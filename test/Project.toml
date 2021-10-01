@@ -1,2 +1,10 @@
 [deps]
+AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
+IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
+PrettyPrinting = "54e16d92-306c-5ea0-a30b-337be88ac337"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestExtras = "5ed8adda-3752-4e41-b88a-e8b09835ee3a"
+TestSetExtensions = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
