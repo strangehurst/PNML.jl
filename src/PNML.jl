@@ -4,6 +4,7 @@ using DocStringExtensions
 using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
 using MLStyle: @match
 
+"Include the XML as part of data."
 const INCLUDEXML = false
 function includexml!(d, node)
     if INCLUDEXML && !haskey(d, :xml)

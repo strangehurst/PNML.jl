@@ -12,26 +12,27 @@ const TOPDIR = "/home/jeff/Projects/Resources/PetriNet/PNML"
     @test !isempty(pn[:nets][1][:pages][1][:trans])
     @test !isempty(pn[:nets][1][:pages][1][:arcs])
     @test !isempty(pn[:nets][1][:pages][1][:places])
-    
-    @show keys(pn)
-    @show keys(pn[:nets])
-    @show keys(pn[:nets][1])
-    @show keys(pn[:nets][1][:pages])
-    @show keys(pn[:nets][1][:pages][1])
-    
-    foreach(pn[:nets]) do net
-        @show keys(net)
-        foreach(net[:pages]) do page
-            @show keys(page)
-            for (key,value) in pairs(page)
-                if value isa Symbol
-                    @show key,value 
-                elseif !isnothing(value)
-                    @show key, keys(value)
+
+    if PRINT_PNML
+        @show keys(pn)
+        @show keys(pn[:nets])
+        @show keys(pn[:nets][1])
+        @show keys(pn[:nets][1][:pages])
+        @show keys(pn[:nets][1][:pages][1])
+        foreach(pn[:nets]) do net
+            @show keys(net)
+            foreach(net[:pages]) do page
+                @show keys(page)
+                for (key,value) in pairs(page)
+                    if value isa Symbol
+                        @show key,value 
+                    elseif !isnothing(value)
+                        @show key, keys(value)
+                    end
                 end
             end
         end
+        #dump(pn;maxdepth=5)
     end
-    #dump(pn;maxdepth=5)
 end
 

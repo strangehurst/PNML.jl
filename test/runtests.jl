@@ -12,8 +12,8 @@ using PNML: parse_doc, parse_pnml, @xml_str,
 
 to_node(s) =  root(EzXML.parsexml(s))
 
-#TODO Change default to false?
-const PRINT_PNML = haskey(ENV, "PRINT_PNML") ? lowercase(ENV["PRINT_PNML"]) == "true" : true
+"Default is to NOT print during test."
+const PRINT_PNML = haskey(ENV, "PRINT_PNML") ? lowercase(ENV["PRINT_PNML"]) == "true" : false
 function printnode(n)
     if PRINT_PNML
         pprint(n)
