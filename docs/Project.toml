@@ -1,3 +1,4 @@
 [deps]
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
