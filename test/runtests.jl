@@ -14,8 +14,9 @@ to_node(s) =  root(EzXML.parsexml(s))
 
 "Default is to NOT print during test."
 const PRINT_PNML = haskey(ENV, "PRINT_PNML") ? lowercase(ENV["PRINT_PNML"]) == "true" : false
-function printnode(n)
+function printnode(n; label=nothing)
     if PRINT_PNML
+        !isnothing(label) && print(label, " ")
         pprint(n)
         println()
     end
@@ -52,5 +53,6 @@ if true
     @testset "graphics"     begin include("graphics.jl") end
     @testset "exceptions"   begin include("exceptions.jl") end
     @testset "example pnml" begin include("parse_examples.jl") end
+    @testset "document"     begin include("document.jl") end
 end
 end

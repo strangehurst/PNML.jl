@@ -39,7 +39,7 @@ end
                    """
      <?xml version="1.0" encoding="UTF-8"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-          <net type="http://www.pnml.org/version-2009/grammar/empty" id="n1">
+          <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
             <page id="pg1">
               <place id="p1"/>
               <transition id="t1"/>
