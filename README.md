@@ -1,6 +1,6 @@
 # PNML
 
-Petri Net Markup Language, https:www.pnml.org, is an XML-based format. 
+Petri Net Markup Language, https://www.pnml.org, is an XML-based format. 
 PNML.jl reads a pnml model and emits an intermediate representation. 
 
 
