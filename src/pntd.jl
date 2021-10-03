@@ -74,8 +74,10 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
     "pt_hlpng"   => :pt_hlpng,
     "symmetric"  => :symmetric,
     "symmetricnet" => :symmetric,
-    "stochastic" => :stochastic,
-    "timed"      => :timednet,
+    "stochastic"   => :stochastic,
+    "timed"        => :timednet,
+    "nonstandard"  => :pnmlcore,
+    "open"         => :pnmlcore
     )
 # TODO: wrap dict in a struct. use __init__?
 """
