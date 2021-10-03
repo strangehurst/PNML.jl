@@ -91,7 +91,7 @@ id(node)::Symbol = node[:id]
 source(arc)::Symbol = arc[:source]
 target(arc)::Symbol = arc[:target]
 
-#TODO  marking, inscription, condition, can be more  complicated
+#TODO  marking, inscription, condition, can be more complicated
 function marking(p)::Integer
     if !isnothing(p[:marking]) && !isnothing(p[:marking][:value])
         p[:marking][:value]

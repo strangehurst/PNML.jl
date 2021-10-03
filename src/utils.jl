@@ -28,7 +28,7 @@ end
 """
     @pnml_str(s)
 
-utility macro for parsing xml strings into symbolics
+#TODO utility macro for parsing xml strings into symbolics
 """
 macro pnml_str(s)
     PNML.parse_str(s)

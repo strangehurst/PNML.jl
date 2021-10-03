@@ -142,7 +142,7 @@ function parse_place(node)
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
             "initialMarking"   => (d[:marking] = parse_node(child))
             "hlinitialMarking" => (d[:marking] = parse_node(child))
-            "type"             =>  (d[:type] = parse_node(child))
+            "type"             => (d[:type] = parse_node(child))
             _ => parse_pnml_node_common!(d,child)
         end
     end
@@ -302,8 +302,7 @@ function parse_hlinitialMarking(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_label_common!(d,child)
-            
+            _ => parse_pnml_label_common!(d,child)          
         end
     end
     d
