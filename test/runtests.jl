@@ -14,7 +14,7 @@ using PNML: parse_doc, parse_pnml, @xml_str,
 
 const GROUP = get(ENV, "GROUP", "All")
 const testdir = dirname(@__FILE__)
-const pnml_dir = joinpath(@__DIR__, "../data")
+const pnml_dir = joinpath(@__DIR__, "data")
     
 # Turn string into a PnmlDict representing XML node.
 to_node(s) =  root(EzXML.parsexml(s))
