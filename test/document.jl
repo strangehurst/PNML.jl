@@ -79,7 +79,7 @@ end
         @test p == PNML.place(net, p[:id])
         @test PNML.id(p) ===  p[:id]
         @test_throws ArgumentError PNML.place(net, :bogus)
-        println("place $(PNML.id(p)) $(PNML.marking(p))")
+        PRINT_PNML && println("place $(PNML.id(p)) $(PNML.marking(p))")
     end
     for t in PNML.transitions(net)
         #printnode(t; label="transition")
@@ -87,7 +87,7 @@ end
         @test t == PNML.transition(net, t[:id])
         @test PNML.id(t) ===  t[:id]
         @test_throws ArgumentError PNML.transition(net, :bogus)
-        println("transition $(PNML.id(t)) $(PNML.condition(t))")
+        PRINT_PNML && println("transition $(PNML.id(t)) $(PNML.condition(t))")
     end
     for a in PNML.arcs(net)
         #printnode(a, label="arc")
@@ -95,7 +95,7 @@ end
         @test a == PNML.arc(net, a[:id])
         @test PNML.id(a) ===  a[:id]
         @test_throws ArgumentError PNML.arc(net, :bogus)
-        println("arc $(PNML.id(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
+        PRINT_PNML && println("arc $(PNML.id(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
     
     #dump(net)
