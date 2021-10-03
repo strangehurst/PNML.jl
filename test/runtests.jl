@@ -1,4 +1,6 @@
 using PNML, EzXML, IfElse, AbstractTrees, Test, PrettyPrinting
+# Run the tests embedded in docstrings.
+using Documenter
 
 using PNML: parse_doc, parse_pnml, @xml_str,
     parse_net, parse_page, parse_place, parse_transition, parse_arc,
@@ -10,6 +12,11 @@ using PNML: parse_doc, parse_pnml, @xml_str,
     parse_declaration, parse_sort, parse_term, parse_label,
     parse_tokengraphics, parse_tokenposition, parse_name
 
+const GROUP = get(ENV, "GROUP", "All")
+const testdir = dirname(@__FILE__)
+const pnml_dir = joinpath(@__DIR__, "../data")
+    
+# Turn string into a PnmlDict representing XML node.
 to_node(s) =  root(EzXML.parsexml(s))
 
 "Default is to NOT print during test."
@@ -30,20 +37,14 @@ function showsize(ob,k)
     end
 end
 
-@testset "attribute" begin
-    n = xml"""
-       <declarations atag="test">
-            <something> #TODO </something>
-            <something2 tag2="two"> <value/> </something2>
-       </declarations>
-        """
-    a = PNML.attribute_elem(n)
-    printnode(a)
-    @test !isnothing(a)
-end
+"Return true if the GROUP environment variable's value if found in 'v'."
+select(v...) = any(==(GROUP), v)
 
-if true
+if !select("None")
 @testset "PNML.jl" begin
+    if select("All", "Doc")
+        @testset "doctest" begin doctest(PNML, manual = false) end 
+    end     
     @testset "maps"     begin include("maps.jl") end
     @testset "utils"    begin include("utils.jl") end
     @testset "print"    begin include("print.jl") end
@@ -53,6 +54,19 @@ if true
     @testset "graphics"     begin include("graphics.jl") end
     @testset "exceptions"   begin include("exceptions.jl") end
     @testset "example pnml" begin include("parse_examples.jl") end
+    @testset "attribute" begin
+        # pnml attribute XML nodes do not have display/GUI data and other
+        # overhead of pnml annotation nodes. Both are pnml labels.
+        a = PNML.attribute_elem(xml"""
+           <declarations atag="test">
+                <something> some content </something>
+                <something2 tag2="two"> <value/> </something2>
+           </declarations>
+        """)
+        printnode(a)
+        @test !isnothing(a)
+        #TODO more tests
+    end
     @testset "document"     begin include("document.jl") end
 end
 end
