@@ -37,11 +37,24 @@ end
 #TODO: Transform Vector{Any} to more specific types. Benchmark first.
 #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 
-"Given a PnmlDict of a pnml 'net' element, assume there is only one page."
-SimpleNet(p) = SimpleNet(p[:id],
-                         p[:pages][begin][:places],
-                         p[:pages][begin][:trans],
-                         p[:pages][begin][:arcs])
+"""
+    collapse_pages(net)
+
+Return NamedTuple holding merged page content.
+Start with simplest case of assuming that only the first page is meaningful.
+Collect places, transitions and arcs. #TODO COLLECT LABELS
+"""
+function collapse_pages(net)
+    (; :places => net[:pages][begin][:places],
+        :trans => net[:pages][begin][:trans],
+        :arcs  => net[:pages][begin][:arcs]) 
+end
+
+"""
+Given a PnmlDict of a pnml 'net' element, assume there is only one page.
+"""
+SimpleNet(net) = SimpleNet(net[:id], collapse_pages(net))
+SimpleNet(id, collapsed) = SimpleNet( id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
 
 #= What are the characteristics of a SimpleNet?
 
@@ -52,7 +65,7 @@ Assumptions about labels:
 
 marking isa initialMarking, has an integer value representing tokens. Default 0.
 inscription has an integer value. Default 1.
-condition mayhave a text value. #TODO what to put here?
+condition may have a text value. #TODO what to put here?
 =#
 
 
@@ -74,7 +87,7 @@ arc(s::SimpleNet, id::Symbol)        = s.arc[findfirst(x -> x[:id] === id, arcs(
 # All pnml nodes have an 'id'.
 id(node)::Symbol = node[:id]
 
-#TODO: wrap arc 
+#TODO: wrap arc?
 source(arc)::Symbol = arc[:source]
 target(arc)::Symbol = arc[:target]
 
@@ -87,23 +100,25 @@ function marking(p)::Integer
     end
 end
 
-function inscription(a)::Integer
-    if !isnothing(a[:inscription]) && !isnothing(a[:inscription][:value])
-        a[:inscription][:value]
+function inscription(arc)::Integer
+    if !isnothing(arc[:inscription]) && !isnothing(arc[:inscription][:value])
+        arc[:inscription][:value]
     else
         1
     end        
 end
 
-#TODO: return something more useful in Julia than a string
-function condition(trans)::Maybe{String}
-    if !isnothing(trans[:condition]) && !isnothing(trans[:condition][:text])
-        trans[:condition][:text][:content]
+#TODO: Return something more useful in Julia than a string!
+function condition(transition)::Maybe{String}
+    if !isnothing(transition[:condition]) && !isnothing(transition[:condition][:text])
+        transition[:condition][:text][:content]
     else
         nothing
     end
 end
 
-"maybe of type `T` or nothing"
-const Maybe{T} = Union{Nothing, T}
+"""
+Maybe of type `T` or nothing.
+"""
+const Maybe{T} = Union{T, Nothing}
 
