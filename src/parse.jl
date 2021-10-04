@@ -1,6 +1,3 @@
-#TODO; replace Any by more specific types
-#const PnmlDict = Dict{Symbol, Union{Nothing,Any}}
-const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,NamedTuple,Symbol,AbstractString,Number}}
 
 "Build pnml from a string."
 function parse_str(str)
@@ -58,11 +55,8 @@ function parse_pnml(node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     validate_node(node) #TODO
     nets = parse_node.(allchildren("net", node))
-    if INCLUDEXML
-        (; :tag=>Symbol(nn), :nets=>nets, :xml=>node)
-    else
-        (; :tag=>Symbol(nn), :nets=>nets, :xml=>nothing)
-    end
+    (; :id=>Symbol(nn), :tag=>Symbol(nn), :nets=>nets,
+     :xml=>(INCLUDEXML ? node : nothing))
 end
 
 """
