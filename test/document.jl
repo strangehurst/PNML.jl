@@ -12,7 +12,7 @@
     </pnml>
         """ 
     
-    doc = PNML.Document(parse_doc(parsexml(str)))
+    doc = PNML.Document(parse_doc(EzXML.parsexml(str)))
     #printnode(doc.nets);println()
     v1 = PNML.find_nets(doc, :ptnet)
     printnode(v1, label="v1")
@@ -48,13 +48,16 @@ end
 @testset "net type" begin
     # pnml with multiple nets.    
     str = """
-    <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
+    <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="pnmlcore">
             <page id="page0">
             <place id="p1"> <initialMarking> <text>1</text> </initialMarking> </place>
             <place id="p2"> <initialMarking> <text>2</text> </initialMarking> </place>
-            <place id="p3"> </place>
+            <place id="p3">
+                <structure att1="doo"/>
+                <frog name="hoppy" />
+            </place>
             <transition id ="t1"> <condition><text>true</text></condition> </transition>
             <transition id ="t2"> <condition/> </transition>
             <arc id="a1" source="p1" target="t1"> <inscription/> </arc>
@@ -68,11 +71,25 @@ end
     </pnml>
         """ 
     
-    doc = PNML.Document(parse_doc(parsexml(str)))
-    #printnode(doc.nets);println()
+    doc = PNML.Document(PNML.parse_doc(EzXML.parsexml(str)))
+    printnode(doc.nets)
+
+    
     v = PNML.find_nets(doc, :pnmlcore)
     @test !isempty(v)
-    net = PNML.SimpleNet(v[begin])
+    @test v[begin] == PNML.first_net(doc)
+
+    #@show typeof(PNML.parse_doc(EzXML.parsexml(str)))
+    net1 = PNML.SimpleNet(doc)
+    net = PNML.SimpleNet(v[begin]) #
+    
+    @test net == PNML.SimpleNet(PNML.first_net(doc))
+    @test net == net1
+    
+    @show PNML.place_ids(net)
+    @show PNML.transition_ids(net)
+    @show PNML.arc_ids(net)
+
     for p in PNML.places(net)
         #printnode(p; label="place")
         @test PNML.has_place(net, p[:id])

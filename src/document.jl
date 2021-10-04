@@ -12,9 +12,9 @@ Document(p) = Document(p[:nets],p[:xml])
 
 "Return nets of 'd' matching the given pntd 'type'."
 function find_nets end
-find_nets(d, type::AbstractString) = find_nets(d, default_pntd_map[type])
-find_nets(d, type::Symbol) = filter(n->n[:type] === type, d.nets)
-
+find_nets(d::Document, type::AbstractString) = find_nets(d, default_pntd_map[type])
+find_nets(d::Document, type::Symbol) = filter(n->n[:type] === type, d.nets)
+first_net(d::Document) = first(d.nets)
 
 """
 SimpleNet wraps the 'place', 'transition' & "arc" collections of a single page.
@@ -38,23 +38,12 @@ end
 #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 
 """
-    collapse_pages(net)
-
-Return NamedTuple holding merged page content.
-Start with simplest case of assuming that only the first page is meaningful.
-Collect places, transitions and arcs. #TODO COLLECT LABELS
-"""
-function collapse_pages(net)
-    (; :places => net[:pages][begin][:places],
-        :trans => net[:pages][begin][:trans],
-        :arcs  => net[:pages][begin][:arcs]) 
-end
-
-"""
 Given a PnmlDict of a pnml 'net' element, assume there is only one page.
 """
+SimpleNet(doc::Document) = SimpleNet(first_net(doc))
 SimpleNet(net) = SimpleNet(net[:id], collapse_pages(net))
-SimpleNet(id, collapsed) = SimpleNet( id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
+SimpleNet(id::Symbol, collapsed) = SimpleNet( id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
+SimpleNet(str::AbstractString) = SimpleNet(Document(parse_doc(parsexml(str))))
 
 #= What are the characteristics of a SimpleNet?
 
@@ -68,10 +57,30 @@ inscription has an integer value. Default 1.
 condition may have a text value. #TODO what to put here?
 =#
 
+"""
+    collapse_pages(net)
+
+Return NamedTuple holding merged page content.
+Start with simplest case of assuming that only the first page is meaningful.
+Collect places, transitions and arcs. #TODO COLLECT LABELS
+"""
+function collapse_pages(net)
+    (; :places => net[:pages][begin][:places],
+        :trans => net[:pages][begin][:trans],
+        :arcs  => net[:pages][begin][:arcs]) 
+end
 
 places(s::SimpleNet) = s.place
 transitions(s::SimpleNet) = s.transition
 arcs(s::SimpleNet) = s.arc
+
+"Return vector of arcs that have a source or target of transition 'id'."
+arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id || target(a)===id, arcs(s))
+"Return vector of arcs that have a source of transition 'id'."
+arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
+"Return vector of arcs that have a  target of transition 'id'."
+arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
+
 
 "Is there any place with 'id' in net 's'?"
 has_place(s::SimpleNet, id::Symbol)      = any(x -> x[:id] === id, places(s))
@@ -86,6 +95,14 @@ arc(s::SimpleNet, id::Symbol)        = s.arc[findfirst(x -> x[:id] === id, arcs(
 
 # All pnml nodes have an 'id'.
 id(node)::Symbol = node[:id]
+
+# Get vector of ids.
+place_ids(s::SimpleNet) = map(id, places(s)) 
+transition_ids(s::SimpleNet) = map(id, transitions(s)) 
+arc_ids(s::SimpleNet) = map(id, arcs(s)) 
+
+
+
 
 #TODO: wrap arc?
 source(arc)::Symbol = arc[:source]
