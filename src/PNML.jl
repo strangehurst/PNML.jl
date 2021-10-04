@@ -2,6 +2,7 @@ module PNML
 using DocStringExtensions
 
 using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
+using LabelledArrays
 using MLStyle: @match
 
 "Include the XML as part of data."
