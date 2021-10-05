@@ -34,6 +34,12 @@ macro pnml_str(s)
     PNML.parse_str(s)
 end
 
+"Parse XML content as a number. First try integer then float."
+function number_value(s::AbstractString)
+    x = tryparse(Int,s) 
+    x = isnothing(x) ?  tryparse(Float64,s) : x
+end
+
 "Return up to 1 immediate` child of element `el` that is a `tag`."
 function firstchild(tag, el, ns=PNML.pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])

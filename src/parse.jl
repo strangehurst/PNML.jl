@@ -110,6 +110,7 @@ function parse_page(node)
                            :refP=>[], :refT=>[],
                            :declarations=>[])
 
+    # Can XML element order be predicted?
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_node(child))
@@ -270,7 +271,8 @@ function parse_initialMarking(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:value] = tryparse(Int, string(strip(nodecontent(child)))))
+            # We extend to allowing meaknings to be real numbers.
+            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d,child)
         end
     end
@@ -283,7 +285,7 @@ function parse_inscription(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:value] = tryparse(Int, string(strip(nodecontent(child)))))
+            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d,child)
         end
     end
