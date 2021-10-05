@@ -1,6 +1,6 @@
 using PNML, EzXML, IfElse, AbstractTrees, Test, PrettyPrinting
 # Run the tests embedded in docstrings.
-using Documenter
+using Documenter, LabelledArrays
 
 using PNML: parse_doc, parse_pnml, @xml_str,
     parse_net, parse_page, parse_place, parse_transition, parse_arc,

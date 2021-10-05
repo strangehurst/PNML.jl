@@ -72,7 +72,7 @@ end
         """ 
     
     doc = PNML.Document(PNML.parse_doc(EzXML.parsexml(str)))
-    printnode(doc.nets)
+    printnode(doc.nets, label="net type")
 
     
     v = PNML.find_nets(doc, :pnmlcore)
@@ -116,4 +116,61 @@ end
     end
     
     #dump(net)
+end
+
+@testset "Petri" begin
+    str = """<?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        <net id="net0" type="pnmlcore">
+        <page id="page0">
+            <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
+            <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
+            <transition id ="birth">     <condition> <text>0.3</text> </condition> </transition>
+            <transition id ="predation"> <condition> <text>0.015</text> </condition> </transition>
+            <transition id ="death">     <condition> <text>0.7</text> </condition> </transition>
+            <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2</text> </inscription> </arc>
+            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a5" source="predation" target="wolves"> <inscription><text>2</text> </inscription> </arc>
+            <arc id="a6" source="wolves"    target="death"> <inscription><text>1</text> </inscription> </arc>
+        </page>
+        </net>
+    </pnml>
+    """ 
+ 
+    doc = PNML.Document(PNML.parse_doc(EzXML.parsexml(str)))
+    net1 = PNML.first_net(doc)
+    printnode(net1, label="Petri Net ")
+    snet = PNML.SimpleNet(net1)
+    
+    S = PNML.place_ids(snet) # [:rabbits, :wolves]
+    T = PNML.transition_ids(snet)
+    @show S, T
+    for t in T
+        @show PNML.in_out(snet, t)
+    end
+
+    # keys are transition ids
+    # values are input, output vectors of "tuples" place id -> inscription (integer?)
+    Δ = PNML.transition_function(snet)#,T)
+    tfun = LVector(
+        birth=(LVector(rabbits=1), LVector(rabbits=2)),
+        predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
+        death=(LVector(wolves=1), LVector()),
+    )
+    @show Δ
+    @show tfun
+    @test Δ.birth     == tfun.birth
+    @test Δ.predation == tfun.predation
+    @test Δ.death     == tfun.death
+
+    uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
+    u0 = PNML.initialMarking(snet) #, S)
+    @show u0
+    @test u0 == uX
+    βx = LVector(birth=.3, predation=.015, death=.7); # transition condition
+    β = PNML.conditions(snet) #LVector( (; [t=>PNML.condition(snet,t) for t in T]...))
+    @show β
+    @test β == βx
 end

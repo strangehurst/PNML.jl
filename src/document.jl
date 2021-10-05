@@ -34,6 +34,7 @@ struct SimpleNet{P,T,A}
     arc::A
 end
 
+
 #TODO: Transform Vector{Any} to more specific types. Benchmark first.
 #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 
@@ -74,14 +75,6 @@ places(s::SimpleNet) = s.place
 transitions(s::SimpleNet) = s.transition
 arcs(s::SimpleNet) = s.arc
 
-"Return vector of arcs that have a source or target of transition 'id'."
-arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id || target(a)===id, arcs(s))
-"Return vector of arcs that have a source of transition 'id'."
-arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
-"Return vector of arcs that have a  target of transition 'id'."
-arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
-
-
 "Is there any place with 'id' in net 's'?"
 has_place(s::SimpleNet, id::Symbol)      = any(x -> x[:id] === id, places(s))
 has_transition(s::SimpleNet, id::Symbol) = any(x -> x[:id] === id, transitions(s))
@@ -102,30 +95,49 @@ transition_ids(s::SimpleNet) = map(id, transitions(s))
 arc_ids(s::SimpleNet) = map(id, arcs(s)) 
 
 
-
-
 #TODO: wrap arc?
 source(arc)::Symbol = arc[:source]
 target(arc)::Symbol = arc[:target]
 
+"Return vector of arcs that have a source or target of transition 'id'."
+all_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id || target(a)===id, arcs(s))
+
+"Return vector of arcs that have a source of transition 'id'."
+src_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
+
+"Return vector of arcs that have a  target of transition 'id'."
+tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
+
+"#TODO Return inscription value"
+inscription(a) = a[:inscription][:value]
+    
+
 #TODO  marking, inscription, condition, can be more complicated
-function marking(p)::Integer
+
+"Return marking value of a place."
+function marking(p)::Number
     if !isnothing(p[:marking]) && !isnothing(p[:marking][:value])
         p[:marking][:value]
     else
         0
     end
 end
+"Return marking value of place with id 'p'."
+marking(s::SimpleNet, p::Symbol) = marking(place(s,p))
 
-function inscription(arc)::Integer
+"Return incription value of an arc."
+function inscription(arc)::Number
     if !isnothing(arc[:inscription]) && !isnothing(arc[:inscription][:value])
         arc[:inscription][:value]
     else
         1
     end        
 end
+"Return inscription value of an arc with id 'a'."
+inscription(s::SimpleNet, a::Symbol) = inscription(arc(s,a))
 
 #TODO: Return something more useful in Julia than a string!
+#Return condition value of a transition."
 function condition(transition)::Maybe{String}
     if !isnothing(transition[:condition]) && !isnothing(transition[:condition][:text])
         transition[:condition][:text][:content]
@@ -133,4 +145,35 @@ function condition(transition)::Maybe{String}
         nothing
     end
 end
+"Return condition value of a transition with id 't'."
+condition(s::SimpleNet, t::Symbol) = condition(transition(s,t))
 
+"""
+Transition function of a Petri Net.
+Each transition has an input vector and an output vector.
+Each vector is indexed by the place on the other end of the arc.
+Values are inscriptions.
+"""
+transition_function(s::SimpleNet) = transition_function(s, transition_ids(s))
+transition_function(s::SimpleNet,v::Vector{Symbol}) =
+    LVector( (;[t=>in_out(s,t) for t in v]...))
+
+"""
+Return tuple of input, output labelled vectors with key of place ids and
+value of arc inscription's value. 
+"""
+function in_out(s::SimpleNet, t::Symbol)
+    # Input arcs have this transition as the target.
+    ins = (; [source(a)=>inscription(a) for a in tgt_arcs(s, t)]...)
+    # Output arcs have this transition as the source.
+    out = (; [target(a)=>inscription(a) for a in src_arcs(s, t)]...)
+    (LVector(ins), LVector(out))
+end    
+
+initialMarking(s::SimpleNet) = initialMarking(s, place_ids(s))
+initialMarking(s::SimpleNet, v::Vector{Symbol}) =
+    LVector( (; [p=>marking(s,p) for p in v]...))
+
+conditions(s::SimpleNet) = conditions(s, transition_ids(s))
+conditions(s::SimpleNet, v::Vector{Symbol}) =
+    LVector( (; [t=>number_value(condition(s,t)) for t in v]...))
