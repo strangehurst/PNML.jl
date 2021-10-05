@@ -121,7 +121,7 @@ end
 @testset "Petri" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="pnmlcore">
+        <net id="net0" type="stochastic">
         <page id="page0">
             <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
             <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
