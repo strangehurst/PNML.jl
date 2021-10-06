@@ -50,6 +50,7 @@ function allchildren(tag, el, ns=PNML.pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 
+#-------------------------------------------------------------------
 # XML attribute predicates.
 has_align(element)       = EzXML.haskey(element, "align")
 has_color(element)       = EzXML.haskey(element, "color")
@@ -80,13 +81,31 @@ has_x(element)           = EzXML.haskey(element, "x")
 has_xmlns(element)       = EzXML.haskey(element, "xmlns")
 has_y(element)           = EzXML.haskey(element, "y")
 
-# bindings for viewing call tree
+#-------------------------------------------------------------------
+# bindings for viewing tree
 AbstractTrees.children(n::EzXML.Node) = EzXML.elements(n)
 AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, :name))
 AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
 
 #-------------------------------------------------------------------
-#Todo: Make global state varaible.
+#TODO: make global state variable 
+mutable struct IDRegistry
+    ids::Set{Symbol}
+    lk::ReentrantLock
+end
+IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
+
+const GlobalIDRegistry = IDRegistry()
+function register_id(reg::IDRegistry, id::Symbol)
+    global GlobalIDRegistry
+    lock(GlobalIDRegistry.lk) do
+        id ∈ GlobalIDRegistry.ids && @warn "ID $(id) already registered."
+        push!(GlobalIDRegistry.ids, id)
+    end
+end
+
+#-------------------------------------------------------------------
+#TODO: Make global state varaible.
 #Count and lock to implement global state."
 mutable struct MissingIDCounter
     i::Int
