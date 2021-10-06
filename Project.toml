@@ -17,4 +17,11 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 Petri = "1"
+OrdinaryDiffEq = "5"
+DocStringExtensions = "0.8"
+AbstractTrees = "0.3"
+Symbolics = "3"
+EzXML = "1"
+MLStyle = "0.4"
+IfElse = "0.1"
 julia = "1.6"
