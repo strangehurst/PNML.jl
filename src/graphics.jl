@@ -77,10 +77,8 @@ function parse_graphics_coordinate(node)
     has_y(node) || throw(MalformedException("$(nn) missing y", node))
     # Specification seems to use integer pixels (or points).
     # We also allow Real numbers.
-    x = tryparse(Int, node["x"])
-    x = (x === nothing) ? tryparse(Float64, node["x"]) : x
-    y = tryparse(Int, node["y"])
-    y = (y === nothing) ? tryparse(Float64, node["y"]) : y
+    x = number_value(node["x"])
+    y = number_value(node["y"])
     (; :tag=>Symbol(nn), :x=>x, :y=>y)
 end
 

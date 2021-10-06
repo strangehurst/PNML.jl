@@ -11,13 +11,13 @@ struct MalformedException <: PnmlException
     node::EzXML.Node
 end
 
-Base.showerror(e::MissingIDException) = Base.showerror(stderr, e)
+Base.showerror(e::MissingIDException) = showerror(stderr, e)
 function Base.showerror(io::IO, e::MissingIDException)
     print(io, "MissingIDException: ", e.msg)
     #node_summary(io, e.node) # Print just the first 5 lines of the offending XML node.
 end
 
-Base.showerror(e::MalformedException) = Base.showerror(stderr, e)
+Base.showerror(e::MalformedException) = showerror(stderr, e)
 function Base.showerror(io::IO, e::MalformedException)
     print(io, "MalformedException: ", e.msg)
     #node_summary(io, e.node) # Print just the first 5 lines of the offending XML node.
