@@ -11,11 +11,11 @@ using OrdinaryDiffEq
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="stochastic">
         <page id="page0">
-            <place id="wolves"> <initialMarking> <text>2</text> </initialMarking> </place>
-            <place id="rabbits"> <initialMarking> <text>1</text> </initialMarking> </place>
-            <transition id ="birth"> <condition> <text>0.1</text> </condition> </transition>
-            <transition id ="death"> <condition> <text>0.1</text> </condition> </transition>
-            <transition id ="predation"> <condition> <text>0.1</text> </condition> </transition>
+            <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
+            <place id="wolves"> <initialMarking> <text>10.0</text> </initialMarking> </place>
+            <transition id ="birth"> <condition> <text>0.3</text> </condition> </transition>
+            <transition id ="death"> <condition> <text>0.7</text> </condition> </transition>
+            <transition id ="predation"> <condition> <text>0.015</text> </condition> </transition>
             <arc id="a1" source="rabbits" target="birth"> <inscription><text>1</text> </inscription> </arc>
             <arc id="a2" source="birth" target="rabbits"> <inscription><text>2</text> </inscription> </arc>
             <arc id="a3" source="wolves" target="predation"> <inscription><text>1</text> </inscription> </arc>
