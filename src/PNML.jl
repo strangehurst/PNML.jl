@@ -2,6 +2,7 @@ module PNML
 using DocStringExtensions
 
 using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
+using LabelledArrays
 using MLStyle: @match
 
 "Include the XML as part of data."
@@ -21,6 +22,7 @@ end
 
 include("utils.jl")
 include("types.jl")
+include("document.jl")
 include("pntd.jl")
 include("parse.jl")
 include("parse_utils.jl")

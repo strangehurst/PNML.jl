@@ -1,6 +1,3 @@
-#TODO; replace Any by more specific types
-#const PnmlDict = Dict{Symbol, Union{Nothing,Any}}
-const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,NamedTuple,Symbol,AbstractString,Number}}
 
 "Build pnml from a string."
 function parse_str(str)
@@ -58,11 +55,8 @@ function parse_pnml(node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     validate_node(node) #TODO
     nets = parse_node.(allchildren("net", node))
-    if INCLUDEXML
-        (; :tag=>Symbol(nn), :nets=>nets, :xml=>node)
-    else
-        (; :tag=>Symbol(nn), :nets=>nets, :xml=>nothing)
-    end
+    (; :id=>Symbol(nn), :tag=>Symbol(nn), :nets=>nets,
+     :xml=>(INCLUDEXML ? node : nothing))
 end
 
 """
@@ -116,6 +110,7 @@ function parse_page(node)
                            :refP=>[], :refT=>[],
                            :declarations=>[])
 
+    # Can XML element order be predicted?
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_node(child))
@@ -142,7 +137,7 @@ function parse_place(node)
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
             "initialMarking"   => (d[:marking] = parse_node(child))
             "hlinitialMarking" => (d[:marking] = parse_node(child))
-            "type"             =>  (d[:type] = parse_node(child))
+            "type"             => (d[:type] = parse_node(child))
             _ => parse_pnml_node_common!(d,child)
         end
     end
@@ -276,7 +271,8 @@ function parse_initialMarking(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:value] = tryparse(Int, string(strip(nodecontent(child)))))
+            # We extend to allowing meaknings to be real numbers.
+            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d,child)
         end
     end
@@ -289,7 +285,7 @@ function parse_inscription(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:value] = tryparse(Int, string(strip(nodecontent(child)))))
+            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d,child)
         end
     end
@@ -302,8 +298,7 @@ function parse_hlinitialMarking(node)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_label_common!(d,child)
-            
+            _ => parse_pnml_label_common!(d,child)          
         end
     end
     d
