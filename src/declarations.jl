@@ -18,10 +18,10 @@ function parse_condition(node)
 end
 
 
-
+"Parse type of a place. Id different from net type or pntd."
 function parse_type(node)
     nn = nodename(node)
-    nn == "type" || error("parse_initialMarking element name wrong: $nn")
+    nn == "type" || error("parse_type element name wrong: $nn")
     attribute_elem(node)
 end
 
@@ -47,9 +47,9 @@ end
 #=
 There are many attribute-label elements.
 These do not have the same characteristics as annotation-label elements.
-The graphics, toolspecific, text and structure of the common dictonary
-are not useful so a NamedTuple is used for attribute-labels.
 The common usage is that 'label' usually be read as annotation-label
+The graphics, toolspecific, text and structure of the common dictonary
+are not useful.
 
 Unknown tags get parsed by attribute_elem.  Annotation-labels usually have
 known tags and dedicated dictonary keys. Pnml-node-elements put unregistered children
@@ -208,7 +208,7 @@ function parse_usersort(node)
     nn = nodename(node)
     nn == "usersort" || error("parse_usersort element name wrong: $nn")
     has_declaration(node) || throw(MalformedException("$(nn) missing declaration attribute", node))
-     attribute_elem(node)
+    attribute_elem(node)
 end
 
 ""
