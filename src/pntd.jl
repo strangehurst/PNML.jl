@@ -1,4 +1,3 @@
-
 #--------------------------------
 # Kinds of Petri Nets
 """
@@ -15,13 +14,13 @@ See (`pnmltype_map)[@ref] for the map from type string to a  dispatch singleton.
 Within PNML.jl no schema-level validation is done. Nor is any use made of
 the schema within the code. Schemas, UML, ISO Specification and papers used
 to inform the design. See https://www.pnml.org/ for details.
- 
+
 In is allowed by the PNML specification to omit validation with the presumption that
 some specialized, external tool can be applied, thus allowing the file format to be
 used for inter-tool communication with lower overhead.
 
 Some pnml files exist that do not use a valid type URI.
-However it is done, an appropriate subtype of `PnmlType` must be chosen. 
+However it is done, an appropriate subtype of `PnmlType` must be chosen.
 Refer to [`to_net_type`](@ref) and [`pnmltype_map`](@ref) for how to get
 from the URI string to a Julia type.
 """
@@ -55,7 +54,7 @@ struct HLNet         <: AbstractHLCore end
     default_pntd_map
 
 Map from Petri Net Type Definition (pntd) URI to Symbol.
-The URI used can be any string regardless of any violation of the PNML Specification. 
+The URI used can be any string regardless of any violation of the PNML Specification.
 There is a companion map [`pnmltype_map`](@ref) that takes the symbol to a type object.
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
@@ -74,20 +73,24 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
     "pt_hlpng"   => :pt_hlpng,
     "symmetric"  => :symmetric,
     "symmetricnet" => :symmetric,
-    "stochastic" => :stochastic,
-    "timed"      => :timednet,
+    "stochastic"   => :stochastic,
+    "timed"        => :timednet,
+    "nonstandard"  => :pnmlcore,
+    "open"         => :pnmlcore
     )
+
 # TODO: wrap dict in a struct. use __init__?
+
 """
     pnmltype_map
 
 The keys are the supported kinds of Petri Nets.
 
-Provides a place to abstract relationship of pntd name and implementation type.  
+Provides a place to abstract relationship of pntd name and implementation type.
 Allows multiple strings to map to the same parser implementation.
 Is a point at which different parser implmentations may be introduced.
 """
-const pnmltype_map = Dict( #{Symbol, <:PnmlType}(
+const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),
     :hlcore     => HLCore(),
     :ptnet      => PTNet(),
@@ -104,7 +107,7 @@ add_nettype!(d::AbstractDict, s::Symbol, t::T) where {T<:PnmlType} = d[s] = t
 """
     to_net_type(uri)
     to_net_type(symbol)
-    
+
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
@@ -131,7 +134,7 @@ We map `uri` to a symbol using a dictionary like [`default_pntd_map`](@ref).
 Return symbol that is a valid pnmltype_map key. Defaults to `:pnmlcore`.
 """
 function to_net_type_sym(uri::AbstractString; pntd_map=default_pntd_map)
-    if isempty(uri) 
+    if isempty(uri)
         @debug "Empty PNML type URI will be mapped to :pnmlcore model."
     elseif !haskey(pntd_map, uri)
         @debug "Unknown PNML type URI $uri will be mapped to :pnmlcore model."

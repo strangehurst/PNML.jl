@@ -1,8 +1,6 @@
 
-const TOPDIR = "./data"
-
 @testset "example pnml" begin
-    pn = parse_file(joinpath(TOPDIR, "AirplaneLD-col-0010.pnml"))
+    pn = parse_file(joinpath(pnml_dir, "AirplaneLD-col-0010.pnml"))
     #printnode(pn) # Too much to display for every test!
     @test pn[:tag] == :pnml
     @test pn[:nets] isa Vector

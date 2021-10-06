@@ -75,7 +75,7 @@ end
             foreach(PNML.allchildren("transition", page)) do t
                 @test nodename(t) == "transition"
                 i = parse_node(PNML.firstchild("condition", t))
-                @test i == nothing
+                @test i === nothing
             end
             
             @test !isempty(PNML.allchildren("arc", page))            

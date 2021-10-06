@@ -28,10 +28,16 @@ end
 """
     @pnml_str(s)
 
-utility macro for parsing xml strings into symbolics
+#TODO utility macro for parsing xml strings into symbolics
 """
 macro pnml_str(s)
     PNML.parse_str(s)
+end
+
+"Parse XML content as a number. First try integer then float."
+function number_value(s::AbstractString)
+    x = tryparse(Int,s) 
+    x = isnothing(x) ?  tryparse(Float64,s) : x
 end
 
 "Return up to 1 immediate` child of element `el` that is a `tag`."
