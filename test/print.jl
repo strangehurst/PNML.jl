@@ -1,6 +1,6 @@
 @testset "node_summary" begin
     @test true
-    xml = readxml("data/simple.pnml").root
+    xml = readxml(joinpath(pnml_dir, "simple.pnml")).root
     PRINT_PNML && node_summary(xml, n=2)
     
     # Print 1st 5 lines.

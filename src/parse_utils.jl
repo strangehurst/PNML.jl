@@ -17,9 +17,8 @@ the hiearchy.
 function attribute_elem(node)
     @debug "attribute = $(nodename(node))"
     d = PnmlDict(:tag=>Symbol(nodename(node)),
-                 (Symbol(a.name)=>(a.name=="id" ? Symbol(a.content) :
-                                   a.content) for a in eachattribute(node))...)
-#                 attribute_attributes(eachattribute(node))...)
+                 (Symbol(a.name)=>((a.name == "id") ?
+                                   Symbol(a.content) : a.content) for a in eachattribute(node))...)
     e = elements(node)
     if !isempty(e)
         merge!(d, attribute_content(e))
@@ -101,6 +100,7 @@ function pnml_common_defaults(node)
     includexml!(d, node)
     d
 end
+
 """
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
@@ -175,7 +175,6 @@ function parse_pnml_label_common!(d, node)
     @match nodename(node) begin
         "text" => (d[:text] = parse_node(node)) #TODO label with name?
         "structure" => (d[:structure] = parse_node(node))
-        "name" => (d[:name] = parse_node(node))
         _      => parse_pnml_common!(d,node)
     end
 end
