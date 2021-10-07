@@ -68,7 +68,7 @@ end
                 @test i[:tag] == :initialMarking
                 @test i[:value] !== nothing
                 @test i[:value] >= 0
-                @test !haskey(i,:xml) || i[:xml] isa EzXML.Node
+                @test isnothing(i[:xml]) || i[:xml] isa EzXML.Node
             end
             
             @test !isempty(PNML.allchildren("transition", page))
@@ -85,23 +85,24 @@ end
                 @test i[:tag] == :inscription
                 @test i[:value] !== nothing
                 @test i[:value] > 0
-                @test !haskey(i,:xml) || i[:xml] isa EzXML.Node
+                @test isnothing(i[:xml]) || i[:xml] isa EzXML.Node
             end
         end
     end
+    PNML.reset_registry()
 end
 
 @testset "parse node level" begin
 
     # Do a full parse and maybe print the generated data structure.
-    e = parse_doc(doc)
-    printnode(e)
+    pnmldoc = parse_doc(doc)
+    #printnode(e)
 
     # Access the returned data structure.
     if SHOW_SUMMARYSIZE && PRINT_PNML
         @show Base.summarysize(e)
     end
-    foreach(e[:nets]) do net
+    foreach(pnmldoc.nets) do net
         @testset "net keys" for k in [:id, :name, :tag, :xml, 
                                       :graphics, :tools, :labels,
                                       :pages, :declarations]
@@ -166,5 +167,6 @@ end
             end
         end
     end
+    PNML.reset_registry()
     println()
 end

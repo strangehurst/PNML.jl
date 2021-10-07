@@ -11,13 +11,20 @@ function parse_file(fn)
     parse_doc(doc)
 end
 
-""" 
-Start descent from the root XML element node of `doc`.
+""" parse_doc(doc::EzXML.Document)
+
+Return a PNML.Document.
+Start descent from the root XML element node.
 A well formed PNML XML document has a single root node: 'pnml'.
 """
-function parse_doc(doc)
-    parse_pnml(root(doc))
+function parse_doc(doc::EzXML.Document)::PNML.Document
+    Document(parse_pnml(root(doc)))
 end
+
+
+
+
+#-------------------------------------------------------------------
 
 """
     parse_node(node;verbose=true)
@@ -55,8 +62,9 @@ function parse_pnml(node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     validate_node(node) #TODO
     nets = parse_node.(allchildren("net", node))
-    (; :id=>Symbol(nn), :tag=>Symbol(nn), :nets=>nets,
-     :xml=>(INCLUDEXML ? node : nothing))
+    # Give tuple an id element to match the rest of the IR.
+    # Because there can only be one pnml tag, we use it as the id.
+    (; :id=>register_id(nn), :tag=>Symbol(nn), :nets=>nets, :xml=>includexml(node))
 end
 
 """
@@ -74,13 +82,14 @@ function parse_net(node)
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
 
+    
     # Create a Dict with keys for possible child tags.
     # Some keys have known/required values.
     # Optional key values are nothing for single object or empty vector when multiples
     # are allowed. Keys that have pural names usually have a vector value.
     # The 'graphics' key is an exception and has a single value.
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>Symbol(node["id"]),
-                           :type=>default_pntd_map[node["type"]],
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
+                           :type=>pntd(node["type"]),
                            :pages => [],
                            :declarations => [])
     # Go through children looking for expected tags, delegating common tags and labels..
@@ -105,7 +114,7 @@ function parse_page(node)
     nn == "page" || error("parse_page element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
 
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :places=>[], :trans=>[], :arcs=>[],
                            :refP=>[], :refT=>[],
                            :declarations=>[])
@@ -129,7 +138,7 @@ function parse_place(node)
     nn = nodename(node)
     nn == "place" || error("parse_place element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id => Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :marking => nothing,
                            :type=>nothing) # This 'type' is different from the net 'type'.
     foreach(elements(node)) do child
@@ -148,7 +157,7 @@ function parse_transition(node)
     nn = nodename(node)
     nn == "transition" || error("parse_transition element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id => Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :condition=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -165,7 +174,7 @@ function parse_arc(node)
     has_id(node) || throw(MissingIDException(nn, node))
     @assert has_source(node)
     @assert has_target(node)
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :source=>Symbol(node["source"]),
                            :target=>Symbol(node["target"]),
                            :inscription=>nothing)
@@ -185,7 +194,7 @@ function parse_refPlace(node)
     nn == "referencePlace" || error("parse_refPlace element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_ref(node) || throw(MalformedException("$(nn) missing ref attribute", node))
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :ref=>Symbol(node["ref"]))
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -200,7 +209,7 @@ function parse_refTransition(node)
     nn == "referenceTransition" || error("parse_refTransition element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_ref(node) || throw(MalformedException("$(nn) missing ref attribute", node))
-    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>Symbol(node["id"]),
+    d = pnml_node_defaults(node, :tag=>Symbol(nn), :id=>register_id(node["id"]),
                            :ref=>Symbol(node["ref"]))
     foreach(elements(node)) do child
         @match nodename(child) begin

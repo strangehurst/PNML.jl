@@ -17,7 +17,7 @@
     n = parse_node(root(doc))
     printnode(n)
     @test n[:tag] == :graphics
-    @test !haskey(n,:xml) || n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
     @test haskey(n,:offset)
     @test haskey(n,:line)
     @test haskey(n,:positions)
@@ -75,7 +75,7 @@ end
         @test length(d[:labels]) == 1
         foreach(d[:labels]) do l
             @test l[:tag] == :tokencolors
-            @test !haskey(l,:xml) || l[:xml] isa EzXML.Node
+            @test isnothing(l[:xml]) || l[:xml] isa EzXML.Node
         end
     end
 end
@@ -117,6 +117,6 @@ end
         @test n[:tag] == :tokengraphics
         @test haskey(n,:positions)
         @test length(n[:positions]) == l
-        @test !haskey(n,:xml) || n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
     end
 end

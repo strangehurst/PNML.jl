@@ -17,33 +17,17 @@ the hiearchy.
 function attribute_elem(node)
     @debug "attribute = $(nodename(node))"
     d = PnmlDict(:tag=>Symbol(nodename(node)),
-                 (Symbol(a.name)=>((a.name == "id") ?
-                                   Symbol(a.content) : a.content) for a in eachattribute(node))...)
+                 (Symbol(a.name)=>((a.name == "id") ? register_id(a.content) :
+                                   a.content) for a in eachattribute(node))...)
     e = elements(node)
     if !isempty(e)
-        merge!(d, attribute_content(e))
+        merge!(d, attribute_content(e)) # children elements
     else
         d[:content] = (!isempty(nodecontent(node)) ? strip(nodecontent(node)) : nothing)
     end
-    includexml!(d, node)
+    d[:xml]=includexml(node)
     @debug d
     d
-end
-
-""" """
-function parse_node_pair(node; verbose=true)
-    Symbol(nodename(node)) => parse_node(node;verbose)
-end
-
-"Return vector of pairs."
-function attribute_attributes(nv)
-    #Symbol(a.name)=>a.content for a in
-    v = Vector{Pair}[]
-    for a in nv
-        tag = Symbol(a.name)
-        push!(v, Pair(tag, tag === :id ? Symbol(a.content) : a.content))
-    end
-    v
 end
 
 """
@@ -58,7 +42,9 @@ function attribute_content(nv)
         e = filter(x->x.first===tname, nn)
         
         d[Symbol(tname)] = if length(e) > 1
-            map(x->parse_node(x.second), e)
+            #map(x->parse_node(x.second), e)
+            #parse_node.(second.(e))
+            parse_node.(map(x->x.second,e))
         else
             parse_node(e[1].second)
         end
@@ -95,9 +81,9 @@ end
 "Return Dict of tags common to both pnml nodes and pnml labels."
 function pnml_common_defaults(node)
     d = PnmlDict(:graphics=>nothing, # graphics tag is single despite the 's'.
-             :tools=>nothing, # Here the 's' indicates multiples are allowed.
-             :labels=>nothing)
-    includexml!(d, node)
+                 :tools=>nothing, # Here the 's' indicates multiples are allowed.
+                 :labels=>nothing,
+                 :xml=>includexml(node))
     d
 end
 

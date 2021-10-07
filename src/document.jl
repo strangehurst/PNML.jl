@@ -1,4 +1,17 @@
 
+struct Compartment
+    size::Float64
+end
+struct Species
+    initial_amount::Float64
+    initial_concentration::Float64
+    compartment::Compartment
+end
+
+struct Model
+    compartments::Vector{Compartment}
+    species::Species
+end
 
 """
 Wrap the collection of PNML nets from a single XML tree.
@@ -6,17 +19,19 @@ Wrap the collection of PNML nets from a single XML tree.
 struct Document{N,X}
     nets::N
     xml::X
+    reg::IDRegistry
 end
 
-Document(p) = Document(p[:nets],p[:xml])
+Document(p) = Document(p[:nets], p[:xml], IDRegistry())
 
 "Return nets of `d` matching the given pntd `type`."
 function find_nets end
-find_nets(d::Document, type::AbstractString) = find_nets(d, default_pntd_map[type])
+find_nets(d::Document, type::AbstractString) = find_nets(d, pntd(type))
 find_nets(d::Document, type::Symbol) = filter(n->n[:type] === type, d.nets)
 
-first_net(d::Document) = first(d.nets)
+    first_net(d::Document) = first(d.nets)
 
+nets(d::Document) = d.nets
 
 #= What are the characteristics of a SimpleNet?
 
@@ -54,7 +69,7 @@ end
 SimpleNet(str::AbstractString) = SimpleNet(Document(parse_doc(parsexml(str))))
 SimpleNet(doc::Document) = SimpleNet(first_net(doc))
 SimpleNet(net) = SimpleNet(net[:id], collapse_pages(net))
-SimpleNet(id::Symbol, collapsed) = SimpleNet( id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
+SimpleNet(id::Symbol, collapsed) = SimpleNet(id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
 
 
 """

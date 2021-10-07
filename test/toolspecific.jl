@@ -42,13 +42,13 @@
         n = parse_node(root(EzXML.parsexml(s)))
         printnode(n)
         @test n[:tag] == :toolspecific
-        @test !haskey(n, :xml) || n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
         @test haskey(n, :tool)
         @test haskey(n, :version)
         @test haskey(n, :content)
         foreach(n[:content]) do c
             @test haskey(c, :tag)
-            @test !haskey(c, :xml) || c[:xml] isa EzXML.Node
+            @test isnothing(c[:xml]) || c[:xml] isa EzXML.Node
             if PRINT_PNML && haskey(c, :xml)
                 EzXML.prettyprint(c[:xml]);
                 println()

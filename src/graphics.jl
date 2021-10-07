@@ -32,7 +32,8 @@ function parse_graphics(node)
 
     d = PnmlDict(:tag=>Symbol(nn),
                  :line=>nothing, :positions=>[], :dimension=>nothing,
-                 :fill=>nothing, :font=>nothing, :offset=>nothing)
+                 :fill=>nothing, :font=>nothing, :offset=>nothing,
+                 :xml=>includexml(node))
     foreach(elements(node)) do child
         @match nodename(child) begin 
             "dimension" => (d[:dimension] = parse_graphics_coordinate(child))

@@ -10,8 +10,8 @@ function parse_toolspecific(node)
     haskey(node,"version") || throw(MalformedException("$(nn) missing version attribute", node))
 
     d = PnmlDict(:tag=>Symbol(nn), :tool=>node["tool"], :version=>node["version"],
-                 :content=>parse_node.(elements(node)))
-    includexml!(d,node)
+                 :content=>parse_node.(elements(node)),
+                 :xml=>includexml(node))
     
     #TODO: Specialize/verify on tool, version. User supplied?
     #TODO: Register additional tool specific parsers?

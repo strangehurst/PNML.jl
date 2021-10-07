@@ -12,12 +12,19 @@ function test_malformed(emsg, xml)
         else
             rethrow(e)
         end
+    finally
+            PNML.reset_registry()
     end    
 end
 
 function test_warn(emsg, xml)
-    @test_logs (:warn, emsg)  parse_node(to_node(xml))
+    try
+        @test_logs (:warn, emsg)  parse_node(to_node(xml))
+    finally
+        PNML.reset_registry()
+    end
 end
+
 
 @testset "missing namespace" begin
     test_warn(r"missing namespace",

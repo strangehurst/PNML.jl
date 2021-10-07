@@ -6,3 +6,11 @@
     @test PNML.next_missing_id(mc) == count+3
 end
 #TODO: MissingIDException
+
+@testset "ID registry" begin
+    PNML.register_id("p")
+    @test PNML.isregistered("p")
+    PNML.reset_registry()
+    @test !PNML.isregistered("p")
+end
+

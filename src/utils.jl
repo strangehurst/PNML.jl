@@ -88,19 +88,62 @@ AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, 
 AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
 
 #-------------------------------------------------------------------
-#TODO: make global state variable 
+"Holds a set of pnml id symbols and a lock to allow safe reentrancy."
 mutable struct IDRegistry
     ids::Set{Symbol}
     lk::ReentrantLock
 end
 IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
-
 const GlobalIDRegistry = IDRegistry()
-function register_id(reg::IDRegistry, id::Symbol)
+
+
+const DUPLICATE_ID_ACTION=nothing
+"""
+Use a global configuration to choose what to do when a duplicated pnml node id
+has been detected. Default is to do nothing.
+There are many pnml files on the internet that have many duplicates.
+"""
+function duplicate_id_action(id::Symbol)
+    DUPLICATE_ID_ACTION === nothing && return
+    DUPLICATE_ID_ACTION === :warn && @warn "ID '$(id)' already registered"
+    DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(GlobalIDRegistry.ids)")
+end
+
+
+"Register `id` symbol and return the symbol."
+register_id(s::AbstractString) = register_id(Symbol(s))
+function register_id(id::Symbol)
     global GlobalIDRegistry
     lock(GlobalIDRegistry.lk) do
-        id ∈ GlobalIDRegistry.ids && @warn "ID $(id) already registered."
+        id ∈ GlobalIDRegistry.ids && duplicate_id_action(id)
         push!(GlobalIDRegistry.ids, id)
+    end
+    id
+ end
+
+isregistered(s::AbstractString) = isregistered(Symbol(s))
+function isregistered(id::Symbol)
+    global GlobalIDRegistry
+    lock(GlobalIDRegistry.lk) do
+        id ∈ GlobalIDRegistry.ids
+    end
+end
+
+""" reset_registry()
+
+Empty the set of id symbols. Use case is unit tests.
+In normal use it should never be needed.
+"""
+function reset_registry()
+    global GlobalIDRegistry
+    lock(GlobalIDRegistry.lk) do
+        empty!(GlobalIDRegistry.ids)
+    end
+end
+
+function Base.isempty(reg::IDRegistry)
+    lock(reg.lk) do
+        isempty(reg.ids)
     end
 end
 

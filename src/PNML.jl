@@ -1,3 +1,6 @@
+"""
+    PNML Module reads and parses a Petri Net Markup Language file.
+"""
 module PNML
 using DocStringExtensions
 
@@ -5,20 +8,10 @@ using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
 using LabelledArrays
 using MLStyle: @match
 
-"Include the XML as part of data."
-const INCLUDEXML = false
+include("config.jl")
 
 "Set value of key :xml based on global variable."
-function includexml!(d, node)
-    if haskey(d, :xml)
-        if INCLUDEXML
-            @debug "adding d[:xml] = node"
-            d[:xml] = node
-        else
-            d[:xml] = nothing
-        end
-    end
-end
+includexml(node)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("utils.jl")
 include("types.jl")

@@ -12,7 +12,7 @@
         """)
     printnode(n)
     @test n[:tag] == :declaration
-    @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     @test haskey(n,:structure)
     @test haskey(n[:structure],:declarations)
     @test haskey(n[:structure][:declarations],:text)
@@ -34,7 +34,7 @@ end
     n = parse_node(to_node(str))
     printnode(n)
     @test n[:tag] == :initialMarking
-    @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     @test haskey(n,:value)
     @test n[:value] isa Int
     @test n[:value] == 1
@@ -65,7 +65,7 @@ end
     n = parse_node(to_node(str))
     printnode(n)
     @test n[:tag] == :hlinitialMarking
-    @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     @test n[:text] !== nothing
     @test n[:text][:content] == "<All,All>"
     @test n[:structure] !== nothing
@@ -125,7 +125,7 @@ end
     n = parse_node(to_node(str))
     printnode(n)
     @test n[:tag] == :structure
-    @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
 
     @test n[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
     @test n[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
@@ -138,7 +138,7 @@ end
     n = parse_node(to_node(str))
     printnode(n)
     @test n[:tag] == :referenceTransition
-    @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     @test haskey(n,:id)
     @test haskey(n,:ref)
     @test n[:id] == :rt1
@@ -161,7 +161,7 @@ end
         n = parse_node(to_node(s))
         printnode(n)
         @test n[:tag] == :referencePlace
-        @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     end
 end
 
@@ -200,9 +200,9 @@ end
         n = parse_node(to_node(s))
         printnode(n)
         @test n[:tag] == :condition
-        @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
         @test n[:structure] !== nothing
-        @test !haskey(n[:structure],:xml) || n[:structure][:xml] isa EzXML.Node
+        @test isnothing(n[:structure][:xml]) || n[:structure][:xml] isa EzXML.Node
         @test n[:graphics] === nothing
         @test !isempty(n[:text])
         @test haskey(n,:tools)
@@ -220,7 +220,7 @@ end
         n = parse_node(to_node(s))
         printnode(n)
         @test n[:tag] == :inscription
-        @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
         @test n[:value] == 12
         @test n[:structure] === nothing
         @test n[:text] === nothing
@@ -252,7 +252,7 @@ end
         n = parse_node(to_node(s))
         printnode(n)
         @test n[:tag] == :hlinscription
-        @test !haskey(n,:xml) ||  n[:xml] isa EzXML.Node
+        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
     end
 end
 
