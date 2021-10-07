@@ -22,8 +22,10 @@ struct Document{N,X}
     reg::IDRegistry
 end
 
-Document(p) = Document(p[:nets], p[:xml], IDRegistry())
-
+Document(p, reg=IDRegistry()) = Document(p[:nets], p[:xml], reg)
+Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s))),
+                                                         reg)
+         
 "Return nets of `d` matching the given pntd `type`."
 function find_nets end
 find_nets(d::Document, type::AbstractString) = find_nets(d, pntd(type))
@@ -66,10 +68,13 @@ end
 #TODO: Transform Vector{Any} to more specific types. Benchmark first.
 #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 
-SimpleNet(str::AbstractString) = SimpleNet(Document(parse_doc(parsexml(str))))
-SimpleNet(doc::Document) = SimpleNet(first_net(doc))
-SimpleNet(net) = SimpleNet(net[:id], collapse_pages(net))
-SimpleNet(id::Symbol, collapsed) = SimpleNet(id, collapsed[:places], collapsed[:trans], collapsed[:arcs])
+SimpleNet(str::AbstractString) = SimpleNet(Document(str))
+SimpleNet(doc::Document)       = SimpleNet(first_net(doc))
+SimpleNet(net)                 = SimpleNet(net[:id], collapse_pages(net))
+SimpleNet(id::Symbol, collapsed) = SimpleNet(id,
+                                             collapsed[:places],
+                                             collapsed[:trans],
+                                             collapsed[:arcs])
 
 
 """
