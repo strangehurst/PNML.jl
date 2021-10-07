@@ -81,6 +81,12 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
 
 # TODO: wrap dict in a struct. use __init__?
 
+""" pntd(s::AbstractString)
+Map `s` to a pntd symbol.
+Any unknown `s` is mapped to pnmlcore.
+"""
+pntd(s::AbstractString) = haskey(default_pntd_map,s) ? default_pntd_map[s] : :pnmlcore
+
 """
     pnmltype_map
 
@@ -117,6 +123,7 @@ Unknown or empty `uri` will map to symbol `:pnmlcore` as part of the logic.
 Unknown `symbol` returns `nothing`.
 """
 function to_net_type end
+to_net_type(t::T) where {T<:PnmlType} = t
 to_net_type(uri::AbstractString; kw...) = to_net_type(to_net_type_sym(uri); kw...)
 
 function to_net_type(s::Symbol; pnmltype_map=pnmltype_map)
@@ -127,7 +134,7 @@ function to_net_type(s::Symbol; pnmltype_map=pnmltype_map)
         return nothing
     end
 end
-to_net_type(t::T) where {T<:PnmlType} = t
+
 """
     to_net_type_sym(uri)
 We map `uri` to a symbol using a dictionary like [`default_pntd_map`](@ref).
