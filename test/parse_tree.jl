@@ -35,12 +35,13 @@ end
     pnml = root(doc)
     @test EzXML.nodename(pnml) == "pnml"
     @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
-    
+
+    reg = PNML.IDRegistry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
     foreach(PNML.allchildren("net", pnml)) do net
         @test nodename(net) == "net"
         
-        nn = parse_name(PNML.firstchild("name", net))
+        nn = parse_name(PNML.firstchild("name", net); reg)
         @test nn.tag == :name
         @test nn.value == "P/T Net with one place"
         @test nn.graphics === nothing
@@ -49,12 +50,12 @@ end
 
         nd = PNML.allchildren("declaration", net)
         @test isempty(nd)
-        @test isempty(parse_node.(nd)) # Empty elements are leaf-enough.
+        @test isempty(parse_node.(nd; reg)) # Empty elements are leaf-enough.
         
         nt = PNML.allchildren("toolspecific", net)
         @test isempty(nt)
-        @test isempty(parse_node.(nt))
-        
+        @test isempty(parse_node.(nt; reg))
+       
         pages = PNML.allchildren("page", net)
         @test !isempty(pages)
         
@@ -64,7 +65,7 @@ end
             @test !isempty(PNML.allchildren("place", page))
             foreach(PNML.allchildren("place", page)) do p
                 @test nodename(p) == "place"
-                i = parse_node(PNML.firstchild("initialMarking", p))
+                i = parse_node(PNML.firstchild("initialMarking", p); reg)
                 @test i[:tag] == :initialMarking
                 @test i[:value] !== nothing
                 @test i[:value] >= 0
@@ -74,14 +75,14 @@ end
             @test !isempty(PNML.allchildren("transition", page))
             foreach(PNML.allchildren("transition", page)) do t
                 @test nodename(t) == "transition"
-                i = parse_node(PNML.firstchild("condition", t))
+                i = parse_node(PNML.firstchild("condition", t); reg)
                 @test i === nothing
             end
             
             @test !isempty(PNML.allchildren("arc", page))            
             foreach(PNML.allchildren("arc", page)) do a
                 @test nodename(a) == "arc"
-                i = parse_node(PNML.firstchild("inscription", a))
+                i = parse_node(PNML.firstchild("inscription", a); reg)
                 @test i[:tag] == :inscription
                 @test i[:value] !== nothing
                 @test i[:value] > 0
@@ -89,13 +90,14 @@ end
             end
         end
     end
-    PNML.reset_registry()
+    PNML.reset_registry!(reg)
 end
 
 @testset "parse node level" begin
 
     # Do a full parse and maybe print the generated data structure.
-    pnmldoc = parse_doc(doc)
+    reg = PNML.IDRegistry()
+    pnmldoc = parse_pnml(root(doc); reg)
     #printnode(e)
 
     # Access the returned data structure.
@@ -167,6 +169,6 @@ end
             end
         end
     end
-    PNML.reset_registry()
+    PNML.reset_registry!(reg)
     println()
 end

@@ -1,21 +1,21 @@
 
 
 "High-level place-transition nets have a toolspecific structure defined for token graphics."
-function parse_tokengraphics(node)
+function parse_tokengraphics(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "tokengraphics" || error("parse_tokengraphics element name wrong: $nn")
-    positions = parse_node.(allchildren("tokenposition",node))
+    positions = parse_node.(allchildren("tokenposition",node); kwargs...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :positions=>positions)
     d
 end
 
 "Position is relative to containing element. Units are points."
-function parse_tokenposition(node)
+function parse_tokenposition(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "tokenposition" || error("parse_ element name wrong: $nn")
-    parse_graphics_coordinate(node)
+    parse_graphics_coordinate(node; kwargs...)
 end
 
 
@@ -25,7 +25,7 @@ end
 Arcs, Annotations and Nodes (places, transitions, pages) have different graphics semantics.
 Return a dictonary with the union of possibilities.
 """
-function parse_graphics(node)
+function parse_graphics(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "graphics" || error("parse_graphics element name wrong: $nn")
@@ -36,12 +36,12 @@ function parse_graphics(node)
                  :xml=>includexml(node))
     foreach(elements(node)) do child
         @match nodename(child) begin 
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child))
-            "fill"      => (d[:fill] = parse_graphics_fill(child))
-            "font"      => (d[:font] = parse_graphics_font(child))
-            "line"      => (d[:line] = parse_graphics_line(child))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child)))
+            "dimension" => (d[:dimension] = parse_graphics_coordinate(child; kwargs...))
+            "fill"      => (d[:fill] = parse_graphics_fill(child; kwargs...))
+            "font"      => (d[:font] = parse_graphics_font(child; kwargs...))
+            "line"      => (d[:line] = parse_graphics_line(child; kwargs...))
+            "offset"    => (d[:offset] = parse_graphics_coordinate(child; kwargs...))
+            "position"  => (push!(d[:positions], parse_graphics_coordinate(child; kwargs...)))
             _ => @warn "ignoring graphics child '$(child)'"
         end
     end
@@ -53,7 +53,7 @@ end
 # Use that to inspect the source XML for children of graphics nodes.
 #
 
-function parse_graphics_line(node)
+function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "line") || error("parse_graphics_line element name wrong: $nn: $nn")
@@ -68,7 +68,7 @@ end
 """
 Coordinates `x`, `y` are in points.
 """
-function parse_graphics_coordinate(node)
+function parse_graphics_coordinate(node; kwargs...)
     @debug node
     nn = nodename(node)
     
@@ -83,7 +83,7 @@ function parse_graphics_coordinate(node)
     (; :tag=>Symbol(nn), :x=>x, :y=>y)
 end
 
-function parse_graphics_fill(node)
+function parse_graphics_fill(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "fill") || error("parse_graphics_fill element name wrong: $nn")
@@ -96,7 +96,7 @@ function parse_graphics_fill(node)
     (; :tag=>Symbol(nn), :color=>clr, :image=>img, :gradient_color=>gclr, :gradient_rotation=>grot)
 end
 
-function parse_graphics_font(node)
+function parse_graphics_font(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "font") || error("parse_graphics_font element name wrong: $nn")

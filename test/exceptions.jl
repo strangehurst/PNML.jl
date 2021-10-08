@@ -2,8 +2,9 @@
 
 "Parse xml and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, xml)
+    reg = PNML.IDRegistry()
     try
-        n  = parse_node(to_node(xml))
+        n  = parse_node(to_node(xml); reg)
         error("expected exception message containing '$emsg` from \n$xml")
     catch e
         if e isa PNML.PnmlException
@@ -13,15 +14,16 @@ function test_malformed(emsg, xml)
             rethrow(e)
         end
     finally
-            PNML.reset_registry()
+            PNML.reset_registry!(reg)
     end    
 end
 
 function test_warn(emsg, xml)
+    reg = PNML.IDRegistry()
     try
-        @test_logs (:warn, emsg)  parse_node(to_node(xml))
+        @test_logs (:warn, emsg)  parse_node(to_node(xml); reg)
     finally
-        PNML.reset_registry()
+        PNML.reset_registry!(reg)
     end
 end
 
@@ -94,26 +96,27 @@ end
 end
 
 @testset "missing id" begin
+    reg = PNML.IDRegistry()
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <net type="test" > </net>""")))
+        <net type="test" > </net>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <page type="test" > </page>""")))
+        <page type="test" > </page>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <place> </place>""")))
+        <place> </place>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <transition> </transition>""")))
+        <transition> </transition>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <arc> </arc>""")))
+        <arc> </arc>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <referencePlace> </referencePlace>""")))
+        <referencePlace> </referencePlace>""")); reg)
 
     @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <referenceTransition> </referenceTransition>""")))
+        <referenceTransition> </referenceTransition>""")); reg)
 end
 
 @testset "graphics" begin

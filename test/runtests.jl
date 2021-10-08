@@ -62,7 +62,7 @@ if !select("None")
                 <something> some content </something>
                 <something2 tag2="two"> <value/> </something2>
            </declarations>
-        """)
+        """; reg=PNML.IDRegistry())
         printnode(a)
         @test !isnothing(a)
         #TODO more tests

@@ -23,8 +23,8 @@ struct Document{N,X}
 end
 
 Document(p, reg=IDRegistry()) = Document(p[:nets], p[:xml], reg)
-Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s))),
-                                                         reg)
+Document(s::AbstractString, reg=IDRegistry()) =
+    Document(parse_pnml(root(parsexml(s)); reg), reg)
          
 "Return nets of `d` matching the given pntd `type`."
 function find_nets end

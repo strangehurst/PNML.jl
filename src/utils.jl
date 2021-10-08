@@ -2,36 +2,12 @@ const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 const XMLNode = EzXML.Node
 
 """
-    extract_pnml()
-
-given a filename, `EzXML.Document`, or `EzXML.Node`
-returns all of the Pnml nodes.
-"""
-function extract_pnml end
-
-extract_pnml(fn::AbstractString) =  extract_pnml(readxml(fn))
-extract_pnml(doc::EzXML.Document) = extract_pnml(EzXML.root(doc))
-
-function extract_pnml(node::EzXML.Node)
-    EzXML.findall("//x:pnml", node, ["x" => pnml_ns])
-end
-
-"""
     @xml_str(s)
 
-utility macro for parsing xml strings into node
+Utility macro for parsing xml strings into node.
 """
 macro xml_str(s)
     EzXML.parsexml(s).root
-end
-
-"""
-    @pnml_str(s)
-
-#TODO utility macro for parsing xml strings into symbolics
-"""
-macro pnml_str(s)
-    PNML.parse_str(s)
 end
 
 "Parse XML content as a number. First try integer then float."
@@ -106,38 +82,43 @@ There are many pnml files on the internet that have many duplicates.
 function duplicate_id_action(id::Symbol)
     DUPLICATE_ID_ACTION === nothing && return
     DUPLICATE_ID_ACTION === :warn && @warn "ID '$(id)' already registered"
-    DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(GlobalIDRegistry.ids)")
+    DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(reg.ids)")
 end
 
 
 "Register `id` symbol and return the symbol."
-register_id(s::AbstractString) = register_id(Symbol(s))
-function register_id(id::Symbol)
-    global GlobalIDRegistry
-    lock(GlobalIDRegistry.lk) do
-        id ∈ GlobalIDRegistry.ids && duplicate_id_action(id)
-        push!(GlobalIDRegistry.ids, id)
+register_id!(reg::IDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
+#function register_id(id::Symbol)
+#    global GlobalIDRegistry
+#    lock(GlobalIDRegistry.lk) do
+#        id ∈ GlobalIDRegistry.ids && duplicate_id_action(id)
+#        push!(GlobalIDRegistry.ids, id)
+#    end
+#    id
+# end
+function register_id!(reg::IDRegistry, id::Symbol)
+    lock(reg.lk) do
+        id ∈ reg.ids && duplicate_id_action(id)
+        push!(reg.ids, id)
     end
     id
  end
 
-isregistered(s::AbstractString) = isregistered(Symbol(s))
-function isregistered(id::Symbol)
-    global GlobalIDRegistry
-    lock(GlobalIDRegistry.lk) do
-        id ∈ GlobalIDRegistry.ids
+isregistered(reg::IDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+function isregistered(reg::IDRegistry, id::Symbol)
+    lock(reg.lk) do
+        id ∈ reg.ids
     end
 end
 
-""" reset_registry()
+""" reset_registry!(reg)
 
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
 """
-function reset_registry()
-    global GlobalIDRegistry
-    lock(GlobalIDRegistry.lk) do
-        empty!(GlobalIDRegistry.ids)
+function reset_registry!(reg::IDRegistry)
+    lock(reg.lk) do
+        empty!(reg.ids)
     end
 end
 
@@ -146,6 +127,7 @@ function Base.isempty(reg::IDRegistry)
         isempty(reg.ids)
     end
 end
+
 
 #-------------------------------------------------------------------
 #TODO: Make global state varaible.

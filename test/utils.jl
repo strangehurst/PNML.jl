@@ -8,9 +8,10 @@ end
 #TODO: MissingIDException
 
 @testset "ID registry" begin
-    PNML.register_id("p")
-    @test PNML.isregistered("p")
-    PNML.reset_registry()
-    @test !PNML.isregistered("p")
+    reg = PNML.IDRegistry()
+    PNML.register_id!(reg, "p")
+    @test PNML.isregistered(reg, "p")
+    PNML.reset_registry!(reg)
+    @test !PNML.isregistered(reg, "p")
 end
 

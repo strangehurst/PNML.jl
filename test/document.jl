@@ -12,11 +12,11 @@
     </pnml>
         """ 
 
-    PRINT_PNML && @show PNML.GlobalIDRegistry.ids
-    PNML.reset_registry()
-    @test !PNML.isregistered(:pnml)
+    reg = PNML.IDRegistry()
+    #PNML.reset_registry!(reg)
+    #@test !PNML.isregistered(reg, :pnml)
 
-    doc::PNML.Document = parse_doc(EzXML.parsexml(str))
+    doc = PNML.Document(str, reg)
     #printnode(doc.nets);println()
     v1 = PNML.find_nets(doc, :ptnet)
     printnode(v1, label="v1")
@@ -46,7 +46,7 @@
             @test net[:type] === t
         end
     end
-    PNML.reset_registry()
+    #PNML.reset_registry!(reg)
 end
 
 
@@ -76,8 +76,9 @@ end
     </pnml>
         """ 
     
-    @test !PNML.isregistered(:pnml)
-    doc::PNML.Document = PNML.parse_doc(EzXML.parsexml(str))
+    #@test !PNML.isregistered(:pnml)
+    reg = PNML.IDRegistry()
+    doc = PNML.Document(str, reg)
     printnode(doc.nets, label="net type")
 
     
@@ -122,7 +123,7 @@ end
     end
     
     #dump(net)
-    PNML.reset_registry()
+    PNML.reset_registry!(reg)
 end
 
 @testset "Petri" begin
@@ -145,8 +146,9 @@ end
         </net>
     </pnml>
     """ 
-    @test !PNML.isregistered(:pnml)
-    doc::PNML.Document =PNML.parse_doc(EzXML.parsexml(str))
+    #@test !PNML.isregistered(:pnml)
+    reg = PNML.IDRegistry()
+    doc = PNML.Document(str, reg)
     net1 = PNML.first_net(doc)
     printnode(net1, label="Petri Net ")
     snet = PNML.SimpleNet(net1)
@@ -180,5 +182,5 @@ end
     β = PNML.conditions(snet) #LVector( (; [t=>PNML.condition(snet,t) for t in T]...))
     @show β
     @test β == βx
-    PNML.reset_registry()
+    PNML.reset_registry!(reg)
 end

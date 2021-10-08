@@ -39,7 +39,7 @@
  </toolspecific>
 """
     @testset for s in [str1, str2, str3, str4, str5] 
-        n = parse_node(root(EzXML.parsexml(s)))
+        n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(n)
         @test n[:tag] == :toolspecific
         @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node

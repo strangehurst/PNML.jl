@@ -1,5 +1,6 @@
 
 @testset "declaration" begin
+    reg = PNML.IDRegistry()
     n = parse_node(xml"""
         <declaration key="test">
           <structure>
@@ -9,7 +10,7 @@
            </declarations>
           </structure>
         </declaration>
-        """)
+        """; reg)
     printnode(n)
     @test n[:tag] == :declaration
     @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -31,7 +32,8 @@ end
      <text>1</text>
  </initialMarking>
     """
-    n = parse_node(to_node(str))
+    reg = PNML.IDRegistry()
+    n = parse_node(to_node(str); reg)
     printnode(n)
     @test n[:tag] == :initialMarking
     @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -62,7 +64,8 @@ end
      </structure>
  </hlinitialMarking>
     """
-    n = parse_node(to_node(str))
+    reg = PNML.IDRegistry()
+    n = parse_node(to_node(str); reg)
     printnode(n)
     @test n[:tag] == :hlinitialMarking
     @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -78,7 +81,8 @@ end
     str1 = """
  <text>ready</text>
     """
-    n = parse_node(to_node(str1))
+    reg = PNML.IDRegistry()
+    n = parse_node(to_node(str1); reg)
     @test n[:content] == "ready"
     
     str2 = """
@@ -86,13 +90,13 @@ end
 ready
 </text>
     """
-    n = parse_node(to_node(str2))
+    n = parse_node(to_node(str2); reg)
     @test n[:content] == "ready"
     
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(to_node(str3))
+    n = parse_node(to_node(str3); reg)
     @test n[:content] == "ready"
     
     str4 = """
@@ -100,7 +104,7 @@ ready
 to
 go</text>
     """
-    n = parse_node(to_node(str4))
+    n = parse_node(to_node(str4); reg)
     @test n[:content] == "ready\nto\ngo"
     
 end
@@ -122,7 +126,8 @@ end
          </tuple>
      </structure>
     """
-    n = parse_node(to_node(str))
+    reg = PNML.IDRegistry()
+    n = parse_node(to_node(str); reg)
     printnode(n)
     @test n[:tag] == :structure
     @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -135,7 +140,8 @@ end
     str = """
         <referenceTransition id="rt1" ref="t1"/>
     """
-    n = parse_node(to_node(str))
+    reg = PNML.IDRegistry()
+    n = parse_node(to_node(str); reg)
     printnode(n)
     @test n[:tag] == :referenceTransition
     @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -158,7 +164,8 @@ end
  </referencePlace>
 """
     @testset for s in [str1, str2] 
-        n = parse_node(to_node(s))
+        reg = PNML.IDRegistry()
+        n = parse_node(to_node(s); reg)
         printnode(n)
         @test n[:tag] == :referencePlace
         @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -175,7 +182,8 @@ end
  </type>
     """
     @testset for s in [str1] 
-        n = parse_node(to_node(s))
+        reg = PNML.IDRegistry()
+        n = parse_node(to_node(s); reg)
         printnode(n)
         @test haskey(n,:tag)
         @test n[:tag] == :type
@@ -197,7 +205,8 @@ end
  </condition>
     """
     @testset for s in [str1] 
-        n = parse_node(to_node(s))
+        reg = PNML.IDRegistry()
+        n = parse_node(to_node(s); reg)
         printnode(n)
         @test n[:tag] == :condition
         @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -217,7 +226,8 @@ end
         <inscription> <text>12 </text> </inscription>
     """
     @testset for s in [str1] 
-        n = parse_node(to_node(s))
+        reg = PNML.IDRegistry()
+        n = parse_node(to_node(s); reg)
         printnode(n)
         @test n[:tag] == :inscription
         @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
@@ -249,7 +259,8 @@ end
  </hlinscription>
  """
     @testset for s in [str1] 
-        n = parse_node(to_node(s))
+        reg = PNML.IDRegistry()
+        n = parse_node(to_node(s); reg)
         printnode(n)
         @test n[:tag] == :hlinscription
         @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
