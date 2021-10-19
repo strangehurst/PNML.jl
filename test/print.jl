@@ -5,19 +5,19 @@
     
     # Print 1st 5 lines.
     io1 = IOBuffer()
-    node_summary(io1, xml)
+    PNML.node_summary(io1, xml)
     s1 = strip(String(take!(io1)))
 
     io2 = IOBuffer()
-    node_summary(io2, xml; n=2)
+    PNML.node_summary(io2, xml; n=2)
     s2 = strip(String(take!(io2)))
 
     io3 = IOBuffer()
-    node_summary(io3, xml; pp=EzXML.prettyprint)
+    PNML.node_summary(io3, xml; pp=EzXML.prettyprint)
     s3 = strip(String(take!(io3)))
 
     io4 = IOBuffer()
-    node_summary(io4, xml; pp=AbstractTrees.print_tree)
+    PNML.node_summary(io4, xml; pp=AbstractTrees.print_tree)
     s4 = strip(String(take!(io4)))
     
     @test endswith(s1,"...")
