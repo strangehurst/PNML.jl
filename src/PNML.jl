@@ -16,6 +16,7 @@ includexml(node)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 include("utils.jl")
 include("types.jl")
 include("document.jl")
+include("simplenet.jl")
 include("pntd.jl")
 include("parse.jl")
 include("parse_utils.jl")
@@ -28,8 +29,6 @@ include("maps.jl")
 
 export extract_pnml,  @xml_str, @pnml_str
 export parse_pnml, parse_node, parse_file, parse_str
-export PnmlException, MissingIDException, MalformedException, node_summary
-
-#export parse_cn, parse_ci, parse_bvar, parse_lambda, parse_piecewise
+export PnmlException, MissingIDException, MalformedException
 
 end
