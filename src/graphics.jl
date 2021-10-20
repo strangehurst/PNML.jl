@@ -4,7 +4,7 @@
 function parse_tokengraphics(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "tokengraphics" || error("parse_tokengraphics element name wrong: $nn")
+    nn == "tokengraphics" || error("element name wrong: $nn")
     positions = parse_node.(allchildren("tokenposition",node); kwargs...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :positions=>positions)
     d
@@ -14,7 +14,7 @@ end
 function parse_tokenposition(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "tokenposition" || error("parse_ element name wrong: $nn")
+    nn == "tokenposition" || error("name wrong: $nn")
     parse_graphics_coordinate(node; kwargs...)
 end
 
@@ -28,7 +28,7 @@ Return a dictonary with the union of possibilities.
 function parse_graphics(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "graphics" || error("parse_graphics element name wrong: $nn")
+    nn == "graphics" || error("element name wrong: $nn")
 
     d = PnmlDict(:tag=>Symbol(nn),
                  :line=>nothing, :positions=>[], :dimension=>nothing,
@@ -56,7 +56,7 @@ end
 function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "line") || error("parse_graphics_line element name wrong: $nn: $nn")
+    (nn == "line") || error("line element name wrong: $nn: $nn")
     color = has_color(node) ? node["color"] : nothing
     shape = has_shape(node) ? node["shape"] : nothing
     style = has_style(node) ? node["style"] : nothing
@@ -73,7 +73,7 @@ function parse_graphics_coordinate(node; kwargs...)
     nn = nodename(node)
     
     (nn=="position" || nn=="dimension" ||
-     nn=="offset" || nn=="tokenposition") || error("$(nn) element name wrong: $nn")
+     nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
     has_x(node) || throw(MalformedException("$(nn) missing x", node))
     has_y(node) || throw(MalformedException("$(nn) missing y", node))
     # Specification seems to use integer pixels (or points).
@@ -86,7 +86,7 @@ end
 function parse_graphics_fill(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "fill") || error("parse_graphics_fill element name wrong: $nn")
+    (nn == "fill") || error("fill element name wrong: $nn")
     
     clr  = has_color(node) ? node["color"] : nothing
     img  = has_image(node) ? node["image"] : nothing
@@ -99,7 +99,7 @@ end
 function parse_graphics_font(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "font") || error("parse_graphics_font element name wrong: $nn")
+    (nn == "font") || error("font element name wrong: $nn")
     
     align  = has_align(node)      ? node["align"] : nothing
     deco   = has_decoration(node) ? node["decoration"] : nothing

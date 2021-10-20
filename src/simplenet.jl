@@ -1,6 +1,12 @@
 
 #= What are the characteristics of a SimpleNet?
 
+This use-case is for explorations, might abuse the standard. The goal of PNML.jl
+is to not constrain what can be parsed & represented in the
+intermediate representation (IR). So many non-standard XML constructions are possible,
+with the standars being a subset. It is the role of IR users to enforce semantics
+upon the IR. SimpleNet takes liberties!
+
 Assumptions about labels:
  place has numeric marking, default 0
  transition has numeric condition, default 0
@@ -29,9 +35,6 @@ struct SimpleNet{P,T,A}
 end
 
 
-#TODO: Transform Vector{Any} to more specific types. Benchmark first.
-#TODO: Maybe using more wrappers. Starts needing pntd-specific types.
-
 SimpleNet(str::AbstractString) = SimpleNet(Document(str))
 SimpleNet(doc::Document)       = SimpleNet(first_net(doc))
 SimpleNet(net)                 = SimpleNet(net[:id], collapse_pages(net))
@@ -40,16 +43,19 @@ SimpleNet(id::Symbol, collapsed) = SimpleNet(id,
                                              collapsed[:trans],
                                              collapsed[:arcs])
 
-
 """
     collapse_pages(net)
 
 Return NamedTuple holding merged page content.
 
 Start with simplest case of assuming that only the first page is meaningful.
-Collect places, transitions and arcs. #TODO COLLECT LABELS
+Collect places, transitions and arcs.
+#TODO COLLECT LABELS, DECLARATIONS
 """
 function collapse_pages(net)
+    #TODO: Transform Vector{Any} to more specific types. Benchmark first.
+    #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
+
     (; :places => net[:pages][begin][:places],
         :trans => net[:pages][begin][:trans],
         :arcs  => net[:pages][begin][:arcs]) 

@@ -41,11 +41,9 @@ function attribute_content(nv; kwargs...)
     tagnames = unique(map(first,nn))
     foreach(tagnames) do tname 
         e = filter(x->x.first===tname, nn)
-        
+        #TODO make toolsoecific match annotation labels.
         d[Symbol(tname)] = if length(e) > 1
-            #map(x->parse_node(x.second), e)
-            #parse_node.(second.(e))
-            parse_node.(map(x->x.second,e); kwargs...)
+            parse_node.(map(x->x.second, e); kwargs...)
         else
             parse_node(e[1].second; kwargs...)
         end
@@ -56,7 +54,7 @@ end
 
 "Add `node` to`d[:labels]`. Return updated `d[:labels]`."
 function add_label!(d::PnmlDict, node; kwargs...)
-    @debug "add label $(nodename(node))"
+    @debug "add label! $(nodename(node))"
     # Pnml considers any "unknown" element to be a label so its key is ':labels'.
     # The value is initialized to `nothing since it is expected that most labels
     # will have defined tags and semantics. And be given a key `:tag`.

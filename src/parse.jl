@@ -13,8 +13,7 @@ end
 
 """ parse_doc(doc::EzXML.Document)
 
-Return a PNML.Document.
-Start descent from the root XML element node.
+Return a PNML.Document built from an XML Doncuent.
 A well formed PNML XML document has a single root node: 'pnml'.
 """
 function parse_doc(doc::EzXML.Document)::PNML.Document
@@ -28,16 +27,16 @@ end
 #-------------------------------------------------------------------
 
 """
-    parse_node(node;verbose=true)
+    parse_node(node; verbose=true)
 
 Take a `node` and parse it by calling the method matching `node.name` from
 [`tagmap`](@ref) if mapping exists, otherwise call [`attribute_elem`](@ref).
 `verbose` is a boolean controlling debug logging.
 """
 function parse_node(node; verbose=true, kwargs...)
-    node === nothing && return # Make all nodes optional. #TODO: is this a good idea?
+    node === nothing && return #TODO Make all nodes optional. Is this a good idea?
     if verbose
-        parser = haskey(tagmap, node.name) ? "present" : "attribute_elem"
+        parser = haskey(tagmap, node.name) ? "tagmap" : "attribute_elem"
         @debug( "parse_node($(node.name)) -> $(parser)" *
                 " attributes $(nodename.(attributes(node)))" *
                 " children $(nodename.(elements(node)))")
@@ -59,7 +58,7 @@ Return a a named tuple containing vector of pnml petri nets.
 """
 function parse_pnml(node; kwargs...)
     nn = nodename(node)
-    nn == "pnml" || error("parse_pnml element name wrong: $nn" )
+    nn == "pnml" || error("element name wrong: $nn" )
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     validate_node(node) #TODO
@@ -68,7 +67,7 @@ function parse_pnml(node; kwargs...)
     # Give tuple an id element to match the rest of the IR.
     # Because there can only be one pnml tag, we use it as the id.
     (; :id=>register_id!(kwargs[:reg], nn), :tag=>Symbol(nn), :nets=>nets,
-     :xml=>includexml(node))
+     :xml=>includexml(node)) 
 end
 
 """
@@ -78,7 +77,7 @@ Return a dictonary of the pnml net with keys matching their XML tag names.
 """
 function parse_net(node; kwargs...)
     nn = nodename(node)
-    nn == "net" || error("parse_net element name wrong: $nn")
+    nn == "net" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_type(node) || throw(MalformedException("$(nn) missing type", node))
     
@@ -86,7 +85,6 @@ function parse_net(node; kwargs...)
     isempty(allchildren("page", node)) && @warn "net does not have any pages"
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
-
     
     # Create a Dict with keys for possible child tags.
     # Some keys have known/required values.
@@ -94,17 +92,17 @@ function parse_net(node; kwargs...)
     # are allowed. Keys that have pural names usually have a vector value.
     # The 'graphics' key is an exception and has a single value.
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kwargs[:reg],node["id"]),
+                           :id=>register_id!(kwargs[:reg], node["id"]),
                            :type=>pntd(node["type"]),
-                           :pages => [],
-                           :declarations => [])
-    # Go through children looking for expected tags, delegating common tags and labels..
+                           :pages=>[],
+                           :declarations=>[])
+    # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; kwargs...))
             # NB: There is also a tag declarations that is different for this symbol.
             "declaration"  => push!(d[:declarations], parse_node(child; kwargs...))
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d 
@@ -117,7 +115,7 @@ PNML requires at least on page.
 """
 function parse_page(node; kwargs...)
     nn = nodename(node)
-    nn == "page" || error("parse_page element name wrong: $nn")
+    nn == "page" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kwargs, :reg)
 
@@ -127,7 +125,6 @@ function parse_page(node; kwargs...)
                            :refP=>[], :refT=>[],
                            :declarations=>[])
 
-    # Can XML element order be predicted?
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_node(child; kwargs...))
@@ -136,37 +133,45 @@ function parse_page(node; kwargs...)
             "referencePlace" => push!(d[:refP], parse_node(child; kwargs...))
             "referenceTransition" => push!(d[:refT], parse_node(child; kwargs...))
             "declaration" => push!(d[:declarations], parse_node(child; kwargs...))
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d
 end
 
+"""
+    parse_place(node)
+
+
+"""
 function parse_place(node; kwargs...)
     nn = nodename(node)
-    nn == "place" || error("parse_place element name wrong: $nn")
+    nn == "place" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kwargs, :reg)
 
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kwargs[:reg],node["id"]),
                            :marking => nothing,
-                           :type=>nothing) # This 'type' is different from the net 'type'.
+                           :type=>nothing) # place 'type' is different from the net 'type'.
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
             "initialMarking"   => (d[:marking] = parse_node(child; kwargs...))
             "hlinitialMarking" => (d[:marking] = parse_node(child; kwargs...))
             "type"             => (d[:type] = parse_node(child; kwargs...))
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d
 end
 
+"""
+    parse_transition(node)
+"""     
 function parse_transition(node; kwargs...)
     nn = nodename(node)
-    nn == "transition" || error("parse_transition element name wrong: $nn")
+    nn == "transition" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kwargs, :reg)
 
@@ -176,15 +181,17 @@ function parse_transition(node; kwargs...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "condition"    => (d[:condition] = parse_node(child; kwargs...))
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d
 end
 
+""" parse_arc(node)
+"""
 function parse_arc(node; kwargs...)
     nn = nodename(node)
-    nn == "arc" || error("parse_arc element name wrong: $nn")
+    nn == "arc" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     @assert has_source(node)
     @assert has_target(node)
@@ -200,7 +207,7 @@ function parse_arc(node; kwargs...)
             # Mutually exclusive tags: inscription, hlinscription
             "inscription"    => (d[:inscription] = parse_node(child; kwargs...))
             "hlinscription"  => (d[:inscription] = parse_node(child; kwargs...))
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d
@@ -208,7 +215,7 @@ end
 
 function parse_refPlace(node; kwargs...)
     nn = nodename(node)
-    nn == "referencePlace" || error("parse_refPlace element name wrong: $nn")
+    nn == "referencePlace" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_ref(node) || throw(MalformedException("$(nn) missing ref attribute", node))
     @assert haskey(kwargs, :reg)
@@ -218,7 +225,7 @@ function parse_refPlace(node; kwargs...)
                            :ref=>Symbol(node["ref"]))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_node_common!(d,child; kwargs...)
+            _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
     d
@@ -226,7 +233,7 @@ end
 
 function parse_refTransition(node; kwargs...)
     nn = nodename(node)
-    nn == "referenceTransition" || error("parse_refTransition element name wrong: $nn")
+    nn == "referenceTransition" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_ref(node) || throw(MalformedException("$(nn) missing ref attribute", node))
     @assert haskey(kwargs, :reg)
@@ -244,7 +251,7 @@ end
 
 #----------------------------------------------------------
 
-"Return the striped string of text child's nodecontent in a named tuple."
+"Return the stripped string of text child's nodecontent in a named tuple."
 function parse_text(node; kwargs...)
     nn = nodename(node)
     nn == "text" || error("parse_text element name wrong")
@@ -265,7 +272,6 @@ function parse_name(node; kwargs...)
     # Ex: PetriNetPlans-PNP/parallel.jl
     isnothing(text) && @warn "$(nn) missing <text> element"
     
-    #TODO: rename :value to :content?
     (; :tag=>Symbol(nn), :value=>isnothing(text) ? nothing : text[:content],
      :graphics=>graphics, :tools=>tools)
 end
@@ -277,10 +283,11 @@ end
 # Should be inside of an label. 
 #
 #----------------------------------------------------------
-"""
-Return dictonary including a vector of child content elements.
-A pnml structure can possibly hold any well formed XML.
-Structure will vary based on parent element and petri net type definition of the net.
+
+""" parse_structure(node)
+
+A pnml structure node can hold any well formed XML.
+Structure semantics will vary based on parent element and petri net type definition of the net.
 #TODO: Specialized structure parsers are needed. 2nd pass parser?
 """
 function parse_structure(node; kwargs...)
@@ -290,12 +297,14 @@ function parse_structure(node; kwargs...)
 end
 
 
+#----------------------------------------------------------
+#
+# PNML annotation-label XML element parsers.
+#
+#----------------------------------------------------------
 
-#----------------------------------------------------------
-#
-# PNML label-like XML element parsers.
-#
-#----------------------------------------------------------
+# Place Transition nets (PT-Nets) use only the text tag of a label for
+# the meaning of marking and inscriptions.
 
 function parse_initialMarking(node; kwargs...)
     nn = nodename(node)
@@ -324,6 +333,9 @@ function parse_inscription(node; kwargs...)
     d
 end
 
+# High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
+# define the semantics of marking and inscriptions.
+
 function parse_hlinitialMarking(node; kwargs...)
     nn = nodename(node)
     nn == "hlinitialMarking" || error("parse_initialMarking element name wrong: $nn")
@@ -346,5 +358,15 @@ function parse_hlinscription(node; kwargs...)
            _ => parse_pnml_label_common!(d,child; kwargs...)
         end
     end
+    d
+end
+
+"Annotation label of transition nodes. Meaning it can have text, graphics, et al."
+function parse_condition(node; kwargs...)
+    @debug node
+    nn = nodename(node)
+    nn == "condition" || error("parse_condition element name wrong: $nn")
+    d = pnml_label_defaults(node, :tag=>Symbol(nn))
+    parse_pnml_label_common!.(Ref(d), elements(node); kwargs...)
     d
 end

@@ -36,7 +36,7 @@
         #dump(pn;maxdepth=5)
     end
 end
-
+#=
 @testset "clever trick" begin
     """
     generator of pairs from SBML
@@ -54,5 +54,5 @@ end
     end for (k, s) in m.species
 )
 end
-
+=#
 
