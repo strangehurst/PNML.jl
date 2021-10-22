@@ -1,5 +1,64 @@
+"""
+    PNML.PetriNet
 
-#= What are the characteristics of a SimpleNet?
+Abstract type providing 2nd-level parsing of the intermediate representation
+of a single network in a PNML.Document.
+
+# Extended
+
+Subtypes should map directly and simply to [`PnmlType`](@ref).
+
+Since a PNML.Document can contain multiple networks it is possible that a higher-level
+will create multiple PNML.PetriNet instances, each a different subtype.
+
+Pages are used for visual layout for humans.
+They can be merged into one page without loosing any Petri Net semantics.
+Often we will only work with merged pages.
+
+# Interface
+#TODO define type for network IR: Wrap a single tag net's [`PnmlDict`](@ref)?
+We start a description of the net IR here. 
+
+XML <net> tags are pnml nodes.
+These nodes are parsed into PnmlDict with keys
+| key          | value description                             |
+|:-------------|:----------------------------------------------|
+[ tag          | XML tag name is standard in the IR            |
+| id           | unique ID                                     |
+| name         | text name, optional                           |
+| tools        | set of tool specific - possibly empty         |
+| labels       | set of generic "pnml labels" - possible empty |
+| type         | PnmlType defines schema the XML should meet   |
+| declarations | defines high-level semantics of a net         |
+| pages        | set of pages - not empty                      |
+
+See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
+and  [`parse_net`](@ref) for more detail.
+
+XML <page> tags are also parsed into PnmlDict
+| key          | value description                             |
+|:-------------|:----------------------------------------------|
+[ tag          | XML tag name is standard in the IR            |
+| id           | unique ID                                     |
+| name         | text name, optional                           |
+| tools        | set of tool specific - possibly empty         |
+| labels       | set of generic "pnml labels" - possible empty |
+| places       |                                               |
+| trans        |                                               |
+| arcs         |                                               |
+| refP         | reference to place on different page          |
+| refT         | reference to transition on different page     |
+| declarations | only net & page tags have declarations        |
+
+See [`parse_page`](@ref).
+
+ [``](@ref)
+
+"""
+abstract type PetriNet end
+
+#=
+# What are the characteristics of a SimpleNet?
 
 This use-case is for explorations, might abuse the standard. The goal of PNML.jl
 is to not constrain what can be parsed & represented in the
@@ -12,23 +71,21 @@ Assumptions about labels:
  transition has numeric condition, default 0
  arc has source, target, numeric inscription value, default 0
 
+# Non-simple Networks means what?
+
 =#
 
 """
-SimpleNet wraps the `place`, `transition` & `arc` collections
-of a single page of one net.
+SimpleNet wraps the `place`, `transition` & `arc` collections of a single page of one net.
 
-Omits the page level of the pnml-defined hierarchy, and
-all labels at the merged net/page level of pnml. Note that
-there may be labels attached to the places, transitions & arcs.
-
-# TODO: Support labels at net/page level? Some, all, non-standard? 
-
+Omits the page level of the pnml-defined hierarchy by collapsing down to one page.
 A multi-page net can be collpsed by removing referenceTransitions & referencePlaces,
-and merging labels of net and all pages.
+and merging pages into the first page. Only selected fields are merged.
 """
-struct SimpleNet{P,T,A}
-    id::Symbol 
+struct SimpleNet{P,T,A} <: PetriNet
+    "Same as the XML attribute of the same name."
+    id::Symbol
+    
     place::P
     transition::T
     arc::A
@@ -37,43 +94,75 @@ end
 
 SimpleNet(str::AbstractString) = SimpleNet(Document(str))
 SimpleNet(doc::Document)       = SimpleNet(first_net(doc))
-SimpleNet(net)                 = SimpleNet(net[:id], collapse_pages(net))
+
+# Single network is the heart of PetriNet.
+SimpleNet(net) = SimpleNet(net[:id], collapse_pages!(net))
 SimpleNet(id::Symbol, collapsed) = SimpleNet(id,
-                                             collapsed[:places],
-                                             collapsed[:trans],
-                                             collapsed[:arcs])
+                                             collapsed[:pages][1][:places],
+                                             collapsed[:pages][1][:trans],
+                                             collapsed[:pages][1][:arcs])
+"""
+"""
+struct HLPetriNet{T} <: PetriNet
+    id::Symbol
+    net::PnmlDict
+end
+HLPetriNet(str::AbstractString) = HLPetriNet(Document(str))
+HLPetriNet(doc::Document)       = HLPetriNet(first_net(doc))
+
+# Single network is the heart of PetriNet.
+HLPetriNet(net::PnmlDict) = HLPetriNet{typeof(net[:type])}(net[:id], collapse_pages!(net))
 
 """
+
     collapse_pages(net)
 
-Return NamedTuple holding merged page content.
+Return net with page content that may be repeated merged into the 1st page.
+Note that refrence nodes are still present. They can be removed later
+with [`deref`](@ref).
 
 Start with simplest case of assuming that only the first page is meaningful.
 Collect places, transitions and arcs.
 #TODO COLLECT LABELS, DECLARATIONS
+#TODO: Transform Vector{Any} to more specific types. Benchmark first.
+#TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 """
-function collapse_pages(net)
-    #TODO: Transform Vector{Any} to more specific types. Benchmark first.
-    #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
+function collapse_pages!(net::PnmlDict)
+    #net = s.
+    @assert net[:tag] === :net
+    page1 = net[:pages][1]
+    pageN = @view net[:pages][2:end]
+    for key in [:places, :trans, :arcs, :tools, :labels, :refT, :refP, :declarations]
+        if !isnothing(page1[key]) #TODO requires first page to have non-empty key
+            foreach(p->append!(page1[key], p[key]), pageN)
+        end
+    end
+    net
+end
 
-    (; :places => net[:pages][begin][:places],
-        :trans => net[:pages][begin][:trans],
-        :arcs  => net[:pages][begin][:arcs]) 
+function collapse_pages!(doc::PNML.Document)
+    foreach(n->collapse_pages!(n), nets(doc))
 end
 
 places(s::SimpleNet) = s.place
 transitions(s::SimpleNet) = s.transition
 arcs(s::SimpleNet) = s.arc
+refplaces(s::SimpleNet) = s.refP
+reftransitions(s::SimpleNet) = s.refT
 
 "Is there any place with `id` in net `s`?"
 has_place(s::SimpleNet, id::Symbol)      = any(x -> x[:id] === id, places(s))
 has_transition(s::SimpleNet, id::Symbol) = any(x -> x[:id] === id, transitions(s))
 has_arc(s::SimpleNet, id::Symbol)        = any(x -> x[:id] === id, arcs(s))
+has_refP(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, refplaces(s))
+has_refT(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, reftransitions(s))
 
 "Return the place with `id` in net `s`."
-place(s::SimpleNet, id::Symbol)      = s.place[findfirst(x -> x[:id] === id, places(s))]
+place(s::SimpleNet, id::Symbol)      =      s.place[findfirst(x -> x[:id] === id, places(s))]
 transition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, transitions(s))]
-arc(s::SimpleNet, id::Symbol)        = s.arc[findfirst(x -> x[:id] === id, arcs(s))]
+arc(s::SimpleNet, id::Symbol)               = s.arc[findfirst(x -> x[:id] === id, arcs(s))]
+refplace(s::SimpleNet, id::Symbol)      =   s.place[findfirst(x -> x[:id] === id, refplaces(s))]
+reftransition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, reftransitions(s))]
 
 
 # All pnml nodes have an `id`.
@@ -83,7 +172,8 @@ id(node)::Symbol = node[:id]
 place_ids(s::SimpleNet) = map(id, places(s)) 
 transition_ids(s::SimpleNet) = map(id, transitions(s)) 
 arc_ids(s::SimpleNet) = map(id, arcs(s)) 
-
+refplace_ids(s::SimpleNet) = map(id, refplaces(s)) 
+reftransition_ids(s::SimpleNet) = map(id, reftransitions(s)) 
 
 #TODO: wrap arc?
 source(arc)::Symbol = arc[:source]
@@ -98,6 +188,30 @@ src_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
 "Return vector of arcs that have a  target of transition `id`."
 tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
 
+"""
+    deref(s::SimpeNet)
+
+Remove reference nodes from arcs.
+Design intent expects [`collapse_pages!`](@ref) to have
+been applied.
+"""
+function deref(s::SimpleNet)
+    for a in arcs(s)
+        while a[:source] ∈  refplace_ids(s)
+            a[:source] = refplace(s, a[:source])[:ref]
+        end
+        while a[:target] ∈  refplace_ids(s)
+            a[:target] = refplace(s, a[:target])[:ref]
+        end
+        while a[:source] ∈  reftransitions_ids(s)
+            a[:source] = reftransitions(s, a[:source])[:ref]
+        end
+        while a[:target] ∈  reftransition_ids(s)
+            a[:target] = reftransitions(s, a[:target])[:ref]
+        end
+        
+    end
+end
 
 #TODO  marking, inscription, condition, can be more complicated
 

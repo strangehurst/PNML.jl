@@ -21,3 +21,5 @@ first_net(d::Document) = first(d.nets)
 "Return all `nets` of `d`."
 nets(d::Document) = d.nets
   
+#function everypage(f::Function, page...)
+    

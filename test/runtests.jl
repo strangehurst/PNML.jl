@@ -68,5 +68,6 @@ if !select("None")
         #TODO more tests
     end
     @testset "document"     begin include("document.jl") end
+    @testset "simplenet"    begin include("simplenet.jl") end
 end
 end
