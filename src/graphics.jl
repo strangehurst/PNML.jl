@@ -31,7 +31,7 @@ function parse_graphics(node; kwargs...)
     nn == "graphics" || error("element name wrong: $nn")
 
     d = PnmlDict(:tag=>Symbol(nn),
-                 :line=>nothing, :positions=>[], :dimension=>nothing,
+                 :line=>nothing, :positions=>NamedTuple[], :dimension=>nothing,
                  :fill=>nothing, :font=>nothing, :offset=>nothing,
                  :xml=>includexml(node))
     foreach(elements(node)) do child
@@ -53,7 +53,7 @@ end
 # Use that to inspect the source XML for children of graphics nodes.
 #
 
-function parse_graphics_line(node; kwargs...)
+function parse_graphics_line(node; kwargs...)::NamedTuple
     @debug node
     nn = nodename(node)
     (nn == "line") || error("line element name wrong: $nn: $nn")
@@ -68,7 +68,7 @@ end
 """
 Coordinates `x`, `y` are in points.
 """
-function parse_graphics_coordinate(node; kwargs...)
+function parse_graphics_coordinate(node; kwargs...)::NamedTuple
     @debug node
     nn = nodename(node)
     
@@ -83,7 +83,7 @@ function parse_graphics_coordinate(node; kwargs...)
     (; :tag=>Symbol(nn), :x=>x, :y=>y)
 end
 
-function parse_graphics_fill(node; kwargs...)
+function parse_graphics_fill(node; kwargs...)::NamedTuple
     @debug node
     nn = nodename(node)
     (nn == "fill") || error("fill element name wrong: $nn")
@@ -96,7 +96,7 @@ function parse_graphics_fill(node; kwargs...)
     (; :tag=>Symbol(nn), :color=>clr, :image=>img, :gradient_color=>gclr, :gradient_rotation=>grot)
 end
 
-function parse_graphics_font(node; kwargs...)
+function parse_graphics_font(node; kwargs...)::NamedTuple
     @debug node
     nn = nodename(node)
     (nn == "font") || error("font element name wrong: $nn")

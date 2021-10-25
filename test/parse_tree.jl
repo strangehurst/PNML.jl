@@ -102,7 +102,7 @@ end
 
     # Access the returned data structure.
     if SHOW_SUMMARYSIZE && PRINT_PNML
-        @show Base.summarysize(e)
+        @show Base.summarysize(pnmldoc)
     end
     foreach(pnmldoc.nets) do net
         @testset "net keys" for k in [:id, :name, :tag, :xml, 

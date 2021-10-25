@@ -30,7 +30,7 @@ end
     parse_node(node; verbose=true)
 
 Take a `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if mapping exists, otherwise call [`attribute_elem`](@ref).
+[`tagmap`](@ref) if that mapping exists, otherwise call [`attribute_elem`](@ref).
 `verbose` is a boolean controlling debug logging.
 """
 function parse_node(node; verbose=true, kwargs...)
