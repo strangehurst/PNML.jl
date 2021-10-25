@@ -60,7 +60,7 @@ function add_label!(d::PnmlDict, node; kwargs...)
     # will have defined tags and semantics. And be given a key `:tag`.
     # Will convert value to a vector on first use.
     if d[:labels] === nothing
-        d[:labels] = Any[] #TODO: pick type allowd in PnmlDict values? 
+        d[:labels] = PnmlDict[] #TODO: pick type allowd in PnmlDict values? 
     end
     # Use of parse_node allows the :labels vector to contain fully parsed nodes.
     # Some higher-level might be able to make use of these.
@@ -70,7 +70,7 @@ end
 "Add `node` to`d[:tools]`. Return updated `d[:tools]`."
 function add_tool!(d::PnmlDict, node; kwargs...)
     if d[:tools] === nothing
-        d[:tools] = Any[] #TODO: pick type allowd in PnmlDict values? 
+        d[:tools] = PnmlDict[] #TODO: pick type allowd in PnmlDict values? 
     end
     # Use of parse_node allows the :tools vector to contain fully parsed nodes.
     # Some higher-level might be able to make use of these.

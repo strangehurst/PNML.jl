@@ -1,12 +1,12 @@
 
 "Build pnml from a string."
-function parse_str(str)
+function parse_str(str)::PNML.Document
     doc = EzXML.parsexml(str)
     parse_doc(doc)
 end
 
 "Build pnml from a file."
-function parse_file(fn)
+function parse_file(fn)::PNML.Document
     doc = EzXML.readxml(fn)
     parse_doc(doc)
 end
@@ -94,8 +94,8 @@ function parse_net(node; kwargs...)
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kwargs[:reg], node["id"]),
                            :type=>pntd(node["type"]),
-                           :pages=>[],
-                           :declarations=>[])
+                           :pages=>PnmlDict[],
+                           :declarations=>PnmlDict[])
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -121,9 +121,9 @@ function parse_page(node; kwargs...)
 
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kwargs[:reg],node["id"]),
-                           :places=>[], :trans=>[], :arcs=>[],
-                           :refP=>[], :refT=>[],
-                           :declarations=>[])
+                           :places=>PnmlDict[], :trans=>PnmlDict[], :arcs=>PnmlDict[],
+                           :refP=>PnmlDict[], :refT=>PnmlDict[],
+                           :declarations=>PnmlDict[])
 
     foreach(elements(node)) do child
         @match nodename(child) begin
