@@ -21,11 +21,10 @@ to_node(s) =  root(EzXML.parsexml(s))
 
 "Default is to NOT print during test."
 const PRINT_PNML = haskey(ENV, "PRINT_PNML") ? lowercase(ENV["PRINT_PNML"]) == "true" : false
-function printnode(n; label=nothing)
+function printnode(n; label=nothing, compress=true)
     if PRINT_PNML
         !isnothing(label) && print(label, " ")
-        pprint(n)
-        println()
+        pprintln(compress ? PNML.compress(n) : n)
     end
 end
 
