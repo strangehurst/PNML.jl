@@ -82,13 +82,18 @@ Omits the page level of the pnml-defined hierarchy by collapsing down to one pag
 A multi-page net can be collpsed by removing referenceTransitions & referencePlaces,
 and merging pages into the first page. Only selected fields are merged.
 """
-struct SimpleNet{P,T,A} <: PetriNet
+struct SimpleNet{P,T,A,RT,RP,L,TI} <: PetriNet
     "Same as the XML attribute of the same name."
     id::Symbol
     
     place::P
     transition::T
     arc::A
+    refT::RT
+    refP::RP
+    label::L
+    tools::TI
+    #declatations:D
 end
 
 
@@ -96,11 +101,38 @@ SimpleNet(str::AbstractString) = SimpleNet(Document(str))
 SimpleNet(doc::Document)       = SimpleNet(first_net(doc))
 
 # Single network is the heart of PetriNet.
-SimpleNet(net) = SimpleNet(net[:id], collapse_pages!(net))
-SimpleNet(id::Symbol, collapsed) = SimpleNet(id,
-                                             collapsed[:pages][1][:places],
-                                             collapsed[:pages][1][:trans],
-                                             collapsed[:pages][1][:arcs])
+function SimpleNet(net::PnmlDict)
+    netcopy = deepcopy(net)
+    collapse_pages!(netcopy)
+    p1 = netcopy[:pages][1]
+    SimpleNet(netcopy[:id], 
+              haskey(p1, :places) ? p1[:places] : nothing,
+              haskey(p1, :trans) ?  p1[:trans] : nothing,
+              haskey(p1, :arcs) ?   p1[:arcs] : nothing,
+              haskey(p1, :refT) ?   p1[:refT] : nothing,
+              haskey(p1, :refP) ?   p1[:refP] : nothing,
+              haskey(p1, :labels) ? p1[:labels] : nothing, # merge page & net labels
+              haskey(p1, :tools) ?  p1[:tools] : nothing) # merge page & net tools
+end
+
+id(s::T) where {T <: PetriNet} = s.id
+
+function Base.show(io::IO, s::SimpleNet{P,T,A}) where {P,T,A}
+    println(io, "PNML.SimpleNet{$P,$T,$A}(")
+    println(io, "id=", id(s), ", ",
+            length(places(s)), " places, ",
+            length(transitions(s)), " transitions, ",
+            length(arcs(s)), " arcs")
+    println(io, id(s), " places")
+    pprintln(io, places(s))
+    println(io, id(s), " transitions")
+    pprintln(io, transitions(s))
+    println(io, id(s), " arcs")
+    pprintln(io, arcs(s))
+    print(io, ")")
+end
+
+
 """
 """
 struct HLPetriNet{T} <: PetriNet
@@ -111,7 +143,9 @@ HLPetriNet(str::AbstractString) = HLPetriNet(Document(str))
 HLPetriNet(doc::Document)       = HLPetriNet(first_net(doc))
 
 # Single network is the heart of PetriNet.
-HLPetriNet(net::PnmlDict) = HLPetriNet{typeof(net[:type])}(net[:id], collapse_pages!(net))
+function HLPetriNet(net::PnmlDict)
+    HLPetriNet{typeof(net[:type])}(net[:id], collapse_pages!(net))
+end
 
 """
 
@@ -128,13 +162,19 @@ Collect places, transitions and arcs.
 #TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 """
 function collapse_pages!(net::PnmlDict)
-    #net = s.
     @assert net[:tag] === :net
-    page1 = net[:pages][1]
-    pageN = @view net[:pages][2:end]
+
+    # Some of the keys are optional. They may be removed by a compress before collapse.
     for key in [:places, :trans, :arcs, :tools, :labels, :refT, :refP, :declarations]
-        if !isnothing(page1[key]) #TODO requires first page to have non-empty key
-            foreach(p->append!(page1[key], p[key]), pageN)
+        f = PnmlDict[]
+        foreach(net[:pages]) do p
+            if haskey(p, key) && !isnothing(p[key])
+                push!.(Ref(f), p[key])
+                empty!(p[key])
+            end
+        end
+        if !isempty(f)
+            net[:pages][1][key] = f
         end
     end
     net
@@ -161,14 +201,14 @@ has_refT(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, reftransition
 place(s::SimpleNet, id::Symbol)      =      s.place[findfirst(x -> x[:id] === id, places(s))]
 transition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, transitions(s))]
 arc(s::SimpleNet, id::Symbol)               = s.arc[findfirst(x -> x[:id] === id, arcs(s))]
-refplace(s::SimpleNet, id::Symbol)      =   s.place[findfirst(x -> x[:id] === id, refplaces(s))]
-reftransition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, reftransitions(s))]
+refplace(s::SimpleNet, id::Symbol)      =    s.refP[findfirst(x -> x[:id] === id, refplaces(s))]
+reftransition(s::SimpleNet, id::Symbol) =    s.refT[findfirst(x -> x[:id] === id, reftransitions(s))]
 
 
-# All pnml nodes have an `id`.
-id(node)::Symbol = node[:id]
+# All pnml nodes in IR have an `id`.
+id(node::PnmlDict)::Symbol = node[:id]
 
-# Get vector of ids.
+"Return vector of place ids in `s`."
 place_ids(s::SimpleNet) = map(id, places(s)) 
 transition_ids(s::SimpleNet) = map(id, transitions(s)) 
 arc_ids(s::SimpleNet) = map(id, arcs(s)) 
@@ -193,29 +233,65 @@ tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
 
 Remove reference nodes from arcs.
 Design intent expects [`collapse_pages!`](@ref) to have
-been applied.
+been applied so that everything is on one page.
+
+# Examples
+## Axioms
+  1) All ids in a PNML.Document are unique in that they only have one instance in the XML.
+  2) A chain of reference Places or Transitions always ends at a Place or Transition.
+  3) All ids are valid.
 """
-function deref(s::SimpleNet)
+function deref! end
+
+deref_place(s::SimpleNet, id::Symbol) =  refplace(s, id)[:ref]
+deref_transition(s::SimpleNet, id::Symbol) =  reftransition(s, id)[:ref]
+
+function deref!(s::SimpleNet)
     for a in arcs(s)
-        while a[:source] ∈  refplace_ids(s)
-            a[:source] = refplace(s, a[:source])[:ref]
+        while a[:source] ∈ refplace_ids(s)
+            @show a[:source], deref_place(s, a[:source])
+            a[:source] = deref_place(s, a[:source])
         end
-        while a[:target] ∈  refplace_ids(s)
-            a[:target] = refplace(s, a[:target])[:ref]
+        while a[:target] ∈ refplace_ids(s)
+            @show a[:target], deref_place(s, a[:target])
+            a[:target] = deref_place(s, a[:target])
         end
-        while a[:source] ∈  reftransitions_ids(s)
-            a[:source] = reftransitions(s, a[:source])[:ref]
+        while a[:source] ∈ reftransition_ids(s)
+            @show a[:source], deref_transition(s, a[:source])
+            a[:source] = deref_transition(s, a[:source])
         end
-        while a[:target] ∈  reftransition_ids(s)
-            a[:target] = reftransitions(s, a[:target])[:ref]
-        end
-        
+        while a[:target] ∈ reftransition_ids(s)
+            @show a[:target], deref_transition(s, a[:target])
+            a[:target] = deref_transition(s, a[:target])
+        end        
     end
 end
 
+
+
+
 #TODO  marking, inscription, condition, can be more complicated
 
-"Return marking value of a place `P`."
+"""
+    marking(p)
+Return marking value of a place `p`.
+
+# Examples
+
+```jldoctest
+julia> using PNML
+
+julia> p = Dict(:marking => Dict(:value=>nothing));
+
+julia> PNML.marking(p)
+0
+
+julia> p = Dict(:marking => Dict(:value=>12.34));
+
+julia> PNML.marking(p)
+12.34
+```
+"""
 function marking(p)::Number
     if !isnothing(p[:marking]) && !isnothing(p[:marking][:value])
         p[:marking][:value]

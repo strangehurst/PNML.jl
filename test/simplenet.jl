@@ -17,6 +17,7 @@
                 <arc id="a2" source="t2" target="p2"/>
                 <arc id="a22" source="t2" target="rp2"/>
                 <referencePlace id="rp2" ref="p3"/>
+                <referenceTransition id="rt2" ref="t3"/>
             </page>
             <page id="page3">
                 <place id="p3"/>
@@ -28,20 +29,39 @@
         """ 
     doc = PNML.Document(str)
 
+    println("------------------------------------------------------------")
+    println("EXPANDED")
+    println("------------------------------------------------------------")
     net = PNML.first_net(doc)
-    pprint(net[:pages][1]);println()
+    printnode(net, compress=false)
 
+    println("------------------------------------------------------------")
+    println("COLLAPSED")
+    println("------------------------------------------------------------")
     PNML.collapse_pages!(net)
-    pprint(net[:pages][1]);println()
+    printnode(net)
 
+    println("------------------------------------------------------------")
+    println("COMPRESSED")
+    println("------------------------------------------------------------")
+    @test net isa PNML.PnmlDict
+    cnet = PNML.compress(net)
+    @test cnet isa PNML.PnmlDict
+    printnode(cnet)
+    @test cnet != net
+
+    println("------------------------------------------------------------")
+    println("DEREFERENCED")
+    println("------------------------------------------------------------")
     
-    #pprint(net);println()
-    
-    net1 = PNML.SimpleNet(net)
+    snet = PNML.SimpleNet(cnet)
+    PNML.deref!(snet)
+
+    @show snet
+    println("------------------------------------------------------------")
 end
 
 @testset "net type" begin
-    # pnml with multiple nets.    
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -66,26 +86,52 @@ end
     </pnml>
         """ 
     
-    #@test !PNML.isregistered(:pnml)
     reg = PNML.IDRegistry()
     doc = PNML.Document(str, reg)
     printnode(doc.nets, label="net type")
-
     
     v = PNML.find_nets(doc, :pnmlcore)
     @test !isempty(v)
     @test v[begin] == PNML.first_net(doc)
 
-    #@show typeof(PNML.parse_doc(EzXML.parsexml(str)))
+    net  = PNML.SimpleNet(v[begin])
     net1 = PNML.SimpleNet(doc)
-    net = PNML.SimpleNet(v[begin]) #
+    net2 = PNML.SimpleNet(PNML.first_net(doc))
+    println()
+    @show net
+    println()
+    #TODO why do the 3 top-level nets compare not equal?
+    for accessor in [PNML.id, PNML.places, PNML.transitions, PNML.arcs,
+                     PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
+        @test accessor(net1) == accessor(net)
+        @test accessor(net2) == accessor(net)
+        @test accessor(net2) == accessor(net1)
+    end
     
-    @test net == PNML.SimpleNet(PNML.first_net(doc))
-    @test net == net1
-    
-    @show PNML.place_ids(net)
-    @show PNML.transition_ids(net)
-    @show PNML.arc_ids(net)
+    println()
+    println("------------------------------------------")
+    println("compress")
+    pl = PNML.places(net)
+    printnode(pl[1], compress=false)
+    cpn = PNML.compress(pl[1])
+    println("to")
+    printnode(cpn, compress=false) #
+    println()
+    printnode(cpn, compress=true) # 
+    println("from")
+    printnode(pl[1], compress=false)
+    println("------------------------------------------")
+    println()
+    println("------------------------------------------")
+    println("compress")
+    pl = PNML.places(net)
+    printnode(pl, compress=false)
+    cpl = PNML.compress(pl)
+    println("to")
+    printnode(cpl, compress=false)
+    @test pl != cpl
+    println("------------------------------------------")
+    println()
 
     for p in PNML.places(net)
         #printnode(p; label="place")
@@ -112,7 +158,6 @@ end
         PRINT_PNML && println("arc $(PNML.id(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
     
-    #dump(net)
     PNML.reset_registry!(reg)
 end
 
