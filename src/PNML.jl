@@ -3,7 +3,7 @@
 """
 module PNML
 using DocStringExtensions
-
+using PrettyPrinting
 using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
 using LabelledArrays
 using MLStyle: @match
