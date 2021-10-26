@@ -12,3 +12,4 @@ Documentation for [PNML](https://github.com/strangehurst/PNML.jl).
 ```@autodocs
 Modules = [PNML]
 ```
+julia

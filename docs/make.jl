@@ -20,5 +20,5 @@ makedocs(;
 
 deploydocs(;
            repo="github.com/strangehurst/PNML.jl",
-           devbranch = "main"
+           devbranch = "dev"
            )

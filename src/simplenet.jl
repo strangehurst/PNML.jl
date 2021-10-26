@@ -50,10 +50,7 @@ XML <page> tags are also parsed into PnmlDict
 | refT         | reference to transition on different page     |
 | declarations | only net & page tags have declarations        |
 
-See [`parse_page`](@ref).
-
- [``](@ref)
-
+See [`parse_page`](@ref), [`parse_net`](@ref)
 """
 abstract type PetriNet end
 
@@ -153,7 +150,7 @@ end
 
 Return net with page content that may be repeated merged into the 1st page.
 Note that refrence nodes are still present. They can be removed later
-with [`deref`](@ref).
+with [`deref!`](@ref).
 
 Start with simplest case of assuming that only the first page is meaningful.
 Collect places, transitions and arcs.

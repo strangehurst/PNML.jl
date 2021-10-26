@@ -13,9 +13,18 @@ the the children into vector NamedTuples & Dicts.
 Note the assumption that children and content are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
+
+# Example
+```jldoctest
+julia> using PNML, EzXML
+
+julia> node = parse_node(xml\"\"\"<aaa id=\"FOO\">BAR</aaa>\"\"\"; reg=PNML.IDRegistry());
+
+```
 """
 function attribute_elem(node; kwargs...)
     @debug "attribute = $(nodename(node))"
+    @assert haskey(kwargs, :reg)
     d = PnmlDict(:tag=>Symbol(nodename(node)),
                  (Symbol(a.name)=>((a.name == "id") ?
                                    register_id!(kwargs[:reg], a.content) :
@@ -32,6 +41,8 @@ function attribute_elem(node; kwargs...)
 end
 
 """
+    attribute_content(nv; kwargs...)
+
 Return PnmlDict with values that are vectors when there are multiple instances
 of a tag in 'nv' and scalar otherwise.
 """
@@ -41,7 +52,7 @@ function attribute_content(nv; kwargs...)
     tagnames = unique(map(first,nn))
     foreach(tagnames) do tname 
         e = filter(x->x.first===tname, nn)
-        #TODO make toolsoecific match annotation labels.
+        #TODO make toolspecific match annotation labels.
         d[Symbol(tname)] = if length(e) > 1
             parse_node.(map(x->x.second, e); kwargs...)
         else
@@ -77,7 +88,12 @@ function add_tool!(d::PnmlDict, node; kwargs...)
     push!(d[:tools], parse_node(node; kwargs...))
 end
 
-"Return Dict of tags common to both pnml nodes and pnml labels."
+"""
+     pnml_common_defaults(node)
+
+Return Dict of tags common to both pnml nodes and pnml labels.
+See [`pnml_label_defaults`](@ref) and [`pnml_node_defaults`](@ref).
+"""
 function pnml_common_defaults(node)
     d = PnmlDict(:graphics=>nothing, # graphics tag is single despite the 's'.
                  :tools=>nothing, # Here the 's' indicates multiples are allowed.
@@ -87,9 +103,13 @@ function pnml_common_defaults(node)
 end
 
 """
+     pnml_node_defaults(node, xs...)
+
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
 Usually default value will be `nothing` or empty vector.
+See [`pnml_label_defaults`](@ref) and [`pnml_common_defaults`](@ref).
+
 """
 function pnml_node_defaults(node, xs...) 
     PnmlDict(pnml_common_defaults(node)...,
@@ -98,10 +118,13 @@ function pnml_node_defaults(node, xs...)
 end
 
 """
+    pnml_label_defaults(node, xs...)
+
 Merge `xs` into dictonary with default pnml label tags.
 Used on pnml tags below a pnml_node tag.
 Label level tags include: name, inscription, initialMarking.
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
+See [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(node, xs...)
     PnmlDict(pnml_common_defaults(node)...,
@@ -112,10 +135,10 @@ end
 
 
 """
-    parse_pnml_common(s, node; kwargs...)
+    parse_pnml_common!(d, node; kwargs...)
 
 Update `d` with graphics, tools, label children of pnml node and label elements.
-Used by parse_pnml_node_commonlabel ! & parse_pnml_label_common!.
+Used by parse_pnml_node_commonlabel! & parse_pnml_label_common!.
 Adds, graphics, tools, labels.
 Note that "lables" are the everything else option and this should be called after parsing
 any elements that has an expected tags.
@@ -158,6 +181,7 @@ function parse_pnml_label_common!(d, node; kwargs...)
     @assert haskey(d, :text)
     @assert haskey(d, :structure)
     @assert haskey(kwargs, :reg)
+    # Do not expect pnml labels to have names, so bark if one is found.
     !isempty(allchildren("name", node)) && @warn "label $(nodename(node)) has unexpected name"
     
     @match nodename(node) begin
@@ -170,6 +194,8 @@ end
 
 #TODO: A '<label>' tag could be hidden inside a '<structure>' tag.
 """
+    parse_label(node; kwargs...)
+
 Should not often have a 'label' tag, this will bark if one is found.
 Return named tuple (tag,node), used to defer parsing the xml while matching
 usage of PnmlDict that has at least the :tag and :xml keys.
