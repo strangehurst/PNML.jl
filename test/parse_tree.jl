@@ -97,78 +97,69 @@ end
 
     # Do a full parse and maybe print the generated data structure.
     reg = PNML.IDRegistry()
-    pnmldoc = parse_pnml(root(doc); reg)
+    pnml_ir = parse_pnml(root(doc); reg)
+    @test pnml_ir isa PNML.PnmlDict # not PNML.Document
     #printnode(e)
 
-    # Access the returned data structure.
     if SHOW_SUMMARYSIZE && PRINT_PNML
-        @show Base.summarysize(pnmldoc)
-    end
-    foreach(pnmldoc.nets) do net
-        @testset "net keys" for k in [:id, :name, :tag, :xml, 
-                                      :graphics, :tools, :labels,
-                                      :pages, :declarations]
-            haskey(net, k) && showsize(net,k)
+        @show Base.summarysize(pnml_ir)        
+        showsize.(Ref(pnml_ir), keys(pnml_ir))
+        foreach(pnml_ir[:nets]) do net
+            showsize.(Ref(net), keys(net))
+            foreach(net[:pages]) do page
+                showsize.(Ref(page), keys(page))
+                for k in [:graphics, :tools, :labels, :places, :trans,
+                          :arcs, :declarations, :refT, :refP]
+                    if !isnothing(page[k])
+                        showsize.(Ref(page[k]), keys(page[k]))
+                        foreach(page[k]) do k2
+                            showsize.(Ref(k2), keys(k2))
+                        end
+                    end
+                end
+            end
         end
+    end
+    println()
+                              
+    foreach(pnml_ir[:nets]) do net
+        @test net isa PNML.PnmlDict
         @test net[:tag] == :net
         @test net[:id] isa Symbol
-        #@test length(net[:id]) > 0
-
-        foreach(net[:declarations]) do decl
-            @testset "declaration keys" for k in [:id, :name, :tag, :xml,
-                                                  :graphics, :tools, :labels,
-                                                  :text, :structure]
-                haskey(decl, k) && showsize(decl,k)
-            end
-            @test decl[:tag] = :declaration
-            @test decl[:test] !== nothing || decl[:structure] !== nothing
-        end
         
         foreach(net[:pages]) do page
-            @testset "page keys" for k in [:id, :name, :tag, :xml,
-                                           :graphics, :tools, :labels,
-                                           :places, :trans, :arcs,
-                                           :declarations, :refT, :refP]
-                haskey(page, k) && showsize(page,k)
-            end
+            @test page isa PNML.PnmlDict
             @test page[:tag] == :page
             @test page[:id] isa Symbol
-            #@test length(page[:id]) > 0
-            
             foreach(page[:places]) do place
-                @testset "place keys" for k in [:id, :name, :tag, :xml,
-                                                :graphics, :tools, :labels,
-                                                :marking, :type]
-                    haskey(place,k) && showsize(place,k)
-                end
+                @test place isa PNML.PnmlDict
                 @test place[:tag] == :place
                 @test place[:id] isa Symbol
-                #@test length(place[:id]) > 0
             end
- 
             foreach(page[:trans]) do transition
-                @testset "place keys" for k in [:id, :name, :tag, :xml,
-                                                :graphics, :tools, :labels,
-                                                :condition]
-                    haskey(transition,k) && showsize(transition,k)
-                end
+                @test transition isa PNML.PnmlDict
                 @test transition[:tag] == :transition
                 @test transition[:id] isa Symbol
-                #@test length(transition[:id]) > 0
-           end
-
+            end
             foreach(page[:arcs]) do arc
-                @testset "place keys" for k in [:id, :name, :tag, :xml,
-                                                :graphics, :tools, :labels,
-                                                :inscription]
-                    haskey(arc,k) && showsize(arc,k)
-                end
+                @test arc isa PNML.PnmlDict
                 @test arc[:tag] == :arc
                 @test arc[:id] isa Symbol
-                #@test length(arc[:id]) > 0
+            end
+            foreach(page[:declarations]) do decl
+                @test decl isa PNML.PnmlDict
+                @test decl[:tag] = :declaration
+                @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
+
+        foreach(net[:declarations]) do decl
+            @test decl isa PNML.PnmlDict
+            @test decl[:tag] = :declaration
+            @test decl[:text] !== nothing || decl[:structure] !== nothing
+        end 
     end
+    
     PNML.reset_registry!(reg)
     println()
 end
