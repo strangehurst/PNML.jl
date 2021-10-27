@@ -1,3 +1,4 @@
+"Alias for Dict with expected value types for PNML intermediate representation."
 const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,NamedTuple,Symbol,AbstractString,Number}}
 
 """
