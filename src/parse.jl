@@ -1,29 +1,4 @@
 
-"Build pnml from a string."
-function parse_str(str)::PNML.Document
-    doc = EzXML.parsexml(str)
-    parse_doc(doc)
-end
-
-"Build pnml from a file."
-function parse_file(fn)::PNML.Document
-    doc = EzXML.readxml(fn)
-    parse_doc(doc)
-end
-
-""" parse_doc(doc::EzXML.Document)
-
-Return a PNML.Document built from an XML Doncuent.
-A well formed PNML XML document has a single root node: 'pnml'.
-"""
-function parse_doc(doc::EzXML.Document)::PNML.Document
-    reg = PNML.IDRegistry()
-    Document(parse_pnml(root(doc); reg), reg)
-end
-
-
-
-
 #-------------------------------------------------------------------
 
 """
@@ -66,8 +41,8 @@ function parse_pnml(node; kwargs...)
     nets = parse_node.(allchildren("net", node); kwargs...)
     # Give tuple an id element to match the rest of the IR.
     # Because there can only be one pnml tag, we use it as the id.
-    (; :id=>register_id!(kwargs[:reg], nn), :tag=>Symbol(nn), :nets=>nets,
-     :xml=>includexml(node)) 
+    PnmlDict(:id=>register_id!(kwargs[:reg], nn), :tag=>Symbol(nn), :nets=>nets,
+             :xml=>includexml(node)) 
 end
 
 """
