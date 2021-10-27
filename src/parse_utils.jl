@@ -197,12 +197,11 @@ end
     parse_label(node; kwargs...)
 
 Should not often have a 'label' tag, this will bark if one is found.
-Return named tuple (tag,node), used to defer parsing the xml while matching
-usage of PnmlDict that has at least the :tag and :xml keys.
+Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
 """
 function parse_label(node; kwargs...)
     nn = nodename(node)
     nn == "label" || error("parse_label element name wrong: $nn")
     @warn "parse_label '$(node !== nothing && nn)'"
-    (; :tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
+    PnmlDict(:tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
 end

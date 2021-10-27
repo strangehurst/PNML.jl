@@ -31,7 +31,7 @@ function parse_graphics(node; kwargs...)
     nn == "graphics" || error("element name wrong: $nn")
 
     d = PnmlDict(:tag=>Symbol(nn),
-                 :line=>nothing, :positions=>NamedTuple[], :dimension=>nothing,
+                 :line=>nothing, :positions=>PnmlDict[], :dimension=>nothing,
                  :fill=>nothing, :font=>nothing, :offset=>nothing,
                  :xml=>includexml(node))
     foreach(elements(node)) do child
@@ -53,7 +53,7 @@ end
 # Use that to inspect the source XML for children of graphics nodes.
 #
 
-function parse_graphics_line(node; kwargs...)::NamedTuple
+function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "line") || error("line element name wrong: $nn: $nn")
@@ -62,13 +62,13 @@ function parse_graphics_line(node; kwargs...)::NamedTuple
     style = has_style(node) ? node["style"] : nothing
     width = has_width(node) ? node["width"] : nothing
 
-    (; :tag=>Symbol(nn), :shape=>shape, :color=>color, :width=>width, :style=>style)
+    PnmlDict(:tag=>Symbol(nn), :shape=>shape, :color=>color, :width=>width, :style=>style)
 end
 
 """
 Coordinates `x`, `y` are in points.
 """
-function parse_graphics_coordinate(node; kwargs...)::NamedTuple
+function parse_graphics_coordinate(node; kwargs...)
     @debug node
     nn = nodename(node)
     
@@ -80,10 +80,10 @@ function parse_graphics_coordinate(node; kwargs...)::NamedTuple
     # We also allow Real numbers.
     x = number_value(node["x"])
     y = number_value(node["y"])
-    (; :tag=>Symbol(nn), :x=>x, :y=>y)
+    PnmlDict(:tag=>Symbol(nn), :x=>x, :y=>y)
 end
 
-function parse_graphics_fill(node; kwargs...)::NamedTuple
+function parse_graphics_fill(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "fill") || error("fill element name wrong: $nn")
@@ -93,10 +93,11 @@ function parse_graphics_fill(node; kwargs...)::NamedTuple
     gclr = has_gradient_color(node)    ? node["gradient-color"] : nothing
     grot = has_gradient_rotation(node) ? node["gradient-rotation"] : nothing
     
-    (; :tag=>Symbol(nn), :color=>clr, :image=>img, :gradient_color=>gclr, :gradient_rotation=>grot)
+    PnmlDict(:tag=>Symbol(nn), :color=>clr, :image=>img,
+             :gradient_color=>gclr, :gradient_rotation=>grot)
 end
 
-function parse_graphics_font(node; kwargs...)::NamedTuple
+function parse_graphics_font(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "font") || error("font element name wrong: $nn")
@@ -109,6 +110,6 @@ function parse_graphics_font(node; kwargs...)::NamedTuple
     style  = has_style(node)      ? node["style"] : nothing
     weight = has_weight(node)     ? node["weight"] : nothing
     
-    (; :tag=>Symbol(nn), :family=>family, :style=>style, :weight=>weight,
-     :size=>size, :decoration=>deco, :align=>align, :rotation=>rot)
+    PnmlDict(:tag=>Symbol(nn), :family=>family, :style=>style, :weight=>weight,
+             :size=>size, :decoration=>deco, :align=>align, :rotation=>rot)
 end

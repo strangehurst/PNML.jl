@@ -226,14 +226,14 @@ end
 
 #----------------------------------------------------------
 
-"Return the stripped string of text child's nodecontent in a named tuple."
+"Return the stripped string of text child's nodecontent as :content key of PnmlDict."
 function parse_text(node; kwargs...)
     nn = nodename(node)
     nn == "text" || error("parse_text element name wrong")
-    (; :tag=>Symbol(nn), :content=>string(strip(nodecontent(node))),)
+    PnmlDict(:tag=>Symbol(nn), :content=>string(strip(nodecontent(node))),)
 end
 
-"Return named tuple with pnml name text and optional tool & GUI information."
+"Return PnmlDict pnml name text and optional tool & GUI information."
 function parse_name(node; kwargs...)
     node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
     nn = nodename(node)
@@ -247,7 +247,7 @@ function parse_name(node; kwargs...)
     # Ex: PetriNetPlans-PNP/parallel.jl
     isnothing(text) && @warn "$(nn) missing <text> element"
     
-    (; :tag=>Symbol(nn), :value=>isnothing(text) ? nothing : text[:content],
+    PnmlDict(:tag=>Symbol(nn), :value=>isnothing(text) ? nothing : text[:content],
      :graphics=>graphics, :tools=>tools)
 end
 

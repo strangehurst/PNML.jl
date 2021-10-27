@@ -42,9 +42,9 @@ end
         @test nodename(net) == "net"
         
         nn = parse_name(PNML.firstchild("name", net); reg)
-        @test nn.tag == :name
-        @test nn.value == "P/T Net with one place"
-        @test nn.graphics === nothing
+        @test nn[:tag] == :name
+        @test nn[:value] == "P/T Net with one place"
+        @test nn[:graphics] === nothing
         @test haskey(nn,:tools)
         @test nn[:tools] === nothing || isempty(nn[:tools])
 
