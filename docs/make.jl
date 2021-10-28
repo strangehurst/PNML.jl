@@ -14,7 +14,13 @@ makedocs(;
         assets=String[],
     ),
     pages=[
-        "Home" => "index.md",
+        "PNML.jl" => "index.md",
+        "pnml.md",
+        "Library Reference" => "library.md",
+        "Examples" => [
+            "lotka-volterra.md",
+            "example2.md",
+            ],
     ],
 )
 
