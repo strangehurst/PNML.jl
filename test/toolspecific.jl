@@ -28,7 +28,6 @@
      </tokengraphics>
  </toolspecific>
 """
-    # Content is Dict and NamedTuple.
     str5 = """
  <toolspecific tool="petrinet" version="1.0">
     <tokengraphics>
@@ -49,7 +48,7 @@
         foreach(n[:content]) do c
             @test haskey(c, :tag)
             @test isnothing(c[:xml]) || c[:xml] isa EzXML.Node
-            if PRINT_PNML && haskey(c, :xml)
+            if PRINT_PNML && haskey(c, :xml) && !isnothing(c[:xml])
                 EzXML.prettyprint(c[:xml]);
                 println()
             end

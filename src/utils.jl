@@ -2,7 +2,7 @@ const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 const XMLNode = EzXML.Node
 
 """
-    @xml_str(s)
+$(SIGNATURES)
 
 Utility macro for parsing xml strings into node.
 """
@@ -10,18 +10,26 @@ macro xml_str(s)
     EzXML.parsexml(s).root
 end
 
-"Parse XML content as a number. First try integer then float."
+"Parse string as a number. First try integer then float."
 function number_value(s::AbstractString)
     x = tryparse(Int,s) 
     x = isnothing(x) ?  tryparse(Float64,s) : x
 end
 
-"Return up to 1 immediate` child of element `el` that is a `tag`."
+"""
+$(SIGNATURES)
+
+Return up to 1 immediate` child of element `el` that is a `tag`.
+"""
 function firstchild(tag, el, ns=PNML.pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 
-"Return vector of 'el` element's immediate children with `tag`."
+"""
+$(SIGNATURES)
+
+Return vector of 'el` element's immediate children with `tag`.
+"""
 function allchildren(tag, el, ns=PNML.pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])
 end
@@ -64,7 +72,11 @@ AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, 
 AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
 
 #-------------------------------------------------------------------
-"Holds a set of pnml id symbols and a lock to allow safe reentrancy."
+"""
+$(TYPEDEF)
+
+Holds a set of pnml id symbols and a lock to allow safe reentrancy.
+"""
 mutable struct IDRegistry
     ids::Set{Symbol}
     lk::ReentrantLock
@@ -75,6 +87,8 @@ const GlobalIDRegistry = IDRegistry()
 
 const DUPLICATE_ID_ACTION=nothing
 """
+$(SIGNATURES)
+
 Use a global configuration to choose what to do when a duplicated pnml node id
 has been detected. Default is to do nothing.
 There are many pnml files on the internet that have many duplicates.
@@ -86,16 +100,12 @@ function duplicate_id_action(id::Symbol)
 end
 
 
-"Register `id` symbol and return the symbol."
+"""
+$(SIGNATURES)
+
+Register `id` symbol and return the symbol.
+"""
 register_id!(reg::IDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
-#function register_id(id::Symbol)
-#    global GlobalIDRegistry
-#    lock(GlobalIDRegistry.lk) do
-#        id ∈ GlobalIDRegistry.ids && duplicate_id_action(id)
-#        push!(GlobalIDRegistry.ids, id)
-#    end
-#    id
-# end
 function register_id!(reg::IDRegistry, id::Symbol)
     lock(reg.lk) do
         id ∈ reg.ids && duplicate_id_action(id)
@@ -104,6 +114,9 @@ function register_id!(reg::IDRegistry, id::Symbol)
     id
  end
 
+"""
+$(SIGNATURES)
+"""
 isregistered(reg::IDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
 function isregistered(reg::IDRegistry, id::Symbol)
     lock(reg.lk) do
@@ -111,7 +124,8 @@ function isregistered(reg::IDRegistry, id::Symbol)
     end
 end
 
-""" reset_registry!(reg)
+"""
+$(SIGNATURES)
 
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
@@ -122,6 +136,9 @@ function reset_registry!(reg::IDRegistry)
     end
 end
 
+"""
+$(SIGNATURES)
+"""
 function Base.isempty(reg::IDRegistry)
     lock(reg.lk) do
         isempty(reg.ids)
@@ -132,6 +149,9 @@ end
 #-------------------------------------------------------------------
 #TODO: Make global state varaible.
 #Count and lock to implement global state."
+"""
+$(TYPEDEF)
+"""
 mutable struct MissingIDCounter
     i::Int
     lk::ReentrantLock
@@ -139,6 +159,9 @@ end
 MissingIDCounter() = MissingIDCounter(0, ReentrantLock())
 
 #Increment counter and return new value."
+"""
+$(SIGNATURES)
+"""
 function next_missing_id(c::MissingIDCounter)
     lock(c.lk) do
         c.i += 1

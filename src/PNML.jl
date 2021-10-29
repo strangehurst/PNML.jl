@@ -1,16 +1,21 @@
 """
-    PNML Module reads and parses a Petri Net Markup Language file.
+$(DocStringExtensions.README)
 """
 module PNML
 using DocStringExtensions
-
-using EzXML, Symbolics, Statistics, IfElse, AbstractTrees
+using PrettyPrinting
+using EzXML
+using Symbolics, Statistics, IfElse, AbstractTrees
 using LabelledArrays
 using MLStyle: @match
 
 include("config.jl")
 
-"Set value of key :xml based on global variable."
+"""
+$(SIGNATURES)
+
+Set value of key :xml based on global configuration/control variable.
+"""
 includexml(node)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("utils.jl")
@@ -27,7 +32,8 @@ include("exceptions.jl")
 include("validate.jl")
 include("maps.jl")
 
-export extract_pnml,  @xml_str, @pnml_str
+#TODO update exports
+export @xml_str
 export parse_pnml, parse_node, parse_file, parse_str
 export PnmlException, MissingIDException, MalformedException
 

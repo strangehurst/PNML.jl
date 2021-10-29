@@ -3,12 +3,12 @@
     str = """
     <graphics>
      <offset x="1" y="2" />
-     <line  color="transparent" shape="line" style="solid" width="1.0"/>
+     <line  color="linecolor" shape="line" style="solid" width="1.0"/>
      <position  x="1" y="2" />
      <position  x="3" y="4" />
      <dimension x="5" y="6" />
      <offset    x="7" y="8" /><!-- override first offset -->
-     <fill  color="transparent" gradient-color="none" />
+     <fill  color="fillcolor" gradient-color="none" />
      <font align="center" family="Dialog" rotation="0.0" size="11"
            style="normal" weight="normal"/>
     </graphics>
@@ -25,31 +25,34 @@
     @test haskey(n,:fill)
     @test haskey(n,:font)
 
-    # There can only be one offset, lat tag parsed wins.
-    @test n[:offset].x == 7
-    @test n[:offset].y == 8
-    @test n[:line].color == "transparent"
-    @test n[:line].shape == "line"
-    @test n[:line].style == "solid"
-    @test n[:line].width == "1.0"
-    @test n[:dimension].x == 5
-    @test n[:dimension].y == 6
-    @test n[:fill].color == "transparent"
-    @test n[:fill].image === nothing
-    @test n[:fill].gradient_color == "none"
-    @test n[:fill].gradient_rotation === nothing
-    @test n[:font].family == "Dialog"
-    @test n[:font].style == "normal"
-    @test n[:font].weight == "normal"
-    @test n[:font].size == "11"
-    @test n[:font].decoration === nothing
-    @test n[:font].align == "center"
-    @test n[:font].rotation == "0.0"
+    # There can only be one offset, last tag parsed wins.
+    @test n[:offset][:x] == 7
+    @test n[:offset][:y] == 8
+    @test n[:line][:color] == "linecolor"
+    @test n[:line][:shape] == "line"
+    @test n[:line][:style] == "solid"
+    @test n[:line][:width] == "1.0"
+    @test n[:dimension][:x] == 5
+    @test n[:dimension][:y] == 6
+    @test n[:fill][:color] == "fillcolor"
+    @test n[:fill][:image] === nothing
+    @test n[:fill][:gradient_color] == "none"
+    @test n[:fill][:gradient_rotation] === nothing
+    @test n[:font][:family] == "Dialog"
+    @test n[:font][:style] == "normal"
+    @test n[:font][:weight] == "normal"
+    @test n[:font][:size] == "11"
+    @test n[:font][:decoration] === nothing
+    @test n[:font][:align] == "center"
+    @test n[:font][:rotation] == "0.0"
+
+    # There can be multiple position tags. Parsed as a vector
+    @test n[:positions] isa Vector{PNML.PnmlDict}
     @test length(n[:positions]) == 2
-    @test n[:positions][1].x == 1
-    @test n[:positions][1].y == 2
-    @test n[:positions][2].x == 3
-    @test n[:positions][2].y == 4
+    @test n[:positions][1][:x] == 1
+    @test n[:positions][1][:y] == 2
+    @test n[:positions][2][:x] == 3
+    @test n[:positions][2][:y] == 4
 end
 
 
