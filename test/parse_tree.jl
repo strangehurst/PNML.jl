@@ -105,12 +105,15 @@ end
         @show Base.summarysize(pnml_ir)        
         showsize.(Ref(pnml_ir), keys(pnml_ir))
         foreach(pnml_ir[:nets]) do net
+            print("net ", net[:id], "\n")
             showsize.(Ref(net), keys(net))
             foreach(net[:pages]) do page
+                print("page ", page[:id], "\n")
                 showsize.(Ref(page), keys(page))
                 for k in [:graphics, :tools, :labels, :places, :trans,
                           :arcs, :declarations, :refT, :refP]
                     if !isnothing(page[k])
+                        print(k, " ", "\n")
                         showsize.(Ref(page[k]), keys(page[k]))
                         foreach(page[k]) do k2
                             showsize.(Ref(k2), keys(k2))

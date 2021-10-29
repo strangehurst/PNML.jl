@@ -33,13 +33,13 @@
     println("EXPANDED")
     println("------------------------------------------------------------")
     net = PNML.first_net(doc)
-    printnode(net, compress=false)
+    printnode(net; compress=false)
 
     println("------------------------------------------------------------")
     println("COLLAPSED")
     println("------------------------------------------------------------")
     PNML.collapse_pages!(net)
-    printnode(net)
+    printnode(net; compress=false)
 
     println("------------------------------------------------------------")
     println("COMPRESSED")
@@ -55,8 +55,10 @@
     println("------------------------------------------------------------")
     
     snet = PNML.SimpleNet(cnet)
+    println("from")
+    @show snet
     PNML.deref!(snet)
-
+    println("to")
     @show snet
     println("------------------------------------------------------------")
 end

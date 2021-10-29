@@ -14,7 +14,11 @@ it is not necessary to define a parse method unless valididation, documentation,
 or additional processing is desired. Some are defined here anyway.
 =#
 
-"Attribute label of 'net' and 'page' nodes"
+"""
+$(TYPEDSIGNATURES)
+
+Attribute label of 'net' and 'page' nodes.
+"""
 function parse_declaration(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -22,7 +26,8 @@ function parse_declaration(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""" parse_type(node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
 
 These type of a place is different from net type or pntd.
 Used to define the "sort" of tokens held by the place and semantics of the marking.
@@ -33,7 +38,8 @@ function parse_type(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""" parse_declarations(node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
 """
 function parse_declarations(node; kwargs...)
     @debug node
@@ -42,7 +48,8 @@ function parse_declarations(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""" parse_sort(node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
 """
 function parse_sort(node; kwargs...)
     @debug node
@@ -51,7 +58,8 @@ function parse_sort(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""" parse_term(node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
 """
 function parse_term(node; kwargs...)
     @debug node
@@ -60,7 +68,9 @@ function parse_term(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_and(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -68,7 +78,9 @@ function parse_and(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_arbitraryoperator(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -76,7 +88,9 @@ function parse_arbitraryoperator(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_arbitrarysort(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -84,7 +98,9 @@ function parse_arbitrarysort(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_bool(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -92,7 +108,9 @@ function parse_bool(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_booleanconstant(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -101,7 +119,9 @@ function parse_booleanconstant(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_equality(node; kwargs...)
     @debug node
     nn   = nodename(node)
@@ -109,7 +129,9 @@ function parse_equality(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_imply(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -117,7 +139,9 @@ function parse_imply(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_inequality(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -125,7 +149,9 @@ function parse_inequality(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_mulitsetsort(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -133,7 +159,9 @@ function parse_mulitsetsort(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_namedoperator(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -141,7 +169,9 @@ function parse_namedoperator(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_not(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -149,7 +179,9 @@ function parse_not(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_or(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -157,7 +189,9 @@ function parse_or(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_productsort(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -165,7 +199,9 @@ function parse_productsort(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_tuple(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -173,7 +209,9 @@ function parse_tuple(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_unparsed(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -181,7 +219,9 @@ function parse_unparsed(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_useroperator(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -190,7 +230,9 @@ function parse_useroperator(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_usersort(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -199,7 +241,9 @@ function parse_usersort(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_variable(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -208,7 +252,9 @@ function parse_variable(node; kwargs...)
     attribute_elem(node; kwargs...)
 end
 
-""
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_variabledecl(node; kwargs...)
     @debug node
     nn = nodename(node)

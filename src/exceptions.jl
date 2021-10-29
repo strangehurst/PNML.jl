@@ -1,11 +1,21 @@
-
+"""
+$(TYPEDEF)
+"""
 abstract type PnmlException <: Exception end
 
-"Use exception to allow dispatch and additional data presentation to user."
+"""
+$(TYPEDEF)
+
+Use exception to allow dispatch and additional data presentation to user.
+"""
 struct MissingIDException <: PnmlException
     msg::String
     node::EzXML.Node
 end
+
+"""
+$(TYPEDEF)
+"""
 struct MalformedException <: PnmlException
     msg::String
     node::EzXML.Node
@@ -24,7 +34,7 @@ function Base.showerror(io::IO, e::MalformedException)
 end
 
 """
-    node_summary([io::IO], node; n=5, pp=EzXML.prettyprint)
+$(SIGNATURES)
 
 Pretty print the first `n` lines of the XML node.
 If `io` is not supplied, prints to the default output stream `stdout`.

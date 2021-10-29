@@ -28,7 +28,6 @@
      </tokengraphics>
  </toolspecific>
 """
-    # Content is Dict and NamedTuple.
     str5 = """
  <toolspecific tool="petrinet" version="1.0">
     <tokengraphics>

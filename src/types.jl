@@ -1,19 +1,20 @@
 "Alias for Dict with expected value types for PNML intermediate representation."
-const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,Symbol,AbstractString,Number}}
+const PnmlDict = Dict{Symbol, Any}
+#const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,Symbol,AbstractString,Number}}
 #const PnmlDict = Dict{Symbol, Union{Nothing,AbstractDict,Vector{AbstractDict},Symbol,AbstractString,Number}}
 
 """
-    compress(v::Vector{PnmlDict})
-    compress(d::PnmlDict)
+$(TYPEDSIGNATURES)
 
-Copy PnmlDict with keys removed when they are paired with value of `nothing`.
-
+Copy PnmlDict with keys removed when paired with value of `nothing`.
 """
 function compress end
+
 function compress(v::Vector{T}) where T <: AbstractDict
     #@show "compress vector $(length(v)) $T"
-    v2 = map(compress, v)
+    map(compress, v)
 end
+
 function compress(d::T) where T <: AbstractDict
     #@show "compress $T"
     f = filter(x -> x.second !== nothing, d)
@@ -24,14 +25,14 @@ function compress(d::T) where T <: AbstractDict
     end
     f
 end
+
 function compress(a::T) where T
     @show "trying to compress unsupported $T"
     a
 end
 
 """
-    compress(v::Vector{PnmlDict})
-    compress(d::PnmlDict)
+$(TYPEDSIGNATURES)
 
 In-place PnmlDict keys removed when they are paired with value of `nothing`.
 
@@ -52,11 +53,13 @@ function compress!(d::T) where T <: AbstractDict
     d
 end
 function compress!(a::T) where T
-    @show "trying to compress unsupported $T"
+    @show "trying to compress! unsupported $T"
     a
 end
 
 """
+$(TYPEDEF)
+
 Maybe of type `T` or nothing.
 """
 const Maybe{T} = Union{T, Nothing}

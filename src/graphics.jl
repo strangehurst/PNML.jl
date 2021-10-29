@@ -1,6 +1,11 @@
 
 
-"High-level place-transition nets have a toolspecific structure defined for token graphics."
+"""
+    parse_tokengraphics(node; kwargs...)
+
+High-level place-transition nets (HL-PTNet) have a toolspecific structure
+defined for token graphics. Contains <tokenposition> tags.
+"""
 function parse_tokengraphics(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -10,18 +15,23 @@ function parse_tokengraphics(node; kwargs...)
     d
 end
 
-"Position is relative to containing element. Units are points."
+"""
+    parse_tokenposition(node; kwargs...)
+
+Position is a coordinate relative to containing element. Units are points.
+"""
 function parse_tokenposition(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "tokenposition" || error("name wrong: $nn")
+    nn == "tokenposition" || error("element name wrong: $nn")
     parse_graphics_coordinate(node; kwargs...)
 end
 
 
 
 """
-    parse_graphics
+    parse_graphics(node; kwargs...)
+
 Arcs, Annotations and Nodes (places, transitions, pages) have different graphics semantics.
 Return a dictonary with the union of possibilities.
 """
@@ -52,7 +62,9 @@ end
 # Any xml node information will be attached to the graphics node.
 # Use that to inspect the source XML for children of graphics nodes.
 #
-
+"""
+$(SIGNATURES)
+"""
 function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -66,6 +78,8 @@ function parse_graphics_line(node; kwargs...)
 end
 
 """
+$(SIGNATURES)
+
 Coordinates `x`, `y` are in points.
 """
 function parse_graphics_coordinate(node; kwargs...)
@@ -83,6 +97,9 @@ function parse_graphics_coordinate(node; kwargs...)
     PnmlDict(:tag=>Symbol(nn), :x=>x, :y=>y)
 end
 
+"""
+$(SIGNATURES)
+"""
 function parse_graphics_fill(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -97,6 +114,9 @@ function parse_graphics_fill(node; kwargs...)
              :gradient_color=>gclr, :gradient_rotation=>grot)
 end
 
+"""
+$(SIGNATURES)
+"""
 function parse_graphics_font(node; kwargs...)
     @debug node
     nn = nodename(node)

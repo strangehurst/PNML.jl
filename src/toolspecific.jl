@@ -1,6 +1,6 @@
 
 """
-    parse_toolspecific(node; kwargs...)
+$(SIGNATURES)
 
 Return PnmlDict with tag name, tool & version attributes and content parsed.
 Anyone that can parse the `:content` may specialize on tool & version.

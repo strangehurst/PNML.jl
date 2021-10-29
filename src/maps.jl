@@ -68,6 +68,7 @@ tagmap = Dict{String,Function}(
 
 )
 
+"Map tag names to verification methods."
 verifymap = Dict{String,Function}(
     "pnml" => validate_pnml,
     "net" => validate_net,

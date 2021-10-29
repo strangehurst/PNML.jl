@@ -1,6 +1,6 @@
 
 """
-    attribute_elem(node)
+$(SIGNATURES)
 
 Return PnmlDict after debug print of nodename.
 If element `node` has any children, each is placed in the dictonary with the
@@ -22,7 +22,7 @@ julia> node = parse_node(xml\"\"\"<aaa id=\"FOO\">BAR</aaa>\"\"\"; reg=PNML.IDRe
 
 ```
 """
-function attribute_elem(node; kwargs...)
+function attribute_elem(node; kwargs...)::PnmlDict
     @debug "attribute = $(nodename(node))"
     @assert haskey(kwargs, :reg)
     d = PnmlDict(:tag=>Symbol(nodename(node)),
@@ -41,12 +41,12 @@ function attribute_elem(node; kwargs...)
 end
 
 """
-    attribute_content(nv; kwargs...)
+$(SIGNATURES)
 
 Return PnmlDict with values that are vectors when there are multiple instances
 of a tag in 'nv' and scalar otherwise.
 """
-function attribute_content(nv; kwargs...)
+function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
     d = PnmlDict()
     nn = [nodename(n)=>n for n in nv] # Not yet turned into Symbols.
     tagnames = unique(map(first,nn))
@@ -89,7 +89,7 @@ function add_tool!(d::PnmlDict, node; kwargs...)
 end
 
 """
-     pnml_common_defaults(node)
+$(SIGNATURES)
 
 Return Dict of tags common to both pnml nodes and pnml labels.
 See [`pnml_label_defaults`](@ref) and [`pnml_node_defaults`](@ref).
@@ -103,7 +103,7 @@ function pnml_common_defaults(node)
 end
 
 """
-     pnml_node_defaults(node, xs...)
+$(SIGNATURES)
 
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
@@ -111,14 +111,15 @@ Usually default value will be `nothing` or empty vector.
 See [`pnml_label_defaults`](@ref) and [`pnml_common_defaults`](@ref).
 
 """
-function pnml_node_defaults(node, xs...) 
+function pnml_node_defaults(node, xs...)
+    #@show nodename(node)
     PnmlDict(pnml_common_defaults(node)...,
              :name=>nothing,
              xs...)
 end
 
 """
-    pnml_label_defaults(node, xs...)
+$(SIGNATURES)
 
 Merge `xs` into dictonary with default pnml label tags.
 Used on pnml tags below a pnml_node tag.
@@ -126,7 +127,8 @@ Label level tags include: name, inscription, initialMarking.
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
 See [`pnml_common_defaults`](@ref).
 """
-function pnml_label_defaults(node, xs...)
+function pnml_label_defaults(node, xs...)::PnmlDict
+    #@show nodename(node)
     PnmlDict(pnml_common_defaults(node)...,
              :text=>nothing,
              :structure=>nothing,
@@ -135,9 +137,9 @@ end
 
 
 """
-    parse_pnml_common!(d, node; kwargs...)
+$(SIGNATURES)
 
-Update `d` with graphics, tools, label children of pnml node and label elements.
+UPDATE `D` WITH graphics, tools, label children of pnml node and label elements.
 Used by parse_pnml_node_commonlabel! & parse_pnml_label_common!.
 Adds, graphics, tools, labels.
 Note that "lables" are the everything else option and this should be called after parsing
@@ -157,7 +159,7 @@ function parse_pnml_common!(d::PnmlDict, node; kwargs...)
 end
 
 """
-    parse_pnml_node_common!(d, node; kwargs...)
+$(SIGNATURES)
 
 Update `d` with name children, defering other tags to [`parse_pnml_common!`](@ref).
 """
@@ -172,12 +174,12 @@ function parse_pnml_node_common!(d::PnmlDict, node; kwargs...)
 end
 
 """
-    parse_pnml_label_common!(d, node; kwargs...)
+$(SIGNATURES)
 
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_label_common!(d, node; kwargs...)
+function parse_pnml_label_common!(d::PnmlDict, node; kwargs...)
     @assert haskey(d, :text)
     @assert haskey(d, :structure)
     @assert haskey(kwargs, :reg)

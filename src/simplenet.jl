@@ -145,40 +145,35 @@ function HLPetriNet(net::PnmlDict)
 end
 
 """
+$(TYPEDSIGNATURES)
 
-    collapse_pages(net)
-
-Return net with page content that may be repeated merged into the 1st page.
+Merge page content into the 1st page of each pnml net.
 Note that refrence nodes are still present. They can be removed later
 with [`deref!`](@ref).
-
-Start with simplest case of assuming that only the first page is meaningful.
-Collect places, transitions and arcs.
-#TODO COLLECT LABELS, DECLARATIONS
-#TODO: Transform Vector{Any} to more specific types. Benchmark first.
-#TODO: Maybe using more wrappers. Starts needing pntd-specific types.
 """
+function collapse_pages! end
+
+function collapse_pages!(doc::PNML.Document)
+    foreach(collapse_pages!, nets(doc))
+end
+
 function collapse_pages!(net::PnmlDict)
     @assert net[:tag] === :net
 
     # Some of the keys are optional. They may be removed by a compress before collapse.
     for key in [:places, :trans, :arcs, :tools, :labels, :refT, :refP, :declarations]
-        f = PnmlDict[]
-        foreach(net[:pages]) do p
-            if haskey(p, key) && !isnothing(p[key])
-                push!.(Ref(f), p[key])
-                empty!(p[key])
+        tmp = PnmlDict[]
+        foreach(net[:pages]) do page
+            if haskey(page, key) && !isnothing(page[key])
+                push!.(Ref(tmp), page[key]) #TODO test this syntax
+                empty!(page[key])
             end
         end
-        if !isempty(f)
-            net[:pages][1][key] = f
+        if !isempty(tmp)
+            net[:pages][1][key] = tmp
         end
     end
     net
-end
-
-function collapse_pages!(doc::PNML.Document)
-    foreach(n->collapse_pages!(n), nets(doc))
 end
 
 places(s::SimpleNet) = s.place
@@ -226,7 +221,7 @@ src_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
 tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
 
 """
-    deref(s::SimpeNet)
+$(TYPEDSIGNATURES)
 
 Remove reference nodes from arcs.
 Design intent expects [`collapse_pages!`](@ref) to have

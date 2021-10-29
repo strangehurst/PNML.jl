@@ -2,13 +2,13 @@
 #-------------------------------------------------------------------
 
 """
-    parse_node(node; verbose=true)
+$(TYPEDSIGNATURES)
 
 Take a `node` and parse it by calling the method matching `node.name` from
 [`tagmap`](@ref) if that mapping exists, otherwise call [`attribute_elem`](@ref).
 `verbose` is a boolean controlling debug logging.
 """
-function parse_node(node; verbose=true, kwargs...)
+function parse_node(node; verbose=true, kwargs...)::Maybe{PnmlDict}
     node === nothing && return #TODO Make all nodes optional. Is this a good idea?
     if verbose
         parser = haskey(tagmap, node.name) ? "tagmap" : "attribute_elem"
@@ -26,7 +26,7 @@ end
 
 
 """
-    parse_pnml(node; reg=IDRegistry())
+$(TYPEDSIGNATURES)
 
 Start parse from the pnml root node of the well formed XML document.
 Return a a named tuple containing vector of pnml petri nets.
@@ -46,7 +46,7 @@ function parse_pnml(node; kwargs...)
 end
 
 """
-    parse_net(node)
+$(TYPEDSIGNATURES)
 
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
@@ -84,7 +84,7 @@ function parse_net(node; kwargs...)
 end
 
 """
-    parse_page(node)
+$(TYPEDSIGNATURES)
 
 PNML requires at least on page.
 """
@@ -115,9 +115,7 @@ function parse_page(node; kwargs...)
 end
 
 """
-    parse_place(node)
-
-
+$(TYPEDSIGNATURES)
 """
 function parse_place(node; kwargs...)
     nn = nodename(node)
@@ -142,7 +140,7 @@ function parse_place(node; kwargs...)
 end
 
 """
-    parse_transition(node)
+$(TYPEDSIGNATURES)
 """     
 function parse_transition(node; kwargs...)
     nn = nodename(node)
@@ -162,7 +160,8 @@ function parse_transition(node; kwargs...)
     d
 end
 
-""" parse_arc(node)
+"""
+$(TYPEDSIGNATURES)
 """
 function parse_arc(node; kwargs...)
     nn = nodename(node)
@@ -188,6 +187,9 @@ function parse_arc(node; kwargs...)
     d
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_refPlace(node; kwargs...)
     nn = nodename(node)
     nn == "referencePlace" || error("element name wrong: $nn")
@@ -206,6 +208,9 @@ function parse_refPlace(node; kwargs...)
     d
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_refTransition(node; kwargs...)
     nn = nodename(node)
     nn == "referenceTransition" || error("element name wrong: $nn")
@@ -226,7 +231,11 @@ end
 
 #----------------------------------------------------------
 
-"Return the stripped string of text child's nodecontent as :content key of PnmlDict."
+"""
+$(TYPEDSIGNATURES)
+
+"Return the stripped string of text child's nodecontent as :content key of PnmlDict.
+"""
 function parse_text(node; kwargs...)
     nn = nodename(node)
     nn == "text" || error("parse_text element name wrong")
@@ -259,7 +268,8 @@ end
 #
 #----------------------------------------------------------
 
-""" parse_structure(node)
+"""
+$(TYPEDSIGNATURES)
 
 A pnml structure node can hold any well formed XML.
 Structure semantics will vary based on parent element and petri net type definition of the net.
@@ -281,6 +291,9 @@ end
 # Place Transition nets (PT-Nets) use only the text tag of a label for
 # the meaning of marking and inscriptions.
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_initialMarking(node; kwargs...)
     nn = nodename(node)
     nn == "initialMarking" || error("parse_initialMarking element name wrong: $nn")
@@ -295,6 +308,9 @@ function parse_initialMarking(node; kwargs...)
     d  
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_inscription(node; kwargs...)
     nn = nodename(node)
     nn == "inscription" || error("parse_inscription element name wrong: $nn'")
@@ -311,6 +327,9 @@ end
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
 # define the semantics of marking and inscriptions.
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_hlinitialMarking(node; kwargs...)
     nn = nodename(node)
     nn == "hlinitialMarking" || error("parse_initialMarking element name wrong: $nn")
@@ -323,6 +342,9 @@ function parse_hlinitialMarking(node; kwargs...)
     d
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_hlinscription(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -336,7 +358,11 @@ function parse_hlinscription(node; kwargs...)
     d
 end
 
-"Annotation label of transition nodes. Meaning it can have text, graphics, et al."
+"""
+$(TYPEDSIGNATURES)
+
+Annotation label of transition nodes. Meaning it can have text, graphics, et al.
+"""
 function parse_condition(node; kwargs...)
     @debug node
     nn = nodename(node)
