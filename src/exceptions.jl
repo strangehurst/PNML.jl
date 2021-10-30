@@ -1,10 +1,14 @@
 """
 $(TYPEDEF)
+
+$(TYPEDFIELDS)
 """
 abstract type PnmlException <: Exception end
 
 """
 $(TYPEDEF)
+
+$(TYPEDFIELDS)
 
 Use exception to allow dispatch and additional data presentation to user.
 """
@@ -15,6 +19,8 @@ end
 
 """
 $(TYPEDEF)
+
+$(TYPEDFIELDS)
 """
 struct MalformedException <: PnmlException
     msg::String
@@ -34,7 +40,7 @@ function Base.showerror(io::IO, e::MalformedException)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Pretty print the first `n` lines of the XML node.
 If `io` is not supplied, prints to the default output stream `stdout`.

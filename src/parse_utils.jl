@@ -1,14 +1,12 @@
-
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Return PnmlDict after debug print of nodename.
 If element `node` has any children, each is placed in the dictonary with the
 tag name symbol as the key, repeated tags produce a vector as the value.
 Any XML attributes found are added as as key,value. to the tuple returned.
 
-Note that this will recursivly decend the well-formed XML, transforming
-the the children into vector NamedTuples & Dicts.
+Note that this will recursivly decend the well-formed XML.
 
 Note the assumption that children and content are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
@@ -41,7 +39,7 @@ function attribute_elem(node; kwargs...)::PnmlDict
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Return PnmlDict with values that are vectors when there are multiple instances
 of a tag in 'nv' and scalar otherwise.
@@ -63,8 +61,12 @@ function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
 end
 
 
-"Add `node` to`d[:labels]`. Return updated `d[:labels]`."
-function add_label!(d::PnmlDict, node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
+
+Add `node` to` d[:labels]`. Return updated `d[:labels]`.
+"""
+function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     @debug "add label! $(nodename(node))"
     # Pnml considers any "unknown" element to be a label so its key is ':labels'.
     # The value is initialized to `nothing since it is expected that most labels
@@ -78,8 +80,12 @@ function add_label!(d::PnmlDict, node; kwargs...)
     push!(d[:labels], parse_node(node; kwargs...))
 end
 
-"Add `node` to`d[:tools]`. Return updated `d[:tools]`."
-function add_tool!(d::PnmlDict, node; kwargs...)
+"""
+$(TYPEDSIGNATURES)
+
+Add `node` to`d[:tools]`. Return updated `d[:tools]`.
+"""
+function add_tool!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     if d[:tools] === nothing
         d[:tools] = PnmlDict[] #TODO: pick type allowd in PnmlDict values? 
     end
@@ -89,7 +95,7 @@ function add_tool!(d::PnmlDict, node; kwargs...)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Return Dict of tags common to both pnml nodes and pnml labels.
 See [`pnml_label_defaults`](@ref) and [`pnml_node_defaults`](@ref).
@@ -103,7 +109,7 @@ function pnml_common_defaults(node)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
@@ -119,7 +125,7 @@ function pnml_node_defaults(node, xs...)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Merge `xs` into dictonary with default pnml label tags.
 Used on pnml tags below a pnml_node tag.
@@ -137,7 +143,7 @@ end
 
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 UPDATE `D` WITH graphics, tools, label children of pnml node and label elements.
 Used by parse_pnml_node_commonlabel! & parse_pnml_label_common!.
@@ -159,7 +165,7 @@ function parse_pnml_common!(d::PnmlDict, node; kwargs...)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Update `d` with name children, defering other tags to [`parse_pnml_common!`](@ref).
 """
@@ -174,7 +180,7 @@ function parse_pnml_node_common!(d::PnmlDict, node; kwargs...)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
@@ -196,7 +202,7 @@ end
 
 #TODO: A '<label>' tag could be hidden inside a '<structure>' tag.
 """
-    parse_label(node; kwargs...)
+$(TYPEDSIGNATURES)
 
 Should not often have a 'label' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.

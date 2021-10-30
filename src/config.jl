@@ -4,7 +4,7 @@
 const INCLUDEXML = false
 
 """
-    PnmlCfg
+$(TYPEDEF)
 
 Contains configuration data.
 #TODO add something

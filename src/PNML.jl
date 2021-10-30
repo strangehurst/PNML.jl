@@ -12,7 +12,7 @@ using MLStyle: @match
 include("config.jl")
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Set value of key :xml based on global configuration/control variable.
 """

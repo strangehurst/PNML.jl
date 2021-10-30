@@ -1,6 +1,7 @@
 # Ideas from MathML.jl
 
 #TODO: use pnml terms?
+"$(TYPEDEF)"
 applymap = Dict{String,Function}(
     "times" => Base.prod, # arity 2, but prod fine
     # "prod" => Base.prod,
@@ -13,6 +14,7 @@ applymap = Dict{String,Function}(
 
 
 """
+$(TYPEDEF)
 Map XML tag names to parser functions.
 """
 tagmap = Dict{String,Function}(
@@ -68,7 +70,10 @@ tagmap = Dict{String,Function}(
 
 )
 
-"Map tag names to verification methods."
+"""
+$(TYPEDEF)
+Map tag names to verification methods.
+"""
 verifymap = Dict{String,Function}(
     "pnml" => validate_pnml,
     "net" => validate_net,

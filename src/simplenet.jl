@@ -1,5 +1,5 @@
 """
-    PNML.PetriNet
+$(TYPEDEF)
 
 Abstract type providing 2nd-level parsing of the intermediate representation
 of a single network in a PNML.Document.
@@ -73,6 +73,10 @@ Assumptions about labels:
 =#
 
 """
+$(TYPEDEF)
+
+$(TYPEDFIELDS)
+
 SimpleNet wraps the `place`, `transition` & `arc` collections of a single page of one net.
 
 Omits the page level of the pnml-defined hierarchy by collapsing down to one page.
@@ -90,7 +94,7 @@ struct SimpleNet{P,T,A,RT,RP,L,TI} <: PetriNet
     refP::RP
     label::L
     tools::TI
-    #declatations:D
+    #declatations:D #TODO
 end
 
 
@@ -112,6 +116,10 @@ function SimpleNet(net::PnmlDict)
               haskey(p1, :tools) ?  p1[:tools] : nothing) # merge page & net tools
 end
 
+"""
+$(TYPEDSIGNATURES)
+Return id field of `s`.
+"""
 id(s::T) where {T <: PetriNet} = s.id
 
 function Base.show(io::IO, s::SimpleNet{P,T,A}) where {P,T,A}
@@ -131,6 +139,9 @@ end
 
 
 """
+$(TYPEDEF)
+
+$(TYPEDFIELDS)
 """
 struct HLPetriNet{T} <: PetriNet
     id::Symbol
@@ -140,6 +151,9 @@ HLPetriNet(str::AbstractString) = HLPetriNet(Document(str))
 HLPetriNet(doc::Document)       = HLPetriNet(first_net(doc))
 
 # Single network is the heart of PetriNet.
+"""
+$(TYPEDSIGNATURES)
+"""
 function HLPetriNet(net::PnmlDict)
     HLPetriNet{typeof(net[:type])}(net[:id], collapse_pages!(net))
 end
@@ -176,48 +190,126 @@ function collapse_pages!(net::PnmlDict)
     net
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 places(s::SimpleNet) = s.place
+"""
+$(TYPEDSIGNATURES)
+"""
 transitions(s::SimpleNet) = s.transition
+"""
+$(TYPEDSIGNATURES)
+"""
 arcs(s::SimpleNet) = s.arc
+"""
+$(TYPEDSIGNATURES)
+"""
 refplaces(s::SimpleNet) = s.refP
+"""
+$(TYPEDSIGNATURES)
+"""
 reftransitions(s::SimpleNet) = s.refT
 
-"Is there any place with `id` in net `s`?"
+"""
+$(TYPEDSIGNATURES)
+Is there any place with `id` in net `s`?
+"""
 has_place(s::SimpleNet, id::Symbol)      = any(x -> x[:id] === id, places(s))
+"""
+$(TYPEDSIGNATURES)
+"""
 has_transition(s::SimpleNet, id::Symbol) = any(x -> x[:id] === id, transitions(s))
+"""
+$(TYPEDSIGNATURES)
+"""
 has_arc(s::SimpleNet, id::Symbol)        = any(x -> x[:id] === id, arcs(s))
+"""
+$(TYPEDSIGNATURES)
+"""
 has_refP(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, refplaces(s))
+"""
+$(TYPEDSIGNATURES)
+"""
 has_refT(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, reftransitions(s))
 
-"Return the place with `id` in net `s`."
+"""
+$(TYPEDSIGNATURES)
+Return the place with `id` in net `s`.
+"""
 place(s::SimpleNet, id::Symbol)      =      s.place[findfirst(x -> x[:id] === id, places(s))]
+"""
+$(TYPEDSIGNATURES)
+"""
 transition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, transitions(s))]
+"""
+$(TYPEDSIGNATURES)
+"""
 arc(s::SimpleNet, id::Symbol)               = s.arc[findfirst(x -> x[:id] === id, arcs(s))]
+"""
+$(TYPEDSIGNATURES)
+"""
 refplace(s::SimpleNet, id::Symbol)      =    s.refP[findfirst(x -> x[:id] === id, refplaces(s))]
+"""
+$(TYPEDSIGNATURES)
+"""
 reftransition(s::SimpleNet, id::Symbol) =    s.refT[findfirst(x -> x[:id] === id, reftransitions(s))]
 
 
 # All pnml nodes in IR have an `id`.
+"""
+$(TYPEDSIGNATURES)
+"""
 id(node::PnmlDict)::Symbol = node[:id]
 
-"Return vector of place ids in `s`."
+"""
+$(TYPEDSIGNATURES)
+Return vector of place ids in `s`.
+"""
 place_ids(s::SimpleNet) = map(id, places(s)) 
+"""
+$(TYPEDSIGNATURES)
+"""
 transition_ids(s::SimpleNet) = map(id, transitions(s)) 
+"""
+$(TYPEDSIGNATURES)
+"""
 arc_ids(s::SimpleNet) = map(id, arcs(s)) 
+"""
+$(TYPEDSIGNATURES)
+"""
 refplace_ids(s::SimpleNet) = map(id, refplaces(s)) 
+"""
+$(TYPEDSIGNATURES)
+"""
 reftransition_ids(s::SimpleNet) = map(id, reftransitions(s)) 
 
 #TODO: wrap arc?
+"""
+$(TYPEDSIGNATURES)
+"""
 source(arc)::Symbol = arc[:source]
+"""
+$(TYPEDSIGNATURES)
+"""
 target(arc)::Symbol = arc[:target]
 
-"Return vector of arcs that have a source or target of transition `id`."
+"""
+$(TYPEDSIGNATURES)
+Return vector of arcs that have a source or target of transition `id`.
+"""
 all_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id || target(a)===id, arcs(s))
 
-"Return vector of arcs that have a source of transition `id`."
+"""
+$(TYPEDSIGNATURES)
+Return vector of arcs that have a source of transition `id`.
+"""
 src_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
 
-"Return vector of arcs that have a  target of transition `id`."
+"""
+$(TYPEDSIGNATURES)
+Return vector of arcs that have a  target of transition `id`.
+"""
 tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
 
 """
@@ -234,10 +326,6 @@ been applied so that everything is on one page.
   3) All ids are valid.
 """
 function deref! end
-
-deref_place(s::SimpleNet, id::Symbol) =  refplace(s, id)[:ref]
-deref_transition(s::SimpleNet, id::Symbol) =  reftransition(s, id)[:ref]
-
 function deref!(s::SimpleNet)
     for a in arcs(s)
         while a[:source] ∈ refplace_ids(s)
@@ -259,13 +347,26 @@ function deref!(s::SimpleNet)
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
 
+Return id of referenced place.
+"""
+deref_place(s::SimpleNet, id::Symbol) =  refplace(s, id)[:ref]
+
+"""
+$(TYPEDSIGNATURES)
+
+Return id of referenced transition.
+"""
+deref_transition(s::SimpleNet, id::Symbol) =  reftransition(s, id)[:ref]
 
 
 #TODO  marking, inscription, condition, can be more complicated
 
 """
-    marking(p)
+$(TYPEDSIGNATURES)
+
 Return marking value of a place `p`.
 
 # Examples
@@ -284,6 +385,7 @@ julia> PNML.marking(p)
 12.34
 ```
 """
+function marking end
 function marking(p)::Number
     if !isnothing(p[:marking]) && !isnothing(p[:marking][:value])
         p[:marking][:value]
@@ -291,11 +393,14 @@ function marking(p)::Number
         0
     end
 end
-
-"Return marking value of place with id `p`."
 marking(s::SimpleNet, p::Symbol) = marking(place(s,p))
 
-"Return incription value of `arc`."
+"""
+$(TYPEDSIGNATURES)
+
+Return incription value of `arc`.
+"""
+function inscription end
 function inscription(arc)::Number
     if !isnothing(arc[:inscription]) && !isnothing(arc[:inscription][:value])
         arc[:inscription][:value]
@@ -303,13 +408,13 @@ function inscription(arc)::Number
         1
     end        
 end
-
-"Return inscription value of an arc with id `a`."
 inscription(s::SimpleNet, a::Symbol) = inscription(arc(s,a))
 
-#TODO: Return something more useful in Julia than a string!
 #TODO: Specialize for stochastic pntd.
-"Return condition value of `transition`."
+"""
+Return condition value of `transition`.
+"""
+function condition end
 function condition(transition)::Number
     if (!isnothing(transition[:condition]) &&
         !isnothing(transition[:condition][:text]) &&
@@ -321,20 +426,24 @@ function condition(transition)::Number
         0
     end
 end
-"Return condition value of a transition with id `t`."
 condition(s::SimpleNet, t::Symbol) = condition(transition(s,t))
 
 """
+$(TYPEDSIGNATURES)
+
 Transition function of a Petri Net.
 Each transition has an input vector and an output vector.
 Each labelled vector is indexed by the place on the other end of the arc.
 Values are inscriptions.
 """
+function transition_function end
 transition_function(s::SimpleNet) = transition_function(s, transition_ids(s))
 transition_function(s::SimpleNet, v::Vector{Symbol}) =
     LVector( (; [t=>in_out(s,t) for t in v]...))
 
 """
+$(TYPEDSIGNATURES)
+
 Return tuple of input, output labelled vectors with key of place ids and
 value of arc inscription's value. 
 """
@@ -346,11 +455,20 @@ function in_out(s::SimpleNet, t::Symbol)
     (LVector(ins), LVector(out))
 end    
 
+"""
+$(TYPEDSIGNATURES)
+"""
+
+function inoitialMarking end
 initialMarking(s::SimpleNet) = initialMarking(s, place_ids(s))
 initialMarking(s::SimpleNet, v::Vector{Symbol}) =
     LVector( (; [p=>marking(s,p) for p in v]...))
 
-"Return a vector of condition values for net `s`."
+"""
+$(TYPEDSIGNATURES)
+Return a vector of condition values for net `s`.
+"""
+function conditions end
 conditions(s::SimpleNet) = conditions(s, transition_ids(s))
 conditions(s::SimpleNet, v::Vector{Symbol}) =
     LVector( (; [t=>condition(s,t) for t in v]...))

@@ -2,7 +2,7 @@ const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 const XMLNode = EzXML.Node
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Utility macro for parsing xml strings into node.
 """
@@ -17,7 +17,7 @@ function number_value(s::AbstractString)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Return up to 1 immediate` child of element `el` that is a `tag`.
 """
@@ -26,7 +26,7 @@ function firstchild(tag, el, ns=PNML.pnml_ns)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Return vector of 'el` element's immediate children with `tag`.
 """
@@ -75,6 +75,8 @@ AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
 """
 $(TYPEDEF)
 
+$(TYPEDFIELDS)
+
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 """
 mutable struct IDRegistry
@@ -87,21 +89,21 @@ const GlobalIDRegistry = IDRegistry()
 
 const DUPLICATE_ID_ACTION=nothing
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Use a global configuration to choose what to do when a duplicated pnml node id
 has been detected. Default is to do nothing.
-There are many pnml files on the internet that have many duplicates.
 """
 function duplicate_id_action(id::Symbol)
-    DUPLICATE_ID_ACTION === nothing && return
+    #DUPLICATE_ID_ACTION === nothing && return
     DUPLICATE_ID_ACTION === :warn && @warn "ID '$(id)' already registered"
     DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(reg.ids)")
+    return nothing
 end
 
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
@@ -115,7 +117,7 @@ function register_id!(reg::IDRegistry, id::Symbol)
  end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 """
 isregistered(reg::IDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
 function isregistered(reg::IDRegistry, id::Symbol)
@@ -125,7 +127,7 @@ function isregistered(reg::IDRegistry, id::Symbol)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
@@ -137,7 +139,7 @@ function reset_registry!(reg::IDRegistry)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 """
 function Base.isempty(reg::IDRegistry)
     lock(reg.lk) do
@@ -151,6 +153,8 @@ end
 #Count and lock to implement global state."
 """
 $(TYPEDEF)
+
+$(TYPEDFIELDS)
 """
 mutable struct MissingIDCounter
     i::Int
@@ -160,7 +164,7 @@ MissingIDCounter() = MissingIDCounter(0, ReentrantLock())
 
 #Increment counter and return new value."
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 """
 function next_missing_id(c::MissingIDCounter)
     lock(c.lk) do

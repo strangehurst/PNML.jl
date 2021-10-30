@@ -1,4 +1,8 @@
-"Alias for Dict with expected value types for PNML intermediate representation."
+"""
+$(TYPEDEF)
+
+Alias for Dict with expected value types for PNML intermediate representation.
+"""
 const PnmlDict = Dict{Symbol, Any}
 #const PnmlDict = Dict{Symbol, Union{Nothing,Dict,Vector,Symbol,AbstractString,Number}}
 #const PnmlDict = Dict{Symbol, Union{Nothing,AbstractDict,Vector{AbstractDict},Symbol,AbstractString,Number}}
