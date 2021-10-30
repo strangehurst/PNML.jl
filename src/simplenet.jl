@@ -21,9 +21,10 @@ We start a description of the net IR here.
 
 XML <net> tags are pnml nodes.
 These nodes are parsed into PnmlDict with keys
+
 | key          | value description                             |
 |:-------------|:----------------------------------------------|
-[ tag          | XML tag name is standard in the IR            |
+| tag          | XML tag name is standard in the IR            |
 | id           | unique ID                                     |
 | name         | text name, optional                           |
 | tools        | set of tool specific - possibly empty         |
@@ -36,9 +37,10 @@ See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
 and  [`parse_net`](@ref) for more detail.
 
 XML <page> tags are also parsed into PnmlDict
+
 | key          | value description                             |
 |:-------------|:----------------------------------------------|
-[ tag          | XML tag name is standard in the IR            |
+| tag          | XML tag name is standard in the IR            |
 | id           | unique ID                                     |
 | name         | text name, optional                           |
 | tools        | set of tool specific - possibly empty         |
