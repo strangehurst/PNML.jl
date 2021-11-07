@@ -38,7 +38,7 @@ Features that have not been started:
 
 Features that are not complete:
   - pnml high-level marking, inscription, condition
-    * pntd schemas: 
+    * pntd schemas 
 	  - specialize where? 
 	  - do not highjack tags, only use standard semantics
 	* parsing of sort, terms, declarations

@@ -27,38 +27,78 @@ from the URI string to a Julia type.
 abstract type PnmlType end
 
 """
+$(TYPEDEF)
+
 Most minimal Petri Net type that is the foundation of all pntd.
 """
 abstract type AbstractPnmlCore  <: PnmlType end
 """
+$(TYPEDEF)
+
 Base of High Level Petri Net pntds.
 """
 abstract type AbstractHLCore    <: AbstractPnmlCore end
 
 
-"PnmlCore is the most minimal concrete Petri Net."
+"""
+$(TYPEDEF)
+
+PnmlCore is the most minimal concrete Petri Net.
+"""
 struct PnmlCore      <: AbstractPnmlCore end
-"Place-Transition Petri Nets add small extensions to core."
+"""
+$(TYPEDEF)
+
+Place-Transition Petri Nets add small extensions to core.
+"""
 struct PTNet         <: AbstractPnmlCore end
 
-"High-Level Petri Nets add large extensions to core. HLCore can be used for generic high-leve nets."
+"""
+$(TYPEDEF)
+
+High-Level Petri Nets add large extensions to core. HLCore can be used for generic high-leve nets.
+"""
 struct HLCore        <: AbstractHLCore end
 
-"Place-Transition High-Level Petri Net Graph"
+"""
+$(TYPEDEF)
+
+Place-Transition High-Level Petri Net Graph
+"""
 struct PT_HLPNG      <: AbstractHLCore end
-"Symmetric Petri Net"
+"""
+$(TYPEDEF)
+
+Symmetric Petri Net
+"""
 struct SymmetricNet  <: AbstractHLCore end
-"Stochastic Petri Net"
+"""
+$(TYPEDEF)
+
+Stochastic Petri Net
+"""
 struct StochasticNet <: AbstractHLCore end
-"Timed Petri Net"
-struct TimedNet      <: AbstractHLCore end
-"Open Petri Net"
-struct OpenNet       <: AbstractHLCore end
-"HLNet is the most intricate High-Level Petri Net schema "
-struct HLNet         <: AbstractHLCore end
+"""
+$(TYPEDEF)
+
+Timed Petri Net
+"""
+struct TimedNet <: AbstractHLCore end
+"""
+$(TYPEDEF)
+
+Open Petri Net
+"""
+struct OpenNet <: AbstractHLCore end
+"""
+$(TYPEDEF)
+
+HLNet is the most intricate High-Level Petri Net schema
+"""
+struct HLNet <: AbstractHLCore end
 
 """
-    default_pntd_map
+$(TYPEDEF)
 
 Map from Petri Net Type Definition (pntd) URI to Symbol.
 The URI used can be any string regardless of any violation of the PNML Specification.
@@ -89,7 +129,7 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
 # TODO: wrap dict in a struct. use __init__?
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Map `s` to a pntd symbol.
 Any unknown `s` is mapped to pnmlcore.
@@ -97,7 +137,7 @@ Any unknown `s` is mapped to pnmlcore.
 pntd(s::AbstractString) = haskey(default_pntd_map,s) ? default_pntd_map[s] : :pnmlcore
 
 """
-    pnmltype_map
+$(TYPEDEF)
 
 The keys are the supported kinds of Petri Nets.
 
@@ -116,11 +156,15 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :timednet   => TimedNet(),
     )
 
-"Add or replace mapping from symbol `s` to nettype dispatch singleton `t`."
+"""
+$(TYPEDSIGNATURES)
+
+Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
+"""
 add_nettype!(d::AbstractDict, s::Symbol, t::T) where {T<:PnmlType} = d[s] = t
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Map either a text string or a symbol to a dispatch type singlton.
 
@@ -144,7 +188,7 @@ function to_net_type(s::Symbol; pnmltype_map=pnmltype_map)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 We map `uri` to a symbol using a dictionary like [`default_pntd_map`](@ref).
 Return symbol that is a valid pnmltype_map key. Defaults to `:pnmlcore`.
@@ -160,7 +204,11 @@ function to_net_type_sym(uri::AbstractString; pntd_map=default_pntd_map)
     return :pnmlcore
 end
 
-"Log a warning if `s` is not a known Petri Net Markup Language schema/pntd. "
+"""
+$(TYPEDSIGNATURES)
+
+Log a warning if `s` is not a known Petri Net Markup Language schema/pntd.
+"""
 function validate(s::Symbol; pnmltype_map=pnmltype_map)
     s ∉ keys(pnmltype_map) && @debug "'$(s)' is not a known pntd type symbol."
     return s
