@@ -45,11 +45,11 @@ XML <page> tags are also parsed into PnmlDict
 | name         | text name, optional                           |
 | tools        | set of tool specific - possibly empty         |
 | labels       | set of generic "pnml labels" - possible empty |
-| places       |                                               |
-| trans        |                                               |
-| arcs         |                                               |
-| refP         | reference to place on different page          |
-| refT         | reference to transition on different page     |
+| places       | set of places                                 |
+| trans        | set of transitions                            |
+| arcs         | set of arcs                                   |
+| refP         | references to place on different page         |
+| refT         | references to transition on different page    |
 | declarations | only net & page tags have declarations        |
 
 See [`parse_page`](@ref), [`parse_net`](@ref)

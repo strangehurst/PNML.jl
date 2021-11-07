@@ -145,8 +145,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-UPDATE `D` WITH graphics, tools, label children of pnml node and label elements.
-Used by parse_pnml_node_commonlabel! & parse_pnml_label_common!.
+Update `d` WITH graphics, tools, label children of pnml node and label elements.
+Used by [`parse_pnml_node_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
 Adds, graphics, tools, labels.
 Note that "lables" are the everything else option and this should be called after parsing
 any elements that has an expected tags.
@@ -167,7 +167,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Update `d` with name children, defering other tags to [`parse_pnml_common!`](@ref).
+Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_node_common!(d::PnmlDict, node; kwargs...)
     @assert haskey(d, :name)    
