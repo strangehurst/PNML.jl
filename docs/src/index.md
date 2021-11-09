@@ -6,6 +6,10 @@ CurrentModule = PNML
 
 Documentation for [PNML](https://github.com/strangehurst/PNML.jl).
 
+```@eval
+now()
+```
+
 ```@contents
 ```
 ## Index
