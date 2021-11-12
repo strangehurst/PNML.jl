@@ -42,7 +42,7 @@ end
 $(TYPEDSIGNATURES)
 
 Return PnmlDict with values that are vectors when there are multiple instances
-of a tag in 'nv' and scalar otherwise.
+of a tag in `nv` and scalar otherwise.
 """
 function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
     d = PnmlDict()
@@ -68,7 +68,7 @@ Add `node` to` d[:labels]`. Return updated `d[:labels]`.
 """
 function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     @debug "add label! $(nodename(node))"
-    # Pnml considers any "unknown" element to be a label so its key is ':labels'.
+    # Pnml considers any "unknown" element to be a label so its key is `:labels`.
     # The value is initialized to `nothing since it is expected that most labels
     # will have defined tags and semantics. And be given a key `:tag`.
     # Will convert value to a vector on first use.
@@ -98,7 +98,7 @@ end
 $(TYPEDSIGNATURES)
 
 Return Dict of tags common to both pnml nodes and pnml labels.
-See [`pnml_label_defaults`](@ref) and [`pnml_node_defaults`](@ref).
+See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).
 """
 function pnml_common_defaults(node)
     d = PnmlDict(:graphics=>nothing, # graphics tag is single despite the 's'.
@@ -114,7 +114,7 @@ $(TYPEDSIGNATURES)
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
 Usually default value will be `nothing` or empty vector.
-See [`pnml_label_defaults`](@ref) and [`pnml_common_defaults`](@ref).
+See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 
 """
 function pnml_node_defaults(node, xs...)
@@ -131,7 +131,7 @@ Merge `xs` into dictonary with default pnml label tags.
 Used on pnml tags below a pnml_node tag.
 Label level tags include: name, inscription, initialMarking.
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
-See [`pnml_common_defaults`](@ref).
+See also: [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(node, xs...)::PnmlDict
     #@show nodename(node)

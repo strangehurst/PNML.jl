@@ -23,7 +23,7 @@ XML <net> tags are pnml nodes.
 These nodes are parsed into PnmlDict with keys
 
 | key          | value description                             |
-|:-------------|:----------------------------------------------|
+| :----------- | :-------------------------------------------- |
 | tag          | XML tag name is standard in the IR            |
 | id           | unique ID                                     |
 | name         | text name, optional                           |
@@ -36,10 +36,10 @@ These nodes are parsed into PnmlDict with keys
 See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
 and  [`parse_net`](@ref) for more detail.
 
-XML <page> tags are also parsed into PnmlDict
+XML <page> tags are also parsed into PnmlDict with keys
 
 | key          | value description                             |
-|:-------------|:----------------------------------------------|
+| :----------- | :-------------------------------------------- |
 | tag          | XML tag name is standard in the IR            |
 | id           | unique ID                                     |
 | name         | text name, optional                           |
@@ -52,9 +52,19 @@ XML <page> tags are also parsed into PnmlDict
 | refT         | references to transition on different page    |
 | declarations | only net & page tags have declarations        |
 
-See [`parse_page`](@ref), [`parse_net`](@ref)
+See also: [`parse_page`](@ref), [`parse_net`](@ref)
 """
 abstract type PetriNet end
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Return pnml id of `s`.
+"""
+function id end
+id(s::T) where {T <: PetriNet} = error("must implement id accessor for T")
+
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -118,11 +128,7 @@ function SimpleNet(net::PnmlDict)
               haskey(p1, :tools) ?  p1[:tools] : nothing) # merge page & net tools
 end
 
-"""
-$(TYPEDSIGNATURES)
-Return id field of `s`.
-"""
-id(s::T) where {T <: PetriNet} = s.id
+id(s::SimpleNet) = s.id
 
 function Base.show(io::IO, s::SimpleNet{P,T,A}) where {P,T,A}
     println(io, "PNML.SimpleNet{$P,$T,$A}(")
@@ -146,7 +152,6 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct HLPetriNet{T} <: PetriNet
-    id::Symbol
     net::PnmlDict
 end
 HLPetriNet(str::AbstractString) = HLPetriNet(Document(str))
@@ -155,10 +160,21 @@ HLPetriNet(doc::Document)       = HLPetriNet(first_net(doc))
 # Single network is the heart of PetriNet.
 """
 $(TYPEDSIGNATURES)
+
+Collapses all the pages into the first page.
 """
 function HLPetriNet(net::PnmlDict)
-    HLPetriNet{typeof(net[:type])}(net[:id], collapse_pages!(net))
+    HLPetriNet{typeof(net[:type])}(collapse_pages!(net))
 end
+
+id(s::HLPetriNet) = id(s.net)
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the type representing the pntd.
+"""
+type(s::HLPetriNet{T}) where {T <: PnmlType} = T
 
 """
 $(TYPEDSIGNATURES)
@@ -196,10 +212,12 @@ end
 $(TYPEDSIGNATURES)
 """
 places(s::SimpleNet) = s.place
+
 """
 $(TYPEDSIGNATURES)
 """
 transitions(s::SimpleNet) = s.transition
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -208,6 +226,7 @@ arcs(s::SimpleNet) = s.arc
 $(TYPEDSIGNATURES)
 """
 refplaces(s::SimpleNet) = s.refP
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -215,21 +234,26 @@ reftransitions(s::SimpleNet) = s.refT
 
 """
 $(TYPEDSIGNATURES)
+
 Is there any place with `id` in net `s`?
 """
 has_place(s::SimpleNet, id::Symbol)      = any(x -> x[:id] === id, places(s))
+
 """
 $(TYPEDSIGNATURES)
 """
 has_transition(s::SimpleNet, id::Symbol) = any(x -> x[:id] === id, transitions(s))
+
 """
 $(TYPEDSIGNATURES)
 """
 has_arc(s::SimpleNet, id::Symbol)        = any(x -> x[:id] === id, arcs(s))
+
 """
 $(TYPEDSIGNATURES)
 """
 has_refP(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, refplaces(s))
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -237,21 +261,26 @@ has_refT(s::SimpleNet, id::Symbol)       = any(x -> x[:id] === id, reftransition
 
 """
 $(TYPEDSIGNATURES)
+
 Return the place with `id` in net `s`.
 """
 place(s::SimpleNet, id::Symbol)      =      s.place[findfirst(x -> x[:id] === id, places(s))]
+
 """
 $(TYPEDSIGNATURES)
 """
 transition(s::SimpleNet, id::Symbol) = s.transition[findfirst(x -> x[:id] === id, transitions(s))]
+
 """
 $(TYPEDSIGNATURES)
 """
 arc(s::SimpleNet, id::Symbol)               = s.arc[findfirst(x -> x[:id] === id, arcs(s))]
+
 """
 $(TYPEDSIGNATURES)
 """
 refplace(s::SimpleNet, id::Symbol)      =    s.refP[findfirst(x -> x[:id] === id, refplaces(s))]
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -259,28 +288,30 @@ reftransition(s::SimpleNet, id::Symbol) =    s.refT[findfirst(x -> x[:id] === id
 
 
 # All pnml nodes in IR have an `id`.
-"""
-$(TYPEDSIGNATURES)
-"""
 id(node::PnmlDict)::Symbol = node[:id]
 
 """
 $(TYPEDSIGNATURES)
+
 Return vector of place ids in `s`.
 """
 place_ids(s::SimpleNet) = map(id, places(s)) 
+
 """
 $(TYPEDSIGNATURES)
 """
 transition_ids(s::SimpleNet) = map(id, transitions(s)) 
+
 """
 $(TYPEDSIGNATURES)
 """
 arc_ids(s::SimpleNet) = map(id, arcs(s)) 
+
 """
 $(TYPEDSIGNATURES)
 """
 refplace_ids(s::SimpleNet) = map(id, refplaces(s)) 
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -291,6 +322,7 @@ reftransition_ids(s::SimpleNet) = map(id, reftransitions(s))
 $(TYPEDSIGNATURES)
 """
 source(arc)::Symbol = arc[:source]
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -298,18 +330,21 @@ target(arc)::Symbol = arc[:target]
 
 """
 $(TYPEDSIGNATURES)
+
 Return vector of arcs that have a source or target of transition `id`.
 """
 all_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id || target(a)===id, arcs(s))
 
 """
 $(TYPEDSIGNATURES)
+
 Return vector of arcs that have a source of transition `id`.
 """
 src_arcs(s::SimpleNet, id::Symbol) = filter(a->source(a)===id, arcs(s))
 
 """
 $(TYPEDSIGNATURES)
+
 Return vector of arcs that have a  target of transition `id`.
 """
 tgt_arcs(s::SimpleNet, id::Symbol) = filter(a->target(a)===id, arcs(s))
@@ -331,19 +366,19 @@ function deref! end
 function deref!(s::SimpleNet)
     for a in arcs(s)
         while a[:source] ∈ refplace_ids(s)
-            @show a[:source], deref_place(s, a[:source])
+            @debug a[:source], deref_place(s, a[:source])
             a[:source] = deref_place(s, a[:source])
         end
         while a[:target] ∈ refplace_ids(s)
-            @show a[:target], deref_place(s, a[:target])
+            @debug a[:target], deref_place(s, a[:target])
             a[:target] = deref_place(s, a[:target])
         end
         while a[:source] ∈ reftransition_ids(s)
-            @show a[:source], deref_transition(s, a[:source])
+            @debug a[:source], deref_transition(s, a[:source])
             a[:source] = deref_transition(s, a[:source])
         end
         while a[:target] ∈ reftransition_ids(s)
-            @show a[:target], deref_transition(s, a[:target])
+            @debug a[:target], deref_transition(s, a[:target])
             a[:target] = deref_transition(s, a[:target])
         end        
     end
@@ -374,7 +409,7 @@ Return marking value of a place `p`.
 # Examples
 
 ```jldoctest
-julia> using PNML
+julia> using PNML #HIDE
 
 julia> p = Dict(:marking => Dict(:value=>nothing));
 
@@ -468,6 +503,7 @@ initialMarking(s::SimpleNet, v::Vector{Symbol}) =
 
 """
 $(TYPEDSIGNATURES)
+
 Return a vector of condition values for net `s`.
 """
 function conditions end

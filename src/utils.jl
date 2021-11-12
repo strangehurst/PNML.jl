@@ -28,7 +28,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of 'el` element's immediate children with `tag`.
+Return vector of `el` element's immediate children with `tag`.
 """
 function allchildren(tag, el, ns=PNML.pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])

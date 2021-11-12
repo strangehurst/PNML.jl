@@ -29,38 +29,46 @@
         """ 
     doc = PNML.Document(str)
 
-    println("------------------------------------------------------------")
-    println("EXPANDED")
-    println("------------------------------------------------------------")
+    PRINT_PNML && println(
+        """------------------------------------------------------------
+        EXPANDED
+        ------------------------------------------------------------""")
     net = PNML.first_net(doc)
     printnode(net; compress=false)
 
-    println("------------------------------------------------------------")
-    println("COLLAPSED")
-    println("------------------------------------------------------------")
+    PRINT_PNML && println(
+        """------------------------------------------------------------
+        COLLAPSED
+        ------------------------------------------------------------""")
     PNML.collapse_pages!(net)
     printnode(net; compress=false)
 
-    println("------------------------------------------------------------")
-    println("COMPRESSED")
-    println("------------------------------------------------------------")
+    PRINT_PNML && println(
+        """------------------------------------------------------------
+        COMPRESSED
+        ------------------------------------------------------------""")
     @test net isa PNML.PnmlDict
     cnet = PNML.compress(net)
     @test cnet isa PNML.PnmlDict
     printnode(cnet)
     @test cnet != net
 
-    println("------------------------------------------------------------")
-    println("DEREFERENCED")
-    println("------------------------------------------------------------")
+    PRINT_PNML && println(
+        """------------------------------------------------------------
+        DEREFERENCED
+        ------------------------------------------------------------""")
     
     snet = PNML.SimpleNet(cnet)
-    println("from")
-    @show snet
+
+    PRINT_PNML && println("from")
+    PRINT_PNML && @show snet
+
     PNML.deref!(snet)
-    println("to")
-    @show snet
-    println("------------------------------------------------------------")
+    @test snet != cnet
+
+    PRINT_PNML && println("to")
+    PRINT_PNML && @show snet
+    PRINT_PNML && println("------------------------------------------------------------")
 end
 
 @testset "net type" begin
@@ -99,9 +107,9 @@ end
     net  = PNML.SimpleNet(v[begin])
     net1 = PNML.SimpleNet(doc)
     net2 = PNML.SimpleNet(PNML.first_net(doc))
-    println()
-    @show net
-    println()
+    PRINT_PNML && println()
+    PRINT_PNML && @show net
+    PRINT_PNML && println()
     #TODO why do the 3 top-level nets compare not equal?
     for accessor in [PNML.id, PNML.places, PNML.transitions, PNML.arcs,
                      PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
@@ -110,30 +118,30 @@ end
         @test accessor(net2) == accessor(net1)
     end
     
-    println()
-    println("------------------------------------------")
-    println("compress")
+    PRINT_PNML && println("""------------------------------------------
+    compress
+    """)
     pl = PNML.places(net)
     printnode(pl[1], compress=false)
     cpn = PNML.compress(pl[1])
-    println("to")
+    PRINT_PNML && println("to")
     printnode(cpn, compress=false) #
-    println()
+    PRINT_PNML && println()
     printnode(cpn, compress=true) # 
-    println("from")
+    PRINT_PNML && println("from")
     printnode(pl[1], compress=false)
-    println("------------------------------------------")
-    println()
-    println("------------------------------------------")
-    println("compress")
+    PRINT_PNML && println("------------------------------------------")
+    PRINT_PNML && println()
+    PRINT_PNML && println("------------------------------------------")
+    PRINT_PNML && println("compress")
     pl = PNML.places(net)
     printnode(pl, compress=false)
     cpl = PNML.compress(pl)
-    println("to")
+    PRINT_PNML && println("to")
     printnode(cpl, compress=false)
     @test pl != cpl
-    println("------------------------------------------")
-    println()
+    PRINT_PNML && println("------------------------------------------")
+    PRINT_PNML && println()
 
     for p in PNML.places(net)
         #printnode(p; label="place")
@@ -159,9 +167,7 @@ end
         @test_throws ArgumentError PNML.arc(net, :bogus)
         PRINT_PNML && println("arc $(PNML.id(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
-    
-    PNML.reset_registry!(reg)
-end
+    end
 
 @testset "lotka-volterra" begin
     str = """<?xml version="1.0"?>
@@ -192,9 +198,9 @@ end
     
     S = PNML.place_ids(snet) # [:rabbits, :wolves]
     T = PNML.transition_ids(snet)
-    @show S, T
+    PRINT_PNML && @show S, T
     for t in T
-        @show PNML.in_out(snet, t)
+        PRINT_PNML && @show PNML.in_out(snet, t)
     end
 
     # keys are transition ids
@@ -205,19 +211,18 @@ end
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
         death=(LVector(wolves=1), LVector()),
     )
-    @show Δ
-    @show tfun
+    PRINT_PNML && @show Δ
+    PRINT_PNML && @show tfun
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initialMarking(snet) #, S)
-    @show u0
+    PRINT_PNML && @show u0
     @test u0 == uX
     βx = LVector(birth=.3, predation=.015, death=.7); # transition condition
     β = PNML.conditions(snet) #LVector( (; [t=>PNML.condition(snet,t) for t in T]...))
-    @show β
+    PRINT_PNML && @show β
     @test β == βx
-    PNML.reset_registry!(reg)
 end

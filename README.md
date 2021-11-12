@@ -1,18 +1,12 @@
 # PNML
-!!! PNML.jl is still a work-in-progress.
+!!! warning 
+	PNML.jl is still a work-in-progress.
 
 [Petri Net Markup Language](https://www.pnml.org), is an XML-based format.
-PNML.jl reads a pnml model and emits an intermediate representation (IR). 
+PNML.jl reads a pnml model and emits an intermediate representation (IR).
 
-Petri Net Type Definitions (pntd) are defined using RelaxNG XML Schema files.
-It is possibly to create a non-standard pntd. Since validation is not a goal of PNML.jl,
-non-standard pntds can be used.
-
-Note that ISO is working on part 3 of the PNML standard covering pntd 
-(as of October 2021). It is for interchange of pnml models between different tools.
-
-The intermediate representation (IR) represents the XML tree via named tuples,
-dictionaries, LabelledArrays (there is an interface duck here). 
+The intermediate representation (IR) represents the XML tree via dictionaries, with
+leaf values including named tuples, LabelledArrays, strings, numbers, objects, vectors.
 The tags of the XML are used as keys as much as possible.
  
 What is accepted as values is often a superset of what the pntd specifies.
@@ -35,7 +29,8 @@ Features that have not been started:
   - Write pnml file
   - Update pnml model
   - Create pnml model
-
+  - Graphs.jl
+  
 Features that are not complete:
   - pnml high-level marking, inscription, condition
     * pntd schemas 
@@ -44,15 +39,6 @@ Features that are not complete:
 	* parsing of sort, terms, declarations
 	* Symbolics support (is this where PnmlType is useful?)
   - toolspecific usage example
-  - 
-	* 
-
-# Acknowledgments
-
-## MathML.jl
-
-Its function map architecture was adopted and per(permute|perverse|use)d in PNML.j.
-
 
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://strangehurst.github.io/PNML.jl/stable)

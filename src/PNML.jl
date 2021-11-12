@@ -20,8 +20,6 @@ includexml(node)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("utils.jl")
 include("types.jl")
-include("document.jl")
-include("simplenet.jl")
 include("pntd.jl")
 include("parse.jl")
 include("parse_utils.jl")
@@ -31,6 +29,9 @@ include("toolspecific.jl")
 include("exceptions.jl")
 include("validate.jl")
 include("maps.jl")
+
+include("document.jl")
+include("simplenet.jl")
 
 #TODO update exports
 export @xml_str

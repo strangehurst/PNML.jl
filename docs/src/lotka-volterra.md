@@ -1,2 +1,5 @@
 # Lotka-Volterra
-## Stuff
+## Petri.jl Starting Point
+https://github.com/mehalter/Petri.jl
+
+

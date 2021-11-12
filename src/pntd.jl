@@ -6,14 +6,18 @@ $(TYPEDEF)
 Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
 
 Each Petri Net Markup Language (PNML) network element will have a single pntd URI
-as a required type XML attribute. That URI could/should refer to a RelaxNG schema defining
-the syntax and semantics of the XML model.
+as a required 'type' XML attribute. That URI should refer to a RelaxNG schema defining
+the syntax and semantics of the XML model. Selected abbreviations are also allowed.
 
-See (`pnmltype_map)[@ref] for the map from type string to a  dispatch singleton.
+
+See [`default_pntd_map`](@ref), [`pnmltype_map`](@ref) for the map from `type` string to a  dispatch singleton.
+
+#TODO relocate this fragment
 
 Within PNML.jl no schema-level validation is done. Nor is any use made of
 the schema within the code. Schemas, UML, ISO Specification and papers used
 to inform the design. See https://www.pnml.org/ for details.
+
 
 In is allowed by the PNML specification to omit validation with the presumption that
 some specialized, external tool can be applied, thus allowing the file format to be
@@ -101,10 +105,23 @@ struct HLNet <: AbstractHLCore end
 $(TYPEDEF)
 
 Map from Petri Net Type Definition (pntd) URI to Symbol.
-The URI used can be any string regardless of any violation of the PNML Specification.
+
 There is a companion map [`pnmltype_map`](@ref) that takes the symbol to a type object.
+
+The URI is a string and may be the full URL of a pntd schema,
+just the schema file name, or a placeholder for a future schema.
+
+# Examples
+
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
+
+```@eval
+
+keys(default_pntd_map)
+values(default_pntd_map)
+
+```
 """
 const default_pntd_map = Dict{AbstractString,Symbol}(
     "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
