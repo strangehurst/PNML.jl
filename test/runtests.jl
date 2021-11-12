@@ -43,7 +43,7 @@ select(v...) = any(==(GROUP), v)
 if !select("None")
 @testset "PNML.jl" begin
     if select("All", "Doc")
-        @testset "doctest" begin doctest(PNML, manual = false) end 
+        @testset "doctest" begin doctest(PNML, manual = true) end 
     end     
     @testset "maps"     begin include("maps.jl") end
     @testset "utils"    begin include("utils.jl") end
