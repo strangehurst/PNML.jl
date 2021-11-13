@@ -1,5 +1,5 @@
-#--------------------------------
 # Kinds of Petri Nets
+
 """
 $(TYPEDEF)
 
@@ -25,7 +25,7 @@ used for inter-tool communication with lower overhead.
 
 Some pnml files exist that do not use a valid type URI.
 However it is done, an appropriate subtype of `PnmlType` must be chosen.
-Refer to [`to_net_type`](@ref) and [`pnmltype_map`](@ref) for how to get
+Refer to [`pnmltype`](@ref) and [`pnmltype_map`](@ref) for how to get
 from the URI string to a Julia type.
 """
 abstract type PnmlType end
@@ -70,30 +70,35 @@ $(TYPEDEF)
 Place-Transition High-Level Petri Net Graph
 """
 struct PT_HLPNG      <: AbstractHLCore end
+
 """
 $(TYPEDEF)
 
 Symmetric Petri Net
 """
 struct SymmetricNet  <: AbstractHLCore end
+
 """
 $(TYPEDEF)
 
 Stochastic Petri Net
 """
 struct StochasticNet <: AbstractHLCore end
+
 """
 $(TYPEDEF)
 
 Timed Petri Net
 """
 struct TimedNet <: AbstractHLCore end
+
 """
 $(TYPEDEF)
 
 Open Petri Net
 """
 struct OpenNet <: AbstractHLCore end
+
 """
 $(TYPEDEF)
 
@@ -143,16 +148,6 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
     "open"         => :pnmlcore
     )
 
-# TODO: wrap dict in a struct. use __init__?
-
-"""
-$(TYPEDSIGNATURES)
-
-Map `s` to a pntd symbol.
-Any unknown `s` is mapped to pnmlcore.
-"""
-pntd(s::AbstractString) = haskey(default_pntd_map,s) ? default_pntd_map[s] : :pnmlcore
-
 """
 $(TYPEDEF)
 
@@ -178,7 +173,25 @@ $(TYPEDSIGNATURES)
 
 Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 """
-add_nettype!(d::AbstractDict, s::Symbol, t::T) where {T<:PnmlType} = d[s] = t
+add_nettype!(d::AbstractDict, s::Symbol, t::T) where {T<:PnmlType} = d[s] = t #TODO test this
+
+
+# TODO: wrap dict in a struct. use __init__?
+
+"""
+$(TYPEDSIGNATURES)
+
+Map `s` to a pntd symbol. Any unknown `s` is mapped to `:pnmlcore`.
+
+# Examples
+
+```jldoctest
+julia> using PNML #hide
+```
+"""
+pntd(s::AbstractString) = haskey(default_pntd_map,s) ? default_pntd_map[s] : :pnmlcore
+
+
 
 """
 $(TYPEDSIGNATURES)
@@ -186,16 +199,17 @@ $(TYPEDSIGNATURES)
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The pnmltype_map and pntd_map are both assumed to be correct here.
+The [`pnmltype_map`](@ref) and [`default_pntd_map`](@ref) are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore` as part of the logic.
 Unknown `symbol` returns `nothing`.
 """
-function to_net_type end
-to_net_type(t::T) where {T<:PnmlType} = t
-to_net_type(uri::AbstractString; kw...) = to_net_type(to_net_type_sym(uri); kw...)
+function pnmltype end
+pnmltype(t::T) where {T<:PnmlType} = t
+pnmltype(uri::AbstractString; kw...) = pnmltype(pntd(uri); kw...)
+pnmltype(d::PnmlDict; kw...) = pnmltype(d[:type]; kw...)
 
-function to_net_type(s::Symbol; pnmltype_map=pnmltype_map)
+function pnmltype(s::Symbol; pnmltype_map=pnmltype_map)
     if haskey(pnmltype_map, s)
         return pnmltype_map[s]
     else

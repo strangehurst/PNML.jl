@@ -3,7 +3,6 @@
     pn = parse_file(joinpath(pnml_dir, "AirplaneLD-col-0010.pnml"))
     # N
     #printnode(pn) # Too much to display for every test!
-    #@test pn[:tag] == :pnml #parse_file now returns a PNML.Document
     @test pn isa PNML.Document
     nets = PNML.nets(pn)
     @test nets isa Vector

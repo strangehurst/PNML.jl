@@ -15,6 +15,7 @@ applymap = Dict{String,Function}(
 
 """
 $(TYPEDEF)
+
 Map XML tag names to parser functions.
 """
 tagmap = Dict{String,Function}(
@@ -67,7 +68,6 @@ tagmap = Dict{String,Function}(
     "usersort" => parse_usersort,
     "variable" => parse_variable,
     "variabledecl" => parse_variabledecl,
-
 )
 
 """

@@ -15,12 +15,10 @@ Copy PnmlDict with keys removed when paired with value of `nothing`.
 function compress end
 
 function compress(v::Vector{T}) where T <: AbstractDict
-    #@show "compress vector $(length(v)) $T"
     map(compress, v)
 end
 
 function compress(d::T) where T <: AbstractDict
-    #@show "compress $T"
     f = filter(x -> x.second !== nothing, d)
     for (k,v) in f
         if v  isa Union{T, Vector{T}}
@@ -31,7 +29,7 @@ function compress(d::T) where T <: AbstractDict
 end
 
 function compress(a::T) where T
-    @show "trying to compress unsupported $T"
+    @warn "trying to compress unsupported $T"
     a
 end
 
@@ -42,12 +40,11 @@ In-place PnmlDict keys removed when they are paired with value of `nothing`.
 
 """
 function compress!(v::Vector{T}) where T <: AbstractDict
-    #@show "compress! vector $(length(v)) $T"
     foreach(compress!, v)
     v
 end
+
 function compress!(d::T) where T <: AbstractDict
-    #@show "compress! $T"
     filter!(x->!isnothing(x.second), d)
     for (k,v) in d
         if v isa Union{T, Vector{T}}
@@ -56,6 +53,7 @@ function compress!(d::T) where T <: AbstractDict
     end
     d
 end
+
 function compress!(a::T) where T
     @show "trying to compress! unsupported $T"
     a
@@ -64,10 +62,7 @@ end
 """
 $(TYPEDEF)
 
-Maybe of type `T` or nothing.
+Union of type `T` or nothing.
 """
 const Maybe{T} = Union{T, Nothing}
-
-
-#-------------------------------------------------------------------
 

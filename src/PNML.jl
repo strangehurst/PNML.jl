@@ -32,7 +32,9 @@ include("validate.jl")
 include("maps.jl")
 
 include("Net/document.jl")
+include("Net/petrinet.jl")
 include("Net/simplenet.jl")
+include("Net/hlnet.jl")
 
 #TODO update exports
 export @xml_str

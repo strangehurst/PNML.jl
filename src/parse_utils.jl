@@ -17,7 +17,6 @@ the hiearchy.
 julia> using PNML, EzXML
 
 julia> node = parse_node(xml\"\"\"<aaa id=\"FOO\">BAR</aaa>\"\"\"; reg=PNML.IDRegistry());
-
 ```
 """
 function attribute_elem(node; kwargs...)::PnmlDict
@@ -73,7 +72,7 @@ function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     # will have defined tags and semantics. And be given a key `:tag`.
     # Will convert value to a vector on first use.
     if d[:labels] === nothing
-        d[:labels] = PnmlDict[] #TODO: pick type allowd in PnmlDict values? 
+        d[:labels] = PnmlDict[]
     end
     # Use of parse_node allows the :labels vector to contain fully parsed nodes.
     # Some higher-level might be able to make use of these.
@@ -199,12 +198,10 @@ function parse_pnml_label_common!(d::PnmlDict, node; kwargs...)
     end
 end
 
-
-#TODO: A '<label>' tag could be hidden inside a '<structure>' tag.
 """
 $(TYPEDSIGNATURES)
 
-Should not often have a 'label' tag, this will bark if one is found.
+Should not often have a '<label>' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
 """
 function parse_label(node; kwargs...)

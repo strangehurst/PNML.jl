@@ -19,21 +19,24 @@ end
 $(TYPEDSIGNATURES)
 """
 function validate_net(node) end
+
 """
 $(TYPEDSIGNATURES)
 """
 function validate_page(node) end
+
 """
 $(TYPEDSIGNATURES)
 """
 function validate_place(node) end
+
 """
 $(TYPEDSIGNATURES)
 """
 function validate_transition(node) end
+
 """
 $(TYPEDSIGNATURES)
 """
 function validate_arc(node) end
-#function validate_(node) end
 

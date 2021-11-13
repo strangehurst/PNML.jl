@@ -1,10 +1,7 @@
-
-#-------------------------------------------------------------------
-
 """
 $(TYPEDSIGNATURES)
 
-Take a `node` and parse it by calling the method matching `node.name` from
+Take an XML `node` and parse it by calling the method matching `node.name` from
 [`tagmap`](@ref) if that mapping exists, otherwise call [`attribute_elem`](@ref).
 `verbose` is a boolean controlling debug logging.
 """
@@ -23,7 +20,6 @@ function parse_node(node; verbose=true, kwargs...)::Maybe{PnmlDict}
         attribute_elem(node; kwargs...)
     end
 end 
-
 
 """
 $(TYPEDSIGNATURES)
@@ -75,7 +71,7 @@ function parse_net(node; kwargs...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; kwargs...))
-            # NB: There is also a tag declarations that is different for this symbol.
+            # NB: There is also a tag declarations that is different from this symbol.
             "declaration"  => push!(d[:declarations], parse_node(child; kwargs...))
             _ => parse_pnml_node_common!(d, child; kwargs...)
         end
@@ -86,7 +82,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-PNML requires at least on page.
+PNML requires at least one page.
 """
 function parse_page(node; kwargs...)
     nn = nodename(node)

@@ -74,3 +74,22 @@ has_y(element)           = EzXML.haskey(element, "y")
 AbstractTrees.children(n::EzXML.Node) = EzXML.elements(n)
 AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, :name))
 AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
+
+#-------------------------------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+
+Pretty print the first `n` lines of the XML node.
+If `io` is not supplied, prints to the default output stream `stdout`.
+`pp` can be any pretty print method that takes (io::IO, node).
+"""
+function node_summary end
+node_summary(node; n=5, pp=EzXML.prettyprint) = node_summary(stdout, node; n, pp)
+function node_summary(io::IO, node; n=5, pp=EzXML.prettyprint)
+    iobuf = IOBuffer()
+    pp(iobuf, node)
+    s = split(String(take!(iobuf)), "\n")
+    head = @view s[begin:min(end,n)]
+    println.(Ref(io), head)
+    println(io, "...")
+end
