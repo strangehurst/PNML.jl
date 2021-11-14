@@ -13,11 +13,3 @@ end
     end
     #TODO: Add non-trivial tests.
 end
-
-@testset "verifymap" begin
-    @testset "tag $t" for t in keys(PNML.verifymap)
-        @test haskey(PNML.verifymap,t)
-        @test !isempty(methods(PNML.verifymap[t], (EzXML.Node,)))
-    end
-end
-

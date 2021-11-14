@@ -80,7 +80,7 @@ InteractiveUtils.@code_warntype PNML.compress!(pdict)
 InteractiveUtils.@code_warntype PNML.compress!([pdict])
 InteractiveUtils.@code_warntype PNML.to_net_type(PNML.PnmlCore())
 InteractiveUtils.@code_warntype PNML.to_net_type_sym("open")
-InteractiveUtils.@code_warntype PNML.validate(:pnmlcore)
+InteractiveUtils.@code_warntype PNML.is_net_type(:pnmlcore)
 InteractiveUtils.@code_warntype PNML.pntd("open")
 InteractiveUtils.@code_warntype PNML.collapse_pages!(pdict)
 
@@ -109,8 +109,6 @@ InteractiveUtils.@code_warntype PNML.src_arcs
 InteractiveUtils.@code_warntype PNML.tagmap
 InteractiveUtils.@code_warntype PNML.tgt_arcs
 InteractiveUtils.@code_warntype PNML.transition_function
-InteractiveUtils.@code_warntype PNML.validate_node
-InteractiveUtils.@code_warntype PNML.validate_pnml
 =#
 #=
 PNML.Document

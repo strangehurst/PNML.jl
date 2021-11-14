@@ -176,8 +176,6 @@ Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 add_nettype!(d::AbstractDict, s::Symbol, t::T) where {T<:PnmlType} = d[s] = t #TODO test this
 
 
-# TODO: wrap dict in a struct. use __init__?
-
 """
 $(TYPEDSIGNATURES)
 
@@ -238,9 +236,6 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Log a warning if `s` is not a known Petri Net Markup Language schema/pntd.
+Is `s` a key of pnmltype_map?
 """
-function validate(s::Symbol; pnmltype_map=pnmltype_map)
-    s ∉ keys(pnmltype_map) && @debug "'$(s)' is not a known pntd type symbol."
-    return s
-end
+is_net_type(s::Symbol; pnmltype_map=pnmltype_map) =  haskey(pnmltype_map, s)

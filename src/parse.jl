@@ -32,7 +32,6 @@ function parse_pnml(node; kwargs...)
     nn == "pnml" || error("element name wrong: $nn" )
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
-    validate_node(node) #TODO
     @assert haskey(kwargs, :reg)
     nets = parse_node.(allchildren("net", node); kwargs...)
     # Give tuple an id element to match the rest of the IR.

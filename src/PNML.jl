@@ -28,7 +28,6 @@ include("graphics.jl")
 include("declarations.jl")
 include("toolspecific.jl")
 include("exceptions.jl")
-include("validate.jl")
 include("maps.jl")
 
 include("Net/document.jl")

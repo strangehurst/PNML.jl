@@ -70,18 +70,6 @@ tagmap = Dict{String,Function}(
     "variabledecl" => parse_variabledecl,
 )
 
-"""
-$(TYPEDEF)
-Map tag names to verification methods.
-"""
-verifymap = Dict{String,Function}(
-    "pnml" => validate_pnml,
-    "net" => validate_net,
-    "page" => validate_page,
-    "place" => validate_place,
-    "transition" => validate_transition,
-    "arc" => validate_arc,
-)
 #TODO: add bits from allowed children
 
 #=
