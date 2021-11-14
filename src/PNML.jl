@@ -14,13 +14,14 @@ include("config.jl")
 """
 $(TYPEDSIGNATURES)
 
-Set value of key :xml based on global configuration/control variable.
+Set value of key :xml based on a control flag.
 """
-includexml(node)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
+includexml(node; INCLUDEXML=false)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("utils.jl")
 include("id.jl")
 include("types.jl")
+
 include("pntd.jl")
 include("parse.jl")
 include("parse_utils.jl")

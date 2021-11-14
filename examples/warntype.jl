@@ -113,8 +113,8 @@ InteractiveUtils.@code_warntype PNML.transition_function
 #=
 PNML.Document
 PNML.IDRegistry
-PNML.INCLUDEXML
 PNML.PnmlCfg
 PNML.SimpleNet
 
 =#
+
