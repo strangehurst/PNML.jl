@@ -237,7 +237,7 @@ end
 $(TYPEDSIGNATURES)
 
 Remove reference nodes from arcs.
-Design intent expects [`collapse_pages!`](@ref) to have
+Design intent expects [`flatten_pages!`](@ref) to have
 been applied so that everything is on one page.
 
 # Examples

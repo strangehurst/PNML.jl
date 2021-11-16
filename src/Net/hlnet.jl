@@ -15,7 +15,7 @@ $(TYPEDSIGNATURES)
 Collapses all the pages into the first page.
 """
 function HLPetriNet(net::PnmlDict)
-    HLPetriNet{typeof(pnmltype(net))}(collapse_pages!(net))
+    HLPetriNet{typeof(pnmltype(net))}(flatten_pages!(net))
 end
 
 id(s::HLPetriNet) = id(s.net)

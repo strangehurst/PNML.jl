@@ -38,7 +38,7 @@ SimpleNet(str::AbstractString) = SimpleNet(PNML.Document(str))
 SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
 function SimpleNet(net::PnmlDict)
     netcopy = deepcopy(net)
-    collapse_pages!(netcopy)
+    flatten_pages!(netcopy)
     SimpleNet{typeof(pnmltype(netcopy))}(netcopy[:id], netcopy[:pages][1])
 end
 

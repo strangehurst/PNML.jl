@@ -1,3 +1,4 @@
+# script to run as: julia examples/warntype.jl 
 using PNML, EzXML, ModuleDocstrings, InteractiveUtils
 
 node = EzXML.ElementNode("n1/")
@@ -78,11 +79,10 @@ InteractiveUtils.@code_warntype PNML.compress(pdict)
 InteractiveUtils.@code_warntype PNML.compress([pdict])
 InteractiveUtils.@code_warntype PNML.compress!(pdict)
 InteractiveUtils.@code_warntype PNML.compress!([pdict])
-InteractiveUtils.@code_warntype PNML.to_net_type(PNML.PnmlCore())
 InteractiveUtils.@code_warntype PNML.to_net_type_sym("open")
 InteractiveUtils.@code_warntype PNML.is_net_type(:pnmlcore)
 InteractiveUtils.@code_warntype PNML.pntd("open")
-InteractiveUtils.@code_warntype PNML.collapse_pages!(pdict)
+InteractiveUtils.@code_warntype PNML.flatten_pages!(pdict)
 
 #=
 InteractiveUtils.@code_warntype PNML.condition

@@ -76,16 +76,16 @@ Merge page content into the 1st page of each pnml net.
 Note that refrence nodes are still present. They can be removed later
 with [`deref!`](@ref).
 """
-function collapse_pages! end
+function flatten_pages! end
 
-function collapse_pages!(doc::PNML.Document)
-    foreach(collapse_pages!, nets(doc))
+function flatten_pages!(doc::PNML.Document)
+    foreach(flatten_pages!, nets(doc))
 end
 
-function collapse_pages!(net::PnmlDict)
+function flatten_pages!(net::PnmlDict)
     @assert net[:tag] === :net
 
-    # Some of the keys are optional. They may be removed by a compress before collapse.
+    # Some of the keys are optional. They may be removed by a compress before flatten.
     for key in [:places, :trans, :arcs, :tools, :labels, :refT, :refP, :declarations]
         tmp = PnmlDict[]
         foreach(net[:pages]) do page
