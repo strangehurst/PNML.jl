@@ -31,7 +31,7 @@ typexxx(s::HLPetriNet{T}) where {T <: PnmlType} = T
 """
 $(TYPEDSIGNATURES)
 """
-places(s::HLPetriNet) = s.net[:places]
+places(s::HLPetriNet) = s.net[:places] 
 
 """
 $(TYPEDSIGNATURES)

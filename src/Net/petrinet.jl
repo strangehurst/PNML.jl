@@ -393,6 +393,7 @@ $(TYPEDSIGNATURES)
 """
 transition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, transitions(s)) 
 
+#----------------------------------------
 
 """
 $(TYPEDSIGNATURES)
@@ -426,7 +427,7 @@ function condition(s::N, t::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     condition(transition(s,t))
 end
 
-
+#-----------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 

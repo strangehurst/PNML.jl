@@ -13,11 +13,13 @@
         """ 
 
     reg = PNML.IDRegistry()
-    #PNML.reset_registry!(reg)
     #@test !PNML.isregistered(reg, :pnml)
 
     doc = PNML.Document(str, reg)
     #printnode(doc.nets);println()
+    @show doc
+    @show reg
+    
     v1 = PNML.find_nets(doc, :ptnet)
     printnode(v1, label="v1")
     foreach(v1) do net

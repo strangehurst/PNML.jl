@@ -120,13 +120,6 @@ just the schema file name, or a placeholder for a future schema.
 
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
-
-```@eval
-
-keys(default_pntd_map)
-values(default_pntd_map)
-
-```
 """
 const default_pntd_map = Dict{AbstractString,Symbol}(
     "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
@@ -156,6 +149,8 @@ The keys are the supported kinds of Petri Nets.
 Provides a place to abstract relationship of pntd name and implementation type.
 Allows multiple strings to map to the same parser implementation.
 Is a point at which different parser implmentations may be introduced.
+
+# Examples
 """
 const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),

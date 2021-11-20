@@ -41,14 +41,16 @@ tagmap = Dict{String,Function}(
     "referenceTransition"  => parse_refTransition,
     "sort" => parse_sort,
     "structure" => parse_structure,
-    "term" => parse_term,
+    "term" => parse_term, #TODO is this valid?
     "text" => parse_text,
     "tokengraphics"  => parse_tokengraphics,
     "tokenposition" => parse_tokenposition,
     "toolspecific"  => parse_toolspecific,
     "transition"  => parse_transition,
     "type" => parse_type,
-
+    
+    # Parts of declaratuons, types, sorts, inscription, condition, marking
+    # These are expected to be under a structure element.
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
@@ -73,7 +75,10 @@ tagmap = Dict{String,Function}(
 #TODO: add bits from allowed children
 
 #=
-jeff@leg5:~/Projects/Resources/PetriNet/PNML$ find . -type f \( -name '*.pnml' \) -exec grep -hPo '<(\w+)' \{\} + | sed -e 's/^<//' | sort -u
+~/Projects/Resources/PetriNet/PNML$ find . -type f \( -name '*.pnml' \) -exec grep -hPo '<(\w+)' \{\} + | sed -e 's/^<//' | sort -u
+~/Projects/Resources/PetriNet/PNML/grammar$ grep -P 'element name="(.*)"' * | sed -e 's/^[^"]*"//' -e 's/".*$//'  | sort -u
+
+
 # Then remove values already in the tagmap:
 add
 addition

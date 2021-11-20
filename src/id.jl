@@ -12,7 +12,11 @@ mutable struct IDRegistry
 end
 
 IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
-#const GlobalIDRegistry = IDRegistry()
+
+function Base.show(io::IO, reg::IDRegistry)
+    print(io, "PNML.IDRegistry ", length(reg.ids), " ids")
+end
+
 
 
 const DUPLICATE_ID_ACTION=nothing
@@ -28,7 +32,6 @@ function duplicate_id_action(id::Symbol)
     DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(reg.ids)")
     return nothing
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -74,7 +77,6 @@ function Base.isempty(reg::IDRegistry)
         isempty(reg.ids)
     end
 end
-
 
 #-------------------------------------------------------------------
 #TODO: Make global state varaible.

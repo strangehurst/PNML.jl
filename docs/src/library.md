@@ -14,27 +14,20 @@ Order = [:module]
 
 ## Types
 
-```@eval
+
+Overview of some type hiearchies
+```@setup type
 using AbstractTrees, PNML, InteractiveUtils, Markdown, GraphRecipes,Plots
+
 AbstractTrees.children(x::Type) = subtypes(x)
 
-Markdown.parse("""
+pt=AbstractTrees.repr_tree(PNML.PnmlType)
+pn=AbstractTrees.repr_tree(PNML.PetriNet)
+pe=AbstractTrees.repr_tree(PNML.PnmlException)
+```
 
-	**TODO MAKE THIS PRETTY**
-
-PNML type attribute string maps to:
-	
-	$(AbstractTrees.repr_tree(PNML.PnmlType))
-
-Petri Nets:
-
-	$(AbstractTrees.repr_tree(PNML.PetriNet))
-
-This tree will be expanded.
-
-Yeah, there is a primitive exception hierarchy:
-	$(AbstractTrees.repr_tree(PNML.PnmlException))
-""")
+```@example type
+println(pt, "\n", pn, "\n", pe) # hide
 ```
 
 ```@autodocs

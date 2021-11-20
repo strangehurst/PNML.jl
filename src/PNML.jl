@@ -9,7 +9,6 @@ using Symbolics, Statistics, IfElse, AbstractTrees
 using LabelledArrays
 using MLStyle: @match
 
-include("config.jl")
 
 """
 $(TYPEDSIGNATURES)
@@ -18,17 +17,20 @@ Set value of key :xml based on a control flag.
 """
 includexml(node; INCLUDEXML=false)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
+include("config.jl")
+
 include("utils.jl")
 include("id.jl")
 include("types.jl")
+include("exceptions.jl")
 
 include("pntd.jl")
+
 include("parse.jl")
 include("parse_utils.jl")
 include("graphics.jl")
 include("declarations.jl")
 include("toolspecific.jl")
-include("exceptions.jl")
 include("maps.jl")
 
 include("Net/document.jl")
