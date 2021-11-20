@@ -79,6 +79,32 @@ function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     push!(d[:labels], parse_node(node; kwargs...))
 end
 
+
+"""
+$(TYPEDSIGNATURES)
+"""
+
+"""
+$(TYPEDSIGNATURES)
+"""
+tag(d::PnmlDict) = d[:tag]
+
+"""
+$(TYPEDSIGNATURES)
+
+Does any label attached to `d` have a matching `tag`.
+"""
+function has_label(d::PnmlDict, tag::Symbol)
+    any(lab->lab[:tag] === tag, d[:labels])
+end
+
+function get_label(d::PnmlDict, tag::Symbol)
+    labels=d[:labels]
+    labels[findfirst(lab->lab[:tag] === tag, labels)]
+end
+
+
+
 """
 $(TYPEDSIGNATURES)
 

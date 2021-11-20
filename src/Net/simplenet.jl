@@ -84,3 +84,43 @@ $(TYPEDSIGNATURES)
 """
 reftransitions(s::SimpleNet) = s.p1[:refT]
 
+
+#---------------------------------------------
+# For Stochastic Nets, a transition is not labeled with a boolean condition,
+# but with a  floating point rate
+#---------------------------------------------
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a labelled vector of rate values for net `s`. Key is transition id.
+"""
+function rates end
+rates(s::N) where {T<:PnmlType, N<:PetriNet{T}} = rates(s, transition_ids(s))
+
+function rates(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [t=>rate(s,t) for t in v]...))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return rate value of `transition`.
+"""
+function rate end
+function rate(transition)::Number
+    r = get_label(transition,:rate)
+    
+    if (!isnothing(r) && !isnothing(r[:text]) && !isnothing(r[:text][:content]))
+        rate = number_value(r[:text][:content])
+        isnothing(rate) ? 0.0 : rate
+    else
+        0.0
+    end
+end
+
+function rate(s::N, t::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    rate(transition(s,t))
+end
+

@@ -176,9 +176,9 @@ end
         <page id="page0">
             <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
             <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
-            <transition id ="birth">     <condition> <text>0.3</text> </condition> </transition>
-            <transition id ="predation"> <condition> <text>0.015</text> </condition> </transition>
-            <transition id ="death">     <condition> <text>0.7</text> </condition> </transition>
+            <transition id ="birth">     <rate> <text>0.3</text> </rate> </transition>
+            <transition id ="predation"> <rate> <text>0.015</text> </rate> </transition>
+            <transition id ="death">     <rate> <text>0.7</text> </rate> </transition>
             <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1</text> </inscription> </arc>
             <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2</text> </inscription> </arc>
             <arc id="a3" source="wolves"    target="predation"> <inscription><text>1</text> </inscription> </arc>
@@ -221,8 +221,8 @@ end
     u0 = PNML.initialMarking(snet) #, S)
     PRINT_PNML && @show u0
     @test u0 == uX
-    βx = LVector(birth=.3, predation=.015, death=.7); # transition condition
-    β = PNML.conditions(snet) #LVector( (; [t=>PNML.condition(snet,t) for t in T]...))
+    βx = LVector(birth=.3, predation=.015, death=.7); # transition rate
+    β = PNML.rates(snet) #LVector( (; [t=>PNML.rate(snet,t) for t in T]...))
     PRINT_PNML && @show β
     @test β == βx
 end

@@ -7,28 +7,30 @@ using Plots
 using OrdinaryDiffEq
 
 
+"""
+PNML model for the original example below. Note that the type is "nonstandard"!
+"""
  str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="stochastic">
+        <net id="net0" type="nonstandard">
         <page id="page0">
             <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
-            <place id="wolves"> <initialMarking> <text>10.0</text> </initialMarking> </place>
-            <transition id ="birth"> <condition> <text>0.3</text> </condition> </transition>
-            <transition id ="death"> <condition> <text>0.7</text> </condition> </transition>
-            <transition id ="predation"> <condition> <text>0.015</text> </condition> </transition>
-            <arc id="a1" source="rabbits" target="birth"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a2" source="birth" target="rabbits"> <inscription><text>2</text> </inscription> </arc>
-            <arc id="a3" source="wolves" target="predation"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a4" source="rabbits" target="predation"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a5" source="predation" target="wolves"> <inscription><text>2</text> </inscription> </arc>
-            <arc id="a6" source="wolves" target="death"> <inscription><text>1</text> </inscription> </arc>
+            <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
+            <transition id ="birth">     <rate> <text>0.3</text> </rate> </transition>
+            <transition id ="death">     <rate> <text>0.7</text> </rate> </transition>
+            <transition id ="predation"> <rate> <text>0.015</text> </rate> </transition>
+            <arc id="a1" source="rabbits"   target="birth">     <inscription><text>1</text> </inscription> </arc>
+            <arc id="a2" source="birth"     target="rabbits">   <inscription><text>2</text> </inscription> </arc>
+            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a5" source="predation" target="wolves">    <inscription><text>2</text> </inscription> </arc>
+            <arc id="a6" source="wolves"    target="death">     <inscription><text>1</text> </inscription> </arc>
         </page>
         </net>
     </pnml>
 """ 
  
 net = PNML.SimpleNet(str)
-
 
 # **Step 1:** Define the states and transitions of the Petri Net
 # 
@@ -38,7 +40,7 @@ net = PNML.SimpleNet(str)
 S = PNML.place_ids(net) # [:rabbits, :wolves]
 Δ = PNML.transition_function(net)
 # keys are transition ids
-# values are input, output vectors of "tuples" place id -> inscription
+# values are tuple of input, output vectors of "tuples" place id = inscription
 #LVector(
 #       birth=(LVector(rabbits=1), LVector(rabbits=2)),
 #       predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
@@ -56,7 +58,7 @@ display(Graph(lotka))
 
 u0 = PNML.initialMarking(net) #LVector(wolves=10.0, rabbits=100.0) # initialMarking
 tspan = (0.0,100.0)
-β = PNML.conditions(net) #LVector(birth=.3, predation=.015, death=.7); # transition condition
+β = PNML.rates(net) #LVector(birth=.3, predation=.015, death=.7); # transition rate
 
 # **Step 3:** Generate a solver and solve
 #
