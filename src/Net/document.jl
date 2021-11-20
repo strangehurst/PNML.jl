@@ -11,8 +11,8 @@ struct Document{N,X}
     reg::IDRegistry
 end
 
-Document(p::PnmlDict, reg=IDRegistry()) = Document(p[:nets], p[:xml], reg)
 Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s)); reg), reg)
+Document(p::PnmlDict, reg=IDRegistry()) = Document(p[:nets], p[:xml], reg)
 
 """
 $(TYPEDSIGNATURES)
@@ -99,4 +99,12 @@ function flatten_pages!(net::PnmlDict)
         end
     end
     net
+end
+
+function Base.show(io::IO, doc::Document{N,X}) where {N,X}
+    println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
+    foreach(doc.nets) do net
+        #println(io, "  net type ", net[:type], " id ", id(net))
+        pprintln(io, PNML.compress(net))
+    end
 end
