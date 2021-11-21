@@ -49,7 +49,7 @@ function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
     tagnames = unique(map(first,nn))
     foreach(tagnames) do tname 
         e = filter(x->x.first===tname, nn)
-        #TODO make toolspecific match annotation labels.
+        #TODO make toolspecific match annotation labels.declarations
         d[Symbol(tname)] = if length(e) > 1
             parse_node.(map(x->x.second, e); kwargs...)
         else
@@ -232,7 +232,7 @@ Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
 """
 function parse_label(node; kwargs...)
     nn = nodename(node)
-    nn == "label" || error("parse_label element name wrong: $nn")
+    nn == "label" || error("element name wrong: $nn")
     @warn "parse_label '$(node !== nothing && nn)'"
     PnmlDict(:tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
 end

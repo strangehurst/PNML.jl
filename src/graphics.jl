@@ -64,7 +64,7 @@ $(TYPEDSIGNATURES)
 function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "line") || error("line element name wrong: $nn: $nn")
+    (nn == "line") || error("element name wrong: $nn: $nn")
     color = has_color(node) ? node["color"] : nothing
     shape = has_shape(node) ? node["shape"] : nothing
     style = has_style(node) ? node["style"] : nothing
@@ -99,7 +99,7 @@ $(TYPEDSIGNATURES)
 function parse_graphics_fill(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "fill") || error("fill element name wrong: $nn")
+    (nn == "fill") || error("element name wrong: $nn")
     
     clr  = has_color(node) ? node["color"] : nothing
     img  = has_image(node) ? node["image"] : nothing
@@ -116,7 +116,7 @@ $(TYPEDSIGNATURES)
 function parse_graphics_font(node; kwargs...)
     @debug node
     nn = nodename(node)
-    (nn == "font") || error("font element name wrong: $nn")
+    (nn == "font") || error("element name wrong: $nn")
     
     align  = has_align(node)      ? node["align"] : nothing
     deco   = has_decoration(node) ? node["decoration"] : nothing

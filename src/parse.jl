@@ -233,7 +233,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_text(node; kwargs...)
     nn = nodename(node)
-    nn == "text" || error("parse_text element name wrong")
+    nn == "text" || error("element name wrong")
     PnmlDict(:tag=>Symbol(nn), :content=>string(strip(nodecontent(node))),)
 end
 
@@ -241,7 +241,7 @@ end
 function parse_name(node; kwargs...)
     node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
     nn = nodename(node)
-    nn == "name" || error("parse_name element name wrong")
+    nn == "name" || error("element name wrong")
     # These can cause parse_node to be passed nothing.
     text     = parse_node(firstchild("text", node); kwargs..., verbose=false)
     graphics = parse_node(firstchild("graphics", node); kwargs..., kwargs..., verbose=false)
@@ -272,7 +272,7 @@ Structure semantics will vary based on parent element and petri net type definit
 """
 function parse_structure(node; kwargs...)
     nn = nodename(node)
-    nn == "structure" || error("parse_structure element name wrong: $nn")
+    nn == "structure" || error("element name wrong: $nn")
     attribute_elem(node; kwargs...)
 end
 
@@ -291,7 +291,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_initialMarking(node; kwargs...)
     nn = nodename(node)
-    nn == "initialMarking" || error("parse_initialMarking element name wrong: $nn")
+    nn == "initialMarking" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -308,7 +308,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_inscription(node; kwargs...)
     nn = nodename(node)
-    nn == "inscription" || error("parse_inscription element name wrong: $nn'")
+    nn == "inscription" || error("element name wrong: $nn'")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -327,7 +327,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_hlinitialMarking(node; kwargs...)
     nn = nodename(node)
-    nn == "hlinitialMarking" || error("parse_initialMarking element name wrong: $nn")
+    nn == "hlinitialMarking" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -343,7 +343,7 @@ $(TYPEDSIGNATURES)
 function parse_hlinscription(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "hlinscription" || error("parse_hlinscription element name wrong: $nn'")
+    nn == "hlinscription" || error("element name wrong: $nn'")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -361,7 +361,7 @@ Annotation label of transition nodes. Meaning it can have text, graphics, et al.
 function parse_condition(node; kwargs...)
     @debug node
     nn = nodename(node)
-    nn == "condition" || error("parse_condition element name wrong: $nn")
+    nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     parse_pnml_label_common!.(Ref(d), elements(node); kwargs...)
     d
