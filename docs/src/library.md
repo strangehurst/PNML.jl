@@ -17,7 +17,8 @@ Order = [:module]
 
 Overview of some type hiearchies
 ```@setup type
-using AbstractTrees, PNML, InteractiveUtils, Markdown, GraphRecipes,Plots
+using AbstractTrees, PNML, InteractiveUtils, Markdown
+#, GraphRecipes,Plots
 
 AbstractTrees.children(x::Type) = subtypes(x)
 

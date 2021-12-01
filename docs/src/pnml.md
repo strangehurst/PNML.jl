@@ -39,16 +39,29 @@ Since validation is not a goal of PNML.jl, non-standard pntds can be used for th
 URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard` 
 are mapped to PnmlCore. 
 
+PnmlCore is the minimum level of meaning that any pnml file can hold. 
+PNML.jl should be able to create a valid intermediate representation using PnmlCore,
+since all the higher-level meaning is expressed as pnml labels, restrictions,
+and required XML tag names.
+
+Further parsing of labels are delegated to some subtype of [`PNML.PetriNet`](@ref).
+
 If you want interchangability of pnml models, you will have to stick to 
 the standard pnml pntds. The High Level Petri Net, even when restricted to 
 symmetricnet.pntd, is very expressive. Even the base pnmlcore.pntd is useful.
 
-PnmlCore is the minimum level of meaning that any pnml file can hold. 
-PNML.jl should be able to create a valid intermediate representation using PnmlCore,
-since all the higher-level meaning is expressed as pnml label XML objects, restrictions,
-and required XML tag names.
+Note that the official pntd schema files are in the grammer directory.
 
-Further parsing of labels are delegated to some subtype of [`PNML.PetriNet`](@ref).
+## Why no Schema Verification
+
+Within PNML.jl no schema-level validation is done. 
+
+In is allowed by the PNML specification to omit validation with the presumption that
+some specialized, external tool can be applied, thus allowing the file format to be
+used for inter-tool communication with lower overhead in each tool.
+
+Also a desire to allow "duck typing" of Petri Nets built upon the 
+PNML intermediate representration.
 
 ## PNTD
 
