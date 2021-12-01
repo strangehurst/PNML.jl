@@ -16,8 +16,8 @@
     doc = EzXML.parsexml(str)
     n = parse_node(root(doc); reg=PNML.IDRegistry())
     printnode(n)
-    @test n[:tag] == :graphics
-    @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
+    @test tag(n) == :graphics
+    @test xmlnode(n) isa Maybe{EzXML.Node}
     @test haskey(n,:offset)
     @test haskey(n,:line)
     @test haskey(n,:positions)
@@ -73,12 +73,12 @@ end
         d = PNML.PnmlDict(:labels=>[])
         n = PNML.add_label!(d, root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(d)
-        @test haskey(d,:labels)
+        @test haskey(d, :labels)
         @test d[:labels] == n
         @test length(d[:labels]) == 1
         foreach(d[:labels]) do l
-            @test l[:tag] == :tokencolors
-            @test isnothing(l[:xml]) || l[:xml] isa EzXML.Node
+            @test tag(l) == :tokencolors
+            @test xmlnode(l) isa Maybe{EzXML.Node}
         end
     end
 end
@@ -117,9 +117,10 @@ end
     @testset for (s,l) in [str0=>0, str1=>1, str2=>2, str3=>3, str4=>4]
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(n)
-        @test n[:tag] == :tokengraphics
+        @test tag(n) == :tokengraphics
         @test haskey(n,:positions)
         @test length(n[:positions]) == l
-        @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
+        @test xmlnode(n) isa Maybe{EzXML.Node}
     end
 end
+

@@ -5,6 +5,36 @@ Alias for Dict with Symbol key.
 """
 const PnmlDict = Dict{Symbol, Any}
 
+
+   
+"""
+$(TYPEDSIGNATURES)
+
+Return pnml id.
+"""
+function pid end
+pid(node::PnmlDict)::Symbol = node[:id]
+
+"""
+$(TYPEDSIGNATURES)
+
+Return tag symbol.
+"""
+function tag end
+tag(d::PnmlDict)::Symbol = d[:tag]
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Return xml node field of `d`.
+"""
+function xmlnode end
+xmlnode(d::PnmlDict) = d[:xml]
+
+
+
+
 """
 $(TYPEDSIGNATURES)
 
@@ -57,6 +87,7 @@ function compress!(a::T) where T
     @warn "trying to compress! unsupported $T"
     a
 end
+
 
 
 """

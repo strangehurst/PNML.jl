@@ -5,12 +5,11 @@ High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
 """
 function parse_tokengraphics(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "tokengraphics" || error("element name wrong: $nn")
-    positions = parse_node.(allchildren("tokenposition",node); kwargs...)
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), :positions=>positions)
-    d
+
+    pnml_label_defaults(node, :tag => Symbol(nn),
+                        :positions => parse_node.(allchildren("tokenposition",node); kwargs...))
 end
 
 """
@@ -19,9 +18,9 @@ $(TYPEDSIGNATURES)
 Position is a coordinate relative to containing element. Units are points.
 """
 function parse_tokenposition(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "tokenposition" || error("element name wrong: $nn")
+
     parse_graphics_coordinate(node; kwargs...)
 end
 
@@ -36,10 +35,10 @@ function parse_graphics(node; kwargs...)
     nn = nodename(node)
     nn == "graphics" || error("element name wrong: $nn")
 
-    d = PnmlDict(:tag=>Symbol(nn),
-                 :line=>nothing, :positions=>PnmlDict[], :dimension=>nothing,
-                 :fill=>nothing, :font=>nothing, :offset=>nothing,
-                 :xml=>includexml(node))
+    d = PnmlDict(:tag => Symbol(nn),
+                 :line => nothing, :positions => PnmlDict[], :dimension => nothing,
+                 :fill => nothing, :font => nothing, :offset => nothing,
+                 :xml => includexml(node))
     foreach(elements(node)) do child
         @match nodename(child) begin 
             "dimension" => (d[:dimension] = parse_graphics_coordinate(child; kwargs...))
@@ -65,6 +64,7 @@ function parse_graphics_line(node; kwargs...)
     @debug node
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn: $nn")
+
     color = has_color(node) ? node["color"] : nothing
     shape = has_shape(node) ? node["shape"] : nothing
     style = has_style(node) ? node["style"] : nothing
@@ -79,25 +79,22 @@ $(TYPEDSIGNATURES)
 Coordinates `x`, `y` are in points.
 """
 function parse_graphics_coordinate(node; kwargs...)
-    @debug node
-    nn = nodename(node)
-    
+    nn = nodename(node)    
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
+
     has_x(node) || throw(MalformedException("$(nn) missing x", node))
     has_y(node) || throw(MalformedException("$(nn) missing y", node))
+
     # Specification seems to use integer pixels (or points).
     # We also allow Real numbers.
-    x = number_value(node["x"])
-    y = number_value(node["y"])
-    PnmlDict(:tag=>Symbol(nn), :x=>x, :y=>y)
+    PnmlDict(:tag=>Symbol(nn), :x => number_value(node["x"]), :y =>number_value(node["y"]))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function parse_graphics_fill(node; kwargs...)
-    @debug node
     nn = nodename(node)
     (nn == "fill") || error("element name wrong: $nn")
     

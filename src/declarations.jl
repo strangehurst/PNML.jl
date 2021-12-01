@@ -29,8 +29,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-These type of a place is different from net type or pntd.
-Used to define the "sort" of tokens held by the place and semantics of the marking.
+Defines the "sort" of tokens held by the place and semantics of the marking.
+The "type" of a place is different from "net type" or "pntd".
 """
 function parse_type(node; kwargs...)
     nn = nodename(node)
@@ -124,7 +124,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_equality(node; kwargs...)
     @debug node
-    nn   = nodename(node)
+    nn = nodename(node)
     nn == "equality" || error("element name wrong: $nn")
     attribute_elem(node; kwargs...)
 end

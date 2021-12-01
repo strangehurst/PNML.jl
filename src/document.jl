@@ -12,12 +12,14 @@ struct Document{N,X}
 end
 
 Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s)); reg), reg)
-Document(p::PnmlDict, reg=IDRegistry()) = Document(p[:nets], p[:xml], reg)
+Document(p::PnmlDict, reg=IDRegistry()) =
+    Document{typeof(p[:nets]), typeof(xmlnode(p))}(p[:nets], xmlnode(p), reg)
 
 """
 $(TYPEDSIGNATURES)
 
-Return nets of `d` matching the given pntd `type`.
+Return nets of `d` matching the given pntd `type` as string or symbol.
+See [`pntd`](@ref).
 """
 function find_nets end
 find_nets(d::Document, type::AbstractString) = find_nets(d, pntd(type))
@@ -49,7 +51,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-
+ 
 Build pnml from a file.
 """
 function parse_file(fn)::PNML.Document
@@ -83,7 +85,7 @@ function flatten_pages!(doc::PNML.Document)
 end
 
 function flatten_pages!(net::PnmlDict)
-    @assert net[:tag] === :net
+    @assert tag(net) === :net
 
     # Some of the keys are optional. They may be removed by a compress before flatten.
     for key in [:places, :trans, :arcs, :tools, :labels, :refT, :refP, :declarations]
@@ -104,7 +106,6 @@ end
 function Base.show(io::IO, doc::Document{N,X}) where {N,X}
     println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
     foreach(doc.nets) do net
-        #println(io, "  net type ", net[:type], " id ", id(net))
-        pprintln(io, PNML.compress(net))
+        println(io, PNML.compress(net))
     end
 end

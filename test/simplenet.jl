@@ -111,7 +111,7 @@ end
     PRINT_PNML && @show net
     PRINT_PNML && println()
     #TODO why do the 3 top-level nets compare not equal?
-    for accessor in [PNML.id, PNML.places, PNML.transitions, PNML.arcs,
+    for accessor in [PNML.pid, PNML.places, PNML.transitions, PNML.arcs,
                      PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
         @test accessor(net1) == accessor(net)
         @test accessor(net2) == accessor(net)
@@ -145,27 +145,27 @@ end
 
     for p in PNML.places(net)
         #printnode(p; label="place")
-        @test PNML.has_place(net, p[:id])
-        @test p == PNML.place(net, p[:id])
-        @test PNML.id(p) ===  p[:id]
+        @test PNML.has_place(net, pid(p))
+        @test p == PNML.place(net, pid(p))
+        @test PNML.pid(p) ===  p[:id]
         @test_throws ArgumentError PNML.place(net, :bogus)
-        PRINT_PNML && println("place $(PNML.id(p)) $(PNML.marking(p))")
+        PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
     end
     for t in PNML.transitions(net)
         #printnode(t; label="transition")
-        @test PNML.has_transition(net, t[:id])
-        @test t == PNML.transition(net, t[:id])
-        @test PNML.id(t) ===  t[:id]
+        @test PNML.has_transition(net, pid(t))
+        @test t == PNML.transition(net, pid(t))
+        @test PNML.pid(t) ===  t[:id]
         @test_throws ArgumentError PNML.transition(net, :bogus)
-        PRINT_PNML && println("transition $(PNML.id(t)) $(PNML.condition(t))")
+        PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
     end
     for a in PNML.arcs(net)
         #printnode(a, label="arc")
-        @test PNML.has_arc(net, a[:id])
-        @test a == PNML.arc(net, a[:id])
-        @test PNML.id(a) ===  a[:id]
+        @test PNML.has_arc(net, pid(a))
+        @test a == PNML.arc(net, pid(a))
+        @test PNML.pid(a) ===  a[:id]
         @test_throws ArgumentError PNML.arc(net, :bogus)
-        PRINT_PNML && println("arc $(PNML.id(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
+        PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
     end
 

@@ -2,13 +2,13 @@
 $(DocStringExtensions.README)
 """
 module PNML
+
+using EzXML
+using MLStyle: @match
 using DocStringExtensions
 using PrettyPrinting
-using EzXML
 using Symbolics, Statistics, IfElse, AbstractTrees
 using LabelledArrays
-using MLStyle: @match
-
 
 """
 $(TYPEDSIGNATURES)
@@ -24,23 +24,22 @@ include("id.jl")
 include("types.jl")
 include("exceptions.jl")
 
-include("pntd.jl")
-
 include("parse.jl")
 include("parse_utils.jl")
 include("graphics.jl")
 include("declarations.jl")
 include("toolspecific.jl")
+include("document.jl")
 include("maps.jl")
 
-include("Net/document.jl")
+include("pntd.jl")
+
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
 
-#TODO update exports
 export @xml_str
-export parse_pnml, parse_node, parse_file, parse_str
+export parse_str, parse_file, parse_pnml, parse_node
 export PnmlException, MissingIDException, MalformedException
 
 end

@@ -18,18 +18,17 @@ function Base.show(io::IO, reg::IDRegistry)
 end
 
 
-
 const DUPLICATE_ID_ACTION=nothing
 
 """
 $(TYPEDSIGNATURES)
 
-Use a global configuration to choose what to do when a duplicated pnml node id
-has been detected. Default is to do nothing.
+Choose what to do when a duplicated pnml node id has been detected.
+Default `action` is to do nothing.
 """
-function duplicate_id_action(id::Symbol)
-    DUPLICATE_ID_ACTION === :warn && @warn "ID '$(id)' already registered"
-    DUPLICATE_ID_ACTION === :error && error("ID '$(id)' already registered in  $(reg.ids)")
+function duplicate_id_action(id::Symbol; action=nothing)
+    action === :warn && @warn "ID '$(id)' already registered"
+    action === :error && error("ID '$(id)' already registered in  $(reg.ids)")
     return nothing
 end
 
@@ -80,11 +79,11 @@ end
 
 #-------------------------------------------------------------------
 #TODO: Make global state varaible.
-#Count and lock to implement global state."
 """
 $(TYPEDEF)
 
 $(TYPEDFIELDS)
+Count and lock to implement global state.
 """
 mutable struct MissingIDCounter
     i::Int
@@ -92,9 +91,10 @@ mutable struct MissingIDCounter
 end
 MissingIDCounter() = MissingIDCounter(0, ReentrantLock())
 
-#Increment counter and return new value."
 """
 $(TYPEDSIGNATURES)
+
+Increment counter and return new value.
 """
 function next_missing_id(c::MissingIDCounter)
     lock(c.lk) do

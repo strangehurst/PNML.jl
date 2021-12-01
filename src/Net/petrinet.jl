@@ -6,21 +6,21 @@ of a single network in a PNML.Document.
 
 # Extended
 
-Subtypes should map directly and simply to [`PnmlType`](@ref).
+Subtypes should map directly and simply to subtypes of [`PnmlType`](@ref).
+Additional constranints can be imposed.
 
 Since a PNML.Document can contain multiple networks it is possible that a higher-level
 will create multiple PNML.PetriNet instances, each a different subtype.
 
 Pages are used for visual layout for humans.
-They can be merged into one page without loosing any Petri Net semantics.
+They can be merged into one page without loseing any Petri Net semantics.
 Often we will only work with merged pages.
 
 # Interface
 #TODO define type for network IR: Wrap a single tag net's [`PnmlDict`](@ref)?
 We start a description of the net IR here. 
 
-XML <net> tags are pnml nodes.
-These nodes are parsed into PnmlDict with keys
+XML <net> tags are parsed into PnmlDict
 
 | key          | value description                             |
 | :----------- | :-------------------------------------------- |
@@ -36,7 +36,7 @@ These nodes are parsed into PnmlDict with keys
 See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
 and [`parse_net`](@ref) for more detail.
 
-XML <page> tags are also parsed into PnmlDict with keys
+XML <page> tags are also parsed into PnmlDict
 
 | key          | value description                             |
 | :----------- | :-------------------------------------------- |
@@ -57,29 +57,22 @@ See also: [`parse_page`](@ref), [`parse_net`](@ref)
 abstract type PetriNet{T<:PnmlType} end
 
 
-"""
-$(TYPEDSIGNATURES)
 
-Return pnml id of `s`.
-"""
-function id end
 
-"All pnml nodes in IR have an `id`"
-id(node::PnmlDict)::Symbol = node[:id]
+#----------------------------------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)
 
-Return the type representing the pntd.
+Return the PnmlType subtype representing the flavor (or pntd) of this kind of Petri Net.
 """
 type(s::N) where {T <: PnmlType, N <: PetriNet{T}} = T
-
 
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
 #------------------------------------------------------------------
 
-id(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accessor")
+pid(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accessor")
 
 """
 $(TYPEDSIGNATURES)
@@ -129,20 +122,20 @@ target(arc)::Symbol = arc[:target]
 $(TYPEDSIGNATURES)
 """
 function has_arc(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> x[:id] === id, arcs(s))
+    any(x -> pid(x) === id, arcs(s))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function arc(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:arcs][findfirst(x -> x[:id] === id, arcs(s))]
+    s.p1[:arcs][findfirst(x -> pid(x) === id, arcs(s))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-arc_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, arcs(s)) 
+arc_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, arcs(s)) 
 
 """
 $(TYPEDSIGNATURES)
@@ -199,38 +192,38 @@ end
 $(TYPEDSIGNATURES)
 """
 function has_refP(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> x[:id] === id, refplaces(s))
+    any(x -> pid(x) === id, refplaces(s))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function has_refT(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> x[:id] === id, reftransitions(s))
+    any(x -> pid(x) === id, reftransitions(s))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-refplace_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, refplaces(s)) 
+refplace_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, refplaces(s)) 
 
 """
 $(TYPEDSIGNATURES)
 """
-reftransition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, reftransitions(s)) 
+reftransition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, reftransitions(s)) 
 
 """
 $(TYPEDSIGNATURES)
 """
 function refplace(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:refP][findfirst(x -> x[:id] === id, refplaces(s))]
+    s.p1[:refP][findfirst(x -> pid(x) === id, refplaces(s))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function reftransition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:refT][findfirst(x -> x[:id] === id, reftransitions(s))]
+    s.p1[:refT][findfirst(x -> pid(x) === id, reftransitions(s))]
 end
 
 """
@@ -296,7 +289,7 @@ $(TYPEDSIGNATURES)
 Is there any place with `id` in net `s`?
 """
 function has_place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> x[:id] === id, places(s))
+    any(x -> pid(x) === id, places(s))
 end
 
 """
@@ -305,7 +298,7 @@ $(TYPEDSIGNATURES)
 Return the place with `id` in net `s`.
 """
 function place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:places][findfirst(x -> x[:id] === id, places(s))]
+    s.p1[:places][findfirst(x -> pid(x) === id, places(s))]
 end
 
 """
@@ -313,7 +306,7 @@ $(TYPEDSIGNATURES)
 
 Return vector of place ids in `s`.
 """
-place_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, places(s)) 
+place_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(s)) 
 
 
 """
@@ -378,20 +371,20 @@ $(TYPEDSIGNATURES)
 Is there a transition with `id` in net `s`?
 """
 function has_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> x[:id] === id, transitions(s))
+    any(x -> pid(x) === id, transitions(s))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:trans][findfirst(x -> x[:id] === id, transitions(s))]
+    s.p1[:trans][findfirst(x -> pid(x) === id, transitions(s))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-transition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(id, transitions(s)) 
+transition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, transitions(s)) 
 
 #----------------------------------------
 

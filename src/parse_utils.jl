@@ -14,25 +14,29 @@ the hiearchy.
 
 # Example
 ```jldoctest
-julia> using PNML, EzXML
+julia> using PNML, EzXML # hide
 
-julia> node = parse_node(xml\"\"\"<aaa id=\"FOO\">BAR</aaa>\"\"\"; reg=PNML.IDRegistry());
+julia> node = parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry());
 ```
 """
 function attribute_elem(node; kwargs...)::PnmlDict
     @debug "attribute = $(nodename(node))"
     @assert haskey(kwargs, :reg)
-    d = PnmlDict(:tag=>Symbol(nodename(node)),
-                 (Symbol(a.name)=>((a.name == "id") ?
-                                   register_id!(kwargs[:reg], a.content) :
-                                   a.content) for a in eachattribute(node))...)
+    # ID attributes can appear in various places. Each unique and added to the registry. 
+    has_id(node) && register_id!(kwargs[:reg], node["id"])
+
+    # Extract XML attributes.
+    d = PnmlDict(:tag => Symbol(nodename(node)),
+                 (Symbol(a.name) => a.content for a in eachattribute(node))...)
+    
+    # Harvest content or children.
     e = elements(node)
     if !isempty(e)
         merge!(d, attribute_content(e; kwargs...)) # children elements
     else
         d[:content] = (!isempty(nodecontent(node)) ? strip(nodecontent(node)) : nothing)
     end
-    d[:xml]=includexml(node)
+    d[:xml] = includexml(node)
     @debug d
     d
 end
@@ -40,8 +44,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return PnmlDict with values that are vectors when there are multiple instances
-of a tag in `nv` and scalar otherwise.
+From `nv`, a vector of XML nodes, return PnmlDict with values that are vectors
+when there are multiple instances of a tag in `nv` and scalar otherwise.
 """
 function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
     d = PnmlDict()
@@ -79,32 +83,22 @@ function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     push!(d[:labels], parse_node(node; kwargs...))
 end
 
-
-"""
-$(TYPEDSIGNATURES)
-"""
-
-"""
-$(TYPEDSIGNATURES)
-"""
-tag(d::PnmlDict) = d[:tag]
-
 """
 $(TYPEDSIGNATURES)
 
-Does any label attached to `d` have a matching `tag`.
+Does any label attached to `d` have a matching `tagvalue`.
 """
-function has_label(d::PnmlDict, tag::Symbol)
-    any(lab->lab[:tag] === tag, d[:labels])
+function has_label(d::PnmlDict, tagvalue::Symbol)
+    any(lab->tag(lab) === tagvalue, d[:labels])
 end
 
-function get_label(d::PnmlDict, tag::Symbol)
-    labels=d[:labels]
-    labels[findfirst(lab->lab[:tag] === tag, labels)]
+function get_label(d::PnmlDict, tagvalue::Symbol)
+    labels = d[:labels]
+    labels[findfirst(lab->tag(lab) === tagvalue, labels)]
 end
 
 
-
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
@@ -119,6 +113,7 @@ function add_tool!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     push!(d[:tools], parse_node(node; kwargs...))
 end
 
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
@@ -126,11 +121,10 @@ Return Dict of tags common to both pnml nodes and pnml labels.
 See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).
 """
 function pnml_common_defaults(node)
-    d = PnmlDict(:graphics=>nothing, # graphics tag is single despite the 's'.
-                 :tools=>nothing, # Here the 's' indicates multiples are allowed.
-                 :labels=>nothing,
-                 :xml=>includexml(node))
-    d
+    PnmlDict(:graphics => nothing, # graphics tag is single despite the 's'.
+             :tools => nothing, # Here the 's' indicates multiples are allowed.
+             :labels => nothing,
+             :xml => includexml(node))
 end
 
 """
@@ -143,9 +137,8 @@ See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 
 """
 function pnml_node_defaults(node, xs...)
-    #@show nodename(node)
     PnmlDict(pnml_common_defaults(node)...,
-             :name=>nothing,
+             :name => nothing,
              xs...)
 end
 
@@ -159,29 +152,25 @@ Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name 
 See also: [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(node, xs...)::PnmlDict
-    #@show nodename(node)
     PnmlDict(pnml_common_defaults(node)...,
-             :text=>nothing,
-             :structure=>nothing,
+             :text => nothing,
+             :structure => nothing,
              xs...)
 end
 
 
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
-Update `d` WITH graphics, tools, label children of pnml node and label elements.
+Update `d` with any graphics, tools, and label child `node`.
 Used by [`parse_pnml_node_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
-Adds, graphics, tools, labels.
-Note that "lables" are the everything else option and this should be called after parsing
-any elements that has an expected tags.
+
+Note that "labels" are the "everything else" option and this should be called after parsing
+any elements that has an expected tag. Any tag that is encountered in an unexpected location
+should be treated as an anonymous label for parsing.
 """
 function parse_pnml_common!(d::PnmlDict, node; kwargs...)
-    @assert haskey(d, :graphics)
-    @assert haskey(d, :tools)
-    @assert haskey(d, :labels)
-
-    @assert haskey(kwargs, :reg)
     @match nodename(node) begin
         "graphics"     => (d[:graphics] = parse_node(node; kwargs...))
         "toolspecific" => add_tool!(d, node; kwargs...)
@@ -195,9 +184,6 @@ $(TYPEDSIGNATURES)
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_node_common!(d::PnmlDict, node; kwargs...)
-    @assert haskey(d, :name)    
-    @assert haskey(kwargs, :reg)
-    
     @match nodename(node) begin
         "name" => (d[:name] = parse_node(node; kwargs...))
         _      => parse_pnml_common!(d, node; kwargs...)
@@ -210,20 +196,15 @@ $(TYPEDSIGNATURES)
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_label_common!(d::PnmlDict, node; kwargs...)
-    @assert haskey(d, :text)
-    @assert haskey(d, :structure)
-    @assert haskey(kwargs, :reg)
-    # Do not expect pnml labels to have names, so bark if one is found.
-    !isempty(allchildren("name", node)) && @warn "label $(nodename(node)) has unexpected name"
-    
+function parse_pnml_label_common!(d::PnmlDict, node; kwargs...)    
     @match nodename(node) begin
-        "text" => (d[:text] = parse_node(node; kwargs...)) #TODO label with name?
+        "text"      => (d[:text] = parse_node(node; kwargs...)) #TODO label with name?
         "structure" => (d[:structure] = parse_node(node; kwargs...))
         _      => parse_pnml_common!(d, node; kwargs...)
     end
 end
 
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 

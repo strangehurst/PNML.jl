@@ -2,7 +2,7 @@ using PNML, EzXML, IfElse, AbstractTrees, Test, PrettyPrinting
 # Run the tests embedded in docstrings.
 using Documenter, LabelledArrays
 
-using PNML: parse_doc, parse_pnml, @xml_str,
+using PNML: parse_doc, parse_pnml, @xml_str, pid, tag, xmlnode, Maybe,
     parse_net, parse_page, parse_place, parse_transition, parse_arc,
     parse_refPlace, parse_refTransition,
     parse_toolspecific, parse_graphics, parse_structure,

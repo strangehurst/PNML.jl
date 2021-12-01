@@ -42,7 +42,7 @@ end
         @test nodename(net) == "net"
         
         nn = parse_name(PNML.firstchild("name", net); reg)
-        @test nn[:tag] == :name
+        @test tag(nn) == :name
         @test nn[:value] == "P/T Net with one place"
         @test nn[:graphics] === nothing
         @test haskey(nn,:tools)
@@ -66,10 +66,10 @@ end
             foreach(PNML.allchildren("place", page)) do p
                 @test nodename(p) == "place"
                 i = parse_node(PNML.firstchild("initialMarking", p); reg)
-                @test i[:tag] == :initialMarking
+                @test tag(i) == :initialMarking
                 @test i[:value] !== nothing
                 @test i[:value] >= 0
-                @test isnothing(i[:xml]) || i[:xml] isa EzXML.Node
+                @test xmlnode(i) isa Maybe{EzXML.Node}
             end
             
             @test !isempty(PNML.allchildren("transition", page))
@@ -83,10 +83,10 @@ end
             foreach(PNML.allchildren("arc", page)) do a
                 @test nodename(a) == "arc"
                 i = parse_node(PNML.firstchild("inscription", a); reg)
-                @test i[:tag] == :inscription
+                @test tag(i) == :inscription
                 @test i[:value] !== nothing
                 @test i[:value] > 0
-                @test isnothing(i[:xml]) || i[:xml] isa EzXML.Node
+                @test xmlnode(i) isa Maybe{EzXML.Node}
             end
         end
     end
@@ -105,10 +105,10 @@ end
         @show Base.summarysize(pnml_ir)        
         showsize.(Ref(pnml_ir), keys(pnml_ir))
         foreach(pnml_ir[:nets]) do net
-            print("net ", net[:id], "\n")
+            print("net ", pid(net), "\n")
             showsize.(Ref(net), keys(net))
             foreach(net[:pages]) do page
-                print("page ", page[:id], "\n")
+                print("page ", pid(page), "\n")
                 showsize.(Ref(page), keys(page))
                 for k in [:graphics, :tools, :labels, :places, :trans,
                           :arcs, :declarations, :refT, :refP]
@@ -127,38 +127,38 @@ end
                               
     foreach(pnml_ir[:nets]) do net
         @test net isa PNML.PnmlDict
-        @test net[:tag] == :net
-        @test net[:id] isa Symbol
+        @test tag(net) == :net
+        @test pid(net) isa Symbol
         
         foreach(net[:pages]) do page
             @test page isa PNML.PnmlDict
-            @test page[:tag] == :page
-            @test page[:id] isa Symbol
+            @test tag(page) == :page
+            @test pid(page) isa Symbol
             foreach(page[:places]) do place
                 @test place isa PNML.PnmlDict
-                @test place[:tag] == :place
-                @test place[:id] isa Symbol
+                @test tag(place) == :place
+                @test pid(place) isa Symbol
             end
             foreach(page[:trans]) do transition
                 @test transition isa PNML.PnmlDict
-                @test transition[:tag] == :transition
-                @test transition[:id] isa Symbol
+                @test tag(transition) == :transition
+                @test pid(transition) isa Symbol
             end
             foreach(page[:arcs]) do arc
                 @test arc isa PNML.PnmlDict
-                @test arc[:tag] == :arc
-                @test arc[:id] isa Symbol
+                @test tag(arc) == :arc
+                @test pid(arc) isa Symbol
             end
             foreach(page[:declarations]) do decl
                 @test decl isa PNML.PnmlDict
-                @test decl[:tag] = :declaration
+                @test tag(decl) = :declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
         foreach(net[:declarations]) do decl
             @test decl isa PNML.PnmlDict
-            @test decl[:tag] = :declaration
+            @test tag(decl) = :declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end 
     end
@@ -166,3 +166,4 @@ end
     PNML.reset_registry!(reg)
     println()
 end
+

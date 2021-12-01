@@ -12,15 +12,14 @@
         </declaration>
         """; reg)
     printnode(n)
-    @test n[:tag] == :declaration
-    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+    @test tag(n) === :declaration
+    @test xmlnode(n) isa Maybe{EzXML.Node}
     @test haskey(n,:structure)
     @test haskey(n[:structure],:declarations)
     @test haskey(n[:structure][:declarations],:text)
 
     @test n[:structure][:declarations][:text][1][:content] == "#TODO"
     @test n[:structure][:declarations][:text][2][:content] == "yes really"
-    #@test n[:structure][:declarations][:text][2][:key] == "bad"
 end
 
 @testset "initMarking" begin
@@ -35,8 +34,8 @@ end
     reg = PNML.IDRegistry()
     n = parse_node(to_node(str); reg)
     printnode(n)
-    @test n[:tag] == :initialMarking
-    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+    @test tag(n) === :initialMarking
+    @test xmlnode(n) isa Maybe{EzXML.Node}
     @test haskey(n,:value)
     @test n[:value] isa Int
     @test n[:value] == 1
@@ -67,8 +66,8 @@ end
     reg = PNML.IDRegistry()
     n = parse_node(to_node(str); reg)
     printnode(n)
-    @test n[:tag] == :hlinitialMarking
-    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+    @test tag(n) === :hlinitialMarking
+    @test xmlnode(n) isa Maybe{EzXML.Node}
     @test n[:text] !== nothing
     @test n[:text][:content] == "<All,All>"
     @test n[:structure] !== nothing
@@ -129,8 +128,8 @@ end
     reg = PNML.IDRegistry()
     n = parse_node(to_node(str); reg)
     printnode(n)
-    @test n[:tag] == :structure
-    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+    @test tag(n) === :structure
+    @test xmlnode(n) isa Maybe{EzXML.Node}
 
     @test n[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
     @test n[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
@@ -143,11 +142,11 @@ end
     reg = PNML.IDRegistry()
     n = parse_node(to_node(str); reg)
     printnode(n)
-    @test n[:tag] == :referenceTransition
-    @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+    @test tag(n) === :referenceTransition
+    @test xmlnode(n) isa Maybe{EzXML.Node}
     @test haskey(n,:id)
     @test haskey(n,:ref)
-    @test n[:id] == :rt1
+    @test pid(n) == :rt1
     @test n[:ref] == :t1
 end
 
@@ -167,8 +166,8 @@ end
         reg = PNML.IDRegistry()
         n = parse_node(to_node(s); reg)
         printnode(n)
-        @test n[:tag] == :referencePlace
-        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+        @test tag(n) === :referencePlace
+        @test xmlnode(n) isa Maybe{EzXML.Node}
     end
 end
 
@@ -186,7 +185,7 @@ end
         n = parse_node(to_node(s); reg)
         printnode(n)
         @test haskey(n,:tag)
-        @test n[:tag] == :type
+        @test tag(n) === :type
         @test n[:text][:content] == "N2"
         @test n[:structure][:usersort][:declaration] == "N2"
     end
@@ -208,10 +207,10 @@ end
         reg = PNML.IDRegistry()
         n = parse_node(to_node(s); reg)
         printnode(n)
-        @test n[:tag] == :condition
-        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+        @test tag(n) === :condition
+        @test xmlnode(n) isa Maybe{EzXML.Node}
         @test n[:structure] !== nothing
-        @test isnothing(n[:structure][:xml]) || n[:structure][:xml] isa EzXML.Node
+        @test xmlnode(n[:structure]) isa Maybe{EzXML.Node}
         @test n[:graphics] === nothing
         @test !isempty(n[:text])
         @test haskey(n,:tools)
@@ -229,8 +228,8 @@ end
         reg = PNML.IDRegistry()
         n = parse_node(to_node(s); reg)
         printnode(n)
-        @test n[:tag] == :inscription
-        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+        @test tag(n) === :inscription
+        @test xmlnode(n) isa Maybe{EzXML.Node}
         @test n[:value] == 12
         @test n[:structure] === nothing
         @test n[:text] === nothing
@@ -262,8 +261,8 @@ end
         reg = PNML.IDRegistry()
         n = parse_node(to_node(s); reg)
         printnode(n)
-        @test n[:tag] == :hlinscription
-        @test isnothing(n[:xml]) ||  n[:xml] isa EzXML.Node
+        @test tag(n) === :hlinscription
+        @test xmlnode(n) isa Maybe{EzXML.Node}
     end
 end
 

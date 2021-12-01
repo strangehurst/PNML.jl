@@ -18,7 +18,7 @@ function HLPetriNet(net::PnmlDict)
     HLPetriNet{typeof(pnmltype(net))}(flatten_pages!(net))
 end
 
-id(s::HLPetriNet) = id(s.net)
+pid(s::HLPetriNet) = pid(s.net)
 
 """
 $(TYPEDSIGNATURES)

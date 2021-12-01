@@ -39,22 +39,22 @@ SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
 function SimpleNet(net::PnmlDict)
     netcopy = deepcopy(net)
     flatten_pages!(netcopy)
-    SimpleNet{typeof(pnmltype(netcopy))}(netcopy[:id], netcopy[:pages][1])
+    SimpleNet{typeof(pnmltype(netcopy))}(pid(netcopy), netcopy[:pages][1])
 end
 
-id(s::SimpleNet) = s.id
+pid(s::SimpleNet) = s.id
 
 function Base.show(io::IO, s::SimpleNet{P}) where {P}
     println(io, "PNML.SimpleNet{$P}(")
-    println(io, "id=", id(s), ", ",
+    println(io, "id=", pid(s), ", ",
             length(places(s)), " places, ",
             length(transitions(s)), " transitions, ",
             length(arcs(s)), " arcs")
-    println(io, id(s), " places")
+    println(io, pid(s), " places")
     pprintln(io, places(s))
-    println(io, id(s), " transitions")
+    println(io, pid(s), " transitions")
     pprintln(io, transitions(s))
-    println(io, id(s), " arcs")
+    println(io, pid(s), " arcs")
     pprintln(io, arcs(s))
     print(io, ")")
 end

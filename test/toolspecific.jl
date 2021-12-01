@@ -1,4 +1,3 @@
-
 @testset "parse tools" begin
     str1 = """
  <toolspecific tool="JARP" version="1.2">
@@ -40,14 +39,14 @@
     @testset for s in [str1, str2, str3, str4, str5] 
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(n)
-        @test n[:tag] == :toolspecific
-        @test isnothing(n[:xml]) || n[:xml] isa EzXML.Node
+        @test tag(n) === :toolspecific
+        @test xmlnode(n) isa Maybe{EzXML.Node}
         @test haskey(n, :tool)
         @test haskey(n, :version)
         @test haskey(n, :content)
         foreach(n[:content]) do c
             @test haskey(c, :tag)
-            @test isnothing(c[:xml]) || c[:xml] isa EzXML.Node
+            @test xmlnode(c) isa Maybe{EzXML.Node}
             if PRINT_PNML && haskey(c, :xml) && !isnothing(c[:xml])
                 EzXML.prettyprint(c[:xml]);
                 println()

@@ -9,11 +9,10 @@ function parse_node(node; verbose=true, kwargs...)::Maybe{PnmlDict}
     node === nothing && return #TODO Make all nodes optional. Is this a good idea?
     if verbose
         parser = haskey(tagmap, node.name) ? "tagmap" : "attribute_elem"
-        @debug( "parse_node($(node.name)) -> $(parser)" *
+        @debug( "parse_node($(node.name)) ---> $(parser)" *
                 " attributes $(nodename.(attributes(node)))" *
                 " children $(nodename.(elements(node)))")
     end
-    @assert haskey(kwargs, :reg)
     if haskey(tagmap, node.name)
         tagmap[node.name](node; kwargs...)
     else
@@ -33,11 +32,11 @@ function parse_pnml(node; kwargs...)
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kwargs, :reg)
-    nets = parse_node.(allchildren("net", node); kwargs...)
-    # Give tuple an id element to match the rest of the IR.
-    # Because there can only be one pnml tag, we use it as the id.
-    PnmlDict(:id=>register_id!(kwargs[:reg], nn), :tag=>Symbol(nn), :nets=>nets,
-             :xml=>includexml(node)) 
+    # Give an id to match the rest of the IR. There can only be one pnml tag, use its name.
+    PnmlDict(:id => register_id!(kwargs[:reg], nn),
+             :tag => Symbol(nn),
+             :nets => parse_node.(allchildren("net", node); kwargs...),
+             :xml => includexml(node))
 end
 
 """
@@ -56,21 +55,21 @@ function parse_net(node; kwargs...)
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
     
-    # Create a Dict with keys for possible child tags.
+    # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
     # Optional key values are nothing for single object or empty vector when multiples
     # are allowed. Keys that have pural names usually have a vector value.
     # The 'graphics' key is an exception and has a single value.
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kwargs[:reg], node["id"]),
-                           :type=>pntd(node["type"]),
-                           :pages=>PnmlDict[],
-                           :declarations=>PnmlDict[])
+    d = pnml_node_defaults(node, :tag => Symbol(nn),
+                           :id => register_id!(kwargs[:reg], node["id"]),
+                           :type => pntd(node["type"]),
+                           :pages => PnmlDict[],
+                           :declarations => PnmlDict[])
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; kwargs...))
-            # NB: There is also a tag declarations that is different from this symbol.
+            # NB: There is also a tag 'declarations' that is different from this symbol.
             "declaration"  => push!(d[:declarations], parse_node(child; kwargs...))
             _ => parse_pnml_node_common!(d, child; kwargs...)
         end
@@ -109,6 +108,7 @@ function parse_page(node; kwargs...)
     d
 end
 
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -118,10 +118,10 @@ function parse_place(node; kwargs...)
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kwargs, :reg)
 
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kwargs[:reg],node["id"]),
+    d = pnml_node_defaults(node, :tag => Symbol(nn),
+                           :id => register_id!(kwargs[:reg],node["id"]),
                            :marking => nothing,
-                           :type=>nothing) # place 'type' is different from the net 'type'.
+                           :type => nothing) # place 'type' is different from the net 'type'.
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
@@ -237,22 +237,41 @@ function parse_text(node; kwargs...)
     PnmlDict(:tag=>Symbol(nn), :content=>string(strip(nodecontent(node))),)
 end
 
-"Return PnmlDict pnml name text and optional tool & GUI information."
+"""
+$(TYPEDSIGNATURES)
+
+Return name text value and optional tool & GUI information.
+"""
 function parse_name(node; kwargs...)
     node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
     nn = nodename(node)
     nn == "name" || error("element name wrong")
-    # These can cause parse_node to be passed nothing.
-    text     = parse_node(firstchild("text", node); kwargs..., verbose=false)
-    graphics = parse_node(firstchild("graphics", node); kwargs..., kwargs..., verbose=false)
-    ts = allchildren("toolspecific", node)
-    tools = !isempty(ts) ? parse_node.(ts; kwargs..., verbose=false) : nothing
-    # There are pnml files that break the rules & do not have a text element here.
-    # Ex: PetriNetPlans-PNP/parallel.jl
-    isnothing(text) && @warn "$(nn) missing <text> element"
+
+    # Using firstchild or allchildren can cause parse_node to be passed nothing
+    # for optional or missing child nodes.
+
+    tx = firstchild("text", node)
+    if isnothing(tx)
+         @warn "$(nn) missing <text> element"
+        # There are pnml files that break the rules & do not have a text element here.
+        # Ex: PetriNetPlans-PNP/parallel.jl
+        # Attempt to harvest content of <name> element instead of the child <text> element.
+        # Assumes there are no other children elements.
+        value = string(strip(nodecontent(node)))
+    else
+        value = string(strip(nodecontent(tx)))
+    end
     
-    PnmlDict(:tag=>Symbol(nn), :value=>isnothing(text) ? nothing : text[:content],
-     :graphics=>graphics, :tools=>tools)
+    gx = firstchild("graphics", node)
+    graphics = isnothing(gx) ? nothing : parse_node(gx; kwargs..., kwargs..., verbose=false)
+    
+    ts = allchildren("toolspecific", node)
+    tools = isempty(ts) ? nothing : parse_node.(ts; kwargs..., verbose=false)
+    
+    PnmlDict(:tag => Symbol(nn),
+             :value => value,
+             :graphics => graphics,
+             :tools => tools)
 end
 
 #----------------------------------------------------------

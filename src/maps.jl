@@ -1,6 +1,6 @@
 # Ideas from MathML.jl
 
-#TODO: use pnml terms?
+#TODO: use pnml tag names instead of mathml?
 "$(TYPEDEF)"
 applymap = Dict{String,Function}(
     "times" => Base.prod, # arity 2, but prod fine
