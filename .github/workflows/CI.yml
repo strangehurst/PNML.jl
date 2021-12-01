@@ -44,15 +44,11 @@ jobs:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1'
+          version: '1.6'
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - run: |
-          julia --project=docs -e '
-            using Documenter: DocMeta, doctest
-            using PNML
-            DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
-            doctest(PNML)'
+          julia --project=docs docs/make.jl
