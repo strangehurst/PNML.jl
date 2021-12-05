@@ -14,6 +14,18 @@ Assumptions about labels:
 
 # Non-simple Networks means what?
 
+# SimpleNet
+
+Created to be a end-to-end use case. And explore implementing something-that-works
+while building upon and improving the IR. Does not try to conform to any standard.
+Much of the complexity possible with pnml is ignored.
+
+The first use is to recreate the lotka-volterra model from Petri.jl examples.
+Find it in the examples folder. This is a stochastic Petri Net.
+
+Liberties are taken with pnml, remember that standards-checking is not a goal.
+A less-simple consumer of the IR can impose standards-checking.
+
 =#
 
 """
