@@ -51,6 +51,7 @@ if !select("None")
     @testset "maps"     begin include("maps.jl") end
     @testset "utils"    begin include("utils.jl") end
     @testset "print"    begin include("print.jl") end
+    @testset "pages"    begin include("pages.jl") end
     @testset "parse_tree"   begin include("parse_tree.jl") end
     @testset "parse_labels" begin include("parse_labels.jl") end
     @testset "toolspecific" begin include("toolspecific.jl") end

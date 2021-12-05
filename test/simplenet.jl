@@ -1,4 +1,4 @@
-
+# SimpleNet
 @testset "deref" begin
     str = """
     <?xml version="1.0"?>
@@ -28,47 +28,25 @@
     </pnml>
         """ 
     doc = PNML.Document(str)
-
-    PRINT_PNML && println(
-    """------------------------------------------------------------
-    EXPANDED
-    ------------------------------------------------------------""")
     net = PNML.first_net(doc)
-    printnode(net; compress=false)
-
-    PRINT_PNML && println(
-    """------------------------------------------------------------
-    FLATTENED
-    ------------------------------------------------------------""")
     PNML.flatten_pages!(net)
-    printnode(net; compress=false)
-
-    PRINT_PNML && println(
-    """------------------------------------------------------------
-    COMPRESSED
-    ------------------------------------------------------------""")
     @test net isa PNML.PnmlDict
     cnet = PNML.compress(net)
     @test cnet isa PNML.PnmlDict
-    printnode(cnet)
     @test cnet != net
 
-    PRINT_PNML && println(
-    """------------------------------------------------------------
-    DEREFERENCED
-    ------------------------------------------------------------""")
-    
     snet = PNML.SimpleNet(cnet)
 
-    PRINT_PNML && println("from")
     PRINT_PNML && @show snet
-
-    PNML.deref!(snet)
     @test snet != cnet
 
-    PRINT_PNML && println("to")
-    PRINT_PNML && @show snet
-    PRINT_PNML && println("------------------------------------------------------------")
+    PNML.deref!(snet)
+
+    if PRINT_PNML
+         println("dereferenced to")
+         @show snet
+        println("------------------------------------------------------------")
+    end
 end
 
 @testset "net type" begin
@@ -225,4 +203,14 @@ end
     β = PNML.rates(snet) #LVector( (; [t=>PNML.rate(snet,t) for t in T]...))
     PRINT_PNML && @show β
     @test β == βx
+end
+
+@testset "merge pages" begin
+    d1 = Dict(:id => :top,
+              :pages => Dict[Dict(:id=>:p1, :arc => [Dict(:id=>:arc1)],),
+                             Dict(:id=>:p2, :arc => [Dict(:id=>:arc2)],),
+                             Dict(:id=>:p3, :arc => [Dict(:id=>:arc3)], :pages=>[]),
+                             ],
+              :arc => [Dict(:id=>:arc2)],)
+              
 end

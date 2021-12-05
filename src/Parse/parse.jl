@@ -88,12 +88,13 @@ function parse_page(node; kwargs...)
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kwargs, :reg)
 
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kwargs[:reg],node["id"]),
-                           :places=>PnmlDict[], :trans=>PnmlDict[], :arcs=>PnmlDict[],
-                           :refP=>PnmlDict[], :refT=>PnmlDict[],
-                           :declarations=>PnmlDict[])
-
+    d = pnml_node_defaults(node, :tag => Symbol(nn),
+                           :id => register_id!(kwargs[:reg],node["id"]),
+                           :places => PnmlDict[], :trans => PnmlDict[], :arcs => PnmlDict[],
+                           :refP => PnmlDict[], :refT=>PnmlDict[],
+                           :declarations => PnmlDict[],
+                           :pages => PnmlDict[])
+    
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_node(child; kwargs...))
@@ -102,6 +103,7 @@ function parse_page(node; kwargs...)
             "referencePlace" => push!(d[:refP], parse_node(child; kwargs...))
             "referenceTransition" => push!(d[:refT], parse_node(child; kwargs...))
             "declaration" => push!(d[:declarations], parse_node(child; kwargs...))
+            "page"         => push!(d[:pages], parse_node(child; kwargs...))
             _ => parse_pnml_node_common!(d, child; kwargs...)
         end
     end
@@ -314,7 +316,7 @@ function parse_initialMarking(node; kwargs...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            # We extend to allowing meaknings to be real numbers.
+            # We extend to real numbers.
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d,child; kwargs...)
         end
