@@ -69,7 +69,8 @@ makedocs(;
          pages=[
              "Home" => "index.md",
              
-             "Library Reference" => "library.md",
+             "API" => "library.md",
+             "Intermediate Representation" => "IR.md",
              "pnml.md",
              "Examples" => Any[
                  "lotka-volterra.md",
