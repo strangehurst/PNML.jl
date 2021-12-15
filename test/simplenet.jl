@@ -1,4 +1,4 @@
-# SimpleNet
+header("SimpleNet")
 @testset "deref" begin
     str = """
     <?xml version="1.0"?>
@@ -88,7 +88,6 @@ end
     PRINT_PNML && println()
     PRINT_PNML && @show net
     PRINT_PNML && println()
-    #TODO why do the 3 top-level nets compare not equal?
     for accessor in [PNML.pid, PNML.places, PNML.transitions, PNML.arcs,
                      PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
         @test accessor(net1) == accessor(net)

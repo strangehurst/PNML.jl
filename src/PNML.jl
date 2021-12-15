@@ -26,6 +26,7 @@ include("utils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
+include("pntd.jl")
 
 include("Parse/parse.jl")
 include("Parse/parse_utils.jl")
@@ -35,7 +36,6 @@ include("Parse/toolspecific.jl")
 include("Parse/document.jl")
 include("Parse/maps.jl")
 
-include("pntd.jl")
 
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")

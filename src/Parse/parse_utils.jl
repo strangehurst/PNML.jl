@@ -19,11 +19,11 @@ julia> using PNML, EzXML # hide
 julia> node = parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry());
 ```
 """
-function attribute_elem(node; kwargs...)::PnmlDict
+function attribute_elem(node; kw...)::PnmlDict
     @debug "attribute = $(nodename(node))"
-    @assert haskey(kwargs, :reg)
+    @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each unique and added to the registry. 
-    has_id(node) && register_id!(kwargs[:reg], node["id"])
+    has_id(node) && register_id!(kw[:reg], node["id"])
 
     # Extract XML attributes.
     d = PnmlDict(:tag => Symbol(nodename(node)),
@@ -32,7 +32,7 @@ function attribute_elem(node; kwargs...)::PnmlDict
     # Harvest content or children.
     e = elements(node)
     if !isempty(e)
-        merge!(d, attribute_content(e; kwargs...)) # children elements
+        merge!(d, attribute_content(e; kw...)) # children elements
     else
         d[:content] = (!isempty(nodecontent(node)) ? strip(nodecontent(node)) : nothing)
     end
@@ -163,7 +163,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Update `d` with any graphics, tools, and label child `node`.
+Update `d` with any graphics, tools, and label child of `node`.
 Used by [`parse_pnml_node_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
 
 Note that "labels" are the "everything else" option and this should be called after parsing

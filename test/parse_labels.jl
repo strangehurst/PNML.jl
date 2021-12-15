@@ -1,4 +1,4 @@
-
+header("PARSE_LABELS")
 @testset "declaration" begin
     reg = PNML.IDRegistry()
     n = parse_node(xml"""

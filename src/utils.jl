@@ -23,7 +23,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return up to 1 immediate` child of element `el` that is a `tag`.
+Return up to 1 immediate child of element `el` that is a `tag`.
 """
 function firstchild(tag, el, ns=PNML.pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])

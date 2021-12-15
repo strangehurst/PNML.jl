@@ -1,8 +1,27 @@
-
-@testset "net type" begin
-    # pnml with multiple nets.    
+header("DOCUMENT")
+@testset "Document & IDRegistry" begin
     str = """
-    <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
+    <?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+      <net id="net" type="pnmlcore"> <page id="page"/> </net>
+    </pnml>
+    """ 
+    header("### Registry")
+    reg = PNML.IDRegistry()
+    @test !PNML.isregistered(reg, :pnml)
+    @test :pnml ∉ reg.ids
+    
+    doc = PNML.Document(str, reg)
+    @show doc
+    @show reg
+
+    @test PNML.isregistered(reg, :pnml)
+    @test :pnml ∈ reg.ids
+end
+
+@testset "multiple net type" begin
+    str = """
+    <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet"> <page id="page1"/> </net>
       <net id="net2" type="pnmlcore"> <page id="page2"/> </net>
@@ -10,15 +29,10 @@
       <net id="net4" type="hlcore"> <page id="page4"/> </net>
       <net id="net5" type="pt_hlpng"> <page id="page5"/> </net>
     </pnml>
-        """ 
-
-    reg = PNML.IDRegistry()
-    #@test !PNML.isregistered(reg, :pnml)
-
-    doc = PNML.Document(str, reg)
-    #printnode(doc.nets);println()
+    """ 
+    
+    doc = PNML.Document(str)
     @show doc
-    @show reg
     
     v1 = PNML.find_nets(doc, :ptnet)
     printnode(v1, label="v1")
@@ -48,6 +62,19 @@
             @test net[:type] === t
         end
     end
-    #PNML.reset_registry!(reg)
 end
 
+@testset "Empty" begin
+    str = """
+    <?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+      <net id="net" type="pnmlcore">
+        <page id="page">
+        </page>
+      </net>
+    </pnml>
+    """ 
+    
+    doc = PNML.Document(str)
+    @show doc
+end

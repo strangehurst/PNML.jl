@@ -18,30 +18,23 @@ abstract type PnmlType end
 """
 $(TYPEDEF)
 
-Most minimal Petri Net type that is the foundation of all pntd.
-"""
-abstract type AbstractPnmlCore <: PnmlType end
-"""
-$(TYPEDEF)
-
 Base of High Level Petri Net pntds.
 """
-abstract type AbstractHLCore <: AbstractPnmlCore end
-
+abstract type AbstractHLCore <: PnmlType end
 
 """
 $(TYPEDEF)
 
 PnmlCore is the most minimal concrete Petri Net.
 """
-struct PnmlCore <: AbstractPnmlCore end
+struct PnmlCore <: PnmlType end
 
 """
 $(TYPEDEF)
 
 Place-Transition Petri Nets add small extensions to core.
 """
-struct PTNet <: AbstractPnmlCore end
+struct PTNet <: PnmlType end
 
 """
 $(TYPEDEF)

@@ -1,9 +1,9 @@
 #=
 There are many attribute-label elements.
-These do not have the same characteristics as annotation-label elements.
-The common usage is that 'label' usually be read as annotation-label
-The graphics, text and structure tags of the common dictonary
-are not useful for attributes.
+The common usage is that 'label' usually be read as annotation-label.
+
+Attribute-labels do not have associated graphics elements. Since <graphics> are
+optional for annotation-labels they share the same implementation.
 
 Unknown tags get parsed by attribute_elem.  Annotation-labels usually have
 known tags and dedicated dictonary keys. Pnml-node-elements put unregistered children

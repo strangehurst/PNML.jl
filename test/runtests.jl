@@ -19,17 +19,23 @@ const GROUP = get(ENV, "GROUP", "All")
 const testdir = dirname(@__FILE__)
 const pnml_dir = joinpath(@__DIR__, "data")
     
-# Turn string into a PnmlDict representing XML node.
-to_node(s) =  root(EzXML.parsexml(s))
+"Turn string into XML node."
+to_node(s) = root(EzXML.parsexml(s))
 
 "Default is to NOT print during test."
 const PRINT_PNML = haskey(ENV, "PRINT_PNML") ? lowercase(ENV["PRINT_PNML"]) == "true" : false
+
+"Pretty print PnmlDict."
 function printnode(n; label=nothing, compress=true, compact=false)
     if PRINT_PNML
         !isnothing(label) && print(label, " ")
         pprintln(compress ? PNML.compress(n) : n)
         !compact && println()
     end
+end
+
+header(s) = if PRINT_PNML
+    println("##### ", s)
 end
 
 const SHOW_SUMMARYSIZE = haskey(ENV, "SHOW_SUMMARYSIZE") ? lowercase(ENV["SHOW_SUMMARYSIZE"]) == "true" : true
@@ -44,34 +50,42 @@ end
 select(v...) = any(==(GROUP), v)
 
 if !select("None")
-@testset "PNML.jl" begin
-    if select("All", "Doc")
-        @testset "doctest" begin doctest(PNML, manual = true) end 
-    end     
-    @testset "maps"     begin include("maps.jl") end
-    @testset "utils"    begin include("utils.jl") end
-    @testset "print"    begin include("print.jl") end
-    @testset "pages"    begin include("pages.jl") end
-    @testset "parse_tree"   begin include("parse_tree.jl") end
-    @testset "parse_labels" begin include("parse_labels.jl") end
-    @testset "toolspecific" begin include("toolspecific.jl") end
-    @testset "graphics"     begin include("graphics.jl") end
-    @testset "exceptions"   begin include("exceptions.jl") end
-    @testset "example pnml" begin include("parse_examples.jl") end
-    @testset "attribute" begin
-        # pnml attribute XML nodes do not have display/GUI data and other
-        # overhead of pnml annotation nodes. Both are pnml labels.
-        a = PNML.attribute_elem(xml"""
-           <declarations atag="test">
-                <something> some content </something>
-                <something2 tag2="two"> <value/> </something2>
-           </declarations>
-        """; reg=PNML.IDRegistry())
-        printnode(a)
-        @test !isnothing(a)
-        #TODO more tests
+    @testset verbose=false "PNML.jl" begin
+        header("TOP LEVEL UNIT TEST")
+        if select("All", "Doc")
+            header("Doctests")
+            @testset "doctest" begin doctest(PNML, manual = true) end 
+        end     
+        if select("All", "IR")
+            header("IR")
+            @testset "maps"     begin include("maps.jl") end
+            @testset "utils"    begin include("utils.jl") end
+            @testset "print"    begin include("print.jl") end
+            @testset "pages"    begin include("pages.jl") end
+            @testset "parse_tree"   begin include("parse_tree.jl") end
+            @testset "parse_labels" begin include("parse_labels.jl") end
+            @testset "toolspecific" begin include("toolspecific.jl") end
+            @testset "graphics"     begin include("graphics.jl") end
+            @testset "exceptions"   begin include("exceptions.jl") end
+            @testset "example pnml" begin include("parse_examples.jl") end
+            @testset "attribute" begin
+                header("ATTRIBUTE")
+                # pnml attribute XML nodes do not have display/GUI data and other
+                # overhead of pnml annotation nodes. Both are pnml labels.
+                a = PNML.attribute_elem(xml"""
+                   <declarations atag="test">
+                        <something> some content </something>
+                        <something2 tag2="two"> <value/> </something2>
+                   </declarations>
+                """; reg=PNML.IDRegistry())
+                printnode(a)
+                @test !isnothing(a)
+            end
+        end
+        if select("All", "Net")
+            header("Net")
+            @testset "document"     begin include("document.jl") end
+            @testset "simplenet"    begin include("simplenet.jl") end
+        end
     end
-    @testset "document"     begin include("document.jl") end
-    @testset "simplenet"    begin include("simplenet.jl") end
-end
-end
+end # select none

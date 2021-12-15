@@ -9,7 +9,7 @@ function parse_tokengraphics(node; kwargs...)
     nn == "tokengraphics" || error("element name wrong: $nn")
 
     pnml_label_defaults(node, :tag => Symbol(nn),
-                        :positions => parse_node.(allchildren("tokenposition",node); kwargs...))
+                        :position => parse_node.(allchildren("tokenposition",node); kwargs...))
 end
 
 """
@@ -36,7 +36,7 @@ function parse_graphics(node; kwargs...)
     nn == "graphics" || error("element name wrong: $nn")
 
     d = PnmlDict(:tag => Symbol(nn),
-                 :line => nothing, :positions => PnmlDict[], :dimension => nothing,
+                 :line => nothing, :positions => Coordinate[], :dimension => nothing,
                  :fill => nothing, :font => nothing, :offset => nothing,
                  :xml => includexml(node))
     foreach(elements(node)) do child
@@ -47,10 +47,15 @@ function parse_graphics(node; kwargs...)
             "line"      => (d[:line] = parse_graphics_line(child; kwargs...))
             "offset"    => (d[:offset] = parse_graphics_coordinate(child; kwargs...))
             "position"  => (push!(d[:positions], parse_graphics_coordinate(child; kwargs...)))
-            _ => @warn "ignoring graphics child '$(child)'"
+            _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
-    d
+    g = Graphics(;dim=d[:dimension],
+                 fill=d[:fill],
+                 font=d[:font],
+                 line=d[:line],
+                 offset=d[:offset],
+                 position=d[:positions])
 end
 
 #
@@ -70,13 +75,14 @@ function parse_graphics_line(node; kwargs...)
     style = has_style(node) ? node["style"] : nothing
     width = has_width(node) ? node["width"] : nothing
 
-    PnmlDict(:tag=>Symbol(nn), :shape=>shape, :color=>color, :width=>width, :style=>style)
+    Line(;shape, color, width, style)
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Coordinates `x`, `y` are in points.
+Specification seems to only use integers, we also allow real numbers.
 """
 function parse_graphics_coordinate(node; kwargs...)
     nn = nodename(node)    
@@ -86,9 +92,7 @@ function parse_graphics_coordinate(node; kwargs...)
     has_x(node) || throw(MalformedException("$(nn) missing x", node))
     has_y(node) || throw(MalformedException("$(nn) missing y", node))
 
-    # Specification seems to use integer pixels (or points).
-    # We also allow Real numbers.
-    PnmlDict(:tag=>Symbol(nn), :x => number_value(node["x"]), :y =>number_value(node["y"]))
+    Coordinate(number_value(node["x"]), number_value(node["y"]))
 end
 
 """
@@ -103,15 +107,14 @@ function parse_graphics_fill(node; kwargs...)
     gclr = has_gradient_color(node)    ? node["gradient-color"] : nothing
     grot = has_gradient_rotation(node) ? node["gradient-rotation"] : nothing
     
-    PnmlDict(:tag=>Symbol(nn), :color=>clr, :image=>img,
-             :gradient_color=>gclr, :gradient_rotation=>grot)
+    Fill(color=clr, image=img, gradient_color=gclr, gradient_rotation=grot)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function parse_graphics_font(node; kwargs...)
-    @debug node
+    @show node
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")
     
@@ -123,6 +126,6 @@ function parse_graphics_font(node; kwargs...)
     style  = has_style(node)      ? node["style"] : nothing
     weight = has_weight(node)     ? node["weight"] : nothing
     
-    PnmlDict(:tag=>Symbol(nn), :family=>family, :style=>style, :weight=>weight,
-             :size=>size, :decoration=>deco, :align=>align, :rotation=>rot)
+    Font(family=family, style=style, weight=weight,
+             size=size, decoration=deco, align=align, rotation=rot)
 end

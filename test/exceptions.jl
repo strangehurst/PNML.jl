@@ -1,4 +1,5 @@
 #function test_malformed(xml, ::Type{E}, emsg) where {E <: PNML.PnmlException} 
+header("EXCEPTIONS")
 
 "Parse xml and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, xml)
@@ -26,7 +27,6 @@ function test_warn(emsg, xml)
         PNML.reset_registry!(reg)
     end
 end
-
 
 @testset "missing namespace" begin
     test_warn(r"missing namespace",
@@ -66,8 +66,8 @@ end
             """)
 
     test_malformed("net missing type",
-                   """
-     <?xml version="1.0" encoding="UTF-8"?>
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="4712">
             <page id="3">
@@ -81,8 +81,7 @@ end
         </pnml>
         """)
 
-       test_malformed("net missing type",
-               """<net id="4712"> </net>""")
+    test_malformed("net missing type", """<net id="4712"> </net>""")
 
     # test absence of an exception
     @test_throws Exception test_malformed("not malformed here",
@@ -120,20 +119,15 @@ end
 end
 
 @testset "graphics" begin
-    test_malformed("missing x","""<graphics><offset y="2" /></graphics>""")
-    test_malformed("missing y","""<graphics><offset x="1" /></graphics>""")
+    test_malformed("missing x", """<graphics><offset y="2" /></graphics>""")
+    test_malformed("missing y", """<graphics><offset x="1" /></graphics>""")
 
-    test_malformed("missing x","""<graphics><position  y="2" /></graphics>""")
-    test_malformed("missing y","""<graphics><position  x="1" /></graphics>""")
+    test_malformed("missing x", """<graphics><position  y="2" /></graphics>""")
+    test_malformed("missing y", """<graphics><position  x="1" /></graphics>""")
 
-    test_malformed("missing x","""<graphics><dimension  y="2" /></graphics>""")
-    test_malformed("missing y","""<graphics><dimension  x="1" /></graphics>""")
+    test_malformed("missing x", """<graphics><dimension  y="2" /></graphics>""")
+    test_malformed("missing y", """<graphics><dimension  x="1" /></graphics>""")
 
-    #test_malformed("missing y","""<graphics></graphics>""")
-    
-    test_malformed("missing x",""" <tokengraphics><tokenposition y="-2"/></tokengraphics>""")
-    test_malformed("missing y",""" <tokengraphics><tokenposition x="-9"/></tokengraphics>""")
-    #test_malformed("missing  ",""" <tokengraphics><tokenposition x="-9" y="-2"/></tokengraphics>""")
-
-    #test_malformed("missing y",""" """)
+    test_malformed("missing x", """ <tokengraphics><tokenposition y="-2"/></tokengraphics>""")
+    test_malformed("missing y", """ <tokengraphics><tokenposition x="-9"/></tokengraphics>""")
 end

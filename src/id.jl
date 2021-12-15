@@ -14,7 +14,7 @@ end
 IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
 
 function Base.show(io::IO, reg::IDRegistry)
-    print(io, "PNML.IDRegistry ", length(reg.ids), " ids")
+    print(io, "PNML.IDRegistry ", length(reg.ids), " ids: ", reg.ids)
 end
 
 
@@ -32,6 +32,7 @@ function duplicate_id_action(id::Symbol; action=nothing)
     return nothing
 end
 
+#TODO rename register_id! to push!
 """
 $(TYPEDSIGNATURES)
 
@@ -44,7 +45,7 @@ function register_id!(reg::IDRegistry, id::Symbol)
         push!(reg.ids, id)
     end
     id
- end
+end
 
 """
 $(TYPEDSIGNATURES)

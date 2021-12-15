@@ -1,7 +1,5 @@
-
-
-    
-str = """
+str =
+    """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -24,7 +22,7 @@ str = """
   </net>
 </pnml>
     """
-
+header("parse tree")
 doc = EzXML.parsexml(str)
 if PRINT_PNML
     EzXML.prettyprint(doc);
@@ -99,8 +97,9 @@ end
     reg = PNML.IDRegistry()
     pnml_ir = parse_pnml(root(doc); reg)
     @test pnml_ir isa PNML.PnmlDict # not PNML.Document
-    #printnode(e)
+    printnode(pnml_ir; compress=false)
 
+    header("Summary of sizes")
     if SHOW_SUMMARYSIZE && PRINT_PNML
         @show Base.summarysize(pnml_ir)        
         showsize.(Ref(pnml_ir), keys(pnml_ir))
@@ -110,8 +109,8 @@ end
             foreach(net[:pages]) do page
                 print("page ", pid(page), "\n")
                 showsize.(Ref(page), keys(page))
-                for k in [:graphics, :tools, :labels, :places, :trans,
-                          :arcs, :declarations, :refT, :refP]
+                for k in [:graphics, :tools, :labels,
+                          :places, :trans, :arcs, :declarations, :refT, :refP]
                     if !isnothing(page[k])
                         print(k, " ", "\n")
                         showsize.(Ref(page[k]), keys(page[k]))
