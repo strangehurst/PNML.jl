@@ -72,6 +72,7 @@ makedocs(;
              "API" => "library.md",
              "Intermediate Representation" => "IR.md",
              "pnml.md",
+             "Interfaces" => "interface.md",
              "Examples" => Any[
                  "lotka-volterra.md",
                  "example2.md",

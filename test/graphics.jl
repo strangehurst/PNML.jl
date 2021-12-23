@@ -88,9 +88,9 @@ end
                                                              str4=>4]
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(n)
-        @test tag(n) == :tokengraphics
-        @test haskey(n,:position)
-        @test length(n[:position]) == l
+        @test n isa PNML.TokenGraphics #tag(n) == :tokengraphics
+        #@test haskey(n,:position)
+        @test length(n.positions) == l
     end
 end
 

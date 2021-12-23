@@ -43,15 +43,15 @@ struct SimpleNet{PNTD} <: PetriNet{PNTD}
     "Same as the XML attribute of the same name."
     id::Symbol
 
-    p1::PnmlDict
+    net::PnmlNet{PNTD}
 end
 
 SimpleNet(str::AbstractString) = SimpleNet(PNML.Document(str))
 SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
-function SimpleNet(net::PnmlDict)
+function SimpleNet(net::PnmlNet)
     netcopy = deepcopy(net)
     flatten_pages!(netcopy)
-    SimpleNet{typeof(pnmltype(netcopy))}(pid(netcopy), netcopy[:pages][1])
+    SimpleNet(netcopy.id, netcopy)
 end
 
 pid(s::SimpleNet) = s.id
@@ -71,31 +71,26 @@ function Base.show(io::IO, s::SimpleNet{P}) where {P}
     print(io, ")")
 end
 
+#-------------------------------------------------------------------------------
+# Implement PNML Petri Net interface.
+# 
+#-------------------------------------------------------------------------------
+places(s::SimpleNet)         = s.net.pages[1].places
+transitions(s::SimpleNet)    = s.net.pages[1].transitions
+arcs(s::SimpleNet)           = s.net.pages[1].arcs
+refplaces(s::SimpleNet)      = s.net.pages[1].refPlaces
+reftransitions(s::SimpleNet) = s.net.pages[1].refTransitions
 
-"""
-$(TYPEDSIGNATURES)
-"""
-places(s::SimpleNet) = s.p1[:places]
 
-"""
-$(TYPEDSIGNATURES)
-"""
-transitions(s::SimpleNet) = s.p1[:trans]
+#------------------------------------------------------------------------
+# Collection of generic labels implemented using a Vector of PnmlDict
+#------------------------------------------------------------------------
+has_labels(::Any) = false
+has_labels(::T) where T<: PnmlObject = true
+has_labels(::PnmlNet) = true
 
-"""
-$(TYPEDSIGNATURES)
-"""
-arcs(s::SimpleNet) = s.p1[:arcs]
-"""
-$(TYPEDSIGNATURES)
-"""
-refplaces(s::SimpleNet) = s.p1[:refP]
-
-"""
-$(TYPEDSIGNATURES)
-"""
-reftransitions(s::SimpleNet) = s.p1[:refT]
-
+has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(x.com.labels, tagvalue) : nothing
+get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
 
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
@@ -123,9 +118,9 @@ Return rate value of `transition`.
 function rate end
 function rate(transition)::Number
     r = get_label(transition,:rate)
-    
-    if (!isnothing(r) && !isnothing(r[:text]) && !isnothing(r[:text][:content]))
-        rate = number_value(r[:text][:content])
+    @show r
+    if (!isnothing(r) && !isnothing(r[:text]))
+        rate = number_value(r[:text])
         isnothing(rate) ? 0.0 : rate
     else
         0.0

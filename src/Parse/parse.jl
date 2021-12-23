@@ -32,12 +32,10 @@ function parse_pnml(node; kw...)
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kw, :reg)
-    # Give an id to match the rest of the IR. There can only be one pnml tag, use its name.
-    PnmlDict(:id => register_id!(kw[:reg], nn),
-             :tag => Symbol(nn),
-             :nets => parse_node.(allchildren("net", node); kw...),
-             :xml => includexml(node))
-    
+
+    Pnml(register_id!(kw[:reg], nn),
+         parse_node.(allchildren("net", node); kw...),
+         includexml(node))
 end
 
 """
@@ -63,19 +61,19 @@ function parse_net(node; kw...)
     # The 'graphics' key is an exception and has a single value.
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :type => pntd(node["type"]),
-                           :pages => PnmlDict[],
-                           :declarations => PnmlDict[])
+                           :type => pnmltype(node["type"]),
+                           :pages => Page[],
+                           :declarations => Declaration[])
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; kw...))
-            # NB: There is also a tag 'declarations' that is different from this symbol.
+            # NB: There is also a tag 'declarations' that is different from this.
             "declaration"  => push!(d[:declarations], parse_node(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d 
+    PnmlNet(d)
 end
 
 """
@@ -91,10 +89,13 @@ function parse_page(node; kw...)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg],node["id"]),
-                           :places => PnmlDict[], :trans => PnmlDict[], :arcs => PnmlDict[],
-                           :refP => PnmlDict[], :refT=>PnmlDict[],
-                           :declarations => PnmlDict[],
-                           :pages => PnmlDict[])
+                           :places => Place[],
+                           :trans => Transition[],
+                           :arcs => Arc[],
+                           :refP => RefPlace[],
+                           :refT => RefTransition[],
+                           :declarations => Declaration[],
+                           :pages => Page[])
     
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -108,7 +109,7 @@ function parse_page(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d
+    Page(d)
 end
 
 
@@ -134,7 +135,7 @@ function parse_place(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d
+    Place(d)
 end
 
 """
@@ -155,7 +156,7 @@ function parse_transition(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d
+    Transition(d)
 end
 
 """
@@ -182,7 +183,7 @@ function parse_arc(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d
+    Arc(d)
 end
 
 """
@@ -203,7 +204,7 @@ function parse_refPlace(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    d
+    RefPlace(d)
 end
 
 """
@@ -224,7 +225,7 @@ function parse_refTransition(node; kw...)
             _ => parse_pnml_node_common!(d,child; kw...)
         end
     end
-    d
+    RefTransition(d)
 end
 
 #----------------------------------------------------------
@@ -232,18 +233,18 @@ end
 """
 $(TYPEDSIGNATURES)
 
-"Return the stripped string of text child's nodecontent as :content key of PnmlDict.
+"Return the stripped string of nodecontent.
 """
 function parse_text(node; kw...)
     nn = nodename(node)
     nn == "text" || error("element name wrong")
-    PnmlDict(:tag=>Symbol(nn), :content=>string(strip(nodecontent(node))),)
+    string(strip(nodecontent(node)))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return name text value and optional tool & GUI information.
+Return [`Name`](@ref) holding text value and optional tool & GUI information.
 """
 function parse_name(node; kw...)
     node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
@@ -255,7 +256,7 @@ function parse_name(node; kw...)
 
     tx = firstchild("text", node)
     if isnothing(tx)
-         @warn "$(nn) missing <text> element"
+        @warn "$(nn) missing <text> element"
         # There are pnml files that break the rules & do not have a text element here.
         # Ex: PetriNetPlans-PNP/parallel.jl
         # Attempt to harvest content of <name> element instead of the child <text> element.
@@ -271,10 +272,7 @@ function parse_name(node; kw...)
     ts = allchildren("toolspecific", node)
     tools = isempty(ts) ? nothing : parse_node.(ts; kw..., verbose=false)
     
-    PnmlDict(:tag => Symbol(nn),
-             :value => value,
-             :graphics => graphics,
-             :tools => tools)
+    Name(value; graphics, tools)
 end
 
 #----------------------------------------------------------
@@ -321,7 +319,7 @@ function parse_initialMarking(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    d  
+    PTMarking(d)  
 end
 
 """
@@ -337,7 +335,7 @@ function parse_inscription(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    d
+    PTInscription(d)
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
@@ -355,7 +353,7 @@ function parse_hlinitialMarking(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)          
         end
     end
-    d
+    HLMarking(d)
 end
 
 """
@@ -371,7 +369,7 @@ function parse_hlinscription(node; kw...)
            _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    d
+    HLInscription(d)
 end
 
 """
@@ -385,5 +383,5 @@ function parse_condition(node; kw...)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
-    d
+    Condition(d)
 end

@@ -2,57 +2,22 @@
 $(TYPEDEF)
 
 Abstract type providing 2nd-level parsing of the intermediate representation
-of a single network in a PNML.Document.
+of a  **single network** in a PNML.Document.
 
 # Extended
 
-Subtypes should map directly and simply to subtypes of [`PnmlType`](@ref).
-Additional constranints can be imposed.
+The type parameter of a nets should map directly and simply
+to subtypes of [`PnmlType`](@ref).
+
+Additional constranints can be imposed. We want to run under the motto:
+"syntax is not semantics, quack".
 
 Since a PNML.Document can contain multiple networks it is possible that a higher-level
 will create multiple PNML.PetriNet instances, each a different subtype.
 
 Pages are used for visual layout for humans.
-They can be merged into one page without loseing any Petri Net semantics.
+They can be merged into one page without losing any Petri Net semantics.
 Often we will only work with merged pages.
-
-# Interface
-#TODO define type for network IR: Wrap a single tag net's [`PnmlDict`](@ref)?
-We start a description of the net IR here. 
-
-XML <net> tags are parsed into PnmlDict
-
-| key          | value description                             |
-| :----------- | :-------------------------------------------- |
-| tag          | XML tag name is standard in the IR            |
-| id           | unique ID                                     |
-| name         | text name, optional                           |
-| tools        | set of tool specific - possibly empty         |
-| labels       | set of generic "pnml labels" - possible empty |
-| type         | PnmlType defines schema the XML should meet   |
-| declarations | defines high-level semantics of a net         |
-| pages        | set of pages - not empty                      |
- 
-See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
-and [`parse_net`](@ref) for more detail.
-
-XML <page> tags are also parsed into PnmlDict
-
-| key          | value description                             |
-| :----------- | :-------------------------------------------- |
-| tag          | XML tag name is standard in the IR            |
-| id           | unique ID                                     |
-| name         | text name, optional                           |
-| tools        | set of tool specific - possibly empty         |
-| labels       | set of generic "pnml labels" - possible empty |
-| places       | set of places                                 |
-| trans        | set of transitions                            |
-| arcs         | set of arcs                                   |
-| refP         | references to place on different page         |
-| refT         | references to transition on different page    |
-| declarations | only net & page tags have declarations        |
-
-See also: [`parse_page`](@ref), [`parse_net`](@ref)
 """
 abstract type PetriNet{T<:PnmlType} end
 
@@ -96,6 +61,8 @@ refplaces(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 """
 $(TYPEDSIGNATURES)
+
+Return vector of 
 """
 reftransitions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
@@ -109,14 +76,14 @@ $(TYPEDSIGNATURES)
 
 Return symbol of source of `arc`.
 """
-source(arc)::Symbol = arc[:source]
+source(arc)::Symbol = arc.source
 
 """
 $(TYPEDSIGNATURES)
 
 Return symbol of target of `arc`.
 """
-target(arc)::Symbol = arc[:target]
+target(arc)::Symbol = arc.target
 
 """
 $(TYPEDSIGNATURES)
@@ -129,7 +96,7 @@ end
 $(TYPEDSIGNATURES)
 """
 function arc(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:arcs][findfirst(x -> pid(x) === id, arcs(s))]
+    arcs(s)[findfirst(x -> pid(x) === id, arcs(s))]
 end
 
 """
@@ -173,8 +140,8 @@ Return incription value of `arc`.
 function inscription end
 
 function inscription(arc)::Number
-    if !isnothing(arc[:inscription]) && !isnothing(arc[:inscription][:value])
-        arc[:inscription][:value]
+    if !isnothing(arc.inscription)
+        arc.inscription.value
     else
         1
     end        
@@ -216,14 +183,14 @@ reftransition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, reftransi
 $(TYPEDSIGNATURES)
 """
 function refplace(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:refP][findfirst(x -> pid(x) === id, refplaces(s))]
+    refplaces(s)[findfirst(x -> pid(x) === id, refplaces(s))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function reftransition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:refT][findfirst(x -> pid(x) === id, reftransitions(s))]
+    reftransitions(s)[findfirst(x -> pid(x) === id, reftransitions(s))]
 end
 
 """
@@ -243,21 +210,21 @@ function deref! end
 
 function deref!(s::N) where {T <: PnmlType, N <: PetriNet{T}} 
     for a in arcs(s)
-        while a[:source] ∈ refplace_ids(s)
-            @debug a[:source], deref_place(s, a[:source])
-            a[:source] = deref_place(s, a[:source])
+        while a.source ∈ refplace_ids(s)
+            @debug a.source, deref_place(s, a.source)
+            a.source = deref_place(s, a.source)
         end
-        while a[:target] ∈ refplace_ids(s)
-            @debug a[:target], deref_place(s, a[:target])
-            a[:target] = deref_place(s, a[:target])
+        while a.target ∈ refplace_ids(s)
+            @debug a.target, deref_place(s, a.target)
+            a.target = deref_place(s, a.target)
         end
-        while a[:source] ∈ reftransition_ids(s)
-            @debug a[:source], deref_transition(s, a[:source])
-            a[:source] = deref_transition(s, a[:source])
+        while a.source ∈ reftransition_ids(s)
+            @debug a.source, deref_transition(s, a.source)
+            a.source = deref_transition(s, a.source)
         end
-        while a[:target] ∈ reftransition_ids(s)
-            @debug a[:target], deref_transition(s, a[:target])
-            a[:target] = deref_transition(s, a[:target])
+        while a.target ∈ reftransition_ids(s)
+            @debug a.target, deref_transition(s, a.target)
+            a.target = deref_transition(s, a.target)
         end        
     end
 end
@@ -269,14 +236,14 @@ $(TYPEDSIGNATURES)
 
 Return id of referenced place.
 """
-deref_place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = refplace(s, id)[:ref]
+deref_place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = refplace(s, id).ref
 
 """
 $(TYPEDSIGNATURES)
 
 Return id of referenced transition.
 """
-deref_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = reftransition(s, id)[:ref]
+deref_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = reftransition(s, id).ref
 
 
 #------------------------------------------------------------------
@@ -298,7 +265,7 @@ $(TYPEDSIGNATURES)
 Return the place with `id` in net `s`.
 """
 function place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:places][findfirst(x -> pid(x) === id, places(s))]
+    places(s)[findfirst(x -> pid(x) === id, places(s))]
 end
 
 """
@@ -317,16 +284,16 @@ Return marking value of a place `p`.
 # Examples
 
 ```jldoctest
-julia> using PNML #hide
+julia> using PNML
 
-julia> p = Dict(:marking => Dict(:value=>nothing));
+julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
 
-julia> PNML.marking(p)
+julia> p.value
 0
 
-julia> p = Dict(:marking => Dict(:value=>12.34));
+julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
 
-julia> PNML.marking(p)
+julia> p.value
 12.34
 ```
 """
@@ -334,8 +301,8 @@ function marking end
 
 function marking(place)::Number
     #TODO PNTD specific marking semantics. Including structures
-    if !isnothing(place[:marking]) && !isnothing(place[:marking][:value])
-        place[:marking][:value]
+    if !isnothing(place.marking)
+        place.marking.value
     else
         0
     end
@@ -345,6 +312,7 @@ function marking(s::N, p::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     #TODO force specialization? Use trait?
     marking(place(s,p))
 end
+
 
 
 """
@@ -364,7 +332,6 @@ end
 # TRANSITIONS, CONDITIONS
 #------------------------------------------------------------------
 
-
 """
 $(TYPEDSIGNATURES)
 
@@ -378,7 +345,7 @@ end
 $(TYPEDSIGNATURES)
 """
 function transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    s.p1[:trans][findfirst(x -> pid(x) === id, transitions(s))]
+    transitions(s)[findfirst(x -> pid(x) === id, transitions(s))]
 end
 
 """
@@ -404,15 +371,15 @@ end
 Return condition value of `transition`.
 """
 function condition end
+
+# TODO Specialize on PNTD.
 function condition(transition)::Number
-    if (!isnothing(transition[:condition]) &&
-        !isnothing(transition[:condition][:text]) &&
-        !isnothing(transition[:condition][:text][:content]))
-        #TODO implement full structure handling
-        rate = number_value(transition[:condition][:text][:content])
-        isnothing(rate) ? 0 : rate
-    else
+    if isnothing(transition.condition) || isnothing(transition.condition.text)
         0
+    else
+        #TODO implement full structure handling
+        rate = number_value(transition.condition.text)
+        isnothing(rate) ? 0 : rate
     end
 end
 

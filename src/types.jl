@@ -2,6 +2,7 @@
 $(TYPEDEF)
 
 Alias for Dict with Symbol key.
+Allows code to have semantic information in type names, better searchability.
 """
 const PnmlDict = Dict{Symbol, Any}
 
@@ -30,6 +31,7 @@ $(TYPEDSIGNATURES)
 Return xml node field of `d`.
 """
 function xmlnode end
+xmlnode(d::Any) = nothing
 xmlnode(d::PnmlDict) = d[:xml]
 
 
@@ -56,6 +58,7 @@ function compress(d::T) where T <: PnmlDict
     end
     f
 end
+
 
 function compress(a::T) where T
     @warn "trying to compress unsupported $T"

@@ -3,12 +3,18 @@
 [Petri Net Markup Language](https://www.pnml.org), is an XML-based format.
 PNML.jl reads a pnml model and emits an intermediate representation (IR).
 
-The intermediate representation (IR) represents the XML tree via dictionaries, with
-leaf values including named tuples, LabelledArrays, strings, numbers, objects, vectors.
-The tags of the XML are used as keys as much as possible.
+The intermediate representation (IR) represents the XML tree via julia data structures:
+dictionaries, NamedTuples, LabelledArrays, strings, numbers, objects, vectors.
+The exact mixture changes as the project continues.
+
+The tags of the XML are used as keys and names as much as possible.
  
-What is accepted as values is often a superset of what the pntd specifies.
+What is accepted as values is often a superset of what the pntd schema specifies.
 This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
+
+On top of the IR is (will be) implemented Petri Net adaptions and interpertations.
+This is the level that pntd conformance can be imposed.
+Adaption to julia packages for graphs, agents, and composing into the greater hive-mind. 
 
 # TODO
 

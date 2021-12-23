@@ -4,12 +4,11 @@ $(TYPEDSIGNATURES)
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
 """
-function parse_tokengraphics(node; kwargs...)
+function parse_tokengraphics(node; kw...)
     nn = nodename(node)
     nn == "tokengraphics" || error("element name wrong: $nn")
 
-    pnml_label_defaults(node, :tag => Symbol(nn),
-                        :position => parse_node.(allchildren("tokenposition",node); kwargs...))
+   TokenGraphics(parse_node.(allchildren("tokenposition",node); kw...))
 end
 
 """
@@ -17,11 +16,11 @@ $(TYPEDSIGNATURES)
 
 Position is a coordinate relative to containing element. Units are points.
 """
-function parse_tokenposition(node; kwargs...)
+function parse_tokenposition(node; kw...)
     nn = nodename(node)
     nn == "tokenposition" || error("element name wrong: $nn")
 
-    parse_graphics_coordinate(node; kwargs...)
+    parse_graphics_coordinate(node; kw...)
 end
 
 """
@@ -30,7 +29,7 @@ $(TYPEDSIGNATURES)
 Arcs, Annotations and Nodes (places, transitions, pages) have different graphics semantics.
 Return a dictonary with the union of possibilities.
 """
-function parse_graphics(node; kwargs...)
+function parse_graphics(node; kw...)
     @debug node
     nn = nodename(node)
     nn == "graphics" || error("element name wrong: $nn")
@@ -41,12 +40,12 @@ function parse_graphics(node; kwargs...)
                  :xml => includexml(node))
     foreach(elements(node)) do child
         @match nodename(child) begin 
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child; kwargs...))
-            "fill"      => (d[:fill] = parse_graphics_fill(child; kwargs...))
-            "font"      => (d[:font] = parse_graphics_font(child; kwargs...))
-            "line"      => (d[:line] = parse_graphics_line(child; kwargs...))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child; kwargs...))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child; kwargs...)))
+            "dimension" => (d[:dimension] = parse_graphics_coordinate(child; kw...))
+            "fill"      => (d[:fill] = parse_graphics_fill(child; kw...))
+            "font"      => (d[:font] = parse_graphics_font(child; kw...))
+            "line"      => (d[:line] = parse_graphics_line(child; kw...))
+            "offset"    => (d[:offset] = parse_graphics_coordinate(child; kw...))
+            "position"  => (push!(d[:positions], parse_graphics_coordinate(child; kw...)))
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
@@ -65,7 +64,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_graphics_line(node; kwargs...)
+function parse_graphics_line(node; kw...)
     @debug node
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn: $nn")
@@ -84,7 +83,7 @@ $(TYPEDSIGNATURES)
 Coordinates `x`, `y` are in points.
 Specification seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node; kwargs...)
+function parse_graphics_coordinate(node; kw...)
     nn = nodename(node)    
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
@@ -98,7 +97,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_graphics_fill(node; kwargs...)
+function parse_graphics_fill(node; kw...)
     nn = nodename(node)
     (nn == "fill") || error("element name wrong: $nn")
     
@@ -113,7 +112,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_graphics_font(node; kwargs...)
+function parse_graphics_font(node; kw...)
     @show node
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")

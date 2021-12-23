@@ -14,7 +14,11 @@ macro xml_str(s)
     EzXML.parsexml(s).root
 end
 
-"Parse string as a number. First try integer then float."
+"""
+$(TYPEDSIGNATURES)
+
+Parse string as a number. First try integer then float.
+"""
 function number_value(s::AbstractString)
     x = tryparse(Int,s) 
     x = isnothing(x) ?  tryparse(Float64,s) : x
@@ -39,35 +43,103 @@ function allchildren(tag, el, ns=PNML.pnml_ns)
 end
 
 #-------------------------------------------------------------------
-# XML attribute predicates.
-has_align(element)       = EzXML.haskey(element, "align")
-has_color(element)       = EzXML.haskey(element, "color")
-has_declaration(element) = EzXML.haskey(element, "declaration") # UserSort
-has_decoration(element)  = EzXML.haskey(element, "decoration")
-has_family(element)      = EzXML.haskey(element, "family")
-has_gradient_color(element)    = EzXML.haskey(element, "gradient-color")
-has_gradient_rotation(element) = EzXML.haskey(element, "gradient-rotation")
-has_id(element)          = EzXML.haskey(element, "id")
-has_image(element)       = EzXML.haskey(element, "image")
-has_name(element)        = EzXML.haskey(element, "name") # declaration tag has name attributes.
-has_ref(element)         = EzXML.haskey(element, "ref")
-has_rotation(element)    = EzXML.haskey(element, "rotation")
-has_shape(element)       = EzXML.haskey(element, "shape")
-has_size(element)        = EzXML.haskey(element, "size")
-has_source(element)      = EzXML.haskey(element, "source")
-has_style(element)       = EzXML.haskey(element, "style")
-has_target(element)      = EzXML.haskey(element, "target")
-has_tool(element)        = EzXML.haskey(element, "tool")
-has_type(element)        = EzXML.haskey(element, "type")
-has_value(element)       = EzXML.haskey(element, "value")
-has_variabledecl(element) = EzXML.haskey(element, "variabledecl") # Variable
-has_refvariable(element) = EzXML.haskey(element, "refvariable") # Variable
-has_version(element)     = EzXML.haskey(element, "version")
-has_weight(element)      = EzXML.haskey(element, "weight")
-has_width(element)       = EzXML.haskey(element, "width")
-has_x(element)           = EzXML.haskey(element, "x")
-has_xmlns(element)       = EzXML.haskey(element, "xmlns")
-has_y(element)           = EzXML.haskey(element, "y")
+# Predicates return a boolean.
+
+function has_xml end
+has_xml(::Any) = false
+
+# TODO Create docstring for block of predicates?
+# XML predicates
+function has_align             end
+function has_color             end
+function has_declaration       end
+function has_decoration        end
+function has_family            end
+function has_gradient_color    end
+function has_gradient_rotation end
+function has_id                end
+function has_image             end
+function has_name              end
+function has_ref               end
+function has_rotation          end
+function has_shape             end
+function has_size              end
+function has_source            end
+function has_style             end
+function has_target            end
+function has_tool              end
+function has_type              end
+function has_value             end
+function has_variabledecl      end
+function has_refvariable       end
+function has_version           end
+function has_weight            end
+function has_width             end
+function has_x                 end
+function has_xmlns             end
+function has_y                 end      
+
+#-------------------------------------------------------------------
+has_align(::Any)             = false
+has_color(::Any)             = false
+has_declaration(::Any)       = false
+has_decoration(::Any)        = false
+has_family(::Any)            = false
+has_gradient_color(::Any)    = false
+has_gradient_rotation(::Any) = false
+has_id(::Any)                = false
+has_image(::Any)             = false
+has_name(::Any)              = false
+has_ref(::Any)               = false
+has_rotation(::Any)          = false
+has_shape(::Any)             = false
+has_size(::Any)              = false
+has_source(::Any)            = false
+has_style(::Any)             = false
+has_target(::Any)            = false
+has_tool(::Any)              = false
+has_type(::Any)              = false
+has_value(::Any)             = false
+has_variabledecl(::Any)      = false
+has_refvariable(::Any)       = false
+has_version(::Any)           = false
+has_weight(::Any)            = false
+has_width(::Any)             = false
+has_x(::Any)                 = false
+has_xmlns(::Any)             = false
+has_y(::Any)                 = false
+
+
+#-------------------------------------------------------------------
+# XML attribute predicates (traits with a boolean value).
+has_align(el::EzXML.Node)       = EzXML.haskey(el, "align")
+has_color(el::EzXML.Node)       = EzXML.haskey(el, "color")
+has_declaration(el::EzXML.Node) = EzXML.haskey(el, "declaration") # UserSort
+has_decoration(el::EzXML.Node)  = EzXML.haskey(el, "decoration")
+has_family(el::EzXML.Node)      = EzXML.haskey(el, "family")
+has_gradient_color(el::EzXML.Node)    = EzXML.haskey(el, "gradient-color")
+has_gradient_rotation(el::EzXML.Node) = EzXML.haskey(el, "gradient-rotation")
+has_id(el::EzXML.Node)          = EzXML.haskey(el, "id")
+has_image(el::EzXML.Node)       = EzXML.haskey(el, "image")
+has_name(el::EzXML.Node)        = EzXML.haskey(el, "name") # declaration tag has name attributes.
+has_ref(el::EzXML.Node)         = EzXML.haskey(el, "ref")
+has_rotation(el::EzXML.Node)    = EzXML.haskey(el, "rotation")
+has_shape(el::EzXML.Node)       = EzXML.haskey(el, "shape")
+has_size(el::EzXML.Node)        = EzXML.haskey(el, "size")
+has_source(el::EzXML.Node)      = EzXML.haskey(el, "source")
+has_style(el::EzXML.Node)       = EzXML.haskey(el, "style")
+has_target(el::EzXML.Node)      = EzXML.haskey(el, "target")
+has_tool(el::EzXML.Node)        = EzXML.haskey(el, "tool")
+has_type(el::EzXML.Node)        = EzXML.haskey(el, "type")
+has_value(el::EzXML.Node)       = EzXML.haskey(el, "value")
+has_variabledecl(el::EzXML.Node) = EzXML.haskey(el, "variabledecl") # Variable
+has_refvariable(el::EzXML.Node) = EzXML.haskey(el, "refvariable") # Variable
+has_version(el::EzXML.Node)     = EzXML.haskey(el, "version")
+has_weight(el::EzXML.Node)      = EzXML.haskey(el, "weight")
+has_width(el::EzXML.Node)       = EzXML.haskey(el, "width")
+has_x(el::EzXML.Node)           = EzXML.haskey(el, "x")
+has_xmlns(el::EzXML.Node)       = EzXML.haskey(el, "xmlns")
+has_y(el::EzXML.Node)           = EzXML.haskey(el, "y")
 
 #-------------------------------------------------------------------
 # Bindings for viewing tree.

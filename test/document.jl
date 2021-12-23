@@ -37,12 +37,12 @@ end
     v1 = PNML.find_nets(doc, :ptnet)
     printnode(v1, label="v1")
     foreach(v1) do net
-        @test net[:type] === :ptnet
+        @test net.type === PNML.pnmltype(:ptnet)
     end    
     v2 = PNML.find_nets(doc, "ptnet")
     printnode(v2, label="v2")
     foreach(v2) do net
-        @test net[:type] === :ptnet
+        @test net.type === PNML.pnmltype(:ptnet)
     end    
     
     @test v1 == v2
@@ -51,7 +51,7 @@ end
     v3 = PNML.find_nets(doc, :pnmlcore)
     printnode(v3, label="v3")
     foreach(v3) do net
-        @test net[:type] === :pnmlcore
+        @test net.type === PNML.pnmltype(:pnmlcore)
     end    
     
     @test !isempty(v3)
@@ -59,7 +59,7 @@ end
     
     @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
         foreach(PNML.find_nets(doc, t)) do net
-            @test net[:type] === t
+            @test net.type === PNML.pnmltype(t)
         end
     end
 end

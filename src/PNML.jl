@@ -28,12 +28,13 @@ include("types.jl")
 include("exceptions.jl")
 include("pntd.jl")
 
+include("Parse/intermediate.jl")
+include("Parse/document.jl")
+include("Parse/pnmldict.jl")
 include("Parse/parse.jl")
-include("Parse/parse_utils.jl")
 include("Parse/graphics.jl")
 include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
-include("Parse/document.jl")
 include("Parse/maps.jl")
 
 

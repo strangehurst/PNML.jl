@@ -23,7 +23,7 @@ function parse_declaration(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
-    attribute_elem(node; kwargs...)
+    Declaration(attribute_elem(node; kwargs...))
 end
 
 """

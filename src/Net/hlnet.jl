@@ -24,31 +24,15 @@ pid(s::HLPetriNet) = pid(s.net)
 $(TYPEDSIGNATURES)
 
 Return the type representing the pntd.
+There are several things with the name 'type'.
+One also called PNTD is meant here..
 """
 typexxx(s::HLPetriNet{T}) where {T <: PnmlType} = T
 
-
-"""
-$(TYPEDSIGNATURES)
-"""
-places(s::HLPetriNet) = s.net[:places] 
-
-"""
-$(TYPEDSIGNATURES)
-"""
-transitions(s::HLPetriNet) = s.net[:trans]
-
-"""
-$(TYPEDSIGNATURES)
-"""
-arcs(s::HLPetriNet) = s.net[:arcs]
-"""
-$(TYPEDSIGNATURES)
-"""
-refplaces(s::HLPetriNet) = s.net[:refP]
-
-"""
-$(TYPEDSIGNATURES)
-"""
-reftransitions(s::HLPetriNet) = s.net[:refT]
+# Implement PNML Petri Net interface.
+places(s::HLPetriNet) = s.net.pages[1].places
+transitions(s::HLPetriNet) = s.net.pages[1].transitions
+arcs(s::HLPetriNet) = s.net.pages[1].arcs
+refplaces(s::HLPetriNet) = s.net.pages[1].refPlaces
+reftransitions(s::HLPetriNet) = s.net.pages[1].refTransitions
 

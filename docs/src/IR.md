@@ -42,6 +42,14 @@ the higher level network
 
 # History of this IR
 
-Started as nested Dict{Symbol,Any}.
+Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref). 
+
+2021-12-15, Began the process of moving to a struct-based scheme 
+based on [`Pnml`](@ref) and the rest of the intermediate representation.
+
+Some instances of `PnmlDict` are still present in the parsing mechanism.
+
+As experience with building & using more complicated pnml network models,
+more of the IR will be implemented or changed.
 
 

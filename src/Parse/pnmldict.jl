@@ -47,17 +47,17 @@ $(TYPEDSIGNATURES)
 From `nv`, a vector of XML nodes, return PnmlDict with values that are vectors
 when there are multiple instances of a tag in `nv` and scalar otherwise.
 """
-function attribute_content(nv::Vector{EzXML.Node}; kwargs...)
-    d = PnmlDict()
+function attribute_content(nv::Vector{EzXML.Node}; kw...)
+    d = PnmlDict() 
     nn = [nodename(n)=>n for n in nv] # Not yet turned into Symbols.
     tagnames = unique(map(first,nn))
     foreach(tagnames) do tname 
         e = filter(x->x.first===tname, nn)
         #TODO make toolspecific match annotation labels.declarations
         d[Symbol(tname)] = if length(e) > 1
-            parse_node.(map(x->x.second, e); kwargs...)
+            parse_node.(map(x->x.second, e); kw...)
         else
-            parse_node(e[1].second; kwargs...)
+            parse_node(e[1].second; kw...)
         end
     end
     d
@@ -69,7 +69,7 @@ $(TYPEDSIGNATURES)
 
 Add `node` to` d[:labels]`. Return updated `d[:labels]`.
 """
-function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
+function add_label!(d::PnmlDict, node; kw...)::Vector{PnmlDict}
     @debug "add label! $(nodename(node))"
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
     # The value is initialized to `nothing since it is expected that most labels
@@ -80,7 +80,7 @@ function add_label!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
     end
     # Use of parse_node allows the :labels vector to contain fully parsed nodes.
     # Some higher-level might be able to make use of these.
-    push!(d[:labels], parse_node(node; kwargs...))
+    push!(d[:labels], parse_node(node; kw...))
 end
 
 """
@@ -88,10 +88,18 @@ $(TYPEDSIGNATURES)
 
 Does any label attached to `d` have a matching `tagvalue`.
 """
+function has_label end
 function has_label(d::PnmlDict, tagvalue::Symbol)
-    any(lab->tag(lab) === tagvalue, d[:labels])
+    any(label->tag(label) === tagvalue, d[:labels])
 end
 
+
+"""
+$(TYPEDSIGNATURES)
+
+Return first label attached to `d` have a matching `tagvalue`.
+"""
+function get_label end
 function get_label(d::PnmlDict, tagvalue::Symbol)
     labels = d[:labels]
     labels[findfirst(lab->tag(lab) === tagvalue, labels)]
@@ -104,13 +112,13 @@ $(TYPEDSIGNATURES)
 
 Add `node` to`d[:tools]`. Return updated `d[:tools]`.
 """
-function add_tool!(d::PnmlDict, node; kwargs...)::Vector{PnmlDict}
+function add_tool!(d::PnmlDict, node; kw...)::Vector{PnmlDict}
     if d[:tools] === nothing
         d[:tools] = PnmlDict[] #TODO: pick type allowd in PnmlDict values? 
     end
     # Use of parse_node allows the :tools vector to contain fully parsed nodes.
     # Some higher-level might be able to make use of these.
-    push!(d[:tools], parse_node(node; kwargs...))
+    push!(d[:tools], parse_node(node; kw...))
 end
 
 #---------------------------------------------------------------------
@@ -170,11 +178,11 @@ Note that "labels" are the "everything else" option and this should be called af
 any elements that has an expected tag. Any tag that is encountered in an unexpected location
 should be treated as an anonymous label for parsing.
 """
-function parse_pnml_common!(d::PnmlDict, node; kwargs...)
+function parse_pnml_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "graphics"     => (d[:graphics] = parse_node(node; kwargs...))
-        "toolspecific" => add_tool!(d, node; kwargs...)
-        _ => add_label!(d, node; kwargs...) # label with a label allows any node to be attached & parsable.
+        "graphics"     => (d[:graphics] = parse_node(node; kw...))
+        "toolspecific" => add_tool!(d, node; kw...)
+        _ => add_label!(d, node; kw...) # label with a label allows any node to be attached & parsable.
     end
 end
 
@@ -183,10 +191,10 @@ $(TYPEDSIGNATURES)
 
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_node_common!(d::PnmlDict, node; kwargs...)
+function parse_pnml_node_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "name" => (d[:name] = parse_node(node; kwargs...))
-        _      => parse_pnml_common!(d, node; kwargs...)
+        "name" => (d[:name] = parse_node(node; kw...))
+        _      => parse_pnml_common!(d, node; kw...)
     end
 end
 
@@ -196,11 +204,11 @@ $(TYPEDSIGNATURES)
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_label_common!(d::PnmlDict, node; kwargs...)    
+function parse_pnml_label_common!(d::PnmlDict, node; kw...)    
     @match nodename(node) begin
-        "text"      => (d[:text] = parse_node(node; kwargs...)) #TODO label with name?
-        "structure" => (d[:structure] = parse_node(node; kwargs...))
-        _      => parse_pnml_common!(d, node; kwargs...)
+        "text"      => (d[:text] = parse_node(node; kw...)) #TODO label with name?
+        "structure" => (d[:structure] = parse_node(node; kw...))
+        _      => parse_pnml_common!(d, node; kw...)
     end
 end
 
@@ -211,7 +219,7 @@ $(TYPEDSIGNATURES)
 Should not often have a '<label>' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
 """
-function parse_label(node; kwargs...)
+function parse_label(node; kw...)
     nn = nodename(node)
     nn == "label" || error("element name wrong: $nn")
     @warn "parse_label '$(node !== nothing && nn)'"

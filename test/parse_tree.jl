@@ -23,13 +23,14 @@ str =
 </pnml>
     """
 header("parse tree")
-doc = EzXML.parsexml(str)
+doc = EzXML.parsexml(str) # shared by testsets
+
 if PRINT_PNML
     EzXML.prettyprint(doc);
     println()
 end
 
-@testset "parse1" begin
+@testset "parse nodes" begin
     pnml = root(doc)
     @test EzXML.nodename(pnml) == "pnml"
     @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
@@ -40,11 +41,10 @@ end
         @test nodename(net) == "net"
         
         nn = parse_name(PNML.firstchild("name", net); reg)
-        @test tag(nn) == :name
-        @test nn[:value] == "P/T Net with one place"
-        @test nn[:graphics] === nothing
-        @test haskey(nn,:tools)
-        @test nn[:tools] === nothing || isempty(nn[:tools])
+        @test isa(nn, PNML.Name)
+        @test nn.text == "P/T Net with one place"
+        @test nn.graphics === nothing
+        @test nn.tools === nothing || isempty(nn.tools)
 
         nd = PNML.allchildren("declaration", net)
         @test isempty(nd)
@@ -64,9 +64,9 @@ end
             foreach(PNML.allchildren("place", page)) do p
                 @test nodename(p) == "place"
                 i = parse_node(PNML.firstchild("initialMarking", p); reg)
-                @test tag(i) == :initialMarking
-                @test i[:value] !== nothing
-                @test i[:value] >= 0
+                @test typeof(i) <: PNML.PTMarking
+                @test typeof(i.value) <: Number
+                @test i.value >= 0
                 @test xmlnode(i) isa Maybe{EzXML.Node}
             end
             
@@ -81,9 +81,9 @@ end
             foreach(PNML.allchildren("arc", page)) do a
                 @test nodename(a) == "arc"
                 i = parse_node(PNML.firstchild("inscription", a); reg)
-                @test tag(i) == :inscription
-                @test i[:value] !== nothing
-                @test i[:value] > 0
+                @test typeof(i) <: PNML.PTInscription
+                @test typeof(i.value) <: Number
+                @test i.value > 0
                 @test xmlnode(i) isa Maybe{EzXML.Node}
             end
         end
@@ -96,9 +96,14 @@ end
     # Do a full parse and maybe print the generated data structure.
     reg = PNML.IDRegistry()
     pnml_ir = parse_pnml(root(doc); reg)
-    @test pnml_ir isa PNML.PnmlDict # not PNML.Document
-    printnode(pnml_ir; compress=false)
+    @show typeof(pnml_ir)
+    @test typeof(pnml_ir) <: PNML.Pnml
+    
+    printnode(pnml_ir; label="pnml_ir", compress=false)
+    #=
 
+    This assumes everything has keys.
+    
     header("Summary of sizes")
     if SHOW_SUMMARYSIZE && PRINT_PNML
         @show Base.summarysize(pnml_ir)        
@@ -106,7 +111,7 @@ end
         foreach(pnml_ir[:nets]) do net
             print("net ", pid(net), "\n")
             showsize.(Ref(net), keys(net))
-            foreach(net[:pages]) do page
+            foreach(net.pages) do page
                 print("page ", pid(page), "\n")
                 showsize.(Ref(page), keys(page))
                 for k in [:graphics, :tools, :labels,
@@ -123,46 +128,38 @@ end
         end
     end
     println()
-                              
-    foreach(pnml_ir[:nets]) do net
-        @test net isa PNML.PnmlDict
-        @test tag(net) == :net
-        @test pid(net) isa Symbol
+    =#
+    foreach(pnml_ir.nets) do net
+        @test net isa PNML.PnmlNet
+        @test net.id isa Symbol
         
-        foreach(net[:pages]) do page
-            @test page isa PNML.PnmlDict
-            @test tag(page) == :page
+        foreach(net.pages) do page
+            @test page isa PNML.Page
             @test pid(page) isa Symbol
-            foreach(page[:places]) do place
-                @test place isa PNML.PnmlDict
-                @test tag(place) == :place
+            foreach(page.places) do place
+                @test place isa PNML.Place
                 @test pid(place) isa Symbol
             end
-            foreach(page[:trans]) do transition
-                @test transition isa PNML.PnmlDict
-                @test tag(transition) == :transition
+            foreach(page.transitions) do transition
+                @test transition isa PNML.Transition
                 @test pid(transition) isa Symbol
             end
-            foreach(page[:arcs]) do arc
-                @test arc isa PNML.PnmlDict
-                @test tag(arc) == :arc
+            foreach(page.arcs) do arc
+                @test arc isa PNML.Arc
                 @test pid(arc) isa Symbol
             end
-            foreach(page[:declarations]) do decl
-                @test decl isa PNML.PnmlDict
-                @test tag(decl) = :declaration
+            foreach(page.declarations) do decl
+                @test decl isa PNML.Declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
-        foreach(net[:declarations]) do decl
-            @test decl isa PNML.PnmlDict
-            @test tag(decl) = :declaration
+        foreach(net.declarations) do decl
+            @test decl isa PNML.Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end 
     end
     
     PNML.reset_registry!(reg)
-    println()
 end
 

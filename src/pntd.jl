@@ -39,7 +39,7 @@ struct PTNet <: PnmlType end
 """
 $(TYPEDEF)
 
-High-Level Petri Nets add large extensions to core, can be used for generic high-leve nets.
+High-Level Petri Nets add large extensions to core, can be used for generic high-level nets.
 """
 struct HLCore <: AbstractHLCore end
 
@@ -162,7 +162,7 @@ Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmlty
 # Examples
 
 ```jldoctest
-julia> using PNML #hide
+julia> using PNML
 ```
 """
 pntd(s::AbstractString) = haskey(default_pntd_map,s) ? default_pntd_map[s] : :pnmlcore
@@ -181,7 +181,7 @@ Unknown `symbol` returns `nothing`.
 function pnmltype end
 pnmltype(t::T; kw...) where {T<:PnmlType} = t
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd(uri); kw...)
-pnmltype(d::PnmlDict; kw...) = pnmltype(d[:type]; kw...)
+#pnmltype(d::PnmlDict; kw...) = pnmltype(d[:type]; kw...)
 
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
     if haskey(pnmltype_map, s)

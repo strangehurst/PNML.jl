@@ -22,13 +22,15 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 
 AbstractTrees.children(x::Type) = subtypes(x)
 
-pt=AbstractTrees.repr_tree(PNML.PnmlType)
-pn=AbstractTrees.repr_tree(PNML.PetriNet)
-pe=AbstractTrees.repr_tree(PNML.PnmlException)
+typet = [
+AbstractTrees.repr_tree(PNML.PnmlType)
+AbstractTrees.repr_tree(PNML.PetriNet)
+AbstractTrees.repr_tree(PNML.PnmlException)
+AbstractTrees.repr_tree(PNML.PnmlObject)]
 ```
 
 ```@example type
-println(pt, "\n", pn, "\n", pe) # hide
+foreach(typet) do t; println(t, "\n"); end # hide
 ```
 
 ```@autodocs

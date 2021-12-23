@@ -3,6 +3,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Wrap the collection of PNML nets from a single XML pnml tree.
+Adds the IDRegistry to [`Pnml`](@ref).
 Corresponds to <pnml> tag.
 """
 struct Document{N,X}
@@ -11,10 +12,9 @@ struct Document{N,X}
     reg::IDRegistry
 end
 
-Document(s::AbstractString, reg=IDRegistry()) =
-    Document(parse_pnml(root(parsexml(s)); reg), reg)
-Document(p::PnmlDict, reg=IDRegistry()) =
-    Document{typeof(p[:nets]), typeof(xmlnode(p))}(p[:nets], xmlnode(p), reg)
+Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s)); reg), reg)
+Document(p::Pnml, reg=IDRegistry())           = Document(p.nets, xmlnode(p), reg)
+Document(p::PnmlDict, reg=IDRegistry())       = Document(p[:nets], xmlnode(p), reg)
 
 """
 $(TYPEDSIGNATURES)
@@ -24,7 +24,8 @@ See [`pntd`](@ref).
 """
 function find_nets end
 find_nets(d::Document, type::AbstractString) = find_nets(d, pntd(type))
-find_nets(d::Document, type::Symbol) = filter(n->n[:type] === type, d.nets)
+find_nets(d::Document, type::Symbol) = find_nets(d, pnmltype(type))
+find_nets(d::Document, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, d.nets)
 
 """
 $(TYPEDSIGNATURES)
@@ -76,6 +77,7 @@ end
 $(TYPEDSIGNATURES)
 
 Merge page content into the 1st page of each pnml net.
+
 Note that refrence nodes are still present. They can be removed later
 with [`deref!`](@ref).
 """
@@ -85,15 +87,90 @@ function flatten_pages!(doc::PNML.Document)
     foreach(flatten_pages!, nets(doc))
 end
 
-function collect_pages(net::PnmlDict)
-    foreach(net[:pages]) do page
-        foreach(page[:pages])
-        ps = get(net, :pages, nothing) # A page may contain other pages
+#function collect_pages(page::Page)
+#    foreach(collect_pages, page.subpages])
+#end
+#function collect_pages(net::PndmlNet)
+#    pages foreach(collect_pages, net.pages)
+#    do page
+#            ps = get(net, :pages, nothing) # A page may contain other pages
+#        end
+#    end
+#end
+
+function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
+    if isnothing(getproperty(l, key))
+            if !isnothing(getproperty(r, key))
+                setproperty!(l, key, getproperty(r, key))
+            end
+        else
+            append!(getproperty(l, key), getproperty(r, key))
+        end
+end
+function update_maybe!(l::T, r::T) where {T <: Maybe{Any}}
+    if isnothing(l)
+        if !isnothing(r)
+            l = r
+        end
+    else
+        append!(l, r)
     end
 end
 
-"Move the elements of 'page[key]' to `outvec`."
-function flatten_page!(outvec, page, key)
+function append_page!(l::Page, r::Page;
+                      keys = [:places, :transitions, :arcs,
+                              :refTransitions, :refPlaces, :declarations],
+                      comk = [:tools, :labels])
+    @show l.id, r.id
+    @show propertynames(l)
+    foreach(keys) do key
+        @show key
+        @show getproperty(l,key)
+        @show getproperty(r,key)
+        append!(getproperty(l,key), getproperty(r,key))
+    end
+    # Optional fields of Maybe{T}
+    foreach(comk) do key
+        @show key
+        @show getproperty(l.com,key)
+        @show getproperty(r.com,key)
+        update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
+    end
+
+    println("return l")
+    l
+#    foreach(comk) do key
+#        if isnothing(getproperty(l.com,key))
+#            if !isnothing(getproperty(r.com,key))
+#                setproperty!(l.com,key, getproperty(r.com,key))
+#            end
+#        else
+#            append!(getproperty(l.com,key), getproperty(r.com,key))
+#        end
+#    end
+end
+
+"Collect keys from all pages and move to first page."
+function flatten_pages!(net::PnmlNet)
+    # Moved the keys into append_page.
+    
+    # Start with the 1 required Page.
+    # Merge 2:end into 1
+    # Merge any subpages of 1 into 1.
+    @show "Merge 2:end into 1"
+    foldl(append_page!, net.pages[:])#, similar(eltype(net.pages[1].key),0))
+    #TODO Test that subpage appended/moved to 1.
+    @show net.pages
+    @show "Merge any subpages of 1 into 1"
+    foreach(net.pages[1].subpages) do subpage
+        foldl(append_page!, net.pages[1], subpage)
+    end
+    #TODO Empty unused pages.
+    net
+end
+
+
+function flatten_page!(outvec, page::PnmlDict, key)
     # Some of the keys are optional. They may be removed by a compress before flatten.
     if haskey(page, key) && !isnothing(page[key])
         push!.(Ref(outvec), page[key])
@@ -101,21 +178,20 @@ function flatten_page!(outvec, page, key)
     end
 end
 
-"Collect keys from all pages and move to first page."
-function flatten_pages!(net::PnmlDict, keys=[:places, :trans, :arcs,
-                                             :tools, :labels, :refT, :refP, :declarations])
-    @assert tag(net) === :net
+function flatten_pages!(net::PnmlDict,
+                        keys=[:places, :trans, :arcs,
+                              :tools, :labels, :refT, :refP, :declarations])
     for key in keys
         tmp = PnmlDict[]
         # A page may contain other pages. Decend the tree.
-        foreach(net[:pages]) do page
+        foreach(net.pages) do page
             foreach(page[:pages]) do subpage
                 flatten_page!(tmp, subpage, key)
                 empty!(subpage)
             end
             flatten_page!(tmp, page, key)
         end
-        net[:pages][1][key] = tmp
+        net.pages[1][key] = tmp
     end
     net
 end
@@ -132,348 +208,9 @@ end
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 #
-# INTERMEDITE REPRESENTATION
+# INTERMEDITE REPRESENTATION moved to intermediate.jl
 #
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-abstract type Label end
-abstract type PnmlObject end
-abstract type PnmlNode <: PnmlObject end
-abstract type AbstractPnmlTool end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Graphics Coordinate. 
-"""
-struct Coordinate{T <: Number}
-    x::T
-    y::T
-end
-Coordinate() = Coordinate(0,0)
-Coordinate(x) = Coordinate(x, 0)
-
-function Base.show(io::IO, c::Coordinate)
-    compact = get(io, :compact, false)
-    print(io, "(", c.x, ",", c.y, ")")
-end
-function Base.show(io::IO, ::MIME"text/plain", c::Coordinate)
-    print(io, "Coordinate:\n   ", c)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Graphics Fill attributes as strings.
-"""
-struct Fill
-    color::Maybe{String}
-    image::Maybe{String}
-    gradient_color::Maybe{String}
-    gradient_rotation::Maybe{String}
-end
-function Fill(; color=nothing, image=nothing,
-              gradient_color=nothing, gradient_rotation=nothing)
-    Fill(color, image, gradient_color, gradient_rotation )
-end
-function Base.show(io::IO, f::Fill)
-    compact = get(io, :compact, false)
-    if compact
-        print(io, "(", f.color, ",", f.image, ",",
-              f.gradient_color, ",", f.gradient_rotation, ")")
-    else
-        print(io, "color: ", f.color,
-              ", image: ", f.image,
-              ", gradient-color: ", f.gradient_color,
-              ", gradient-rotation: ", f.gradient_rotation)
-    end
-end
-function Base.show(io::IO, ::MIME"text/plain", f::Fill)
-    print(io, "Fill:\n   ", f)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Font attributes as strings. 
-"""
-struct Font
-    family    ::Maybe{String}
-    style     ::Maybe{String}
-    weight    ::Maybe{String}
-    size      ::Maybe{String}
-    align     ::Maybe{String}
-    rotation  ::Maybe{String}
-    decoration::Maybe{String}
-end
-function Font(; family=nothing, style=nothing, weight=nothing,
-              size=nothing, align=nothing, rotation=nothing, decoration=nothing)
-    Font(family, style, weight, size, align, rotation, decoration)
-end
-
-function Base.show(io::IO, f::Font)
-    print(io, "family: ", f.family,
-          ", style: ", f.style,
-          ", weight: ", f.weight,
-          ", size: ", f.size,
-          ", aligh: ", f.align,
-          ", rotation: ", f.rotation,
-          ", decoration: ", f.decoration)
-end
-function Base.show(io::IO, ::MIME"text/plain", f::Font)
-    print(io, "Font:\n   ", f)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Line attributes as strings.
-"""
-struct Line
-    color::Maybe{String}
-    shape::Maybe{String}
-    style::Maybe{String}
-    width::Maybe{String}
-end
-function Line(; color=nothing, shape=nothing, style=nothing, width=nothing)
-    Line(color, shape, style, width)
-end
-
-function Base.show(io::IO, l::Line)
-    print(io,
-          ", color: ", l.color,
-          ", style: ", l.style,
-          ", shape: ", l.shape,
-          ", width: ", l.width)
-end
-function Base.show(io::IO, ::MIME"text/plain", l::Line)
-    print(io, "Line:\n   ", l)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Graphics elements can be attached to many parts of PNML models.
-"""
-struct Graphics
-    dimension::Maybe{Coordinate}
-    fill::Maybe{Fill} 
-    font::Maybe{Font}
-    line::Maybe{Line} 
-    offset::Maybe{Coordinate}
-    position::Maybe{Vector{Coordinate}}
-end
-
-function Graphics(;dim=nothing, fill=nothing, font=nothing,
-                  line=nothing, offset=nothing, position=nothing)
-    Graphics(dim, fill, font, line, offset, position)
-end
-
-function Base.show(io::IO, g::Graphics)
-    @show io
-    compact = get(io, :compact, false)
-    if compact
-        print(io, "Graphics:(",
-              " dimension=", g.dimension,
-              " fill=",      g.fill,
-              " font=",      g.font,
-              " line=",      g.line,
-              " offset=",    g.offset,
-              " position=",  g.position, ")")
-    else
-        println(io, "Graphics:(")
-        println(io, " dimension = ", g.dimension)
-        println(io, " fill = ",      g.fill)
-        println(io, " font = ",      g.font)
-        println(io, " line = ",      g.line)
-        println(io, " offset = ",    g.offset)
-        println(io, " position = ",  g.position, ")")
-    end
-end
-    
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Toolspecific elements can contain any well-formed XML as content.
-By default treat the `content` as generic PNML labels.
-"""
-struct DefaultTool <: AbstractPnmlTool
-    toolname::String
-    version::String
-    "In case a higher-level wishes to parse the XML."
-    xml::XMLNode
-    content::Any
-end
-
-function Base.show(io::IO, ::MIME"text/plain", f::DefaultTool)
-    print(io, "DefaultTool:\n   ", f)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Name is for display, possibly in a tool specific way.
-"""
-struct Name <: Label
-    value::String
-    graphics::Graphics
-    tools::Vector{DefaultTool}
-end
-
-function Base.show(io::IO, ::MIME"text/plain", f::Name)
-    print(io, "Name: ", f)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Place node.
-"""
-struct Place <: PnmlNode
-    id::Symbol
-    xml::XMLNode
-    # marking
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Place)
-    print(io, "Place:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Transition node.
-"""
-struct Transition <: PnmlNode
-    id::Symbol
-    xml::XMLNode
-    # condition
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Transition)
-    print(io, "Transition:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Arc connects places and transitions.
-"""
-struct Arc <: PnmlObject
-    id::Symbol
-    xml::XMLNode
-    # inscription
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Arc)
-    print(io, "Arc:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Declarations are the core of high-level Petri Net.
-They define objects/names that are used for conditions, inscriptions, markings.
-They are attached to PNML nets and pages.
-"""
-struct Declarations 
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Declarations)
-    print(io, "Declarations:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Pages contain all places, transitions & arcs. They are for visual presentation.
-"""
-struct Page <: PnmlObject
-    id::Symbol
-    places::Vector{Place}
-    transitions::Vector{Transition}
-    arcs::Vector{Arc}
-    name::Maybe{Name}
-
-    subpage::Maybe{Vector{Page}}
-
-    graphics::Maybe{Graphics}
-    tools::Maybe{Vector{DefaultTool}}
-    labels::Maybe{Vector{Label}}
-    xml::Maybe{XMLNode}
-end
-
-
-function Base.show(io::IO, ::MIME"text/plain", p::Page)
-    print(io, "Page:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Each net in a PNML model has an independent type. 
-"""
-struct PnmlNet{PNTD<:PnmlType}
-    id::Symbol
-    type::PNTD
-    name::Maybe{Name}
-
-    page::Vector{Page}
-    declarations::Vector{Declarations}
-    
-    graphics::Maybe{Graphics}
-    tools::Maybe{Vector{DefaultTool}}
-    labels::Maybe{Vector{Label}}
-    xml::Maybe{XMLNode}
-end
-
-
-function Base.show(io::IO, ::MIME"text/plain", p::PnmlNet)
-    print(io, "PnmlNet:\n   ", p)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-A PNML model can have multiple net elements.
-"""
-struct Pnml
-    id::Symbol
-    net::Vector{PnmlNet}
-    xml::Maybe{XMLNode}
-end
-
-
-function Base.show(io::IO, ::MIME"text/plain", pnml::Pnml)
-    print(io, "Pnml:\n   ", pnml)
-end
