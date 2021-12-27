@@ -2,23 +2,24 @@
 $(TYPEDSIGNATURES)
 
 Take an XML `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if that mapping exists, otherwise call [`attribute_elem`](@ref).
+[`tagmap`](@ref) if that mapping exists, otherwise call [`unclaimed_element`](@ref)
+and return a [`PnmlLabel`](@ref) wrapping the PnmlDict..
 `verbose` is a boolean controlling debug logging.
 """
 function parse_node(node; verbose=true, kw...)
     node === nothing && return #TODO Make all nodes optional. Is this a good idea?
     if verbose
-        parser = haskey(tagmap, node.name) ? "tagmap" : "attribute_elem"
+        parser = haskey(tagmap, node.name) ? "tagmap" : "unclaimed_element"
         @debug( "parse_node($(node.name)) ---> $(parser)" *
                 " attributes $(nodename.(attributes(node)))" *
                 " children $(nodename.(elements(node)))")
     end
     if haskey(tagmap, node.name)
-        tagmap[node.name](node; kw...)
+        tagmap[node.name](node; kw...) # Various types returned here.
     else
-        attribute_elem(node; kw...)
+        PnmlLabel(unclaimed_element(node; kw...))
     end
-end 
+end  
 
 """
 $(TYPEDSIGNATURES)
@@ -292,7 +293,7 @@ Structure semantics will vary based on parent element and petri net type definit
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    attribute_elem(node; kw...)
+    PnmlLabel(unclaimed_element(node; kw...))
 end
 
 
@@ -385,3 +386,4 @@ function parse_condition(node; kw...)
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
     Condition(d)
 end
+

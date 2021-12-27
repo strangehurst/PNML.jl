@@ -15,8 +15,8 @@ InteractiveUtils.@code_warntype PNML.parse_arc(node; reg)
 
 #@xml_str
 InteractiveUtils.@code_warntype PNML.parse_node(node; reg)
-InteractiveUtils.@code_warntype PNML.attribute_content([node]; reg)
-InteractiveUtils.@code_warntype PNML.attribute_elem(node; reg)
+InteractiveUtils.@code_warntype PNML.unclaimed_content([node]; reg)
+InteractiveUtils.@code_warntype PNML.unclaimed_element(node; reg)
 InteractiveUtils.@code_warntype PNML.parse_name(node; reg)
 InteractiveUtils.@code_warntype PNML.parse_text(node; reg)
 InteractiveUtils.@code_warntype PNML.parse_structure(node; reg)
