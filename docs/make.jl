@@ -24,9 +24,6 @@ srcgenpath = joinpath(docspath, "src_generation")
 
 mkpath(genpath) #TODO where should initialization happen?
 
-# copy news file into src directory
-cp(joinpath(pathroot, "NEWS.md"), joinpath(srcpath, "news.md"); force=true)
-
 ################################################################################
 #                          Syntax highlighting theme                           #
 ################################################################################
@@ -77,7 +74,6 @@ makedocs(;
                  "lotka-volterra.md",
                  "example2.md",
              ],
-             "news.md",
              "acknowledgments.md",
           ],
          )
