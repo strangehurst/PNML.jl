@@ -181,13 +181,12 @@ Unknown `symbol` returns `nothing`.
 function pnmltype end
 pnmltype(t::T; kw...) where {T<:PnmlType} = t
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd(uri); kw...)
-#pnmltype(d::PnmlDict; kw...) = pnmltype(d[:type]; kw...)
 
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
     if haskey(pnmltype_map, s)
         return pnmltype_map[s]
     else
-        @debug "Unknown PNTD symbol $s"
+        @warn "Unknown PNTD symbol $s"
         return nothing
     end
 end

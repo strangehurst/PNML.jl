@@ -1,6 +1,5 @@
 header("PARSE_LABELS")
 @testset "declaration" begin
-    reg = PNML.IDRegistry()
     n = parse_node(xml"""
         <declaration key="test">
           <structure>
@@ -10,27 +9,52 @@ header("PARSE_LABELS")
            </declarations>
           </structure>
         </declaration>
-        """; reg)
+        """; reg= PNML.IDRegistry())
     printnode(n)
-    @test typeof(n) <: PNML.Declaration
+    
+    @test typeof(n) <: PNML.Declaration 
     @test xmlnode(n) isa Maybe{EzXML.Node}
 
-    @test typeof(n.d) <: PNML.PnmlDict
-    @test n.d[:structure][:declarations][:text][1] == "#TODO"
-    @test n.d[:structure][:declarations][:text][2] == "yes really"
+    println("\nLABELS")
+    @show n
+    @show typeof(n), fieldnames(typeof(n))
+    @show typeof(n.d), fieldnames(typeof(n.d))
+    for (k,v) in pairs(n.d.dict)
+        @show k, typeof(v), v
+    end
+
+    @test typeof(n.d) <: PNML.PnmlLabel
+
+    @show typeof(n.d.dict)
+    @show typeof(n.d.dict[:structure])
+    @show typeof(n.d.dict[:structure].dict)
+    @show typeof(n.d.dict[:structure].dict[:declarations])
+
+    @test n.d.dict[:tag] === :declaration
+    @test n.d.dict[:key] == "test"
+
+    @show n.d.dict[:structure].dict
+    @show n.d.dict[:structure].dict[:declarations].dict[:text]
+
+    @test n.d.dict[:structure].dict[:declarations].dict[:text][1] == "#TODO"
+    @test n.d.dict[:structure].dict[:declarations].dict[:text][2] == "yes really"
 end
 
-@testset "initMarking" begin
+header("PT initMarking")
+@testset "PT initMarking" begin
     str = """
  <initialMarking>
-     <graphics>
-            <offset x="0" y="0"/>
-     </graphics>
-     <text>1</text>
+    <!-- not valid here <graphics> <offset x="0" y="0"/> </graphics> -->
+    <text>1</text>
+    <toolspecific tool="org.pnml.tool" version="1.0">
+        <tokengraphics>
+            <tokenposition x="6" y="9"/>
+        </tokengraphics>
+    </toolspecific>
  </initialMarking>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(to_node(str); reg)
+
+    n = parse_node(to_node(str); reg=PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.PTMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -38,6 +62,7 @@ end
     @test n.value == 1
 end
 
+header("HL Marking")
 @testset "HL initMarking" begin
     str = """
  <hlinitialMarking>
@@ -58,25 +83,24 @@ end
      </structure>
  </hlinitialMarking>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(to_node(str); reg)
+    n = parse_node(to_node(str); reg = PNML.IDRegistry())
     printnode(n)
+    @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
-    # 
+    @show n
     @test n.text == "<All,All>"
     @test n.structure !== nothing
-    @test n.structure[:tuple][:subterm][1][:all] !== nothing
-    @test n.structure[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
-    @test n.structure[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
+    @test n.structure.dict[:tuple].dict[:subterm][1].dict[:all] !== nothing
+    @test n.structure.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
+    @test n.structure.dict[:tuple].dict[:subterm][2].dict[:all].dict[:usersort].dict[:declaration] == "N2"
 end
 
 @testset "text" begin
     str1 = """
  <text>ready</text>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(to_node(str1); reg)
+    n = parse_node(to_node(str1); reg = PNML.IDRegistry())
     @test n == "ready"
     
     str2 = """
@@ -84,13 +108,13 @@ end
 ready
 </text>
     """
-    n = parse_node(to_node(str2); reg)
+    n = parse_node(to_node(str2); reg = PNML.IDRegistry())
     @test n == "ready"
     
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(to_node(str3); reg)
+    n = parse_node(to_node(str3); reg = PNML.IDRegistry())
     @test n == "ready"
     
     str4 = """
@@ -98,9 +122,8 @@ ready
 to
 go</text>
     """
-    n = parse_node(to_node(str4); reg)
-    @test n == "ready\nto\ngo"
-    
+    n = parse_node(to_node(str4); reg = PNML.IDRegistry())
+    @test n == "ready\nto\ngo"    
 end
 
 @testset "structure" begin
@@ -120,22 +143,20 @@ end
          </tuple>
      </structure>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(to_node(str); reg)
+
+    n = parse_node(to_node(str); reg = PNML.IDRegistry())
     printnode(n)
-    @test tag(n) === :structure
     @test xmlnode(n) isa Maybe{EzXML.Node}
 
-    @test n[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
-    @test n[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
+    @test n.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
+    @test n.dict[:tuple].dict[:subterm][2].dict[:all].dict[:usersort].dict[:declaration] == "N2"
 end
 
 @testset "ref Trans" begin
     str = """
         <referenceTransition id="rt1" ref="t1"/>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(to_node(str); reg)
+    n = parse_node(to_node(str); reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
     @test !PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
@@ -158,8 +179,7 @@ end
  </referencePlace>
 """
     @testset for s in [str1, str2] 
-        reg = PNML.IDRegistry()
-        n = parse_node(to_node(s); reg)
+        n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.RefPlace
         @test !PNML.has_xml(n)
@@ -178,13 +198,11 @@ end
  </type>
     """
     @testset for s in [str1] 
-        reg = PNML.IDRegistry()
-        n = parse_node(to_node(s); reg)
+        n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
-        @test haskey(n,:tag)
-        @test tag(n) === :type
-        @test n[:text] == "N2"
-        @test n[:structure][:usersort][:declaration] == "N2"
+        @test typeof(n) <: PNML.PnmlLabel
+        @test n.dict[:text] == "N2"
+        @test n.dict[:structure].dict[:usersort].dict[:declaration] == "N2"
     end
 end
 
@@ -201,8 +219,7 @@ end
  </condition>
     """
     @testset for s in [str1] 
-        reg = PNML.IDRegistry()
-        n = parse_node(to_node(s); reg)
+        n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.Condition
         @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -220,8 +237,7 @@ end
         <inscription> <text>12 </text> </inscription>
     """
     @testset for s in [str1] 
-        reg = PNML.IDRegistry()
-        n = parse_node(to_node(s); reg)
+        n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.PTInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -249,8 +265,7 @@ end
  </hlinscription>
  """
     @testset for s in [str1] 
-        reg = PNML.IDRegistry()
-        n = parse_node(to_node(s); reg)
+        n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.HLInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}

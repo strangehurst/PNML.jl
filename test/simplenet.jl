@@ -96,11 +96,25 @@ end
     PRINT_PNML && @show net
     PRINT_PNML && println()
 
-    for accessor in [PNML.pid, PNML.places, PNML.transitions, PNML.arcs,
-                     PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
+    for accessor in [PNML.pid, PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
+        @show accessor
         @test accessor(net1) == accessor(net)
-        @test accessor(net2) == accessor(net)
         @test accessor(net2) == accessor(net1)
+        @test accessor(net2) == accessor(net)
+    end
+
+    for accessor in [PNML.places, PNML.transitions, PNML.arcs]
+        @show accessor
+        for (a,b) in zip(accessor(net1), accessor(net))
+            @test a.id == b.id
+        end
+        for (a,b) in zip(accessor(net2), accessor(net1))
+            @test a.id == b.id
+        end
+        for (a,b) in zip(accessor(net2), accessor(net))
+            @test a.id == b.id
+        end
+            
     end
     
     PRINT_PNML && println("------------------------------------------")
@@ -116,13 +130,14 @@ end
     PRINT_PNML && println("\n------------------------------------------")
 
     pl = PNML.places(net)
-    printnode(pl, label="uncompressed", compress=false)
+    printnode(pl, label="uncompressed pl", compress=false)
 
     cpl = PNML.compress(pl)
-    printnode(cpl, label="compressed", compress=false)
+    printnode(cpl, label="compressed cpl", compress=false)
 
-    @test pl != cpl
-
+    for (a,b) in zip(pl, cpl)
+        @test a.id == b.id
+    end
     PRINT_PNML && println("------------------------------------------")
 
     for p in PNML.places(net)
@@ -149,7 +164,30 @@ end
         @test_throws ArgumentError PNML.arc(net, :bogus)
         PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
-    end
+end
+
+
+@testset "rate" begin
+    header("RATE")
+    str = """<?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        <net id="net0" type="stochastic">
+        <page id="page0">
+            <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
+        </page>
+        </net>
+    </pnml>
+    """
+    doc = PNML.Document(str)
+    net = PNML.first_net(doc)
+    printnode(net, label="rate net")
+    
+    snet = PNML.SimpleNet(net)
+    @show snet
+    β = PNML.rates(snet)
+    @show β
+    @test β == LVector(birth=.3);
+end
 
 @testset "lotka-volterra" begin
     header("LOTKA-VOLTERRA")

@@ -7,13 +7,14 @@ Allows code to have semantic information in type names, better searchability.
 const PnmlDict = Dict{Symbol, Any}
 
 
-   
+
 """
 $(TYPEDSIGNATURES)
 
 Return pnml id.
 """
 function pid end
+pid(::Any) = nothing
 pid(node::PnmlDict)::Symbol = node[:id]
 
 """
@@ -22,6 +23,7 @@ $(TYPEDSIGNATURES)
 Return tag symbol.
 """
 function tag end
+tag(::Any) = nothing
 tag(d::PnmlDict)::Symbol = d[:tag]
 
 
@@ -59,9 +61,8 @@ function compress(d::T) where T <: PnmlDict
     f
 end
 
-
 function compress(a::T) where T
-    @warn "trying to compress unsupported $T"
+    @debug "trying to compress unsupported $T"
     a
 end
 
@@ -87,7 +88,7 @@ function compress!(d::T) where T <: PnmlDict
 end
 
 function compress!(a::T) where T
-    @warn "trying to compress! unsupported $T"
+    @debug "trying to compress! unsupported $T"
     a
 end
 

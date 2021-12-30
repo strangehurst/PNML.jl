@@ -1,7 +1,7 @@
 """
 $(TYPEDEF)
 
-Abstract type providing 2nd-level parsing of the intermediate representation
+Provides 2nd-level parsing of the intermediate representation
 of a  **single network** in a PNML.Document.
 
 # Extended
@@ -9,11 +9,11 @@ of a  **single network** in a PNML.Document.
 The type parameter of a nets should map directly and simply
 to subtypes of [`PnmlType`](@ref).
 
-Additional constranints can be imposed. We want to run under the motto:
+Additional constrants can be imposed. We want to run under the motto:
 "syntax is not semantics, quack".
 
 Since a PNML.Document can contain multiple networks it is possible that a higher-level
-will create multiple PNML.PetriNet instances, each a different subtype.
+will create multiple PetriNet instances, each a different subtype.
 
 Pages are used for visual layout for humans.
 They can be merged into one page without losing any Petri Net semantics.
@@ -41,28 +41,36 @@ pid(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accesso
 
 """
 $(TYPEDSIGNATURES)
+
+Return vector of places. 
 """
 places(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 """
 $(TYPEDSIGNATURES)
+
+Return vector of transitions. 
 """
 transitions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 """
 $(TYPEDSIGNATURES)
+
+Return vector of arcs. 
 """
 arcs(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 """
 $(TYPEDSIGNATURES)
+
+Return vector of reference places. 
 """
 refplaces(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 """
 $(TYPEDSIGNATURES)
 
-Return vector of 
+Return vector of reference transitions. 
 """
 reftransitions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 

@@ -121,23 +121,22 @@ function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
                               :refTransitions, :refPlaces, :declarations],
                       comk = [:tools, :labels])
-    @show l.id, r.id
-    @show propertynames(l)
+    #@show l.id, r.id
+    #@show propertynames(l)
     foreach(keys) do key
-        @show key
-        @show getproperty(l,key)
-        @show getproperty(r,key)
+        #@show key
+        #@show getproperty(l,key)
+        #@show getproperty(r,key)
         append!(getproperty(l,key), getproperty(r,key))
     end
     # Optional fields of Maybe{T}
     foreach(comk) do key
-        @show key
-        @show getproperty(l.com,key)
-        @show getproperty(r.com,key)
+        #@show key
+        #@show getproperty(l.com,key)
+        #@show getproperty(r.com,key)
         update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
     end
 
-    println("return l")
     l
 #    foreach(comk) do key
 #        if isnothing(getproperty(l.com,key))
@@ -157,11 +156,11 @@ function flatten_pages!(net::PnmlNet)
     # Start with the 1 required Page.
     # Merge 2:end into 1
     # Merge any subpages of 1 into 1.
-    @show "Merge 2:end into 1"
+    @debug "Merge 2:end into 1"
     foldl(append_page!, net.pages[:])#, similar(eltype(net.pages[1].key),0))
     #TODO Test that subpage appended/moved to 1.
-    @show net.pages
-    @show "Merge any subpages of 1 into 1"
+    @debug net.pages
+    @debug "Merge any subpages of 1 into 1"
     foreach(net.pages[1].subpages) do subpage
         foldl(append_page!, net.pages[1], subpage)
     end

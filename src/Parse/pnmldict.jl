@@ -140,19 +140,19 @@ Add `node` to`d[:tools]`. Return updated `d[:tools]`.
 function add_tool!(d::PnmlDict, node; kw...)
     @show "add tool! $(nodename(node))"
     if d[:tools] === nothing
-        d[:tools] = DefaultTool[] #TODO: Pick type based on PNTD/Trait?
-        #TODO DefaultTool and TokenGraphics are 2 known Toolspecific flavors.
+        d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
+        #TODO DefaultTool and TokenGraphics are 2 known flavors.
         #TODO Tools may induce additional subtype, but if is hoped that
         #TODO label based parsing is general & flexible enough to suffice.
     end
     add_tool!(d[:tools], node; kw...)
 end
 
-function add_tool!(v::Vector{DefaultTool}, node; kw...)
-    # Use of parse_node allows the vector contents to be fully parsed nodes.
-    l = parse_node(node; kw...) #TODO Handle other AbstractPnmlLabel subtypes.
-    @show typeof(l)
-    push!(v,l)
+function add_tool!(v::Vector{ToolInfo}, node; kw...)
+    EzXML.prettyprint(node)
+    ti = parse_toolspecific(node; kw...)
+    @show typeof(ti)
+    push!(v,ti)
 end
 
 #---------------------------------------------------------------------

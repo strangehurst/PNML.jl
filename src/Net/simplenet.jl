@@ -89,8 +89,18 @@ has_labels(::Any) = false
 has_labels(::T) where T<: PnmlObject = true
 has_labels(::PnmlNet) = true
 
-has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(x.com.labels, tagvalue) : nothing
-get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
+has_label(x, tagvalue::Symbol) =
+    has_labels(x) ? has_Label(x.com.labels, tagvalue) : false
+
+function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
+    println("get_label Vector{PnmlLabel} size ", length(v))
+    findfirst(lab->tag(lab) === tagvalue, v) 
+end
+
+function get_label(x, tagvalue::Symbol)
+    @show x, typeof(x), typeof(x.com.labels), has_labels(x), tagvalue
+    has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
+end
 
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
@@ -104,10 +114,11 @@ $(TYPEDSIGNATURES)
 Return a labelled vector of rate values for net `s`. Key is transition id.
 """
 function rates end
+
 rates(s::N) where {T<:PnmlType, N<:PetriNet{T}} = rates(s, transition_ids(s))
 
 function rates(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [t=>rate(s,t) for t in v]...))
+    LVector( (; [tid=>rate(s,tid) for tid in v]...))
 end
 
 """
@@ -117,17 +128,18 @@ Return rate value of `transition`.
 """
 function rate end
 function rate(transition)::Number
-    r = get_label(transition,:rate)
+    r = get_label(transition, :rate)
     @show r
+    @show typeof(r)# <: Maybe{PnmlDict}
     if (!isnothing(r) && !isnothing(r[:text]))
-        rate = number_value(r[:text])
-        isnothing(rate) ? 0.0 : rate
+        value = number_value(r[:text])
+        isnothing(value) ? 0.0 : value
     else
         0.0
     end
 end
 
-function rate(s::N, t::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    rate(transition(s,t))
+function rate(s::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    rate(transition(s, tid))
 end
 

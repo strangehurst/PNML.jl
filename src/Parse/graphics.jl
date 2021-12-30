@@ -49,12 +49,13 @@ function parse_graphics(node; kw...)
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
-    g = Graphics(;dim=d[:dimension],
-                 fill=d[:fill],
-                 font=d[:font],
-                 line=d[:line],
-                 offset=d[:offset],
-                 position=d[:positions])
+    Graphics(;
+             dim=d[:dimension],
+             fill=d[:fill],
+             font=d[:font],
+             line=d[:line],
+             offset=d[:offset],
+             position=d[:positions])
 end
 
 #
@@ -74,7 +75,7 @@ function parse_graphics_line(node; kw...)
     style = has_style(node) ? node["style"] : nothing
     width = has_width(node) ? node["width"] : nothing
 
-    Line(;shape, color, width, style)
+    Line(; shape, color, width, style)
 end
 
 """
@@ -125,6 +126,5 @@ function parse_graphics_font(node; kw...)
     style  = has_style(node)      ? node["style"] : nothing
     weight = has_weight(node)     ? node["weight"] : nothing
     
-    Font(family=family, style=style, weight=weight,
-             size=size, decoration=deco, align=align, rotation=rot)
+    Font(; family, style, weight, size, decoration=deco, align, rotation=rot)
 end

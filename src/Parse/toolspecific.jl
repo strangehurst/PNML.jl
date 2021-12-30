@@ -1,24 +1,23 @@
 """
 $(TYPEDSIGNATURES)
 
-Return PnmlDict with tag name, tool & version attributes and content parsed.
-Anyone that can parse the `:content` may specialize on tool & version.
+Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
-The content can be any well-formed xml. We use our usual parsing mechanism,
-which can be enhanced if someone makes a good case.
+The content can be one or more well-formed xml elements.
+Each are wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_toolspecific(node; kw...)
     nn = nodename(node)
     nn == "toolspecific" || error("element name wrong: $nn")
     haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
     haskey(node,"version") || throw(MalformedException("$(nn) missing version attribute", node))
-
-    d = PnmlDict(:tag=>Symbol(nn), :tool=>node["tool"], :version=>node["version"],
-                 :content=>parse_node.(elements(node); kw...),
-                 :xml=>includexml(node))
     
+    d = PnmlDict(:tag=>Symbol(nn), :tool=>node["tool"], :version=>node["version"],
+                 :content=>unclaimed_element.(elements(node); kw...),
+                 :xml=>includexml(node))
+    # unclaimed_elements 
     #TODO: Specialize/verify on tool, version. User supplied?
     #TODO: Register additional tool specific parsers?
-    d
+    ToolInfo(d)
 end
 

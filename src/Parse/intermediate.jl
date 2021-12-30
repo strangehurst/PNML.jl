@@ -1,4 +1,4 @@
-abstract type Label end
+abstract type AbstractLabel end
 abstract type PnmlObject end
 abstract type PnmlNode <: PnmlObject end
 abstract type AbstractPnmlTool end
@@ -161,7 +161,7 @@ end
 function Base.show(io::IO, g::Graphics)
     compact = get(io, :compact, false)
     print(io, "(",
-          " dimension=", g.dimension,
+          "dimension=", g.dimension,
           " fill=",      g.fill,
           " font=",      g.font,
           " line=",      g.line,
@@ -169,8 +169,9 @@ function Base.show(io::IO, g::Graphics)
           " position=",  g.position, ")")
 end
     
+
 ###############################################################################
-# P-T Graphics
+# PNML Unclaimed Labels, TOOLS, NAMES, other bits
 ###############################################################################
 
 #-------------------
@@ -178,7 +179,99 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-TokenGraphics is a ToolInfo content.
+PnmlLabel is for unclaimed PNML labels.
+It wraps a PnmlDict that can be the root of an XML-tree.
+
+See [`DefaultTool`](@ref) for another PnmlDict wrapper.
+"""
+struct PnmlLabel <: AbstractLabel
+    dict::PnmlDict
+    PnmlLabel(d::PnmlDict) = new(d)
+end
+
+convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d) 
+
+has_structure(::PnmlLabel) = false #TODO Allow HL labels?
+structure(::PnmlLabel) = nothing
+
+function Base.show(io::IO, n::PnmlLabel)
+    print(io, "dict = '"); pprint(io, n.dict); print(io, "'")
+end
+function Base.show(io::IO, ::MIME"text/plain", f::PnmlLabel)
+    print(io, "PnmlLabel: ", f)
+end
+
+###############################################################################
+# ToolInfo
+###############################################################################
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+ToolInfo maps to <toolspecific> tag.
+It wraps a vector of well formed elements parsed into [`PnmlLabel`](@ref)s
+for use by anything that understands toolname, version toolspecifics.
+"""
+struct ToolInfo
+    toolname::String
+    version::String
+    info::Vector{PnmlDict}
+    xml::Maybe{XMLNode}
+end
+
+function ToolInfo(d::PnmlDict)
+    ToolInfo(d[:tool], d[:version], d[:content], d[:xml])
+end
+convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d) 
+
+has_xml(::ToolInfo) = true
+compress(a::ToolInfo) = a
+
+function Base.show(io::IO, ti::ToolInfo)
+    print(io, 
+          "(name: ", ti.toolname,
+          ", version: ", ti.version,
+          ", info: ", ti.info, ")")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
+    print(io, "ToolInfo:\n   ", ti)
+end
+
+#-------------------
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Tool specific elements can contain any well-formed XML as content.
+By default treat the `content` as generic PNML labels.
+
+See [`PnmlLabel`](@ref) for another PnmlDict wrapper.
+"""
+struct DefaultTool <: AbstractPnmlTool
+    info::Vector{PnmlLabel} #TODO well-formed xml content here: Vector{PnmlLabel}
+end
+function DefaultTool(toolname, version; content=nothing, xml=nothing)
+    DefaultTool(toolname, version, content, xml)
+end
+
+function Base.show(io::IO, t::DefaultTool)
+    print(io, "content: (", t.content, ")")
+end
+function Base.show(io::IO, ::MIME"text/plain", t::DefaultTool)
+    print(io, "DefaultTool:\n   ", t)
+end
+
+###############################################################################
+# P-T Graphics is wrapped in a PnmlLabel
+###############################################################################
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+TokenGraphics is <toolspecific> content and is wrapped by a [`ToolInfo`](@ref).
 It combines the <tokengraphics> and <tokenposition> elements.
 """
 struct TokenGraphics <: AbstractPnmlTool
@@ -186,7 +279,6 @@ struct TokenGraphics <: AbstractPnmlTool
 end
 
 has_xml(::TokenGraphics) = false
-
 compress(a::TokenGraphics) = a
 
 function Base.show(io::IO, tg::TokenGraphics)
@@ -197,48 +289,18 @@ function Base.show(io::IO, ::MIME"text/plain", tg::TokenGraphics)
     print(io, "TokenGraphics:\n   ", tg)
 end
 
+
 ###############################################################################
-# PNML TOOLS, NAMES, other bits
+# Common parts
 ###############################################################################
 
-#-------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML Toolspecific elements can contain any well-formed XML as content.
-By default treat the `content` as generic PNML labels.
+Name is for display, possibly in a tool specific way.
 """
-struct DefaultTool <: AbstractPnmlTool
-    toolname::String
-    version::String
-    content::Any
-
-    "In case a higher-level wishes to parse the XML."
-    xml::Maybe{XMLNode}
-end
-function DefaultTool(toolname, version; content=nothing, xml=nothing)
-    DefaultTool(toolname, version, content, xml)
-end
-
-function Base.show(io::IO, t::DefaultTool)
-    print(io,
-          "name: ", t.toolname,
-          "version: ", t.version,
-          "content: ", t.content)
-end
-function Base.show(io::IO, ::MIME"text/plain", t::DefaultTool)
-    print(io, "DefaultTool:\n   ", t)
-end
-
-#-------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-PNML Name is for display, possibly in a tool specific way.
-"""
-struct Name <: Label
+struct Name <: AbstractLabel
     text::String
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{DefaultTool}}
@@ -258,22 +320,19 @@ function Base.show(io::IO, ::MIME"text/plain", f::Name)
     print(io, "Name: ", f)
 end
 
-###############################################################################
-# Common parts
-###############################################################################
-
+#-------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML Objects and labels share some common infrastructure.
-The optional incidental bits are collected here.
+Common infrastructure shared by PNML objects and labels.
+Some optional incidental bits are collected here.
 """
 struct ObjectCommon
     name::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{DefaultTool}}
-    labels::Maybe{Vector{PnmlDict}} #TODO
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
     xml::Maybe{XMLNode}
 end
 function ObjectCommon(; name=nothing, graphics=nothing, tools=nothing,
@@ -292,13 +351,11 @@ ObjectCommon(p::PnmlDict) =
 
 #TODO SHOW
 function Base.show(io::IO, p::ObjectCommon)
-    print(io,
-          "name: ", p.name,
-          ", graphics: ", p.graphics,
-          ", tools: ", p.tools,
-          ", labels: ", p.labels,)
+    !isnothing(p.name)     && print(io, ", name: ", p.name)
+    !isnothing(p.graphics) && print(io, ", graphics: '", p.graphics, "'")
+    !isnothing(p.tools)    && print(io, ", tools: '", p.tools,"'")
+    !isnothing(p.labels)   && print(io, ", labels: '", p.labels,"'")
     # In general, do not display/print the XML. 
-    #", xml: ", p.xml)
 end
 #    print(io, " toolinfo: ", isnothing(p.tools) ?  0 : length(p.tools))
 #    print(io, " labels: ", isnothing(p.labels) ?  0 : length(p.labels))
@@ -308,27 +365,29 @@ end
 # PNML Nodes
 ###############################################################################
 
-abstract type Marking <: Label end
+abstract type Marking <: AbstractLabel end
 
 #-------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML PTMarking labels a Place instance.
+Labels a Place/Transition pntd Place instance.
 """
 mutable struct PTMarking{N<:Number} <: Marking
     value::N
     com::ObjectCommon
+    # PTMarking does not use ObjectCommon.graphics,
+    # but rather, TokenGraphics in ObjectCommon.tools.
 end
 
 function PTMarking(p::PnmlDict)
     PTMarking(onnothing(p[:value], 0), ObjectCommon(p))
 end
 convert(::Type{Maybe{PTMarking}}, d::PnmlDict) = PTMarking(d) 
-    
+
 function Base.show(io::IO, p::PTMarking)
-    print(io, "value: ", p.value, ", ", p.com,)
+    print(io, "value: ", p.value, p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::PTMarking)
     print(io, "PTMarking:\n   ", p)
@@ -343,7 +402,7 @@ PNML HLMarking labels a Place instance.
 """
 mutable struct HLMarking <: Marking
     text::Maybe{String}
-    structure::Maybe{PnmlDict}
+    structure::Maybe{PnmlLabel}
     com::ObjectCommon
 end
 
@@ -351,7 +410,7 @@ HLMarking(p::PnmlDict) = HLMarking(p[:text], p[:structure], ObjectCommon(p))
 convert(::Type{Maybe{HLMarking}}, d::PnmlDict) = HLMarking(d) 
     
 function Base.show(io::IO, p::HLMarking)
-    print(io,  "'", p.text, "', ", p.structure, ", ", p.com,)
+    print(io,  "'", p.text, "', ", p.structure, p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::HLMarking)
     print(io, "HLMarking:\n   ", p)
@@ -367,7 +426,7 @@ PNML Place node.
 mutable struct Place <: PnmlNode
     id::Symbol
     marking::Maybe{Marking}
-    type::Maybe{PnmlDict}
+    type::Maybe{PnmlLabel}
 
     com::ObjectCommon
 end
@@ -376,10 +435,10 @@ Place(p::PnmlDict) = Place(p[:id], p[:marking], p[:type], ObjectCommon(p))
 
 function Base.show(io::IO, p::Place)
     print(io,
-          "id: ", p.id,
+          "(id: ", p.id,
           ", marking: ", p.marking,
           ", type: ", p.type,
-          ", ", p.com,
+          p.com, ")"
           )
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Place)
@@ -393,19 +452,19 @@ $(TYPEDFIELDS)
 
 PNML Condition labels a Transition instance.
 """
-struct Condition <: Label
+struct Condition <: AbstractLabel
     text::Maybe{String}
-    structure::PnmlDict
+    structure::Maybe{PnmlLabel}
     com::ObjectCommon
 end
 
 Condition(p::PnmlDict) = Condition(p[:text],
-                                   p[:structure] === nothing ? PnmlDict(:tag=>:none) : p[:structure],
+                                   p[:structure],
                                    ObjectCommon(p))
 #convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d) 
     
 function Base.show(io::IO, p::Condition)
-    print(io,  "'", p.text, "', ", structure, ", ", p.com)
+    print(io,  "'", p.text, "', ", structure, p.com)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Condition)
     print(io, "Condition:\n   ", p)
@@ -428,7 +487,7 @@ end
 Transition(d::PnmlDict) = Transition(d[:id], d[:condition], ObjectCommon(d))
 
 function Base.show(io::IO, p::Transition)
-    print(io, "id: ", p.id, ", condition: ", p.condition, ", ", p.com,)
+    print(io, "id: ", p.id, ", condition: ", p.condition, p.com,)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Transition)
@@ -453,7 +512,7 @@ RefPlace(d::PnmlDict) = RefPlace(d[:id], d[:ref], ObjectCommon(d))
 has_xml(::RefPlace) = false
 
 function Base.show(io::IO, p::RefPlace)
-    print(io, "id: ", p.id, ", ref: ", p.ref, ", ", p.com,)
+    print(io, "id: ", p.id, ", ref: ", p.ref, p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::RefPlace)
     print(io, "RefPlace:\n   ", p)
@@ -477,21 +536,21 @@ RefTransition(d::PnmlDict) = RefTransition(d[:id], d[:ref], ObjectCommon(d))
 has_xml(::RefTransition) = false
 
 function Base.show(io::IO, p::RefTransition)
-    print(io, "id: ", p.id, ", ref: ", p.ref, ", ", p.com,)
+    print(io, "id: ", p.id, ", ref: ", p.ref, p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::RefTransition)
     print(io, "RefTransition:\n   ", p)
 end
 
 #-------------------<: Inscription
-abstract type Inscription <: Label end
+abstract type Inscription <: AbstractLabel end
 
 #-------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML PTInscription labels an Arc instance.
+PTInscription labels an Arc instance.
 """
 mutable struct PTInscription{T<:Number}  <: Inscription
     value::T
@@ -502,7 +561,7 @@ PTInscription(p::PnmlDict) = PTInscription(onnothing(p[:value],1), ObjectCommon(
 convert(::Type{Maybe{PTInscription}}, d::PnmlDict) = PTInscription(d) 
     
 function Base.show(io::IO, p::PTInscription)
-    print(io, "value: ", p.value, ", ", p.com,)
+    print(io, "value: ", p.value, p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::PTInscription)
     print(io, "PTInscription:\n   ", p)
@@ -513,11 +572,11 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML HLInscription labels an Arc instance.
+HLInscription labels an Arc instance.
 """
 struct HLInscription <: Inscription
     text::Maybe{String}
-    structure::Maybe{PnmlDict}
+    structure::Maybe{PnmlLabel}
     com::ObjectCommon
 end
 
@@ -525,7 +584,7 @@ HLInscription(p::PnmlDict) = HLInscription(p[:text], p[:structure], ObjectCommon
 convert(::Type{Maybe{HLInscription}}, d::PnmlDict) = HLInscription(d) 
     
 function Base.show(io::IO, ins::HLInscription)
-    print(io,   "'", ins.text, "', ", ins.structure, ", ", ins.com,)
+    print(io,   "'", ins.text, "', ", ins.structure, ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::HLInscription)
     print(io, "HLInscription:\n   ", ins)
@@ -536,7 +595,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML Arc connects places and transitions.
+Arc connects places and transitions.
 """
 mutable struct Arc <: PnmlObject
     id::Symbol
@@ -549,10 +608,12 @@ end
 Arc(d::PnmlDict) = Arc(d[:id], d[:source], d[:target], d[:inscription], ObjectCommon(d))
 
 function Base.show(io::IO, arc::Arc)
-    print(io, "id: ", arc.id,
+    print(io, "(id: ", arc.id,
           ", source: ", arc.source,
           ", target: ", arc.target,
-          ", inscription: ", arc.inscription, ", ", arc.com,)
+          ", inscription: ", arc.inscription,
+          arc.com,
+          ")")
 end
 function Base.show(io::IO, ::MIME"text/plain", arc::Arc)
     print(io, "Arc:\n   ", arc)
@@ -574,15 +635,15 @@ They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
 """
 struct Declaration
-    d::PnmlDict 
+    d::PnmlLabel 
     com::ObjectCommon
 end
 
-Declaration(d::PnmlDict) = Declaration(d, ObjectCommon(d))
+Declaration(d::PnmlDict) = Declaration(PnmlLabel(d), ObjectCommon(d))
 convert(::Type{Maybe{Declaration}}, d::PnmlDict) = Declaration(d) 
 
 function Base.show(io::IO, p::Declaration)
-    print(io, p.com,)
+    print(io, "'", p.d, "'", p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Declaration)
     print(io, "Declaration:\n   ", p)
@@ -630,7 +691,7 @@ function Base.show(io::IO, p::Page)
           " arcs: ", p.arcs,
           " declarations: ", p.declarations,
           " subpages: ", p.subpages,
-          ", ", p.com,)
+          p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Page)
     print(io, "Page:\n   ", p)
@@ -661,10 +722,10 @@ function PnmlNet(d::PnmlDict)
 end
 
 function Base.show(io::IO, p::PnmlNet)
-    print(io, "id: ", p.id, " type: ", p.type, " name: ", p.com.name)
-    print(io, " pages: ", length(p.pages))
-    print(io, " declarations: ", isnothing(p.declarations) ?  0 : length(p.declarations))
-    print(io, " ", p.com)
+    print(io, "id: ", p.id, " type: ", p.type)
+    print(io, ", declarations: ", isnothing(p.declarations) ?  0 : length(p.declarations))
+    print(io, p.com)
+    print(io, ", pages: ", length(p.pages))
     print(io, "\n")
     print(io, p.pages)
 end
@@ -690,6 +751,12 @@ Pnml(id::Symbol, nets::Vector{PnmlNet}; xml=nothing) = Pnml(id, nets, xml)
 
 has_xml(tool::Pnml) = true
 xmlnode(tool::Pnml) = tool.xml
+
+Base.summary(io::IO, pnml::Pnml) = print(io, summary(pnml))
+function Base.summary(pnml::Pnml)
+    l = length(pnml.nets)
+    return "PNML model $(pnml.id) with $l nets"   
+end
 
 function Base.show(io::IO, pnml::Pnml)
     print(io, "id = ", pnml.id, ", ", pnml.nets)

@@ -46,23 +46,18 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
   
         n = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
         printnode(n)
-        @test tag(n) === :toolspecific
+        @test typeof(n) <: PNML.ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
-        @test haskey(n, :tool)
-        @test haskey(n, :version)
-        @test n[:tool] isa String
-        @test n[:version] isa String
-        @test n[:tool] == s.tool
-        @test n[:version] == s.version
+        @test n.toolname == s.tool
+        @test n.version == s.version
         
-        @test haskey(n, :content)
-        @show n[:content]
-        #s.contentparse(n[:content]) #TODO
+        @show n.info
+        #s.contentparse(n.info) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
-        foreach(n[:content]) do c
-            @show c
+        foreach(n.info) do toolinfo
+            @show toolinfo
             # Content may optionally attach its xml.            
-            @test !PNML.has_xml(c) || xmlnode(c) isa Maybe{EzXML.Node}
+            @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
     end
 end
