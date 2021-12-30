@@ -26,7 +26,9 @@ typet = [
 AbstractTrees.repr_tree(PNML.PnmlType)
 AbstractTrees.repr_tree(PNML.PetriNet)
 AbstractTrees.repr_tree(PNML.PnmlException)
-AbstractTrees.repr_tree(PNML.PnmlObject)]
+AbstractTrees.repr_tree(PNML.PnmlObject)
+AbstractTrees.repr_tree(PNML.AbstractLabel)
+AbstractTrees.repr_tree(PNML.AbstractPnmlTool)]
 ```
 
 ```@example type

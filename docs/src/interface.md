@@ -6,14 +6,15 @@ most naturally a varity of Petri Net.
 
 High-Level Petri Net Graphs can be expressed in a pnml model.
 
-#TODO define type for network IR: Wrap a single tag net's [`PnmlDict`](@ref)?
+#TODO define type for network IR: Wrap a single tag net's [`PnmlDict`](@ref PNML.PnmlDict)?
 We start a description of the net IR here. 
 
 ## Net & Pages
 
 At the top level a pnml model is described by a single <net> tag
 and one or more <page> tags. Pages are present for visual presentation 
-to humans. The collection of pages is usually [`flatten`](@ref)ed before use.
+to humans. The collection of pages is usually flattened before use.
+See [`flatten_page`](@ref PNML.flatten_pages!).
 
 The parsing step for nets & pages converts xml into PnmlDict instances. 
 Then constructs objects from the PnmlDict contents.
@@ -31,8 +32,9 @@ XML <net> tags are parsed into PnmlDict:
 | declarations | defines high-level semantics of a net         |
 | pages        | set of pages - not empty                      |
  
-See [`pnml_common_defaults`](@ref), [`pnml_node_defaults`](@ref)
-and [`parse_net`](@ref) for more detail.
+See [`pnml_common_defaults`](@ref PNML.pnml_common_defaults), 
+[`pnml_node_defaults`](@ref PNML.pnml_node_defaults)
+and [`parse_net`](@ref PNML.parse_net) for more detail.
 
 XML <page> tags are also parsed into PnmlDict:
 
@@ -50,7 +52,7 @@ XML <page> tags are also parsed into PnmlDict:
 | refT         | references to transition on different page    |
 | declarations | only net & page tags have declarations        |
 
-See also: [`parse_page`](@ref).
+See also: [`parse_page`](@ref PNML.parse_page).
 
 __TBD__
 

@@ -42,10 +42,10 @@ the higher level network
 
 # History of this IR
 
-Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref). 
+Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref PNML.PnmlDict). 
 
 2021-12-15, Began the process of moving to a struct-based scheme 
-based on [`Pnml`](@ref) and the rest of the intermediate representation.
+based on [`Pnml`](@ref PNML.Pnml) and the rest of the intermediate representation.
 
 Some instances of `PnmlDict` are still present in the parsing mechanism.
 
