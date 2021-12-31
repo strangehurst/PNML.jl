@@ -194,6 +194,8 @@ convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d)
 has_structure(::PnmlLabel) = false #TODO Allow HL labels?
 structure(::PnmlLabel) = nothing
 
+tag(lab::PnmlLabel) = tag(lab.dict)
+
 function Base.show(io::IO, n::PnmlLabel)
     print(io, "dict = '"); pprint(io, n.dict); print(io, "'")
 end
@@ -386,6 +388,8 @@ function PTMarking(p::PnmlDict)
 end
 convert(::Type{Maybe{PTMarking}}, d::PnmlDict) = PTMarking(d) 
 
+(ptm::PTMarking)() = ptm.value
+
 function Base.show(io::IO, p::PTMarking)
     print(io, "value: ", p.value, p.com,)
 end
@@ -408,7 +412,10 @@ end
 
 HLMarking(p::PnmlDict) = HLMarking(p[:text], p[:structure], ObjectCommon(p))
 convert(::Type{Maybe{HLMarking}}, d::PnmlDict) = HLMarking(d) 
-    
+
+#
+(hlm::HLMarking)() = @warn "HLMarking functor not implemented"
+
 function Base.show(io::IO, p::HLMarking)
     print(io,  "'", p.text, "', ", p.structure, p.com,)
 end
@@ -464,7 +471,7 @@ Condition(p::PnmlDict) = Condition(p[:text],
 #convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d) 
     
 function Base.show(io::IO, p::Condition)
-    print(io,  "'", p.text, "', ", structure, p.com)
+    print(io,  "'", p.text, "', ", p.structure, p.com)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Condition)
     print(io, "Condition:\n   ", p)

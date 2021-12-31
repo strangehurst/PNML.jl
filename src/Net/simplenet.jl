@@ -56,17 +56,21 @@ end
 
 pid(s::SimpleNet) = s.id
 
+Base.summary(io::IO, s::SimpleNet{P}) where {P} = print(io, summary(s))
+function Base.summary(s::SimpleNet{P}) where {P} 
+    return "$(typeof(s)) id $(pid(s)) " *
+        "$(length(places(s))) places " *
+        "$(length(transitions(s))) transitions " *
+        "$(length(arcs(s))) arcs"
+end
+
 function Base.show(io::IO, s::SimpleNet{P}) where {P}
-    println(io, "PNML.SimpleNet{$P}(")
-    println(io, "id=", pid(s), ", ",
-            length(places(s)), " places, ",
-            length(transitions(s)), " transitions, ",
-            length(arcs(s)), " arcs")
-    println(io, pid(s), " places")
+    println(io, summary(s), " (")
+    println(io, " places")
     pprintln(io, places(s))
-    println(io, pid(s), " transitions")
+    println(io, " transitions")
     pprintln(io, transitions(s))
-    println(io, pid(s), " arcs")
+    println(io, " arcs")
     pprintln(io, arcs(s))
     print(io, ")")
 end
@@ -93,12 +97,11 @@ has_label(x, tagvalue::Symbol) =
     has_labels(x) ? has_Label(x.com.labels, tagvalue) : false
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    println("get_label Vector{PnmlLabel} size ", length(v))
-    findfirst(lab->tag(lab) === tagvalue, v) 
+    i = findfirst(lab->tag(lab) === tagvalue, v)
+    v[i]
 end
 
 function get_label(x, tagvalue::Symbol)
-    @show x, typeof(x), typeof(x.com.labels), has_labels(x), tagvalue
     has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
 end
 
@@ -129,10 +132,8 @@ Return rate value of `transition`.
 function rate end
 function rate(transition)::Number
     r = get_label(transition, :rate)
-    @show r
-    @show typeof(r)# <: Maybe{PnmlDict}
-    if (!isnothing(r) && !isnothing(r[:text]))
-        value = number_value(r[:text])
+    if (!isnothing(r.dict) && !isnothing(r.dict[:text]))
+        value = number_value(r.dict[:text])
         isnothing(value) ? 0.0 : value
     else
         0.0
