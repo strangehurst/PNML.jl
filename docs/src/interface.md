@@ -19,6 +19,7 @@ See [`flatten_page`](@ref PNML.flatten_pages!).
 The parsing step for nets & pages converts xml into PnmlDict instances. 
 Then constructs objects from the PnmlDict contents.
 
+
 XML <net> tags are parsed into PnmlDict:
 
 | key          | value description                             |
@@ -60,3 +61,5 @@ __TBD__
 ## Methods
 
 pid
+tag
+

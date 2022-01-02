@@ -14,7 +14,6 @@ Order = [:module]
 
 ## Types
 
-
 Overview of some type hiearchies
 ```@setup type
 using AbstractTrees, PNML, InteractiveUtils, Markdown
@@ -30,7 +29,6 @@ AbstractTrees.repr_tree(PNML.PnmlObject)
 AbstractTrees.repr_tree(PNML.AbstractLabel)
 AbstractTrees.repr_tree(PNML.AbstractPnmlTool)]
 ```
-
 ```@example type
 foreach(typet) do t; println(t, "\n"); end # hide
 ```

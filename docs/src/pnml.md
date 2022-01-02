@@ -89,7 +89,27 @@ Often the <text> is a human-readable representation of of the <structure> elemen
 | PT-HLPNG     | ?              | restrict sort to dot, condition always true            |
 | SymmetricNet | ?              | restrict sorts to finite, annotations have <structure> |
 
-## Terms
+
+
+## High-level Petri Net Concepts
+
+From the draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - 
+Part 1: Concepts, definitions and graphical notation._
+
+Useful for setting the ontology.
+
+Arc inscriptions are expressions that are evaluated.
+
+Place markings are multisets of tokens of a type.
+
+Transition conditions are boolean expressions.
+
+Expressions in _pnml_ can be many-sorted algebras.
+Declaration, Term, Sort, Multiset, Variable, are among the concepts 
+used to define expressions.
+
+
+### Terms
 
 Terms have _sort_s: the sort of the variable or the output sort of the operator.
 
@@ -100,7 +120,7 @@ These are defined in *variable declaration*s, a kind of
 A *transition* can have a *condition*, a term of *sort* boolean, 
 which imposes restrictions on when the transition may fire.
 
-## Sorts
+### Sorts
 
 *named sort*s are constructed from existing *sort*s and given a new name.
 
@@ -109,7 +129,7 @@ HLPNG adds arbitrary declarations, sorts of lists, strings, integers to Symmetri
 
 The sort of a term is the sort of the *variable* or the output sort of the *operator*.
 
-## Operators
+### Operators
 
 An *operator* can be:
 built-in constant, built-in operator, multiset operator or tuple operator.
@@ -122,7 +142,7 @@ but not for Symmetric Nets.
 
 Operators have a sequence of input sorts and a single output sort.
 
-## Variables
+### Variables
 
 
 See [`PNML.PnmlType `](@ref), [`PNML.default_pntd_map`](@ref), [`PNML.pnmltype_map`](@ref)
