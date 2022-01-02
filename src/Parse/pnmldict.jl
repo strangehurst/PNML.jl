@@ -75,6 +75,9 @@ function unclaimed_content(nv::Vector{EzXML.Node}; kw...)
 end
 
 
+#---------------------------------------------------------------------
+# LABELS
+#--------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
@@ -119,8 +122,9 @@ Return first label attached to `d` have a matching `tagvalue`.
 function get_label end
 
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
-    println("get_label Vector{PnmlDict} size ", length(v))
-    findfirst(lab->tag(lab) === tagvalue, v) 
+    @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
+    i = findfirst(lab->tag(lab) === tagvalue, v)
+    v[i]
 end
 
 # Vector of labels may be contained in a dictonary.
@@ -132,29 +136,101 @@ end
 
 
 #---------------------------------------------------------------------
+# TOOLINFO
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
 Add `node` to`d[:tools]`. Return updated `d[:tools]`.
+
+# DETAILS
+
+The UML from the _pnml primer_ (and schemas) use <toolspecific>
+as the tag name for instances of the type ToolInfo.
 """
-function add_tool!(d::PnmlDict, node; kw...)
-    @show "add tool! $(nodename(node))"
+function add_toolinfo!(d::PnmlDict, node; kw...)
+    #@show "add tool! $(nodename(node))"
     if d[:tools] === nothing
         d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
         #TODO DefaultTool and TokenGraphics are 2 known flavors.
         #TODO Tools may induce additional subtype, but if is hoped that
         #TODO label based parsing is general & flexible enough to suffice.
     end
-    add_tool!(d[:tools], node; kw...)
+    add_toolinfo!(d[:tools], node; kw...)
 end
 
-function add_tool!(v::Vector{ToolInfo}, node; kw...)
+function add_toolinfo!(v::Vector{ToolInfo}, node; kw...)
     EzXML.prettyprint(node)
     ti = parse_toolspecific(node; kw...)
-    @show typeof(ti)
+    @show "add_toolinfo $(typeof(ti))"
     push!(v,ti)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Does any toolinfo attached to `d` have a matching `toolname`.
+"""
+function has_toolinfo end
+
+# tools vector
+function has_toolinfo(v::Vector{PnmlDict}, toolname::AbstractString)
+    has_toolinfo(v, Regex(toolname))
+end
+function has_toolinfo(v::Vector{PnmlDict}, toolname::AbstractString)
+    has_toolinfo(v, Regex(toolname), Regex(version))
+end
+function has_toolinfo(v::Vector{PnmlDict}, namerex::Regex, versionrex::Regex=r"^.*$")
+    @show 
+    any(v) do tool
+       match(namerex, tool.toolname) && match(versionrex, tool.version)
+    end
+end
+          
+#----------------
+function match(ti::ToolInfo, namerex::AbstractString)
+    @show "match toolinfo $namerex"
+    match(ti.info, Regex(namerex))
+end
+function match(ti::ToolInfo, namerex::String, versionrex::String)
+    @show "match toolinfo $namerex"
+    match(ti.inf, Regex(namerex), Regex(versionrex))
+end
+function match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
+    @show "match toolinfo $namerex"
+    match(namerex, ti.toolname) && match(versionrex, ti.version)
+end
+
+#----------------
+"""
+$(TYPEDSIGNATURES)
+
+Return first toolinfo having a matching `toolname` and version.
+
+A `Toolinfo` wraps a vector of PnmlDict with each element
+"""
+function get_toolinfo end
+
+# identity
+get_toolinfo(ti::ToolInfo, args...) = ti
+
+function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString)
+    get_toolinfo(v, Regex(toolname))
+end
+function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString, version::AbstractString)
+    get_toolinfo(v, Regex(toolname), Regex(version))
+end
+
+function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
+    @show "match toolinfo $(typeof(v)) $namerex $versionrex"
+    i = findfirst(v) do ti
+        match(ti.info, namerex, versionrex)
+    end
+    v[i]
+end
+
+
+#---------------------------------------------------------------------
 #---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -176,6 +252,7 @@ Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
 Usually default value will be `nothing` or empty vector.
 See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
+
 
 """
 function pnml_node_defaults(node, xs...)
@@ -215,7 +292,7 @@ should be treated as an anonymous label for parsing.
 function parse_pnml_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
         "graphics"     => (d[:graphics] = parse_node(node; kw...))
-        "toolspecific" => add_tool!(d, node; kw...)
+        "toolspecific" => add_toolinfo!(d, node; kw...)
         _ => add_label!(d, node; kw...) # label with a label allows any node to be attached & parsable.
     end
 end

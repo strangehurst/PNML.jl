@@ -50,8 +50,10 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.toolname == s.tool
         @test n.version == s.version
-        
         @show n.info
+        # get_toolinfo(::ToolInfo, args...) is identity
+        @test PNML.get_toolinfo(n, s.tool, s.version) !== nothing
+        
         #s.contentparse(n.info) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
         foreach(n.info) do toolinfo
