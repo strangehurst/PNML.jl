@@ -196,8 +196,11 @@ structure(::PnmlLabel) = nothing
 
 tag(lab::PnmlLabel) = tag(lab.dict)
 
+function Base.show(io::IO, labelvector::Vector{PnmlLabel})
+    foreach(label->println(io,label), labelvector)
+end
 function Base.show(io::IO, n::PnmlLabel)
-    print(io, "dict = '"); pprint(io, n.dict); print(io, "'")
+    pprint(io, n.dict) #dict
 end
 function Base.show(io::IO, ::MIME"text/plain", f::PnmlLabel)
     print(io, "PnmlLabel: ", f)
@@ -230,11 +233,16 @@ convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 has_xml(::ToolInfo) = true
 compress(a::ToolInfo) = a
 
+function Base.show(io::IO, toolvector::Vector{ToolInfo})
+    foreach(ti->println(io, ti), toolvector)
+end
+
 function Base.show(io::IO, ti::ToolInfo)
-    print(io, 
-          "(name: ", ti.toolname,
+    print(io,
+          "name: ", ti.toolname,
           ", version: ", ti.version,
-          ", info: ", ti.info, ")")
+          ", info: ")
+    foreach(d->pprintln(io,d), ti.info) #dict
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
@@ -351,17 +359,22 @@ ObjectCommon(p::PnmlDict) =
         get(p, :xml, nothing)
     ) 
 
+Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
+function Base.summary(oc::ObjectCommon)
+    string("name: ",
+           isnothing(oc.name)  ? nothing : oc.name,
+           isnothing(oc.graphics) ? ", no" : ", has", " graphics, ",
+           isnothing(oc.tools)  ? 0 : length(oc.tools),  " tools, ",
+           isnothing(oc.labels) ? 0 : length(oc.labels), " labels ")
+end
+
 #TODO SHOW
-function Base.show(io::IO, p::ObjectCommon)
-    !isnothing(p.name)     && print(io, ", name: ", p.name)
-    !isnothing(p.graphics) && print(io, ", graphics: '", p.graphics, "'")
-    !isnothing(p.tools)    && print(io, ", tools: '", p.tools,"'")
-    !isnothing(p.labels)   && print(io, ", labels: '", p.labels,"'")
+function Base.show(io::IO, oc::ObjectCommon)
+    !isnothing(oc.graphics) && print(io, ", graphics: ", oc.graphics)
+    !isnothing(oc.tools)    && print(io, ", tools: ", oc.tools)
+    !isnothing(oc.labels)   && print(io, ", labels: ", oc.labels)
     # In general, do not display/print the XML. 
 end
-#    print(io, " toolinfo: ", isnothing(p.tools) ?  0 : length(p.tools))
-#    print(io, " labels: ", isnothing(p.labels) ?  0 : length(p.labels))
-#    isnothing(p.graphics) && print(io, " has graphics" )
 
 ###############################################################################
 # PNML Nodes
@@ -391,7 +404,7 @@ convert(::Type{Maybe{PTMarking}}, d::PnmlDict) = PTMarking(d)
 (ptm::PTMarking)() = ptm.value
 
 function Base.show(io::IO, p::PTMarking)
-    print(io, "value: ", p.value, p.com,)
+    print(io, "value: ", p.value, ", ", p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::PTMarking)
     print(io, "PTMarking:\n   ", p)
@@ -413,11 +426,11 @@ end
 HLMarking(p::PnmlDict) = HLMarking(p[:text], p[:structure], ObjectCommon(p))
 convert(::Type{Maybe{HLMarking}}, d::PnmlDict) = HLMarking(d) 
 
-#
+"Evaluate the marking expression."
 (hlm::HLMarking)() = @warn "HLMarking functor not implemented"
 
 function Base.show(io::IO, p::HLMarking)
-    print(io,  "'", p.text, "', ", p.structure, p.com,)
+    print(io,  "'", p.text, "', ", p.structure, ", ", p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::HLMarking)
     print(io, "HLMarking:\n   ", p)
@@ -440,16 +453,21 @@ end
 
 Place(p::PnmlDict) = Place(p[:id], p[:marking], p[:type], ObjectCommon(p))
 
-function Base.show(io::IO, p::Place)
-    print(io,
-          "(id: ", p.id,
-          ", marking: ", p.marking,
-          ", type: ", p.type,
-          p.com, ")"
-          )
+function Base.show(io::IO, placevector::Vector{Place})
+    isempty(placevector) && return
+    foreach(place->println(io, place), @view placevector[begin:end-1])
+    print(io, placevector[end])
 end
-function Base.show(io::IO, ::MIME"text/plain", p::Place)
-    print(io, "Place:\n   ", p)
+function Base.show(io::IO, place::Place)
+    print(io,
+          "id: ", place.id,
+          ", ", summary(place.com),
+          ", marking: ", place.marking,
+          ", type: ", place.type, ", ",
+          place.com)
+end
+function Base.show(io::IO, ::MIME"text/plain", place::Place)
+    print(io, "Place:\n   ", place)
 end
 
 #-------------------
@@ -471,7 +489,7 @@ Condition(p::PnmlDict) = Condition(p[:text],
 #convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d) 
     
 function Base.show(io::IO, p::Condition)
-    print(io,  "'", p.text, "', ", p.structure, p.com)
+    print(io,  "'", p.text, "', ", p.structure, ", ",  p.com)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::Condition)
     print(io, "Condition:\n   ", p)
@@ -494,7 +512,7 @@ end
 Transition(d::PnmlDict) = Transition(d[:id], d[:condition], ObjectCommon(d))
 
 function Base.show(io::IO, p::Transition)
-    print(io, "id: ", p.id, ", condition: ", p.condition, p.com,)
+    print(io, "id: ", p.id, ", condition: ", p.condition, ", ", p.com,)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Transition)
@@ -519,7 +537,7 @@ RefPlace(d::PnmlDict) = RefPlace(d[:id], d[:ref], ObjectCommon(d))
 has_xml(::RefPlace) = false
 
 function Base.show(io::IO, p::RefPlace)
-    print(io, "id: ", p.id, ", ref: ", p.ref, p.com,)
+    print(io, "id: ", p.id, ", ref: ", p.ref, ", ", p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::RefPlace)
     print(io, "RefPlace:\n   ", p)
@@ -543,7 +561,7 @@ RefTransition(d::PnmlDict) = RefTransition(d[:id], d[:ref], ObjectCommon(d))
 has_xml(::RefTransition) = false
 
 function Base.show(io::IO, p::RefTransition)
-    print(io, "id: ", p.id, ", ref: ", p.ref, p.com,)
+    print(io, "id: ", p.id, ", ref: ", p.ref, ", ",  p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::RefTransition)
     print(io, "RefTransition:\n   ", p)
@@ -568,7 +586,7 @@ PTInscription(p::PnmlDict) = PTInscription(onnothing(p[:value],1), ObjectCommon(
 convert(::Type{Maybe{PTInscription}}, d::PnmlDict) = PTInscription(d) 
     
 function Base.show(io::IO, p::PTInscription)
-    print(io, "value: ", p.value, p.com,)
+    print(io, "value: ", p.value, ", ", p.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", p::PTInscription)
     print(io, "PTInscription:\n   ", p)
@@ -591,7 +609,7 @@ HLInscription(p::PnmlDict) = HLInscription(p[:text], p[:structure], ObjectCommon
 convert(::Type{Maybe{HLInscription}}, d::PnmlDict) = HLInscription(d) 
     
 function Base.show(io::IO, ins::HLInscription)
-    print(io,   "'", ins.text, "', ", ins.structure, ins.com,)
+    print(io,   "'", ins.text, "', ", ins.structure, ", ", ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::HLInscription)
     print(io, "HLInscription:\n   ", ins)
@@ -642,18 +660,23 @@ They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
 """
 struct Declaration
-    d::PnmlLabel 
+    d::PnmlLabel # TODO what do declarations contain? Land of Symbolics.jl.
     com::ObjectCommon
 end
 
 Declaration(d::PnmlDict) = Declaration(PnmlLabel(d), ObjectCommon(d))
 convert(::Type{Maybe{Declaration}}, d::PnmlDict) = Declaration(d) 
 
-function Base.show(io::IO, p::Declaration)
-    print(io, "'", p.d, "'", p.com,)
+function Base.show(io::IO, declarations::Vector{Declaration})
+    isempty(declarations) && return
+    foreach(declare->println(io, declare), @view declarations[begin:end-1])
+    print(io, declarations[end])
 end
-function Base.show(io::IO, ::MIME"text/plain", p::Declaration)
-    print(io, "Declaration:\n   ", p)
+function Base.show(io::IO, declare::Declaration)
+    print(io, declare.d, ", ", declare.com,)
+end
+function Base.show(io::IO, ::MIME"text/plain", declare::Declaration)
+    print(io, "Declaration:\n   ", declare)
 end
 
 #-------------------
@@ -688,18 +711,34 @@ function Page(d::PnmlDict)
 end
 
 
-function Base.show(io::IO, p::Page)
-    print(io,
-          "id: ", p.id,
-          " places: ", p.places,
-          " refPlaces: ", p.refPlaces,
-          " transitions: ", p.transitions,
-          " refTransitions: ", p.refTransitions,
-          " arcs: ", p.arcs,
-          " declarations: ", p.declarations,
-          " subpages: ", p.subpages,
-          p.com,)
+function Base.summary(io::IO, page::Page) print(io, summary(page)) end
+function Base.summary( page::Page)
+    string("PNML Page Id: ", page.id, ", ",
+           length(page.places), " places ",
+           length(page.refPlaces), " refPlaces ",
+           length(page.transitions), " transitions ",
+           length(page.refTransitions), " refTransitions ",
+           length(page.arcs), " arcs ",
+           length(page.declarations), " declarations ",
+           length(page.subpages), " subpages ",
+           summary(page.com)
+           )
 end
+
+function Base.show(io::IO, page::Page)
+    println(io, summary(page))
+    println(io, "places: ", page.places)
+    println(io, "refPlaces: ", page.refPlaces)
+    println(io, "transitions: ", page.transitions)
+    println(io, "refTransitions: ", page.refTransitions)
+    println(io, "arcs: ", page.arcs)
+    println(io, "declarations: ", page.declarations)
+    println(io, "subpages: ", page.subpages)
+    println(io, page.com)
+end
+
+Base.show(io::IO, pages::Vector{Page}) = foreach(page->println(io, page), pages)
+
 function Base.show(io::IO, ::MIME"text/plain", p::Page)
     print(io, "Page:\n   ", p)
 end
@@ -728,17 +767,23 @@ function PnmlNet(d::PnmlDict)
             ObjectCommon(d)) #[:graphics], d[:tools], d[:labels], d[:xml])
 end
 
-function Base.show(io::IO, p::PnmlNet)
-    print(io, "id: ", p.id, " type: ", p.type)
-    print(io, ", declarations: ", isnothing(p.declarations) ?  0 : length(p.declarations))
-    print(io, p.com)
-    print(io, ", pages: ", length(p.pages))
-    print(io, "\n")
-    print(io, p.pages)
+Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
+function Base.summary(net::PnmlNet)
+    string( "id ", net.id, " type ", net.type, ", ",
+            length(net.pages), " pages ",
+            length(net.declarations), " declarations ",
+            summary(net.com))
 end
 
-function Base.show(io::IO, ::MIME"text/plain", p::PnmlNet)
-    print(io, "PnmlNet:\n   ", p)
+function Base.show(io::IO, net::PnmlNet)
+    println(io, summary(net))
+    println(io, net.com)
+    println(io, net.declarations)
+    println(io, net.pages)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
+    print(io, "PnmlNet:\n   ", net)
 end
 
 #-------------------
@@ -766,7 +811,8 @@ function Base.summary(pnml::Pnml)
 end
 
 function Base.show(io::IO, pnml::Pnml)
-    print(io, "id = ", pnml.id, ", ", pnml.nets)
+    println(io, summary(pnml))
+    println(io, pnml.nets)
 end
 function Base.show(io::IO, ::MIME"text/plain", pnml::Pnml)
     print(io, "Pnml:\n   ", pnml)

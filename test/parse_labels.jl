@@ -1,4 +1,5 @@
 header("PARSE_LABELS")
+header("DECLARATION")
 @testset "declaration" begin
     n = parse_node(xml"""
         <declaration key="test">
@@ -15,8 +16,6 @@ header("PARSE_LABELS")
     @test typeof(n) <: PNML.Declaration 
     @test xmlnode(n) isa Maybe{EzXML.Node}
 
-    println("\nLABELS")
-    @show n
     @show typeof(n), fieldnames(typeof(n))
     @show typeof(n.d), fieldnames(typeof(n.d))
     for (k,v) in pairs(n.d.dict)
@@ -38,6 +37,7 @@ header("PARSE_LABELS")
 
     @test n.d.dict[:structure].dict[:declarations].dict[:text][1] == "#TODO"
     @test n.d.dict[:structure].dict[:declarations].dict[:text][2] == "yes really"
+    println()
 end
 
 header("PT initMarking")
@@ -88,7 +88,6 @@ header("HL Marking")
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
-    @show n
     @test n.text == "<All,All>"
     @test n.structure !== nothing
     @test n.structure.dict[:tuple].dict[:subterm][1].dict[:all] !== nothing
@@ -127,6 +126,7 @@ go</text>
 end
 
 @testset "structure" begin
+    header("STRUCTURE")
     str = """
      <structure>
          <tuple>
@@ -160,8 +160,6 @@ end
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
     @test !PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
-    #@test haskey(n,:id)
-    #@test haskey(n,:ref)
     @test pid(n) == :rt1
     @test n.ref == :t1
 end

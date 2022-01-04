@@ -90,14 +90,14 @@ function add_label!(d::PnmlDict, node; kw...)
     add_label!(d[:labels], node; kw...) 
 end
 function add_label!(v::Vector{PnmlLabel}, node; kw...)
-    @show "add label! $(nodename(node))"
+    #@show "add label! $(nodename(node))"
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
     # The value is initialized to `nothing since it is expected that most labels
     # will have defined tags and semantics. And be given a key `:tag`.
     # Will convert value to a vector on first use.
     # Use of parse_node allows the :labels vector to contain fully parsed nodes.
     l = parse_node(node; kw...) #TODO handle types
-    @debug typeof(l)
+    #@debug typeof(l)
     push!(v, l) #TODO specialized types not just PnmlDicts.
 end
 
@@ -160,9 +160,9 @@ function add_toolinfo!(d::PnmlDict, node; kw...)
 end
 
 function add_toolinfo!(v::Vector{ToolInfo}, node; kw...)
-    EzXML.prettyprint(node)
+    #EzXML.prettyprint(node)
     ti = parse_toolspecific(node; kw...)
-    @show "add_toolinfo $(typeof(ti))"
+    #@show "add_toolinfo $(typeof(ti))"
     push!(v,ti)
 end
 
@@ -214,12 +214,12 @@ function get_toolinfo end
 # identity
 get_toolinfo(ti::ToolInfo, args...) = ti
 
-function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString)
-    get_toolinfo(v, Regex(toolname))
-end
-function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString, version::AbstractString)
-    get_toolinfo(v, Regex(toolname), Regex(version))
-end
+#function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString)
+#    get_toolinfo(v, Regex(toolname))
+#end
+#function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString, version::AbstractString)
+#    get_toolinfo(v, Regex(toolname), Regex(version))
+#end
 
 function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
     @show "match toolinfo $(typeof(v)) $namerex $versionrex"

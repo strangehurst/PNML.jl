@@ -34,15 +34,24 @@ to_node(s::AbstractString) = root(EzXML.parsexml(s))
 function printnode(n; label=nothing, compress=true, compact=false)
     printnode(stdout, n; label, compress, compact)
 end
+function printnodeln(n; label=nothing, compress=true, compact=false)
+    printnode(n; label, compress, compact)
+    println(io)
+end
+
+function printnodeln(io::IO, n; label=nothing, compress=true, compact=false)
+    printnode(io, n; label, compress, compact)
+    println(io)
+end
 function printnode(io::IO, n; label=nothing, compress=true, compact=false)
     if PRINT_PNML
         print(io, typeof(n), " ")
         !isnothing(label) && print(io, label, " ")
-        #pprintln(compress ? PNML.compress(n) : n)
-        @show(n)
+        pprint(io, n)
         !compact && println(io, "")
     end
 end
+
 
 header(s) = if VERBOSE_PNML
     println("##### ", s)

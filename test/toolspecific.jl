@@ -43,7 +43,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """, contentparse = (c) -> begin end)
     
     @testset for s in [str1, str2, str3, str4, str5]
-  
+        println("tool")
         n = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.ToolInfo
@@ -61,5 +61,29 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
             # Content may optionally attach its xml.            
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
+    end
+    @testset "combined" begin
+        println("combined tools")
+        str = """
+<?xml version="1.0"?>
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+ <net id="net0" type="pnmlcore">
+ <page id="page0">
+ <place id="place1">
+""" *
+    str1.str *
+    str2.str *
+    str3.str *
+    str4.str *
+    str5.str *
+"""
+ </place>
+ </page>
+ </net>
+</pnml>
+"""
+        doc = PNML.Document(str)
+        @show doc
+   
     end
 end
