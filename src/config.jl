@@ -1,10 +1,10 @@
 # config.jl
 
 """
-$(TYPEDEF)
-
 Contains configuration data.
 #TODO add something
+
+$(TYPEDEF)
 """
 struct PnmlCfg
     

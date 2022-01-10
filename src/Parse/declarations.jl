@@ -15,9 +15,9 @@ or additional processing is desired. Some are defined here anyway.
 =#
 
 """
-$(TYPEDSIGNATURES)
-
 Attribute label of 'net' and 'page' nodes.
+
+$(TYPEDSIGNATURES)
 """
 function parse_declaration(node; kwargs...)
     @debug node
@@ -27,10 +27,10 @@ function parse_declaration(node; kwargs...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Defines the "sort" of tokens held by the place and semantics of the marking.
 The "type" of a place is different from "net type" or "pntd".
+
+$(TYPEDSIGNATURES)
 """
 function parse_type(node; kwargs...)
     nn = nodename(node)
@@ -39,6 +39,8 @@ function parse_type(node; kwargs...)
 end
 
 """
+Return `PnmlLabel`.
+
 $(TYPEDSIGNATURES)
 """
 function parse_declarations(node; kwargs...)
@@ -253,6 +255,7 @@ function parse_variable(node; kwargs...)
 end
 
 """
+Return `PnmlLabel` for a variable declaration.
 $(TYPEDSIGNATURES)
 """
 function parse_variabledecl(node; kwargs...)

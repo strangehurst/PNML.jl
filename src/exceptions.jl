@@ -1,13 +1,10 @@
 """
 $(TYPEDEF)
-
-$(TYPEDFIELDS)
 """
 abstract type PnmlException <: Exception end
 
 """
 $(TYPEDEF)
-
 $(TYPEDFIELDS)
 
 Use exception to allow dispatch and additional data presentation to user.
@@ -27,12 +24,12 @@ struct MalformedException <: PnmlException
     node::EzXML.Node
 end
 
-Base.showerror(e::MissingIDException) = showerror(stderr, e)
-function Base.showerror(io::IO, e::MissingIDException)
-    print(io, "MissingIDException: ", e.msg)
+Base.showerror(exc::MissingIDException) = showerror(stderr, exc)
+function Base.showerror(io::IO, exc::MissingIDException)
+    print(io, "MissingIDException: ", exc.msg)
 end
 
-Base.showerror(e::MalformedException) = showerror(stderr, e)
-function Base.showerror(io::IO, e::MalformedException)
-    print(io, "MalformedException: ", e.msg)
+Base.showerror(exc::MalformedException) = showerror(stderr, exc)
+function Base.showerror(io::IO, exc::MalformedException)
+    print(io, "MalformedException: ", exc.msg)
 end

@@ -1,10 +1,10 @@
 """
-$(TYPEDSIGNATURES)
-
 Take an XML `node` and parse it by calling the method matching `node.name` from
 [`tagmap`](@ref) if that mapping exists, otherwise call [`unclaimed_element`](@ref)
 and return a [`PnmlLabel`](@ref) wrapping the PnmlDict..
 `verbose` is a boolean controlling debug logging.
+
+$(TYPEDSIGNATURES)
 """
 function parse_node(node; verbose=true, kw...)
     node === nothing && return #TODO Make all nodes optional. Is this a good idea?
@@ -22,10 +22,10 @@ function parse_node(node; verbose=true, kw...)
 end  
 
 """
-$(TYPEDSIGNATURES)
-
 Start parse from the pnml root node of the well formed XML document.
 Return vector of pnml petri nets.
+
+$(TYPEDSIGNATURES)
 """
 function parse_pnml(node; kw...)
     nn = nodename(node)
@@ -40,9 +40,9 @@ function parse_pnml(node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Return a dictonary of the pnml net with keys matching their XML tag names.
+
+$(TYPEDSIGNATURES)
 """
 function parse_net(node; kw...)
     nn = nodename(node)
@@ -74,13 +74,13 @@ function parse_net(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    PnmlNet(d)
+    PnmlNet(d) #IR
 end
 
 """
-$(TYPEDSIGNATURES)
-
 PNML requires at least one page.
+
+$(TYPEDSIGNATURES)
 """
 function parse_page(node; kw...)
     nn = nodename(node)
@@ -110,7 +110,7 @@ function parse_page(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Page(d)
+    Page(d) #IR
 end
 
 
@@ -184,7 +184,7 @@ function parse_arc(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Arc(d)
+    Arc(d) #IR
 end
 
 """
@@ -205,7 +205,7 @@ function parse_refPlace(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    RefPlace(d)
+    RefPlace(d) #IR
 end
 
 """
@@ -226,15 +226,15 @@ function parse_refTransition(node; kw...)
             _ => parse_pnml_node_common!(d,child; kw...)
         end
     end
-    RefTransition(d)
+    RefTransition(d) #IR
 end
 
 #----------------------------------------------------------
 
 """
-$(TYPEDSIGNATURES)
+Return the stripped string of nodecontent.
 
-"Return the stripped string of nodecontent.
+$(TYPEDSIGNATURES)
 """
 function parse_text(node; kw...)
     nn = nodename(node)
@@ -243,9 +243,9 @@ function parse_text(node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Return [`Name`](@ref) holding text value and optional tool & GUI information.
+
+$(TYPEDSIGNATURES)
 """
 function parse_name(node; kw...)
     node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
@@ -285,10 +285,10 @@ end
 #----------------------------------------------------------
 
 """
-$(TYPEDSIGNATURES)
-
 A pnml structure node can hold any well formed XML.
 Structure semantics will vary based on parent element and petri net type definition.
+
+$(TYPEDSIGNATURES)
 """
 function parse_structure(node; kw...)
     nn = nodename(node)
@@ -320,7 +320,7 @@ function parse_initialMarking(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    PTMarking(d)  
+    PTMarking(d)  #IR
 end
 
 """
@@ -336,7 +336,7 @@ function parse_inscription(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    PTInscription(d)
+    PTInscription(d) #IR
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
@@ -354,7 +354,7 @@ function parse_hlinitialMarking(node; kw...)
             _ => parse_pnml_label_common!(d,child; kw...)          
         end
     end
-    HLMarking(d)
+    HLMarking(d) #IR
 end
 
 """
@@ -370,13 +370,13 @@ function parse_hlinscription(node; kw...)
            _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
-    HLInscription(d)
+    HLInscription(d) #IR
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Annotation label of transition nodes. Meaning it can have text, graphics, et al.
+Annotation label of transition nodes.
 """
 function parse_condition(node; kw...)
     @debug node
@@ -384,6 +384,6 @@ function parse_condition(node; kw...)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
-    Condition(d)
+    Condition(d) #IR
 end
 

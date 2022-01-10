@@ -1,38 +1,32 @@
 """
 $(TYPEDEF)
-
 $(TYPEDFIELDS)
 """
 struct HLPetriNet{PNTD} <: PetriNet{PNTD}
-    net::PnmlDict
+    net::PnmlNet{PNTD}
 end
 HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Document(str))
 HLPetriNet(doc::PNML.Document)  = HLPetriNet(first_net(doc))
 
 """
-$(TYPEDSIGNATURES)
-
 Collapses all the pages into the first page.
+
+$(TYPEDSIGNATURES)
 """
 function HLPetriNet(net::PnmlDict)
     HLPetriNet{typeof(pnmltype(net))}(flatten_pages!(net))
 end
 
-pid(s::HLPetriNet) = pid(s.net)
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the type representing the pntd.
-There are several things with the name 'type'.
-One also called PNTD is meant here..
-"""
-typexxx(s::HLPetriNet{T}) where {T <: PnmlType} = T
-
 # Implement PNML Petri Net interface.
-places(s::HLPetriNet) = s.net.pages[1].places
-transitions(s::HLPetriNet) = s.net.pages[1].transitions
-arcs(s::HLPetriNet) = s.net.pages[1].arcs
-refplaces(s::HLPetriNet) = s.net.pages[1].refPlaces
-reftransitions(s::HLPetriNet) = s.net.pages[1].refTransitions
+
+# Delegate to wrapped net.
+pid(petrinet::HLPetriNet) = pid(petrinet.net)
+
+# Flattened to page[1], so simple vectors.
+places(petrinet::HLPetriNet)      = petrinet.net.pages[1].places
+transitions(petrinet::HLPetriNet) = petrinet.net.pages[1].transitions
+"Return vector of arcs from first page."
+arcs(petrinet::HLPetriNet)        = petrinet.net.pages[1].arcs
+refplaces(petrinet::HLPetriNet)   = petrinet.net.pages[1].refPlaces
+reftransitions(petrinet::HLPetriNet) = petrinet.net.pages[1].refTransitions
 

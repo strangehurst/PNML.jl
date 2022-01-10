@@ -6,37 +6,46 @@ const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 const XMLNode = EzXML.Node
 
 """
-$(TYPEDSIGNATURES)
-
 Utility macro for parsing xml strings into node.
+
+$(TYPEDSIGNATURES)
 """
 macro xml_str(s)
     EzXML.parsexml(s).root
 end
 
 """
+Parse string as a number. First try integer then float.
+
+---
 $(TYPEDSIGNATURES)
 
-Parse string as a number. First try integer then float.
+$(METHODLIST)
 """
 function number_value(s::AbstractString)
-    x = tryparse(Int,s) 
-    x = isnothing(x) ?  tryparse(Float64,s) : x
+    x = tryparse(Int, s) 
+    x = isnothing(x) ?  tryparse(Float64, s) : x
 end
 
 """
+Return up to 1 immediate child of element `el` that is a `tag`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return up to 1 immediate child of element `el` that is a `tag`.
+$(METHODLIST)
 """
 function firstchild(tag, el, ns=PNML.pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 
 """
+Return vector of `el` element's immediate children with `tag`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return vector of `el` element's immediate children with `tag`.
+$(METHODLIST)
 """
 function allchildren(tag, el, ns=PNML.pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])
@@ -44,7 +53,14 @@ end
 
 #-------------------------------------------------------------------
 # Predicates return a boolean.
+"""
+Does object have XML, defaults to `false`'
 
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
+"""
 function has_xml end
 has_xml(::Any) = false
 
@@ -149,11 +165,14 @@ AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
 
 #-------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-
 Pretty print the first `n` lines of the XML node.
 If `io` is not supplied, prints to the default output stream `stdout`.
 `pp` can be any pretty print method that takes (io::IO, node).
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
 """
 function node_summary end
 node_summary(node; n=5, pp=EzXML.prettyprint) = node_summary(stdout, node; n, pp)

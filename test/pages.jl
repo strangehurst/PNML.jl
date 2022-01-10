@@ -39,18 +39,11 @@
 
     net = PNML.first_net(doc)
     @test net isa PNML.PnmlNet
-    printnode(net; label="\nMultiple nested pages", compress=false)
+    printnode(net; label="\nMultiple nested pages")
 
     net1 = recursive_merge(net)
-    printnode(net1; label="\nRecusivly merged", compress=true)
+    printnode(net1; label="\nRecusivly merged")
     
     PNML.flatten_pages!(net)
-    printnode(net; label="\nFlattened to 1 page", compress=false)
-
-    cnet = PNML.compress(net)
-    @test cnet isa PNML.PnmlNet
-    printnode(cnet; label="\nCompressed", compress=false)
-    # Transition to PnmlNet breaks compress
-    @test_broken cnet != net
-
+    printnode(net; label="\nFlattened to 1 page")
 end

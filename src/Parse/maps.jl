@@ -1,7 +1,9 @@
 # Ideas from MathML.jl
 
 #TODO: use pnml tag names instead of mathml?
-"$(TYPEDEF)"
+"""
+$(TYPEDEF)
+"""
 applymap = Dict{String,Function}(
     "times" => Base.prod, # arity 2, but prod fine
     # "prod" => Base.prod,
@@ -14,9 +16,9 @@ applymap = Dict{String,Function}(
 
 
 """
-$(TYPEDEF)
-
 Map XML tag names to parser functions.
+
+$(TYPEDEF)
 """
 tagmap = Dict{String,Function}(
     # Assumes all child elements have an entry in tagmap

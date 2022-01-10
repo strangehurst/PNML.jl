@@ -1,10 +1,10 @@
 """
-$(TYPEDSIGNATURES)
-
 Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 Each are wrapped in a [`PnmlLabel`](@ref).
+
+$(TYPEDSIGNATURES)
 """
 function parse_toolspecific(node; kw...)
     nn = nodename(node)

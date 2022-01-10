@@ -33,14 +33,8 @@ header("SimpleNet")
     PNML.flatten_pages!(net)
     @test typeof(net) <: PNML.PnmlNet
 
-    cnet = PNML.compress(net) #TODO compress booken
-
-    @test typeof(cnet) <: PNML.PnmlNet
-    @test_broken cnet != net
-    
-    snet = PNML.SimpleNet(cnet)
+    snet = PNML.SimpleNet(net)
     PRINT_PNML && @show snet
-    @test snet != cnet
 
     PNML.deref!(snet)
 
@@ -120,24 +114,13 @@ end
     PRINT_PNML && println("------------------------------------------")
 
     pl = PNML.places(net)
-    printnode(pl[1], label="uncompressed", compress=false)
-    
-    cpn = PNML.compress(pl[1])
-    printnode(cpn, label="compressed",   compress=false)
-    printnode(cpn, label="recompressed", compress=true)
-    printnode(pl[1],label="from",        compress=false)
+    printnode(pl[1],label="from")
     
     PRINT_PNML && println("\n------------------------------------------")
 
     pl = PNML.places(net)
-    printnode(pl, label="uncompressed pl", compress=false)
+    printnode(pl, label="places")
 
-    cpl = PNML.compress(pl)
-    printnode(cpl, label="compressed cpl", compress=false)
-
-    for (a,b) in zip(pl, cpl)
-        @test a.id == b.id
-    end
     PRINT_PNML && println("------------------------------------------")
 
     for p in PNML.places(net)

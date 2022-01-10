@@ -27,7 +27,8 @@ AbstractTrees.repr_tree(PNML.PetriNet)
 AbstractTrees.repr_tree(PNML.PnmlException)
 AbstractTrees.repr_tree(PNML.PnmlObject)
 AbstractTrees.repr_tree(PNML.AbstractLabel)
-AbstractTrees.repr_tree(PNML.AbstractPnmlTool)]
+AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
+]
 ```
 ```@example type
 foreach(typet) do t; println(t, "\n"); end # hide

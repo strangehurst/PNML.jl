@@ -1,8 +1,8 @@
 """
-$(TYPEDSIGNATURES)
-
 Return PnmlDict holding contents of a well-formed XML node.
 Expected to be wrapped by a type, not be inside anothe Dict.
+
+$(TYPEDSIGNATURES)
 
 If element `node` has any children, each is placed in the dictonary with the
 tag name symbol as the key, repeated tags produce a vector as the value.
@@ -16,6 +16,7 @@ It is possible that claimed labels will be in the unclaimed element's content.
 Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
+
 
 # Examples
 
@@ -53,10 +54,10 @@ function unclaimed_element(node; kw...)::PnmlDict
 end
 
 """
-$(TYPEDSIGNATURES)
-
 From `nv`, a vector of XML nodes, return PnmlDict with values that are vectors
 when there are multiple instances of a tag in `nv` and scalar otherwise.
+
+$(TYPEDSIGNATURES)
 """
 function unclaimed_content(nv::Vector{EzXML.Node}; kw...)
     d = PnmlDict() 
@@ -102,9 +103,12 @@ function add_label!(v::Vector{PnmlLabel}, node; kw...)
 end
 
 """
+Does any label attached to `d` have a matching `tagvalue`.
+
+---
 $(TYPEDSIGNATURES)
 
-Does any label attached to `d` have a matching `tagvalue`.
+$(METHODLIST)
 """
 function has_label end
 function has_label(d::PnmlDict, tagvalue::Symbol)
@@ -114,14 +118,25 @@ function has_label(d::Vector{PnmlDict}, tagvalue::Symbol)
     any(label->tag(label) === tagvalue, d[:labels])
 end
 
+has_labels(::Any) = false
+
 """
+Return first label attached to `d` have a matching `tagvalue`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return first label attached to `d` have a matching `tagvalue`.
+$(METHODLIST)
 """
 function get_label end
 
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
+    @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
+    i = findfirst(lab->tag(lab) === tagvalue, v)
+    v[i]
+end
+
+function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
     @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     i = findfirst(lab->tag(lab) === tagvalue, v)
     v[i]
@@ -139,9 +154,9 @@ end
 # TOOLINFO
 #---------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
+Add `node` to `d[:tools]`. Return updated `d[:tools]`.
 
-Add `node` to`d[:tools]`. Return updated `d[:tools]`.
+$(TYPEDSIGNATURES)
 
 # DETAILS
 
@@ -167,20 +182,28 @@ function add_toolinfo!(v::Vector{ToolInfo}, node; kw...)
 end
 
 """
+Does any toolinfo attached to `d` have a matching `toolname`.
+
+---
 $(TYPEDSIGNATURES)
 
-Does any toolinfo attached to `d` have a matching `toolname`.
+$(METHODLIST)
 """
 function has_toolinfo end
 
 # tools vector
-function has_toolinfo(v::Vector{PnmlDict}, toolname::AbstractString)
+function has_toolinfo(v::Vector{PnmlDict},
+                      toolname::AbstractString)
     has_toolinfo(v, Regex(toolname))
 end
-function has_toolinfo(v::Vector{PnmlDict}, toolname::AbstractString)
+function has_toolinfo(v::Vector{PnmlDict},
+                      toolname::AbstractString,
+                      version::AbstractString)
     has_toolinfo(v, Regex(toolname), Regex(version))
 end
-function has_toolinfo(v::Vector{PnmlDict}, namerex::Regex, versionrex::Regex=r"^.*$")
+function has_toolinfo(v::Vector{PnmlDict},
+                      namerex::Regex,
+                      versionrex::Regex=r"^.*$")
     @show 
     any(v) do tool
        match(namerex, tool.toolname) && match(versionrex, tool.version)
@@ -203,11 +226,14 @@ end
 
 #----------------
 """
-$(TYPEDSIGNATURES)
-
 Return first toolinfo having a matching `toolname` and version.
 
 A `Toolinfo` wraps a vector of PnmlDict with each element
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
 """
 function get_toolinfo end
 
@@ -233,10 +259,10 @@ end
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-
 Return Dict of tags common to both pnml nodes and pnml labels.
 See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).
+
+$(TYPEDSIGNATURES)
 """
 function pnml_common_defaults(node)
     PnmlDict(:graphics => nothing, # graphics tag is single despite the 's'.
@@ -246,14 +272,12 @@ function pnml_common_defaults(node)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Merge `xs` into dictonary with default pnml node tags.
 Used on: net, page ,place, transition, arc.
 Usually default value will be `nothing` or empty vector.
 See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 
-
+$(TYPEDSIGNATURES)
 """
 function pnml_node_defaults(node, xs...)
     PnmlDict(pnml_common_defaults(node)...,
@@ -262,13 +286,13 @@ function pnml_node_defaults(node, xs...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Merge `xs` into dictonary with default pnml label tags.
 Used on pnml tags below a pnml_node tag.
 Label level tags include: name, inscription, initialMarking.
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
 See also: [`pnml_common_defaults`](@ref).
+
+$(TYPEDSIGNATURES)
 """
 function pnml_label_defaults(node, xs...)::PnmlDict
     PnmlDict(pnml_common_defaults(node)...,
@@ -280,14 +304,14 @@ end
 
 #---------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-
 Update `d` with any graphics, tools, and label child of `node`.
 Used by [`parse_pnml_node_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
 
 Note that "labels" are the "everything else" option and this should be called after parsing
 any elements that has an expected tag. Any tag that is encountered in an unexpected location
 should be treated as an anonymous label for parsing.
+
+$(TYPEDSIGNATURES)
 """
 function parse_pnml_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
@@ -298,9 +322,9 @@ function parse_pnml_common!(d::PnmlDict, node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
+
+$(TYPEDSIGNATURES)
 """
 function parse_pnml_node_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
@@ -310,10 +334,10 @@ function parse_pnml_node_common!(d::PnmlDict, node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
+
+$(TYPEDSIGNATURES)
 """
 function parse_pnml_label_common!(d::PnmlDict, node; kw...)    
     @match nodename(node) begin
@@ -325,10 +349,10 @@ end
 
 #---------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-
 Should not often have a '<label>' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
+
+$(TYPEDSIGNATURES)
 """
 function parse_label(node; kw...)
     nn = nodename(node)

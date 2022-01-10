@@ -1,8 +1,8 @@
 """
-$(TYPEDSIGNATURES)
-
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
+
+$(TYPEDSIGNATURES)
 """
 function parse_tokengraphics(node; kw...)
     nn = nodename(node)
@@ -12,9 +12,9 @@ function parse_tokengraphics(node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Position is a coordinate relative to containing element. Units are points.
+
+$(TYPEDSIGNATURES)
 """
 function parse_tokenposition(node; kw...)
     nn = nodename(node)
@@ -24,10 +24,10 @@ function parse_tokenposition(node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Arcs, Annotations and Nodes (places, transitions, pages) have different graphics semantics.
 Return a dictonary with the union of possibilities.
+
+$(TYPEDSIGNATURES)
 """
 function parse_graphics(node; kw...)
     @debug node
@@ -79,10 +79,10 @@ function parse_graphics_line(node; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Coordinates `x`, `y` are in points.
 Specification seems to only use integers, we also allow real numbers.
+
+$(TYPEDSIGNATURES)
 """
 function parse_graphics_coordinate(node; kw...)
     nn = nodename(node)    

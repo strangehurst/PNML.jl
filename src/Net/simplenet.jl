@@ -30,8 +30,8 @@ A less-simple consumer of the IR can impose standards-checking.
 
 """
 $(TYPEDEF)
-
 $(TYPEDFIELDS)
+
 **TODO: Rename SimpleNet to TBD** 
 SimpleNet wraps the `place`, `transition` & `arc` collections of a single page of one net.
 
@@ -49,29 +49,27 @@ end
 SimpleNet(str::AbstractString) = SimpleNet(PNML.Document(str))
 SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
 function SimpleNet(net::PnmlNet)
-    netcopy = deepcopy(net)
+    netcopy = deepcopy(net) #TODO Is copy needed?
     flatten_pages!(netcopy)
     SimpleNet(netcopy.id, netcopy)
 end
 
-pid(s::SimpleNet) = s.id
-
-Base.summary(io::IO, s::SimpleNet{P}) where {P} = print(io, summary(s))
-function Base.summary(s::SimpleNet{P}) where {P} 
-    return "$(typeof(s)) id $(pid(s)) " *
-        "$(length(places(s))) places " *
-        "$(length(transitions(s))) transitions " *
-        "$(length(arcs(s))) arcs"
+Base.summary(io::IO, petrinet::SimpleNet{P}) where {P} = print(io, summary(petrinet))
+function Base.summary(petrinet::SimpleNet{P}) where {P} 
+    return "$(typeof(petrinet)) id $(pid(petrinet)) " *
+        "$(length(places(petrinet))) places " *
+        "$(length(transitions(petrinet))) transitions " *
+        "$(length(arcs(petrinet))) arcs"
 end
 
-function Base.show(io::IO, s::SimpleNet{P}) where {P}
-    println(io, summary(s), " (")
+function Base.show(io::IO, petrinet::SimpleNet{P}) where {P}
+    println(io, summary(petrinet), " (")
     println(io, " places")
-    pprintln(io, places(s))
+    println(io, places(petrinet))
     println(io, " transitions")
-    pprintln(io, transitions(s))
+    println(io, transitions(petrinet))
     println(io, " arcs")
-    pprintln(io, arcs(s))
+    println(io, arcs(petrinet))
     print(io, ")")
 end
 
@@ -79,31 +77,16 @@ end
 # Implement PNML Petri Net interface.
 # 
 #-------------------------------------------------------------------------------
-places(s::SimpleNet)         = s.net.pages[1].places
-transitions(s::SimpleNet)    = s.net.pages[1].transitions
-arcs(s::SimpleNet)           = s.net.pages[1].arcs
-refplaces(s::SimpleNet)      = s.net.pages[1].refPlaces
-reftransitions(s::SimpleNet) = s.net.pages[1].refTransitions
+
+pid(petrinet::SimpleNet) = petrinet.id
+
+places(petrinet::SimpleNet)         = petrinet.net.pages[1].places
+transitions(petrinet::SimpleNet)    = petrinet.net.pages[1].transitions
+arcs(petrinet::SimpleNet)           = petrinet.net.pages[1].arcs
+refplaces(petrinet::SimpleNet)      = petrinet.net.pages[1].refPlaces
+reftransitions(petrinet::SimpleNet) = petrinet.net.pages[1].refTransitions
 
 
-#------------------------------------------------------------------------
-# Collection of generic labels implemented using a Vector of PnmlDict
-#------------------------------------------------------------------------
-has_labels(::Any) = false
-has_labels(::T) where T<: PnmlObject = true
-has_labels(::PnmlNet) = true
-
-has_label(x, tagvalue::Symbol) =
-    has_labels(x) ? has_Label(x.com.labels, tagvalue) : false
-
-function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    i = findfirst(lab->tag(lab) === tagvalue, v)
-    v[i]
-end
-
-function get_label(x, tagvalue::Symbol)
-    has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
-end
 
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
@@ -112,22 +95,29 @@ end
 
 
 """
+Return a transition-id labelled vector of rate values for transitions of net `s`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return a labelled vector of rate values for net `s`. Key is transition id.
+$(METHODLIST)
 """
 function rates end
 
-rates(s::N) where {T<:PnmlType, N<:PetriNet{T}} = rates(s, transition_ids(s))
+rates(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    rates(petrinet, transition_ids(petrinet))
 
-function rates(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [tid=>rate(s,tid) for tid in v]...))
+function rates(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [transitionid => rate(petrinet, transitionid) for transitionid in idvec]...))
 end
 
 """
+Return rate value of `transition`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return rate value of `transition`.
+$(METHODLIST)
 """
 function rate end
 function rate(transition)::Number
@@ -140,7 +130,7 @@ function rate(transition)::Number
     end
 end
 
-function rate(s::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    rate(transition(s, tid))
+function rate(petrinet::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    rate(transition(petrinet, tid))
 end
 

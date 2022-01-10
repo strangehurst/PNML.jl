@@ -46,8 +46,16 @@ DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 
 @info("Running `makedocs` from make.jl.")
 
+for m ∈ [PNML]
+    for i ∈ propertynames(m)
+       xxx = getproperty(m, i)
+       println(xxx)
+    end
+ end
+
 makedocs(;
          clean = true,
+         doctest=true,
          modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",

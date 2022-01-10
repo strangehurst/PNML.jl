@@ -13,38 +13,50 @@ struct Document{N,X}
 end
 
 Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s)); reg), reg)
-Document(p::Pnml, reg=IDRegistry())           = Document(p.nets, xmlnode(p), reg)
-Document(p::PnmlDict, reg=IDRegistry())       = Document(p[:nets], xmlnode(p), reg)
+Document(pnml::Pnml, reg=IDRegistry())        = Document(pnml.nets, xmlnode(pnml), reg)
+Document(pdict::PnmlDict, reg=IDRegistry())   = Document(pdict[:nets], xmlnode(pdict), reg)
+
+
+function Base.show(io::IO, doc::Document{N,X}) where {N,X}
+    println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
+    foreach(doc.nets) do net
+        println(io, net)
+    end
+    #TODO Print ID Registry
+end
 
 """
+Return nets of `doc` matching the given pntd `type` as string or symbol.
+See [`pntd`](@ref).
+
+---
 $(TYPEDSIGNATURES)
 
-Return nets of `d` matching the given pntd `type` as string or symbol.
-See [`pntd`](@ref).
+$(METHODLIST)
 """
 function find_nets end
-find_nets(d::Document, type::AbstractString) = find_nets(d, pntd(type))
-find_nets(d::Document, type::Symbol) = find_nets(d, pnmltype(type))
-find_nets(d::Document, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, d.nets)
+find_nets(doc::Document, type::AbstractString) = find_nets(doc, pntd(type))
+find_nets(doc::Document, type::Symbol) = find_nets(doc, pnmltype(type))
+find_nets(doc::Document, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, doc.nets)
 
 """
+Return first net contained by `doc`.
+
 $(TYPEDSIGNATURES)
-
-Return first net contained by `d`.
 """
-first_net(d::Document) = first(d.nets)
+first_net(doc::Document) = first(doc.nets)
 
 """
+Return all `nets` of `doc`.
+
 $(TYPEDSIGNATURES)
-
-Return all `nets` of `d`.
 """
-nets(d::Document) = d.nets
+nets(doc::Document) = doc.nets
   
 """
-$(TYPEDSIGNATURES)
-
 Build pnml from a string.
+
+$(TYPEDSIGNATURES)
 """
 function parse_str(str)::PNML.Document
     ezdoc = EzXML.parsexml(str)
@@ -52,60 +64,36 @@ function parse_str(str)::PNML.Document
 end
 
 """
-$(TYPEDSIGNATURES)
- 
+
 Build pnml from a file.
+
+$(TYPEDSIGNATURES)
 """
-function parse_file(fn)::PNML.Document
-    ezdoc = EzXML.readxml(fn)
+function parse_file(fname)::PNML.Document
+    ezdoc = EzXML.readxml(fname)
     parse_doc(ezdoc)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Return a PNML.Document built from an XML Doncuent.
 A well formed PNML XML document has a single root node: <pnml>.
+
+$(TYPEDSIGNATURES)
 """
 function parse_doc(doc::EzXML.Document)::PNML.Document
     reg = PNML.IDRegistry()
     Document(parse_pnml(root(doc); reg), reg)
 end
 
-
-"""
-$(TYPEDSIGNATURES)
-
-Merge page content into the 1st page of each pnml net.
-
-Note that refrence nodes are still present. They can be removed later
-with [`deref!`](@ref).
-"""
-function flatten_pages! end
-
-function flatten_pages!(doc::PNML.Document)
-    foreach(flatten_pages!, nets(doc))
-end
-
-#function collect_pages(page::Page)
-#    foreach(collect_pages, page.subpages])
-#end
-#function collect_pages(net::PndmlNet)
-#    pages foreach(collect_pages, net.pages)
-#    do page
-#            ps = get(net, :pages, nothing) # A page may contain other pages
-#        end
-#    end
-#end
-
+# 2 Things, each could be nothing.
 function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
     if isnothing(getproperty(l, key))
-            if !isnothing(getproperty(r, key))
-                setproperty!(l, key, getproperty(r, key))
-            end
-        else
-            append!(getproperty(l, key), getproperty(r, key))
+        if !isnothing(getproperty(r, key))
+            setproperty!(l, key, getproperty(r, key))
         end
+    else
+        append!(getproperty(l, key), getproperty(r, key))
+    end
 end
 function update_maybe!(l::T, r::T) where {T <: Maybe{Any}}
     if isnothing(l)
@@ -121,35 +109,40 @@ function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
                               :refTransitions, :refPlaces, :declarations],
                       comk = [:tools, :labels])
-    #@show l.id, r.id
-    #@show propertynames(l)
     foreach(keys) do key
-        #@show key
-        #@show getproperty(l,key)
-        #@show getproperty(r,key)
         append!(getproperty(l,key), getproperty(r,key))
     end
-    # Optional fields of Maybe{T}
+    # Optional fields
     foreach(comk) do key
-        #@show key
-        #@show getproperty(l.com,key)
-        #@show getproperty(r.com,key)
         update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
     end
 
     l
-#    foreach(comk) do key
-#        if isnothing(getproperty(l.com,key))
-#            if !isnothing(getproperty(r.com,key))
-#                setproperty!(l.com,key, getproperty(r.com,key))
-#            end
-#        else
-#            append!(getproperty(l.com,key), getproperty(r.com,key))
-#        end
-#    end
 end
 
-"Collect keys from all pages and move to first page."
+"""
+Merge page content into the 1st page of each pnml net.
+
+Note that refrence nodes are still present. They can be removed later
+with [`deref!`](@ref).
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
+"""
+function flatten_pages! end
+
+"Flatten each net of PNML document."
+function flatten_pages!(doc::PNML.Document)
+    foreach(flatten_pages!, nets(doc))
+end
+
+"""
+Collect keys from all pages and move to first page.
+
+$(TYPEDSIGNATURES)
+"""
 function flatten_pages!(net::PnmlNet)
     # Moved the keys into append_page.
     
@@ -167,49 +160,3 @@ function flatten_pages!(net::PnmlNet)
     #TODO Empty unused pages.
     net
 end
-
-
-function flatten_page!(outvec, page::PnmlDict, key)
-    # Some of the keys are optional. They may be removed by a compress before flatten.
-    if haskey(page, key) && !isnothing(page[key])
-        push!.(Ref(outvec), page[key])
-        empty!(page[key])
-    end
-end
-
-function flatten_pages!(net::PnmlDict,
-                        keys=[:places, :trans, :arcs,
-                              :tools, :labels, :refT, :refP, :declarations])
-    for key in keys
-        tmp = PnmlDict[]
-        # A page may contain other pages. Decend the tree.
-        foreach(net.pages) do page
-            foreach(page[:pages]) do subpage
-                flatten_page!(tmp, subpage, key)
-                empty!(subpage)
-            end
-            flatten_page!(tmp, page, key)
-        end
-        net.pages[1][key] = tmp
-    end
-    net
-end
-
-function Base.show(io::IO, doc::Document{N,X}) where {N,X}
-    println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
-    foreach(doc.nets) do net
-        println(io, net)
-    end
-    # ID Registry
-end
-
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-#
-# INTERMEDITE REPRESENTATION moved to intermediate.jl
-#
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-

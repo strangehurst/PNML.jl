@@ -99,7 +99,7 @@ end
     @show typeof(pnml_ir)
     @test typeof(pnml_ir) <: PNML.Pnml
     
-    printnode(pnml_ir; label="pnml_ir", compress=false)
+    printnode(pnml_ir; label="pnml_ir")
     #=
 
     This assumes everything has keys.

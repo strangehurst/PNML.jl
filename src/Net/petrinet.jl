@@ -1,8 +1,8 @@
 """
-$(TYPEDEF)
-
 Provides 2nd-level parsing of the intermediate representation
 of a  **single network** in a PNML.Document.
+
+$(TYPEDEF)
 
 # Extended
 
@@ -27,52 +27,58 @@ abstract type PetriNet{T<:PnmlType} end
 #----------------------------------------------------------------------------------
 
 """
-$(TYPEDSIGNATURES)
-
 Return the PnmlType subtype representing the flavor (or pntd) of this kind of Petri Net.
+
+$(TYPEDSIGNATURES)
+$(METHODLIST)
 """
-type(s::N) where {T <: PnmlType, N <: PetriNet{T}} = T
+type(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = T
 
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
 #------------------------------------------------------------------
 
-pid(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accessor")
+pid(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accessor")
 
 """
-$(TYPEDSIGNATURES)
-
 Return vector of places. 
-"""
-places(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
-"""
 $(TYPEDSIGNATURES)
+$(METHODLIST)
+"""
+places(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
+"""
 Return vector of transitions. 
-"""
-transitions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
-"""
 $(TYPEDSIGNATURES)
+$(METHODLIST)
+"""
+transitions(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
+"""
 Return vector of arcs. 
-"""
-arcs(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
-"""
 $(TYPEDSIGNATURES)
+$(METHODLIST)
+"""
+arcs(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
+"""
 Return vector of reference places. 
-"""
-refplaces(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
-"""
 $(TYPEDSIGNATURES)
-
-Return vector of reference transitions. 
+$(METHODLIST)
 """
-reftransitions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
+refplaces(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
+
+"""
+Return vector of reference transitions. 
+
+$(TYPEDSIGNATURES)
+$(METHODLIST)
+"""
+reftransitions(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 
 #------------------------------------------------------------------
 # ARC, INSCRIPTION
@@ -95,68 +101,86 @@ target(arc)::Symbol = arc.target
 
 """
 $(TYPEDSIGNATURES)
+Return `true` if any `arc` in `petrinet` has `id`. 
 """
-function has_arc(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, arcs(s))
+function has_arc(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    any(x -> pid(x) === id, arcs(petrinet))
+end
+
+"""
+Return arc of `petrinet` with `id` if found, otherwise `nothing`.
+
+---
+$(TYPEDSIGNATURES)
+"""
+function arc(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    arcs(petrinet)[findfirst(x -> pid(x) === id, arcs(petrinet))]
 end
 
 """
 $(TYPEDSIGNATURES)
+Return vector of `petrinet`'s arc ids.
 """
-function arc(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    arcs(s)[findfirst(x -> pid(x) === id, arcs(s))]
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-arc_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, arcs(s)) 
+arc_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, arcs(petrinet)) 
 
 """
 $(TYPEDSIGNATURES)
 
 Return vector of arcs that have a source or target of transition `id`.
+See also [`src_arcs`](@ref), [`tgt_arcs`](@ref).
 """
-function all_arcs(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    filter(a->source(a)===id || target(a)===id, arcs(s))
+function all_arcs(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    filter(a->source(a)===id || target(a)===id, arcs(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Return vector of arcs that have a source of transition `id`.
+See also [`all_arcs`](@ref), [`tgt_arcs`](@ref).
 """
-function src_arcs(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    filter(a->source(a)===id, arcs(s))
+function src_arcs(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    filter(a->source(a)===id, arcs(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Return vector of arcs that have a target of transition `id`.
+See also [`all_arcs`](@ref), [`src_arcs`](@ref).
 """
-function tgt_arcs(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    filter(a->target(a)===id, arcs(s))
+function tgt_arcs(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    filter(a->target(a)===id, arcs(petrinet))
 end
 
 
 """
+Return incription value of `arc`.
+
+---
 $(TYPEDSIGNATURES)
 
-Return incription value of `arc`.
+$(METHODLIST)
 """
 function inscription end
 
-function inscription(arc)::Number
+# This is evaluating the incscription attached to an arc.
+# Original implementation is for PTNet.
+# HLNets do usual label semantics  here.
+# Map from net.type to inscription 
+function inscription(arc)
     if !isnothing(arc.inscription)
+        # Evaluate inscription
+        #TODO Is this where a functor is called to get a value?
         arc.inscription.value
     else
-        1
+        # Default inscription
+        1 # Omitted PTNet inscriptions default value. TODO: match value type.
     end        
 end
 
-function inscription(s::N, a::Symbol) where {T <: PnmlType, N <: PetriNet{T}}
-    inscription(arc(s,a))
+function inscription(petrinet::N, arc_id::Symbol) where {T <: PnmlType, N <: PetriNet{T}}
+    inscription(arc(petrinet, arc_id))
 end
 
 #------------------------------------------------------------------
@@ -166,47 +190,51 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function has_refP(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, refplaces(s))
+function has_refP(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    any(x -> pid(x) === id, refplaces(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function has_refT(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, reftransitions(s))
+function has_refT(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    any(x -> pid(x) === id, reftransitions(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-refplace_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, refplaces(s)) 
+refplace_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    map(pid, refplaces(petrinet)) 
 
 """
 $(TYPEDSIGNATURES)
 """
-reftransition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, reftransitions(s)) 
+reftransition_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    map(pid, reftransitions(petrinet)) 
 
 """
 $(TYPEDSIGNATURES)
 """
-function refplace(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    refplaces(s)[findfirst(x -> pid(x) === id, refplaces(s))]
+function refplace(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    refplaces(petrinet)[findfirst(x -> pid(x) === id, refplaces(petrinet))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function reftransition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    reftransitions(s)[findfirst(x -> pid(x) === id, reftransitions(s))]
+function reftransition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    reftransitions(petrinet)[findfirst(x -> pid(x) === id, reftransitions(petrinet))]
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Remove reference nodes from arcs.
 Design intent expects [`flatten_pages!`](@ref) to have
 been applied so that everything is on one page.
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
 
 # Examples
 ## Axioms
@@ -216,23 +244,23 @@ been applied so that everything is on one page.
 """
 function deref! end
 
-function deref!(s::N) where {T <: PnmlType, N <: PetriNet{T}} 
-    for a in arcs(s)
-        while a.source ∈ refplace_ids(s)
-            @debug a.source, deref_place(s, a.source)
-            a.source = deref_place(s, a.source)
+function deref!(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} 
+    for a in arcs(petrinet)
+        while a.source ∈ refplace_ids(petrinet)
+            @debug a.source, deref_place(petrinet, a.source)
+            a.source = deref_place(petrinet, a.source)
         end
-        while a.target ∈ refplace_ids(s)
-            @debug a.target, deref_place(s, a.target)
-            a.target = deref_place(s, a.target)
+        while a.target ∈ refplace_ids(petrinet)
+            @debug a.target, deref_place(petrinet, a.target)
+            a.target = deref_place(petrinet, a.target)
         end
-        while a.source ∈ reftransition_ids(s)
-            @debug a.source, deref_transition(s, a.source)
-            a.source = deref_transition(s, a.source)
+        while a.source ∈ reftransition_ids(petrinet)
+            @debug a.source, deref_transition(petrinet, a.source)
+            a.source = deref_transition(petrinet, a.source)
         end
-        while a.target ∈ reftransition_ids(s)
-            @debug a.target, deref_transition(s, a.target)
-            a.target = deref_transition(s, a.target)
+        while a.target ∈ reftransition_ids(petrinet)
+            @debug a.target, deref_transition(petrinet, a.target)
+            a.target = deref_transition(petrinet, a.target)
         end        
     end
 end
@@ -244,14 +272,16 @@ $(TYPEDSIGNATURES)
 
 Return id of referenced place.
 """
-deref_place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = refplace(s, id).ref
+deref_place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} =
+    refplace(petrinet, id).ref
 
 """
 $(TYPEDSIGNATURES)
 
 Return id of referenced transition.
 """
-deref_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = reftransition(s, id).ref
+deref_transition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} =
+    reftransition(petrinet, id).ref
 
 
 #------------------------------------------------------------------
@@ -261,33 +291,36 @@ deref_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} = reftran
 """
 $(TYPEDSIGNATURES)
 
-Is there any place with `id` in net `s`?
+Is there any place with `id` in `petrinet`?
 """
-function has_place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, places(s))
+function has_place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    any(x -> pid(x) === id, places(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return the place with `id` in net `s`.
+Return the place with `id` in `petrinet`.
 """
-function place(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    places(s)[findfirst(x -> pid(x) === id, places(s))]
+function place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    places(petrinet)[findfirst(x -> pid(x) === id, places(petrinet))]
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return vector of place ids in `s`.
+Return vector of place ids in `petrinet`.
 """
-place_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(s)) 
+place_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(petrinet)) 
 
 
 """
-$(TYPEDSIGNATURES)
-
 Return marking value of a place `p`.
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
 
 # Examples
 
@@ -307,18 +340,19 @@ julia> p.value
 """
 function marking end
 
-function marking(place)::Number
+function marking(place)
     #TODO PNTD specific marking semantics. Including structures
     if !isnothing(place.marking)
+        # Evaluate marking.
         place.marking.value
     else
-        0
+        0 #TODO returm default marking
     end
 end
 
-function marking(s::N, p::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+function marking(petrinet::N, placeid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     #TODO force specialization? Use trait?
-    marking(place(s,p))
+    marking(place(petrinet, placeid))
 end
 
 
@@ -326,13 +360,14 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return a labelled vector with key of place ids and value of marking.
+Return a labelled vector with key of place id and value of marking.
 """
 function initialMarking end
-initialMarking(s::N) where {T<:PnmlType, N<:PetriNet{T}} = initialMarking(s, place_ids(s))
+initialMarking(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    initialMarking(petrinet, place_ids(petrinet))
 
-function initialMarking(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [p=>marking(s,p) for p in v]...))
+function initialMarking(petrinet::N, placeid_vec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [p=>marking(petrinet,p) for p in placeid_vec]...))
 end
 
 
@@ -343,56 +378,67 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Is there a transition with `id` in net `s`?
+Is there a transition with `id` in net `petrinet`?
 """
-function has_transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, transitions(s))
+function has_transition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    any(x -> pid(x) === id, transitions(petrinet))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function transition(s::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    transitions(s)[findfirst(x -> pid(x) === id, transitions(s))]
+function transition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    transitions(petrinet)[findfirst(x -> pid(x) === id, transitions(petrinet))]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-transition_ids(s::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, transitions(s)) 
+transition_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    map(pid, transitions(petrinet)) 
 
 #----------------------------------------
 
 """
+Return a labelled vector of condition values for net `s`. Key is transition id.
+
+---
 $(TYPEDSIGNATURES)
 
-Return a labelled vector of condition values for net `s`. Key is transition id.
+$(METHODLIST)
 """
 function conditions end
-conditions(s::N) where {T<:PnmlType, N<:PetriNet{T}} = conditions(s, transition_ids(s))
+conditions(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    conditions(petrinet, transition_ids(petrinet))
 
-function conditions(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [t=>condition(s,t) for t in v]...))
+function conditions(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [t=>condition(petrinet,t) for t in idvec]...))
 end
 
 """
 Return condition value of `transition`.
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
 """
 function condition end
 
 # TODO Specialize on PNTD.
-function condition(transition)::Number
+function condition(transition)
     if isnothing(transition.condition) || isnothing(transition.condition.text)
-        0
+        0 # TODO default condition
     else
+        #TODO evaluate condition
         #TODO implement full structure handling
         rate = number_value(transition.condition.text)
         isnothing(rate) ? 0 : rate
     end
 end
 
-function condition(s::N, t::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    condition(transition(s,t))
+function condition(petrinet::N, transition_id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    condition(transition(petrinet, transition_id))
 end
 
 #-----------------------------------------------------------------
@@ -403,15 +449,19 @@ Transition function of a Petri Net.
 Each transition has an input vector and an output vector.
 Each labelled vector is indexed by the place on the other end of the arc.
 Values are inscriptions.
+
+---
+$(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 function transition_function end
 
-function transition_function(s::N) where {T<:PnmlType, N<:PetriNet{T}}
-    transition_function(s, transition_ids(s))
+function transition_function(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}}
+    transition_function(petrinet, transition_ids(petrinet))
 end
 
-function transition_function(s::N, v::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [t=>in_out(s,t) for t in v]...))
+function transition_function(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [t=>in_out(petrinet,t) for t in idvec]...))
 end
 
 """
@@ -420,11 +470,11 @@ $(TYPEDSIGNATURES)
 Return tuple of input, output labelled vectors with key of place ids and
 value of arc inscription's value. 
 """
-function in_out(s::N, t::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+function in_out(petrinet::N, transition_id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     # Input arcs have this transition as the target.
-    ins = (; [source(a)=>inscription(a) for a in tgt_arcs(s, t)]...)
+    ins = (; [source(a)=>inscription(a) for a in tgt_arcs(petrinet, transition_id)]...)
     # Output arcs have this transition as the source.
-    out = (; [target(a)=>inscription(a) for a in src_arcs(s, t)]...)
+    out = (; [target(a)=>inscription(a) for a in src_arcs(petrinet, transition_id)]...)
     (LVector(ins), LVector(out))
 end    
 
