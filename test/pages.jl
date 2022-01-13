@@ -1,3 +1,4 @@
+header("PAGES")
 @testset "pages" begin
     str = """
     <?xml version="1.0"?>
@@ -9,10 +10,19 @@
                 <arc id="a1" source="p1" target="t1"/>
                 <arc id="a12" source="t1" target="rp1"/>
                 <referencePlace id="rp1" ref="p2"/>
+                <page id="page11">
+                    <place id="p11" /> 
+                    <page id="page11.1">
+                        <place id="p11.1" /> 
+                    </page>  
+                </page>
+                <page id="page12" />
+                <page id="page13" />
+                <page id="page14" />
             </page>
             <page id="page2">
-                <place id="p2"/>
-                <transition id ="t2"/>
+            <place id="p2"/>
+            <transition id ="t2"/>
                 <arc id="a2" source="t2" target="p2"/>
                 <arc id="a22" source="t2" target="rp2"/>
                 <referencePlace id="rp2" ref="p3"/>
@@ -26,24 +36,29 @@
                     <place id="p4"/>
                     <transition id ="t4"/>
                     <arc id="a4" source="t4" target="p1"/>
+                    <page id="page41">
+                        <place id="p41" /> 
+                        <page id="page41.1">
+                            <place id="p41.1" /> 
+                        </page>
+                    </page>
+                    <page id="page42" />
+                    <page id="page43" />
+                    <page id="page44" />
                 </page>
             </page>
         </net>
     </pnml>
     """ 
-    recursive_merge(x::AbstractDict...) = merge(recursive_merge, x...)
-    recursive_merge(x::AbstractVector...) = cat(x...; dims=1)
-    recursive_merge(x...) = x[end]
-    
     doc = PNML.Document(str)
 
     net = PNML.first_net(doc)
     @test net isa PNML.PnmlNet
-    printnode(net; label="\nMultiple nested pages")
+    printnode(net; label="\n\nMultiple nested pages\n")
 
-    net1 = recursive_merge(net)
-    printnode(net1; label="\nRecusivly merged")
-    
     PNML.flatten_pages!(net)
     printnode(net; label="\nFlattened to 1 page")
+
+    
+
 end

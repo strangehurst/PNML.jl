@@ -91,7 +91,7 @@ function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
         if !isnothing(getproperty(r, key))
             setproperty!(l, key, getproperty(r, key))
         end
-    else
+    else 
         append!(getproperty(l, key), getproperty(r, key))
     end
 end
@@ -105,10 +105,12 @@ function update_maybe!(l::T, r::T) where {T <: Maybe{Any}}
     end
 end
 
+# NB: subpages are omitted from append_page!
 function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
                               :refTransitions, :refPlaces, :declarations],
                       comk = [:tools, :labels])
+    @show "append_page!($(pid(l)), $(pid(r)))"
     foreach(keys) do key
         append!(getproperty(l,key), getproperty(r,key))
     end
@@ -142,21 +144,30 @@ end
 Collect keys from all pages and move to first page.
 
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 function flatten_pages!(net::PnmlNet)
-    # Moved the keys into append_page.
+    # Move everything to the 1 required Page.
+    @debug "Flatten $(length(net.pages)) page(s) of net $(pid(net))"
     
-    # Start with the 1 required Page.
-    # Merge 2:end into 1
-    # Merge any subpages of 1 into 1.
-    @debug "Merge 2:end into 1"
-    foldl(append_page!, net.pages[:])#, similar(eltype(net.pages[1].key),0))
-    #TODO Test that subpage appended/moved to 1.
-    @debug net.pages
-    @debug "Merge any subpages of 1 into 1"
-    foreach(net.pages[1].subpages) do subpage
-        foldl(append_page!, net.pages[1], subpage)
+    # Place content of subpages of 1st page before sibling page's content.
+    if !isnothing(net.pages[1].subpages)
+        foldl(flatten_pages!, net.pages[1].subpages, init=net.pages[1])
+        empty!(net.pages[1].subpages)
     end
-    #TODO Empty unused pages.
+    if length(net.pages) > 1
+        foldl(flatten_pages!, net.pages[2:end], init=net.pages[1])
+        resize!(net.pages, 1)
+    end
     net
+end
+"After appending `r` to `l`, recursivly flatten into `l`, then empty `r`."
+function flatten_pages!(l::Page, r::Page)
+    @debug "flatten_pages!($(pid(l)), $(pid(r)))"
+    append_page!(l, r)
+    if !isnothing(r.subpages) 
+        foldl(flatten_pages!, r.subpages; init=l)
+    end
+    empty!(r)
+    return l
 end

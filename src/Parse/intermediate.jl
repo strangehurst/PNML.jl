@@ -729,6 +729,15 @@ function Page(d::PnmlDict)
          ObjectCommon(d))
 end
 
+function Base.empty!(page::Page)
+    empty!(page.places)
+    empty!(page.refPlaces)
+    empty!(page.transitions)
+    empty!(page.refTransitions)
+    empty!(page.arcs)
+    empty!(page.declarations)
+    !isnothing(page.subpages) && empty!(page.subpages)
+end
 
 function Base.summary(io::IO, page::Page) print(io, summary(page)) end
 function Base.summary( page::Page)
