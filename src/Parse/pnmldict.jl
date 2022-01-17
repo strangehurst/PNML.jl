@@ -23,7 +23,7 @@ the hiearchy.
 ```jldoctest
 julia> using PNML, EzXML
 
-julia> node = parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry());
+julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry());
 ```
 """
 function unclaimed_element(node; kw...)::PnmlDict

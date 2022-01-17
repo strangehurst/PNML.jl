@@ -13,6 +13,8 @@ using AbstractTrees
 using LabelledArrays
 using SciMLBase: @add_kwonly
 
+#include("docstrings.jl")
+
 """
 $(TYPEDSIGNATURES)
 
@@ -43,7 +45,7 @@ include("Net/simplenet.jl")
 include("Net/hlnet.jl")
 
 export @xml_str
-export parse_str, parse_file, parse_pnml, parse_node
-export PnmlException, MissingIDException, MalformedException
+#export parse_str, parse_file, parse_pnml, parse_node
+#export PnmlException, MissingIDException, MalformedException
 
 end

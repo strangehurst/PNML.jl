@@ -1,4 +1,19 @@
 header("PARSE_LABELS")
+
+header("UNCLAIMED ELEMENT")
+@testset "attribute" begin
+    # pnml attribute XML nodes do not have display/GUI data and other
+    # overhead of pnml annotation nodes. Both are pnml labels.
+    a = PNML.unclaimed_element(xml"""
+                           <declarations atag="test">
+                                <something> some content </something>
+                                <something2 tag2="two"> <value/> </something2>
+                           </declarations>
+                        """; reg=PNML.IDRegistry())
+    printnode(a)
+    @test !isnothing(a)
+end
+
 header("DECLARATION")
 @testset "declaration" begin
     n = parse_node(xml"""

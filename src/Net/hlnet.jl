@@ -1,10 +1,16 @@
 """
+Wrap a single pnm net.
+
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+# Details
+
 """
 struct HLPetriNet{PNTD} <: PetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
+"Construct from string of valid pnml XML using the first network"
 HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Document(str))
 HLPetriNet(doc::PNML.Document)  = HLPetriNet(first_net(doc))
 
@@ -23,10 +29,10 @@ end
 pid(petrinet::HLPetriNet) = pid(petrinet.net)
 
 # Flattened to page[1], so simple vectors.
-places(petrinet::HLPetriNet)      = petrinet.net.pages[1].places
-transitions(petrinet::HLPetriNet) = petrinet.net.pages[1].transitions
+places(petrinet::HLPetriNet)      = firstpage(petrinetnet).places
+transitions(petrinet::HLPetriNet) = firstpage(petrinet.net).transitions
 "Return vector of arcs from first page."
-arcs(petrinet::HLPetriNet)        = petrinet.net.pages[1].arcs
-refplaces(petrinet::HLPetriNet)   = petrinet.net.pages[1].refPlaces
-reftransitions(petrinet::HLPetriNet) = petrinet.net.pages[1].refTransitions
+arcs(petrinet::HLPetriNet)        = firstpage(petrinet.net).arcs
+refplaces(petrinet::HLPetriNet)   = firstpage(petrinet.net).refPlaces
+reftransitions(petrinet::HLPetriNet) = firstpage(petrinet.net).refTransitions
 

@@ -34,9 +34,7 @@ function parse_pnml(node; kw...)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kw, :reg)
 
-    Pnml(register_id!(kw[:reg], nn),
-         parse_node.(allchildren("net", node); kw...),
-         includexml(node))
+    Pnml(parse_node.(allchildren("net", node); kw...), includexml(node))
 end
 
 """

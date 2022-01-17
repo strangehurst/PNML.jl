@@ -1,7 +1,7 @@
-@testset "example pnml" begin
+@testset "AirplaneLD pnml file" begin
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
-    @show testfile
-    pn = parse_file(testfile)
+    @show typeof(testfile), testfile
+    pn = PNML.parse_file(testfile)
     # N
     #printnode(pn) # Too much to display for every test!
     @test pn isa PNML.Document
@@ -13,7 +13,7 @@
     @test !isempty(nets[1].pages[1].transitions)
     @test !isempty(nets[1].pages[1].arcs)
     @test !isempty(nets[1].pages[1].places)
-
+    @test firstpage(nets[1]) isa PNML.Page
     #=
     Decend and print. Needs update.
     if PRINT_PNML

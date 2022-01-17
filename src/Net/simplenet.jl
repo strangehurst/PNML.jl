@@ -33,21 +33,23 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD** 
-SimpleNet wraps the `place`, `transition` & `arc` collections of a single page of one net.
+SimpleNet wraps one net.
 
-Omits the page level of the pnml-defined hierarchy by collapsing down to one page.
-A multi-page net can be collpsed by removing referenceTransitions & referencePlaces,
-and merging pages into the first page. Only selected fields are merged.
+Omits the page level of the pnml-defined hierarchy by flattening pages.
+A multi-page net can be flattened by removing referenceTransitions & referencePlaces,
+and merging pages into the first page.
+
+Only selected fields are merged.
 """
 struct SimpleNet{PNTD} <: PetriNet{PNTD}
-    "Same as the XML attribute of the same name."
     id::Symbol
-
     net::PnmlNet{PNTD}
 end
 
+"Construct from string of valid pnml XML using the first network"
 SimpleNet(str::AbstractString) = SimpleNet(PNML.Document(str))
 SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
+
 function SimpleNet(net::PnmlNet)
     netcopy = deepcopy(net) #TODO Is copy needed?
     flatten_pages!(netcopy)
@@ -78,13 +80,13 @@ end
 # 
 #-------------------------------------------------------------------------------
 
-pid(petrinet::SimpleNet) = petrinet.id
+pid(petrinet::SimpleNet) = pid(petrinet.net)
 
-places(petrinet::SimpleNet)         = petrinet.net.pages[1].places
-transitions(petrinet::SimpleNet)    = petrinet.net.pages[1].transitions
-arcs(petrinet::SimpleNet)           = petrinet.net.pages[1].arcs
-refplaces(petrinet::SimpleNet)      = petrinet.net.pages[1].refPlaces
-reftransitions(petrinet::SimpleNet) = petrinet.net.pages[1].refTransitions
+places(petrinet::SimpleNet)         = firstpage(petrinet.net).places
+transitions(petrinet::SimpleNet)    = firstpage(petrinet.net).transitions
+arcs(petrinet::SimpleNet)           = firstpage(petrinet.net).arcs
+refplaces(petrinet::SimpleNet)      = firstpage(petrinet.net).refPlaces
+reftransitions(petrinet::SimpleNet) = firstpage(petrinet.net).refTransitions
 
 
 

@@ -787,15 +787,18 @@ mutable struct PnmlNet{PNTD<:PnmlType}
     com::ObjectCommon
 end
 
+function PnmlNet(pdict::PnmlDict)
+    PnmlNet(pdict[:id], pdict[:type], pdict[:pages], pdict[:declarations],
+            ObjectCommon(pdict)) 
+end
+
 pid(net::PnmlNet) = net.id
 has_labels(::PnmlNet) = true
 has_xml(::PnmlNet) = true
 xmlnode(net::PnmlNet) = net.xml
 
-function PnmlNet(pdict::PnmlDict)
-    PnmlNet(pdict[:id], pdict[:type], pdict[:pages], pdict[:declarations],
-            ObjectCommon(pdict)) 
-end
+"Usually the only interesting page."
+firstpage(net::PnmlNet) = net.pages[1]
 
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
@@ -824,21 +827,19 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Pnml
-    id::Symbol
     nets::Vector{PnmlNet}
     xml::Maybe{XMLNode}
 end
-Pnml(id::Symbol, net::PnmlNet; xml=nothing) = Pnml(id, [net], xml)
-Pnml(id::Symbol, nets::Vector{PnmlNet}; xml=nothing) = Pnml(id, nets, xml)
+Pnml(net::PnmlNet; xml=nothing) = Pnml(id, [net], xml)
+Pnml(nets::Vector{PnmlNet}; xml=nothing) = Pnml(id, nets, xml)
 
-pid(pnml::Pnml) = pnml.id
 has_xml(tool::Pnml) = true
 xmlnode(tool::Pnml) = tool.xml
 
 Base.summary(io::IO, pnml::Pnml) = print(io, summary(pnml))
 function Base.summary(pnml::Pnml)
     l = length(pnml.nets)
-    return "PNML model $(pnml.id) with $l nets"   
+    return "PNML model with $l nets"   
 end
 
 function Base.show(io::IO, pnml::Pnml)

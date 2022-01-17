@@ -2,20 +2,48 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap the collection of PNML nets from a single XML pnml tree.
-Adds the IDRegistry to [`Pnml`](@ref).
 Corresponds to <pnml> tag.
+Wrap the collection of PNML nets from a single XML pnml document.
+Adds the IDRegistry to [`Pnml`](@ref).
 """
 struct Document{N,X}
     nets::N
     xml::X
     reg::IDRegistry
 end
+#
+# Chain of constructors
+#
+"Construct from valid pnml XML in `s`."
+Document(s::AbstractString, reg=IDRegistry()) =
+    Document(parse_pnml(root(parsexml(s)); reg), reg)
 
-Document(s::AbstractString, reg=IDRegistry()) = Document(parse_pnml(root(parsexml(s)); reg), reg)
-Document(pnml::Pnml, reg=IDRegistry())        = Document(pnml.nets, xmlnode(pnml), reg)
-Document(pdict::PnmlDict, reg=IDRegistry())   = Document(pdict[:nets], xmlnode(pdict), reg)
+"Construct from parsed XML in `doc`."
+function Document(doc::EzXML.Document)
+    reg = PNML.IDRegistry()
+    Document(parse_pnml(root(doc); reg), reg)
+end
 
+"Construct from `pnml` IR form."
+Document(pnml::Pnml, reg=IDRegistry()) =
+    Document(pnml.nets, xmlnode(pnml), reg)
+
+
+"""
+Build pnml from a string 'str' containing XML.
+See [`parse_file`](@ref) and `Document("string")`.
+
+$(TYPEDSIGNATURES)
+"""
+parse_str(str::AbstractString) = Document(EzXML.parsexml(str))
+
+"""
+Build pnml from a fileneame string `fname`.
+See [`parse_str`](@ref) and `Document("string")`.
+
+$(TYPEDSIGNATURES)
+"""
+parse_file(fname::AbstractString) = Document(EzXML.readxml(fname))
 
 function Base.show(io::IO, doc::Document{N,X}) where {N,X}
     println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
@@ -53,38 +81,6 @@ $(TYPEDSIGNATURES)
 """
 nets(doc::Document) = doc.nets
   
-"""
-Build pnml from a string.
-
-$(TYPEDSIGNATURES)
-"""
-function parse_str(str)::PNML.Document
-    ezdoc = EzXML.parsexml(str)
-    parse_doc(ezdoc)
-end
-
-"""
-
-Build pnml from a file.
-
-$(TYPEDSIGNATURES)
-"""
-function parse_file(fname)::PNML.Document
-    ezdoc = EzXML.readxml(fname)
-    parse_doc(ezdoc)
-end
-
-"""
-Return a PNML.Document built from an XML Doncuent.
-A well formed PNML XML document has a single root node: <pnml>.
-
-$(TYPEDSIGNATURES)
-"""
-function parse_doc(doc::EzXML.Document)::PNML.Document
-    reg = PNML.IDRegistry()
-    Document(parse_pnml(root(doc); reg), reg)
-end
-
 # 2 Things, each could be nothing.
 function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
     if isnothing(getproperty(l, key))
@@ -110,7 +106,7 @@ function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
                               :refTransitions, :refPlaces, :declarations],
                       comk = [:tools, :labels])
-    @show "append_page!($(pid(l)), $(pid(r)))"
+    @debug "append_page!($(pid(l)), $(pid(r)))"
     foreach(keys) do key
         append!(getproperty(l,key), getproperty(r,key))
     end
@@ -151,16 +147,17 @@ function flatten_pages!(net::PnmlNet)
     @debug "Flatten $(length(net.pages)) page(s) of net $(pid(net))"
     
     # Place content of subpages of 1st page before sibling page's content.
-    if !isnothing(net.pages[1].subpages)
-        foldl(flatten_pages!, net.pages[1].subpages, init=net.pages[1])
-        empty!(net.pages[1].subpages)
+    if !isnothing(firstpage(net).subpages)
+        foldl(flatten_pages!, firstpage(net).subpages, init=firstpage(net))
+        empty!(firstpage(net).subpages)
     end
     if length(net.pages) > 1
-        foldl(flatten_pages!, net.pages[2:end], init=net.pages[1])
+        foldl(flatten_pages!, net.pages[2:end], init=firstpage(net))
         resize!(net.pages, 1)
     end
     net
 end
+
 "After appending `r` to `l`, recursivly flatten into `l`, then empty `r`."
 function flatten_pages!(l::Page, r::Page)
     @debug "flatten_pages!($(pid(l)), $(pid(r)))"

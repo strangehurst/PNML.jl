@@ -8,15 +8,15 @@ header("DOCUMENT")
     """ 
     header("### Registry")
     reg = PNML.IDRegistry()
-    @test !PNML.isregistered(reg, :pnml)
-    @test :pnml ∉ reg.ids
+    @test !PNML.isregistered(reg, :net)
+    @test :net ∉ reg.ids
     
     doc = PNML.Document(str, reg)
     @show doc
     @show reg
 
-    @test PNML.isregistered(reg, :pnml)
-    @test :pnml ∈ reg.ids
+    @test PNML.isregistered(reg, :net)
+    @test :net ∈ reg.ids
 end
 
 @testset "multiple net type" begin
