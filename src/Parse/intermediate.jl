@@ -1,6 +1,10 @@
+"Pnml labels."
 abstract type AbstractLabel end
+"Pnml objects are pages, arcs, nodes."
 abstract type PnmlObject end
+"Pnml graph nodes are places, transitions."
 abstract type PnmlNode <: PnmlObject end
+"Tool specific"
 abstract type AbstractPnmlTool end
 
 has_xml(node::PnmlNode) = true
@@ -700,12 +704,13 @@ end
 
 #-------------------
 """
-Pages contain all places, transitions & arcs. They are for visual presentation.
+Contain all places, transitions & arcs. They are for visual presentation.
+There must be at least 1 Page for a valid pnml model.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Page <: PnmlObject
+mutable struct Page{PNTD<:PnmlType} <: PnmlObject
     id::Symbol
     places::Vector{Place}
     refPlaces::Vector{RefPlace}
@@ -719,14 +724,15 @@ mutable struct Page <: PnmlObject
     com::ObjectCommon
 end
 
-function Page(d::PnmlDict)
-    Page(d[:id],
-         d[:places], d[:refP],
-         d[:trans], d[:refT],
-         d[:arcs],
-         d[:declarations],
-         d[:pages],
-         ObjectCommon(d))
+function Page(d::PnmlDict, pntd = PnmlCore())
+    Page{typeof(pntd)}(
+        d[:id],
+        d[:places], d[:refP],
+        d[:trans], d[:refT],
+        d[:arcs],
+        d[:declarations],
+        d[:pages],
+        ObjectCommon(d))
 end
 
 function Base.empty!(page::Page)

@@ -33,8 +33,8 @@ function parse_pnml(node; kw...)
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kw, :reg)
-
-    Pnml(parse_node.(allchildren("net", node); kw...), includexml(node))
+    # Do not yet have a PNTD defined, so call directly.
+    Pnml(parse_net.(allchildren("net", node); kw...), includexml(node))
 end
 
 """
@@ -50,6 +50,7 @@ function parse_net(node; kw...)
     
     @assert haskey(kw, :reg)
     isempty(allchildren("page", node)) && @warn "net does not have any pages"
+    
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
     
@@ -63,13 +64,16 @@ function parse_net(node; kw...)
                            :type => pnmltype(node["type"]),
                            :pages => Page[],
                            :declarations => Declaration[])
+
+    pntd = d[:type] # We pass the PNTD down the parse tree.
+
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_node(child; kw...))
+            "page"         => push!(d[:pages], parse_node(child; pntd, kw...))
             # NB: There is also a tag 'declarations' that is different from this.
-            "declaration"  => push!(d[:declarations], parse_node(child; kw...))
-            _ => parse_pnml_node_common!(d, child; kw...)
+            "declaration"  => push!(d[:declarations], parse_node(child; pntd, kw...))
+            _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
     PnmlNet(d) #IR
@@ -85,6 +89,7 @@ function parse_page(node; kw...)
     nn == "page" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     @assert haskey(kw, :reg)
+    @assert haskey(kw, :pntd)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg],node["id"]),
@@ -108,7 +113,7 @@ function parse_page(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Page(d) #IR
+    Page(d, kw[:pntd]) #IR
 end
 
 
