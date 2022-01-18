@@ -54,7 +54,7 @@ end
 #-------------------------------------------------------------------
 # Predicates return a boolean.
 """
-Does object have XML, defaults to `false`'
+Does object have XML, defaults to `false`.
 
 ---
 $(TYPEDSIGNATURES)

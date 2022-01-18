@@ -63,9 +63,10 @@ $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function find_nets end
-find_nets(doc::Document, type::AbstractString) = find_nets(doc, pntd(type))
+find_nets(doc::Document, type::AbstractString) = find_nets(doc, pntd_symbol(type))
 find_nets(doc::Document, type::Symbol) = find_nets(doc, pnmltype(type))
-find_nets(doc::Document, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, doc.nets)
+find_nets(doc::Document, type::T) where T <: PnmlType =
+    filter(n->typeof(n.type) <: T, doc.nets)
 
 """
 Return first net contained by `doc`.

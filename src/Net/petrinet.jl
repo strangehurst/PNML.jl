@@ -34,6 +34,11 @@ $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 type(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = T
+type(net::PnmlNet{T}, n=1) where {T <: PnmlType} = T
+type(page::Page{T}) where {T <: PnmlType} = T
+
+
+
 
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
@@ -47,7 +52,7 @@ Return vector of places.
 $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
-function placs end
+function places end
 places(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
 places(net::PnmlNet, n=1) = places(net.pages[n])
 places(page::Page) = page.places

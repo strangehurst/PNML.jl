@@ -166,7 +166,8 @@ $(TYPEDSIGNATURES)
 julia> using PNML
 ```
 """
-pntd(s::AbstractString) = haskey(default_pntd_map, s) ? default_pntd_map[s] : :pnmlcore
+pntd_symbol(s::AbstractString) =
+    haskey(default_pntd_map, s) ? default_pntd_map[s] : :pnmlcore
 
 """
 Map either a text string or a symbol to a dispatch type singlton.
@@ -186,7 +187,7 @@ function pnmltype end
 "Identity"
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
 "URI"
-pnmltype(uri::AbstractString; kw...) = pnmltype(pntd(uri); kw...)
+pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri); kw...)
 "Symbol"
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
     if haskey(pnmltype_map, s)
