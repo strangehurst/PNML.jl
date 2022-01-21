@@ -31,6 +31,7 @@ include("exceptions.jl")
 include("pntd.jl")
 
 include("Parse/intermediate.jl")
+include("Parse/show.jl")
 include("Parse/document.jl")
 include("Parse/pnmldict.jl")
 include("Parse/parse.jl")

@@ -58,21 +58,20 @@ end
 
 Base.summary(io::IO, petrinet::SimpleNet{P}) where {P} = print(io, summary(petrinet))
 function Base.summary(petrinet::SimpleNet{P}) where {P} 
-    return "$(typeof(petrinet)) id $(pid(petrinet)) " *
-        "$(length(places(petrinet))) places " *
-        "$(length(transitions(petrinet))) transitions " *
-        "$(length(arcs(petrinet))) arcs"
+    string(typeof(petrinet), " id ", pid(petrinet), ", ",
+        length(places(petrinet)), " places, ",
+        length(transitions(petrinet)), " transitions, ",
+        length(arcs(petrinet)), " arcs")
 end
 
 function Base.show(io::IO, petrinet::SimpleNet{P}) where {P}
-    println(io, summary(petrinet), " (")
-    println(io, " places")
+    println(io, summary(petrinet))
+    println(io, "places")
     println(io, places(petrinet))
-    println(io, " transitions")
+    println(io, "transitions")
     println(io, transitions(petrinet))
-    println(io, " arcs")
-    println(io, arcs(petrinet))
-    print(io, ")")
+    println(io, "arcs")
+    print(io, arcs(petrinet))
 end
 
 #-------------------------------------------------------------------------------
