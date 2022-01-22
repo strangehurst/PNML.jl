@@ -45,17 +45,26 @@ $(TYPEDSIGNATURES)
 """
 parse_file(fname::AbstractString) = Document(EzXML.readxml(fname))
 
+Base.summary(doc::Document) = summary(stdout, doc)
+function Base.summary(io::IO, doc::Document{N,X}) where {N,X}
+    string(typeof(doc), " with ", length(doc.nets), " nets")
+end
+
 function Base.show(io::IO, doc::Document{N,X}) where {N,X}
-    println(io, "PNML.Document{$N,$X} ", length(doc.nets), " nets")
+    summary(doc)
     foreach(doc.nets) do net
         println(io, net)
     end
     #TODO Print ID Registry
 end
 
+function Base.show(io::IO, ::MIME"text/plain", doc::Document{N,X}) where {N,X}
+    print(io, "Document:", doc)
+end
+
 """
 Return nets of `doc` matching the given pntd `type` as string or symbol.
-See [`pntd`](@ref).
+See [`pntd_symbol`](@ref), [`pnmltype`](@ref).
 
 ---
 $(TYPEDSIGNATURES)

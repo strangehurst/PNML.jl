@@ -33,7 +33,7 @@ to_node(s::AbstractString) = root(EzXML.parsexml(s))
 "Pretty print PnmlDict."
 function printnode(io::IO, n; label=nothing, compact=false)
     if PRINT_PNML
-        print(io, typeof(n), " ")
+        #print(io, typeof(n), " ")
         !isnothing(label) && print(io, label, " ")
         pprint(io, n)
         !compact && println(io, "")

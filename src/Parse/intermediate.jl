@@ -164,7 +164,7 @@ $(TYPEDFIELDS)
 struct ToolInfo
     toolname::String
     version::String
-    info::Vector{PnmlDict}
+    infos::Vector{PnmlDict}
     xml::Maybe{XMLNode}
 end
 

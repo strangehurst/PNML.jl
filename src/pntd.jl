@@ -9,7 +9,8 @@ the syntax and semantics of the XML model.
 
 Selected abbreviations, URIs that do not resolve to a valid schema file, are also allowed.
 
-Refer to [`pntd`](@ref) and [`pnmltype`](@ref) for how to get from the URI to a singleton.
+Refer to [`pntd_symbol`](@ref) and
+[`pnmltype`](@ref) for how to get from the URI to a singleton.
 
 $(TYPEDEF)
 """

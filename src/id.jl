@@ -13,7 +13,7 @@ end
 IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
 
 function Base.show(io::IO, reg::IDRegistry)
-    print(io, "PNML.IDRegistry ", length(reg.ids), " ids: ", reg.ids)
+    print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
 end
 
 

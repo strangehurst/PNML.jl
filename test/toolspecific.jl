@@ -43,21 +43,20 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """, contentparse = (c) -> begin end)
     
     @testset for s in [str1, str2, str3, str4, str5]
-        println("tool")
         n = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
         printnode(n)
+        #@show n
         @test typeof(n) <: PNML.ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.toolname == s.tool
         @test n.version == s.version
-        @show n.info
-        # get_toolinfo(::ToolInfo, args...) is identity
+        #Base.Meta.@dump n.infos
+        # get_toolinfo(::ToolInfo, args...) is identity #TODO make sense of this
         @test PNML.get_toolinfo(n, s.tool, s.version) !== nothing
         
-        #s.contentparse(n.info) #TODO
+        #s.contentparse(n.infos) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
-        foreach(n.info) do toolinfo
-            @show toolinfo
+        foreach(n.infos) do toolinfo
             # Content may optionally attach its xml.            
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
@@ -70,13 +69,11 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
  <net id="net0" type="pnmlcore">
  <page id="page0">
  <place id="place1">
-""" *
-    str1.str *
-    str2.str *
-    str3.str *
-    str4.str *
-    str5.str *
-"""
+    $(str1.str)
+    $(str2.str)
+    $(str3.str)
+    $(str4.str)
+    $(str5.str)
  </place>
  </page>
  </net>
