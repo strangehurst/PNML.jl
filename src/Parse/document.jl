@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 Corresponds to <pnml> tag.
 Wrap the collection of PNML nets from a single XML pnml document.
-Adds the IDRegistry to [`Pnml`](@ref).
+Adds the IDRegistry to [`PnmlModel`](@ref).
 """
 struct Document{N,X}
     nets::N
@@ -25,7 +25,7 @@ function Document(doc::EzXML.Document)
 end
 
 "Construct from `pnml` IR form."
-Document(pnml::Pnml, reg=IDRegistry()) =
+Document(pnml::PnmlModel, reg=IDRegistry()) =
     Document(pnml.nets, xmlnode(pnml), reg)
 
 

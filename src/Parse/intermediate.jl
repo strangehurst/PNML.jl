@@ -1,10 +1,10 @@
-"Pnml labels."
+"Labels are attached to the Petri Net Graph object subtypes. See [`PnmlObject`](@ref)."
 abstract type AbstractLabel end
-"Pnml objects are pages, arcs, nodes."
+"Objects of a Petri Net Graph are pages, arcs, nodes."
 abstract type PnmlObject end
-"Pnml graph nodes are places, transitions."
+"Petri Net Graph nodes are places, transitions."
 abstract type PnmlNode <: PnmlObject end
-"Tool specific"
+"Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes."
 abstract type AbstractPnmlTool end
 
 has_xml(node::PnmlNode) = true
@@ -554,15 +554,15 @@ A PNML model can have multiple net elements.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Pnml
+struct PnmlModel
     nets::Vector{PnmlNet}
     xml::Maybe{XMLNode}
 end
-Pnml(net::PnmlNet; xml=nothing) = Pnml(id, [net], xml)
-Pnml(nets::Vector{PnmlNet}; xml=nothing) = Pnml(id, nets, xml)
+PnmlModel(net::PnmlNet; xml=nothing) = PnmlModel(id, [net], xml)
+PnmlModel(nets::Vector{PnmlNet}; xml=nothing) = PnmlModel(id, nets, xml)
 
-has_xml(tool::Pnml) = true
-xmlnode(tool::Pnml) = tool.xml
+has_xml(tool::PnmlModel) = true
+xmlnode(tool::PnmlModel) = tool.xml
 
 ###############################################################################
 # 

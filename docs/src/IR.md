@@ -58,7 +58,7 @@ the higher level network
 Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref PNML.PnmlDict). 
 
 2021-12-15, Began the process of moving to a struct-based scheme 
-based on [`Pnml`](@ref PNML.Pnml) and the rest of the intermediate representation.
+based on [`PnmlModel`](@ref PNML.PnmlModel) and the rest of the intermediate representation.
 
 Some instances of `PnmlDict` are still present in the parsing mechanism.
 

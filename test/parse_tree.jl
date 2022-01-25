@@ -97,7 +97,7 @@ end
     reg = PNML.IDRegistry()
     pnml_ir = parse_pnml(root(doc); reg)
     @show typeof(pnml_ir)
-    @test typeof(pnml_ir) <: PNML.Pnml
+    @test typeof(pnml_ir) <: PNML.PnmlModel
     
     printnode(pnml_ir; label="pnml_ir")
     #=

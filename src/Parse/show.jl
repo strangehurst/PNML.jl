@@ -1,37 +1,39 @@
 # show methods fot the intermediate representation
 "Indention increment."
-const inc = 4
+const indent_width = 4
 
 #-------------------
 "Return string of current indent size in `io`."
 indent(io::IO) = repeat(' ', get(io, :indent, 0))
 
 "Increment the `:indent` value `inc`."
-inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + inc)
+inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width)
 
 #-------------------
 function Base.show(io::IO, fill::Fill)
     compact = get(io, :compact, false)
     if compact
-        print(io, "(", fill.color, ",", fill.image, ",",
-              fill.gradient_color, ",", fill.gradient_rotation, ")")
+        print(io, "(", fill.color, ",",
+              fill.image, ",",
+              fill.gradient_color, ",",
+              fill.gradient_rotation, ")")
     else
-        print(io, "(color: ", fill.color,
-              ", image: ", fill.image,
-              ", gradient-color: ", fill.gradient_color,
-              ", gradient-rotation: ", fill.gradient_rotation,
+        print(io, "Fill(color, ", fill.color,
+              ", image, ", fill.image,
+              ", gradient-color, ", fill.gradient_color,
+              ", gradient-rotation ", fill.gradient_rotation,
               ")")
     end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", fill::Fill)
-    print(io, "Fill:\n   ", fill)
+    show(io, fill)
 end
 
 #-------------------
 function Base.show(io::IO, font::Font)
     print(io,
-          "(family: ", font.family,
+          "Font(family: ", font.family,
           ", style: ", font.style,
           ", weight: ", font.weight,
           ", size: ", font.size,
@@ -42,13 +44,13 @@ function Base.show(io::IO, font::Font)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", font::Font)
-    print(io, "Font:\n   ", font)
+    show(io, font)
 end
 
 #-------------------
 function Base.show(io::IO, line::Line)
     print(io,
-          "(color: ", line.color,
+          "Line(color: ", line.color,
           ", style: ", line.style,
           ", shape: ", line.shape,
           ", width: ", line.width,
@@ -56,7 +58,7 @@ function Base.show(io::IO, line::Line)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", line::Line)
-    print(io, "Line:\n   ", line)
+    print(io, line)
 end
 
 #-------------------
@@ -66,13 +68,13 @@ function Base.show(io::IO, c::Coordinate)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", c::Coordinate)
-    print(io, "Coordinate:\n   ", c)
+    print(io, c)
 end
 
 #-------------------
 function Base.show(io::IO, g::Graphics)
     compact = get(io, :compact, false)
-    print(io, "(",
+    print(io, "Graphics(",
           "dimension=", g.dimension,
           ", fill=",      g.fill,
           ", font=",      g.font,
@@ -83,17 +85,19 @@ end
 
 #-------------------
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    foreach(label->println(io,label), @view labelvector[begin:end-1])
-    print(io, labelvector[end])
+    for (i,label) in enumerate(labelvector)
+        print(io, indent(io), label)
+        i < length(labelvector) && print(io, "\n")
+    end
 end
           
 function Base.show(io::IO, n::PnmlLabel)
-    print(io, indent(io))
+    print(io, typeof(n), " ")
     pprint(io, n.dict)
 end
           
 function Base.show(io::IO, ::MIME"text/plain", f::PnmlLabel)
-    print(io, "PnmlLabel: ", f)
+    print(io, f)
 end
 
 #-------------------
@@ -104,53 +108,53 @@ function Base.summary(ti::ToolInfo)
 end
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
-    foreach(ti->println(io, indent(io), ti), @view toolvector[begin:end-1])
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    print(io, indent(io), toolvector[end])
+    for (i, ti) in enumerate(toolvector)
+        print(io, indent(io), ti)
+        i < length(toolvector) && print(io, "\n")
+    end
 end
 
 function Base.show(io::IO, ti::ToolInfo)
-    println(io, indent(io), summary(ti), ":")
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    foreach(ti.infos[begin:end-1]) do info
+    println(io, summary(ti), ":")
+    io = inc_indent(io)
+    for (i,info) in enumerate(ti.infos)
         print(io, indent(io))
         pprintln(io, info)
+        i < length(ti.infos) && print(io, "\n")
     end
-    print(io, indent(io))
-    pprint(io, ti.infos[end])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
-    print(io, "ToolInfo:\n   ", ti)
+    print(io, ti)
 end
 
 #-------------------
 function Base.show(io::IO, tool::DefaultTool)
-    print(io, indent(io), "content: (", tool.content, ")")
+    print(io, "content: (", tool.content, ")")
 end
 function Base.show(io::IO, ::MIME"text/plain", tool::DefaultTool)
-    print(io, "DefaultTool:\n   ", tool)
+    print(io, tool)
 end
 
 #-------------------
 function Base.show(io::IO, tg::TokenGraphics)
-    print(io, indent(io), "positions: ", tg.positions)
+    print(io, "positions: ", tg.positions)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", tg::TokenGraphics)
-    print(io, "TokenGraphics:\n   ", tg)
+    print(io, tg)
 end
 
 #-------------------
 function Base.show(io::IO, name::Name)
-    print(io, "'",name.text,"'")
+    print(io, typeof(name), " '", name.text, "'")
     !isnothing(name.graphics) && print(io, ", has graphics")
     !isnothing(name.tools)    && print(io, ", ", length(name.tools), " tool info")
 end
 function Base.show(io::IO, ::MIME"text/plain", name::Name)
-    print(io, indent(io), "Name: ", name)
+    print(io, name)
 end
-
+ 
 #-------------------
 Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
@@ -162,10 +166,18 @@ function Base.summary(oc::ObjectCommon)
 end
 
 function Base.show(io::IO, oc::ObjectCommon)
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    !isnothing(oc.graphics) && println(io, indent(io), "graphics: ", oc.graphics)
-    !isnothing(oc.tools)    && println(io, indent(io), "tools: \n", oc.tools)
-    !isnothing(oc.labels)   && println(io, indent(io), "labels: \n", oc.labels)
+    io = inc_indent(io)
+    if !isnothing(oc.graphics)
+        print(io, indent(io), "graphics: ", oc.graphics)
+    end
+    if !isnothing(oc.tools)
+        println(io, "\n", indent(io), "tools:")
+        show(inc_indent(io), oc.tools)
+    end
+    if !isnothing(oc.labels)
+        println(io, "\n", indent(io), "labels:")
+        show(inc_indent(io), oc.labels)
+    end
     # In general, do not display/print the XML. 
 end
 
@@ -176,19 +188,19 @@ function Base.summary(ptm::PTMarking)
 end
 
 function Base.show(io::IO, ptm::PTMarking)
-    print(io, indent(io), summary(ptm), " value: ", ptm.value, ", ", ptm.com,)
+    print(io, summary(ptm), " value: ", ptm.value, ", ", ptm.com,)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
-    print(io, "PTMarking:\n   ", ptm)
+    print(io, ptm)
 end
 
 #-------------------
 function Base.show(io::IO, hlm::HLMarking)
-    print(io, indent(io), "'", hlm.text, "', ", hlm.structure, ", ", hlm.com,)
+    print(io, "'", hlm.text, "', ", hlm.structure, ", ", hlm.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
-    print(io, "HLMarking:\n   ", hlm)
+    print(io, hlm)
 end
 
 #-------------------
@@ -198,97 +210,125 @@ function Base.summary(place::Place)
 end
 
 function Base.show(io::IO, place::Place)
-    print(io, summary(place))
-    print(io, indent(io), 
-          "id: ", place.id,
-          ", type: ", place.type, ", ",
-          ", marking: ", place.marking,
-          place.com)
+    print(io, summary(place),
+          " id ", place.id,
+          ", type ", place.type, ", ",
+          ", marking ", place.marking,
+          ", ", place.com)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
-    print(io, "Place:\n   ", place)
+    show(io, place)
 end
 
 function Base.show(io::IO, placevector::Vector{Place})
     isempty(placevector) && return
-    foreach(place->println(io, indent(io), place), @view placevector[begin:end-1])
-    print(io, indent(io), placevector[end])
+    for (i,place) in enumerate(placevector)
+        print(io, indent(io), place)
+        i < length(placevector) && print(io, "\n")
+    end
 end
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
-    print(io, indent(io), "'", cond.text, "', ", cond.structure, ", ",  cond.com)
+    print(io, typeof(cond), " '", cond.text, "', ", cond.structure, ", ", cond.com)
 end
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
-    print(io, "Condition:\n   ", cond)
+    print(io, cond)
 end
 
 #-------------------
 function Base.show(io::IO, trans::Transition)
-    print(io, indent(io), "id: ", trans.id, ", condition: ", trans.condition, ", ", trans.com,)
+    print(io, typeof(trans),
+          " id ", trans.id, ", condition ", trans.condition, ", ", trans.com)
+end
+
+function Base.show(io::IO, transvector::Vector{Transition})
+    for (i,trans) in enumerate(transvector)
+        print(io, indent(io), trans)
+        i < length(transvector) && print(io, "\n")
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", trans::Transition)
-    print(io, "Transition:\n   ", trans)
+    print(io, trans)
 end
 
 #-------------------
 function Base.show(io::IO, refp::RefPlace)
-    print(io, indent(io), "id: ", refp.id, ", ref: ", refp.ref, ", ", refp.com,)
+    print(io, "(id ", refp.id, ", ref ", refp.ref, ", ", refp.com, ")")
+end
+function Base.show(io::IO, rpvector::Vector{RefPlace})
+    for (i,rp) in enumerate(rpvector)
+        print(io, indent(io), rp)
+        i < length(rpvector) && print(io, "\n")
+    end
 end
 function Base.show(io::IO, ::MIME"text/plain", refp::RefPlace)
-    print(io, "RefPlace:\n   ", refp)
+    show(io, refp)
 end
 
 #-------------------
 function Base.show(io::IO, reft::RefTransition)
-    print(io, indent(io), "id: ", reft.id, ", ref: ", reft.ref, ", ",  reft.com,)
+    print(io, "(id ", reft.id, ", ref ", reft.ref, ", ",  reft.com, ")")
+end
+function Base.show(io::IO, rtvector::Vector{RefTransition})
+    for (i,rt) in enumerate(rtvector)
+        print(io, indent(io), rt)
+        i < length(rtvector) && print(io, "\n")
+    end
 end
 function Base.show(io::IO, ::MIME"text/plain", reft::RefTransition)
-    print(io, "RefTransition:\n   ", reft)
+    show(io, reft)
 end
 
 #-------------------
 function Base.show(io::IO, ins::PTInscription)
-    print(io, indent(io), "value: ", ins.value, ", ", ins.com,)
+    print(io, typeof(ins), " value ", ins.value, ", ", ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::PTInscription)
-    print(io, "PTInscription:\n   ", ins)
+    show(io, ins)
 end
 
 #-------------------
 function Base.show(io::IO, ins::HLInscription)
-    print(io, indent(io),  "'", ins.text, "', ", ins.structure, ", ", ins.com,)
+    print(io, typeof(ins),  " '", ins.text, "', ", ins.structure, ", ", ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::HLInscription)
-    print(io, "HLInscription:\n   ", ins)
+    show(io, ins)
 end
 
 #-------------------
 function Base.show(io::IO, arc::Arc)
-    print(io, indent(io), "(id: ", arc.id,
+    print(io, "id: ", arc.id,
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription,
-          arc.com,
-          ")")
+          arc.com)
+end
+function Base.show(io::IO, arcvector::Vector{Arc})
+    for (i,arc) in enumerate(arcvector)
+        print(io, indent(io), arc)
+        i < length(arcvector) && print(io, "\n")
+    end
 end
 function Base.show(io::IO, ::MIME"text/plain", arc::Arc)
-    print(io, "Arc:\n   ", arc)
+    show(io, arc)
 end
 
 #-------------------
 function Base.show(io::IO, declarations::Vector{Declaration})
     isempty(declarations) && return
-    foreach(declare->println(io, declare), @view declarations[begin:end-1])
-    print(io, declarations[end])
+    for (i,dec) in enumerate(declarations)
+        print(io, indent(io), dec)
+        i < length(declarations) && print(io, "\n")
+    end
 end
 function Base.show(io::IO, declare::Declaration)
     print(io, declare.d, ", ", declare.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", declare::Declaration)
-    print(io, "Declaration:\n   ", declare)
+    show(io, declare)
 end
 
 #-------------------
@@ -300,35 +340,47 @@ function Base.summary( page::Page)
            length(page.arcs), " arcs, ",
            length(page.declarations), " declarations, ",
            length(page.refPlaces), " refP, ",
-           length(page.refTransitions), " ref, ",
+           length(page.refTransitions), " refT, ",
            length(page.subpages), " subpages, ",
            summary(page.com)
            )
 end
 
+function show_page_field(io::IO, label::AbstractString, x)
+    println(io, indent(io), label)
+    if !isempty(x)
+        show(inc_indent(io), x)
+        print(io, "\n")
+    end
+end
+
 function Base.show(io::IO, page::Page)
-    println(io, summary(page))
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    f_indent = indent(io) # Save 
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    println(io, f_indent, "places: \n", page.places)
-    println(io, f_indent, "transitions: \n", page.transitions)
-    println(io, f_indent, "arcs: \n", page.arcs)
-    println(io, f_indent, "declarations: \n", page.declarations)
-    println(io, f_indent, "refPlaces: ", page.refPlaces)
-    println(io, f_indent, "refTransitions: ", page.refTransitions)
-    println(io, f_indent, "subpages: \n", page.subpages)
-    println(io, f_indent,  page.com)
+    #TODO Add support for :trim and :compact
+    println(io, indent(io), summary(page))
+    # Start indent here. Will indent subpages.
+    inc_io = inc_indent(io)    
+
+    show_page_field(inc_io, "places:",         page.places)
+    show_page_field(inc_io, "transitions:",    page.transitions)
+    show_page_field(inc_io, "arcs:",           page.arcs)
+    show_page_field(inc_io, "declarations:",   page.declarations)
+    show_page_field(inc_io, "refPlaces:",      page.refPlaces)
+    show_page_field(inc_io, "refTransitions:", page.refTransitions)
+    show_page_field(inc_io, "subpages:",       page.subpages)
+
+    print(inc_io, indent(io),  page.com)
 end
 
 function Base.show(io::IO, pages::Vector{Page})
     isempty(pages) && return
-    foreach(page->println(io, page), @view pages[begin:end-1])
-    print(io, pages[end])
+    for (i,page) in enumerate(pages)
+        show(io, page)
+        i < length(pages) && print(io, "\n")
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Page)
-    print(io, "Page:\n   ", p)
+    show(io, p)
 end
 
 #-------------------
@@ -340,33 +392,44 @@ function Base.summary(net::PnmlNet)
             summary(net.com))
 end
 
+# No indent here.
 function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
-    f_indent = indent(io)
-    io = IOContext(io, :indent => get(io, :indent, 0) + inc)
-    println(io, indent(io), net.com)
-    println(io, indent(io), net.declarations)
-    print(io, indent(io), net.pages)
+    for (i, dec) in enumerate(net.declarations)
+        show(io, dec)
+        i < length(net.declarations) && println(io) 
+    end
+    print(io, net.com)
+    show(io, net.pages)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
-    print(io, "PnmlNet:\n   ", net)
+    show(io, net)
 end
 
 #-------------------
-Base.summary(io::IO, pnml::Pnml) = print(io, summary(pnml))
-function Base.summary(pnml::Pnml)
-    l = length(pnml.nets)
-    return string(typeof(pnml), " model with ", l, " nets" )
+Base.summary(io::IO, pnml::PnmlModel) = print(io, summary(pnml))
+function Base.summary(pnml::PnmlModel)
+    string(typeof(pnml), " model with ",  length(pnml.nets), " nets" )
 end
 
-function Base.show(io::IO, pnml::Pnml)
+# No indent done here.
+function Base.show(io::IO, pnml::PnmlModel)
     println(io, summary(pnml))
-    print(inc_indent(io), indent(io), pnml.nets)
+    for (i, net) in enumerate(pnml.nets)
+        print(io, net)
+        if i < length(pnml.nets)
+            print(io, "\n")
+        end
+    end
+    # Omit display of any xml
 end
-function Base.show(io::IO, ::MIME"text/plain", pnml::Pnml)
-    print(io, "Pnml:\n   ", pnml)
+
+function Base.show(io::IO, ::MIME"text/plain", pnml::PnmlModel)
+    return show(io, pnml)
 end
 
 
 #-------------------
+# show(io, x) ... _show_default formats as
+#type(f1(...), f2(...), ...)
