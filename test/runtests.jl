@@ -31,23 +31,20 @@ const pnml_dir = joinpath(@__DIR__, "data")
 to_node(s::AbstractString) = root(EzXML.parsexml(s))
 
 "Pretty print PnmlDict."
-function printnode(io::IO, n; label=nothing, compact=false)
+function printnode(io::IO, n; label=nothing, compact=false, type=false, kw...)
     if PRINT_PNML
-        #print(io, typeof(n), " ")
+        type && print(io, typeof(n), " ")
         !isnothing(label) && print(io, label, " ")
         pprint(io, n)
         !compact && println(io, "")
     end
 end
-function printnode(n; label=nothing, compact=false)
-    printnode(stdout, n; label, compact)
-end
-function printnodeln(n; label=nothing, compact=false)
-    printnodeln(stdout, n; label, compact)
+function printnode(n; kw...)
+    printnode(stdout, n; kw...)
 end
 
-function printnodeln(io::IO, n; label=nothing, compact=false)
-    printnode(io, n; label, compact)
+function printnodeln(io::IO, n; kw...)
+    printnode(io, n; kw...)
     PRINT_PNML && println(io)
 end
 

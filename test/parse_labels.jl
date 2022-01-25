@@ -10,7 +10,7 @@ header("UNCLAIMED ELEMENT")
                                 <something2 tag2="two"> <value/> </something2>
                            </declarations>
                         """; reg=PNML.IDRegistry())
-    printnode(a)
+    printnode(a, type=true)
     @test !isnothing(a)
 end
 
