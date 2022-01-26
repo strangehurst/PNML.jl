@@ -6,8 +6,8 @@ str =
     <name> <text>P/T Net with one place</text> </name>
     <page id="page0">
       <place id="place1">
-	<name> <text>Some place</text> </name>
-	<initialMarking> <text>100</text> </initialMarking>
+        <name> <text>Some place</text> </name>
+        <initialMarking> <text>100</text> </initialMarking>
       </place>
       <transition id="transition1">
         <name> <text>Some transition </text> </name>
@@ -39,7 +39,7 @@ end
     # Manually decend tree parsing leaf-enough elements because this is a test!
     foreach(PNML.allchildren("net", pnml)) do net
         @test nodename(net) == "net"
-        
+
         nn = parse_name(PNML.firstchild("name", net); reg)
         @test isa(nn, PNML.Name)
         @test nn.text == "P/T Net with one place"
@@ -49,17 +49,17 @@ end
         nd = PNML.allchildren("declaration", net)
         @test isempty(nd)
         @test isempty(parse_node.(nd; reg)) # Empty elements are leaf-enough.
-        
+
         nt = PNML.allchildren("toolspecific", net)
         @test isempty(nt)
         @test isempty(parse_node.(nt; reg))
-       
+
         pages = PNML.allchildren("page", net)
         @test !isempty(pages)
-        
+
         foreach(pages) do page
             @test nodename(page) == "page"
-            
+
             @test !isempty(PNML.allchildren("place", page))
             foreach(PNML.allchildren("place", page)) do p
                 @test nodename(p) == "place"
@@ -69,15 +69,15 @@ end
                 @test i.value >= 0
                 @test xmlnode(i) isa Maybe{EzXML.Node}
             end
-            
+
             @test !isempty(PNML.allchildren("transition", page))
             foreach(PNML.allchildren("transition", page)) do t
                 @test nodename(t) == "transition"
                 i = parse_node(PNML.firstchild("condition", t); reg)
                 @test i === nothing
             end
-            
-            @test !isempty(PNML.allchildren("arc", page))            
+
+            @test !isempty(PNML.allchildren("arc", page))
             foreach(PNML.allchildren("arc", page)) do a
                 @test nodename(a) == "arc"
                 i = parse_node(PNML.firstchild("inscription", a); reg)
@@ -98,15 +98,15 @@ end
     pnml_ir = parse_pnml(root(doc); reg)
     @show typeof(pnml_ir)
     @test typeof(pnml_ir) <: PNML.PnmlModel
-    
+
     printnode(pnml_ir; label="pnml_ir")
     #=
 
     This assumes everything has keys.
-    
+
     header("Summary of sizes")
     if SHOW_SUMMARYSIZE && PRINT_PNML
-        @show Base.summarysize(pnml_ir)        
+        @show Base.summarysize(pnml_ir)
         showsize.(Ref(pnml_ir), keys(pnml_ir))
         foreach(pnml_ir[:nets]) do net
             print("net ", pid(net), "\n")
@@ -132,7 +132,7 @@ end
     foreach(pnml_ir.nets) do net
         @test net isa PNML.PnmlNet
         @test net.id isa Symbol
-        
+
         foreach(net.pages) do page
             @test page isa PNML.Page
             @test pid(page) isa Symbol
@@ -157,9 +157,8 @@ end
         foreach(net.declarations) do decl
             @test decl isa PNML.Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
-        end 
+        end
     end
-    
+
     PNML.reset_registry!(reg)
 end
-

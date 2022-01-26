@@ -47,7 +47,7 @@ type(page::Page{T}) where {T <: PnmlType} = T
 pid(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("must implement id accessor")
 
 """
-Return vector of places. 
+Return vector of places.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -58,7 +58,7 @@ places(net::PnmlNet, n=1) = places(net.pages[n])
 places(page::Page) = page.places
 
 """
-Return vector of transitions. 
+Return vector of transitions.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -69,7 +69,7 @@ transitions(net::PnmlNet, n=1) = transitions(net.pages[n])
 transitions(page::Page) = page.transitions
 
 """
-Return vector of arcs. 
+Return vector of arcs.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -80,7 +80,7 @@ arcs(net::PnmlNet, n=1) = arcs(net.pages[n])
 arcs(page::Page) = page.arcs
 
 """
-Return vector of reference places. 
+Return vector of reference places.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -91,7 +91,7 @@ refplaces(net::PnmlNet, n=1) = refplaces(net.pages[n])
 refplaces(page::Page) = page.refplaces
 
 """
-Return vector of reference transitions. 
+Return vector of reference transitions.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -122,7 +122,7 @@ target(arc)::Symbol = arc.target
 
 """
 $(TYPEDSIGNATURES)
-Return `true` if any `arc` in `petrinet` has `id`. 
+Return `true` if any `arc` in `petrinet` has `id`.
 """
 function has_arc end
 function has_arc(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
@@ -151,9 +151,9 @@ $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function arc_ids end
-arc_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, arcs(petrinet)) 
-arc_ids(net::PnmlNet, n=1) = arc_ids(net.pages[n]) 
-arc_ids(page::Page) = map(pid, page.arcs) 
+arc_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, arcs(petrinet))
+arc_ids(net::PnmlNet, n=1) = arc_ids(net.pages[n])
+arc_ids(page::Page) = map(pid, page.arcs)
 
 """
 Return vector of arcs that have a source or target of transition `id`.
@@ -213,7 +213,7 @@ function inscription end
 # This is evaluating the incscription attached to an arc.
 # Original implementation is for PTNet.
 # HLNets do usual label semantics  here.
-# Map from net.type to inscription 
+# Map from net.type to inscription
 function inscription(arc)
     if !isnothing(arc.inscription)
         # Evaluate inscription
@@ -222,7 +222,7 @@ function inscription(arc)
     else
         # Default inscription
         1 # Omitted PTNet inscriptions default value. TODO: match value type.
-    end        
+    end
 end
 
 function inscription(petrinet::N, arc_id::Symbol) where {T <: PnmlType, N <: PetriNet{T}}
@@ -230,7 +230,7 @@ function inscription(petrinet::N, arc_id::Symbol) where {T <: PnmlType, N <: Pet
 end
 inscription(net::PnmlNet, id::Symbol, n=1) = inscription(net.pages[n], id)
 inscription(page::Page, id::Symbol) = inscription(arc(page, arc_id))
-    
+
 #------------------------------------------------------------------
 # REFERENCES
 #------------------------------------------------------------------
@@ -261,18 +261,18 @@ $(TYPEDSIGNATURES)
 """
 function refplace_ids end
 refplace_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
-    map(pid, refplaces(petrinet)) 
-refplace_ids(net::PnmlNet, n=1) = refplace_ids(net.pages[n]) 
-refplace_ids(page::Page) = map(pid, page.refPlaces) 
+    map(pid, refplaces(petrinet))
+refplace_ids(net::PnmlNet, n=1) = refplace_ids(net.pages[n])
+refplace_ids(page::Page) = map(pid, page.refPlaces)
 
 """
 $(TYPEDSIGNATURES)
 """
 function reftransition_ids end
 reftransition_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
-    map(pid, reftransitions(petrinet)) 
-reftransition_ids(net::PnmlNet, n=1) = reftransition_ids(net.pages[n]) 
-reftransition_ids(page::Page) = map(pid, page.refTransitions) 
+    map(pid, reftransitions(petrinet))
+reftransition_ids(net::PnmlNet, n=1) = reftransition_ids(net.pages[n])
+reftransition_ids(page::Page) = map(pid, page.refTransitions)
 
 """
 Return reference place matchind `id`.
@@ -335,7 +335,7 @@ function _deref!(p)
         while a.target ∈ reftransition_ids(p)
             @debug a.target, deref_transition(p, a.target)
             a.target = deref_transition(p, a.target)
-        end        
+        end
     end
 end
 
@@ -350,7 +350,7 @@ deref_place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}} =
 deref_place(net::PnmlNet, id::Symbol, n=1) = deref_place(net.pages[n], id)
 deref_place(page::Page, id::Symbol) =
     page.places[findfirst(p->pid(p)===id, page.places)].ref
-    
+
 """
 Return id of referenced transition.
 
@@ -364,7 +364,7 @@ deref_transition(page::Page, id::Symbol) = reftransition(page, id).ref
 
 
 #------------------------------------------------------------------
-# PLACES, MARKING, 
+# PLACES, MARKING,
 #------------------------------------------------------------------
 
 """
@@ -398,9 +398,9 @@ Return vector of place ids in `petrinet`.
 $(TYPEDSIGNATURES)
 """
 function place_ids end
-place_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(petrinet)) 
-place_ids(net::PnmlNet, n=1) = place_ids(net.pages[n]) 
-place_ids(page::Page) = map(pid, page.places) 
+place_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(petrinet))
+place_ids(net::PnmlNet, n=1) = place_ids(net.pages[n])
+place_ids(page::Page) = map(pid, page.places)
 
 """
 Return marking value of a place `p`.
@@ -498,9 +498,9 @@ $(TYPEDSIGNATURES)
 """
 function transition_ids end
 transition_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
-    map(pid, transitions(petrinet)) 
-transition_ids(net::PnmlNet, n=1) = transition_ids(net.pages[n]) 
-transition_ids(page::Page) = map(pid, page.transitions) 
+    map(pid, transitions(petrinet))
+transition_ids(net::PnmlNet, n=1) = transition_ids(net.pages[n])
+transition_ids(page::Page) = map(pid, page.transitions)
 
 #----------------------------------------
 
@@ -554,7 +554,7 @@ end
 
 condition(net::PnmlNet, trans_id::Symbol, n=1) = condition(net.pages[n], trans_id)
 condition(page::Page, trans_id::Symbol) = condition(transition(page, trans_id))
-    
+
 #-----------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -587,7 +587,7 @@ transition_function(page::Page, idvec::Vector{Symbol}) =
 $(TYPEDSIGNATURES)
 
 Return tuple of input, output labelled vectors with key of place ids and
-value of arc inscription's value for use as a transition function. 
+value of arc inscription's value for use as a transition function.
 """
 function in_out end
 function in_out(petrinet::N, transition_id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
@@ -608,5 +608,5 @@ outs(p, transition_id::Symbol) =
     LVector( (; [target(a)=>inscription(a) for a in src_arcs(p, transition_id)]...))
 
 #------------------------------------------------------------------
-# 
+#
 #------------------------------------------------------------------

@@ -2,11 +2,10 @@
 "Indention increment."
 const indent_width = 4
 
-#-------------------
 "Return string of current indent size in `io`."
 indent(io::IO) = repeat(' ', get(io, :indent, 0))
 
-"Increment the `:indent` value `inc`."
+"Increment the `:indent` value by `indent_width`."
 inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width)
 
 #-------------------
@@ -90,12 +89,12 @@ function Base.show(io::IO, labelvector::Vector{PnmlLabel})
         i < length(labelvector) && print(io, "\n")
     end
 end
-          
+
 function Base.show(io::IO, n::PnmlLabel)
     print(io, typeof(n), " ")
     pprint(io, n.dict)
 end
-          
+
 function Base.show(io::IO, ::MIME"text/plain", f::PnmlLabel)
     print(io, f)
 end
@@ -119,7 +118,7 @@ function Base.show(io::IO, ti::ToolInfo)
     io = inc_indent(io)
     for (i,info) in enumerate(ti.infos)
         print(io, indent(io))
-        pprintln(io, info)
+        pprint(io, info)
         i < length(ti.infos) && print(io, "\n")
     end
 end
@@ -154,7 +153,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", name::Name)
     print(io, name)
 end
- 
+
 #-------------------
 Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
@@ -167,8 +166,11 @@ end
 
 function Base.show(io::IO, oc::ObjectCommon)
     io = inc_indent(io)
+    if !isnothing(oc.graphics) || !isnothing(oc.tools) || !isnothing(oc.labels)
+        print(io, ", ")
+    end
     if !isnothing(oc.graphics)
-        print(io, indent(io), "graphics: ", oc.graphics)
+        print(io, "graphics: ", oc.graphics)
     end
     if !isnothing(oc.tools)
         println(io, "\n", indent(io), "tools:")
@@ -178,7 +180,7 @@ function Base.show(io::IO, oc::ObjectCommon)
         println(io, "\n", indent(io), "labels:")
         show(inc_indent(io), oc.labels)
     end
-    # In general, do not display/print the XML. 
+    # In general, do not display/print the XML.
 end
 
 #-------------------
@@ -188,19 +190,27 @@ function Base.summary(ptm::PTMarking)
 end
 
 function Base.show(io::IO, ptm::PTMarking)
-    print(io, summary(ptm), " value: ", ptm.value, ", ", ptm.com,)
+    print(io, summary(ptm), " value: ", ptm.value)
+    show(io, ptm.com)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
-    print(io, ptm)
+    show(io, ptm)
 end
 
 #-------------------
-function Base.show(io::IO, hlm::HLMarking)
-    print(io, "'", hlm.text, "', ", hlm.structure, ", ", hlm.com,)
+Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
+function Base.summary(hlm::HLMarking)
+    string(typeof(hlm))
 end
+
+function Base.show(io::IO, hlm::HLMarking)
+    print(io, "'", hlm.text, "', ", hlm.structure)
+    show(io, hlm.com,)
+end
+
 function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
-    print(io, hlm)
+    show(io, hlm)
 end
 
 #-------------------
@@ -212,9 +222,9 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
-          ", type ", place.type, ", ",
-          ", marking ", place.marking,
-          ", ", place.com)
+          ", type ", place.type,
+          ", marking ", place.marking)
+    show(io, place.com)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
@@ -231,16 +241,18 @@ end
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
-    print(io, typeof(cond), " '", cond.text, "', ", cond.structure, ", ", cond.com)
+    print(io, typeof(cond), " '", cond.text, "', ", cond.structure)
+    show(io, cond.com)
 end
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
-    print(io, cond)
+    show(io, cond)
 end
 
 #-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
-          " id ", trans.id, ", condition ", trans.condition, ", ", trans.com)
+          " id ", trans.id, ", condition ", trans.condition)
+    show(io, trans.com)
 end
 
 function Base.show(io::IO, transvector::Vector{Transition})
@@ -251,12 +263,14 @@ function Base.show(io::IO, transvector::Vector{Transition})
 end
 
 function Base.show(io::IO, ::MIME"text/plain", trans::Transition)
-    print(io, trans)
+    sh(io, trans)
 end
 
 #-------------------
 function Base.show(io::IO, refp::RefPlace)
-    print(io, "(id ", refp.id, ", ref ", refp.ref, ", ", refp.com, ")")
+    print(io, "(id ", refp.id, ", ref ", refp.ref)
+    show(io, refp.com)
+    print(io, ")")
 end
 function Base.show(io::IO, rpvector::Vector{RefPlace})
     for (i,rp) in enumerate(rpvector)
@@ -270,7 +284,9 @@ end
 
 #-------------------
 function Base.show(io::IO, reft::RefTransition)
-    print(io, "(id ", reft.id, ", ref ", reft.ref, ", ",  reft.com, ")")
+    print(io, "(id ", reft.id, ", ref ", reft.ref)
+    show(io, reft.com)
+    print(io, ")")
 end
 function Base.show(io::IO, rtvector::Vector{RefTransition})
     for (i,rt) in enumerate(rtvector)
@@ -284,7 +300,8 @@ end
 
 #-------------------
 function Base.show(io::IO, ins::PTInscription)
-    print(io, typeof(ins), " value ", ins.value, ", ", ins.com,)
+    print(io, typeof(ins), " value ", ins.value)
+    show(io, ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::PTInscription)
     show(io, ins)
@@ -292,7 +309,8 @@ end
 
 #-------------------
 function Base.show(io::IO, ins::HLInscription)
-    print(io, typeof(ins),  " '", ins.text, "', ", ins.structure, ", ", ins.com,)
+    print(io, typeof(ins),  " '", ins.text, "', ", ins.structure)
+    show(io, ins.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", ins::HLInscription)
     show(io, ins)
@@ -303,8 +321,8 @@ function Base.show(io::IO, arc::Arc)
     print(io, "id: ", arc.id,
           ", source: ", arc.source,
           ", target: ", arc.target,
-          ", inscription: ", arc.inscription,
-          arc.com)
+          ", inscription: ", arc.inscription)
+    show(io, arc.com)
 end
 function Base.show(io::IO, arcvector::Vector{Arc})
     for (i,arc) in enumerate(arcvector)
@@ -325,7 +343,8 @@ function Base.show(io::IO, declarations::Vector{Declaration})
     end
 end
 function Base.show(io::IO, declare::Declaration)
-    print(io, declare.d, ", ", declare.com,)
+    print(io, declare.d)
+    show(io, declare.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", declare::Declaration)
     show(io, declare)
@@ -358,7 +377,7 @@ function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
     println(io, indent(io), summary(page))
     # Start indent here. Will indent subpages.
-    inc_io = inc_indent(io)    
+    inc_io = inc_indent(io)
 
     show_page_field(inc_io, "places:",         page.places)
     show_page_field(inc_io, "transitions:",    page.transitions)
@@ -397,9 +416,9 @@ function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
     for (i, dec) in enumerate(net.declarations)
         show(io, dec)
-        i < length(net.declarations) && println(io) 
+        i < length(net.declarations) && println(io)
     end
-    print(io, net.com)
+    show(io, net.com)
     show(io, net.pages)
 end
 

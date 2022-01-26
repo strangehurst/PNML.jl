@@ -29,13 +29,13 @@ julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDReg
 function unclaimed_element(node; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
-    # ID attributes can appear in various places. Each unique and added to the registry. 
+    # ID attributes can appear in various places. Each unique and added to the registry.
     has_id(node) && register_id!(kw[:reg], node["id"])
-    
+
     # Extract XML attributes.
     d = PnmlDict(:tag => Symbol(nodename(node)),
                  (Symbol(a.name) => a.content for a in eachattribute(node))...)
-    
+
     # Harvest content or children.
     e = elements(node)
     if !isempty(e)
@@ -60,10 +60,10 @@ when there are multiple instances of a tag in `nv` and scalar otherwise.
 $(TYPEDSIGNATURES)
 """
 function unclaimed_content(nv::Vector{EzXML.Node}; kw...)
-    d = PnmlDict() 
+    d = PnmlDict()
     nn = [nodename(n)=>n for n in nv] # Not yet turned into Symbols.
     tagnames = unique(map(first,nn))
-    foreach(tagnames) do tname 
+    foreach(tagnames) do tname
         e = filter(x->x.first===tname, nn)
         #TODO make toolspecific match annotation labels.declarations
         d[Symbol(tname)] = if length(e) > 1
@@ -88,7 +88,7 @@ function add_label!(d::PnmlDict, node; kw...)
     if d[:labels] === nothing
         d[:labels] = PnmlLabel[]
     end
-    add_label!(d[:labels], node; kw...) 
+    add_label!(d[:labels], node; kw...)
 end
 function add_label!(v::Vector{PnmlLabel}, node; kw...)
     #@show "add label! $(nodename(node))"
@@ -204,12 +204,12 @@ end
 function has_toolinfo(v::Vector{PnmlDict},
                       namerex::Regex,
                       versionrex::Regex=r"^.*$")
-    @show 
+    @show
     any(v) do tool
        match(namerex, tool.toolname) && match(versionrex, tool.version)
     end
 end
-          
+
 #----------------
 function match(ti::ToolInfo, namerex::AbstractString)
     @show "match toolinfo $namerex"
@@ -339,7 +339,7 @@ defering other tags to [`parse_pnml_common!`](@ref).
 
 $(TYPEDSIGNATURES)
 """
-function parse_pnml_label_common!(d::PnmlDict, node; kw...)    
+function parse_pnml_label_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
         "text"      => (d[:text] = parse_node(node; kw...)) #TODO label with name?
         "structure" => (d[:structure] = parse_node(node; kw...))

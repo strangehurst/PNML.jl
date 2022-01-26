@@ -13,10 +13,10 @@ header("PAGES")
                 <arc id="a12" source="t1" target="rp1"/>
                 <referencePlace id="rp1" ref="p2"/>
                 <page id="page11">
-                    <place id="p11" /> 
+                    <place id="p11" />
                     <page id="page111">
-                        <place id="p111" /> 
-                    </page>  
+                        <place id="p111" />
+                    </page>
                 </page>
                 <page id="page12" />
                 <page id="page13" />
@@ -39,9 +39,9 @@ header("PAGES")
                     <transition id ="t4"/>
                     <arc id="a4" source="t4" target="p1"/>
                     <page id="page41">
-                        <place id="p41" /> 
+                        <place id="p41" />
                         <page id="page411">
-                            <place id="p411" /> 
+                            <place id="p411" />
                         </page>
                     </page>
                     <page id="page42" />
@@ -51,20 +51,20 @@ header("PAGES")
             </page>
         </net>
     </pnml>
-    """ 
+    """
     doc = PNML.Document(str)
     net = PNML.first_net(doc)
 
     @test net isa PNML.PnmlNet
     @test typeof(net) <: PNML.PnmlNet
     @test typeof(firstpage(net)) <: PNML.Page
-        
+
     printnode(net; label="\n----------------\n Multiple nested pages")
-        
+
     @testset "flatten" begin
         PNML.flatten_pages!(net)
         printnode(net; label="\n----------------\n Flattened to 1 page")
-        
+
         @show PNML.arc_ids(net)
         @show PNML.place_ids(net)
         @show PNML.transition_ids(net)
@@ -75,16 +75,16 @@ header("PAGES")
         @test PNML.arc_ids(net) == expected_a
         @test PNML.arc_ids(firstpage(net)) == expected_a
         @test PNML.arc_ids(net) == PNML.arc_ids(firstpage(net))
-        
+
         for a ∈ expected_a
             @test a ∈ PNML.arc_ids(net)
         end
-        
+
         expected_p = [:p1, :p11, :p111, :p2, :p3, :p4, :p41, :p411]
         @test PNML.place_ids(net) == expected_p
         @test PNML.place_ids(firstpage(net)) == expected_p
         @test PNML.place_ids(net) == PNML.place_ids(firstpage(net))
-        
+
         for p ∈ expected_p
             @test p ∈ PNML.place_ids(net)
         end
@@ -93,7 +93,7 @@ header("PAGES")
         @test PNML.transition_ids(net) == expected_t
         @test PNML.transition_ids(firstpage(net)) == expected_t
         @test PNML.transition_ids(net) == PNML.transition_ids(firstpage(net))
-        
+
         for t ∈ expected_t
             @test t ∈ PNML.transition_ids(net)
         end
@@ -102,7 +102,7 @@ header("PAGES")
         @test PNML.reftransition_ids(net) == expected_rt
         @test PNML.reftransition_ids(firstpage(net)) == expected_rt
         @test PNML.reftransition_ids(net) == PNML.reftransition_ids(firstpage(net))
-        
+
         for rt ∈ expected_rt
             @test rt ∈ PNML.reftransition_ids(net)
         end
@@ -110,7 +110,7 @@ header("PAGES")
         @test PNML.refplace_ids(net) == expected_rp
         @test PNML.refplace_ids(firstpage(net)) == expected_rp
         @test PNML.refplace_ids(net) == PNML.refplace_ids(firstpage(net))
-        
+
         for rp ∈ expected_rp
             @test rp ∈ PNML.refplace_ids(net)
         end

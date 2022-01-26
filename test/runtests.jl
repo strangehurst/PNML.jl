@@ -26,7 +26,7 @@ end
 
 const testdir = dirname(@__FILE__)
 const pnml_dir = joinpath(@__DIR__, "data")
-    
+
 "Turn string into XML node."
 to_node(s::AbstractString) = root(EzXML.parsexml(s))
 
@@ -71,8 +71,8 @@ end
 @testset verbose=false "PNML.jl" begin
     if select("All", "Doc")
         header("Doctests")
-        @testset "doctest" begin doctest(PNML, manual = true) end 
-    end     
+        @testset "doctest" begin doctest(PNML, manual = true) end
+    end
     if select("All", "Base")
         header("Base")
         @testset "maps"         begin include("maps.jl") end

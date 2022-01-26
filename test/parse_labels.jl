@@ -27,8 +27,8 @@ header("DECLARATION")
         </declaration>
         """; reg= PNML.IDRegistry())
     printnode(n)
-    
-    @test typeof(n) <: PNML.Declaration 
+
+    @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
 
     @show typeof(n), fieldnames(typeof(n))
@@ -116,7 +116,7 @@ end
     """
     n = parse_node(to_node(str1); reg = PNML.IDRegistry())
     @test n == "ready"
-    
+
     str2 = """
  <text>
 ready
@@ -124,20 +124,20 @@ ready
     """
     n = parse_node(to_node(str2); reg = PNML.IDRegistry())
     @test n == "ready"
-    
+
     str3 = """
  <text>    ready  </text>
     """
     n = parse_node(to_node(str3); reg = PNML.IDRegistry())
     @test n == "ready"
-    
+
     str4 = """
      <text>ready
 to
 go</text>
     """
     n = parse_node(to_node(str4); reg = PNML.IDRegistry())
-    @test n == "ready\nto\ngo"    
+    @test n == "ready\nto\ngo"
 end
 
 @testset "structure" begin
@@ -191,7 +191,7 @@ end
         </graphics>
  </referencePlace>
 """
-    @testset for s in [str1, str2] 
+    @testset for s in [str1, str2]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.RefPlace
@@ -210,7 +210,7 @@ end
      </structure>
  </type>
     """
-    @testset for s in [str1] 
+    @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.PnmlLabel
@@ -231,7 +231,7 @@ end
      </structure>
  </condition>
     """
-    @testset for s in [str1] 
+    @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.Condition
@@ -249,7 +249,7 @@ end
     str1 = """
         <inscription> <text>12 </text> </inscription>
     """
-    @testset for s in [str1] 
+    @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.PTInscription
@@ -277,7 +277,7 @@ end
      </structure>
  </hlinscription>
  """
-    @testset for s in [str1] 
+    @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.HLInscription
@@ -286,4 +286,3 @@ end
         @test n.text !== nothing
     end
 end
-

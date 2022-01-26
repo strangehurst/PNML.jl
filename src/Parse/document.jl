@@ -90,14 +90,14 @@ Return all `nets` of `doc`.
 $(TYPEDSIGNATURES)
 """
 nets(doc::Document) = doc.nets
-  
+
 # 2 Things, each could be nothing.
 function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
     if isnothing(getproperty(l, key))
         if !isnothing(getproperty(r, key))
             setproperty!(l, key, getproperty(r, key))
         end
-    else 
+    else
         append!(getproperty(l, key), getproperty(r, key))
     end
 end
@@ -155,7 +155,7 @@ $(METHODLIST)
 function flatten_pages!(net::PnmlNet)
     # Move everything to the 1 required Page.
     @debug "Flatten $(length(net.pages)) page(s) of net $(pid(net))"
-    
+
     # Place content of subpages of 1st page before sibling page's content.
     if !isnothing(firstpage(net).subpages)
         foldl(flatten_pages!, firstpage(net).subpages, init=firstpage(net))
@@ -172,7 +172,7 @@ end
 function flatten_pages!(l::Page, r::Page)
     @debug "flatten_pages!($(pid(l)), $(pid(r)))"
     append_page!(l, r)
-    if !isnothing(r.subpages) 
+    if !isnothing(r.subpages)
         foldl(flatten_pages!, r.subpages; init=l)
     end
     empty!(r)

@@ -27,12 +27,12 @@ header("SimpleNet")
             </page>
         </net>
     </pnml>
-        """ 
-    
+        """
+
     reg = PNML.IDRegistry()
     doc = PNML.Document(str, reg)
     printnode(doc.nets, label="SimpleNet")
-    
+
     v = PNML.find_nets(doc, :pnmlcore)
     @test !isempty(v)
     @test v[begin] == PNML.first_net(doc)
@@ -63,14 +63,14 @@ header("SimpleNet")
         for (a,b) in zip(accessor(net2), accessor(net))
             @test a.id == b.id
         end
-            
+
     end
-    
+
     PRINT_PNML && println("------------------------------------------")
 
     pl = PNML.places(net)
     printnode(pl[1],label="from")
-    
+
     PRINT_PNML && println("\n------------------------------------------")
 
     pl = PNML.places(net)
@@ -79,7 +79,6 @@ header("SimpleNet")
     PRINT_PNML && println("------------------------------------------")
 
     for p in PNML.places(net)
-        #printnode(p; label="place")
         @test PNML.has_place(net, pid(p))
         @test p == PNML.place(net, pid(p))
         @test PNML.pid(p) ===  p.id
@@ -87,7 +86,6 @@ header("SimpleNet")
         PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
     end
     for t in PNML.transitions(net)
-        #printnode(t; label="transition")
         @test PNML.has_transition(net, pid(t))
         @test t == PNML.transition(net, pid(t))
         @test PNML.pid(t) ===  t.id
@@ -95,7 +93,6 @@ header("SimpleNet")
         PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
     end
     for a in PNML.arcs(net)
-        #printnode(a, label="arc")
         @test PNML.has_arc(net, pid(a))
         @test a == PNML.arc(net, pid(a))
         @test PNML.pid(a) ===  a.id
@@ -119,7 +116,7 @@ end
     doc = PNML.Document(str)
     net = PNML.first_net(doc)
     printnode(net, label="rate net")
-    
+
     snet = PNML.SimpleNet(net)
     @show snet
     β = PNML.rates(snet)
@@ -147,14 +144,14 @@ end
         </page>
         </net>
     </pnml>
-    """ 
+    """
     #@test !PNML.isregistered(:pnml)
     reg = PNML.IDRegistry()
     doc = PNML.Document(str, reg)
     net1 = PNML.first_net(doc)
-    printnode(net1, label="Petri Net ")
+    printnode(net1)
     snet = PNML.SimpleNet(net1)
-    
+
     S = PNML.place_ids(snet) # [:rabbits, :wolves]
     T = PNML.transition_ids(snet)
     PRINT_PNML && @show S, T
@@ -193,5 +190,5 @@ end
                              Dict(:id=>:p3, :arc => [Dict(:id=>:arc3)], :pages=>[]),
                              ],
               :arc => [Dict(:id=>:arc2)],)
-              
+
 end

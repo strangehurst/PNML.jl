@@ -35,4 +35,3 @@ transitions(petrinet::HLPetriNet) = firstpage(petrinet.net).transitions
 arcs(petrinet::HLPetriNet)        = firstpage(petrinet.net).arcs
 refplaces(petrinet::HLPetriNet)   = firstpage(petrinet.net).refPlaces
 reftransitions(petrinet::HLPetriNet) = firstpage(petrinet.net).refTransitions
-

@@ -99,5 +99,5 @@ Increment counter and return new value.
 function next_missing_id(c::MissingIDCounter)
     lock(c.lk) do
         c.i += 1
-    end 
+    end
 end

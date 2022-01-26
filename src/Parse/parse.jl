@@ -19,7 +19,7 @@ function parse_node(node; verbose=true, kw...)
     else
         PnmlLabel(unclaimed_element(node; kw...))
     end
-end  
+end
 
 """
 Start parse from the pnml root node of the well formed XML document.
@@ -47,13 +47,13 @@ function parse_net(node; kw...)
     nn == "net" || error("element name wrong: $nn")
     has_id(node) || throw(MissingIDException(nn, node))
     has_type(node) || throw(MalformedException("$(nn) missing type", node))
-    
+
     @assert haskey(kw, :reg)
     isempty(allchildren("page", node)) && @warn "net does not have any pages"
-    
+
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
-    
+
     # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
     # Optional key values are nothing for single object or empty vector when multiples
@@ -100,7 +100,7 @@ function parse_page(node; kw...)
                            :refT => RefTransition[],
                            :declarations => Declaration[],
                            :pages => Page[])
-    
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_node(child; kw...))
@@ -144,7 +144,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-"""     
+"""
 function parse_transition(node; kw...)
     nn = nodename(node)
     nn == "transition" || error("element name wrong: $nn")
@@ -269,13 +269,13 @@ function parse_name(node; kw...)
     else
         value = string(strip(nodecontent(tx)))
     end
-    
+
     gx = firstchild("graphics", node)
     graphics = isnothing(gx) ? nothing : parse_node(gx; kw..., verbose=false)
-    
+
     ts = allchildren("toolspecific", node)
     tools = isempty(ts) ? nothing : parse_node.(ts; kw..., verbose=false)
-    
+
     Name(value; graphics, tools)
 end
 
@@ -283,7 +283,7 @@ end
 #
 # structure is neither a pnml node nor a pnml annotation-label.
 # Behaves like an attribute-label.
-# Should be inside of an label. 
+# Should be inside of an label.
 #
 #----------------------------------------------------------
 
@@ -354,7 +354,7 @@ function parse_hlinitialMarking(node; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_label_common!(d,child; kw...)          
+            _ => parse_pnml_label_common!(d,child; kw...)
         end
     end
     HLMarking(d) #IR
@@ -389,4 +389,3 @@ function parse_condition(node; kw...)
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
     Condition(d) #IR
 end
-

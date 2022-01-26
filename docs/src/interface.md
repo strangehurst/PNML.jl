@@ -1,12 +1,17 @@
 # Interface 
 
+```@contents
+Pages = ["interface.md"]
+Depth = 5
+```
+
 The intermediate representation is used to implement networks 
 expressed in a pnml model. The consumer of the IR is a network,
 most naturally a varity of Petri Net. 
 
 High-Level Petri Net Graphs can be expressed in a pnml model.
 
-[`PnmlDict`](@ref PNML.PnmlDict) is an alias for `Dict{Symbol,Any}`.
+[`Pnmldict`](@ref PNML.PnmlDict) is an alias for `Dict{Symbol,Any}`.
 Each XML tag is first parsed into a `PnmlDict`, many are then used 
 to create higher-level types. Some parts will continue to find 
 use for `PnmlDict`'s flexibility.
@@ -63,30 +68,69 @@ XML <page> tags are also 1st parsed into PnmlDict:
 
 See also: [`parse_page`](@ref PNML.parse_page).
 
+## Petri Net Graphs and Networks
 
+There are 3 top-level forms:
+  - [`PetriNet`](@ref PNML.PetriNet) subtpes wraping a single `PnmlNet`, maybe multiple pages.
+  - [`PnmlNet`](@ref PNML.PnmlNet) assumes there is only 1 page is this net.
+  - [`Page`](@ref PNML.Page) when the only page of the only net in a petrinet.
 
+The simplest arrangement is a pnml model with a single <net> element having
+a single page. Any <net> may be flatten to a single page. 
 
-## Methods
+The initial `PetriNet` subtypes are built using the assumption that
+multiple pages will be flattened to a single page.
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
-
 ```
+
+## Simple Interface Methods
+
+### pid - access pnml ID symbol
+
+Objects within a pnml graph have unique identifiers,
+which are used for referring to the object.
+This includes:
+[`PnmlObject`](@ref PNML.PnmlObject) subtypes,
+[`PnmlNet`](@ref PNML.PnmlNet).
+
+[`PNML.pid`](@ref PNML.pid)
 ```@example methods
 methods(PNML.pid)
 ```
+
+### tag - access XML tag symbol
+
+
+[`PNML.tag`](@ref PNML.tag)
 ```@example methods
 methods(PNML.tag)
 ```
+
+### has_xml
+
+[`PNML.has_xml`](@ref PNML.has_xml)
 ```@example methods
 methods(PNML.has_xml)
 ```
+
+### xmlnode
+
+[`PNML.xmlnode`](@ref PNML.xmlnode)
 ```@example methods
 methods(PNML.xmlnode)
 ```
+### type
+
+[`PNML.type`](@ref PNML.type)
 ```@example methods
 methods(PNML.type)
 ```
+
+## Nodes of Graph
+
+[`PNML.places`](@ref PNML.places)
 ```@example methods
 methods(PNML.places)
 ```
@@ -96,5 +140,114 @@ methods(PNML.transitions)
 ```@example methods
 methods(PNML.arcs)
 ```
+```@example methods 
+methods(PNML.refplaces) 
+```
+```@example methods 
+methods(PNML.reftransitions) 
+```
 
+## Node Predicates
+
+```@example methods 
+methods(PNML.has_place) 
+```
+```@example methods 
+methods(PNML.has_transition) 
+```
+```@example methods
+methods(PNML.has_arc)
+```
+```@example methods 
+methods(PNML.has_refP) 
+```
+```@example methods 
+methods(PNML.has_refT) 
+```
+
+## Node Vector
+
+```@example methods 
+methods(PNML.place) 
+```
+```@example methods 
+methods(PNML.transition)
+```
+```@example methods
+methods(PNML.arc) 
+```
+```@example methods 
+methods(PNML.refplace) 
+```
+```@example methods 
+methods(PNML.reftransition) 
+```
+
+## Node ID Vector 
+
+```@example methods 
+methods(PNML.place_ids) 
+```
+```@example methods 
+methods(PNML.transition_ids) 
+```
+```@example methods 
+methods(PNML.arc_ids) 
+```
+```@example methods 
+methods(PNML.refplace_ids) 
+```
+```@example methods 
+methods(PNML.reftransition_ids) 
+```
+
+## Arc Related
+
+```@example methods 
+methods(PNML.all_arcs) 
+```
+```@example methods 
+methods(PNML.src_arcs) 
+```
+```@example methods 
+methods(PNML.tgt_arcs) 
+```
+
+```@example methods 
+methods(PNML.inscription) 
+```
+
+```@example methods 
+methods(PNML.deref!) 
+```
+```@example methods 
+methods(PNML.deref_place) 
+```
+```@example methods 
+methods(PNML.deref_transition) 
+```
+
+## Place Related
+
+```@example methods 
+methods(PNML.marking) 
+```
+```@example methods 
+methods(PNML.initialMarking) 
+```
+
+## Transition Related
+
+```@example methods 
+methods(PNML.conditions) 
+```
+```@example methods 
+methods(PNML.condition) 
+```
+```@example methods
+methods(PNML.transition_function) 
+```
+```@example methods
+methods(PNML.in_out) 
+```
 

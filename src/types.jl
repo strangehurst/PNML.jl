@@ -53,4 +53,3 @@ Union of type `T` or `nothing`.
 $(TYPEDEF)
 """
 const Maybe{T} = Union{T, Nothing}
-

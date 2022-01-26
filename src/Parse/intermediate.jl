@@ -26,7 +26,7 @@ onnothing(x, non) = isnothing(x) ? non : x
 ###############################################################################
 
 """
-PNML Graphics Coordinate. 
+PNML Graphics Coordinate.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -57,7 +57,7 @@ end
 
 #-------------------
 """
-PNML Font attributes as strings. 
+PNML Font attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -102,9 +102,9 @@ $(TYPEDFIELDS)
 """
 struct Graphics
     dimension::Maybe{Coordinate}
-    fill::Maybe{Fill} 
+    fill::Maybe{Fill}
     font::Maybe{Font}
-    line::Maybe{Line} 
+    line::Maybe{Line}
     offset::Maybe{Coordinate}
     position::Maybe{Vector{Coordinate}}
 end
@@ -133,7 +133,7 @@ struct PnmlLabel <: AbstractLabel
     #PnmlLabel(d::PnmlDict) = new(d)
 end
 
-convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d) 
+convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d)
 
 has_structure(::PnmlLabel) = false #TODO Allow HL labels?
 structure(::PnmlLabel) = nothing
@@ -171,7 +171,7 @@ end
 function ToolInfo(d::PnmlDict)
     ToolInfo(d[:tool], d[:version], d[:content], d[:xml])
 end
-convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d) 
+convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 
 has_xml(::ToolInfo) = true
 
@@ -230,7 +230,7 @@ has_structure(::Name) = false
 structure(::Name) = nothing
 
 Name(name::AbstractString = ""; graphics=nothing, tools=nothing) =
-    Name(name, graphics, tools) 
+    Name(name, graphics, tools)
 
 #-------------------
 """
@@ -259,7 +259,7 @@ ObjectCommon(pdict::PnmlDict) =
         get(pdict, :tools, nothing),
         get(pdict, :labels, nothing),
         get(pdict, :xml, nothing)
-    ) 
+    )
 
 ###############################################################################
 # PNML Nodes
@@ -287,7 +287,7 @@ end
 function PTMarking(pdict::PnmlDict)
     PTMarking(onnothing(pdict[:value], 0), ObjectCommon(pdict))
 end
-convert(::Type{Maybe{PTMarking}}, pdict::PnmlDict) = PTMarking(pdict) 
+convert(::Type{Maybe{PTMarking}}, pdict::PnmlDict) = PTMarking(pdict)
 
 (ptm::PTMarking)() = ptm.value
 
@@ -306,7 +306,7 @@ end
 
 HLMarking(pdict::PnmlDict) =
     HLMarking(pdict[:text], pdict[:structure], ObjectCommon(pdict))
-convert(::Type{Maybe{HLMarking}}, pdict::PnmlDict) = HLMarking(pdict) 
+convert(::Type{Maybe{HLMarking}}, pdict::PnmlDict) = HLMarking(pdict)
 
 "Evaluate the marking expression."
 (hlm::HLMarking)() = @warn "HLMarking functor not implemented"
@@ -345,8 +345,8 @@ end
 Condition(pdict::PnmlDict) = Condition(pdict[:text],
                                        pdict[:structure],
                                        ObjectCommon(pdict))
-#convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d) 
-    
+#convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d)
+
 #-------------------
 """
 PNML Transition node.
@@ -416,7 +416,7 @@ end
 
 PTInscription(pdict::PnmlDict) =
     PTInscription(onnothing(pdict[:value],1), ObjectCommon(pdict))
-convert(::Type{Maybe{PTInscription}}, pdict::PnmlDict) = PTInscription(pdict) 
+convert(::Type{Maybe{PTInscription}}, pdict::PnmlDict) = PTInscription(pdict)
 
 #-------------------
 """
@@ -433,8 +433,8 @@ end
 
 HLInscription(pdict::PnmlDict) =
     HLInscription(pdict[:text], pdict[:structure], ObjectCommon(pdict))
-convert(::Type{Maybe{HLInscription}}, pdict::PnmlDict) = HLInscription(pdict) 
-    
+convert(::Type{Maybe{HLInscription}}, pdict::PnmlDict) = HLInscription(pdict)
+
 #-------------------
 """
 Arc connects places and transitions.
@@ -454,7 +454,7 @@ Arc(pdict::PnmlDict) =
     Arc(pdict[:id], pdict[:source], pdict[:target], pdict[:inscription], ObjectCommon(pdict))
 
 ###############################################################################
-# Begin section dealing with the top level of a pnml model: nets, pages and 
+# Begin section dealing with the top level of a pnml model: nets, pages and
 # labels at equivalent level of the model. Declarations are here because they
 # are from tags that are only found as children of <net> and <page> tags.
 ###############################################################################
@@ -474,7 +474,7 @@ struct Declaration
 end
 
 Declaration(pdict::PnmlDict) = Declaration(PnmlLabel(pdict), ObjectCommon(pdict))
-convert(::Type{Maybe{Declaration}}, pdict::PnmlDict) = Declaration(pdict) 
+convert(::Type{Maybe{Declaration}}, pdict::PnmlDict) = Declaration(pdict)
 
 #-------------------
 """
@@ -521,7 +521,7 @@ end
 
 #-------------------
 """
-Each net in a PNML model has an independent type. 
+Each net in a PNML model has an independent type.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -531,12 +531,12 @@ mutable struct PnmlNet{PNTD<:PnmlType}
     type::PNTD
     pages::Vector{Page}
     declarations::Vector{Declaration}
-    
+
     com::ObjectCommon
 end
 
 function PnmlNet(d::PnmlDict)
-    PnmlNet(d[:id], d[:type], d[:pages], d[:declarations], ObjectCommon(d)) 
+    PnmlNet(d[:id], d[:type], d[:pages], d[:declarations], ObjectCommon(d))
 end
 
 pid(net::PnmlNet) = net.id
@@ -565,6 +565,5 @@ has_xml(tool::PnmlModel) = true
 xmlnode(tool::PnmlModel) = tool.xml
 
 ###############################################################################
-# 
+#
 ###############################################################################
-

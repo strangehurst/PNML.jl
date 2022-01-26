@@ -23,7 +23,7 @@ $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function number_value(s::AbstractString)
-    x = tryparse(Int, s) 
+    x = tryparse(Int, s)
     x = isnothing(x) ?  tryparse(Float64, s) : x
 end
 
@@ -93,7 +93,7 @@ function has_weight            end
 function has_width             end
 function has_x                 end
 function has_xmlns             end
-function has_y                 end      
+function has_y                 end
 
 #-------------------------------------------------------------------
 has_align(::Any)             = false
