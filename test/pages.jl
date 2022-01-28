@@ -52,8 +52,8 @@ header("PAGES")
         </net>
     </pnml>
     """
-    doc = PNML.Document(str)
-    net = PNML.first_net(doc)
+    model = parse_str(str)
+    net = PNML.first_net(model)
 
     @test net isa PNML.PnmlNet
     @test typeof(net) <: PNML.PnmlNet

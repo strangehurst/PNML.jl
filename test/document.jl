@@ -41,8 +41,7 @@ end
     @test !PNML.isregistered(reg, :net)
     @test :net ∉ reg.ids
 
-    doc = PNML.Document(str, reg)
-    @show doc
+    parse_pnml(root(parsexml(str)); reg)
     @show reg
 
     @test PNML.isregistered(reg, :net)
@@ -61,15 +60,15 @@ end
     </pnml>
     """
 
-    doc = PNML.Document(str)
-    @show doc
+    @show model = parse_str(str)
+    #@show model
 
-    v1 = PNML.find_nets(doc, :ptnet)
+    v1 = PNML.find_nets(model, :ptnet)
     printnode(v1, label="v1")
     foreach(v1) do net
         @test net.type === PNML.pnmltype(:ptnet)
     end
-    v2 = PNML.find_nets(doc, "ptnet")
+    v2 = PNML.find_nets(model, "ptnet")
     printnode(v2, label="v2")
     foreach(v2) do net
         @test net.type === PNML.pnmltype(:ptnet)
@@ -78,7 +77,7 @@ end
     @test v1 == v2
     @test length(v1) == 2
 
-    v3 = PNML.find_nets(doc, :pnmlcore)
+    v3 = PNML.find_nets(model, :pnmlcore)
     printnode(v3, label="v3")
     foreach(v3) do net
         @test net.type === PNML.pnmltype(:pnmlcore)
@@ -88,7 +87,7 @@ end
     @test v3 != v1
 
     @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
-        foreach(PNML.find_nets(doc, t)) do net
+        foreach(PNML.find_nets(model, t)) do net
             @test net.type === PNML.pnmltype(t)
         end
     end
@@ -105,6 +104,5 @@ end
     </pnml>
     """
 
-    doc = PNML.Document(str)
-    @show doc
+    @show model = parse_str(str)
 end

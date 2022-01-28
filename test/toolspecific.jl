@@ -79,8 +79,8 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
  </net>
 </pnml>
 """
-        doc = PNML.Document(str)
-        @show doc
+        model = parse_str(str)
+        @show model
    
     end
 end

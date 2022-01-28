@@ -29,17 +29,16 @@ header("SimpleNet")
     </pnml>
         """
 
-    reg = PNML.IDRegistry()
-    doc = PNML.Document(str, reg)
-    printnode(doc.nets, label="SimpleNet")
+    model = parse_str(str)
+    printnode(nets(model), label="SimpleNet")
 
-    v = PNML.find_nets(doc, :pnmlcore)
+    v = PNML.find_nets(model, :pnmlcore)
     @test !isempty(v)
-    @test v[begin] == PNML.first_net(doc)
+    @test v[begin] == PNML.first_net(model)
 
     net  = PNML.SimpleNet(v[begin])
-    net1 = PNML.SimpleNet(doc)
-    net2 = PNML.SimpleNet(PNML.first_net(doc))
+    net1 = PNML.SimpleNet(model)
+    net2 = PNML.SimpleNet(PNML.first_net(model))
 
     PRINT_PNML && println()
     PRINT_PNML && @show net
@@ -113,8 +112,8 @@ end
         </net>
     </pnml>
     """
-    doc = PNML.Document(str)
-    net = PNML.first_net(doc)
+    model = parse_str(str)
+    net = PNML.first_net(model)
     printnode(net, label="rate net")
 
     snet = PNML.SimpleNet(net)
@@ -146,9 +145,8 @@ end
     </pnml>
     """
     #@test !PNML.isregistered(:pnml)
-    reg = PNML.IDRegistry()
-    doc = PNML.Document(str, reg)
-    net1 = PNML.first_net(doc)
+    model = parse_str(str)
+    net1 = PNML.first_net(model)
     printnode(net1)
     snet = PNML.SimpleNet(net1)
 

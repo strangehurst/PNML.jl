@@ -23,7 +23,7 @@ well-formed XML. We assume nobody would use colliding names intentionally.
 
 
 The crude structure required by the pnmlcore schema:
-Document
+PnmlModel
   - Net
     - Page
     	- Places, Marking

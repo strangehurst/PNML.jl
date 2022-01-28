@@ -252,14 +252,31 @@ function ObjectCommon(; name=nothing, graphics=nothing, tools=nothing,
     ObjectCommon(name, graphics, tools, labels, xml)
 end
 
-ObjectCommon(pdict::PnmlDict) =
-    ObjectCommon(
-        get(pdict, :name, nothing),
-        get(pdict, :graphics, nothing),
-        get(pdict, :tools, nothing),
-        get(pdict, :labels, nothing),
-        get(pdict, :xml, nothing)
-    )
+ObjectCommon(pdict::PnmlDict) = ObjectCommon(
+    get(pdict, :name, nothing),
+    get(pdict, :graphics, nothing),
+    get(pdict, :tools, nothing),
+    get(pdict, :labels, nothing),
+    get(pdict, :xml, nothing)
+)
+
+has_name(oc::ObjectCommon) = !isnothing(oc.name)
+
+has_graphics(::Any) = false
+has_graphics(oc::ObjectCommon) = !isnothing(oc.graphics)
+
+has_tools(::Any) = false
+has_tools(oc::ObjectCommon) = !isnothing(oc.tools)
+
+has_labels(::Any) = false
+has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
+
+# Could use introspection on every field if they are all Maybes.
+Base.isempty(oc::ObjectCommon) = !(has_name(oc) ||
+                                   has_graphics(oc) ||
+                                   has_tools(oc) ||
+                                   has_labels(oc) ||
+                                   has_xml(oc)) #TODO do we care about xml?
 
 ###############################################################################
 # PNML Nodes
@@ -556,13 +573,74 @@ $(TYPEDFIELDS)
 """
 struct PnmlModel
     nets::Vector{PnmlNet}
+    reg::IDRegistry
     xml::Maybe{XMLNode}
 end
-PnmlModel(net::PnmlNet; xml=nothing) = PnmlModel(id, [net], xml)
-PnmlModel(nets::Vector{PnmlNet}; xml=nothing) = PnmlModel(id, nets, xml)
+PnmlModel(net::PnmlNet) = PnmlModel([net])
+PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
+PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
 
 has_xml(tool::PnmlModel) = true
 xmlnode(tool::PnmlModel) = tool.xml
+
+"""
+Build a PnmlModel from a string 'str' containing XML.
+
+$(TYPEDSIGNATURES)
+"""
+function parse_str(str::AbstractString)
+    reg = IDRegistry()
+    parse_pnml(root(EzXML.parsexml(str)); reg)
+end
+
+"""
+Build a PnmlModel from a file `fname`.
+
+$(TYPEDSIGNATURES)
+"""
+function parse_file(fname::AbstractString)
+    reg = IDRegistry()
+    parse_pnml(root(EzXML.readxml(fname)); reg)
+end
+
+"""
+Return nets matching pntd `type` given as string or symbol.
+See [`pntd_symbol`](@ref), [`pnmltype`](@ref).
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
+"""
+function find_nets end
+find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
+find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
+find_nets(model, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, nets(model))
+
+"""
+Return nets matching the pntd `type` given as string or symbol.
+See [`pntd_symbol`](@ref), [`pnmltype`](@ref).
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
+"""
+function find_nets end
+
+"""
+Return first net contained by `doc`.
+
+$(TYPEDSIGNATURES)
+"""
+first_net(model) = first(nets(model))
+
+"""
+Return all `nets` of `model`.
+
+$(TYPEDSIGNATURES)
+"""
+nets(model::PnmlModel) = model.nets
 
 ###############################################################################
 #

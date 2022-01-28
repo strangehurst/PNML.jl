@@ -1,11 +1,11 @@
 @testset "AirplaneLD pnml file" begin
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
     @show typeof(testfile), testfile
-    pn = PNML.parse_file(testfile)
+    model = parse_file(testfile)
     # N
     #printnode(pn) # Too much to display for every test!
-    @test pn isa PNML.Document
-    nets = PNML.nets(pn)
+    @test model isa PNML.PnmlModel
+    nets = PNML.nets(model)
     @test nets isa Vector{PNML.PnmlNet}
     @test length(nets) == 1
     @test nets[1].pages isa Vector

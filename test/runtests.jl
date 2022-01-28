@@ -5,7 +5,8 @@ using IfElse
 # Run the tests embedded in docstrings.
 using Documenter, LabelledArrays
 
-using PNML: PNML, parse_pnml, parse_node, @xml_str, pid, tag, xmlnode, Maybe,
+using PNML: PNML, parse_pnml, parse_str, parse_file,
+    parse_node, @xml_str, pid, tag, xmlnode, Maybe,
     parse_net, parse_page, parse_place, parse_transition, parse_arc,
     parse_refPlace, parse_refTransition,
     parse_toolspecific, parse_graphics, parse_structure,
@@ -13,7 +14,8 @@ using PNML: PNML, parse_pnml, parse_node, @xml_str, pid, tag, xmlnode, Maybe,
     parse_inscription, parse_hlinscription,
     parse_condition,
     parse_declaration, parse_sort, parse_term, parse_label,
-    parse_tokengraphics, parse_tokenposition, parse_name
+    parse_tokengraphics, parse_tokenposition, parse_name,
+    nets
 
 const GROUP        = get(ENV, "GROUP", "All")
 const PRINT_PNML   = get(ENV, "PRINT_PNML", true)

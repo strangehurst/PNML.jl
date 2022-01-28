@@ -33,8 +33,8 @@ function parse_pnml(node; kw...)
     EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kw, :reg)
-    # Do not yet have a PNTD defined, so call directly.
-    PnmlModel(parse_net.(allchildren("net", node); kw...), includexml(node))
+    # Do not yet have a PNTD defined, so call parse_net directly.
+    PnmlModel(parse_net.(allchildren("net", node); kw...), kw[:reg], includexml(node))
 end
 
 """
@@ -296,7 +296,7 @@ $(TYPEDSIGNATURES)
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kw...))
+    PnmlLabel(unclaimed_element(node; kw...)) # TODO make a structure type (tree?)
 end
 
 

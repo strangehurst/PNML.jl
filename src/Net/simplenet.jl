@@ -47,8 +47,8 @@ struct SimpleNet{PNTD} <: PetriNet{PNTD}
 end
 
 "Construct from string of valid pnml XML using the first network"
-SimpleNet(str::AbstractString) = SimpleNet(PNML.Document(str))
-SimpleNet(doc::PNML.Document)  = SimpleNet(first_net(doc))
+SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
+SimpleNet(model::PnmlModel)  = SimpleNet(first_net(model))
 
 function SimpleNet(net::PnmlNet)
     netcopy = deepcopy(net) #TODO Is copy needed?

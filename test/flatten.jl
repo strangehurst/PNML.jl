@@ -28,8 +28,8 @@ header("FLATTEN")
         </net>
     </pnml>
     """ 
-    doc = PNML.Document(str)
-    net = PNML.first_net(doc)
+    model = parse_str(str)
+    net = PNML.first_net(model)
 
     PNML.flatten_pages!(net)
     @test typeof(net) <: PNML.PnmlNet

@@ -11,8 +11,8 @@ struct HLPetriNet{PNTD} <: PetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 "Construct from string of valid pnml XML using the first network"
-HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Document(str))
-HLPetriNet(doc::PNML.Document)  = HLPetriNet(first_net(doc))
+HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
+HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
 
 """
 Collapses all the pages into the first page.
