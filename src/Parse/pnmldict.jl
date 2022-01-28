@@ -29,7 +29,7 @@ julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDReg
 function unclaimed_element(node; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
-    # ID attributes can appear in various places. Each unique and added to the registry.
+    # ID attributes can appear in various places. Each is unique and added to the registry.
     has_id(node) && register_id!(kw[:reg], node["id"])
 
     # Extract XML attributes.
@@ -45,11 +45,6 @@ function unclaimed_element(node; kw...)::PnmlDict
     end
     d[:xml] = includexml(node)
 
-    #println()
-    #for (k,v) in pairs(d)
-    #    @show k, typeof(v), v
-    #end
-    #println()
     d
 end
 
@@ -61,8 +56,8 @@ $(TYPEDSIGNATURES)
 """
 function unclaimed_content(nv::Vector{EzXML.Node}; kw...)
     d = PnmlDict()
-    nn = [nodename(n)=>n for n in nv] # Not yet turned into Symbols.
-    tagnames = unique(map(first,nn))
+    nn = [nodename(n) => n for n in nv] # Not yet turned into Symbols.
+    tagnames = unique(map(first, nn))
     foreach(tagnames) do tname
         e = filter(x->x.first===tname, nn)
         #TODO make toolspecific match annotation labels.declarations
@@ -82,7 +77,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Add `node` to` d[:labels]` a vector of PnmlLabel. Return updated `d[:labels]`.
+Add `node` to` d[:labels]`, a vector of PnmlLabel. Return updated `d[:labels]`.
 """
 function add_label!(d::PnmlDict, node; kw...)
     if d[:labels] === nothing
@@ -164,7 +159,6 @@ The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
 function add_toolinfo!(d::PnmlDict, node; kw...)
-    #@show "add tool! $(nodename(node))"
     if d[:tools] === nothing
         d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
         #TODO DefaultTool and TokenGraphics are 2 known flavors.
@@ -175,9 +169,7 @@ function add_toolinfo!(d::PnmlDict, node; kw...)
 end
 
 function add_toolinfo!(v::Vector{ToolInfo}, node; kw...)
-    #EzXML.prettyprint(node)
     ti = parse_toolspecific(node; kw...)
-    #@show "add_toolinfo $(typeof(ti))"
     push!(v,ti)
 end
 
