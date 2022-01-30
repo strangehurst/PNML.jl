@@ -129,7 +129,7 @@ end
     end
     println()
     =#
-    foreach(pnml_ir.nets) do net
+    foreach(nets(pnml_ir)) do net
         @test net isa PNML.PnmlNet
         @test net.id isa Symbol
 

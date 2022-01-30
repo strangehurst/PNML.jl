@@ -4,7 +4,8 @@ CurrentModule = PNML
 
 # PNML.jl
 
-Documentation for the GitHub [PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
+Documentation for the GitHub 
+[PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
 
 ```@eval
 using Markdown

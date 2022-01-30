@@ -35,7 +35,7 @@ struct Coordinate{T <: Number}
     x::T
     y::T
 end
-Coordinate() = Coordinate(0,0)
+Coordinate() = Coordinate(0, 0)
 Coordinate(x) = Coordinate(x, 0)
 
 #-------------------
@@ -433,6 +433,7 @@ end
 
 PTInscription(pdict::PnmlDict) =
     PTInscription(onnothing(pdict[:value],1), ObjectCommon(pdict))
+
 convert(::Type{Maybe{PTInscription}}, pdict::PnmlDict) = PTInscription(pdict)
 
 #-------------------
@@ -501,7 +502,7 @@ There must be at least 1 Page for a valid pnml model.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Page{PNTD<:PnmlType} <: PnmlObject
+struct Page{PNTD<:PnmlType} <: PnmlObject
     id::Symbol
     places::Vector{Place}
     refPlaces::Vector{RefPlace}
@@ -509,9 +510,7 @@ mutable struct Page{PNTD<:PnmlType} <: PnmlObject
     refTransitions::Vector{RefTransition}
     arcs::Vector{Arc}
     declarations::Vector{Declaration}
-
     subpages::Maybe{Vector{Page}}
-
     com::ObjectCommon
 end
 
@@ -581,12 +580,13 @@ PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
 
 has_xml(tool::PnmlModel) = true
-xmlnode(tool::PnmlModel) = tool.xml
+xmlnode(model::PnmlModel) = model.xml
 
 """
 Build a PnmlModel from a string 'str' containing XML.
 
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 function parse_str(str::AbstractString)
     reg = IDRegistry()
@@ -597,6 +597,7 @@ end
 Build a PnmlModel from a file `fname`.
 
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 function parse_file(fname::AbstractString)
     reg = IDRegistry()
@@ -615,23 +616,13 @@ $(METHODLIST)
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
 find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
-find_nets(model, type::T) where T <: PnmlType = filter(n->typeof(n.type) <: T, nets(model))
-
-"""
-Return nets matching the pntd `type` given as string or symbol.
-See [`pntd_symbol`](@ref), [`pnmltype`](@ref).
-
----
-$(TYPEDSIGNATURES)
-
-$(METHODLIST)
-"""
-function find_nets end
+find_nets(model, type::T) where {T <: PnmlType} = filter(n->typeof(n.type) <: T, nets(model))
 
 """
 Return first net contained by `doc`.
 
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 first_net(model) = first(nets(model))
 
@@ -639,6 +630,7 @@ first_net(model) = first(nets(model))
 Return all `nets` of `model`.
 
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 nets(model::PnmlModel) = model.nets
 

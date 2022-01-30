@@ -1,7 +1,7 @@
 """
 Provides 2nd-level parsing of the intermediate representation
 of a  **single network** in a pnml model.
-See [`PNML.Document`](@ref).
+See [`PnmlModel`](@ref).
 
 $(TYPEDEF)
 
@@ -321,19 +321,15 @@ deref!(page::Page) = _deref!(page)
 function _deref!(p)
     for a in arcs(p)
         while a.source ∈ refplace_ids(p)
-            @debug a.source, deref_place(p, a.source)
             a.source = deref_place(p, a.source)
         end
         while a.target ∈ refplace_ids(p)
-            @debug a.target, deref_place(p, a.target)
             a.target = deref_place(p, a.target)
         end
         while a.source ∈ reftransition_ids(p)
-            @debug a.source, deref_transition(p, a.source)
             a.source = deref_transition(p, a.source)
         end
         while a.target ∈ reftransition_ids(p)
-            @debug a.target, deref_transition(p, a.target)
             a.target = deref_transition(p, a.target)
         end
     end

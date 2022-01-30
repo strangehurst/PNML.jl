@@ -435,15 +435,15 @@ end
 #-------------------
 Base.summary(io::IO, pnml::PnmlModel) = print(io, summary(pnml))
 function Base.summary(pnml::PnmlModel)
-    string(typeof(pnml), " model with ",  length(pnml.nets), " nets" )
+    string(typeof(pnml), " model with ",  length(nets(pnml)), " nets" )
 end
 
 # No indent done here.
 function Base.show(io::IO, pnml::PnmlModel)
     println(io, summary(pnml))
-    for (i, net) in enumerate(pnml.nets)
+    for (i, net) in enumerate(nets(pnml))
         print(io, net)
-        if i < length(pnml.nets)
+        if i < length(nets(pnml))
             print(io, "\n")
         end
     end

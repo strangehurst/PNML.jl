@@ -65,12 +65,12 @@ PNML intermediate representration.
 
 ## PNTD
 
-Defaut PNTD to Symbol map has keys (URI strings):
-```@exampl
+Defaut PNTD to Symbol map keys (URI strings):
+```@example
 using PNML; foreach(println, sort!(collect(keys(PNML.default_pntd_map)))) #hide
 ```
 
-PnmlType map has keys (pntd symbols):
+PnmlType map keys (pntd symbols):
 ```@example
 using PNML; foreach(println, sort!(collect(keys(PNML.pnmltype_map)))) #hide
 ```
@@ -80,6 +80,8 @@ using PNML; foreach(println, sort!(collect(keys(PNML.pnmltype_map)))) #hide
 
 Labels are expected to have either a <text> element, a <structure> element or both.
 Often the <text> is a human-readable representation of of the <structure> element. 
+Labels defined in a pntd "require" all meaning to reside in the <structure>.
+
 
 | PnmlType     | PetriNet       | Description                                            |
 | :----------- | :------------- | :------------------------------                        |
@@ -144,5 +146,8 @@ Operators have a sequence of input sorts and a single output sort.
 
 ### Variables
 
+__TBD__
+
+### References
 
 See [`PNML.PnmlType `](@ref), [`PNML.default_pntd_map`](@ref), [`PNML.pnmltype_map`](@ref)

@@ -48,7 +48,7 @@ xmlnode(pdict::PnmlDict) = pdict[:xml]
 
 
 """
-Union of type `T` or `nothing`.
+Alias for union of type `T` or `nothing`.
 
 $(TYPEDEF)
 """

@@ -113,7 +113,6 @@ function has_label(d::Vector{PnmlDict}, tagvalue::Symbol)
     any(label->tag(label) === tagvalue, d[:labels])
 end
 
-has_labels(::Any) = false
 
 """
 Return first label attached to `d` have a matching `tagvalue`.

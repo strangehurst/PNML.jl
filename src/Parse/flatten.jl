@@ -12,8 +12,6 @@ $(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function flatten_pages! end
-
-flatten_pages!(doc::PNML.Document) = flatten_pages!.(nets(doc))
 flatten_pages!(model::PNML.PnmlModel) = flatten_pages!.(nets(model))
 
 """
