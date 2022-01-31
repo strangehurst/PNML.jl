@@ -405,22 +405,6 @@ Return marking value of a place `p`.
 $(TYPEDSIGNATURES)
 
 $(METHODLIST)
-
-# Examples
-
-```jldoctest
-julia> using PNML
-
-julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
-
-julia> p.value
-0
-
-julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
-
-julia> p.value
-12.34
-```
 """
 function marking end
 

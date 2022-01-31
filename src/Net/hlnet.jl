@@ -14,15 +14,6 @@ end
 HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
 HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
 
-"""
-Collapses all the pages into the first page.
-
-$(TYPEDSIGNATURES)
-"""
-function HLPetriNet(net::PnmlDict)
-    HLPetriNet{typeof(pnmltype(net))}(flatten_pages!(net))
-end
-
 # Implement PNML Petri Net interface.
 
 # Delegate to wrapped net.
