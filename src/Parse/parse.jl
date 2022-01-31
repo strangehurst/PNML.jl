@@ -389,3 +389,18 @@ function parse_condition(node; kw...)
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
     Condition(d) #IR
 end
+
+#---------------------------------------------------------------------
+#TODO Will unclaimed_node handel this?
+"""
+Should not often have a '<label>' tag, this will bark if one is found.
+Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
+
+$(TYPEDSIGNATURES)
+"""
+function parse_label(node; kw...)
+    nn = nodename(node)
+    nn == "label" || error("element name wrong: $nn")
+    @warn "parse_label '$(node !== nothing && nn)'"
+    PnmlDict(:tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
+end
