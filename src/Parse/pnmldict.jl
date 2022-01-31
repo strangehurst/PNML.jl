@@ -80,6 +80,11 @@ $(TYPEDSIGNATURES)
 Add `node` to` d[:labels]`, a vector of PnmlLabel. Return updated `d[:labels]`.
 """
 function add_label!(d::PnmlDict, node; kw...)
+    # Pnml considers any "unknown" element to be a label so its key is `:labels`.
+
+    # The value is initialized to `nothing since it is expected that most labels
+    # will have defined tags and semantics. And be given a key `:tag`.
+    # Will convert value to a vector on first use.
     if d[:labels] === nothing
         d[:labels] = PnmlLabel[]
     end
@@ -87,13 +92,10 @@ function add_label!(d::PnmlDict, node; kw...)
 end
 function add_label!(v::Vector{PnmlLabel}, node; kw...)
     #@show "add label! $(nodename(node))"
-    # Pnml considers any "unknown" element to be a label so its key is `:labels`.
-    # The value is initialized to `nothing since it is expected that most labels
-    # will have defined tags and semantics. And be given a key `:tag`.
-    # Will convert value to a vector on first use.
+    haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
     # Use of parse_node allows the :labels vector to contain fully parsed nodes.
     l = parse_node(node; kw...) #TODO handle types
-    #@debug typeof(l)
+    haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(l))."
     push!(v, l) #TODO specialized types not just PnmlDicts.
 end
 
@@ -127,20 +129,19 @@ function get_label end
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
     @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     i = findfirst(lab->tag(lab) === tagvalue, v)
-    v[i]
+    !isnothing(i) ? v[i] : nothing
 end
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
     @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     i = findfirst(lab->tag(lab) === tagvalue, v)
-    v[i]
+    !isnothing(i) ? v[i] : nothing
 end
 
 # Vector of labels may be contained in a dictonary.
 function get_label(d::PnmlDict, tagvalue::Symbol)
-    labels = d[:labels]
-    @debug labels
-    get_label(labels, tagvalue)
+    @debug d[:labels]
+    get_label(d[:labels], tagvalue)
 end
 
 
