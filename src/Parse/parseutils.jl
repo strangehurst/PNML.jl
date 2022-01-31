@@ -1,11 +1,7 @@
-"""
-Alias for Dict with Symbol key.
-Allows code to have semantic information in type names, better searchability.
+# Uses PnmlDict descending the XML during parsing.
+# PnmlDict turned into Intermediate Representation forms on the return up the tree.
 
-$(TYPEDEF)
-"""
-const PnmlDict = Dict{Symbol, Any}
-
+# Start with some generic functions that are shared with the IR.
 
 """
 Return pnml id symbol, if argument has one, otherwise return `nothing`.
@@ -254,24 +250,8 @@ function has_toolinfo(v::Vector{PnmlDict},
 end
 
 #----------------
-function match(ti::ToolInfo, namerex::AbstractString)
-    @show "match toolinfo $namerex"
-    match(ti.info, Regex(namerex))
-end
-function match(ti::ToolInfo, namerex::String, versionrex::String)
-    @show "match toolinfo $namerex"
-    match(ti.inf, Regex(namerex), Regex(versionrex))
-end
-function match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
-    @show "match toolinfo $namerex"
-    match(namerex, ti.toolname) && match(versionrex, ti.version)
-end
-
-#----------------
 """
-Return first toolinfo having a matching `toolname` and version.
-
-A `Toolinfo` wraps a vector of PnmlDict with each element
+Return first toolinfo having a matching toolname and version.
 
 ---
 $(TYPEDSIGNATURES)
@@ -280,22 +260,30 @@ $(METHODLIST)
 """
 function get_toolinfo end
 
-# identity
-get_toolinfo(ti::ToolInfo, args...) = ti
-
-#function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString)
-#    get_toolinfo(v, Regex(toolname))
-#end
-#function get_toolinfo(v::Vector{ToolInfo}, toolname::AbstractString, version::AbstractString)
-#    get_toolinfo(v, Regex(toolname), Regex(version))
-#end
-
+get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo([ti], Regex(name)) 
+get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) = 
+    get_toolinfo([ti], Regex(name), Regex(version)) 
+ 
 function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    @show "match toolinfo $(typeof(v)) $namerex $versionrex"
+    #@show "match toolinfo $(typeof(v)) $namerex $versionrex"
     i = findfirst(v) do ti
-        match(ti.info, namerex, versionrex)
+        _match(ti, namerex, versionrex)
     end
-    v[i]
+    return !isnothing(i) ? v[i] : nothing
+end
+
+#----------------
+function _match(ti::ToolInfo, name::AbstractString)
+    #@show "match toolinfo $name"
+    _match(ti.info, Regex(name))
+end
+function _match(ti::ToolInfo, name::String, version::String)
+    #@show "match toolinfo $name, $version"
+    _match(ti.inf, Regex(name), Regex(version))
+end
+function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
+    #@show "match toolinfo $namerex ,$versionrex"
+    !isnothing(match(namerex, ti.toolname)) && !isnothing(match(versionrex, ti.version))
 end
 
 
@@ -388,18 +376,4 @@ function parse_pnml_label_common!(d::PnmlDict, node; kw...)
         "structure" => (d[:structure] = parse_node(node; kw...))
         _      => parse_pnml_common!(d, node; kw...)
     end
-end
-
-#---------------------------------------------------------------------
-"""
-Should not often have a '<label>' tag, this will bark if one is found.
-Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
-
-$(TYPEDSIGNATURES)
-"""
-function parse_label(node; kw...)
-    nn = nodename(node)
-    nn == "label" || error("element name wrong: $nn")
-    @warn "parse_label '$(node !== nothing && nn)'"
-    PnmlDict(:tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
 end
