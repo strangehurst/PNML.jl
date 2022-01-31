@@ -91,7 +91,7 @@ reftransitions(petrinet::SimpleNet) = firstpage(petrinet.net).refTransitions
 
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
-# but with a  floating point rate
+# but with a  floating point rate. 
 #---------------------------------------------
 
 
@@ -113,8 +113,7 @@ function rates(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriN
 end
 
 """
-Return rate value of `transition`.
-
+Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
 ---
 $(TYPEDSIGNATURES)
 
@@ -123,11 +122,11 @@ $(METHODLIST)
 function rate end
 function rate(transition)::Number
     r = get_label(transition, :rate)
-    if (!isnothing(r.dict) && !isnothing(r.dict[:text]))
-        value = number_value(r.dict[:text])
-        isnothing(value) ? 0.0 : value
+    if !isnothing(r) && !isnothing(r.dict[:text])
+        value = number_value(r.dict[:text]) #TODO 
+        return isnothing(value) ? 0.0 : value
     else
-        0.0
+        return 0.0
     end
 end
 
