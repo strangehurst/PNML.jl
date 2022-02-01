@@ -12,12 +12,18 @@ function parse_toolspecific(node; kw...)
     haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
     haskey(node,"version") || throw(MalformedException("$(nn) missing version attribute", node))
     
-    d = PnmlDict(:tag=>Symbol(nn), :tool=>node["tool"], :version=>node["version"],
-                 :content=>unclaimed_element.(elements(node); kw...),
-                 :xml=>includexml(node))
-    # unclaimed_elements 
+    d = PnmlDict(:tag    => Symbol(nn), 
+                :tool    => node["tool"],
+                :version => node["version"], 
+                :xml     => includexml(node))
+    # Treat all top-level children as labels.
+    d[:content] = PnmlLabel[]
+    foreach(elements(node)) do child
+        push!(d[:content], PnmlLabel(unclaimed_element(child; kw...)))
+    end
     #TODO: Specialize/verify on tool, version. User supplied?
     #TODO: Register additional tool specific parsers?
     ToolInfo(d)
 end
+
 

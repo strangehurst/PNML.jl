@@ -84,15 +84,24 @@ function unclaimed_element(node; kw...)::PnmlDict
                  (Symbol(a.name) => a.content for a in eachattribute(node))...)
 
     # Harvest content or children.
+    _harvest!(d, node; kw...)
+    #e = elements(node)
+    #if !isempty(e)
+    #    merge!(d, unclaimed_content(e; kw...)) # children elements
+    #else
+    #    d[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
+    #end
+    d[:xml] = includexml(node)
+
+    d
+end
+function _harvest!(d::PnmlDict, node::XMLNode; kw...)
     e = elements(node)
     if !isempty(e)
         merge!(d, unclaimed_content(e; kw...)) # children elements
     else
         d[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
     end
-    d[:xml] = includexml(node)
-
-    d
 end
 
 """
@@ -101,7 +110,7 @@ when there are multiple instances of a tag in `nv` and scalar otherwise.
 
 $(TYPEDSIGNATURES)
 """
-function unclaimed_content(nv::Vector{EzXML.Node}; kw...)
+function unclaimed_content(nv::Vector{XMLNode}; kw...)
     d = PnmlDict()
     nn = [nodename(n) => n for n in nv] # Not yet turned into Symbols.
     tagnames = unique(map(first, nn))

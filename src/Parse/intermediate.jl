@@ -7,10 +7,10 @@ abstract type PnmlNode <: PnmlObject end
 "Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes."
 abstract type AbstractPnmlTool end
 
-has_xml(node::PnmlNode) = true
+has_xml(node::PnmlNode) = has_xml(node.com)
 xmlnode(node::PnmlNode) = node.xml
 
-has_xml(tool::AbstractPnmlTool) = true
+has_xml(tool::AbstractPnmlTool) = !isempty(tool.xml)
 xmlnode(tool::AbstractPnmlTool) = tool.xml
 
 "PnmlObjects are exected to have unique pnml ids."
@@ -57,7 +57,7 @@ end
 
 #-------------------
 """
-PNML Font attributes as strings.
+PNML Graphics Font attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -78,7 +78,7 @@ end
 
 #-------------------
 """
-Line attributes as strings.
+Graphics Line attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -144,7 +144,7 @@ tag(lab::PnmlLabel) = tag(lab.dict)
 # Collection of generic labels
 #------------------------------------------------------------------------
 
-has_labels(::T) where T<: PnmlObject = true
+has_labels(x::T) where {T<: PnmlObject} = has_labels(x.com)
 
 has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(x.com.labels, tagvalue) : false
 get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
@@ -164,7 +164,7 @@ $(TYPEDFIELDS)
 struct ToolInfo
     toolname::String
     version::String
-    infos::Vector{PnmlDict}
+    infos::Vector{PnmlLabel} #TODO 
     xml::Maybe{XMLNode}
 end
 
@@ -173,7 +173,9 @@ function ToolInfo(d::PnmlDict)
 end
 convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 
-has_xml(::ToolInfo) = true
+has_xml(ti::ToolInfo) = !isempty(ti.xml)
+
+infos(ti::ToolInfo) = ti.infos
 
 #-------------------
 """
@@ -207,9 +209,6 @@ $(TYPEDFIELDS)
 struct TokenGraphics <: AbstractPnmlTool
     positions::Vector{Coordinate}
 end
-
-has_xml(::TokenGraphics) = false
-
 
 ###############################################################################
 # Common parts
@@ -293,6 +292,23 @@ Labels a Place/Transition pntd Place instance.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+# Examples
+
+```jldoctest
+julia> using PNML
+
+julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
+
+julia> p.value
+0
+
+julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
+
+julia> p.value
+12.34
+```
+
 """
 mutable struct PTMarking{N<:Number} <: Marking
     value::N
@@ -396,8 +412,6 @@ end
 
 RefPlace(pdict::PnmlDict) = RefPlace(pdict[:id], pdict[:ref], ObjectCommon(pdict))
 
-has_xml(::RefPlace) = false
-
 #-------------------
 """
 PNML RefTransition node.
@@ -414,9 +428,7 @@ end
 RefTransition(pdict::PnmlDict) =
     RefTransition(pdict[:id], pdict[:ref], ObjectCommon(pdict))
 
-has_xml(::RefTransition) = false
-
-#-------------------<: Inscription
+#-------------------
 abstract type Inscription <: AbstractLabel end
 
 #-------------------
@@ -533,6 +545,7 @@ function Base.empty!(page::Page)
     empty!(page.arcs)
     empty!(page.declarations)
     !isnothing(page.subpages) && empty!(page.subpages)
+    #TODO empty common
 end
 
 #-------------------
@@ -556,8 +569,8 @@ function PnmlNet(d::PnmlDict)
 end
 
 pid(net::PnmlNet) = net.id
-has_labels(::PnmlNet) = true
-has_xml(::PnmlNet) = true
+has_labels(net::PnmlNet) = has_labels(net.com)
+has_xml(net::PnmlNet) = has_xml(net.com)
 xmlnode(net::PnmlNet) = net.xml
 
 "Usually the only interesting page."
@@ -579,11 +592,11 @@ PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
 
-has_xml(tool::PnmlModel) = true
+has_xml(model::PnmlModel) = !isempty(model.xml)
 xmlnode(model::PnmlModel) = model.xml
 
 """
-Build a PnmlModel from a string 'str' containing XML.
+Build a PnmlModel from a string ontaining XML.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)
@@ -594,7 +607,7 @@ function parse_str(str::AbstractString)
 end
 
 """
-Build a PnmlModel from a file `fname`.
+Build a PnmlModel from a file containing XML.
 
 $(TYPEDSIGNATURES)
 $(METHODLIST)

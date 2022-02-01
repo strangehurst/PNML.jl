@@ -24,21 +24,21 @@ includexml(node; INCLUDEXML=false)::Maybe{EzXML.Node} = INCLUDEXML ? node : noth
 
 include("config.jl")
 
-include("utils.jl")
+include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
 include("pntd.jl")
 
 include("Parse/intermediate.jl")
-include("Parse/show.jl")
-include("Parse/pnmldict.jl")
+include("Parse/parseutils.jl")
 include("Parse/parse.jl")
 include("Parse/graphics.jl")
 include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 include("Parse/flatten.jl")
+include("Parse/show.jl")
 
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
