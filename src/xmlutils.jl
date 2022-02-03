@@ -15,19 +15,6 @@ macro xml_str(s)
 end
 
 """
-Parse string as a number. First try integer then float.
-
----
-$(TYPEDSIGNATURES)
-
-$(METHODLIST)
-"""
-function number_value(s::AbstractString)
-    x = tryparse(Int, s)
-    x = isnothing(x) ?  tryparse(Float64, s) : x
-end
-
-"""
 Return up to 1 immediate child of element `el` that is a `tag`.
 
 ---

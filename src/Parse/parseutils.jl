@@ -85,12 +85,6 @@ function unclaimed_element(node; kw...)::PnmlDict
 
     # Harvest content or children.
     _harvest!(d, node; kw...)
-    #e = elements(node)
-    #if !isempty(e)
-    #    merge!(d, unclaimed_content(e; kw...)) # children elements
-    #else
-    #    d[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
-    #end
     d[:xml] = includexml(node)
 
     d
@@ -282,6 +276,13 @@ function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^
 end
 
 #----------------
+"""
+Match toolname and version.
+
+$(TYPEDSIGNATURES)
+$(METHODLIST)
+"""
+function _match end
 function _match(ti::ToolInfo, name::AbstractString)
     #@show "match toolinfo $name"
     _match(ti.info, Regex(name))
@@ -334,7 +335,7 @@ See also: [`pnml_common_defaults`](@ref).
 
 $(TYPEDSIGNATURES)
 """
-function pnml_label_defaults(node, xs...)::PnmlDict
+function pnml_label_defaults(node, xs...)
     PnmlDict(pnml_common_defaults(node)...,
              :text => nothing,
              :structure => nothing,
@@ -385,4 +386,17 @@ function parse_pnml_label_common!(d::PnmlDict, node; kw...)
         "structure" => (d[:structure] = parse_node(node; kw...))
         _      => parse_pnml_common!(d, node; kw...)
     end
+end
+
+"""
+Parse string as a number. First try integer then float.
+
+---
+$(TYPEDSIGNATURES)
+
+$(METHODLIST)
+"""
+function number_value(s::AbstractString)
+    x = tryparse(Int, s)
+    x = isnothing(x) ?  tryparse(Float64, s) : x
 end
