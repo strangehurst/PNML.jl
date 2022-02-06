@@ -9,8 +9,8 @@ $(TYPEDSIGNATURES)
 function parse_toolspecific(node; kw...)
     nn = nodename(node)
     nn == "toolspecific" || error("element name wrong: $nn")
-    haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
-    haskey(node,"version") || throw(MalformedException("$(nn) missing version attribute", node))
+    EzXML.haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
+    EzXML.haskey(node, "version") || throw(MalformedException("$(nn) missing version attribute", node))
     
     d = PnmlDict(:tag    => Symbol(nn), 
                 :tool    => node["tool"],

@@ -164,7 +164,10 @@ $(TYPEDSIGNATURES)
 # Examples
 
 ```jldoctest
-julia> using PNML
+julia> using PNML: pntd_symbol
+
+julia> pntd_symbol("foo")
+:pnmlcore
 ```
 """
 pntd_symbol(s::AbstractString) =
@@ -179,17 +182,22 @@ The [`pnmltype_map`](@ref) and [`default_pntd_map`](@ref) are both assumed to be
 Unknown or empty `uri` will map to symbol `:pnmlcore` as part of the logic.
 Unknown `symbol` returns `nothing`.
 
+# Examples
+
+```jldoctest
+julia> using PNML: pntd_symbol, pnmltype
+
+julia> pnmltype("nonstandard")
+PNML.PnmlCore()
+```
 ---
 $(TYPEDSIGNATURES)
 
 $(METHODLIST)
 """
 function pnmltype end
-"Identity"
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
-"URI"
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri); kw...)
-"Symbol"
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
     if haskey(pnmltype_map, s)
         return pnmltype_map[s]

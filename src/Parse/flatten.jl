@@ -48,7 +48,7 @@ end
 
 """
 Append selected fields of `r` to fields of `l`.
-NB: subpages are omitted from append_page! See [`flatten_pages!`](@ref).
+NB: subpages are omitted from `append_page!` See [`flatten_pages!`](@ref).
 Names and xml are omitted because they are scalar values, not collections.
 """
 function append_page!(l::Page, r::Page;

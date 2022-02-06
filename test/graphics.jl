@@ -8,7 +8,7 @@
      <position  x="3" y="4" />
      <dimension x="5" y="6" />
      <offset    x="7" y="8" /><!-- override first offset -->
-     <fill  color="fillcolor" gradient-color="none" />
+     <fill  color="fillcolor" gradient-color="none" gradient-rotation="horizontal"/>
      <font align="center" family="Dialog" rotation="0.0" size="11"
            style="normal" weight="normal" />
     </graphics>
@@ -37,7 +37,7 @@
     @test n.fill.color == "fillcolor"
     @test n.fill.image === nothing
     @test n.fill.gradient_color == "none"
-    @test n.fill.gradient_rotation === nothing
+    @test n.fill.gradient_rotation === "horizontal"
 
     @test n.font isa PNML.Font
     @test n.font.family == "Dialog"
@@ -89,7 +89,6 @@ end
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         printnode(n)
         @test n isa PNML.TokenGraphics #tag(n) == :tokengraphics
-        #@test haskey(n,:position)
         @test length(n.positions) == l
     end
 end

@@ -117,7 +117,7 @@ function parse_booleanconstant(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "booleanconstant" || error("element name wrong: $nn")
-    has_declaration(node) || throw(MalformedException("$(nn) missing declaration attribute", node))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     PnmlLabel(unclaimed_element(node; kwargs...))
 end
 
@@ -228,7 +228,7 @@ function parse_useroperator(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "useroperator" || error("element name wrong: $nn")
-    has_declaration(node) || throw(MalformedException("$(nn) missing declaration attribute", node))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     PnmlLabel(unclaimed_element(node; kwargs...))
 end
 
@@ -239,7 +239,7 @@ function parse_usersort(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "usersort" || error("element name wrong: $nn")
-    has_declaration(node) || throw(MalformedException("$(nn) missing declaration attribute", node))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     PnmlLabel(unclaimed_element(node; kwargs...))
 end
 
@@ -250,7 +250,7 @@ function parse_variable(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "variable" || error("element name wrong: $nn")
-    has_refvariable(node) || throw(MalformedException("$(nn) missing refvariable attribute", node))
+    EzXML.haskey(node, "refvariable") || throw(MalformedException("$(nn) missing refvariable attribute", node))
     PnmlLabel(unclaimed_element(node; kwargs...))
 end
 
@@ -262,7 +262,7 @@ function parse_variabledecl(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "variabledecl" || error("element name wrong: $nn")
-    has_id(node) || throw(MissingIDException(nn, node))
-    has_name(node) || throw(MalformedException("$(nn) missing name attribute", node))
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
     PnmlLabel(unclaimed_element(node; kwargs...))
 end

@@ -1,5 +1,7 @@
 """
 $(DocStringExtensions.README)
+$(DocStringExtensions.IMPORTS)
+$(DocStringExtensions.EXPORTS)
 """
 module PNML
 
@@ -12,7 +14,7 @@ using PrettyPrinting
 using AbstractTrees
 using LabelledArrays
 using SciMLBase: @add_kwonly
-
+using Reexport
 #include("docstrings.jl")
 
 """
@@ -24,7 +26,10 @@ includexml(node; INCLUDEXML=false)::Maybe{EzXML.Node} = INCLUDEXML ? node : noth
 
 include("config.jl")
 
-include("xmlutils.jl")
+include("Base/PnmlBase.jl") #TODO sub module test
+@reexport using .PnmlBase
+
+#include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
@@ -44,7 +49,7 @@ include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
 
-export @xml_str
+#export @xml_str
 #export parse_str, parse_file, parse_pnml, parse_node
 #export PnmlException, MissingIDException, MalformedException
 

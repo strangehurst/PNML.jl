@@ -41,13 +41,21 @@ xmlnode(::Any) = nothing
 xmlnode(pdict::PnmlDict) = pdict[:xml]
 
 
+"""
+Does object have XML attached? Defaults to `false`.
 
+---
+$(TYPEDSIGNATURES)
 
+$(METHODLIST)
+"""
+function has_xml end
+has_xml(::Any) = false
 
 
 """
 Return PnmlDict holding contents of a well-formed XML node.
-Expected to be wrapped by a type, not be inside anothe Dict.
+Expected to be wrapped: see [`PnmlLabel`](@ref), [`ToolInfo`](@ref).
 
 $(TYPEDSIGNATURES)
 
@@ -64,20 +72,20 @@ Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
 
-
 # Examples
 
 ```jldoctest
 julia> using PNML, EzXML
 
-julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry());
+julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry())
+PNML.PnmlLabel Dict(:tag => :aaa, :id => "FOO", :xml => nothing, :content => "BAR")
 ```
 """
 function unclaimed_element(node; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
-    has_id(node) && register_id!(kw[:reg], node["id"])
+    EzXML.haskey(node, "id") && register_id!(kw[:reg], node["id"])
 
     # Extract XML attributes.
     d = PnmlDict(:tag => Symbol(nodename(node)),

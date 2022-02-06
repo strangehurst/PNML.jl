@@ -70,10 +70,10 @@ function parse_graphics_line(node; kw...)
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn: $nn")
 
-    color = has_color(node) ? node["color"] : nothing
-    shape = has_shape(node) ? node["shape"] : nothing
-    style = has_style(node) ? node["style"] : nothing
-    width = has_width(node) ? node["width"] : nothing
+    color = EzXML.haskey(node, "color") ? node["color"] : nothing
+    shape = EzXML.haskey(node, "shape") ? node["shape"] : nothing
+    style = EzXML.haskey(node, "style") ? node["style"] : nothing
+    width = EzXML.haskey(node, "width") ? node["width"] : nothing
 
     Line(; shape, color, width, style)
 end
@@ -89,8 +89,8 @@ function parse_graphics_coordinate(node; kw...)
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
 
-    has_x(node) || throw(MalformedException("$(nn) missing x", node))
-    has_y(node) || throw(MalformedException("$(nn) missing y", node))
+    EzXML.haskey(node, "x") || throw(MalformedException("$(nn) missing x", node))
+    EzXML.haskey(node, "y") || throw(MalformedException("$(nn) missing y", node))
 
     Coordinate(number_value(node["x"]), number_value(node["y"]))
 end
@@ -102,10 +102,10 @@ function parse_graphics_fill(node; kw...)
     nn = nodename(node)
     (nn == "fill") || error("element name wrong: $nn")
     
-    clr  = has_color(node) ? node["color"] : nothing
-    img  = has_image(node) ? node["image"] : nothing
-    gclr = has_gradient_color(node)    ? node["gradient-color"] : nothing
-    grot = has_gradient_rotation(node) ? node["gradient-rotation"] : nothing
+    clr  = EzXML.haskey(node, "color") ? node["color"] : nothing
+    img  = EzXML.haskey(node, "image") ? node["image"] : nothing
+    gclr = EzXML.haskey(node, "gradient-color")    ? node["gradient-color"] : nothing
+    grot = EzXML.haskey(node, "gradient-rotation") ? node["gradient-rotation"] : nothing
     
     Fill(color=clr, image=img, gradient_color=gclr, gradient_rotation=grot)
 end
@@ -118,13 +118,14 @@ function parse_graphics_font(node; kw...)
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")
     
-    align  = has_align(node)      ? node["align"] : nothing
-    deco   = has_decoration(node) ? node["decoration"] : nothing
-    family = has_family(node)     ? node["family"] : nothing
-    rot    = has_rotation(node)   ? node["rotation"] : nothing
-    size   = has_size(node)       ? node["size"] : nothing
-    style  = has_style(node)      ? node["style"] : nothing
-    weight = has_weight(node)     ? node["weight"] : nothing
+    align  = EzXML.haskey(node, "align")      ? node["align"] : nothing
+    deco   = EzXML.haskey(node, "decoration") ? node["decoration"] : nothing
+    family = EzXML.haskey(node, "family")     ? node["family"] : nothing
+    rot    = EzXML.haskey(node, "rotation")   ? node["rotation"] : nothing
+    size   = EzXML.haskey(node, "size")       ? node["size"] : nothing
+    style  = EzXML.haskey(node, "style")      ? node["style"] : nothing
+    weight = EzXML.haskey(node, "weight")     ? node["weight"] : nothing
     
     Font(; family, style, weight, size, decoration=deco, align, rotation=rot)
 end
+

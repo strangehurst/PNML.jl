@@ -5,7 +5,7 @@ abstract type PnmlObject end
 "Petri Net Graph nodes are places, transitions."
 abstract type PnmlNode <: PnmlObject end
 "Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes."
-abstract type AbstractPnmlTool end
+abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 has_xml(node::PnmlNode) = has_xml(node.com)
 xmlnode(node::PnmlNode) = node.xml
@@ -100,7 +100,7 @@ PNML Graphics elements can be attached to many parts of PNML models.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Graphics
+struct Graphics #{COORD,FILL,FONT,LINE}
     dimension::Maybe{Coordinate}
     fill::Maybe{Fill}
     font::Maybe{Font}
@@ -113,6 +113,7 @@ function Graphics(;dim=nothing, fill=nothing, font=nothing,
                   line=nothing, offset=nothing, position=nothing)
     Graphics(dim, fill, font, line, offset, position)
 end
+
 
 ###############################################################################
 # PNML Unclaimed Labels, TOOLS, NAMES, other bits
@@ -206,8 +207,8 @@ It combines the <tokengraphics> and <tokenposition> elements.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct TokenGraphics <: AbstractPnmlTool
-    positions::Vector{Coordinate}
+struct TokenGraphics{T} <: AbstractPnmlTool
+    positions::Vector{T} #was Coordinate}
 end
 
 ###############################################################################
@@ -258,7 +259,7 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :labels, nothing),
     get(pdict, :xml, nothing)
 )
-
+#import .PnmlBase.XmlUtils: has_name
 has_name(oc::ObjectCommon) = !isnothing(oc.name)
 
 has_graphics(::Any) = false
@@ -467,7 +468,7 @@ convert(::Type{Maybe{HLInscription}}, pdict::PnmlDict) = HLInscription(pdict)
 
 #-------------------
 """
-Arc connects places and transitions.
+Edge of graph that connects place and transition.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -585,7 +586,7 @@ $(TYPEDFIELDS)
 """
 struct PnmlModel
     nets::Vector{PnmlNet}
-    reg::IDRegistry
+    reg::IDRegistry # Shared by all nets.
     xml::Maybe{XMLNode}
 end
 PnmlModel(net::PnmlNet) = PnmlModel([net])
@@ -630,6 +631,19 @@ function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
 find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
 find_nets(model, type::T) where {T <: PnmlType} = filter(n->typeof(n.type) <: T, nets(model))
+
+
+"""
+Return `PnmlNet` with `id` or `nothing``.
+"""
+function find_net end
+
+function find_net(model, id::Symbol)
+    i = findfirst(nets(model)) do net
+        pid(net) === id
+    end
+    isnothing(i) ? nothing : nets[i]
+end
 
 """
 Return first net contained by `doc`.
