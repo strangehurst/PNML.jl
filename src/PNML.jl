@@ -1,6 +1,10 @@
 """
 $(DocStringExtensions.README)
+
+# Imports
 $(DocStringExtensions.IMPORTS)
+
+# Exports
 $(DocStringExtensions.EXPORTS)
 """
 module PNML
@@ -9,7 +13,7 @@ using EzXML
 using MLStyle: @match
 using DocStringExtensions
 using PrettyPrinting
-#using Symbolics, Statistics
+#using Symbolics
 #using IfElse
 using AbstractTrees
 using LabelledArrays
@@ -20,16 +24,16 @@ using Reexport
 """
 $(TYPEDSIGNATURES)
 
-Set value of key :xml based on a control flag.
+Set value of key :xml based on a boolean control flag. Defaut is `true`.
 """
-includexml(node; INCLUDEXML=false)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
+includexml(node; INCLUDEXML=true)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("config.jl")
 
-include("Base/PnmlBase.jl") #TODO sub module test
-@reexport using .PnmlBase
+#include("Base/PnmlBase.jl") #TODO sub module test
+#@reexport using .PnmlBase
 
-#include("xmlutils.jl")
+include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
@@ -49,8 +53,8 @@ include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
 
-#export @xml_str
-#export parse_str, parse_file, parse_pnml, parse_node
-#export PnmlException, MissingIDException, MalformedException
+export @xml_str,
+    parse_str, parse_file, parse_pnml, parse_node,
+    PnmlException, MissingIDException, MalformedException
 
 end
