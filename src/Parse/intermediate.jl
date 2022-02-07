@@ -13,6 +13,15 @@ xmlnode(node::PnmlNode) = node.xml
 has_xml(tool::AbstractPnmlTool) = !isempty(tool.xml)
 xmlnode(tool::AbstractPnmlTool) = tool.xml
 
+has_xml(::AbstractLabel) = false
+xmlnode(::AbstractLabel) = nothing
+
+has_text(::AbstractLabel) = false
+text(::AbstractLabel) = nothing
+
+has_structure(::AbstractLabel) = false
+structure(::AbstractLabel) = nothing
+
 "PnmlObjects are exected to have unique pnml ids."
 pid(object::PnmlObject) = object.id
 
@@ -131,15 +140,36 @@ $(TYPEDFIELDS)
 """
 struct PnmlLabel <: AbstractLabel
     dict::PnmlDict
-    #PnmlLabel(d::PnmlDict) = new(d)
+    xml::Maybe{XMLNode}
 end
 
+function PnmlLabel(d::PnmlDict) 
+    # Extract the xml so that it will not be printed.
+    # Store it so that it may be used, but not be printed as part of dict.
+    xml = haskey(d, :xml) ? d[:xml] : nothing
+    delete!(d, :xml)
+    PnmlLabel(d, xml)
+end
 convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d)
 
-has_structure(::PnmlLabel) = false #TODO Allow HL labels?
-structure(::PnmlLabel) = nothing
+function has_text(l::PnmlLabel)
+    haskey(l.dict, :text) 
+end
+function text(l::PnmlLabel)
+    l.dict[:text]
+end
+
+function has_structure(::PnmlLabel)
+    haskey(l.dict, :structure)
+end
+function structure(::PnmlLabel)
+    l.dict[:structure]
+end
 
 tag(lab::PnmlLabel) = tag(lab.dict)
+
+has_xml(lab::PnmlLabel) = !isnothing(lab.xml)
+xmlnode(lab::PnmlLabel) = lab.xml
 
 #------------------------------------------------------------------------
 # Collection of generic labels
@@ -175,6 +205,7 @@ end
 convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 
 has_xml(ti::ToolInfo) = !isempty(ti.xml)
+xmlnode(ti::ToolInfo) = ti.xml
 
 infos(ti::ToolInfo) = ti.infos
 
@@ -226,8 +257,6 @@ struct Name <: AbstractLabel
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{DefaultTool}}
 end
-has_structure(::Name) = false
-structure(::Name) = nothing
 
 Name(name::AbstractString = ""; graphics=nothing, tools=nothing) =
     Name(name, graphics, tools)
@@ -585,7 +614,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct PnmlModel
-    nets::Vector{PnmlNet}
+    nets::Vector{PnmlNet} #TODO Vector{PetriNet}
     reg::IDRegistry # Shared by all nets.
     xml::Maybe{XMLNode}
 end

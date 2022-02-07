@@ -78,7 +78,7 @@ the hiearchy.
 julia> using PNML, EzXML
 
 julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry())
-PNML.PnmlLabel Dict(:tag => :aaa, :id => "FOO", :xml => nothing, :content => "BAR")
+PNML.PnmlLabel Dict(:tag => :aaa, :id => "FOO", :content => "BAR")
 ```
 """
 function unclaimed_element(node; kw...)::PnmlDict
