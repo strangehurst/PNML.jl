@@ -5,7 +5,7 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct IDRegistry
+struct IDRegistry
     ids::Set{Symbol}
     lk::ReentrantLock
 end

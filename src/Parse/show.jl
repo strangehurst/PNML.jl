@@ -17,10 +17,10 @@ function Base.show(io::IO, fill::Fill)
               fill.gradient_color, ",",
               fill.gradient_rotation, ")")
     else
-        print(io, "Fill(color, ", fill.color,
-              ", image, ", fill.image,
-              ", gradient-color, ", fill.gradient_color,
-              ", gradient-rotation ", fill.gradient_rotation,
+        print(io, "Fill(color=", fill.color,
+              ", image=", fill.image,
+              ", gradient-color=", fill.gradient_color,
+              ", gradient-rotatio=", fill.gradient_rotation,
               ")")
     end
 end
@@ -32,13 +32,13 @@ end
 #-------------------
 function Base.show(io::IO, font::Font)
     print(io,
-          "Font(family: ", font.family,
-          ", style: ", font.style,
-          ", weight: ", font.weight,
-          ", size: ", font.size,
-          ", aligh: ", font.align,
-          ", rotation: ", font.rotation,
-          ", decoration: ", font.decoration,
+          "Font(family=", font.family,
+          ", style=", font.style,
+          ", weight=", font.weight,
+          ", size=", font.size,
+          ", aligh=", font.align,
+          ", rotation=", font.rotation,
+          ", decoration=", font.decoration,
           ")")
 end
 
@@ -49,10 +49,10 @@ end
 #-------------------
 function Base.show(io::IO, line::Line)
     print(io,
-          "Line(color: ", line.color,
-          ", style: ", line.style,
-          ", shape: ", line.shape,
-          ", width: ", line.width,
+          "Line(color=", line.color,
+          ", style=", line.style,
+          ", shape=", line.shape,
+          ", width=", line.width,
           ")")
 end
 
@@ -102,8 +102,8 @@ end
 #-------------------
 Base.summary(io::IO, ti::ToolInfo) = print(io, summary(ti))
 function Base.summary(ti::ToolInfo)
-    string(typeof(ti), " name ", ti.toolname, ", version ", ti.version,
-           ", ", length(ti.infos), " info dicts")
+    string(typeof(ti), " name =", ti.toolname, ", version = ", ti.version,
+           ", ", length(ti.infos), " infos")
 end
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
@@ -162,6 +162,7 @@ function Base.summary(oc::ObjectCommon)
            isnothing(oc.graphics) ? ", no graphics, " : ", has graphics, ",
            isnothing(oc.tools)  ? 0 : length(oc.tools),  " tools, ",
            isnothing(oc.labels) ? 0 : length(oc.labels), " labels")
+           #TODO xml state
 end
 
 function Base.show(io::IO, oc::ObjectCommon)
@@ -183,11 +184,10 @@ function Base.show(io::IO, oc::ObjectCommon)
     # In general, do not display/print the XML.
 end
 
-"Prepend comma-space to object common."
+"Prepend comma-space to non-empty `oc`."
 function show_common(io::IO, oc::ObjectCommon)
     !isempty(oc) && print(io, ", ", oc )
 end
-
 
 #-------------------
 Base.summary(io::IO, ptm::PTMarking)  = summary(io, summary(ptm))
@@ -250,6 +250,7 @@ function Base.show(io::IO, cond::Condition)
     print(io, typeof(cond), " '", cond.text, "', ", cond.structure)
     show_common(io, cond.com)
 end
+
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
     show(io, cond)
 end

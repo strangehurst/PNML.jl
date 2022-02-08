@@ -4,7 +4,14 @@ header("UNCLAIMED ELEMENT")
 @testset "attribute" begin
     # pnml attribute XML nodes do not have display/GUI data and other
     # overhead of pnml annotation nodes. Both are pnml labels.
-    a = PNML.unclaimed_element(xml"""
+    a,xml = PNML.unclaimed_element(xml"""
+                           <declarations atag="test">
+                           </declarations>
+                        """; reg=PNML.IDRegistry())
+    printnode(a, type=true)
+    @test !isnothing(a)
+
+    a,xml = PNML.unclaimed_element(xml"""
                            <declarations atag="test">
                                 <something> some content </something>
                                 <something2 tag2="two"> <value/> </something2>
@@ -174,7 +181,7 @@ end
     n = parse_node(to_node(str); reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
-    @test !PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
+    @test PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
     @test pid(n) == :rt1
     @test n.ref == :t1
 end
@@ -195,7 +202,7 @@ end
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.RefPlace
-        @test !PNML.has_xml(n)
+        @test PNML.has_xml(n)
         @test typeof(n.id) == Symbol
         @test typeof(n.ref) == Symbol
     end

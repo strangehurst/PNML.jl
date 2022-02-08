@@ -54,7 +54,9 @@ has_xml(::Any) = false
 
 
 """
-Return PnmlDict holding contents of a well-formed XML node.
+Return tuple of PnmlDict holding parsed contents of a well-formed XML node
+and the `XMLNode`.
+
 Expected to be wrapped: see [`PnmlLabel`](@ref), [`ToolInfo`](@ref).
 
 $(TYPEDSIGNATURES)
@@ -81,7 +83,7 @@ julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDReg
 PNML.PnmlLabel Dict(:tag => :aaa, :id => "FOO", :content => "BAR")
 ```
 """
-function unclaimed_element(node; kw...)::PnmlDict
+function unclaimed_element(node; kw...)
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
@@ -91,19 +93,17 @@ function unclaimed_element(node; kw...)::PnmlDict
     d = PnmlDict(:tag => Symbol(nodename(node)),
                  (Symbol(a.name) => a.content for a in eachattribute(node))...)
 
-    # Harvest content or children.
-    _harvest!(d, node; kw...)
-    d[:xml] = includexml(node)
-
-    d
+    return _harvest!(d, node; kw...)
 end
-function _harvest!(d::PnmlDict, node::XMLNode; kw...)
+"Update `dict` with content or children"
+function _harvest!(dict::PnmlDict, node::XMLNode; kw...)
     e = elements(node)
     if !isempty(e)
-        merge!(d, unclaimed_content(e; kw...)) # children elements
+        merge!(dict, unclaimed_content(e; kw...)) # children elements
     else
-        d[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
+        dict[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
     end
+    dict
 end
 
 """
@@ -316,8 +316,7 @@ $(TYPEDSIGNATURES)
 function pnml_common_defaults(node)
     PnmlDict(:graphics => nothing, # graphics tag is single despite the 's'.
              :tools => nothing, # Here the 's' indicates multiples are allowed.
-             :labels => nothing,# ditto
-             :xml => includexml(node))
+             :labels => nothing) # ditto
 end
 
 """

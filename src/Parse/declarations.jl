@@ -20,10 +20,9 @@ Attribute label of 'net' and 'page' nodes.
 $(TYPEDSIGNATURES)
 """
 function parse_declaration(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
-    Declaration(unclaimed_element(node; kwargs...))
+    Declaration(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -35,7 +34,7 @@ $(TYPEDSIGNATURES)
 function parse_type(node; kwargs...)
     nn = nodename(node)
     nn == "type" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -47,7 +46,7 @@ function parse_declarations(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "declarations" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -57,7 +56,7 @@ function parse_sort(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "sort" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -67,7 +66,7 @@ function parse_term(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "term" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -77,7 +76,7 @@ function parse_and(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "and" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -87,7 +86,7 @@ function parse_arbitraryoperator(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "arbitraryoperator" || error("element name wrong: $nn")
-    PnmlLabel(nclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -97,7 +96,7 @@ function parse_arbitrarysort(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "arbitrarysort" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -107,7 +106,7 @@ function parse_bool(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "bool" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -118,7 +117,7 @@ function parse_booleanconstant(node; kwargs...)
     nn = nodename(node)
     nn == "booleanconstant" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -128,7 +127,7 @@ function parse_equality(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "equality" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -138,7 +137,7 @@ function parse_imply(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "imply" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -148,7 +147,7 @@ function parse_inequality(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "inequality" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -158,7 +157,7 @@ function parse_mulitsetsort(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "mulitsetsort" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -168,7 +167,7 @@ function parse_namedoperator(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "namedoperator" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -178,7 +177,7 @@ function parse_not(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "not" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -188,7 +187,7 @@ function parse_or(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "or" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -198,7 +197,7 @@ function parse_productsort(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "productsort" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -208,7 +207,7 @@ function parse_tuple(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "tuple" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -218,7 +217,7 @@ function parse_unparsed(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "unparsed" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -229,7 +228,7 @@ function parse_useroperator(node; kwargs...)
     nn = nodename(node)
     nn == "useroperator" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -240,7 +239,7 @@ function parse_usersort(node; kwargs...)
     nn = nodename(node)
     nn == "usersort" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -251,7 +250,7 @@ function parse_variable(node; kwargs...)
     nn = nodename(node)
     nn == "variable" || error("element name wrong: $nn")
     EzXML.haskey(node, "refvariable") || throw(MalformedException("$(nn) missing refvariable attribute", node))
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end
 
 """
@@ -264,5 +263,5 @@ function parse_variabledecl(node; kwargs...)
     nn == "variabledecl" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
-    PnmlLabel(unclaimed_element(node; kwargs...))
+    PnmlLabel(unclaimed_element(node; kwargs...), node)
 end

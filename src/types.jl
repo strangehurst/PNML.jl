@@ -1,6 +1,5 @@
 """
-Alias for Dict with Symbol key.
-Allows code to have semantic information in type names, better searchability.
+Alias for Dict with Symbol as key.
 
 $(TYPEDEF)
 """

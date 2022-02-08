@@ -14,16 +14,16 @@ function parse_toolspecific(node; kw...)
     
     d = PnmlDict(:tag    => Symbol(nn), 
                 :tool    => node["tool"],
-                :version => node["version"], 
-                :xml     => includexml(node))
+                :version => node["version"])
     # Treat all top-level children as labels.
     d[:content] = PnmlLabel[]
     foreach(elements(node)) do child
-        push!(d[:content], PnmlLabel(unclaimed_element(child; kw...)))
+        #TODO unclaimed_element returns tuple 
+        push!(d[:content], PnmlLabel(unclaimed_element(child; kw...), child))
     end
     #TODO: Specialize/verify on tool, version. User supplied?
     #TODO: Register additional tool specific parsers?
-    ToolInfo(d)
+    ToolInfo(d, node)
 end
 
 

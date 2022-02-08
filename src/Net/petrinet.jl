@@ -122,6 +122,7 @@ target(arc)::Symbol = arc.target
 
 """
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 Return `true` if any `arc` in `petrinet` has `id`.
 """
 function has_arc end
@@ -136,6 +137,7 @@ Return arc of `petrinet` with `id` if found, otherwise `nothing`.
 
 ---
 $(TYPEDSIGNATURES)
+$(METHODLIST)
 """
 function arc end
 function arc(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}

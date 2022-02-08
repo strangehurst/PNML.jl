@@ -17,7 +17,7 @@ function parse_node(node; verbose=true, kw...)
     if haskey(tagmap, node.name)
         tagmap[node.name](node; kw...) # Various types returned here.
     else
-        PnmlLabel(unclaimed_element(node; kw...))
+        PnmlLabel(unclaimed_element(node; kw...), node)
     end
 end
 
@@ -34,7 +34,7 @@ function parse_pnml(node; kw...)
     #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
     @assert haskey(kw, :reg)
     # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node); kw...), kw[:reg], includexml(node))
+    PnmlModel(parse_net.(allchildren("net", node); kw...), kw[:reg], node)
 end
 
 """
@@ -76,7 +76,7 @@ function parse_net(node; kw...)
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
-    PnmlNet(d) #IR
+    PnmlNet(d, node) #IR
 end
 
 """
@@ -296,7 +296,7 @@ $(TYPEDSIGNATURES)
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kw...)) # TODO make a structure type (tree?)
+    PnmlLabel(unclaimed_element(node; kw...), node) # TODO make a Structure type (tree?)
 end
 
 

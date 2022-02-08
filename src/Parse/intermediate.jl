@@ -7,10 +7,10 @@ abstract type PnmlNode <: PnmlObject end
 "Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes."
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-has_xml(node::PnmlNode) = has_xml(node.com)
+has_xml(node::PnmlNode) = true #has_xml(node.com)
 xmlnode(node::PnmlNode) = node.xml
 
-has_xml(tool::AbstractPnmlTool) = !isempty(tool.xml)
+has_xml(tool::AbstractPnmlTool) = true
 xmlnode(tool::AbstractPnmlTool) = tool.xml
 
 has_xml(::AbstractLabel) = false
@@ -140,17 +140,8 @@ $(TYPEDFIELDS)
 """
 struct PnmlLabel <: AbstractLabel
     dict::PnmlDict
-    xml::Maybe{XMLNode}
+    xml::XMLNode
 end
-
-function PnmlLabel(d::PnmlDict) 
-    # Extract the xml so that it will not be printed.
-    # Store it so that it may be used, but not be printed as part of dict.
-    xml = haskey(d, :xml) ? d[:xml] : nothing
-    delete!(d, :xml)
-    PnmlLabel(d, xml)
-end
-convert(::Type{Maybe{PnmlLabel}}, d::PnmlDict) = PnmlLabel(d)
 
 function has_text(l::PnmlLabel)
     haskey(l.dict, :text) 
@@ -168,7 +159,7 @@ end
 
 tag(lab::PnmlLabel) = tag(lab.dict)
 
-has_xml(lab::PnmlLabel) = !isnothing(lab.xml)
+has_xml(lab::PnmlLabel) = true #!isnothing(lab.xml)
 xmlnode(lab::PnmlLabel) = lab.xml
 
 #------------------------------------------------------------------------
@@ -196,15 +187,15 @@ struct ToolInfo
     toolname::String
     version::String
     infos::Vector{PnmlLabel} #TODO 
-    xml::Maybe{XMLNode}
+    xml::XMLNode
 end
 
-function ToolInfo(d::PnmlDict)
-    ToolInfo(d[:tool], d[:version], d[:content], d[:xml])
+function ToolInfo(d::PnmlDict, xml::XMLNode)
+    ToolInfo(d[:tool], d[:version], d[:content], xml)
 end
 convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 
-has_xml(ti::ToolInfo) = !isempty(ti.xml)
+has_xml(ti::ToolInfo) = true #isempty(ti.xml)
 xmlnode(ti::ToolInfo) = ti.xml
 
 infos(ti::ToolInfo) = ti.infos
@@ -274,22 +265,17 @@ struct ObjectCommon
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
-    xml::Maybe{XMLNode}
-end
-function ObjectCommon(; name=nothing, graphics=nothing, tools=nothing,
-                      labels=nothing, xml=nothing)
-    ObjectCommon(name, graphics, tools, labels, xml)
 end
 
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :name, nothing),
     get(pdict, :graphics, nothing),
     get(pdict, :tools, nothing),
-    get(pdict, :labels, nothing),
-    get(pdict, :xml, nothing)
+    get(pdict, :labels, nothing)
 )
 #import .PnmlBase.XmlUtils: has_name
 has_name(oc::ObjectCommon) = !isnothing(oc.name)
+has_xml(oc::ObjectCommon) = false
 
 has_graphics(::Any) = false
 has_graphics(oc::ObjectCommon) = !isnothing(oc.graphics)
@@ -304,8 +290,7 @@ has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
 Base.isempty(oc::ObjectCommon) = !(has_name(oc) ||
                                    has_graphics(oc) ||
                                    has_tools(oc) ||
-                                   has_labels(oc) ||
-                                   has_xml(oc)) #TODO do we care about xml?
+                                   has_labels(oc))
 
 ###############################################################################
 # PNML Nodes
@@ -340,7 +325,7 @@ julia> p.value
 ```
 
 """
-mutable struct PTMarking{N<:Number} <: Marking
+struct PTMarking{N<:Number} <: Marking
     value::N
     com::ObjectCommon
     # PTMarking does not use ObjectCommon.graphics,
@@ -361,7 +346,7 @@ PNML HLMarking labels a Place instance.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct HLMarking <: Marking
+struct HLMarking <: Marking
     text::Maybe{String}
     structure::Maybe{PnmlLabel}
     com::ObjectCommon
@@ -381,7 +366,7 @@ PNML Place node.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Place <: PnmlNode
+struct Place <: PnmlNode
     id::Symbol
     marking::Maybe{Marking}
     type::Maybe{PnmlLabel}
@@ -417,7 +402,7 @@ PNML Transition node.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Transition <: PnmlNode
+struct Transition <: PnmlNode
     id::Symbol
     condition::Maybe{Condition}
 
@@ -468,7 +453,7 @@ PTInscription labels an Arc instance.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct PTInscription{T<:Number}  <: Inscription
+struct PTInscription{T<:Number}  <: Inscription
     value::T
     com::ObjectCommon
 end
@@ -513,6 +498,8 @@ end
 Arc(pdict::PnmlDict) =
     Arc(pdict[:id], pdict[:source], pdict[:target], pdict[:inscription], ObjectCommon(pdict))
 
+Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.id, src, tgt, a.inscription, a.com)
+
 ###############################################################################
 # Begin section dealing with the top level of a pnml model: nets, pages and
 # labels at equivalent level of the model. Declarations are here because they
@@ -531,10 +518,11 @@ $(TYPEDFIELDS)
 struct Declaration
     d::PnmlLabel # TODO what do declarations contain? Land of Symbolics.jl.
     com::ObjectCommon
+    xml::XMLNode
 end
 
-Declaration(pdict::PnmlDict) = Declaration(PnmlLabel(pdict), ObjectCommon(pdict))
-convert(::Type{Maybe{Declaration}}, pdict::PnmlDict) = Declaration(pdict)
+Declaration(pdict::PnmlDict, xml::XMLNode) = 
+    Declaration(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
 
 #-------------------
 """
@@ -554,6 +542,7 @@ struct Page{PNTD<:PnmlType} <: PnmlObject
     declarations::Vector{Declaration}
     subpages::Maybe{Vector{Page}}
     com::ObjectCommon
+    #xml::XMLNode
 end
 
 function Page(d::PnmlDict, pntd = PnmlCore())
@@ -585,22 +574,23 @@ Each net in a PNML model has an independent type.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct PnmlNet{PNTD<:PnmlType}
+struct PnmlNet{PNTD<:PnmlType}
     id::Symbol
     type::PNTD
     pages::Vector{Page}
     declarations::Vector{Declaration}
 
     com::ObjectCommon
+    xml::XMLNode
 end
 
-function PnmlNet(d::PnmlDict)
-    PnmlNet(d[:id], d[:type], d[:pages], d[:declarations], ObjectCommon(d))
+function PnmlNet(d::PnmlDict, xml::XMLNode)
+    PnmlNet(d[:id], d[:type], d[:pages], d[:declarations], ObjectCommon(d), xml)
 end
 
 pid(net::PnmlNet) = net.id
 has_labels(net::PnmlNet) = has_labels(net.com)
-has_xml(net::PnmlNet) = has_xml(net.com)
+has_xml(net::PnmlNet) = true # has_xml(net.com)
 xmlnode(net::PnmlNet) = net.xml
 
 "Usually the only interesting page."
@@ -616,13 +606,13 @@ $(TYPEDFIELDS)
 struct PnmlModel
     nets::Vector{PnmlNet} #TODO Vector{PetriNet}
     reg::IDRegistry # Shared by all nets.
-    xml::Maybe{XMLNode}
+    xml::XMLNode
 end
 PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
 
-has_xml(model::PnmlModel) = !isempty(model.xml)
+has_xml(model::PnmlModel) = !true #isempty(model.xml)
 xmlnode(model::PnmlModel) = model.xml
 
 """
