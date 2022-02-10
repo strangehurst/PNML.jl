@@ -1,4 +1,11 @@
-# Kinds of Petri Nets: PNTD URI mapped to PnmlType singleton.
+"Kinds of Petri Nets: PNTD URI mapped to PnmlType singleton."
+module PnmlTypes
+using DocStringExtensions
+
+export PnmlType, 
+        PnmlCore, PTNet,
+        AbstractHLCore, HLCore, HLNet, StochasticNet, Symmetric, TimedNet, OpenNet, PT_HLPNG 
+
 
 """
 Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
@@ -89,21 +96,23 @@ struct HLNet <: AbstractHLCore end
 
 
 """
+$(TYPEDEF)
+
 Map from Petri Net Type Definition (pntd) URI to Symbol.
+Allows multiple strings to map to the same pntd.
 
 There is a companion map [`pnmltype_map`](@ref) that takes the symbol to a type object.
 
 The URI is a string and may be the full URL of a pntd schema,
 just the schema file name, or a placeholder for a future schema.
 
-$(TYPEDEF)
 
 # Examples
 
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
 """
-const default_pntd_map = Dict{AbstractString,Symbol}(
+const default_pntd_map = Dict{AbstractString, Symbol}(
     "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
     "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
     "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
@@ -124,15 +133,9 @@ const default_pntd_map = Dict{AbstractString,Symbol}(
     )
 
 """
-The keys are the supported kinds of Petri Nets.
-
-Provides a place to abstract relationship of pntd name and implementation type.
-Allows multiple strings to map to the same parser implementation.
-Is a point at which different parser implmentations may be introduced.
-
 $(TYPEDEF)
 
-# Examples
+The key Symbols are the supported kinds of Petri Nets.
 """
 const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),
@@ -164,14 +167,13 @@ $(TYPEDSIGNATURES)
 # Examples
 
 ```jldoctest
-julia> using PNML: pntd_symbol
+julia> using PNML: PnmlTypes.pntd_symbol
 
 julia> pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) =
-    haskey(default_pntd_map, s) ? default_pntd_map[s] : :pnmlcore
+pntd_symbol(s::AbstractString) = get(default_pntd_map, s, :pnmlcore)
 
 """
 Map either a text string or a symbol to a dispatch type singlton.
@@ -185,10 +187,10 @@ Unknown `symbol` returns `nothing`.
 # Examples
 
 ```jldoctest
-julia> using PNML: pntd_symbol, pnmltype
+julia> using PNML, PNML.PnmlTypes
 
-julia> pnmltype("nonstandard")
-PNML.PnmlCore()
+julia> PnmlTypes.pnmltype("nonstandard")
+PnmlCore()
 ```
 ---
 $(TYPEDSIGNATURES)
@@ -206,3 +208,4 @@ function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
         return nothing
     end
 end
+end # module PnmlTypes

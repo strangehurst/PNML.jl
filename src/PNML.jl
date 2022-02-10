@@ -21,12 +21,12 @@ using SciMLBase: @add_kwonly
 using Reexport
 #include("docstrings.jl")
 
-"""
-$(TYPEDSIGNATURES)
+# """
+# $(TYPEDSIGNATURES)
 
-Set value of key :xml based on a boolean control flag. Defaut is `true`.
-"""
-includexml(node; INCLUDEXML=true)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
+# Set value of key :xml based on a boolean control flag. Defaut is `true`.
+# """
+# includexml(node; INCLUDEXML=true)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("config.jl")
 
@@ -37,7 +37,8 @@ include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
-include("pntd.jl")
+include("pnmltypes.jl")
+using .PnmlTypes
 
 include("Parse/intermediate.jl")
 include("Parse/parseutils.jl")

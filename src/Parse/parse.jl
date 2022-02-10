@@ -61,7 +61,7 @@ function parse_net(node; kw...)
     # The 'graphics' key is an exception and has a single value.
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :type => pnmltype(node["type"]),
+                           :type => PnmlTypes.pnmltype(node["type"]),
                            :pages => Page[],
                            :declarations => Declaration[])
 
