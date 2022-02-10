@@ -40,7 +40,8 @@ include("exceptions.jl")
 include("pnmltypes.jl")
 using .PnmlTypes
 
-include("Parse/intermediate.jl")
+include("IR/intermediate.jl")
+
 include("Parse/parseutils.jl")
 include("Parse/parse.jl")
 include("Parse/graphics.jl")
