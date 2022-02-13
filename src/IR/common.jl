@@ -37,7 +37,7 @@ end
 
 tag(lab::PnmlLabel) = tag(lab.dict)
 
-has_xml(lab::PnmlLabel) = true #!isnothing(lab.xml)
+has_xml(lab::PnmlLabel) = true
 xmlnode(lab::PnmlLabel) = lab.xml
 
 #------------------------------------------------------------------------
@@ -73,7 +73,7 @@ function ToolInfo(d::PnmlDict, xml::XMLNode)
 end
 convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
 
-has_xml(ti::ToolInfo) = true #isempty(ti.xml)
+has_xml(ti::ToolInfo) = true
 xmlnode(ti::ToolInfo) = ti.xml
 
 infos(ti::ToolInfo) = ti.infos
@@ -145,6 +145,9 @@ struct ObjectCommon
     labels::Maybe{Vector{PnmlLabel}}
 end
 
+"""
+Wrap selected fields of `pdict`. Default to `nothing`.
+"""
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :name, nothing),
     get(pdict, :graphics, nothing),

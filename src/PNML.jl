@@ -38,7 +38,7 @@ include("id.jl")
 include("types.jl")
 include("exceptions.jl")
 include("pnmltypes.jl")
-using .PnmlTypes
+@reexport using .PnmlTypes
 
 include("IR/intermediate.jl")
 

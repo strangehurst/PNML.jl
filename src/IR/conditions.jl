@@ -1,5 +1,5 @@
 """
-PNML Condition labels a Transition instance.
+Label of a Transition.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -13,4 +13,3 @@ end
 Condition(pdict::PnmlDict) = Condition(pdict[:text],
                                        pdict[:structure],
                                        ObjectCommon(pdict))
-#convert(::Type{Maybe{Condition}}, d::PnmlDict) = Condition(d)

@@ -54,12 +54,16 @@ has_xml(::Any) = false
 
 
 """
-Return tuple of PnmlDict holding parsed contents of a well-formed XML node
-and the `XMLNode`.
+If `x` is `nothing` return `non`, otherwise return `x`.
+"""
+onnothing(x, non) = isnothing(x) ? non : x
+onnothing(d::PnmlDict, s::Symbol, default) =
+    isnothing(get(d, s, nothing)) ? default : d[s]
 
-Expected to be wrapped: see [`PnmlLabel`](@ref), [`ToolInfo`](@ref).
-
+"""
 $(TYPEDSIGNATURES)
+
+Return PnmlDict holding parsed contents of a well-formed XML node.
 
 If element `node` has any children, each is placed in the dictonary with the
 tag name symbol as the key, repeated tags produce a vector as the value.
@@ -95,6 +99,7 @@ function unclaimed_element(node; kw...)
 
     return _harvest!(d, node; kw...)
 end
+
 "Update `dict` with content or children"
 function _harvest!(dict::PnmlDict, node::XMLNode; kw...)
     e = elements(node)

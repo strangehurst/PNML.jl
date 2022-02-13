@@ -1,7 +1,8 @@
 """
 Take an XML `node` and parse it by calling the method matching `node.name` from
 [`tagmap`](@ref) if that mapping exists, otherwise call [`unclaimed_element`](@ref)
-and return a [`PnmlLabel`](@ref) wrapping the PnmlDict..
+and return a [`PnmlLabel`](@ref) wrapping the `PnmlDict`.
+
 `verbose` is a boolean controlling debug logging.
 
 $(TYPEDSIGNATURES)

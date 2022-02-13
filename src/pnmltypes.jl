@@ -1,10 +1,19 @@
-"Kinds of Petri Nets: PNTD URI mapped to PnmlType singleton."
+"""
+Kinds of Petri Nets: PNTD URI mapped to PnmlType singleton.
+
+# Imports
+$(DocStringExtensions.IMPORTS)
+
+# Exports
+$(DocStringExtensions.EXPORTS)
+"""
 module PnmlTypes
 using DocStringExtensions
 
 export PnmlType, 
-        PnmlCore, PTNet,
-        AbstractHLCore, HLCore, HLNet, StochasticNet, Symmetric, TimedNet, OpenNet, PT_HLPNG 
+    PnmlCore, PTNet,
+    AbstractHLCore, HLCore, HLNet, StochasticNet,
+    SymmetricNet, TimedNet, OpenNet, PT_HLPNG 
 
 
 """
@@ -179,7 +188,7 @@ pntd_symbol(s::AbstractString) = get(default_pntd_map, s, :pnmlcore)
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The [`pnmltype_map`](@ref) and [`default_pntd_map`](@ref) are both assumed to be correct here.
+The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref) are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore` as part of the logic.
 Unknown `symbol` returns `nothing`.

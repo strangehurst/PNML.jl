@@ -1,3 +1,5 @@
+
+
 """
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.

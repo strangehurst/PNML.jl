@@ -1,4 +1,4 @@
-#types
+#types and interface methods.
 "Labels are attached to the Petri Net Graph object subtypes. See [`PnmlObject`](@ref)."
 abstract type AbstractLabel end
 
@@ -20,7 +20,7 @@ pid(object::PnmlObject) = object.id
 "Petri Net Graph nodes are places, transitions."
 abstract type PnmlNode <: PnmlObject end
 
-has_xml(node::PnmlNode) = true #has_xml(node.com)
+has_xml(node::PnmlNode) = true
 xmlnode(node::PnmlNode) = node.xml
 
 "Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes."
@@ -28,8 +28,3 @@ abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 has_xml(tool::AbstractPnmlTool) = true
 xmlnode(tool::AbstractPnmlTool) = tool.xml
-
-"""
-If `x` is `nothing` return `non`, otherwise return `x`.
-"""
-onnothing(x, non) = isnothing(x) ? non : x

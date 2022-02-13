@@ -1,4 +1,7 @@
 # Library Reference
+```@meta
+CurrentModule = PNML
+```
 
 ```@contents
 Pages = ["library.md"]
@@ -25,7 +28,7 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 AbstractTrees.children(x::Type) = subtypes(x)
 
 typet = [
-AbstractTrees.repr_tree(PNML.PnmlType)
+AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)
 AbstractTrees.repr_tree(PNML.PetriNet)
 AbstractTrees.repr_tree(PNML.PnmlObject)
 AbstractTrees.repr_tree(PNML.AbstractLabel)

@@ -9,7 +9,7 @@ Unknown tags get parsed by unclaimed_element.  Annotation-labels usually have
 known tags and dedicated dictonary keys. Pnml-node-elements put unregistered children
 into the :labels collection.  It can include annotations and attributes.
 
-Because any tag not present in the tagmap are processed by [`unclaimed_element`](@ref)
+Because any tag not present in the tagmap are processed by `unclaimed_element`
 it is not necessary to define a parse method unless valididation, documentation,
 or additional processing is desired. Some are defined here anyway.
 =#

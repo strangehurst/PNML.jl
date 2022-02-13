@@ -8,6 +8,24 @@ include("declarations.jl")
 
 #-------------------
 """
+PNML Place node.
+
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct Place <: PnmlNode
+    id::Symbol
+    marking::Maybe{Marking}
+    type::Maybe{PnmlLabel}
+
+    com::ObjectCommon
+end
+
+Place(pdict::PnmlDict) =
+    Place(pdict[:id], pdict[:marking], pdict[:type], ObjectCommon(pdict))
+
+    #-------------------
+"""
 PNML Transition node.
 
 $(TYPEDEF)
@@ -144,7 +162,7 @@ end
 
 pid(net::PnmlNet) = net.id
 has_labels(net::PnmlNet) = has_labels(net.com)
-has_xml(net::PnmlNet) = true # has_xml(net.com)
+has_xml(net::PnmlNet) = true
 xmlnode(net::PnmlNet) = net.xml
 
 "Usually the only interesting page."
@@ -166,7 +184,7 @@ PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
 
-has_xml(model::PnmlModel) = !true #isempty(model.xml)
+has_xml(model::PnmlModel) = true
 xmlnode(model::PnmlModel) = model.xml
 
 """
@@ -193,7 +211,7 @@ end
 
 """
 Return nets matching pntd `type` given as string or symbol.
-See [`pntd_symbol`](@ref), [`pnmltype`](@ref).
+See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
 
 ---
 $(TYPEDSIGNATURES)

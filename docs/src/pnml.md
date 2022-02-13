@@ -67,12 +67,12 @@ PNML intermediate representration.
 
 Defaut PNTD to Symbol map keys (URI strings):
 ```@example
-using PNML; foreach(println, sort!(collect(keys(PNML.default_pntd_map)))) #hide
+using PNML; foreach(println, sort!(collect(keys(PNML.PnmlTypes.default_pntd_map)))) #hide
 ```
 
 PnmlType map keys (pntd symbols):
 ```@example
-using PNML; foreach(println, sort!(collect(keys(PNML.pnmltype_map)))) #hide
+using PNML; foreach(println, sort!(collect(keys(PNML.PnmlTypes.pnmltype_map)))) #hide
 ```
 
 
@@ -150,4 +150,6 @@ __TBD__
 
 ### References
 
-See [`PNML.PnmlType `](@ref), [`PNML.default_pntd_map`](@ref), [`PNML.pnmltype_map`](@ref)
+See [`PnmlTypes.PnmlType `](@ref), 
+[`PnmlTypes.default_pntd_map`](@ref), 
+[`PnmlTypes.pnmltype_map`](@ref)

@@ -66,20 +66,3 @@ convert(::Type{Maybe{HLMarking}}, pdict::PnmlDict) = HLMarking(pdict)
 "Evaluate the marking expression."
 (hlm::HLMarking)() = @warn "HLMarking functor not implemented"
 
-#-------------------
-"""
-PNML Place node.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct Place <: PnmlNode
-    id::Symbol
-    marking::Maybe{Marking}
-    type::Maybe{PnmlLabel}
-
-    com::ObjectCommon
-end
-
-Place(pdict::PnmlDict) =
-    Place(pdict[:id], pdict[:marking], pdict[:type], ObjectCommon(pdict))

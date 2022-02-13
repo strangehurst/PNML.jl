@@ -1,4 +1,4 @@
-using PNML
+using PNML, PNML.PnmlTypes
 using PrettyPrinting
 using Documenter
 
@@ -56,7 +56,7 @@ for m ∈ [PNML]
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML],
+         modules=[PNML], #, PNML.PnmlTypes],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          checkdocs=:all,
@@ -72,17 +72,22 @@ makedocs(;
                                 ),
          sitename="PNML.jl",
          pages=[
-             "Home" => "index.md",
+            "Home" => "index.md",
+            "Petri Net Markup Language" => [
+                "pnml.md"
+            ],
              
-             "API" => "library.md",
-             "Intermediate Representation" => "IR.md",
-             "pnml.md",
-             "Interfaces" => "interface.md",
-             "Examples" => Any[
-                 "lotka-volterra.md",
-                 "example2.md",
-             ],
-             "acknowledgments.md",
+            "API" => [
+                "Library"   => "API/library.md",
+                "PnmlTypes" => "API/pnmltypes.md"
+            ],
+            "Intermediate Representation" => "IR.md",
+            "Interfaces" => "interface.md",
+            "Examples"   => [
+                "Lotka-Volterra" => "lotka-volterra.md",
+                "Example2 TBD"   => "example2.md",
+            ],
+            "acknowledgments.md",
           ],
          )
 
