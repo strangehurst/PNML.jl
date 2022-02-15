@@ -58,7 +58,8 @@ makedocs(;
          doctest=true,
          modules=[PNML], #, PNML.PnmlTypes],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
-         repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
+         #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
+         repo="/home/jeff/Jules/PNToyBox/src/PNML/{path}",
          checkdocs=:all,
          
          format=Documenter.HTML(;
@@ -78,7 +79,7 @@ makedocs(;
             ],
              
             "API" => [
-                "Library"   => "API/library.md",
+                "PNML"      => "API/library.md",
                 "PnmlTypes" => "API/pnmltypes.md"
             ],
             "Intermediate Representation" => "IR.md",

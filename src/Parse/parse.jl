@@ -22,17 +22,21 @@ function parse_node(node; verbose=true, kw...)
     end
 end
 
+"Warn when `node` does not have a namespace."
+pnml_namespace_check(node::XMLNode) =
+    EzXML.hasnamespace(node) || @warn "$(nodename(node)) missing namespace"
+#TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
+
 """
-Start parse from the pnml root node of the well formed XML document.
-Return vector of pnml petri nets.
+Start parse from the pnml root `node` of a well formed XML document.
+Return a [`PnmlModel`](@ref)..
 
 $(TYPEDSIGNATURES)
 """
 function parse_pnml(node; kw...)
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
-    EzXML.hasnamespace(node) || @warn("$(nn) missing namespace: ", node)
-    #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
+    pnml_namespace_check(node)
     @assert haskey(kw, :reg)
     # Do not yet have a PNTD defined, so call parse_net directly.
     PnmlModel(parse_net.(allchildren("net", node); kw...), kw[:reg], node)
@@ -72,12 +76,12 @@ function parse_net(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; pntd, kw...))
-            # NB: There is also a tag 'declarations' that is different from this.
+            # NB: There is also a 'declarations' tag that is different from this.
             "declaration"  => push!(d[:declarations], parse_node(child; pntd, kw...))
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
-    PnmlNet(d, node) #IR
+    PnmlNet(d, pntd, node) #IR
 end
 
 """
@@ -93,7 +97,7 @@ function parse_page(node; kw...)
     @assert haskey(kw, :pntd)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
-                           :id => register_id!(kw[:reg],node["id"]),
+                           :id => register_id!(kw[:reg], node["id"]),
                            :places => Place[],
                            :trans => Transition[],
                            :arcs => Arc[],
@@ -110,7 +114,7 @@ function parse_page(node; kw...)
             "referencePlace" => push!(d[:refP], parse_node(child; kw...))
             "referenceTransition" => push!(d[:refT], parse_node(child; kw...))
             "declaration" => push!(d[:declarations], parse_node(child; kw...))
-            "page"         => push!(d[:pages], parse_node(child; kw...))
+            "page"        => push!(d[:pages], parse_node(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end

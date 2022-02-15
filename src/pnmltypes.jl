@@ -1,5 +1,6 @@
 """
-Kinds of Petri Nets: PNTD URI mapped to PnmlType singleton.
+Kind of Petri Net.
+Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 
 # Imports
 $(DocStringExtensions.IMPORTS)
@@ -11,9 +12,9 @@ module PnmlTypes
 using DocStringExtensions
 
 export PnmlType, 
-    PnmlCore, PTNet,
-    AbstractHLCore, HLCore, HLNet, StochasticNet,
-    SymmetricNet, TimedNet, OpenNet, PT_HLPNG 
+        PnmlCore, PTNet,
+        AbstractHLCore, HLCore, HLNet, StochasticNet,
+            SymmetricNet, TimedNet, OpenNet, PT_HLPNG 
 
 
 """
@@ -25,8 +26,8 @@ the syntax and semantics of the XML model.
 
 Selected abbreviations, URIs that do not resolve to a valid schema file, are also allowed.
 
-Refer to [`pntd_symbol`](@ref) and
-[`pnmltype`](@ref) for how to get from the URI to a singleton.
+Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref)
+for how to get from the URI to a singleton.
 
 $(TYPEDEF)
 """
@@ -121,7 +122,7 @@ just the schema file name, or a placeholder for a future schema.
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
 """
-const default_pntd_map = Dict{AbstractString, Symbol}(
+default_pntd_map() = Dict{AbstractString, Symbol}(
     "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
     "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
     "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
@@ -182,15 +183,17 @@ julia> pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) = get(default_pntd_map, s, :pnmlcore)
+pntd_symbol(s::AbstractString) = get(default_pntd_map(), s, :pnmlcore)
 
 """
+$(TYPEDSIGNATURES)
+
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
 The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref) are both assumed to be correct here.
 
-Unknown or empty `uri` will map to symbol `:pnmlcore` as part of the logic.
+Unknown or empty `uri` will map to symbol `:pnmlcore`.
 Unknown `symbol` returns `nothing`.
 
 # Examples
@@ -202,8 +205,6 @@ julia> PnmlTypes.pnmltype("nonstandard")
 PnmlCore()
 ```
 ---
-$(TYPEDSIGNATURES)
-
 $(METHODLIST)
 """
 function pnmltype end

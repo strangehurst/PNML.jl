@@ -316,7 +316,7 @@ $(METHODLIST)
   3) All ids are valid.
 """
 function deref! end
-deref!(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = _deref!(petrinet)
+deref!(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = _deref!(petrinet)
 deref!(net::PnmlNet, n=1) = deref!(net.pages[n])
 deref!(page::Page) = _deref!(page)
 
@@ -376,7 +376,7 @@ function has_place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
 end
 
 has_place(net::PnmlNet, id::Symbol, n=1) = has_place(net.pages[n], id)
-has_place(page::Page, id::Symbol) = any(x -> pid(x) === id, page.places)
+has_place(page::Page, id::Symbol) = any(x -> pid(x) === id, places(page))
 
 """
 Return the place with `id` in `petrinet`.
@@ -388,7 +388,7 @@ function place(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     places(petrinet)[findfirst(x -> pid(x) === id, places(petrinet))]
 end
 place(net::PnmlNet, id::Symbol, n=1) = place(net.pages[n], id)
-place(page::Page, id::Symbol) = page.places[findfirst(x -> pid(x) === id, page.places)]
+place(page::Page, id::Symbol) = page.places[findfirst(x -> pid(x) === id, places(page))]
 
 """
 Return vector of place ids in `petrinet`.
@@ -398,8 +398,7 @@ $(TYPEDSIGNATURES)
 function place_ids end
 place_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(petrinet))
 place_ids(net::PnmlNet, n=1) = place_ids(net.pages[n])
-place_ids(page::Page) = map(pid, page.places)
-
+place_ids(page::Page) = map(pid, places(page))
 """
 Return marking value of a place `p`.
 

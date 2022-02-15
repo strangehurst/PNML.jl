@@ -8,7 +8,7 @@ include("declarations.jl")
 
 #-------------------
 """
-PNML Place node.
+Place node of a Petri Net Markup Language graph.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -26,7 +26,7 @@ Place(pdict::PnmlDict) =
 
     #-------------------
 """
-PNML Transition node.
+Transition node of a Petri Net Markup Language graph.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -43,38 +43,7 @@ Transition(pdict::PnmlDict) =
 
 #-------------------
 """
-PNML RefPlace node.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct RefPlace <: PnmlNode
-    id::Symbol
-    ref::Symbol
-    com::ObjectCommon
-end
-
-RefPlace(pdict::PnmlDict) = RefPlace(pdict[:id], pdict[:ref], ObjectCommon(pdict))
-
-#-------------------
-"""
-PNML RefTransition node.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct RefTransition <: PnmlNode
-    id::Symbol
-    ref::Symbol
-    com::ObjectCommon
-end
-
-RefTransition(pdict::PnmlDict) =
-    RefTransition(pdict[:id], pdict[:ref], ObjectCommon(pdict))
-
-#-------------------
-"""
-Edge of graph that connects place and transition.
+Edge of a Petri Net Markup Language graph that connects place and transition.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -85,12 +54,55 @@ mutable struct Arc <: PnmlObject
     target::Symbol
     inscription::Maybe{Inscription} #TODO Abstract, could br a Union.
     com::ObjectCommon
+    #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 Arc(pdict::PnmlDict) =
     Arc(pdict[:id], pdict[:source], pdict[:target], pdict[:inscription], ObjectCommon(pdict))
 
+"""
+$(TYPEDSIGNATURES)
+"""
 Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.id, src, tgt, a.inscription, a.com)
+
+#-------------------
+"""
+Reference Place node of a Petri Net Markup Language graph. For connections between pages.
+
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct RefPlace <: PnmlNode
+    id::Symbol
+    ref::Symbol # Place or RefPlace
+    com::ObjectCommon
+    #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
+end
+
+RefPlace(pdict::PnmlDict) = RefPlace(pdict[:id], pdict[:ref], ObjectCommon(pdict))
+
+#-------------------
+"""
+Refrence Transition node of a Petri Net Markup Language graph. For connections between pages.
+
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct RefTransition <: PnmlNode
+    id::Symbol
+    ref::Symbol # Transition or RefTransition
+    com::ObjectCommon
+    #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+RefTransition(pdict::PnmlDict) =
+    RefTransition(pdict[:id], pdict[:ref], ObjectCommon(pdict))
 
 ###############################################################################
 # Begin section dealing with the top level of a pnml model: nets, pages and
@@ -98,13 +110,13 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.id, src, tgt, a.inscription, a.com
 ###############################################################################
 #-------------------
 """
-Contain all places, transitions & arcs. They are for visual presentation.
-There must be at least 1 Page for a valid pnml model.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Contain all places, transitions & arcs. Pages are for visual presentation.
+There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD<:PnmlType} <: PnmlObject
+struct Page{T<:PnmlType} <: PnmlObject
     id::Symbol
     places::Vector{Place}
     refPlaces::Vector{RefPlace}
@@ -117,6 +129,9 @@ struct Page{PNTD<:PnmlType} <: PnmlObject
     #xml::XMLNode
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function Page(d::PnmlDict, pntd = PnmlCore())
     Page{typeof(pntd)}(
         d[:id],
@@ -141,14 +156,14 @@ end
 
 #-------------------
 """
-Each net in a PNML model has an independent type.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType}
+struct PnmlNet{T<:PnmlType}
     id::Symbol
-    type::PNTD
+    type::T
     pages::Vector{Page}
     declarations::Vector{Declaration}
 
@@ -156,8 +171,11 @@ struct PnmlNet{PNTD<:PnmlType}
     xml::XMLNode
 end
 
-function PnmlNet(d::PnmlDict, xml::XMLNode)
-    PnmlNet(d[:id], d[:type], d[:pages], d[:declarations], ObjectCommon(d), xml)
+"""
+$(TYPEDSIGNATURES)
+"""
+function PnmlNet(d::PnmlDict, pntd::T, xml::XMLNode) where {T<:PnmlType}
+    PnmlNet(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
 end
 
 pid(net::PnmlNet) = net.id
@@ -170,16 +188,20 @@ firstpage(net::PnmlNet) = net.pages[1]
 
 #-------------------
 """
-A PNML model can have multiple net elements.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+PNML model holds one or more Petri Nets and an ID Registry shared by al nets.
 """
 struct PnmlModel
     nets::Vector{PnmlNet} #TODO Vector{PetriNet}
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode
 end
+
+"""
+$(TYPEDSIGNATURES)
+"""
 PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
@@ -188,20 +210,23 @@ has_xml(model::PnmlModel) = true
 xmlnode(model::PnmlModel) = model.xml
 
 """
+$(TYPEDSIGNATURES)
+
 Build a PnmlModel from a string ontaining XML.
 
-$(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function parse_str(str::AbstractString)
     reg = IDRegistry()
+    # Good place for debugging.  
     parse_pnml(root(EzXML.parsexml(str)); reg)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Build a PnmlModel from a file containing XML.
 
-$(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 function parse_file(fname::AbstractString)
@@ -214,9 +239,6 @@ Return nets matching pntd `type` given as string or symbol.
 See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
 
 ---
-$(TYPEDSIGNATURES)
-
-$(METHODLIST)
 """
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, PnmlTypes.pntd_symbol(type))
@@ -226,7 +248,11 @@ find_nets(model, type::T) where {T <: PnmlType} =
 
 
 """
+$(TYPEDSIGNATURES)
+
 Return `PnmlNet` with `id` or `nothing``.
+
+$(METHODLIST)
 """
 function find_net end
 
@@ -238,17 +264,19 @@ function find_net(model, id::Symbol)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Return first net contained by `doc`.
 
-$(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 first_net(model) = first(nets(model))
 
 """
+$(TYPEDSIGNATURES)
+
 Return all `nets` of `model`.
 
-$(TYPEDSIGNATURES)
 $(METHODLIST)
 """
 nets(model::PnmlModel) = model.nets

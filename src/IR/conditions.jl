@@ -10,6 +10,7 @@ struct Condition <: AbstractLabel
     com::ObjectCommon
 end
 
+"$(TYPEDSIGNATURES)"
 Condition(pdict::PnmlDict) = Condition(pdict[:text],
                                        pdict[:structure],
                                        ObjectCommon(pdict))

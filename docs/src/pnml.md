@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = PNML
+```
+
 # Petri Net Markup Language
 
 PNML is intended to be an interchange format.
@@ -67,7 +71,7 @@ PNML intermediate representration.
 
 Defaut PNTD to Symbol map keys (URI strings):
 ```@example
-using PNML; foreach(println, sort!(collect(keys(PNML.PnmlTypes.default_pntd_map)))) #hide
+using PNML; foreach(println, sort!(collect(keys(PNML.PnmlTypes.default_pntd_map())))) #hide
 ```
 
 PnmlType map keys (pntd symbols):

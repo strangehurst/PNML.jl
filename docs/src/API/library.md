@@ -1,4 +1,3 @@
-# Library Reference
 ```@meta
 CurrentModule = PNML
 ```
@@ -7,10 +6,7 @@ CurrentModule = PNML
 Pages = ["library.md"]
 Depth = 2
 ```
-
-## Modules
-
-Docstrings for modules. 
+# PNML Reference
 
 ```@autodocs
 Modules = [PNML]

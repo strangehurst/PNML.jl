@@ -65,17 +65,11 @@ header("SimpleNet")
 
     end
 
-    PRINT_PNML && println("------------------------------------------")
-
     pl = PNML.places(net)
     printnode(pl[1],label="from")
 
-    PRINT_PNML && println("\n------------------------------------------")
-
     pl = PNML.places(net)
     printnode(pl, label="places")
-
-    PRINT_PNML && println("------------------------------------------")
 
     for p in PNML.places(net)
         @test PNML.has_place(net, pid(p))

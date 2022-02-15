@@ -35,5 +35,6 @@ InteractiveUtils.versioninfo()
 ## Index
 
 ```@index
+Modules = [PNML, PNML.PnmlTypes]
 ```
 

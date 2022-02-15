@@ -1,9 +1,12 @@
-# Interface 
+```@meta
+CurrentModule = PNML
+```
 
 ```@contents
 Pages = ["interface.md"]
 Depth = 5
 ```
+# Interface 
 
 The intermediate representation is used to implement networks 
 expressed in a pnml model. The consumer of the IR is a network,
@@ -11,7 +14,7 @@ most naturally a varity of Petri Net.
 
 High-Level Petri Net Graphs can be expressed in a pnml model.
 
-[`Pnmldict`](@ref PNML.PnmlDict) is an alias for `Dict{Symbol,Any}`.
+[`PnmlDict`](@ref) is an alias for `Dict{Symbol,Any}`.
 Each XML tag is first parsed into a `PnmlDict`, many are then used 
 to create higher-level types. Some parts will continue to find 
 use for `PnmlDict`'s flexibility.
@@ -30,7 +33,7 @@ Parse for input, worry about writing back out and interchange later.
 The collection of pages is flattened before use. Using them unflattened is 
 not supposed to be impossible, but is not the arena or the initial use cases:
 adapting to use graph tools, catlab, sciml, and other linear algebra things.
-See [`flatten_page!`](@ref PNML.flatten_pages!).
+See [`flatten_pages!`](@ref).
 
 
 XML <net> tags are 1st parsed into PnmlDict:
@@ -46,9 +49,9 @@ XML <net> tags are 1st parsed into PnmlDict:
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
  
-See [`pnml_common_defaults`](@ref PNML.pnml_common_defaults), 
-[`pnml_node_defaults`](@ref PNML.pnml_node_defaults)
-and [`parse_net`](@ref PNML.parse_net) for more detail.
+See [`pnml_common_defaults`](@ref), 
+[`pnml_node_defaults`](@ref)
+and [`parse_net`](@ref) for more detail.
 
 XML <page> tags are also 1st parsed into PnmlDict:
 
@@ -66,14 +69,14 @@ XML <page> tags are also 1st parsed into PnmlDict:
 | refT         | references to transition on different page     |
 | declarations | only net & page tags have declarations         |
 
-See also: [`parse_page`](@ref PNML.parse_page).
+See also: [`parse_page`](@ref).
 
 ## Petri Net Graphs and Networks
 
 There are 3 top-level forms:
-  - [`PetriNet`](@ref PNML.PetriNet) subtpes wraping a single `PnmlNet`, maybe multiple pages.
-  - [`PnmlNet`](@ref PNML.PnmlNet) assumes there is only 1 page is this net.
-  - [`Page`](@ref PNML.Page) when the only page of the only net in a petrinet.
+  - [`PetriNet`](@ref) subtpes wraping a single `PnmlNet`, maybe multiple pages.
+  - [`PnmlNet`](@ref) assumes there is only 1 page is this net.
+  - [`Page`](@ref) when the only page of the only net in a petrinet.
 
 The simplest arrangement is a pnml model with a single <net> element having
 a single page. Any <net> may be flatten to a single page. 
@@ -92,10 +95,10 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 Objects within a pnml graph have unique identifiers,
 which are used for referring to the object.
 This includes:
-[`PnmlObject`](@ref PNML.PnmlObject) subtypes,
-[`PnmlNet`](@ref PNML.PnmlNet).
+[`PnmlObject`](@ref) subtypes,
+[`PnmlNet`](@ref).
 
-[`PNML.pid`](@ref PNML.pid)
+[`PNML.pid`](@ref)
 ```@example methods
 methods(PNML.pid)
 ```
@@ -103,34 +106,34 @@ methods(PNML.pid)
 ### tag - access XML tag symbol
 
 
-[`PNML.tag`](@ref PNML.tag)
+[`PNML.tag`](@ref)
 ```@example methods
 methods(PNML.tag)
 ```
 
 ### has_xml
 
-[`PNML.has_xml`](@ref PNML.has_xml)
+[`PNML.has_xml`](@ref)
 ```@example methods
 methods(PNML.has_xml)
 ```
 
 ### xmlnode
 
-[`PNML.xmlnode`](@ref PNML.xmlnode)
+[`PNML.xmlnode`](@ref)
 ```@example methods
 methods(PNML.xmlnode)
 ```
 ### type
 
-[`PNML.type`](@ref PNML.type)
+[`PNML.type`](@ref)
 ```@example methods
 methods(PNML.type)
 ```
 
 ## Nodes of Graph
 
-[`PNML.places`](@ref PNML.places)
+[`PNML.places`](@ref)
 ```@example methods
 methods(PNML.places)
 ```

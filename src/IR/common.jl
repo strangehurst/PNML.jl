@@ -6,15 +6,15 @@
 
 #-------------------
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 Unclaimed PNML label wraps a `PnmlDict`` that can be the root of an XML-tree.
 Claimed labels will have type defined to make use of the structure 
 defined by the pntd schema, see [`Name`](@ref), markings, inscriptions,
 etc.
 
 See [`DefaultTool`](@ref) for another PnmlDict wrapper.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
 """
 struct PnmlLabel <: AbstractLabel
     dict::PnmlDict
@@ -54,12 +54,12 @@ get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(x.com.labels, tagvalu
 ###############################################################################
 
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 ToolInfo maps to <toolspecific> tag.
 It wraps a vector of well formed elements parsed into [`PnmlLabel`](@ref)s
 for use by anything that understands toolname, version toolspecifics.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
 """
 struct ToolInfo
     toolname::String
@@ -80,11 +80,11 @@ infos(ti::ToolInfo) = ti.infos
 
 #-------------------
 """
-Tool specific elements can contain any well-formed XML as content.
-By default treat the `content` as generic PNML labels.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Tool specific elements can contain any well-formed XML as content.
+By default treat the `content` as generic PNML labels.
 
 See [`PnmlLabel`](@ref) for another PnmlDict wrapper.
 """
@@ -101,11 +101,11 @@ end
 ###############################################################################
 
 """
-TokenGraphics is <toolspecific> content and is wrapped by a [`ToolInfo`](@ref).
-It combines the <tokengraphics> and <tokenposition> elements.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+TokenGraphics is <toolspecific> content and is wrapped by a [`ToolInfo`](@ref).
+It combines the <tokengraphics> and <tokenposition> elements.
 """
 struct TokenGraphics{T} <: AbstractPnmlTool
     positions::Vector{T} #was Coordinate}
@@ -116,10 +116,10 @@ end
 ###############################################################################
 
 """
-Name is for display, possibly in a tool specific way.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
+Name is for display, possibly in a tool specific way.
 """
 struct Name <: AbstractLabel
     text::String
@@ -132,11 +132,11 @@ Name(name::AbstractString = ""; graphics=nothing, tools=nothing) =
 
 #-------------------
 """
-Common infrastructure shared by PNML objects and labels.
-Some optional incidental bits are collected here.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Common infrastructure shared by PNML objects and labels.
+Some optional incidental bits are collected here.
 """
 struct ObjectCommon
     name::Maybe{Name}
@@ -146,6 +146,7 @@ struct ObjectCommon
 end
 
 """
+$(TYPEDSIGNATURES)
 Wrap selected fields of `pdict`. Default to `nothing`.
 """
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(

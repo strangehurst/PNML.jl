@@ -1,3 +1,8 @@
+```@meta
+CurrentModule = PNML
+```
+
+
 # Intermediate Representation
 
 The intermediate representation (IR) is between the XML model and
@@ -6,7 +11,7 @@ to be implemented using the IR.
 
 The IR is constructed by traversing the XML and using tag names as dictonary keys.
 
-In the first part of parsing, a [`PnmlDict`](@ref PNML.PnmlDict) is filled with appropriate 
+In the first part of parsing, a [`PnmlDict`](@ref) is filled with appropriate 
 initial values for each xml tag. Then optional child keys have values bound 
 as they are parsed. 
 
@@ -55,10 +60,10 @@ the higher level network
 
 # History of this IR
 
-Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref PNML.PnmlDict). 
+Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref). 
 
 2021-12-15, Began the process of moving to a struct-based scheme 
-based on [`PnmlModel`](@ref PNML.PnmlModel) and the rest of the intermediate representation.
+based on [`PnmlModel`](@ref) and the rest of the intermediate representation.
 
 Some instances of `PnmlDict` are still present in the parsing mechanism.
 
