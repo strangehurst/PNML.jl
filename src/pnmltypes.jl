@@ -204,8 +204,6 @@ julia> using PNML, PNML.PnmlTypes
 julia> PnmlTypes.pnmltype("nonstandard")
 PnmlCore()
 ```
----
-$(METHODLIST)
 """
 function pnmltype end
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd

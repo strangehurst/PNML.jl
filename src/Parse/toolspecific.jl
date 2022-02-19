@@ -1,10 +1,10 @@
 """
+$(TYPEDSIGNATURES)
+
 Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 Each are wrapped in a [`PnmlLabel`](@ref).
-
-$(TYPEDSIGNATURES)
 """
 function parse_toolspecific(node; kw...)
     nn = nodename(node)
@@ -18,12 +18,10 @@ function parse_toolspecific(node; kw...)
     # Treat all top-level children as labels.
     d[:content] = PnmlLabel[]
     foreach(elements(node)) do child
-        #TODO unclaimed_element returns tuple 
+        #TODO: use parse_node here?
+        #TODO: Specialize/verify on tool, version. User supplied?
+        #TODO: Register additional tool specific parsers?
         push!(d[:content], PnmlLabel(unclaimed_element(child; kw...), child))
     end
-    #TODO: Specialize/verify on tool, version. User supplied?
-    #TODO: Register additional tool specific parsers?
     ToolInfo(d, node)
 end
-
-

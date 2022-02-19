@@ -1,24 +1,20 @@
 # Flatten the pages of a Petri Net Markup Language
 
 """
+$(TYPEDSIGNATURES)
+
 Merge page content into the 1st page of each pnml net.
 
 Note that refrence nodes are still present. They can be removed later
 with [`deref!`](@ref).
-
----
-$(TYPEDSIGNATURES)
-
-$(METHODLIST)
 """
 function flatten_pages! end
 flatten_pages!(model::PNML.PnmlModel) = flatten_pages!.(nets(model))
 
 """
-Collect keys from all pages and move to first page.
-
 $(TYPEDSIGNATURES)
-$(METHODLIST)
+
+Collect keys from all pages and move to first page.
 """
 function flatten_pages!(net::PnmlNet)
     @debug "Flatten $(length(net.pages)) page(s) of net $(pid(net))"

@@ -1,5 +1,5 @@
+header("GRAPHICS")
 @testset "graphics" begin
-    header("GRAPHICS")
     str = """
     <graphics>
      <offset x="1" y="2" />
@@ -81,15 +81,33 @@ end
      <tokenposition x="-2" y="-22"/>
  </tokengraphics>
 """
+    str5 = """
+ <tokengraphics>
+     <tokenposition x="-1.2" y="-22.33"/>
+ </tokengraphics>
+"""
+    str6 = """
+ <tokengraphics>
+     <tokenposition x="-1" y="-2"/>
+     <tokenposition x="-1.2" y="-22.33"/>
+ </tokengraphics>
+"""
     @testset "tokengraphics $l tokenpositions" for (s,l) in [str0=>0,
                                                              str1=>1,
                                                              str2=>2,
                                                              str3=>3,
-                                                             str4=>4]
+                                                             str4=>4,
+                                                             str5=>1,
+                                                             str6=>2]
+        @show l,s
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
+        @show typeof(n)
         printnode(n)
-        @test n isa PNML.TokenGraphics #tag(n) == :tokengraphics
+        @test n isa PNML.TokenGraphics
         @test length(n.positions) == l
+        for p in n.positions
+            @show p, PNML.eltype(p.x)
+        end
     end
 end
 

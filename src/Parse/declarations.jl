@@ -43,7 +43,6 @@ Return `PnmlLabel`.
 $(TYPEDSIGNATURES)
 """
 function parse_declarations(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "declarations" || error("element name wrong: $nn")
     PnmlLabel(unclaimed_element(node; kwargs...), node)
@@ -53,7 +52,6 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_sort(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "sort" || error("element name wrong: $nn")
     PnmlLabel(unclaimed_element(node; kwargs...), node)
@@ -63,7 +61,6 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_term(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "term" || error("element name wrong: $nn")
     PnmlLabel(unclaimed_element(node; kwargs...), node)

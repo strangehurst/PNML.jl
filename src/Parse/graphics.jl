@@ -1,16 +1,21 @@
 
 
 """
+$(TYPEDSIGNATURES)
+
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
-
-$(TYPEDSIGNATURES)
 """
 function parse_tokengraphics(node; kw...)
     nn = nodename(node)
     nn == "tokengraphics" || error("element name wrong: $nn")
-
-   TokenGraphics(parse_node.(allchildren("tokenposition",node); kw...))
+    positions = allchildren("tokenposition", node)
+    if isempty(positions) 
+        TokenGraphics() # Empty is legal.
+    else
+        #TODO: Enforce type sameness of position coordinates? How?
+        TokenGraphics(parse_node.(positions; kw...))
+    end
 end
 
 """
@@ -67,7 +72,6 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_graphics_line(node; kw...)
-    @debug node
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn: $nn")
 
@@ -115,7 +119,6 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_graphics_font(node; kw...)
-    @show node
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")
     

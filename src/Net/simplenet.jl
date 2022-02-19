@@ -96,12 +96,9 @@ reftransitions(petrinet::SimpleNet) = firstpage(petrinet.net).refTransitions
 
 
 """
-Return a transition-id labelled vector of rate values for transitions of net `s`.
-
----
 $(TYPEDSIGNATURES)
 
-$(METHODLIST)
+Return a transition-id labelled vector of rate values for transitions of net `s`.
 """
 function rates end
 
@@ -113,11 +110,9 @@ function rates(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriN
 end
 
 """
-Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
----
 $(TYPEDSIGNATURES)
 
-$(METHODLIST)
+Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
 """
 function rate end
 function rate(transition)::Number

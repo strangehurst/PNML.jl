@@ -1,24 +1,17 @@
 """
 Take an XML `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if that mapping exists, otherwise call [`unclaimed_element`](@ref)
-and return a [`PnmlLabel`](@ref) wrapping the `PnmlDict`.
-
-`verbose` is a boolean controlling debug logging.
+[`tagmap`](@ref) if that mapping exists, otherwise wrap an [`unclaimed_element`](@ref)
+in a [`PnmlLabel`](@ref).
 
 $(TYPEDSIGNATURES)
 """
-function parse_node(node; verbose=true, kw...)
-    node === nothing && return #TODO Make all nodes optional. Is this a good idea?
-    if verbose
-        parser = haskey(tagmap, node.name) ? "tagmap" : "unclaimed_element"
-        @debug( "parse_node($(node.name)) ---> $(parser)" *
-                " attributes $(nodename.(attributes(node)))" *
-                " children $(nodename.(elements(node)))")
-    end
+function parse_node(node; kw...)
+    @assert node !== nothing
+    @debug "parse_node($(node.name))"
     if haskey(tagmap, node.name)
-        tagmap[node.name](node; kw...) # Various types returned here.
+        return tagmap[node.name](node; kw...) # Various types returned here.
     else
-        PnmlLabel(unclaimed_element(node; kw...), node)
+        return PnmlLabel(unclaimed_element(node; kw...), node)
     end
 end
 
@@ -43,18 +36,18 @@ function parse_pnml(node; kw...)
 end
 
 """
-Return a dictonary of the pnml net with keys matching their XML tag names.
-
 $(TYPEDSIGNATURES)
+Return a dictonary of the pnml net with keys matching their XML tag names.
 """
-function parse_net(node; kw...)
+function parse_net(node; kw...)::PnmlNet
     nn = nodename(node)
     nn == "net" || error("element name wrong: $nn")
     EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "type") || throw(MalformedException("$(nn) missing type", node))
 
     @assert haskey(kw, :reg)
-    isempty(allchildren("page", node)) && @warn "net does not have any pages"
+    isempty(allchildren("page", node)) &&
+         throw(MalformedException("$(nn) does not have any pages"))
 
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
@@ -81,13 +74,13 @@ function parse_net(node; kw...)
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
-    PnmlNet(d, pntd, node) #IR
+    PnmlNet(d, pntd, node)
 end
 
 """
-PNML requires at least one page.
-
 $(TYPEDSIGNATURES)
+
+PNML requires at least one page.
 """
 function parse_page(node; kw...)
     nn = nodename(node)
@@ -118,9 +111,8 @@ function parse_page(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Page(d, kw[:pntd]) #IR
+    Page(d, kw[:pntd])
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -132,7 +124,7 @@ function parse_place(node; kw...)
     @assert haskey(kw, :reg)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
-                           :id => register_id!(kw[:reg],node["id"]),
+                           :id => register_id!(kw[:reg], node["id"]),
                            :marking => nothing,
                            :type => nothing) # place 'type' is different from the net 'type'.
     foreach(elements(node)) do child
@@ -192,7 +184,7 @@ function parse_arc(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Arc(d) #IR
+    Arc(d)
 end
 
 """
@@ -213,7 +205,7 @@ function parse_refPlace(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    RefPlace(d) #IR
+    RefPlace(d)
 end
 
 """
@@ -234,31 +226,30 @@ function parse_refTransition(node; kw...)
             _ => parse_pnml_node_common!(d,child; kw...)
         end
     end
-    RefTransition(d) #IR
+    RefTransition(d)
 end
 
 #----------------------------------------------------------
 
 """
-Return the stripped string of nodecontent.
-
 $(TYPEDSIGNATURES)
+
+Return the stripped string of nodecontent.
 """
 function parse_text(node; kw...)
     nn = nodename(node)
-    nn == "text" || error("element name wrong")
+    nn == "text" || error("parse_text nodename wrong")
     string(strip(nodecontent(node)))
 end
 
 """
-Return [`Name`](@ref) holding text value and optional tool & GUI information.
-
 $(TYPEDSIGNATURES)
+
+Return [`Name`](@ref) holding text value and optional tool & GUI information.
 """
 function parse_name(node; kw...)
-    node === nothing && return # Pnml names are optional. #TODO: error check mode? redundant?
     nn = nodename(node)
-    nn == "name" || error("element name wrong")
+    nn == "name" || error("element nodename wrong")
 
     # Using firstchild or allchildren can cause parse_node to be passed nothing
     # for optional or missing child nodes.
@@ -293,15 +284,15 @@ end
 #----------------------------------------------------------
 
 """
+$(TYPEDSIGNATURES)
+
 A pnml structure node can hold any well formed XML.
 Structure semantics will vary based on parent element and petri net type definition.
-
-$(TYPEDSIGNATURES)
 """
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kw...), node) # TODO make a Structure type (tree?)
+    PnmlLabel(unclaimed_element(node; kw...), node) # TODO make a Structure type.
 end
 
 
@@ -325,10 +316,10 @@ function parse_initialMarking(node; kw...)
         @match nodename(child) begin
             # We extend to real numbers.
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            _ => parse_pnml_label_common!(d,child; kw...)
+            _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    PTMarking(d)  #IR
+    PTMarking(d)
 end
 
 """
@@ -341,10 +332,10 @@ function parse_inscription(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            _ => parse_pnml_label_common!(d,child; kw...)
+            _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    PTInscription(d) #IR
+    PTInscription(d)
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
@@ -359,10 +350,10 @@ function parse_hlinitialMarking(node; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_label_common!(d,child; kw...)
+            _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    HLMarking(d) #IR
+    HLMarking(d)
 end
 
 """
@@ -375,10 +366,10 @@ function parse_hlinscription(node; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-           _ => parse_pnml_label_common!(d,child; kw...)
+           _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    HLInscription(d) #IR
+    HLInscription(d)
 end
 
 """
@@ -392,11 +383,11 @@ function parse_condition(node; kw...)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     parse_pnml_label_common!.(Ref(d), elements(node); kw...)
-    Condition(d) #IR
+    Condition(d)
 end
 
 #---------------------------------------------------------------------
-#TODO Will unclaimed_node handel this?
+#TODO Will unclaimed_node handle this?
 """
 Should not often have a '<label>' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.

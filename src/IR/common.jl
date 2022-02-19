@@ -1,5 +1,3 @@
-# common
-
 ###############################################################################
 # PNML Unclaimed Labels, TOOLS, NAMES, other bits
 ###############################################################################
@@ -9,10 +7,11 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Unclaimed PNML label wraps a `PnmlDict`` that can be the root of an XML-tree.
-Claimed labels will have type defined to make use of the structure 
-defined by the pntd schema, see [`Name`](@ref), markings, inscriptions,
-etc.
+Wrap a `PnmlDict` that can be the root of an XML-tree.
+
+Used for labels that do not have, or we choose not to use, a dedicated parse method.
+Claimed labels will have a type defined to make use of the structure 
+defined by the pntd schema. See [`Name`](@ref), the only label defined in pnmlcore.
 
 See [`DefaultTool`](@ref) for another PnmlDict wrapper.
 """
@@ -28,10 +27,10 @@ function text(l::PnmlLabel)
     l.dict[:text]
 end
 
-function has_structure(::PnmlLabel)
+function has_structure(l::PnmlLabel)
     haskey(l.dict, :structure)
 end
-function structure(::PnmlLabel)
+function structure(l::PnmlLabel)
     l.dict[:structure]
 end
 
@@ -64,7 +63,7 @@ for use by anything that understands toolname, version toolspecifics.
 struct ToolInfo
     toolname::String
     version::String
-    infos::Vector{PnmlLabel} #TODO 
+    infos::Vector{PnmlLabel} #TODO specialize?
     xml::XMLNode
 end
 
@@ -107,24 +106,28 @@ $(TYPEDFIELDS)
 TokenGraphics is <toolspecific> content and is wrapped by a [`ToolInfo`](@ref).
 It combines the <tokengraphics> and <tokenposition> elements.
 """
-struct TokenGraphics{T} <: AbstractPnmlTool
-    positions::Vector{T} #was Coordinate}
+struct TokenGraphics <: AbstractPnmlTool
+    positions::Vector{Coordinate} #TODO: uses abstract type
 end
+
+# Empty TokenGraphics is allowed in spec.
+TokenGraphics() = TokenGraphics(Coordinate[])
+#TokenGraphics(v::Vector{Coordinate}) = 
 
 ###############################################################################
 # Common parts
 ###############################################################################
 
 """
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
 Name is for display, possibly in a tool specific way.
 """
 struct Name <: AbstractLabel
     text::String
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{DefaultTool}}
+    tools::Maybe{Vector{DefaultTool}} #TODO Use ToolInfo?
 end
 
 Name(name::AbstractString = ""; graphics=nothing, tools=nothing) =
@@ -173,3 +176,10 @@ Base.isempty(oc::ObjectCommon) = !(has_name(oc) ||
                                    has_graphics(oc) ||
                                    has_tools(oc) ||
                                    has_labels(oc))
+
+function Base.empty!(oc::ObjectCommon)
+    has_name(oc) && empty!(oc.name)
+    has_graphics(oc) && empty!(oc.graphics)
+    has_tools(oc) && empty!(oc.tools)
+    has_labels(oc) && enpty!(oc.labels)
+end

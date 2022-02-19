@@ -12,8 +12,10 @@ struct Coordinate{T <: Number}
     x::T
     y::T
 end
-Coordinate() = Coordinate(0, 0)
-Coordinate(x) = Coordinate(x, 0)
+Coordinate() = Coordinate{Int}(0, 0)
+Coordinate(x::T) where T<:Number = Coordinate{T}(x, zero(x))
+#Coordinate(x::T, y::T) where {T<:Number} = Coordinate{T}(x, y)
+Base.eltype(c::Coordinate{T}) where {T<:Number} = T
 
 #-------------------
 """

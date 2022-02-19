@@ -11,7 +11,6 @@ $(DOCSTRING)
 $(TYPEDSIGNATURES)
 ---
 ## Methods
-$(METHODLIST)
 """
 
 #@template (TYPES) =

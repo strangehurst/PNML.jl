@@ -24,7 +24,7 @@ end
 Place(pdict::PnmlDict) =
     Place(pdict[:id], pdict[:marking], pdict[:type], ObjectCommon(pdict))
 
-    #-------------------
+#-------------------
 """
 Transition node of a Petri Net Markup Language graph.
 
@@ -52,7 +52,7 @@ mutable struct Arc <: PnmlObject
     id::Symbol
     source::Symbol
     target::Symbol
-    inscription::Maybe{Inscription} #TODO Abstract, could br a Union.
+    inscription::Maybe{Inscription}
     com::ObjectCommon
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
@@ -126,7 +126,6 @@ struct Page{T<:PnmlType} <: PnmlObject
     declarations::Vector{Declaration}
     subpages::Maybe{Vector{Page}}
     com::ObjectCommon
-    #xml::XMLNode
 end
 
 """
@@ -151,7 +150,7 @@ function Base.empty!(page::Page)
     empty!(page.arcs)
     empty!(page.declarations)
     !isnothing(page.subpages) && empty!(page.subpages)
-    #TODO empty common
+    empty!(page.com)
 end
 
 #-------------------
@@ -175,7 +174,7 @@ end
 $(TYPEDSIGNATURES)
 """
 function PnmlNet(d::PnmlDict, pntd::T, xml::XMLNode) where {T<:PnmlType}
-    PnmlNet(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
+    PnmlNet{T}(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
 end
 
 pid(net::PnmlNet) = net.id
@@ -191,10 +190,10 @@ firstpage(net::PnmlNet) = net.pages[1]
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-PNML model holds one or more Petri Nets and an ID Registry shared by al nets.
+One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Vector{PnmlNet} #TODO Vector{PetriNet}
+    nets::Vector{PnmlNet}
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode
 end
@@ -212,9 +211,7 @@ xmlnode(model::PnmlModel) = model.xml
 """
 $(TYPEDSIGNATURES)
 
-Build a PnmlModel from a string ontaining XML.
-
-$(METHODLIST)
+Build a PnmlModel from a string containing XML.
 """
 function parse_str(str::AbstractString)
     reg = IDRegistry()
@@ -226,8 +223,6 @@ end
 $(TYPEDSIGNATURES)
 
 Build a PnmlModel from a file containing XML.
-
-$(METHODLIST)
 """
 function parse_file(fname::AbstractString)
     reg = IDRegistry()
@@ -235,10 +230,9 @@ function parse_file(fname::AbstractString)
 end
 
 """
+$(TYPEDSIGNATURES)
 Return nets matching pntd `type` given as string or symbol.
 See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
-
----
 """
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, PnmlTypes.pntd_symbol(type))
@@ -246,20 +240,15 @@ find_nets(model, type::Symbol) = find_nets(model, PnmlTypes.pnmltype(type))
 find_nets(model, type::T) where {T <: PnmlType} =
     filter(n->typeof(n.type) <: T, nets(model))
 
-
 """
 $(TYPEDSIGNATURES)
 
-Return `PnmlNet` with `id` or `nothing``.
-
-$(METHODLIST)
+Return `PnmlNet` having `id` or `nothing``.
 """
 function find_net end
 
 function find_net(model, id::Symbol)
-    i = findfirst(nets(model)) do net
-        pid(net) === id
-    end
+    i = findfirst(net->pid(net) === id, nets(model))
     isnothing(i) ? nothing : nets[i]
 end
 
@@ -267,8 +256,6 @@ end
 $(TYPEDSIGNATURES)
 
 Return first net contained by `doc`.
-
-$(METHODLIST)
 """
 first_net(model) = first(nets(model))
 
@@ -276,11 +263,5 @@ first_net(model) = first(nets(model))
 $(TYPEDSIGNATURES)
 
 Return all `nets` of `model`.
-
-$(METHODLIST)
 """
 nets(model::PnmlModel) = model.nets
-
-###############################################################################
-#
-###############################################################################

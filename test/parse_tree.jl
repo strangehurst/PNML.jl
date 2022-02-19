@@ -16,7 +16,6 @@ str =
         <inscription> <text>12 </text> </inscription>
       </arc>
       <arc source="place1" target="transition1" id="arc2">
-        <inscription> <text> 13 </text> </inscription>
       </arc>
     </page>
   </net>
@@ -73,18 +72,22 @@ end
             @test !isempty(PNML.allchildren("transition", page))
             foreach(PNML.allchildren("transition", page)) do t
                 @test nodename(t) == "transition"
-                i = parse_node(PNML.firstchild("condition", t); reg)
-                @test i === nothing
+                cond = PNML.firstchild("condition", t)
+                @test cond === nothing
+                #i = parse_node(PNML.firstchild("condition", t); reg)
             end
 
             @test !isempty(PNML.allchildren("arc", page))
             foreach(PNML.allchildren("arc", page)) do a
                 @test nodename(a) == "arc"
-                i = parse_node(PNML.firstchild("inscription", a); reg)
-                @test typeof(i) <: PNML.PTInscription
-                @test typeof(i.value) <: Number
-                @test i.value > 0
-                @test xmlnode(i) isa Maybe{EzXML.Node}
+                ins = PNML.firstchild("inscription", a)
+                if ins !== nothing
+                    i = parse_node(ins; reg)
+                    @test typeof(i) <: PNML.PTInscription
+                    @test typeof(i.value) <: Number
+                    @test i.value > 0
+                    @test xmlnode(i) isa Maybe{EzXML.Node}
+                end
             end
         end
     end

@@ -15,24 +15,18 @@ macro xml_str(s)
 end
 
 """
-Return up to 1 immediate child of element `el` that is a `tag`.
-
----
 $(TYPEDSIGNATURES)
 
-$(METHODLIST)
+Return up to 1 immediate child of element `el` that is a `tag`.
 """
 function firstchild(tag, el, ns=pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 
 """
-Return vector of `el` element's immediate children with `tag`.
-
----
 $(TYPEDSIGNATURES)
 
-$(METHODLIST)
+Return vector of `el` element's immediate children with `tag`.
 """
 function allchildren(tag, el, ns=pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])
