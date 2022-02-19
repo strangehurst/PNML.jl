@@ -6,31 +6,31 @@ CurrentModule = PNML
 Pages = ["interface.md"]
 Depth = 5
 ```
-# Interface 
+# Interface
 
-The intermediate representation is used to implement networks 
+The intermediate representation is used to implement networks
 expressed in a pnml model. The consumer of the IR is a network,
-most naturally a varity of Petri Net. 
+most naturally a varity of Petri Net.
 
 High-Level Petri Net Graphs can be expressed in a pnml model.
 
 [`PnmlDict`](@ref) is an alias for `Dict{Symbol,Any}`.
-Each XML tag is first parsed into a `PnmlDict`, many are then used 
-to create higher-level types. Some parts will continue to find 
+Each XML tag is first parsed into a `PnmlDict`, many are then used
+to create higher-level types. Some parts will continue to find
 use for `PnmlDict`'s flexibility.
 
-We start a description of the net IR here. 
+We start a description of the net IR here.
 
 ## Net & Pages
 
-At the top level a pnml model is one or more networks, 
-each described by a <net> tag and one or more <page> tags. 
+At the top level a pnml model is one or more networks,
+each described by a <net> tag and one or more <page> tags.
 
 Pages are present for visual presentation to humans.
 Not doing anything with it until convinced there is a viable external community.
 Parse for input, worry about writing back out and interchange later.
 
-The collection of pages is flattened before use. Using them unflattened is 
+The collection of pages is flattened before use. Using them unflattened is
 not supposed to be impossible, but is not the arena or the initial use cases:
 adapting to use graph tools, catlab, sciml, and other linear algebra things.
 See [`flatten_pages!`](@ref).
@@ -48,10 +48,8 @@ XML <net> tags are 1st parsed into PnmlDict:
 | type         | PnmlType defines schema the XML should meet    |
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
- 
-See [`pnml_common_defaults`](@ref), 
-[`pnml_node_defaults`](@ref)
-and [`parse_net`](@ref) for more detail.
+
+See [`parse_net`](@ref) for more detail.
 
 XML <page> tags are also 1st parsed into PnmlDict:
 
@@ -74,12 +72,12 @@ See also: [`parse_page`](@ref).
 ## Petri Net Graphs and Networks
 
 There are 3 top-level forms:
-  - [`PetriNet`](@ref) subtpes wraping a single `PnmlNet`, maybe multiple pages.
-  - [`PnmlNet`](@ref) assumes there is only 1 page is this net.
+  - [`PetriNet`](@ref) subtypes wraping a single `PnmlNet`.
+  - [`PnmlNet`](@ref)  maybe multiple pages.
   - [`Page`](@ref) when the only page of the only net in a petrinet.
 
 The simplest arrangement is a pnml model with a single <net> element having
-a single page. Any <net> may be flatten to a single page. 
+a single page. Any <net> may be flatten to a single page.
 
 The initial `PetriNet` subtypes are built using the assumption that
 multiple pages will be flattened to a single page.
@@ -90,7 +88,7 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 
 ## Simple Interface Methods
 
-### pid - access pnml ID symbol
+### pid - get PNML ID symbol
 
 Objects within a pnml graph have unique identifiers,
 which are used for referring to the object.
@@ -100,157 +98,233 @@ This includes:
 
 [`PNML.pid`](@ref)
 ```@example methods
-methods(PNML.pid)
+methods(PNML.pid) # hide
 ```
 
 ### tag - access XML tag symbol
 
-
 [`PNML.tag`](@ref)
 ```@example methods
-methods(PNML.tag)
+methods(PNML.tag) # hide
 ```
 
-### has_xml
+### has\_xml - is xml attached
 
 [`PNML.has_xml`](@ref)
 ```@example methods
-methods(PNML.has_xml)
+methods(PNML.has_xml) # hide
 ```
 
-### xmlnode
+### xmlnode - access xml
 
 [`PNML.xmlnode`](@ref)
 ```@example methods
-methods(PNML.xmlnode)
+methods(PNML.xmlnode) # hide
 ```
-### type
+
+### type - return PnmlType identifying PNTD
 
 [`PNML.type`](@ref)
 ```@example methods
-methods(PNML.type)
+methods(PNML.type) # hide
 ```
 
-## Nodes of Graph
+## Nodes of Petri Net Graph
 
+Return vector of nodes.
+
+### places
 [`PNML.places`](@ref)
 ```@example methods
-methods(PNML.places)
+methods(PNML.places) # hide
 ```
+### transitions
+[`PNML.transitions`](@ref)
 ```@example methods
-methods(PNML.transitions)
+methods(PNML.transitions) # hide
 ```
+### arcs
+[`PNML.arcs`](@ref)
 ```@example methods
-methods(PNML.arcs)
+methods(PNML.arcs) # hide
 ```
-```@example methods 
-methods(PNML.refplaces) 
-```
-```@example methods 
-methods(PNML.reftransitions) 
-```
-
-## Node Predicates
-
-```@example methods 
-methods(PNML.has_place) 
-```
-```@example methods 
-methods(PNML.has_transition) 
-```
+### refplaces
+[`PNML.refplaces`](@ref)
 ```@example methods
-methods(PNML.has_arc)
+methods(PNML.refplaces)  # hide
 ```
-```@example methods 
-methods(PNML.has_refP) 
-```
-```@example methods 
-methods(PNML.has_refT) 
-```
-
-## Node Vector
-
-```@example methods 
-methods(PNML.place) 
-```
-```@example methods 
-methods(PNML.transition)
-```
+### reftransitions
+[`PNML.reftransitions`](@ref)
 ```@example methods
-methods(PNML.arc) 
-```
-```@example methods 
-methods(PNML.refplace) 
-```
-```@example methods 
-methods(PNML.reftransition) 
+methods(PNML.reftransitions)  # hide
 ```
 
-## Node ID Vector 
+## Node Predicates - uses PNML ID
 
-```@example methods 
-methods(PNML.place_ids) 
+### has\_place
+[`PNML.has_place`](@ref)
+```@example methods
+methods(PNML.has_place)  # hide
 ```
-```@example methods 
-methods(PNML.transition_ids) 
+### has\_transition
+[`PNML.has_place`](@ref)
+```@example methods
+methods(PNML.has_transition)  # hide
 ```
-```@example methods 
-methods(PNML.arc_ids) 
+### has\_arc
+[`PNML.has_arc`](@ref)
+```@example methods
+methods(PNML.has_arc) # hide
 ```
-```@example methods 
-methods(PNML.refplace_ids) 
+### has\_refP
+[`PNML.has_refP`](@ref)
+```@example methods
+methods(PNML.has_refP)  # hide
 ```
-```@example methods 
-methods(PNML.reftransition_ids) 
+### has\_refT
+[`PNML.has_refT`](@ref)
+```@example methods
+methods(PNML.has_refT)  # hide
+```
+
+## Node Access - uses PNML ID
+
+### place
+[`PNML.place`](@ref)
+```@example methods
+methods(PNML.place)  # hide
+```
+### transition
+[`PNML.transition`](@ref)
+```@example methods
+methods(PNML.transition) # hide
+```
+### arc
+[`PNML.arc`](@ref)
+```@example methods
+methods(PNML.arc)  # hide
+```
+### refplace
+[`PNML.refplace`](@ref)
+```@example methods
+methods(PNML.refplace)  # hide
+```
+### reftransition
+[`PNML.reftransition`](@ref)
+```@example methods
+methods(PNML.reftransition)  # hide
+```
+
+## Node ID Vector
+
+### place\_ids
+[`PNML.place_ids`](@ref)
+```@example methods
+methods(PNML.place_ids)  # hide
+```
+### transition\_ids
+[`PNML.transition_ids`](@ref)
+```@example methods
+methods(PNML.transition_ids)  # hide
+```
+### arc\_ids
+[`PNML.arc_ids`](@ref)
+```@example methods
+methods(PNML.arc_ids)  # hide
+```
+### refplace\_ids
+[`PNML.refplace_ids`](@ref)
+```@example methods
+methods(PNML.refplace_ids)  # hide
+```
+### reftransition\_ids
+[`PNML.reftransition_ids`](@ref)
+```@example methods
+methods(PNML.reftransition_ids)  # hide
 ```
 
 ## Arc Related
 
-```@example methods 
-methods(PNML.all_arcs) 
+### all\_arcs - source or target is PNML ID
+[`PNML.all_arcs`](@ref)
+```@example methods
+methods(PNML.all_arcs)  # hide
 ```
-```@example methods 
-methods(PNML.src_arcs) 
+### src\_arcs - source is PNML ID
+[`PNML.src_arcs`](@ref)
+```@example methods
+methods(PNML.src_arcs)  # hide
 ```
-```@example methods 
-methods(PNML.tgt_arcs) 
+### tgt\_arcs - target is PNML ID
+[`tgt_arcs`](@ref)
+```@example methods
+methods(PNML.tgt_arcs)  # hide
 ```
-
-```@example methods 
-methods(PNML.inscription) 
+### inscription - evaluate inscription value (or return default)
+[`inscription`](@ref)
+```@example methods
+methods(PNML.inscription)  # hide
 ```
-
-```@example methods 
-methods(PNML.deref!) 
+### deref! - dereference all references of flattened net
+[`deref!`](@ref)
+```@example methods
+methods(PNML.deref!)  # hide
 ```
-```@example methods 
-methods(PNML.deref_place) 
+### deref\_place - derefrence one place
+[`deref_place`](@ref)
+```@example methods
+methods(PNML.deref_place)  # hide
 ```
-```@example methods 
-methods(PNML.deref_transition) 
+### deref\_transition - dereference one transition
+[`deref_transition`](@ref)
+```@example methods
+methods(PNML.deref_transition)  # hide
 ```
 
 ## Place Related
 
-```@example methods 
-methods(PNML.marking) 
+### marking - evaluate marking value (or return default)
+[`marking`](@ref)
+```@example methods
+methods(PNML.marking)  # hide
 ```
-```@example methods 
-methods(PNML.initialMarking) 
+### initialMarking -
+[`initialMarking`](@ref)
+```@example methods
+methods(PNML.initialMarking)  # hide
 ```
 
 ## Transition Related
 
-```@example methods 
-methods(PNML.conditions) 
-```
-```@example methods 
-methods(PNML.condition) 
-```
+### conditions - collect evaluated conditions
+[`conditions`](@ref)
 ```@example methods
-methods(PNML.transition_function) 
+methods(PNML.conditions)  # hide
 ```
+### condition - evaluate condition of one transition
+[`condition`](@ref)
 ```@example methods
-methods(PNML.in_out) 
+methods(PNML.condition)  # hide
+```
+### transition\_function - return `LVector` of `in_out` for all transitions
+[`transition_function`](@ref)
+```@example methods
+methods(PNML.transition_function)  # hide
+```
+### in\_out - tuple of `ins`, `outs` of one transition
+[`in_out`](@ref)
+```@example methods
+methods(PNML.in_out)  # hide
 ```
 
+### ins - `LVector` of source arc evaluated inscriptions.
+[`ins`](@ref)
+```@example methods
+methods(PNML.ins)  # hide
+```
+
+### outs - `LVector` of target arc evaluated inscriptions.
+[`outs`](@ref)
+```@example methods
+methods(PNML.outs)  # hide
+```
