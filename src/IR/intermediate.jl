@@ -15,8 +15,8 @@ $(TYPEDFIELDS)
 """
 struct Place <: PnmlNode
     id::Symbol
-    marking::Maybe{Marking}
-    type::Maybe{PnmlLabel}
+    marking::Maybe{Marking} #TODO remove Maybe, add initialMarking
+    sorttype::Maybe{PnmlLabel} # Place type is different from pntd/PnmlType.
 
     com::ObjectCommon
 end
@@ -116,7 +116,7 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{T<:PnmlType} <: PnmlObject
+struct Page{PNTD<:PnmlType} <: PnmlObject
     id::Symbol
     places::Vector{Place}
     refPlaces::Vector{RefPlace}
@@ -160,9 +160,9 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{T<:PnmlType}
+struct PnmlNet{PNTD<:PnmlType}
     id::Symbol
-    type::T
+    type::PNTD
     pages::Vector{Page}
     declarations::Vector{Declaration}
 
@@ -173,8 +173,8 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function PnmlNet(d::PnmlDict, pntd::T, xml::XMLNode) where {T<:PnmlType}
-    PnmlNet{T}(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
+function PnmlNet(d::PnmlDict, pntd::PNTD, xml::XMLNode) where {PNTD<:PnmlType}
+    PnmlNet{PNTD}(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
 end
 
 pid(net::PnmlNet) = net.id
@@ -237,8 +237,8 @@ See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, PnmlTypes.pntd_symbol(type))
 find_nets(model, type::Symbol) = find_nets(model, PnmlTypes.pnmltype(type))
-find_nets(model, type::T) where {T <: PnmlType} =
-    filter(n->typeof(n.type) <: T, nets(model))
+find_nets(model, type::PNTD) where {PNTD <: PnmlType} =
+    filter(n->typeof(n.type) <: PNTD, nets(model))
 
 """
 $(TYPEDSIGNATURES)

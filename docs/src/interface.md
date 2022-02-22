@@ -328,3 +328,36 @@ methods(PNML.ins)  # hide
 ```@example methods
 methods(PNML.outs)  # hide
 ```
+
+## Labels
+
+### has\_text
+[`has_text`](@ref)
+```@example methods
+methods(PNML.has_text) # hide
+```
+
+### has\_structure
+[`has_structure`](@ref)
+```@example methods
+methods(PNML.has_structure) # hide
+```
+
+### text
+[`text`](@ref)
+```@example methods
+methods(PNML.text) # hide
+```
+
+### has_labels
+[`has_labels`](@ref)
+```@example methods
+methods(PNML.has_labels) # hide
+```
+
+### methodswith AbstractLabel
+
+---
+```@example methods
+InteractiveUtils.methodswith(PNML.PnmlLabel, PNML, supertypes=true) # hide
+```

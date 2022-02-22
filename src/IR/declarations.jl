@@ -1,5 +1,3 @@
-
-#-------------------
 """
 Declarations are the core of high-level Petri Net.
 They define objects/names that are used for conditions, inscriptions, markings.

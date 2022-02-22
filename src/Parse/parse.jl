@@ -132,6 +132,7 @@ function parse_place(node; kw...)
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
             "initialMarking"   => (d[:marking] = parse_node(child; kw...))
             "hlinitialMarking" => (d[:marking] = parse_node(child; kw...))
+            # Here type means `sort`. Re: Many-sorted algebra.
             "type"             => (d[:type] = parse_node(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end

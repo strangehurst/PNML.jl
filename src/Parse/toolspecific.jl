@@ -15,8 +15,8 @@ function parse_toolspecific(node; kw...)
     d = PnmlDict(:tag    => Symbol(nn), 
                 :tool    => node["tool"],
                 :version => node["version"])
-    # Treat all top-level children as labels.
-    d[:content] = PnmlLabel[]
+    
+    d[:content] = PnmlLabel[] # Treat all top-level children as labels.
     foreach(elements(node)) do child
         #TODO: use parse_node here?
         #TODO: Specialize/verify on tool, version. User supplied?

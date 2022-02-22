@@ -10,7 +10,7 @@ abstract type Marking <: AbstractLabel end
 
 #-------------------
 """
-Labels a Place/Transition pntd Place instance.
+Label a Place et.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -48,7 +48,7 @@ convert(::Type{Maybe{PTMarking}}, pdict::PnmlDict) = PTMarking(pdict)
 
 #-------------------
 """
-PNML HLMarking labels a Place instance.
+Label a Place.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -57,6 +57,7 @@ struct HLMarking <: Marking
     text::Maybe{String}
     structure::Maybe{PnmlLabel}
     com::ObjectCommon
+    #TODO check that there is a text or structure (or both)
 end
 
 HLMarking(pdict::PnmlDict) =

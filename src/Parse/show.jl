@@ -90,13 +90,13 @@ function Base.show(io::IO, labelvector::Vector{PnmlLabel})
     end
 end
 
-function Base.show(io::IO, n::PnmlLabel)
-    print(io, typeof(n), " ")
-    pprint(io, n.dict)
+function Base.show(io::IO, label::PnmlLabel)
+    print(io, typeof(label), " ")
+    print(io, label.dict) #! Was pprint
 end
 
-function Base.show(io::IO, ::MIME"text/plain", f::PnmlLabel)
-    print(io, f)
+function Base.show(io::IO, ::MIME"text/plain", label::PnmlLabel)
+    print(io, label)
 end
 
 #-------------------
@@ -118,21 +118,13 @@ function Base.show(io::IO, ti::ToolInfo)
     io = inc_indent(io)
     for (i,info) in enumerate(ti.infos)
         print(io, indent(io))
-        pprint(io, info)
+        print(io, info) #! Was pprint
         i < length(ti.infos) && print(io, "\n")
     end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
     print(io, ti)
-end
-
-#-------------------
-function Base.show(io::IO, tool::DefaultTool)
-    print(io, "content: (", tool.content, ")")
-end
-function Base.show(io::IO, ::MIME"text/plain", tool::DefaultTool)
-    print(io, tool)
 end
 
 #-------------------
@@ -228,7 +220,7 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
-          ", type ", place.type,
+          ", type ", place.sorttype,
           ", marking ", place.marking)
     show_common(io, place.com)
 end

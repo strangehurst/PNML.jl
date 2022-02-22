@@ -35,7 +35,7 @@ xmlnode(pdict::PnmlDict) = pdict[:xml]
 """
 $(TYPEDSIGNATURES)
 
-Does object have XML attached? Defaults to `false`.
+Return `true` if has XML attached. Defaults to `false`.
 """
 function has_xml end
 has_xml(::Any) = false
@@ -72,7 +72,7 @@ the hiearchy.
 julia> using PNML, EzXML
 
 julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry())
-PNML.PnmlLabel Dict(:tag => :aaa, :id => "FOO", :content => "BAR")
+PNML.PnmlLabel Dict{Symbol, Any}(:tag => :aaa, :id => "FOO", :content => "BAR")
 ```
 """
 function unclaimed_element(node; kw...)
@@ -205,7 +205,7 @@ as the tag name for instances of the type ToolInfo.
 function add_toolinfo!(d::PnmlDict, node; kw...)
     if d[:tools] === nothing
         d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
-        #TODO DefaultTool and TokenGraphics are 2 known flavors.
+        #TODO TokenGraphics is a known flavor.
         #TODO Tools may induce additional subtype, but if is hoped that
         #TODO label based parsing is general & flexible enough to suffice.
     end
