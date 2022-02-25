@@ -7,11 +7,17 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Declaration
-    d::PnmlLabel # TODO what do declarations contain? Land of Symbolics.jl.
+    label::PnmlLabel # TODO what do declarations contain? Land of Symbolics.jl.
     com::ObjectCommon
     xml::XMLNode
 end
 
 Declaration(pdict::PnmlDict, xml::XMLNode) = 
     Declaration(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
+
+"""
+"""
+struct UserOperator
+    declaration::Symbol # varialble, operator, or sort declaration id
+end
 

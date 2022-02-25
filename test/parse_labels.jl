@@ -1,24 +1,20 @@
 header("PARSE_LABELS")
 
 header("UNCLAIMED ELEMENT")
-@testset "attribute" begin
-    # pnml attribute XML nodes do not have display/GUI data and other
-    # overhead of pnml annotation nodes. Both are pnml labels.
-    a,xml = PNML.unclaimed_element(xml"""
-                           <declarations atag="test">
-                           </declarations>
-                        """; reg=PNML.IDRegistry())
-    printnode(a, type=true)
-    @test !isnothing(a)
-
-    a,xml = PNML.unclaimed_element(xml"""
-                           <declarations atag="test">
-                                <something> some content </something>
-                                <something2 tag2="two"> <value/> </something2>
-                           </declarations>
-                        """; reg=PNML.IDRegistry())
-    printnode(a, type=true)
-    @test !isnothing(a)
+@testset "unclaimed" begin
+    for elem in [
+        xml"""<declarations atag="test1">
+              </declarations>""",
+        xml"""<declarations atag="test2">
+                <something> some content </something>
+                <something2 tag2="two"> <value/> </something2>
+              </declarations>
+    """]
+        dict::PNML.PnmlDict = PNML.unclaimed_element(elem, reg=PNML.IDRegistry())
+        printnode(dict)
+        @test !isnothing(dict)
+    end
+    println()
 end
 
 header("DECLARATION")
@@ -37,29 +33,61 @@ header("DECLARATION")
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
+    @test typeof(n.label) <: PNML.PnmlLabel
+    @test n.label.dict[:tag] === :declaration
+    @test n.label.dict[:key] == "test"
+    @test n.label.dict[:structure].dict[:declarations].dict[:text][1] == "#TODO"
+    @test n.label.dict[:structure].dict[:declarations].dict[:text][2] == "yes really"
+
 
     @show typeof(n), fieldnames(typeof(n))
-    @show typeof(n.d), fieldnames(typeof(n.d))
-    for (k,v) in pairs(n.d.dict)
+    @show typeof(n.label), fieldnames(typeof(n.label))
+    for (k,v) in pairs(n.label.dict)
         @show k, typeof(v), v
     end
 
-    @test typeof(n.d) <: PNML.PnmlLabel
+    @show typeof(n.label.dict)
+    @show typeof(n.label.dict[:structure])
+    @show typeof(n.label.dict[:structure].dict)
+    @show typeof(n.label.dict[:structure].dict[:declarations])
 
-    @show typeof(n.d.dict)
-    @show typeof(n.d.dict[:structure])
-    @show typeof(n.d.dict[:structure].dict)
-    @show typeof(n.d.dict[:structure].dict[:declarations])
-
-    @test n.d.dict[:tag] === :declaration
-    @test n.d.dict[:key] == "test"
-
-    @show n.d.dict[:structure].dict
-    @show n.d.dict[:structure].dict[:declarations].dict[:text]
-
-    @test n.d.dict[:structure].dict[:declarations].dict[:text][1] == "#TODO"
-    @test n.d.dict[:structure].dict[:declarations].dict[:text][2] == "yes really"
+    @show n.label.dict[:structure].dict
+    @show n.label.dict[:structure].dict[:declarations].dict[:text]
+    
     println()
+end
+@testset "declaration tree" begin
+    n = parse_node(xml"""
+        <declaration>
+	    <structure>
+                <declarations>
+                    <namedsort id="LegalResident" name="LegalResident">
+			<cyclicenumeration>
+			    <feconstant id="LegalResident0" name="0"/>
+                             <feconstant id="LegalResident1" name="1"/>
+			</cyclicenumeration>
+		    </namedsort>
+                    <namedsort id="MICSystem" name="MICSystem">
+			<cyclicenumeration>
+				<feconstant id="MICSystem0" name="0"/>
+				<feconstant id="MICSystem1" name="1"/>
+			</cyclicenumeration>
+		    </namedsort>
+		    <namedsort id="CINFORMI" name="CINFORMI">
+			<cyclicenumeration>
+				<feconstant id="CINFORMI0" name="0"/>
+				<feconstant id="CINFORMI1" name="1"/>
+			</cyclicenumeration>
+		    </namedsort>
+            </declarations>
+        </structure>
+    </declaration>
+    """; reg= PNML.IDRegistry())
+    printnode(n)
+
+    @test typeof(n) <: PNML.Declaration
+    @test xmlnode(n) isa Maybe{EzXML.Node}
+    @test typeof(n.label) <: PNML.PnmlLabel
 end
 
 header("PT initMarking")

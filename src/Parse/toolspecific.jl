@@ -21,7 +21,7 @@ function parse_toolspecific(node; kw...)
         #TODO: use parse_node here?
         #TODO: Specialize/verify on tool, version. User supplied?
         #TODO: Register additional tool specific parsers?
-        push!(d[:content], PnmlLabel(unclaimed_element(child; kw...), child))
+        push!(d[:content], PnmlLabel(child; kw...))
     end
     ToolInfo(d, node)
 end

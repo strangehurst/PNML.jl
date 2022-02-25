@@ -1,4 +1,8 @@
-# show methods fot the intermediate representation
+# Show methods for the intermediate representation.
+# References:
+#  - base/show.jl
+#  - ?show
+#
 "Indention increment."
 const indent_width = 4
 
@@ -83,20 +87,34 @@ function Base.show(io::IO, g::Graphics)
 end
 
 #-------------------
+function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel})
+    print(io, "SMLV:", typeof(labelvector), "[")
+    io = inc_indent(io)
+    for (i,label) in enumerate(labelvector)
+        print(io, indent(io))
+        show(io, mime, label)
+        i < length(labelvector) && print(io, "\n")
+    end
+    print(io, "]")
+    
+end
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
+    print(io, "SLV:", typeof(labelvector), "[")
+    io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
         print(io, indent(io), label)
         i < length(labelvector) && print(io, "\n")
     end
+    print(io, "]")
 end
 
-function Base.show(io::IO, label::PnmlLabel)
-    print(io, typeof(label), " ")
-    print(io, label.dict) #! Was pprint
+function Base.show(io::IO, label::PnmlLabel) #TODO Make labels parametric labels.
+    print(IOContext(io, :typeinfo=>Dict), "SL:", label.dict) #! Was pprint
 end
 
-function Base.show(io::IO, ::MIME"text/plain", label::PnmlLabel)
-    print(io, label)
+function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
+    print(io, "SML:", typeof(label), " ")
+    show(IOContext(io, :typeinfo=>Dict), mime, label.dict)
 end
 
 #-------------------
@@ -335,18 +353,23 @@ end
 
 #-------------------
 function Base.show(io::IO, declarations::Vector{Declaration})
-    isempty(declarations) && return
+
+    print(io, typeof(declare), "[")
     for (i,dec) in enumerate(declarations)
-        print(io, indent(io), dec)
+        print(io, indent(io))
+        show(inc_indent(io), MIME"text/plain"(), dec)
         i < length(declarations) && print(io, "\n")
     end
+    print(io, "]")
 end
 function Base.show(io::IO, declare::Declaration)
-    print(io, declare.d)
+    show(io, declare.label)
     show_common(io, declare.com,)
 end
-function Base.show(io::IO, ::MIME"text/plain", declare::Declaration)
-    show(io, declare)
+function Base.show(io::IO, mime::MIME"text/plain", declare::Declaration)
+    print(io, typeof(declare))
+    show(io, mime, declare.label)
+    show(io, mime, declare.com)
 end
 
 #-------------------
@@ -413,9 +436,11 @@ end
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
-    for (i, dec) in enumerate(net.declarations)
-        show(io, dec)
-        i < length(net.declarations) && println(io)
+    iio = inc_indent(io) # Indent any declarations.
+    foreach(net.declarations) do decl
+        print(iio, indent())
+        show(iio, MIME"plain/text"(), decl)
+        println(iio, "\n") 
     end
     show_common(io, net.com)
     show(io, net.pages)
@@ -435,7 +460,7 @@ end
 function Base.show(io::IO, pnml::PnmlModel)
     println(io, summary(pnml))
     for (i, net) in enumerate(nets(pnml))
-        print(io, net)
+        show(io, MIME"text/plain"(), net)
         if i < length(nets(pnml))
             print(io, "\n")
         end

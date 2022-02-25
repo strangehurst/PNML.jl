@@ -32,13 +32,13 @@ const pnml_dir = joinpath(@__DIR__, "data")
 "Turn string into XML node."
 to_node(s::AbstractString) = root(EzXML.parsexml(s))
 
+#function printnode(io::IO, node; label=nothing, compact=false, type=false, kw...)
 "Print PnmlDict."
-function printnode(io::IO, node; label=nothing, compact=false, type=false, kw...)
-    if PRINT_PNML
-        type && print(io, typeof(node), " ")
+function printnode(io::IO, node; label=nothing, kw...)
+        if PRINT_PNML
         !isnothing(label) && print(io, label, " ")
-        print(io, node) #! Was pprint
-        !compact && println(io, "")
+        show(io, MIME"text/plain"(), node) #! Was pprint
+        println(io, "\n")
     end
 end
 function printnode(n; kw...)

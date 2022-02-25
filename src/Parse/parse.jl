@@ -1,9 +1,9 @@
 """
-Take an XML `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if that mapping exists, otherwise wrap an [`unclaimed_element`](@ref)
-in a [`PnmlLabel`](@ref).
-
 $(TYPEDSIGNATURES)
+
+Take an XML `node` and parse it by calling the method matching `node.name` from
+[`tagmap`](@ref) if that mapping exists, otherwise parse as [`unclaimed_element`](@ref)
+in a [`PnmlLabel`](@ref).
 """
 function parse_node(node; kw...)
     @assert node !== nothing
@@ -11,7 +11,7 @@ function parse_node(node; kw...)
     if haskey(tagmap, node.name)
         return tagmap[node.name](node; kw...) # Various types returned here.
     else
-        return PnmlLabel(unclaimed_element(node; kw...), node)
+        return PnmlLabel(node; kw...)
     end
 end
 
@@ -21,10 +21,10 @@ pnml_namespace_check(node::XMLNode) =
 #TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
 
 """
+$(TYPEDSIGNATURES)
+
 Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
-
-$(TYPEDSIGNATURES)
 """
 function parse_pnml(node; kw...)
     nn = nodename(node)
@@ -69,7 +69,10 @@ function parse_net(node; kw...)::PnmlNet
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page"         => push!(d[:pages], parse_node(child; pntd, kw...))
-            # NB: There is also a 'declarations' tag that is different from this.
+            # NB: There is also a 'declarations' tag that is different from :declarations key.
+            # Use plural here because there can be zero or more declaration tags 
+            # for a net or page. Within a <declaration> is a <structure> holding
+            # a <declarations> with zero or more elements.
             "declaration"  => push!(d[:declarations], parse_node(child; pntd, kw...))
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
@@ -106,6 +109,7 @@ function parse_page(node; kw...)
             "arc"         => push!(d[:arcs], parse_node(child; kw...))
             "referencePlace" => push!(d[:refP], parse_node(child; kw...))
             "referenceTransition" => push!(d[:refT], parse_node(child; kw...))
+            # See note above about declarations vs. declaration.
             "declaration" => push!(d[:declarations], parse_node(child; kw...))
             "page"        => push!(d[:pages], parse_node(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)

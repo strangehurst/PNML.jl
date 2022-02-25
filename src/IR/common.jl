@@ -24,24 +24,24 @@ PnmlLabel(node::XMLNode; kw...) =
 """
 Return `true` if the label has a `text`` element.
 """
-function has_text(label::PnmlLabel)
+function has_text(label::AbstractLabel)
     haskey(label.dict, :text) 
 end
 
-"Return `t                         ext` element."
-function text(label::PnmlLabel)
+"Return `text` element."
+function text(label::AbstractLabel)
     label.dict[:text]
 end
 
 """
 Return `true` if the label has a `structure`` element.
 """
-function has_structure(label::PnmlLabel)
+function has_structure(label::AbstractLabel)
     haskey(label.dict, :structure)
 end
 
 "Return `structure` element."
-function structure(label::PnmlLabel)
+function structure(label::AbstractLabel)
     label.dict[:structure]
 end
 

@@ -75,7 +75,7 @@ julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDReg
 PNML.PnmlLabel Dict{Symbol, Any}(:tag => :aaa, :id => "FOO", :content => "BAR")
 ```
 """
-function unclaimed_element(node; kw...)
+function unclaimed_element(node; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
@@ -89,14 +89,16 @@ function unclaimed_element(node; kw...)
 end
 
 "Update `dict` with content or children"
-function _harvest!(dict::PnmlDict, node::XMLNode; kw...)
+function _harvest!(dict::PnmlDict, node::XMLNode; kw...)::PnmlDict
     children = elements(node)
     if !isempty(children)
         merge!(dict, unclaimed_content(children; kw...))
     else
-        dict[:content] = isempty(nodecontent(node)) ? nothing : strip(nodecontent(node))
+    if !isempty(nodecontent(node))
+        dict[:content] = strip(nodecontent(node))
     end
-    dict
+    end
+    return dict
 end
 
 """
@@ -105,12 +107,12 @@ $(TYPEDSIGNATURES)
 Return PnmlDict with values that are vectors when there 
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function unclaimed_content(nodes::Vector{XMLNode}; kw...)
+function unclaimed_content(nodes::Vector{XMLNode}; kw...)::PnmlDict
     d = PnmlDict()
-    nnamevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
-    tagnames = unique(map(first, nnamevec))
+    namevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
+    tagnames = unique(map(first, namevec))
     foreach(tagnames) do tagname
-        tags = filter(x->x.first===tagname, nnamevec)
+        tags = filter(x->x.first===tagname, namevec)
         #TODO make toolspecific match annotation labels.declarations
         d[Symbol(tagname)] = if length(tags) > 1 # Now its a symbol.
             parse_node.(map(x->x.second, tags); kw...) #vector
@@ -118,7 +120,7 @@ function unclaimed_content(nodes::Vector{XMLNode}; kw...)
             parse_node(tags[1].second; kw...) #scalar
         end
     end
-    d
+    return d
 end
 
 
@@ -173,13 +175,13 @@ Return first label attached to `d` have a matching `tagvalue`.
 function get_label end
 
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
-    @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
+    @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     i = findfirst(lab->tag(lab) === tagvalue, v)
     !isnothing(i) ? v[i] : nothing
 end
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    @show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
+    @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     i = findfirst(lab->tag(lab) === tagvalue, v)
     !isnothing(i) ? v[i] : nothing
 end
@@ -237,7 +239,6 @@ end
 function has_toolinfo(v::Vector{PnmlDict},
                       namerex::Regex,
                       versionrex::Regex=r"^.*$")
-    @show
     any(v) do tool
        match(namerex, tool.toolname) && match(versionrex, tool.version)
     end

@@ -99,7 +99,7 @@ end
                                                              str4=>4,
                                                              str5=>1,
                                                              str6=>2]
-        @show l,s
+        #@show l,s
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
         @show typeof(n)
         printnode(n)
