@@ -42,6 +42,7 @@ include("pnmltypes.jl")
 
 include("IR/intermediate.jl")
 
+include("Parse/anyelement.jl")
 include("Parse/parseutils.jl")
 include("Parse/parse.jl")
 include("Parse/graphics.jl")

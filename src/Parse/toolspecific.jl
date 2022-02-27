@@ -16,12 +16,12 @@ function parse_toolspecific(node; kw...)
                 :tool    => node["tool"],
                 :version => node["version"])
     
-    d[:content] = PnmlLabel[] # Treat all top-level children as labels.
+    d[:content] = AnyElement[] # 
+
     foreach(elements(node)) do child
-        #TODO: use parse_node here?
         #TODO: Specialize/verify on tool, version. User supplied?
         #TODO: Register additional tool specific parsers?
-        push!(d[:content], PnmlLabel(child; kw...))
+        push!(d[:content], anyelement(child; kw...))
     end
     ToolInfo(d, node)
 end

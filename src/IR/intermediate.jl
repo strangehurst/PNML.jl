@@ -1,5 +1,8 @@
 include("types.jl")
 include("graphics.jl")
+include("anyelements.jl")
+include("toolinfos.jl")
+include("labels.jl")
 include("common.jl")
 include("markings.jl")
 include("conditions.jl")

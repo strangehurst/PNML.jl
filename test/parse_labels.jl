@@ -10,7 +10,7 @@ header("UNCLAIMED ELEMENT")
                 <something2 tag2="two"> <value/> </something2>
               </declarations>
     """]
-        dict::PNML.PnmlDict = PNML.unclaimed_element(elem, reg=PNML.IDRegistry())
+        dict::PNML.PnmlDict = PNML.unclaimed_label(elem, reg=PNML.IDRegistry())
         printnode(dict)
         @test !isnothing(dict)
     end

@@ -5,11 +5,11 @@ The common usage is that 'label' usually be read as annotation-label.
 Attribute-labels do not have associated graphics elements. Since <graphics> are
 optional for annotation-labels they share the same implementation.
 
-Unknown tags get parsed by unclaimed_element.  Annotation-labels usually have
+Unknown tags get parsed by unclaimed_label.  Annotation-labels usually have
 known tags and dedicated dictonary keys. Pnml-node-elements put unregistered children
 into the :labels collection.  It can include annotations and attributes.
 
-Because any tag not present in the tagmap are processed by `unclaimed_element`
+Because any tag not present in the tagmap are processed by `unclaimed_label`
 it is not necessary to define a parse method unless valididation, documentation,
 or additional processing is desired. Some are defined here anyway.
 =#
@@ -22,7 +22,7 @@ Attribute label of 'net' and 'page' nodes.
 function parse_declaration(node; kwargs...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
-    Declaration(unclaimed_element(node; kwargs...), node)
+    Declaration(unclaimed_label(node; kwargs...), node)
 end
 
 """

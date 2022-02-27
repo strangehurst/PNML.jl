@@ -34,6 +34,7 @@ xmlnode(node::PnmlNode) = node.xml
 
 """
 $(TYPEDEF)
+
 Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subtypes.
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo

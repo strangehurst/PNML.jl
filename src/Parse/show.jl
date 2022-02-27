@@ -102,13 +102,14 @@ function Base.show(io::IO, labelvector::Vector{PnmlLabel})
     print(io, "SLV:", typeof(labelvector), "[")
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
-        print(io, indent(io), label)
+        print(io, indent(io))
+        show(io, label)
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
 end
 
-function Base.show(io::IO, label::PnmlLabel) #TODO Make labels parametric labels.
+function Base.show(io::IO, label::PnmlLabel) #TODO Make labels parametric.
     print(IOContext(io, :typeinfo=>Dict), "SL:", label.dict) #! Was pprint
 end
 
@@ -118,9 +119,30 @@ function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
 end
 
 #-------------------
+function Base.show(io::IO, elvector::Vector{AnyElement})
+    print(io, "SLV:", typeof(elvector), "[")
+    io = inc_indent(io)
+    for (i,el) in enumerate(elvector)
+        print(io, indent(io))
+        show(io, el)
+        i < length(elvector) && print(io, "\n")
+    end
+    print(io, "]")
+end
+
+function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
+    #print(io, "SL:", typeof(el), " ")
+    show(IOContext(io, :typeinfo=>Dict), el.dict)
+end
+function Base.show(io::IO, ::MIME"plain/text", el::AnyElement) #TODO Make parametric.
+    print(io, "SL:", typeof(el), " ")
+    show(IOContext(io, :typeinfo=>Dict), el.dict)
+end
+
+#-------------------
 Base.summary(io::IO, ti::ToolInfo) = print(io, summary(ti))
 function Base.summary(ti::ToolInfo)
-    string(typeof(ti), " name =", ti.toolname, ", version = ", ti.version,
+    string(typeof(ti), " name ", ti.toolname, ", version ", ti.version,
            ", ", length(ti.infos), " infos")
 end
 
@@ -373,6 +395,8 @@ function Base.show(io::IO, mime::MIME"text/plain", declare::Declaration)
 end
 
 #-------------------
+
+#-------------------
 Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
@@ -438,7 +462,7 @@ function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
     iio = inc_indent(io) # Indent any declarations.
     foreach(net.declarations) do decl
-        print(iio, indent())
+        print(iio, indent(io))
         show(iio, MIME"plain/text"(), decl)
         println(iio, "\n") 
     end

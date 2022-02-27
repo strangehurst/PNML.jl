@@ -40,89 +40,12 @@ Return `true` if has XML attached. Defaults to `false`.
 function has_xml end
 has_xml(::Any) = false
 
-
 """
 If `x` is `nothing` return `non`, otherwise return `x`.
 """
 onnothing(x, non) = isnothing(x) ? non : x
 onnothing(d::PnmlDict, s::Symbol, default) =
     isnothing(get(d, s, nothing)) ? default : d[s]
-
-"""
-$(TYPEDSIGNATURES)
-
-Return PnmlDict holding parsed contents of a well-formed XML node.
-
-If element `node` has any children, each is placed in the dictonary with the
-tag name symbol as the key, repeated tags produce a vector as the value.
-Any XML attributes found are added as as key,value pairs.
-
-# Details
-
-This will recursivly descend the well-formed XML.
-It is possible that claimed labels will be in the unclaimed element's content.
-
-Note the assumption that "children" and "content" are mutually exclusive.
-Content is always a leaf element. However XML attributes can be anywhere in
-the hiearchy.
-
-# Examples
-
-```jldoctest
-julia> using PNML, EzXML
-
-julia> node = PNML.parse_node(xml\"<aaa id=\\"FOO\\">BAR</aaa>\"; reg=PNML.IDRegistry())
-PNML.PnmlLabel Dict{Symbol, Any}(:tag => :aaa, :id => "FOO", :content => "BAR")
-```
-"""
-function unclaimed_element(node; kw...)::PnmlDict
-    @debug "unclaimed = $(nodename(node))"
-    @assert haskey(kw, :reg)
-    # ID attributes can appear in various places. Each is unique and added to the registry.
-    EzXML.haskey(node, "id") && register_id!(kw[:reg], node["id"])
-
-    # Extract XML attributes.
-    d = PnmlDict(:tag => Symbol(nodename(node)),
-                 (Symbol(a.name) => a.content for a in eachattribute(node))...)
-    _harvest!(d, node; kw...)
-    return d
-end
-
-"Update `dict` with content or children"
-function _harvest!(dict::PnmlDict, node::XMLNode; kw...)::PnmlDict
-    children = elements(node)
-    if !isempty(children)
-        merge!(dict, unclaimed_content(children; kw...))
-    else
-    if !isempty(nodecontent(node))
-        dict[:content] = strip(nodecontent(node))
-    end
-    end
-    return dict
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return PnmlDict with values that are vectors when there 
-are multiple instances of a tag in `nodes` and scalar otherwise.
-"""
-function unclaimed_content(nodes::Vector{XMLNode}; kw...)::PnmlDict
-    d = PnmlDict()
-    namevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
-    tagnames = unique(map(first, namevec))
-    foreach(tagnames) do tagname
-        tags = filter(x->x.first===tagname, namevec)
-        #TODO make toolspecific match annotation labels.declarations
-        d[Symbol(tagname)] = if length(tags) > 1 # Now its a symbol.
-            parse_node.(map(x->x.second, tags); kw...) #vector
-        else
-            parse_node(tags[1].second; kw...) #scalar
-        end
-    end
-    return d
-end
-
 
 #---------------------------------------------------------------------
 # LABELS

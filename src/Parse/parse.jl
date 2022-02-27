@@ -2,7 +2,7 @@
 $(TYPEDSIGNATURES)
 
 Take an XML `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if that mapping exists, otherwise parse as [`unclaimed_element`](@ref)
+[`tagmap`](@ref) if that mapping exists, otherwise parse as [`unclaimed_label`](@ref)
 in a [`PnmlLabel`](@ref).
 """
 function parse_node(node; kw...)
@@ -297,7 +297,7 @@ Structure semantics will vary based on parent element and petri net type definit
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    PnmlLabel(unclaimed_element(node; kw...), node) # TODO make a Structure type.
+    PnmlLabel(node; kw...) # TODO make a Structure type.
 end
 
 
