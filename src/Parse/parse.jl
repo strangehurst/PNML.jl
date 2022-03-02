@@ -1,24 +1,33 @@
 """
 $(TYPEDSIGNATURES)
 
-Take an XML `node` and parse it by calling the method matching `node.name` from
-[`tagmap`](@ref) if that mapping exists, otherwise parse as [`unclaimed_label`](@ref)
-in a [`PnmlLabel`](@ref).
+Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exists,
+otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
-function parse_node(node; kw...)
+function parse_node(node::XMLNode; kw...)
     @assert node !== nothing
-    @debug "parse_node($(node.name))"
-    if haskey(tagmap, node.name)
-        return tagmap[node.name](node; kw...) # Various types returned here.
+    if haskey(tagmap, nodename(node))
+        return tagmap[nodename(node)](node; kw...) # Various types returned here.
     else
-        return PnmlLabel(node; kw...)
+        return PnmlLabel(unclaimed_label(node; kw...), node)
     end
 end
 
-"Warn when `node` does not have a namespace."
-pnml_namespace_check(node::XMLNode) =
-    EzXML.hasnamespace(node) || @warn "$(nodename(node)) missing namespace"
-#TODO: Make @warn optional? Maybe can use default pnml namespace without notice.
+#TODO test pnml_namespace
+"""
+$(TYPEDSIGNATURES)
+
+Return namespace of `node. When `node` does not have a namespace return default value [`pnml_ns`](@ref)."
+"""
+function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_ns)
+    if EzXML.hasnamespace(node) 
+         EzXML.namespace(node)
+    else
+        emsg = "$(nodename(node)) missing namespace"
+        missing_ns_fatal===false ? @warn(emsg) : error(emsg)
+        default_ns
+    end
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -29,10 +38,13 @@ Return a [`PnmlModel`](@ref)..
 function parse_pnml(node; kw...)
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
-    pnml_namespace_check(node)
+    
     @assert haskey(kw, :reg)
     # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node); kw...), kw[:reg], node)
+    PnmlModel(parse_net.(allchildren("net", node); kw...), 
+              pnml_namespace(node),
+              kw[:reg], 
+              node)
 end
 
 """
@@ -259,8 +271,8 @@ function parse_name(node; kw...)
     # Using firstchild or allchildren can cause parse_node to be passed nothing
     # for optional or missing child nodes.
 
-    tx = firstchild("text", node)
-    if isnothing(tx)
+    textnode = firstchild("text", node)
+    if isnothing(textnode)
         @warn "$(nn) missing <text> element"
         # There are pnml files that break the rules & do not have a text element here.
         # Ex: PetriNetPlans-PNP/parallel.jl
@@ -268,14 +280,14 @@ function parse_name(node; kw...)
         # Assumes there are no other children elements.
         value = string(strip(nodecontent(node)))
     else
-        value = string(strip(nodecontent(tx)))
+        value = string(strip(nodecontent(textnode)))
     end
 
-    gx = firstchild("graphics", node)
-    graphics = isnothing(gx) ? nothing : parse_node(gx; kw..., verbose=false)
+    graphicsnode = firstchild("graphics", node)
+    graphics = isnothing(graphicsnode) ? nothing : parse_node(graphicsnode; kw..., verbose=false)
 
-    ts = allchildren("toolspecific", node)
-    tools = isempty(ts) ? nothing : parse_node.(ts; kw..., verbose=false)
+    toolspecific = allchildren("toolspecific", node)
+    tools = isempty(toolspecific) ? nothing : parse_node.(toolspecific; kw..., verbose=false)
 
     Name(value; graphics, tools)
 end

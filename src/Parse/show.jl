@@ -483,6 +483,7 @@ end
 # No indent done here.
 function Base.show(io::IO, pnml::PnmlModel)
     println(io, summary(pnml))
+    println(io, "namespace = ", namespace(pnml))
     for (i, net) in enumerate(nets(pnml))
         show(io, MIME"text/plain"(), net)
         if i < length(nets(pnml))

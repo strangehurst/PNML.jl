@@ -1,4 +1,10 @@
+# PNML Intermediate Representation
+# Defines types instantiated on the upwards parse step using PnmlDicts 
+# created on the downward (leaf-ward) parsing step.
+# Enables use of dispatch to create higher-level constructs.
+#module IR
 include("types.jl")
+include("irutilities.jl")
 include("graphics.jl")
 include("anyelements.jl")
 include("toolinfos.jl")
@@ -197,6 +203,7 @@ One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
     nets::Vector{PnmlNet}
+    namespace::String
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode
 end
@@ -205,11 +212,12 @@ end
 $(TYPEDSIGNATURES)
 """
 PnmlModel(net::PnmlNet) = PnmlModel([net])
-PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, IDRegistry(), nothing)
-PnmlModel(nets::Vector{PnmlNet}, reg::IDRegistry) = PnmlModel(nets, reg, nothing)
+PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, pnml_ns, IDRegistry(), nothing)
+PnmlModel(nets::Vector{PnmlNet}, ns, reg::IDRegistry) = PnmlModel(nets, ns, reg, nothing)
 
 has_xml(model::PnmlModel) = true
 xmlnode(model::PnmlModel) = model.xml
+namespace(model::PnmlModel) = model.namespace
 
 """
 $(TYPEDSIGNATURES)
@@ -268,3 +276,5 @@ $(TYPEDSIGNATURES)
 Return all `nets` of `model`.
 """
 nets(model::PnmlModel) = model.nets
+
+#end # module IR
