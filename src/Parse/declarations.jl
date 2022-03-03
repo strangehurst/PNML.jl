@@ -22,7 +22,43 @@ Attribute label of 'net' and 'page' nodes.
 function parse_declaration(node; kwargs...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
+    # id, name attributes
     Declaration(unclaimed_label(node; kwargs...), node)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_sortdecl(node; kwargs...)
+    nn = nodename(node)
+    nn == "sortdecl" || error("element name wrong: $nn")
+    # NamedSort
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
+    PnmlLabel(node; kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_variabledecl(node; kwargs...)
+    nn = nodename(node)
+    nn == "variabledecl" || error("element name wrong: $nn")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
+    # Sort
+    PnmlLabel(node; kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_operatordecl(node; kwargs...)
+    nn = nodename(node)
+    nn == "operatordecl" || error("element name wrong: $nn")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
+    PnmlLabel(node; kwargs...)
 end
 
 """
@@ -56,6 +92,12 @@ function parse_sort(node; kwargs...)
     nn == "sort" || error("element name wrong: $nn")
     PnmlLabel(node; kwargs...)
 end
+# BuiltInSort
+# MultisetSort
+# ProductSort ordered list of sorts
+# UserSort
+
+# NamedSort id, name
 
 """
 $(TYPEDSIGNATURES)
@@ -65,6 +107,8 @@ function parse_term(node; kwargs...)
     nn == "term" || error("element name wrong: $nn")
     PnmlLabel(node; kwargs...)
 end
+# Variable
+# Operator
 
 """
 $(TYPEDSIGNATURES)
@@ -247,18 +291,5 @@ function parse_variable(node; kwargs...)
     nn = nodename(node)
     nn == "variable" || error("element name wrong: $nn")
     EzXML.haskey(node, "refvariable") || throw(MalformedException("$(nn) missing refvariable attribute", node))
-    PnmlLabel(node; kwargs...)
-end
-
-"""
-Return `PnmlLabel` for a variable declaration.
-$(TYPEDSIGNATURES)
-"""
-function parse_variabledecl(node; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "variabledecl" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
     PnmlLabel(node; kwargs...)
 end

@@ -53,7 +53,7 @@ onnothing(d::PnmlDict, s::Symbol, default) =
 """
 $(TYPEDSIGNATURES)
 
-Add `node` to` d[:labels]`, a vector of PnmlLabel. Return updated `d[:labels]`.
+Add `node` to` d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
 """
 function add_label!(d::PnmlDict, node; kw...)
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
@@ -66,13 +66,15 @@ function add_label!(d::PnmlDict, node; kw...)
     end
     add_label!(d[:labels], node; kw...)
 end
+
 function add_label!(v::Vector{PnmlLabel}, node; kw...)
     #@show "add label! $(nodename(node))"
     haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
     # Use of parse_node here allows the :labels vector to contain fully parsed nodes.
-    l = parse_node(node; kw...) #TODO handle types
-    haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(l))."
-    push!(v, l)
+    label = parse_node(node; kw...) #TODO handle types
+    haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(label))."
+    push!(v, label)
+    return v
 end
 
 """

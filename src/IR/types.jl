@@ -41,3 +41,5 @@ abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 has_xml(tool::AbstractPnmlTool) = true
 xmlnode(tool::AbstractPnmlTool) = tool.xml
+
+

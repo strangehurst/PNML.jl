@@ -1,9 +1,8 @@
-# graphcs
 ###############################################################################
 # GRAPHICS
 ###############################################################################
 """
-Graphics Coordinate.
+Cartesian Coordinate.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -14,12 +13,11 @@ struct Coordinate{T <: Number}
 end
 Coordinate() = Coordinate{Int}(0, 0)
 Coordinate(x::T) where T<:Number = Coordinate{T}(x, zero(x))
-#Coordinate(x::T, y::T) where {T<:Number} = Coordinate{T}(x, y)
 Base.eltype(c::Coordinate{T}) where {T<:Number} = T
 
 #-------------------
 """
-PNML Graphics Fill attributes as strings.
+Fill attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -36,7 +34,7 @@ end
 
 #-------------------
 """
-PNML Graphics Font attributes as strings.
+Font attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -57,7 +55,7 @@ end
 
 #-------------------
 """
-Graphics Line attributes as strings.
+Line attributes as strings.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -74,7 +72,7 @@ end
 
 #-------------------
 """
-PNML Graphics elements can be attached to many parts of PNML models.
+PNML Graphics can be attached to many parts of PNML models.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)

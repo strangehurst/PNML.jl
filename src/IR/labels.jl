@@ -13,6 +13,7 @@ struct PnmlLabel <: AbstractLabel
     xml::XMLNode
 end
 
+
 PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
 
 tag(label::PnmlLabel) = tag(label.dict)
