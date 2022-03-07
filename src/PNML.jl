@@ -49,7 +49,6 @@ include("Parse/graphics.jl")
 include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
-include("Parse/flatten.jl")
 include("Parse/show.jl")
 
 include("Net/petrinet.jl")

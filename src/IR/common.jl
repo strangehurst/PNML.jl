@@ -1,13 +1,9 @@
-###############################################################################
-# Common parts
-###############################################################################
-#-------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Common infrastructure shared by PNML objects and labels.
-Some optional incidental bits are collected here.
+Some optional incidental bits are shared by most PNML objects are also collected here.
 """
 struct ObjectCommon
     name::Maybe{Name}
@@ -18,7 +14,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Wrap selected fields of `pdict`. Default to `nothing`.
+Wrap selected fields of `pdict`. Each defaults to `nothing`.
 """
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :name, nothing),
@@ -27,7 +23,7 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :labels, nothing)
 )
 
-"Return `true` if has a `name` element."
+"Return `true` if `oc` has a `name` element."
 has_name(oc::ObjectCommon) = !isnothing(oc.name)
 has_xml(oc::ObjectCommon) = false
 

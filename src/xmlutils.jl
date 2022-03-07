@@ -6,6 +6,12 @@ const XMLNode = EzXML.Node
 const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 
 """
+Return XML namespace.
+"""
+function namespace end
+namespace(::Any) = error("namespace method not defined")
+
+"""
 Parse xml string into ExXML node.
 
 $(TYPEDSIGNATURES)
@@ -37,7 +43,3 @@ end
 AbstractTrees.children(n::EzXML.Node) = EzXML.elements(n)
 AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, :name))
 AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node
-
-#export XMLNode, @xml_str, pnml_ns, firstchild, allchildren
-
-

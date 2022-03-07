@@ -63,7 +63,7 @@ end
 
 """
 Defines the "sort" of tokens held by the place and semantics of the marking.
-The "type" of a place is different from "net type" or "pntd".
+NB: The "type" of a place is different from the "type" of a net or "pntd".
 
 $(TYPEDSIGNATURES)
 """
