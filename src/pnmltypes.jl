@@ -9,12 +9,13 @@ $(DocStringExtensions.IMPORTS)
 $(DocStringExtensions.EXPORTS)
 """
 module PnmlTypes
+using PNML
 using DocStringExtensions
 
-export PnmlType, 
-        PnmlCore, PTNet,
-        AbstractHLCore, HLCore, HLNet, StochasticNet,
-            SymmetricNet, TimedNet, OpenNet, PT_HLPNG 
+export PnmlType,
+        AbstractHLCore, PnmlCore, PTNet,
+        AbstractHLCore, SymmetricNet, PT_HLPNG,
+                        HLCore, HLNet, StochasticNet, TimedNet, OpenNet
 
 
 """
@@ -34,7 +35,15 @@ $(TYPEDEF)
 abstract type PnmlType end
 
 """
-Base of High Level Petri Net pntds.
+Base of [`PnmlCore`](@ref) and [`PTNet`] Petri Net pntds.
+
+$(TYPEDEF)
+"""
+abstract type AbstractPnmlCore <: PnmlType end
+
+"""
+Base of High Level Petri Net pntds. 
+See [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
 
 $(TYPEDEF)
 """
@@ -45,14 +54,16 @@ PnmlCore is the most minimal concrete Petri Net.
 
 $(TYPEDEF)
 """
-struct PnmlCore <: PnmlType end
+struct PnmlCore <: AbstractPnmlCore end
 
 """
-Place-Transition Petri Nets add small extensions to core.
+Place-Transition Petri Nets add small extensions to core. 
+The grammer file is ptnet.pnml so we name it PTNet.
+Note that 'PT' is often the prefix for XML tags specilized for this net type.
 
 $(TYPEDEF)
 """
-struct PTNet <: PnmlType end
+struct PTNet <: AbstractPnmlCore end
 
 """
 High-Level Petri Nets add large extensions to core, can be used for generic high-level nets.
@@ -62,7 +73,7 @@ $(TYPEDEF)
 struct HLCore <: AbstractHLCore end
 
 """
-Place-Transition High-Level Petri Net Graph
+Place-Transition Net in HLCore notation (HLPNG=High-Level Petri Net Graph).
 
 $(TYPEDEF)
 """
@@ -97,7 +108,10 @@ $(TYPEDEF)
 struct OpenNet <: AbstractHLCore end
 
 """
-HLNet is the most intricate High-Level Petri Net schema
+HLNet is the most intricate High-Level Petri Net schema.
+It extends [`SymmetricNet`](@ref)
+   - declarations for sorts and functions (ArbitraryDeclarations)
+   - sorts for Integer, String, and List
 
 $(TYPEDEF)
 """
@@ -159,20 +173,20 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     )
 
 """
-Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
-
 $(TYPEDSIGNATURES)
+
+Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 """
 add_nettype!(dict::AbstractDict, s::Symbol, pntd::T) where {T<:PnmlType} =
     dict[s] = pntd #TODO test this
 
 
 """
+$(TYPEDSIGNATURES)
+
 Map string `s` to a pntd symbol using [`default_pntd_map`](@ref).
 Any unknown `s` is mapped to `:pnmlcore`.
 Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmltype_map`](@ref).
-
-$(TYPEDSIGNATURES)
 
 # Examples
 
@@ -186,7 +200,9 @@ julia> pntd_symbol("foo")
 pntd_symbol(s::AbstractString) = get(default_pntd_map(), s, :pnmlcore)
 
 """
-$(TYPEDSIGNATURES)
+    pnmltype(pntd::T; kw...)
+    pnmltype(uri::AbstractString; kw...)
+    function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
 
 Map either a text string or a symbol to a dispatch type singlton.
 
@@ -194,26 +210,32 @@ While that string may be a URI for a pntd, we treat it as a simple string withou
 The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref) are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore`.
-Unknown `symbol` returns `nothing`.
+Unknown `symbol` throws a [`PNML.MalformedException`](@ref)
 
 # Examples
 
 ```jldoctest
 julia> using PNML, PNML.PnmlTypes
 
+julia> PnmlTypes.pnmltype(PnmlCore())
+PnmlCore()
+
 julia> PnmlTypes.pnmltype("nonstandard")
 PnmlCore()
+
+julia> PnmlTypes.pnmltype(:symmetric)
+SymmetricNet()
 ```
 """
 function pnmltype end
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri); kw...)
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
-    if haskey(pnmltype_map, s)
-        return pnmltype_map[s]
-    else
-        @warn "Unknown PNTD symbol $s"
-        return nothing
-    end
+    haskey(pnmltype_map, s) ? pnmltype_map[s] : 
+        throw(PNML.MalformedException("Unknown PNTD symbol $s"))
 end
+
+#TODO add traits
+
+
 end # module PnmlTypes

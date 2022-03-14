@@ -1,5 +1,3 @@
-
-
 """
 $(TYPEDSIGNATURES)
 
@@ -19,7 +17,7 @@ function parse_tokengraphics(node; kw...)
 end
 
 """
-Position is a coordinate relative to containing element. Units are points.
+Cartesian coordinate relative to containing element.
 
 $(TYPEDSIGNATURES)
 """
@@ -31,8 +29,8 @@ function parse_tokenposition(node; kw...)
 end
 
 """
-Arcs, Annotations and Nodes (places, transitions, pages) have different graphics semantics.
-Return a dictonary with the union of possibilities.
+Arcs, Annotations and Nodes have different graphics semantics.
+Return a [`Graphics`](@ref) holding the union of possibilities.
 
 $(TYPEDSIGNATURES)
 """
@@ -64,16 +62,14 @@ function parse_graphics(node; kw...)
              position=d[:positions])
 end
 
-#
-# Any xml node information will be attached to the graphics node.
-# Use that to inspect the source XML for children of graphics nodes.
-#
 """
 $(TYPEDSIGNATURES)
+
+Return [`Line`](@ref).
 """
 function parse_graphics_line(node; kw...)
     nn = nodename(node)
-    (nn == "line") || error("element name wrong: $nn: $nn")
+    (nn == "line") || error("element name wrong: $nn")
 
     color = EzXML.haskey(node, "color") ? node["color"] : nothing
     shape = EzXML.haskey(node, "shape") ? node["shape"] : nothing
@@ -84,24 +80,26 @@ function parse_graphics_line(node; kw...)
 end
 
 """
-Coordinates `x`, `y` are in points.
-Specification seems to only use integers, we also allow real numbers.
-
 $(TYPEDSIGNATURES)
+
+Return [`Coordinate`](@ref).
+Specification seems to only use integers, we also allow real numbers.
 """
 function parse_graphics_coordinate(node; kw...)
     nn = nodename(node)    
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
 
-    EzXML.haskey(node, "x") || throw(MalformedException("$(nn) missing x", node))
-    EzXML.haskey(node, "y") || throw(MalformedException("$(nn) missing y", node))
+    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x", node))
+    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y", node))
 
     Coordinate(number_value(node["x"]), number_value(node["y"]))
 end
 
 """
 $(TYPEDSIGNATURES)
+
+Return [`Fill`](@ref)
 """
 function parse_graphics_fill(node; kw...)
     nn = nodename(node)
@@ -117,6 +115,8 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Return [`Font`](@ref).
 """
 function parse_graphics_font(node; kw...)
     nn = nodename(node)

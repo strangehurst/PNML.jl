@@ -4,9 +4,9 @@ Label of a Transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Condition <: AbstractLabel
+struct Condition <: HLAnnotation
     text::Maybe{String}
-    structure::Maybe{PnmlLabel}
+    structure::Maybe{Structure{AnyElement}}
     com::ObjectCommon
 end
 

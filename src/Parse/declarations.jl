@@ -17,22 +17,74 @@ or additional processing is desired. Some are defined here anyway.
 """
 $(TYPEDSIGNATURES)
 
-Attribute label of 'net' and 'page' nodes.
+Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 """
-function parse_declaration(node; kwargs...)
+function parse_declaration(node; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
-    # id, name attributes
-    Declaration(unclaimed_label(node; kwargs...), node)
+    
+    # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
+    # optional(0..1), required,  zero or more
+    decl_structure(nv::Vector{XMLNode}; kw...) = begin
+        if isempty(nv)
+            AbstractDeclaration[]
+        else
+            parse_declarations.(nv; kw...)
+        end
+    end 
+    d = pnml_label_defaults(node, :tag=>Symbol(nn))
+    @show d
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            # <declaration>'s <structure> contains a vector of declarations.
+            "structure" => (d[:structure] = decl_structure(allchildren("declarations",node); kw...))
+            _ => parse_pnml_label_common!(d, child; kw...)
+         end
+    end
+    @show d
+   Declaration(d)
+end
+
+"""
+Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
+
+$(TYPEDSIGNATURES)
+"""
+function parse_declarations(node; kw...)::Vector{AbstractDeclaration}
+    nn = nodename(node)
+    nn == "declarations" || error("element name wrong: $nn")
+    v = AbstractDeclaration[]
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            "namedsort" => push!(v, parse_namedsort(child; kw...))
+            "namedoperator" => push!(v, parse_namedoperator(child; kw...))
+            "variabledecl" => push!(v, parse_variabledecl(child; kw...))
+            _ => @error("$nn is not a known declaration tag")
+        end
+    end
+    return v
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_sortdecl(node; kwargs...)
+function parse_namedsort(node; kw...)
+    @debug node
     nn = nodename(node)
-    nn == "sortdecl" || error("element name wrong: $nn")
-    # NamedSort
+    nn == "namedsort" || error("element name wrong: $nn")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
+    def = parse_sort(firstelement(node); kw...)
+    NamedSort(node["id"], node["name"], def; kw...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_namedoperator(node; kwargs...)
+    @debug node
+    nn = nodename(node)
+    nn == "namedoperator" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
     PnmlLabel(node; kwargs...)
@@ -41,26 +93,16 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_variabledecl(node; kwargs...)
+function parse_variabledecl(node; kw...)
     nn = nodename(node)
     nn == "variabledecl" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
     # Sort
-    PnmlLabel(node; kwargs...)
+    PnmlLabel(node; kw...)
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_operatordecl(node; kwargs...)
-    nn = nodename(node)
-    nn == "operatordecl" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
-    PnmlLabel(node; kwargs...)
-end
-
+#------------------------
 """
 Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place is different from the "type" of a net or "pntd".
@@ -74,22 +116,20 @@ function parse_type(node; kwargs...)
 end
 
 """
-Return `PnmlLabel`.
-
-$(TYPEDSIGNATURES)
-"""
-function parse_declarations(node; kwargs...)
-    nn = nodename(node)
-    nn == "declarations" || error("element name wrong: $nn")
-    PnmlLabel(node; kwargs...)
-end
-
-"""
 $(TYPEDSIGNATURES)
 """
 function parse_sort(node; kwargs...)
     nn = nodename(node)
     nn == "sort" || error("element name wrong: $nn")
+    @match nodename(child) begin
+        #Booleans, range of integers, finite enumerations, cyclic enumerations and dots
+        "bool" => (def = anyelement(child; kw...))
+        "finiteenumeration" => (def = anyelement(child; kw...))
+        "finiterange" => (def = anyelement(child; kw...))
+        "cyclicenumeration" => (def = anyelement(child; kw...))
+        "dot" => (def = anyelement(child; kw...))
+        _ => @error("$nn is not a known declaration tag")
+    end
     PnmlLabel(node; kwargs...)
 end
 # BuiltInSort
@@ -98,6 +138,18 @@ end
 # UserSort
 
 # NamedSort id, name
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_usersort(node; kwargs...)
+    @debug node
+    nn = nodename(node)
+    nn == "usersort" || error("element name wrong: $nn")
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
+    PnmlLabel(node; kwargs...)
+end
+
 
 """
 $(TYPEDSIGNATURES)
@@ -204,16 +256,6 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_namedoperator(node; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "namedoperator" || error("element name wrong: $nn")
-    PnmlLabel(node; kwargs...)
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
 function parse_not(node; kwargs...)
     @debug node
     nn = nodename(node)
@@ -268,17 +310,6 @@ function parse_useroperator(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "useroperator" || error("element name wrong: $nn")
-    EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(node; kwargs...)
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_usersort(node; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "usersort" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     PnmlLabel(node; kwargs...)
 end

@@ -12,7 +12,7 @@ struct Page{PNTD<:PnmlType} <: PnmlObject
     transitions::Vector{Transition}
     refTransitions::Vector{RefTransition}
     arcs::Vector{Arc}
-    declarations::Vector{Declaration}
+    declaration::Maybe{Declaration}
     subpages::Maybe{Vector{Page}}
     com::ObjectCommon
 end
@@ -26,7 +26,7 @@ function Page(d::PnmlDict, pntd = PnmlCore())
         d[:places], d[:refP],
         d[:trans], d[:refT],
         d[:arcs],
-        d[:declarations],
+        d[:declaration],
         d[:pages],
         ObjectCommon(d))
 end
@@ -37,7 +37,7 @@ function Base.empty!(page::Page)
     empty!(page.transitions)
     empty!(page.refTransitions)
     empty!(page.arcs)
-    empty!(page.declarations)
+    !isnothing(page.declaration) && empty!(page.declaration)
     !isnothing(page.subpages) && empty!(page.subpages)
     empty!(page.com)
 end

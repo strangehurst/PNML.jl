@@ -13,6 +13,43 @@ $(TYPEDEF)
 const Maybe{T} = Union{T, Nothing}
 
 """
+$(TYPEDSIGNATURES)
+
+Return pnml id symbol, if argument has one, otherwise return `nothing`.
+"""
+function pid end
+pid(::Any) = nothing
+pid(node::PnmlDict)::Symbol = node[:id]
+
+"""
+$(TYPEDSIGNATURES)
+
+Return tag symbol, if argument has one, otherwise `nothing`.
+"""
+function tag end
+tag(::Any) = nothing
+tag(pdict::PnmlDict)::Symbol = pdict[:tag]
+
+"""
+$(TYPEDSIGNATURES)
+
+Return xml node field of `d` or `nothing`.
+"""
+function xmlnode end
+xmlnode(::Any) = nothing
+xmlnode(pdict::PnmlDict) = pdict[:xml]
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Return `true` if has XML attached. Defaults to `false`.
+"""
+function has_xml end
+has_xml(::Any) = false
+has_xml(pdict::PnmlDict) = false
+
+"""
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
@@ -47,6 +84,13 @@ structure(::AbstractLabel) = nothing
 
 """
 $(TYPEDEF)
+Label that may be displayed. 
+It differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
+"""
+abstract type Annotation <: AbstractLabel end
+
+"""
+$(TYPEDEF)
 $(TYPEDFIELDS)
 
 Wrap a `PnmlDict` that may be the root of an XML-tree.
@@ -56,7 +100,7 @@ Claimed labels will have a type defined to make use of the structure
 defined by the pntd schema. See [`Name`](@ref), the only label defined in pnmlcore
 and [`HLLabel`](@ref) for similat treatment of "unclaimed" high-level labels.
 """
-struct PnmlLabel <: AbstractLabel
+struct PnmlLabel <: Annotation
     dict::PnmlDict
     xml::XMLNode
 end
@@ -67,6 +111,13 @@ tag(label::PnmlLabel) = tag(label.dict)
 
 has_xml(label::PnmlLabel) = true
 xmlnode(label::PnmlLabel) = label.xml
+
+"""
+$(TYPEDEF)
+
+Annotation label that uses <text> and <structure>.
+"""
+abstract type HLAnnotation <: AbstractLabel end
 
 """
 $(TYPEDEF)
@@ -100,3 +151,4 @@ abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 has_xml(tool::AbstractPnmlTool) = true
 xmlnode(tool::AbstractPnmlTool) = tool.xml
+

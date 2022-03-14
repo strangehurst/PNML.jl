@@ -1,20 +1,16 @@
-###############################################################################
-# ToolInfo
-###############################################################################
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 ToolInfo holds a <toolspecific> tag.
 
-It wraps a vector of well formed elements parsed into [`PnmlLabel`](@ref)s
+It wraps a vector of well formed elements parsed into [`AnyElement`](@ref)s.
 for use by anything that understands toolname, version toolspecifics.
 """
 struct ToolInfo
     toolname::String
     version::String
-    infos::Vector{AnyElement}
+    infos::Vector{AnyElement} #TODO specialize infos.
     xml::XMLNode
 end
 

@@ -6,7 +6,7 @@ $(TYPEDFIELDS)
 """
 struct Place <: PnmlNode
     id::Symbol
-    marking::Maybe{Marking} #TODO remove Maybe, add initialMarking
+    marking::Maybe{Union{PTMarking,HLMarking}} #TODO remove Maybe, add initialMarking
     sorttype::Maybe{PnmlLabel} # Place type is different from pntd/PnmlType.
 
     com::ObjectCommon
@@ -43,7 +43,7 @@ mutable struct Arc <: PnmlObject
     id::Symbol
     source::Symbol
     target::Symbol
-    inscription::Maybe{Inscription}
+    inscription::Maybe{Union{PTInscription,HLInscription}}
     com::ObjectCommon
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end

@@ -1,4 +1,5 @@
-# PNML id registry and related function.
+# PNML id, id registry and related function.
+
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 
@@ -17,10 +18,10 @@ function Base.show(io::IO, reg::IDRegistry)
 end
 
 """
-Choose what to do when a duplicated pnml node id has been detected.
-Default `action` is to issue a warning.
-
 $(TYPEDSIGNATURES)
+
+Duplicated pnml node id has been detected.
+Default `action` is to issue a warning.
 """
 function duplicate_id_action(id::Symbol; action=:warn)
     action === :warn && @warn "ID '$id' already registered"
@@ -29,9 +30,9 @@ function duplicate_id_action(id::Symbol; action=:warn)
 end
 
 """
-Register `id` symbol and return the symbol.
-
 $(TYPEDSIGNATURES)
+
+Register `id` symbol and return the symbol.
 """
 register_id!(reg::IDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::IDRegistry, id::Symbol)
@@ -44,6 +45,8 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Return `true` if `s` is registered in `reg`.
 """
 isregistered(reg::IDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
 function isregistered(reg::IDRegistry, id::Symbol)
@@ -64,9 +67,6 @@ function reset_registry!(reg::IDRegistry)
     end
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function Base.isempty(reg::IDRegistry)
     lock(reg.lk) do
         isempty(reg.ids)

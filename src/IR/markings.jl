@@ -1,11 +1,7 @@
-"""
-$(TYPEDEF)
-"""
-abstract type Marking <: AbstractLabel end
 
 #-------------------
 """
-Label a Place.
+Label of a [`Place`](@ref) in a [`PTNet`](@ref).
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -15,19 +11,24 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> using PNML
 
-julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
+julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
 
-julia> p.value
+julia> m()
 0
 
-julia> p = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
+julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
 
-julia> p.value
+julia> m()
+0
+
+julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
+
+julia> m()
 12.34
 ```
 
 """
-struct PTMarking{N<:Number} <: Marking
+struct PTMarking{N<:Number} <: Annotation
     value::N
     com::ObjectCommon
     # PTMarking does not use ObjectCommon.graphics,
@@ -35,30 +36,36 @@ struct PTMarking{N<:Number} <: Marking
 end
 
 function PTMarking(pdict::PnmlDict)
-    PTMarking(onnothing(pdict[:value], 0), ObjectCommon(pdict))
+    PTMarking(onnothing(pdict, :value, 0), ObjectCommon(pdict))
 end
 convert(::Type{Maybe{PTMarking}}, pdict::PnmlDict) = PTMarking(pdict)
 
-(ptm::PTMarking)() = ptm.value
+"""
+Evaluate a [`PTMarking`](@ref).
+"""
+(mark::PTMarking)() = mark.value
 
 #-------------------
 """
-Label a Place.
+Label a Place in a [`AbstractHLCore`](#ref).
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct HLMarking <: Marking
+struct HLMarking <: HLAnnotation
     text::Maybe{String}
-    structure::Maybe{PnmlLabel}
+    structure::Maybe{Structure{AnyElement}}
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
 
+#TODO default value
 HLMarking(pdict::PnmlDict) =
     HLMarking(pdict[:text], pdict[:structure], ObjectCommon(pdict))
 convert(::Type{Maybe{HLMarking}}, pdict::PnmlDict) = HLMarking(pdict)
 
-"Evaluate the marking expression."
+"""
+Evaluate a [`HLMarking`](@ref). Returns a value of the same sort as its `Place`.
+"""
 (hlm::HLMarking)() = @warn "HLMarking functor not implemented"
 

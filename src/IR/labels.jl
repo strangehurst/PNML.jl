@@ -1,11 +1,17 @@
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+High-level pnml labels are expected to have <text> and <structure> elements.
+This concrete type is for "unclaimed" labels in a high-level petri net.
 """    
-struct HLLabel <: AbstractLabel #TODO make abstract?
+struct HLLabel <: HLAnnotation
     text::Maybe{String}
     structure::Maybe{Structure}
     #TODO toolinfos
     #TODO graphics
     xml::XMLNode
+    #TODO validate in constructor: must have text or structure
 end
 
 # interface methods

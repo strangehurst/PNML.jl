@@ -374,9 +374,9 @@ function Base.show(io::IO, ::MIME"text/plain", arc::Arc)
 end
 
 #-------------------
-function Base.show(io::IO, declarations::Vector{Declaration})
+function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
 
-    print(io, typeof(declare), "[")
+    print(io, typeof(declarations), "[")
     for (i,dec) in enumerate(declarations)
         print(io, indent(io))
         show(inc_indent(io), MIME"text/plain"(), dec)
@@ -384,11 +384,11 @@ function Base.show(io::IO, declarations::Vector{Declaration})
     end
     print(io, "]")
 end
-function Base.show(io::IO, declare::Declaration)
+function Base.show(io::IO, declare::AbstractDeclaration)
     show(io, declare.label)
     show_common(io, declare.com,)
 end
-function Base.show(io::IO, mime::MIME"text/plain", declare::Declaration)
+function Base.show(io::IO, mime::MIME"text/plain", declare::AbstractDeclaration)
     print(io, typeof(declare))
     show(io, mime, declare.label)
     show(io, mime, declare.com)
@@ -403,7 +403,7 @@ function Base.summary( page::Page)
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",
-           length(page.declarations), " declarations, ",
+           isnothing(page.declaration) ? 0 : length(page.declaration), " declarations, ",
            length(page.refPlaces), " refP, ",
            length(page.refTransitions), " refT, ",
            length(page.subpages), " subpages, ",
@@ -413,7 +413,7 @@ end
 
 function show_page_field(io::IO, label::AbstractString, x)
     println(io, indent(io), label)
-    if !isempty(x)
+    if !isnothing(x)
         show(inc_indent(io), x)
         print(io, "\n")
     end
@@ -428,7 +428,7 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "places:",         page.places)
     show_page_field(inc_io, "transitions:",    page.transitions)
     show_page_field(inc_io, "arcs:",           page.arcs)
-    show_page_field(inc_io, "declarations:",   page.declarations)
+    show_page_field(inc_io, "declaration:",    page.declaration)
     show_page_field(inc_io, "refPlaces:",      page.refPlaces)
     show_page_field(inc_io, "refTransitions:", page.refTransitions)
     show_common(io, page.com)
@@ -453,18 +453,20 @@ Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", net.id, " type ", net.type, ", ",
             length(net.pages), " pages ",
-            length(net.declarations), " declarations ",
+            isnothing(net.declaration) ? 0 : length(net.declaration), " declarations ",
             summary(net.com))
 end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
-    iio = inc_indent(io) # Indent any declarations.
-    foreach(net.declarations) do decl
-        print(iio, indent(io))
-        show(iio, MIME"plain/text"(), decl)
-        println(iio, "\n") 
+    if !isnothing(net.declaration)
+        iio = inc_indent(io) # Indent any declarations.
+        foreach(net.declaration) do decl
+            print(iio, indent(io))
+            show(iio, MIME"plain/text"(), decl)
+            println(iio, "\n") 
+        end
     end
     show_common(io, net.com)
     show(io, net.pages)

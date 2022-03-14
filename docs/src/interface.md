@@ -21,6 +21,31 @@ use for `PnmlDict`'s flexibility.
 
 We start a description of the net IR here.
 
+## Type Hierarchies
+
+Overview of some type hiearchies:
+
+```@setup type
+using AbstractTrees, PNML, InteractiveUtils, Markdown
+#, GraphRecipes,Plots
+
+AbstractTrees.children(x::Type) = subtypes(x)
+
+typet = [
+AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)
+AbstractTrees.repr_tree(PNML.PnmlObject)
+AbstractTrees.repr_tree(PNML.AbstractLabel)
+AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
+AbstractTrees.repr_tree(PNML.PnmlException)
+AbstractTrees.repr_tree(PNML.PetriNet)
+AbstractTrees.repr_tree(PNML.AbstractSort)
+AbstractTrees.repr_tree(PNML.Term)
+]
+```
+```@example type
+foreach(typet) do t; println(t); end # hide
+```
+
 ## Net & Pages
 
 At the top level a pnml model is one or more networks,
@@ -356,8 +381,12 @@ methods(PNML.has_labels) # hide
 ```
 
 ### methodswith AbstractLabel
-
+TODO make work
 ---
 ```@example methods
 InteractiveUtils.methodswith(PNML.PnmlLabel, PNML, supertypes=true) # hide
 ```
+
+## PnmlType traits
+
+See [PnmlTypes](@ref) for details of the module.

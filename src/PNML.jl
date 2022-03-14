@@ -37,13 +37,14 @@ include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
+
 include("pnmltypes.jl")
 @reexport using .PnmlTypes
 
 include("IR/intermediate.jl")
 
-include("Parse/anyelement.jl")
 include("Parse/parseutils.jl")
+include("Parse/anyelement.jl")
 include("Parse/parse.jl")
 include("Parse/graphics.jl")
 include("Parse/declarations.jl")

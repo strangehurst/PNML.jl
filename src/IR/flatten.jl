@@ -49,11 +49,11 @@ Names and xml are omitted because they are scalar values, not collections.
 """
 function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
-                              :refTransitions, :refPlaces, :declarations],
+                              :refTransitions, :refPlaces, :declaration],
                       comk = [:tools, :labels])
     @debug "append_page!($(pid(l)), $(pid(r)))"
     foreach(keys) do key
-        append!(getproperty(l,key), getproperty(r,key))
+        update_maybe!(getproperty(l, key), getproperty(r, key))
     end
     # Optional fields to append.
     foreach(comk) do key

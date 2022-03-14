@@ -1,49 +1,13 @@
 # Uses PnmlDict descending the XML during parsing.
 # PnmlDict turned into Intermediate Representation forms on the return up the tree.
 
-# Start with some generic functions that are shared with the IR.
-
 """
 $(TYPEDSIGNATURES)
 
-Return pnml id symbol, if argument has one, otherwise return `nothing`.
+If `x` is `nothing` return `default`, otherwise return `x`.
+Or if `d[s]` is `nothing` return `default`, otherwise return `x`.
 """
-function pid end
-pid(::Any) = nothing
-pid(node::PnmlDict)::Symbol = node[:id]
-
-"""
-$(TYPEDSIGNATURES)
-
-Return tag symbol, if argument has one, otherwise `nothing`.
-"""
-function tag end
-tag(::Any) = nothing
-tag(pdict::PnmlDict)::Symbol = pdict[:tag]
-
-
-"""
-$(TYPEDSIGNATURES)
-
-Return xml node field of `d` or `nothing`.
-"""
-function xmlnode end
-xmlnode(::Any) = nothing
-xmlnode(pdict::PnmlDict) = pdict[:xml]
-
-
-"""
-$(TYPEDSIGNATURES)
-
-Return `true` if has XML attached. Defaults to `false`.
-"""
-function has_xml end
-has_xml(::Any) = false
-
-"""
-If `x` is `nothing` return `non`, otherwise return `x`.
-"""
-onnothing(x, non) = isnothing(x) ? non : x
+onnothing(x, default) = isnothing(x) ? default : x
 onnothing(d::PnmlDict, s::Symbol, default) =
     isnothing(get(d, s, nothing)) ? default : d[s]
 
@@ -70,11 +34,10 @@ end
 function add_label!(v::Vector{PnmlLabel}, node; kw...)
     #@show "add label! $(nodename(node))"
     haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
-    # Use of parse_node here allows the :labels vector to contain fully parsed nodes.
-    label = parse_node(node; kw...) #TODO handle types
+    label = PnmlLabel(unclaimed_label(node; kw...), node) #TODO handle types
     haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(label))."
     push!(v, label)
-    return v
+    return
 end
 
 """
@@ -169,7 +132,6 @@ function has_toolinfo(v::Vector{PnmlDict},
     end
 end
 
-#----------------
 """
 $(TYPEDSIGNATURES)
 
@@ -189,7 +151,6 @@ function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^
     return !isnothing(i) ? v[i] : nothing
 end
 
-#----------------
 """
 $(TYPEDSIGNATURES)
 Match toolname and version.
@@ -208,8 +169,6 @@ function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
     !isnothing(match(namerex, ti.toolname)) && !isnothing(match(versionrex, ti.version))
 end
 
-
-#---------------------------------------------------------------------
 #---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -240,7 +199,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Merge `xs` into dictonary with default pnml label tags.
+Merge `xs` into dictonary with default pnml HLannotation label tags.
 Used on pnml tags below a [`PnmlNode`](@ref) tag.
 Label level tags include: name, inscription, initialMarking.
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
@@ -281,7 +240,7 @@ Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@
 function parse_pnml_node_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
         "name" => (d[:name] = parse_node(node; kw...))
-        _      => parse_pnml_common!(d, node; kw...)
+        _ => parse_pnml_common!(d, node; kw...)
     end
 end
 
@@ -293,12 +252,15 @@ defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_label_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "text"      => (d[:text] = parse_node(node; kw...)) #TODO label with name?
+        "text"      => (d[:text] = parse_node(node; kw...))
+        # This is the fallback as "claimed" label's parser
+        # should have already consumed the <structure>.
         "structure" => (d[:structure] = parse_node(node; kw...))
-        _      => parse_pnml_common!(d, node; kw...)
+        _ => parse_pnml_common!(d, node; kw...)
     end
 end
 
+#---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 

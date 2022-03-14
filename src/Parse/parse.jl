@@ -21,11 +21,11 @@ Return namespace of `node. When `node` does not have a namespace return default 
 """
 function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_ns)
     if EzXML.hasnamespace(node) 
-         EzXML.namespace(node)
+         return EzXML.namespace(node)
     else
         emsg = "$(nodename(node)) missing namespace"
         missing_ns_fatal===false ? @warn(emsg) : error(emsg)
-        default_ns
+        return default_ns
     end
 end
 
@@ -55,14 +55,12 @@ function parse_net(node; kw...)::PnmlNet
     nn = nodename(node)
     nn == "net" || error("element name wrong: $nn")
     EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "type") || throw(MalformedException("$(nn) missing type", node))
-
+    EzXML.haskey(node, "type") || throw(MalformedException("$nn missing type", node))
     @assert haskey(kw, :reg)
-    isempty(allchildren("page", node)) &&
-         throw(MalformedException("$(nn) does not have any pages"))
-
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
+    isempty(allchildren("page", node)) &&
+         throw(MalformedException("$nn does not have any pages"))
 
     # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
@@ -73,24 +71,26 @@ function parse_net(node; kw...)::PnmlNet
                            :id => register_id!(kw[:reg], node["id"]),
                            :type => PnmlTypes.pnmltype(node["type"]),
                            :pages => Page[],
-                           :declarations => Declaration[])
+                           :declaration => nothing)
 
     pntd = d[:type] # We pass the PNTD down the parse tree.
 
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_node(child; pntd, kw...))
-            # NB: There is also a 'declarations' tag that is different from :declarations key.
-            # Use plural here because there can be zero or more declaration tags 
-            # for a net or page. Within a <declaration> is a <structure> holding
-            # a <declarations> with zero or more elements.
-            "declaration"  => push!(d[:declarations], parse_node(child; pntd, kw...))
+            "page"         => push!(d[:pages], parse_page(child; pntd, kw...))
+            
+            # For nets and pages the <declaration> tag is optional 
+            # <declaration> ia a High-Level Annotation with a <structure> holding
+            # a zero or more <declarations>
+            "declaration"  => (d[:declaration] = parse_declaration(child; pntd, kw...))
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
     PnmlNet(d, pntd, node)
 end
+# Expected XML structure:
+#    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
 
 """
 $(TYPEDSIGNATURES)
@@ -111,19 +111,19 @@ function parse_page(node; kw...)
                            :arcs => Arc[],
                            :refP => RefPlace[],
                            :refT => RefTransition[],
-                           :declarations => Declaration[],
+                           :declaration => nothing,
                            :pages => Page[])
 
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "place"       => push!(d[:places], parse_node(child; kw...))
-            "transition"  => push!(d[:trans], parse_node(child; kw...))
-            "arc"         => push!(d[:arcs], parse_node(child; kw...))
-            "referencePlace" => push!(d[:refP], parse_node(child; kw...))
-            "referenceTransition" => push!(d[:refT], parse_node(child; kw...))
+            "place"       => push!(d[:places], parse_place(child; kw...))
+            "transition"  => push!(d[:trans], parse_transition(child; kw...))
+            "arc"         => push!(d[:arcs], parse_arc(child; kw...))
+            "referencePlace"      => push!(d[:refP], parse_refPlace(child; kw...))
+            "referenceTransition" => push!(d[:refT], parse_refTransition(child; kw...))
             # See note above about declarations vs. declaration.
-            "declaration" => push!(d[:declarations], parse_node(child; kw...))
-            "page"        => push!(d[:pages], parse_node(child; kw...))
+            "declaration" => (d[:declaration] = parse_declaration(child; kw...))
+            "page"        => push!(d[:pages], parse_page(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
@@ -255,7 +255,7 @@ Return the stripped string of nodecontent.
 """
 function parse_text(node; kw...)
     nn = nodename(node)
-    nn == "text" || error("parse_text nodename wrong")
+    nn == "text" || error("$nn nodename wrong")
     string(strip(nodecontent(node)))
 end
 
@@ -294,22 +294,19 @@ end
 
 #----------------------------------------------------------
 #
-# structure is neither a pnml node nor a pnml annotation-label.
-# Behaves like an attribute-label.
-# Should be inside of an label.
-#
 #----------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)
 
-A pnml structure node can hold any well formed XML.
-Structure semantics will vary based on parent element and petri net type definition.
+Return [`Structure`](@ref) wrapping a `PnmlDict` holding a <structure>.
+Should be inside of an label. 
+A "claimed" label usually elids the <structure> level (does not call this method).
 """
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    PnmlLabel(node; kw...) # TODO make a Structure type.
+    Structure(anyelement(node; kw...))
 end
 
 
@@ -364,9 +361,12 @@ $(TYPEDSIGNATURES)
 function parse_hlinitialMarking(node; kw...)
     nn = nodename(node)
     nn == "hlinitialMarking" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn))
+    d = pnml_label_defaults(node, :tag=>Symbol(nn), 
+                            :text=>nothing, 
+                            :structure=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
+            "text" => (d[:text] = parse_text(child; kw...))
             _ => parse_pnml_label_common!(d, child; kw...)
         end
     end

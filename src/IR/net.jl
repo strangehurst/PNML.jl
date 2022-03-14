@@ -8,7 +8,7 @@ struct PnmlNet{PNTD<:PnmlType}
     id::Symbol
     type::PNTD
     pages::Vector{Page}
-    declarations::Vector{Declaration}
+    declaration::Maybe{Declaration}
 
     com::ObjectCommon
     xml::XMLNode
@@ -18,7 +18,7 @@ end
 $(TYPEDSIGNATURES)
 """
 function PnmlNet(d::PnmlDict, pntd::PNTD, xml::XMLNode) where {PNTD<:PnmlType}
-    PnmlNet{PNTD}(d[:id], pntd, d[:pages], d[:declarations], ObjectCommon(d), xml)
+    PnmlNet{PNTD}(d[:id], pntd, d[:pages], d[:declaration], ObjectCommon(d), xml)
 end
 
 pid(net::PnmlNet) = net.id

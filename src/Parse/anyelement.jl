@@ -2,7 +2,7 @@
 $(TYPEDSIGNATURES)
 
 Return [`AnyElement`](@ref) wraping `PnmlDict` holding a well-formed XML node.
-See [`ToolInfo`](@ref) for intended use-case and [`unclaimed_label`](@ref) for when
+See [`ToolInfo`](@ref) for the intended use-case and [`unclaimed_label`](@ref) for when
 a pnml label is expected but does not have a parser or the tag appears in an 
 unexpected place.
 """
@@ -15,8 +15,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return `PnmlDict` holding generic pnml label node and its children.
+Return `PnmlDict` holding a pnml label and its children.
 Note that the children can be "claimed" labels.
+The main use-case is to wrap in a [`PnmlLabel`](@ref)
 """
 function unclaimed_label(node; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
@@ -36,9 +37,7 @@ If element `node` has any children, each is placed in the dictonary with the
 child's tag name symbol as the key, repeated tags produce a vector as the value.
 Any XML attributes found are added as as key,value pairs.
 
-# Details
-
-This will recursivly descend the well-formed XML using `parser` on child nodes.
+Descend the well-formed XML using `parser` on child nodes.
 It is possible that claimed labels will be in the unclaimed element's content.
 
 Note the assumption that "children" and "content" are mutually exclusive.
@@ -67,9 +66,9 @@ Return PnmlDict with values that are vectors when there
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
 function anyelement_content(nodes::Vector{XMLNode}, parser; kw...)::PnmlDict
-    dict = PnmlDict()
     namevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
     tagnames = unique(map(first, namevec))
+    dict = PnmlDict()
     foreach(tagnames) do tagname
         tags = filter(x->x.first===tagname, namevec)
         dict[Symbol(tagname)] = if length(tags) > 1 # Now its a symbol.

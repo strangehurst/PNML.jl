@@ -1,8 +1,8 @@
 #-------------------
-"""
-$(TYPEDEF)
-"""
-abstract type Inscription <: AbstractLabel end
+# """
+# $(TYPEDEF)
+# """
+# abstract type Inscription <: AbstractLabel end
 
 #-------------------
 """
@@ -11,7 +11,7 @@ $(TYPEDFIELDS)
 
 Labels an Arc.
 """
-struct PTInscription{T<:Number}  <: Inscription
+struct PTInscription{T<:Number}  <: Annotation
     value::T
     com::ObjectCommon
 end
@@ -20,7 +20,7 @@ end
 $(TYPEDSIGNATURES)
 """
 PTInscription(pdict::PnmlDict) =
-    PTInscription(onnothing(pdict[:value],1), ObjectCommon(pdict))
+    PTInscription(onnothing(pdict, :value, 1), ObjectCommon(pdict))
 
 convert(::Type{Maybe{PTInscription}}, pdict::PnmlDict) = PTInscription(pdict)
 
@@ -31,9 +31,9 @@ $(TYPEDFIELDS)
 
 Labels an Arc.
 """
-struct HLInscription <: Inscription
+struct HLInscription <: HLAnnotation
     text::Maybe{String}
-    structure::Maybe{PnmlLabel}
+    structure::Maybe{Structure{AnyElement}}
     com::ObjectCommon
 end
 
