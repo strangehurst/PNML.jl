@@ -48,20 +48,37 @@ foreach(typet) do t; println(t); end # hide
 
 ## Net & Pages
 
-At the top level a pnml model is one or more networks,
+At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
 
-Pages are present for visual presentation to humans.
-Not doing anything with it until convinced there is a viable external community.
-Parse for input, worry about writing back out and interchange later.
+[`Page`](@ref) is mostly present for visual presentation to humans. 
+It also contains [`PnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
 
-The collection of pages is flattened before use. Using them unflattened is
-not supposed to be impossible, but is not the arena or the initial use cases:
-adapting to use graph tools, catlab, sciml, and other linear algebra things.
-See [`flatten_pages!`](@ref).
+[`ObjectCommon`](@ref) is a field of most types. 
+This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
 
+While [`Graphics`](@ref) is implemented as part of `ObjectCommon`
+it is not dicussed further (until someone extends/uses it).
 
-XML <net> tags are 1st parsed into PnmlDict:
+`ObjectCommon`  also has [`ToolInfo`](@ref) used to attach well-formed XML.
+TODO: Need way to parse <toolspecific> that is flexible/extendable.
+
+Parse pnml for input, worry about writing back out and interchange later (future extensions).
+
+A future extension  maybe to use pages for distributed computing.
+
+The pnml specification permits that multiple pages to be flattened 
+(by [`flatten_pages!`](@ref)) to a single `Page` before use. 
+Using them unflattened is not supposed to be impossible, 
+but is not the arena or the initial use cases in no paticular order:
+adapting to use graph tools, catlab, agent based modeling, sciml, etc.
+
+[`PetriNet`](@ref) subtypes extend [`PnmlNet`](@ref).
+`PnmlNet` and its contents can be considered an intermediate representation (IR).
+A concrete `PetriNet` type uses the IR to produce higher-level behavior.
+This is the level at which `flatten_pages!` and `deref~` operate.
+
+XML <net> tags are 1st parsed into `PnmlDict` which is used to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
@@ -76,7 +93,7 @@ XML <net> tags are 1st parsed into PnmlDict:
 
 See [`parse_net`](@ref) for more detail.
 
-XML <page> tags are also 1st parsed into PnmlDict:
+XML <page> tags are also 1st parsed into `PnmlDict` which is used to construct a [`Page`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
@@ -354,7 +371,9 @@ methods(PNML.ins)  # hide
 methods(PNML.outs)  # hide
 ```
 
-## Labels
+## Labels - `Annotation` and `HLAnnotation`
+
+Both have `ObjectCommon`. [`HLAnnotation`](@ref) adds optional <text>, <structure>.
 
 ### has\_text
 [`has_text`](@ref)
