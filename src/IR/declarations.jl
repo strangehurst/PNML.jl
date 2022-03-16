@@ -131,5 +131,20 @@ struct Declaration <: HLAnnotation
 end
 
 Declaration(pdict::PnmlDict) = Declaration(pdict[:structure], ObjectCommon(pdict))
+Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon())
 
-convert(::Type{Maybe{Declaration}}, pdict::PnmlDict) = Declaration(pdict)
+convert(::Type{Declaration}, nothing::Nothing) = Declaration()
+
+declarations(d::Declaration) = d.declarations
+Base.length(d::Declaration) = length(declarations(d))
+
+#TODO make for all annotation?
+function Base.append!(l::Declaration, r::Declaration)
+    append!(declarations(l), declarations(r))
+    append!(l.com, r.com)
+end
+
+function Base.empty!(d::Declaration)
+    empty!(declarations(d))
+    empty!(d.com)
+end

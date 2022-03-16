@@ -63,22 +63,25 @@ function append_page!(l::Page, r::Page;
     l
 end
 
-# 2 Things, each could be nothing.
-function update_maybe(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
-    if isnothing(getproperty(l, key))
-        if !isnothing(getproperty(r, key))
+# 2 Things, each could be union of nothing and `T`.
+# `T`  has field `key` that is to be appended.
+function update_maybe!(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
+    if !isnothing(getproperty(r, key))
+        if isnothing(getproperty(l, key))
             setproperty!(l, key, getproperty(r, key))
+        else
+            append!(getproperty(l, key), getproperty(r, key))
         end
-    else
-        append!(getproperty(l, key), getproperty(r, key))
     end
 end
+
+#! TODO test this (how would it be used?)
 function update_maybe!(l::T, r::T) where {T <: Maybe{Any}}
-    if isnothing(l)
-        if !isnothing(r)
+    if !isnothing(r)
+        if isnothing(l)
             l = r
+        else
+            append!(l, r)
         end
-    else
-        append!(l, r)
     end
 end

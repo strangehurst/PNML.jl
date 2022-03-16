@@ -12,16 +12,13 @@ struct ObjectCommon
     labels::Maybe{Vector{PnmlLabel}}
 end
 
-"""
-$(TYPEDSIGNATURES)
-Wrap selected fields of `pdict`. Each defaults to `nothing`.
-"""
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
     get(pdict, :name, nothing),
     get(pdict, :graphics, nothing),
     get(pdict, :tools, nothing),
     get(pdict, :labels, nothing)
 )
+ObjectCommon() = ObjectCommon(nothing, nothing, nothing, nothing)
 
 "Return `true` if `oc` has a `name` element."
 has_name(oc::ObjectCommon) = !isnothing(oc.name)
@@ -50,4 +47,15 @@ function Base.empty!(oc::ObjectCommon)
     has_graphics(oc) && empty!(oc.graphics)
     has_tools(oc) && empty!(oc.tools)
     has_labels(oc) && empty!(oc.labels)
+end
+
+function Base.append!(l::ObjectCommon, r::ObjectCommon)
+    # In the flatten use-case do not overwrite scalars.
+    # How useful is propagating scalars?
+    # Note that ObjectCommon is immutable so this errors.
+    #if !has_name(l);     l.name     = r.name; end
+    #if !has_graphics(l); l.graphics = r.graphics; end
+
+    update_maybe!(l, r, :tools)
+    update_maybe!(l, r, :labels)
 end

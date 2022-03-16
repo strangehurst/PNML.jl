@@ -71,7 +71,7 @@ function parse_net(node; kw...)::PnmlNet
                            :id => register_id!(kw[:reg], node["id"]),
                            :type => PnmlTypes.pnmltype(node["type"]),
                            :pages => Page[],
-                           :declaration => nothing)
+                           :declaration => Declaration())
 
     pntd = d[:type] # We pass the PNTD down the parse tree.
 
@@ -111,7 +111,7 @@ function parse_page(node; kw...)
                            :arcs => Arc[],
                            :refP => RefPlace[],
                            :refT => RefTransition[],
-                           :declaration => nothing,
+                           :declaration => Declaration(),
                            :pages => Page[])
 
     foreach(elements(node)) do child

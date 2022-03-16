@@ -22,22 +22,17 @@ Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 function parse_declaration(node; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
-    
-    # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
-    # optional(0..1), required,  zero or more
-    decl_structure(nv::Vector{XMLNode}; kw...) = begin
-        if isempty(nv)
-            AbstractDeclaration[]
-        else
-            parse_declarations.(nv; kw...)
-        end
-    end 
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     @show d
+
+    # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
+    # optional,     required,  zero or more
+    decl_structure(nv::Vector{XMLNode}) =
+            isempty(nv) ? AbstractDeclaration[] : parse_declarations.(nv; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            # <declaration>'s <structure> contains a vector of declarations.
-            "structure" => (d[:structure] = decl_structure(allchildren("declarations",node); kw...))
+            # <declaration>'s <structure> contains a vector of declarations. Usually 1.
+            "structure" => (d[:structure] = decl_structure(allchildren("declarations",node)))
             _ => parse_pnml_label_common!(d, child; kw...)
          end
     end

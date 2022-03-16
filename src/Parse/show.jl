@@ -403,7 +403,7 @@ function Base.summary( page::Page)
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",
-           isnothing(page.declaration) ? 0 : length(page.declaration), " declarations, ",
+           isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
            length(page.refPlaces), " refP, ",
            length(page.refTransitions), " refT, ",
            length(page.subpages), " subpages, ",
@@ -428,7 +428,7 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "places:",         page.places)
     show_page_field(inc_io, "transitions:",    page.transitions)
     show_page_field(inc_io, "arcs:",           page.arcs)
-    show_page_field(inc_io, "declaration:",    page.declaration)
+    show_page_field(inc_io, "declaration:",    declarations(page))
     show_page_field(inc_io, "refPlaces:",      page.refPlaces)
     show_page_field(inc_io, "refTransitions:", page.refTransitions)
     show_common(io, page.com)
@@ -460,13 +460,11 @@ end
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
-    if !isnothing(net.declaration)
-        iio = inc_indent(io) # Indent any declarations.
-        foreach(net.declaration) do decl
-            print(iio, indent(io))
-            show(iio, MIME"plain/text"(), decl)
-            println(iio, "\n") 
-        end
+    iio = inc_indent(io) # Indent any declarations.
+    foreach(declarations(net)) do decl
+        print(iio, indent(io))
+        show(iio, MIME"plain/text"(), decl)
+        println(iio, "\n") 
     end
     show_common(io, net.com)
     show(io, net.pages)

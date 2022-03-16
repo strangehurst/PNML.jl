@@ -151,13 +151,13 @@ end
                 @test arc isa PNML.Arc
                 @test pid(arc) isa Symbol
             end
-            !isnothing(page.declaration) && foreach(page.declaration) do decl
+            foreach(PNML.declarations(page)) do decl
                 @test decl isa PNML.Declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
-        !isnothing(net.declaration) && foreach(net.declaration) do decl
+        foreach(PNML.declarations(net)) do decl
             @test decl isa PNML.Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end

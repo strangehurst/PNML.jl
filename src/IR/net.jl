@@ -8,7 +8,7 @@ struct PnmlNet{PNTD<:PnmlType}
     id::Symbol
     type::PNTD
     pages::Vector{Page}
-    declaration::Maybe{Declaration}
+    declaration::Declaration
 
     com::ObjectCommon
     xml::XMLNode
@@ -28,3 +28,5 @@ xmlnode(net::PnmlNet) = net.xml
 
 "Usually the only interesting page."
 firstpage(net::PnmlNet) = net.pages[1]
+
+declarations(net::PnmlNet) = declarations(net.declaration)
