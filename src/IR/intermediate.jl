@@ -20,5 +20,6 @@ include("net.jl")
 include("model.jl")
 
 include("flatten.jl")
+include("show.jl")
 
 #end # module IR

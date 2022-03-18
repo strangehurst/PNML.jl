@@ -3,6 +3,9 @@
 #  - base/show.jl
 #  - ?show
 #
+#
+# TODO: use  MIME"application/vnd.julia-vscode.diagnostics" for runtime diagnostics
+#
 "Indention increment."
 const indent_width = 4
 
