@@ -12,7 +12,7 @@ The intermediate representation is used to implement networks
 expressed in a pnml model. The consumer of the IR is a network,
 most naturally a varity of Petri Net.
 
-High-Level Petri Net Graphs can be expressed in a pnml model.
+High-Level Petri Net Graphs (HLPNG) can be expressed in a pnml model.
 
 [`PnmlDict`](@ref) is an alias for `Dict{Symbol,Any}`.
 Each XML tag is first parsed into a `PnmlDict`, many are then used
@@ -23,7 +23,7 @@ We start a description of the net IR here.
 
 ## Type Hierarchies
 
-Overview of some type hiearchies:
+Overview of some type hiearchies.
 
 ```@setup type
 using AbstractTrees, PNML, InteractiveUtils, Markdown
@@ -32,16 +32,45 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 AbstractTrees.children(x::Type) = subtypes(x)
 
 typet = [
-AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)
 AbstractTrees.repr_tree(PNML.PnmlObject)
 AbstractTrees.repr_tree(PNML.AbstractLabel)
 AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
 AbstractTrees.repr_tree(PNML.PnmlException)
-AbstractTrees.repr_tree(PNML.PetriNet)
 AbstractTrees.repr_tree(PNML.AbstractSort)
 AbstractTrees.repr_tree(PNML.Term)
 ]
 ```
+### PnmlType - Petri Net Type Definition
+See [PnmlTypes](@ref) module page.
+
+There are 2 levels:  Core (Place-Transition) and High-Level PNG.
+
+[`PnmlCore`](@ref) is a concrete subtype of [`PnmlType`](@ref).
+`PnmlCore` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
+
+Because we rely on external XML Schema verification tools, so long as we
+match the standard [link to discussion of match], we can extend TODO?.
+
+[`HLCore`](@ref) is a concrete subtypevof [`AbstractHLCore`](@ref).
+`HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
+Think of it as a testable implementation of `AbstractHLCore`.
+
+The IR does not try to impose semantics on the model. Those semantics should
+be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
+at a structural level. It may paramertize types to facilitate specilaization.
+
+```@example type
+println(AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)) # hide
+```
+
+### PetriNet
+[`PetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
+
+```@example type
+println(AbstractTrees.repr_tree(PNML.PetriNet)) # hide
+```
+
+### Intermediate Representation: Nodes, Labels, Terms, & Other
 ```@example type
 foreach(typet) do t; println(t); end # hide
 ```
@@ -51,10 +80,10 @@ foreach(typet) do t; println(t); end # hide
 At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
 
-[`Page`](@ref) is mostly present for visual presentation to humans. 
+[`Page`](@ref) is mostly present for visual presentation to humans.
 It also contains [`PnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
 
-[`ObjectCommon`](@ref) is a field of most types. 
+[`ObjectCommon`](@ref) is a field of most types.
 This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
 
 While [`Graphics`](@ref) is implemented as part of `ObjectCommon`
@@ -67,9 +96,9 @@ Parse pnml for input, worry about writing back out and interchange later (future
 
 A future extension  maybe to use pages for distributed computing.
 
-The pnml specification permits that multiple pages to be flattened 
-(by [`flatten_pages!`](@ref)) to a single `Page` before use. 
-Using them unflattened is not supposed to be impossible, 
+The pnml specification permits that multiple pages to be flattened
+(by [`flatten_pages!`](@ref)) to a single `Page` before use.
+Using them unflattened is not supposed to be impossible,
 but is not the arena or the initial use cases in no paticular order:
 adapting to use graph tools, catlab, agent based modeling, sciml, etc.
 
@@ -312,7 +341,7 @@ methods(PNML.inscription)  # hide
 ```@example methods
 methods(PNML.deref!)  # hide
 ```
-### deref\_place - derefrence one place
+### deref\_place - derefeence one place
 [`deref_place`](@ref)
 ```@example methods
 methods(PNML.deref_place)  # hide
@@ -393,17 +422,41 @@ methods(PNML.has_structure) # hide
 methods(PNML.text) # hide
 ```
 
-### has_labels
+### structure
+[`structure`](@ref)
+```@example methods
+methods(PNML.structure) # hide
+```
+
+### has_labels - do any exist
 [`has_labels`](@ref)
 ```@example methods
 methods(PNML.has_labels) # hide
 ```
 
-### methodswith AbstractLabel
-TODO make work
----
+### has_label - does a specific label exist
+[`has_label`](@ref)
 ```@example methods
-InteractiveUtils.methodswith(PNML.PnmlLabel, PNML, supertypes=true) # hide
+methods(PNML.has_label) # hide
+```
+
+### get_label - get a specific label
+[`get_label`](@ref)
+```@example methods
+methods(PNML.get_label) # hide
+```
+
+## ToolInfo
+
+### has_toolinfo - does a specific toolinfo exist
+[`has_toolinfo`](@ref)
+```@example methods
+methods(PNML.has_toolinfo) # hide
+```
+### get_toolinfo - get a specific toolinfo exist
+[`get_toolinfo`](@ref)
+```@example methods
+methods(PNML.get_toolinfo) # hide
 ```
 
 ## PnmlType traits
