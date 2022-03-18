@@ -1,7 +1,8 @@
 using PNML, PNML.PnmlTypes
-using PrettyPrinting
+#using PrettyPrinting
 using Documenter
 
+using PNML
 using PNML: AbstractHLCore,
     AbstractLabel,
     AbstractPnmlTool,
@@ -68,7 +69,6 @@ using PNML: AbstractHLCore,
     ToolInfo,
     Transition,
     XMLNode,
-    _deref!,
     _harvest_any!,
     _match,
     add_label!,
@@ -213,7 +213,6 @@ using PNML: AbstractHLCore,
     transitions,
     type,
     unclaimed_label,
-    update_maybe,
     update_maybe!,
     xmlnode
 
@@ -277,7 +276,7 @@ makedocs(;
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          repo="/home/jeff/Jules/PNToyBox/src/PNML/{path}",
          checkdocs=:all,
-         
+
          format=Documenter.HTML(;
                                 # CI means publish documentation on GitHub.
                                 prettyurls=get(ENV, "CI", nothing) == "true",
@@ -293,7 +292,7 @@ makedocs(;
             "Petri Net Markup Language" => [
                 "pnml.md"
             ],
-             
+
             "API" => [
                 "PNML"      => "API/library.md",
                 "PnmlTypes" => "API/pnmltypes.md"

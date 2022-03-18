@@ -13,7 +13,7 @@ using PNML
 using DocStringExtensions
 
 export PnmlType,
-        AbstractHLCore, PnmlCore, PTNet,
+        PnmlCore, PTNet,
         AbstractHLCore, SymmetricNet, PT_HLPNG,
                         HLCore, HLNet, StochasticNet, TimedNet, OpenNet
 
@@ -34,27 +34,19 @@ $(TYPEDEF)
 """
 abstract type PnmlType end
 
-"""
-Base of [`PnmlCore`](@ref) and [`PTNet`] Petri Net pntds.
-
-$(TYPEDEF)
-"""
-abstract type AbstractPnmlCore <: PnmlType end
-
-"""
-Base of High Level Petri Net pntds. 
-See [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
-
-$(TYPEDEF)
-"""
-abstract type AbstractHLCore <: PnmlType end
+#"""
+#Base of [`PnmlCore`](@ref) and [`PTNet`] Petri Net pntds.#
+#
+#$(TYPEDEF)
+#"""
+#abstract type AbstractPnmlCore <: PnmlType end
 
 """
 PnmlCore is the most minimal concrete Petri Net.
 
 $(TYPEDEF)
 """
-struct PnmlCore <: AbstractPnmlCore end
+struct PnmlCore <: PnmlType end
 
 """
 Place-Transition Petri Nets add small extensions to core. 
@@ -63,7 +55,15 @@ Note that 'PT' is often the prefix for XML tags specilized for this net type.
 
 $(TYPEDEF)
 """
-struct PTNet <: AbstractPnmlCore end
+struct PTNet <: PnmlType end
+
+"""
+Base of High Level Petri Net pntds. 
+See [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
+
+$(TYPEDEF)
+"""
+abstract type AbstractHLCore <: PnmlType end
 
 """
 High-Level Petri Nets add large extensions to core, can be used for generic high-level nets.
@@ -87,21 +87,21 @@ $(TYPEDEF)
 struct SymmetricNet <: AbstractHLCore end
 
 """
-Stochastic Petri Net
+TODO: Stochastic Petri Net
 
 $(TYPEDEF)
 """
 struct StochasticNet <: AbstractHLCore end
 
 """
-Timed Petri Net
+TODO: Timed Petri Net
 
 $(TYPEDEF)
 """
 struct TimedNet <: AbstractHLCore end
 
 """
-Open Petri Net
+TODO: Open Petri Net
 
 $(TYPEDEF)
 """

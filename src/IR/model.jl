@@ -18,9 +18,16 @@ PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, pnml_ns, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, ns, reg::IDRegistry) = PnmlModel(nets, ns, reg, nothing)
 
+"""
+$(TYPEDSIGNATURES)
+
+Return all `nets` of `model`.
+"""
+nets(model::PnmlModel) = model.nets
+namespace(model::PnmlModel) = model.namespace
+idregistry(model::PnmlModel) = model.reg
 has_xml(model::PnmlModel) = true
 xmlnode(model::PnmlModel) = model.xml
-namespace(model::PnmlModel) = model.namespace
 
 """
 $(TYPEDSIGNATURES)
@@ -62,8 +69,7 @@ Return `PnmlNet` having `id` or `nothing``.
 function find_net end
 
 function find_net(model, id::Symbol)
-    i = findfirst(net->pid(net) === id, nets(model))
-    isnothing(i) ? nothing : nets[i]
+    getfirst(net->pid(net) === id, nets(model))
 end
 
 """
@@ -73,9 +79,3 @@ Return first net contained by `doc`.
 """
 first_net(model) = first(nets(model))
 
-"""
-$(TYPEDSIGNATURES)
-
-Return all `nets` of `model`.
-"""
-nets(model::PnmlModel) = model.nets

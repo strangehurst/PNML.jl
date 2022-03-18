@@ -12,12 +12,13 @@ module PNML
 using EzXML
 using MLStyle: @match
 using DocStringExtensions
-using PrettyPrinting
+using AutoHashEquals
+#using PrettyPrinting
 #using Symbolics
 #using IfElse
 using AbstractTrees
 using LabelledArrays
-using SciMLBase: @add_kwonly
+#using SciMLBase: @add_kwonly
 using Reexport
 #include("docstrings.jl")
 
@@ -37,6 +38,7 @@ include("xmlutils.jl")
 include("id.jl")
 include("types.jl")
 include("exceptions.jl")
+include("utils.jl")
 
 include("pnmltypes.jl")
 @reexport using .PnmlTypes
@@ -59,5 +61,4 @@ include("Net/hlnet.jl")
 export @xml_str,
     parse_str, parse_file, parse_pnml, parse_node,
     PnmlException, MissingIDException, MalformedException
-
 end

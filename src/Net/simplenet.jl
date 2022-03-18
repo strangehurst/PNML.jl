@@ -33,7 +33,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD** 
-SimpleNet wraps one net.
+SimpleNet wraps one net. This is a `PetriNet` wrapping a `PnmlNet`.
 
 Omits the page level of the pnml-defined hierarchy by flattening pages.
 A multi-page net can be flattened by removing referenceTransitions & referencePlaces,
@@ -56,36 +56,35 @@ function SimpleNet(net::PnmlNet)
     SimpleNet(netcopy.id, netcopy)
 end
 
-Base.summary(io::IO, petrinet::SimpleNet{P}) where {P} = print(io, summary(petrinet))
-function Base.summary(petrinet::SimpleNet{P}) where {P} 
-    string(typeof(petrinet), " id ", pid(petrinet), ", ",
-        length(places(petrinet)), " places, ",
-        length(transitions(petrinet)), " transitions, ",
-        length(arcs(petrinet)), " arcs")
+Base.summary(io::IO, spn::SimpleNet{P}) where {P} = print(io, summary(spn))
+function Base.summary(spn::SimpleNet{P}) where {P} 
+    string(typeof(spn), " id ", pid(spn), ", ",
+        length(places(spn)), " places, ",
+        length(transitions(spn)), " transitions, ",
+        length(arcs(spn)), " arcs")
 end
 
-function Base.show(io::IO, petrinet::SimpleNet{P}) where {P}
-    println(io, summary(petrinet))
+function Base.show(io::IO, spn::SimpleNet{P}) where {P}
+    println(io, summary(spn))
     println(io, "places")
-    println(io, places(petrinet))
+    println(io, places(spn))
     println(io, "transitions")
-    println(io, transitions(petrinet))
+    println(io, transitions(spn))
     println(io, "arcs")
-    print(io, arcs(petrinet))
+    print(io, arcs(spn))
 end
 
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface.
-# 
 #-------------------------------------------------------------------------------
 
-pid(petrinet::SimpleNet) = pid(petrinet.net)
+pid(spn::SimpleNet) = pid(spn.net)
 
-places(petrinet::SimpleNet)         = firstpage(petrinet.net).places
-transitions(petrinet::SimpleNet)    = firstpage(petrinet.net).transitions
-arcs(petrinet::SimpleNet)           = firstpage(petrinet.net).arcs
-refplaces(petrinet::SimpleNet)      = firstpage(petrinet.net).refPlaces
-reftransitions(petrinet::SimpleNet) = firstpage(petrinet.net).refTransitions
+places(spn::SimpleNet)         = firstpage(spn.net).places
+transitions(spn::SimpleNet)    = firstpage(spn.net).transitions
+arcs(spn::SimpleNet)           = firstpage(spn.net).arcs
+refplaces(spn::SimpleNet)      = firstpage(spn.net).refPlaces
+reftransitions(spn::SimpleNet) = firstpage(spn.net).refTransitions
 
 
 
@@ -102,11 +101,11 @@ Return a transition-id labelled vector of rate values for transitions of net `s`
 """
 function rates end
 
-rates(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
-    rates(petrinet, transition_ids(petrinet))
+rates(spn::N) where {T<:PnmlType, N<:PetriNet{T}} =
+    rates(spn, transition_ids(spn))
 
-function rates(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [transitionid => rate(petrinet, transitionid) for transitionid in idvec]...))
+function rates(spn::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
+    LVector( (; [transitionid => rate(spn, transitionid) for transitionid in idvec]...))
 end
 
 """
@@ -125,7 +124,7 @@ function rate(transition)::Number
     end
 end
 
-function rate(petrinet::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    rate(transition(petrinet, tid))
+function rate(spn::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
+    rate(transition(spn, tid))
 end
 

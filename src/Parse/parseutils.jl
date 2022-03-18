@@ -43,7 +43,6 @@ end
 """
 Does any label attached to `d` have a matching `tagvalue`.
 
----
 $(TYPEDSIGNATURES)
 """
 function has_label end
@@ -64,14 +63,12 @@ function get_label end
 
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
     @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
-    i = findfirst(lab->tag(lab) === tagvalue, v)
-    !isnothing(i) ? v[i] : nothing
+    getfirst(lab->tag(lab) === tagvalue, v)
 end
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
     @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
-    i = findfirst(lab->tag(lab) === tagvalue, v)
-    !isnothing(i) ? v[i] : nothing
+    getfirst(lab->tag(lab) === tagvalue, v)
 end
 
 # Vector of labels may be contained in a dictonary.
@@ -145,10 +142,7 @@ get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) =
  
 function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
     #@show "match toolinfo $(typeof(v)) $namerex $versionrex"
-    i = findfirst(v) do ti
-        _match(ti, namerex, versionrex)
-    end
-    return !isnothing(i) ? v[i] : nothing
+    getfirst(ti -> _match(ti, namerex, versionrex), v) 
 end
 
 """

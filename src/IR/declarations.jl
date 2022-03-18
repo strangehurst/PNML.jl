@@ -20,22 +20,48 @@ abstract type SortDeclaration <: AbstractDeclaration end
 abstract type OperatorDeclaration <: AbstractDeclaration end
 
 """
-    
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct VariableDeclaration <: AbstractDeclaration
+struct VariableDeclaration{S<:AbstractSort}  <: AbstractDeclaration
     id::Symbol
     name::String
-    sort::AbstractSort
-    #    com::ObjectCommon
-    #    xml::XMLNode
+    sort::S
+    com::ObjectCommon
+    xml::XMLNode
 end
 
-VariableDeclaration(pdict::PnmlDict, xml::XMLNode) = 
+VariableDeclaration(pdict::PnmlDict, xml::XMLNode) =
     VariableDeclaration(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
 
-struct Variable <: Term 
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct NamedSort{S<:AbstractSort} <: SortDeclaration
+    id::Symbol
+    name::String
+    def::S #Union{BuiltInSort,MultisetSort,ProductSort,UserSort}
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct NamedOperator <: OperatorDeclaration
+    id::Symbol
+    name::String
+    parameter::Vector{VariableDeclaration}
+    def::Term
+    com::ObjectCommon
+    xml::XMLNode
+end
+
+NamedOperator(pdict::PnmlDict, xml::XMLNode) =
+    NamedOperator(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
+
+
+struct Variable <: Term
     variableDecl::VariableDeclaration
 end
 
@@ -47,9 +73,9 @@ struct PnmlTuple <: AbstractOperator end
 """
 $(TYPEDSIGNATURES)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked. 
+Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 
-From the 'primer': built-in sorts of Symmetric Nets are the following: 
+From the 'primer': built-in sorts of Symmetric Nets are the following:
   Booleans, range of integers, finite enumerations, cyclic enumerations and dots
 """
 struct BuiltInSort <: AbstractSort
@@ -59,7 +85,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked. 
+Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
 struct MultisetSort <: AbstractSort
     dict::AnyElement
@@ -68,7 +94,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked. 
+Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
 struct ProductSort <: AbstractSort
     dict::AnyElement
@@ -77,38 +103,11 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked. 
+Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
 struct UserSort <: AbstractSort
     dict::AnyElement
 end
-
-"""
-User-defined Sort.
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct NamedSort{S<:AbstractSort} <: SortDeclaration
-    id::Symbol
-    name::String
-    def::S #Union{BuiltInSort,MultisetSort,ProductSort,UserSort}
-end
-    
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct NamedOperator <: OperatorDeclaration
-    id::Symbol
-    name::String
-    sort::Union{BuiltInSort,MultisetSort,ProductSort,UserSort}
-#    com::ObjectCommon
-#    xml::XMLNode
-end
-
-NamedOperator(pdict::PnmlDict, xml::XMLNode) = 
-    NamedOperator(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
 
 """
 $(TYPEDEF)

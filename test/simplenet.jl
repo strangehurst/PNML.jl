@@ -75,21 +75,21 @@ header("SimpleNet")
         @test PNML.has_place(net, pid(p))
         @test p == PNML.place(net, pid(p))
         @test PNML.pid(p) ===  p.id
-        @test_throws ArgumentError PNML.place(net, :bogus)
+        @test PNML.place(net, :bogus) === nothing
         PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
     end
     for t in PNML.transitions(net)
         @test PNML.has_transition(net, pid(t))
         @test t == PNML.transition(net, pid(t))
         @test PNML.pid(t) ===  t.id
-        @test_throws ArgumentError PNML.transition(net, :bogus)
+        @test PNML.transition(net, :bogus) === nothing
         PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
     end
     for a in PNML.arcs(net)
         @test PNML.has_arc(net, pid(a))
         @test a == PNML.arc(net, pid(a))
         @test PNML.pid(a) ===  a.id
-        @test_throws ArgumentError PNML.arc(net, :bogus)
+        @test PNML.arc(net, :bogus) === nothing
         PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
 end

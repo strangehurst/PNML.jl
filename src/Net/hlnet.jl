@@ -1,5 +1,5 @@
 """
-Wrap a single pnm net.
+Wrap a single pnml net.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -14,15 +14,16 @@ end
 HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
 HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
 
+#-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface.
+#-------------------------------------------------------------------------------
 
 # Delegate to wrapped net.
-pid(petrinet::HLPetriNet) = pid(petrinet.net)
+pid(hlpn::HLPetriNet) = pid(hlpn.net)
 
 # Flattened to page[1], so simple vectors.
-places(petrinet::HLPetriNet)      = firstpage(petrinetnet).places
-transitions(petrinet::HLPetriNet) = firstpage(petrinet.net).transitions
-"Return vector of arcs from first page."
-arcs(petrinet::HLPetriNet)        = firstpage(petrinet.net).arcs
-refplaces(petrinet::HLPetriNet)   = firstpage(petrinet.net).refPlaces
-reftransitions(petrinet::HLPetriNet) = firstpage(petrinet.net).refTransitions
+places(hlpn::HLPetriNet)      = places(firstpage(hlpn.net))
+transitions(hlpn::HLPetriNet) = transitions(firstpage(hlpn.net))
+arcs(hlpn::HLPetriNet)        = arcs(firstpage(hlpn.net))
+refplaces(hlpn::HLPetriNet)   = refPlaces(firstpage(hlpn.net))
+reftransitions(hlpn::HLPetriNet) = refPlaces(firstpage(hlpn.net))
