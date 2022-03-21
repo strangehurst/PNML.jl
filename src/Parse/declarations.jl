@@ -23,7 +23,6 @@ function parse_declaration(node; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    @show d
 
     # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
     # optional,     required,  zero or more
@@ -36,7 +35,6 @@ function parse_declaration(node; kw...)
             _ => parse_pnml_label_common!(d, child; kw...)
          end
     end
-    @show d
    Declaration(d)
 end
 
