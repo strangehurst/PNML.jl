@@ -1,5 +1,5 @@
-abstract type Term end
-abstract type AbstractOperator <: Term end
+abstract type AbstractTerm end
+abstract type AbstractOperator <: AbstractTerm end
 abstract type AbstractSort end
 
 """
@@ -60,8 +60,13 @@ end
 NamedOperator(pdict::PnmlDict, xml::XMLNode) =
     NamedOperator(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
 
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
-struct Variable <: Term
+Example input: <variable refvariable="varx"/>
+"""
+struct Variable <: AbstractTerm
     variableDecl::VariableDeclaration
 end
 

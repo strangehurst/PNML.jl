@@ -12,7 +12,7 @@ function parse_tokengraphics(node; kw...)
         TokenGraphics() # Empty is legal.
     else
         #TODO: Enforce type sameness of position coordinates? How?
-        TokenGraphics(parse_node.(positions; kw...))
+        TokenGraphics(parse_tokenposition.(positions; kw...))
     end
 end
 

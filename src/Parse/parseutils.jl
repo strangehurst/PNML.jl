@@ -220,7 +220,7 @@ should be treated as an anonymous label for parsing.
 """
 function parse_pnml_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "graphics"     => (d[:graphics] = parse_node(node; kw...))
+        "graphics"     => (d[:graphics] = parse_graphics(node; kw...))
         "toolspecific" => add_toolinfo!(d, node; kw...)
         _ => add_label!(d, node; kw...) # label with a label allows any node to be attached & parsable.
     end
@@ -233,7 +233,7 @@ Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@
 """
 function parse_pnml_node_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "name" => (d[:name] = parse_node(node; kw...))
+        "name" => (d[:name] = parse_name(node; kw...))
         _ => parse_pnml_common!(d, node; kw...)
     end
 end
@@ -246,10 +246,10 @@ defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_label_common!(d::PnmlDict, node; kw...)
     @match nodename(node) begin
-        "text"      => (d[:text] = parse_node(node; kw...))
+        "text"      => (d[:text] = parse_text(node; kw...))
         # This is the fallback as "claimed" label's parser
         # should have already consumed the <structure>.
-        "structure" => (d[:structure] = parse_node(node; kw...))
+        "structure" => (d[:structure] = parse_structure(node; kw...))
         _ => parse_pnml_common!(d, node; kw...)
     end
 end

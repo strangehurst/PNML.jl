@@ -146,10 +146,10 @@ function parse_place(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
-            "initialMarking"   => (d[:marking] = parse_node(child; kw...))
-            "hlinitialMarking" => (d[:marking] = parse_node(child; kw...))
+            "initialMarking"   => (d[:marking] = parse_initialMarking(child; kw...))
+            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child; kw...))
             # Here type means `sort`. Re: Many-sorted algebra.
-            "type"             => (d[:type] = parse_node(child; kw...))
+            "type"             => (d[:type] = parse_type(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
@@ -170,7 +170,7 @@ function parse_transition(node; kw...)
                            :condition=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "condition"    => (d[:condition] = parse_node(child; kw...))
+            "condition"    => (d[:condition] = parse_condition(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
@@ -196,8 +196,8 @@ function parse_arc(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Mutually exclusive tags: inscription, hlinscription
-            "inscription"    => (d[:inscription] = parse_node(child; kw...))
-            "hlinscription"  => (d[:inscription] = parse_node(child; kw...))
+            "inscription"    => (d[:inscription] = parse_inscription(child; kw...))
+            "hlinscription"  => (d[:inscription] = parse_hlinscription(child; kw...))
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
@@ -284,10 +284,10 @@ function parse_name(node; kw...)
     end
 
     graphicsnode = firstchild("graphics", node)
-    graphics = isnothing(graphicsnode) ? nothing : parse_node(graphicsnode; kw..., verbose=false)
+    graphics = isnothing(graphicsnode) ? nothing : parse_graphics(graphicsnode; kw..., verbose=false)
 
     toolspecific = allchildren("toolspecific", node)
-    tools = isempty(toolspecific) ? nothing : parse_node.(toolspecific; kw..., verbose=false)
+    tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific; kw..., verbose=false)
 
     Name(value; graphics, tools)
 end
@@ -306,9 +306,8 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    Structure(anyelement(node; kw...))
+    Structure(unclaimed_label(node; kw...))
 end
-
 
 #----------------------------------------------------------
 #
@@ -346,6 +345,7 @@ function parse_inscription(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
+            # Should not have a sturcture.
             _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
@@ -366,8 +366,8 @@ function parse_hlinitialMarking(node; kw...)
                             :structure=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:text] = parse_text(child; kw...))
-            _ => parse_pnml_label_common!(d, child; kw...)
+        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
+        _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
     HLMarking(d)
@@ -383,7 +383,9 @@ function parse_hlinscription(node; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-           _ => parse_pnml_label_common!(d, child; kw...)
+    #        "structure" => (d[:structure] = parse_term(child; kw...))
+        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
+        _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
     HLInscription(d)
@@ -399,7 +401,14 @@ function parse_condition(node; kw...)
     nn = nodename(node)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    parse_pnml_label_common!.(Ref(d), elements(node); kw...)
+    #cute trick    parse_pnml_label_common!.(Ref(d), elements(node); kw...)
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            #"structure" => (d[:structure] = parse_term(child; kw...))
+            "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
+            _ => parse_pnml_label_common!(d, child; kw...)
+        end
+    end
     Condition(d)
 end
 

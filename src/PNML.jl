@@ -57,7 +57,7 @@ include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
 
-export @xml_str,
+export @xml_str, PnmlDict,
     parse_str, parse_file, parse_pnml, parse_node,
     PnmlException, MissingIDException, MalformedException
 end

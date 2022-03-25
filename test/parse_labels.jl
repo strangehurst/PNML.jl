@@ -138,8 +138,8 @@ header("HL Marking")
     @test typeof(n) <: PNML.HLMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test n.text == "<All,All>"
-    @test n.structure !== nothing
-    @show n.structure
+    @test n.term !== nothing
+    @show n.term
     #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all] !== nothing
     #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
     #@test n.structure.dict[:tuple].dict[:subterm][2].dict[:all].dict[:usersort].dict[:declaration] == "N2"
@@ -271,8 +271,8 @@ end
         printnode(n)
         @test typeof(n) <: PNML.Condition
         @test xmlnode(n) isa Maybe{EzXML.Node}
-        @test n.structure !== nothing
-        @test xmlnode(n.structure) isa Maybe{EzXML.Node}
+        @test n.term !== nothing
+        @test xmlnode(n.term) isa Maybe{EzXML.Node}
         @test n.com.graphics === nothing
         @test !isempty(n.text)
         @test n.com.tools === nothing || isempty(n.com.tools)
@@ -317,7 +317,7 @@ end
         printnode(n)
         @test typeof(n) <: PNML.HLInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}
-        @test n.structure !== nothing
+        @test n.term !== nothing
         @test n.text !== nothing
     end
 end

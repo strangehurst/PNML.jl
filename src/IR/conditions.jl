@@ -6,7 +6,7 @@ $(TYPEDFIELDS)
 """
 struct Condition <: HLAnnotation
     text::Maybe{String}
-    structure::Maybe{Structure{AnyElement}}
+    term::Maybe{Term} # structure
     com::ObjectCommon
 end
 

@@ -37,7 +37,7 @@ AbstractTrees.repr_tree(PNML.AbstractLabel)
 AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
 AbstractTrees.repr_tree(PNML.PnmlException)
 AbstractTrees.repr_tree(PNML.AbstractSort)
-AbstractTrees.repr_tree(PNML.Term)
+AbstractTrees.repr_tree(PNML.AbstractTerm)
 ]
 ```
 ### PnmlType - Petri Net Type Definition

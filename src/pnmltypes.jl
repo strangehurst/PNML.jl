@@ -34,15 +34,12 @@ $(TYPEDEF)
 """
 abstract type PnmlType end
 
-#"""
-#Base of [`PnmlCore`](@ref) and [`PTNet`] Petri Net pntds.#
-#
-#$(TYPEDEF)
-#"""
-#abstract type AbstractPnmlCore <: PnmlType end
-
 """
-PnmlCore is the most minimal concrete Petri Net.
+The most minimal concrete Petri Net. 
+Used to implement and test the complete Petri Net Graph infrastructure.
+Labels of the graph is where meaning is attached. 
+Much of the Label infrastructure for High Level Petri Net Graphs is tested at this level.
+Subtypes of `PnmlType` should be used to specialize Labels for expressiveness and optimization.
 
 $(TYPEDEF)
 """
@@ -66,11 +63,24 @@ $(TYPEDEF)
 abstract type AbstractHLCore <: PnmlType end
 
 """
-High-Level Petri Nets add large extensions to core, can be used for generic high-level nets.
+High-Level Petri Net Graphs (HLPNGs) add large extensions to core.
+The `HLCore` can be used for generic high-level nets.
+We try to implement and test all function at `PnmlCore` level,
+but expect to find use for a concrete type at this level.
 
 $(TYPEDEF)
 """
 struct HLCore <: AbstractHLCore end
+
+"""
+HLNet is the most intricate High-Level Petri Net schema.
+It extends [`SymmetricNet`](@ref) with
+   - declarations for sorts and functions (ArbitraryDeclarations)
+   - sorts for Integer, String, and List
+
+$(TYPEDEF)
+"""
+struct HLNet <: AbstractHLCore end
 
 """
 Place-Transition Net in HLCore notation (HLPNG=High-Level Petri Net Graph).
@@ -80,7 +90,8 @@ $(TYPEDEF)
 struct PT_HLPNG <: AbstractHLCore end
 
 """
-Symmetric Petri Net
+Symmetric Petri Net is the best-worked use case on the `primer`
+and ISO specification part 2.
 
 $(TYPEDEF)
 """
@@ -106,16 +117,6 @@ TODO: Open Petri Net
 $(TYPEDEF)
 """
 struct OpenNet <: AbstractHLCore end
-
-"""
-HLNet is the most intricate High-Level Petri Net schema.
-It extends [`SymmetricNet`](@ref)
-   - declarations for sorts and functions (ArbitraryDeclarations)
-   - sorts for Integer, String, and List
-
-$(TYPEDEF)
-"""
-struct HLNet <: AbstractHLCore end
 
 
 
@@ -145,6 +146,7 @@ default_pntd_map() = Dict{AbstractString, Symbol}(
     "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
     "pnmlcore"   => :pnmlcore,
     "ptnet"      => :ptnet,
+    "hlnet"      => :hlnet,
     "hlcore"     => :hlcore,
     "pt-hlpng"   => :pt_hlpng,
     "pt_hlpng"   => :pt_hlpng,
@@ -165,7 +167,7 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),
     :hlcore     => HLCore(),
     :ptnet      => PTNet(),
-    :hlnet      => HLNet(),
+    :hlnet      => HLNet(), #HLPNG?
     :pt_hlpng   => PT_HLPNG(),
     :symmetric  => SymmetricNet(),
     :stochastic => StochasticNet(),

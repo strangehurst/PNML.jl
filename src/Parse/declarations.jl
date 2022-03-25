@@ -146,11 +146,14 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+There will be no node <term>. 
+Instead it is the interpertation of the child of some <structure> elements.
 """
 function parse_term(node; kwargs...)
     nn = nodename(node)
-    nn == "term" || error("element name wrong: $nn")
-    PnmlLabel(node; kwargs...)
+    #TODO validate? nn == "term" || error("element name wrong: $nn")
+    Term(unclaimed_label(node; kwargs...))
 end
 # Variable
 # Operator

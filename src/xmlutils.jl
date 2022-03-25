@@ -25,9 +25,14 @@ $(TYPEDSIGNATURES)
 
 Return up to 1 immediate child of element `el` that is a `tag`.
 """
-function firstchild(tag, el, ns=pnml_ns)
+function firstchild(tag, el::XMLNode, ns=pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
+function getfirst(tag, el::XMLNode, ns=pnml_ns) 
+    i = findchild(tag, el, ns)
+    isnothing(i) ? nothing : i
+end
+
 
 """
 $(TYPEDSIGNATURES)

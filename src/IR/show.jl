@@ -246,7 +246,7 @@ function Base.summary(hlm::HLMarking)
 end
 
 function Base.show(io::IO, hlm::HLMarking)
-    print(io, "'", hlm.text, "', ", hlm.structure)
+    print(io, "'", hlm.text, "', ", hlm.term)
     show_common(io, hlm.com)
 end
 
@@ -282,7 +282,7 @@ end
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
-    print(io, typeof(cond), " '", cond.text, "', ", cond.structure)
+    print(io, typeof(cond), " '", cond.text, "', ", cond.term)
     show_common(io, cond.com)
 end
 
@@ -351,7 +351,7 @@ end
 
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
-    print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.structure)
+    print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.term)
     show_common(io, inscription.com,)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)

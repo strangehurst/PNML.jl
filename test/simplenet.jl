@@ -40,10 +40,6 @@ header("SimpleNet")
     net1 = PNML.SimpleNet(model)
     net2 = PNML.SimpleNet(PNML.first_net(model))
 
-    PRINT_PNML && println()
-    PRINT_PNML && @show net
-    PRINT_PNML && println()
-
     for accessor in [PNML.pid, PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
         @show accessor
         @test accessor(net1) == accessor(net)
@@ -65,32 +61,32 @@ header("SimpleNet")
 
     end
 
-    pl = PNML.places(net)
-    printnode(pl[1],label="from")
+    #pl = PNML.places(net)
+    #printnode(pl[1],label="from")
 
-    pl = PNML.places(net)
-    printnode(pl, label="places")
+    #pl = PNML.places(net)
+    #printnode(pl, label="places")
 
     for p in PNML.places(net)
         @test PNML.has_place(net, pid(p))
         @test p == PNML.place(net, pid(p))
         @test PNML.pid(p) ===  p.id
         @test PNML.place(net, :bogus) === nothing
-        PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
+        #PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
     end
     for t in PNML.transitions(net)
         @test PNML.has_transition(net, pid(t))
         @test t == PNML.transition(net, pid(t))
         @test PNML.pid(t) ===  t.id
         @test PNML.transition(net, :bogus) === nothing
-        PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
+        #PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
     end
     for a in PNML.arcs(net)
         @test PNML.has_arc(net, pid(a))
         @test a == PNML.arc(net, pid(a))
         @test PNML.pid(a) ===  a.id
         @test PNML.arc(net, :bogus) === nothing
-        PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
+        #PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
     end
 end
 
@@ -108,7 +104,7 @@ end
     """
     model = parse_str(str)
     net = PNML.first_net(model)
-    printnode(net, label="rate net")
+    #printnode(net, label="rate net")
 
     snet = PNML.SimpleNet(net)
     @show snet
@@ -159,19 +155,19 @@ end
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
         death=(LVector(wolves=1), LVector()),
     )
-    PRINT_PNML && @show Δ
-    PRINT_PNML && @show tfun
+    #PRINT_PNML && @show Δ
+    #PRINT_PNML && @show tfun
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initialMarking(snet) #, S)
-    PRINT_PNML && @show u0
+    #PRINT_PNML && @show u0
     @test u0 == uX
     βx = LVector(birth=.3, predation=.015, death=.7); # transition rate
     β = PNML.rates(snet) #LVector( (; [t=>PNML.rate(snet,t) for t in T]...))
-    PRINT_PNML && @show β
+    #PRINT_PNML && @show β
     @test β == βx
 end
 

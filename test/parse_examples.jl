@@ -2,8 +2,6 @@
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
     @show typeof(testfile), testfile
     model = parse_file(testfile)
-    # N
-    #printnode(pn) # Too much to display for every test!
     @test model isa PNML.PnmlModel
     nets = PNML.nets(model)
     @test nets isa Vector{PNML.PnmlNet}
