@@ -283,18 +283,22 @@ end
 #-------------------
 #TODO Make RefPlace, RefTransition an Abstract Type
 function Base.show(io::IO, ::MIME"text/plain", r::ReferenceNode)
+    #@show "mime ref node"
     show(io, r)
 end
 function Base.show(io::IO, r::ReferenceNode)
-    print(io, typeof(r), " (id ", pid(r), ", ref ", ref(r))
+    #@show "ref node"
+    print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r))
     show_common(io, r.com)
     print(io, ")")
 end
 
-function Base.show(io::IO, ::MIME"text/plain", rvector::Vector{ReferenceNode})
+function Base.show(io::IO, ::MIME"text/plain", rvector::Vector{<:ReferenceNode})
+    #@show "mime vector ref node"
     show(io, rvector)
 end
-function Base.show(io::IO, rvector::Vector{ReferenceNode})
+function Base.show(io::IO, rvector::Vector{<:ReferenceNode})
+    #@show "vector ref node"
     for (i,r) in enumerate(rvector)
         print(io, indent(io), r)
         i < length(rvector) && print(io, "\n")
@@ -364,6 +368,9 @@ function show_page_field(io::IO, label::AbstractString, x)
     end
 end
 
+function Base.show(io::IO, ::MIME"text/plain", p::Page)
+    show(io, p)
+end
 function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
     println(io, indent(io), summary(page))
@@ -374,22 +381,21 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "transitions:",    transitions(page))
     show_page_field(inc_io, "arcs:",           arcs(page))
     show_page_field(inc_io, "declaration:",    declarations(page))
-    show_page_field(inc_io, "refPlaces:",      page.refPlaces)
-    show_page_field(inc_io, "refTransitions:", page.refTransitions)
+    show_page_field(inc_io, "refPlaces:",      refplaces(page))
+    show_page_field(inc_io, "refTransitions:", reftransitions(page))
     show_common(io, page.com)
     show_page_field(inc_io, "subpages:",       page.subpages)
 end
 
+function Base.show(io::IO, ::MIME"text/plain", pages::Vector{Page})
+    show(io, pages)
+end
 function Base.show(io::IO, pages::Vector{Page})
     isempty(pages) && return
     for (i,page) in enumerate(pages)
         show(io, MIME"text/plain"(), page)
         i < length(pages) && print(io, "\n")
     end
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Page)
-    show(io, p)
 end
 
 #-------------------

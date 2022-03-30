@@ -152,7 +152,7 @@ For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref).
 """
 abstract type ReferenceNode <: PnmlNode end
 
-ref(reference::ReferenceNode) = reference.ref
+refid(reference::ReferenceNode) = reference.ref
 
 """
 $(TYPEDEF)
