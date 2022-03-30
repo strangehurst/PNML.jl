@@ -31,7 +31,9 @@ function Page(d::PnmlDict, pntd = PnmlCore())
         ObjectCommon(d))
 end
 
+# Note declaration wraps a vector of AbstractDeclarations.
 declarations(page::Page) = declarations(page.declaration)
+pages(page::Page) = page.subpages
 
 function Base.empty!(page::Page)
     empty!(page.places)

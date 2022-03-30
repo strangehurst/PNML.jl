@@ -222,11 +222,11 @@ function Base.show(io::IO, oc::ObjectCommon)
     # In general, do not display/print the XML.
 end
 
-"Prepend comma-space to non-empty `oc`."
-function show_common(io::IO, oc::ObjectCommon)
-    isempty(oc) && return
+"Prepend comma-space to non-empty `ObjectCommon`."
+function show_common(io::IO, x::Union{PnmlNet, PnmlObject, AbstractLabel})
+    isempty(x.com) && return
     print(io, ", ")
-    show(io, MIME"text/plain"(), oc )
+    show(io, MIME"text/plain"(), x.com )
 end
 
 #---------------------------------------------------------------------------------
@@ -240,7 +240,7 @@ function Base.show(io::IO, place::Place)
           " id ", place.id,
           ", type ", place.sorttype,
           ", marking ", place.marking)
-    show_common(io, place.com)
+    show_common(io, place)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
@@ -262,7 +262,7 @@ end
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
           " id ", trans.id, ", condition ", trans.condition)
-    show_common(io, trans.com)
+    show_common(io, trans)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
@@ -289,7 +289,7 @@ end
 function Base.show(io::IO, r::ReferenceNode)
     #@show "ref node"
     print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r))
-    show_common(io, r.com)
+    show_common(io, r)
     print(io, ")")
 end
 
@@ -333,7 +333,7 @@ function Base.show(io::IO, arc::Arc)
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
-    show_common(io, arc.com)
+    show_common(io, arc)
 end
 function Base.show(io::IO, ::MIME"text/plain", arcvector::Vector{Arc})
     for (i,arc) in enumerate(arcvector)
@@ -383,8 +383,8 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "declaration:",    declarations(page))
     show_page_field(inc_io, "refPlaces:",      refplaces(page))
     show_page_field(inc_io, "refTransitions:", reftransitions(page))
-    show_common(io, page.com)
-    show_page_field(inc_io, "subpages:",       page.subpages)
+    show_common(io, page)
+    show_page_field(inc_io, "subpages:",       pages(page))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", pages::Vector{Page})
@@ -401,9 +401,9 @@ end
 #-------------------
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
-    string( typeof(net), " id ", net.id, " type ", net.type, ", ",
-            length(net.pages), " pages ",
-            isnothing(net.declaration) ? 0 : length(net.declaration), " declarations ",
+    string( typeof(net), " id ", pid(net), " type ", type(net), ", ",
+            length(pages(net)), " pages ",
+            length(declarations(net)), " declarations ",
             summary(net.com))
 end
 
@@ -416,8 +416,8 @@ function Base.show(io::IO, net::PnmlNet)
         show(iio, MIME"text/plain"(), decl)
         println(iio, "\n") 
     end
-    show_common(io, net.com)
-    show(io, net.pages)
+    show_common(io, net)
+    show(io, pages(net))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
@@ -459,7 +459,7 @@ end
 
 function Base.show(io::IO, ptm::PTMarking)
     print(io, summary(ptm), " value: ", ptm.value)
-    show_common(io, ptm.com)
+    show_common(io, ptm)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
@@ -474,7 +474,7 @@ end
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, "'", hlm.text, "', ", hlm.term)
-    show_common(io, hlm.com)
+    show_common(io, hlm)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
@@ -484,7 +484,7 @@ end
 #-------------------
 function Base.show(io::IO, cond::Condition)
     print(io, typeof(cond), " '", cond.text, "', ", cond.term)
-    show_common(io, cond.com)
+    show_common(io, cond)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
@@ -494,7 +494,7 @@ end
 #-------------------
 function Base.show(io::IO, inscription::PTInscription)
     print(io, typeof(inscription), " value ", inscription.value)
-    show_common(io, inscription.com,)
+    show_common(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
     show(io, inscription)
@@ -503,7 +503,7 @@ end
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
     print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.term)
-    show_common(io, inscription.com,)
+    show_common(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
     show(io, inscription)
