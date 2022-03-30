@@ -23,12 +23,12 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct VariableDeclaration{S<:AbstractSort}  <: AbstractDeclaration
+struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
     name::String
     sort::S
-    com::ObjectCommon
-    xml::XMLNode
+    #com::ObjectCommon
+    #xml::XMLNode
 end
 
 VariableDeclaration(pdict::PnmlDict, xml::XMLNode) =
@@ -38,11 +38,13 @@ VariableDeclaration(pdict::PnmlDict, xml::XMLNode) =
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct NamedSort{S<:AbstractSort} <: SortDeclaration
+struct NamedSort{S} <: SortDeclaration #TODO restrict to AbstractSort?
     id::Symbol
     name::String
     def::S #Union{BuiltInSort,MultisetSort,ProductSort,UserSort}
 end
+
+
 
 """
 $(TYPEDEF)
@@ -67,7 +69,7 @@ $(TYPEDFIELDS)
 Example input: <variable refvariable="varx"/>
 """
 struct Variable <: AbstractTerm
-    variableDecl::VariableDeclaration
+    variableDecl::Symbol
 end
 
 struct BuiltInOperator <: AbstractOperator end
@@ -100,6 +102,7 @@ end
 $(TYPEDSIGNATURES)
 
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
+Should contain an ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
     dict::AnyElement
@@ -119,7 +122,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct UserOperator <: AbstractOperator
-    declaration::Symbol # varialble, operator, or sort declaration id
+    declaration::Symbol # operator declaration id
 end
 
 """

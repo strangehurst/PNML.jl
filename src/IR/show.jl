@@ -90,30 +90,24 @@ function Base.show(io::IO, g::Graphics)
 end
 
 #-------------------
+function Base.show(io::IO, labelvector::Vector{PnmlLabel})
+    show(io, MIME"text/plain"(), labelvector)
+end
 function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel})
-    print(io, "SMLV:", typeof(labelvector), "[")
+    print(io, indent(io), typeof(labelvector), "[")
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
-        print(io, indent(io))
-        show(io, mime, label)
+        i > 1 && print(io, indent(io))
+        #print(io, label)
+        show(io, label)
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
     
 end
-function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    print(io, "SLV:", typeof(labelvector), "[")
-    io = inc_indent(io)
-    for (i,label) in enumerate(labelvector)
-        print(io, indent(io))
-        show(io, label)
-        i < length(labelvector) && print(io, "\n")
-    end
-    print(io, "]")
-end
 
-function Base.show(io::IO, label::PnmlLabel) #TODO Make labels parametric.
-    print(IOContext(io, :typeinfo=>Dict), "SL:", label.dict) #! Was pprint
+function Base.show(io::IO, label::PnmlLabel)
+    show(IOContext(io, :typeinfo=>Dict), label.dict)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
@@ -123,23 +117,28 @@ end
 
 #-------------------
 function Base.show(io::IO, elvector::Vector{AnyElement})
+    show(io, MIME"text/plain"(), elvector)
+end
+function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
     print(io, "SLV:", typeof(elvector), "[")
     io = inc_indent(io)
     for (i,el) in enumerate(elvector)
-        print(io, indent(io))
-        show(io, el)
-        i < length(elvector) && print(io, "\n")
+        print(io, "\n", indent(io), "$i: ", el)
+        #show(io, mime, el)
+        #i < length(elvector) && 
+        #print(io, "\n")
     end
     print(io, "]")
 end
 
 function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
     #print(io, "SL:", typeof(el), " ")
-    show(IOContext(io, :typeinfo=>Dict), el.dict)
+    show(IOContext(io, :typeinfo=>Dict), MIME"text/plain"(), el.dict)
 end
-function Base.show(io::IO, ::MIME"plain/text", el::AnyElement) #TODO Make parametric.
+
+function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make parametric.
     print(io, "SL:", typeof(el), " ")
-    show(IOContext(io, :typeinfo=>Dict), el.dict)
+    show(IOContext(io, :typeinfo=>Dict), mime, el.dict)
 end
 
 #-------------------
@@ -151,8 +150,9 @@ end
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     for (i, ti) in enumerate(toolvector)
-        print(io, indent(io), ti)
-        i < length(toolvector) && print(io, "\n")
+        print(io, "\n", indent(io), "$i: ")
+        show(io, MIME"text/plain"(), ti)
+        #i < length(toolvector) && print(io, "\n")
     end
 end
 
@@ -161,13 +161,16 @@ function Base.show(io::IO, ti::ToolInfo)
     io = inc_indent(io)
     for (i,info) in enumerate(ti.infos)
         print(io, indent(io))
-        print(io, info) #! Was pprint
+        show(io, MIME"text/plain"(), info)
         i < length(ti.infos) && print(io, "\n")
     end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
-    print(io, ti)
+    show(io, ti)
+end
+function Base.show(io::IO, ::MIME"text/plain", toolvector::Vector{ToolInfo})
+    show(io, toolvector)
 end
 
 #-------------------
@@ -210,51 +213,23 @@ function Base.show(io::IO, oc::ObjectCommon)
     end
     if !isnothing(oc.tools)
         println(io, "\n", indent(io), "tools:")
-        show(inc_indent(io), oc.tools)
+        show(inc_indent(io), MIME"text/plain"(), oc.tools)
     end
     if !isnothing(oc.labels)
         println(io, "\n", indent(io), "labels:")
-        show(inc_indent(io), oc.labels)
+        show(inc_indent(io), MIME"text/plain"(), oc.labels)
     end
     # In general, do not display/print the XML.
 end
 
 "Prepend comma-space to non-empty `oc`."
 function show_common(io::IO, oc::ObjectCommon)
-    !isempty(oc) && print(io, ", ", oc )
+    isempty(oc) && return
+    print(io, ", ")
+    show(io, MIME"text/plain"(), oc )
 end
 
-#-------------------
-Base.summary(io::IO, ptm::PTMarking)  = summary(io, summary(ptm))
-function Base.summary(ptm::PTMarking)
-    string(typeof(ptm))
-end
-
-function Base.show(io::IO, ptm::PTMarking)
-    print(io, summary(ptm), " value: ", ptm.value)
-    show_common(io, ptm.com)
-end
-
-function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
-    show(io, ptm)
-end
-
-#-------------------
-Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
-function Base.summary(hlm::HLMarking)
-    string(typeof(hlm))
-end
-
-function Base.show(io::IO, hlm::HLMarking)
-    print(io, "'", hlm.text, "', ", hlm.term)
-    show_common(io, hlm.com)
-end
-
-function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
-    show(io, hlm)
-end
-
-#-------------------
+#---------------------------------------------------------------------------------
 Base.summary(io::IO, place::Place)  = summary(io, summary(place))
 function Base.summary(place::Place)
     string(typeof(place))
@@ -271,6 +246,9 @@ end
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
     show(io, place)
 end
+function Base.show(io::IO, ::MIME"text/plain", placevector::Vector{Place})
+    show(io, placevector)
+end
 
 function Base.show(io::IO, placevector::Vector{Place})
     isempty(placevector) && return
@@ -281,20 +259,14 @@ function Base.show(io::IO, placevector::Vector{Place})
 end
 
 #-------------------
-function Base.show(io::IO, cond::Condition)
-    print(io, typeof(cond), " '", cond.text, "', ", cond.term)
-    show_common(io, cond.com)
-end
-
-function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
-    show(io, cond)
-end
-
-#-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
           " id ", trans.id, ", condition ", trans.condition)
     show_common(io, trans.com)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
+    show(io, transvector)
 end
 
 function Base.show(io::IO, transvector::Vector{Transition})
@@ -305,68 +277,61 @@ function Base.show(io::IO, transvector::Vector{Transition})
 end
 
 function Base.show(io::IO, ::MIME"text/plain", trans::Transition)
-    sh(io, trans)
+    show(io, trans)
 end
 
 #-------------------
-function Base.show(io::IO, r::RefPlace)
-    print(io, typeof(r), " (id ", r.id, ", ref ", r.ref)
+#TODO Make RefPlace, RefTransition an Abstract Type
+function Base.show(io::IO, ::MIME"text/plain", r::ReferenceNode)
+    show(io, r)
+end
+function Base.show(io::IO, r::ReferenceNode)
+    print(io, typeof(r), " (id ", pid(r), ", ref ", ref(r))
     show_common(io, r.com)
     print(io, ")")
 end
-function Base.show(io::IO, rpvector::Vector{RefPlace})
-    for (i,rp) in enumerate(rpvector)
-        print(io, indent(io), rp)
-        i < length(rpvector) && print(io, "\n")
+
+function Base.show(io::IO, ::MIME"text/plain", rvector::Vector{ReferenceNode})
+    show(io, rvector)
+end
+function Base.show(io::IO, rvector::Vector{ReferenceNode})
+    for (i,r) in enumerate(rvector)
+        print(io, indent(io), r)
+        i < length(rvector) && print(io, "\n")
     end
 end
-function Base.show(io::IO, ::MIME"text/plain", refp::RefPlace)
-    show(io, refp)
-end
 
-#-------------------
-function Base.show(io::IO, r::RefTransition)
-    print(io, typeof(r), " (id ", r.id, ", ref ", r.ref)
-    show_common(io, r.com)
-    print(io, ")")
-end
-function Base.show(io::IO, rtvector::Vector{RefTransition})
-    for (i,rt) in enumerate(rtvector)
-        print(io, indent(io), rt)
-        i < length(rtvector) && print(io, "\n")
-    end
-end
-function Base.show(io::IO, ::MIME"text/plain", reft::RefTransition)
-    show(io, reft)
-end
+#function Base.show(io::IO, r::RefTransition)
+#    print(io, typeof(r), " (id ", pid(r), ", ref ", ref(r))
+#    show_common(io, r.com)
+#    print(io, ")")
+#end
 
-#-------------------
-function Base.show(io::IO, inscription::PTInscription)
-    print(io, typeof(inscription), " value ", inscription.value)
-    show_common(io, inscription.com,)
-end
-function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
-    show(io, inscription)
-end
+#function Base.show(io::IO, ::MIME"text/plain", rtvector::Vector{RefTransition})
+#    show(io, rtvector)
+#end
 
-#-------------------
-function Base.show(io::IO, inscription::HLInscription)
-    print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.term)
-    show_common(io, inscription.com,)
-end
-function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
-    show(io, inscription)
-end
+#function Base.show(io::IO, ::MIME"text/plain", rpvector::Vector{RefPlace})
+#    for (i,rp) in enumerate(rpvector)
+#        print(io, indent(io), rp)
+#        i < length(rpvector) && print(io, "\n")
+#    end
+#end
+
+#function Base.show(io::IO, ::MIME"text/plain", reft::RefTransition)
+#    show(io, reft)
+#end
 
 #-------------------
 function Base.show(io::IO, arc::Arc)
+    #@show Base.StackTraces.stacktrace()
     print(io, typeof(arc), " id ", arc.id,
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
     show_common(io, arc.com)
 end
-function Base.show(io::IO, arcvector::Vector{Arc})
+function Base.show(io::IO, ::MIME"text/plain", arcvector::Vector{Arc})
     for (i,arc) in enumerate(arcvector)
         print(io, indent(io), arc)
         i < length(arcvector) && print(io, "\n")
@@ -375,29 +340,6 @@ end
 function Base.show(io::IO, ::MIME"text/plain", arc::Arc)
     show(io, arc)
 end
-
-#-------------------
-function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
-
-    print(io, typeof(declarations), "[")
-    for (i,dec) in enumerate(declarations)
-        print(io, indent(io))
-        show(inc_indent(io), MIME"text/plain"(), dec)
-        i < length(declarations) && print(io, "\n")
-    end
-    print(io, "]")
-end
-function Base.show(io::IO, declare::AbstractDeclaration)
-    show(io, declare.label)
-    show_common(io, declare.com,)
-end
-function Base.show(io::IO, mime::MIME"text/plain", declare::AbstractDeclaration)
-    print(io, typeof(declare))
-    show(io, mime, declare.label)
-    show(io, mime, declare.com)
-end
-
-#-------------------
 
 #-------------------
 Base.summary(io::IO, page::Page) = print(io, summary(page))
@@ -416,8 +358,8 @@ end
 
 function show_page_field(io::IO, label::AbstractString, x)
     println(io, indent(io), label)
-    if !isnothing(x)
-        show(inc_indent(io), x)
+    if !isnothing(x) && length(x) > 0
+        show(inc_indent(io), MIME"text/plain"(), x)
         print(io, "\n")
     end
 end
@@ -428,21 +370,20 @@ function Base.show(io::IO, page::Page)
     # Start indent here. Will indent subpages.
     inc_io = inc_indent(io)
 
-    show_page_field(inc_io, "places:",         page.places)
-    show_page_field(inc_io, "transitions:",    page.transitions)
-    show_page_field(inc_io, "arcs:",           page.arcs)
+    show_page_field(inc_io, "places:",         places(page))
+    show_page_field(inc_io, "transitions:",    transitions(page))
+    show_page_field(inc_io, "arcs:",           arcs(page))
     show_page_field(inc_io, "declaration:",    declarations(page))
     show_page_field(inc_io, "refPlaces:",      page.refPlaces)
     show_page_field(inc_io, "refTransitions:", page.refTransitions)
     show_common(io, page.com)
     show_page_field(inc_io, "subpages:",       page.subpages)
-
 end
 
 function Base.show(io::IO, pages::Vector{Page})
     isempty(pages) && return
     for (i,page) in enumerate(pages)
-        show(io, page)
+        show(io, MIME"text/plain"(), page)
         i < length(pages) && print(io, "\n")
     end
 end
@@ -466,7 +407,7 @@ function Base.show(io::IO, net::PnmlNet)
     iio = inc_indent(io) # Indent any declarations.
     foreach(declarations(net)) do decl
         print(iio, indent(io))
-        show(iio, MIME"plain/text"(), decl)
+        show(iio, MIME"text/plain"(), decl)
         println(iio, "\n") 
     end
     show_common(io, net.com)
@@ -501,6 +442,106 @@ function Base.show(io::IO, ::MIME"text/plain", pnml::PnmlModel)
 end
 
 
+#-------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------
+
 #-------------------
+Base.summary(io::IO, ptm::PTMarking)  = summary(io, summary(ptm))
+function Base.summary(ptm::PTMarking)
+    string(typeof(ptm))
+end
+
+function Base.show(io::IO, ptm::PTMarking)
+    print(io, summary(ptm), " value: ", ptm.value)
+    show_common(io, ptm.com)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
+    show(io, ptm)
+end
+
+#-------------------
+Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
+function Base.summary(hlm::HLMarking)
+    string(typeof(hlm))
+end
+
+function Base.show(io::IO, hlm::HLMarking)
+    print(io, "'", hlm.text, "', ", hlm.term)
+    show_common(io, hlm.com)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
+    show(io, hlm)
+end
+
+#-------------------
+function Base.show(io::IO, cond::Condition)
+    print(io, typeof(cond), " '", cond.text, "', ", cond.term)
+    show_common(io, cond.com)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
+    show(io, cond)
+end
+
+#-------------------
+function Base.show(io::IO, inscription::PTInscription)
+    print(io, typeof(inscription), " value ", inscription.value)
+    show_common(io, inscription.com,)
+end
+function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
+    show(io, inscription)
+end
+
+#-------------------
+function Base.show(io::IO, inscription::HLInscription)
+    print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.term)
+    show_common(io, inscription.com,)
+end
+function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
+    show(io, inscription)
+end
+
+
+function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
+    iio = inc_indent(io)
+    print(io, indent(io), typeof(declarations), "[")
+    
+    for (i,dec) in enumerate(declarations)
+        print(iio, "\n", indent(iio))
+        show(inc_indent(io), MIME"text/plain"(), dec)
+        #i < length(declarations) && print(io, "\n")
+    end
+    print(io, "]")
+end
+#function Base.show(io::IO, declare::AbstractDeclaration)
+#    print(io, declare)
+#end
+function Base.show(io::IO, mime::MIME"text/plain", declare::AbstractDeclaration)
+    print(io, typeof(declare), declare)
+    #show(io, mime, declare.label)
+    #show(io, mime, declare.com)
+end
+
+#-------------------
+function Base.show(io::IO, nsorts::Vector{NamedSort})
+
+    print(io, typeof(nsorts), "[")
+    for (i,dec) in enumerate(nsorts)
+        print(io, "\n", indent(io))
+        show(inc_indent(io), MIME"text/plain"(), dec)
+        i < length(nsorts) && print(io, "\n")
+    end
+    print(io, "]")
+end
+#function Base.show(io::IO, declare::AbstractDeclaration)
+#    print(io, declare)
+#end
+function Base.show(io::IO, mime::MIME"text/plain", nsort::NamedSort)
+    print(io, typeof(nsort), " id=", pid(nsort), " name=", nsort.name, " def=")
+    show(io, mime, nsort.def)
+end
+
 # show(io, x) ... _show_default formats as
 #type(f1(...), f2(...), ...)

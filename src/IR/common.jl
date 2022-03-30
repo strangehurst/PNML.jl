@@ -36,6 +36,11 @@ has_tools(oc::ObjectCommon) = !isnothing(oc.tools)
 has_labels(::Any) = false
 has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
 
+name(oc::ObjectCommon) = oc.name
+graphics(oc::ObjectCommon) = oc.graphics
+tools(oc::ObjectCommon) = oc.tools
+labels(oc::ObjectCommon) = oc.labels
+
 # Could use introspection on every field if they are all Maybes.
 Base.isempty(oc::ObjectCommon) = !(has_name(oc) ||
                                    has_graphics(oc) ||

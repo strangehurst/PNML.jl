@@ -18,8 +18,8 @@ using PNML: PNML, parse_pnml, parse_str, parse_file,
     nets
 
 const GROUP        = get(ENV, "GROUP", "All")
-const PRINT_PNML   = get(ENV, "PRINT_PNML", true)
-const VERBOSE_PNML = get(ENV, "VERBOSE_PNML", true)
+const PRINT_PNML::Bool   = get(ENV, "PRINT_PNML", "true") == "true"
+const VERBOSE_PNML::Bool = get(ENV, "VERBOSE_PNML", "true") == "true"
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -35,9 +35,9 @@ to_node(s::AbstractString) = root(EzXML.parsexml(s))
 #function printnode(io::IO, node; label=nothing, compact=false, type=false, kw...)
 "Print PnmlDict."
 function printnode(io::IO, node; label=nothing, kw...)
-        if PRINT_PNML
+    if PRINT_PNML
         !isnothing(label) && print(io, label, " ")
-        show(io, MIME"text/plain"(), node) #! Was pprint
+        show(io, MIME"text/plain"(), node) 
         println(io, "\n")
     end
 end
@@ -49,7 +49,6 @@ function printnodeln(io::IO, n; kw...)
     printnode(io, n; kw...)
     PRINT_PNML && println(io)
 end
-
 
 header(s) = if VERBOSE_PNML
     println("##### ", s)

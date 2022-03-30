@@ -7,7 +7,7 @@ $(TYPEDFIELDS)
 struct Place <: PnmlNode
     id::Symbol
     marking::Maybe{Union{PTMarking,HLMarking}} #TODO remove Maybe, add initialMarking
-    sorttype::Maybe{PnmlLabel} # Place type is different from pntd/PnmlType.
+    sorttype::Maybe{AnyElement} # Place type is different from pntd/PnmlType.
 
     com::ObjectCommon
 end
@@ -66,7 +66,7 @@ Reference Place node of a Petri Net Markup Language graph. For connections betwe
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefPlace <: PnmlNode
+struct RefPlace <: ReferenceNode
     id::Symbol
     ref::Symbol # Place or RefPlace
     com::ObjectCommon
@@ -82,7 +82,7 @@ Refrence Transition node of a Petri Net Markup Language graph. For connections b
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefTransition <: PnmlNode
+struct RefTransition <: ReferenceNode
     id::Symbol
     ref::Symbol # Transition or RefTransition
     com::ObjectCommon

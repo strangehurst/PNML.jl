@@ -5,7 +5,7 @@ header("EXCEPTIONS")
 function test_malformed(emsg, xml)
     reg = PNML.IDRegistry()
     try
-        n  = parse_node(to_node(xml); reg)
+        n  = parse_node(root(EzXML.parsexml(xml)); reg)
         error("expected exception message containing '$emsg` from \n$xml")
     catch e
         if e isa PNML.PnmlException
@@ -22,7 +22,7 @@ end
 function test_warn(emsg, xml)
     reg = PNML.IDRegistry()
     try
-        @test_logs (:warn, emsg)  parse_node(to_node(xml); reg)
+        @test_logs (:warn, emsg)  parse_node(root(EzXML.parsexml(xml)); reg)
     finally
         PNML.reset_registry!(reg)
     end

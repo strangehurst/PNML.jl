@@ -23,29 +23,37 @@ function parse_declaration(node; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-
-    # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
-    # optional,     required,  zero or more
-    decl_structure(nv::Vector{XMLNode}) =
-            isempty(nv) ? AbstractDeclaration[] : parse_declarations.(nv; kw...)
+    @info "parse declaration"
+   
     foreach(elements(node)) do child
         @match nodename(child) begin
-            # <declaration>'s <structure> contains a vector of declarations. Usually 1.
-            "structure" => (d[:structure] = decl_structure(allchildren("declarations",node)))
+            "structure" => (d[:structure] = decl_structure(child; kw...))
             _ => parse_pnml_label_common!(d, child; kw...)
          end
     end
    Declaration(d)
 end
 
-"""
-Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
-
-$(TYPEDSIGNATURES)
-"""
-function parse_declarations(node; kw...)::Vector{AbstractDeclaration}
+# <declaration><structure><declarations><namedsort id="weight" name="Weight">...
+# optional,     required,  zero or more
+function decl_structure(node; kw...)
+    @info "decl_structure"
     nn = nodename(node)
-    nn == "declarations" || error("element name wrong: $nn")
+    nn == "structure" || error("element name wrong: $nn")
+    declarations = getfirst("declarations", node)
+    isnothing(declarations) ? AbstractDeclaration[] : parse_declarations(declarations; kw...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
+"""
+function parse_declarations(node; kw...)
+    nn = nodename(node)
+    nn == "declarations" || error("element name wrong: $nn") 
+    @info "parse declarations"
+
     v = AbstractDeclaration[]
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -62,25 +70,25 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_namedsort(node; kw...)
-    @debug node
     nn = nodename(node)
     nn == "namedsort" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
+
     def = parse_sort(firstelement(node); kw...)
-    NamedSort(node["id"], node["name"], def; kw...)
+    #@show typeof(def), def
+    NamedSort(register_id!(kw[:reg], node["id"]), node["name"], def)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
 function parse_namedoperator(node; kwargs...)
-    @debug node
     nn = nodename(node)
     nn == "namedoperator" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
-    PnmlLabel(node; kwargs...)
+    anyelement(node; kwargs...)
 end
 
 """
@@ -90,9 +98,11 @@ function parse_variabledecl(node; kw...)
     nn = nodename(node)
     nn == "variabledecl" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
     # Sort
-    PnmlLabel(node; kw...)
+    sort = parse_sort(firstelement(node); kw...)
+
+    VariableDeclaration(Symbol(node["id"]), node["name"], sort)
 end
 
 #------------------------
@@ -105,25 +115,27 @@ $(TYPEDSIGNATURES)
 function parse_type(node; kwargs...)
     nn = nodename(node)
     nn == "type" || error("element name wrong: $nn")
-    PnmlLabel(node; kwargs...)
+    anyelement(node; kwargs...)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_sort(node; kwargs...)
+function parse_sort(node; kw...)
     nn = nodename(node)
-    nn == "sort" || error("element name wrong: $nn")
-    @match nodename(child) begin
-        #Booleans, range of integers, finite enumerations, cyclic enumerations and dots
-        "bool" => (def = anyelement(child; kw...))
-        "finiteenumeration" => (def = anyelement(child; kw...))
-        "finiterange" => (def = anyelement(child; kw...))
-        "cyclicenumeration" => (def = anyelement(child; kw...))
-        "dot" => (def = anyelement(child; kw...))
-        _ => @error("$nn is not a known declaration tag")
-    end
-    PnmlLabel(node; kwargs...)
+    # Builtin
+    sort =  nn == "bool" ? anyelement(node; kw...) :
+            nn == "finiteenumeration" ? anyelement(node; kw...) :
+            nn == "finiterange" ? anyelement(node; kw...) :
+            nn == "cyclicenumeration"  ? anyelement(node; kw...) : 
+            nn == "dot" ? anyelement(node; kw...) : 
+            # Also do these.
+            nn == "mulitsetsort" ? anyelement(node; kw...) :
+            nn == "productsort" ? anyelement(node; kw...) :
+            nn == "usersort" ? anyelement(node; kw...) : nothing
+ 
+    isnothing(sort) && error("$nn is not a known sort")
+    return sort
 end
 # BuiltInSort
 # MultisetSort
@@ -140,7 +152,7 @@ function parse_usersort(node; kwargs...)
     nn = nodename(node)
     nn == "usersort" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(node; kwargs...)
+    UserSort(anyelement(node; kwargs...))
 end
 
 
@@ -307,7 +319,7 @@ function parse_useroperator(node; kwargs...)
     nn = nodename(node)
     nn == "useroperator" || error("element name wrong: $nn")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
-    PnmlLabel(node; kwargs...)
+    UserOperator(Symbol(node["declaration"]))
 end
 
 """
@@ -317,6 +329,7 @@ function parse_variable(node; kwargs...)
     @debug node
     nn = nodename(node)
     nn == "variable" || error("element name wrong: $nn")
+    # The 'primer' UML2 uses variableDecl
     EzXML.haskey(node, "refvariable") || throw(MalformedException("$(nn) missing refvariable attribute", node))
-    PnmlLabel(node; kwargs...)
+    Variable(Symbol(node["refvariable"]))
 end

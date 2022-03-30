@@ -82,6 +82,11 @@ has_structure(::AbstractLabel) = false
 "Return `structure` field."
 structure(::AbstractLabel) = nothing
 
+name(l::AbstractLabel)     = hasproperty(l, :name) ? name(l.com) : nothing
+graphics(l::AbstractLabel) = hasproperty(l, :graphics) ? graphics(l.com) : nothing
+tools(l::AbstractLabel)    = hasproperty(l, :tools) ? tools(l.com) : nothing
+labels(l::AbstractLabel)   = hasproperty(l, :labels) ? labels(l.com) : nothing
+
 """
 $(TYPEDEF)
 Label that may be displayed. 
@@ -141,6 +146,13 @@ abstract type PnmlNode <: PnmlObject end
 
 has_xml(node::PnmlNode) = true
 xmlnode(node::PnmlNode) = node.xml
+
+"""
+For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref).
+"""
+abstract type ReferenceNode <: PnmlNode end
+
+ref(reference::ReferenceNode) = reference.ref
 
 """
 $(TYPEDEF)

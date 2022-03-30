@@ -38,4 +38,4 @@ test1(pnmlroot)
 PNML.reset_registry!(reg)
 #ProfileView.
 @profview test1(pnmlroot)
-@profview reg=PNML.IDRegistry()
+@profview PNML.IDRegistry()

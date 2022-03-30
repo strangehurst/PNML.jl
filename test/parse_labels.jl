@@ -1,24 +1,27 @@
 header("PARSE_LABELS")
 
-header("UNCLAIMED ELEMENT")
+header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
-    for elem in [
-        xml"""<declarations atag="test1">
-              </declarations>""",
+    # The attibutes should be harvested.
+    for node in [
+        xml"""<declarations> </declarations>""",
+        xml"""<declarations atag="test1"> </declarations>""",
         xml"""<declarations atag="test2">
                 <something> some content </something>
-                <something2 tag2="two"> <value/> </something2>
-              </declarations>
-    """]
-        dict::PNML.PnmlDict = PNML.unclaimed_label(elem, reg=PNML.IDRegistry())
+                <something> other stuff </something>
+                <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
+              </declarations>""",
+        xml"""<foo><declarations> </declarations></foo>""", ]
+        dict::PNML.PnmlDict = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
         printnode(dict)
         @test !isnothing(dict)
     end
-    println()
+    #println()
 end
 
 header("DECLARATION")
 @testset "empty declarations" begin
+    # The attribute should be ignored.
     n = parse_node(xml"""
         <declaration key="test">
           <structure>
@@ -27,19 +30,21 @@ header("DECLARATION")
           </structure>
         </declaration>
         """; reg= PNML.IDRegistry())
+
+    @show typeof(n), fieldnames(typeof(n))
     printnode(n)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(n.declarations) <: Vector{PNML.AbstractDeclaration}
+    @test typeof(PNML.declarations(n)) <: Vector{PNML.AbstractDeclaration}
+    @test length(PNML.declarations(n)) == 0
     @test typeof(n.com) <: PNML.ObjectCommon
-    #@test n.label.dict[:tag] === :declaration
-    #@test n.label.dict[:key] == "test"
-    #@test n.label.dict[:structure].dict[:declarations].dict[:text][1] == "#TODO"
-    #@test n.label.dict[:structure].dict[:declarations].dict[:text][2] == "yes really"
+    @test PNML.name(n) === nothing
+    @test PNML.graphics(n) === nothing
+    @test PNML.tools(n) === nothing
+    @test PNML.labels(n) === nothing
 
 
-    @show typeof(n), fieldnames(typeof(n))
     #@show typeof(n.label), fieldnames(typeof(n.label))
     #for (k,v) in pairs(n.label.dict)
     #    @show k, typeof(v), v
@@ -52,40 +57,42 @@ header("DECLARATION")
 
     #@show n.label.dict[:structure].dict
     #@show n.label.dict[:structure].dict[:declarations].dict[:text]
-    
-    println()
+
+    #println()
 end
 @testset "declaration tree" begin
-    n = parse_node(xml"""
+        node = xml"""
         <declaration>
-	    <structure>
+            <structure>
                 <declarations>
                     <namedsort id="LegalResident" name="LegalResident">
-			<cyclicenumeration>
-			    <feconstant id="LegalResident0" name="0"/>
-                             <feconstant id="LegalResident1" name="1"/>
-			</cyclicenumeration>
-		    </namedsort>
+                        <cyclicenumeration>
+                            <feconstant id="LegalResident0" name="0"/>
+                            <feconstant id="LegalResident1" name="1"/>
+                        </cyclicenumeration>
+                    </namedsort>
                     <namedsort id="MICSystem" name="MICSystem">
-			<cyclicenumeration>
-				<feconstant id="MICSystem0" name="0"/>
-				<feconstant id="MICSystem1" name="1"/>
-			</cyclicenumeration>
-		    </namedsort>
-		    <namedsort id="CINFORMI" name="CINFORMI">
-			<cyclicenumeration>
-				<feconstant id="CINFORMI0" name="0"/>
-				<feconstant id="CINFORMI1" name="1"/>
-			</cyclicenumeration>
-		    </namedsort>
+                        <cyclicenumeration>
+                            <feconstant id="MICSystem0" name="0"/>
+                            <feconstant id="MICSystem1" name="1"/>
+                        </cyclicenumeration>
+                    </namedsort>
+                    <namedsort id="CINFORMI" name="CINFORMI">
+                        <cyclicenumeration>
+                            <feconstant id="CINFORMI0" name="0"/>
+                            <feconstant id="CINFORMI1" name="1"/>
+                        </cyclicenumeration>
+                    </namedsort>
             </declarations>
         </structure>
     </declaration>
-    """; reg= PNML.IDRegistry())
+    """
+    n = parse_node(node; reg= PNML.IDRegistry())
     printnode(n)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
+    @test length(PNML.declarations(n)) == 3
     #@test typeof(n.label) <: PNML.PnmlLabel
 end
 
@@ -203,10 +210,10 @@ end
 end
 
 @testset "ref Trans" begin
-    str = """
+    node = xml"""
         <referenceTransition id="rt1" ref="t1"/>
     """
-    n = parse_node(to_node(str); reg = PNML.IDRegistry())
+    n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
     @test PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
@@ -248,7 +255,7 @@ end
     @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
-        @test typeof(n) <: PNML.PnmlLabel
+        @test typeof(n) <: PNML.AnyElement
         #@test n.dict[:text] == "N2"
         #@test n.dict[:structure].dict[:usersort].dict[:declaration] == "N2"
     end
