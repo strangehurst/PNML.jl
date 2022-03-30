@@ -69,11 +69,11 @@ function parse_net(node; kw...)::PnmlNet
     # The 'graphics' key is an exception and has a single value.
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :type => PnmlTypes.pnmltype(node["type"]),
+                           :pntd => PnmlTypes.pnmltype(node["type"]),
                            :pages => Page[],
                            :declaration => Declaration())
 
-    pntd = d[:type] # We pass the PNTD down the parse tree.
+    pntd = d[:pntd] # Pass the PNTD down the parse tree in keyword arguments.
 
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
@@ -87,7 +87,7 @@ function parse_net(node; kw...)::PnmlNet
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
     end
-    PnmlNet(d, pntd, node)
+    PnmlNet(d, pntd, node) # 
 end
 # Expected XML structure:
 #    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
