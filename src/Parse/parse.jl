@@ -64,16 +64,16 @@ function parse_net(node; kw...)::PnmlNet
 
     # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
-    # Optional key values are nothing for single object or empty vector when multiples
-    # are allowed. Keys that have pural names usually have a vector value.
-    # The 'graphics' key is an exception and has a single value.
+    # Optional key values are nothing for single object or empty vector when multiples.
+    # Keys that have pural names usually have a vector value.
+    # The 'graphics' key is one exception and has a single value.
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :pntd => PnmlTypes.pnmltype(node["type"]),
+                           :pntd => pnmltype(node["type"]),
                            :pages => Page[],
                            :declaration => Declaration())
 
-    pntd = d[:pntd] # Pass the PNTD down the parse tree in keyword arguments.
+    pntd = d[:pntd] # Pass the PNTD down the parse tree with keyword arguments.
 
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
@@ -82,7 +82,7 @@ function parse_net(node; kw...)::PnmlNet
             
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
-            # a zero or more <declarations>
+            # a zero or more <declarations>. Is complicated. You have been warned!
             "declaration"  => (d[:declaration] = parse_declaration(child; pntd, kw...))
             _ => parse_pnml_node_common!(d, child; pntd, kw...)
         end
@@ -142,7 +142,7 @@ function parse_place(node; kw...)
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
                            :marking => nothing,
-                           :type => nothing) # place 'type' is different from the net 'type'.
+                           :type => nothing) # Place 'type' is different from net 'type'.
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
@@ -153,7 +153,7 @@ function parse_place(node; kw...)
             _ => parse_pnml_node_common!(d, child; kw...)
         end
     end
-    Place(d)
+    Place(d, kw[:pntd])
 end
 
 """

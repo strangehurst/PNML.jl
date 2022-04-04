@@ -14,9 +14,10 @@ using DocStringExtensions
 
 export PnmlType,
         PnmlCore, PTNet,
-        AbstractHLCore, SymmetricNet, PT_HLPNG,
-                        HLCore, HLNet, StochasticNet, TimedNet, OpenNet
-
+        AbstractHLCore, HLCore, PT_HLPNG, SymmetricNet, HLNet,
+                        StochasticNet, TimedNet, OpenNet,
+        AbstractContinuousCore, ContinuousNet
+export pnmltype, pntd_symbol
 
 """
 Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
@@ -35,9 +36,9 @@ $(TYPEDEF)
 abstract type PnmlType end
 
 """
-The most minimal concrete Petri Net. 
+The most minimal concrete Petri Net.
 Used to implement and test the complete Petri Net Graph infrastructure.
-Labels of the graph is where meaning is attached. 
+Labels of the graph is where meaning is attached.
 Much of the Label infrastructure for High Level Petri Net Graphs is tested at this level.
 Subtypes of `PnmlType` should be used to specialize Labels for expressiveness and optimization.
 
@@ -46,7 +47,7 @@ $(TYPEDEF)
 struct PnmlCore <: PnmlType end
 
 """
-Place-Transition Petri Nets add small extensions to core. 
+Place-Transition Petri Nets add small extensions to core.
 The grammer file is ptnet.pnml so we name it PTNet.
 Note that 'PT' is often the prefix for XML tags specilized for this net type.
 
@@ -55,7 +56,7 @@ $(TYPEDEF)
 struct PTNet <: PnmlType end
 
 """
-Base of High Level Petri Net pntds. 
+Base of High Level Petri Net pntds.
 See [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
 
 $(TYPEDEF)
@@ -96,6 +97,22 @@ and ISO specification part 2.
 $(TYPEDEF)
 """
 struct SymmetricNet <: AbstractHLCore end
+
+"""
+$(TYPEDEF)
+
+Uses floating point numbers for markings, inscriptions, and conditions.
+"""
+abstract type AbstractContinuousCore <: PnmlType end
+
+
+"""
+TODO: Continuous Petri Net
+Concrete type.
+$(TYPEDEF)
+"""
+struct ContinuousNet <: AbstractContinuousCore end
+
 
 """
 TODO: Stochastic Petri Net
@@ -155,7 +172,8 @@ default_pntd_map() = Dict{AbstractString, Symbol}(
     "stochastic"   => :stochastic,
     "timed"        => :timednet,
     "nonstandard"  => :pnmlcore,
-    "open"         => :pnmlcore
+    "open"         => :pnmlcore,
+    "continuous"   => :continuous,
     )
 
 """
@@ -172,6 +190,7 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :symmetric  => SymmetricNet(),
     :stochastic => StochasticNet(),
     :timednet   => TimedNet(),
+    :continuous => ContinuousNet(),
     )
 
 """
@@ -217,15 +236,15 @@ Unknown `symbol` throws a [`PNML.MalformedException`](@ref)
 # Examples
 
 ```jldoctest
-julia> using PNML, PNML.PnmlTypes
+julia> using PNML; using PNML.PnmlTypes: pnmltype, pntd_symbol
 
-julia> PnmlTypes.pnmltype(PnmlCore())
+julia> pnmltype(PnmlCore())
 PnmlCore()
 
-julia> PnmlTypes.pnmltype("nonstandard")
+julia> pnmltype("nonstandard")
 PnmlCore()
 
-julia> PnmlTypes.pnmltype(:symmetric)
+julia> pnmltype(:symmetric)
 SymmetricNet()
 ```
 """
@@ -233,7 +252,7 @@ function pnmltype end
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri); kw...)
 function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
-    haskey(pnmltype_map, s) ? pnmltype_map[s] : 
+    haskey(pnmltype_map, s) ? pnmltype_map[s] :
         throw(PNML.MalformedException("Unknown PNTD symbol $s"))
 end
 

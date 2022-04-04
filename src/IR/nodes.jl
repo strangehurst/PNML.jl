@@ -4,16 +4,21 @@ Place node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Place <: PnmlNode
+struct Place{PnmlType,MarkingType,SortType} <: PnmlNode
     id::Symbol
-    marking::Maybe{Union{PTMarking,HLMarking}} #TODO remove Maybe, add initialMarking
-    sorttype::Maybe{AnyElement} # Place type is different from pntd/PnmlType.
+    #
+    marking::Maybe{MarkingType} #TODO default marking when initialMarking is nothing.
+    initialMarking::Maybe{MarkingType} #TODO
+    # High-level Petri Nets place's have sorts.
+    sorttype::Maybe{SortType} # Place type is different from pntd/PnmlType.
 
     com::ObjectCommon
 end
 
-Place(pdict::PnmlDict) =
-    Place(pdict[:id], pdict[:marking], pdict[:type], ObjectCommon(pdict))
+Place(pd::PnmlDict, pntd::PnmlType = PnmlCore()) =
+    Place{typeof(pntd),
+         typeof(pd[:marking]),
+         typeof(pd[:type])}(pd[:id], pd[:marking], pd[:marking], pd[:type], ObjectCommon(pd))
 
 #-------------------
 """
@@ -22,15 +27,15 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Transition <: PnmlNode
+struct Transition{PnmlType}  <: PnmlNode
     id::Symbol
     condition::Maybe{Condition}
 
     com::ObjectCommon
 end
 
-Transition(pdict::PnmlDict) =
-    Transition(pdict[:id], pdict[:condition], ObjectCommon(pdict))
+Transition(pdict::PnmlDict, pntd::PnmlType = PnmlCore()) =
+    Transition{typeof(pntd)}(pdict[:id], pdict[:condition], ObjectCommon(pdict))
 
 #-------------------
 """
@@ -39,7 +44,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc <: PnmlObject
+mutable struct Arc{PnmlType} <: PnmlObject
     id::Symbol
     source::Symbol
     target::Symbol
@@ -51,8 +56,8 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-Arc(pdict::PnmlDict) =
-    Arc(pdict[:id], pdict[:source], pdict[:target], pdict[:inscription], ObjectCommon(pdict))
+Arc(pdict::PnmlDict, pntd::PnmlType = PnmlCore()) =
+    Arc{typeof(pntd)}(pdict[:id], pdict[:source], pdict[:target], pdict[:inscription], ObjectCommon(pdict))
 
 """
 $(TYPEDSIGNATURES)
@@ -94,4 +99,3 @@ $(TYPEDSIGNATURES)
 """
 RefTransition(pdict::PnmlDict) =
     RefTransition(pdict[:id], pdict[:ref], ObjectCommon(pdict))
-
