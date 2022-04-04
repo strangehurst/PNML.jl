@@ -13,4 +13,5 @@ struct Term #TODO
     #TODO xml
 end
 
+Term() = Term(PnmlDict())
 convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)

@@ -1,23 +1,10 @@
-# Uses PnmlDict descending the XML during parsing.
-# PnmlDict turned into Intermediate Representation forms on the return up the tree.
-
-"""
-$(TYPEDSIGNATURES)
-
-If `x` is `nothing` return `default`, otherwise return `x`.
-Or if `d[s]` is `nothing` return `default`, otherwise return `x`.
-"""
-onnothing(x, default) = isnothing(x) ? default : x
-onnothing(d::PnmlDict, s::Symbol, default) =
-    isnothing(get(d, s, nothing)) ? default : d[s]
-
 #---------------------------------------------------------------------
 # LABELS
 #--------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
-Add `node` to` d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
+Add `node` to `d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
 """
 function add_label!(d::PnmlDict, node; kw...)
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.

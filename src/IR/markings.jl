@@ -1,7 +1,15 @@
+"""
+Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+"""
+function default_marking end
+default_marking(::PNTD) where {PNTD <: PnmlType} = zero(Integer)
+default_marking(::PNTD) where {PNTD <: AbstractContinuousCore} = zero(Float64)
+default_marking(::PNTD) where {PNTD <: AbstractHLCore} = nothing
 
 #-------------------
 """
-Label of a [`Place`](@ref) in a [`PTNet`](@ref).
+Number-valued label of [`Place`](@ref).
+See [`PTNet`](@ref), [`ContinuousNet`](@ref).
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -11,22 +19,21 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> using PNML
 
-julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>nothing));
+julia> m = PNML.PTMarking();
 
 julia> m()
 0
 
-julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>1));
+julia> m = PNML.PTMarking(1);
 
 julia> m()
 1
 
-julia> m = PNML.PTMarking(PNML.PnmlDict(:value=>12.34));
+julia> m = PNML.PTMarking(12.34);
 
 julia> m()
 12.34
 ```
-
 """
 struct PTMarking{N<:Number} <: Annotation
     value::N
@@ -34,11 +41,8 @@ struct PTMarking{N<:Number} <: Annotation
     # PTMarking does not use ObjectCommon.graphics,
     # but rather, TokenGraphics in ObjectCommon.tools.
 end
-
-function PTMarking(pdict::PnmlDict)
-    PTMarking(onnothing(pdict, :value, 0), ObjectCommon(pdict))
-end
-convert(::Type{Maybe{PTMarking}}, pdict::PnmlDict) = PTMarking(pdict)
+PTMarking() = PTMarking(zero(Int))
+PTMarking(value) = PTMarking(value, ObjectCommon())
 
 """
 Evaluate a [`PTMarking`](@ref).
@@ -47,7 +51,8 @@ Evaluate a [`PTMarking`](@ref).
 
 #-------------------
 """
-Label a Place in a [`AbstractHLCore`](#ref).
+Label a Place in a High-level Petri Net Graph.
+See [`AbstractHLCore`](#ref).
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -57,24 +62,23 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> using PNML: HLMarking, PnmlDict, Term
 
-julia> m = HLMarking(PnmlDict(:text=>"the text",
-                        :structure=>Term(PnmlDict(:value=>3))));
+julia> m = HLMarking("the text", Term(PnmlDict(:value=>3)));
 
 julia> m()
 "HLMarking functor not implemented"
 ```
 """
-struct HLMarking <: HLAnnotation
+struct HLMarking{TermType} <: HLAnnotation
     text::Maybe{String}
-    term::Maybe{Term} # is the expected structure content
+    term::Maybe{TermType} # is the expected structure content
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
 
-#TODO default value
-HLMarking(pdict::PnmlDict) =
-    HLMarking(pdict[:text], pdict[:structure], ObjectCommon(pdict))
-convert(::Type{Maybe{HLMarking}}, pdict::PnmlDict) = HLMarking(pdict)
+HLMarking() = HLMarking(nothing,Term(),ObjectCommon())
+HLMarking(s::AbstractString) = HLMarking(s, Term())
+HLMarking(t::Term) = HLMarking(nothing, t)
+HLMarking(s::AbstractString, t::Term) = HLMarking(s, t, ObjectCommon())
 
 """
 Evaluate a [`HLMarking`](@ref). Returns a value of the same sort as its `Place`.

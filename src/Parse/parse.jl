@@ -332,7 +332,7 @@ function parse_initialMarking(node; kw...)
             _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    PTMarking(d)
+    PTMarking(isnothing(d[:value]) ? default_marking(kw[:pntd]) : d[:value], ObjectCommon(d))
 end
 
 """
@@ -349,7 +349,7 @@ function parse_inscription(node; kw...)
             _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    PTInscription(d)
+    PTInscription(isnothing(d[:value]) ? default_inscription(kw[:pntd]) : d[:value], ObjectCommon(d))
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
@@ -370,7 +370,7 @@ function parse_hlinitialMarking(node; kw...)
         _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    HLMarking(d)
+    HLMarking(d[:text], d[:structure], ObjectCommon(d))
 end
 
 """
@@ -388,7 +388,7 @@ function parse_hlinscription(node; kw...)
         _ => parse_pnml_label_common!(d, child; kw...)
         end
     end
-    HLInscription(d)
+    HLInscription(d[:text], d[:structure], ObjectCommon(d))
 end
 
 """
