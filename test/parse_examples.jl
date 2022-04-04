@@ -27,7 +27,7 @@ header("Exanples")
                 @show keys(page)
                 for (key,value) in pairs(page)
                     if value isa Symbol
-                        @show key,value 
+                        @show key,value
                     elseif !isnothing(value)
                         @show key, keys(value)
                     end
@@ -57,4 +57,3 @@ end
 )
 end
 =#
-

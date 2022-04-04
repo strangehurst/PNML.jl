@@ -56,9 +56,9 @@ Return nets matching pntd `type` given as string or symbol.
 See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
 """
 function find_nets end
-find_nets(model, type::AbstractString) = find_nets(model, PnmlTypes.pntd_symbol(type))
-find_nets(model, type::Symbol) = find_nets(model, PnmlTypes.pnmltype(type))
-find_nets(model, type::PNTD) where {PNTD <: PnmlType} =
+find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
+find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
+find_nets(model, ::PNTD) where {PNTD <: PnmlType} =
     filter(n->typeof(n.type) <: PNTD, nets(model))
 
 """

@@ -41,7 +41,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
      <visible>true</visible>
  </toolspecific>
 """, contentparse = (c) -> begin end)
-    
+
     @testset for s in [str1, str2, str3, str4, str5]
         n = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
         printnode(n)
@@ -53,11 +53,11 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         #Base.Meta.@dump n.infos
         # get_toolinfo(::ToolInfo, args...) is identity #TODO make sense of this
         @test PNML.get_toolinfo(n, s.tool, s.version) !== nothing
-        
+
         #s.contentparse(n.infos) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
         foreach(n.infos) do toolinfo
-            # Content may optionally attach its xml.            
+            # Content may optionally attach its xml.
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
     end
@@ -81,6 +81,6 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """
         model = parse_str(str)
         @show model
-   
+
     end
 end

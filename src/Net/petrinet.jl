@@ -32,9 +32,9 @@ and we are asuming a flattened net it seems useful.
 
 $(TYPEDSIGNATURES)
 """
-type(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = T
-type(net::PnmlNet{T}) where {T <: PnmlType} = T
-type(page::Page{T}) where {T <: PnmlType} = T
+nettype(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = T
+nettype(net::PnmlNet{T}) where {T <: PnmlType} = T
+nettype(page::Page{T}) where {T <: PnmlType} = T
 
 
 #------------------------------------------------------------------
@@ -48,9 +48,9 @@ $(TYPEDSIGNATURES)
 
 Return vector of pages.
 """
-function pages end
+function pages end #TODO move empty function to TBD.
 pages(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = error("not implemented")
-pages(net::PnmlNet) = net.pages
+
 
 """
 $(TYPEDSIGNATURES)
@@ -545,6 +545,7 @@ $(TYPEDSIGNATURES)
 
 Return tuple of input, output labelled vectors with key of place ids and
 value of arc inscription's value for use as a transition function.
+#TODO When do these get called "pre" and "post"?
 """
 function in_out end
 function in_out(petrinet::N, transition_id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}

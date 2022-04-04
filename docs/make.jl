@@ -211,7 +211,7 @@ using PNML: AbstractHLCore,
     transition_function,
     transition_ids,
     transitions,
-    type,
+    nettype,
     unclaimed_label,
     update_maybe!,
     xmlnode

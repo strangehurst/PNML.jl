@@ -401,7 +401,7 @@ end
 #-------------------
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
-    string( typeof(net), " id ", pid(net), " type ", type(net), ", ",
+    string( typeof(net), " id ", pid(net), " type ", nettype(net), ", ",
             length(pages(net)), " pages ",
             length(declarations(net)), " declarations ",
             summary(net.com))
@@ -548,6 +548,3 @@ function Base.show(io::IO, mime::MIME"text/plain", nsort::NamedSort)
     print(io, typeof(nsort), " id=", pid(nsort), " name=", nsort.name, " def=")
     show(io, mime, nsort.def)
 end
-
-# show(io, x) ... _show_default formats as
-#type(f1(...), f2(...), ...)

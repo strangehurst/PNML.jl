@@ -16,7 +16,7 @@ end
 $(TYPEDSIGNATURES)
 
 Return `PnmlDict` holding a pnml label and its children.
-Note that the children can be "claimed" labels.
+Note that the children have `parse_node` applied recursivly and can be "claimed" labels.
 The main use-case is to wrap in a [`PnmlLabel`](@ref)
 """
 function unclaimed_label(node; kw...)::PnmlDict

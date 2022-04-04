@@ -19,6 +19,8 @@ Each XML tag is first parsed into a `PnmlDict`, many are then used
 to create higher-level types. Some parts will continue to find
 use for `PnmlDict`'s flexibility.
 
+[`AnyElement`](@ref) wraps a `PnmlDict` and `XMLNode`.
+
 We start a description of the net IR here.
 
 ## Type Hierarchies
@@ -51,7 +53,7 @@ There are 2 levels:  Core (Place-Transition) and High-Level PNG.
 Because we rely on external XML Schema verification tools, so long as we
 match the standard [link to discussion of match], we can extend TODO?.
 
-[`HLCore`](@ref) is a concrete subtypevof [`AbstractHLCore`](@ref).
+[`HLCore`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
 `HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
@@ -62,6 +64,33 @@ at a structural level. It may paramertize types to facilitate specilaization.
 ```@example type
 println(AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)) # hide
 ```
+
+| PnmlType     | Place | Trans | Arc  | Description                                               |
+| :---------   | :---- | :---- | :--- | :-------------------------------------------------------- |
+| PnmlCore     |       |       |      | <name> is only defined label                              |
+| PTNet        | PTM   | none  | PTI  | <initialMarking>, <inscription> labels only have <text>   |
+| HLCore       | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
+| PT-HLPNG     | HLM   | Cond  | HLI  | restrict sort to dot, condition always true               |
+| SymmetricNet | HLM   | Cond  | HLI  | restrict sorts to finite, annotations have <structure>    |
+| HLNet        | HLM   | Cond  | HLI  | extend symmetric with arbitrary sorts                     |
+| Stochastic   |       | Rate  |      | continuous or discrete                                    |
+| Timed        |       |       |      | continuous or discrete                                    |
+| Open         |       |       |      | continuous or discrete                                    |
+
+Todo: Continuous Petri Net
+
+| Abbreviation | Full Name     | Node       | Label Description                                   |
+|:-------------|:--------------|:-----------|:----------------------------------------------------|
+| PTM          | PTMarking     | Place      |                                                     |
+| PTI          | PTInscription | Arc        |                                                     |
+| HLM          | HLMarking     | Place      |                                                     |
+| HLI          | HLInscription | Arc        |                                                     |
+| Cond         | Condition     | Transition |                                                     |
+| Rate         | Rate          | Transition | random variable or function of marking, firing rate |
+| Pri          | Priority      | Transition | firing order of enabled transitions                 |
+| We           | Weight        | Transition | firing tiebreaker                                   |
+|              |               |            |                                                     |
+
 
 ### PetriNet
 [`PetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
@@ -93,8 +122,7 @@ it is not dicussed further (until someone extends/uses it).
 TODO: Need way to parse <toolspecific> that is flexible/extendable.
 
 Parse pnml for input, worry about writing back out and interchange later (future extensions).
-
-A future extension  maybe to use pages for distributed computing.
+Another future extension may be to use pages for distributed computing.
 
 The pnml specification permits that multiple pages to be flattened
 (by [`flatten_pages!`](@ref)) to a single `Page` before use.
@@ -102,10 +130,15 @@ Using them unflattened is not supposed to be impossible,
 but is not the arena or the initial use cases in no paticular order:
 adapting to use graph tools, catlab, agent based modeling, sciml, etc.
 
-[`PetriNet`](@ref) subtypes extend [`PnmlNet`](@ref).
+[`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
 A concrete `PetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which `flatten_pages!` and `deref~` operate.
+
+`PetriNet` is the level of most Petri Net Graph semantics.
+One example is enforcing integer, non-negative, positive.
+
+Remember, the IR trys to be as promiscuous as possible.
 
 XML <net> tags are 1st parsed into `PnmlDict` which is used to construct a [`PnmlNet`](@ref):
 
@@ -139,6 +172,40 @@ XML <page> tags are also 1st parsed into `PnmlDict` which is used to construct a
 | declarations | only net & page tags have declarations         |
 
 See also: [`parse_page`](@ref).
+
+## Places
+
+Properties that various places may have one or more of:
+  * discrete
+  * continuous
+  * timed
+
+## Transitions
+
+Properties that various transitions may have one or more of:
+  * discrete
+  * continuous
+  * hybrid of discrete & continuous subnets
+  * stochastic
+  * immediate
+  * deterministically time delayed
+  * scheduled
+
+The pnml schemas and primer only try to cover the discrete case as High-Level nets.
+With a lot of multi-sorted algebra to make it complicated enough to be challanging.
+
+Continous support is present where possible. For instance, when a number appers in the XML
+[`number_value`](@ref) is used to parse the string to `Int` or `Float64.
+This is currently (2022) "non-standard" so such pnml files will not be generally
+interchangable with other tools.
+
+https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8
+
+'Discrete, Continuous, and Hybrid Petri Nets' Rene David and Hassane Alla
+
+See [`rate`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
+Implements a continuous petri net as part of the first working use-case.
+Demonstrates the expressiveness of pnml.
 
 ## Petri Net Graphs and Networks
 
@@ -193,11 +260,11 @@ methods(PNML.has_xml) # hide
 methods(PNML.xmlnode) # hide
 ```
 
-### type - return PnmlType identifying PNTD
+### nettype - return PnmlType identifying PNTD
 
-[`PNML.type`](@ref)
+[`PNML.nettype`](@ref)
 ```@example methods
-methods(PNML.type) # hide
+methods(PNML.nettype) # hide
 ```
 
 ## Nodes of Petri Net Graph
