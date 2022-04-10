@@ -6,7 +6,7 @@ $(TYPEDSIGNATURES)
 
 Add `node` to `d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
 """
-function add_label!(d::PnmlDict, node; kw...)
+function add_label!(d::PnmlDict, node, pntd; kw...)
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
 
     # The value is initialized to `nothing since it is expected that most labels
@@ -15,13 +15,13 @@ function add_label!(d::PnmlDict, node; kw...)
     if d[:labels] === nothing
         d[:labels] = PnmlLabel[]
     end
-    add_label!(d[:labels], node; kw...)
+    add_label!(d[:labels], node, pntd; kw...)
 end
 
-function add_label!(v::Vector{PnmlLabel}, node; kw...)
+function add_label!(v::Vector{PnmlLabel}, node, pntd; kw...)
     #@show "add label! $(nodename(node))"
     haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
-    label = PnmlLabel(unclaimed_label(node; kw...), node) #TODO handle types
+    label = PnmlLabel(unclaimed_label(node, pntd; kw...), node) #TODO handle types
     haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(label))."
     push!(v, label)
     return
@@ -76,18 +76,18 @@ Add [`ToolInfo`](@ref) `node` to `d[:tools]`. Return updated `d[:tools]`.
 The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
-function add_toolinfo!(d::PnmlDict, node; kw...)
+function add_toolinfo!(d::PnmlDict, node, pntd; kw...)
     if d[:tools] === nothing
         d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
         #TODO TokenGraphics is a known flavor.
         #TODO Tools may induce additional subtype, but if is hoped that
         #TODO label based parsing is general & flexible enough to suffice.
     end
-    add_toolinfo!(d[:tools], node; kw...)
+    add_toolinfo!(d[:tools], node, pntd; kw...)
 end
 
-function add_toolinfo!(v::Vector{ToolInfo}, node; kw...)
-    ti = parse_toolspecific(node; kw...) # Here is that tag name in use.
+function add_toolinfo!(v::Vector{ToolInfo}, node, pntd; kw...)
+    ti = parse_toolspecific(node, pntd; kw...) # Here is that tag name in use.
     push!(v,ti)
 end
 
@@ -205,11 +205,11 @@ Note that "labels" are the "everything else" option and this should be called af
 any elements that has an expected tag. Any tag that is encountered in an unexpected location
 should be treated as an anonymous label for parsing.
 """
-function parse_pnml_common!(d::PnmlDict, node; kw...)
+function parse_pnml_common!(d::PnmlDict, node, pntd; kw...)
     @match nodename(node) begin
-        "graphics"     => (d[:graphics] = parse_graphics(node; kw...))
-        "toolspecific" => add_toolinfo!(d, node; kw...)
-        _ => add_label!(d, node; kw...) # label with a label allows any node to be attached & parsable.
+        "graphics"     => (d[:graphics] = parse_graphics(node, pntd; kw...))
+        "toolspecific" => add_toolinfo!(d, node, pntd; kw...)
+        _ => add_label!(d, node, pntd; kw...) # label with a label allows any node to be attached & parsable.
     end
 end
 
@@ -218,10 +218,10 @@ $(TYPEDSIGNATURES)
 
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_node_common!(d::PnmlDict, node; kw...)
+function parse_pnml_node_common!(d::PnmlDict, node, pntd; kw...)
     @match nodename(node) begin
-        "name" => (d[:name] = parse_name(node; kw...))
-        _ => parse_pnml_common!(d, node; kw...)
+        "name" => (d[:name] = parse_name(node, pntd; kw...))
+        _ => parse_pnml_common!(d, node, pntd; kw...)
     end
 end
 
@@ -231,13 +231,13 @@ $(TYPEDSIGNATURES)
 Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_label_common!(d::PnmlDict, node; kw...)
+function parse_pnml_label_common!(d::PnmlDict, node, pntd; kw...)
     @match nodename(node) begin
-        "text"      => (d[:text] = parse_text(node; kw...))
+        "text"      => (d[:text] = parse_text(node, pntd; kw...))
         # This is the fallback as "claimed" label's parser
         # should have already consumed the <structure>.
-        "structure" => (d[:structure] = parse_structure(node; kw...))
-        _ => parse_pnml_common!(d, node; kw...)
+        "structure" => (d[:structure] = parse_structure(node, pntd; kw...))
+        _ => parse_pnml_common!(d, node, pntd; kw...)
     end
 end
 

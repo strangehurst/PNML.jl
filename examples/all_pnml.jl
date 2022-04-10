@@ -1,5 +1,5 @@
 # julia ~/Jules/PNToyBox/scripts/all_pnml.jl
-# include("/home/jeff/Jules/PNToyBox/scripts/all_pnml.jl")
+# include("all_pnml.jl")
 
 #using PNMLTree
 using PNML

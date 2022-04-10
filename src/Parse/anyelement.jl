@@ -6,9 +6,12 @@ See [`ToolInfo`](@ref) for the intended use-case and [`unclaimed_label`](@ref) f
 a pnml label is expected but does not have a parser or the tag appears in an 
 unexpected place.
 """
-function anyelement(node; kw...)::AnyElement
+function anyelement end
+anyelement(node; kw...) =  anyelement(node, PnmlCore(); kw...)
+function anyelement(node, pntd; kw...)::AnyElement    
     @debug "anyelement = $(nodename(node))"
-    d = _harvest_any!(node, anyelement; kw...)
+
+    d = _harvest_any!(node, pntd, anyelement; kw...)
     return AnyElement(d, node)
 end
 
@@ -19,13 +22,15 @@ Return `PnmlDict` holding a pnml label and its children.
 Note that the children have `parse_node` applied recursivly and can be "claimed" labels.
 The main use-case is to wrap in a [`PnmlLabel`](@ref)
 """
-function unclaimed_label(node; kw...)::PnmlDict
+function unclaimed_label end
+unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
+function unclaimed_label(node, pntd; kw...)::PnmlDict
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
     EzXML.haskey(node, "id") && register_id!(kw[:reg], node["id"])
     # Children may be claimed.
-    return _harvest_any!(node, parse_node; kw...)
+    return _harvest_any!(node, pntd, parse_node; kw...)
 end
 
 """
@@ -44,7 +49,7 @@ Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
 """
-function _harvest_any!(node::XMLNode, parser; kw...)::PnmlDict
+function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...)::PnmlDict where {PNTD<:PnmlType}
     # Extract XML attributes.
     dict = PnmlDict(:tag => Symbol(nodename(node)),
                  (Symbol(a.name) => a.content for a in eachattribute(node))...)

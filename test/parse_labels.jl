@@ -87,7 +87,7 @@ end
         </structure>
     </declaration>
     """
-    n = parse_node(node; reg= PNML.IDRegistry())
+    n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
 
     @test typeof(n) <: PNML.Declaration
@@ -182,8 +182,8 @@ go</text>
     @test n == "ready\nto\ngo"
 end
 
+header("STRUCTURE")
 @testset "structure" begin
-    header("STRUCTURE")
     str = """
      <structure>
          <tuple>
@@ -247,9 +247,7 @@ end
     str1 = """
  <type>
      <text>N2</text>
-     <structure>
-            <usersort declaration="N2"/>
-     </structure>
+     <structure> <usersort declaration="N2"/> </structure>
  </type>
     """
     @testset for s in [str1]
@@ -261,27 +259,21 @@ end
     end
 end
 
-
+header("CONDITION")
 @testset "condition" begin
     str1 = """
  <condition>
      <text>(x==1 and y==1 and d==1)</text>
-     <structure>
-            <or>
-    #TODO
-           </or>
-     </structure>
+     <structure> <or> #TODO </or> </structure>
  </condition>
     """
     @testset for s in [str1]
         n = parse_node(to_node(s); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.Condition
-        @test xmlnode(n) isa Maybe{EzXML.Node}
+        @test n.text !== nothing
         @test n.term !== nothing
-        @test xmlnode(n.term) isa Maybe{EzXML.Node}
         @test n.com.graphics === nothing
-        @test !isempty(n.text)
         @test n.com.tools === nothing || isempty(n.com.tools)
         @test n.com.labels === nothing || isempty(n.com.labels)
     end

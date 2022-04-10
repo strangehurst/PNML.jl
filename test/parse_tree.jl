@@ -39,7 +39,7 @@ end
     foreach(PNML.allchildren("net", pnml)) do net
         @test nodename(net) == "net"
 
-        nn = parse_name(PNML.firstchild("name", net); reg)
+        nn = parse_name(PNML.firstchild("name", net), PnmlCore(); reg)
         @test isa(nn, PNML.Name)
         @test nn.text == "P/T Net with one place"
         @test nn.graphics === nothing

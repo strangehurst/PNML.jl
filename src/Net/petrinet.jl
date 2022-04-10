@@ -22,20 +22,21 @@ Initial concrete `PetriNet`s are constructed by flattening to a single `Page`.
 """
 abstract type PetriNet{T<:PnmlType} end
 
-#----------------------------------------------------------------------------------
-
 """
+$(TYPEDSIGNATURES)
+
 Return the PnmlType subtype representing the flavor (or pntd) of this kind of 
-Petri Net Graph. Also found as a type parameter of `PnmlNet` and `Page`.
+Petri Net Graph. Also found as a type parameter of `PnmlNet` and `Page` and others.
 Since `Page` is the level of a pnml model where the content is found,
 and we are asuming a flattened net it seems useful.
-
-$(TYPEDSIGNATURES)
 """
+function nettype end #TODO see pnmltype which returns a singleton
 nettype(petrinet::N) where {T <: PnmlType, N <: PetriNet{T}} = T
-nettype(net::PnmlNet{T}) where {T <: PnmlType} = T
-nettype(page::Page{T}) where {T <: PnmlType} = T
-
+nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+nettype(::Page{T}) where {T <: PnmlType} = T
+nettype(::Place{T}) where {T <: PnmlType} = T
+nettype(::Transition{T}) where {T <: PnmlType} = T
+nettype(::Arc{T}) where {T <: PnmlType} = T
 
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
@@ -207,8 +208,7 @@ function inscription end
 function inscription(arc)
     if !isnothing(arc.inscription)
         # Evaluate inscription
-        #TODO Is this where a functor is called to get a value?
-        arc.inscription.value
+        arc.inscription() #.value
     else
         # Default inscription value.
         one(Int) #TODO: match value type.

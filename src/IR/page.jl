@@ -5,30 +5,22 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD<:PnmlType} <: PnmlObject
+struct Page{PNTD<:PnmlType,D} <: PnmlObject
     id::Symbol
     places::Vector{Place}
     refPlaces::Vector{RefPlace}
     transitions::Vector{Transition}
     refTransitions::Vector{RefTransition}
     arcs::Vector{Arc}
-    declaration::Declaration
+    declaration::D
     subpages::Maybe{Vector{Page}}
     com::ObjectCommon
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function Page(d::PnmlDict, pntd = PnmlCore())
-    Page{typeof(pntd)}(
-        d[:id],
-        d[:places], d[:refP],
-        d[:trans], d[:refT],
-        d[:arcs],
-        d[:declaration],
-        d[:pages],
-        ObjectCommon(d))
+function Page(pntd::PNTD, id::Symbol, places, refp, transitions, reft,
+                arcs, declare, pages, oc::ObjectCommon) where {PNTD<:PnmlType}
+    Page{typeof(pntd), 
+         typeof(declare)}(id, places, refp, transitions, reft, arcs, declare, pages, oc)
 end
 
 # Note declaration wraps a vector of AbstractDeclarations.

@@ -4,7 +4,7 @@ $(TYPEDSIGNATURES)
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
 """
-function parse_tokengraphics(node; kw...)
+function parse_tokengraphics(node, pntd; kw...)
     nn = nodename(node)
     nn == "tokengraphics" || error("element name wrong: $nn")
     positions = allchildren("tokenposition", node)
@@ -12,7 +12,7 @@ function parse_tokengraphics(node; kw...)
         TokenGraphics() # Empty is legal.
     else
         #TODO: Enforce type sameness of position coordinates? How?
-        TokenGraphics(parse_tokenposition.(positions; kw...))
+        TokenGraphics(parse_tokenposition.(positions, Ref(pntd); kw...))
     end
 end
 
@@ -21,11 +21,11 @@ Cartesian coordinate relative to containing element.
 
 $(TYPEDSIGNATURES)
 """
-function parse_tokenposition(node; kw...)
+function parse_tokenposition(node, pntd; kw...)
     nn = nodename(node)
     nn == "tokenposition" || error("element name wrong: $nn")
 
-    parse_graphics_coordinate(node; kw...)
+    parse_graphics_coordinate(node, pntd; kw...)
 end
 
 """
@@ -34,7 +34,7 @@ Return a [`Graphics`](@ref) holding the union of possibilities.
 
 $(TYPEDSIGNATURES)
 """
-function parse_graphics(node; kw...)
+function parse_graphics(node, pntd; kw...)
     @debug node
     nn = nodename(node)
     nn == "graphics" || error("element name wrong: $nn")
@@ -44,12 +44,12 @@ function parse_graphics(node; kw...)
                  :fill => nothing, :font => nothing, :offset => nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin 
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child; kw...))
-            "fill"      => (d[:fill] = parse_graphics_fill(child; kw...))
-            "font"      => (d[:font] = parse_graphics_font(child; kw...))
-            "line"      => (d[:line] = parse_graphics_line(child; kw...))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child; kw...))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child; kw...)))
+            "dimension" => (d[:dimension] = parse_graphics_coordinate(child, pntd; kw...))
+            "fill"      => (d[:fill] = parse_graphics_fill(child, pntd; kw...))
+            "font"      => (d[:font] = parse_graphics_font(child, pntd; kw...))
+            "line"      => (d[:line] = parse_graphics_line(child, pntd; kw...))
+            "offset"    => (d[:offset] = parse_graphics_coordinate(child, pntd; kw...))
+            "position"  => (push!(d[:positions], parse_graphics_coordinate(child, pntd; kw...)))
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
@@ -67,7 +67,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Line`](@ref).
 """
-function parse_graphics_line(node; kw...)
+function parse_graphics_line(node, pntd; kw...)
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn")
 
@@ -85,7 +85,7 @@ $(TYPEDSIGNATURES)
 Return [`Coordinate`](@ref).
 Specification seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node; kw...)
+function parse_graphics_coordinate(node, pntd; kw...)
     nn = nodename(node)    
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
@@ -101,7 +101,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Fill`](@ref)
 """
-function parse_graphics_fill(node; kw...)
+function parse_graphics_fill(node, pntd; kw...)
     nn = nodename(node)
     (nn == "fill") || error("element name wrong: $nn")
     
@@ -118,7 +118,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Font`](@ref).
 """
-function parse_graphics_font(node; kw...)
+function parse_graphics_font(node, pntd; kw...)
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")
     

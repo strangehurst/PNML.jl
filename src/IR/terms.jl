@@ -1,4 +1,12 @@
 """
+Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+"""
+function default_term end
+default_term(::PNTD) where {PNTD <: PnmlType} = zero(Integer) #!
+default_term(::PNTD) where {PNTD <: AbstractContinuousCore} = zero(Float64) #!
+default_term(::PNTD) where {PNTD <: AbstractHLCore} = Term() #!
+
+"""
 $(TYPEDEF)
 $(TYPEDFIELDS)
 

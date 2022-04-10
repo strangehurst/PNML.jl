@@ -4,12 +4,14 @@ $(TYPEDSIGNATURES)
 Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exists,
 otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
-function parse_node(node::XMLNode; kw...)
+function parse_node end
+parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
+function parse_node(node::XMLNode, pntd; kw...)
     @assert node !== nothing
     if haskey(tagmap, nodename(node))
-        return tagmap[nodename(node)](node; kw...) # Various types returned here.
+        return tagmap[nodename(node)](node, pntd; kw...) # Various types returned here.
     else
-        return PnmlLabel(unclaimed_label(node; kw...), node)
+        return PnmlLabel(unclaimed_label(node, pntd; kw...), node)
     end
 end
 
@@ -35,13 +37,13 @@ $(TYPEDSIGNATURES)
 Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
 """
-function parse_pnml(node; kw...)
+function parse_pnml(node, pntd=nothing; kw...)
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
     
     @assert haskey(kw, :reg)
     # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node); kw...), 
+    PnmlModel(parse_net.(allchildren("net", node), Ref(pntd); kw...), 
               pnml_namespace(node),
               kw[:reg], 
               node)
@@ -51,7 +53,7 @@ end
 $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
-function parse_net(node; kw...)::PnmlNet
+function parse_net(node, pntd=nothing; kw...)::PnmlNet
     nn = nodename(node)
     nn == "net" || error("element name wrong: $nn")
     EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
@@ -78,16 +80,16 @@ function parse_net(node; kw...)::PnmlNet
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_page(child; pntd, kw...))
+            "page"         => push!(d[:pages], parse_page(child, pntd; pntd, kw...))
             
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
             # a zero or more <declarations>. Is complicated. You have been warned!
-            "declaration"  => (d[:declaration] = parse_declaration(child; pntd, kw...))
-            _ => parse_pnml_node_common!(d, child; pntd, kw...)
+            "declaration"  => (d[:declaration] = parse_declaration(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    PnmlNet(d, pntd, node) # 
+    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], ObjectCommon(d), node)
 end
 # Expected XML structure:
 #    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
@@ -97,7 +99,7 @@ $(TYPEDSIGNATURES)
 
 PNML requires at least one page.
 """
-function parse_page(node; kw...)
+function parse_page(node, pntd; kw...)
     nn = nodename(node)
     nn == "page" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
@@ -116,24 +118,28 @@ function parse_page(node; kw...)
 
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "place"       => push!(d[:places], parse_place(child; kw...))
-            "transition"  => push!(d[:trans], parse_transition(child; kw...))
-            "arc"         => push!(d[:arcs], parse_arc(child; kw...))
-            "referencePlace"      => push!(d[:refP], parse_refPlace(child; kw...))
-            "referenceTransition" => push!(d[:refT], parse_refTransition(child; kw...))
+            "place"       => push!(d[:places], parse_place(child, pntd; kw...))
+            "transition"  => push!(d[:trans], parse_transition(child, pntd; kw...))
+            "arc"         => push!(d[:arcs], parse_arc(child, pntd; kw...))
+            "referencePlace"      => push!(d[:refP], parse_refPlace(child, pntd; kw...))
+            "referenceTransition" => push!(d[:refT], parse_refTransition(child, pntd; kw...))
             # See note above about declarations vs. declaration.
-            "declaration" => (d[:declaration] = parse_declaration(child; kw...))
-            "page"        => push!(d[:pages], parse_page(child; kw...))
-            _ => parse_pnml_node_common!(d, child; kw...)
+            "declaration" => (d[:declaration] = parse_declaration(child, pntd; kw...))
+            "page"        => push!(d[:pages], parse_page(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Page(d, kw[:pntd])
+    Page(pntd, d[:id],
+        d[:places], d[:refP],
+        d[:trans], d[:refT],
+        d[:arcs],
+        d[:declaration], d[:pages], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_place(node; kw...)
+function parse_place(node, pntd; kw...)
     nn = nodename(node)
     nn == "place" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
@@ -141,25 +147,26 @@ function parse_place(node; kw...)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :marking => nothing,
-                           :type => nothing) # Place 'type' is different from net 'type'.
+                           :marking => default_marking(kw[:pntd]),
+                           :type => default_sort(kw[:pntd])) # Different from net's.
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
-            "initialMarking"   => (d[:marking] = parse_initialMarking(child; kw...))
-            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child; kw...))
+            "initialMarking"   => (d[:marking] = parse_initialMarking(child, pntd; kw...))
+            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...))
             # Here type means `sort`. Re: Many-sorted algebra.
-            "type"             => (d[:type] = parse_type(child; kw...))
-            _ => parse_pnml_node_common!(d, child; kw...)
+            "type"             => (d[:type] = parse_type(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Place(d, kw[:pntd])
+    #TODO Choose marking, sort when nothing
+    Place(pntd, d[:id], d[:marking], d[:type], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_transition(node; kw...)
+function parse_transition(node, pntd; kw...)
     nn = nodename(node)
     nn == "transition" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
@@ -167,20 +174,20 @@ function parse_transition(node; kw...)
 
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kw[:reg], node["id"]),
-                           :condition=>nothing)
+                           :condition=>Condition())
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "condition"    => (d[:condition] = parse_condition(child; kw...))
-            _ => parse_pnml_node_common!(d, child; kw...)
+            "condition"    => (d[:condition] = parse_condition(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Transition(d)
+    Transition(pntd, d[:id], d[:condition], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_arc(node; kw...)
+function parse_arc(node, pntd; kw...)
     nn = nodename(node)
     nn == "arc" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
@@ -192,22 +199,22 @@ function parse_arc(node; kw...)
                            :id=>register_id!(kw[:reg], node["id"]),
                            :source=>Symbol(node["source"]),
                            :target=>Symbol(node["target"]),
-                           :inscription=>nothing)
+                           :inscription=>default_inscription(pntd))
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Mutually exclusive tags: inscription, hlinscription
-            "inscription"    => (d[:inscription] = parse_inscription(child; kw...))
-            "hlinscription"  => (d[:inscription] = parse_hlinscription(child; kw...))
-            _ => parse_pnml_node_common!(d, child; kw...)
+            "inscription"    => (d[:inscription] = parse_inscription(child, pntd; kw...))
+            "hlinscription"  => (d[:inscription] = parse_hlinscription(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Arc(d)
+    Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refPlace(node; kw...)
+function parse_refPlace(node, pntd; kw...)
     nn = nodename(node)
     nn == "referencePlace" || error("element name wrong: $nn")
     EzXML.haskey(node, "id")  || throw(MissingIDException(nn, node))
@@ -219,16 +226,16 @@ function parse_refPlace(node; kw...)
                            :ref=>Symbol(node["ref"]))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_node_common!(d, child; kw...)
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    RefPlace(d)
+    RefPlace(pntd, d[:id], d[:ref], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refTransition(node; kw...)
+function parse_refTransition(node, pntd; kw...)
     nn = nodename(node)
     nn == "referenceTransition" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
@@ -240,10 +247,10 @@ function parse_refTransition(node; kw...)
                            :ref=>Symbol(node["ref"]))
     foreach(elements(node)) do child
         @match nodename(child) begin
-            _ => parse_pnml_node_common!(d,child; kw...)
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    RefTransition(d)
+    RefTransition(pntd, d[:id], d[:ref], ObjectCommon(d))
 end
 
 #----------------------------------------------------------
@@ -253,7 +260,7 @@ $(TYPEDSIGNATURES)
 
 Return the stripped string of nodecontent.
 """
-function parse_text(node; kw...)
+function parse_text(node, pntd; kw...)
     nn = nodename(node)
     nn == "text" || error("$nn nodename wrong")
     string(strip(nodecontent(node)))
@@ -264,7 +271,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Name`](@ref) holding text value and optional tool & GUI information.
 """
-function parse_name(node; kw...)
+function parse_name(node, pntd; kw...)
     nn = nodename(node)
     nn == "name" || error("element nodename wrong")
 
@@ -284,10 +291,10 @@ function parse_name(node; kw...)
     end
 
     graphicsnode = firstchild("graphics", node)
-    graphics = isnothing(graphicsnode) ? nothing : parse_graphics(graphicsnode; kw..., verbose=false)
+    graphics = isnothing(graphicsnode) ? nothing : parse_graphics(graphicsnode, pntd; kw..., verbose=false)
 
     toolspecific = allchildren("toolspecific", node)
-    tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific; kw..., verbose=false)
+    tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific, Ref(pntd); kw..., verbose=false)
 
     Name(value; graphics, tools)
 end
@@ -303,10 +310,10 @@ Return [`Structure`](@ref) wrapping a `PnmlDict` holding a <structure>.
 Should be inside of an label. 
 A "claimed" label usually elids the <structure> level (does not call this method).
 """
-function parse_structure(node; kw...)
+function parse_structure(node, pntd; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    Structure(unclaimed_label(node; kw...))
+    Structure(unclaimed_label(node, pntd; kw...))
 end
 
 #----------------------------------------------------------
@@ -321,7 +328,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_initialMarking(node; kw...)
+function parse_initialMarking(node, pntd; kw...)
     nn = nodename(node)
     nn == "initialMarking" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
@@ -329,7 +336,7 @@ function parse_initialMarking(node; kw...)
         @match nodename(child) begin
             # We extend to real numbers.
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            _ => parse_pnml_label_common!(d, child; kw...)
+            _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     PTMarking(isnothing(d[:value]) ? default_marking(kw[:pntd]) : d[:value], ObjectCommon(d))
@@ -338,15 +345,15 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_inscription(node; kw...)
+function parse_inscription(node, pntd; kw...)
     nn = nodename(node)
     nn == "inscription" || error("element name wrong: $nn'")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            # Should not have a sturcture.
-            _ => parse_pnml_label_common!(d, child; kw...)
+            # Should not have a sturucture.
+            _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     PTInscription(isnothing(d[:value]) ? default_inscription(kw[:pntd]) : d[:value], ObjectCommon(d))
@@ -358,7 +365,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_hlinitialMarking(node; kw...)
+function parse_hlinitialMarking(node, pntd; kw...)
     nn = nodename(node)
     nn == "hlinitialMarking" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), 
@@ -366,8 +373,8 @@ function parse_hlinitialMarking(node; kw...)
                             :structure=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
-        _ => parse_pnml_label_common!(d, child; kw...)
+        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
+        _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     HLMarking(d[:text], d[:structure], ObjectCommon(d))
@@ -376,7 +383,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_hlinscription(node; kw...)
+function parse_hlinscription(node, pntd; kw...)
     @debug node
     nn = nodename(node)
     nn == "hlinscription" || error("element name wrong: $nn'")
@@ -384,8 +391,8 @@ function parse_hlinscription(node; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
     #        "structure" => (d[:structure] = parse_term(child; kw...))
-        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
-        _ => parse_pnml_label_common!(d, child; kw...)
+        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
+        _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     HLInscription(d[:text], d[:structure], ObjectCommon(d))
@@ -396,20 +403,18 @@ $(TYPEDSIGNATURES)
 
 Annotation label of transition nodes.
 """
-function parse_condition(node; kw...)
+function parse_condition(node, pntd; kw...)
     @debug node
     nn = nodename(node)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    #cute trick    parse_pnml_label_common!.(Ref(d), elements(node); kw...)
-    foreach(elements(node)) do child
+        foreach(elements(node)) do child
         @match nodename(child) begin
-            #"structure" => (d[:structure] = parse_term(child; kw...))
-            "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child); kw...) : nothing)
-            _ => parse_pnml_label_common!(d, child; kw...)
+            "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : default_term(pntd))
+            _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    Condition(d)
+    Condition(d[:text], d[:structure], ObjectCommon(d))
 end
 
 #---------------------------------------------------------------------
@@ -420,7 +425,7 @@ Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
 
 $(TYPEDSIGNATURES)
 """
-function parse_label(node; kw...)
+function parse_label(node, pntd; kw...)
     nn = nodename(node)
     nn == "label" || error("element name wrong: $nn")
     @warn "parse_label '$(node !== nothing && nn)'"
