@@ -23,6 +23,19 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
+struct UnknownDeclaration  <: AbstractDeclaration
+    id::Symbol
+    name::String
+    nodename::String
+    content::Vector{AnyElement}
+    #sort::S
+    #com::ObjectCommon
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
 struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
     name::String
@@ -41,26 +54,20 @@ $(TYPEDFIELDS)
 struct NamedSort{S} <: SortDeclaration #TODO restrict to AbstractSort?
     id::Symbol
     name::String
-    def::S #Union{BuiltInSort,MultisetSort,ProductSort,UserSort}
+    def::S # BuiltInSort, MultisetSort, ProductSort, UserSort
 end
-
-
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct NamedOperator <: OperatorDeclaration
+struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
     name::String
-    parameter::Vector{VariableDeclaration}
-    def::Term
-    com::ObjectCommon
-    xml::XMLNode
+    parameter::Vector{V}
+    def::T # sort of term
 end
 
-NamedOperator(pdict::PnmlDict, xml::XMLNode) =
-    NamedOperator(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
 
 """
 $(TYPEDEF)

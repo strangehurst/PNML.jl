@@ -23,7 +23,6 @@ function parse_declaration(node, pntd; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    @info "parse declaration"
    
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -37,7 +36,6 @@ end
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
 # optional,     required,  zero or more
 function decl_structure(node, pntd; kw...)
-    @info "decl_structure"
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
     declarations = getfirst("declarations", node)
@@ -52,7 +50,6 @@ Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
 function parse_declarations(node, pntd; kw...)
     nn = nodename(node)
     nn == "declarations" || error("element name wrong: $nn") 
-    @info "parse declarations"
 
     v = AbstractDeclaration[]
     foreach(elements(node)) do child
@@ -60,7 +57,8 @@ function parse_declarations(node, pntd; kw...)
             "namedsort" => push!(v, parse_namedsort(child, pntd; kw...))
             "namedoperator" => push!(v, parse_namedoperator(child, pntd; kw...))
             "variabledecl" => push!(v, parse_variabledecl(child, pntd; kw...))
-            _ => @error("$nn is not a known declaration tag")
+            _ =>  push!(v, parse_unknowndecl(child, pntd; kw...))
+            #@warn("$(nodename(child)) is not a known declaration tag")
         end
     end
     return v
@@ -76,19 +74,23 @@ function parse_namedsort(node, pntd; kw...)
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
     def = parse_sort(firstelement(node), pntd; kw...)
-    #@show typeof(def), def
     NamedSort(register_id!(kw[:reg], node["id"]), node["name"], def)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_namedoperator(node, pntd; kwargs...)
+function parse_namedoperator(node, pntd; kw...)
     nn = nodename(node)
     nn == "namedoperator" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
-    anyelement(node, pntd; kwargs...)
+
+    @warn "namedoperator under test"
+    # <parameter> holds zero or more VariableDeclaration
+    def = parse_sort(getfirst("def", node), pntd; kw...)
+    parameters = parse_variabledecl.(elements(getfirst("parameter", node)), Ref(pntd); kw...)
+    NamedOperator(register_id!(kw[:reg], node["id"]), node["name"], def)
 end
 
 """
@@ -99,10 +101,24 @@ function parse_variabledecl(node, pntd; kw...)
     nn == "variabledecl" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
-    # Sort
+
     sort = parse_sort(firstelement(node), pntd; kw...)
 
     VariableDeclaration(Symbol(node["id"]), node["name"], sort)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_unknowndecl(node, pntd; kw...)
+    nn = nodename(node)
+    @info("unknown declaration: $nn")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
+
+    #TODO Turn all children into anyelements?
+    content = anyelement.(elements(node), Ref(pntd); kw...)
+    UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
 end
 
 #------------------------
@@ -126,7 +142,7 @@ function parse_sort(node, pntd; kw...)
     # Builtin
     sort =  nn == "bool" ? anyelement(node, pntd; kw...) :
             nn == "finiteenumeration" ? anyelement(node, pntd; kw...) :
-            nn == "finiterange" ? anyelement(node, pntd; kw...) :
+            nn == "finiteintrange" ? anyelement(node, pntd; kw...) :
             nn == "cyclicenumeration"  ? anyelement(node, pntd; kw...) : 
             nn == "dot" ? anyelement(node, pntd; kw...) : 
             # Also do these.

@@ -159,7 +159,7 @@ function parse_place(node, pntd; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    #TODO Choose marking, sort when nothing
+
     Place(pntd, d[:id], d[:marking], d[:type], ObjectCommon(d))
 end
 

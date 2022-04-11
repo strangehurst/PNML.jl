@@ -8,14 +8,14 @@ struct Place{PNTD<:PnmlType,MarkingType,SortType} <: PnmlNode
     pntd::PNTD
     id::Symbol
     #
-    marking::Maybe{MarkingType} #TODO default marking when initialMarking is nothing.
-    initialMarking::Maybe{MarkingType} #TODO
+    marking::MarkingType
+    initialMarking::MarkingType
     # High-level Petri Nets place's have sorts.
-    sorttype::Maybe{SortType} # Place type is different from pntd/PnmlType.
+    sorttype::SortType # Place type is different from pntd/PnmlType.
 
     com::ObjectCommon
 end
-#TODO marking/sort types from pntd when nothing
+
 Place(pntd::PNTD, id::Symbol, marking, sort, oc::ObjectCommon) where {PNTD<:PnmlType} =
     Place{typeof(pntd), typeof(marking), typeof(sort)}(pntd, id, marking, marking, sort, oc)
 
@@ -34,8 +34,8 @@ struct Transition{PNTD<:PnmlType,C}  <: PnmlNode
     com::ObjectCommon
 end
 
-Transition(pntd::PNTD, id::Symbol, condition, oc::ObjectCommon) where {PNTD<:PnmlType} =
-    Transition{typeof(pntd),typeof(condition)}(pntd, id, condition. oc)
+#Transition(pntd::PNTD, id::Symbol, condition, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#    Transition{typeof(pntd),typeof(condition)}(pntd, id, condition. oc)
 
 #-------------------
 """
@@ -54,14 +54,11 @@ mutable struct Arc{PNTD<:PnmlType,ITYPE} <: PnmlObject
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-Arc(pntd::PNTD, id::Symbol, src::Symbol, tgt::Symbol, 
-        inscription, oc::ObjectCommon) where {PNTD<:PnmlType} =
-    Arc{typeof(pntd),typeof(inscription)}(pntd, id, src, tgt, inscription, oc)
+#Arc(pntd::PNTD, id::Symbol, src::Symbol, tgt::Symbol, 
+#        inscription, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#    Arc{typeof(pntd),typeof(inscription)}(pntd, id, src, tgt, inscription, oc)
 
 
-"""
-$(TYPEDSIGNATURES)
-"""
 Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.pntd, a.id, src, tgt, a.inscription, a.com)
 
 #-------------------
@@ -79,8 +76,8 @@ struct RefPlace{PNTD<:PnmlType} <: ReferenceNode
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-RefPlace(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
-    RefPlace{typeof(pntd)}(pntd, id, ref, oc)
+#RefPlace(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#    RefPlace{typeof(pntd)}(pntd, id, ref, oc)
 
 #-------------------
 """
@@ -97,5 +94,5 @@ struct RefTransition{PNTD<:PnmlType} <: ReferenceNode
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-RefTransition(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
-    RefTransition{typeof(pntd)}(pntd, id, ref, oc)
+#RefTransition(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#    RefTransition{typeof(pntd)}(pntd, id, ref, oc)

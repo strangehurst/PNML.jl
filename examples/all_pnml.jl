@@ -24,7 +24,7 @@ function testpn(;topdir="/home/jeff/Projects/Resources/PetriNet/PNML",
                                time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
                     # Display the PnmlModel as a test of the
                     # parsing, creation and show() implementation.
-                    @show stats.value
+                    #@show stats.value
                 catch e
                     if e isa PNML.PnmlException
                         @warn " failed: $e"
