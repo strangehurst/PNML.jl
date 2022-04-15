@@ -6,6 +6,8 @@
 #
 # TODO: use  MIME"application/vnd.julia-vscode.diagnostics" for runtime diagnostics
 #
+import PrettyPrinting: quoteof
+
 "Indention increment."
 const indent_width = 4
 
@@ -33,8 +35,13 @@ function Base.show(io::IO, fill::Fill)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", fill::Fill)
-    show(io, fill)
+    pprint(IOContext(io, :displaysize => (24, 100)), fill) #show(io, fill)
 end
+
+quoteof(f::Fill) = :(Fill($(quoteof(f.color)), 
+        $(quoteof(f.image)), 
+        $(quoteof(f.gradient_color)),
+        $(quoteof(fieldoffset.gradient_rotation))))
 
 #-------------------
 function Base.show(io::IO, font::Font)
@@ -107,13 +114,17 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
 end
 
 function Base.show(io::IO, label::PnmlLabel)
-    show(IOContext(io, :typeinfo=>Dict), label.dict)
+    #show(IOContext(io, :typeinfo=>Dict), label.dict)
+    pprint(IOContext(io, :displaysize => (24, 100)), label) 
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
-    print(io, "SML:", typeof(label), " ")
-    show(IOContext(io, :typeinfo=>Dict), mime, label.dict)
+    #print(io, "SML:", typeof(label), " ")
+    #show(IOContext(io, :typeinfo=>Dict), mime, label.dict)
+    pprint(io, label)
 end
+
+quoteof(l::PnmlLabel) = :(PnmlLabel($(quoteof(l.tag)), $(quoteof(l.dict))))
 
 #-------------------
 function Base.show(io::IO, elvector::Vector{AnyElement})
@@ -123,7 +134,8 @@ function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
     print(io, "SLV:", typeof(elvector), "[")
     io = inc_indent(io)
     for (i,el) in enumerate(elvector)
-        print(io, "\n", indent(io), "$i: ", el)
+        print(io, "\n", indent(io), "$i: ")
+        pprint(IOContext(io, :displaysize => (24, 100)), el)
         #show(io, mime, el)
         #i < length(elvector) && 
         #print(io, "\n")
@@ -133,12 +145,14 @@ end
 
 function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
     #print(io, "SL:", typeof(el), " ")
-    show(IOContext(io, :typeinfo=>Dict), MIME"text/plain"(), el.dict)
+    pprint(IOContext(io, :displaysize => (24, 100)), el.dict)
+    #show(IOContext(io, :typeinfo=>Dict), MIME"text/plain"(), el.dict)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make parametric.
     print(io, "SL:", typeof(el), " ")
-    show(IOContext(io, :typeinfo=>Dict), mime, el.dict)
+    pprint(IOContext(io, :displaysize => (24, 100)), el.dict)
+    #show(IOContext(io, :typeinfo=>Dict), mime, el.dict)
 end
 
 #-------------------
@@ -525,7 +539,7 @@ end
 #    print(io, declare)
 #end
 function Base.show(io::IO, mime::MIME"text/plain", declare::AbstractDeclaration)
-    print(io, typeof(declare), declare)
+    print(io, declare)
     #show(io, mime, declare.label)
     #show(io, mime, declare.com)
 end
@@ -545,6 +559,10 @@ end
 #    print(io, declare)
 #end
 function Base.show(io::IO, mime::MIME"text/plain", nsort::NamedSort)
-    print(io, typeof(nsort), " id=", pid(nsort), " name=", nsort.name, " def=")
-    show(io, mime, nsort.def)
+    #print(io, typeof(nsort), " id=", pid(nsort), " name=", nsort.name, " def=")
+    #show(io, mime, nsort.def)
+    #pprint(io, nsort)
+    pprint(IOContext(io, :displaysize => (24, 180)), nsort)
 end
+
+quoteof(n::NamedSort) = :(NamedSort($(quoteof(n.id)), $(quoteof(n.name)), $(quoteof(n.def))))

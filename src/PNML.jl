@@ -9,11 +9,15 @@ $(DocStringExtensions.EXPORTS)
 """
 module PNML
 
+if !haskey(ENV, "COLUMNS")
+    ENV["COLUMNS"] = 180
+end
+
 using EzXML
 using MLStyle: @match
 using DocStringExtensions
 using AutoHashEquals
-#using PrettyPrinting
+using PrettyPrinting
 #using Symbolics
 #using IfElse
 using AbstractTrees
@@ -21,6 +25,7 @@ using LabelledArrays
 #using SciMLBase: @add_kwonly
 using Reexport
 #include("docstrings.jl")
+# Use default display width for printing.
 
 # """
 # $(TYPEDSIGNATURES)
