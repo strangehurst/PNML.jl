@@ -57,6 +57,20 @@ struct NamedSort{S} <: SortDeclaration #TODO restrict to AbstractSort?
     def::S # BuiltInSort, MultisetSort, ProductSort, UserSort
 end
 
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+User-declared sort.
+"""
+struct Partition{S,PE} <: SortDeclaration
+    id::Symbol
+    name::String
+    def::S # Refers to a NamedSort
+    element::PE # 0 or more PartitionElements.
+end
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)

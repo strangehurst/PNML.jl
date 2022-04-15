@@ -149,7 +149,7 @@ function parse_sort(node, pntd; kw...)
             nn == "mulitsetsort" ? anyelement(node, pntd; kw...) :
             nn == "productsort" ? anyelement(node, pntd; kw...) :
             nn == "usersort" ? anyelement(node, pntd; kw...) : nothing
- 
+    #TODO partition
     isnothing(sort) && error("$nn is not a known sort")
     return sort
 end
