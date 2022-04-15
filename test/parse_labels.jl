@@ -12,11 +12,24 @@ header("UNCLAIMED LABEL")
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
               </declarations>""",
         xml"""<foo><declarations> </declarations></foo>""", ]
-        dict::PNML.PnmlDict = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
-        printnode(dict)
-        @test !isnothing(dict)
+        p = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
+        printnode(p)
+        @test !isnothing(p)
     end
     #println()
+end
+
+header("GET_LABEL")
+@testset "" begin
+    n = parse_node(xml"""<transition id ="birth">
+        <rate> <text>0.3</text> </rate>
+    </transition>""", reg=PNML.IDRegistry())
+    printnode(n)
+    l = PNML.labels(n)
+    @test PNML.tag(first(l)) === :rate
+
+    r = PNML.get_label(n, :rate)
+    @show r
 end
 
 header("DECLARATION")

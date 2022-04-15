@@ -49,18 +49,18 @@ Return first label attached to `d` have a matching `tagvalue`.
 function get_label end
 
 function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
-    @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
+    #@show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
     getfirst(lab->tag(lab) === tagvalue, v)
 end
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    @debug "get_label $(typeof(v)) size $(length(v)) $tagvalue"
-    getfirst(lab->tag(lab) === tagvalue, v)
+    #@show "get_label $tagvalue $v"
+    getfirst(l->tag(l) === tagvalue, v)
 end
 
 # Vector of labels may be contained in a dictonary.
 function get_label(d::PnmlDict, tagvalue::Symbol)
-    @debug d[:labels]
+    #@show d[:labels]
     get_label(d[:labels], tagvalue)
 end
 

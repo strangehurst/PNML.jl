@@ -24,7 +24,7 @@ The main use-case is to wrap in a [`PnmlLabel`](@ref)
 """
 function unclaimed_label end
 unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
-function unclaimed_label(node, pntd; kw...)::PnmlDict
+function unclaimed_label(node, pntd; kw...)::Pair{Symbol,PnmlDict}
     @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
@@ -49,7 +49,7 @@ Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
 """
-function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...)::PnmlDict where {PNTD<:PnmlType}
+function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:PnmlType}
     # Extract XML attributes.
     dict = PnmlDict(:tag => Symbol(nodename(node)),
                  (Symbol(a.name) => a.content for a in eachattribute(node))...)
@@ -60,7 +60,7 @@ function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...)::PnmlDict where
     elseif !isempty(nodecontent(node))
         dict[:content] = strip(nodecontent(node))
     end
-    return dict
+    return Symbol(nodename(node)) => dict
 end
 
 """
@@ -70,7 +70,7 @@ Apply `parser` to each node in `nodes`.
 Return PnmlDict with values that are vectors when there 
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function anyelement_content(nodes::Vector{XMLNode}, parser; kw...)::PnmlDict
+function anyelement_content(nodes::Vector{XMLNode}, parser; kw...)
     namevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
     tagnames = unique(map(first, namevec))
     dict = PnmlDict()

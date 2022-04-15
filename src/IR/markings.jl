@@ -62,7 +62,7 @@ $(TYPEDFIELDS)
 ```jldoctest
 julia> using PNML: HLMarking, PnmlDict, Term
 
-julia> m = HLMarking("the text", Term(PnmlDict(:value=>3)));
+julia> m = HLMarking("the text", Term(:term, PnmlDict(:value=>3)));
 
 julia> m()
 "HLMarking functor not implemented"

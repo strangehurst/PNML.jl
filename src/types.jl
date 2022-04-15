@@ -57,9 +57,12 @@ Wrap `PnmlDict` holding well-formed XML.
 See [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 """
 struct AnyElement
+    tag::Symbol
     dict::PnmlDict
     xml::XMLNode
 end
+AnyElement(p::Pair{Symbol,PnmlDict},xml::XMLNode) = AnyElement(p.first,p.second,xml)
+tag(a::AnyElement) = a.tag
 
 """
 $(TYPEDEF)
@@ -106,13 +109,15 @@ defined by the pntd schema. See [`Name`](@ref), the only label defined in pnmlco
 and [`HLLabel`](@ref) for similat treatment of "unclaimed" high-level labels.
 """
 struct PnmlLabel <: Annotation
+    tag::Symbol
     dict::PnmlDict
     xml::XMLNode
 end
 
 PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
+PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...)  = PnmlLabel(p.first, p.second, node; kw...)
 
-tag(label::PnmlLabel) = tag(label.dict)
+tag(label::PnmlLabel) = label.tag
 
 has_xml(label::PnmlLabel) = true
 xmlnode(label::PnmlLabel) = label.xml
@@ -133,10 +138,11 @@ abstract type PnmlObject end
 "PnmlObjects are exected to have unique pnml ids."
 pid(object::PnmlObject) = object.id
 
-has_labels(x::T) where {T<: PnmlObject} = has_labels(x.com)
+has_labels(x::T) where {T <: PnmlObject} = has_labels(x.com)
+labels(x::T) where {T <: PnmlObject} = labels(x.com)
 
-has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(x.com.labels, tagvalue) : false
-get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(x.com.labels, tagvalue) : nothing
+has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(labels(x.com), tagvalue) : false
+get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(labels(x.com), tagvalue) : nothing
 
 """
 $(TYPEDEF)

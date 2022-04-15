@@ -17,9 +17,13 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
   - operator
 """
 struct Term #TODO 
-    dict::PnmlDict #TODO AnyElement for bring-up? What should be here?
-    #TODO xml
+  tag::Symbol
+  dict::PnmlDict #TODO AnyElement for bring-up? What should be here?
+  #TODO xml
 end
 
-Term() = Term(PnmlDict())
+Term() = Term(:empty, PnmlDict())
+
+Term(p::Pair{Symbol,PnmlDict}) = Term(p.first,p.second)
+
 convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)
