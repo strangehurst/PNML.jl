@@ -29,8 +29,8 @@ function firstchild(tag, el::XMLNode, ns=pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 function getfirst(tag, el::XMLNode, ns=pnml_ns) 
-    i = firstchild(tag, el, ns)
-    isnothing(i) ? nothing : i
+    x = firstchild(tag, el, ns)
+    isnothing(x) ? nothing : x
 end
 
 

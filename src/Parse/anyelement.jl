@@ -9,10 +9,8 @@ unexpected place.
 function anyelement end
 anyelement(node; kw...) =  anyelement(node, PnmlCore(); kw...)
 function anyelement(node, pntd; kw...)::AnyElement    
-    @debug "anyelement = $(nodename(node))"
-
-    d = _harvest_any!(node, pntd, anyelement; kw...)
-    return AnyElement(d, node)
+    d = _harvest_any!(node, pntd, _harvest_any!; kw...)
+    return AnyElement(Symbol(nodename(node)) => d, node)
 end
 
 """
@@ -25,12 +23,11 @@ The main use-case is to wrap in a [`PnmlLabel`](@ref)
 function unclaimed_label end
 unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
 function unclaimed_label(node, pntd; kw...)::Pair{Symbol,PnmlDict}
-    @debug "unclaimed = $(nodename(node))"
     @assert haskey(kw, :reg)
     # ID attributes can appear in various places. Each is unique and added to the registry.
     EzXML.haskey(node, "id") && register_id!(kw[:reg], node["id"])
     # Children may be claimed.
-    return _harvest_any!(node, pntd, parse_node; kw...)
+    return Symbol(nodename(node)) => _harvest_any!(node, pntd, _harvest_any!; kw...) # was parse_node
 end
 
 """
@@ -50,17 +47,18 @@ Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
 """
 function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:PnmlType}
+    #@show nodename(node), parser
     # Extract XML attributes.
-    dict = PnmlDict(:tag => Symbol(nodename(node)),
-                 (Symbol(a.name) => a.content for a in eachattribute(node))...)
+    dict = PnmlDict((Symbol(a.name) => a.content for a in eachattribute(node))...)
     # Extract children or content
     children = elements(node)
     if !isempty(children)
-        merge!(dict, anyelement_content(children, parser; kw...))
+        merge!(dict, _anyelement_content(children, pntd, parser; kw...))
     elseif !isempty(nodecontent(node))
         dict[:content] = strip(nodecontent(node))
     end
-    return Symbol(nodename(node)) => dict
+    #@show dict
+    return dict
 end
 
 """
@@ -70,16 +68,17 @@ Apply `parser` to each node in `nodes`.
 Return PnmlDict with values that are vectors when there 
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function anyelement_content(nodes::Vector{XMLNode}, parser; kw...)
+function _anyelement_content(nodes::Vector{XMLNode}, pntd::PNTD, parser; kw...) where {PNTD<:PnmlType}
     namevec = [nodename(node) => node for node in nodes] # Not yet turned into Symbols.
     tagnames = unique(map(first, namevec))
     dict = PnmlDict()
     foreach(tagnames) do tagname
         tags = filter(x->x.first===tagname, namevec)
+#        @show tagname, length(tags)
         dict[Symbol(tagname)] = if length(tags) > 1 # Now its a symbol.
-            parser.(map(x->x.second, tags); kw...) # vector
+            parser.(map(x->x.second, tags), Ref(pntd), Ref(parser); kw...) # vector
         else
-            parser(tags[1].second; kw...) # scalar
+            parser(tags[1].second, pntd, parser; kw...) # scalar
         end
     end
     return dict

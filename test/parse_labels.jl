@@ -12,11 +12,24 @@ header("UNCLAIMED LABEL")
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
               </declarations>""",
         xml"""<foo><declarations> </declarations></foo>""", ]
-        p = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
-        printnode(p)
-        @test !isnothing(p)
+        
+        u = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
+        @test !isnothing(u)
+        l = PNML.PnmlLabel(u, node)
+        @test !isnothing(l)
+        println()
+        a = PNML.anyelement(node, reg=PNML.IDRegistry())
+        @test !isnothing(a)
+        println()
+        
+        @show typeof(u), u
+        println()
+        @show typeof(l), l
+        println()
+        @show typeof(a), a
+        println(" - - - - - -")
     end
-    #println()
+    println()
 end
 
 header("GET_LABEL")
@@ -111,7 +124,7 @@ end
 
 header("PT initMarking")
 @testset "PT initMarking" begin
-    str = """
+    node = xml"""
  <initialMarking>
     <!-- not valid here <graphics> <offset x="0" y="0"/> </graphics> -->
     <text>1</text>
@@ -123,7 +136,7 @@ header("PT initMarking")
  </initialMarking>
     """
 
-    n = parse_node(to_node(str); reg=PNML.IDRegistry())
+    n = parse_node(node; reg=PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.PTMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -197,7 +210,7 @@ end
 
 header("STRUCTURE")
 @testset "structure" begin
-    str = """
+    node = xml"""
      <structure>
          <tuple>
               <subterm>
@@ -214,7 +227,7 @@ header("STRUCTURE")
      </structure>
     """
 
-    n = parse_node(to_node(str); reg = PNML.IDRegistry())
+    n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test xmlnode(n) isa Maybe{EzXML.Node}
 

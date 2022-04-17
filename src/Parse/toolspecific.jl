@@ -12,7 +12,7 @@ function parse_toolspecific(node, pntd; kw...)
     EzXML.haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
     EzXML.haskey(node, "version") || throw(MalformedException("$(nn) missing version attribute", node))
     
-    d = PnmlDict(:tag    => Symbol(nn), 
+    d = PnmlDict(
                 :tool    => node["tool"],
                 :version => node["version"])
     
@@ -23,5 +23,5 @@ function parse_toolspecific(node, pntd; kw...)
         #TODO: Register additional tool specific parsers?
         push!(d[:content], anyelement(child, pntd; kw...))
     end
-    ToolInfo(d, node)
+    ToolInfo(d[:tool], d[:version], d[:content], node)
 end

@@ -110,7 +110,7 @@ end
     @show snet
     β = PNML.rates(snet)
     @show β
-    @test β == LVector(birth=.3);
+    @test β == LVector(birth=0.3)
 end
 
 @testset "lotka-volterra" begin
@@ -165,7 +165,7 @@ end
     u0 = PNML.initialMarking(snet) #, S)
     #PRINT_PNML && @show u0
     @test u0 == uX
-    βx = LVector(birth=.3, predation=.015, death=.7); # transition rate
+    βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet) #LVector( (; [t=>PNML.rate(snet,t) for t in T]...))
     #PRINT_PNML && @show β
     @test β == βx
