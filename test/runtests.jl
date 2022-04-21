@@ -32,8 +32,7 @@ const pnml_dir = joinpath(@__DIR__, "data")
 "Turn string into XML node."
 to_node(s::AbstractString) = root(EzXML.parsexml(s))
 
-#function printnode(io::IO, node; label=nothing, compact=false, type=false, kw...)
-"Print PnmlDict."
+"Print `node` prepended by optional label string."
 function printnode(io::IO, node; label=nothing, kw...)
     if PRINT_PNML
         !isnothing(label) && print(io, label, " ")
@@ -78,7 +77,6 @@ end
         header("Base")
         @testset "maps"         begin include("maps.jl") end
         @testset "utils"        begin include("utils.jl") end
-        @testset "print"        begin include("print.jl") end
     end
     if select("All", "IR")
         header("IR")

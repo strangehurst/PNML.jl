@@ -17,32 +17,32 @@ header("UNCLAIMED LABEL")
         @test !isnothing(u)
         l = PNML.PnmlLabel(u, node)
         @test !isnothing(l)
-        println()
         a = PNML.anyelement(node, reg=PNML.IDRegistry())
         @test !isnothing(a)
-        println()
         
+        nn = Symbol(nodename(node))
+        @test u.first === nn
+        @test tag(l) === nn
+        @test tag(a) === nn
+
         @show typeof(u), u
-        println()
         @show typeof(l), l
-        println()
         @show typeof(a), a
-        println(" - - - - - -")
+        println()
     end
-    println()
 end
 
 header("GET_LABEL")
-@testset "" begin
+@testset "get rate label" begin
     n = parse_node(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
     </transition>""", reg=PNML.IDRegistry())
     printnode(n)
     l = PNML.labels(n)
-    @test PNML.tag(first(l)) === :rate
+    @test PNML.tag(first(l)) === :rate # only label
 
-    r = PNML.get_label(n, :rate)
-    @show r
+    #@show r = PNML.get_label(n, :rate)
+    @test PNML.rate(n) ≈ 0.3
 end
 
 header("DECLARATION")
@@ -69,23 +69,8 @@ header("DECLARATION")
     @test PNML.graphics(n) === nothing
     @test PNML.tools(n) === nothing
     @test PNML.labels(n) === nothing
-
-
-    #@show typeof(n.label), fieldnames(typeof(n.label))
-    #for (k,v) in pairs(n.label.dict)
-    #    @show k, typeof(v), v
-    #end
-
-    #@show typeof(n.label.dict)
-    #@show typeof(n.label.dict[:structure])
-    #@show typeof(n.label.dict[:structure].dict)
-    #@show typeof(n.label.dict[:structure].dict[:declarations])
-
-    #@show n.label.dict[:structure].dict
-    #@show n.label.dict[:structure].dict[:declarations].dict[:text]
-
-    #println()
 end
+
 @testset "declaration tree" begin
         node = xml"""
         <declaration>
@@ -113,35 +98,77 @@ end
         </structure>
     </declaration>
     """
-    n = parse_node(node; reg = PNML.IDRegistry())
+    reg = PNML.IDRegistry()
+    n = parse_node(node; reg)
     printnode(n)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(n)) == 3
-    #@test typeof(n.label) <: PNML.PnmlLabel
+    for d in PNML.declarations(n)
+        @test typeof(d) <: PNML.AbstractDeclaration
+        @test typeof(d) <: PNML.SortDeclaration
+        @test typeof(d) <: PNML.NamedSort
+
+        #@show d
+        #@show fieldtypes(typeof(d))
+        #@show fieldnames(typeof(d))
+
+        @test PNML.isregistered(reg, pid(d))
+        @test Symbol(PNML.name(d)) === pid(d)
+        @test d.def isa PNML.AnyElement
+        @test tag(d.def) === :cyclicenumeration
+
+        #@show d.def
+        #@show typeof(d.def)
+        #@show fieldtypes(typeof(d.def))
+        #@show fieldnames(typeof(d.def))
+        #@show d.def.dict
+
+        @test haskey(d.def.dict, :feconstant)
+
+        #@show d.def.dict[:feconstant]
+        for x in d.def.dict[:feconstant]
+            @test x isa PnmlDict
+            #@show x
+            @test PNML.isregistered(reg, pid(x))
+            @test x[:name] isa String
+        end
+        #println()
+    end
 end
 
 header("PT initMarking")
 @testset "PT initMarking" begin
     node = xml"""
  <initialMarking>
-    <!-- not valid here <graphics> <offset x="0" y="0"/> </graphics> -->
-    <text>1</text>
+    <text>1.0</text>
     <toolspecific tool="org.pnml.tool" version="1.0">
         <tokengraphics>
             <tokenposition x="6" y="9"/>
         </tokengraphics>
     </toolspecific>
  </initialMarking>
-    """
+ """
 
     n = parse_node(node; reg=PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.PTMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(n.value) <: Number
-    @test n.value == 1
+    @test n.value == n()
+
+    mark1 = PNML.PTMarking(2)
+    @test typeof(mark1()) == typeof(2)
+    @test mark1() == 2
+    mark2 = PNML.PTMarking(3.5)
+    @test typeof(mark2()) == typeof(3.5)
+    @test mark2() ≈ 3.5
+    mark3 = PNML.PTMarking()
+    @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore()))
+    @test mark3() == PNML.default_marking(PnmlCore())
+
+    #TODO test tokenposition?
 end
 
 header("HL Marking")
@@ -172,6 +199,8 @@ header("HL Marking")
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test n.text == "<All,All>"
     @test n.term !== nothing
+    @test n.term isa PNML.AbstractTerm
+    @show typeof(n.term)
     @show n.term
     #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all] !== nothing
     #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
