@@ -45,7 +45,7 @@ PTMarking() = PTMarking(zero(Int))
 PTMarking(value) = PTMarking(value, ObjectCommon())
 
 """
-Evaluate a [`PTMarking`](@ref).
+Evaluate a [`PTMarking`](@ref) instance.
 """
 (mark::PTMarking)() = mark.value
 
@@ -75,13 +75,14 @@ struct HLMarking{TermType} <: HLAnnotation
     #TODO check that there is a text or structure (or both)
 end
 
-HLMarking() = HLMarking(nothing,Term(),ObjectCommon())
+HLMarking() = HLMarking(nothing, Term())
 HLMarking(s::AbstractString) = HLMarking(s, Term())
-HLMarking(t::Term) = HLMarking(nothing, t)
-HLMarking(s::AbstractString, t::Term) = HLMarking(s, t, ObjectCommon())
+HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
+HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
 
 """
-Evaluate a [`HLMarking`](@ref). Returns a value of the same sort as its `Place`.
+Evaluate a [`HLMarking`](@ref) instance. 
+Returns a value of the same sort as its `Place`.
 """
 (hlm::HLMarking)() = "HLMarking functor not implemented"
 

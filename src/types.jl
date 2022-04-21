@@ -27,7 +27,7 @@ $(TYPEDSIGNATURES)
 Return tag symbol, if argument has one, otherwise `nothing`.
 """
 function tag end
-tag(::Any) = nothing
+#tag(::Any) = nothing
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]
 
 """
@@ -61,7 +61,7 @@ struct AnyElement
     dict::PnmlDict
     xml::XMLNode
 end
-AnyElement(p::Pair{Symbol,PnmlDict},xml::XMLNode) = AnyElement(p.first,p.second,xml)
+AnyElement(p::Pair{Symbol,PnmlDict}, xml::XMLNode) = AnyElement(p.first, p.second, xml)
 tag(a::AnyElement) = a.tag
 
 """
@@ -115,7 +115,8 @@ struct PnmlLabel <: Annotation
 end
 
 PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
-PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...)  = PnmlLabel(p.first, p.second, node; kw...)
+PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) = 
+        PnmlLabel(p.first, p.second, node; kw...)
 
 tag(label::PnmlLabel) = label.tag
 

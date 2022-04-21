@@ -47,9 +47,13 @@ Content is always a leaf element. However XML attributes can be anywhere in
 the hiearchy.
 """
 function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:PnmlType}
-    #@show nodename(node), parser
-    # Extract XML attributes.
-    dict = PnmlDict((Symbol(a.name) => a.content for a in eachattribute(node))...)
+    @assert haskey(kw, :reg)
+    # Extract XML attributes. Register IDs as symbols.
+    dict = PnmlDict()
+    for a in eachattribute(node)
+        dict[Symbol(a.name)] = a.name == "id" ? register_id!(kw[:reg], a.content) : a.content
+    end
+
     # Extract children or content
     children = elements(node)
     if !isempty(children)

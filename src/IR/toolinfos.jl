@@ -30,8 +30,8 @@ infos(ti::ToolInfo) = ti.infos
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-TokenGraphics is <toolspecific> content and is wrapped by a [`ToolInfo`](@ref).
-It combines the <tokengraphics> and <tokenposition> elements.
+TokenGraphics is <toolspecific> content.
+Combines the <tokengraphics> and <tokenposition> elements.
 """
 struct TokenGraphics <: AbstractPnmlTool
     positions::Vector{Coordinate} #TODO: uses abstract type

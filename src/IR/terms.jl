@@ -16,14 +16,14 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
   - variable
   - operator
 """
-struct Term #TODO 
+struct Term{T}  <: AbstractTerm #TODO make mutable?
   tag::Symbol
-  dict::PnmlDict #TODO AnyElement for bring-up? What should be here?
+  dict::T #TODO AnyElement for bring-up? What should be here?
   #TODO xml
 end
 
 Term() = Term(:empty, PnmlDict())
 
-Term(p::Pair{Symbol,PnmlDict}) = Term(p.first,p.second)
+Term(p::Pair{Symbol,PnmlDict}; kw...) = Term(p.first, p.second)
 
 convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)

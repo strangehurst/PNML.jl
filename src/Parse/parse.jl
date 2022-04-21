@@ -7,7 +7,6 @@ otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 function parse_node end
 parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
 function parse_node(node::XMLNode, pntd; kw...)
-    @assert node !== nothing
     if haskey(tagmap, nodename(node))
         return tagmap[nodename(node)](node, pntd; kw...) # Various types returned here.
     else

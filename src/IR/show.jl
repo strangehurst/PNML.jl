@@ -19,60 +19,31 @@ inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width
 
 #-------------------
 function Base.show(io::IO, fill::Fill)
-    compact = get(io, :compact, false)
-    if compact
-        print(io, "(", fill.color, ",",
-              fill.image, ",",
-              fill.gradient_color, ",",
-              fill.gradient_rotation, ")")
-    else
-        print(io, "Fill(color=", fill.color,
-              ", image=", fill.image,
-              ", gradient-color=", fill.gradient_color,
-              ", gradient-rotatio=", fill.gradient_rotation,
-              ")")
-    end
-end
-
-function Base.show(io::IO, ::MIME"text/plain", fill::Fill)
-    pprint(IOContext(io, :displaysize => (24, 100)), fill) #show(io, fill)
+    pprint(io, fill) 
 end
 
 quoteof(f::Fill) = :(Fill($(quoteof(f.color)), 
         $(quoteof(f.image)), 
         $(quoteof(f.gradient_color)),
-        $(quoteof(fieldoffset.gradient_rotation))))
+        $(quoteof(f.gradient_rotation))))
 
 #-------------------
 function Base.show(io::IO, font::Font)
-    print(io,
-          "Font(family=", font.family,
-          ", style=", font.style,
-          ", weight=", font.weight,
-          ", size=", font.size,
-          ", aligh=", font.align,
-          ", rotation=", font.rotation,
-          ", decoration=", font.decoration,
-          ")")
+    pprint(io, font)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", font::Font)
-    show(io, font)
-end
+quoteof(f::Font) = :(Font($quoteof(f.family)), 
+            $(quoteof(f.style)), $(quoteof(f.weight)),
+            $(quoteof(f.size)), $(quoteof(f.align)), 
+            $(quoteof(f.rotation)), $(quoteof(f.decoration)))
 
 #-------------------
 function Base.show(io::IO, line::Line)
-    print(io,
-          "Line(color=", line.color,
-          ", style=", line.style,
-          ", shape=", line.shape,
-          ", width=", line.width,
-          ")")
+    pprint(io, line)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", line::Line)
-    print(io, line)
-end
+quoteof(l::Line) = :(Line($(quoteof(l.color)), $(quoteof(l.style)),
+            $(quoteof(l.shape)), $(quoteof(l.width))))
 
 #-------------------
 function Base.show(io::IO, c::Coordinate)
@@ -85,15 +56,24 @@ function Base.show(io::IO, ::MIME"text/plain", c::Coordinate)
 end
 
 #-------------------
-function Base.show(io::IO, g::Graphics)
-    compact = get(io, :compact, false)
+function shownames(io::IO, g::Graphics)
     print(io, "Graphics(",
-          "dimension=", g.dimension,
-          ", fill=",      g.fill,
-          ", font=",      g.font,
-          ", line=",      g.line,
-          ", offset=",    g.offset,
-          ", position=",  g.position, ")")
+        "dimension=", g.dimension,
+        ", fill=",      g.fill,
+        ", font=",      g.font,
+        ", line=",      g.line,
+        ", offset=",    g.offset,
+        ", position=",  g.position, ")")
+end
+
+function Base.show(io::IO, g::Graphics)
+    print(io, "Graphics(", 
+            g.dimension, ", ",
+            g.fill, ", ",
+            g.font, ", ",
+            g.line, ", ",
+            g.offset, ", ",
+            g.position, ")")
 end
 
 #-------------------
@@ -106,7 +86,7 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
         #print(io, label)
-        show(io, label)
+        pprint(io, label)
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
@@ -115,7 +95,7 @@ end
 
 function Base.show(io::IO, label::PnmlLabel)
     #show(IOContext(io, :typeinfo=>Dict), label.dict)
-    pprint(IOContext(io, :displaysize => (24, 100)), label) 
+    pprint(io, label) 
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
@@ -135,7 +115,7 @@ function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
     io = inc_indent(io)
     for (i,el) in enumerate(elvector)
         print(io, "\n", indent(io), "$i: ")
-        pprint(IOContext(io, :displaysize => (24, 100)), el)
+        pprint(io, el)
         #show(io, mime, el)
         #i < length(elvector) && 
         #print(io, "\n")
@@ -145,15 +125,16 @@ end
 
 function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
     #print(io, "SL:", typeof(el), " ")
-    pprint(IOContext(io, :displaysize => (24, 100)), el.dict)
+    pprint(io, el)
     #show(IOContext(io, :typeinfo=>Dict), MIME"text/plain"(), el.dict)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make parametric.
     print(io, "SL:", typeof(el), " ")
-    pprint(IOContext(io, :displaysize => (24, 100)), el.dict)
+    pprint(io, el)
     #show(IOContext(io, :typeinfo=>Dict), mime, el.dict)
 end
+quoteof(a::AnyElement) = :(AnyElement($(quoteof(a.tag)), $(quoteof(a.dict))))
 
 #-------------------
 Base.summary(io::IO, ti::ToolInfo) = print(io, summary(ti))
@@ -165,27 +146,15 @@ end
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     for (i, ti) in enumerate(toolvector)
         print(io, "\n", indent(io), "$i: ")
-        show(io, MIME"text/plain"(), ti)
-        #i < length(toolvector) && print(io, "\n")
+        show(io, ti)
     end
 end
 
 function Base.show(io::IO, ti::ToolInfo)
-    println(io, summary(ti), ":")
-    io = inc_indent(io)
-    for (i,info) in enumerate(ti.infos)
-        print(io, indent(io))
-        show(io, MIME"text/plain"(), info)
-        i < length(ti.infos) && print(io, "\n")
-    end
+    pprint(io, ti)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", ti::ToolInfo)
-    show(io, ti)
-end
-function Base.show(io::IO, ::MIME"text/plain", toolvector::Vector{ToolInfo})
-    show(io, toolvector)
-end
+quoteof(ti::ToolInfo) = :($(quoteof(ti.toolname)), $(quoteof(ti.version)), $(quoteof(infos)))
 
 #-------------------
 function Base.show(io::IO, tg::TokenGraphics)
@@ -223,15 +192,15 @@ function Base.show(io::IO, oc::ObjectCommon)
         print(io, ", ")
     end
     if !isnothing(oc.graphics)
-        print(io, "graphics: ", oc.graphics)
+        pprint(io, oc.graphics)
     end
     if !isnothing(oc.tools)
         println(io, "\n", indent(io), "tools:")
-        show(inc_indent(io), MIME"text/plain"(), oc.tools)
+        show(inc_indent(io), oc.tools)
     end
     if !isnothing(oc.labels)
         println(io, "\n", indent(io), "labels:")
-        show(inc_indent(io), MIME"text/plain"(), oc.labels)
+        show(inc_indent(io), oc.labels)
     end
     # In general, do not display/print the XML.
 end
@@ -318,27 +287,6 @@ function Base.show(io::IO, rvector::Vector{<:ReferenceNode})
         i < length(rvector) && print(io, "\n")
     end
 end
-
-#function Base.show(io::IO, r::RefTransition)
-#    print(io, typeof(r), " (id ", pid(r), ", ref ", ref(r))
-#    show_common(io, r.com)
-#    print(io, ")")
-#end
-
-#function Base.show(io::IO, ::MIME"text/plain", rtvector::Vector{RefTransition})
-#    show(io, rtvector)
-#end
-
-#function Base.show(io::IO, ::MIME"text/plain", rpvector::Vector{RefPlace})
-#    for (i,rp) in enumerate(rpvector)
-#        print(io, indent(io), rp)
-#        i < length(rpvector) && print(io, "\n")
-#    end
-#end
-
-#function Base.show(io::IO, ::MIME"text/plain", reft::RefTransition)
-#    show(io, reft)
-#end
 
 #-------------------
 function Base.show(io::IO, arc::Arc)
@@ -472,58 +420,60 @@ function Base.summary(ptm::PTMarking)
 end
 
 function Base.show(io::IO, ptm::PTMarking)
-    print(io, summary(ptm), " value: ", ptm.value)
-    show_common(io, ptm)
+    pprint(io, ptm) #    print(io, summary(ptm), " value: ", ptm.value)
+    #show_common(io, ptm)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", ptm::PTMarking)
-    show(io, ptm)
-end
+quoteof(m::PTMarking) = :(PTMarking($(quoteof(m.value)), $(quoteof(m.com))))
 
 #-------------------
 Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
-function Base.summary(hlm::HLMarking)
+function
+    Base.summary(hlm::HLMarking)
     string(typeof(hlm))
 end
 
 function Base.show(io::IO, hlm::HLMarking)
-    print(io, "'", hlm.text, "', ", hlm.term)
-    show_common(io, hlm)
+    #print(io, "'", hlm.text, "', ", hlm.term)
+    pprint(io, hlm)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", hlm::HLMarking)
-    show(io, hlm)
-end
+quoteof(m::HLMarking) = :(HLMarking($(quoteof(m.text)), $(quoteof(m.term)), $(quoteof(m.com))))
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
-    print(io, typeof(cond), " '", cond.text, "', ", cond.term)
-    show_common(io, cond)
+    pprint(io, cond) #typeof(cond), " '", cond.text, "', ", cond.term)
+    #show_common(io, cond)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
     show(io, cond)
 end
+quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(c.term)), $(quoteof(c.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::PTInscription)
-    print(io, typeof(inscription), " value ", inscription.value)
-    show_common(io, inscription)
+    pprint(io, inscription)#, " value ", inscription.value)
+    #show_common(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
     show(io, inscription)
 end
+quoteof(i::PTInscription) = :(PTInscription($(quoteof(i.value)), $(quoteof(i.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
-    print(io, typeof(inscription),  " '", inscription.text, "', ", inscription.term)
-    show_common(io, inscription)
+    pprint(io, inscription)#,  " '", inscription.text, "', ", inscription.term)
+    #show_common(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
     show(io, inscription)
 end
 
+quoteof(i::HLInscription) = 
+    :(HLInscription($(quoteof(i.text)), $(quoteof(i.term)), $(quoteof(i.com))))
 
+#-------------------
 function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
     iio = inc_indent(io)
     print(io, indent(io), typeof(declarations), "[")
@@ -531,18 +481,36 @@ function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
     for (i,dec) in enumerate(declarations)
         print(iio, "\n", indent(iio))
         show(inc_indent(io), MIME"text/plain"(), dec)
-        #i < length(declarations) && print(io, "\n")
     end
     print(io, "]")
 end
-#function Base.show(io::IO, declare::AbstractDeclaration)
-#    print(io, declare)
-#end
-function Base.show(io::IO, mime::MIME"text/plain", declare::AbstractDeclaration)
-    print(io, declare)
-    #show(io, mime, declare.label)
-    #show(io, mime, declare.com)
+function Base.show(io::IO, declare::AbstractDeclaration)
+    pprint(io, declare)
 end
+quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name)),
+         $(quoteof(i.com))))
+#-------------------
+function Base.show(io::IO, terms::Vector{AbstractTerm})
+    iio = inc_indent(io)
+    print(io, indent(io), typeof(terms), "[")
+    
+    for (i,term) in enumerate(terms)
+        print(iio, "\n", indent(iio))
+        show(inc_indent(io), term)
+    end
+    print(io, "]")
+end
+function Base.show(io::IO, term::AbstractTerm)
+    pprint(io, term)
+end
+quoteof(t::AbstractTerm) = :(AbstractTerm($(quoteof(t.tag)), $(quoteof(t.dict))))
+#         $(quoteof(t.com))))
+
+
+function Base.show(io::IO, term::Term)
+    pprint(io, term)
+end
+quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.dict))))
 
 #-------------------
 function Base.show(io::IO, nsorts::Vector{NamedSort})
@@ -550,18 +518,13 @@ function Base.show(io::IO, nsorts::Vector{NamedSort})
     print(io, typeof(nsorts), "[")
     for (i,dec) in enumerate(nsorts)
         print(io, "\n", indent(io))
-        show(inc_indent(io), MIME"text/plain"(), dec)
+        show(inc_indent(io), dec)
         i < length(nsorts) && print(io, "\n")
     end
     print(io, "]")
 end
-#function Base.show(io::IO, declare::AbstractDeclaration)
-#    print(io, declare)
-#end
-function Base.show(io::IO, mime::MIME"text/plain", nsort::NamedSort)
-    #print(io, typeof(nsort), " id=", pid(nsort), " name=", nsort.name, " def=")
-    #show(io, mime, nsort.def)
-    #pprint(io, nsort)
+
+function Base.show(io::IO, nsort::NamedSort)
     pprint(IOContext(io, :displaysize => (24, 180)), nsort)
 end
 

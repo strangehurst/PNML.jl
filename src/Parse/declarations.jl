@@ -180,11 +180,12 @@ Instead it is the interpertation of the child of some <structure> elements.
 """
 function parse_term(node, pntd; kwargs...)
     nn = nodename(node)
-    #TODO validate? nn == "term" || error("element name wrong: $nn")
+    #TODO Validate that it is a kind of term? How? nn == "term" || error("element name wrong: $nn")
     Term(unclaimed_label(node, pntd; kwargs...))
 end
-# Variable
-# Operator
+
+#! TODO Variable is one kind of term.
+#! TODO Operator is another kind of term.
 
 """
 $(TYPEDSIGNATURES)

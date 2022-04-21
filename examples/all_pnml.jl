@@ -10,7 +10,7 @@ using DataFrames, DataFramesMeta
 function testpn(;topdir="/home/jeff/Projects/Resources/PetriNet/PNML",
                 dir="examples")
     pnml = endswith(".pnml")
-    df = DataFrame() # Collects data from test files.
+    df = DataFrame() # Collects data from tests.
     cd(joinpath(topdir, dir)) do
         for (root, dirs, files) in walkdir(".")
             for file in filter(pnml, files)
@@ -24,19 +24,19 @@ function testpn(;topdir="/home/jeff/Projects/Resources/PetriNet/PNML",
                                time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
                     # Display the PnmlModel as a test of the
                     # parsing, creation and show() implementation.
-                    #@show stats.value
+                    @show stats.value
                 catch e
                     if e isa PNML.PnmlException
                         @warn " failed: $e"
                     elseif e isa InterruptException
                         return
                     else
-                        rethrow(e)
+                        sprint(showerror, e)
                     end
                 end
             end
         end
     end
     # Display the gathered data frame.
-    return sort(df, [:time])
+    display(sort(df, [:time]))
 end
