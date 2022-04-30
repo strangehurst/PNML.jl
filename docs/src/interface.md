@@ -104,7 +104,7 @@ println(AbstractTrees.repr_tree(PNML.PetriNet)) # hide
 foreach(typet) do t; println(t); end # hide
 ```
 
-## Net & Pages
+## Top Level: Net, Page
 
 At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.

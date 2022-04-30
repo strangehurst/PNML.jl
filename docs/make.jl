@@ -257,8 +257,6 @@ mkpath(genpath) #TODO where should initialization happen?
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 
-@info("Running `makedocs` from make.jl.")
-
 for m ∈ [PNML]
     for i ∈ propertynames(m)
        xxx = getproperty(m, i)
@@ -266,13 +264,15 @@ for m ∈ [PNML]
     end
  end
 
+@info("Running `makedocs` from make.jl.")
+
 makedocs(;
          clean = true,
          doctest=true,
          modules=[PNML], #, PNML.PnmlTypes],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
-         repo="/home/jeff/Jules/PNToyBox/src/PNML/{path}",
+         repo="/home/jeff/PNML/{path}",
          checkdocs=:all,
 
          format=Documenter.HTML(;
@@ -286,21 +286,15 @@ makedocs(;
                                 ),
          sitename="PNML.jl",
          pages=[
-            "Home" => "index.md",
-            "Petri Net Markup Language" => [
-                "pnml.md"
-            ],
-
+            "Petri Net Markup Language" => "pnml.md",
             "API" => [
                 "PNML"      => "API/library.md",
                 "PnmlTypes" => "API/pnmltypes.md"
             ],
             "Intermediate Representation" => "IR.md",
             "Interfaces" => "interface.md",
-            "Examples"   => [
-                "Lotka-Volterra" => "lotka-volterra.md",
-                "Example2 TBD"   => "example2.md",
-            ],
+            "Examples"   => "examples.md",
+            "Index" => "index.md",
             "acknowledgments.md",
           ],
          )
