@@ -2,32 +2,82 @@ header("PARSE_LABELS")
 
 header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
-    # The attibutes should be harvested.
-    for node in [
-        xml"""<declarations> </declarations>""",
-        xml"""<declarations atag="test1"> </declarations>""",
-        xml"""<declarations atag="test2">
+    # The funk are key, value pairs expected to be in the PnmlDict.
+    for (node,funk) in [
+        xml"""<declarations> </declarations>""" => [
+            :content => ""
+            ],
+        xml"""<declarations atag="test1"> </declarations>""" => [
+            :atag => "test1",
+            :content => ""
+            ],
+
+            xml"""<declarations atag="test2">
                 <something> some content </something>
                 <something> other stuff </something>
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
-              </declarations>""",
-        xml"""<foo><declarations> </declarations></foo>""", ]
-        
+              </declarations>""" => [
+            :atag => "test2",
+            :something  => [Dict(:content => "some content"), Dict(:content => "other stuff")],
+            :something2 => Dict(:value => [Dict(), Dict(:tag3 => "three")], :tag2 => "two")
+            ],
+
+        xml"""<foo><declarations> </declarations></foo>""" => [
+            :declarations => Dict(:content => "")
+            ],
+
+        # no content, no attribute results in empty dict.
+        xml"""<null></null>""" => [],
+        xml"""<null2/>""" => [],
+        # no content, with attribute
+        xml"""<null at="null"></null>""" => [
+            :at => "null"
+            ],
+        xml"""<null2 at="null2" />""" => [
+                :at => "null2"
+            ],
+
+        # empty content, no attribute
+        xml"""<empty> </empty>""" => [
+            :content => ""
+            ],
+        # empty content, with attribute
+        xml"""<empty at="empty"> </empty>""" => [
+            :content => ""
+            :at => "empty"
+            ],
+        ]
+
         u = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
-        @test !isnothing(u)
         l = PNML.PnmlLabel(u, node)
-        @test !isnothing(l)
         a = PNML.anyelement(node, reg=PNML.IDRegistry())
+
+        @test !isnothing(u)
+        @test !isnothing(l)
         @test !isnothing(a)
-        
+
+        @test u isa Pair{Symbol, Dict{Symbol, Any}}
+        @test l isa PNML.PnmlLabel
+        @test a isa PNML.AnyElement
+
         nn = Symbol(nodename(node))
         @test u.first === nn
         @test tag(l) === nn
         @test tag(a) === nn
 
-        @show typeof(u), u
-        @show typeof(l), l
-        @show typeof(a), a
+        @test u.second isa PnmlDict
+        @test l.dict isa PnmlDict
+        @test a.dict isa PnmlDict
+
+        for (key,val) in funk
+            @test u.second[key] == val
+            @test l.dict[key] == val
+            @test a.dict[key] == val
+        end
+
+        @show u
+        @show l
+        @show a
         println()
     end
 end
@@ -299,14 +349,14 @@ end
 end
 
 @testset "type" begin
-    str1 = """
+    n1 = xml"""
  <type>
      <text>N2</text>
      <structure> <usersort declaration="N2"/> </structure>
  </type>
     """
-    @testset for s in [str1]
-        n = parse_node(to_node(s); reg = PNML.IDRegistry())
+    @testset for node in [n1]
+        n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.AnyElement
         #@test n.dict[:text] == "N2"
@@ -316,14 +366,14 @@ end
 
 header("CONDITION")
 @testset "condition" begin
-    str1 = """
+    n1 = xml"""
  <condition>
      <text>(x==1 and y==1 and d==1)</text>
      <structure> <or> #TODO </or> </structure>
  </condition>
     """
-    @testset for s in [str1]
-        n = parse_node(to_node(s); reg = PNML.IDRegistry())
+    @testset for node in [n1]
+        n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
@@ -335,11 +385,11 @@ header("CONDITION")
 end
 
 @testset "inscription" begin
-    str1 = """
+    n1 = xml"""
         <inscription> <text>12 </text> </inscription>
     """
-    @testset for s in [str1]
-        n = parse_node(to_node(s); reg = PNML.IDRegistry())
+    @testset for node in [n1]
+        n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.PTInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -351,7 +401,7 @@ end
 end
 
 @testset "hlinscription" begin
-    str1 = """
+    n1 = xml"""
  <hlinscription>
      <text>&lt;x,v&gt;</text>
      <structure>
@@ -366,8 +416,8 @@ end
      </structure>
  </hlinscription>
  """
-    @testset for s in [str1]
-        n = parse_node(to_node(s); reg = PNML.IDRegistry())
+    @testset for node in [n1]
+        n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.HLInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}
