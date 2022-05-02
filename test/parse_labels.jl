@@ -90,8 +90,7 @@ header("GET_LABEL")
     printnode(n)
     l = PNML.labels(n)
     @test PNML.tag(first(l)) === :rate # only label
-
-    #@show r = PNML.get_label(n, :rate)
+    @test PNML.get_label(n, :rate) === first(PNML.labels(n))
     @test PNML.rate(n) ≈ 0.3
 end
 
@@ -119,6 +118,7 @@ header("DECLARATION")
     @test PNML.graphics(n) === nothing
     @test PNML.tools(n) === nothing
     @test PNML.labels(n) === nothing
+    @test isempty(n.com)
 end
 
 @testset "declaration tree" begin
@@ -163,26 +163,20 @@ end
         #@show d
         #@show fieldtypes(typeof(d))
         #@show fieldnames(typeof(d))
-
-        @test PNML.isregistered(reg, pid(d))
-        @test Symbol(PNML.name(d)) === pid(d)
-        @test d.def isa PNML.AnyElement
-        @test tag(d.def) === :cyclicenumeration
-
-        #@show d.def
-        #@show typeof(d.def)
         #@show fieldtypes(typeof(d.def))
         #@show fieldnames(typeof(d.def))
-        #@show d.def.dict
 
+        @test PNML.isregistered(reg, pid(d))
+        @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
+        @test d.def isa PNML.AnyElement #TODO implement definitions?
+        @test tag(d.def) === :cyclicenumeration
         @test haskey(d.def.dict, :feconstant)
 
-        #@show d.def.dict[:feconstant]
         for x in d.def.dict[:feconstant]
             @test x isa PnmlDict
-            #@show x
             @test PNML.isregistered(reg, pid(x))
             @test x[:name] isa String
+            @test endswith(string(pid(x)), x[:name])
         end
         #println()
     end
@@ -217,8 +211,6 @@ header("PT initMarking")
     mark3 = PNML.PTMarking()
     @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore()))
     @test mark3() == PNML.default_marking(PnmlCore())
-
-    #TODO test tokenposition?
 end
 
 header("HL Marking")
@@ -308,10 +300,12 @@ header("STRUCTURE")
 
     n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
+    @test n isa PNML.Structure
     @test xmlnode(n) isa Maybe{EzXML.Node}
-
-    #@test n.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
-    #@test n.dict[:tuple].dict[:subterm][2].dict[:all].dict[:usersort].dict[:declaration] == "N2"
+    @test tag(n) === :structure
+    @test n.dict isa PnmlDict
+    @test n.dict[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
+    @test n.dict[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
 end
 
 @testset "ref Trans" begin
@@ -321,33 +315,38 @@ end
     n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
-    @test PNML.has_xml(n) #xmlnode(n) isa Maybe{EzXML.Node}
+    @test PNML.has_xml(n)
     @test pid(n) == :rt1
     @test n.ref == :t1
 end
 
 @testset "ref Place" begin
-    str1 = """
- <referencePlace id="rp2" ref="rp1"/>
-"""
-    str2 = """
- <referencePlace id="rp1" ref="Sync1">
+    n1 = (node = xml"""
+    <referencePlace id="rp2" ref="rp1"/>
+    """,
+    id="rp2", ref="rp1" )
+    n2 = (node = xml"""
+    <referencePlace id="rp1" ref="Sync1">
         <graphics>
           <position x="734.5" y="41.5"/>
           <dimension x="40.0" y="40.0"/>
         </graphics>
- </referencePlace>
-"""
-    @testset for s in [str1, str2]
-        n = parse_node(to_node(s); reg = PNML.IDRegistry())
+    </referencePlace>
+    """,
+    id="rp1", ref="Sync1")
+    @testset for s in [n1, n2]
+        n = parse_node(s.node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.RefPlace
         @test PNML.has_xml(n)
         @test typeof(n.id) == Symbol
         @test typeof(n.ref) == Symbol
+        @test n.id == Symbol(s.id)
+        @test n.ref == Symbol(s.ref)
     end
 end
 
+header("SORT TYPE")
 @testset "type" begin
     n1 = xml"""
  <type>
@@ -359,8 +358,9 @@ end
         n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.AnyElement
-        #@test n.dict[:text] == "N2"
-        #@test n.dict[:structure].dict[:usersort].dict[:declaration] == "N2"
+        @test tag(n) === :type
+        @test n.dict[:text][:content] == "N2"
+        @test n.dict[:structure][:usersort][:declaration] == "N2"
     end
 end
 
