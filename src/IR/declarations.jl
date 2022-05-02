@@ -51,7 +51,7 @@ VariableDeclaration(pdict::PnmlDict, xml::XMLNode) =
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct NamedSort{S} <: SortDeclaration #TODO restrict to AbstractSort?
+struct NamedSort{S} <: SortDeclaration
     id::Symbol
     name::String
     def::S # BuiltInSort, MultisetSort, ProductSort, UserSort
@@ -99,46 +99,6 @@ struct MultiSetOperator <: AbstractOperator end
 struct PnmlTuple <: AbstractOperator end
 
 """
-$(TYPEDSIGNATURES)
-
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
-
-From the 'primer': built-in sorts of Symmetric Nets are the following:
-  Booleans, range of integers, finite enumerations, cyclic enumerations and dots
-"""
-struct BuiltInSort <: AbstractSort
-    dict::AnyElement
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
-"""
-struct MultisetSort <: AbstractSort
-    dict::AnyElement
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
-Should contain an ordered collection of sorts.
-"""
-struct ProductSort <: AbstractSort
-    dict::AnyElement
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
-"""
-struct UserSort <: AbstractSort
-    dict::AnyElement
-end
-
-"""
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
@@ -147,7 +107,7 @@ struct UserOperator <: AbstractOperator
 end
 
 """
-Label of a net or place that holds zero or more [`AbstractDeclaration`].
+Label of a net or page that holds zero or more [`AbstractDeclaration`](@ref).
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -158,7 +118,6 @@ struct Declaration <: HLAnnotation
     #TODO attach XML node?
 end
 
-Declaration(pdict::PnmlDict) = Declaration(pdict[:structure], ObjectCommon(pdict))
 Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon())
 
 convert(::Type{Declaration}, nothing::Nothing) = Declaration()
@@ -166,10 +125,10 @@ convert(::Type{Declaration}, nothing::Nothing) = Declaration()
 declarations(d::Declaration) = d.declarations
 Base.length(d::Declaration) = length(declarations(d))
 
-#TODO make for all annotation?
+# Flattening pages also combines declarations into the first page.
 function Base.append!(l::Declaration, r::Declaration)
     append!(declarations(l), declarations(r))
-    append!(l.com, r.com)
+    append!(l.com, r.com) # Only merges collections.
 end
 
 function Base.empty!(d::Declaration)
