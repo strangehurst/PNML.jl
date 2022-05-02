@@ -154,7 +154,7 @@ function Base.show(io::IO, ti::ToolInfo)
     pprint(io, ti)
 end
 
-quoteof(ti::ToolInfo) = :($(quoteof(ti.toolname)), $(quoteof(ti.version)), $(quoteof(infos)))
+quoteof(ti::ToolInfo) = :($(quoteof(ti.toolname)), $(quoteof(ti.version)), $(quoteof(ti.infos)))
 
 #-------------------
 function Base.show(io::IO, tg::TokenGraphics)
