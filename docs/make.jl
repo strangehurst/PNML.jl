@@ -287,12 +287,12 @@ makedocs(;
          sitename="PNML.jl",
          pages=[
             "Petri Net Markup Language" => "pnml.md",
+            "Intermediate Representation" => "IR.md",
+            "Interfaces" => "interface.md",
             "API" => [
                 "PNML"      => "API/library.md",
                 "PnmlTypes" => "API/pnmltypes.md"
             ],
-            "Intermediate Representation" => "IR.md",
-            "Interfaces" => "interface.md",
             "Examples"   => "examples.md",
             "Index" => "index.md",
             "acknowledgments.md",

@@ -192,7 +192,20 @@ Operators have a sequence of input sorts and a single output sort.
 
 __TBD__
 
-### References
+## Continuous, Open and Other Petri Nets
+
+Allow marking, inscription, conditions to be floating point even when specification
+wants an integer. This allows continuous nets.
+
+See [Petri.jl](https://github.com/mehalter/Petri.jl)
+and [AlgebraicPetri.jl](https://github.com/AlgebraicJulia/AlgebraicPetri.jl)
+for some continuous use-cases.
+
+TODO: Hybrid nets combining floating point/continuous and integer/discrete
+inscription/marking.
+
+
+## References
 
 See [`PnmlTypes.PnmlType `](@ref),
 [`PnmlTypes.default_pntd_map`](@ref),

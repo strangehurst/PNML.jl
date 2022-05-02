@@ -45,13 +45,13 @@ AbstractTrees.repr_tree(PNML.AbstractTerm)
 ### PnmlType - Petri Net Type Definition
 See [PnmlTypes](@ref) module page.
 
-There are 2 levels:  Core (Place-Transition) and High-Level PNG.
+There are levels:  Core (Place-Transition), Continuous and High-Level PNG.
 
 [`PnmlCore`](@ref) is a concrete subtype of [`PnmlType`](@ref).
 `PnmlCore` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
 
-Because we rely on external XML Schema verification tools, so long as we
-match the standard [link to discussion of match], we can extend TODO?.
+[`ContinuousNet`](@ref) uses floating point marking and inscriptions.
+It is an extension to the ISO specification.
 
 [`HLCore`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
 `HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
