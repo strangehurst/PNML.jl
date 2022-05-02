@@ -30,7 +30,7 @@ function parse_declaration(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
          end
     end
-   Declaration(d)
+    Declaration(d[:structure], ObjectCommon(d))
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
@@ -38,8 +38,10 @@ end
 function decl_structure(node, pntd; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
+    #TODO warn if more than one?
     declarations = getfirst("declarations", node)
-    isnothing(declarations) ? AbstractDeclaration[] : parse_declarations(declarations, pntd; kw...)
+    isnothing(declarations) ? AbstractDeclaration[] : 
+                            parse_declarations(declarations, pntd; kw...)
 end
 
 """
@@ -58,7 +60,6 @@ function parse_declarations(node, pntd; kw...)
             "namedoperator" => push!(v, parse_namedoperator(child, pntd; kw...))
             "variabledecl" => push!(v, parse_variabledecl(child, pntd; kw...))
             _ =>  push!(v, parse_unknowndecl(child, pntd; kw...))
-            #@warn("$(nodename(child)) is not a known declaration tag")
         end
     end
     return v
@@ -101,10 +102,10 @@ function parse_variabledecl(node, pntd; kw...)
     nn == "variabledecl" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
-
+    # Assert only 1 element
     sort = parse_sort(firstelement(node), pntd; kw...)
 
-    VariableDeclaration(Symbol(node["id"]), node["name"], sort)
+    VariableDeclaration(Symbol(node["id"]), node["name"], sort) #TODO register id?
 end
 
 """
@@ -116,26 +117,28 @@ function parse_unknowndecl(node, pntd; kw...)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
-    #TODO Turn all children into anyelements?
-    content = anyelement.(elements(node), Ref(pntd); kw...)
+    content = anyelement.(elements(node), Ref(pntd); kw...) #TODO Turn children into?
     UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
 end
 
 #------------------------
 """
+$(TYPEDSIGNATURES)
+
 Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place is different from the "type" of a net or "pntd".
 
-$(TYPEDSIGNATURES)
 """
 function parse_type(node, pntd; kwargs...)
     nn = nodename(node)
     nn == "type" || error("element name wrong: $nn")
-    anyelement(node, pntd; kwargs...)
+    anyelement(node, pntd; kwargs...) #TODO implement sort type
 end
 
 """
 $(TYPEDSIGNATURES)
+
+Sorts are found within a <structure> element.
 """
 function parse_sort(node, pntd; kw...)
     nn = nodename(node)
