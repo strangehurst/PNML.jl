@@ -57,7 +57,10 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 
         #s.contentparse(n.infos) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
+
+        @show typeof(n.infos)
         foreach(n.infos) do toolinfo
+            @show typeof(toolinfo)
             # Content may optionally attach its xml.
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end

@@ -14,12 +14,6 @@ struct HLLabel <: HLAnnotation
     #TODO validate in constructor: must have text or structure
 end
 
-# interface methods
-has_text(label::HLLabel) = !isnothing(label.text)
-text(label::HLLabel) = label.text
-#has_structure(label::HLLabel) = !isnothing(label.structure)
-#structure(label::HLLabel) = label.structure
-
 #------------------------------------------------------------------------
 """
 $(TYPEDEF)

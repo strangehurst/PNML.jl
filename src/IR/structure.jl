@@ -17,8 +17,10 @@ There are various defined structure ast variants:
 struct Structure{T} #TODO
     tag::Symbol
     dict::T
-    #TODO xml
+    xml::XMLNode
 end
-Structure(p::Pair{Symbol,PnmlDict}) = Structure(p.first, p.second)
+Structure(p::Pair{Symbol,PnmlDict}, node::XMLNode) = Structure(p.first, p.second, node)
 
 tag(s::Structure) = s.tag
+dict(s::Structure) = s.dict
+xmlnode(s::Structure) = s.xml

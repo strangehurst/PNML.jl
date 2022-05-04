@@ -14,13 +14,14 @@ struct Page{PNTD<:PnmlType,D} <: PnmlObject
     arcs::Vector{Arc}
     declaration::D
     subpages::Maybe{Vector{Page}}
+    name::Maybe{Name}
     com::ObjectCommon
 end
 
 function Page(pntd::PNTD, id::Symbol, places, refp, transitions, reft,
-                arcs, declare, pages, oc::ObjectCommon) where {PNTD<:PnmlType}
+                arcs, declare, pages, name, oc::ObjectCommon) where {PNTD<:PnmlType}
     Page{typeof(pntd), 
-         typeof(declare)}(id, places, refp, transitions, reft, arcs, declare, pages, oc)
+         typeof(declare)}(id, places, refp, transitions, reft, arcs, declare, pages, name, oc)
 end
 
 # Note declaration wraps a vector of AbstractDeclarations.

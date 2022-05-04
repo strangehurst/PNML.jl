@@ -75,7 +75,7 @@ struct HLCore <: AbstractHLCore end
 
 """
 HLNet is the most intricate High-Level Petri Net schema.
-It extends [`SymmetricNet`](@ref) with
+It extends [`SymmetricNet`](@ref), including with
    - declarations for sorts and functions (ArbitraryDeclarations)
    - sorts for Integer, String, and List
 

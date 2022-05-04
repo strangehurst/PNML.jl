@@ -24,7 +24,7 @@ function add_label!(v::Vector{PnmlLabel}, node, pntd; kw...)
     label = PnmlLabel(unclaimed_label(node, pntd; kw...), node) #TODO handle types
     haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(label))."
     push!(v, label)
-    return
+    return v
 end
 
 """

@@ -238,6 +238,16 @@ This includes:
 ```@example methods
 methods(PNML.pid) # hide
 ```
+### name - get name
+
+`PnmlObject`s and `PnmlNet`s have a name label. 
+[`Declaration`](@ref)s have a name attribute.
+[`ToolInfo](@ref)s have a toolname attribute.
+
+[`PNML.name`](@ref)
+```@example methods
+methods(PNML.name) # hide
+``` 
 
 ### tag - access XML tag symbol
 

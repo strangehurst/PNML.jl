@@ -6,23 +6,17 @@ Common infrastructure shared by PNML objects and labels.
 Some optional incidental bits are shared by most PNML objects are also collected here.
 """
 struct ObjectCommon
-    name::Maybe{Name} #TODO Move name to PnmlObject, PnmlNet.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
 end
 
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
-    get(pdict, :name, nothing), #! move
     get(pdict, :graphics, nothing),
     get(pdict, :tools, nothing),
     get(pdict, :labels, nothing)
 )
-ObjectCommon() = ObjectCommon(nothing, nothing, nothing, nothing)
-
-"Return `true` if `oc` has a `name` element."
-has_name(oc::ObjectCommon) = !isnothing(oc.name) #! move
-has_xml(oc::ObjectCommon) = false
+ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 "Return `true` if has a `graphics` element."
 has_graphics(::Any) = false
@@ -36,19 +30,16 @@ has_tools(oc::ObjectCommon) = !isnothing(oc.tools)
 has_labels(::Any) = false
 has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
 
-name(oc::ObjectCommon) = oc.name
 graphics(oc::ObjectCommon) = oc.graphics
 tools(oc::ObjectCommon) = oc.tools
 labels(oc::ObjectCommon) = oc.labels
 
 # Could use introspection on every field if they are all Maybes.
-Base.isempty(oc::ObjectCommon) = !(has_name(oc) || #! move
-                                   has_graphics(oc) ||
+Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
                                    has_tools(oc) ||
                                    has_labels(oc))
 
 function Base.empty!(oc::ObjectCommon)
-    has_name(oc) && empty!(oc.name) #! move
     has_graphics(oc) && empty!(oc.graphics)
     has_tools(oc) && empty!(oc.tools)
     has_labels(oc) && empty!(oc.labels)

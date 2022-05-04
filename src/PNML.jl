@@ -9,6 +9,7 @@ $(DocStringExtensions.EXPORTS)
 """
 module PNML
 
+# Width for printing.
 if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
@@ -18,21 +19,10 @@ using MLStyle: @match
 using DocStringExtensions
 using AutoHashEquals
 using PrettyPrinting
-#using Symbolics
-#using IfElse
 using AbstractTrees
 using LabelledArrays
-#using SciMLBase: @add_kwonly
 using Reexport
-#include("docstrings.jl")
-# Use default display width for printing.
 
-# """
-# $(TYPEDSIGNATURES)
-
-# Set value of key :xml based on a boolean control flag. Defaut is `true`.
-# """
-# includexml(node; INCLUDEXML=true)::Maybe{EzXML.Node} = INCLUDEXML ? node : nothing
 
 include("config.jl")
 
@@ -41,6 +31,7 @@ include("config.jl")
 
 include("xmlutils.jl")
 include("id.jl")
+include("interfaces.jl")
 include("types.jl")
 include("exceptions.jl")
 include("utils.jl")

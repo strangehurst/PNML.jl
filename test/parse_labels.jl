@@ -34,7 +34,7 @@ header("UNCLAIMED LABEL")
             :at => "null"
             ],
         xml"""<null2 at="null2" />""" => [
-                :at => "null2"
+            :at => "null2"
             ],
 
         # empty content, no attribute
@@ -43,14 +43,19 @@ header("UNCLAIMED LABEL")
             ],
         # empty content, with attribute
         xml"""<empty at="empty"> </empty>""" => [
-            :content => ""
+            :content => "",
             :at => "empty"
             ],
-        ]
 
-        u = PNML.unclaimed_label(node, reg=PNML.IDRegistry())
+        xml"""<foo id="testid"/>""" => [
+            :id => :testid
+            ],
+        ]
+        reg1=PNML.IDRegistry()
+        reg2=PNML.IDRegistry()
+        u = PNML.unclaimed_label(node, reg=reg1)
         l = PNML.PnmlLabel(u, node)
-        a = PNML.anyelement(node, reg=PNML.IDRegistry())
+        a = PNML.anyelement(node, reg=reg2)
 
         @test !isnothing(u)
         @test !isnothing(l)
@@ -74,6 +79,10 @@ header("UNCLAIMED LABEL")
             @test l.dict[key] == val
             @test a.dict[key] == val
         end
+        
+        haskey(u.second, :id) && @test PNML.isregistered(reg1, u.second[:id])
+        haskey(l.dict, :id) && @test PNML.isregistered(reg1, l.dict[:id])
+        haskey(a.dict, :id) && @test PNML.isregistered(reg2, a.dict[:id])
 
         @show u
         @show l
@@ -114,7 +123,7 @@ header("DECLARATION")
     @test typeof(PNML.declarations(n)) <: Vector{PNML.AbstractDeclaration}
     @test length(PNML.declarations(n)) == 0
     @test typeof(n.com) <: PNML.ObjectCommon
-    @test PNML.name(n) === nothing
+    #@test PNML.name(n) === nothing
     @test PNML.graphics(n) === nothing
     @test PNML.tools(n) === nothing
     @test PNML.labels(n) === nothing
@@ -315,7 +324,7 @@ end
     n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.RefTransition
-    @test PNML.has_xml(n)
+    @test !PNML.has_xml(n)
     @test pid(n) == :rt1
     @test n.ref == :t1
 end
@@ -338,7 +347,7 @@ end
         n = parse_node(s.node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.RefPlace
-        @test PNML.has_xml(n)
+        @test !PNML.has_xml(n)
         @test typeof(n.id) == Symbol
         @test typeof(n.ref) == Symbol
         @test n.id == Symbol(s.id)

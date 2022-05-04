@@ -26,7 +26,6 @@ Return all `nets` of `model`.
 nets(model::PnmlModel) = model.nets
 namespace(model::PnmlModel) = model.namespace
 idregistry(model::PnmlModel) = model.reg
-has_xml(model::PnmlModel) = true
 xmlnode(model::PnmlModel) = model.xml
 
 """

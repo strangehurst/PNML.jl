@@ -14,15 +14,11 @@ struct ToolInfo
     xml::XMLNode
 end
 
-function ToolInfo(d::PnmlDict, xml::XMLNode)
-    ToolInfo(d[:tool], d[:version], d[:content], xml)
-end
-convert(::Type{Maybe{ToolInfo}}, d::PnmlDict) = ToolInfo(d)
-
-has_xml(ti::ToolInfo) = true
-xmlnode(ti::ToolInfo) = ti.xml
-
+name(ti::ToolInfo) = ti.toolname
+version(ti::ToolInfo) = ti.version
 infos(ti::ToolInfo) = ti.infos
+
+xmlnode(ti::ToolInfo) = ti.xml
 
 ###############################################################################
 

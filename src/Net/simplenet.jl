@@ -115,12 +115,12 @@ Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
 """
 function rate end
 function rate(transition)::Number
-    @show r = get_label(transition, :rate)
+    r = get_label(transition, :rate)
     @assert tag(r) === :rate
     # The unclaimed label mechanism does not do parse_node (at the moment).
     # Adds a content key for text elements.
     if !isnothing(r) && !isnothing(r.dict[:text])
-        value = number_value(r.dict[:text][:content]) #TODO 
+        value = number_value(r.dict[:text][:content]) #TODO :content is redundent for :text
         return isnothing(value) ? 0.0 : value
     else
         return 0.0

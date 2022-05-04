@@ -85,7 +85,6 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
-        #print(io, label)
         pprint(io, label)
         i < length(labelvector) && print(io, "\n")
     end
@@ -94,13 +93,10 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
 end
 
 function Base.show(io::IO, label::PnmlLabel)
-    #show(IOContext(io, :typeinfo=>Dict), label.dict)
     pprint(io, label) 
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
-    #print(io, "SML:", typeof(label), " ")
-    #show(IOContext(io, :typeinfo=>Dict), mime, label.dict)
     pprint(io, label)
 end
 
@@ -116,23 +112,17 @@ function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
     for (i,el) in enumerate(elvector)
         print(io, "\n", indent(io), "$i: ")
         pprint(io, el)
-        #show(io, mime, el)
-        #i < length(elvector) && 
-        #print(io, "\n")
     end
     print(io, "]")
 end
 
 function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
-    #print(io, "SL:", typeof(el), " ")
     pprint(io, el)
-    #show(IOContext(io, :typeinfo=>Dict), MIME"text/plain"(), el.dict)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make parametric.
     print(io, "SL:", typeof(el), " ")
     pprint(io, el)
-    #show(IOContext(io, :typeinfo=>Dict), mime, el.dict)
 end
 quoteof(a::AnyElement) = :(AnyElement($(quoteof(a.tag)), $(quoteof(a.dict))))
 
@@ -179,7 +169,6 @@ end
 Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
     string("name: ",
-           isnothing(oc.name)  ? nothing : oc.name,
            isnothing(oc.graphics) ? ", no graphics, " : ", has graphics, ",
            isnothing(oc.tools)  ? 0 : length(oc.tools),  " tools, ",
            isnothing(oc.labels) ? 0 : length(oc.labels), " labels")
@@ -221,8 +210,10 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
+          isnothing(place.name) ? "" : "name " * place.name.text * ", ",
           ", type ", place.sorttype,
-          ", marking ", place.marking)
+          ", marking ", place.marking,
+          ", name ", place.name)
     show_common(io, place)
 end
 
@@ -244,7 +235,9 @@ end
 #-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
-          " id ", trans.id, ", condition ", trans.condition)
+          " id ", trans.id, 
+          isnothing(trans.name) ? "" : "name " * trans.name.text * ", ",
+          ", condition ", trans.condition)
     show_common(io, trans)
 end
 
@@ -292,6 +285,7 @@ end
 function Base.show(io::IO, arc::Arc)
     #@show Base.StackTraces.stacktrace()
     print(io, typeof(arc), " id ", arc.id,
+          isnothing(arc.name) ? "" : "name " * arc.name.text * ", ",
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
@@ -311,6 +305,7 @@ end
 Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
+           isnothing(page.name) ? "" : "name " * page.name.text * ", ",
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",
@@ -364,6 +359,7 @@ end
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", pid(net), " type ", nettype(net), ", ",
+            isnothing(net.name) ? "" : "name " * net.name.text * ", ",
             length(pages(net)), " pages ",
             length(declarations(net)), " declarations ",
             summary(net.com))

@@ -27,3 +27,7 @@ Term() = Term(:empty, PnmlDict())
 Term(p::Pair{Symbol,PnmlDict}; kw...) = Term(p.first, p.second)
 
 convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)
+
+tag(t::Term) = t.tag
+dict(t::Term) = t.dict
+#xml(t::Term) = t.xml

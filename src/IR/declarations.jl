@@ -15,7 +15,6 @@ abstract type AbstractDeclaration <: HLAnnotation end
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name
 
-
 abstract type SortDeclaration <: AbstractDeclaration end
 abstract type OperatorDeclaration <: AbstractDeclaration end
 
@@ -113,19 +112,17 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Declaration <: HLAnnotation
-    declarations::Vector{AbstractDeclaration}
+    declarations::Vector{AbstractDeclaration} #TODO type stability?
     com::ObjectCommon
     #TODO attach XML node?
 end
 
 Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon())
 
-convert(::Type{Declaration}, nothing::Nothing) = Declaration()
-
 declarations(d::Declaration) = d.declarations
 Base.length(d::Declaration) = length(declarations(d))
 
-# Flattening pages also combines declarations into the first page.
+# Flattening pages combines declarations into the first page.
 function Base.append!(l::Declaration, r::Declaration)
     append!(declarations(l), declarations(r))
     append!(l.com, r.com) # Only merges collections.

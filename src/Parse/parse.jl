@@ -83,12 +83,12 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
             
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
-            # a zero or more <declarations>. Is complicated. You have been warned!
+            # zero or more <declarations>. Is complicated. You have been warned!
             "declaration"  => (d[:declaration] = parse_declaration(child, pntd; kw...))
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], ObjectCommon(d), node)
+    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
 end
 # Expected XML structure:
 #    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
@@ -132,7 +132,7 @@ function parse_page(node, pntd; kw...)
         d[:places], d[:refP],
         d[:trans], d[:refT],
         d[:arcs],
-        d[:declaration], d[:pages], ObjectCommon(d))
+        d[:declaration], d[:pages], d[:name], ObjectCommon(d))
 end
 
 """
@@ -159,7 +159,7 @@ function parse_place(node, pntd; kw...)
         end
     end
 
-    Place(pntd, d[:id], d[:marking], d[:type], ObjectCommon(d))
+    Place(pntd, d[:id], d[:marking], d[:type], d[:name], ObjectCommon(d))
 end
 
 """
@@ -180,7 +180,7 @@ function parse_transition(node, pntd; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Transition(pntd, d[:id], d[:condition], ObjectCommon(d))
+    Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
 end
 
 """
@@ -207,7 +207,7 @@ function parse_arc(node, pntd; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], ObjectCommon(d))
+    Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
 end
 
 """
@@ -228,7 +228,7 @@ function parse_refPlace(node, pntd; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    RefPlace(pntd, d[:id], d[:ref], ObjectCommon(d))
+    RefPlace(pntd, d[:id], d[:ref], d[:name], ObjectCommon(d))
 end
 
 """
@@ -249,7 +249,7 @@ function parse_refTransition(node, pntd; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    RefTransition(pntd, d[:id], d[:ref], ObjectCommon(d))
+    RefTransition(pntd, d[:id], d[:ref], d[:name], ObjectCommon(d))
 end
 
 #----------------------------------------------------------
@@ -312,7 +312,7 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node, pntd; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")
-    Structure(unclaimed_label(node, pntd; kw...))
+    Structure(unclaimed_label(node, pntd; kw...), node)
 end
 
 #----------------------------------------------------------
@@ -389,8 +389,8 @@ function parse_hlinscription(node, pntd; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-    #        "structure" => (d[:structure] = parse_term(child; kw...))
-        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
+        "structure" => (d[:structure] = 
+                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
         _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
