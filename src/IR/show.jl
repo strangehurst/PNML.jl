@@ -168,30 +168,25 @@ end
 #-------------------
 Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
-    string("name: ",
-           isnothing(oc.graphics) ? ", no graphics, " : ", has graphics, ",
+    string(isnothing(oc.graphics) ? ", no graphics, " : ", has graphics, ",
            isnothing(oc.tools)  ? 0 : length(oc.tools),  " tools, ",
            isnothing(oc.labels) ? 0 : length(oc.labels), " labels")
-           #TODO xml state
 end
 
 function Base.show(io::IO, oc::ObjectCommon)
     io = inc_indent(io)
     if !isnothing(oc.graphics) || !isnothing(oc.tools) || !isnothing(oc.labels)
         print(io, ", ")
+        !isnothing(oc.graphics) && pprint(io, oc.graphics)
+        if !isnothing(oc.tools)
+            println(io, "\n", indent(io), "tools:")
+            show(inc_indent(io), oc.tools)
+        end
+        if !isnothing(oc.labels)
+            println(io, "\n", indent(io), "labels:")
+            show(inc_indent(io), oc.labels)
+        end
     end
-    if !isnothing(oc.graphics)
-        pprint(io, oc.graphics)
-    end
-    if !isnothing(oc.tools)
-        println(io, "\n", indent(io), "tools:")
-        show(inc_indent(io), oc.tools)
-    end
-    if !isnothing(oc.labels)
-        println(io, "\n", indent(io), "labels:")
-        show(inc_indent(io), oc.labels)
-    end
-    # In general, do not display/print the XML.
 end
 
 "Prepend comma-space to non-empty `ObjectCommon`."
@@ -210,7 +205,7 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
-          isnothing(place.name) ? "" : "name " * place.name.text * ", ",
+          ", name " , has_name(place) ? name(place) : "",
           ", type ", place.sorttype,
           ", marking ", place.marking,
           ", name ", place.name)
@@ -236,7 +231,7 @@ end
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
           " id ", trans.id, 
-          isnothing(trans.name) ? "" : "name " * trans.name.text * ", ",
+          ", name ", has_name(trans) ? name(trans) : "", 
           ", condition ", trans.condition)
     show_common(io, trans)
 end
@@ -285,7 +280,7 @@ end
 function Base.show(io::IO, arc::Arc)
     #@show Base.StackTraces.stacktrace()
     print(io, typeof(arc), " id ", arc.id,
-          isnothing(arc.name) ? "" : "name " * arc.name.text * ", ",
+          ", name ", has_name(arc) ? name(arc) : "",
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
@@ -305,7 +300,7 @@ end
 Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
-           isnothing(page.name) ? "" : "name " * page.name.text * ", ",
+           " name ", has_name(page) ? name(page) : "", ", ",
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",
@@ -358,8 +353,9 @@ end
 #-------------------
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
-    string( typeof(net), " id ", pid(net), " type ", nettype(net), ", ",
-            isnothing(net.name) ? "" : "name " * net.name.text * ", ",
+    string( typeof(net), " id ", pid(net), 
+            " name ", has_name(net) ? name(net) : "", ", ",
+            " type ", nettype(net), ", ",
             length(pages(net)), " pages ",
             length(declarations(net)), " declarations ",
             summary(net.com))
