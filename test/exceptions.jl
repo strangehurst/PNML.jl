@@ -1,12 +1,10 @@
-#function test_malformed(xml, ::Type{E}, emsg) where {E <: PNML.PnmlException} 
 header("EXCEPTIONS")
 
-"Parse xml and expect a MalformedException with message containing `emsg`."
-function test_malformed(emsg, xml)
-    reg = PNML.IDRegistry()
+"Parse xmlnode and expect a MalformedException with message containing `emsg`."
+function test_malformed(emsg, f, node)
     try
-        n  = parse_node(root(EzXML.parsexml(xml)); reg)
-        error("expected exception message containing '$emsg` from \n$xml")
+        n  = f(node; reg=PNML.IDRegistry())
+        error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
             @test e isa  PNML.MalformedException
@@ -14,38 +12,28 @@ function test_malformed(emsg, xml)
         else
             rethrow(e)
         end
-    finally
-            PNML.reset_registry!(reg)
     end    
 end
 
-function test_warn(emsg, xml)
-    reg = PNML.IDRegistry()
-    try
-        @test_logs (:warn, emsg)  parse_node(root(EzXML.parsexml(xml)); reg)
-    finally
-        PNML.reset_registry!(reg)
-    end
-end
-
 @testset "missing namespace" begin
-    test_warn(r"missing namespace",
-                   """
-     <?xml version="1.0" encoding="UTF-8"?>
+    emsg = r"missing namespace"
+    @test_logs (:warn, emsg) parse_pnml(xml"""
         <pnml>
         </pnml>
-            """)
-    test_warn(r"missing namespace", """<?xml version="1.0" encoding="UTF-8"?> <pnml> </pnml> """)
-    test_warn(r"missing namespace", """<?xml version="1.0" encoding="UTF-8"?> <pnml/> """)
+        """; reg=PNML.IDRegistry())
+    @test_logs (:warn, emsg) parse_pnml(xml"""
+        <?xml version="1.0" encoding="UTF-8"?> <pnml> </pnml> """; reg=PNML.IDRegistry())
+    @test_logs (:warn, emsg) parse_pnml(xml"""
+        <?xml version="1.0" encoding="UTF-8"?> <pnml/> """; reg=PNML.IDRegistry())
 end
 
 @testset "name" begin
-    test_warn(r"missing <text>", """<name> </name>""")
+    @test_logs (:warn, r"missing <text>") parse_node(xml"""<name> </name>"""; reg=PNML.IDRegistry())
 end
 
 @testset "malformed" begin
-    test_malformed("missing tool attribute",
-                   """
+    test_malformed("missing tool attribute", parse_pnml,
+                   xml"""
      <?xml version="1.0" encoding="UTF-8"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
@@ -65,9 +53,9 @@ end
         </pnml>
             """)
 
-    test_malformed("net missing type",
-        """
-        <?xml version="1.0" encoding="UTF-8"?>
+    header("net1")
+    test_malformed("net missing type", parse_pnml,
+        xml"""
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="4712">
             <page id="3">
@@ -81,53 +69,54 @@ end
         </pnml>
         """)
 
-    test_malformed("net missing type", """<net id="4712"> </net>""")
+    header("net2")
+    test_malformed("net missing type", parse_net, xml"""<net id="4712"> </net>""")
 
+    header("mal1")
     # test absence of an exception
-    @test_throws Exception test_malformed("not malformed here",
-           """<toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0"> <visible>true</visible> </toolspecific>""")
+    @test_throws Exception test_malformed("not malformed here", parse_node,
+           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0"> <visible>true</visible> </toolspecific>""")
 
-    test_malformed("missing version attribute",
-           """<toolspecific tool="de.uni-freiburg.telematik.editor"> <visible>true</visible> </toolspecific>""")
+    test_malformed("missing version attribute", parse_node,
+           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor"> <visible>true</visible> </toolspecific>""")
 
-    test_malformed("missing tool attribute",
-           """<toolspecific version="1.0"> <visible>true</visible> </toolspecific>""")
+    test_malformed("missing tool attribute", parse_node,
+           xml"""<toolspecific version="1.0"> <visible>true</visible> </toolspecific>""")
 end
 
 @testset "missing id" begin
     reg = PNML.IDRegistry()
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <net type="test" > </net>""")); reg)
+    @test_throws PNML.MissingIDException parse_net(xml"""<net type="test" > </net>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <page type="test" > </page>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <page type="test" > </page>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <place> </place>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <place> </place>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <transition> </transition>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <transition> </transition>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <arc> </arc>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <arc> </arc>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <referencePlace> </referencePlace>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <referencePlace> </referencePlace>"""; reg)
 
-    @test_throws PNML.MissingIDException parse_node(root(EzXML.parsexml("""
-        <referenceTransition> </referenceTransition>""")); reg)
+    @test_throws PNML.MissingIDException parse_node(xml"""
+        <referenceTransition> </referenceTransition>"""; reg)
 end
 
 @testset "graphics" begin
-    test_malformed("missing x", """<graphics><offset y="2" /></graphics>""")
-    test_malformed("missing y", """<graphics><offset x="1" /></graphics>""")
+    test_malformed("missing x", parse_node, xml"""<graphics><offset y="2" /></graphics>""")
+    test_malformed("missing y", parse_node, xml"""<graphics><offset x="1" /></graphics>""")
 
-    test_malformed("missing x", """<graphics><position  y="2" /></graphics>""")
-    test_malformed("missing y", """<graphics><position  x="1" /></graphics>""")
+    test_malformed("missing x", parse_node, xml"""<graphics><position  y="2" /></graphics>""")
+    test_malformed("missing y", parse_node, xml"""<graphics><position  x="1" /></graphics>""")
 
-    test_malformed("missing x", """<graphics><dimension  y="2" /></graphics>""")
-    test_malformed("missing y", """<graphics><dimension  x="1" /></graphics>""")
+    test_malformed("missing x", parse_node, xml"""<graphics><dimension  y="2" /></graphics>""")
+    test_malformed("missing y", parse_node, xml"""<graphics><dimension  x="1" /></graphics>""")
 
-    test_malformed("missing x", """ <tokengraphics><tokenposition y="-2"/></tokengraphics>""")
-    test_malformed("missing y", """ <tokengraphics><tokenposition x="-9"/></tokengraphics>""")
+    test_malformed("missing x", parse_node, xml""" <tokengraphics><tokenposition y="-2"/></tokengraphics>""")
+    test_malformed("missing y", parse_node, xml""" <tokengraphics><tokenposition x="-9"/></tokengraphics>""")
 end

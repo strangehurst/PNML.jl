@@ -36,13 +36,13 @@ $(TYPEDSIGNATURES)
 Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
 """
-function parse_pnml(node, pntd=nothing; kw...)
+function parse_pnml(node; kw...)
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
     
     @assert haskey(kw, :reg)
     # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node), Ref(pntd); kw...), 
+    PnmlModel(parse_net.(allchildren("net", node), nothing; kw...), 
               pnml_namespace(node),
               kw[:reg], 
               node)
@@ -58,11 +58,14 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "type") || throw(MalformedException("$nn missing type", node))
     @assert haskey(kw, :reg)
+
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
     # May result in undefined behavior and/or require ideosyncratic parsing.
     isempty(allchildren("page", node)) &&
          throw(MalformedException("$nn does not have any pages"))
 
+    # Although the petri net type definition (pntd) must be attached to the <net> element,
+    # it is allowed by this package to override that value.
     pntypedef = pnmltype(node["type"])
     if isnothing(pntd)
         pntd = pntypedef
