@@ -80,9 +80,10 @@ end
     end
     if select("All", "IR")
         header("IR")
+        @testset "nodes"        begin include("nodes.jl") end
+        @testset "graphics"     begin include("graphics.jl") end
         @testset "parse_labels" begin include("parse_labels.jl") end
         @testset "toolspecific" begin include("toolspecific.jl") end
-        @testset "graphics"     begin include("graphics.jl") end
         @testset "exceptions"   begin include("exceptions.jl") end
         @testset "parse_tree"   begin include("parse_tree.jl") end
         @testset "pages"        begin include("pages.jl") end

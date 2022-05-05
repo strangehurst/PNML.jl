@@ -317,44 +317,6 @@ header("STRUCTURE")
     @test n.dict[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
 end
 
-@testset "ref Trans" begin
-    node = xml"""
-        <referenceTransition id="rt1" ref="t1"/>
-    """
-    n = parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
-    @test typeof(n) <: PNML.RefTransition
-    @test !PNML.has_xml(n)
-    @test pid(n) == :rt1
-    @test n.ref == :t1
-end
-
-@testset "ref Place" begin
-    n1 = (node = xml"""
-    <referencePlace id="rp2" ref="rp1"/>
-    """,
-    id="rp2", ref="rp1" )
-    n2 = (node = xml"""
-    <referencePlace id="rp1" ref="Sync1">
-        <graphics>
-          <position x="734.5" y="41.5"/>
-          <dimension x="40.0" y="40.0"/>
-        </graphics>
-    </referencePlace>
-    """,
-    id="rp1", ref="Sync1")
-    @testset for s in [n1, n2]
-        n = parse_node(s.node; reg = PNML.IDRegistry())
-        printnode(n)
-        @test typeof(n) <: PNML.RefPlace
-        @test !PNML.has_xml(n)
-        @test typeof(n.id) == Symbol
-        @test typeof(n.ref) == Symbol
-        @test n.id == Symbol(s.id)
-        @test n.ref == Symbol(s.ref)
-    end
-end
-
 header("SORT TYPE")
 @testset "type" begin
     n1 = xml"""
