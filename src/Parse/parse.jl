@@ -6,7 +6,7 @@ otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_node end
 parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
-function parse_node(node::XMLNode, pntd; kw...)
+function parse_node(node::XMLNode, pntd::PNTD; kw...) where {PNTD <: PnmlType}
     if haskey(tagmap, nodename(node))
         return tagmap[nodename(node)](node, pntd; kw...) # Various types returned here.
     else
@@ -63,6 +63,15 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     isempty(allchildren("page", node)) &&
          throw(MalformedException("$nn does not have any pages"))
 
+    pntypedef = pnmltype(node["type"])
+    if isnothing(pntd)
+        pntd = pntypedef
+    else
+        @info """
+        parse_net pntd set to $pntd
+                    should be $pntypedef
+        """
+    end
     # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
     # Optional key values are nothing for single object or empty vector when multiples.
@@ -70,16 +79,15 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     # The 'graphics' key is one exception and has a single value.
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :pntd => pnmltype(node["type"]),
                            :pages => Page[],
                            :declaration => Declaration())
 
-    pntd = d[:pntd] # Pass the PNTD down the parse tree with keyword arguments.
+    #!##pntd = d[:pntd] # Pass the PNTD down the parse tree with keyword arguments.
 
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_page(child, pntd; pntd, kw...))
+            "page"         => push!(d[:pages], parse_page(child, pntd; kw...))
             
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
@@ -103,7 +111,6 @@ function parse_page(node, pntd; kw...)
     nn == "page" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     @assert haskey(kw, :reg)
-    @assert haskey(kw, :pntd)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
@@ -146,8 +153,8 @@ function parse_place(node, pntd; kw...)
 
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
-                           :marking => default_marking(kw[:pntd]),
-                           :type => default_sort(kw[:pntd])) # Different from net's.
+                           :marking => default_marking(pntd),
+                           :type => default_sort(pntd)) # Different from net's.
     foreach(elements(node)) do child
         @match nodename(child) begin
             # Tags initialMarking and hlinitialMarking are mutually exclusive.
@@ -338,7 +345,7 @@ function parse_initialMarking(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    PTMarking(isnothing(d[:value]) ? default_marking(kw[:pntd]) : d[:value], ObjectCommon(d))
+    PTMarking(isnothing(d[:value]) ? default_marking(pntd) : d[:value], ObjectCommon(d))
 end
 
 """
@@ -355,7 +362,7 @@ function parse_inscription(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    PTInscription(isnothing(d[:value]) ? default_inscription(kw[:pntd]) : d[:value], ObjectCommon(d))
+    PTInscription(isnothing(d[:value]) ? default_inscription(pntd) : d[:value], ObjectCommon(d))
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
