@@ -17,6 +17,14 @@ tag(pdict::PnmlDict)::Symbol = pdict[:tag]
 #has_xml(pdict::PnmlDict) = false
 xmlnode(pdict::PnmlDict) = pdict[:xml]
 
+has_labels(pdict::PnmlDict) = haskey(pdict, :labels)
+has_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? has_label(labels(d), tagvalue) : false
+
+labels(pdict::PnmlDict) = has_labels(pdict) ? pdict[:labels] : nothing
+
+get_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? get_label(labels(d), tagvalue) : nothing
+get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -24,7 +32,7 @@ $(TYPEDFIELDS)
 Wrap `PnmlDict` holding well-formed XML. 
 See [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 """
-struct AnyElement
+@auto_hash_equals struct AnyElement
     tag::Symbol
     dict::PnmlDict
     xml::XMLNode
@@ -53,11 +61,16 @@ text(l::AbstractLabel) = l.text
 "Return `true` if label has a `structure` field."
 has_structure(l::AbstractLabel) = hasproperty(l, :structure) && !isnothing(l.structure)
 "Return `structure` field."
-structure(l::AbstractLabel) = l.structure
+structure(l::AbstractLabel) = has_structure(l) ? l.structure : nothing
 
-graphics(l::AbstractLabel) = hasproperty(l.com, :graphics) ? graphics(l.com) : nothing
-tools(l::AbstractLabel)    = hasproperty(l.com, :tools) ? tools(l.com) : nothing
-labels(l::AbstractLabel)   = hasproperty(l.com, :labels) ? labels(l.com) : nothing
+has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
+graphics(l::AbstractLabel) = has_graphics(l) ? l.graphics : nothing
+
+has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
+tools(l::AbstractLabel)  = has_tools(l) ? l.tools : nothing
+
+has_labels(l::AbstractLabel)  = hasproperty(l, :labels) && !isnothing(l.labels)
+labels(l::AbstractLabel) = has_labels(l) ? l.labels : nothing
 
 """
 $(TYPEDEF)
@@ -77,7 +90,7 @@ Claimed labels will have a type defined to make use of the structure
 defined by the pntd schema. See [`Name`](@ref), the only label defined in pnmlcore
 and [`HLLabel`](@ref) for similat treatment of "unclaimed" high-level labels.
 """
-struct PnmlLabel <: Annotation
+@auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
     dict::PnmlDict
     xml::XMLNode
@@ -90,6 +103,19 @@ PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) =
 tag(label::PnmlLabel) = label.tag
 dict(label::PnmlLabel) = label.dict
 xmlnode(label::PnmlLabel) = label.xml
+
+function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
+    any(label->tag(label) === tagvalue, v)
+end
+
+function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
+    getfirst(l->tag(l) === tagvalue, v)
+end
+
+function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)
+    filter(l -> tag(l) === tagvalue, v)
+end
+
 
 """
 $(TYPEDEF)
@@ -112,11 +138,16 @@ pid(object::PnmlObject) = object.id
 has_labels(x::T) where {T <: PnmlObject} = has_labels(x.com)
 labels(x::T) where {T <: PnmlObject} = labels(x.com)
 
-has_label(x, tagvalue::Symbol) = has_labels(x) ? has_Label(labels(x.com), tagvalue) : false
-get_label(x, tagvalue::Symbol) = has_labels(x) ? get_label(labels(x.com), tagvalue) : nothing
+has_label(x::T, tagvalue::Symbol) where {T <: PnmlObject} = 
+                has_labels(x) ? has_Label(labels(x.com), tagvalue) : false
+get_label(x::T, tagvalue::Symbol) where {T <: PnmlObject} =
+                has_labels(x) ? get_label(labels(x.com), tagvalue) : nothing
 
 has_name(o::PnmlObject) = hasproperty(o, :name) && !isnothing(o.name)
-name(o::PnmlObject) = o.name.text
+name(o::PnmlObject) = has_name(o) && o.name.text
+        
+has_tools(o::PnmlObject) = hasproperty(o.com, :tools) && !isnothing(tools(o.com))
+tools(o::PnmlObject) = has_tools(o) && tools(o.com)
 
 """
 $(TYPEDEF)

@@ -30,7 +30,7 @@ header("SimpleNet")
         """
 
     model = parse_str(str)
-    printnode(nets(model), label="SimpleNet")
+    printnode(nets(model))
 
     v = PNML.find_nets(model, :pnmlcore)
     @test !isempty(v)
@@ -41,14 +41,14 @@ header("SimpleNet")
     net2 = PNML.SimpleNet(PNML.first_net(model))
 
     for accessor in [PNML.pid, PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
-        @show accessor
+       # @show accessor
         @test accessor(net1) == accessor(net)
         @test accessor(net2) == accessor(net1)
         @test accessor(net2) == accessor(net)
     end
 
     for accessor in [PNML.places, PNML.transitions, PNML.arcs]
-        @show accessor
+        #@show accessor
         for (a,b) in zip(accessor(net1), accessor(net))
             @test a.id == b.id
         end
@@ -91,8 +91,8 @@ header("SimpleNet")
 end
 
 
+header("RATE")
 @testset "rate" begin
-    header("RATE")
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="stochastic">
@@ -155,28 +155,14 @@ end
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
         death=(LVector(wolves=1), LVector()),
     )
-    #PRINT_PNML && @show Δ
-    #PRINT_PNML && @show tfun
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = PNML.initialMarking(snet) #, S)
-    #PRINT_PNML && @show u0
+    u0 = PNML.initialMarking(snet)
     @test u0 == uX
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
-    β = PNML.rates(snet) #LVector( (; [t=>PNML.rate(snet,t) for t in T]...))
-    #PRINT_PNML && @show β
+    β = PNML.rates(snet) 
     @test β == βx
-end
-
-@testset "merge pages" begin
-    d1 = Dict(:id => :top,
-              :pages => Dict[Dict(:id=>:p1, :arc => [Dict(:id=>:arc1)],),
-                             Dict(:id=>:p2, :arc => [Dict(:id=>:arc2)],),
-                             Dict(:id=>:p3, :arc => [Dict(:id=>:arc3)], :pages=>[]),
-                             ],
-              :arc => [Dict(:id=>:arc2)],)
-
 end

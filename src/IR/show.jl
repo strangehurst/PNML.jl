@@ -32,10 +32,13 @@ function Base.show(io::IO, font::Font)
     pprint(io, font)
 end
 
-quoteof(f::Font) = :(Font($quoteof(f.family)), 
-            $(quoteof(f.style)), $(quoteof(f.weight)),
-            $(quoteof(f.size)), $(quoteof(f.align)), 
-            $(quoteof(f.rotation)), $(quoteof(f.decoration)))
+quoteof(f::Font) = :(Font($(quoteof(f.family)),
+            $(quoteof(f.style)), 
+            $(quoteof(f.weight)),
+            $(quoteof(f.size)), 
+            $(quoteof(f.align)), 
+            $(quoteof(f.rotation)), 
+            $(quoteof(f.decoration)) ))
 
 #-------------------
 function Base.show(io::IO, line::Line)
@@ -107,7 +110,7 @@ function Base.show(io::IO, elvector::Vector{AnyElement})
     show(io, MIME"text/plain"(), elvector)
 end
 function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
-    print(io, "SLV:", typeof(elvector), "[")
+    print(io, typeof(elvector), "[")
     io = inc_indent(io)
     for (i,el) in enumerate(elvector)
         print(io, "\n", indent(io), "$i: ")
@@ -121,9 +124,9 @@ function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make parametric.
-    print(io, "SL:", typeof(el), " ")
     pprint(io, el)
 end
+
 quoteof(a::AnyElement) = :(AnyElement($(quoteof(a.tag)), $(quoteof(a.dict))))
 
 #-------------------
@@ -175,9 +178,10 @@ end
 
 function Base.show(io::IO, oc::ObjectCommon)
     io = inc_indent(io)
-    if !isnothing(oc.graphics) || !isnothing(oc.tools) || !isnothing(oc.labels)
+    #if !isnothing(oc.graphics) || 
+    if !isnothing(oc.tools) || !isnothing(oc.labels)
         print(io, ", ")
-        !isnothing(oc.graphics) && pprint(io, oc.graphics)
+        #!isnothing(oc.graphics) && pprint(io, oc.graphics)
         if !isnothing(oc.tools)
             println(io, "\n", indent(io), "tools:")
             show(inc_indent(io), oc.tools)
@@ -189,10 +193,9 @@ function Base.show(io::IO, oc::ObjectCommon)
     end
 end
 
-"Prepend comma-space to non-empty `ObjectCommon`."
 function show_common(io::IO, x::Union{PnmlNet, PnmlObject, AbstractLabel})
     isempty(x.com) && return
-    print(io, ", ")
+    #    print(io, ", ")
     show(io, MIME"text/plain"(), x.com )
 end
 
@@ -205,10 +208,10 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
-          ", name " , has_name(place) ? name(place) : "",
+          ", name '" , has_name(place) ? name(place) : "", "'",
           ", type ", place.sorttype,
-          ", marking ", place.marking,
-          ", name ", place.name)
+          ", marking ", place.marking)
+#          ", name ", place.name)
     show_common(io, place)
 end
 
@@ -231,7 +234,7 @@ end
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
           " id ", trans.id, 
-          ", name ", has_name(trans) ? name(trans) : "", 
+          ", name '", has_name(trans) ? name(trans) : "", "'",
           ", condition ", trans.condition)
     show_common(io, trans)
 end
@@ -254,22 +257,18 @@ end
 #-------------------
 #TODO Make RefPlace, RefTransition an Abstract Type
 function Base.show(io::IO, ::MIME"text/plain", r::ReferenceNode)
-    #@show "mime ref node"
     show(io, r)
 end
 function Base.show(io::IO, r::ReferenceNode)
-    #@show "ref node"
     print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r))
     show_common(io, r)
     print(io, ")")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rvector::Vector{<:ReferenceNode})
-    #@show "mime vector ref node"
     show(io, rvector)
 end
 function Base.show(io::IO, rvector::Vector{<:ReferenceNode})
-    #@show "vector ref node"
     for (i,r) in enumerate(rvector)
         print(io, indent(io), r)
         i < length(rvector) && print(io, "\n")
@@ -278,9 +277,8 @@ end
 
 #-------------------
 function Base.show(io::IO, arc::Arc)
-    #@show Base.StackTraces.stacktrace()
     print(io, typeof(arc), " id ", arc.id,
-          ", name ", has_name(arc) ? name(arc) : "",
+          ", name '", has_name(arc) ? name(arc) : "", "'",
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
@@ -300,14 +298,14 @@ end
 Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
-           " name ", has_name(page) ? name(page) : "", ", ",
+           " name '", has_name(page) ? name(page) : "", "', ",
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
            length(page.refPlaces), " refP, ",
            length(page.refTransitions), " refT, ",
-           length(page.subpages), " subpages, ",
+           length(page.subpages), " subpages",
            summary(page.com)
            )
 end
@@ -354,10 +352,10 @@ end
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", pid(net), 
-            " name ", has_name(net) ? name(net) : "", ", ",
+            " name '", has_name(net) ? name(net) : "", "', ",
             " type ", nettype(net), ", ",
             length(pages(net)), " pages ",
-            length(declarations(net)), " declarations ",
+            length(declarations(net)), " declarations",
             summary(net.com))
 end
 
@@ -412,8 +410,7 @@ function Base.summary(ptm::PTMarking)
 end
 
 function Base.show(io::IO, ptm::PTMarking)
-    pprint(io, ptm) #    print(io, summary(ptm), " value: ", ptm.value)
-    #show_common(io, ptm)
+    pprint(io, ptm)
 end
 
 quoteof(m::PTMarking) = :(PTMarking($(quoteof(m.value)), $(quoteof(m.com))))
@@ -426,7 +423,6 @@ function
 end
 
 function Base.show(io::IO, hlm::HLMarking)
-    #print(io, "'", hlm.text, "', ", hlm.term)
     pprint(io, hlm)
 end
 
@@ -434,8 +430,7 @@ quoteof(m::HLMarking) = :(HLMarking($(quoteof(m.text)), $(quoteof(m.term)), $(qu
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
-    pprint(io, cond) #typeof(cond), " '", cond.text, "', ", cond.term)
-    #show_common(io, cond)
+    pprint(io, cond)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
@@ -445,8 +440,7 @@ quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(c.term)), $(qu
 
 #-------------------
 function Base.show(io::IO, inscription::PTInscription)
-    pprint(io, inscription)#, " value ", inscription.value)
-    #show_common(io, inscription)
+    pprint(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
     show(io, inscription)
@@ -455,8 +449,7 @@ quoteof(i::PTInscription) = :(PTInscription($(quoteof(i.value)), $(quoteof(i.com
 
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
-    pprint(io, inscription)#,  " '", inscription.text, "', ", inscription.term)
-    #show_common(io, inscription)
+    pprint(io, inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
     show(io, inscription)

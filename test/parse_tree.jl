@@ -1,5 +1,5 @@
-str =
-    """
+header("parse tree")
+str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -20,16 +20,15 @@ str =
     </page>
   </net>
 </pnml>
-    """
-header("parse tree")
+"""
 doc = EzXML.parsexml(str) # shared by testsets
 
-if PRINT_PNML
-    EzXML.prettyprint(doc);
-    println()
-end
+#if PRINT_PNML
+#    EzXML.prettyprint(doc);
+#    println()
+#end
 
-@testset "parse nodes" begin
+@testset "parse tree" begin
     pnml = root(doc)
     @test EzXML.nodename(pnml) == "pnml"
     @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
@@ -99,39 +98,8 @@ end
     # Do a full parse and maybe print the generated data structure.
     reg = PNML.IDRegistry()
     pnml_ir = parse_pnml(root(doc); reg)
-    @show typeof(pnml_ir)
     @test typeof(pnml_ir) <: PNML.PnmlModel
 
-    printnode(pnml_ir; label="pnml_ir")
-    #=
-
-    This assumes everything has keys.
-
-    header("Summary of sizes")
-    if SHOW_SUMMARYSIZE && PRINT_PNML
-        @show Base.summarysize(pnml_ir)
-        showsize.(Ref(pnml_ir), keys(pnml_ir))
-        foreach(pnml_ir[:nets]) do net
-            print("net ", pid(net), "\n")
-            showsize.(Ref(net), keys(net))
-            foreach(net.pages) do page
-                print("page ", pid(page), "\n")
-                showsize.(Ref(page), keys(page))
-                for k in [:graphics, :tools, :labels,
-                          :places, :trans, :arcs, :declarations, :refT, :refP]
-                    if !isnothing(page[k])
-                        print(k, " ", "\n")
-                        showsize.(Ref(page[k]), keys(page[k]))
-                        foreach(page[k]) do k2
-                            showsize.(Ref(k2), keys(k2))
-                        end
-                    end
-                end
-            end
-        end
-    end
-    println()
-    =#
     foreach(nets(pnml_ir)) do net
         @test net isa PNML.PnmlNet
         @test net.id isa Symbol

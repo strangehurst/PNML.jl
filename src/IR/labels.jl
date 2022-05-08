@@ -23,7 +23,7 @@ Name is for display, possibly in a tool specific way.
 """
 struct Name <: AbstractLabel
     text::String
-    graphics::Maybe{Graphics} #TODO check relaxng schema.
+    graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 

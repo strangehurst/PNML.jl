@@ -37,3 +37,24 @@ Return attached xml node.
 """
 function xmlnode end
 
+
+"""
+    has_labels(x) -> Bool
+
+Does x have any labels.
+""" 
+function has_labels end
+
+"""
+    has_label(x, tag::Symbol) -> Bool
+
+Does any label have a matching `tagvalue`.
+""" 
+function has_label end
+
+"""
+    get_label(x, tag::Symbol) -> PnmlLabel
+
+Return first label with a matching `tagvalue`.
+"""
+function get_label end

@@ -322,6 +322,7 @@ function deref!(page::Page)
             arc.target = deref_transition(page, arc.target)
         end
     end
+    #TODO Remove reference nodes.
     page
 end
 

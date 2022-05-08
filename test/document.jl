@@ -26,9 +26,11 @@ str =
 </pnml>
     """
     pnml_ir = parse_pnml(root(parsexml(str)); reg=PNML.IDRegistry())
+    @test typeof(pnml_ir) <: PNML.PnmlModel
     @show pnml_ir
 end
 
+header("### Registry")
 @testset "Document & IDRegistry" begin
     str = """
     <?xml version="1.0"?>
@@ -36,13 +38,12 @@ end
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """
-    header("### Registry")
     reg = PNML.IDRegistry()
     @test !PNML.isregistered(reg, :net)
     @test :net ∉ reg.ids
 
     parse_pnml(root(parsexml(str)); reg)
-    @show reg
+    #@show reg
 
     @test PNML.isregistered(reg, :net)
     @test :net ∈ reg.ids
@@ -61,7 +62,6 @@ end
     """
 
     @show model = parse_str(str)
-    #@show model
 
     v1 = PNML.find_nets(model, :ptnet)
     printnode(v1, label="v1")
@@ -104,5 +104,6 @@ end
     </pnml>
     """
 
-    @show model = parse_str(str)
+    model = parse_str(str)
+    @test model isa PNML.PnmlModel
 end

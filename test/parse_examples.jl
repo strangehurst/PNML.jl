@@ -1,7 +1,8 @@
 header("Exanples")
+
 @testset "AirplaneLD pnml file" begin
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
-    @show typeof(testfile), testfile
+    @show testfile
     model = parse_file(testfile)
     @test model isa PNML.PnmlModel
     nets = PNML.nets(model)

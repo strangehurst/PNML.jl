@@ -15,7 +15,7 @@ header("GRAPHICS")
     """
     doc = EzXML.parsexml(str)
     n = parse_node(root(doc); reg=PNML.IDRegistry())
-    @show n
+    printnode(n)
     
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
@@ -99,15 +99,12 @@ end
                                                              str4=>4,
                                                              str5=>1,
                                                              str6=>2]
-        #@show l,s
         n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
-        @show typeof(n)
-        printnode(n)
         @test n isa PNML.TokenGraphics
         @test length(n.positions) == l
-        for p in n.positions
-            @show p, PNML.eltype(p.x)
-        end
+        #for p in n.positions
+        #    @show p, PNML.eltype(p.x)
+        #end
     end
 end
 

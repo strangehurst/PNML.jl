@@ -7,7 +7,7 @@ ToolInfo holds a <toolspecific> tag.
 It wraps a vector of well formed elements parsed into [`AnyElement`](@ref)s.
 for use by anything that understands toolname, version toolspecifics.
 """
-struct ToolInfo
+@auto_hash_equals struct ToolInfo
     toolname::String
     version::String
     infos::Vector{AnyElement} #TODO specialize infos.

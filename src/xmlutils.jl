@@ -1,4 +1,3 @@
-
 "Alias for EzXML.Node"
 const XMLNode = EzXML.Node
 
@@ -12,7 +11,7 @@ function namespace end
 namespace(::Any) = error("namespace method not defined")
 
 """
-Parse xml string into ExXML node.
+Parse xml string into EzXML node.
 
 $(TYPEDSIGNATURES)
 """

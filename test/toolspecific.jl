@@ -46,21 +46,22 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         n = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
         printnode(n)
 
-        @test typeof(n) <: PNML.ToolInfo
+        @test typeof(n) <: ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.toolname == s.tool
         @test n.version == s.version
 
         # get_toolinfo(::ToolInfo, args...) is identity #TODO make sense of this
-        @test PNML.get_toolinfo(n, s.tool, s.version) !== nothing
-        #@show PNML.get_toolinfo(n, s.tool, s.version)
+        @test get_toolinfo(n, s.tool, s.version) !== nothing
+        @test get_toolinfo(n, s.tool, s.version) isa ToolInfo
+        @test get_toolinfo(n, s.tool, s.version) == n
 
         #s.contentparse(n.infos) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
 
-        @show typeof(n.infos)
+        @test n.infos isa Vector{AnyElement}
         foreach(n.infos) do toolinfo
-            @show typeof(toolinfo)
+            @test toolinfo isa AnyElement
             # Content may optionally attach its xml.
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
@@ -73,7 +74,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
  <net id="net0" type="pnmlcore">
  <page id="page0">
- <place id="place1">
+ <place id="place0">
     $(str1.str)
     $(str2.str)
     $(str3.str)
@@ -87,5 +88,39 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         model = parse_str(str)
         @show model
 
+        page = firstpage(first_net(model))
+        @test !has_tools(page)
+        place = first(page.places)
+        @test has_tools(place)
+        t = tools(place)
+        @test t isa Vector{ToolInfo}
+        @test length(t) == 5
+        
+        for ti in t
+            @test ti isa ToolInfo
+        end
+        for (i,s) in enumerate([str1, str2, str3, str4, str5])
+            ti = get_toolinfo(t, s.tool, s.version)
+            @test ti isa ToolInfo
+            @test PNML.name(t[i]) == PNML.name(ti)
+            @test PNML.version(t[i]) == PNML.version(ti)
+            @test PNML.name(t[i]) == s.tool
+            @test PNML.version(t[i]) == s.version
+
+            @test typeof(t[i].infos) == typeof(ti.infos)
+
+            for y in zip(t[i].infos, ti.infos)
+                @test tag(y[1]) == tag(y[2])
+                @test y[1].dict == y[2].dict
+            end
+            
+            x = parse_node(root(EzXML.parsexml(s.str)); reg=PNML.IDRegistry())
+
+            @test typeof(t[i].infos) == typeof(x.infos)
+            for y in zip(t[i].infos, x.infos)
+                @test tag(y[1]) == tag(y[2])
+                @test y[1].dict == y[2].dict
+            end
+        end
     end
 end

@@ -91,12 +91,12 @@ header("UNCLAIMED LABEL")
     end
 end
 
-header("GET_LABEL")
+#header("GET_LABEL")
 @testset "get rate label" begin
     n = parse_node(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
     </transition>""", reg=PNML.IDRegistry())
-    printnode(n)
+    #printnode(n)
     l = PNML.labels(n)
     @test PNML.tag(first(l)) === :rate # only label
     @test PNML.get_label(n, :rate) === first(PNML.labels(n))
@@ -122,8 +122,8 @@ header("DECLARATION")
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(PNML.declarations(n)) <: Vector{PNML.AbstractDeclaration}
     @test length(PNML.declarations(n)) == 0
+
     @test typeof(n.com) <: PNML.ObjectCommon
-    #@test PNML.name(n) === nothing
     @test PNML.graphics(n) === nothing
     @test PNML.tools(n) === nothing
     @test PNML.labels(n) === nothing
@@ -244,18 +244,22 @@ header("HL Marking")
  </hlinitialMarking>
     """
     n = parse_node(to_node(str); reg = PNML.IDRegistry())
+    @show typeof(n), fieldnames(typeof(n))
     printnode(n)
+    
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test n.text == "<All,All>"
     @test n.term !== nothing
     @test n.term isa PNML.AbstractTerm
-    @show typeof(n.term)
-    @show n.term
-    #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all] !== nothing
-    #@test n.structure.dict[:tuple].dict[:subterm][1].dict[:all].dict[:usersort].dict[:declaration] == "N1"
-    #@test n.structure.dict[:tuple].dict[:subterm][2].dict[:all].dict[:usersort].dict[:declaration] == "N2"
+
+    #@show typeof(n.term), fieldnames(typeof(n.term))
+    #@show n.term
+    @test tag(n.term) === :tuple
+    @test n.term.dict[:subterm][1][:all] !== nothing
+    @test n.term.dict[:subterm][1][:all][:usersort][:declaration] == "N1"
+    @test n.term.dict[:subterm][2][:all][:usersort][:declaration] == "N2"
 end
 
 @testset "text" begin
@@ -313,6 +317,7 @@ header("STRUCTURE")
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(n) === :structure
     @test n.dict isa PnmlDict
+    @test tag(n) === :structure
     @test n.dict[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
     @test n.dict[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
 end
@@ -349,6 +354,7 @@ header("CONDITION")
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
         @test n.term !== nothing
+        @test tag(n.term) === :or
         @test n.com.graphics === nothing
         @test n.com.tools === nothing || isempty(n.com.tools)
         @test n.com.labels === nothing || isempty(n.com.labels)
@@ -356,9 +362,7 @@ header("CONDITION")
 end
 
 @testset "inscription" begin
-    n1 = xml"""
-        <inscription> <text>12 </text> </inscription>
-    """
+    n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
         n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
@@ -392,7 +396,9 @@ end
         printnode(n)
         @test typeof(n) <: PNML.HLInscription
         @test xmlnode(n) isa Maybe{EzXML.Node}
-        @test n.term !== nothing
-        @test n.text !== nothing
+        @test tag(n.term) === :tuple
+        @test n.term.dict[:subterm][1][:variable][:refvariable] == "x"
+        @test n.term.dict[:subterm][2][:variable][:refvariable] == "v"
+        @test n.text == "<x,v>"
     end
 end

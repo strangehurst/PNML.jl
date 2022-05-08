@@ -6,7 +6,7 @@ $(TYPEDSIGNATURES)
 
 Add `node` to `d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
 """
-function add_label!(d::PnmlDict, node, pntd; kw...)
+function add_label!(d::PnmlDict, node::XMLNode, pntd; kw...)
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
 
     # The value is initialized to `nothing since it is expected that most labels
@@ -18,7 +18,7 @@ function add_label!(d::PnmlDict, node, pntd; kw...)
     add_label!(d[:labels], node, pntd; kw...)
 end
 
-function add_label!(v::Vector{PnmlLabel}, node, pntd; kw...)
+function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd; kw...)
     #@show "add label! $(nodename(node))"
     haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
     label = PnmlLabel(unclaimed_label(node, pntd; kw...), node) #TODO handle types
@@ -26,44 +26,6 @@ function add_label!(v::Vector{PnmlLabel}, node, pntd; kw...)
     push!(v, label)
     return v
 end
-
-"""
-Does any label attached to `d` have a matching `tagvalue`.
-
-$(TYPEDSIGNATURES)
-"""
-function has_label end
-function has_label(d::PnmlDict, tagvalue::Symbol)
-    has_label(d[:labels], tagvalue)
-end
-function has_label(d::Vector{PnmlDict}, tagvalue::Symbol)
-    any(label->tag(label) === tagvalue, d[:labels])
-end
-
-
-"""
-$(TYPEDSIGNATURES)
-
-Return first label attached to `d` have a matching `tagvalue`.
-"""
-function get_label end
-
-function get_label(v::Vector{PnmlDict}, tagvalue::Symbol)
-    #@show "get_label $(typeof(v)) size $(length(v)) $tagvalue"
-    getfirst(lab->tag(lab) === tagvalue, v)
-end
-
-function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    #@show "get_label $tagvalue $v"
-    getfirst(l->tag(l) === tagvalue, v)
-end
-
-# Vector of labels may be contained in a dictonary.
-function get_label(d::PnmlDict, tagvalue::Symbol)
-    #@show d[:labels]
-    get_label(d[:labels], tagvalue)
-end
-
 
 #---------------------------------------------------------------------
 # TOOLINFO
@@ -123,14 +85,19 @@ Return first toolinfo having a matching toolname and version.
 """
 function get_toolinfo end
 
-get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo([ti], Regex(name)) 
+get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo([ti], name) 
 get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) = 
-    get_toolinfo([ti], Regex(name), Regex(version)) 
+    get_toolinfo([ti], name, version) 
+get_toolinfo(ti::Vector{ToolInfo}, name::AbstractString, version::AbstractString) = 
+    get_toolinfo(ti, Regex(name), Regex(version)) 
  
 function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    #@show "match toolinfo $(typeof(v)) $namerex $versionrex"
     getfirst(ti -> _match(ti, namerex, versionrex), v) 
 end
+
+#function get_toolinfo(o, namerex::Regex, versionrex::Regex=r"^.*$")
+#   has_tools(o) && get_toolinfo(tools(o), namerex, versionrex)
+#end
 
 """
 $(TYPEDSIGNATURES)

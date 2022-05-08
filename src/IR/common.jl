@@ -19,15 +19,12 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
 ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 "Return `true` if has a `graphics` element."
-has_graphics(::Any) = false
 has_graphics(oc::ObjectCommon) = !isnothing(oc.graphics)
 
 "Return `true` if has a `tools` element."
-has_tools(::Any) = false
 has_tools(oc::ObjectCommon) = !isnothing(oc.tools)
 
 "Return `true` if there is a `labels` element."
-has_labels(::Any) = false
 has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
 
 graphics(oc::ObjectCommon) = oc.graphics

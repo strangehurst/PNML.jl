@@ -15,7 +15,9 @@ using PNML: PNML, parse_pnml, parse_str, parse_file,
     parse_condition,
     parse_declaration, parse_sort, parse_term, parse_label,
     parse_tokengraphics, parse_tokenposition, parse_name,
-    nets
+    nets,
+    first_net, firstpage, tools, has_tools, get_toolinfo,
+    AnyElement, ToolInfo
 
 const GROUP        = get(ENV, "GROUP", "All")
 const PRINT_PNML::Bool   = get(ENV, "PRINT_PNML", "true") == "true"
@@ -81,6 +83,7 @@ end
     if select("All", "IR")
         header("IR")
         @testset "nodes"        begin include("nodes.jl") end
+        @testset "labels"       begin include("labels.jl") end
         @testset "graphics"     begin include("graphics.jl") end
         @testset "parse_labels" begin include("parse_labels.jl") end
         @testset "toolspecific" begin include("toolspecific.jl") end
