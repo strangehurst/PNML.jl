@@ -30,4 +30,5 @@ has_name(net::PnmlNet) = hasproperty(net, :name) && !isnothing(net.name)
 name(net::PnmlNet) = net.name.text
 
 "Usually the only interesting page."
-firstpage(net::PnmlNet) = net.pages[1]
+firstpage(net::PnmlNet) = first(net.pages)
+

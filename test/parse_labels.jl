@@ -218,8 +218,8 @@ header("PT initMarking")
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
     mark3 = PNML.PTMarking()
-    @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore()))
-    @test mark3() == PNML.default_marking(PnmlCore())
+    @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore())())
+    @test mark3() == PNML.default_marking(PnmlCore())()
 end
 
 header("HL Marking")

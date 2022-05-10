@@ -27,7 +27,7 @@ header("SimpleNet")
             </page>
         </net>
     </pnml>
-        """
+    """
 
     model = parse_str(str)
     printnode(nets(model))
@@ -35,61 +35,57 @@ header("SimpleNet")
     v = PNML.find_nets(model, :pnmlcore)
     @test !isempty(v)
     @test v[begin] == PNML.first_net(model)
+    @test first(v) == PNML.first_net(model)
 
     net  = PNML.SimpleNet(v[begin])
     net1 = PNML.SimpleNet(model)
     net2 = PNML.SimpleNet(PNML.first_net(model))
 
-    for accessor in [PNML.pid, PNML.place_ids, PNML.transition_ids, PNML.arc_ids]
-       # @show accessor
+    for accessor in [pid, place_ids, transition_ids, arc_ids,
+                     reftransition_ids, refplace_ids]
         @test accessor(net1) == accessor(net)
         @test accessor(net2) == accessor(net1)
         @test accessor(net2) == accessor(net)
     end
 
-    for accessor in [PNML.places, PNML.transitions, PNML.arcs]
-        #@show accessor
+    for accessor in [places, transitions, arcs]
         for (a,b) in zip(accessor(net1), accessor(net))
-            @test a.id == b.id
+            @test pid(a) == pid(b)
         end
         for (a,b) in zip(accessor(net2), accessor(net1))
-            @test a.id == b.id
+            @test pid(a) == pid(b)
         end
         for (a,b) in zip(accessor(net2), accessor(net))
-            @test a.id == b.id
+            @test pid(a) == pid(b)
         end
-
     end
 
-    #pl = PNML.places(net)
-    #printnode(pl[1],label="from")
-
-    #pl = PNML.places(net)
-    #printnode(pl, label="places")
-
-    for p in PNML.places(net)
-        @test PNML.has_place(net, pid(p))
-        @test p == PNML.place(net, pid(p))
-        @test PNML.pid(p) ===  p.id
-        @test PNML.place(net, :bogus) === nothing
-        #PRINT_PNML && println("place $(PNML.pid(p)) $(PNML.marking(p))")
-    end
-    for t in PNML.transitions(net)
-        @test PNML.has_transition(net, pid(t))
-        @test t == PNML.transition(net, pid(t))
-        @test PNML.pid(t) ===  t.id
-        @test PNML.transition(net, :bogus) === nothing
-        #PRINT_PNML && println("transition $(PNML.pid(t)) $(PNML.condition(t))")
-    end
-    for a in PNML.arcs(net)
-        @test PNML.has_arc(net, pid(a))
-        @test a == PNML.arc(net, pid(a))
-        @test PNML.pid(a) ===  a.id
-        @test PNML.arc(net, :bogus) === nothing
-        #PRINT_PNML && println("arc $(PNML.pid(a)) s:$(PNML.source(a)) t:$(PNML.target(a)) $(PNML.inscription(a))")
+    for top in [net, net.net, first(pages(net.net))]
+        for p in places(top)
+            @test has_place(top, pid(p))
+            @test p == place(top, pid(p))
+            @test pid(p) ===  p.id
+            @test place(top, :bogus) === nothing
+            @show marking(p)
+        end
+        for t in transitions(top)
+            @test has_transition(top, pid(t))
+            @test t == transition(top, pid(t))
+            @test pid(t) ===  t.id
+            @test transition(top, :bogus) === nothing
+            @test condition(t) !== nothing
+        end
+        for a in arcs(top)
+            @test has_arc(top, pid(a))
+            @test a == arc(top, pid(a))
+            @test pid(a) ===  a.id
+            @test arc(net, :bogus) === nothing
+            @test PNML.source(a) !== nothing
+            @test PNML.target(a) !== nothing
+            @test inscription(a) !== nothing
+        end
     end
 end
-
 
 header("RATE")
 @testset "rate" begin
@@ -113,11 +109,11 @@ header("RATE")
     @test β == LVector(birth=0.3)
 end
 
+header("LOTKA-VOLTERRA")
 @testset "lotka-volterra" begin
-    header("LOTKA-VOLTERRA")
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="stochastic">
+        <net id="net0" type="continuous">
         <page id="page0">
             <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
             <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
@@ -134,7 +130,6 @@ end
         </net>
     </pnml>
     """
-    #@test !PNML.isregistered(:pnml)
     model = parse_str(str)
     net1 = PNML.first_net(model)
     printnode(net1)
@@ -163,6 +158,13 @@ end
     u0 = PNML.initialMarking(snet)
     @test u0 == uX
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
-    β = PNML.rates(snet) 
+    β = PNML.rates(snet)
+    if PRINT_PNML
+        @show Δ
+        @show u0
+        @show uX
+        @show βx
+        @show β
+    end
     @test β == βx
 end

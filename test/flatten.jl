@@ -33,9 +33,5 @@ header("FLATTEN")
 
     PNML.flatten_pages!(net)
     @test typeof(net) <: PNML.PnmlNet
-
-    snet = PNML.SimpleNet(net)
-    #PRINT_PNML && @show snet
-    PNML.deref!(snet)
-    #PRINT_PNML && println( "dereferenced to\n", snet, "\n", "-"^50)
+    #@show net
 end

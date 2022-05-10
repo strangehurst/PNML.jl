@@ -5,8 +5,8 @@ using IfElse
 # Run the tests embedded in docstrings.
 using Documenter, LabelledArrays
 
-using PNML: PNML, parse_pnml, parse_str, parse_file,
-    parse_node, @xml_str, pid, tag, xmlnode, Maybe,
+using PNML: PNML,
+    parse_pnml, parse_str, parse_file, parse_node, @xml_str,
     parse_net, parse_page, parse_place, parse_transition, parse_arc,
     parse_refPlace, parse_refTransition,
     parse_toolspecific, parse_graphics, parse_structure,
@@ -14,10 +14,19 @@ using PNML: PNML, parse_pnml, parse_str, parse_file,
     parse_inscription, parse_hlinscription,
     parse_condition,
     parse_declaration, parse_sort, parse_term, parse_label,
-    parse_tokengraphics, parse_tokenposition, parse_name,
-    nets,
-    first_net, firstpage, tools, has_tools, get_toolinfo,
+    parse_tokengraphics, parse_tokenposition, parse_name
+
+using PNML: tag, xmlnode, Maybe,
+    pid, place_ids, transition_ids, arc_ids,
+    reftransition_ids, refplace_ids,
+    nets, pages, places, transitions, arcs,
+    place, transition, arc,
+    has_place, has_transition, has_arc,
+    first_net, firstpage,
+    tools, has_tools, get_toolinfo,
+    marking, condition, conditions, inscription,
     AnyElement, ToolInfo
+
 
 const GROUP        = get(ENV, "GROUP", "All")
 const PRINT_PNML::Bool   = get(ENV, "PRINT_PNML", "true") == "true"

@@ -18,7 +18,7 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 """
 struct Term{T}  <: AbstractTerm #TODO make mutable?
   tag::Symbol
-  dict::T #TODO AnyElement for bring-up? What should be here?
+  dict::T
   #TODO xml
 end
 

@@ -19,6 +19,15 @@ end
 Place(pntd::PNTD, id::Symbol, marking, sort, name, oc::ObjectCommon) where {PNTD<:PnmlType} =
     Place{typeof(pntd), typeof(marking), typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
 
+# Evaluate the marking.
+function marking(place)
+    if !isnothing(place.marking)
+        place.marking()
+    else
+        default_marking(nettype(place))()
+    end
+end
+    
 #-------------------
 """
 Transition node of a Petri Net Markup Language graph.
@@ -32,6 +41,18 @@ struct Transition{PNTD<:PnmlType,C}  <: PnmlNode
     condition::C
     name::Maybe{Name}
     com::ObjectCommon
+end
+
+
+function condition(transition)
+    if isnothing(transition.condition) || isnothing(transition.condition.text)
+        zero(Int) # TODO default condition
+    else
+        #TODO evaluate condition
+        #TODO implement full structure handling
+        rate = number_value(transition.condition.text)
+        isnothing(rate) ? zero(Int) : rate
+    end
 end
 
 #-------------------
@@ -56,8 +77,33 @@ end
 #        inscription, oc::ObjectCommon) where {PNTD<:PnmlType} =
 #    Arc{typeof(pntd),typeof(inscription)}(pntd, id, src, tgt, inscription, oc)
 
-
 Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
+
+# This is evaluating the incscription attached to an arc.
+# Original implementation is for PTNet.
+# HLNets do usual label semantics  here.
+# TODO: Map from net.type to inscription
+function inscription(arc)
+    if !isnothing(arc.inscription)
+        arc.inscription()
+    else
+        default_inscription(nettype(arc))() #one(Int) #TODO: match value type.
+    end
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return symbol of source of `arc`.
+"""
+source(arc)::Symbol = arc.source
+
+"""
+$(TYPEDSIGNATURES)
+
+Return symbol of target of `arc`.
+"""
+target(arc)::Symbol = arc.target
 
 #-------------------
 """

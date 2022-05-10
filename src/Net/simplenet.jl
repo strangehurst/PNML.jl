@@ -76,6 +76,7 @@ end
 
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface.
+#TODO Where is the interface documented?
 #-------------------------------------------------------------------------------
 
 pid(spn::SimpleNet) = pid(spn.net)
@@ -86,13 +87,11 @@ arcs(spn::SimpleNet)           = firstpage(spn.net).arcs
 refplaces(spn::SimpleNet)      = firstpage(spn.net).refPlaces
 reftransitions(spn::SimpleNet) = firstpage(spn.net).refTransitions
 
-
-
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
 # but with a  floating point rate. 
+#TODO Which can be turned into a boolean with a comparison.
 #---------------------------------------------
-
 
 """
 $(TYPEDSIGNATURES)
@@ -114,14 +113,14 @@ $(TYPEDSIGNATURES)
 Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
 """
 function rate end
-function rate(transition)::Number
+function rate(transition)::Number #! where {T<:PnmlType, N<:PetriNet{T}}
     r = get_label(transition, :rate)
     @assert tag(r) === :rate
-    # The unclaimed label mechanism does not do parse_node (at the moment).
-    # Adds a content key for text elements.
     if !isnothing(r) && !isnothing(r.dict[:text])
+        # The unclaimed label mechanism does not do parse_node (at the moment),
+        # so adds a :content key for text elements.
         value = number_value(r.dict[:text][:content]) #TODO :content is redundent for :text
-        return isnothing(value) ? 0.0 : value
+        return isnothing(value) ? 0.0 : value #! specialize default value?
     else
         return 0.0
     end

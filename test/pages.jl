@@ -63,7 +63,7 @@ header("PAGES")
 
     @testset "flatten" begin
         PNML.flatten_pages!(net)
-        printnode(net; label="\n----------------\n Flattened to 1 page")
+        printnode(net; label="\n----------------\n Flattened & dereferenced to 1 page")
 
         #@show PNML.arc_ids(net)
         #@show PNML.place_ids(net)
@@ -94,31 +94,24 @@ header("PAGES")
         @test PNML.transition_ids(net) == expected_t
         @test PNML.transition_ids(firstpage(net)) == expected_t
         @test PNML.transition_ids(net) == PNML.transition_ids(firstpage(net))
-
         for t ∈ expected_t
             @test t ∈ PNML.transition_ids(net)
         end
 
-        expected_rt = [:rt2]
+        expected_rt = []#:rt2]
         @test PNML.reftransition_ids(net) == expected_rt
         @test PNML.reftransition_ids(firstpage(net)) == expected_rt
         @test PNML.reftransition_ids(net) == PNML.reftransition_ids(firstpage(net))
-
         for rt ∈ expected_rt
             @test rt ∈ PNML.reftransition_ids(net)
         end
-        expected_rp = [:rp1, :rp2]
+        
+        expected_rp = []#:rp1, :rp2]
         @test PNML.refplace_ids(net) == expected_rp
         @test PNML.refplace_ids(firstpage(net)) == expected_rp
         @test PNML.refplace_ids(net) == PNML.refplace_ids(firstpage(net))
-
         for rp ∈ expected_rp
             @test rp ∈ PNML.refplace_ids(net)
         end
-    end
-    
-    @testset "dereference" begin
-        PNML.deref!(net)
-        printnode(net; label="\n----------------\n Dereferenced")
     end
 end # pages
