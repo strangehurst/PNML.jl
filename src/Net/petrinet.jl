@@ -30,6 +30,12 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 nettype(::Transition{T}) where {T <: PnmlType} = T
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
+nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+nettype(::Page{T}) where {T <: PnmlType} = T
+nettype(::Place{T}) where {T <: PnmlType} = T
+nettype(::Transition{T}) where {T <: PnmlType} = T
+nettype(::Arc{T}) where {T <: PnmlType} = T
+
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
 #------------------------------------------------------------------

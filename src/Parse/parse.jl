@@ -183,7 +183,7 @@ function parse_transition(node, pntd; kw...)
 
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kw[:reg], node["id"]),
-                           :condition=>Condition())
+                           :condition=>default_condition(pntd))
     foreach(elements(node)) do child
         @match nodename(child) begin
             "condition"    => (d[:condition] = parse_condition(child, pntd; kw...))
@@ -410,16 +410,31 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Annotation label of transition nodes.
+Label of transition nodes.
+
+# Details
+
+Condition is defined by the ISO Specification as a High-level Annotation,
+meaning it has <text> and <structure> elements. With all meaning in the element
+that the <structure> holds. 
+
+We extend Condition by allowing <structure> to have _context_ instead of of a child element.
+This content is treated as either an Integer or Float64. 
+
+A Condition should evaluate to a boolean. We defer that evaluation to a higher level.
+See [`AbstractTerm`](@ref).
 """
 function parse_condition(node, pntd; kw...)
     @debug node
     nn = nodename(node)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-        foreach(elements(node)) do child
+    foreach(elements(node)) do child
         @match nodename(child) begin
-            "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : default_term(pntd))
+            "structure" => (d[:structure] = 
+                    haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
+                    !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
+                    default_term(pntd))
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end

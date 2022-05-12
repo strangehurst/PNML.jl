@@ -85,6 +85,11 @@ Return vector of places.
 """
 function places end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return vector of place IDs.
+"""
 function place_ids end
 
 """

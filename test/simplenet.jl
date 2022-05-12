@@ -4,20 +4,17 @@ header("SimpleNet")
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="pnmlcore">
+        <net id="net0" type="continuous">
             <page id="page0">
-            <place id="p1"> <initialMarking> <text>1</text> </initialMarking> </place>
-            <place id="p2"> <initialMarking> <text>2</text> </initialMarking> </place>
+            <place id="p1"> <initialMarking> <text>1.0</text> </initialMarking> </place>
+            <place id="p2"> <initialMarking> <text>2.0</text> </initialMarking> </place>
             <place id="p3">
                 <structure att1="doo"/>
                 <frog name="hoppy" />
             </place>
-            <!-- missing structure is non-standard for SOME PNTDs -->
-            <transition id ="t1"> <condition><text>true</text></condition> </transition>
-            <!-- empty condition is malformed  -->
-            <transition id ="t2"> <condition/> </transition>
-            <!-- ommitted text  -->
-            <transition id ="t3"> <condition><structure/></condition> </transition>
+            <transition id ="t1"> </transition>
+            <transition id ="t2"> </transition>
+            <transition id ="t3"> </transition>
             <arc id="a1" source="p1" target="t1"> <inscription/> </arc>
             <arc id="a2" source="p2" target="t1"> <inscription/> </arc>
             <arc id="a3" source="t1" target="p3"> <inscription/> </arc>
@@ -32,8 +29,7 @@ header("SimpleNet")
     model = parse_str(str)
     printnode(nets(model))
 
-    v = PNML.find_nets(model, :pnmlcore)
-    @test !isempty(v)
+    v = PNML.find_nets(model, :continuous)
     @test v[begin] == PNML.first_net(model)
     @test first(v) == PNML.first_net(model)
 
@@ -66,7 +62,8 @@ header("SimpleNet")
             @test p == place(top, pid(p))
             @test pid(p) ===  p.id
             @test place(top, :bogus) === nothing
-            @show marking(p)
+            @test typeof(marking(p)) <: typeof(default_marking(nettype(p))())
+            @test marking(p) isa typeof(default_marking(nettype(p))())
         end
         for t in transitions(top)
             @test has_transition(top, pid(t))

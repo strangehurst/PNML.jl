@@ -1,3 +1,10 @@
+"""
+$(TYPEDEF)
+Terms are part of the multi-sorted algebra that is part of High-Level Petri Net
+markings, inscriptions and conditions. 
+
+See also [`AbstractDeclaration`](@ref).
+"""
 abstract type AbstractTerm end
 abstract type AbstractOperator <: AbstractTerm end
 abstract type AbstractSort end
@@ -8,7 +15,6 @@ They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
 
 $(TYPEDEF)
-
 """
 abstract type AbstractDeclaration <: HLAnnotation end
 

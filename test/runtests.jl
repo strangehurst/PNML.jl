@@ -21,10 +21,12 @@ using PNML: tag, xmlnode, Maybe,
     reftransition_ids, refplace_ids,
     nets, pages, places, transitions, arcs,
     place, transition, arc,
-    has_place, has_transition, has_arc,
+    has_place, has_transition, has_arc, has_name,
     first_net, firstpage,
     tools, has_tools, get_toolinfo,
     marking, condition, conditions, inscription,
+    nettype,
+    default_marking, default_condition, default_inscription,
     AnyElement, ToolInfo
 
 

@@ -45,13 +45,12 @@ end
 
 
 function condition(transition)
-    if isnothing(transition.condition) || isnothing(transition.condition.text)
-        zero(Int) # TODO default condition
+    if isnothing(transition.condition) || isnothing(transition.condition.term)
+        default_condition(nettype(transition)).term
     else
+        transition.condition.term
         #TODO evaluate condition
         #TODO implement full structure handling
-        rate = number_value(transition.condition.text)
-        isnothing(rate) ? zero(Int) : rate
     end
 end
 

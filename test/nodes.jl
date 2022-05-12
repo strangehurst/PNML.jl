@@ -14,14 +14,14 @@ header("NODES")
     @test pid(n) === :place1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some place"
-    @test PNML.marking(n) == 100
+    @test marking(n) == 100
 end
 
 @testset "transition" begin
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
-        <condition> <text>100</text> </condition>
+        <condition> <structure>100</structure> </condition>
       </transition>
     """
     n = parse_node(node; reg = PNML.IDRegistry())
@@ -31,7 +31,14 @@ end
     @test pid(n) === :transition1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some transition"
-    @test PNML.condition(n) == 100
+    @test condition(n) == 100
+
+    node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
+    @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())
+    node = xml"""<transition id ="t2"> <condition/> </transition>"""
+    @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())
+    node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
+    @test parse_node(node; reg = PNML.IDRegistry()) isa PNML.Transition
 end
  
 @testset "arc" begin

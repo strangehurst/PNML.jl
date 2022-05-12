@@ -3,9 +3,10 @@ Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`
 """
 function default_marking end
 default_marking(::PNTD) where {PNTD <: PnmlType} = PTMarking(zero(Integer))
+default_marking(::Type{PNTD}) where {PNTD <: PnmlType} = PTMarking(zero(Integer))
 default_marking(::PNTD) where {PNTD <: AbstractContinuousCore} = PTMarking(zero(Float64))
-default_marking(pntd::PNTD) where {PNTD <: AbstractHLCore} = 
-    HLMarking(default_term(pntd)) #!
+default_marking(::Type{PNTD}) where {PNTD <: AbstractContinuousCore} = PTMarking(zero(Float64))
+default_marking(pntd::PNTD) where {PNTD <: AbstractHLCore} = HLMarking(default_term(pntd))
 
 #-------------------
 """
