@@ -7,6 +7,7 @@ header("NODES")
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
+    @test_call parse_node(node; reg = PNML.IDRegistry())
     n = parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.Place

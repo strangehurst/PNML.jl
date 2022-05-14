@@ -4,6 +4,7 @@ using PrettyPrinting
 using IfElse
 # Run the tests embedded in docstrings.
 using Documenter, LabelledArrays
+using JET
 
 using PNML: PNML,
     parse_pnml, parse_str, parse_file, parse_node, @xml_str,

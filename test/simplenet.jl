@@ -26,6 +26,7 @@ header("SimpleNet")
     </pnml>
     """
 
+    @test_call parse_str(str)
     model = parse_str(str)
     printnode(nets(model))
 
