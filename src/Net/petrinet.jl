@@ -30,11 +30,11 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 nettype(::Transition{T}) where {T <: PnmlType} = T
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
-nettype(::PnmlNet{T}) where {T <: PnmlType} = T
-nettype(::Page{T}) where {T <: PnmlType} = T
-nettype(::Place{T}) where {T <: PnmlType} = T
-nettype(::Transition{T}) where {T <: PnmlType} = T
-nettype(::Arc{T}) where {T <: PnmlType} = T
+nettype(::Type{PnmlNet{T}}) where {T <: PnmlType} = T
+nettype(::Type{Page{T}}) where {T <: PnmlType} = T
+nettype(::Type{Place{T}}) where {T <: PnmlType} = T
+nettype(::Type{Transition{T}}) where {T <: PnmlType} = T
+nettype(::Type{Arc{T}}) where {T <: PnmlType} = T
 
 #------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes.
@@ -151,9 +151,6 @@ function marking(petrinet::N, placeid::Symbol) where {T<:PnmlType, N<:PetriNet{T
 end
 place_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} = map(pid, places(petrinet))
 
-"""
-Return a LVector of all places' initialMarking value labeled with place ID.
-"""
 function initialMarking end
 
 initialMarking(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
@@ -192,9 +189,16 @@ end
 #------------------------------------------------------------------
 # TRANSITIONS, CONDITIONS
 #------------------------------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+
+Return function to be used like: any(ispid(sym), iterater_with_pid)
+"""
+ispid(x) = Base.Fix2(===, x)
 
 function has_transition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    any(x -> pid(x) === id, transitions(petrinet))
+    #any(x -> pid(x) === id, transitions(petrinet))
+    any(Base.Fix2(===,id), transition_ids(petrinet))
 end
 
 function transition(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}

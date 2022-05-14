@@ -38,7 +38,9 @@ end
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
     @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test parse_node(node; reg = PNML.IDRegistry()) isa PNML.Transition
+    t = parse_node(node; reg = PNML.IDRegistry())
+    @test t isa PNML.Transition
+    @test condition(t) === true
 end
  
 @testset "arc" begin

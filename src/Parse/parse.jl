@@ -434,7 +434,7 @@ function parse_condition(node, pntd; kw...)
             "structure" => (d[:structure] = 
                     haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
                     !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                    default_term(pntd))
+                    true) #default_term(pntd))
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end

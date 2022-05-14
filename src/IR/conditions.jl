@@ -6,8 +6,8 @@ default_condition(::PNTD) where {PNTD <: PnmlType} = Condition(true)
 default_condition(::Type{PNTD}) where {PNTD <: PnmlType} = Condition(true)
 default_condition(::PNTD) where {PNTD <: AbstractContinuousCore} = Condition(true)
 default_condition(::Type{PNTD}) where {PNTD <: AbstractContinuousCore} = Condition(true)
-default_condition(pntd::PNTD) where {PNTD <: AbstractHLCore} = Condition(default_term(pntd)) #!
-default_condition(::Type{PNTD}) where {PNTD <: AbstractHLCore} = Condition(default_term(PNTD)) #!
+default_condition(pntd::PNTD) where {PNTD <: AbstractHLCore} = Condition(true)#default_term(pntd)) #!
+default_condition(::Type{PNTD}) where {PNTD <: AbstractHLCore} = Condition(true)
 
 """
 Label of a Transition that determines when the transition fires.

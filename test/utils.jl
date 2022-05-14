@@ -30,6 +30,6 @@ end
     </test>
     """
     @test nodename(PNML.getfirst("a", node)) == "a"
-    @test PNML.getfirst("b", node) == nothing
+    @test PNML.getfirst("b", node) === nothing
     @test nodename(PNML.getfirst("c", node)) == "c"
 end

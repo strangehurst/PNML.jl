@@ -29,13 +29,17 @@ str = """<?xml version="1.0"?>
 """
 xmlroot(s::String) = root(EzXML.parsexml(s))
 const pnmlroot = xmlroot(str)
-const reg=PNML.IDRegistry()
+#const reg = PNML.IDRegistry()
+
 #tinf = @snoopi_deep begin end
 function test1(proot)
-    model = parse_pnml(proot; reg=PNML.IDRegistry())
+    for i in 1:10
+        model = parse_pnml(proot; reg=PNML.IDRegistry())
+    end
 end
-test1(pnmlroot)
-PNML.reset_registry!(reg)
+
+#test1(pnmlroot)
+#PNML.reset_registry!(reg)
 #ProfileView.
-@profview test1(pnmlroot)
-@profview PNML.IDRegistry()
+#@profview test1(pnmlroot)
+#@profview PNML.IDRegistry()
