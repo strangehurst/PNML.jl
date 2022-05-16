@@ -17,24 +17,23 @@ $(TYPEDSIGNATURES)
 Collect keys from all pages and move to first page.
 """
 function flatten_pages!(net::PnmlNet)
-    @debug "Flatten $(length(net.pages)) page(s) of net $(pid(net))"
-
     # Place content of subpages of 1st page before sibling page's content.
-    if !isnothing(firstpage(net).subpages)
-        foldl(flatten_pages!, firstpage(net).subpages, init=firstpage(net))
-        empty!(firstpage(net).subpages)
+    subpages = firstpage(net).subpages
+    if !isnothing(subpages)
+        foldl(flatten_pages!, subpages; init=firstpage(net))
+        empty!(subpages)
     end
+    # Sibling pages.
     if length(net.pages) > 1
-        foldl(flatten_pages!, net.pages[2:end], init=firstpage(net))
+        foldl(flatten_pages!, net.pages[2:end]; init=firstpage(net))
         resize!(net.pages, 1)
     end
-    deref!(net)
-    net
+    deref!(net) # Resolve reference nodes 
+    return net
 end
 
-"After appending `r` to `l`, recursivly flatten into `l`, then empty `r`."
+"After appending `r` to `l`, recursivly flatten `r` into `l`, then empty `r`."
 function flatten_pages!(l::Page, r::Page)
-    @debug "flatten_pages!($(pid(l)), $(pid(r)))"
     append_page!(l, r)
     if !isnothing(r.subpages)
         foldl(flatten_pages!, r.subpages; init=l)
@@ -132,7 +131,10 @@ Return id of referenced place.
 function deref_place end
 
 deref_place(net::PnmlNet, id::Symbol, page_idx=1) = deref_place(pages(net)[page_idx], id)
-deref_place(page::Page, id::Symbol) = refplace(page, id).ref
+deref_place(page::Page, id::Symbol) = begin
+    rp = refplace(page, id)
+    isnothing(rp) ? nothing : rp.ref
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -143,5 +145,7 @@ function deref_transition end
 
 deref_transition(net::PnmlNet, id::Symbol, page_idx=1) = 
         deref_transition(net.pages[page_idx], id)
-deref_transition(page::Page, id::Symbol) = reftransition(page, id).ref
-
+deref_transition(page::Page, id::Symbol) = begin
+    rt = reftransition(page, id)
+    isnothing(rt) ? nothing : rt.ref
+end

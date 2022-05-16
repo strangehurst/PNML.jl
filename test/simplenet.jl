@@ -25,18 +25,24 @@ header("SimpleNet")
         </net>
     </pnml>
     """
-
     @test_call parse_str(str)
-    model = parse_str(str)
+    model = @inferred parse_str(str)
     printnode(nets(model))
 
-    v = PNML.find_nets(model, :continuous)
-    @test v[begin] == PNML.first_net(model)
-    @test first(v) == PNML.first_net(model)
+    @test_call PNML.find_nets(model, :continuous)
+    v = @inferred PNML.find_nets(model, :continuous)
 
-    net  = PNML.SimpleNet(v[begin])
-    net1 = PNML.SimpleNet(model)
-    net2 = PNML.SimpleNet(PNML.first_net(model))
+    @test_call PNML.first_net(model)
+    @test v[begin] == @inferred PnmlNet PNML.first_net(model)
+    @test first(v) == @inferred PnmlNet PNML.first_net(model)
+
+    @test_call PNML.SimpleNet(v[begin])
+    @test_call PNML.SimpleNet(model)
+    @test_call PNML.SimpleNet(PNML.first_net(model))
+    
+    net  = @inferred SimpleNet PNML.SimpleNet(v[begin])
+    net1 = @inferred SimpleNet PNML.SimpleNet(model)
+    net2 = @inferred SimpleNet PNML.SimpleNet(PNML.first_net(model))
 
     for accessor in [pid, place_ids, transition_ids, arc_ids,
                      reftransition_ids, refplace_ids]
@@ -58,29 +64,33 @@ header("SimpleNet")
     end
 
     for top in [net, net.net, first(pages(net.net))]
-        for p in places(top)
-            @test has_place(top, pid(p))
-            @test p == place(top, pid(p))
+        @test_call places(top)
+        for p in @inferred places(top)
+            @test @inferred has_place(top, pid(p))
+            @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
             @test place(top, :bogus) === nothing
             @test typeof(marking(p)) <: typeof(default_marking(nettype(p))())
-            @test marking(p) isa typeof(default_marking(nettype(p))())
+            @test @inferred(marking(p)) isa typeof(default_marking(nettype(p))())
         end
-        for t in transitions(top)
-            @test has_transition(top, pid(t))
-            @test t == transition(top, pid(t))
+        @test_call transitions(top)
+        for t in @inferred transitions(top)
+            @test @inferred has_transition(top, pid(t))
+            @test t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
             @test transition(top, :bogus) === nothing
             @test condition(t) !== nothing
+            @test @inferred condition(t)
         end
-        for a in arcs(top)
-            @test has_arc(top, pid(a))
-            @test a == arc(top, pid(a))
+        @test_call arcs(top)
+        for a in @inferred arcs(top)
+            @test @inferred has_arc(top, pid(a))
+            @test a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
             @test arc(net, :bogus) === nothing
-            @test PNML.source(a) !== nothing
-            @test PNML.target(a) !== nothing
-            @test inscription(a) !== nothing
+            @test @inferred(PNML.source(a)) !== nothing
+            @test @inferred(PNML.target(a)) !== nothing
+            @test @inferred(inscription(a)) !== nothing
         end
     end
 end

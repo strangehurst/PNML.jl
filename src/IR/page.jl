@@ -35,7 +35,8 @@ function Base.empty!(page::Page)
     empty!(page.refTransitions)
     empty!(page.arcs)
     empty!(page.declaration)
-    empty!(page.subpages)
-    empty!(page.com)
+    !isnothing(page.subpages) && empty!(page.subpages)
+    has_tools(page.com) && empty!(page.com.tools)
+    has_labels(page.com) && empty!(page.com.labels)
 end
 

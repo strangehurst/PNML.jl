@@ -18,6 +18,7 @@ using PNML: PNML,
     parse_tokengraphics, parse_tokenposition, parse_name
 
 using PNML: tag, xmlnode, Maybe,
+    Place, Transition, Arc, Page, PnmlNet,
     pid, place_ids, transition_ids, arc_ids,
     reftransition_ids, refplace_ids,
     nets, pages, places, transitions, arcs,
@@ -28,7 +29,8 @@ using PNML: tag, xmlnode, Maybe,
     marking, condition, conditions, inscription,
     nettype,
     default_marking, default_condition, default_inscription,
-    AnyElement, ToolInfo
+    AnyElement, ToolInfo,
+    SimpleNet
 
 
 const GROUP        = get(ENV, "GROUP", "All")
@@ -50,7 +52,7 @@ to_node(s::AbstractString) = root(EzXML.parsexml(s))
 function printnode(io::IO, node; label=nothing, kw...)
     if PRINT_PNML
         !isnothing(label) && print(io, label, " ")
-        show(io, MIME"text/plain"(), node) 
+        show(io, MIME"text/plain"(), node)
         println(io, "\n")
     end
 end

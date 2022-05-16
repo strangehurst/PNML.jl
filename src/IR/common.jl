@@ -37,9 +37,17 @@ Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
                                    has_labels(oc))
 
 function Base.empty!(oc::ObjectCommon)
-    has_graphics(oc) && empty!(oc.graphics)
-    has_tools(oc) && empty!(oc.tools)
-    has_labels(oc) && empty!(oc.labels)
+    #! isnothing(oc.graphics) || replace with Graphics()
+    #has_tools(oc)
+    if oc.tools !== nothing
+        # JET needs help avoiding the Nothing union split.
+        t::Vector{ToolInfo} = oc.tools
+        empty!(t)
+    end
+    if has_labels(oc)
+        l::Vector{PnmlLabel} = oc.labels
+        empty!(l)
+    end
 end
 
 function Base.append!(l::ObjectCommon, r::ObjectCommon)

@@ -100,14 +100,14 @@ PNML intermediate representration.
 
 ## PNTD
 
-Defaut PNTD to Symbol map keys (URI strings):
+Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort!(collect(keys(PNML.PnmlTypes.default_pntd_map())))) #hide
+using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
 ```
 
-PnmlType map (pntd symbols to singleton):
+PnmlType map (pntd symbol to singleton):
 ```@example
-using PNML; foreach(println, collect(pairs(PNML.PnmlTypes.pnmltype_map))) #hide
+using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
 ```
 
 

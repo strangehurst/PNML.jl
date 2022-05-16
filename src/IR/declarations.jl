@@ -136,5 +136,5 @@ end
 
 function Base.empty!(d::Declaration)
     empty!(declarations(d))
-    empty!(d.com)
+    empty!(d.com) #! JET will bark?
 end

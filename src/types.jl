@@ -146,8 +146,8 @@ get_label(x::T, tagvalue::Symbol) where {T <: PnmlObject} =
                 has_labels(x) ? get_label(labels(x.com), tagvalue) : nothing
 
 has_name(o::PnmlObject) = hasproperty(o, :name) && !isnothing(o.name)
-name(o::PnmlObject) = has_name(o) && o.name.text
-        
+name(o::PnmlObject) = o.name.text
+
 has_tools(o::PnmlObject) = hasproperty(o.com, :tools) && !isnothing(tools(o.com))
 tools(o::PnmlObject) = has_tools(o) && tools(o.com)
 

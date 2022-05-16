@@ -154,7 +154,7 @@ just the schema file name, or a placeholder for a future schema.
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
 """
-default_pntd_map() = Dict{AbstractString, Symbol}(
+const default_pntd_map = Dict{String, Symbol}(
     "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
     "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
     "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
@@ -218,7 +218,7 @@ julia> pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) = get(default_pntd_map(), s, :pnmlcore)
+pntd_symbol(s::String) = get(default_pntd_map::Dict{String,Symbol}, s, :pnmlcore)
 
 """
     pnmltype(pntd::T; kw...)
@@ -250,10 +250,11 @@ SymmetricNet()
 """
 function pnmltype end
 pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
-pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri); kw...)
-function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
-    haskey(pnmltype_map, s) ? pnmltype_map[s] :
-        throw(PNML.MalformedException("Unknown PNTD symbol $s"))
+pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri))
+function pnmltype(s::Symbol)
+    typemap = pnmltype_map::Dict{Symbol, PnmlType}
+    !haskey(typemap, s) && throw(DomainError("Unknown PNTD symbol $s"))
+    @inbounds typemap[s]
 end
 
 #TODO add traits

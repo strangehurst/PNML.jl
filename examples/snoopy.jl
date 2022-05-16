@@ -32,8 +32,8 @@ const pnmlroot = xmlroot(str)
 #const reg = PNML.IDRegistry()
 
 #tinf = @snoopi_deep begin end
-function test1(proot)
-    for i in 1:10
+function test1(proot, n=10)
+    for i in 1:n
         model = parse_pnml(proot; reg=PNML.IDRegistry())
     end
 end

@@ -5,7 +5,7 @@ Map XML tag names to parser functions.
 
 $(TYPEDEF)
 """
-tagmap = Dict{String,Function}(
+const tagmap = Dict{String,Function}(
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
