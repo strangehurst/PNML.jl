@@ -444,10 +444,10 @@ end
 #---------------------------------------------------------------------
 #TODO Will unclaimed_node handle this?
 """
+$(TYPEDSIGNATURES)
+
 Should not often have a '<label>' tag, this will bark if one is found.
 Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
-
-$(TYPEDSIGNATURES)
 """
 function parse_label(node, pntd; kw...)
     nn = nodename(node)

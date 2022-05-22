@@ -17,9 +17,9 @@ function parse_tokengraphics(node, pntd; kw...)
 end
 
 """
-Cartesian coordinate relative to containing element.
-
 $(TYPEDSIGNATURES)
+
+Cartesian coordinate relative to containing element.
 """
 function parse_tokenposition(node, pntd; kw...)
     nn = nodename(node)
@@ -29,10 +29,10 @@ function parse_tokenposition(node, pntd; kw...)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Arcs, Annotations and Nodes have different graphics semantics.
 Return a [`Graphics`](@ref) holding the union of possibilities.
-
-$(TYPEDSIGNATURES)
 """
 function parse_graphics(node, pntd; kw...)
     @debug node

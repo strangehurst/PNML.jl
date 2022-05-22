@@ -216,7 +216,6 @@ transition(page::Page, id::Symbol) = getfirst(x -> pid(x) === id, transitions(pa
 transition_ids(page::Page) = map(pid, page.transitions)
 
 #----------------------------------------
-
 conditions(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
     conditions(petrinet, transition_ids(petrinet))
 

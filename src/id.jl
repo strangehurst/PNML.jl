@@ -56,10 +56,10 @@ function isregistered(reg::IDRegistry, id::Symbol)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
-
-$(TYPEDSIGNATURES)
 """
 function reset_registry!(reg::IDRegistry)
     lock(reg.lk) do
