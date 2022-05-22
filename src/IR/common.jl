@@ -19,22 +19,22 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
 ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 "Return `true` if has a `graphics` element."
-has_graphics(oc::ObjectCommon) = !isnothing(oc.graphics)
+has_graphics(oc::ObjectCommon) = oc.graphics !== nothing
 
 "Return `true` if has a `tools` element."
-has_tools(oc::ObjectCommon) = !isnothing(oc.tools)
+has_tools(oc::ObjectCommon) = oc.tools !== nothing #!&& !isempty(oc.tools)
 
 "Return `true` if there is a `labels` element."
-has_labels(oc::ObjectCommon) = !isnothing(oc.labels)
+has_labels(oc::ObjectCommon) = oc.labels !== nothing #!&& !isempty(oc.labels)
 
 graphics(oc::ObjectCommon) = oc.graphics
 tools(oc::ObjectCommon) = oc.tools
 labels(oc::ObjectCommon) = oc.labels
 
-# Could use introspection on every field if they are all Maybes.
+
 Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
-                                   has_tools(oc) ||
-                                   has_labels(oc))
+                                   (has_tools(oc) && !isempty(oc.tools)) ||
+                                   (has_labels(oc) && !isempty(oc.labels)))
 
 function Base.empty!(oc::ObjectCommon)
     #! isnothing(oc.graphics) || replace with Graphics()

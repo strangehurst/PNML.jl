@@ -26,8 +26,8 @@ declarations(net::PnmlNet) = declarations(net.declaration)
 has_labels(net::PnmlNet) = has_labels(net.com)
 xmlnode(net::PnmlNet) = net.xml
 
-has_name(net::PnmlNet) = hasproperty(net, :name) && !isnothing(net.name)
-name(net::PnmlNet) = net.name.text
+has_name(net::PnmlNet) = !isnothing(net.name)
+name(net::PnmlNet) = has_name(net) ? net.name.text : ""
 
 "Usually the only interesting page."
 firstpage(net::PnmlNet) = first(net.pages)

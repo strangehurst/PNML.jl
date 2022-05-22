@@ -20,9 +20,13 @@ tag(pdict::PnmlDict)::Symbol = pdict[:tag]
 xmlnode(pdict::PnmlDict) = pdict[:xml]
 
 has_labels(pdict::PnmlDict) = haskey(pdict, :labels)
-has_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? has_label(labels(d), tagvalue) : false
+has_label(d::PnmlDict, tagvalue::Symbol) = if has_labels(d)
+    has_label(labels(d), tagvalue)
+else
+    false
+end
 
-labels(pdict::PnmlDict) = has_labels(pdict) ? pdict[:labels] : nothing
+labels(pdict::PnmlDict) = pdict[:labels]
 
 get_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? get_label(labels(d), tagvalue) : nothing
 get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
@@ -31,7 +35,7 @@ get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap `PnmlDict` holding well-formed XML. 
+Wrap `PnmlDict` holding well-formed XML.
 See [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 """
 @auto_hash_equals struct AnyElement
@@ -56,27 +60,37 @@ xmlnode(::AbstractLabel) = nothing
 
 # TODO: Doc HLLabel interface in manual.
 "Return `true` if label has `text` field."
-has_text(l::AbstractLabel) = hasproperty(l, :text) && !isnothing(l.text)
+has_text(l::L) where {L <: AbstractLabel} = hasproperty(l, :text) && !isnothing(l.text)
 "Return `text` field"
-text(l::AbstractLabel) = l.text
+text(l::L) where {L <: AbstractLabel} = l.text
 
 "Return `true` if label has a `structure` field."
-has_structure(l::AbstractLabel) = hasproperty(l, :structure) && !isnothing(l.structure)
+has_structure(l::L) where {L <: AbstractLabel} = hasproperty(l, :structure) && !isnothing(l.structure)
 "Return `structure` field."
-structure(l::AbstractLabel) = has_structure(l) ? l.structure : nothing
+structure(l::L) where {L <: AbstractLabel} = has_structure(l) ? l.structure : nothing
 
-has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
-graphics(l::AbstractLabel) = has_graphics(l) ? l.graphics : nothing
+has_graphics(l::L) where {L <: AbstractLabel} =
+    hasproperty(l, :graphics) && !isnothing(l.graphics)
+graphics(l::L) where {L <: AbstractLabel} =
+    has_graphics(l) ? l.graphics : nothing
 
-has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
-tools(l::AbstractLabel)  = has_tools(l) ? l.tools : nothing
+has_tools(l::L) where {L <: AbstractLabel} = has_tools(l.com)#! && !isempty(tools(l))
+#    hasproperty(l, :tools) && !isnothing(l.tools)
+tools(l::L) where {L <: AbstractLabel} = tools(l.com)
 
-has_labels(l::AbstractLabel)  = hasproperty(l, :labels) && !isnothing(l.labels)
-labels(l::AbstractLabel) = has_labels(l) ? l.labels : nothing
+has_labels(l::L) where {L <: AbstractLabel} = has_labels(l.com)#! && !isempty(labels(l))
+#    hasproperty(l, :labels) && !isnothing(l.labels)
+labels(l::L) where {L <: AbstractLabel} = labels(l.com)
+
+has_label(l::L, tagvalue::Symbol)  where {L <: AbstractLabel}= if has_labels(l)
+    has_label(labels(l), tagvalue)
+else
+    false
+end
 
 """
 $(TYPEDEF)
-Label that may be displayed. 
+Label that may be displayed.
 It differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
 """
 abstract type Annotation <: AbstractLabel end
@@ -88,7 +102,7 @@ $(TYPEDFIELDS)
 Wrap a `PnmlDict` that may be the root of an XML-tree.
 
 Used for labels that do not have, or we choose not to use, a dedicated parse method.
-Claimed labels will have a type defined to make use of the structure 
+Claimed labels will have a type defined to make use of the structure
 defined by the pntd schema. See [`Name`](@ref), the only label defined in pnmlcore
 and [`HLLabel`](@ref) for similat treatment of "unclaimed" high-level labels.
 """
@@ -99,7 +113,7 @@ and [`HLLabel`](@ref) for similat treatment of "unclaimed" high-level labels.
 end
 
 PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
-PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) = 
+PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) =
         PnmlLabel(p.first, p.second, node; kw...)
 
 tag(label::PnmlLabel) = label.tag
@@ -137,19 +151,30 @@ abstract type PnmlObject end
 "PnmlObjects are exected to have unique pnml ids."
 pid(object::PnmlObject) = object.id
 
-has_labels(x::T) where {T <: PnmlObject} = has_labels(x.com)
-labels(x::T) where {T <: PnmlObject} = labels(x.com)
+has_name(o::T) where {T <: PnmlObject} = o.name !== nothing
+name(o::T) where {T <: PnmlObject} = has_name(o) ? o.name.text : ""
 
-has_label(x::T, tagvalue::Symbol) where {T <: PnmlObject} = 
-                has_labels(x) ? has_Label(labels(x.com), tagvalue) : false
-get_label(x::T, tagvalue::Symbol) where {T <: PnmlObject} =
-                has_labels(x) ? get_label(labels(x.com), tagvalue) : nothing
+has_labels(o::T) where {T <: PnmlObject} = has_labels(o.com)
+labels(o::T) where {T <: PnmlObject} = labels(o.com)
 
-has_name(o::PnmlObject) = hasproperty(o, :name) && !isnothing(o.name)
-name(o::PnmlObject) = o.name.text
+has_label(o::T, tagvalue::Symbol) where {T <: PnmlObject} =
+    if has_labels(o)
+        l = labels(o)
+        l !== nothing ? has_label(l, tagvalue) : false
+    else
+        false
+    end
+get_label(o::T, tagvalue::Symbol) where {T <: PnmlObject} =
+    if has_labels(o)
+        l = labels(o)
+        l !== nothing ? get_label(l, tagvalue) : nothing
+    else
+        nothing
+    end
 
-has_tools(o::PnmlObject) = hasproperty(o.com, :tools) && !isnothing(tools(o.com))
-tools(o::PnmlObject) = has_tools(o) && tools(o.com)
+has_tools(o::T) where {T <: PnmlObject} = has_tools(o.com) && !isnothing(tools(o.com))
+tools(o::T) where {T <: PnmlObject} = tools(o.com)
+#TODO has_tool, get_tool
 
 """
 $(TYPEDEF)
@@ -174,4 +199,3 @@ Tool specific objects can be attached to `PnmlObject`s and `AbstractLabel`s subt
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 xmlnode(tool::AbstractPnmlTool) = tool.xml
-

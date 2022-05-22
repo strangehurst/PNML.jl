@@ -294,9 +294,9 @@ function parse_name(node, pntd; kw...)
         # Ex: PetriNetPlans-PNP/parallel.jl
         # Attempt to harvest content of <name> element instead of the child <text> element.
         # Assumes there are no other children elements.
-        value = string(strip(nodecontent(node)))
+        text = string(strip(nodecontent(node)))
     else
-        value = string(strip(nodecontent(textnode)))
+        text = string(strip(nodecontent(textnode)))
     end
 
     graphicsnode = firstchild("graphics", node)
@@ -305,7 +305,7 @@ function parse_name(node, pntd; kw...)
     toolspecific = allchildren("toolspecific", node)
     tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific, Ref(pntd); kw..., verbose=false)
 
-    Name(value; graphics, tools)
+    Name(; text, graphics, tools)
 end
 
 #----------------------------------------------------------

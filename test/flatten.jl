@@ -30,8 +30,10 @@ header("FLATTEN")
     """ 
     model = parse_str(str)
     net = PNML.first_net(model)
+    @test_call PNML.first_net(model)
 
     PNML.flatten_pages!(net)
+    @test_call PNML.flatten_pages!(net)
     @test typeof(net) <: PNML.PnmlNet
     #@show net
 end

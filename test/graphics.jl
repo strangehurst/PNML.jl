@@ -20,7 +20,10 @@ header("GRAPHICS")
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
     @test n.position isa Vector{PNML.Coordinate}
-    
+
+    @test_call PNML.Coordinate(1,2)
+    @test_call PNML.Coordinate(1.1,2.2)
+
     # There can only be one offset, last tag parsed wins.
     @test n.offset == PNML.Coordinate(7,8)
     @test n.dimension == PNML.Coordinate(5,6)

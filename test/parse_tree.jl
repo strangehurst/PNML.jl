@@ -45,6 +45,7 @@ doc = EzXML.parsexml(str) # shared by testsets
         @test nn.tools === nothing || isempty(nn.tools)
 
         nd = PNML.allchildren("declaration", net)
+        @test_call PNML.allchildren("declaration", net)
         @test isempty(nd)
         @test isempty(parse_node.(nd; reg)) # Empty elements are leaf-enough.
 
@@ -62,6 +63,7 @@ doc = EzXML.parsexml(str) # shared by testsets
             foreach(PNML.allchildren("place", page)) do p
                 @test nodename(p) == "place"
                 i = parse_node(PNML.firstchild("initialMarking", p); reg)
+                @test_call PNML.firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.PTMarking
                 @test typeof(i.value) <: Number
                 @test i.value >= 0

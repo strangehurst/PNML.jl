@@ -85,19 +85,26 @@ Return first toolinfo having a matching toolname and version.
 """
 function get_toolinfo end
 
-get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo([ti], name) 
-get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) = 
-    get_toolinfo([ti], name, version) 
-get_toolinfo(ti::Vector{ToolInfo}, name::AbstractString, version::AbstractString) = 
-    get_toolinfo(ti, Regex(name), Regex(version)) 
- 
+get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo(ti, Regex(name))
+get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) =
+    get_toolinfo(ti, Regex(name), Regex(version))
+get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
+    get_toolinfo(ti, Regex(name),  versionrex)
+get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
+    get_toolinfo([ti], namerex, versionrex)
+
+get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, version::AbstractString) =
+    get_toolinfo(v, Regex(name), Regex(version))
+get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, versionrex::Regex) =
+    get_toolinfo(v, Regex(name), versionrex)
+
 function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    getfirst(ti -> _match(ti, namerex, versionrex), v) 
+    first(get_toolinfos(v, namerex, versionrex))
 end
 
-#function get_toolinfo(o, namerex::Regex, versionrex::Regex=r"^.*$")
-#   has_tools(o) && get_toolinfo(tools(o), namerex, versionrex)
-#end
+function get_toolinfos(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
+    filter(ti -> _match(ti, namerex, versionrex), v)
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -113,8 +120,12 @@ function _match(ti::ToolInfo, name::String, version::String)
     _match(ti.inf, Regex(name), Regex(version))
 end
 function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
-    #@show "match toolinfo $namerex ,$versionrex"
-    !isnothing(match(namerex, ti.toolname)) && !isnothing(match(versionrex, ti.version))
+    #@show "match toolinfo $namerex, $versionrex"
+    match_name = match(namerex, name(ti))
+    match_version = match(versionrex, version(ti))
+    #@show match_name
+    #@show match_version
+    !isnothing(match_name) && !isnothing(match_version)
 end
 
 #---------------------------------------------------------------------

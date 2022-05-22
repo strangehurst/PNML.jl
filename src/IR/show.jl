@@ -298,7 +298,7 @@ end
 Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
-           " name '", has_name(page) ? name(page) : "", "', ",
+           " name '", name(page), "', ",
            length(page.places), " places, ",
            length(page.transitions), " transitions, ",
            length(page.arcs), " arcs, ",

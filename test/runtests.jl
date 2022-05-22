@@ -17,7 +17,7 @@ using PNML: PNML,
     parse_declaration, parse_sort, parse_term, parse_label,
     parse_tokengraphics, parse_tokenposition, parse_name
 
-using PNML: tag, xmlnode, Maybe,
+using PNML: tag, xmlnode, Maybe, name,
     Place, Transition, Arc, Page, PnmlNet,
     pid, place_ids, transition_ids, arc_ids,
     reftransition_ids, refplace_ids,
@@ -27,9 +27,10 @@ using PNML: tag, xmlnode, Maybe,
     first_net, firstpage,
     tools, has_tools, get_toolinfo,
     marking, condition, conditions, inscription,
+    labels, has_label, has_labels,
     nettype,
     default_marking, default_condition, default_inscription,
-    AnyElement, ToolInfo,
+    AnyElement, ToolInfo, version, 
     SimpleNet
 
 

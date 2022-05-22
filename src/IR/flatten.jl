@@ -19,7 +19,7 @@ Collect keys from all pages and move to first page.
 function flatten_pages!(net::PnmlNet)
     # Place content of subpages of 1st page before sibling page's content.
     subpages = firstpage(net).subpages
-    if !isnothing(subpages)
+    if subpages !== nothing
         foldl(flatten_pages!, subpages; init=firstpage(net))
         empty!(subpages)
     end
@@ -35,10 +35,10 @@ end
 "After appending `r` to `l`, recursivly flatten `r` into `l`, then empty `r`."
 function flatten_pages!(l::Page, r::Page)
     append_page!(l, r)
-    if !isnothing(r.subpages)
+    if r.subpages !== nothing
         foldl(flatten_pages!, r.subpages; init=l)
     end
-    empty!(r)
+    r !== nothing && empty!(r)
     return l
 end
 

@@ -53,9 +53,14 @@ header("UNCLAIMED LABEL")
         ]
         reg1=PNML.IDRegistry()
         reg2=PNML.IDRegistry()
+
         u = PNML.unclaimed_label(node, reg=reg1)
         l = PNML.PnmlLabel(u, node)
         a = PNML.anyelement(node, reg=reg2)
+
+        @test_call PNML.unclaimed_label(node, reg=reg1)
+        @test_call PNML.PnmlLabel(u, node)
+        @test_call PNML.anyelement(node, reg=reg2)
 
         @test !isnothing(u)
         @test !isnothing(l)
@@ -79,10 +84,12 @@ header("UNCLAIMED LABEL")
             @test l.dict[key] == val
             @test a.dict[key] == val
         end
-        
+
         haskey(u.second, :id) && @test PNML.isregistered(reg1, u.second[:id])
         haskey(l.dict, :id) && @test PNML.isregistered(reg1, l.dict[:id])
         haskey(a.dict, :id) && @test PNML.isregistered(reg2, a.dict[:id])
+
+        @test_call  PNML.isregistered(reg2, :id)
 
         @show u
         @show l
@@ -96,11 +103,17 @@ end
     n = parse_node(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
     </transition>""", reg=PNML.IDRegistry())
-    #printnode(n)
-    l = PNML.labels(n)
+    printnode(n)
+    @show l = PNML.labels(n)
     @test PNML.tag(first(l)) === :rate # only label
     @test PNML.get_label(n, :rate) === first(PNML.labels(n))
     @test PNML.rate(n) ≈ 0.3
+
+    @test_call PNML.has_labels(n)
+    @test_call PNML.labels(n)
+    @test_call PNML.has_label(n, :rate)
+    @test_call PNML.get_label(n, :rate)
+    @test_call PNML.rate(n)
 end
 
 header("DECLARATION")
@@ -113,7 +126,7 @@ header("DECLARATION")
            </declarations>
           </structure>
         </declaration>
-        """; reg= PNML.IDRegistry())
+        """; reg = PNML.IDRegistry())
 
     @show typeof(n), fieldnames(typeof(n))
     printnode(n)
@@ -128,6 +141,11 @@ header("DECLARATION")
     @test PNML.tools(n) === nothing
     @test PNML.labels(n) === nothing
     @test isempty(n.com)
+
+    @test_call PNML.declarations(n)
+    @test_call PNML.graphics(n)
+    @test_call PNML.tools(n)
+    @test_call PNML.labels(n)
 end
 
 @testset "declaration tree" begin
@@ -164,6 +182,8 @@ end
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(n)) == 3
+    @test_call PNML.declarations(n)
+
     for d in PNML.declarations(n)
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
@@ -176,6 +196,7 @@ end
         #@show fieldnames(typeof(d.def))
 
         @test PNML.isregistered(reg, pid(d))
+        @test_call PNML.isregistered(reg, pid(d))
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
         @test d.def isa PNML.AnyElement #TODO implement definitions?
         @test tag(d.def) === :cyclicenumeration
@@ -212,14 +233,22 @@ header("PT initMarking")
     @test n.value == n()
 
     mark1 = PNML.PTMarking(2)
+    @test_call PNML.PTMarking(2)
     @test typeof(mark1()) == typeof(2)
     @test mark1() == 2
+    @test_call mark1()
+
     mark2 = PNML.PTMarking(3.5)
+    @test_call PNML.PTMarking(3.5)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
+    @test_call mark2()
+
     mark3 = PNML.PTMarking()
+    @test_call PNML.PTMarking()
     @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore())())
     @test mark3() == PNML.default_marking(PnmlCore())()
+    @test_call mark3()
 end
 
 header("HL Marking")
@@ -246,7 +275,7 @@ header("HL Marking")
     n = parse_node(to_node(str); reg = PNML.IDRegistry())
     @show typeof(n), fieldnames(typeof(n))
     printnode(n)
-    
+
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}

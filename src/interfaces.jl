@@ -16,9 +16,9 @@ Return tag symbol.
 function tag end
 
 """
-    name(x) -> Union{Name,String}
+    name(x) -> String
 
-Return name String.
+Return name String. Default to empty string.
 """
 function name end
 

@@ -16,6 +16,7 @@ header("NODES")
     @test @inferred(pid(n)) === :place1
     @test @inferred PNML.has_name(n)
     @test @inferred(PNML.name(n)) == "Some place"
+    @test_call marking(n)
     @test marking(n) == 100
 end
 
@@ -42,6 +43,7 @@ end
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     t = parse_node(node; reg = PNML.IDRegistry())
     @test t isa PNML.Transition
+    @test_call condition(t)
     @test condition(t) === true
 end
 
@@ -59,6 +61,7 @@ end
     @test pid(n) === :arc1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some arc"
+    @test_call inscription(n)
     @test PNML.inscription(n) == 6
 end
 
