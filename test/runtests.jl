@@ -35,8 +35,8 @@ using PNML: tag, xmlnode, Maybe, name,
 
 
 const GROUP        = get(ENV, "GROUP", "All")
-const PRINT_PNML::Bool   = get(ENV, "PRINT_PNML", "true") == "true"
-const VERBOSE_PNML::Bool = get(ENV, "VERBOSE_PNML", "true") == "true"
+const PRINT_PNML   = parse(Bool, get(ENV, "PRINT_PNML", "true"))
+const VERBOSE_PNML = parse(Bool, get(ENV, "VERBOSE_PNML", "true"))
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
