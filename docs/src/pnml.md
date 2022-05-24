@@ -48,7 +48,7 @@ These are instances of the 3 flavors currently covered by PNML.
 There are links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
 
 Note that ISTM the people behind PNML are of the Model Driven Engineering (MDE) camp
-and have chosen Java, Eclipse and its EMF. There is GUI focus (see [[Top Level: Net, Page](@ref)).
+and have chosen Java, Eclipse and its EMF. There is GUI focus.
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
@@ -115,7 +115,7 @@ using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
 
 The implementation of Labels supports _annotation_ and _attribute_ format labels.
 
-### Annotatiion Labels
+### Annotation Labels
 
 _annotation_ format labels are expected to have either a <text> element, 
 a <structure> element or both. Often the <text> is a human-readable representation

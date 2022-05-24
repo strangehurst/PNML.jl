@@ -1,4 +1,4 @@
-```@meta
+f```@meta
 CurrentModule = PNML
 ```
 
@@ -103,8 +103,7 @@ println(AbstractTrees.repr_tree(PNML.PetriNet)) # hide
 ```@example type
 foreach(typet) do t; println(t); end # hide
 ```
-
-## Top Level: Net, Page
+## Top Level: Model, Net, Page
 
 At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
@@ -127,13 +126,13 @@ Another future extension may be to use pages for distributed computing.
 The pnml specification permits that multiple pages to be flattened
 (by [`flatten_pages!`](@ref)) to a single `Page` before use.
 Using them unflattened is not supposed to be impossible,
-but is not the arena or the initial use cases in no paticular order:
-adapting to use graph tools, catlab, agent based modeling, sciml, etc.
+but is not the arena or the initial use cases (in no paticular order):
+adapting to use graph tools, agent based modeling, sciml, etc.
 
 [`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
 A concrete `PetriNet` type uses the IR to produce higher-level behavior.
-This is the level at which `flatten_pages!` and `deref~` operate.
+This is the level at which `flatten_pages!` and `deref!` operate.
 
 `PetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
