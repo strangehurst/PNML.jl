@@ -29,3 +29,7 @@ Condition(::Nothing) =  error("Condition must have a `value`, ")
 Condition(::Maybe{String}, ::Nothing) = error("Condition must have a `value`, ")
 Condition(::Maybe{String}, ::Nothing, ::ObjectCommon) = error("Condition must have a `value`, ")
 
+"""
+Evaluate a [`Condition`](@ref) instance.
+"""
+(mark::Condition)() = _evaluate(mark.term)

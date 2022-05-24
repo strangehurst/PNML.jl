@@ -34,7 +34,7 @@ $(TYPEDFIELDS)
 
 Labels an Arc.
 """
-struct HLInscription{TermType} <: HLAnnotation
+struct HLInscription{TermType<:AbstractTerm} <: HLAnnotation
     text::Maybe{String}
     term::Maybe{TermType} # structure
     com::ObjectCommon
@@ -52,4 +52,4 @@ HLInscription(s::AbstractString, t::Term) = HLInscription(s, t, ObjectCommon())
 """
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
-(hlm::HLInscription)() = "HLInscription functor not implemented"
+(hlm::HLInscription)() = _evaluate(hlm.term) #"HLInscription functor not implemented"

@@ -67,7 +67,7 @@ julia> using PNML: HLMarking, PnmlDict, Term
 julia> m = HLMarking("the text", Term(:term, PnmlDict(:value=>3)));
 
 julia> m()
-"HLMarking functor not implemented"
+3
 ```
 """
 struct HLMarking{TermType} <: HLAnnotation
@@ -85,6 +85,11 @@ HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
 """
 Evaluate a [`HLMarking`](@ref) instance. 
 Returns a value of the same sort as its `Place`.
+#TODO How to ensure sort type?
 """
-(hlm::HLMarking)() = "HLMarking functor not implemented"
+(hlm::HLMarking)() = _evaluate(hlm.term)
+
+_evaluate(x::Term) = x()
+_evaluate(x::Bool) = x
+_evaluate(x::Number) = x
 
