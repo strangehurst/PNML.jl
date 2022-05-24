@@ -24,10 +24,12 @@ function marking(place)
     if !isnothing(place.marking)
         place.marking()
     else
-        default_marking(nettype(place))()
+        default_marking(place)()
     end
 end
-    
+
+default_marking(place::Place) = default_marking(nettype(place)) 
+
 #-------------------
 """
 Transition node of a Petri Net Markup Language graph.
@@ -46,13 +48,14 @@ end
 
 function condition(transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
-        default_condition(nettype(transition)).term
+        default_condition(transition).term
     else
         transition.condition.term
         #TODO evaluate condition
         #TODO implement full structure handling
     end
 end
+default_condition(transition::Transition) = default_condition(nettype(transition))
 
 #-------------------
 """
@@ -86,9 +89,10 @@ function inscription(arc)
     if !isnothing(arc.inscription)
         arc.inscription()
     else
-        default_inscription(nettype(arc))() #one(Int) #TODO: match value type.
+        default_inscription(arc)() #one(Int) #TODO: match value type.
     end
 end
+default_inscription(arc::Arc) = default_inscription(nettype(arc))
 
 """
 $(TYPEDSIGNATURES)
