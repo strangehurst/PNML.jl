@@ -382,8 +382,11 @@ function parse_hlinitialMarking(node, pntd; kw...)
                             :structure=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-        "structure" => (d[:structure] = haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
-        _ => parse_pnml_label_common!(d, child, pntd; kw...)
+            "structure" => (d[:structure] =
+                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
+                !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
+                default_tmarking(pntd)())
+            _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     HLMarking(d[:text], d[:structure], ObjectCommon(d))
@@ -400,8 +403,10 @@ function parse_hlinscription(node, pntd; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
         "structure" => (d[:structure] = 
-                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : nothing)
-        _ => parse_pnml_label_common!(d, child, pntd; kw...)
+                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
+                !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
+                default_inscription(pntd)())
+     _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     HLInscription(d[:text], d[:structure], ObjectCommon(d))
@@ -434,7 +439,7 @@ function parse_condition(node, pntd; kw...)
             "structure" => (d[:structure] = 
                     haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
                     !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                    true) #default_term(pntd))
+                    default_condition(pntd)())
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
