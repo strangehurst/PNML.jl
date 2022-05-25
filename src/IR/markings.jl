@@ -89,6 +89,10 @@ Returns a value of the same sort as its `Place`.
 """
 (hlm::HLMarking)() = _evaluate(hlm.term)
 
+"""
+Inscriptions, Markings, Conditions evaluate a value that may be a scalar of a Term functor.
+"""
+function _evaluate end
 _evaluate(x::Term) = x()
 _evaluate(x::Bool) = x
 _evaluate(x::Number) = x
