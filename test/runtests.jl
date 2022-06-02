@@ -1,5 +1,5 @@
 using PNML, EzXML
-using AbstractTrees, Test
+using AbstractTrees, Test, SafeTestsets
 using PrettyPrinting
 using IfElse
 # Run the tests embedded in docstrings.
