@@ -25,20 +25,20 @@ header("SimpleNet")
         </net>
     </pnml>
     """
-    @test_call parse_str(str)
+    #test_call parse_str(str)
     model = @inferred parse_str(str)
     printnode(nets(model))
 
-    @test_call PNML.find_nets(model, :continuous)
+    #test_call PNML.find_nets(model, :continuous)
     v = @inferred PNML.find_nets(model, :continuous)
 
-    @test_call PNML.first_net(model)
+    #test_call PNML.first_net(model)
     @test v[begin] == @inferred PnmlNet PNML.first_net(model)
     @test first(v) == @inferred PnmlNet PNML.first_net(model)
 
-    @test_call PNML.SimpleNet(v[begin])
-    @test_call PNML.SimpleNet(model)
-    @test_call PNML.SimpleNet(PNML.first_net(model))
+    #test_call PNML.SimpleNet(v[begin])
+    #test_call PNML.SimpleNet(model)
+    #test_call PNML.SimpleNet(PNML.first_net(model))
     
     net  = @inferred SimpleNet PNML.SimpleNet(v[begin])
     net1 = @inferred SimpleNet PNML.SimpleNet(model)
@@ -64,7 +64,7 @@ header("SimpleNet")
     end
 
     for top in [net, net.net, first(pages(net.net))]
-        @test_call places(top)
+        #test_call places(top)
         for p in @inferred places(top)
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
@@ -73,7 +73,7 @@ header("SimpleNet")
             @test typeof(marking(p)) <: typeof(default_marking(nettype(p))())
             @test @inferred(marking(p)) isa typeof(default_marking(nettype(p))())
         end
-        @test_call transitions(top)
+        #test_call transitions(top)
         for t in @inferred transitions(top)
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -82,7 +82,7 @@ header("SimpleNet")
             @test condition(t) !== nothing
             @test @inferred condition(t)
         end
-        @test_call arcs(top)
+        #test_call arcs(top)
         for a in @inferred arcs(top)
             @test @inferred has_arc(top, pid(a))
             @test a == @inferred Maybe{Arc} arc(top, pid(a))

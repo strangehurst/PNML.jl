@@ -7,16 +7,36 @@ header("NODES")
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
-    @test_call parse_node(node; reg = PNML.IDRegistry())
+    #test_call parse_node(node; reg = PNML.IDRegistry())
     n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: Place
-    @test_call PNML.has_xml(n)
+    #test_call PNML.has_xml(n)
     @test !PNML.has_xml(n)
     @test @inferred(pid(n)) === :place1
     @test @inferred PNML.has_name(n)
     @test @inferred(PNML.name(n)) == "Some place"
-    @test_call marking(n)
+    #test_call marking(n)
+    @test marking(n) == 100
+end
+
+@testset "no text" begin
+    node = xml"""
+      <place id="place1">
+        <name> <text>Some place</text> </name>
+        <initialMarking>100</initialMarking>
+      </place>
+    """
+    #test_call parse_node(node; reg = PNML.IDRegistry())
+    n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
+    printnode(n)
+    @test typeof(n) <: Place
+    #test_call PNML.has_xml(n)
+    @test !PNML.has_xml(n)
+    @test @inferred(pid(n)) === :place1
+    @test @inferred PNML.has_name(n)
+    @test @inferred(PNML.name(n)) == "Some place"
+    #test_call marking(n)
     @test marking(n) == 100
 end
 
@@ -43,7 +63,7 @@ end
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     t = parse_node(node; reg = PNML.IDRegistry())
     @test t isa PNML.Transition
-    @test_call condition(t)
+    #test_call condition(t)
     @test condition(t) === true
 end
 
@@ -61,7 +81,7 @@ end
     @test pid(n) === :arc1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some arc"
-    @test_call inscription(n)
+    #test_call inscription(n)
     @test PNML.inscription(n) == 6
 end
 

@@ -76,8 +76,8 @@ header("PAGES")
         @test PNML.arc_ids(net) == expected_a
         @test PNML.arc_ids(firstpage(net)) == expected_a
         @test PNML.arc_ids(net) == PNML.arc_ids(firstpage(net))
-        @test_call PNML.arc_ids(net)
-        @test_call PNML.arc_ids(firstpage(net))
+        #test_call PNML.arc_ids(net)
+        #test_call PNML.arc_ids(firstpage(net))
 
         for a ∈ expected_a
             @test a ∈ PNML.arc_ids(net)
@@ -87,8 +87,8 @@ header("PAGES")
         @test PNML.place_ids(net) == expected_p
         @test PNML.place_ids(firstpage(net)) == expected_p
         @test PNML.place_ids(net) == PNML.place_ids(firstpage(net))
-        @test_call PNML.place_ids(net)
-        @test_call PNML.place_ids(firstpage(net))
+        #test_call PNML.place_ids(net)
+        #test_call PNML.place_ids(firstpage(net))
 
         for p ∈ expected_p
             @test p ∈ PNML.place_ids(net)
@@ -98,8 +98,8 @@ header("PAGES")
         @test PNML.transition_ids(net) == expected_t
         @test PNML.transition_ids(firstpage(net)) == expected_t
         @test PNML.transition_ids(net) == PNML.transition_ids(firstpage(net))
-        @test_call PNML.transition_ids(net)
-        @test_call PNML.transition_ids(firstpage(net))
+        #test_call PNML.transition_ids(net)
+        #test_call PNML.transition_ids(firstpage(net))
 
         for t ∈ expected_t
             @test t ∈ PNML.transition_ids(net)
@@ -109,8 +109,8 @@ header("PAGES")
         @test PNML.reftransition_ids(net) == expected_rt
         @test PNML.reftransition_ids(firstpage(net)) == expected_rt
         @test PNML.reftransition_ids(net) == PNML.reftransition_ids(firstpage(net))
-        @test_call PNML.reftransition_ids(net)
-        @test_call PNML.reftransition_ids(firstpage(net))
+        #test_call PNML.reftransition_ids(net)
+        #test_call PNML.reftransition_ids(firstpage(net))
 
         for rt ∈ expected_rt
             @test rt ∈ PNML.reftransition_ids(net)
@@ -120,8 +120,8 @@ header("PAGES")
         @test PNML.refplace_ids(net) == expected_rp
         @test PNML.refplace_ids(firstpage(net)) == expected_rp
         @test PNML.refplace_ids(net) == PNML.refplace_ids(firstpage(net))
-        @test_call PNML.refplace_ids(net)
-        @test_call PNML.refplace_ids(firstpage(net))
+        #test_call PNML.refplace_ids(net)
+        #test_call PNML.refplace_ids(firstpage(net))
 
         for rp ∈ expected_rp
             @test rp ∈ PNML.refplace_ids(net)

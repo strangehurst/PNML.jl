@@ -9,9 +9,9 @@
 end
 
 @testset "pnmltype" begin
-    #@test_call PNML.PnmlTypes.default_pntd_map()
-    @test_call PNML.pnmltype(PnmlCore())
-    @test_call pntd_symbol("foo")
-    @test_call PNML.pnmltype("pnmlcore")
-    @test_call PNML.pnmltype(:pnmlcore)
+    ##test_call PNML.PnmlTypes.default_pntd_map()
+    #test_call PNML.pnmltype(PnmlCore())
+    #test_call pntd_symbol("foo")
+    #test_call PNML.pnmltype("pnmlcore")
+    #test_call PNML.pnmltype(:pnmlcore)
 end
