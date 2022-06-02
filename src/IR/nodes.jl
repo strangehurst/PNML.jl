@@ -89,7 +89,7 @@ function inscription(arc)
     if !isnothing(arc.inscription)
         arc.inscription()
     else
-        default_inscription(arc)() #one(Int) #TODO: match value type.
+        default_inscription(arc)()
     end
 end
 default_inscription(arc::Arc) = default_inscription(nettype(arc))

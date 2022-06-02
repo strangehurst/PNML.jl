@@ -14,6 +14,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
+
 PnmlModel(net::PnmlNet) = PnmlModel([net])
 PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, pnml_ns, IDRegistry(), nothing)
 PnmlModel(nets::Vector{PnmlNet}, ns, reg::IDRegistry) = PnmlModel(nets, ns, reg, nothing)
