@@ -340,7 +340,11 @@ $(TYPEDSIGNATURES)
 function parse_initialMarking(node, pntd; kw...)
     nn = nodename(node)
     nn == "initialMarking" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
+    d = pnml_label_defaults(node, :tag=>Symbol(nn), 
+        :value=>isempty(nodecontent(node)) ? _evaluate(default_marking(pntd)) :
+                    number_value(strip(nodecontent(node)))
+                    )
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             # We extend to real numbers.
@@ -348,7 +352,7 @@ function parse_initialMarking(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    PTMarking(isnothing(d[:value]) ? default_marking(pntd) : d[:value], ObjectCommon(d))
+    PTMarking(d[:value], ObjectCommon(d))
 end
 
 """
@@ -357,7 +361,10 @@ $(TYPEDSIGNATURES)
 function parse_inscription(node, pntd; kw...)
     nn = nodename(node)
     nn == "inscription" || error("element name wrong: $nn'")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
+    d = pnml_label_defaults(node, :tag=>Symbol(nn),
+        :value=>isempty(nodecontent(node)) ? _evaluate(default_inscription(pntd)) :
+                                    number_value(strip(nodecontent(node))))
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
@@ -365,7 +372,7 @@ function parse_inscription(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    PTInscription(isnothing(d[:value]) ? default_inscription(pntd) : d[:value], ObjectCommon(d))
+    PTInscription(d[:value], ObjectCommon(d))
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
