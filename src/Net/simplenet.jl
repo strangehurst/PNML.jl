@@ -49,6 +49,7 @@ end
 "Construct from string of valid pnml XML using the first network"
 SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
 SimpleNet(model::PnmlModel)  = SimpleNet(first_net(model))
+SimpleNet(node::XMLNode)  = SimpleNet(PnmlModel(node))
 
 function SimpleNet(net::PnmlNet)
     netcopy = deepcopy(net) #TODO Is copy needed?
@@ -110,19 +111,26 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return rate value of `transition`.  Mising rate labels are defaulted to 0.0
+Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 """
 function rate end
 function rate(transition)::Number #! where {T<:PnmlType, N<:PetriNet{T}}
     r = get_label(transition, :rate)
-    if !isnothing(r) && !isnothing(r.dict[:text])
+    if !isnothing(r)
         @assert tag(r) === :rate
-        # The unclaimed label mechanism does not do parse_node (at the moment),
-        # so adds a :content key for text elements.
-        value = number_value(r.dict[:text][:content]) #TODO :content is redundent for :text
-        return isnothing(value) ? 0.0 : value #! specialize default value?
+        if haskey(r.dict, :text)
+            !isnothing(r.dict[:text])
+            # The unclaimed label mechanism adds a :content key for text elements.
+            value = number_value(r.dict[:text][:content])
+        elseif haskey(r.dict, :content)
+            # When the text element is elided,, there is still a :content.
+            value = number_value(r.dict[:content])
+        else
+            value = zero(Float64)
+        end
+        return isnothing(value) ? zero(Float64) : value #! specialize default value?
     else
-        return 0.0
+        return zero(Float64)
     end
 end
 
