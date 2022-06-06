@@ -4,11 +4,11 @@ header("Exanples")
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
     @show testfile
     model = parse_file(testfile)
-    #test_call  parse_file(testfile)
+    @test_call  parse_file(testfile)
 
     @test model isa PNML.PnmlModel
     nets = PNML.nets(model)
-    #test_call PNML.nets(model)
+    @test_call PNML.nets(model)
     @test nets isa Vector{PNML.PnmlNet}
     @test length(nets) == 1
     @test nets[1].pages isa Vector

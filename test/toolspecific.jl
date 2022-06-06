@@ -49,7 +49,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test typeof(n) <: ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
-        #test_call xmlnode(n)
+        @test_call xmlnode(n)
         @test n.toolname == s.tool
         @test name(n) == s.tool
         @test n.version == s.version
@@ -62,7 +62,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         @test get_toolinfo(n, Regex(s.tool), r"^.*$") == n
         @test get_toolinfo(n, Regex(s.tool)) == n
 
-        #test_call get_toolinfo(n, s.tool, s.version)
+        @test_call get_toolinfo(n, s.tool, s.version)
 
         #s.contentparse(n.infos) #TODO
         # contentparse should handle a vector or scalar of well-formed xml.
@@ -98,16 +98,16 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         @show model
 
         page = firstpage(first_net(model))
-        #test_call firstpage(first_net(model))
+        @test_call firstpage(first_net(model))
 
         @test !has_tools(page)
-        #test_call has_tools(page)
+        @test_call has_tools(page)
 
         place = first(page.places)
         @test has_tools(place)
-        #test_call has_tools(place)
+        @test_call has_tools(place)
         t = tools(place)
-        #test_call tools(place)
+        @test_call tools(place)
         @test t isa Vector{ToolInfo}
         @test length(t) == 5
 
@@ -122,8 +122,8 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
             @test PNML.name(t[i]) == s.tool
             @test PNML.version(t[i]) == s.version
 
-            #test_call PNML.name(t[i])
-            #test_call PNML.version(t[i])
+            @test_call PNML.name(t[i])
+            @test_call PNML.version(t[i])
 
             @test typeof(t[i].infos) == typeof(ti.infos)
 

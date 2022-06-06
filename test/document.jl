@@ -43,7 +43,7 @@ header("### Registry")
     @test :net ∉ reg.ids
 
     parse_pnml(root(parsexml(str)); reg)
-    #test_call parse_pnml(root(parsexml(str)); reg)
+    @test_call parse_pnml(root(parsexml(str)); reg)
     #@show reg
 
     @test PNML.isregistered(reg, :net)
@@ -66,7 +66,7 @@ end
 
     v1 = PNML.find_nets(model, :ptnet)
     printnode(v1, label="v1")
-    #test_call PNML.PnmlTypes.pnmltype(:ptnet)
+    @test_call PNML.PnmlTypes.pnmltype(:ptnet)
     foreach(v1) do net
         @test net.type === PNML.PnmlTypes.pnmltype(:ptnet)
     end

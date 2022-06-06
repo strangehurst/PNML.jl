@@ -1,10 +1,10 @@
 @testset "ID registry" begin
-    #test_call PNML.IDRegistry()
+    @test_call PNML.IDRegistry()
     reg = PNML.IDRegistry()
-    #test_call PNML.register_id!(reg, :p)
-    #test_call PNML.register_id!(reg, "p")
-    #test_call PNML.reset_registry!(reg)
-    #test_call PNML.duplicate_id_action(:p; action=:bogus)
+    @test_call PNML.register_id!(reg, :p)
+    @test_call PNML.register_id!(reg, "p")
+    @test_call PNML.reset_registry!(reg)
+    @test_call PNML.duplicate_id_action(:p; action=:bogus)
     
     PNML.register_id!(reg, "p")
     @test @inferred PNML.isregistered(reg, "p")
@@ -22,7 +22,7 @@ end
 header("GETFIRST")
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
-    #test_call PNML.getfirst(==("3"), v)
+    @test_call PNML.getfirst(==("3"), v)
     @test "3" == @inferred Maybe{String} PNML.getfirst(==("3"), v)
     @test nothing === @inferred Maybe{String} PNML.getfirst(==("33"), v)
 end
@@ -36,7 +36,7 @@ end
         <c name="c2"/>
     </test>
     """
-    #test_call nodename(PNML.getfirst("a", node))
+    @test_call nodename(PNML.getfirst("a", node))
     @test nodename(PNML.getfirst("a", node)) == "a"
     @test PNML.getfirst("b", node) === nothing
     @test nodename(PNML.getfirst("c", node)) == "c"
