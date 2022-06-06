@@ -96,9 +96,9 @@ inscription(net::PnmlNet, arc_id::Symbol, page_idx=1) = inscription(pages(net)[p
 has_arc(page::Page, id::Symbol) = any(x -> pid(x) === id, arcs(page))
 arc(page::Page, id::Symbol) = getfirst(x -> pid(x) === id, arcs(page))
 arc_ids(page::Page) = map(pid, arcs(page))
-all_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id, arcs(page))
+all_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id || target(a)===id, arcs(page))
 src_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id, arcs(page))
-tgt_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id, arcs(page))
+tgt_arcs(page::Page, id::Symbol) = filter(a -> target(a)===id, arcs(page))
 inscription(page::Page, arc_id::Symbol) = inscription(arc(page, arc_id))
 
 #------------------------------------------------------------------
@@ -111,10 +111,12 @@ end
 function has_refT(petrinet::N, ref_id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     any(x -> pid(x) === ref_id, reftransitions(petrinet))
 end
+
 refplace_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
     map(pid, refplaces(petrinet))
 reftransition_ids(petrinet::N) where {T<:PnmlType, N<:PetriNet{T}} =
     map(pid, reftransitions(petrinet))
+
 function refplace(petrinet::N, id::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
     refplace(petrinet.net, id)
 end
@@ -256,8 +258,9 @@ function transition_function(petrinet::N, idvec::Vector{Symbol}) where {T<:PnmlT
 end
 
 transition_function(net::PnmlNet, page_idx=1) = transition_function(net.pages[page_idx])
-transition_function(page::Page, idvec::Vector{Symbol}) =
+function transition_function(page::Page, idvec::Vector{Symbol})
     LVector( (; [t=>in_out(page, t) for t in idvec]...))
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -275,22 +278,26 @@ end
 in_out(net::PnmlNet, transition_id::Symbol, page_idx=1) =
     in_out(net.pages[page_idx], transition_id)
 
-in_out(page::Page, transition_id::Symbol) =
+function in_out(page::Page, transition_id::Symbol)
     (ins(page, transition_id), outs(page, transition_id))
+end
 
 """
 $(TYPEDSIGNATURES)
 Return arcs of `p` that have `transition_id` as the target.
 """
-ins(p, transition_id::Symbol) =
+function ins(p, transition_id::Symbol)
     LVector( (; [source(a)=>inscription(a) for a in tgt_arcs(p, transition_id)]...))
+end
 
 """
 $(TYPEDSIGNATURES)
 Return arcs of `p` that have `transition_id` as the source.
 """
-outs(p, transition_id::Symbol) =
+function outs(p, transition_id::Symbol)
+    #isempty(src_arcs(p, transition_id)) && @warn "no src_arcs for $transition_id"
     LVector( (; [target(a)=>inscription(a) for a in src_arcs(p, transition_id)]...))
+end
 
 #------------------------------------------------------------------
 #
