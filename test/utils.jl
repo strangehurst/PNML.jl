@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Maybe
+ 
 @testset "ID registry" begin
     @test_call PNML.IDRegistry()
     reg = PNML.IDRegistry()

@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: tag, pid, xmlnode, parse_pnml
+
 header("DOCUMENT")
 
 @testset "Show" begin

@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Maybe, tag, pid, xmlnode, parse_name, nets
+
 header("parse tree")
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->

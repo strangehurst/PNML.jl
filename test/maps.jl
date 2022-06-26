@@ -1,3 +1,6 @@
+using PNML, EzXML
+using JET
+
 @testset "tagmap" begin
     # Visit every entry in the map.
     @testset "tag $t" for t in keys(PNML.tagmap)

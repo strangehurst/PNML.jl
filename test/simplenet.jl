@@ -1,3 +1,16 @@
+using PNML, EzXML, ..TestUtils, JET, LabelledArrays
+using PNML: tag, pid, xmlnode, parse_str, 
+    Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
+    nets, pages,
+    place, places, has_place,
+    transition, transitions, has_transition,
+    arc, arcs, has_arc,
+    place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
+    marking, default_marking, initialMarking,
+    condition,
+    inscription,
+    nettype
+
 header("SimpleNet")
 
 @testset "SIMPLENET" begin

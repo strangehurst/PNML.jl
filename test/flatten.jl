@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: tag, pid, xmlnode
+
 header("FLATTEN")
 
 @testset "deref" begin

@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Maybe, tag, xmlnode, labels
+
 header("LABELS")
 @testset "labels" begin
     # Exersize the :labels of a PnmlDict

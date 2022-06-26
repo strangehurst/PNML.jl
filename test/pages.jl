@@ -1,4 +1,5 @@
-using PNML: firstpage
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Maybe, tag, xmlnode, labels, firstpage
 
 header("PAGES")
 @testset "pages" begin

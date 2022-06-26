@@ -1,3 +1,5 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
 header("EXCEPTIONS")
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."

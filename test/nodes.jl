@@ -1,3 +1,7 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Place, Transition, Arc, 
+  pid, marking, condition, inscription
+
 header("NODES")
 
 @testset "place" begin

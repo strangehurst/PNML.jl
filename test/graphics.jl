@@ -1,3 +1,6 @@
+using PNML, EzXML, ..TestUtils, JET
+using PNML: tag, pid
+
 header("GRAPHICS")
 @testset "graphics" begin
     str = """
