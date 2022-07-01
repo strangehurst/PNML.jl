@@ -108,7 +108,8 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct UserOperator <: AbstractOperator
-    declaration::Symbol # operator declaration id
+    "Identity of operators's declaration."
+    declaration::Symbol # 
 end
 
 """
@@ -118,7 +119,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Declaration <: HLAnnotation
-    declarations::Vector{AbstractDeclaration} #TODO type stability?
+    declarations::Vector{Any} #!{AbstractDeclaration} causes JET errors
     com::ObjectCommon
     #TODO attach XML node?
 end

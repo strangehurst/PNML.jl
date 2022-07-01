@@ -80,15 +80,18 @@ end
     if select("All", "IR")
         header("IR")
         @safetestset "nodes"        begin include("nodes.jl") end
-        @safetestset "labels"       begin include("labels.jl") end
         @safetestset "graphics"     begin include("graphics.jl") end
+        @safetestset "labels"       begin include("labels.jl") end
         @safetestset "parse_labels" begin include("parse_labels.jl") end
+        @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "flatten"      begin include("flatten.jl") end
-        @safetestset "example file" begin include("parse_examples.jl") end
+    end
+    if select("All", "Examples")
+            @safetestset "example file" begin include("parse_examples.jl") end
     end
     if select("All", "Net")
         header("Net")
