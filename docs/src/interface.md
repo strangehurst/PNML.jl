@@ -38,6 +38,7 @@ AbstractTrees.repr_tree(PNML.PnmlObject)
 AbstractTrees.repr_tree(PNML.AbstractLabel)
 AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
 AbstractTrees.repr_tree(PNML.PnmlException)
+AbstractTrees.repr_tree(PNML.AbstractDeclaration) # Kind of label.
 AbstractTrees.repr_tree(PNML.AbstractSort)
 AbstractTrees.repr_tree(PNML.AbstractTerm)
 ]
