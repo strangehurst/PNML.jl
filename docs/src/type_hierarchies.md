@@ -9,16 +9,7 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 #, GraphRecipes,Plots
 
 AbstractTrees.children(x::Type) = subtypes(x)
-
-typet = [
-AbstractTrees.repr_tree(PNML.PnmlObject)
-AbstractTrees.repr_tree(PNML.AbstractLabel)
-AbstractTrees.repr_tree(PNML.AbstractPnmlTool)
-AbstractTrees.repr_tree(PNML.PnmlException)
-AbstractTrees.repr_tree(PNML.AbstractDeclaration) # Kind of label.
-AbstractTrees.repr_tree(PNML.AbstractSort)
-AbstractTrees.repr_tree(PNML.AbstractTerm)
-]
+type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition
 See [PnmlTypes](@ref) module page.
@@ -40,7 +31,7 @@ be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
 at a structural level. It may paramertize types to facilitate specilaization.
 
 ```@example type
-println(AbstractTrees.repr_tree(PNML.PnmlTypes.PnmlType)) # hide
+type_tree(PNML.PnmlTypes.PnmlType) # hide
 ```
 
 | PnmlType     | Place | Trans | Arc  | Description                                               |
@@ -74,20 +65,20 @@ Todo: Continuous Petri Net
 [`PetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
 
 ```@example type
-println(AbstractTrees.repr_tree(PNML.PetriNet)) # hide
+type_tree(PNML.PetriNet) # hide
 ```
 
 ## PnmlObject
 Page, Arc, Place, Transition define the graph of a petri net.
 ```@example type
-println(AbstractTrees.repr_tree(PNML.PnmlObject)) # hide
+type_tree(PNML.PnmlObject) # hide
 ```
 ## AbstractLabel
 Labels are attached to `PnmlObject`s. 
 Kinds of label include: marking, inscription, condition and 
 declarations of sorts, operators, and variables.
 ```@example type
-println(AbstractTrees.repr_tree(PNML.AbstractLabel)) # hide
+type_tree(PNML.AbstractLabel) # hide
 ```
 
 !!! info "Difference between Object and Label"
@@ -101,24 +92,24 @@ println(AbstractTrees.repr_tree(PNML.AbstractLabel)) # hide
 ## AbstractPnmlTool
 See [`ToolInfo`](@ref).
 ```@example type
-println(AbstractTrees.repr_tree(PNML.AbstractPnmlTool)) # hide
+type_tree(PNML.AbstractPnmlTool) # hide
 ```
 ## PnmlException
 ```@example type
-println(AbstractTrees.repr_tree(PNML.PnmlException)) # hide
+type_tree(PNML.PnmlException) # hide
 ```
 ## AbstractDeclaration
 Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 ```@example type
-println(AbstractTrees.repr_tree(PNML.AbstractDeclaration)) # hide
+type_tree(PNML.AbstractDeclaration) # hide
 ```
 ## AbstractSort
 High-level net's `Place` has a sort. 
 ```@example type
-println(AbstractTrees.repr_tree(PNML.AbstractSort)) # hide
+type_tree(PNML.AbstractSort) # hide
 ```
 ## AbstractTerm 
 Part of the *many-sorted algebra* of a High-level net.
 ```@example type
-println(AbstractTrees.repr_tree(PNML.AbstractTerm)) # hide
+type_tree(PNML.AbstractTerm) # hide
 ```
