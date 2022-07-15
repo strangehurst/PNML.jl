@@ -11,6 +11,7 @@ using PNML: AbstractHLCore,
     Coordinate,
     AbstractDeclaration,
     AbstractSort,
+    AnyElement,
     BuiltInSort,
     MultisetSort,
     ProductSort,
@@ -230,12 +231,10 @@ pathroot   = normpath(@__DIR__, "..")
 docspath   = joinpath(pathroot, "docs")
 srcpath    = joinpath(docspath, "src")
 buildpath  = joinpath(docspath, "build")
-genpath    = joinpath(srcpath,  "generated")
-srcgenpath = joinpath(docspath, "src_generation")
-
+#genpath    = joinpath(srcpath,  "generated")
+#srcgenpath = joinpath(docspath, "src_generation")
 # Eventually we plan on generating pictures, et al in genpath.
-
-mkpath(genpath) #TODO where should initialization happen?
+#mkpath(genpath) #TODO where should initialization happen?
 
 ################################################################################
 #                          Syntax highlighting theme                           #
@@ -288,6 +287,7 @@ makedocs(;
          pages=[
             "Petri Net Markup Language" => "pnml.md",
             "Intermediate Representation" => "IR.md",
+            "Type Hierarchies" => "type_hierarchies.md",
             "Interfaces" => "interface.md",
             "API" => [
                 "PNML"      => "API/library.md",
