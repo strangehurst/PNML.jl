@@ -1,4 +1,4 @@
-using PNML, EzXML
+using PNML #, EzXML
 using AbstractTrees, Test, SafeTestsets
 using PrettyPrinting
 using IfElse
@@ -44,7 +44,7 @@ header(s) = if VERBOSE_PNML
     println("##### ", s)
 end
 
-const SHOW_SUMMARYSIZE = get(ENV, "SHOW_SUMMARYSIZE", "false") == "true"
+const SHOW_SUMMARYSIZE = parse(Bool, get(ENV, "SHOW_SUMMARYSIZE", "false"))
 
 function showsize(ob,k)
     if SHOW_SUMMARYSIZE && PRINT_PNML
