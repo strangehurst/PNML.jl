@@ -211,10 +211,8 @@ Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmlty
 
 # Examples
 
-```jldoctest
-julia> using PNML: PnmlTypes.pntd_symbol
-
-julia> pntd_symbol("foo")
+```jldoctest; setup=:(using PNML)
+julia> PnmlTypes.pntd_symbol("foo")
 :pnmlcore
 ```
 """
@@ -235,9 +233,7 @@ Unknown `symbol` throws a [`PNML.MalformedException`](@ref)
 
 # Examples
 
-```jldoctest
-julia> using PNML; using PNML.PnmlTypes: pnmltype, pntd_symbol
-
+```jldoctest; setup=:(using PNML; using PNML.PnmlTypes: pnmltype, pntd_symbol)
 julia> pnmltype(PnmlCore())
 PnmlCore()
 

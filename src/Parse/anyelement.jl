@@ -50,7 +50,7 @@ Descend the well-formed XML using `parser` on child nodes.
 
 Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
-the hiearchy. And neither children nor content nor attribute may be present.
+the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:PnmlType}
     @assert haskey(kw, :reg)

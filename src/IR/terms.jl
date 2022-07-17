@@ -1,10 +1,28 @@
 """
 Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+
+# Examples
+
+```jldoctest; setup=:(using PNML; using PNML: default_term, default_one_term, default_zero_term, Term)
+julia> m = default_one_term(HLCore())
+Term(:empty, Dict(:value => 1))
+
+julia> m()
+1
+
+julia> m = default_zero_term(HLCore())
+Term(:empty, Dict(:value => 0))
+
+julia> m()
+0
+
+```
 """
 function default_term end
-default_term(::PNTD) where {PNTD <: PnmlType} = zero(Integer) #!
-default_term(::PNTD) where {PNTD <: AbstractContinuousCore} = zero(Float64) #!
-default_term(::PNTD) where {PNTD <: AbstractHLCore} = Term() #!
+default_term(t::PNTD) where {PNTD <: AbstractHLCore} = default_one_term(t)
+default_one_term(::PNTD)  where {PNTD <: AbstractHLCore} = Term(:empty, PnmlDict(:value => one(Integer)))
+default_zero_term(::PNTD) where {PNTD <: AbstractHLCore} = Term(:empty, PnmlDict(:value => zero(Integer)))
+#TODO Allow continuous-valued terms.
 
 """
 $(TYPEDEF)
