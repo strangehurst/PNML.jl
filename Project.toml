@@ -15,8 +15,8 @@ PrettyPrinting = "54e16d92-306c-5ea0-a30b-337be88ac337"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
-AbstractTrees = "0.3"
-DocStringExtensions = "0.8, 0.9"
+AbstractTrees = "0.3, 0.4"
+DocStringExtensions = "0.8"
 EzXML = "1"
 LabelledArrays = "1"
 MLStyle = "0.4"
