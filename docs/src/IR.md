@@ -52,11 +52,8 @@ it was not necessary to consult the type during creation of the IR.
 It is expected that conforming to pntd will be done at a higher level.
 
 Some parts of pnml are complicated. Not yet completed bits may be implemented
-as weappers holdind unparsed XML. In fact, parts of pnml are specified as holding 
+as wrappers holdind unparsed XML. In fact, parts of pnml are specified as holding
 any well-formed XML.
-
-Between the tags explicitly handled by the IR and the generic label collection
-the higher level network 
 
 # History of this IR
 
@@ -69,5 +66,3 @@ Some instances of `PnmlDict` are still present in the parsing mechanism.
 
 As experience with building & using more complicated pnml network models,
 more of the IR will be implemented or changed.
-
-

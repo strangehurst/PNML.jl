@@ -207,7 +207,7 @@ end
     @test n == "ready"
 
     str2 = """
- <text>
+<text>
 ready
 </text>
     """

@@ -47,8 +47,9 @@ These are instances of the 3 flavors currently covered by PNML.
 
 There are links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
 
-Note that ISTM the people behind PNML are of the Model Driven Engineering (MDE) camp
-and have chosen Java, Eclipse and its EMF. There is GUI focus.
+It seems the people behind PNML are of the Model Driven Engineering (MDE) camp
+and have chosen Java, Eclipse and its EMF. There is GUI focus. 
+One can find some PNML implementations in other languages
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
@@ -59,13 +60,12 @@ familiar with the primer's contents.
 
 ## Interoperability
 
-Petri Net Type Definition files (pntd) are defined using RELAX-NG XML Schema files.
+Petri Net Type Definition schema files (pntd) are defined using RELAX-NG XML Schema files.
 Petri Net Markup Language files (pnml) are intended to be validated against a pntd schema.
 
-For tool interchange it should be enough to support the same pntd schema.
+For interchange of pnml between tools it should be enough to support the same pntd schema.
 
-Petri Net type definitions is for interchange of pnml models between different tools.
-ISO is working on part 3 of the PNML standard covering pntd (as of October 2021).
+Note that ISO is working on part 3 of the PNML standard covering pntd (as of October 2021).
 
 It is possibly to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
@@ -98,6 +98,9 @@ used for inter-tool communication with lower overhead in each tool.
 Also a desire to allow "duck typing" of Petri Nets built upon the
 PNML intermediate representration.
 
+Also, non-standard pntd that do not (yet) have a schema written are part of
+the PNML implementation. See [`ContinuousNet`](@ref).
+
 ## PNTD
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
@@ -124,11 +127,11 @@ of of the <structure> element. `Graphics` and `ToolInfo` elements may be present
 Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 "require" all meaning to reside in the <structure>.
 
-For `PTNet` labels (and `pnmlcore`) only the `Name` label with a <etxt> element is defined. 
+For `PTNet` (and `pnmlcore`) only the `Name` label with a <etxt> element is defined.
 
 ### Attribute Labels
 
-_attribute_ format labels are present in the UML model of pnml.  
+_attribute_ format labels are present in the UML model of pnml.
 They differ from _annotation_ by omitting the `Graphics` element, 
 but retain the `ToolInfo` element. Unless an optimization is identified,
 both _attribute_ and _annotation_ will share the same implementation.
@@ -138,8 +141,8 @@ so that field would be `nothing`.
 
 ## High-level Petri Net Concepts
 
-From the draft version of _ISO/IEC 15909-1:2004 High-level Petri nets -
-Part 1: Concepts, definitions and graphical notation._
+From a draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - Part 1:
+Concepts, definitions and graphical notation._
 
 Useful for setting the ontology.
 
