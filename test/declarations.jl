@@ -82,11 +82,11 @@ end
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
 
-        #@show d
-        #@show fieldtypes(typeof(d))
-        #@show fieldnames(typeof(d))
-        #@show fieldtypes(typeof(d.def))
-        #@show fieldnames(typeof(d.def))
+        @show d
+        @show fieldtypes(typeof(d))
+        @show fieldnames(typeof(d))
+        @show fieldtypes(typeof(d.def))
+        @show fieldnames(typeof(d.def))
 
         @test PNML.isregistered(reg, pid(d))
         @test_call PNML.isregistered(reg, pid(d))

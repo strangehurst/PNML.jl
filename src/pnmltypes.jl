@@ -49,7 +49,7 @@ struct PnmlCore <: PnmlType end
 """
 Place-Transition Petri Nets add small extensions to core.
 The grammer file is ptnet.pnml so we name it PTNet.
-Note that 'PT' is often the prefix for XML tags specilized for this net type.
+Note that 'PT' is often the prefix for XML tags specialized for this net type.
 
 $(TYPEDEF)
 """
@@ -65,7 +65,7 @@ abstract type AbstractHLCore <: PnmlType end
 
 """
 High-Level Petri Net Graphs (HLPNGs) add large extensions to core.
-The `HLCore` can be used for generic high-level nets.
+`HLCore` can be used for generic high-level nets.
 We try to implement and test all function at `PnmlCore` level,
 but expect to find use for a concrete type at this level.
 
@@ -91,7 +91,7 @@ $(TYPEDEF)
 struct PT_HLPNG <: AbstractHLCore end
 
 """
-Symmetric Petri Net is the best-worked use case on the `primer`
+Symmetric Petri Net is the best-worked use case in the `primer`
 and ISO specification part 2.
 
 $(TYPEDEF)
