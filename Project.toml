@@ -16,6 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 AbstractTrees = "0.3"
+AutoHashEquals = "0.2"
 DocStringExtensions = "0.8"
 EzXML = "1"
 LabelledArrays = "1"
