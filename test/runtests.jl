@@ -68,10 +68,6 @@ if select("None")
 end
 
 @testset verbose=false "PNML.jl" begin
-    if select("All", "Doc")
-        header("Doctests")
-        @testset "doctest" begin doctest(PNML, manual = true) end
-    end
     if select("All", "Base")
         TestUtils.header("Base")
         @safetestset "maps"         begin include("maps.jl") end
@@ -97,5 +93,9 @@ end
         header("Net")
         @safetestset "document"     begin include("document.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
+    end
+    if select("All", "Doc")
+        header("Doctests")
+        @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end

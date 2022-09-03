@@ -91,7 +91,7 @@ function parse_namedoperator(node, pntd; kw...)
     # <parameter> holds zero or more VariableDeclaration
     def = parse_sort(getfirst("def", node), pntd; kw...)
     parameters = parse_variabledecl.(elements(getfirst("parameter", node)), Ref(pntd); kw...)
-    NamedOperator(register_id!(kw[:reg], node["id"]), node["name"], def)
+    NamedOperator(register_id!(kw[:reg], node["id"]), node["name"], parameters, def)
 end
 
 """

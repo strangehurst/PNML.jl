@@ -1,4 +1,6 @@
 """
+$(TYPEDSIGNATURES)
+
 Return default condition based on `PNTD`. Has meaning of true or always.
 
 # Examples
@@ -17,9 +19,9 @@ Condition(nothing, true, )
 function default_condition end
 default_condition(::PNTD) where {PNTD <: PnmlType} = Condition(true)
 default_condition(::Type{PNTD}) where {PNTD <: PnmlType} = Condition(true)
-default_condition(::PNTD) where {PNTD <: AbstractContinuousCore} = Condition(true)
-default_condition(::Type{PNTD}) where {PNTD <: AbstractContinuousCore} = Condition(true)
-default_condition(pntd::PNTD) where {PNTD <: AbstractHLCore} = Condition(true)#default_term(pntd)) #!
+default_condition(::PNTD) where {PNTD <: AbstractContinuousNet} = Condition(true)
+default_condition(::Type{PNTD}) where {PNTD <: AbstractContinuousNet} = Condition(true)
+default_condition(pntd::PNTD) where {PNTD <: AbstractHLCore} = Condition(true) #! should be a term
 default_condition(::Type{PNTD}) where {PNTD <: AbstractHLCore} = Condition(true)
 
 """
@@ -65,6 +67,7 @@ Condition(::Maybe{String}, ::Nothing) = error("Condition must have a `value`, ")
 Condition(::Maybe{String}, ::Nothing, ::ObjectCommon) = error("Condition must have a `value`, ")
 
 """
+$(TYPEDSIGNATURES)
 Evaluate a [`Condition`](@ref) instance.
 """
 (mark::Condition)() = _evaluate(mark.term)

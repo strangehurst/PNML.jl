@@ -180,7 +180,7 @@ header("HL Marking")
      </structure>
  </hlinitialMarking>
     """
-    n = parse_node(to_node(str); reg = PNML.IDRegistry())
+    n = parse_node(to_node(str), HLCore(); reg = PNML.IDRegistry())
     @show typeof(n), fieldnames(typeof(n))
     printnode(n)
 
@@ -248,7 +248,7 @@ header("STRUCTURE")
      </structure>
     """
 
-    n = parse_node(node; reg = PNML.IDRegistry())
+    n = parse_node(node, HLCore(); reg = PNML.IDRegistry())
     printnode(n)
     @test n isa PNML.Structure
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -268,7 +268,7 @@ header("SORT TYPE")
  </type>
     """
     @testset for node in [n1]
-        n = parse_node(node; reg = PNML.IDRegistry())
+        n = parse_node(node, HLCore(); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.AnyElement
         @test tag(n) === :type
@@ -286,7 +286,7 @@ header("CONDITION")
  </condition>
     """
     @testset for node in [n1]
-        n = parse_node(node; reg = PNML.IDRegistry())
+        n = parse_node(node, PnmlCore(); reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
@@ -328,14 +328,12 @@ end
      </structure>
  </hlinscription>
  """
-    @testset for node in [n1]
-        n = parse_node(node; reg = PNML.IDRegistry())
-        printnode(n)
-        @test typeof(n) <: PNML.HLInscription
-        @test xmlnode(n) isa Maybe{EzXML.Node}
-        @test tag(n.term) === :tuple
-        @test n.term.dict[:subterm][1][:variable][:refvariable] == "x"
-        @test n.term.dict[:subterm][2][:variable][:refvariable] == "v"
-        @test n.text == "<x,v>"
-    end
+    n = parse_node(n1, HLCore(); reg = PNML.IDRegistry())
+    printnode(n)
+    @test typeof(n) <: PNML.HLInscription
+    @test xmlnode(n) isa Maybe{EzXML.Node}
+    @test tag(n.term) === :tuple
+    @test n.term.dict[:subterm][1][:variable][:refvariable] == "x"
+    @test n.term.dict[:subterm][2][:variable][:refvariable] == "v"
+    @test n.text == "<x,v>"
 end

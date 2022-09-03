@@ -43,7 +43,7 @@ Return default  based on `PNTD`. Has meaning of empty, as in `zero`.
 """
 function default_sort end
 default_sort(::PNTD) where {PNTD <: PnmlType} = zero(Integer) #!
-default_sort(::PNTD) where {PNTD <: AbstractContinuousCore} = zero(Float64) #!
+default_sort(::PNTD) where {PNTD <: AbstractContinuousNet} = zero(Float64) #!
 default_sort(::PNTD) where {PNTD <: AbstractHLCore} = Sort() #!
 # For a HL Net the sort is Dot.
 

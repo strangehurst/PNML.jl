@@ -52,14 +52,15 @@ adapting to use graph tools, agent based modeling, sciml, etc.
 [`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
 A concrete `PetriNet` type uses the IR to produce higher-level behavior.
-This is the level at which `flatten_pages!` and `deref!` operate.
+This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
 
 `PetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are 1st parsed into `PnmlDict` which is used to construct a [`PnmlNet`](@ref):
+XML <net> tags are 1st parsed into [`PnmlDict`](@ref) 
+which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
@@ -72,9 +73,7 @@ XML <net> tags are 1st parsed into `PnmlDict` which is used to construct a [`Pnm
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
 
-See [`parse_net`](@ref) for more detail.
-
-XML <page> tags are also 1st parsed into `PnmlDict` which is used to construct a [`Page`](@ref):
+XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@ref) which is used to construct a [`Page`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
@@ -89,8 +88,6 @@ XML <page> tags are also 1st parsed into `PnmlDict` which is used to construct a
 | refP         | references to place on different page          |
 | refT         | references to transition on different page     |
 | declarations | only net & page tags have declarations         |
-
-See also: [`parse_page`](@ref).
 
 ## Places
 
@@ -110,17 +107,18 @@ Properties that various transitions may have one or more of:
   * deterministically time delayed
   * scheduled
 
-The pnml schemas and primer only try to cover the discrete case as High-Level nets.
-With a lot of multi-sorted algebra to make it complicated enough to be challanging.
+The pnml schemas and primer only try to cover the discrete case as Place-Transition and High-Level Petri Nets.
+With a lot of multi-sorted algebra to make High-Level Nets complicated enough to be challenging.
 
 Continous support is present where possible. For instance, when a number appers in the XML
-[`number_value`](@ref) is used to parse the string to `Int` or `Float64.
+[`number_value`](@ref) is used to parse the string to `Int` or `Float64`.
 This is currently (2022) "non-standard" so such pnml files will not be generally
 interchangable with other tools.
 
-https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8
 
-'Discrete, Continuous, and Hybrid Petri Nets' Rene David and Hassane Alla
+['Discrete, Continuous, and Hybrid Petri Nets' by Rene David and Hassane Alla](https://link.springer.com/book/10.1007/978-3-642-10669-9)
+
+[VANESA](https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8)
 
 See [`rate`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
 Implements a continuous petri net as part of the first working use-case.
@@ -458,3 +456,42 @@ methods(PNML.get_toolinfo) # hide
 ## PnmlType traits
 
 See [PnmlTypes](@ref) for details of the module.
+
+## _evaluate, functors, markings,  inscriptions
+
+[`_evaluate`](@ref)
+```@example methods
+methods(PNML._evaluate) # hide
+```
+
+[`default_marking`](@ref)
+```@example methods
+methods(PNML.default_marking) # hide
+```
+
+[`default_inscription`](@ref)
+```@example methods
+methods(PNML.default_inscription) # hide
+```
+
+[`default_condition`](@ref)
+```@example methods
+methods(PNML.default_condition) # hide
+```
+[`default_one_term`](@ref)
+```@example methods
+methods(PNML.default_one_term) # hide
+```
+
+Things that are functors:
+  - Marking: return `Int`, `Float64`, or `Term` 
+  - Inscription: return `Int`, `Float64`, or `Term` 
+  - Condition: return `Int`, `Float64`, or `Term` 
+  - Term: return a sort's value
+
+Defaults
+  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term 
+  - inscription: return one(`Int`), one(`Float64`), or default_one_term
+  - condition: return `true`, or boolean sort's true value
+  - Term: return boolean sort's true value
+

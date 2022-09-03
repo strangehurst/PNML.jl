@@ -9,14 +9,15 @@ $(DocStringExtensions.IMPORTS)
 $(DocStringExtensions.EXPORTS)
 """
 module PnmlTypes
+
 using PNML
 using DocStringExtensions
 
 export PnmlType,
-        PnmlCore, PTNet,
-        AbstractHLCore, HLCore, PT_HLPNG, SymmetricNet, HLNet,
+        AbstractPnmlCore, PnmlCore, PTNet,
+        AbstractHLCore, HLCore, PT_HLPNG, SymmetricNet, HLPNG,
                         StochasticNet, TimedNet, OpenNet,
-        AbstractContinuousCore, ContinuousNet
+        AbstractContinuousNet, ContinuousNet
 export pnmltype, pntd_symbol
 
 """
@@ -36,6 +37,14 @@ $(TYPEDEF)
 abstract type PnmlType end
 
 """
+Base of token/integer-based Petri Net pntds.
+See [`PnmlCore`](@ref), [`PTNet`](@ref) and others.
+
+$(TYPEDEF)
+"""
+abstract type AbstractPnmlCore <: PnmlType end
+
+"""
 The most minimal concrete Petri Net.
 Used to implement and test the complete Petri Net Graph infrastructure.
 Labels of the graph is where meaning is attached.
@@ -44,7 +53,7 @@ Subtypes of `PnmlType` should be used to specialize Labels for expressiveness an
 
 $(TYPEDEF)
 """
-struct PnmlCore <: PnmlType end
+struct PnmlCore <: AbstractPnmlCore end
 
 """
 Place-Transition Petri Nets add small extensions to core.
@@ -53,7 +62,7 @@ Note that 'PT' is often the prefix for XML tags specialized for this net type.
 
 $(TYPEDEF)
 """
-struct PTNet <: PnmlType end
+struct PTNet <: AbstractPnmlCore end
 
 """
 Base of High Level Petri Net pntds.
@@ -74,14 +83,14 @@ $(TYPEDEF)
 struct HLCore <: AbstractHLCore end
 
 """
-HLNet is the most intricate High-Level Petri Net schema.
+HLPNG is the most intricate High-Level Petri Net schema.
 It extends [`SymmetricNet`](@ref), including with
    - declarations for sorts and functions (ArbitraryDeclarations)
    - sorts for Integer, String, and List
 
 $(TYPEDEF)
 """
-struct HLNet <: AbstractHLCore end
+struct HLPNG <: AbstractHLCore end
 
 """
 Place-Transition Net in HLCore notation (HLPNG=High-Level Petri Net Graph).
@@ -103,7 +112,7 @@ $(TYPEDEF)
 
 Uses floating point numbers for markings, inscriptions, and conditions.
 """
-abstract type AbstractContinuousCore <: PnmlType end
+abstract type AbstractContinuousNet <: PnmlType end
 
 
 """
@@ -111,7 +120,15 @@ TODO: Continuous Petri Net
 Concrete type.
 $(TYPEDEF)
 """
-struct ContinuousNet <: AbstractContinuousCore end
+struct ContinuousNet <: AbstractContinuousNet end
+
+"""
+TODO: Open Petri Net
+
+$(TYPEDEF)
+"""
+struct OpenNet <: AbstractContinuousNet end
+
 
 
 """
@@ -128,14 +145,7 @@ $(TYPEDEF)
 """
 struct TimedNet <: AbstractHLCore end
 
-"""
-TODO: Open Petri Net
-
-$(TYPEDEF)
-"""
-struct OpenNet <: AbstractHLCore end
-
-
+#----------------------------------------------------------------------------------------
 
 """
 $(TYPEDEF)
@@ -185,7 +195,7 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),
     :hlcore     => HLCore(),
     :ptnet      => PTNet(),
-    :hlnet      => HLNet(), #HLPNG?
+    :hlnet      => HLPNG(), 
     :pt_hlpng   => PT_HLPNG(),
     :symmetric  => SymmetricNet(),
     :stochastic => StochasticNet(),

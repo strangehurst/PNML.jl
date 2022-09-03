@@ -171,6 +171,9 @@ header("LOTKA-VOLTERRA")
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
         death=(LVector(wolves=1), LVector()),
     )
+    @show Δ.birth
+    @show tfun.birth
+    @test typeof(Δ)   == typeof(tfun)
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
     @test Δ.death     == tfun.death

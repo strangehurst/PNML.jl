@@ -83,13 +83,13 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.pntd, a.id, src, tgt, a.inscriptio
 
 # This is evaluating the incscription attached to an arc.
 # Original implementation is for PTNet.
-# HLNets do usual label semantics  here.
+# HLPNGs do usual label semantics  here.
 # TODO: Map from net.type to inscription
 function inscription(arc)
     if !isnothing(arc.inscription)
-        arc.inscription()
+        _evaluate(arc.inscription)
     else
-        default_inscription(arc)()
+        _evaluate(default_inscription(arc))
     end
 end
 default_inscription(arc::Arc) = default_inscription(nettype(arc))

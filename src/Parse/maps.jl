@@ -6,6 +6,9 @@ Map XML tag names to parser functions.
 $(TYPEDEF)
 """
 const tagmap = Dict{String,Function}(
+    #! <pnml> and <net> should not be found by parse_node. Called directly.
+    # "pnml" => parse_pnml, 
+    # "net" => parse_net,
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
@@ -27,12 +30,10 @@ const tagmap = Dict{String,Function}(
     "mulitsetsort" => parse_mulitsetsort,
     "name" => parse_name,
     "namedoperator" => parse_namedoperator,
-    #"net" => parse_net, #! Method should not be forun by parse_node.
     "not" => parse_not,
     "or" => parse_or,
     "page"  => parse_page,
     "place"  => parse_place,
-    #"pnml" => parse_pnml, #! Method should not be forun by parse_node.
     "productsort" => parse_productsort,
     "referencePlace"  => parse_refPlace,
     "referenceTransition"  => parse_refTransition,

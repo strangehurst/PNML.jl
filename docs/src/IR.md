@@ -55,7 +55,7 @@ Some parts of pnml are complicated. Not yet completed bits may be implemented
 as wrappers holdind unparsed XML. In fact, parts of pnml are specified as holding
 any well-formed XML.
 
-# History of this IR
+## History of this IR
 
 Started as nested Dict{Symbol,Any} see [`PnmlDict`](@ref). 
 
@@ -66,3 +66,13 @@ Some instances of `PnmlDict` are still present in the parsing mechanism.
 
 As experience with building & using more complicated pnml network models,
 more of the IR will be implemented or changed.
+
+## Default Values
+
+  - marking - zero or empty
+  - inscription - one
+  - condition - true
+
+[`default_one_term`](@ref), [`default_zero_term`](@ref)
+
+

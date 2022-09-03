@@ -1,4 +1,6 @@
 """
+$(TYPEDSIGNATURES)
+
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
 
 # Examples
@@ -19,8 +21,8 @@ julia> i()
 ```
 """
 function default_inscription end
-default_inscription(::PNTD) where {PNTD <: PnmlType} = one(Integer)
-default_inscription(::PNTD) where {PNTD <: AbstractContinuousCore} = one(Float64)
+default_inscription(::PNTD) where {PNTD <: PnmlType} = one(Int)
+default_inscription(::PNTD) where {PNTD <: AbstractContinuousNet} = one(Float64)
 default_inscription(pntd::PNTD) where {PNTD <: AbstractHLCore} = default_one_term(pntd)
 
 #-------------------
@@ -55,6 +57,7 @@ PTInscription() = PTInscription(one(Int))
 PTInscription(value) = PTInscription(value, ObjectCommon()) 
 
 """
+$(TYPEDSIGNATURES)
 Evaluate a [`PTInscription`](@ref).
 """
 (inscription::PTInscription)() = _evaluate(inscription.value)
@@ -70,28 +73,28 @@ Labels an Arc.
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
-julia> i = HLInscription()
+julia> i1 = HLInscription()
 HLInscription(nothing, Term(:empty, Dict()), )
 
-julia> i()
+julia> i1()
 1
 
-julia> i = HLInscription(Term(:term, PnmlDict(:value=>3)))
+julia> i2 = HLInscription(Term(:term, PnmlDict(:value=>3)))
 HLInscription(nothing, Term(:term, Dict(:value => 3)), )
 
-julia> i()
+julia> i2()
 3
 
-julia> i = HLInscription("text", Term())
+julia> i3 = HLInscription("text", Term())
 HLInscription("text", Term(:empty, Dict()), )
 
-julia> i()
+julia> i3()
 1
 
-julia> i = HLInscription("text", Term(:term, PnmlDict(:value=>3)))
+julia> i4 = HLInscription("text", Term(:term, PnmlDict(:value=>3)))
 HLInscription("text", Term(:term, Dict(:value => 3)), )
 
-julia> i()
+julia> i4()
 3
 ```
 """
@@ -108,6 +111,7 @@ HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::Term) = HLInscription(s, t, ObjectCommon())
 
 """
+$(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (inscription::HLInscription)() = _evaluate(inscription.term)

@@ -60,7 +60,7 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     @assert haskey(kw, :reg)
 
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
-    # May result in undefined behavior and/or require ideosyncratic parsing.
+    # May result in undefined behparse_pnmlavior and/or require ideosyncratic parsing.
     isempty(allchildren("page", node)) &&
          throw(MalformedException("$nn does not have any pages"))
 
@@ -210,11 +210,18 @@ function parse_arc(node, pntd; kw...)
                            :target=>Symbol(node["target"]),
                            :inscription=>default_inscription(pntd))
     foreach(elements(node)) do child
-        @match nodename(child) begin
-            # Mutually exclusive tags: inscription, hlinscription
-            "inscription"    => (d[:inscription] = parse_inscription(child, pntd; kw...))
-            "hlinscription"  => (d[:inscription] = parse_hlinscription(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+        if pntd isa AbstractHLCore
+            @match nodename(child) begin
+                # Mutually exclusive tags: inscription, hlinscription
+                "hlinscription"  => (d[:inscription] = parse_hlinscription(child, pntd; kw...))
+                _ => parse_pnml_node_common!(d, child, pntd; kw...)
+            end
+        else
+            @match nodename(child) begin
+                # Mutually exclusive tags: inscription, hlinscription
+                "inscription"    => (d[:inscription] = parse_inscription(child, pntd; kw...))
+                _ => parse_pnml_node_common!(d, child, pntd; kw...)
+            end
         end
     end
     Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
@@ -377,9 +384,13 @@ end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
 # define the semantics of marking and inscriptions.
-
+# 
 """
 $(TYPEDSIGNATURES)
+
+High-level initial marking labels are expected to have a [`Term`](@ref) in the <structure>
+child. We extend the pnml standard by allowing node content to be numeric: 
+parsed to `Int` and `Float64`.
 """
 function parse_hlinitialMarking(node, pntd; kw...)
     nn = nodename(node)
@@ -391,8 +402,8 @@ function parse_hlinitialMarking(node, pntd; kw...)
         @match nodename(child) begin
             "structure" => (d[:structure] =
                 haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_tmarking(pntd)())
+                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
+                default_marking(pntd)())
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
@@ -401,19 +412,22 @@ end
 
 """
 $(TYPEDSIGNATURES)
-"""
-function parse_hlinscription(node, pntd; kw...)
+w"""
+function parse_hlinscription(node, pntd::T; kw...) where {T <: AbstractHLCore}
     @debug node
     nn = nodename(node)
     nn == "hlinscription" || error("element name wrong: $nn'")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
+        # Expect <structure> to contain a Term as a child tag.
+        #! If no Term and there is content parse content as a number.
+        # Otherwise use the default inscription 
         "structure" => (d[:structure] = 
                 haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_inscription(pntd)())
-     _ => parse_pnml_label_common!(d, child, pntd; kw...)
+                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
+                default_inscription(pntd)()) 
+        _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     HLInscription(d[:text], d[:structure], ObjectCommon(d))

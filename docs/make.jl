@@ -31,7 +31,7 @@ using PNML: AbstractHLCore,
     HLAnnotation,
     HLInscription,
     HLMarking,
-    HLNet,
+    HLPNG, # High-Level Petri Net Graph
     HLPetriNet,
     IDRegistry,
     Line,

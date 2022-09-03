@@ -4,9 +4,9 @@ CurrentModule = PNML
 
 # PNML.jl
 
-Documentation for the GitHub 
-[PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
-
+Documentation for the GitHub [PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
+Which defines a Julia module named `PNML`.  
+Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup language.
 
 ```@eval
 using Markdown
@@ -34,6 +34,8 @@ versioninfo()
 ```
 
 ## www.pnml.org
+
+In this section 'PNML' refers to the markup language, its specification and schemas.
 
 <http://www.pnml.org> has publications and tutorials covering PNML at
 various points in its evolution. Is the cannonical site for the
@@ -91,6 +93,9 @@ Note that the official pntd schema files are in the grammer directory.
 
 Within PNML.jl no schema-level validation is done.
 
+Note that, depending on context, 'PNML' may refer to either 
+the markup language or the Julia code.
+
 In is allowed by the PNML specification to omit validation with the presumption that
 some specialized, external tool can be applied, thus allowing the file format to be
 used for inter-tool communication with lower overhead in each tool.
@@ -101,7 +106,7 @@ PNML intermediate representration.
 Also, non-standard pntd that do not (yet) have a schema written are part of
 the PNML implementation. See [`ContinuousNet`](@ref).
 
-## PNTD
+## PNTD Maps
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
@@ -124,10 +129,11 @@ _annotation_ format labels are expected to have either a <text> element,
 a <structure> element or both. Often the <text> is a human-readable representation
 of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
 
+For `PTNet` (and `pnmlcore`) only the `Name` label with a <text> element
+(and no <structure> element) is defined.
+
 Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 "require" all meaning to reside in the <structure>.
-
-For `PTNet` (and `pnmlcore`) only the `Name` label with a <etxt> element is defined.
 
 ### Attribute Labels
 

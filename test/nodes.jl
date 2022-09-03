@@ -86,6 +86,7 @@ end
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some arc"
     @test_call inscription(n)
+    @show PNML.inscription(n)
     @test PNML.inscription(n) == 6
 end
 

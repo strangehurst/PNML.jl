@@ -1,4 +1,6 @@
 """
+$(TYPEDSIGNATURES)
+
 Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
 
 # Examples
@@ -24,10 +26,10 @@ julia> m()
 ```
 """
 function default_marking end
-default_marking(::PNTD) where {PNTD <: PnmlType} = PTMarking(zero(Integer))
-default_marking(::Type{PNTD}) where {PNTD <: PnmlType} = PTMarking(zero(Integer))
-default_marking(::PNTD) where {PNTD <: AbstractContinuousCore} = PTMarking(zero(Float64))
-default_marking(::Type{PNTD}) where {PNTD <: AbstractContinuousCore} = PTMarking(zero(Float64))
+default_marking(::PNTD) where {PNTD <: PnmlType} = PTMarking(zero(Int))
+default_marking(::Type{PNTD}) where {PNTD <: PnmlType} = PTMarking(zero(Int))
+default_marking(::PNTD) where {PNTD <: AbstractContinuousNet} = PTMarking(zero(Float64))
+default_marking(::Type{PNTD}) where {PNTD <: AbstractContinuousNet} = PTMarking(zero(Float64))
 default_marking(pntd::PNTD) where {PNTD <: AbstractHLCore} = HLMarking(default_zero_term(pntd))
 
 #-------------------
@@ -72,6 +74,7 @@ PTMarking() = PTMarking(zero(Int))
 PTMarking(value) = PTMarking(value, ObjectCommon())
 
 """
+$(TYPEDSIGNATURES)
 Evaluate a [`PTMarking`](@ref) instance.
 """
 (mark::PTMarking)() = _evaluate(mark.value)
@@ -111,32 +114,9 @@ HLMarking(t::AbstractTerm) = HLMarking(nothing, t, ObjectCommon())
 HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
 
 """
+$(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance. 
 Returns a value of the same sort as its `Place`.
 #TODO How to ensure sort type?
 """
 (hlm::HLMarking)() = _evaluate(hlm.term)
-
-"""
-Inscriptions, Markings, Conditions evaluate a value
-that may be a scalar or a [`Term`](@ref) functor.
-
-# Examples
-
-```jldoctest; setup=(using PNML: _evaluate, Term)
-julia> _evaluate(1)
-1
-
-julia> _evaluate(true)
-true
-
-julia> _evaluate(Term(:term, Dict(:value => 3)))
-3
-```
-"""
-function _evaluate end
-_evaluate(x::Number) = x
-_evaluate(x::Bool) = x
-_evaluate(x::Term) = x()
-
-
