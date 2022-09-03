@@ -9,7 +9,7 @@ Usage of a bit is as a script or via include in a REPL. Examples:
 
 ```
 cd examples
-julia lotka-voltera.jl
+julia lotka-volterra.jl
 ```
 ```
 cd examples
