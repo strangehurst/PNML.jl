@@ -13,11 +13,19 @@ module PnmlTypes
 using PNML
 using DocStringExtensions
 
-export PnmlType,
-        AbstractPnmlCore, PnmlCore, PTNet,
-        AbstractHLCore, HLCore, PT_HLPNG, SymmetricNet, HLPNG,
-                        StochasticNet, TimedNet, OpenNet,
-        AbstractContinuousNet, ContinuousNet
+# Abstract Types
+export PnmlType, 
+        AbstractPnmlCore, 
+        AbstractHLCore, 
+        AbstractContinuousNet
+
+# Singletons (concrete types)
+export  PnmlCore, PTNet,
+        HLCore, PT_HLPNG, SymmetricNet, HLPNG,
+        StochasticNet, TimedNet, OpenNet,
+        ContinuousNet
+
+
 export pnmltype, pntd_symbol
 
 """
