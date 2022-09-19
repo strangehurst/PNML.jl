@@ -110,12 +110,12 @@ the PNML implementation. See [`ContinuousNet`](@ref).
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
+using PNML; foreach(println, sort(collect(pairs(PnmlTypeDefs.default_pntd_map)))) #hide
 ```
 
 PnmlType map (pntd symbol to singleton):
 ```@example
-using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
+using PNML; foreach(println, pairs(PnmlTypeDefs.pnmltype_map)) #hide
 ```
 
 
@@ -216,6 +216,6 @@ inscription/marking.
 
 ## References
 
-See [`PnmlTypes.PnmlType `](@ref),
-[`PnmlTypes.default_pntd_map`](@ref),
-[`PnmlTypes.pnmltype_map`](@ref)
+See [`PnmlTypeDefs.PnmlType `](@ref),
+[`PnmlTypeDefs.default_pntd_map`](@ref),
+[`PnmlTypeDefs.pnmltype_map`](@ref)

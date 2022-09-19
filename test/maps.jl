@@ -56,7 +56,7 @@ end
 end
 
 @testset "pnmltype" begin
-    #@test_call PNML.PnmlTypes.default_pntd_map()
+    #@test_call PNML.PnmlTypeDefs.default_pntd_map()
     @test_call pnmltype(PnmlCore())
     @test_call pnmltype("pnmlcore")
     @test_call pnmltype(:pnmlcore)

@@ -1,6 +1,18 @@
-using PNML, PNML.PnmlTypes
+using PNML, PnmlTypeDefs
 #using PrettyPrinting
 using Documenter
+
+using PnmlTypeDefs
+using PnmlTypeDefs:     PnmlType,
+StochasticNet,
+SymmetricNet,
+TimedNet,
+PnmlCore,
+OpenNet,
+HLCore,
+HLPNG # High-Level Petri Net Graph
+
+
 
 using PNML
 using PNML: AbstractHLCore,
@@ -27,11 +39,9 @@ using PNML: AbstractHLCore,
     Fill,
     Font,
     Graphics,
-    HLCore,
     HLAnnotation,
     HLInscription,
     HLMarking,
-    HLPNG, # High-Level Petri Net Graph
     HLPetriNet,
     IDRegistry,
     Line,
@@ -40,7 +50,6 @@ using PNML: AbstractHLCore,
     MissingIDException,
     Name,
     ObjectCommon,
-    OpenNet,
     PNML,
     PTInscription,
     PTMarking,
@@ -50,7 +59,6 @@ using PNML: AbstractHLCore,
     PetriNet,
     Place,
     PnmlCfg,
-    PnmlCore,
     PnmlDict,
     PnmlException,
     PnmlLabel,
@@ -58,14 +66,9 @@ using PNML: AbstractHLCore,
     PnmlNet,
     PnmlNode,
     PnmlObject,
-    PnmlType,
-    PnmlTypes,
     RefPlace,
     RefTransition,
     SimpleNet,
-    StochasticNet,
-    SymmetricNet,
-    TimedNet,
     TokenGraphics,
     ToolInfo,
     Transition,
@@ -268,7 +271,7 @@ for m ∈ [PNML]
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML], #, PNML.PnmlTypes],
+         modules=[PNML, PnmlTypeDefs],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          #repo="/home/jeff/PNML/{path}",
@@ -291,7 +294,7 @@ makedocs(;
             "Interfaces" => "interface.md",
             "API" => [
                 "PNML"      => "API/library.md",
-                "PnmlTypes" => "API/pnmltypes.md"
+                "PnmlTypeDefs" => "API/pnmltypes.md"
             ],
             "Examples"   => "examples.md",
             "Index" => "index.md",

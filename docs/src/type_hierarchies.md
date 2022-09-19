@@ -12,7 +12,7 @@ AbstractTrees.children(x::Type) = subtypes(x)
 type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition
-See [PnmlTypes](@ref) module page.
+See [PnmlTypeDefs](@ref) module page.
 
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG.
 
@@ -31,7 +31,7 @@ be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
 at a structural level. It may paramertize types to facilitate specilaization.
 
 ```@example type
-type_tree(PNML.PnmlTypes.PnmlType) # hide
+type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 ```
 
 | PnmlType     | Place | Trans | Arc  | Description                                               |

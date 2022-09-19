@@ -1,3 +1,3 @@
 ```@index
-Modules = [PNML, PNML.PnmlTypes]
+Modules = [PNML, PNML.PnmlTypeDefs]
 ```

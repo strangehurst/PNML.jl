@@ -53,7 +53,7 @@ end
 """
 $(TYPEDSIGNATURES)
 Return nets matching pntd `type` given as string or symbol.
-See [`PnmlTypes.pntd_symbol`](@ref), [`PnmlTypes.pnmltype`](@ref).
+See [`PnmlTypeDefs.pntd_symbol`](@ref), [`PnmlTypeDefs.pnmltype`](@ref).
 """
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))

@@ -1,0 +1,7 @@
+name = "PnmlTypeDefs"
+uuid = "bf569b50-707c-4e9e-b371-6d3a192cb2e8"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.0.1"
+
+[deps]
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"

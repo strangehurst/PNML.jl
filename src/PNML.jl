@@ -23,6 +23,7 @@ using AbstractTrees
 using LabelledArrays
 using Reexport
 
+@reexport using PnmlTypeDefs
 
 include("config.jl")
 
@@ -36,8 +37,8 @@ include("types.jl")
 include("exceptions.jl")
 include("utils.jl")
 
-include("pnmltypes.jl")
-@reexport using .PnmlTypes
+#include("pnmltypes.jl")
+#@reexport using .PnmlTypes
 
 include("IR/intermediate.jl")
 

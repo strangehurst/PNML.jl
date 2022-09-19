@@ -1,5 +1,4 @@
 """
-Kind of Petri Net.
 Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 
 # Imports
@@ -8,9 +7,9 @@ $(DocStringExtensions.IMPORTS)
 # Exports
 $(DocStringExtensions.EXPORTS)
 """
-module PnmlTypes
+module PnmlTypeDefs
 
-using PNML
+#using PNML
 using DocStringExtensions
 
 # Abstract Types
@@ -230,7 +229,7 @@ Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmlty
 # Examples
 
 ```jldoctest; setup=:(using PNML)
-julia> PnmlTypes.pntd_symbol("foo")
+julia> PnmlTypeDefs.pntd_symbol("foo")
 :pnmlcore
 ```
 """
@@ -244,14 +243,14 @@ pntd_symbol(s::String) = get(default_pntd_map::Dict{String,Symbol}, s, :pnmlcore
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref) are both assumed to be correct here.
+The [`PnmlTypeDefs.pnmltype_map`](@ref) and [`PnmlTypeDefs.default_pntd_map`](@ref) are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore`.
-Unknown `symbol` throws a [`PNML.MalformedException`](@ref)
+Unknown `symbol` throws a `DomainError` exception.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML.PnmlTypes: pnmltype, pntd_symbol)
+```jldoctest; setup=:(using PNML; using PNML.PnmlTypeDefs: pnmltype, pntd_symbol)
 julia> pnmltype(PnmlCore())
 PnmlCore()
 
@@ -273,5 +272,4 @@ end
 
 #TODO add traits
 
-
-end # module PnmlTypes
+end # module PnmlTypeDefs

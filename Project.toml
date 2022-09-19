@@ -11,6 +11,7 @@ EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 ModuleDocstrings = "982ee2ff-df44-427b-be98-c6c9fd49f925"
+PnmlTypeDefs = "bf569b50-707c-4e9e-b371-6d3a192cb2e8"
 PrettyPrinting = "54e16d92-306c-5ea0-a30b-337be88ac337"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 

@@ -1,7 +1,7 @@
-# PnmlTypes
+# PnmlTypeDefs
 
 ```@meta
-CurrentModule = PNML.PnmlTypes
+CurrentModule = PnmlTypeDefs
 ```
 
 ```@contents
@@ -10,14 +10,14 @@ Depth = 2
 ```
 
 ```@autodocs
-Modules = [PnmlTypes]
+Modules = [PnmlTypeDefs]
 Order = [:module]
 ```
 
 ## Types
 
 ```@autodocs
-Modules = [PnmlTypes]
+Modules = [PnmlTypeDefs]
 Order = [:type]
 ```
 
@@ -26,7 +26,7 @@ Order = [:type]
 Docstrings for constants. This includes type  aliases.
 
 ```@autodocs
-Modules = [PnmlTypes]
+Modules = [PnmlTypeDefs]
 Order = [:constant]
 ```
 
@@ -35,7 +35,7 @@ Order = [:constant]
 Docstrings for functions.
 
 ```@autodocs
-Modules = [PnmlTypes]
+Modules = [PnmlTypeDefs]
 Order = [:function]
 ```
 
@@ -44,6 +44,6 @@ Order = [:function]
 Docstrings for macros.
 
 ```@autodocs
-Modules = [PnmlTypes]
+Modules = [PnmlTypeDefs]
 Order = [:macro]
 ```
