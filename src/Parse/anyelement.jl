@@ -23,16 +23,11 @@ Return `tag` => `PnmlDict` holding a pnml label and its children.
 The main use-case is to wrap in a [`PnmlLabel`](@ref), [`Structure`](@ref),
 [`Term`](@ref) or other specialized label. These wrappers add type to the 
 nested dictonary holding the contents of the label.
-
-Differs from `AnyElement` in that any id attribute of `node`
-will be registered in [`IDRegistry`](@ref) as a unique identifier.
-"""
+ """
 function unclaimed_label end
 unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
 function unclaimed_label(node, pntd; kw...)::Pair{Symbol,PnmlDict}
     @assert haskey(kw, :reg)
-    # ID attributes can appear in various places. Each is unique and added to the registry.
-    #EzXML.haskey(node, "id") && register_id!(kw[:reg], node["id"])
     # Children may be claimed.
     return Symbol(nodename(node)) => _harvest_any!(node, pntd, _harvest_any!; kw...)
 end
@@ -57,6 +52,7 @@ function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:Pn
     # Extract XML attributes. Register IDs as symbols.
     dict = PnmlDict()
     for a in eachattribute(node)
+        # ID attributes can appear in various places. Each is unique and added to the registry.
         dict[Symbol(a.name)] = a.name == "id" ? register_id!(kw[:reg], a.content) : a.content
     end
 
