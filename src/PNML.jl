@@ -24,21 +24,13 @@ using LabelledArrays
 using Reexport
 
 @reexport using PnmlTypeDefs
-
-include("config.jl")
-
-#include("Base/PnmlBase.jl") #TODO sub module test
-#@reexport using .PnmlBase
+@reexport using PnmlIDRegistrys
 
 include("xmlutils.jl")
-include("id.jl")
 include("interfaces.jl")
 include("types.jl")
 include("exceptions.jl")
 include("utils.jl")
-
-#include("pnmltypes.jl")
-#@reexport using .PnmlTypes
 
 include("IR/intermediate.jl")
 

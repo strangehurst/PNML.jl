@@ -8,7 +8,7 @@ const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 Return XML namespace.
 """
 function namespace end
-namespace(::Any) = error("namespace method not defined")
+namespace(::T) where {T<:Any} = error("namespace(::$T) method not defined")
 
 """
 Parse xml string into EzXML node.

@@ -1,25 +1,27 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe
- 
-@testset "ID registry" begin
-    @test_call PNML.IDRegistry()
-    reg = PNML.IDRegistry()
-    @test_call PNML.register_id!(reg, :p)
-    @test_call PNML.register_id!(reg, "p")
-    @test_call PNML.reset_registry!(reg)
-    @test_call PNML.duplicate_id_action(:p; action=:bogus)
-    
-    PNML.register_id!(reg, "p")
-    @test @inferred PNML.isregistered(reg, "p")
-    @test @inferred PNML.isregistered(reg, :p)
-    PNML.reset_registry!(reg)
-    @test !PNML.isregistered(reg, "p")
-    @test !PNML.isregistered(reg, :p)
+using .PnmlIDRegistrys
+using .PnmlIDRegistrys: duplicate_id_action, reset_registry!
 
-    @test_logs (:warn,"ID 'p' already registered") PNML.duplicate_id_action(:p)
-    @test_logs (:warn,"ID 'p' already registered") PNML.duplicate_id_action(:p; action=:warn)
-    @test_throws ErrorException PNML.duplicate_id_action(:p; action=:error)
-    @test @inferred( PNML.duplicate_id_action(:p; action=:bogus) ) === nothing
+@testset "ID registry" begin
+    @test_call IDRegistry()
+    reg = IDRegistry()
+    @test_call register_id!(reg, :p)
+    @test_call register_id!(reg, "p")
+    @test_call reset_registry!(reg)
+    @test_call duplicate_id_action(:p; action=:bogus)
+    
+    register_id!(reg, "p")
+    @test @inferred isregistered(reg, "p")
+    @test @inferred isregistered(reg, :p)
+    reset_registry!(reg)
+    @test !isregistered(reg, "p")
+    @test !isregistered(reg, :p)
+
+    @test_logs (:warn,"ID 'p' already registered") duplicate_id_action(:p)
+    @test_logs (:warn,"ID 'p' already registered") duplicate_id_action(:p; action=:warn)
+    @test_throws ErrorException duplicate_id_action(:p; action=:error)
+    @test @inferred( duplicate_id_action(:p; action=:bogus) ) === nothing
 end
 
 header("GETFIRST")

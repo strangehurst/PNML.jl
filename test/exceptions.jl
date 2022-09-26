@@ -1,11 +1,13 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
+using .PnmlIDRegistrys
+
 header("EXCEPTIONS")
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
     try
-        n  = f(node; reg=PNML.IDRegistry())
+        n  = f(node; reg=IDRegistry())
         error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
@@ -19,7 +21,7 @@ end
 
 @testset "missing namespace" begin
     emsg = r"missing namespace"
-    reg=PNML.IDRegistry()
+    reg = IDRegistry()
     @test_logs (:warn, emsg) parse_pnml(xml"""
         <pnml>
         </pnml>
@@ -82,7 +84,7 @@ end
 end
 
 @testset "missing id" begin
-    reg = PNML.IDRegistry()
+    reg = IDRegistry()
     @test_throws PNML.MissingIDException parse_net(xml"<net type='test'></net>"; reg)
     @test_throws PNML.MissingIDException parse_node(xml"<page></page>"; reg)
     @test_throws PNML.MissingIDException parse_node(xml"<place></place>"; reg)

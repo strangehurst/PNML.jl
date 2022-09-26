@@ -1,4 +1,14 @@
-# PNML id, id registry and related function.
+"""
+Petri Net Markup Language identifier registry.
+
+$(DocStringExtensions.IMPORTS)
+$(DocStringExtensions.EXPORTS)
+"""
+module PnmlIDRegistrys
+
+using DocStringExtensions
+
+export IDRegistry, register_id!, isregistered
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -20,7 +30,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Duplicated pnml node id has been detected.
+Duplicated pnml id `id` has been detected, perform `action`.
 Default `action` is to issue a warning.
 """
 function duplicate_id_action(id::Symbol; action=:warn)
@@ -67,8 +77,15 @@ function reset_registry!(reg::IDRegistry)
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Is the set of id symbols empty? 
+"""
 function Base.isempty(reg::IDRegistry)
     lock(reg.lk) do
         isempty(reg.ids)
     end
 end
+
+end # module PnmlIDRegistrys

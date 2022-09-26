@@ -12,11 +12,12 @@ $(TYPEDEF)
 """
 const PnmlDict = Dict{Symbol, Any}
 
+
+
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]
 
 
-#has_xml(pdict::PnmlDict) = false
 xmlnode(pdict::PnmlDict) = pdict[:xml]
 
 has_labels(pdict::PnmlDict) = haskey(pdict, :labels)

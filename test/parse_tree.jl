@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, parse_name, nets
+using .PnmlIDRegistrys
 
 header("parse tree")
 str = """
@@ -36,7 +37,7 @@ doc = EzXML.parsexml(str) # shared by testsets
     @test EzXML.nodename(pnml) == "pnml"
     @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
 
-    reg = PNML.IDRegistry()
+    reg = IDRegistry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
     foreach(PNML.allchildren("net", pnml)) do net
         @test nodename(net) == "net"
@@ -95,13 +96,13 @@ doc = EzXML.parsexml(str) # shared by testsets
             end
         end
     end
-    PNML.reset_registry!(reg)
+    PnmlIDRegistrys.reset_registry!(reg)
 end
 
 @testset "parse node level" begin
 
     # Do a full parse and maybe print the generated data structure.
-    reg = PNML.IDRegistry()
+    reg = IDRegistry()
     pnml_ir = parse_pnml(root(doc); reg)
     @test typeof(pnml_ir) <: PNML.PnmlModel
 
@@ -136,5 +137,5 @@ end
         end
     end
 
-    PNML.reset_registry!(reg)
+    PnmlIDRegistrys.reset_registry!(reg)
 end
