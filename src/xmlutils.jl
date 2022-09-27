@@ -27,6 +27,12 @@ Return up to 1 immediate child of element `el` that is a `tag`.
 function firstchild(tag, el::XMLNode, ns=pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return first matchibg child or nothing. 
+"""
 function getfirst(tag, el::XMLNode, ns=pnml_ns) 
     x = firstchild(tag, el, ns)
     isnothing(x) ? nothing : x
