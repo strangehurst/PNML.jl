@@ -4,15 +4,12 @@ $(TYPEDSIGNATURES)
 Return [`AnyElement`](@ref) wraping a `tag` symbol and `PnmlDict` holding 
 a well-formed XML node.
 
-See [`ToolInfo`](@ref) for one intended use-case and [`unclaimed_label`](@ref) for when
-a pnml label is expected but does not have a parser or the tag appears in an 
-unexpected place.
+See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement end
 anyelement(node; kw...) =  anyelement(node, PnmlCore(); kw...)
 function anyelement(node, pntd; kw...)::AnyElement    
-    d = _harvest_any!(node, pntd, _harvest_any!; kw...)
-    return AnyElement(Symbol(nodename(node)) => d, node)
+    AnyElement(unclaimed_label(node, pntd; kw...), node)
 end
 
 """
@@ -20,15 +17,14 @@ $(TYPEDSIGNATURES)
 
 Return `tag` => `PnmlDict` holding a pnml label and its children.
 
-The main use-case is to wrap in a [`PnmlLabel`](@ref), [`Structure`](@ref),
+The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`Structure`](@ref),
 [`Term`](@ref) or other specialized label. These wrappers add type to the 
-nested dictonary holding the contents of the label.
- """
+nested dictionary holding the contents of the label.
+"""
 function unclaimed_label end
 unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
 function unclaimed_label(node, pntd; kw...)::Pair{Symbol,PnmlDict}
     @assert haskey(kw, :reg)
-    # Children may be claimed.
     return Symbol(nodename(node)) => _harvest_any!(node, pntd, _harvest_any!; kw...)
 end
 
@@ -65,8 +61,7 @@ function _harvest_any!(node::XMLNode, pntd::PNTD, parser; kw...) where {PNTD<:Pn
         dict[:content] = strip(nodecontent(node))
     else
         # <tag/> and <tag></tag> will not have any nodecontent.
-        #TODO Force dict[:content] = "" ?
-        #TODO <tag/> serves as a flag. (is key present?)
+        dict[:content] = ""  # serves as a flag. (is key present?)
     end
     #@show dict
     return dict

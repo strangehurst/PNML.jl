@@ -1,11 +1,13 @@
-# Declare&Document interface functions of PNML.jl
+# Declare & Document interface functions of PNML.jl
 # Any method defined in this file should operate on `Any`.
-
+# Specialized
 """
     pid(x) -> Symbol
 
 Return pnml id symbol.
-"""
+
+See [`PnmlIDRegistrys`](@ref).
+""" 
 function pid end
 
 """
@@ -266,3 +268,11 @@ Return condition value of `transition`.
 """
 function condition end
 
+
+#!===================================================================
+#!===================================================================
+
+
+xmlnode(node::PnmlNode) = node.xml
+refid(reference::ReferenceNode) = reference.ref
+xmlnode(tool::AbstractPnmlTool) = tool.xml

@@ -27,13 +27,41 @@ using Reexport
 @reexport using PnmlIDRegistrys
 
 include("xmlutils.jl")
-include("interfaces.jl")
-include("types.jl")
 include("exceptions.jl")
 include("utils.jl")
 
-include("IR/intermediate.jl")
 
+# INTERMEDIATE REPRESENTATION
+# BASE
+include("IR/types.jl")
+include("IR/interfaces.jl")
+include("IR/pnmldict.jl")
+include("IR/anyelement.jl")
+# PNML CORE
+include("IR/graphics.jl")
+include("IR/toolinfos.jl")
+include("IR/objcommon.jl")
+include("IR/labels.jl")
+# High-Level
+include("IR/structure.jl")
+include("IR/hllabels.jl")
+include("IR/declarations.jl")
+include("IR/terms.jl")
+include("IR/sorts.jl")
+
+include("IR/markings.jl")
+include("IR/conditions.jl")
+include("IR/inscriptions.jl")
+
+include("IR/evaluate.jl")
+include("IR/nodes.jl")
+include("IR/page.jl")
+include("IR/net.jl")
+include("IR/model.jl")
+include("IR/flatten.jl")
+include("IR/show.jl")
+
+# PARSE
 include("Parse/parseutils.jl")
 include("Parse/anyelement.jl")
 include("Parse/parse.jl")
@@ -42,6 +70,7 @@ include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 
+# PETRI NET
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
