@@ -6,23 +6,24 @@ header("PARSE_LABELS")
 header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
     # The funk are key, value pairs expected to be in the PnmlDict.
-    for (node,funk) in [
-        xml"""<declarations> </declarations>""" => [
-            :content => ""
-            ],
-        xml"""<declarations atag="test1"> </declarations>""" => [
-            :atag => "test1",
-            :content => ""
-            ],
+    ctrl = [
+        xml"""<declarations> </declarations>""" => 
+                [:content => ""],
 
-            xml"""<declarations atag="test2">
+        xml"""<declarations atag="test1"> </declarations>""" => 
+                [:atag => "test1", :content => ""],
+
+        xml"""<declarations atag="test2">
                 <something> some content </something>
                 <something> other stuff </something>
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
               </declarations>""" => [
-            :atag => "test2",
-            :something  => [Dict(:content => "some content"), Dict(:content => "other stuff")],
-            :something2 => Dict(:value => [Dict(), Dict(:tag3 => "three")], :tag2 => "two")
+                :atag => "test2",
+                :something  => [Dict(:content => "some content"), 
+                                Dict(:content => "other stuff")],
+                :something2 => Dict(:value => [Dict(:content => ""), 
+                                               Dict(:tag3 => "three", :content => "")], 
+                                    :tag2 => "two")
             ],
 
         xml"""<foo><declarations> </declarations></foo>""" => [
@@ -54,12 +55,19 @@ header("UNCLAIMED LABEL")
             :id => :testid
             ],
         ]
-        reg1=PNML.IDRegistry()
-        reg2=PNML.IDRegistry()
+
+    for (node,funk) in ctrl
+
+        reg1 = IDRegistry()
+        reg2 = IDRegistry()
 
         u = PNML.unclaimed_label(node, reg=reg1)
         l = PNML.PnmlLabel(u, node)
         a = PNML.anyelement(node, reg=reg2)
+
+        #@show u
+        #@show l
+        #@show a
 
         @test_call PNML.unclaimed_label(node, reg=reg1)
         @test_call PNML.PnmlLabel(u, node)
@@ -82,9 +90,14 @@ header("UNCLAIMED LABEL")
         @test l.dict isa PnmlDict
         @test a.dict isa PnmlDict
 
+        # test each key,value pair
         for (key,val) in funk
+            #@show typeof(key), typeof(val)#@show key#@show val
+            @test haskey(u.second, key)
             @test u.second[key] == val
+            @test haskey(l.dict,key)
             @test l.dict[key] == val
+            @test haskey(a.dict,key)
             @test a.dict[key] == val
         end
 
@@ -94,9 +107,6 @@ header("UNCLAIMED LABEL")
 
         @test_call  PNML.isregistered(reg2, :id)
 
-        @show u
-        @show l
-        @show a
         println()
     end
 end
