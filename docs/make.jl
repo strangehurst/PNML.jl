@@ -1,16 +1,15 @@
-using PNML, PnmlTypeDefs
+using PNML, PnmlTypeDefs, PnmlIDRegistrys
 #using PrettyPrinting
 using Documenter
 
-using PnmlTypeDefs
-using PnmlTypeDefs:     PnmlType,
-StochasticNet,
-SymmetricNet,
-TimedNet,
-PnmlCore,
-OpenNet,
-HLCore,
-HLPNG # High-Level Petri Net Graph
+using PnmlTypeDefs: PnmlType,
+    StochasticNet,
+    SymmetricNet,
+    TimedNet,
+    PnmlCore,
+    OpenNet,
+    HLCore,
+    HLPNG # High-Level Petri Net Graph
 
 
 
@@ -58,7 +57,6 @@ using PNML: AbstractHLCore,
     Page,
     PetriNet,
     Place,
-    PnmlCfg,
     PnmlDict,
     PnmlException,
     PnmlLabel,
@@ -89,7 +87,6 @@ using PNML: AbstractHLCore,
     deref!,
     deref_place,
     deref_transition,
-    duplicate_id_action,
     find_net,
     find_nets,
     first_net,
@@ -268,10 +265,10 @@ for m ∈ [PNML]
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML, PnmlTypeDefs],
+         modules=[PNML, PnmlTypeDefs, PnmlIDRegistrys],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
-         repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
-         #repo="/home/jeff/PNML/{path}",
+         #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
+         repo="/home/jeff/PNML/{path}",
          checkdocs=:all,
 
          format=Documenter.HTML(;
@@ -291,7 +288,7 @@ makedocs(;
             "Interfaces" => "interface.md",
             "API" => [
                 "PNML"      => "API/library.md",
-                "PnmlTypeDefs" => "API/pnmltypes.md"
+               # "PnmlTypeDefs" => "API/pnmltypes.md"
             ],
             "Examples"   => "examples.md",
             "Index" => "index.md",

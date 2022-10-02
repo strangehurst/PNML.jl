@@ -455,7 +455,7 @@ methods(PNML.get_toolinfo) # hide
 
 ## PnmlType traits
 
-See [PnmlTypeDefs](@ref) for details of the module.
+See [`PnmlTypeDefs`](@ref) for details of the module.
 
 ## _evaluate, functors, markings,  inscriptions
 

@@ -12,7 +12,7 @@ AbstractTrees.children(x::Type) = subtypes(x)
 type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition
-See [PnmlTypeDefs](@ref) module page.
+See [`PnmlTypeDefs`](@ref) module page.
 
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG.
 

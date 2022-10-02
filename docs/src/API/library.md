@@ -9,14 +9,14 @@ Depth = 2
 # PNML Reference
 
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
 Order = [:module]
 ```
 
 ## Types
 
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
 Order = [:type]
 ```
 
@@ -25,7 +25,7 @@ Order = [:type]
 Docstrings for constants. This includes type  aliases.
 
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
 Order = [:constant]
 ```
 
@@ -34,7 +34,7 @@ Order = [:constant]
 Docstrings for functions.
 
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
 Order = [:function]
 ```
 
@@ -43,6 +43,6 @@ Order = [:function]
 Docstrings for macros.
 
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
 Order = [:macro]
 ```

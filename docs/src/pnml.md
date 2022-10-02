@@ -72,12 +72,14 @@ Note that ISO is working on part 3 of the PNML standard covering pntd (as of Oct
 It is possibly to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
 
+Note that we use PNML.jl to refer to all the packages in the monorepo (multiple package repository).
+
 Since validation is not a goal of PNML.jl, non-standard pntds can be used for the
 URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard`
 are mapped to PnmlCore.
 
 PnmlCore is the minimum level of meaning that any pnml file can hold.
-PNML.jl should be able to create a valid intermediate representation using PnmlCore,
+PNML.jl should be able to create a valid intermediate representation using PnmlCore
 since all the higher-level meaning is expressed as pnml labels, restrictions,
 and required XML tag names.
 
@@ -100,11 +102,11 @@ In is allowed by the PNML specification to omit validation with the presumption 
 some specialized, external tool can be applied, thus allowing the file format to be
 used for inter-tool communication with lower overhead in each tool.
 
-Also a desire to allow "duck typing" of Petri Nets built upon the
+Also omiting pntd validation allows "duck typing" of Petri Nets built upon the
 PNML intermediate representration.
 
-Also, non-standard pntd that do not (yet) have a schema written are part of
-the PNML implementation. See [`ContinuousNet`](@ref).
+Of some note it that PNML.jl extends PNML. These, non-standard pntd do not 
+(yet) have a schema written. See [`ContinuousNet`](@ref).
 
 ## PNTD Maps
 
@@ -117,7 +119,6 @@ PnmlType map (pntd symbol to singleton):
 ```@example
 using PNML; foreach(println, pairs(PnmlTypeDefs.pnmltype_map)) #hide
 ```
-
 
 ## Handling Labels
 
