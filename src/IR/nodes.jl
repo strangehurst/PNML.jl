@@ -1,3 +1,7 @@
+# Interface methods for abstract types.
+xmlnode(node::PnmlNode) = node.xml
+refid(reference::ReferenceNode) = reference.ref
+
 """
 Place node of a Petri Net Markup Language graph.
 

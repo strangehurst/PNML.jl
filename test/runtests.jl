@@ -70,28 +70,28 @@ end
 @testset verbose=false "PNML.jl" begin
     if select("All", "Base")
         TestUtils.header("Base")
-        @safetestset "maps"         begin include("maps.jl") end
-        @safetestset "utils"        begin include("utils.jl") end
+        @safetestset "maps"         begin include("Core/maps.jl") end
+        @safetestset "utils"        begin include("Core/utils.jl") end
     end
     if select("All", "IR")
         header("IR")
-        @safetestset "nodes"        begin include("nodes.jl") end
-        @safetestset "graphics"     begin include("graphics.jl") end
-        @safetestset "labels"       begin include("labels.jl") end
+        @safetestset "nodes"        begin include("Core/nodes.jl") end
+        @safetestset "graphics"     begin include("Core/graphics.jl") end
+        @safetestset "labels"       begin include("Core/labels.jl") end
         @safetestset "parse_labels" begin include("parse_labels.jl") end
-        @safetestset "declarations" begin include("declarations.jl") end
-        @safetestset "toolspecific" begin include("toolspecific.jl") end
-        @safetestset "exceptions"   begin include("exceptions.jl") end
+        @safetestset "declarations" begin include("HighLevel/declarations.jl") end
+        @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
+        @safetestset "exceptions"   begin include("Core/exceptions.jl") end
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
-        @safetestset "pages"        begin include("pages.jl") end
-        @safetestset "flatten"      begin include("flatten.jl") end
+        @safetestset "pages"        begin include("Core/pages.jl") end
+        @safetestset "flatten"      begin include("Core/flatten.jl") end
     end
     if select("All", "Examples")
             @safetestset "example file" begin include("parse_examples.jl") end
     end
     if select("All", "Net")
         header("Net")
-        @safetestset "document"     begin include("document.jl") end
+        @safetestset "document"     begin include("Core/document.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end
     if select("All", "Doc")

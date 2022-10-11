@@ -5,7 +5,7 @@ header("PARSE_LABELS")
 
 header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
-    # The funk are key, value pairs expected to be in the PnmlDict.
+    # node => vector of key, value pairs expected to be in the PnmlDict from parsing node.
     ctrl = [
         xml"""<declarations> </declarations>""" => 
                 [:content => ""],

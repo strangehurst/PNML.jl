@@ -1,0 +1,4 @@
+name = "PnmlBase"
+uuid = "306db74c-7064-4106-b42d-73d41efa0ede"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.0.1"

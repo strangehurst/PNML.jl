@@ -1,30 +1,4 @@
 """
-$(TYPEDSIGNATURES)
-
-Return default condition based on `PNTD`. Has meaning of true or always.
-
-# Examples
-
-```jldoctest; setup=:(using PNML; using PNML: default_condition)
-julia> m = default_condition(PnmlCore())
-Condition(nothing, true, )
-
-julia> m = default_condition(ContinuousNet())
-Condition(nothing, true, )
-
-julia> m = default_condition(HLCore())
-Condition(nothing, true, )
-```
-"""
-function default_condition end
-default_condition(::PNTD) where {PNTD <: PnmlType} = Condition(true)
-default_condition(::Type{PNTD}) where {PNTD <: PnmlType} = Condition(true)
-default_condition(::PNTD) where {PNTD <: AbstractContinuousNet} = Condition(true)
-default_condition(::Type{PNTD}) where {PNTD <: AbstractContinuousNet} = Condition(true)
-default_condition(pntd::PNTD) where {PNTD <: AbstractHLCore} = Condition(true) #! should be a term
-default_condition(::Type{PNTD}) where {PNTD <: AbstractHLCore} = Condition(true)
-
-"""
 Label of a Transition that determines when the transition fires.
 
 $(TYPEDEF)

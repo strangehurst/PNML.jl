@@ -32,32 +32,37 @@ include("utils.jl")
 
 
 # INTERMEDIATE REPRESENTATION
-# BASE
-include("IR/types.jl")
-include("IR/interfaces.jl")
-include("IR/pnmldict.jl")
-include("IR/anyelement.jl")
-# PNML CORE
-include("IR/graphics.jl")
-include("IR/toolinfos.jl")
-include("IR/objcommon.jl")
-include("IR/labels.jl")
-# High-Level
-include("IR/structure.jl")
-include("IR/hllabels.jl")
-include("IR/declarations.jl")
-include("IR/terms.jl")
-include("IR/sorts.jl")
 
+# PNML CORE
+include("Core/types.jl") # Abstract Types
+include("Core/interfaces.jl") # Function docstrings
+include("Core/pnmldict.jl")
+include("Core/anyelement.jl")
+include("Core/graphics.jl")
+include("Core/toolinfos.jl")
+include("Core/objcommon.jl")
+include("Core/labels.jl")
+
+# High-Level
+include("HighLevel/hltypes.jl")
+include("HighLevel/structure.jl")
+include("HighLevel/hllabels.jl")
+include("HighLevel/declarations.jl")
+include("HighLevel/terms.jl")
+include("HighLevel/sorts.jl")
+
+include("IR/defaults.jl")
 include("IR/markings.jl")
 include("IR/conditions.jl")
 include("IR/inscriptions.jl")
 
 include("IR/evaluate.jl")
+
 include("IR/nodes.jl")
 include("IR/page.jl")
 include("IR/net.jl")
 include("IR/model.jl")
+
 include("IR/flatten.jl")
 include("IR/show.jl")
 

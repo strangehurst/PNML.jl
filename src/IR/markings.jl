@@ -1,37 +1,3 @@
-"""
-$(TYPEDSIGNATURES)
-
-Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
-
-# Examples
-
-```jldoctest; setup=:(using PNML; using PNML: default_marking, PTMarking, HLMarking, pnmltype)
-julia> m = default_marking(pnmltype(PnmlCore()))
-PTMarking(0, )
-
-julia> m()
-0
-
-julia> m = default_marking(typeof(pnmltype(PnmlCore())))
-PTMarking(0, )
-
-julia> m()
-0
-
-julia> m = default_marking(pnmltype(HLCore()))
-HLMarking(nothing, Term(:empty, Dict(:value => 0)), )
-
-julia> m()
-0
-```
-"""
-function default_marking end
-default_marking(::PNTD) where {PNTD <: PnmlType} = PTMarking(zero(Int))
-default_marking(::Type{PNTD}) where {PNTD <: PnmlType} = PTMarking(zero(Int))
-default_marking(::PNTD) where {PNTD <: AbstractContinuousNet} = PTMarking(zero(Float64))
-default_marking(::Type{PNTD}) where {PNTD <: AbstractContinuousNet} = PTMarking(zero(Float64))
-default_marking(pntd::PNTD) where {PNTD <: AbstractHLCore} = HLMarking(default_zero_term(pntd))
-
 #-------------------
 """
 Number-valued label of [`Place`](@ref).

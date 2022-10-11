@@ -1,30 +1,3 @@
-"""
-$(TYPEDSIGNATURES)
-
-Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
-
-# Examples
-
-```jldoctest; setup=:(using PNML; using PNML: default_inscription)
-julia> i = default_inscription(PnmlCore())
-1
-
-julia> i = default_inscription(ContinuousNet())
-1.0
-
-julia> i = default_inscription(HLCore())
-Term(:empty, Dict(:value => 1))
-
-julia> i()
-1
-
-```
-"""
-function default_inscription end
-default_inscription(::PNTD) where {PNTD <: PnmlType} = one(Int)
-default_inscription(::PNTD) where {PNTD <: AbstractContinuousNet} = one(Float64)
-default_inscription(pntd::PNTD) where {PNTD <: AbstractHLCore} = default_one_term(pntd)
-
 #-------------------
 """
 $(TYPEDEF)
