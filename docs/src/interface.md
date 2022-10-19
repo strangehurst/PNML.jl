@@ -7,6 +7,11 @@ Pages = ["interface.md"]
 Depth = 5
 ```
 # Interface
+ 
+!!! warning
+    Being a work in progress, there will be obsolote, opportunistic or incoherent bits.
+
+    Eventually this section will cover interfaces in a useful way.
 
 The intermediate representation is used to implement networks
 expressed in a pnml model. The consumer of the IR is a network,

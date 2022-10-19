@@ -35,12 +35,18 @@ include("utils.jl")
 
 # PNML CORE
 include("Core/types.jl") # Abstract Types
+
 include("Core/interfaces.jl") # Function docstrings
 include("Core/pnmldict.jl")
 include("Core/anyelement.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
+
+
+include("Core/pnmllabel.jl")
 include("Core/objcommon.jl")
+
+include("Core/name.jl")
 include("Core/labels.jl")
 
 # High-Level

@@ -26,9 +26,9 @@ Place(pntd::PNTD, id::Symbol, marking, sort, name, oc::ObjectCommon) where {PNTD
 # Evaluate the marking.
 function marking(place)
     if !isnothing(place.marking)
-        place.marking()
+        place.marking() #! _evaluate ?
     else
-        default_marking(place)()
+        default_marking(place)() #! _evaluate ?
     end
 end
 
@@ -49,7 +49,8 @@ struct Transition{PNTD<:PnmlType,C}  <: PnmlNode
     com::ObjectCommon
 end
 
-
+#! High-level specific ?!
+#! Use traits? 
 function condition(transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
         default_condition(transition).term

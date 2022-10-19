@@ -34,7 +34,7 @@ function parse_declaration(node, pntd; kw...)
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
-# optional,     required,  zero or more
+# optional, required,  zero or more
 function decl_structure(node, pntd; kw...)
     nn = nodename(node)
     nn == "structure" || error("element name wrong: $nn")

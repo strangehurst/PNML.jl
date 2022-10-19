@@ -1,28 +1,18 @@
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Name is for display, possibly in a tool specific way.
-"""
-struct Name <: AbstractLabel
-    text::String
-    graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
-end
-
-Name(; text::AbstractString = "", graphics=nothing, tools=nothing) =
-    Name(text, graphics, tools)
-
+#------------------------------------------------------------------------------
+# Abstract Label 
+#------------------------------------------------------------------------------
 
 xmlnode(::AbstractLabel) = nothing
 
 "Return `true` if label has `text` field."
 has_text(l::L) where {L <: AbstractLabel} = hasproperty(l, :text) && !isnothing(l.text)
+
 "Return `text` field"
 text(l::L) where {L <: AbstractLabel} = l.text
     
 "Return `true` if label has a `structure` field."
 has_structure(l::L) where {L <: AbstractLabel} = hasproperty(l, :structure) && !isnothing(l.structure)
+
 "Return `structure` field."
 structure(l::L) where {L <: AbstractLabel} = has_structure(l) ? l.structure : nothing
     
@@ -43,7 +33,12 @@ has_label(l::L, tagvalue::Symbol)  where {L <: AbstractLabel} =
     else
         false
     end
+ 
     
+#------------------------------------------------------------------------------
+# Pnml Label
+#------------------------------------------------------------------------------
+
 tag(label::PnmlLabel) = label.tag
 dict(label::PnmlLabel) = label.dict
 xmlnode(label::PnmlLabel) = label.xml

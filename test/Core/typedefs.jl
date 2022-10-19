@@ -48,6 +48,8 @@ end
     @test pntd_symbol("pt_hlpng"  ) === :pt_hlpng
     @test pntd_symbol("symmetric" ) === :symmetric
     @test pntd_symbol("symmetricnet") === :symmetric
+
+    
     @test pntd_symbol("stochastic"  ) === :stochastic
     @test pntd_symbol("timed"       ) === :timednet
     @test pntd_symbol("nonstandard" ) === :pnmlcore

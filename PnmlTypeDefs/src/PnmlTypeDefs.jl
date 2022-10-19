@@ -24,7 +24,7 @@ export  PnmlCore, PTNet,
         StochasticNet, TimedNet, OpenNet,
         ContinuousNet
 
-
+# Functions
 export pnmltype, pntd_symbol
 
 """
@@ -186,6 +186,7 @@ const default_pntd_map = Dict{String, Symbol}(
     "pt_hlpng"   => :pt_hlpng,
     "symmetric"  => :symmetric,
     "symmetricnet" => :symmetric,
+    # extensions
     "stochastic"   => :stochastic,
     "timed"        => :timednet,
     "nonstandard"  => :pnmlcore,
@@ -205,6 +206,7 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :hlnet      => HLPNG(), 
     :pt_hlpng   => PT_HLPNG(),
     :symmetric  => SymmetricNet(),
+
     :stochastic => StochasticNet(),
     :timednet   => TimedNet(),
     :continuous => ContinuousNet(),
@@ -216,7 +218,7 @@ $(TYPEDSIGNATURES)
 Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 """
 add_nettype!(dict::AbstractDict, s::Symbol, pntd::T) where {T<:PnmlType} =
-    dict[s] = pntd #TODO test this
+    dict[s] = pntd #! test this
 
 
 """

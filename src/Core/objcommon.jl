@@ -7,8 +7,8 @@ Some optional incidental bits are shared by most PNML objects are also collected
 """
 struct ObjectCommon
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    tools::Maybe{Vector{ToolInfo}} #! #TODO Make toolinfo generic.
+    labels::Maybe{Vector{PnmlLabel}} #! #TODO Make label generic.
 end
 
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
@@ -19,11 +19,11 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
 ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 has_graphics(oc::ObjectCommon) = oc.graphics !== nothing
-has_tools(oc::ObjectCommon) = oc.tools !== nothing #!&& !isempty(oc.tools)
-has_labels(oc::ObjectCommon) = oc.labels !== nothing #!&& !isempty(oc.labels)
-graphics(oc::ObjectCommon) = oc.graphics
-tools(oc::ObjectCommon) = oc.tools
-labels(oc::ObjectCommon) = oc.labels
+has_tools(oc::ObjectCommon)    = oc.tools !== nothing #!&& !isempty(oc.tools)
+has_labels(oc::ObjectCommon)   = oc.labels !== nothing #!&& !isempty(oc.labels)
+graphics(oc::ObjectCommon)     = oc.graphics
+tools(oc::ObjectCommon)        = oc.tools
+labels(oc::ObjectCommon)       = oc.labels
 
 Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
                                    (has_tools(oc) && !isempty(oc.tools)) ||
@@ -46,9 +46,9 @@ end
 function Base.append!(l::ObjectCommon, r::ObjectCommon)
     # In the flatten use-case do not overwrite scalars.
     # How useful is propagating scalars?
-    # Note that ObjectCommon is immutable so these error.
-    #if !has_name(l);     l.name     = r.name; end
-    #if !has_graphics(l); l.graphics = r.graphics; end
+    #! Note that ObjectCommon is immutable so these error.
+    #! if !has_name(l);     l.name     = r.name; end
+    #! if !has_graphics(l); l.graphics = r.graphics; end
 
     update_maybe!(l, r, :tools)
     update_maybe!(l, r, :labels)

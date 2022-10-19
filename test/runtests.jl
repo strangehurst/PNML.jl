@@ -70,24 +70,32 @@ end
 @testset verbose=false "PNML.jl" begin
     if select("All", "Base")
         TestUtils.header("Base")
-        @safetestset "maps"         begin include("Core/maps.jl") end
+        @safetestset "typedefs"     begin include("Core/typedefs.jl") end
+        @safetestset "idreg"        begin include("Core/idregistry.jl") end
         @safetestset "utils"        begin include("Core/utils.jl") end
     end
-    if select("All", "IR")
-        header("IR")
+    if select("All", "Core")
+        header("Core")
         @safetestset "nodes"        begin include("Core/nodes.jl") end
         @safetestset "graphics"     begin include("Core/graphics.jl") end
         @safetestset "labels"       begin include("Core/labels.jl") end
-        @safetestset "parse_labels" begin include("parse_labels.jl") end
-        @safetestset "declarations" begin include("HighLevel/declarations.jl") end
         @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
         @safetestset "exceptions"   begin include("Core/exceptions.jl") end
-        @safetestset "parse_tree"   begin include("parse_tree.jl") end
         @safetestset "pages"        begin include("Core/pages.jl") end
         @safetestset "flatten"      begin include("Core/flatten.jl") end
     end
+    if select("All", "HighLevel")
+        header("HighLevel")
+        @safetestset "declarations" begin include("HighLevel/declarations.jl") end
+    end
+    if select("All", "Parse")
+        header("Parse")
+        @safetestset "parse_labels" begin include("parse_labels.jl") end
+        @safetestset "parse_tree"   begin include("parse_tree.jl") end
+    end
     if select("All", "Examples")
-            @safetestset "example file" begin include("parse_examples.jl") end
+        header("Examples")
+        @safetestset "example file" begin include("parse_examples.jl") end
     end
     if select("All", "Net")
         header("Net")
