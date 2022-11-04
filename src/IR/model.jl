@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Vector{PnmlNet}
+    nets::Vector{Any} #! abstract
     namespace::String
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode
@@ -29,26 +29,6 @@ namespace(model::PnmlModel) = model.namespace
 idregistry(model::PnmlModel) = model.reg
 xmlnode(model::PnmlModel) = model.xml
 
-"""
-$(TYPEDSIGNATURES)
-
-Build a PnmlModel from a string containing XML.
-"""
-function parse_str(str::AbstractString)
-    reg = IDRegistry()
-    # Good place for debugging.  
-    parse_pnml(root(EzXML.parsexml(str)); reg)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Build a PnmlModel from a file containing XML.
-"""
-function parse_file(fname::AbstractString)
-    reg = IDRegistry()
-    parse_pnml(root(EzXML.readxml(fname)); reg)
-end
 
 """
 $(TYPEDSIGNATURES)

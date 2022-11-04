@@ -15,10 +15,13 @@ function parse_node(node::XMLNode, pntd::PNTD; kw...) where {PNTD <: PnmlType}
 end
 
 #TODO test pnml_namespace
+
 """
 $(TYPEDSIGNATURES)
 
-Return namespace of `node. When `node` does not have a namespace return default value [`pnml_ns`](@ref)."
+Return namespace of `node.
+When `node` does not have a namespace return default value [`pnml_ns`](@ref)
+and warn or throw an error.
 """
 function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_ns)
     if EzXML.hasnamespace(node) 
@@ -29,25 +32,64 @@ function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_n
         return default_ns
     end
 end
+"""
+$(TYPEDSIGNATURES)
+
+Build a PnmlModel from a string containing XML.
+See [`parse_file`](@ref) and [`parse_pnml`](@ref).
+"""
+function parse_str(str::AbstractString)
+    isempty(str) && error("parse_str must have a non-empty string argument")
+    reg = IDRegistry()
+    # Good place for debugging.  
+    parse_pnml(root(EzXML.parsexml(str)); reg)
+end
 
 """
 $(TYPEDSIGNATURES)
 
+Build a PnmlModel from a file containing XML.
+See [`parse_str`](@ref) and [`parse_pnml`](@ref).
+"""
+function parse_file(fname::AbstractString)
+    isempty(fname) && error("parse_file must have a non-empty file name argument")
+    reg = IDRegistry()
+    parse_pnml(root(EzXML.readxml(fname)); reg)
+end
+
+"""
+$(TYPEDSIGNATURES)
 Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
 """
-function parse_pnml(node; kw...)
+function parse_pnml(node::XMLNode; kw...)
+    #!isnothing(node) && error("parse_pnml requires an XML node argument")
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
     
     @assert haskey(kw, :reg)
+
+    nets = allchildren("net", node)
+    @show typeof(nets)
+    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
+
+    netvec = parse_net.(nets; kw...)
+    @show typeof(netvec)
+
+    namespace = if EzXML.hasnamespace(node) 
+            EzXML.namespace(node)
+        else
+            @warn("$nn missing namespace")
+            pnml_ns # Use default value 
+        end
+
     # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node), nothing; kw...), 
-              pnml_namespace(node),
+    PnmlModel(netvec, 
+              namespace,
               kw[:reg], 
               node)
 end
-
+ 
 """
 $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
@@ -60,9 +102,9 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     @assert haskey(kw, :reg)
 
     # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
-    # May result in undefined behparse_pnmlavior and/or require ideosyncratic parsing.
+    # May result in undefined behavior and/or require ideosyncratic parsing.
     isempty(allchildren("page", node)) &&
-         throw(MalformedException("$nn does not have any pages"))
+         throw(MalformedException("$nn does not have any pages", node))
 
     # Although the petri net type definition (pntd) must be attached to the <net> element,
     # it is allowed by this package to override that value.
@@ -75,6 +117,7 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
                     should be $pntypedef
         """
     end
+
     # Create a PnmlDict with keys for possible child tags.
     # Some keys have known/required values.
     # Optional key values are nothing for single object or empty vector when multiples.
@@ -85,8 +128,6 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
                            :pages => Page[],
                            :declaration => Declaration())
 
-    #!##pntd = d[:pntd] # Pass the PNTD down the parse tree with keyword arguments.
-
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -95,18 +136,17 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
             # zero or more <declarations>. Is complicated. You have been warned!
+            # Expected XML structure:
+            #  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
             "declaration"  => (d[:declaration] = parse_declaration(child, pntd; kw...))
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
     PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
 end
-# Expected XML structure:
-#    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
 
 """
 $(TYPEDSIGNATURES)
-
 PNML requires at least one page.
 """
 function parse_page(node, pntd; kw...)
@@ -371,7 +411,7 @@ function parse_inscription(node, pntd; kw...)
     d = pnml_label_defaults(node, :tag=>Symbol(nn),
         :value=>isempty(nodecontent(node)) ? _evaluate(default_inscription(pntd)) :
                                     number_value(strip(nodecontent(node))))
-
+    #! specialize for HL
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
