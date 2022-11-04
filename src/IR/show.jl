@@ -473,7 +473,7 @@ function Base.show(io::IO, declare::AbstractDeclaration)
     pprint(io, declare)
 end
 quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name)),
-         $(quoteof(i.com))))
+         $(quoteof(i.sort))))
 #-------------------
 function Base.show(io::IO, terms::Vector{AbstractTerm})
     iio = inc_indent(io)
