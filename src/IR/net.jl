@@ -4,19 +4,20 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType,D}
+struct PnmlNet{PNTD<:PnmlType}
     type::PNTD #TODO
     id::Symbol
     pages::Vector{Page}
-    declaration::D
+    declaration::Declaration
 
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
 end
 
-function PnmlNet(pntd::PNTD, id::Symbol, pages, declare, name, oc::ObjectCommon, xml::XMLNode) where {PNTD<:PnmlType}
-    PnmlNet{PNTD, typeof(declare)}(pntd, id, pages, declare, name, oc, xml)
+function PnmlNet(pntd::PNTD, id::Symbol, pages, declare, name, 
+                    oc::ObjectCommon, xml::XMLNode) where {PNTD<:PnmlType}
+    PnmlNet{PNTD}(pntd, id, pages, declare, name, oc, xml)
 end
 
 pid(net::PnmlNet) = net.id

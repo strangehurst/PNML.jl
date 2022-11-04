@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: firstpage, parse_file
+using PNML: firstpage, parse_file, PnmlNet, Page
 
 header("Exanples")
 
@@ -11,16 +11,20 @@ header("Exanples")
     @test_call  parse_file(testfile)
 
     @test model isa PNML.PnmlModel
-    nets = PNML.nets(model)
     @test_call PNML.nets(model)
-    @test nets isa Vector{PNML.PnmlNet}
-    @test length(nets) == 1
-    @test nets[1].pages isa Vector
-    @test length(nets[1].pages) == 1
-    @test !isempty(nets[1].pages[1].transitions)
-    @test !isempty(nets[1].pages[1].arcs)
-    @test !isempty(nets[1].pages[1].places)
-    @test firstpage(nets[1]) isa PNML.Page
+    netvec = PNML.nets(model)
+    #@show typeof(netvec)
+    @test netvec isa Vector{Any}
+    @test length(netvec) == 1
+    #@show typeof(netvec[1])
+    @test netvec[1] isa PnmlNet
+    @test netvec[1] isa PnmlNet{<:PnmlType}
+    @test netvec[1].pages isa Vector{<:Page}
+    @test length(netvec[1].pages) == 1
+    @test !isempty(netvec[1].pages[1].transitions)
+    @test !isempty(netvec[1].pages[1].arcs)
+    @test !isempty(netvec[1].pages[1].places)
+    @test firstpage(netvec[1]) isa PNML.Page
     #=
     Decend and print. Needs update.
     if PRINT_PNML
