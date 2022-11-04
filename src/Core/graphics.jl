@@ -7,13 +7,13 @@ Cartesian Coordinate.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Coordinate{T <: Number}
-    x::T
-    y::T
+struct Coordinate
+    x::Union{Int,Float64}
+    y::Union{Int,Float64}
 end
-Coordinate() = Coordinate{Int}(0, 0)
-Coordinate(x::T) where T<:Number = Coordinate{T}(x, zero(x))
-Base.eltype(c::Coordinate{T}) where {T<:Number} = T
+Coordinate() = Coordinate(0, 0)
+Coordinate(x::Union{Int,Float64}) = Coordinate{typeof(x)}(x, zero(x))
+#!Base.eltype(c::Coordinate) where {T<:Union{Int,Float64}} = T
 
 #-------------------
 """

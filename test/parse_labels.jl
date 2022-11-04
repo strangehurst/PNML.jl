@@ -147,7 +147,7 @@ header("PT initMarking")
     printnode(n)
     @test typeof(n) <: PNML.PTMarking
     @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(n.value) <: Number
+    @test typeof(n.value) <: Union{Int,Float64}
     @test n.value == n()
 
     mark1 = PNML.PTMarking(2)

@@ -21,13 +21,13 @@ julia> i()
 3
 ```
 """
-struct PTInscription{T<:Number}  <: Annotation
+struct PTInscription{T<:Union{Int,Float64}}  <: Annotation
     value::T
     com::ObjectCommon
 end
 
 PTInscription() = PTInscription(one(Int))
-PTInscription(value) = PTInscription(value, ObjectCommon()) 
+PTInscription(value::Union{Int,Float64}) = PTInscription(value, ObjectCommon()) 
 
 """
 $(TYPEDSIGNATURES)

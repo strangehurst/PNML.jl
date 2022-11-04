@@ -69,7 +69,7 @@ doc = EzXML.parsexml(str) # shared by testsets
                 i = parse_node(PNML.firstchild("initialMarking", p); reg)
                 @test_call PNML.firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.PTMarking
-                @test typeof(i.value) <: Number
+                @test typeof(i.value) <: Union{Int,Float64}
                 @test i.value >= 0
                 @test xmlnode(i) isa Maybe{EzXML.Node}
             end
@@ -89,7 +89,7 @@ doc = EzXML.parsexml(str) # shared by testsets
                 if ins !== nothing
                     i = parse_node(ins; reg)
                     @test typeof(i) <: PNML.PTInscription
-                    @test typeof(i.value) <: Number
+                    @test typeof(i.value) <: Union{Int,Float64}
                     @test i.value > 0
                     @test xmlnode(i) isa Maybe{EzXML.Node}
                 end

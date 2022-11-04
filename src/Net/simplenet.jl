@@ -114,7 +114,7 @@ $(TYPEDSIGNATURES)
 Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 """
 function rate end
-function rate(transition)::Number #! where {T<:PnmlType, N<:PetriNet{T}}
+function rate(transition)::Union{Int,Float64} #! where {T<:PnmlType, N<:PetriNet{T}}
     r = get_label(transition, :rate)
     if !isnothing(r)
         @assert tag(r) === :rate

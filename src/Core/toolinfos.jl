@@ -30,7 +30,7 @@ TokenGraphics is <toolspecific> content.
 Combines the <tokengraphics> and <tokenposition> elements.
 """
 struct TokenGraphics <: AbstractPnmlTool
-    positions::Vector{Coordinate} #TODO: uses abstract type
+    positions::Vector{Coordinate}
 end
 
 # Empty TokenGraphics is allowed in spec.

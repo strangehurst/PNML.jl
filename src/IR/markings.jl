@@ -30,14 +30,14 @@ julia> m()
 12.34
 ```
 """
-struct PTMarking{N<:Number} <: Annotation
+struct PTMarking{N<:Union{Int,Float64}} <: Annotation
     value::N
     com::ObjectCommon
     # PTMarking does not use ObjectCommon.graphics,
     # but rather, TokenGraphics in ObjectCommon.tools.
 end
 PTMarking() = PTMarking(zero(Int))
-PTMarking(value) = PTMarking(value, ObjectCommon())
+PTMarking(value::Union{Int,Float64}) = PTMarking(value, ObjectCommon())
 
 """
 $(TYPEDSIGNATURES)
