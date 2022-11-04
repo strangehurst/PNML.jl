@@ -12,7 +12,9 @@ function parse_tokengraphics(node, pntd; kw...)
         TokenGraphics() # Empty is legal.
     else
         #TODO: Enforce type sameness of position coordinates? How?
-        TokenGraphics(parse_tokenposition.(positions, Ref(pntd); kw...))
+        positions = parse_tokenposition.(positions, Ref(pntd))
+        isempty(positions) && throw(MalformedException("$nn has no positions",node))
+        TokenGraphics(positions)
     end
 end
 

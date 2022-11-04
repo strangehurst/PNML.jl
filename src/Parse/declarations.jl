@@ -87,10 +87,18 @@ function parse_namedoperator(node, pntd; kw...)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
 
-    @warn "namedoperator under test"
+    @warn "namedoperator under development"
+
+    defnode = getfirst("def", node)
+    isnothing(defnode) && error("namedoperator does not have a <def>")
+    def = parse_sort(defnode, pntd; kw...)
+
     # <parameter> holds zero or more VariableDeclaration
-    def = parse_sort(getfirst("def", node), pntd; kw...)
-    parameters = parse_variabledecl.(elements(getfirst("parameter", node)), Ref(pntd); kw...)
+    parnode = getfirst("parameter", node)
+    isnothing(parnode) && error("namedoperator does not have a <parameters>")
+    parameters = isnothing(parnode) ? [default_term()] :
+                     parse_variabledecl.(elements(parnode), Ref(pntd); kw...)
+
     NamedOperator(register_id!(kw[:reg], node["id"]), node["name"], parameters, def)
 end
 
