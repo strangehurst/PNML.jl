@@ -11,7 +11,7 @@ function namespace end
 namespace(::T) where {T<:Any} = error("namespace(::$T) method not defined")
 
 """
-Parse xml string into EzXML node.
+Parse string `s` into EzXML node.
 
 $(TYPEDSIGNATURES)
 """
@@ -22,7 +22,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return up to 1 immediate child of element `el` that is a `tag`.
+Return up to 1 immediate child of `el` that is a `tag`.
 """
 function firstchild(tag, el::XMLNode, ns=pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x"=>ns])
@@ -31,7 +31,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return first matchibg child or nothing. 
+Return first child with `tag` or nothing. 
 """
 function getfirst(tag, el::XMLNode, ns=pnml_ns) 
     x = firstchild(tag, el, ns)
@@ -42,7 +42,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of `el` element's immediate children with `tag`.
+Return vector of `el`'s immediate children with `tag`.
 """
 function allchildren(tag, el, ns=pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])

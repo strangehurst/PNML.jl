@@ -69,7 +69,7 @@ which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
-| tag          | XML tag name is standard in the IR             |
+| tag          | XML tag symbol `:net`                          |
 | id           | unique ID                                      |
 | name         | text name, optional                            |
 | tools        | list of tool specific - possibly empty         |
@@ -82,7 +82,7 @@ XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@r
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
-| tag          | XML tag name is standard in the IR             |
+| tag          | XML tag symbol `:page`                         |
 | id           | unique ID                                      |
 | name         | text name, optional                            |
 | tools        | list of tool specific - possibly empty         |
@@ -93,6 +93,7 @@ XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@r
 | refP         | references to place on different page          |
 | refT         | references to transition on different page     |
 | declarations | only net & page tags have declarations         |
+| pages        | pages can be nested                            |
 
 ## Places
 
@@ -160,6 +161,7 @@ This includes:
 ```@example methods
 methods(PNML.pid) # hide
 ```
+
 ### name - get name
 
 `PnmlObject`s and `PnmlNet`s have a name label. 

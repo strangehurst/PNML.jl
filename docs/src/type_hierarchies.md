@@ -12,15 +12,17 @@ AbstractTrees.children(x::Type) = subtypes(x)
 type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition
+
 See [`PnmlTypeDefs`](@ref) module page.
 
-There are levels:  Core (Place-Transition), Continuous and High-Level PNG.
+There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
 [`PnmlCore`](@ref) is a concrete subtype of [`PnmlType`](@ref).
 `PnmlCore` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
 
-[`ContinuousNet`](@ref) uses floating point marking and inscriptions.
-It is an extension to the ISO specification.
+[`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
+`ContinuousNet` uses floating point marking and inscriptions.
+It is a nonstandard extension to the ISO specification.
 
 [`HLCore`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
 `HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
@@ -28,7 +30,7 @@ Think of it as a testable implementation of `AbstractHLCore`.
 
 The IR does not try to impose semantics on the model. Those semantics should
 be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
-at a structural level. It may paramertize types to facilitate specilaization.
+at a structural level. It may paramertize types to facilitate specilization.
 
 ```@example type
 type_tree(PNML.PnmlTypeDefs.PnmlType) # hide

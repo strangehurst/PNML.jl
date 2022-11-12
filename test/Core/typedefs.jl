@@ -18,7 +18,7 @@ using PNML: IDRegistry, XMLNode, pnmltype, tagmap
         else
 
         end
-        # Some tags only 
+        #! Some tags only HighLevel
         if any(==(t), ["hlmarking", "hlinitialMarking", "hlinscription", "namedoperator", "declarations", "declaration"]) 
             @test_call tagmap[t](EzXML.parsexml("<$(t)></$(t)>").root, HLCore(); reg=IDRegistry() )
         else

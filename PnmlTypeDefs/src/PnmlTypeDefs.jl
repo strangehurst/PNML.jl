@@ -1,6 +1,7 @@
 """
 Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 
+
 # Imports
 $(DocStringExtensions.IMPORTS)
 
@@ -28,6 +29,8 @@ export  PnmlCore, PTNet,
 export pnmltype, pntd_symbol
 
 """
+$(TYPEDEF)
+
 Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
 
 Each Petri Net Markup Language (PNML) network element will have a single pntd URI
@@ -36,87 +39,78 @@ the syntax and semantics of the XML model.
 
 Selected abbreviations, URIs that do not resolve to a valid schema file, are also allowed.
 
-Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref)
-for how to get from the URI to a singleton.
-
-$(TYPEDEF)
+Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref) for how to get from the URI to a singleton.
 """
 abstract type PnmlType end
 
 """
-Base of token/integer-based Petri Net pntds.
-See [`PnmlCore`](@ref), [`PTNet`](@ref) and others.
-
 $(TYPEDEF)
+Base of token/integer-based Petri Net pntds.
+
+See [`PnmlCore`](@ref), [`PTNet`](@ref) and others.
 """
 abstract type AbstractPnmlCore <: PnmlType end
 
 """
-The most minimal concrete Petri Net.
-Used to implement and test the complete Petri Net Graph infrastructure.
-Labels of the graph is where meaning is attached.
-Much of the Label infrastructure for High Level Petri Net Graphs is tested at this level.
-Subtypes of `PnmlType` should be used to specialize Labels for expressiveness and optimization.
-
 $(TYPEDEF)
+The most minimal concrete Petri Net. 
+
+Used to implement and test the core PNML support.
+Covers the complete graph infrastructure including labels attached to nodes and arcs.
 """
 struct PnmlCore <: AbstractPnmlCore end
 
 """
-Place-Transition Petri Nets add small extensions to core.
+$(TYPEDEF)
+Place-Transition Petri Nets add small extensions to core PNML for initialMarking and inscription.
+
 The grammer file is ptnet.pnml so we name it PTNet.
 Note that 'PT' is often the prefix for XML tags specialized for this net type.
-
-$(TYPEDEF)
 """
 struct PTNet <: AbstractPnmlCore end
 
 """
-Base of High Level Petri Net pntds.
-See [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
-
 $(TYPEDEF)
+Base of High Level Petri Net pntds which add large extensions to PNML core.
+hlinitialMarking, hlinscription, and defined lable structure.
+
+See [`HLCore`](@ref), [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
 """
 abstract type AbstractHLCore <: PnmlType end
 
 """
-High-Level Petri Net Graphs (HLPNGs) add large extensions to core.
+$(TYPEDEF)
 `HLCore` can be used for generic high-level nets.
 We try to implement and test all function at `PnmlCore` level,
-but expect to find use for a concrete type at this level.
-
-$(TYPEDEF)
+but expect to find use for a concrete type at this level for testing high-level extensions.
 """
 struct HLCore <: AbstractHLCore end
 
 """
-HLPNG is the most intricate High-Level Petri Net schema.
+
+$(TYPEDEF)
+High-Level Petri Net Graphs (HLPNGs) are the most intricate High-Level Petri Net schema.
 It extends [`SymmetricNet`](@ref), including with
    - declarations for sorts and functions (ArbitraryDeclarations)
    - sorts for Integer, String, and List
-
-$(TYPEDEF)
 """
 struct HLPNG <: AbstractHLCore end
 
 """
-Place-Transition Net in HLCore notation (HLPNG=High-Level Petri Net Graph).
-
 $(TYPEDEF)
+Place-Transition Net in HLCore notation.
 """
 struct PT_HLPNG <: AbstractHLCore end
 
 """
+$(TYPEDEF)
 Symmetric Petri Net is the best-worked use case in the `primer`
 and ISO specification part 2.
-
-$(TYPEDEF)
 """
 struct SymmetricNet <: AbstractHLCore end
 
 """
 $(TYPEDEF)
-
 Uses floating point numbers for markings, inscriptions, and conditions.
 """
 abstract type AbstractContinuousNet <: PnmlType end

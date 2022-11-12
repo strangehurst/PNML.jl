@@ -38,26 +38,25 @@ versioninfo()
 In this section 'PNML' refers to the markup language, its specification and schemas.
 
 <http://www.pnml.org> has publications and tutorials covering PNML at
-various points in its evolution. Is the cannonical site for the
-RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd),
+various points in its evolution. 
+
+Site has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
+
+The cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd),
 including:
-  - PT Net 
+  - PT Net (Place/Transition Net)
   - High-level Place/Transition Net
   - Symmetric Net
 
-These are instances of the 3 flavors currently covered by PNML.
+These are instances of the 2 flavors currently covered by PNML. Discrete intger-valued vs High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the mant-sorted algebra to use integers. Also 
+ 
+It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its EMF. 
 
-There are links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
-
-It seems the people behind PNML are of the Model Driven Engineering (MDE) camp
-and have chosen Java, Eclipse and its EMF. There is GUI focus. 
-One can find some PNML implementations in other languages
+There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf)
-for more details. The rest of this page will make more sense if you are
-familiar with the primer's contents.
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will make more sense if you are familiar with the primer's contents.
 
 
 ## Interoperability
@@ -217,6 +216,8 @@ inscription/marking.
 
 ## References
 
-See [`PnmlTypeDefs.PnmlType `](@ref),
-[`PnmlTypeDefs.default_pntd_map`](@ref),
-[`PnmlTypeDefs.pnmltype_map`](@ref)
+[www.pnml.org](https://www.pnml.org/)
+
+[*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)
+
+ISO/IEC: Software and Systems Engineering – High-level Petri Nets, Part 1: Concepts Definitions and Graphical Notation, International Standard ISO/IEC 15909 (2004)

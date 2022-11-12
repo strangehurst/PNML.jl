@@ -49,13 +49,13 @@ struct Transition{PNTD<:PnmlType,C}  <: PnmlNode
     com::ObjectCommon
 end
 
-#! High-level specific ?!
+#! Split out High-level specific version
 #! Use traits? 
 function condition(transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
-        default_condition(transition).term
+        default_condition(transition).term #! _evaluate
     else
-        transition.condition.term
+        transition.condition.term #! _evaluate
         #TODO evaluate condition
         #TODO implement full structure handling
     end
