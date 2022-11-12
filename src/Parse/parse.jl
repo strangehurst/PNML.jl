@@ -54,6 +54,7 @@ See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 function parse_file(fname::AbstractString)
     isempty(fname) && error("parse_file must have a non-empty file name argument")
     reg = IDRegistry()
+    # Good place for debugging.  
     parse_pnml(root(EzXML.readxml(fname)); reg)
 end
 
@@ -63,18 +64,16 @@ Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
 """
 function parse_pnml(node::XMLNode; kw...)
-    #!isnothing(node) && error("parse_pnml requires an XML node argument")
     nn = nodename(node)
     nn == "pnml" || error("element name wrong: $nn" )
     
     @assert haskey(kw, :reg)
 
     nets = allchildren("net", node)
-    @show typeof(nets)
     isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
 
+    # Do not yet have a PNTD defined, so call parse_net directly.
     netvec = parse_net.(nets; kw...)
-    @show typeof(netvec)
 
     namespace = if EzXML.hasnamespace(node) 
             EzXML.namespace(node)
@@ -83,7 +82,6 @@ function parse_pnml(node::XMLNode; kw...)
             pnml_ns # Use default value 
         end
 
-    # Do not yet have a PNTD defined, so call parse_net directly.
     PnmlModel(netvec, 
               namespace,
               kw[:reg], 
@@ -126,12 +124,29 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
     d = pnml_node_defaults(node, :tag => Symbol(nn),
                            :id => register_id!(kw[:reg], node["id"]),
                            :pages => Page[],
-                           :declaration => Declaration())
+                           :declaration => Declaration()) #! declaration is High Level
+    parse_net_2!(d, node, pntd; kw...)
+    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
+end
 
+"Specialize net parsing on pntd"
+function parse_net_2! end
+
+function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...) # Every pntd not a AbstractHLCore.
     # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_page(child, pntd; kw...))
+            "page" => push!(d[:pages], parse_page(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+        end
+    end
+end
+
+function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PNTD; kw...) where {PNTD<:AbstractHLCore}
+    # Go through children looking for expected tags, delegating common tags and labels.
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            "page" => push!(d[:pages], parse_page(child, pntd; kw...))
             
             # For nets and pages the <declaration> tag is optional 
             # <declaration> ia a High-Level Annotation with a <structure> holding
@@ -142,7 +157,6 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
 end
 
 """
@@ -162,9 +176,34 @@ function parse_page(node, pntd; kw...)
                            :arcs => Arc[],
                            :refP => RefPlace[],
                            :refT => RefTransition[],
-                           :declaration => Declaration(),
+                           :declaration => Declaration(), #! HL
                            :pages => Page[])
+    parse_page_2!(d, node, pntd; kw...)
+    Page(pntd, d[:id],
+        d[:places], d[:refP],
+        d[:trans], d[:refT],
+        d[:arcs],
+        d[:declaration], d[:pages], d[:name], ObjectCommon(d))
+end
 
+""
+function parse_page_2! end
+
+function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            "place"       => push!(d[:places], parse_place(child, pntd; kw...))
+            "transition"  => push!(d[:trans], parse_transition(child, pntd; kw...))
+            "arc"         => push!(d[:arcs], parse_arc(child, pntd; kw...))
+            "referencePlace"      => push!(d[:refP], parse_refPlace(child, pntd; kw...))
+            "referenceTransition" => push!(d[:refT], parse_refTransition(child, pntd; kw...))
+            "page"        => push!(d[:pages], parse_page(child, pntd; kw...))
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+        end
+    end
+end
+
+function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PNTD; kw...) where {PNTD<:AbstractHLCore}
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place"       => push!(d[:places], parse_place(child, pntd; kw...))
@@ -173,16 +212,11 @@ function parse_page(node, pntd; kw...)
             "referencePlace"      => push!(d[:refP], parse_refPlace(child, pntd; kw...))
             "referenceTransition" => push!(d[:refT], parse_refTransition(child, pntd; kw...))
             # See note above about declarations vs. declaration.
-            "declaration" => (d[:declaration] = parse_declaration(child, pntd; kw...))
+            "declaration" => (d[:declaration] = parse_declaration(child, pntd; kw...)) #! HL
             "page"        => push!(d[:pages], parse_page(child, pntd; kw...))
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Page(pntd, d[:id],
-        d[:places], d[:refP],
-        d[:trans], d[:refT],
-        d[:arcs],
-        d[:declaration], d[:pages], d[:name], ObjectCommon(d))
 end
 
 """
@@ -198,18 +232,30 @@ function parse_place(node, pntd; kw...)
                            :id => register_id!(kw[:reg], node["id"]),
                            :marking => default_marking(pntd),
                            :type => default_sort(pntd)) # Different from net's.
+    parse_place_labels!(d, node, pntd; kw...)
+
+    Place(pntd, d[:id], d[:marking], d[:type], d[:name], ObjectCommon(d))
+end
+
+"Specialize place label parsing."
+function parse_place_labels! end
+function parse_place_labels!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...) 
     foreach(elements(node)) do child
         @match nodename(child) begin
-            # Tags initialMarking and hlinitialMarking are mutually exclusive.
             "initialMarking"   => (d[:marking] = parse_initialMarking(child, pntd; kw...))
-            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...))
-            # Here type means `sort`. Re: Many-sorted algebra.
-            "type"             => (d[:type] = parse_type(child, pntd; kw...))
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-
-    Place(pntd, d[:id], d[:marking], d[:type], d[:name], ObjectCommon(d))
+end
+function parse_place_labels!(d::PnmlDict, node::XMLNode, pntd::PNTD; kw...) where {PNTD<:AbstractHLCore}
+    foreach(elements(node)) do child
+        @match nodename(child) begin
+            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...)) #!L
+            # Here type means `sort`. Re: Many-sorted algebra.
+            "type"             => (d[:type] = parse_type(child, pntd; kw...)) #! HL
+            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+        end
+    end
 end
 
 """
@@ -220,21 +266,32 @@ function parse_transition(node, pntd; kw...)
     nn == "transition" || error("element name wrong: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     @assert haskey(kw, :reg)
-
+    
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kw[:reg], node["id"]),
                            :condition=>default_condition(pntd))
+    parse_transition_2!(d, node, pntd; kw...)
+    Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
+end
+
+"Specialize transition label parsing."
+function parse_transition_2! end
+function parse_transition_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "condition"    => (d[:condition] = parse_condition(child, pntd; kw...))
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-    Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
 end
 
+# Implements if specialization needed.
+#function parse_transition_2!(d::PnmlNode, node::XMLNode, pntd::PNTD; kw...) where{PNTD<:AbstractHLCore} end
+
 """
-$(TYPEDSIGNATURES)
+    parse_arc(node::XMLNode, pntd::PnmlType; kw...) -> Arc{typeof(pntd), typeof(inscription)}
+
+Construct an `Arc` with labels specialized for the PnmlType.
 """
 function parse_arc(node, pntd; kw...)
     nn = nodename(node)
@@ -250,21 +307,28 @@ function parse_arc(node, pntd; kw...)
                            :target=>Symbol(node["target"]),
                            :inscription=>default_inscription(pntd))
     foreach(elements(node)) do child
-        if pntd isa AbstractHLCore
-            @match nodename(child) begin
-                # Mutually exclusive tags: inscription, hlinscription
-                "hlinscription"  => (d[:inscription] = parse_hlinscription(child, pntd; kw...))
-                _ => parse_pnml_node_common!(d, child, pntd; kw...)
-            end
-        else
-            @match nodename(child) begin
-                # Mutually exclusive tags: inscription, hlinscription
-                "inscription"    => (d[:inscription] = parse_inscription(child, pntd; kw...))
-                _ => parse_pnml_node_common!(d, child, pntd; kw...)
-            end
-        end
+    parse_arc_labels!(d, child, pntd; kw...) # Dispatch on pntd
     end
     Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
+end
+
+"""
+Specialize arc label parsing.
+"""
+function parse_arc_labels! end
+
+function parse_arc_labels!(d, node, pntd::PNTD; kw...) where {PNTD<:PnmlType}
+    @match nodename(node) begin
+        "inscription" => (d[:inscription] = parse_inscription(node, pntd; kw...))
+        _ => parse_pnml_node_common!(d, node, pntd; kw...)
+    end
+end
+
+function parse_arc_labels!(d, node, pntd::PNTD; kw...) where {PNTD<:AbstractHLCore}
+    @match nodename(node) begin
+        "hlinscription" => (d[:inscription] = parse_hlinscription(node, pntd; kw...))
+        _ => parse_pnml_node_common!(d, node, pntd; kw...)
+    end
 end
 
 """
@@ -280,6 +344,7 @@ function parse_refPlace(node, pntd; kw...)
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kw[:reg], node["id"]),
                            :ref=>Symbol(node["ref"]))
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
@@ -301,6 +366,7 @@ function parse_refTransition(node, pntd; kw...)
     d = pnml_node_defaults(node, :tag=>Symbol(nn),
                            :id=>register_id!(kw[:reg], node["id"]),
                            :ref=>Symbol(node["ref"]))
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
@@ -325,22 +391,19 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Name`](@ref) holding text value and optional tool & GUI information.
+Return [`Name`](@ref) label holding text value and optional tool & GUI information.
 """
 function parse_name(node, pntd; kw...)
     nn = nodename(node)
     nn == "name" || error("element nodename wrong")
 
-    # Using firstchild or allchildren can cause parse_node to be passed nothing
-    # for optional or missing child nodes.
-
+    # Assumes there are no other children with this tag (like the specification says).
     textnode = firstchild("text", node)
     if isnothing(textnode)
-        @warn "$(nn) missing <text> element"
+        @warn "$(nn) missing <text> element" #TODO Make optional.
         # There are pnml files that break the rules & do not have a text element here.
         # Ex: PetriNetPlans-PNP/parallel.jl
         # Attempt to harvest content of <name> element instead of the child <text> element.
-        # Assumes there are no other children elements.
         text = string(strip(nodecontent(node)))
     else
         text = string(strip(nodecontent(textnode)))
@@ -405,13 +468,12 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_inscription(node, pntd; kw...)
+function parse_inscription(node, pntd::PnmlType; kw...)
     nn = nodename(node)
     nn == "inscription" || error("element name wrong: $nn'")
     d = pnml_label_defaults(node, :tag=>Symbol(nn),
         :value=>isempty(nodecontent(node)) ? _evaluate(default_inscription(pntd)) :
                                     number_value(strip(nodecontent(node))))
-    #! specialize for HL
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
@@ -432,7 +494,7 @@ High-level initial marking labels are expected to have a [`Term`](@ref) in the <
 child. We extend the pnml standard by allowing node content to be numeric: 
 parsed to `Int` and `Float64`.
 """
-function parse_hlinitialMarking(node, pntd; kw...)
+function parse_hlinitialMarking(node, pntd::AbstractHLCore; kw...)
     nn = nodename(node)
     nn == "hlinitialMarking" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn), 
@@ -453,7 +515,7 @@ end
 """
 $(TYPEDSIGNATURES)
 w"""
-function parse_hlinscription(node, pntd::T; kw...) where {T <: AbstractHLCore}
+function parse_hlinscription(node, pntd::PNTD; kw...) where {PNTD <: AbstractHLCore}
     @debug node
     nn = nodename(node)
     nn == "hlinscription" || error("element name wrong: $nn'")
@@ -495,6 +557,7 @@ function parse_condition(node, pntd; kw...)
     nn = nodename(node)
     nn == "condition" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             "structure" => (d[:structure] = 
@@ -506,6 +569,7 @@ function parse_condition(node, pntd; kw...)
     end
     Condition(d[:text], d[:structure], ObjectCommon(d))
 end
+
 
 #---------------------------------------------------------------------
 #TODO Will unclaimed_node handle this?
