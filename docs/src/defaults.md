@@ -17,9 +17,9 @@ High-level nets are not completely implemented (as of November 2022). Also suppo
 
 The values used for markings, inscriptions, conditions arepart of a multi-sorted algebra. 
 
-  - default_sort, where sort is for the many-sorted algebra defined for high-level nets.
-  - default_one_term
-  - default_zero_term
+  - default\_sort, where sort is for the many-sorted algebra defined for high-level nets.
+  - default\_one\_term
+  - default\_zero\_term
 
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)

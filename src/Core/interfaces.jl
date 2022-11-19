@@ -24,10 +24,13 @@ Return name String. Default to empty string.
 """
 function name end
 
+#--------------------------------
+# XML
+#--------------------------------
 """
     has_xml(x) -> Bool
 
-Return `true` if has XML attached. Defaults to `false`.
+Return `true` if `x` has XML attached. Defaults to `false`.
 """
 function has_xml end
 has_xml(x::Any) = hasproperty(x, :xml)
@@ -39,7 +42,9 @@ Return attached xml node.
 """
 function xmlnode end
 
-
+#--------------------------------
+# LABELS
+#--------------------------------
 """
     has_labels(x) -> Bool
 
@@ -50,18 +55,19 @@ function has_labels end
 """
     has_label(x, tag::Symbol) -> Bool
 
-Does any label have a matching `tagvalue`.
+Does `x` have any label have a matching `tagvalue`.
 """ 
 function has_label end
 
 """
     get_label(x, tag::Symbol) -> PnmlLabel
 
-Return first label with a matching `tagvalue`.
+Return first label of `x` with a matching `tagvalue`.
 """
 function get_label end
 
 
+#--------------------------------------------
 #--------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -76,49 +82,105 @@ function nettype end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of pages.
+Return vector of all pages.
 """
 function pages end
 
+#--------------------------------------------
+# PLACES & MARKINGS
+#--------------------------------------------
 """
 $(TYPEDSIGNATURES)
 
-Return vector of places.
+Return vector of all places.
 """
 function places end
 
 """
 $(TYPEDSIGNATURES)
 
-Return vector of place IDs.
+Return vector of all place IDs.
 """
 function place_ids end
 
 """
 $(TYPEDSIGNATURES)
-Return vector of transitions.
+
+Return `true` if there is any place with `id`?
+"""
+function has_place end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the place with `id`.
+"""
+function place end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return marking value of a place.
+"""
+function marking end
+
+#! CHANGE NAME
+"""
+$(TYPEDSIGNATURES)
+
+Return a labelled vector with key of place id and value of marking.
+"""
+function initialMarking end
+
+#--------------------------------------------
+# TRANSITIONS & CONDITIONS
+#--------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+Return vector of all transitions.
 """
 function transitions end
 
 """
 $(TYPEDSIGNATURES)
 
-Return vector of arcs.
+Is there a transition with `id`?
+"""
+function has_transition end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function transition end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function transition_ids end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a labelled vector of condition values.
+"""
+function conditions end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return condition value of `transition`.
+"""
+function condition end
+
+#--------------------------------------------
+# ARCS & INSCRIPTIONS
+#--------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+
+Return vector of all arcs.
 """
 function arcs end
-
-"""
-$(TYPEDSIGNATURES)
-Return vector of reference places.
-"""
-function refplaces end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return vector of reference transitions.
-"""
-function reftransitions end
 """
 $(TYPEDSIGNATURES)
 
@@ -135,7 +197,7 @@ function arc end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of arc ids.
+Return vector of all arc ids.
 """
 function arc_ids end
 
@@ -171,6 +233,22 @@ Return incription value of `arc`.
 """
 function inscription end
 
+#--------------------------------------------
+# REFERENCES
+#--------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+Return vector of all reference places.
+"""
+function refplaces end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return vector of all reference transitions.
+"""
+function reftransitions end
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -202,68 +280,3 @@ Return reference transition matching `id`.
 $(TYPEDSIGNATURES)
 """
 function reftransition end
-
-"""
-$(TYPEDSIGNATURES)
-
-Is there any place with `id`?
-"""
-function has_place end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the place with `id`.
-"""
-function place end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return vector of place ids.
-"""
-
-"""
-$(TYPEDSIGNATURES)
-
-Return marking value of a place `p`.
-"""
-function marking end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return a labelled vector with key of place id and value of marking.
-"""
-function initialMarking end
-
-"""
-$(TYPEDSIGNATURES)
-
-Is there a transition with `id`?
-"""
-function has_transition end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function transition end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function transition_ids end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return a labelled vector of condition values for net `s`. Key is transition id.
-"""
-function conditions end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return condition value of `transition`.
-"""
-function condition end

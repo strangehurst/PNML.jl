@@ -7,9 +7,10 @@ using PNML: tag, pid, xmlnode, parse_str,
     arc, arcs, has_arc,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
     marking, default_marking, initialMarking,
-    condition,
-    inscription,
-    nettype
+    condition, default_condition,
+    inscription, default_inscription,
+    nettype,
+    ispid
 
 header("SimpleNet")
 
@@ -75,19 +76,33 @@ header("SimpleNet")
             @test pid(a) == pid(b)
         end
     end
+    # 
+    for top in [net, net.net, first(pages(net.net))]
+        @show typeof(top)
+    end
+    @show typeof(ispid)
+    println()
 
     for top in [net, net.net, first(pages(net.net))]
+        @show typeof(top)
         @test_call places(top)
         for p in @inferred places(top)
+            @show pid(p), marking(p), typeof(marking(p)), default_marking(p)
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
             @test place(top, :bogus) === nothing
-            @test typeof(marking(p)) <: typeof(default_marking(nettype(p))())
-            @test @inferred(marking(p)) isa typeof(default_marking(nettype(p))())
+            @test typeof(marking(p)) <: typeof(default_marking(p))
+            @test @inferred(marking(p)) isa typeof(default_marking(p))
         end
+    end
+    println()
+    for top in [net, net.net, first(pages(net.net))]
+        @show typeof(top)
         @test_call transitions(top)
         for t in @inferred transitions(top)
+            @show pid(t), condition(t), typeof(condition(t)), default_condition(t)
+            @test ispid(pid(t))(pid(t))
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
@@ -95,8 +110,17 @@ header("SimpleNet")
             @test condition(t) !== nothing
             @test @inferred condition(t)
         end
+    end
+    println()
+    # 
+    for top in [net, net.net, first(pages(net.net))]
+        @show typeof(top)
         @test_call arcs(top)
         for a in @inferred arcs(top)
+            #@show a
+            @show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
+            #@show has_arc(top, pid(a))
+            #@show typeof(has_arc(top, pid(a)))
             @test @inferred has_arc(top, pid(a))
             @test a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
@@ -106,6 +130,7 @@ header("SimpleNet")
             @test @inferred(inscription(a)) !== nothing
         end
     end
+    println()
 end
 
 header("RATE")
@@ -154,6 +179,7 @@ header("LOTKA-VOLTERRA")
     model = parse_str(str)
     net1 = PNML.first_net(model)
     printnode(net1)
+
     snet = PNML.SimpleNet(net1)
 
     S = PNML.place_ids(snet) # [:rabbits, :wolves]
@@ -181,6 +207,7 @@ header("LOTKA-VOLTERRA")
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initialMarking(snet)
     @test u0 == uX
+    
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
     if PRINT_PNML

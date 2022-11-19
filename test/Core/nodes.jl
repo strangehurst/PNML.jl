@@ -21,7 +21,7 @@ header("NODES")
     @test @inferred PNML.has_name(n)
     @test @inferred(PNML.name(n)) == "Some place"
     @test_call marking(n)
-    @test marking(n) == 100
+    @test marking(n)() == 100
 end
 
 @testset "no text" begin
@@ -41,7 +41,7 @@ end
     @test @inferred PNML.has_name(n)
     @test @inferred(PNML.name(n)) == "Some place"
     @test_call marking(n)
-    @test marking(n) == 100
+    @test marking(n)() == 100
 end
 
 @testset "transition" begin

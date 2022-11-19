@@ -41,7 +41,7 @@ PTMarking(value::Union{Int,Float64}) = PTMarking(value, ObjectCommon())
 
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`PTMarking`](@ref) instance.
+Evaluate a [`PTMarking`](@ref) instance by returning its value.
 """
 (mark::PTMarking)() = _evaluate(mark.value)
 
@@ -49,9 +49,8 @@ Evaluate a [`PTMarking`](@ref) instance.
 """
 Label of a `Place` in a High-level Petri Net Graph.
 See [`AbstractHLCore`](@ref), [`Term`](@ref).
-#TODO Term as wrapper of [`PnmlDict`](@ref) should be replaced (someday). 
 
-Is a functor that evaluates the `term`.
+Multisets of a sort.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -67,7 +66,7 @@ julia> m()
 ```
 """
 struct HLMarking{TermType} <: HLAnnotation
-    text::Maybe{String}
+    text::Maybe{String} # Supposed to be for human consumption.
     "Any <structure> must be a many-sorted algebra term for a <hlmarking> annotation label."
     term::Maybe{TermType} # Expected structure content.
     com::ObjectCommon
@@ -79,10 +78,12 @@ HLMarking(s::AbstractString) = HLMarking(s, Term())
 HLMarking(t::AbstractTerm) = HLMarking(nothing, t, ObjectCommon())
 HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
 
+#! HLMarking is a multiset, not an expression.
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`HLMarking`](@ref) instance. 
-Returns a value of the same sort as its `Place`.
-#TODO How to ensure sort type?
+Evaluate a [`HLMarking`](@ref) instance by returning its term.
 """
 (hlm::HLMarking)() = _evaluate(hlm.term)
+
+#TODO convert to sort
+#TODO query sort

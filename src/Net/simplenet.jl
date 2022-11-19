@@ -82,6 +82,7 @@ end
 
 pid(spn::SimpleNet) = pid(spn.net)
 
+pages(spn::SimpleNet)          = pages(spn.net)
 places(spn::SimpleNet)         = firstpage(spn.net).places
 transitions(spn::SimpleNet)    = firstpage(spn.net).transitions
 arcs(spn::SimpleNet)           = firstpage(spn.net).arcs
@@ -90,7 +91,7 @@ reftransitions(spn::SimpleNet) = firstpage(spn.net).refTransitions
 
 #---------------------------------------------
 # For Stochastic Nets, a transition is not labeled with a boolean condition,
-# but with a  floating point rate. 
+# but with a floating point rate. 
 #TODO Which can be turned into a boolean with a comparison.
 #---------------------------------------------
 

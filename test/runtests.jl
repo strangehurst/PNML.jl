@@ -100,7 +100,7 @@ end
     if select("All", "Net")
         header("Net")
         @safetestset "document"     begin include("Core/document.jl") end
-        @safetestset "simplenet"    begin include("simplenet.jl") end
+        @safetestset "simplenet"    begin include("PetriNets/simplenet.jl") end
     end
     if select("All", "Doc")
         header("Doctests")

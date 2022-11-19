@@ -14,7 +14,7 @@ struct Place{PNTD<:PnmlType,MarkingType,SortType} <: PnmlNode
     #
     marking::MarkingType
     initialMarking::MarkingType
-    # High-level Petri Nets place's have sorts.
+    # High-level Petri Nets place's markings have sorts.
     sorttype::SortType # Place type is different from pntd/PnmlType.
     name::Maybe{Name}
     com::ObjectCommon
@@ -24,15 +24,11 @@ Place(pntd::PNTD, id::Symbol, marking, sort, name, oc::ObjectCommon) where {PNTD
     Place{typeof(pntd), typeof(marking), typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
 
 # Evaluate the marking.
-function marking(place)
-    if !isnothing(place.marking)
-        place.marking() #! _evaluate ?
-    else
-        default_marking(place)() #! _evaluate ?
-    end
-end
+marking(place) = marking(place.pntd, place)
+marking(pntd::PnmlType, place) = isnothing(place.marking) ? default_marking(place) : place.marking
+marking(pntd::AbstractHLCore, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 
-default_marking(place::Place) = default_marking(nettype(place)) 
+default_marking(place::Place) = default_marking(place.pntd) 
 
 #-------------------
 """
@@ -60,7 +56,7 @@ function condition(transition)
         #TODO implement full structure handling
     end
 end
-default_condition(transition::Transition) = default_condition(nettype(transition))
+default_condition(transition::Transition) = default_condition(transition.pntd)
 
 #-------------------
 """
@@ -97,7 +93,7 @@ function inscription(arc)
         _evaluate(default_inscription(arc))
     end
 end
-default_inscription(arc::Arc) = default_inscription(nettype(arc))
+default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 """
 $(TYPEDSIGNATURES)

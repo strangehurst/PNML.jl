@@ -35,24 +35,23 @@ versioninfo()
 
 ## www.pnml.org
 
-In this section 'PNML' refers to the markup language, its specification and schemas.
+In this section 'PNML' refers to the markup language, its specification and schemas, not this software.
 
 <http://www.pnml.org> has publications and tutorials covering PNML at
 various points in its evolution. 
 
 Site has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
 
-The cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd),
-including:
+The cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd), including:
   - PT Net (Place/Transition Net)
   - High-level Place/Transition Net
   - Symmetric Net
 
-These are instances of the 2 flavors currently covered by PNML. Discrete intger-valued vs High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the mant-sorted algebra to use integers. Also 
+These are instances of the 2 flavors currently covered by PNML. Discrete intger-valued vs High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers. Also the core and high-level layers.
  
-It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its EMF. 
+It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site. 
 
-There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure
+There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
@@ -82,11 +81,12 @@ PNML.jl should be able to create a valid intermediate representation using PnmlC
 since all the higher-level meaning is expressed as pnml labels, restrictions,
 and required XML tag names.
 
-Further parsing of labels are delegated to some subtype of [`PNML.PetriNet`](@ref).
+Further parsing of labels is specialized upon subtypes of [`PNML.PetriNet`](@ref).
+See [Traits](@ref) for more details.
 
 If you want interchangability of pnml models, you will have to stick to
 the standard pnml pntds. The High Level Petri Net, even when restricted to
-symmetricnet.pntd, is very expressive. Even the base pnmlcore.pntd is useful.
+_symmetricnet.pntd_, is very expressive. Even the base _pnmlcore.pntd_ is useful.
 
 Note that the official pntd schema files are in the grammer directory.
 

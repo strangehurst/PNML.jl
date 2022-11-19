@@ -307,7 +307,7 @@ function parse_arc(node, pntd; kw...)
                            :target=>Symbol(node["target"]),
                            :inscription=>default_inscription(pntd))
     foreach(elements(node)) do child
-    parse_arc_labels!(d, child, pntd; kw...) # Dispatch on pntd
+        parse_arc_labels!(d, child, pntd; kw...) # Dispatch on pntd
     end
     Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
 end
@@ -450,10 +450,15 @@ $(TYPEDSIGNATURES)
 function parse_initialMarking(node, pntd; kw...)
     nn = nodename(node)
     nn == "initialMarking" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), 
-        :value=>isempty(nodecontent(node)) ? _evaluate(default_marking(pntd)) :
-                    number_value(strip(nodecontent(node)))
-                    )
+
+    val = if isempty(nodecontent(node))
+        @warn "missing  <initialMarking> content"
+        nothing
+    else
+       number_value(strip(nodecontent(node)))
+    end
+    
+    d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>val)
 
     foreach(elements(node)) do child
         @match nodename(child) begin
@@ -461,6 +466,11 @@ function parse_initialMarking(node, pntd; kw...)
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
+    end
+    # Treat missing value as if the <initialMarking> element was absent.
+    if isnothing(d[:value])
+        @warn "missing  <initialMarking> value"
+        d[:value] = _evaluate(default_marking(pntd))
     end
     PTMarking(d[:value], ObjectCommon(d))
 end
@@ -471,17 +481,20 @@ $(TYPEDSIGNATURES)
 function parse_inscription(node, pntd::PnmlType; kw...)
     nn = nodename(node)
     nn == "inscription" || error("element name wrong: $nn'")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn),
-        :value=>isempty(nodecontent(node)) ? _evaluate(default_inscription(pntd)) :
-                                    number_value(strip(nodecontent(node))))
+    d = pnml_label_defaults(node, :tag=>Symbol(nn), :value=>nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            # Should not have a sturucture.
+            # Should not have a structure.
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    PTInscription(d[:value], ObjectCommon(d))
+    # Treat missing value as if the <inscription> element was absent.
+    if isnothing(d[:value])
+        @warn "missing or unparsable <inscription> value"
+        d[:value] = _evaluate(default_inscription(pntd))
+    end
+   PTInscription(d[:value], ObjectCommon(d))
 end
 
 # High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
@@ -504,17 +517,21 @@ function parse_hlinitialMarking(node, pntd::AbstractHLCore; kw...)
         @match nodename(child) begin
             "structure" => (d[:structure] =
                 haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_marking(pntd)())
+                default_marking(pntd)) #! sort of place
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
+
+    # Missing value as if the <inscription> element was absent.
+
     HLMarking(d[:text], d[:structure], ObjectCommon(d))
 end
 
 """
 $(TYPEDSIGNATURES)
-w"""
+
+hlinscriptions are expressions.
+"""
 function parse_hlinscription(node, pntd::PNTD; kw...) where {PNTD <: AbstractHLCore}
     @debug node
     nn = nodename(node)
@@ -522,13 +539,11 @@ function parse_hlinscription(node, pntd::PNTD; kw...) where {PNTD <: AbstractHLC
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
     foreach(elements(node)) do child
         @match nodename(child) begin
-        # Expect <structure> to contain a Term as a child tag.
-        #! If no Term and there is content parse content as a number.
-        # Otherwise use the default inscription 
+        # Expect <structure> to contain a single Term as a child tag.
+        # Otherwise use the default inscription Term.
         "structure" => (d[:structure] = 
                 haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_inscription(pntd)()) 
+                default_inscription(pntd)) 
         _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
