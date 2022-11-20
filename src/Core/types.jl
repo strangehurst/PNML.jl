@@ -14,19 +14,19 @@ const PnmlDict = Dict{Symbol, Any}
 $(TYPEDEF)
 Objects of a Petri Net Graph are pages, arcs, nodes.
 """
-abstract type PnmlObject end
+abstract type PnmlObject{PNTD<:PnmlType} end
 
 """
 $(TYPEDEF)
 Petri Net Graph nodes are places, transitions.
 """
-abstract type PnmlNode <: PnmlObject end
+abstract type PnmlNode{PNTD} <: PnmlObject{PNTD} end
 
 """
 $(TYPEDEF)
 For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref).
 """
-abstract type ReferenceNode <: PnmlNode end
+abstract type ReferenceNode{PNTD} <: PnmlNode{PNTD} end
 
 """
 $(TYPEDEF)

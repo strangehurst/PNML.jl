@@ -7,8 +7,8 @@ One Petri Net of a PNML model.
 struct PnmlNet{PNTD<:PnmlType}
     type::PNTD #TODO
     id::Symbol
-    pages::Vector{Page}
-    declaration::Declaration
+    pages::Vector{Page{PNTD}}
+    declaration::Declaration #! Specialize with type parameters.
 
     name::Maybe{Name}
     com::ObjectCommon

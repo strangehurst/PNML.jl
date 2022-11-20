@@ -5,15 +5,15 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD<:PnmlType,D} <: PnmlObject
+struct Page{PNTD,D} <: PnmlObject{PNTD}
     id::Symbol
-    places::Vector{Place}
-    refPlaces::Vector{RefPlace}
-    transitions::Vector{Transition}
-    refTransitions::Vector{RefTransition}
-    arcs::Vector{Arc}
+    places::Vector{Place{PNTD}}
+    refPlaces::Vector{RefPlace{PNTD}}
+    transitions::Vector{Transition{PNTD}}
+    refTransitions::Vector{RefTransition{PNTD}}
+    arcs::Vector{Arc{PNTD}}
     declaration::D
-    subpages::Maybe{Vector{Page}}
+    subpages::Maybe{Vector{Page{PNTD}}}
     name::Maybe{Name}
     com::ObjectCommon
 end

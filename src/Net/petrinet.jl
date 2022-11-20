@@ -19,7 +19,7 @@ Multiple [`Page`](@ref) can (are permitted to) be merged into one page
 by [`flatten_pages!`](@ref) without losing any Petri Net semantics.
 Initial concrete `PetriNet`s are constructed by flattening to a single `Page`.
 """
-abstract type PetriNet{T<:PnmlType} end
+abstract type PetriNet{PNTD<:PnmlType} end
 
 # Example of the idiom of handling the three "top level" components.
 # Usually in the form of a cascade, without type parameters.
@@ -124,19 +124,18 @@ transition(net::PnmlNet, id::Symbol)           = transition(net.pages[begin], id
 transition(net::PnmlNet, id::Symbol, page_idx) = transition(net.pages[page_idx], id)
 transition(page::Page, id::Symbol)             = getfirst(x->pid(x)===id, transitions(page))
 
+condition(petrinet::PetriNet, trans_id::Symbol)     = condition(petrinet.net, trans_id)
+condition(net::PnmlNet, trans_id::Symbol)           = condition(net.pages[begin], trans_id)
+condition(net::PnmlNet, trans_id::Symbol, page_idx) = condition(net.pages[page_idx], trans_id)
+condition(page::Page, trans_id::Symbol)             = condition(transition(page, trans_id))
+
 #----------------------------------------
 conditions(petrinet::PetriNet)     = conditions(petrinet.net)
 conditions(net::PnmlNet)           = conditions(net.pages[begin])
 conditions(net::PnmlNet, page_idx) = conditions(net.pages[page_idx])
 conditions(page::Page)             = conditions(page, transition_ids(page))
 
-#conditions(petrinet::PetriNet, idvec::Vector{Symbol}) = LVector((;[t=>condition(petrinet, t) for t in idvec]...))
 conditions(page::Page, idvec::Vector{Symbol}) = LVector((;[t=>condition(page, t) for t in idvec]...))
-
-condition(petrinet::PetriNet, trans_id::Symbol)     = condition(petrinet.net, trans_id)
-condition(net::PnmlNet, trans_id::Symbol)           = condition(net.pages[begin], trans_id)
-condition(net::PnmlNet, trans_id::Symbol, page_idx) = condition(net.pages[page_idx], trans_id)
-condition(page::Page, trans_id::Symbol)             = condition(transition(page, trans_id))
 
 #------------------------------------------------------------------
 # ARC, INSCRIPTION
@@ -219,7 +218,7 @@ $(TYPEDSIGNATURES)
 Transition function of a Petri Net.
 Each transition has an input vector and an output vector.
 Each labelled vector is indexed by the place on the other end of the arc.
-Values are inscriptions.
+Values are inscriptions of the arc.
 """
 function transition_function end
 

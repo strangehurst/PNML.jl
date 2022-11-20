@@ -8,7 +8,7 @@ Place node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Place{PNTD<:PnmlType,MarkingType,SortType} <: PnmlNode
+struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     #
@@ -37,7 +37,7 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Transition{PNTD<:PnmlType,C}  <: PnmlNode
+struct Transition{PNTD,C}  <: PnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     condition::C
@@ -65,7 +65,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{PNTD<:PnmlType,ITYPE} <: PnmlObject
+mutable struct Arc{PNTD,ITYPE} <: PnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     source::Symbol
@@ -116,7 +116,7 @@ Reference Place node of a Petri Net Markup Language graph. For connections betwe
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefPlace{PNTD<:PnmlType} <: ReferenceNode
+struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     pntd::PNTD
     id::Symbol
     ref::Symbol # Place or RefPlace
@@ -135,7 +135,7 @@ Refrence Transition node of a Petri Net Markup Language graph. For connections b
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefTransition{PNTD<:PnmlType} <: ReferenceNode
+struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     pntd::PNTD
     id::Symbol
     ref::Symbol # Transition or RefTransition
