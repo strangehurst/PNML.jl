@@ -1,7 +1,3 @@
-# Interface methods for abstract types.
-xmlnode(node::PnmlNode) = node.xml
-refid(reference::ReferenceNode) = reference.ref
-
 """
 Place node of a Petri Net Markup Language graph.
 
@@ -28,7 +24,7 @@ marking(place) = marking(place.pntd, place)
 marking(pntd::PnmlType, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 marking(pntd::AbstractHLCore, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 
-default_marking(place::Place) = default_marking(place.pntd) 
+default_marking(place::Place) = default_marking(place.pntd)
 
 #-------------------
 """
@@ -46,7 +42,7 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
 end
 
 #! Split out High-level specific version
-#! Use traits? 
+#! Use traits?
 function condition(transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
         default_condition(transition).term #! _evaluate
@@ -76,7 +72,7 @@ mutable struct Arc{PNTD,ITYPE} <: PnmlObject{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-#Arc(pntd::PNTD, id::Symbol, src::Symbol, tgt::Symbol, 
+#Arc(pntd::PNTD, id::Symbol, src::Symbol, tgt::Symbol,
 #        inscription, oc::ObjectCommon) where {PNTD<:PnmlType} =
 #    Arc{typeof(pntd),typeof(inscription)}(pntd, id, src, tgt, inscription, oc)
 
