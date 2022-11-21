@@ -6,8 +6,8 @@
 
 Return pnml id symbol.
 
-See [`PnmlIDRegistrys`](@ref).
-""" 
+See module [`PnmlIDRegistrys`](@ref).
+"""
 function pid end
 
 """
@@ -16,6 +16,14 @@ function pid end
 Return tag symbol.
 """
 function tag end
+
+
+"""
+    has_name(x) -> Bool
+
+Return true if there is a name.
+"""
+function has_name end
 
 """
     name(x) -> String
@@ -45,18 +53,26 @@ function xmlnode end
 #--------------------------------
 # LABELS
 #--------------------------------
+
 """
     has_labels(x) -> Bool
 
 Does x have any labels.
-""" 
+"""
 function has_labels end
+
+"""
+    labels(x) -> Vector
+
+Return vector of labels attached to `x`.
+"""
+function labels(x) end
 
 """
     has_label(x, tag::Symbol) -> Bool
 
 Does `x` have any label have a matching `tagvalue`.
-""" 
+"""
 function has_label end
 
 """
@@ -72,7 +88,7 @@ function get_label end
 """
 $(TYPEDSIGNATURES)
 
-Return the [`PnmlType`](@ref) subtype representing the flavor (or pntd) of this kind of 
+Return the [`PnmlType`](@ref) subtype representing the flavor (or pntd) of this kind of
 Petri Net Graph.
 
 See also [`pnmltype`](@ref)
