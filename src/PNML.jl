@@ -34,20 +34,18 @@ include("utils.jl")
 # INTERMEDIATE REPRESENTATION
 
 # PNML CORE
-include("Core/types.jl") # Abstract Types
 
 include("Core/interfaces.jl") # Function docstrings
-include("Core/pnmldict.jl")
+include("Core/types.jl") # Abstract Types
+include("Core/labels.jl")
+#include("Core/pnmllabel.jl")
+#include("Core/pnmldict.jl")
 include("Core/anyelement.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
-
-
-include("Core/pnmllabel.jl")
 include("Core/objcommon.jl")
 
 include("Core/name.jl")
-include("Core/labels.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
@@ -86,6 +84,7 @@ include("Parse/maps.jl")
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
+include("Net/transition_function.jl")
 
 export @xml_str, PnmlDict,
     parse_str, parse_file, parse_pnml, parse_node,
