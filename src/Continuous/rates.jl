@@ -1,6 +1,7 @@
-#---------------------------------------------
+#---------------------------------------------------------------------------
 # For some nets a transition is labeled with a floating point rate.
-#---------------------------------------------
+# NB: condition labels are part of high-level nets
+#---------------------------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)
@@ -22,6 +23,7 @@ Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 """
 function rate end
 function rate(transition)::Float64
+    # <rate> <text>0.3</text> </rate>
     r = get_label(transition, :rate)
     if isnothing(r)
         return zero(Float64)

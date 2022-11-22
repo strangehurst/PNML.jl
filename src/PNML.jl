@@ -82,7 +82,7 @@ include("Parse/maps.jl")
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
-include("Net/rates.jl")
+include("Continuous/rates.jl")
 include("Net/transition_function.jl")
 
 export @xml_str, PnmlDict,
