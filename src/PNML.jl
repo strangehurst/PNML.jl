@@ -38,8 +38,6 @@ include("utils.jl")
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 include("Core/labels.jl")
-#include("Core/pnmllabel.jl")
-#include("Core/pnmldict.jl")
 include("Core/anyelement.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
@@ -84,6 +82,7 @@ include("Parse/maps.jl")
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
+include("Net/rates.jl")
 include("Net/transition_function.jl")
 
 export @xml_str, PnmlDict,
