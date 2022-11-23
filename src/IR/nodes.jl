@@ -21,7 +21,6 @@ Place(pntd::PnmlType, id::Symbol, marking, sort, name, oc::ObjectCommon) =
           typeof(marking),
           typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
 
-# Evaluate the marking.
 marking(place) = marking(place.pntd, place)
 marking(pntd::PnmlType, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 marking(pntd::AbstractHLCore, place) = isnothing(place.marking) ? default_marking(place) : place.marking
@@ -43,13 +42,20 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
     com::ObjectCommon
 end
 
-#! Split out High-level specific version
-#! Use traits?
-function condition(transition)
+#! Condition is High-level specific in the specification.
+condition(transition) = condition(transition.pntd, transition)
+function condition(::PnmlType, transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
-        default_condition(transition).term #! _evaluate
+        default_condition(transition).term
     else
-        transition.condition.term #! _evaluate
+        transition.condition.term
+    end
+end
+function condition(::AbstractHLCore, transition)
+    if isnothing(transition.condition) || isnothing(transition.condition.term)
+        default_condition(transition).term
+    else
+        transition.condition.term
         #TODO evaluate condition
         #TODO implement full structure handling
     end
@@ -77,11 +83,18 @@ end
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
 
-# This is evaluating the incscription attached to an arc.
+# This is evaluating the inscription attached to an arc.
 # Original implementation is for PTNet.
-# HLPNGs do usual label semantics  here.
-# TODO: Map from net.type to inscription
-function inscription(arc)
+# HLPNGs should do usual label semantics  here.
+inscription(arc) = inscription(arc.pntd, arc)
+function inscription(::PnmlType, arc)
+    if !isnothing(arc.inscription)
+        _evaluate(arc.inscription)
+    else
+        _evaluate(default_inscription(arc))
+    end
+end
+function inscription(::AbstractHLCore, arc)
     if !isnothing(arc.inscription)
         _evaluate(arc.inscription)
     else
