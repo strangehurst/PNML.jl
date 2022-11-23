@@ -1,7 +1,7 @@
 """
 $(TYPEDEF)
 Terms are part of the multi-sorted algebra that is part of High-Level Petri Net
-markings, inscriptions and conditions. 
+markings, inscriptions and conditions.
 
 See also [`AbstractDeclaration`](@ref).
 """
@@ -109,7 +109,7 @@ $(TYPEDFIELDS)
 """
 struct UserOperator <: AbstractOperator
     "Identity of operators's declaration."
-    declaration::Symbol # 
+    declaration::Symbol #
 end
 
 """
@@ -121,11 +121,12 @@ $(TYPEDFIELDS)
 struct Declaration <: HLAnnotation
     declarations::Vector{Any} #!{AbstractDeclaration} causes JET errors
     com::ObjectCommon
-    #TODO attach XML node?
+    xml::Maybe{XMLNode}
 end
 
-Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon())
+Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon(), nothing)
 
+xmlnode(d::Declaration) = d.xml
 declarations(d::Declaration) = d.declarations
 Base.length(d::Declaration) = length(declarations(d))
 

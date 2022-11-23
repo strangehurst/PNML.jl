@@ -30,7 +30,7 @@ function parse_declaration(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
          end
     end
-    Declaration(d[:structure], ObjectCommon(d))
+    Declaration(d[:structure], ObjectCommon(d), node)
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
