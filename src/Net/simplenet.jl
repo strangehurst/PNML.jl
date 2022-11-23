@@ -59,24 +59,6 @@ function SimpleNet(net::PnmlNet)
     SimpleNet(netcopy.id, netcopy)
 end
 
-Base.summary(io::IO, spn::SimpleNet{P}) where {P} = print(io, summary(spn))
-function Base.summary(spn::SimpleNet{P}) where {P}
-    string(typeof(spn), " id ", pid(spn), ", ",
-        length(places(spn)), " places, ",
-        length(transitions(spn)), " transitions, ",
-        length(arcs(spn)), " arcs")
-end
-
-function Base.show(io::IO, spn::SimpleNet{P}) where {P}
-    println(io, summary(spn))
-    println(io, "places")
-    println(io, places(spn))
-    println(io, "transitions")
-    println(io, transitions(spn))
-    println(io, "arcs")
-    print(io, arcs(spn))
-end
-
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface. See interface.jl for docstrings.
 #-------------------------------------------------------------------------------

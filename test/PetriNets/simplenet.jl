@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET, LabelledArrays
-using PNML: tag, pid, xmlnode, parse_str, 
+using PNML: tag, pid, xmlnode, parse_str,
     Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
     nets, pages,
     place, places, has_place,
@@ -53,7 +53,7 @@ header("SimpleNet")
     @test_call PNML.SimpleNet(v[begin])
     @test_call PNML.SimpleNet(model)
     @test_call PNML.SimpleNet(PNML.first_net(model))
-    
+
     net  = @inferred SimpleNet PNML.SimpleNet(v[begin])
     net1 = @inferred SimpleNet PNML.SimpleNet(model)
     net2 = @inferred SimpleNet PNML.SimpleNet(PNML.first_net(model))
@@ -76,7 +76,7 @@ header("SimpleNet")
             @test pid(a) == pid(b)
         end
     end
-    # 
+    #
     for top in [net, net.net, first(pages(net.net))]
         @show typeof(top)
     end
@@ -112,7 +112,7 @@ header("SimpleNet")
         end
     end
     println()
-    # 
+    #
     for top in [net, net.net, first(pages(net.net))]
         @show typeof(top)
         @test_call arcs(top)
@@ -146,8 +146,6 @@ header("RATE")
     """
     model = parse_str(str)
     net = PNML.first_net(model)
-    #printnode(net, label="rate net")
-
     snet = PNML.SimpleNet(net)
     @show snet
     β = PNML.rates(snet)
@@ -207,7 +205,7 @@ header("LOTKA-VOLTERRA")
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initialMarking(snet)
     @test u0 == uX
-    
+
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
     if PRINT_PNML

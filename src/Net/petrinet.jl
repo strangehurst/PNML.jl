@@ -89,3 +89,21 @@ reftransition(petrinet::PetriNet, id::Symbol) = reftransition(petrinet.net, id)
 
 #-----------------------------------------------------------------
 #-----------------------------------------------------------------
+
+Base.summary(io::IO, pn::PetriNet) = print(io, summary(pn))
+function Base.summary(pn::PetriNet)
+    string(typeof(pn), " id ", pid(pn), ", ",
+        length(places(pn)), " places, ",
+        length(transitions(pn)), " transitions, ",
+        length(arcs(pn)), " arcs")
+end
+
+function Base.show(io::IO, pn::PetriNet)
+    println(io, summary(pn))
+    println(io, "places")
+    println(io, places(pn))
+    println(io, "transitions")
+    println(io, transitions(pn))
+    println(io, "arcs")
+    print(io, arcs(pn))
+end
