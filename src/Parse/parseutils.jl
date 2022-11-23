@@ -189,6 +189,7 @@ function parse_pnml_common!(d::PnmlDict, node, pntd; kw...)
         "toolspecific" => add_toolinfo!(d, node, pntd; kw...)
         _ => add_label!(d, node, pntd; kw...) # label with a label allows any node to be attached & parsable.
     end
+    d
 end
 
 """
@@ -201,6 +202,7 @@ function parse_pnml_node_common!(d::PnmlDict, node, pntd; kw...)
         "name" => (d[:name] = parse_name(node, pntd; kw...))
         _ => parse_pnml_common!(d, node, pntd; kw...)
     end
+    d
 end
 
 """
@@ -217,6 +219,7 @@ function parse_pnml_label_common!(d::PnmlDict, node, pntd; kw...)
         "structure" => (d[:structure] = parse_structure(node, pntd; kw...))
         _ => parse_pnml_common!(d, node, pntd; kw...)
     end
+    d
 end
 
 #---------------------------------------------------------------------
