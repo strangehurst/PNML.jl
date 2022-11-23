@@ -1,5 +1,5 @@
 """
-Return default empty [`Term`](@ref) of a High-Level Net based on `PNTD`. 
+Return default empty [`Term`](@ref) of a High-Level Net based on `PNTD`.
 Forwards to [`default_one_term`](@ref) meaning multiplicative identity or 1.
 See [`default_zero_term`](@ref) for additive identity or 0.
 Markings default to zero and inscriptions default to 1
@@ -22,7 +22,7 @@ julia> m()
 ```
 """
 function default_term end
-default_term(t::PNTD) where {PNTD <: PnmlType} = default_one_term(t)
+default_term(t::PnmlType) = default_one_term(t)
 
 """
 $(TYPEDSIGNATURES)
@@ -30,20 +30,21 @@ $(TYPEDSIGNATURES)
 One as integer, float, or empty term with a value of one.
 """
 function default_one_term end
-default_one_term(::PNTD)  where {PNTD <: PnmlType} = one(Int)# PTNet & PnmlCore
-default_one_term(::PNTD)  where {PNTD <: AbstractContinuousNet} = one(Float64)
-default_one_term(::PNTD)  where {PNTD <: AbstractHLCore} = Term(:empty, PnmlDict(:value => one(Int)))
-default_one_term(x::Any)  = error("argument type must be subtype of PnmlType, got: $(typeof(x))")
+default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCore
+default_one_term(::AbstractContinuousNet) = one(Float64)
+default_one_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => one(Int)))
+default_one_term(x::Any) = error("argument must be subtype of PnmlType, got: $(typeof(x))")
+
 """
 $(TYPEDSIGNATURES)
 
 Zero as integer, float, or empty term with a value of zero.
 """
 function default_zero_term end
-default_zero_term(::PNTD) where {PNTD <: PnmlType} = zero(Int)
-default_zero_term(::PNTD) where {PNTD <: AbstractContinuousNet} = zero(Float64)
-default_zero_term(::PNTD) where {PNTD <: AbstractHLCore} = Term(:empty, PnmlDict(:value => zero(Int)))
-default_zero_term(x::Any) = error("argument type must be subtype of PnmlType, got: $(typeof(x))")
+default_zero_term(::PnmlType) = zero(Int)
+default_zero_term(::AbstractContinuousNet) = zero(Float64)
+default_zero_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => zero(Int)))
+default_zero_term(x::Any) = error("argument must be subtype of PnmlType, got: $(typeof(x))")
 
 #TODO Allow continuous-valued terms.
 

@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Vector{Any} #! abstract
+    nets::Vector{Any} #! Yes it is abstract.
     namespace::String
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode
@@ -32,14 +32,13 @@ xmlnode(model::PnmlModel) = model.xml
 
 """
 $(TYPEDSIGNATURES)
-Return nets matching pntd `type` given as string or symbol.
+Return nets matching pntd `type` given as string, symbol or singleton.
 See [`PnmlTypeDefs.pntd_symbol`](@ref), [`PnmlTypeDefs.pnmltype`](@ref).
 """
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
 find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
-find_nets(model, ::PNTD) where {PNTD <: PnmlType} =
-    filter(n->typeof(n.type) <: PNTD, nets(model))
+find_nets(model, pntd::PnmlType) = filter(n->isa(n.type, typeof(pntd)), nets(model))
 
 """
 $(TYPEDSIGNATURES)
@@ -58,4 +57,3 @@ $(TYPEDSIGNATURES)
 Return first net contained by `doc`.
 """
 first_net(model) = first(nets(model))
-

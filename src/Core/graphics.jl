@@ -12,8 +12,7 @@ struct Coordinate
     y::Union{Int,Float64}
 end
 Coordinate() = Coordinate(0, 0)
-Coordinate(x::Union{Int,Float64}) = Coordinate{typeof(x)}(x, zero(x))
-#!Base.eltype(c::Coordinate) where {T<:Union{Int,Float64}} = T
+Coordinate(x::Union{Int,Float64}) = Coordinate(x, zero(x))
 
 #-------------------
 """
@@ -90,4 +89,3 @@ function Graphics(;dim=nothing, fill=nothing, font=nothing,
                   line=nothing, offset=nothing, position=nothing)
     Graphics(dim, fill, font, line, offset, position)
 end
-

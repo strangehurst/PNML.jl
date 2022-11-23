@@ -16,8 +16,10 @@ struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
     com::ObjectCommon
 end
 
-Place(pntd::PNTD, id::Symbol, marking, sort, name, oc::ObjectCommon) where {PNTD<:PnmlType} =
-    Place{typeof(pntd), typeof(marking), typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
+Place(pntd::PnmlType, id::Symbol, marking, sort, name, oc::ObjectCommon) =
+    Place{typeof(pntd),
+          typeof(marking),
+          typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
 
 # Evaluate the marking.
 marking(place) = marking(place.pntd, place)
@@ -72,11 +74,8 @@ mutable struct Arc{PNTD,ITYPE} <: PnmlObject{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-#Arc(pntd::PNTD, id::Symbol, src::Symbol, tgt::Symbol,
-#        inscription, oc::ObjectCommon) where {PNTD<:PnmlType} =
-#    Arc{typeof(pntd),typeof(inscription)}(pntd, id, src, tgt, inscription, oc)
-
-Arc(a::Arc, src::Symbol, tgt::Symbol) = Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
+Arc(a::Arc, src::Symbol, tgt::Symbol) =
+    Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
 
 # This is evaluating the incscription attached to an arc.
 # Original implementation is for PTNet.
@@ -121,7 +120,7 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-#RefPlace(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#RefPlace(pntd::PnmlType, id::Symbol, ref::Symbol, oc::ObjectCommon) =
 #    RefPlace{typeof(pntd)}(pntd, id, ref, oc)
 
 #-------------------
@@ -140,5 +139,5 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-#RefTransition(pntd::PNTD, id::Symbol, ref::Symbol, oc::ObjectCommon) where {PNTD<:PnmlType} =
+#RefTransition(pntd::PnmlType, id::Symbol, ref::Symbol, oc::ObjectCommon) =
 #    RefTransition{typeof(pntd)}(pntd, id, ref, oc)

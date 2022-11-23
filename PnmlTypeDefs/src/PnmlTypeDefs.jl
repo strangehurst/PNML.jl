@@ -14,9 +14,9 @@ module PnmlTypeDefs
 using DocStringExtensions
 
 # Abstract Types
-export PnmlType, 
-        AbstractPnmlCore, 
-        AbstractHLCore, 
+export PnmlType,
+        AbstractPnmlCore,
+        AbstractHLCore,
         AbstractContinuousNet
 
 # Singletons (concrete types)
@@ -53,7 +53,7 @@ abstract type AbstractPnmlCore <: PnmlType end
 
 """
 $(TYPEDEF)
-The most minimal concrete Petri Net. 
+The most minimal concrete Petri Net.
 
 Used to implement and test the core PNML support.
 Covers the complete graph infrastructure including labels attached to nodes and arcs.
@@ -197,7 +197,7 @@ const pnmltype_map = Dict{Symbol, PnmlType}(
     :pnmlcore   => PnmlCore(),
     :hlcore     => HLCore(),
     :ptnet      => PTNet(),
-    :hlnet      => HLPNG(), 
+    :hlnet      => HLPNG(),
     :pt_hlpng   => PT_HLPNG(),
     :symmetric  => SymmetricNet(),
 
@@ -211,9 +211,7 @@ $(TYPEDSIGNATURES)
 
 Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 """
-add_nettype!(dict::AbstractDict, s::Symbol, pntd::T) where {T<:PnmlType} =
-    dict[s] = pntd #! test this
-
+add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType) = dict[s] = pntd #! test this
 
 """
 $(TYPEDSIGNATURES)
@@ -258,14 +256,12 @@ SymmetricNet()
 ```
 """
 function pnmltype end
-pnmltype(pntd::T; kw...) where {T<:PnmlType} = pntd
+pnmltype(pntd::PnmlType; kw...) = pntd
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
     typemap = pnmltype_map::Dict{Symbol, PnmlType}
     !haskey(typemap, s) && throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
 end
-
-#TODO add traits
 
 end # module PnmlTypeDefs

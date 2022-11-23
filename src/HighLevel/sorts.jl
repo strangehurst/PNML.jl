@@ -39,13 +39,12 @@ struct UserSort <: AbstractSort
 end
 
 """
-Return default  based on `PNTD`. Has meaning of empty, as in `zero`.
+Return default sort based on `PNTD`. Has meaning of empty, as in `zero`.
 """
 function default_sort end
-default_sort(::PNTD) where {PNTD <: PnmlType} = zero(Integer) #!
-default_sort(::PNTD) where {PNTD <: AbstractContinuousNet} = zero(Float64) #!
-default_sort(::PNTD) where {PNTD <: AbstractHLCore} = Sort() #!
-# For a HL Net the sort is Dot.
+default_sort(::PnmlType)              = zero(Integer) #!
+default_sort(::AbstractContinuousNet) = zero(Float64) #!
+default_sort(::AbstractHLCore)        = Sort() #!
 
 """
 $(TYPEDEF)
@@ -54,7 +53,7 @@ $(TYPEDFIELDS)
 Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 Is content of a <structure> element of a High-Level label.
 """
-struct Sort #TODO 
+struct Sort #TODO
     dict::PnmlDict #TODO AnyElement for bring-up? What should be here?
     #TODO xml
 end

@@ -19,6 +19,6 @@ julia> _evaluate(Term(:term, Dict(:value => 3))())
 """
 function _evaluate end
 _evaluate(x::Any) = x
-_evaluate(x::T) where {T<:AbstractTerm} = x()
-_evaluate(x::T) where {T<:AbstractSort} = x()
-_evaluate(x::T) where {T<:AbstractLabel} = x()
+_evaluate(x::AbstractTerm) = x()
+_evaluate(x::AbstractSort) = x()
+_evaluate(x::AbstractLabel) = x()
