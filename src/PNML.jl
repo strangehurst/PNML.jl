@@ -30,11 +30,7 @@ include("xmlutils.jl")
 include("exceptions.jl")
 include("utils.jl")
 
-
-# INTERMEDIATE REPRESENTATION
-
 # PNML CORE
-
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 include("Core/labels.jl")
@@ -42,8 +38,11 @@ include("Core/anyelement.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
 include("Core/objcommon.jl")
-
 include("Core/name.jl")
+
+include("IR/ptinscriptions.jl")
+include("IR/ptmarkings.jl")
+include("IR/defaults.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
@@ -52,13 +51,10 @@ include("HighLevel/hllabels.jl")
 include("HighLevel/declarations.jl")
 include("HighLevel/terms.jl")
 include("HighLevel/sorts.jl")
+include("HighLevel/hlinscriptions.jl")
+include("HighLevel/hlmarkings.jl")
 
-
-include("IR/defaults.jl")
-include("IR/markings.jl")
 include("IR/conditions.jl")
-include("IR/ptinscriptions.jl")
-include("IR/hlinscriptions.jl")
 
 include("IR/evaluate.jl")
 
