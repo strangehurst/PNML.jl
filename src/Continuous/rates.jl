@@ -22,6 +22,11 @@ $(TYPEDSIGNATURES)
 Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 """
 function rate end
+
+function rate(pn::PetriNet, tid::Symbol)
+    rate(transition(pn, tid))
+end
+
 function rate(transition)::Float64
     # <rate> <text>0.3</text> </rate>
     r = get_label(transition, :rate)
@@ -37,12 +42,8 @@ function rate(transition)::Float64
             # When the text element is elided, there is still a :content.
             value = number_value(r.dict[:content])
         else
-            value = zero(Float64)
+            value = nothing
         end
-        return isnothing(value) ? zero(Float64) : value #! specialize default value?
+        return isnothing(value) ? zero(Float64) : value
     end
-end
-
-function rate(pn::PetriNet, tid::Symbol)
-    rate(transition(pn, tid))
 end

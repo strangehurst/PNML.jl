@@ -28,7 +28,7 @@ function flatten_pages!(net::PnmlNet)
         foldl(flatten_pages!, net.pages[2:end]; init=firstpage(net))
         resize!(net.pages, 1)
     end
-    deref!(net) # Resolve reference nodes 
+    deref!(net) # Resolve reference nodes
     return net
 end
 
@@ -143,9 +143,13 @@ Return id of referenced transition.
 """
 function deref_transition end
 
-deref_transition(net::PnmlNet, id::Symbol, page_idx=1) = 
-        deref_transition(net.pages[page_idx], id)
-deref_transition(page::Page, id::Symbol) = begin
+function deref_transition(net::PnmlNet, id::Symbol)
+    deref_transition(net.pages[begin], id)
+end
+function deref_transition(net::PnmlNet, id::Symbol, age_idx)
+    deref_transition(net.pages[page_idx], id)
+end
+function deref_transition(page::Page, id::Symbol)
     rt = reftransition(page, id)
     isnothing(rt) ? nothing : rt.ref
 end

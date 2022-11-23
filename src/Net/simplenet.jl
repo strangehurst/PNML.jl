@@ -34,14 +34,15 @@ $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD**
 
-SimpleNet is a `PetriNet` wrapping a `PnmlNet`.
+SimpleNet is a concrete `PetriNet` wrapping a `PnmlNet`.
 
 Omits the page level of the pnml-defined hierarchy by flattening pages.
+
 A multi-page net can be flattened by removing referenceTransitions & referencePlaces,
 and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: PetriNet{PNTD}
-    id::Symbol
+    id::Symbol # Not needed except for dispatch to inner constructor.
     net::PnmlNet{PNTD}
 end
 
@@ -63,7 +64,7 @@ end
 # Implement PNML Petri Net interface. See interface.jl for docstrings.
 #-------------------------------------------------------------------------------
 
-pid(spn::SimpleNet) = spn.id
+pid(spn::SimpleNet) = pid(spn.net)
 
 pages(spn::SimpleNet)          = pages(spn.net)
 places(spn::SimpleNet)         = firstpage(spn.net).places

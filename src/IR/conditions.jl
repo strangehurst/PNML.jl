@@ -28,8 +28,8 @@ false
 """
 struct Condition{T} <: HLAnnotation
     text::Maybe{String}
-    term::T # structure
-    com::ObjectCommon 
+    term::T # <structure> tag will contain a term.
+    com::ObjectCommon
 
 end
 Condition() = Condition(nothing, true, ObjectCommon())

@@ -75,11 +75,11 @@ dict(label::PnmlLabel) = label.dict
 xmlnode(label::PnmlLabel) = label.xml
 
 function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    any(label->tag(label) === tagvalue, v)
+    any(label -> tag(label) === tagvalue, v)
 end
 
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    getfirst(l->tag(l) === tagvalue, v)
+    getfirst(l -> tag(l) === tagvalue, v)
 end
 
 function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)

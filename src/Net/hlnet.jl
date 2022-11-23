@@ -1,5 +1,5 @@
 """
-Wrap a single pnml net.
+Wrap a single pnml net. Presumes that the net does not need to be flattened.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -10,7 +10,7 @@ $(TYPEDFIELDS)
 struct HLPetriNet{PNTD} <: PetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
-"Construct from string of valid pnml XML using the first network"
+"Construct from string of valid pnml XML, using the first network in model."
 HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
 HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
 

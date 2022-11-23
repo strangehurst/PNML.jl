@@ -74,6 +74,7 @@ conditions(petrinet::PetriNet)                  = conditions(petrinet.net)
 arc_ids(petrinet::PetriNet)              = arc_ids(petrinet.net)
 has_arc(petrinet::PetriNet, id::Symbol)  = has_arc(petrinet.net, id)
 arc(petrinet::PetriNet, id::Symbol)      = arc(petrinet.net, id)
+
 all_arcs(petrinet::PetriNet, id::Symbol) = all_arcs(petrinet.net, id)
 src_arcs(petrinet::PetriNet, id::Symbol) = src_arcs(petrinet.net, id)
 tgt_arcs(petrinet::PetriNet, id::Symbol) = tgt_arcs(petrinet.net, id)

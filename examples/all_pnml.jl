@@ -1,5 +1,4 @@
-# julia ~/Jules/PNToyBox/scripts/all_pnml.jl
-# include("all_pnml.jl")
+#julia -e 'include("all_pnml.jl"); testpn()' 2>&1 | tee  /tmp/testpn.txt
 
 #using PNMLTree
 using PNML

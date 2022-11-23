@@ -57,7 +57,8 @@ include("HighLevel/sorts.jl")
 include("IR/defaults.jl")
 include("IR/markings.jl")
 include("IR/conditions.jl")
-include("IR/inscriptions.jl")
+include("IR/ptinscriptions.jl")
+include("IR/hlinscriptions.jl")
 
 include("IR/evaluate.jl")
 
