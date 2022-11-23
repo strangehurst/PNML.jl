@@ -7,10 +7,10 @@ header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
     # node => vector of key, value pairs expected to be in the PnmlDict from parsing node.
     ctrl = [
-        xml"""<declarations> </declarations>""" => 
+        xml"""<declarations> </declarations>""" =>
                 [:content => ""],
 
-        xml"""<declarations atag="test1"> </declarations>""" => 
+        xml"""<declarations atag="test1"> </declarations>""" =>
                 [:atag => "test1", :content => ""],
 
         xml"""<declarations atag="test2">
@@ -19,10 +19,10 @@ header("UNCLAIMED LABEL")
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
               </declarations>""" => [
                 :atag => "test2",
-                :something  => [Dict(:content => "some content"), 
+                :something  => [Dict(:content => "some content"),
                                 Dict(:content => "other stuff")],
-                :something2 => Dict(:value => [Dict(:content => ""), 
-                                               Dict(:tag3 => "three", :content => "")], 
+                :something2 => Dict(:value => [Dict(:content => ""),
+                                               Dict(:tag3 => "three", :content => "")],
                                     :tag2 => "two")
             ],
 
@@ -146,7 +146,7 @@ header("PT initMarking")
     n = parse_node(node; reg=PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.PTMarking
-    @test xmlnode(n) isa Maybe{EzXML.Node}
+    #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(n.value) <: Union{Int,Float64}
     @test n.value == n()
 
@@ -196,7 +196,7 @@ header("HL Marking")
 
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
-    @test xmlnode(n) isa Maybe{EzXML.Node}
+    #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test n.text == "<All,All>"
     @test n.term !== nothing
     @test n.term isa PNML.AbstractTerm
@@ -314,7 +314,7 @@ end
         n = parse_node(node; reg = PNML.IDRegistry())
         printnode(n)
         @test typeof(n) <: PNML.PTInscription
-        @test xmlnode(n) isa Maybe{EzXML.Node}
+        #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.value == 12
         @test n.com.graphics === nothing
         @test n.com.tools === nothing || isempty(n.com.tools)
@@ -341,7 +341,7 @@ end
     n = parse_node(n1, HLCore(); reg = PNML.IDRegistry())
     printnode(n)
     @test typeof(n) <: PNML.HLInscription
-    @test xmlnode(n) isa Maybe{EzXML.Node}
+    #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(n.term) === :tuple
     @test n.term.dict[:subterm][1][:variable][:refvariable] == "x"
     @test n.term.dict[:subterm][2][:variable][:refvariable] == "v"

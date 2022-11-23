@@ -71,7 +71,7 @@ doc = EzXML.parsexml(str) # shared by testsets
                 @test typeof(i) <: PNML.PTMarking
                 @test typeof(i.value) <: Union{Int,Float64}
                 @test i.value >= 0
-                @test xmlnode(i) isa Maybe{EzXML.Node}
+                #@test xmlnode(i) isa Maybe{EzXML.Node}
             end
 
             @test !isempty(PNML.allchildren("transition", page))
@@ -91,7 +91,7 @@ doc = EzXML.parsexml(str) # shared by testsets
                     @test typeof(i) <: PNML.PTInscription
                     @test typeof(i.value) <: Union{Int,Float64}
                     @test i.value > 0
-                    @test xmlnode(i) isa Maybe{EzXML.Node}
+                    #@test xmlnode(i) isa Maybe{EzXML.Node}
                 end
             end
         end

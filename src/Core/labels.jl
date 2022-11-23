@@ -7,7 +7,7 @@ Labels are attached to the Petri Net Graph objects. See [`PnmlObject`](@ref).
 """
 abstract type AbstractLabel end
 
-xmlnode(::AbstractLabel) = nothing
+xmlnode(::T) where {T<:AbstractLabel} = error("missing implementation of `xmlnode` for $T")
 
 "Return `true` if label has `text` field."
 has_text(l::AbstractLabel) = hasproperty(l, :text) && !isnothing(l.text)
