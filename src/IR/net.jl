@@ -4,41 +4,40 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType}
-    type::PNTD #TODO
+struct PnmlNet{PNTD<:PnmlType,D}
+    type::PNTD
     id::Symbol
     pages::Vector{Page{PNTD}}
-    declaration::Declaration #! Specialize with type parameters.
-
+    declaration::D
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
 end
 
-function PnmlNet(pntd::PNTD, id::Symbol, pages, declare, name,
-                    oc::ObjectCommon, xml::XMLNode) where {PNTD<:PnmlType}
-    PnmlNet{PNTD}(pntd, id, pages, declare, name, oc, xml)
+function PnmlNet(pntd::PnmlType, id::Symbol, pages, declare, name,
+                    oc::ObjectCommon, xml::XMLNode)
+    PnmlNet{typeof(pntd),typeof(declare)}(pntd, id, pages, declare, name, oc, xml)
 end
 
-pid(net::PnmlNet) = net.id
-pages(net::PnmlNet) = net.pages
+pid(net::PnmlNet)          = net.id
+pages(net::PnmlNet)        = net.pages
 declarations(net::PnmlNet) = declarations(net.declaration)
 
 has_labels(net::PnmlNet) = has_labels(net.com)
-xmlnode(net::PnmlNet) = net.xml
+xmlnode(net::PnmlNet)    = net.xml
 
 has_name(net::PnmlNet) = !isnothing(net.name)
-name(net::PnmlNet) = has_name(net) ? net.name.text : ""
+name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 
 "Usually the only interesting page."
 firstpage(net::PnmlNet) = first(net.pages)
 
 # Presumes net has been flattened. Or in a future implementation, collect from all pages.
-places(net::PnmlNet)         = places(pages(net)[begin])
-transitions(net::PnmlNet)    = transitions(pages(net)[begin])
-arcs(net::PnmlNet)           = arcs(pages(net)[begin])
-refplaces(net::PnmlNet)      = refplaces(pages(net)[begin])
-reftransitions(net::PnmlNet) = reftransitions(pages(net)[begin])
+places(net::PnmlNet)         = places(firstpage(net))
+transitions(net::PnmlNet)    = transitions(firstpage(net))
+arcs(net::PnmlNet)           = arcs(firstpage(net))
+refplaces(net::PnmlNet)      = refplaces(firstpage(net))
+reftransitions(net::PnmlNet) = reftransitions(firstpage(net))
 
 # Handle individual pages here.
 places(net::PnmlNet, page_idx)         = places(pages(net)[page_idx])
