@@ -24,7 +24,7 @@ abstract type PetriNet{PNTD<:PnmlType} end
 #! move nettype
 # Example of the idiom of handling the three "top level" components.
 # Usually in the form of a cascade, without type parameters.
-nettype(petrinet::PetriNet{T}) where {T <: PnmlType} = T
+nettype(::PetriNet{T}) where {T <: PnmlType} = T
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
 nettype(::Page{T}) where {T <: PnmlType} = T
 

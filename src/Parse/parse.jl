@@ -92,7 +92,7 @@ end
 $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
-function parse_net(node, pntd=nothing; kw...)::PnmlNet
+function parse_net(node, pntd::Maybe{PnmlType}=nothing; kw...)::PnmlNet
     nn = nodename(node)
     nn == "net" || error("element name wrong: $nn")
     EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
@@ -106,13 +106,13 @@ function parse_net(node, pntd=nothing; kw...)::PnmlNet
 
     # Although the petri net type definition (pntd) must be attached to the <net> element,
     # it is allowed by this package to override that value.
-    pntypedef = pnmltype(node["type"])
+    pn_typedef = pnmltype(node["type"])
     if isnothing(pntd)
-        pntd = pntypedef
+        pntd = pn_typedef
     else
         @info """
         parse_net pntd set to $pntd
-                    should be $pntypedef
+                    should be $pn_typedef
         """
     end
 
