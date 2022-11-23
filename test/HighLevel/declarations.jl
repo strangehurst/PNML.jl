@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, labels, firstpage, pid
+using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
 
 header("DECLARATIONS")
 @testset "Declaration()" begin
@@ -7,7 +7,19 @@ header("DECLARATIONS")
     @test length(PNML.declarations(d)) == 0
     @show Core.fieldtype(PNML.Declaration, 1)
     @test_call PNML.Declaration()
-end # declarations
+end
+
+@testset "parse_sort" begin
+    parse_sort(xml"<bool/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<finiteenumeration/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<finiteintrange/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<cyclicenumeration/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<dot/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<mulitsetsort/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<productsort/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<usersort/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<partition/>", PnmlCore(); reg = PNML.IDRegistry())
+end
 
 @testset "empty declarations" begin
     # The attribute should be ignored.

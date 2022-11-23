@@ -23,7 +23,7 @@ function parse_declaration(node, pntd; kw...)
     nn = nodename(node)
     nn == "declaration" || error("element name wrong: $nn")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
-   
+
     foreach(elements(node)) do child
         @match nodename(child) begin
             "structure" => (d[:structure] = decl_structure(child, pntd; kw...))
@@ -40,7 +40,7 @@ function decl_structure(node, pntd; kw...)
     nn == "structure" || error("element name wrong: $nn")
     #TODO warn if more than one?
     declarations = getfirst("declarations", node)
-    isnothing(declarations) ? AbstractDeclaration[] : 
+    isnothing(declarations) ? AbstractDeclaration[] :
                             parse_declarations(declarations, pntd; kw...)
 end
 
@@ -51,7 +51,7 @@ Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
 """
 function parse_declarations(node, pntd; kw...)
     nn = nodename(node)
-    nn == "declarations" || error("element name wrong: $nn") 
+    nn == "declarations" || error("element name wrong: $nn")
 
     v = AbstractDeclaration[]
     foreach(elements(node)) do child
@@ -150,19 +150,20 @@ Sorts are found within a <structure> element.
 """
 function parse_sort(node, pntd; kw...)
     nn = nodename(node)
-    # Builtin
-    sort =  nn == "bool" ? anyelement(node, pntd; kw...) :
-            nn == "finiteenumeration" ? anyelement(node, pntd; kw...) :
-            nn == "finiteintrange" ? anyelement(node, pntd; kw...) :
-            nn == "cyclicenumeration"  ? anyelement(node, pntd; kw...) : 
-            nn == "dot" ? anyelement(node, pntd; kw...) : 
-            # Also do these.
-            nn == "mulitsetsort" ? anyelement(node, pntd; kw...) :
-            nn == "productsort" ? anyelement(node, pntd; kw...) :
-            nn == "usersort" ? anyelement(node, pntd; kw...) : nothing
-    #TODO partition
-    isnothing(sort) && error("$nn is not a known sort")
-    return sort
+    sort_tags = [
+        "bool",
+        "finiteenumeration",
+        "finiteintrange",
+        "cyclicenumeration",
+        "dot",
+        "mulitsetsort",
+        "productsort",
+        "usersort",
+        "partition"]
+    if !any(==(nn), sort_tags)
+        error("'$nn' is not a known sort in $sort_tags")
+    end
+    anyelement(node, pntd; kw...)
 end
 # BuiltInSort
 # MultisetSort
@@ -186,7 +187,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-There will be no node <term>. 
+There will be no node <term>.
 Instead it is the interpertation of the child of some <structure> elements.
 """
 function parse_term(node, pntd; kwargs...)
