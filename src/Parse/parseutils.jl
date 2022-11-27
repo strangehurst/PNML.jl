@@ -214,7 +214,7 @@ defering other tags to [`parse_pnml_common!`](@ref).
 function parse_pnml_label_common!(d::PnmlDict, node, pntd; kw...)
     @match nodename(node) begin
         "text"      => (d[:text] = parse_text(node, pntd; kw...))
-        # This is the fallback as "claimed" label's parser
+        # This is the fallback as a "claimed" label's parser
         # should have already consumed the <structure>.
         "structure" => (d[:structure] = parse_structure(node, pntd; kw...))
         _ => parse_pnml_common!(d, node, pntd; kw...)

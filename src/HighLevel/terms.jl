@@ -65,7 +65,7 @@ Term(:empty, Dict())
 julia> t()
 1
 ```
-#! Term as functor requires a defsult value for missing values.
+#! Term as functor requires a default value for missing values.
 """
 struct Term{T<:AbstractDict}  <: AbstractTerm #TODO make mutable?
   tag::Symbol
