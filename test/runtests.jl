@@ -67,6 +67,18 @@ if select("None")
     return
 end
 
+# Check for ambiguous methods.
+ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+@show length(ambiguous)
+foreach(ambiguous) do amb
+    @show amb
+end
+unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+@show length(unbound)
+foreach(unbound) do unb
+    @show unb
+end
+
 @testset verbose=false "PNML.jl" begin
     if select("All", "Base")
         TestUtils.header("Base")
