@@ -22,6 +22,7 @@ julia> m()
 ```
 """
 function default_term end
+default_term() = default_one_term(PnmlCore())
 default_term(t::PnmlType) = default_one_term(t)
 
 """
@@ -30,6 +31,7 @@ $(TYPEDSIGNATURES)
 One as integer, float, or empty term with a value of one.
 """
 function default_one_term end
+default_one_term() = default_one_term(PnmlCore())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCore
 default_one_term(::AbstractContinuousNet) = one(Float64)
 default_one_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => one(Int)))
@@ -41,6 +43,7 @@ $(TYPEDSIGNATURES)
 Zero as integer, float, or empty term with a value of zero.
 """
 function default_zero_term end
+default_zero_term() = default_zero_term(PnmlCore())
 default_zero_term(::PnmlType) = zero(Int)
 default_zero_term(::AbstractContinuousNet) = zero(Float64)
 default_zero_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => zero(Int)))
@@ -81,7 +84,7 @@ convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)
 
 tag(t::Term) = t.tag
 dict(t::Term) = t.dict
-#xml(t::Term) = t.xml
+#TODO xml(t::Term) = t.xml
 
 """
 Evaluate a term by returning the ':value' in `dict` or a default value.
@@ -106,4 +109,4 @@ julia> t(2.3)
 ```
 """
 #(t::Term)() = t(default_one_term(HLCore())) #! HLCore restricts `Term` to AbstractHLCore subtypes
-(t::AbstractTerm)(default=default_one_term(HLCore())) = _evaluate(get(t.dict, :value, default)) #
+(t::Term)(default=default_one_term(HLCore())) = _evaluate(get(t.dict, :value, default)) #

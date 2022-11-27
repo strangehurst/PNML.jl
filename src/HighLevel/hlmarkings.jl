@@ -17,18 +17,18 @@ julia> m()
 3
 ```
 """
-struct HLMarking{TermType} <: HLAnnotation
+struct HLMarking <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    "Any <structure> must be a many-sorted algebra term for a <hlmarking> annotation label."
-    term::Maybe{TermType} # Expected structure content.
+    "Any <structure> must be a many-sorted algebra term for a <hlmarking>."
+    term::Any
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
 
-HLMarking() = HLMarking(nothing, Term())
-HLMarking(s::AbstractString) = HLMarking(s, Term())
-HLMarking(t::AbstractTerm) = HLMarking(nothing, t, ObjectCommon())
-HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
+HLMarking() = HLMarking(nothing, nothing)
+HLMarking(s::AbstractString) = HLMarking(s, nothing)
+HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon())
+HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
 
 #! HLMarking is a multiset, not an expression.
 """

@@ -8,7 +8,7 @@ Labels an Arc.
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
 julia> i1 = HLInscription()
-HLInscription(nothing, Term(:empty, Dict()), )
+HLInscription(nothing, nothing, )
 
 julia> i1()
 1
@@ -32,20 +32,24 @@ julia> i4()
 3
 ```
 """
-struct HLInscription{TermType<:AbstractTerm} <: HLAnnotation
+struct HLInscription <: HLAnnotation
     text::Maybe{String}
-    "Any <structure> must be a many-sorted algebra term for a <hlinscription> annotation label."
-    term::Maybe{TermType} # structure
+    "Any <structure> child must be a many-sorted algebra term for a <hlinscription>."
+    term::Any
     com::ObjectCommon
 end
 
-HLInscription() = HLInscription(nothing, Term(), ObjectCommon())
-HLInscription(s::AbstractString) = HLInscription(s, Term())
+HLInscription() = HLInscription(nothing, nothing, ObjectCommon())
+HLInscription(s::AbstractString) = HLInscription(s, nothing)
 HLInscription(t::Term) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::Term) = HLInscription(s, t, ObjectCommon())
+HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
-(inscription::HLInscription)() = _evaluate(inscription.term)
+(inscription::HLInscription)() = if isnothing(inscription.term)
+    default_one_term()
+else
+     _evaluate(inscription.term)
+end
