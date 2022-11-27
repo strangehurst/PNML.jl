@@ -31,9 +31,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return first child with `tag` or nothing. 
+Return first child with `tag` or nothing.
 """
-function getfirst(tag, el::XMLNode, ns=pnml_ns) 
+function getfirst(tag::AbstractString, el::XMLNode, ns=pnml_ns)
     x = firstchild(tag, el, ns)
     isnothing(x) ? nothing : x
 end
