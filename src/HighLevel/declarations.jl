@@ -113,21 +113,23 @@ struct UserOperator <: AbstractOperator
 end
 
 """
-Label of a net or page that holds zero or more [`AbstractDeclaration`](@ref).
+Label of a high-level net or page that holds zero or more [`AbstractDeclaration`](@ref).
+Implemented as `Any[]` so beware type-stability issues.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Declaration <: HLAnnotation
-    declarations::Vector{Any} #!{AbstractDeclaration} causes JET errors
+    declarations::Vector{Any}
     com::ObjectCommon
     xml::Maybe{XMLNode}
 end
 
-Declaration() = Declaration(Vector{AbstractDeclaration}[], ObjectCommon(), nothing)
+Declaration() = Declaration(Any[], ObjectCommon(), nothing)
 
-xmlnode(d::Declaration) = d.xml
 declarations(d::Declaration) = d.declarations
+xmlnode(d::Declaration) = d.xml
+#
 Base.length(d::Declaration) = length(declarations(d))
 
 # Flattening pages combines declarations into the first page.
@@ -138,5 +140,5 @@ end
 
 function Base.empty!(d::Declaration)
     empty!(declarations(d))
-    empty!(d.com) #! JET will bark?
+    empty!(d.com)
 end
