@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Place, Transition, Arc, 
+using PNML: Place, Transition, Arc,
   pid, marking, condition, inscription
 
 header("NODES")
@@ -48,7 +48,7 @@ end
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
-        <condition> <structure>100</structure> </condition>
+        <condition> <text>foo</text><structure>100</structure> </condition>
       </transition>
     """
     n = @inferred Transition parse_node(node; reg = PNML.IDRegistry())
@@ -58,7 +58,7 @@ end
     @test pid(n) === :transition1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some transition"
-    @test condition(n) == 100
+    @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())

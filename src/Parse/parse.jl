@@ -23,12 +23,12 @@ Return namespace of `node.
 When `node` does not have a namespace return default value [`pnml_ns`](@ref)
 and warn or throw an error.
 """
-function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_ns)
+function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool=false, default_ns=pnml_ns)
     if EzXML.hasnamespace(node)
          return EzXML.namespace(node)
     else
         emsg = "$(nodename(node)) missing namespace"
-        missing_ns_fatal===false ? @warn(emsg) : error(emsg)
+        missing_ns_fatal ? error(emsg) : @warn(emsg)
         return default_ns
     end
 end
@@ -125,6 +125,7 @@ function parse_net(node, pntd::Maybe{PnmlType}=nothing; kw...)::PnmlNet
                            :id => register_id!(kw[:reg], node["id"]),
                            :pages => Page[],
                            :declaration => Declaration()) #! declaration is High Level
+    # Go through children looking for expected tags, delegating common tags and labels.
     parse_net_2!(d, node, pntd; kw...)
     PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
 end
@@ -132,23 +133,22 @@ end
 "Specialize net parsing on pntd"
 function parse_net_2! end
 
-function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...) # Every pntd not a AbstractHLCore.
-    # Go through children looking for expected tags, delegating common tags and labels.
+function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page" => push!(d[:pages], parse_page(child, pntd; kw...))
+            # Leave the empty `Declaration` alone.
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
 end
 
 function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::AbstractHLCore; kw...)
-    # Go through children looking for expected tags, delegating common tags and labels.
     foreach(elements(node)) do child
         @match nodename(child) begin
             "page" => push!(d[:pages], parse_page(child, pntd; kw...))
 
-            # For nets and pages the <declaration> tag is optional
+            # For nets and pages the <declaration> tag is optional.
             # <declaration> ia a High-Level Annotation with a <structure> holding
             # zero or more <declarations>. Is complicated. You have been warned!
             # Expected XML structure:
@@ -561,9 +561,6 @@ Condition is defined by the ISO Specification as a High-level Annotation,
 meaning it has <text> and <structure> elements. With all meaning in the element
 that the <structure> holds.
 
-We extend Condition by allowing <structure> to have _context_ instead of of a child element.
-This content is treated as either an Integer or Float64.
-
 A Condition should evaluate to a boolean. We defer that evaluation to a higher level.
 See [`AbstractTerm`](@ref).
 """
@@ -576,15 +573,28 @@ function parse_condition(node, pntd; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "structure" => (d[:structure] =
-                    haselement(child) ? parse_term(firstelement(child), pntd; kw...) :
-                    !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                    default_condition(pntd)())
+                        parse_condition_structure(child, pntd; kw...))
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
     Condition(d[:text], d[:structure], ObjectCommon(d))
 end
 
+function parse_condition_structure(node, pntd::PnmlType; kw...)
+    nn = nodename(node)
+    nn == "structure" || error("element name wrong: $nn")
+
+    if haselement(node)
+        term = firstelement(node)
+        # Term is an abstract type even in the ISO specification.
+        # Wraps an unclaimed label until more of high-level many-sorted algebra is done.
+        #nodename(term) == "term"  ||
+        #    error("$nn did not have <term> child: found $(nodename(term))")
+        parse_term(term, pntd; kw...)
+    else
+        default_condition(pntd)()
+    end
+end
 
 #---------------------------------------------------------------------
 #TODO Will unclaimed_node handle this?
