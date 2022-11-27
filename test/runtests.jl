@@ -69,12 +69,12 @@ end
 
 # Check for ambiguous methods.
 ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-@show length(ambiguous)
+@test length(ambiguous) == 0
 foreach(ambiguous) do amb
     @show amb
 end
 unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-@show length(unbound)
+@test length(unbound) == 0
 foreach(unbound) do unb
     @show unb
 end
