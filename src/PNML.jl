@@ -53,8 +53,7 @@ include("HighLevel/terms.jl")
 include("HighLevel/sorts.jl")
 include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
-
-include("IR/conditions.jl")
+include("HighLevel/conditions.jl")
 
 include("IR/evaluate.jl")
 
