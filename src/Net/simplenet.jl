@@ -36,20 +36,17 @@ $(TYPEDFIELDS)
 
 SimpleNet is a concrete `PetriNet` wrapping a `PnmlNet`.
 
-Omits the page level of the pnml-defined hierarchy by flattening pages.
+Uses a flattened net to avoid the page level of the pnml hierarchy.
 
-A multi-page net can be flattened by removing referenceTransitions & referencePlaces,
-and merging pages into the first page.
+A multi-page petri net can always be flattened by removing
+referenceTransitions & referencePlaces, and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: PetriNet{PNTD}
     id::Symbol # Not needed except for dispatch to inner constructor.
     net::PnmlNet{PNTD}
 end
 
-"""
-Construct from the flattened first network of the pnml model created from valid XML.
-"""
-function SimpleNet end
+# Construct from the flattened first network of the pnml model created from valid XML.
 
 SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
 SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
