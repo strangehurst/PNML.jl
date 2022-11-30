@@ -44,4 +44,4 @@ Condition(::Maybe{String}, ::Nothing, ::ObjectCommon) = error("Condition must ha
 $(TYPEDSIGNATURES)
 Evaluate a [`Condition`](@ref) instance.
 """
-(mark::Condition)() = _evaluate(mark.term)
+(c::Condition)() = _evaluate(c.term)

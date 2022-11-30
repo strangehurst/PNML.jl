@@ -48,8 +48,8 @@ HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
-(inscription::HLInscription)() = if isnothing(inscription.term)
+(hli::HLInscription)() = if isnothing(hli.term)
     default_one_term()
 else
-     _evaluate(inscription.term)
+     _evaluate(hli.term)
 end
