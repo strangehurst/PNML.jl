@@ -35,7 +35,10 @@ HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.
 """
-(hlm::HLMarking)() = _evaluate(hlm.term)
-
+(hlm::HLMarking)() = if isnothing(hlm.term)
+    default_zero_term()
+else
+    _evaluate(hlm.term)
+end
 #TODO convert to sort
 #TODO query sort
