@@ -24,7 +24,7 @@ Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 function rate end
 
 function rate(pn::PetriNet, tid::Symbol)
-    rate(transition(pn, tid))
+    (rate ∘ transition)(pn, tid)
 end
 
 function rate(transition)::Float64

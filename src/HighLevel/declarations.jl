@@ -130,7 +130,7 @@ Declaration() = Declaration(Any[], ObjectCommon(), nothing)
 declarations(d::Declaration) = d.declarations
 xmlnode(d::Declaration) = d.xml
 #
-Base.length(d::Declaration) = length(declarations(d))
+Base.length(d::Declaration) = (length ∘ declarations)(d)
 
 # Flattening pages combines declarations into the first page.
 function Base.append!(l::Declaration, r::Declaration)
