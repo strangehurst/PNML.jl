@@ -291,6 +291,7 @@ makedocs(;
                # "PnmlTypeDefs" => "API/pnmltypes.md"
             ],
             "Default Values"   => "defaults.md",
+            "Parser" => "parser.md",
             "Examples"   => "examples.md",
             "Index" => "index.md",
             "acknowledgments.md",
