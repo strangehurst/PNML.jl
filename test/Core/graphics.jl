@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid
 
-header("GRAPHICS")
+#!header("GRAPHICS")
 @testset "graphics" begin
     str = """
     <graphics>
@@ -16,10 +16,9 @@ header("GRAPHICS")
            style="normal" weight="normal" />
     </graphics>
     """
-    doc = EzXML.parsexml(str)
-    n = parse_node(root(doc); reg=PNML.IDRegistry())
-    printnode(n)
-    
+        n = parse_node(xmlroot(str); reg=PNML.IDRegistry())
+    #!printnode(n)
+
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
     @test n.position isa Vector{PNML.Coordinate}
@@ -105,12 +104,8 @@ end
                                                              str4=>4,
                                                              str5=>1,
                                                              str6=>2]
-        n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
+        n = parse_node(xmlroot(s); reg=PNML.IDRegistry())
         @test n isa PNML.TokenGraphics
         @test length(n.positions) == l
-        #for p in n.positions
-        #    @show p, PNML.eltype(p.x)
-        #end
     end
 end
-

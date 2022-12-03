@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode
 
-header("FLATTEN")
+#!header("FLATTEN")
 
 @testset "deref" begin
     str = """
@@ -30,7 +30,7 @@ header("FLATTEN")
             </page>
         </net>
     </pnml>
-    """ 
+    """
     model = parse_str(str)
     net = PNML.first_net(model)
     @test_call PNML.first_net(model)

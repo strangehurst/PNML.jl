@@ -12,7 +12,7 @@ using PNML: tag, pid, xmlnode, parse_str,
     nettype,
     ispid
 
-header("SimpleNet")
+#!header("SimpleNet")
 
 @testset "SIMPLENET" begin
     str = """
@@ -41,7 +41,7 @@ header("SimpleNet")
     """
     @test_call parse_str(str)
     model = @inferred parse_str(str)
-    printnode(nets(model))
+    #!printnode(nets(model))
 
     @test_call PNML.find_nets(model, :continuous)
     v = @inferred PNML.find_nets(model, :continuous)
@@ -77,17 +77,17 @@ header("SimpleNet")
         end
     end
     #
-    for top in [net, net.net, first(pages(net.net))]
-        @show typeof(top)
-    end
-    @show typeof(ispid)
-    println()
+    #!for top in [net, net.net, first(pages(net.net))]
+    #!@show typeof(top)
+    #!end
+    #!@show typeof(ispid)
+    #!println()
 
     for top in [net, net.net, first(pages(net.net))]
-        @show typeof(top)
+        #!@show typeof(top)
         @test_call places(top)
         for p in @inferred places(top)
-            @show pid(p), marking(p), typeof(marking(p)), default_marking(p)
+            #!@show pid(p), marking(p), typeof(marking(p)), default_marking(p)
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
@@ -96,12 +96,12 @@ header("SimpleNet")
             @test @inferred(marking(p)) isa typeof(default_marking(p))
         end
     end
-    println()
+
     for top in [net, net.net, first(pages(net.net))]
-        @show typeof(top)
+        #!@show typeof(top)
         @test_call transitions(top)
         for t in @inferred transitions(top)
-            @show pid(t), condition(t), typeof(condition(t)), default_condition(t)
+            #!@show pid(t), condition(t), typeof(condition(t)), default_condition(t)
             @test ispid(pid(t))(pid(t))
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -111,14 +111,14 @@ header("SimpleNet")
             @test @inferred condition(t)
         end
     end
-    println()
+
     #
     for top in [net, net.net, first(pages(net.net))]
-        @show typeof(top)
+        #!@show typeof(top)
         @test_call arcs(top)
         for a in @inferred arcs(top)
             #@show a
-            @show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
+            #!@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
             #@show has_arc(top, pid(a))
             #@show typeof(has_arc(top, pid(a)))
             @test @inferred has_arc(top, pid(a))
@@ -130,10 +130,9 @@ header("SimpleNet")
             @test @inferred(inscription(a)) !== nothing
         end
     end
-    println()
 end
 
-header("RATE")
+#!header("RATE")
 @testset "rate" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -147,13 +146,13 @@ header("RATE")
     model = parse_str(str)
     net = PNML.first_net(model)
     snet = PNML.SimpleNet(net)
-    @show snet
+    #!@show snet
     β = PNML.rates(snet)
-    @show β
+    #!@show β
     @test β == LVector(birth=0.3)
 end
 
-header("LOTKA-VOLTERRA")
+#!header("LOTKA-VOLTERRA")
 @testset "lotka-volterra" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -176,16 +175,16 @@ header("LOTKA-VOLTERRA")
     """
     model = parse_str(str)
     net1 = PNML.first_net(model)
-    printnode(net1)
+    #!printnode(net1)
 
     snet = PNML.SimpleNet(net1)
 
     S = PNML.place_ids(snet) # [:rabbits, :wolves]
     T = PNML.transition_ids(snet)
-    PRINT_PNML && @show S, T
-    for t in T
-        PRINT_PNML && @show PNML.in_out(snet, t)
-    end
+    #!@show S, T
+    #!for t in T
+    #!@show PNML.in_out(snet, t)
+    #!end
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription (integer?)
@@ -195,8 +194,8 @@ header("LOTKA-VOLTERRA")
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
         death=(LVector(wolves=1), LVector()),
     )
-    @show Δ.birth
-    @show tfun.birth
+    #!@show Δ.birth
+    #!@show tfun.birth
     @test typeof(Δ)   == typeof(tfun)
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
@@ -208,12 +207,11 @@ header("LOTKA-VOLTERRA")
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
-    if PRINT_PNML
-        @show Δ
-        @show u0
-        @show uX
-        @show βx
-        @show β
-    end
+    #!@show Δ
+    #!@show u0
+    #!@show uX
+    #!@show βx
+    #!@show β
+
     @test β == βx
 end

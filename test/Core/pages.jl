@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage
 
-header("PAGES")
+#!header("PAGES")
 @testset "pages" begin
     str = """
     <?xml version="1.0"?>
@@ -60,18 +60,17 @@ header("PAGES")
     @test typeof(net) <: PNML.PnmlNet
     @test typeof(firstpage(net)) <: PNML.Page
 
-    printnode(net; label="\n----------------\n Multiple nested pages")
+    #!printnode(net; label="\n----------------\n Multiple nested pages")
 
     @testset "flatten" begin
         PNML.flatten_pages!(net)
-        printnode(net; label="\n----------------\n Flattened & dereferenced to 1 page")
+        #!printnode(net; label="\n----------------\n Flattened & dereferenced to 1 page")
 
         #@show PNML.arc_ids(net)
         #@show PNML.place_ids(net)
         #@show PNML.transition_ids(net)
         #@show PNML.refplace_ids(net)
         #@show PNML.reftransition_ids(net)
-        #println()
 
         expected_a = [:a1, :a12, :a2, :a22, :a3, :a4]
         @test PNML.arc_ids(net) == expected_a

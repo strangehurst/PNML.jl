@@ -13,51 +13,7 @@ if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
 
-module TestUtils
-using EzXML
-
-"Turn string into XML node."
-to_node(s::AbstractString) = root(EzXML.parsexml(s))
-
-const PRINT_PNML = parse(Bool, get(ENV, "PRINT_PNML", "true"))
-
-"Print `node` prepended by optional label string."
-function printnode(io::IO, node; label=nothing, kw...)
-    if PRINT_PNML
-        !isnothing(label) && print(io, label, " ")
-        show(io, MIME"text/plain"(), node)
-        println(io, "\n")
-    end
-end
-function printnode(n; kw...)
-    printnode(stdout, n; kw...)
-end
-
-function printnodeln(io::IO, n; kw...)
-    printnode(io, n; kw...)
-    PRINT_PNML && println(io)
-end
-
-const VERBOSE_PNML = parse(Bool, get(ENV, "VERBOSE_PNML", "true"))
-
-header(s) = if VERBOSE_PNML
-    println("##### ", s)
-end
-
-const SHOW_SUMMARYSIZE = parse(Bool, get(ENV, "SHOW_SUMMARYSIZE", "false"))
-
-function showsize(ob,k)
-    if SHOW_SUMMARYSIZE && PRINT_PNML
-        summarysz = Base.summarysize(ob[k])
-        @show k,summarysz
-    end
-end
-
-export PRINT_PNML, VERBOSE_PNML, SHOW_SUMMARYSIZE,
-    to_node, printnode, header, showsize
-
-end # module TestUtils
-
+include("TestUtils.jl")
 using .TestUtils
 
 "Return true if one of the GROUP environment variable's values if found in 'v'."
@@ -67,55 +23,65 @@ if select("None")
     return
 end
 
-# Check for ambiguous methods.
-ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-@test length(ambiguous) == 0
-foreach(ambiguous) do amb
-    @show amb
-end
-unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-@test length(unbound) == 0
-foreach(unbound) do unb
-    @show unb
-end
+#############################################################################
+@time "ALL TESTS" begin
 
-@testset verbose=false "PNML.jl" begin
+# Check for ambiguous methods.
+@time "ambiguous" begin
+    ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+    @test length(ambiguous) == 0
+    foreach(ambiguous) do amb
+        @show amb
+    end
+end
+# Check for unbound type parameters.
+@time "unbound" begin
+    unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+    @test length(unbound) == 0
+    foreach(unbound) do unb
+        @show unb
+    end
+end
+@testset verbose=true "PNML.jl" begin
     if select("All", "Base")
-        TestUtils.header("Base")
-        @safetestset "typedefs"     begin include("Core/typedefs.jl") end
-        @safetestset "idreg"        begin include("Core/idregistry.jl") end
-        @safetestset "utils"        begin include("Core/utils.jl") end
+        #!TestUtils.header("Base")
+        @time "typedefs" @safetestset "typedefs"  begin include("Core/typedefs.jl") end
+        @time "registry" @safetestset "registry"  begin include("Core/idregistry.jl") end
+        @time "utils"    @safetestset "utils"     begin include("Core/utils.jl") end
     end
     if select("All", "Core")
-        header("Core")
-        @safetestset "nodes"        begin include("Core/nodes.jl") end
-        @safetestset "graphics"     begin include("Core/graphics.jl") end
-        @safetestset "labels"       begin include("Core/labels.jl") end
-        @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
-        @safetestset "exceptions"   begin include("Core/exceptions.jl") end
-        @safetestset "pages"        begin include("Core/pages.jl") end
-        @safetestset "flatten"      begin include("Core/flatten.jl") end
+        #!header("Core")
+        @time "nodes"        @safetestset "nodes"        begin include("Core/nodes.jl") end
+        @time "graphics"     @safetestset "graphics"     begin include("Core/graphics.jl") end
+        @time "labels"       @safetestset "labels"       begin include("Core/labels.jl") end
+        @time "toolspecific" @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
+        @time "exceptions"   @safetestset "exceptions"   begin include("Core/exceptions.jl") end
+        @time "pages"        @safetestset "pages"        begin include("Core/pages.jl") end
+        @time "flatten"      @safetestset "flatten"      begin include("Core/flatten.jl") end
     end
     if select("All", "HighLevel")
-        header("HighLevel")
-        @safetestset "declarations" begin include("HighLevel/declarations.jl") end
+        #!header("HighLevel")
+        @time "declarations" @safetestset "declarations" begin include("HighLevel/declarations.jl") end
+        @time "labels_hl"    @safetestset "labels_hl"    begin include("HighLevel/labels_hl.jl") end
     end
     if select("All", "Parse")
-        header("Parse")
-        @safetestset "parse_labels" begin include("parse_labels.jl") end
-        @safetestset "parse_tree"   begin include("parse_tree.jl") end
-    end
-    if select("All", "Examples")
-        header("Examples")
-        @safetestset "example file" begin include("parse_examples.jl") end
+        #!header("Parse")
+        #@safetestset "parse_labels" begin include("parse_labels.jl") end
+        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("All", "Net")
-        header("Net")
-        @safetestset "document"     begin include("Core/document.jl") end
-        @safetestset "simplenet"    begin include("PetriNets/simplenet.jl") end
+        #!header("Petri Net")
+        @time "document"  @safetestset "document"     begin include("Core/document.jl") end
+        @time "simplenet" @safetestset "simplenet"    begin include("PetriNets/simplenet.jl") end
+        @time "rate"      @safetestset "rate"         begin include("PetriNets/rate.jl") end
+    end
+    if select("All", "Examples")
+        #!header("Examples")
+        @time "example file" @safetestset "example file" begin include("parse_examples.jl") end
     end
     if select("All", "Doc")
-        header("Doctests")
-        @testset "doctest" begin doctest(PNML, manual = true) end
+        #!header("Doctests")
+        @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end
+end # time

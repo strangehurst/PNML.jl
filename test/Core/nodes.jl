@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc,
   pid, marking, condition, inscription
 
-header("NODES")
+#!header("NODES")
 
 @testset "place" begin
     node = xml"""
@@ -13,7 +13,7 @@ header("NODES")
     """
     @test_call parse_node(node; reg = PNML.IDRegistry())
     n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    #!printnode(n)
     @test typeof(n) <: Place
     @test_call PNML.has_xml(n)
     @test !PNML.has_xml(n)
@@ -24,7 +24,7 @@ header("NODES")
     @test marking(n)() == 100
 end
 
-@testset "no text" begin
+@testset "no marking text" begin
     node = xml"""
       <place id="place1">
         <name> <text>Some place</text> </name>
@@ -33,7 +33,7 @@ end
     """
     @test_call parse_node(node; reg = PNML.IDRegistry())
     n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    #!printnode(n)
     @test typeof(n) <: Place
     @test_call PNML.has_xml(n)
     @test !PNML.has_xml(n)
@@ -43,7 +43,7 @@ end
     @test_call marking(n)
     @test marking(n)() == 100
 end
-
+#! <condition> is High-Level
 @testset "transition" begin
     node = xml"""
       <transition id="transition1">
@@ -52,7 +52,7 @@ end
       </transition>
     """
     n = @inferred Transition parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    #!printnode(n)
     @test typeof(n) <: PNML.Transition
     @test !PNML.has_xml(n)
     @test pid(n) === :transition1
@@ -79,14 +79,13 @@ end
       </arc>
     """
     n = @inferred Arc parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    #!printnode(n)
     @test typeof(n) <: PNML.Arc
     @test !PNML.has_xml(n)
     @test pid(n) === :arc1
     @test PNML.has_name(n)
     @test PNML.name(n) == "Some arc"
     @test_call inscription(n)
-    @show PNML.inscription(n)
     @test PNML.inscription(n) == 6
 end
 
@@ -95,8 +94,8 @@ end
         <referenceTransition id="rt1" ref="t1"/>
     """
     n = parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
-    @test typeof(n) <: PNML.RefTransition
+    #!printnode(n)
+    @test n isa PNML.RefTransition
     @test !PNML.has_xml(n)
     @test pid(n) === :rt1
     @test n.ref === :t1
@@ -118,7 +117,7 @@ end
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
         n = parse_node(s.node; reg = PNML.IDRegistry())
-        printnode(n)
+        #!printnode(n)
         @test typeof(n) <: PNML.RefPlace
         @test !PNML.has_xml(n)
         @test typeof(n.id) == Symbol

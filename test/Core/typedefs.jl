@@ -10,19 +10,14 @@ using PNML: IDRegistry, XMLNode, pnmltype, tagmap
     @testset "tag $t" for t in keys(tagmap)
         @test !isempty(methods(tagmap[t], (XMLNode, PnmlType)))
         @test isempty(methods(tagmap[t], (XMLNode,)))
-        if true
-            @show t, tagmap[t]
-            #@show """<$(t)></$(t)>"""
-            #@show xml"""<$(t)> </$(t)>"""
-            #@show EzXML.parsexml("<$(t)> </$(t)>").root
-        else
 
-        end
         #! Some tags only HighLevel
-        if any(==(t), ["hlmarking", "hlinitialMarking", "hlinscription", "namedoperator", "declarations", "declaration"]) 
-            @test_call tagmap[t](EzXML.parsexml("<$(t)></$(t)>").root, HLCore(); reg=IDRegistry() )
+        highleveltags = ["hlmarking", "hlinitialMarking", "hlinscription",
+                        "namedoperator", "declarations", "declaration"]
+        if any(==(t), highleveltags)
+            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), HLCore(); reg=IDRegistry() )
         else
-            @test_call tagmap[t](EzXML.parsexml("<$(t)></$(t)>").root, PnmlCore(); reg=IDRegistry() )
+            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), PnmlCore(); reg=IDRegistry() )
         end
 
     end
@@ -49,7 +44,7 @@ end
     @test pntd_symbol("symmetric" ) === :symmetric
     @test pntd_symbol("symmetricnet") === :symmetric
 
-    
+
     @test pntd_symbol("stochastic"  ) === :stochastic
     @test pntd_symbol("timed"       ) === :timednet
     @test pntd_symbol("nonstandard" ) === :pnmlcore

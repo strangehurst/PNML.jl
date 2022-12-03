@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, parse_name, nets
 using .PnmlIDRegistrys
 
-header("parse tree")
+#!header("parse tree")
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -25,21 +25,15 @@ str = """
   </net>
 </pnml>
 """
-doc = EzXML.parsexml(str) # shared by testsets
-
-#if PRINT_PNML
-#    EzXML.prettyprint(doc);
-#    println()
-#end
+pnmldoc = PNML.xmlroot(str) # shared by testsets
 
 @testset "parse tree" begin
-    pnml = root(doc)
-    @test EzXML.nodename(pnml) == "pnml"
-    @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
+    @test EzXML.nodename(pnmldoc) == "pnml"
+    @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
 
     reg = IDRegistry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
-    foreach(PNML.allchildren("net", pnml)) do net
+    foreach(PNML.allchildren("net", pnmldoc)) do net
         @test nodename(net) == "net"
 
         nn = parse_name(PNML.firstchild("name", net), PnmlCore(); reg)
@@ -103,7 +97,7 @@ end
 
     # Do a full parse and maybe print the generated data structure.
     reg = IDRegistry()
-    pnml_ir = parse_pnml(root(doc); reg)
+    pnml_ir = parse_pnml(pnmldoc; reg)
     @test typeof(pnml_ir) <: PNML.PnmlModel
 
     foreach(nets(pnml_ir)) do net
