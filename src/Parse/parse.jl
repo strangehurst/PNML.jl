@@ -42,7 +42,7 @@ function parse_str(str::AbstractString)
     isempty(str) && error("parse_str must have a non-empty string argument")
     reg = IDRegistry()
     # Good place for debugging.
-    parse_pnml(root(EzXML.parsexml(str)); reg)
+    parse_pnml(xmlroot(str); reg)
 end
 
 """

@@ -33,6 +33,8 @@ Transition node of a Petri Net Markup Language graph.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+
 """
 struct Transition{PNTD,C}  <: PnmlNode{PNTD}
     pntd::PNTD
@@ -43,6 +45,8 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
 end
 
 #! Condition is High-level specific in the specification.
+#! To be an expression that evaluates to a boolean value.
+#! Make others evaluate to true by default.
 condition(transition) = condition(transition.pntd, transition)
 function condition(::PnmlType, transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
@@ -51,6 +55,7 @@ function condition(::PnmlType, transition)
         transition.condition.term
     end
 end
+
 function condition(::AbstractHLCore, transition)
     if isnothing(transition.condition) || isnothing(transition.condition.term)
         default_condition(transition).term
@@ -80,6 +85,7 @@ mutable struct Arc{PNTD,ITYPE} <: PnmlObject{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
+#
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
 

@@ -2,7 +2,7 @@
 """
 $(TYPEDSIGNATURES)
 Inscriptions, Markings, Conditions evaluate a value
-that may be a scalar or a [`Term`](@ref) functor.
+that may be a scalar or a functor.
 
 # Examples
 
@@ -18,7 +18,7 @@ julia> _evaluate(Term(:term, Dict(:value => 3))())
 ```
 """
 function _evaluate end
-_evaluate(x::Any) = x
-_evaluate(x::AbstractTerm) = x()
-_evaluate(x::AbstractSort) = x()
-_evaluate(x::AbstractLabel) = x()
+_evaluate(x::Any) = x # identity
+_evaluate(x::AbstractTerm) = x() # functor
+_evaluate(x::AbstractSort) = x() # functor
+_evaluate(x::AbstractLabel) = x() # functor

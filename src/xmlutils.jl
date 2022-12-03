@@ -14,10 +14,19 @@ namespace(::T) where {T<:Any} = error("namespace(::$T) method not defined")
 Parse string `s` into EzXML node.
 
 $(TYPEDSIGNATURES)
+
+See [`xmlroot`](@ref).
 """
 macro xml_str(s)
-    EzXML.parsexml(s).root
+    xmlroot(s)
 end
+
+"""
+Parse string `s` into EzXML node.
+
+$(TYPEDSIGNATURES)
+ """
+xmlroot(s::String) = root(EzXML.parsexml(s))
 
 """
 $(TYPEDSIGNATURES)
