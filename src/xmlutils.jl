@@ -5,12 +5,6 @@ const XMLNode = EzXML.Node
 const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 
 """
-Return XML namespace.
-"""
-function namespace end
-namespace(::T) where {T<:Any} = error("namespace(::$T) method not defined")
-
-"""
 Parse string `s` into EzXML node.
 
 $(TYPEDSIGNATURES)
@@ -18,6 +12,7 @@ $(TYPEDSIGNATURES)
 See [`xmlroot`](@ref).
 """
 macro xml_str(s)
+    isempty(s) && throw(ArgumentError("empty XML string in macro"))
     xmlroot(s)
 end
 
@@ -53,7 +48,7 @@ $(TYPEDSIGNATURES)
 
 Return vector of `el`'s immediate children with `tag`.
 """
-function allchildren(tag, el, ns=pnml_ns)
+function allchildren(tag, el, ns::String=pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x"=>ns])
 end
 
