@@ -51,11 +51,11 @@ end
     end
     if select("All", "Core")
         #!header("Core")
-        @time "nodes"        @safetestset "nodes"        begin include("Core/nodes.jl") end
-        @time "graphics"     @safetestset "graphics"     begin include("Core/graphics.jl") end
         @time "labels"       @safetestset "labels"       begin include("Core/labels.jl") end
+        @time "graphics"     @safetestset "graphics"     begin include("Core/graphics.jl") end
         @time "toolspecific" @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
         @time "exceptions"   @safetestset "exceptions"   begin include("Core/exceptions.jl") end
+        @time "nodes"        @safetestset "nodes"        begin include("Core/nodes.jl") end
         @time "pages"        @safetestset "pages"        begin include("Core/pages.jl") end
         @time "flatten"      @safetestset "flatten"      begin include("Core/flatten.jl") end
     end

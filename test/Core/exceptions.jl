@@ -79,23 +79,26 @@ end
 
     # Test absence of an malformed exception detection.
     @test_throws Exception test_malformed("not malformed here", parse_node,
-           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0"> <visible>true</visible> </toolspecific>""")
+           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0">
+                <visible>true</visible> </toolspecific>""")
 
     test_malformed("missing version attribute", parse_node,
-           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor"> <visible>true</visible> </toolspecific>""")
+           xml"""<toolspecific tool="de.uni-freiburg.telematik.editor">
+                <visible>true</visible> </toolspecific>""")
 
     test_malformed("missing tool attribute", parse_node,
-           xml"""<toolspecific version="1.0"> <visible>true</visible> </toolspecific>""")
+           xml"""<toolspecific version="1.0">
+                <visible>true</visible> </toolspecific>""")
 end
 
 @testset "missing id" begin
-    @test_throws PNML.MissingIDException parse_net(xml"<net type='test'></net>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<page></page>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<place></place>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<transition></transition>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<arc></arc>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<referencePlace></referencePlace>"; reg=IDRegistry())
-    @test_throws PNML.MissingIDException parse_node(xml"<referenceTransition></referenceTransition>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_net(xml"<net type='test'></net>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<page></page>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<place></place>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<transition></transition>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<arc></arc>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>"; reg=IDRegistry())
 end
 
 @testset "graphics" begin

@@ -1,11 +1,12 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, xmlroot, labels
+using PNML: Maybe, tag, xmlnode, xmlroot, labels,
+        unclaimed_label, anyelement, PnmlLabel, AnyElement
 
 #!header("PARSE CORE LABELS")
 
 #!header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
-    # node => vector of key, value pairs expected to be in the PnmlDict from parsing node.
+    # node => [key => value] expected to be in the PnmlDict after parsing node.
     ctrl = [
         xml"""<declarations> </declarations>""" =>
                 [:content => ""],
@@ -26,34 +27,29 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels
                                     :tag2 => "two")
             ],
 
-        xml"""<foo><declarations> </declarations></foo>""" => [
-            :declarations => Dict(:content => "")
-            ],
+        xml"""<foo><declarations> </declarations></foo>""" =>
+                [:declarations => Dict(:content => "")],
 
         # no content, no attribute results in empty dict.
         xml"""<null></null>""" => [],
         xml"""<null2/>""" => [],
         # no content, with attribute
-        xml"""<null at="null"></null>""" => [
-            :at => "null"
-            ],
-        xml"""<null2 at="null2" />""" => [
-            :at => "null2"
-            ],
+        xml"""<null at="null"></null>""" =>
+            [:at => "null"],
+        xml"""<null2 at="null2" />""" =>
+            [:at => "null2"],
 
         # empty content, no attribute
-        xml"""<empty> </empty>""" => [
-            :content => ""
-            ],
+        xml"""<empty> </empty>""" =>
+            [:content => ""],
         # empty content, with attribute
         xml"""<empty at="empty"> </empty>""" => [
             :content => "",
             :at => "empty"
             ],
 
-        xml"""<foo id="testid"/>""" => [
-            :id => :testid
-            ],
+        xml"""<foo id="testid"/>""" =>
+            [:id => :testid],
         ]
 
     for (node,funk) in ctrl
@@ -61,25 +57,25 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels
         reg1 = IDRegistry()
         reg2 = IDRegistry()
 
-        u = PNML.unclaimed_label(node, reg=reg1)
-        l = PNML.PnmlLabel(u, node)
-        a = PNML.anyelement(node, reg=reg2)
+        u = unclaimed_label(node, reg=reg1)
+        l = PnmlLabel(u, node)
+        a = anyelement(node, reg=reg2)
 
         #@show u
         #@show l
         #@show a
 
-        @test_call PNML.unclaimed_label(node, reg=reg1)
-        @test_call PNML.PnmlLabel(u, node)
-        @test_call PNML.anyelement(node, reg=reg2)
+        @test_call unclaimed_label(node, reg=reg1)
+        @test_call PnmlLabel(u, node)
+        @test_call anyelement(node, reg=reg2)
 
         @test !isnothing(u)
         @test !isnothing(l)
         @test !isnothing(a)
 
         @test u isa Pair{Symbol, Dict{Symbol, Any}}
-        @test l isa PNML.PnmlLabel
-        @test a isa PNML.AnyElement
+        @test l isa PnmlLabel
+        @test a isa AnyElement
 
         nn = Symbol(nodename(node))
         @test u.first === nn
@@ -101,11 +97,11 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels
             @test a.dict[key] == val
         end
 
-        haskey(u.second, :id) && @test PNML.isregistered(reg1, u.second[:id])
-        haskey(l.dict, :id) && @test PNML.isregistered(reg1, l.dict[:id])
-        haskey(a.dict, :id) && @test PNML.isregistered(reg2, a.dict[:id])
+        haskey(u.second, :id) && @test isregistered(reg1, u.second[:id])
+        haskey(l.dict, :id) && @test isregistered(reg1, l.dict[:id])
+        haskey(a.dict, :id) && @test isregistered(reg2, a.dict[:id])
 
-        @test_call  PNML.isregistered(reg2, :id)
+        @test_call  isregistered(reg2, :id)
 
         #!println()
     end
@@ -114,17 +110,17 @@ end
 #!header("PT initMarking")
 @testset "PT initMarking" begin
     node = xml"""
- <initialMarking>
-    <text>1.0</text>
-    <toolspecific tool="org.pnml.tool" version="1.0">
-        <tokengraphics>
-            <tokenposition x="6" y="9"/>
-        </tokengraphics>
-    </toolspecific>
- </initialMarking>
- """
+    <initialMarking>
+        <text>1.0</text>
+        <toolspecific tool="org.pnml.tool" version="1.0">
+            <tokengraphics>
+                <tokenposition x="6" y="9"/>
+            </tokengraphics>
+        </toolspecific>
+    </initialMarking>
+    """
 
-    n = parse_node(node; reg=PNML.IDRegistry())
+    n = parse_node(node; reg=IDRegistry())
     #!printnode(n)
     @test typeof(n) <: PNML.PTMarking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
@@ -165,9 +161,7 @@ end
 end
 
 @testset "text" begin
-    str1 = """
- <text>ready</text>
-    """
+    str1 = """<text>ready</text>"""
     n = parse_node(xmlroot(str1); reg = PNML.IDRegistry())
     @test n == "ready"
 
@@ -199,19 +193,21 @@ end
 
     d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
     reg = PNML.IDRegistry()
-    for i in 1:4
-        x = i<3 ? 1 : 2
+    @test_call PNML.labels(d)
+    @test PNML.labels(d) isa Vector{PNML.PnmlLabel}
+    for i in 1:4 # add 4 labels
+        x = i<3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        n = PNML.add_label!(d, node, PnmlCore(); reg)
         @test_call PNML.add_label!(d, node, PnmlCore(); reg)
+        n = PNML.add_label!(d, node, PnmlCore(); reg)
+        @test n isa Vector{PnmlLabel}
+        #@show n
         @test length(PNML.labels(d)) == i
-        @test d[:labels] == n # Returned value is the vector
-        @test PNML.labels(d) == n # Returned value is the vector
+        @test d[:labels] == n
+        @test PNML.labels(d) == n
     end
     #!printnode(d)
-    @test_call PNML.labels(d)
-    # labels(d) infers as Any
-    @test PNML.labels(d) isa Vector{PNML.PnmlLabel}
+
     @test length(d[:labels]) == 4
     @test length(labels(d)) == 4
     foreach(PNML.labels(d)) do l
@@ -219,8 +215,6 @@ end
         @test tag(l) === :test1 || tag(l) === :test2
         @test xmlnode(l) isa Maybe{EzXML.Node}
     end
-    #!@show typeof(d), collect(keys(d))
-    #!@show typeof(labels(d))
 
     @test_call PNML.has_label(d, :test1)
     @test_call PNML.get_label(d, :test1)

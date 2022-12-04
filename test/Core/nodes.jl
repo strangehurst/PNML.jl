@@ -43,6 +43,7 @@ end
     @test_call marking(n)
     @test marking(n)() == 100
 end
+
 #! <condition> is High-Level
 @testset "transition" begin
     node = xml"""

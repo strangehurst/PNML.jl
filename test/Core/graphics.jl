@@ -16,7 +16,7 @@ using PNML: tag, pid
            style="normal" weight="normal" />
     </graphics>
     """
-        n = parse_node(xmlroot(str); reg=PNML.IDRegistry())
+    n = parse_node(xmlroot(str); reg=PNML.IDRegistry())
     #!printnode(n)
 
     @test n.offset isa PNML.Coordinate
