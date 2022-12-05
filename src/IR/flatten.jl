@@ -25,7 +25,7 @@ function flatten_pages!(net::PnmlNet)
     end
     # Sibling pages.
     if length(net.pages) > 1
-        foldl(flatten_pages!, net.pages[2:end]; init=firstpage(net))
+        foldl(flatten_pages!, pages(net))
         resize!(net.pages, 1)
     end
     deref!(net) # Resolve reference nodes
@@ -63,9 +63,14 @@ function append_page!(l::Page, r::Page;
     l
 end
 
-# 2 Things, each could be union of nothing and `T`.
-# `T`  has field `key` that is to be appended.
-function update_maybe!(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
+# Property/Field `key` is to be set or appended.
+# Used to merge pages.
+# Scalar fields should not be overwritten to preserve first page identity, name.
+# Also means that the graphics, gui data is not merged (how would it work?), but one of
+# the merged page's field could replace an optional field of the first page.
+# Implemented by testing lhs.key for nothing. This works because anything else is assumed
+# to be appendable.
+function update_maybe!(l, r, key::Symbol)
     if !isnothing(getproperty(r, key))
         if isnothing(getproperty(l, key))
             setproperty!(l, key, getproperty(r, key))
@@ -75,8 +80,8 @@ function update_maybe!(l::T, r::T, key::Symbol) where {T <: Maybe{Any}}
     end
 end
 
-#! TODO test this (how would it be used?)
-function update_maybe!(l::T, r::T) where {T <: Maybe{Any}}
+# See above.
+function update_maybe!(l, r)
     if !isnothing(r)
         if isnothing(l)
             l = r
