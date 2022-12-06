@@ -62,8 +62,13 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
 
     #!printnode(net; label="\n----------------\n Multiple nested pages")
 
+    @test_broken PNML.refplace_ids(net) == [:rp1, :rp2]
+    @test_broken PNML.reftransition_ids(net) == [:rt2]
+    #@show PNML.reftransition_ids(net)
+
     @testset "flatten" begin
         PNML.flatten_pages!(net)
+
         #!printnode(net; label="\n----------------\n Flattened & dereferenced to 1 page")
 
         #@show PNML.arc_ids(net)
@@ -73,6 +78,11 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
         #@show PNML.reftransition_ids(net)
 
         expected_a = [:a1, :a12, :a2, :a22, :a3, :a4]
+        expected_p = [:p1, :p11, :p111, :p2, :p3, :p4, :p41, :p411]
+        expected_t = [:t1, :t2, :t3, :t4]
+        expected_rt = [] # removed by flatten
+        expected_rp = []  # removed by flatten
+
         @test PNML.arc_ids(net) == expected_a
         @test PNML.arc_ids(firstpage(net)) == expected_a
         @test PNML.arc_ids(net) == PNML.arc_ids(firstpage(net))
@@ -83,7 +93,6 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
             @test a ∈ PNML.arc_ids(net)
         end
 
-        expected_p = [:p1, :p11, :p111, :p2, :p3, :p4, :p41, :p411]
         @test PNML.place_ids(net) == expected_p
         @test PNML.place_ids(firstpage(net)) == expected_p
         @test PNML.place_ids(net) == PNML.place_ids(firstpage(net))
@@ -94,7 +103,6 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
             @test p ∈ PNML.place_ids(net)
         end
 
-        expected_t = [:t1, :t2, :t3, :t4]
         @test PNML.transition_ids(net) == expected_t
         @test PNML.transition_ids(firstpage(net)) == expected_t
         @test PNML.transition_ids(net) == PNML.transition_ids(firstpage(net))
@@ -105,7 +113,6 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
             @test t ∈ PNML.transition_ids(net)
         end
 
-        expected_rt = []#:rt2]
         @test PNML.reftransition_ids(net) == expected_rt
         @test PNML.reftransition_ids(firstpage(net)) == expected_rt
         @test PNML.reftransition_ids(net) == PNML.reftransition_ids(firstpage(net))
@@ -116,7 +123,6 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
             @test rt ∈ PNML.reftransition_ids(net)
         end
 
-        expected_rp = []#:rp1, :rp2]
         @test PNML.refplace_ids(net) == expected_rp
         @test PNML.refplace_ids(firstpage(net)) == expected_rp
         @test PNML.refplace_ids(net) == PNML.refplace_ids(firstpage(net))
