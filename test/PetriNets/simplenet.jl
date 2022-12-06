@@ -77,17 +77,17 @@ using PNML: tag, pid, xmlnode, parse_str,
         end
     end
     #
-    #!for top in [net, net.net, first(pages(net.net))]
-    #!@show typeof(top)
-    #!end
-    #!@show typeof(ispid)
-    #!println()
+    #println()
+    #@show typeof(first(pages(net.net)))
+    #@show typeof(net.net)
+    #@show typeof(net)
 
-    for top in [net, net.net, first(pages(net.net))]
+    for top in [first(pages(net.net)), net.net, net]
         #!@show typeof(top)
         @test_call places(top)
+        #@show typeof(places(top))
         for p in @inferred places(top)
-            #!@show pid(p), marking(p), typeof(marking(p)), default_marking(p)
+            #!@show pid(p), typeof(p)
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
