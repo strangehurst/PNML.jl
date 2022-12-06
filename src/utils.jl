@@ -3,3 +3,16 @@ function getfirst(f::Function, v)
     i = findfirst(f,v) # Cannot use nothing as an index.
     isnothing(i) ? nothing : v[i]
 end
+
+
+"""
+Use PNML type as trait to select type of marking.
+"""
+markingtype(::PnmlType) = PTMarking
+markingtype(::AbstractHLCore) = HLMarking
+
+"""
+Use PNML type as trait to select type of inscription.
+"""
+inscriptiontype(::PnmlType) = PTInscription
+inscriptiontype(::AbstractHLCore) = HLInscription
