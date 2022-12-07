@@ -144,7 +144,9 @@ function marking end
 """
 $(TYPEDSIGNATURES)
 
-Return a labelled vector with key of place id and value of marking.
+Return a labelled vector with key of place id and value of marking's value.
+Marking value is evaluated to be a number (Int or Float64). High-level nets
+evaluate a `Term` of the many-soted algebra to an `Int`.
 """
 function initialMarking end
 
@@ -276,12 +278,16 @@ $(TYPEDSIGNATURES)
 function has_refT end
 
 """
-$(TYPEDSIGNATURES)
+refplace_ids(x) -> Vector{Symbol}
+
+Return reference place pnml ids.
 """
 function refplace_ids end
 
 """
-$(TYPEDSIGNATURES)
+reftransition_ids(x) -> Vector{Symbol}
+
+Return reference transition pnml ids.
 """
 function reftransition_ids end
 

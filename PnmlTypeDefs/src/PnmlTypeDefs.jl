@@ -62,7 +62,8 @@ struct PnmlCore <: AbstractPnmlCore end
 
 """
 $(TYPEDEF)
-Place-Transition Petri Nets add small extensions to core PNML for initialMarking and inscription.
+Place-Transition Petri Nets add small extensions to core PNML.
+Integer-valued initialMarking and inscription.
 
 The grammer file is ptnet.pnml so we name it PTNet.
 Note that 'PT' is often the prefix for XML tags specialized for this net type.
@@ -72,7 +73,7 @@ struct PTNet <: AbstractPnmlCore end
 """
 $(TYPEDEF)
 Base of High Level Petri Net pntds which add large extensions to PNML core.
-hlinitialMarking, hlinscription, and defined lable structure.
+hlinitialMarking, hlinscription, and defined label structures.
 
 See [`HLCore`](@ref), [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
 """
@@ -81,8 +82,8 @@ abstract type AbstractHLCore <: PnmlType end
 """
 $(TYPEDEF)
 `HLCore` can be used for generic high-level nets.
-We try to implement and test all function at `PnmlCore` level,
-but expect to find use for a concrete type at this level for testing high-level extensions.
+We try to implement and test all function at `PnmlCore` level, but
+expect to find use for a concrete type at this level for testing high-level extensions.
 """
 struct HLCore <: AbstractHLCore end
 
@@ -111,15 +112,17 @@ struct SymmetricNet <: AbstractHLCore end
 
 """
 $(TYPEDEF)
-Uses floating point numbers for markings, inscriptions, and conditions.
+Uses floating point numbers for markings, inscriptions.
+Most of the functionality is shared with [`AbstractPnmlCore`](@ref).
+This seperates the
 """
 abstract type AbstractContinuousNet <: PnmlType end
 
 
 """
+$(TYPEDEF)
 TODO: Continuous Petri Net
 Concrete type.
-$(TYPEDEF)
 """
 struct ContinuousNet <: AbstractContinuousNet end
 
