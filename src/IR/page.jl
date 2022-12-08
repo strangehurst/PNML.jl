@@ -33,14 +33,16 @@ arcs(page::Page)           = page.arcs
 refplaces(page::Page)      = page.refPlaces
 reftransitions(page::Page) = page.refTransitions
 
+#! Should subpages be traversed?
 place(page::Page, id::Symbol)        = getfirst(x -> pid(x) === id, places(page))
 place_ids(page::Page)                = map(pid, places(page))
 has_place(page::Page, id::Symbol)    = any(x -> pid(x) === id, places(page))
 
 marking(page::Page, placeid::Symbol) = marking(place(page, placeid))
-initialMarking(page::Page)           = initialMarking(page, place_ids(page))
-initialMarking(page::Page, id_vec::Vector{Symbol}) =
-                                LVector((;[p=>marking(page, p)() for p in id_vec]...))
+currentMarkings(page::Page)           = currentMarkings(page, place_ids(page))
+currentMarkings(page::Page, id_vec::Vector{Symbol}) = begin
+    LVector((;[p=>marking(page, p)() for p in id_vec]...))
+end
 
 transition(page::Page, id::Symbol)      = getfirst(x->pid(x)===id, transitions(page))
 transition_ids(page::Page)              = map(pid, page.transitions)
@@ -49,14 +51,14 @@ has_transition(page::Page, id::Symbol)  = any(ispid(id), transition_ids(page))
 condition(page::Page, trans_id::Symbol) = condition(transition(page, trans_id))
 conditions(page::Page)                  = conditions(page, transition_ids(page))
 conditions(page::Page, idvec::Vector{Symbol}) =
-                                    LVector((;[t=>condition(page, t) for t in idvec]...))
+                    LVector((;[t=>condition(page, t) for t in idvec]...))
 
-arc(page::Page, id::Symbol)             = getfirst(x->pid(x)===id, arcs(page))
-arc_ids(page::Page)                     = map(pid, arcs(page))
-has_arc(page::Page, id::Symbol)         = any(ispid(id), arc_ids(page))
-all_arcs(page::Page, id::Symbol)        = filter(a -> source(a)===id || target(a)===id, arcs(page))
-src_arcs(page::Page, id::Symbol)        = filter(a -> source(a)===id, arcs(page))
-tgt_arcs(page::Page, id::Symbol)        = filter(a -> target(a)===id, arcs(page))
+arc(page::Page, id::Symbol)      = getfirst(x->pid(x)===id, arcs(page))
+arc_ids(page::Page)              = map(pid, arcs(page))
+has_arc(page::Page, id::Symbol)  = any(ispid(id), arc_ids(page))
+all_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id || target(a)===id, arcs(page))
+src_arcs(page::Page, id::Symbol) = filter(a -> source(a)===id, arcs(page))
+tgt_arcs(page::Page, id::Symbol) = filter(a -> target(a)===id, arcs(page))
 
 inscription(page::Page, arc_id::Symbol) = inscription(arc(page, arc_id))
 

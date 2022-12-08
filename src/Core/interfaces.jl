@@ -144,9 +144,9 @@ function marking end
 """
 $(TYPEDSIGNATURES)
 
-Return a labelled vector with key of place id and value of marking's value.
+Return a labelled vector with key of place id and value of its marking.
 Marking value is evaluated to be a number (Int or Float64). High-level nets
-evaluate a `Term` of the many-soted algebra to an `Int`.
+evaluate a `Term` of the many-sorted algebra to an `Int`.
 """
 function initialMarking end
 

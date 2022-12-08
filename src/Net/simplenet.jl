@@ -64,8 +64,8 @@ end
 pid(spn::SimpleNet) = pid(spn.net)
 
 pages(spn::SimpleNet)          = pages(spn.net)
-places(spn::SimpleNet)         = firstpage(spn.net).places
-transitions(spn::SimpleNet)    = firstpage(spn.net).transitions
-arcs(spn::SimpleNet)           = firstpage(spn.net).arcs
-refplaces(spn::SimpleNet)      = firstpage(spn.net).refPlaces
-reftransitions(spn::SimpleNet) = firstpage(spn.net).refTransitions
+places(spn::SimpleNet)         = places(spn.net) #.places
+transitions(spn::SimpleNet)    = transitions(spn.net)#.transitions
+arcs(spn::SimpleNet)           = arcs(spn.net)#.arcs
+refplaces(spn::SimpleNet)      = refPlaces(spn.net)#.refPlaces
+reftransitions(spn::SimpleNet) = refTransitions(spn.net)#.refTransitions

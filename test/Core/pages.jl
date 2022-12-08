@@ -62,8 +62,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
 
     #!printnode(net; label="\n----------------\n Multiple nested pages")
 
-    @test_broken PNML.refplace_ids(net) == [:rp1, :rp2]
-    @test_broken PNML.reftransition_ids(net) == [:rt2]
+    @test PNML.refplace_ids(net) == [:rp1, :rp2]
+    @test PNML.reftransition_ids(net) == [:rt2]
     #@show PNML.reftransition_ids(net)
 
     @testset "flatten" begin

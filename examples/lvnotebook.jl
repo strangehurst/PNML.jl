@@ -171,7 +171,7 @@ end;
 Graph(lotka)
 
 # ╔═╡ 0c300670-010b-42c9-8f62-f681668050c3
-u0 = PNML.initialMarking(net)
+u0 = PNML.currentMarkings(net)
 
 # ╔═╡ 2a1dc647-9aa8-4907-89f3-a15f13b45eb2
 β = PNML.rates(net)

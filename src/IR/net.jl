@@ -35,42 +35,60 @@ firstpage(net::PnmlNet) = first(pages(net))
 # Forward to the first and only page.
 # Presumes net has been flattened or only has one page.
 # Or in a future implementation, collect from all pages.
-places(net::PnmlNet)         = places(firstpage(net))
-transitions(net::PnmlNet)    = transitions(firstpage(net))
-arcs(net::PnmlNet)           = arcs(firstpage(net))
-refplaces(net::PnmlNet)      = refplaces(firstpage(net))
-reftransitions(net::PnmlNet) = reftransitions(firstpage(net))
+#reduce(append!, (a, b), init=Int[]
+places(net::PnmlNet)         = mapreduce(places, append!, pages(net); init=Place[])
+transitions(net::PnmlNet)    = mapreduce(transitions, append!, pages(net); init=Transition[])
+arcs(net::PnmlNet)           = mapreduce(arcs, append!, pages(net); init=Arc[])
+refplaces(net::PnmlNet)      = mapreduce(refplaces, append!, pages(net); init=RefPlace[])
+reftransitions(net::PnmlNet) = mapreduce(reftransitions, append!, pages(net); init=RefTransition[])
 
-place(net::PnmlNet, id::Symbol)     = place(firstpage(net), id)
-place_ids(net::PnmlNet)             = place_ids(firstpage(net))
-has_place(net::PnmlNet, id::Symbol) = has_place(firstpage(net), id)
+# Apply `f` to pages of net. Return first non-nothing. Else return default.
+_ppages(f, net::PnmlNet, id::Symbol, default=nothing) = begin
+    for pg in pages(net)
+        pl = f(pg, id)
+        !isnothing(pl) && return pl
+    end
+    return default
+end
 
-marking(net::PnmlNet)          = marking(firstpage(net), placeid)
-initialMarking(net::PnmlNet)   = initialMarking(firstpage(net))
+# Mapreduce `f` using `append!`.
+_reduce(f, net, init=Symbol[]) = mapreduce(f, append!, pages(net); init)
 
-transition(net::PnmlNet, id::Symbol)     = transition(firstpage(net), id)
-transition_ids(net::PnmlNet,)            = transition_ids(firstpage(net))
-has_transition(net::PnmlNet, id::Symbol) = has_transition(firstpage(net), id)
+place(net::PnmlNet, id::Symbol)     = _ppages(place, net, id, nothing)
+place_ids(net::PnmlNet)             = _reduce(place_ids, net)
+has_place(net::PnmlNet, id::Symbol) = _ppages(has_place, net, id, false)
 
-condition(net::PnmlNet, trans_id::Symbol) = condition(firstpage(net), trans_id)
-conditions(net::PnmlNet)                  = conditions(firstpage(net))
+marking(net::PnmlNet, placeid::Symbol) = _ppages(marking, net, id)
+currentMarkings(net::PnmlNet) = begin
+    #@info "initialMarking net $(pid(net))"
+    LVector((;[p=>marking(place(net, p))() for p in place_ids(net)]...))
+end
 
-arc(net::PnmlNet, id::Symbol)      = arc(firstpage(net), id)
-arc_ids(net::PnmlNet)              = arc_ids(firstpage(net))
-has_arc(net::PnmlNet, id::Symbol)  = has_arc(firstpage(net), id)
-all_arcs(net::PnmlNet, id::Symbol) = all_arcs(firstpage(net), id)
-src_arcs(net::PnmlNet, id::Symbol) = src_arcs(firstpage(net), id)
-tgt_arcs(net::PnmlNet, id::Symbol) = tgt_arcs(firstpage(net), id)
+transition(net::PnmlNet, id::Symbol)     = _ppages(transition, net, id)
+transition_ids(net::PnmlNet,)            = _reduce(transition_ids, net)
+has_transition(net::PnmlNet, id::Symbol) = _ppages(has_transition, net, id, false)
 
-inscription(net::PnmlNet, arc_id::Symbol) = inscription(firstpage(net), arc_id)
+condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition,net, trans_id)
+conditions(net::PnmlNet) =
+    LVector((;[t=>condition(transition(net, t)) for t in idvec]...))
 
-refplace(net::PnmlNet, id::Symbol)      = refplace(firstpage(net), id)
-refplace_ids(net::PnmlNet)              = refplace_ids(firstpage(net))
-has_refP(net::PnmlNet, ref_id::Symbol)  = has_refP(firstpage(net), ref_id)
+arc(net::PnmlNet, id::Symbol)      = _ppages(arc, net, id)
+arc_ids(net::PnmlNet)              = _reduce(arc_ids, net)
+has_arc(net::PnmlNet, id::Symbol)  = _ppages(has_arc, net, id, false)
 
-reftransition(net::PnmlNet, id::Symbol) = reftransition(firstpage(net), id)
-reftransition_ids(net::PnmlNet)         = reftransition_ids(firstpage(net))
-has_refT(net::PnmlNet, ref_id::Symbol)  = has_refP(firstpage(net), ref_id)
+all_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(all_arcs,id), net)
+src_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(src_arcs,id), net)
+tgt_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(tgt_arcs,id), net)
+
+inscription(net::PnmlNet, arc_id::Symbol) = _ppages(inscription, net, arc_id)
+
+refplace(net::PnmlNet, id::Symbol)      = _ppage(refplace, net, id)
+refplace_ids(net::PnmlNet)              = _reduce(refplace_ids, net)
+has_refP(net::PnmlNet, ref_id::Symbol)  = _ppage(has_refP, net, ref_id, false)
+
+reftransition(net::PnmlNet, id::Symbol) = _ppages(reftransition, net, id)
+reftransition_ids(net::PnmlNet)         = _reduce(reftransition_ids, net)
+has_refT(net::PnmlNet, ref_id::Symbol)  = _ppages(has_refP, net, ref_id, false)
 
 #------------------------------
 # Handle individual pages here.
@@ -86,7 +104,9 @@ place_ids(net::PnmlNet, page_idx)             = place_ids(pages(net)[page_idx])
 has_place(net::PnmlNet, id::Symbol, page_idx) = has_place(pages(net)[page_idx], id)
 
 marking(net::PnmlNet, placeid::Symbol, page_idx) = marking(pages(net)[page_idx], placeid)
-initialMarking(net::PnmlNet, page_idx)           = initialMarking(pages(net)[page_idx])
+currentMarkings(net::PnmlNet, page_idx) = begin
+    currentMarkings(pages(net)[page_idx])
+end
 
 transition(net::PnmlNet, id::Symbol, page_idx)     = transition(pages(net)[page_idx], id)
 transition_ids(net::PnmlNet, page_idx)             = transition_ids(pages(net)[page_idx])

@@ -28,19 +28,20 @@ PNML model for the original example below. Note that the type is "nonstandard"!
         </page>
         </net>
     </pnml>
-""" 
- 
+"""
+
 net = PNML.SimpleNet(str)
 
 # **Step 1:** Define the states and transitions of the Petri Net
-# 
+#
 # Here we have 2 states, wolves and rabbits, and transitions to
 # model predation between the two species in the system
 
 S = PNML.place_ids(net) # [:rabbits, :wolves]
 Δ = PNML.transition_function(net)
-# keys are transition ids
-# values are tuple of input, output vectors of "tuples" place id = inscription
+# keys are transition ids,
+# values are tuple of input, output vectors
+#       with keys of place id and values of inscription value .
 #LVector(
 #       birth=(LVector(rabbits=1), LVector(rabbits=2)),
 #       predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
@@ -56,7 +57,7 @@ display(Graph(lotka))
 # Once a model is defined, we can define out initial parameters `u0`, a time
 # span `tspan`, and the transition rates of the interactions `β`
 
-u0 = PNML.initialMarking(net) #LVector(wolves=10.0, rabbits=100.0) # initialMarking
+u0 = PNML.currentMarkings(net) #LVector(wolves=10.0, rabbits=100.0)
 tspan = (0.0,100.0)
 β = PNML.rates(net) #LVector(birth=.3, predation=.015, death=.7); # transition rate
 
@@ -68,4 +69,3 @@ prob = ODEProblem(lotka, u0, tspan, β) # transform PetriNet problem using vecto
 sol = OrdinaryDiffEq.solve(prob,Tsit5(),reltol=1e-8,abstol=1e-8)
 
 plot(sol)
-

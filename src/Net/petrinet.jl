@@ -60,9 +60,15 @@ place_ids(petrinet::PetriNet)             = place_ids(petrinet.net)
 place(petrinet::PetriNet, id::Symbol)     = place(petrinet.net, id)
 
 marking(petrinet::PetriNet, placeid::Symbol) = marking(petrinet.net, placeid)
-#TODO Use marking (initialized to initialMarking in constructor).
-# Return all places' marking as LVector
-initialMarking(petrinet::PetriNet)     = initialMarking(petrinet.net)
+"""
+    currentMarkings(n) -> LVector{markingvaluetype(n)}
+
+`n` can be a `PetriNet`, `PnmlNet` or `Page`.
+LVector labelled with place id and holding marking's value.
+"""
+currentMarkings(petrinet::PetriNet) = begin
+    currentMarkings(petrinet.net)
+end
 
 transition_ids(petrinet::PetriNet)             = transition_ids(petrinet.net)
 has_transition(petrinet::PetriNet, id::Symbol) = has_transition(petrinet.net, id)

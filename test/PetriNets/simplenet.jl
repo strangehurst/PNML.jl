@@ -6,16 +6,16 @@ using PNML: tag, pid, xmlnode, parse_str,
     transition, transitions, has_transition,
     arc, arcs, has_arc,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
-    marking, default_marking, initialMarking,
+    marking, default_marking,  currentMarkings,
     condition, default_condition,
     inscription, default_inscription,
-    nettype,
+    nettype, firstpage,
     ispid
 
 #!header("SimpleNet")
 
 @testset "SIMPLENET" begin
-    str = """
+        str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="continuous">
@@ -50,13 +50,13 @@ using PNML: tag, pid, xmlnode, parse_str,
     @test v[begin] == @inferred PnmlNet PNML.first_net(model)
     @test first(v) == @inferred PnmlNet PNML.first_net(model)
 
-    @test_call PNML.SimpleNet(v[begin])
-    @test_call PNML.SimpleNet(model)
-    @test_call PNML.SimpleNet(PNML.first_net(model))
+    @test_call SimpleNet(v[begin])
+    @test_call SimpleNet(model)
+    @test_call SimpleNet(PNML.first_net(model))
 
-    net  = @inferred SimpleNet PNML.SimpleNet(v[begin])
-    net1 = @inferred SimpleNet PNML.SimpleNet(model)
-    net2 = @inferred SimpleNet PNML.SimpleNet(PNML.first_net(model))
+    net  = @inferred SimpleNet SimpleNet(v[begin])
+    net1 = @inferred SimpleNet SimpleNet(model)
+    net2 = @inferred SimpleNet SimpleNet(PNML.first_net(model))
 
     for accessor in [pid, place_ids, transition_ids, arc_ids,
                      reftransition_ids, refplace_ids]
@@ -130,6 +130,21 @@ using PNML: tag, pid, xmlnode, parse_str,
             @test @inferred(inscription(a)) !== nothing
         end
     end
+    @testset "initialMarking" begin
+        u1 = @inferred LArray currentMarkings(net)
+        u2 = @inferred LArray currentMarkings(net.net)
+        u3 = @inferred LArray currentMarkings(first(pages(net.net)))
+        #@show typeof(net)
+        #@show typeof(net.net)
+        #@show typeof(firstpage(net.net))
+        #@show typeof(currentMarkings(net))
+        #@show typeof(currentMarkings(net.net))
+        #@show typeof(currentMarkings(firstpage(net.net)))
+        @test u1 == u2
+        @test u1 == u3
+        @test typeof(u1) == typeof(u2)
+        @test typeof(u1) == typeof(u3)
+    end
 end
 
 #!header("RATE")
@@ -202,7 +217,7 @@ end
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = PNML.initialMarking(snet)
+    u0 = PNML.currentMarkings(snet)
     @test u0 == uX
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
