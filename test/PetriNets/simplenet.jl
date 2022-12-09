@@ -12,6 +12,9 @@ using PNML: tag, pid, xmlnode, parse_str,
     nettype, firstpage,
     ispid
 
+using Test, Logging
+testlogger = TestLogger()
+
 @testset "SIMPLENET" begin
         str = """
     <?xml version="1.0"?>

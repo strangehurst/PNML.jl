@@ -8,7 +8,7 @@ struct PnmlNet{PNTD<:PnmlType,D}
     type::PNTD
     id::Symbol
     pages::Vector{Page{PNTD}}
-    declaration::D
+    declaration::D #! High-level thing.
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
@@ -21,7 +21,7 @@ end
 
 pid(net::PnmlNet)          = net.id
 pages(net::PnmlNet)        = net.pages
-declarations(net::PnmlNet) = declarations(net.declaration)
+declarations(net::PnmlNet) = declarations(net.declaration) # Forward
 
 has_labels(net::PnmlNet) = has_labels(net.com)
 xmlnode(net::PnmlNet)    = net.xml
@@ -100,9 +100,7 @@ place_ids(net::PnmlNet, page_idx)             = place_ids(pages(net)[page_idx])
 has_place(net::PnmlNet, id::Symbol, page_idx) = has_place(pages(net)[page_idx], id)
 
 marking(net::PnmlNet, placeid::Symbol, page_idx) = marking(pages(net)[page_idx], placeid)
-currentMarkings(net::PnmlNet, page_idx) = begin
-    currentMarkings(pages(net)[page_idx])
-end
+currentMarkings(net::PnmlNet, page_idx) = currentMarkings(pages(net)[page_idx])
 
 transition(net::PnmlNet, id::Symbol, page_idx)     = transition(pages(net)[page_idx], id)
 transition_ids(net::PnmlNet, page_idx)             = transition_ids(pages(net)[page_idx])
@@ -111,9 +109,9 @@ has_transition(net::PnmlNet, id::Symbol, page_idx) = has_transition(pages(net)[p
 condition(net::PnmlNet, trans_id::Symbol, page_idx) = condition(pages(net)[page_idx], trans_id)
 conditions(net::PnmlNet, page_idx) = conditions(pages(net)[page_idx])
 
-arc(net::PnmlNet, id::Symbol, page_idx)     = arc(pages(net)[page_idx], id)
-arc_ids(net::PnmlNet, page_idx)             = arc_ids(pages(net)[page_idx])
-has_arc(net::PnmlNet, id::Symbol, page_idx) = has_arc(pages(net)[page_idx], id)
+arc(net::PnmlNet, id::Symbol, page_idx)      = arc(pages(net)[page_idx], id)
+arc_ids(net::PnmlNet, page_idx)              = arc_ids(pages(net)[page_idx])
+has_arc(net::PnmlNet, id::Symbol, page_idx)  = has_arc(pages(net)[page_idx], id)
 
 all_arcs(net::PnmlNet, id::Symbol, page_idx) = all_arcs(pages(net)[page_idx], id)
 src_arcs(net::PnmlNet, id::Symbol, page_idx) = src_arcs(pages(net)[page_idx], id)
