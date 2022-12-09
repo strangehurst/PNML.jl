@@ -32,15 +32,14 @@ name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 "Usually the only interesting page."
 firstpage(net::PnmlNet) = first(pages(net))
 
-# Forward to the first and only page.
-# Presumes net has been flattened or only has one page.
-# Or in a future implementation, collect from all pages.
-#reduce(append!, (a, b), init=Int[]
-places(net::PnmlNet)         = mapreduce(places, append!, pages(net); init=Place[])
-transitions(net::PnmlNet)    = mapreduce(transitions, append!, pages(net); init=Transition[])
-arcs(net::PnmlNet)           = mapreduce(arcs, append!, pages(net); init=Arc[])
-refplaces(net::PnmlNet)      = mapreduce(refplaces, append!, pages(net); init=RefPlace[])
-reftransitions(net::PnmlNet) = mapreduce(reftransitions, append!, pages(net); init=RefTransition[])
+# Mapreduce `f` using `append!` over all pages of the net.
+_reduce(f, net, init=Symbol[]) = mapreduce(f, append!, pages(net); init)
+
+places(net::PnmlNet)         = _reduce(places, net, Place[])
+transitions(net::PnmlNet)    = _reduce(transitions, net, Transition[])
+arcs(net::PnmlNet)           = _reduce(arcs, net, Arc[])
+refplaces(net::PnmlNet)      = _reduce(refplaces, net, RefPlace[])
+reftransitions(net::PnmlNet) = _reduce(reftransitions, net, RefTransition[])
 
 # Apply `f` to pages of net. Return first non-nothing. Else return default.
 _ppages(f, net::PnmlNet, id::Symbol, default=nothing) = begin
@@ -50,9 +49,6 @@ _ppages(f, net::PnmlNet, id::Symbol, default=nothing) = begin
     end
     return default
 end
-
-# Mapreduce `f` using `append!`.
-_reduce(f, net, init=Symbol[]) = mapreduce(f, append!, pages(net); init)
 
 place(net::PnmlNet, id::Symbol)     = _ppages(place, net, id, nothing)
 place_ids(net::PnmlNet)             = _reduce(place_ids, net)
@@ -70,7 +66,7 @@ has_transition(net::PnmlNet, id::Symbol) = _ppages(has_transition, net, id, fals
 
 condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition,net, trans_id)
 conditions(net::PnmlNet) =
-    LVector((;[t=>condition(transition(net, t)) for t in idvec]...))
+    LVector((;[t=>condition(transition(net, t)) for t in transition_ids(net)]...))
 
 arc(net::PnmlNet, id::Symbol)      = _ppages(arc, net, id)
 arc_ids(net::PnmlNet)              = _reduce(arc_ids, net)
