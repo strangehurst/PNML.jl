@@ -20,9 +20,14 @@ end
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd; kw...)
     #@show "add label! $(nodename(node))"
-    haskey(tagmap, node.name) && @info "$(node.name) is known tag being treated as unclaimed."
+    #! make info optional
+    let tag=node.name
+        if haskey(tagmap, tag) &&
+                tag != "structure"
+            @info "$(tag) is known tag being treated as unclaimed."
+        end
+    end
     label = PnmlLabel(unclaimed_label(node, pntd; kw...), node) #TODO handle types
-    haskey(tagmap, node.name) && @info "$(node.name) parsed to type $(typeof(label))."
     push!(v, label)
     return v
 end
