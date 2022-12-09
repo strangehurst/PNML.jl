@@ -1,10 +1,10 @@
 """
-Place node of a Petri Net Markup Language graph.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Place node of a Petri Net Markup Language graph.
 """
-struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
+mutable struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     #
@@ -17,11 +17,10 @@ struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
 end
 
 Place(pntd::PnmlType, id::Symbol, marking, sort, name, oc::ObjectCommon) =
-    Place{typeof(pntd),
-          typeof(marking),
-          typeof(sort)}(pntd, id, marking, marking, sort, name, oc)
+    Place(pntd, id, marking, marking, sort, name, oc)
 
 marking(place) = marking(place.pntd, place)
+#TODO would marking ever be nothing?
 marking(pntd::PnmlType, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 marking(pntd::AbstractHLCore, place) = isnothing(place.marking) ? default_marking(place) : place.marking
 
@@ -48,7 +47,19 @@ end
 #! To be an expression that evaluates to a boolean value.
 #! Make others evaluate to true by default.
 condition(transition) = condition(transition.pntd, transition)
+# While conditions are only defined for high-level nets in the specification,
+#
 function condition(::PnmlType, transition)
+    if isnothing(transition.condition) || isnothing(transition.condition.term)
+        default_condition(transition).term #TODO rename term to value?
+    else
+        transition.condition.term
+    end
+end
+
+function condition(::AbstractHLCore, transition)
+    #TODO evaluate condition.term
+    #TODO implement full structure handling
     if isnothing(transition.condition) || isnothing(transition.condition.term)
         default_condition(transition).term
     else
@@ -56,15 +67,6 @@ function condition(::PnmlType, transition)
     end
 end
 
-function condition(::AbstractHLCore, transition)
-    if isnothing(transition.condition) || isnothing(transition.condition.term)
-        default_condition(transition).term
-    else
-        transition.condition.term
-        #TODO evaluate condition
-        #TODO implement full structure handling
-    end
-end
 default_condition(transition::Transition) = default_condition(transition.pntd)
 
 #-------------------
@@ -102,7 +104,7 @@ function inscription(::PnmlType, arc)
 end
 function inscription(::AbstractHLCore, arc)
     if !isnothing(arc.inscription)
-        _evaluate(arc.inscription)
+        _evaluate(arc.inscription) #TODO term?
     else
         _evaluate(default_inscription(arc))
     end
@@ -139,9 +141,6 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
 
-#RefPlace(pntd::PnmlType, id::Symbol, ref::Symbol, oc::ObjectCommon) =
-#    RefPlace{typeof(pntd)}(pntd, id, ref, oc)
-
 #-------------------
 """
 Refrence Transition node of a Petri Net Markup Language graph. For connections between pages.
@@ -157,6 +156,3 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     com::ObjectCommon
     #TODO Enforce constraints in constructor? (see ocl in Primer's UML)
 end
-
-#RefTransition(pntd::PnmlType, id::Symbol, ref::Symbol, oc::ObjectCommon) =
-#    RefTransition{typeof(pntd)}(pntd, id, ref, oc)
