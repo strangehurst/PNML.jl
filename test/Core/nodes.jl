@@ -2,8 +2,6 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc,
   pid, marking, condition, inscription
 
-#!header("NODES")
-
 @testset "place" begin
     node = xml"""
       <place id="place1">
@@ -13,7 +11,6 @@ using PNML: Place, Transition, Arc,
     """
     @test_call parse_node(node; reg = PNML.IDRegistry())
     n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: Place
     @test_call PNML.has_xml(n)
     @test !PNML.has_xml(n)
@@ -33,7 +30,6 @@ end
     """
     @test_call parse_node(node; reg = PNML.IDRegistry())
     n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: Place
     @test_call PNML.has_xml(n)
     @test !PNML.has_xml(n)
@@ -53,7 +49,6 @@ end
       </transition>
     """
     n = @inferred Transition parse_node(node; reg = PNML.IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: PNML.Transition
     @test !PNML.has_xml(n)
     @test pid(n) === :transition1
@@ -80,7 +75,6 @@ end
       </arc>
     """
     n = @inferred Arc parse_node(node; reg = PNML.IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: PNML.Arc
     @test !PNML.has_xml(n)
     @test pid(n) === :arc1
@@ -95,7 +89,6 @@ end
         <referenceTransition id="rt1" ref="t1"/>
     """
     n = parse_node(node; reg = PNML.IDRegistry())
-    #!printnode(n)
     @test n isa PNML.RefTransition
     @test !PNML.has_xml(n)
     @test pid(n) === :rt1
@@ -118,7 +111,6 @@ end
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
         n = parse_node(s.node; reg = PNML.IDRegistry())
-        #!printnode(n)
         @test typeof(n) <: PNML.RefPlace
         @test !PNML.has_xml(n)
         @test typeof(n.id) == Symbol

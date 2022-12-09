@@ -2,8 +2,6 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
 using .PnmlIDRegistrys
 
-#!header("EXCEPTIONS")
-
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
     try

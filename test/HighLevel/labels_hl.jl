@@ -1,9 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode
 
-#!header("PARSE HL LABELS")
-
-#!header("HL Marking")
 @testset "HL initMarking" begin
     str = """
  <hlinitialMarking>
@@ -25,8 +22,6 @@ using PNML: Maybe, tag, pid, xmlnode
  </hlinitialMarking>
     """
     n = parse_node(xmlroot(str), HLCore(); reg = PNML.IDRegistry())
-    #!@show typeof(n), fieldnames(typeof(n))
-    #!printnode(n)
 
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
@@ -35,8 +30,6 @@ using PNML: Maybe, tag, pid, xmlnode
     @test n.term !== nothing
     @test n.term isa PNML.AbstractTerm
 
-    #!@show typeof(n.term), fieldnames(typeof(n.term))
-    #!@show n.term
     @test tag(n.term) === :tuple
     @test n.term.dict[:subterm][1][:all] !== nothing
     @test n.term.dict[:subterm][1][:all][:usersort][:declaration] == "N1"
@@ -60,7 +53,6 @@ end
     </hlinscription>
     """
     n = parse_node(n1, HLCore(); reg = PNML.IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: PNML.HLInscription
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(n.term) === :tuple
@@ -69,7 +61,6 @@ end
     @test n.text == "<x,v>"
 end
 
-#!header("STRUCTURE")
 @testset "structure" begin
     node = xml"""
      <structure>
@@ -89,7 +80,6 @@ end
     """
 
     n = parse_node(node, HLCore(); reg = PNML.IDRegistry())
-    #!printnode(n)
     @test n isa PNML.Structure
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(n) === :structure
@@ -99,7 +89,6 @@ end
     @test n.dict[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
 end
 
-#!header("SORT TYPE")
 @testset "type" begin
     n1 = xml"""
  <type>
@@ -109,7 +98,6 @@ end
     """
     @testset for node in [n1]
         n = parse_node(node, HLCore(); reg = PNML.IDRegistry())
-        #!printnode(n)
         @test typeof(n) <: PNML.AnyElement
         @test tag(n) === :type
         @test n.dict[:text][:content] == "N2"
@@ -117,7 +105,6 @@ end
     end
 end
 
-#!header("CONDITION")
 @testset "condition" begin
     n1 = xml"""
  <condition>
@@ -127,7 +114,6 @@ end
     """
     @testset for node in [n1]
         n = parse_node(node, PnmlCore(); reg = PNML.IDRegistry())
-        #!printnode(n)
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
         @test n.term !== nothing

@@ -1,12 +1,9 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: firstpage, parse_file, PnmlNet, Page
 
-#!header("Exanples")
-
 @testset "AirplaneLD pnml file" begin
     pnml_dir = joinpath(@__DIR__, "data")
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
-    #!@show testfile
     model = parse_file(testfile)
     @test_call  parse_file(testfile)
 

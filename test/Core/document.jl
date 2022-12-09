@@ -1,8 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel
 
-#!header("DOCUMENT")
-
 @testset "Show" begin
 str =
     """
@@ -30,7 +28,7 @@ str =
     """
     model = parse_pnml(xmlroot(str); reg=IDRegistry())
     @test model isa PnmlModel
-    #!@show model
+    #@show model
 end
 
 @testset "Document & IDRegistry" begin
@@ -68,13 +66,11 @@ end
     model = parse_str(str)
 
     v1 = PNML.find_nets(model, :ptnet)
-    #!printnode(v1, label="v1")
     @test_call pnmltype(:ptnet)
     foreach(v1) do net
         @test net.type === pnmltype(:ptnet)
     end
     v2 = PNML.find_nets(model, "ptnet")
-    #!printnode(v2, label="v2")
     foreach(v2) do net
         @test net.type === PNML.PnmlTypeDefs.pnmltype(:ptnet)
     end
@@ -83,7 +79,6 @@ end
     @test length(v1) == 2
 
     v3 = PNML.find_nets(model, :pnmlcore)
-    #!printnode(v3, label="v3")
     foreach(v3) do net
         @test net.type === pnmltype(:pnmlcore)
     end

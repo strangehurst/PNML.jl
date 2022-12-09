@@ -3,7 +3,6 @@ using PNML: Maybe, tag, pid, xmlnode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
     has_tools, tools
 
-#!header("TOOLSPECIFIC")
 @testset "parse tools" begin
     str1 = (tool="JARP", version="1.2", str = """
  <toolspecific tool="JARP" version="1.2">
@@ -48,9 +47,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """, contentparse = (c) -> begin end)
 
     @testset for s in [str1, str2, str3, str4, str5]
-        #!@show s
         n = parse_node(xmlroot(s.str); reg=PNML.IDRegistry())
-        #!printnode(n)
         @test typeof(n) <: ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test_call xmlnode(n)
@@ -78,10 +75,8 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
             # Content may optionally attach its xml.
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
         end
-        #!println()
     end
     @testset "combined" begin
-        #!println("combined tools")
         str = """
 <?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -99,7 +94,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 </pnml>
 """
         model = parse_str(str)
-        #!@show model
+        #@show model
 
         page = firstpage(first_net(model))
         @test_call firstpage(first_net(model))

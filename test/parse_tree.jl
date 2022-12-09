@@ -2,7 +2,6 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, parse_name, nets
 using .PnmlIDRegistrys
 
-#!header("parse tree")
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">

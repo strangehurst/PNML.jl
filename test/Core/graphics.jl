@@ -1,7 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid
 
-#!header("GRAPHICS")
 @testset "graphics" begin
     str = """
     <graphics>
@@ -17,7 +16,6 @@ using PNML: tag, pid
     </graphics>
     """
     n = parse_node(xmlroot(str); reg=PNML.IDRegistry())
-    #!printnode(n)
 
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate

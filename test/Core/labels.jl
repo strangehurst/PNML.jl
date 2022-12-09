@@ -2,9 +2,6 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, xmlroot, labels,
         unclaimed_label, anyelement, PnmlLabel, AnyElement
 
-#!header("PARSE CORE LABELS")
-
-#!header("UNCLAIMED LABEL")
 @testset "unclaimed" begin
     # node => [key => value] expected to be in the PnmlDict after parsing node.
     ctrl = [
@@ -102,12 +99,9 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels,
         haskey(a.dict, :id) && @test isregistered(reg2, a.dict[:id])
 
         @test_call  isregistered(reg2, :id)
-
-        #!println()
     end
 end
 
-#!header("PT initMarking")
 @testset "PT initMarking" begin
     node = xml"""
     <initialMarking>
@@ -121,7 +115,6 @@ end
     """
 
     n = parse_node(node; reg=IDRegistry())
-    #!printnode(n)
     @test typeof(n) <: PNML.PTMarking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(n.value) <: Union{Int,Float64}
@@ -150,7 +143,6 @@ end
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
         n = parse_node(node; reg = PNML.IDRegistry())
-        #!printnode(n)
         @test typeof(n) <: PNML.PTInscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.value == 12
@@ -206,7 +198,6 @@ end
         @test d[:labels] == n
         @test PNML.labels(d) == n
     end
-    #!printnode(d)
 
     @test length(d[:labels]) == 4
     @test length(labels(d)) == 4

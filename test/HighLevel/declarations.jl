@@ -1,11 +1,9 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
 
-#!header("DECLARATIONS")
 @testset "Declaration()" begin
     d = PNML.Declaration()
     @test length(PNML.declarations(d)) == 0
-    #!@show Core.fieldtype(PNML.Declaration, 1)
     @test_call PNML.Declaration()
 end
 
@@ -32,12 +30,9 @@ end
         </declaration>
         """; reg = PNML.IDRegistry())
 
-    #!@show typeof(n), fieldnames(typeof(n))
-    #!printnode(n)
-
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(PNML.declarations(n)) <: Vector{Any} #TODO {PNML.AbstractDeclaration}
+    @test typeof(PNML.declarations(n)) <: Vector{Any} #TODO {AbstractDeclaration}
     @test length(PNML.declarations(n)) == 0
 
     @test typeof(n.com) <: PNML.ObjectCommon
@@ -81,7 +76,6 @@ end
     """
     reg = PNML.IDRegistry()
     n = parse_node(node; reg)
-    #!printnode(n)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -89,16 +83,9 @@ end
     @test_call PNML.declarations(n)
 
     for d in PNML.declarations(n)
-        #!@show typeof(d)
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
-
-        #!@show d
-        #!@show fieldtypes(typeof(d))
-        #!@show fieldnames(typeof(d))
-        #!@show fieldtypes(typeof(d.def))
-        #!@show fieldnames(typeof(d.def))
 
         @test PNML.isregistered(reg, pid(d))
         @test_call PNML.isregistered(reg, pid(d))
@@ -113,6 +100,5 @@ end
             @test x[:name] isa String
             @test endswith(string(pid(x)), x[:name])
         end
-        #!println()
     end
 end

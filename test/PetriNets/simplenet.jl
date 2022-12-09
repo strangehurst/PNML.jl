@@ -12,8 +12,6 @@ using PNML: tag, pid, xmlnode, parse_str,
     nettype, firstpage,
     ispid
 
-#!header("SimpleNet")
-
 @testset "SIMPLENET" begin
         str = """
     <?xml version="1.0"?>
@@ -41,7 +39,6 @@ using PNML: tag, pid, xmlnode, parse_str,
     """
     @test_call parse_str(str)
     model = @inferred parse_str(str)
-    #!printnode(nets(model))
 
     @test_call PNML.find_nets(model, :continuous)
     v = @inferred PNML.find_nets(model, :continuous)
@@ -83,11 +80,9 @@ using PNML: tag, pid, xmlnode, parse_str,
     #@show typeof(net)
 
     for top in [first(pages(net.net)), net.net, net]
-        #!@show typeof(top)
         @test_call places(top)
         #@show typeof(places(top))
         for p in @inferred places(top)
-            #!@show pid(p), typeof(p)
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
@@ -98,10 +93,8 @@ using PNML: tag, pid, xmlnode, parse_str,
     end
 
     for top in [net, net.net, first(pages(net.net))]
-        #!@show typeof(top)
         @test_call transitions(top)
         for t in @inferred transitions(top)
-            #!@show pid(t), condition(t), typeof(condition(t)), default_condition(t)
             @test ispid(pid(t))(pid(t))
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -114,11 +107,10 @@ using PNML: tag, pid, xmlnode, parse_str,
 
     #
     for top in [net, net.net, first(pages(net.net))]
-        #!@show typeof(top)
         @test_call arcs(top)
         for a in @inferred arcs(top)
             #@show a
-            #!@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
+            #@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
             #@show has_arc(top, pid(a))
             #@show typeof(has_arc(top, pid(a)))
             @test @inferred has_arc(top, pid(a))
@@ -147,7 +139,6 @@ using PNML: tag, pid, xmlnode, parse_str,
     end
 end
 
-#!header("RATE")
 @testset "rate" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -161,13 +152,12 @@ end
     model = parse_str(str)
     net = PNML.first_net(model)
     snet = PNML.SimpleNet(net)
-    #!@show snet
+    #@show snet
     β = PNML.rates(snet)
-    #!@show β
+    #@show β
     @test β == LVector(birth=0.3)
 end
 
-#!header("LOTKA-VOLTERRA")
 @testset "lotka-volterra" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -190,7 +180,6 @@ end
     """
     model = parse_str(str)
     net1 = PNML.first_net(model)
-    #!printnode(net1)
 
     snet = PNML.SimpleNet(net1)
 

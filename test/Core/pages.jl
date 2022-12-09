@@ -1,7 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage
 
-#!header("PAGES")
 @testset "pages" begin
     str = """
     <?xml version="1.0"?>
@@ -60,16 +59,12 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage
     @test typeof(net) <: PNML.PnmlNet
     @test typeof(firstpage(net)) <: PNML.Page
 
-    #!printnode(net; label="\n----------------\n Multiple nested pages")
-
     @test PNML.refplace_ids(net) == [:rp1, :rp2]
     @test PNML.reftransition_ids(net) == [:rt2]
     #@show PNML.reftransition_ids(net)
 
     @testset "flatten" begin
         PNML.flatten_pages!(net)
-
-        #!printnode(net; label="\n----------------\n Flattened & dereferenced to 1 page")
 
         #@show PNML.arc_ids(net)
         #@show PNML.place_ids(net)
