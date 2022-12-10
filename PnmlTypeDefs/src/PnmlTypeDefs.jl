@@ -191,7 +191,7 @@ $(TYPEDEF)
 
 The key Symbols are the supported kinds of Petri Nets.
 """
-const pnmltype_map = Dict{Symbol, PnmlType}(:pnmlcore => PnmlCore(),
+const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCore(),
                                             :hlcore => HLCore(),
                                             :ptnet => PTNet(),
                                             :hlnet => HLPNG(),
@@ -254,7 +254,7 @@ function pnmltype end
 pnmltype(pntd::PnmlType; kw...) = pntd
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
-    typemap = pnmltype_map::Dict{Symbol, PnmlType}
+    typemap = pnmltype_map::IdDict{Symbol, PnmlType}
     !haskey(typemap, s) && throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
 end
