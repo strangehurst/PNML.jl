@@ -35,7 +35,7 @@ default_one_term() = default_one_term(PnmlCore())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCore
 default_one_term(::AbstractContinuousNet) = one(Float64)
 default_one_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => one(Int)))
-default_one_term(x::Any) = error("argument must be subtype of PnmlType, got: $(typeof(x))")
+default_one_term(x::Any) = throw(ArgumentError("expected PnmlType, got: $(typeof(x))"))
 
 """
 $(TYPEDSIGNATURES)
@@ -47,7 +47,7 @@ default_zero_term() = default_zero_term(PnmlCore())
 default_zero_term(::PnmlType) = zero(Int)
 default_zero_term(::AbstractContinuousNet) = zero(Float64)
 default_zero_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => zero(Int)))
-default_zero_term(x::Any) = error("argument must be subtype of PnmlType, got: $(typeof(x))")
+default_zero_term(x::Any) = throw(ArgumentError("expected PnmlType, got: $(typeof(x))"))
 
 #TODO Allow continuous-valued terms.
 

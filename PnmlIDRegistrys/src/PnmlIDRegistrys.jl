@@ -34,8 +34,8 @@ Duplicated pnml id `id` has been detected, perform `action`.
 Default `action` is to issue a warning.
 """
 function duplicate_id_action(id::Symbol; action = :warn)
-    action === :warn && @warn "ID '$id' already registered"
-    action === :error && error("ID '$id' already registered")
+    action === :warn && @warn "ID already registered: $id"
+    action === :error && throw(ArgumentError("ID already registered: $id"))
     return nothing
 end
 
@@ -80,7 +80,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Is the set of id symbols empty? 
+Is the set of id symbols empty?
 """
 function Base.isempty(reg::IDRegistry)
     lock(reg.lk) do

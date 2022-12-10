@@ -18,8 +18,8 @@ using .PnmlIDRegistrys: duplicate_id_action, reset_registry!
     @test !isregistered(reg, "p")
     @test !isregistered(reg, :p)
 
-    @test_logs (:warn,"ID 'p' already registered") duplicate_id_action(:p)
-    @test_logs (:warn,"ID 'p' already registered") duplicate_id_action(:p; action=:warn)
-    @test_throws ErrorException duplicate_id_action(:p; action=:error)
+    @test_logs (:warn,"ID already registered: p") duplicate_id_action(:p)
+    @test_logs (:warn,"ID already registered: p") duplicate_id_action(:p; action=:warn)
+    @test_throws ArgumentError duplicate_id_action(:p; action=:error)
     @test @inferred( duplicate_id_action(:p; action=:bogus) ) === nothing
 end
