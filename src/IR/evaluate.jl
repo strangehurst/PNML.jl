@@ -6,14 +6,14 @@ that may be a scalar or a functor.
 
 # Examples
 
-```jldoctest; setup=(using PNML: _evaluate, Term)
+```jldoctest; setup=(using PNML: _evaluate, Term, PnmlDict)
 julia> _evaluate(1)
 1
 
 julia> _evaluate(true)
 true
 
-julia> _evaluate(Term(:term, Dict(:value => 3))())
+julia> _evaluate(Term(:term, PnmlDict(:value => 3))())
 3
 ```
 """

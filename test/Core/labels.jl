@@ -17,17 +17,17 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels,
                 <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
               </declarations>""" => [
                 :atag => "test2",
-                :something  => [Dict(:content => "some content"),
-                                Dict(:content => "other stuff")],
-                :something2 => Dict(:value => [Dict(:content => ""),
-                                               Dict(:tag3 => "three", :content => "")],
+                :something  => [PnmlDict(:content => "some content"),
+                                PnmlDict(:content => "other stuff")],
+                :something2 => PnmlDict(:value => [PnmlDict(:content => ""),
+                                               PnmlDict(:tag3 => "three", :content => "")],
                                     :tag2 => "two")
             ],
 
         xml"""<foo><declarations> </declarations></foo>""" =>
-                [:declarations => Dict(:content => "")],
+                [:declarations => PnmlDict(:content => "")],
 
-        # no content, no attribute results in empty dict.
+        # no content, no attribute results in empty PnmlDict.
         xml"""<null></null>""" => [],
         xml"""<null2/>""" => [],
         # no content, with attribute
@@ -70,7 +70,7 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels,
         @test !isnothing(l)
         @test !isnothing(a)
 
-        @test u isa Pair{Symbol, Dict{Symbol, Any}}
+        @test u isa Pair{Symbol, PnmlDict}
         @test l isa PnmlLabel
         @test a isa AnyElement
 

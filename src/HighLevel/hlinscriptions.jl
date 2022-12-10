@@ -6,7 +6,7 @@ Labels an Arc.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
+```jldoctest; setup=:(using PNML; using PNML: HLInscription, PnmlDict, Term)
 julia> i1 = HLInscription()
 HLInscription(nothing, nothing, )
 
@@ -14,19 +14,22 @@ julia> i1()
 1
 
 julia> i2 = HLInscription(Term(:term, PnmlDict(:value=>3)))
-HLInscription(nothing, Term(:term, Dict(:value => 3)), )
+HLInscription(nothing, Term(:term, IdDict{Symbol, Any}(:value => 3)), )
+
+julia> PnmlDict
+IdDict{Symbol, Any}
 
 julia> i2()
 3
 
 julia> i3 = HLInscription("text", Term())
-HLInscription("text", Term(:empty, Dict()), )
+HLInscription("text", Term(:empty, IdDict{Symbol, Any}()), )
 
 julia> i3()
 1
 
 julia> i4 = HLInscription("text", Term(:term, PnmlDict(:value=>3)))
-HLInscription("text", Term(:term, Dict(:value => 3)), )
+HLInscription("text", Term(:term, IdDict{Symbol, Any}(:value => 3)), )
 
 julia> i4()
 3

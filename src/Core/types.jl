@@ -11,7 +11,7 @@ const Maybe{T} = Union{T, Nothing}
 $(TYPEDEF)
 Alias for Dict with Symbol as key.
 """
-const PnmlDict = Dict{Symbol, Any}
+const PnmlDict = IdDict{Symbol, Any}
 
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]

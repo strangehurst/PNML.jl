@@ -5,6 +5,7 @@ Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exist
 otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_node end
+#! change kw... to a named tuple
 parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
 function parse_node(node::XMLNode, pntd::PnmlType; kw...)
     if haskey(tagmap, nodename(node))
@@ -491,7 +492,7 @@ function parse_inscription(node, pntd::PnmlType; kw...)
     end
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(d[:value])
-        @warn "missing or unparsable <inscription> value"
+        @warn "missing or unparsable <inscription> value" #! make optional
         d[:value] = _evaluate(default_inscription(pntd))
     end
    PTInscription(d[:value], ObjectCommon(d))
