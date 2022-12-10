@@ -62,16 +62,12 @@ end
         @time "labels_hl"    @safetestset "labels_hl"    begin include("HighLevel/labels_hl.jl") end
     end
     if select("All", "Parse")
-        #@safetestset "parse_labels" begin include("parse_labels.jl") end
         @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("All", "Net")
         @time "document"  @safetestset "document"     begin include("Core/document.jl") end
         @time "simplenet" @safetestset "simplenet"    begin include("PetriNets/simplenet.jl") end
         @time "rate"      @safetestset "rate"         begin include("PetriNets/rate.jl") end
-    end
-    if select("All", "Examples")
-        @time "example file" @safetestset "example file" begin include("parse_examples.jl") end
     end
     if select("All", "Doc")
         @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
