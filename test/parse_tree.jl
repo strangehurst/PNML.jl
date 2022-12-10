@@ -1,6 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, firstpage, parse_file, parse_name,
-     PnmlModel, PnmlNet, Page,nets, pages, arcs, places, transitions,
+     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
+     nets, pages, arcs, places, transitions,
      allchildren, firstchild
 using .PnmlIDRegistrys
 
@@ -46,7 +47,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
         nd = allchildren("declaration", net)
         @test_call allchildren("declaration", net)
         @test isempty(nd)
-        @test isempty(parse_node.(nd; reg)) # Empty elements are leaf-enough.
+        @test isempty(parse_node.(nd; reg))
 
         nt = allchildren("toolspecific", net)
         @test isempty(nt)
@@ -96,35 +97,35 @@ end
     # Do a full parse and maybe print the generated data structure.
     reg = IDRegistry()
     pnml_ir = parse_pnml(pnmldoc; reg)
-    @test typeof(pnml_ir) <: PNML.PnmlModel
+    @test typeof(pnml_ir) <: PnmlModel
 
     foreach(nets(pnml_ir)) do net
-        @test net isa PNML.PnmlNet
+        @test net isa PnmlNet
         @test net.id isa Symbol
 
         foreach(net.pages) do page
-            @test page isa PNML.Page
+            @test page isa Page
             @test pid(page) isa Symbol
             foreach(page.places) do place
-                @test place isa PNML.Place
+                @test place isa Place
                 @test pid(place) isa Symbol
             end
             foreach(page.transitions) do transition
-                @test transition isa PNML.Transition
+                @test transition isa Transition
                 @test pid(transition) isa Symbol
             end
             foreach(page.arcs) do arc
-                @test arc isa PNML.Arc
+                @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
             foreach(PNML.declarations(page)) do decl
-                @test decl isa PNML.Declaration
+                @test decl isa Declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
         foreach(PNML.declarations(net)) do decl
-            @test decl isa PNML.Declaration
+            @test decl isa Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end
     end

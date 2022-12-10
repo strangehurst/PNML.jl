@@ -1,6 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, xmlroot, labels,
-        unclaimed_label, anyelement, PnmlLabel, AnyElement
+using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
+        unclaimed_label, anyelement, PnmlLabel, AnyElement,
+        has_label, get_label, get_labels, default_marking, add_label!
 
 @testset "unclaimed" begin
     # node => [key => value] expected to be in the PnmlDict after parsing node.
@@ -19,9 +20,11 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels,
                 :atag => "test2",
                 :something  => [PnmlDict(:content => "some content"),
                                 PnmlDict(:content => "other stuff")],
-                :something2 => PnmlDict(:value => [PnmlDict(:content => ""),
-                                               PnmlDict(:tag3 => "three", :content => "")],
-                                    :tag2 => "two")
+                :something2 => PnmlDict(:value => [
+                                                PnmlDict(:content => ""),
+                                                PnmlDict(:tag3 => "three", :content => "")
+                                                ],
+                                        :tag2 => "two")
             ],
 
         xml"""<foo><declarations> </declarations></foo>""" =>
@@ -98,7 +101,7 @@ using PNML: Maybe, tag, xmlnode, xmlroot, labels,
         haskey(l.dict, :id) && @test isregistered(reg1, l.dict[:id])
         haskey(a.dict, :id) && @test isregistered(reg2, a.dict[:id])
 
-        @test_call  isregistered(reg2, :id)
+        @test_call isregistered(reg2, :id)
     end
 end
 
@@ -114,7 +117,7 @@ end
     </initialMarking>
     """
 
-    n = parse_node(node; reg=IDRegistry())
+    n = parse_node(node; reg = IDRegistry())
     @test typeof(n) <: PNML.PTMarking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(n.value) <: Union{Int,Float64}
@@ -134,15 +137,15 @@ end
 
     mark3 = PNML.PTMarking()
     @test_call PNML.PTMarking()
-    @test typeof(mark3()) == typeof(PNML.default_marking(PnmlCore())())
-    @test mark3() == PNML.default_marking(PnmlCore())()
+    @test typeof(mark3()) == typeof(default_marking(PnmlCore())())
+    @test mark3() == default_marking(PnmlCore())()
     @test_call mark3()
 end
 
 @testset "PT inscription" begin
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
-        n = parse_node(node; reg = PNML.IDRegistry())
+        n = parse_node(node; reg = IDRegistry())
         @test typeof(n) <: PNML.PTInscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.value == 12
@@ -154,7 +157,7 @@ end
 
 @testset "text" begin
     str1 = """<text>ready</text>"""
-    n = parse_node(xmlroot(str1); reg = PNML.IDRegistry())
+    n = parse_node(xmlroot(str1); reg = IDRegistry())
     @test n == "ready"
 
     str2 = """
@@ -162,13 +165,13 @@ end
 ready
 </text>
     """
-    n = parse_node(xmlroot(str2); reg = PNML.IDRegistry())
+    n = parse_node(xmlroot(str2); reg = IDRegistry())
     @test n == "ready"
 
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(xmlroot(str3); reg = PNML.IDRegistry())
+    n = parse_node(xmlroot(str3); reg = IDRegistry())
     @test n == "ready"
 
     str4 = """
@@ -176,45 +179,46 @@ ready
 to
 go</text>
     """
-    n = parse_node(xmlroot(str4); reg = PNML.IDRegistry())
+    n = parse_node(xmlroot(str4); reg = IDRegistry())
     @test n == "ready\nto\ngo"
 end
 
 @testset "labels" begin
     # Exersize the :labels of a PnmlDict
 
-    d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
-    reg = PNML.IDRegistry()
-    @test_call PNML.labels(d)
-    @test PNML.labels(d) isa Vector{PNML.PnmlLabel}
+    d = PnmlDict(:labels => PnmlLabel[])
+    reg = IDRegistry()
+    @test_call labels(d)
+    @test labels(d) isa Vector{PnmlLabel}
     for i in 1:4 # add 4 labels
         x = i<3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call PNML.add_label!(d, node, PnmlCore(); reg)
-        n = PNML.add_label!(d, node, PnmlCore(); reg)
+        @test_call add_label!(d, node, PnmlCore(); reg)
+        n = add_label!(d, node, PnmlCore(); reg)
         @test n isa Vector{PnmlLabel}
         #@show n
-        @test length(PNML.labels(d)) == i
+        @test length(labels(d)) == i
         @test d[:labels] == n
-        @test PNML.labels(d) == n
+        @test labels(d) == n
     end
 
     @test length(d[:labels]) == 4
     @test length(labels(d)) == 4
-    foreach(PNML.labels(d)) do l
+    foreach(labels(d)) do l
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
         @test xmlnode(l) isa Maybe{EzXML.Node}
+        @test xmlnode(l) isa Maybe{XMLNode}
     end
 
-    @test_call PNML.has_label(d, :test1)
-    @test_call PNML.get_label(d, :test1)
-    @test_call PNML.get_labels(d, :test1)
+    @test_call has_label(d, :test1)
+    @test_call get_label(d, :test1)
+    @test_call get_labels(d, :test1)
 
-    @test PNML.has_label(d, :test1)
-    @test !PNML.has_label(d, :bumble)
+    @test has_label(d, :test1)
+    @test !has_label(d, :bumble)
 
-    v = PNML.get_label(d, :test2)
+    v = get_label(d, :test2)
     @test v.dict[:content] == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
