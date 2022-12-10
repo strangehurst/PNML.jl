@@ -33,7 +33,7 @@ $(TYPEDSIGNATURES)
 Duplicated pnml id `id` has been detected, perform `action`.
 Default `action` is to issue a warning.
 """
-function duplicate_id_action(id::Symbol; action=:warn)
+function duplicate_id_action(id::Symbol; action = :warn)
     action === :warn && @warn "ID '$id' already registered"
     action === :error && error("ID '$id' already registered")
     return nothing

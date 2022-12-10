@@ -15,15 +15,15 @@ using DocStringExtensions
 
 # Abstract Types
 export PnmlType,
-        AbstractPnmlCore,
-        AbstractHLCore,
-        AbstractContinuousNet
+       AbstractPnmlCore,
+       AbstractHLCore,
+       AbstractContinuousNet
 
 # Singletons (concrete types)
-export  PnmlCore, PTNet,
-        HLCore, PT_HLPNG, SymmetricNet, HLPNG,
-        StochasticNet, TimedNet, OpenNet,
-        ContinuousNet
+export PnmlCore, PTNet,
+       HLCore, PT_HLPNG, SymmetricNet, HLPNG,
+       StochasticNet, TimedNet, OpenNet,
+       ContinuousNet
 
 # Functions
 export pnmltype, pntd_symbol
@@ -118,7 +118,6 @@ This seperates the
 """
 abstract type AbstractContinuousNet <: PnmlType end
 
-
 """
 $(TYPEDEF)
 TODO: Continuous Petri Net
@@ -132,8 +131,6 @@ TODO: Open Petri Net
 $(TYPEDEF)
 """
 struct OpenNet <: AbstractContinuousNet end
-
-
 
 """
 TODO: Stochastic Petri Net
@@ -168,46 +165,41 @@ just the schema file name, or a placeholder for a future schema.
 The 'pntd symbol' should match the name used in the URI with inconvinient characters
 removed or replaced. For example, '-' is replaced by '_'.
 """
-const default_pntd_map = Dict{String, Symbol}(
-    "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
-    "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
-    "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
-    "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
-    "http://www.pnml.org/version-2009/grammar/pt-hlpng" => :pt_hlpng,
-    "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
-    "pnmlcore"   => :pnmlcore,
-    "ptnet"      => :ptnet,
-    "hlnet"      => :hlnet,
-    "hlcore"     => :hlcore,
-    "pt-hlpng"   => :pt_hlpng,
-    "pt_hlpng"   => :pt_hlpng,
-    "symmetric"  => :symmetric,
-    "symmetricnet" => :symmetric,
-    # extensions
-    "stochastic"   => :stochastic,
-    "timed"        => :timednet,
-    "nonstandard"  => :pnmlcore,
-    "open"         => :pnmlcore,
-    "continuous"   => :continuous,
-    )
+const default_pntd_map = Dict{String, Symbol}("http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
+                                              "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
+                                              "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
+                                              "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
+                                              "http://www.pnml.org/version-2009/grammar/pt-hlpng" => :pt_hlpng,
+                                              "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
+                                              "pnmlcore" => :pnmlcore,
+                                              "ptnet" => :ptnet,
+                                              "hlnet" => :hlnet,
+                                              "hlcore" => :hlcore,
+                                              "pt-hlpng" => :pt_hlpng,
+                                              "pt_hlpng" => :pt_hlpng,
+                                              "symmetric" => :symmetric,
+                                              "symmetricnet" => :symmetric,
+                                              # extensions
+                                              "stochastic" => :stochastic,
+                                              "timed" => :timednet,
+                                              "nonstandard" => :pnmlcore,
+                                              "open" => :pnmlcore,
+                                              "continuous" => :continuous)
 
 """
 $(TYPEDEF)
 
 The key Symbols are the supported kinds of Petri Nets.
 """
-const pnmltype_map = Dict{Symbol, PnmlType}(
-    :pnmlcore   => PnmlCore(),
-    :hlcore     => HLCore(),
-    :ptnet      => PTNet(),
-    :hlnet      => HLPNG(),
-    :pt_hlpng   => PT_HLPNG(),
-    :symmetric  => SymmetricNet(),
-
-    :stochastic => StochasticNet(),
-    :timednet   => TimedNet(),
-    :continuous => ContinuousNet(),
-    )
+const pnmltype_map = Dict{Symbol, PnmlType}(:pnmlcore => PnmlCore(),
+                                            :hlcore => HLCore(),
+                                            :ptnet => PTNet(),
+                                            :hlnet => HLPNG(),
+                                            :pt_hlpng => PT_HLPNG(),
+                                            :symmetric => SymmetricNet(),
+                                            :stochastic => StochasticNet(),
+                                            :timednet => TimedNet(),
+                                            :continuous => ContinuousNet())
 
 """
 $(TYPEDSIGNATURES)
@@ -230,7 +222,7 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::String) = get(default_pntd_map::Dict{String,Symbol}, s, :pnmlcore)
+pntd_symbol(s::String) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)
 
 """
     pnmltype(pntd::T; kw...)

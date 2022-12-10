@@ -81,7 +81,14 @@ include("Net/hlnet.jl")
 include("Continuous/rates.jl")
 include("Net/transition_function.jl")
 
-export @xml_str, xmlroot, PnmlDict,
-    parse_str, parse_file, parse_pnml, parse_node,
-    PnmlException, MissingIDException, MalformedException
+export @xml_str,
+    xmlroot,
+    PnmlDict,
+    parse_str,
+    parse_file,
+    parse_pnml,
+    parse_node,
+    PnmlException,
+    MissingIDException,
+    MalformedException
 end
