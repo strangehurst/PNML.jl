@@ -492,7 +492,7 @@ function parse_inscription(node, pntd::PnmlType; kw...)
     end
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(d[:value])
-        @warn "missing or unparsable <inscription> value" #! make optional
+        #@warn "missing or unparsable <inscription> value" #! make optional
         d[:value] = _evaluate(default_inscription(pntd))
     end
    PTInscription(d[:value], ObjectCommon(d))
