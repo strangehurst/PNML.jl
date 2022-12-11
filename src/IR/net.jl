@@ -42,8 +42,8 @@ refplaces(net::PnmlNet)      = _reduce(refplaces, net, RefPlace[])
 reftransitions(net::PnmlNet) = _reduce(reftransitions, net, RefTransition[])
 
 # Apply `f` to pages of net. Return first non-nothing. Else return default.
-_ppages(f, net::PnmlNet, id::Symbol, default=nothing) = begin
-    for pg in pages(net)
+_ppages(f, x::Union{PnmlNet, Page}, id::Symbol, default=nothing) = begin
+    for pg in pages(x)
         pl = f(pg, id)
         !isnothing(pl) && return pl
     end
