@@ -124,7 +124,7 @@ function _match(ti::ToolInfo, name::String, version::String)
     #@show "match toolinfo $name, $version"
     _match(ti.inf, Regex(name), Regex(version))
 end
-function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$")
+function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
     #@show "match toolinfo $namerex, $versionrex"
     match_name = match(namerex, name(ti))
     match_version = match(versionrex, version(ti))

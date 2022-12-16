@@ -79,9 +79,9 @@ function _anyelement_content(nodes::Vector{XMLNode}, pntd::PnmlType, parser; kw.
     tagnames = unique(map(first, namevec))
     dict = PnmlDict()
     foreach(tagnames) do tagname
-        tags = filter(x->x.first===tagname, namevec)
+        tags = filter(x -> x.first === tagname, namevec)
         dict[Symbol(tagname)] = if length(tags) > 1 # Now its a symbol.
-            parser.(map(x->x.second, tags), Ref(pntd), Ref(parser); kw...) # vector
+            parser.(map(x -> x.second, tags), Ref(pntd), Ref(parser); kw...) # vector
         else
             parser(tags[1].second, pntd, parser; kw...) # scalar
         end

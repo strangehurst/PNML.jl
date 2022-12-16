@@ -4,7 +4,6 @@ function getfirst(f::Function, v)
     isnothing(i) ? nothing : v[i]
 end
 
-
 """
 Use PNML type as trait to select type of marking.
 """
