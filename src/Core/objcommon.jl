@@ -9,6 +9,15 @@ struct ObjectCommon
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}} #! #TODO Make toolinfo generic.
     labels::Maybe{Vector{PnmlLabel}} #! #TODO Make label generic.
+    function ObjectCommon(g, t, l)
+        # isnothing(tools) ||
+        #     tools isa Vector ||
+        #     throw(ArgumentError("ObjectCommon tools must be a Vector"))
+        # isnothing(labels) ||
+        #     labels isa Vector ||
+        #     throw(ArgumentError("ObjectCommon labels must be a Vector"))
+        new(g, t, l)
+    end
 end
 
 ObjectCommon(pdict::PnmlDict) = ObjectCommon(
@@ -19,8 +28,8 @@ ObjectCommon(pdict::PnmlDict) = ObjectCommon(
 ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 has_graphics(oc::ObjectCommon) = oc.graphics !== nothing
-has_tools(oc::ObjectCommon)    = oc.tools !== nothing #!&& !isempty(oc.tools)
-has_labels(oc::ObjectCommon)   = oc.labels !== nothing #!&& !isempty(oc.labels)
+has_tools(oc::ObjectCommon)    = oc.tools !== nothing
+has_labels(oc::ObjectCommon)   = oc.labels !== nothing
 graphics(oc::ObjectCommon)     = oc.graphics
 tools(oc::ObjectCommon)        = oc.tools
 labels(oc::ObjectCommon)       = oc.labels
@@ -31,7 +40,6 @@ Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
 
 function Base.empty!(oc::ObjectCommon)
     #! isnothing(oc.graphics) || replace with Graphics()
-    #has_tools(oc)
     if oc.tools !== nothing
         # JET needs help avoiding the Nothing union split.
         t::Vector{ToolInfo} = oc.tools
