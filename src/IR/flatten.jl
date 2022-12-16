@@ -17,6 +17,7 @@ $(TYPEDSIGNATURES)
 Collect keys from all pages and move to first page.
 """
 function flatten_pages!(net::PnmlNet)
+    #@show "flatten_pages!(net::PnmlNet)"
     # Place content of subpages of 1st page before sibling page's content.
     subpages = firstpage(net).subpages
     if subpages !== nothing
@@ -24,7 +25,7 @@ function flatten_pages!(net::PnmlNet)
         empty!(subpages)
     end
     # Sibling pages.
-    if length(net.pages) > 1
+    if length(pages(net)) > 1
         foldl(flatten_pages!, pages(net))
         resize!(net.pages, 1)
     end
@@ -34,6 +35,7 @@ end
 
 "After appending `r` to `l`, recursivly flatten `r` into `l`, then empty `r`."
 function flatten_pages!(l::Page, r::Page)
+    #@show "flatten_pages!($(pid(l)), $(pid(r)))"
     append_page!(l, r)
     if r.subpages !== nothing
         foldl(flatten_pages!, r.subpages; init=l)
@@ -51,7 +53,7 @@ function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
                               :refTransitions, :refPlaces, :declaration],
                       comk = [:tools, :labels])
-    @debug "append_page!($(pid(l)), $(pid(r)))"
+    #@show "append_page!($(pid(l)), $(pid(r)))"
     foreach(keys) do key
         update_maybe!(getproperty(l, key), getproperty(r, key))
     end
@@ -129,16 +131,27 @@ function deref!(page::Page)
 end
 
 """
-$(TYPEDSIGNATURES)
+    deref_place(page, id) -> Symbol
 
 Return id of referenced place.
 """
 function deref_place end
 
 deref_place(net::PnmlNet, id::Symbol, page_idx=1) = deref_place(pages(net)[page_idx], id)
-deref_place(page::Page, id::Symbol) = begin
-    rp = refplace(page, id)
-    isnothing(rp) ? nothing : rp.ref
+deref_place(p::Page, id::Symbol) = begin
+    #@show "deref_place page $(pid(p)) $id"
+    #@show refplaces(p)
+    rp = refplace(p, id)
+    #@show rp
+    if isnothing(rp) # Something is really, really wrong.
+        @show reftransition_ids(p)
+        @show refplace_ids(p)
+        @show place_ids(p)
+        @show arc_ids(p)
+        @show transition_ids(p)
+        error("failed to lookup reference place id $id in page $(pid(p))")
+    end
+    return rp.ref
 end
 
 """
@@ -155,6 +168,18 @@ function deref_transition(net::PnmlNet, id::Symbol, age_idx)
     deref_transition(net.pages[page_idx], id)
 end
 function deref_transition(page::Page, id::Symbol)
+    #@show "deref_transition page $(pid(page)) id $id"
+    #@show refplaces(page)
     rt = reftransition(page, id)
-    isnothing(rt) ? nothing : rt.ref
+    #@show rt
+    if isnothing(rt) # Something is really, really wrong.
+        @show refplace_ids(page)
+        @show reftransition_ids(page)
+        @show place_ids(page)
+        @show arc_ids(page)
+        @show transition_ids(page)
+        @show reftransition_ids(page)
+        error("failed to lookup reference transition id $id in page $(pid(page))")
+    end
+    return rt.ref
 end
