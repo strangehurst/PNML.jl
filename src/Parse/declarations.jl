@@ -20,8 +20,8 @@ $(TYPEDSIGNATURES)
 Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 """
 function parse_declaration(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "declaration" || error("element name wrong: $nn")
+    nn = check_nodename(node, "declaration")
+    @debug nn
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
 
     foreach(elements(node)) do child
@@ -36,8 +36,8 @@ end
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
 # optional, required,  zero or more
 function decl_structure(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "structure" || error("element name wrong: $nn")
+    nn = check_nodename(node, "structure")
+    @debug nn
     #TODO warn if more than one?
     declarations = getfirst("declarations", node)
     isnothing(declarations) ? AbstractDeclaration[] :
@@ -50,8 +50,8 @@ $(TYPEDSIGNATURES)
 Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
 """
 function parse_declarations(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "declarations" || error("element name wrong: $nn")
+    nn = check_nodename(node, "declarations")
+    @debug nn
 
     v = AbstractDeclaration[]
     foreach(elements(node)) do child
@@ -69,8 +69,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_namedsort(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "namedsort" || error("element name wrong: $nn")
+    nn = check_nodename(node, "namedsort")
+    @debug nn
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
@@ -82,8 +82,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_namedoperator(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "namedoperator" || error("element name wrong: $nn")
+    nn = check_nodename(node, "namedoperator")
+    @debug nn
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$(nn) missing name attribute", node))
 
@@ -106,8 +106,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_variabledecl(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "variabledecl" || error("element name wrong: $nn")
+    nn = check_nodename(node, "variabledecl")
+    @debug nn
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
     # Assert only 1 element
@@ -138,8 +138,8 @@ NB: The "type" of a place is different from the "type" of a net or "pntd".
 
 """
 function parse_type(node, pntd; kwargs...)
-    nn = nodename(node)
-    nn == "type" || error("element name wrong: $nn")
+    nn = check_nodename(node, "type")
+    @debug nn
     anyelement(node, pntd; kwargs...) #TODO implement sort type
 end
 
@@ -150,6 +150,7 @@ Sorts are found within a <structure> element.
 """
 function parse_sort(node, pntd; kw...)
     nn = nodename(node)
+    @debug nn
     sort_tags = [
         "bool",
         "finiteenumeration",
@@ -176,9 +177,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_usersort(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "usersort" || error("element name wrong: $nn")
+    nn = check_nodename(node, "usersort")
+    @debug nn
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     UserSort(anyelement(node, pntd; kwargs...))
 end
@@ -192,6 +192,7 @@ Instead it is the interpertation of the child of some <structure> elements.
 """
 function parse_term(node, pntd; kwargs...)
     nn = nodename(node)
+    @debug nn
     #TODO Validate that it is a kind of term? How? nn == "term" || error("element name wrong: $nn")
     Term(unclaimed_label(node, pntd; kwargs...))
 end
@@ -203,9 +204,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_and(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "and" || error("element name wrong: $nn")
+    nn = check_nodename(node, "and")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -213,9 +213,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_arbitraryoperator(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "arbitraryoperator" || error("element name wrong: $nn")
+    nn = check_nodename(node, "arbitraryoperator")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -223,9 +222,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_arbitrarysort(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "arbitrarysort" || error("element name wrong: $nn")
+    nn = check_nodename(node, "arbitrarysort")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -233,9 +231,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_bool(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "bool" || error("element name wrong: $nn")
+    nn = check_nodename(node, "bool")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -243,9 +240,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_booleanconstant(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "booleanconstant" || error("element name wrong: $nn")
+    nn = check_nodename(node, "booleanconstant")
+    @debug nn
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     PnmlLabel(node; kwargs...)
 end
@@ -254,9 +250,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_equality(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "equality" || error("element name wrong: $nn")
+    nn = check_nodename(node, "equality")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -264,9 +259,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_imply(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "imply" || error("element name wrong: $nn")
+    nn = check_nodename(node, "imply")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -274,9 +268,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_inequality(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "inequality" || error("element name wrong: $nn")
+    nn = check_nodename(node, "inequality")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -284,9 +277,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_mulitsetsort(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "mulitsetsort" || error("element name wrong: $nn")
+    nn = check_nodename(node, "mulitsetsort")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -294,9 +286,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_not(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "not" || error("element name wrong: $nn")
+    nn = check_nodename(node, "not")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -304,9 +295,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_or(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "or" || error("element name wrong: $nn")
+    nn = check_nodename(node, "or")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -314,9 +304,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_productsort(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "productsort" || error("element name wrong: $nn")
+    nn = check_nodename(node, "productsort")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -324,9 +313,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_tuple(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "tuple" || error("element name wrong: $nn")
+    nn = check_nodename(node, "tuple")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -334,9 +322,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_unparsed(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "unparsed" || error("element name wrong: $nn")
+    nn = check_nodename(node, "unparsed")
+    @debug nn
     PnmlLabel(node; kwargs...)
 end
 
@@ -344,9 +331,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_useroperator(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "useroperator" || error("element name wrong: $nn")
+    nn = check_nodename(node, "useroperator")
+    @debug nn
     EzXML.haskey(node, "declaration") || throw(MalformedException("$(nn) missing declaration attribute", node))
     UserOperator(Symbol(node["declaration"]))
 end
@@ -355,9 +341,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_variable(node, pntd; kwargs...)
-    @debug node
-    nn = nodename(node)
-    nn == "variable" || error("element name wrong: $nn")
+    nn = check_nodename(node, "variable")
+    @debug nn
     # The 'primer' UML2 uses variableDecl
     EzXML.haskey(node, "refvariable") || throw(MalformedException("$(nn) missing refvariable attribute", node))
     Variable(Symbol(node["refvariable"]))

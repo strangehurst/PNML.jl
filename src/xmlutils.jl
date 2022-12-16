@@ -52,6 +52,16 @@ function allchildren(tag, el, ns::String = pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
+
+function check_nodename(n, s)
+    if EzXML.nodename(n) == s
+        return s # used to be nodename
+    else
+      throw(ArgumentError(string("element name wrong, expected ", s,
+                                 ", got ", nodename(n))))
+    end
+end
+
 #-------------------------------------------------------------------
 # Bindings for viewing tree.
 AbstractTrees.children(n::EzXML.Node) = EzXML.elements(n)
