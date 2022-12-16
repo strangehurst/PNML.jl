@@ -19,20 +19,20 @@ end
 
 @testset "missing namespace" begin
     emsg = r"missing namespace"
-    @test_logs (:warn, emsg) parse_pnml(xml"""
+    @test_logs  match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <pnml><net id="1" type="foo"><page id="pg1"/></net>
         </pnml>
         """; reg=IDRegistry())
-    @test_logs (:warn, emsg) parse_pnml(xml"""
+    @test_logs match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <?xml version="1.0" encoding="UTF-8"?>
         <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>"""; reg=IDRegistry())
-    @test_logs (:warn, emsg) parse_pnml(xml"""
+    @test_logs match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <?xml version="1.0" encoding="UTF-8"?>
         <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>"""; reg=IDRegistry())
 end
 
 @testset "empty name" begin
-    @test_logs (:warn, r"missing <text>") parse_node(xml"<name></name>"; reg=PNML.IDRegistry())
+    @test_logs match_mode=:any (:warn, r"missing <text>") parse_node(xml"<name></name>"; reg=PNML.IDRegistry())
 end
 
 @testset "malformed" begin
