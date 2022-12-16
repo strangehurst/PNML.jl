@@ -29,18 +29,18 @@ end
 # Check for ambiguous methods.
 @time "ambiguous" begin
     ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-    @test length(ambiguous) == 0
     foreach(ambiguous) do amb
         @show amb
     end
+    @test length(ambiguous) == 0
 end
 # Check for unbound type parameters.
 @time "unbound" begin
     unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
-    @test length(unbound) == 0
     foreach(unbound) do unb
         @show unb
     end
+    @test length(unbound) == 0
 end
 @testset verbose=true "PNML.jl" begin
     if select("All", "Base")
@@ -48,26 +48,27 @@ end
         @time "registry" @safetestset "registry"  begin include("Core/idregistry.jl") end
         @time "utils"    @safetestset "utils"     begin include("Core/utils.jl") end
     end
+    if select("All", "Parse")
+        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
+    end
     if select("All", "Core")
         @time "labels"       @safetestset "labels"       begin include("Core/labels.jl") end
         @time "graphics"     @safetestset "graphics"     begin include("Core/graphics.jl") end
-        @time "toolspecific" @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
+
         @time "exceptions"   @safetestset "exceptions"   begin include("Core/exceptions.jl") end
         @time "nodes"        @safetestset "nodes"        begin include("Core/nodes.jl") end
         @time "pages"        @safetestset "pages"        begin include("Core/pages.jl") end
+        @time "toolspecific" @safetestset "toolspecific" begin include("Core/toolspecific.jl") end
         @time "flatten"      @safetestset "flatten"      begin include("Core/flatten.jl") end
     end
     if select("All", "HighLevel")
         @time "declarations" @safetestset "declarations" begin include("HighLevel/declarations.jl") end
         @time "labels_hl"    @safetestset "labels_hl"    begin include("HighLevel/labels_hl.jl") end
     end
-    if select("All", "Parse")
-        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
-    end
     if select("All", "Net")
+        @time "rate"      @safetestset "rate"         begin include("PetriNets/rate.jl") end
         @time "document"  @safetestset "document"     begin include("Core/document.jl") end
         @time "simplenet" @safetestset "simplenet"    begin include("PetriNets/simplenet.jl") end
-        @time "rate"      @safetestset "rate"         begin include("PetriNets/rate.jl") end
     end
     if select("All", "Doc")
         @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
