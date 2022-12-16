@@ -37,7 +37,7 @@ function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool = false, default_n
         return EzXML.namespace(node)
     else
         emsg = "$(nodename(node)) missing namespace"
-        missing_ns_fatal ? error(emsg) : @warn(emsg)
+        missing_ns_fatal ? throw(ArgumentError(emsg)) : @warn(emsg)
         return default_ns
     end
 end
