@@ -32,12 +32,14 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 nettype(::Transition{T}) where {T <: PnmlType} = T
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
-using Base: Fix2
+using Base: Fix2, Fix1
 """
 $(TYPEDSIGNATURES)
 Return function to be used like: any(ispid(sym), iterate_with_pid)
 """
-ispid(x) = Fix2(===, x)
+ispid(x::Symbol) = Fix2(===, x) #! x -> x === id,
+haspid(x, id::Symbol) = pid(x) === id
+haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 #------------------------------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes of PetriNet will throw an error.

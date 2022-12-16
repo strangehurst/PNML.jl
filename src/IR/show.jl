@@ -19,11 +19,11 @@ inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width
 
 #-------------------
 function Base.show(io::IO, fill::Fill)
-    pprint(io, fill) 
+    pprint(io, fill)
 end
 
-quoteof(f::Fill) = :(Fill($(quoteof(f.color)), 
-        $(quoteof(f.image)), 
+quoteof(f::Fill) = :(Fill($(quoteof(f.color)),
+        $(quoteof(f.image)),
         $(quoteof(f.gradient_color)),
         $(quoteof(f.gradient_rotation))))
 
@@ -33,11 +33,11 @@ function Base.show(io::IO, font::Font)
 end
 
 quoteof(f::Font) = :(Font($(quoteof(f.family)),
-            $(quoteof(f.style)), 
+            $(quoteof(f.style)),
             $(quoteof(f.weight)),
-            $(quoteof(f.size)), 
-            $(quoteof(f.align)), 
-            $(quoteof(f.rotation)), 
+            $(quoteof(f.size)),
+            $(quoteof(f.align)),
+            $(quoteof(f.rotation)),
             $(quoteof(f.decoration)) ))
 
 #-------------------
@@ -70,7 +70,7 @@ function shownames(io::IO, g::Graphics)
 end
 
 function Base.show(io::IO, g::Graphics)
-    print(io, "Graphics(", 
+    print(io, "Graphics(",
             g.dimension, ", ",
             g.fill, ", ",
             g.font, ", ",
@@ -92,11 +92,11 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
-    
+
 end
 
 function Base.show(io::IO, label::PnmlLabel)
-    pprint(io, label) 
+    pprint(io, label)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
@@ -178,7 +178,7 @@ end
 
 function Base.show(io::IO, oc::ObjectCommon)
     io = inc_indent(io)
-    #if !isnothing(oc.graphics) || 
+    #if !isnothing(oc.graphics) ||
     if !isnothing(oc.tools) || !isnothing(oc.labels)
         print(io, ", ")
         #!isnothing(oc.graphics) && pprint(io, oc.graphics)
@@ -194,7 +194,7 @@ function Base.show(io::IO, oc::ObjectCommon)
 end
 
 function show_common(io::IO, x::Union{PnmlNet, PnmlObject, AbstractLabel})
-    isempty(x.com) && return
+    #!isempty(x.com) && return
     #    print(io, ", ")
     show(io, MIME"text/plain"(), x.com )
 end
@@ -233,7 +233,7 @@ end
 #-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
-          " id ", trans.id, 
+          " id ", trans.id,
           ", name '", has_name(trans) ? name(trans) : "", "'",
           ", condition ", trans.condition)
     show_common(io, trans)
@@ -351,7 +351,7 @@ end
 #-------------------
 Base.summary(io::IO, net::PnmlNet) = print(io, summary(net))
 function Base.summary(net::PnmlNet)
-    string( typeof(net), " id ", pid(net), 
+    string( typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", "', ",
             " type ", nettype(net), ", ",
             length(pages(net)), " pages ",
@@ -366,7 +366,7 @@ function Base.show(io::IO, net::PnmlNet)
     foreach(declarations(net)) do decl
         print(iio, indent(io))
         show(iio, MIME"text/plain"(), decl)
-        println(iio, "\n") 
+        println(iio, "\n")
     end
     show_common(io, net)
     show(io, pages(net))
@@ -455,14 +455,14 @@ function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
     show(io, inscription)
 end
 
-quoteof(i::HLInscription) = 
+quoteof(i::HLInscription) =
     :(HLInscription($(quoteof(i.text)), $(quoteof(i.term)), $(quoteof(i.com))))
 
 #-------------------
 function Base.show(io::IO, declarations::Vector{AbstractDeclaration})
     iio = inc_indent(io)
     print(io, indent(io), typeof(declarations), "[")
-    
+
     for (i,dec) in enumerate(declarations)
         print(iio, "\n", indent(iio))
         show(inc_indent(io), MIME"text/plain"(), dec)
@@ -478,7 +478,7 @@ quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quot
 function Base.show(io::IO, terms::Vector{AbstractTerm})
     iio = inc_indent(io)
     print(io, indent(io), typeof(terms), "[")
-    
+
     for (i,term) in enumerate(terms)
         print(iio, "\n", indent(iio))
         show(inc_indent(io), term)

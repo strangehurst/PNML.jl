@@ -38,7 +38,8 @@ See [`PnmlTypeDefs.pntd_symbol`](@ref), [`PnmlTypeDefs.pnmltype`](@ref).
 function find_nets end
 find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
 find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
-find_nets(model, pntd::PnmlType) = filter(n->isa(n.type, typeof(pntd)), nets(model))
+find_nets(model, pntd::PnmlType) = filter(n -> isa(n.type, typeof(pntd)), nets(model))
+#find_nets(model, pntd::PnmlType) = filter(Fix2(isa, typeof(pntd)), nets(model))
 
 """
 $(TYPEDSIGNATURES)
@@ -48,7 +49,7 @@ Return `PnmlNet` having `id` or `nothing``.
 function find_net end
 
 function find_net(model, id::Symbol)
-    getfirst(net->pid(net) === id, nets(model))
+    getfirst(Fix2(haspid, id), nets(model))
 end
 
 """
