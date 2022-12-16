@@ -68,19 +68,20 @@ end
 PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
 PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) = PnmlLabel(p.first, p.second, node; kw...)
 
-
 tag(label::PnmlLabel) = label.tag
 dict(label::PnmlLabel) = label.dict
 xmlnode(label::PnmlLabel) = label.xml
 
 function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    any(label -> tag(label) === tagvalue, v)
+    any(Fix2(hastag, tagvalue), v)
 end
 
+hastag(l, tagvalue) = tag(l) === tagvalue
+
 function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    getfirst(l -> tag(l) === tagvalue, v)
+    getfirst(Fix2(hastag, tagvalue), v)
 end
 
 function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    filter(l -> tag(l) === tagvalue, v)
+    filter(Fix2(hastag, tagvalue), v)
 end
