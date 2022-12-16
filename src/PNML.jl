@@ -22,6 +22,7 @@ using PrettyPrinting
 using AbstractTrees
 using LabelledArrays
 using Reexport
+using Preferences
 
 @reexport using PnmlTypeDefs
 @reexport using PnmlIDRegistrys
