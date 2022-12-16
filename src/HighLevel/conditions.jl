@@ -35,7 +35,7 @@ end
 Condition() = Condition(nothing, true, ObjectCommon())
 Condition(value) = Condition(nothing, value, ObjectCommon())
 Condition(text, value) = Condition(text, value, ObjectCommon())
-Condition(text, value, oc::ObjectCommon) = Condition{typeof(value)}(text, value, oc)
+
 Condition(::Nothing) =  error("Condition must have a `value`, ")
 Condition(::Maybe{String}, ::Nothing) = error("Condition must have a `value`, ")
 Condition(::Maybe{String}, ::Nothing, ::ObjectCommon) = error("Condition must have a `value`, ")
