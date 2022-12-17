@@ -4,26 +4,25 @@ $(TYPEDFIELDS)
 
 Place node of a Petri Net Markup Language graph.
 """
-mutable struct Place{PNTD,MarkingType,SortType} <: PnmlNode{PNTD}
+mutable struct Place{PNTD,M,S} <: PnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    #
-    marking::MarkingType
-    initialMarking::MarkingType
+
+    marking::M
+    initialMarking::M
     # High-level Petri Nets place's markings have sorts.
-    sorttype::SortType # Place type is different from pntd/PnmlType.
+    sorttype::S # Place type is different from pntd/PnmlType. #! HL
     name::Maybe{Name}
     com::ObjectCommon
+
+    function Place(pntd::PnmlType, id::Symbol, initMarking, sort, name, oc::ObjectCommon)
+        marking = isnothing(initMarking) ? default_marking(pntd) : initMarking
+        new{typeof(pntd),typeof(marking),typeof(sort)}(pntd, id, marking, initMarking,
+                                                       sort, name, oc)
+    end
 end
 
-Place(pntd::PnmlType, id::Symbol, marking, sort, name, oc::ObjectCommon) =
-    Place(pntd, id, marking, marking, sort, name, oc)
-
-marking(place) = marking(place.pntd, place)
-#TODO would marking ever be nothing?
-marking(pntd::PnmlType, place) = isnothing(place.marking) ? default_marking(place) : place.marking
-marking(pntd::AbstractHLCore, place) = isnothing(place.marking) ? default_marking(place) : place.marking
-
+marking(place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
 
 #-------------------
@@ -43,8 +42,8 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
     com::ObjectCommon
 end
 
-#! Condition is High-level specific in the specification.
-#! To be an expression that evaluates to a boolean value.
+#! Condition is High-level specific in the specification as an expression of the
+#! many-sortthated algebra that evaluates to a boolean value.
 #! Make others evaluate to true by default.
 condition(transition) = condition(transition.pntd, transition)
 # While conditions are only defined for high-level nets in the specification,
