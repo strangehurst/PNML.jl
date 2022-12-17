@@ -2,7 +2,7 @@
 """
 $(TYPEDSIGNATURES)
 Inscriptions, Markings, Conditions evaluate a value
-that may be a scalar or a functor.
+that may be simple or a functor.
 
 # Examples
 
@@ -12,6 +12,9 @@ julia> _evaluate(1)
 
 julia> _evaluate(true)
 true
+
+julia> _evaluate(nothing)
+
 
 julia> _evaluate(Term(:term, PnmlDict(:value => 3))())
 3
