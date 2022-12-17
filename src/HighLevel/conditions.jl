@@ -7,38 +7,40 @@ $(TYPEDFIELDS)
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition, HLMarking, Term)
-julia> c = Condition()
+julia> c = Condition(PnmlCore())
 Condition(nothing, true, )
 
 julia> c()
 true
 
-julia> c = Condition(false)
+julia> c = Condition(PnmlCore(), false)
 Condition(nothing, false, )
 
 julia> c()
 false
 
-julia> c = Condition("xx", false)
+julia> c = Condition(PnmlCore(), "xx", false)
 Condition("xx", false, )
 
 julia> c()
 false
 ```
 """
-struct Condition{T} <: HLAnnotation
+mutable struct Condition{PNTD,T} <: HLAnnotation
+    pntd::PNTD
     text::Maybe{String}
     term::T # <structure> tag will contain a term.
     com::ObjectCommon
 
+    function Condition(pntd, t, v, c)
+        val = isnothing(v) ? default_condition(pntd) : v
+        new{typeof(pntd), typeof(val)}(pntd, t, val, c)
+    end
 end
-Condition() = Condition(nothing, true, ObjectCommon())
-Condition(value) = Condition(nothing, value, ObjectCommon())
-Condition(text, value) = Condition(text, value, ObjectCommon())
 
-Condition(::Nothing) =  error("Condition must have a `value`, ")
-Condition(::Maybe{String}, ::Nothing) = error("Condition must have a `value`, ")
-Condition(::Maybe{String}, ::Nothing, ::ObjectCommon) = error("Condition must have a `value`, ")
+Condition(pntd) = Condition(pntd, nothing, true, ObjectCommon())
+Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
+Condition(pntd, text, value) = Condition(pntd, text, value, ObjectCommon())
 
 """
 $(TYPEDSIGNATURES)

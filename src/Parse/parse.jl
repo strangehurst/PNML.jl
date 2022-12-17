@@ -48,7 +48,7 @@ Build a PnmlModel from a string containing XML.
 See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_str(str::AbstractString)
-    isempty(str) && error("parse_str must have a non-empty string argument")
+    isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
     reg = IDRegistry()
     # Good place for debugging.
     parse_pnml(xmlroot(str); reg)
@@ -61,7 +61,8 @@ Build a PnmlModel from a file containing XML.
 See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_file(fname::AbstractString)
-    isempty(fname) && error("parse_file must have a non-empty file name argument")
+    isempty(fname) &&
+        throw(ArgumentError("parse_file must have a non-empty file name argument"))
     reg = IDRegistry()
     # Good place for debugging.
     parse_pnml(root(EzXML.readxml(fname)); reg)
@@ -613,7 +614,7 @@ function parse_condition(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
-    Condition(d[:text], d[:structure], ObjectCommon(d))
+    Condition(pntd, d[:text], d[:structure], ObjectCommon(d))
 end
 
 function parse_condition_structure(node, pntd::PnmlType; kw...)

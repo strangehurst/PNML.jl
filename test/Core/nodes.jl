@@ -58,9 +58,11 @@ end
     @test condition(n) isa Bool #! define non-HL other's semantics.
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    @test_throws ErrorException parse_node(node; reg = IDRegistry())
+    #@test_throws ErrorException parse_node(node; reg = IDRegistry())
+    @test parse_node(node; reg = IDRegistry()) !== nothing
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test_throws ErrorException parse_node(node; reg = IDRegistry())
+    #@test_throws ErrorException parse_node(node; reg = IDRegistry())
+    @test parse_node(node; reg = IDRegistry()) !== nothing
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     t = parse_node(node; reg = IDRegistry())
     @test t isa Transition
