@@ -32,7 +32,7 @@ xmlnode(model::PnmlModel) = model.xml
 
 """
 $(TYPEDSIGNATURES)
-Return nets matching pntd `type` given as string, symbol or singleton.
+Return nets matching pntd `type` given as string, symbol or pnmltype singleton.
 See [`PnmlTypeDefs.pntd_symbol`](@ref), [`PnmlTypeDefs.pnmltype`](@ref).
 """
 function find_nets end

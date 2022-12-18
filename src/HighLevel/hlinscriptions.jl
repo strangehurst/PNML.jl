@@ -11,7 +11,7 @@ julia> i1 = HLInscription()
 HLInscription(nothing, nothing, )
 
 julia> i1()
-1
+
 
 julia> i2 = HLInscription(Term(:term, PnmlDict(:value=>3)))
 HLInscription(nothing, Term(:term, IdDict{Symbol, Any}(:value => 3)), )
@@ -38,7 +38,7 @@ julia> i4()
 struct HLInscription <: HLAnnotation
     text::Maybe{String}
     "Any <structure> child must be a many-sorted algebra term for a <hlinscription>."
-    term::Any
+    term::Any #! rename to value
     com::ObjectCommon
 end
 
@@ -51,8 +51,5 @@ HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
-(hli::HLInscription)() = if isnothing(hli.term)
-    default_one_term()
-else
-     _evaluate(hli.term)
-end
+(hli::HLInscription)() = _evaluate(hli.term)
+#!(hli::HLInscription)() = isnothing(hli.term) ? default_one_term() : _evaluate(hli.term)
