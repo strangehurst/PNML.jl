@@ -1,7 +1,28 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
         unclaimed_label, anyelement, PnmlLabel, AnyElement,
-        has_label, get_label, get_labels, default_marking, add_label!
+        has_label, get_label, get_labels, default_marking, add_label!,
+        default_marking,
+        default_inscription,
+        default_condition,
+        default_term,
+        default_one_term,
+        default_zero_term,
+        default_sort,
+        default_term
+
+
+@testset "default values" begin
+    pntd = PNML.PnmlCore()
+    default_marking(pntd)
+    default_inscription(pntd)
+    default_condition(pntd)
+    default_term(pntd)
+    default_one_term(pntd)
+    default_zero_term(pntd)
+    default_sort(pntd)
+    default_term(pntd)
+end
 
 @testset "unclaimed" begin
     # node => [key => value] expected to be in the PnmlDict after parsing node.
