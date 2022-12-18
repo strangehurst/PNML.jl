@@ -185,7 +185,7 @@ function parse_page(node, pntd; kw...)
         :declaration => Declaration(), #! HL
         :pages => Page[],
     )
-    parse_page_2!(d, node, pntd; kw...)
+    parse_page_2!(pntd, d, node; kw...)
     #pprintln(IOContext(stdout, :displaysize => (24, 120)), d)
     #println()
     #@show typeof(d[:places]), d[:places]
@@ -209,7 +209,7 @@ end
 ""
 function parse_page_2! end
 
-function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
+function parse_page_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
     foreach(elements(node)) do child
         #!@show "parse_page_2! $pntd $(nodename(child))"
         @match nodename(child) begin
@@ -225,7 +225,7 @@ function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
     end
 end
 
-function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::AbstractHLCore; kw...)
+function parse_page_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "place" => push!(d[:places], parse_place(child, pntd; kw...))
@@ -297,15 +297,16 @@ function parse_transition(node, pntd; kw...)
         node,
         :tag => Symbol(nn),
         :id => register_id!(kw[:reg], node["id"]),
-        :condition => default_condition(pntd),
+        :condition => nothing, #default_condition(pntd),
     )
-    parse_transition_2!(d, node, pntd; kw...)
+    parse_transition_2!(pntd, d, node; kw...)
+    #! Allow condition to be nothing.
     Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
 end
 
-"Specialize transition label parsing."
+"Specialize transition label parsing on Petri Net Type Definition."
 function parse_transition_2! end
-function parse_transition_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
+function parse_transition_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "condition" => (d[:condition] = parse_condition(child, pntd; kw...))
@@ -314,8 +315,7 @@ function parse_transition_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
     end
 end
 
-# Implements if specialization needed.
-#function parse_transition_2!(d::PnmlNode, node::XMLNode, pntd::PNTD; kw...) where{PNTD<:AbstractHLCore} end
+# Implement other pntd dispatches if needed.
 
 """
     parse_arc(node::XMLNode, pntd::PnmlType; kw...) -> Arc{typeof(pntd), typeof(inscription)}
@@ -598,9 +598,11 @@ Label of transition nodes.
 
 Condition is defined by the ISO Specification as a High-level Annotation,
 meaning it has <text> and <structure> elements. With all meaning in the element
-that the <structure> holds.
+that the <structure> holds evaluating to a boolean value.
+We extend this to anything that evaluates to a boolean value when
+treated as a functor.
 
-A Condition should evaluate to a boolean. We defer that evaluation to a higher level.
+A Condition should evaluate to a boolean.
 See [`AbstractTerm`](@ref).
 """
 function parse_condition(node, pntd; kw...)
