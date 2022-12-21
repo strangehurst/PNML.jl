@@ -1,6 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
     PnmlNet, Page,
+    arcs, places, transitions, refplaces, reftransitions,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
     flatten_pages!
 
@@ -68,14 +69,20 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
     @test refplace_ids(net)      == [:rp1, :rp2]
     @test reftransition_ids(net) == [:rt2]
 
+    #@show arc_ids(net)
+    #@show place_ids(net)
+    #@show transition_ids(net)
+    #@show refplace_ids(net)
+    #@show reftransition_ids(net)
+
+    @test arcs(net) !== nothing
+    @test places(net) !== nothing
+    @test transitions(net) !== nothing
+    @test refplaces(net) !== nothing
+    @test reftransitions(net) !== nothing
+
     @testset "flatten" begin
         flatten_pages!(net)
-
-        #@show PNML.arc_ids(net)
-        #@show PNML.place_ids(net)
-        #@show PNML.transition_ids(net)
-        #@show PNML.refplace_ids(net)
-        #@show PNML.reftransition_ids(net)
 
         expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
         expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]

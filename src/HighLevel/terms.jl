@@ -25,7 +25,7 @@ julia> m()
 ```
 """
 function default_term end
-default_term() = default_one_term(PnmlCore())
+default_term() = default_term(PnmlCore())
 default_term(t::PnmlType) = default_one_term(t)
 
 """
@@ -38,7 +38,7 @@ default_one_term() = default_one_term(PnmlCore())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCore
 default_one_term(::AbstractContinuousNet) = one(Float64)
 default_one_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => one(Int)))
-default_one_term(x::Any) = throw(ArgumentError("expected PnmlType, got: $(typeof(x))"))
+default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
 $(TYPEDSIGNATURES)
@@ -50,9 +50,7 @@ default_zero_term() = default_zero_term(PnmlCore())
 default_zero_term(::PnmlType) = zero(Int)
 default_zero_term(::AbstractContinuousNet) = zero(Float64)
 default_zero_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => zero(Int)))
-default_zero_term(x::Any) = throw(ArgumentError("expected PnmlType, got: $(typeof(x))"))
-
-#TODO Allow continuous-valued terms.
+default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
 $(TYPEDEF)
@@ -67,9 +65,6 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> t = Term()
 Term(:empty, IdDict{Symbol, Any}())
-
-julia> PnmlDict
-IdDict{Symbol, Any}
 
 julia> t()
 1
@@ -103,9 +98,6 @@ Default term value defaults to 1. Use the default argument to specify a default.
 julia> t = Term()
 Term(:empty, IdDict{Symbol, Any}())
 
-julia> PnmlDict
-IdDict{Symbol, Any}
-
 julia> t()
 1
 
@@ -117,5 +109,4 @@ julia> t(2.3)
 
 ```
 """
-#(t::Term)() = t(default_one_term(HLCore())) #! HLCore restricts `Term` to AbstractHLCore subtypes
-(t::Term)(default=default_one_term(HLCore())) = _evaluate(get(t.dict, :value, default)) #
+(t::Term)(default=default_one_term(HLCore())) = _evaluate(get(t.dict, :value, default))

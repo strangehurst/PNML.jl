@@ -30,12 +30,7 @@ tools(l::AbstractLabel) = tools(l.com)
 has_labels(l::AbstractLabel) = has_labels(l.com)
 labels(l::AbstractLabel) = labels(l.com)
 
-has_label(l::AbstractLabel, tagvalue::Symbol) =
-    if has_labels(l)
-        has_label(labels(l), tagvalue)
-    else
-        false
-    end
+has_label(l::AbstractLabel, tag::Symbol) = has_labels(l) ? has_label(labels(l), tag) : false
 
 #--------------------------------------------
 """
@@ -54,10 +49,11 @@ $(TYPEDFIELDS)
 
 Wrap a `PnmlDict` for an `XMLNode` that is treated as a pnml label. Use the XML tag as identifier.
 
-Used for "unclaimed" labels that do not have, or we choose not to use, a dedicated parse method.
-Claimed labels will have a type/parser defined to make use of the structure defined by the pntd
-schema. See [`Name`](@ref), the only label defined in [`PnmlCore`](@ref)
-and [`HLLabel`](@ref) for similar treatment of "unclaimed" High-Level labels.
+Used for "unclaimed" labels that do not have, or we choose not to use,
+a dedicated parse method. Claimed labels will have a type/parser defined to make use
+of the structure defined by the pntd schema.
+
+See [`Name`](@ref), the only label defined in [`PnmlCore`](@ref) and [`HLLabel`](@ref).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol

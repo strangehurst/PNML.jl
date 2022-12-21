@@ -4,29 +4,39 @@ function getfirst(f::Function, v)
     isnothing(i) ? nothing : v[i]
 end
 
+#! TODO Move this somewhere.
 """
 Use PNML type as trait to select type of marking.
 """
-markingtype(::PnmlType) = PTMarking
-markingtype(::AbstractHLCore) = HLMarking
-
-"""
-Use PNML type as trait to select type of inscription.
-"""
-inscriptiontype(::PnmlType) = PTInscription
-inscriptiontype(::AbstractHLCore) = HLInscription
-
+function markingtype end
 
 """
 Use PNML type as trait to select valuetype of marking.
 """
-markingvaluetype(::PnmlType) = Int
-markingvaluetype(::AbstractContinuousNet) = Float64
-markingvaluetype(::AbstractHLCore) = Term
+function markingvaluetype end
 
 """
 Use PNML type as trait to select type of inscription.
 """
+function inscriptiontype end
+
+"""
+Use PNML type as trait to select type of inscription.
+"""
+function inscriptionvaluetype end
+
+markingtype(::PnmlType) = PTMarking
+
+markingvaluetype(::PnmlType) = Int
+markingvaluetype(::AbstractContinuousNet) = Float64
+
+inscriptiontype(::PnmlType) = PTInscription
+
 inscriptionvaluetype(::PnmlType) = Int
 inscriptionvaluetype(::AbstractContinuousNet) = Float64
+
+markingtype(::AbstractHLCore) = HLMarking
+markingvaluetype(::AbstractHLCore) = Term
+
+inscriptiontype(::AbstractHLCore) = HLInscription
 inscriptionvaluetype(::AbstractHLCore) = Term

@@ -1,7 +1,6 @@
 """
 Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 
-
 # Imports
 $(DocStringExtensions.IMPORTS)
 
@@ -30,7 +29,6 @@ export pnmltype, pntd_symbol
 
 """
 $(TYPEDEF)
-
 Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
 
 Each Petri Net Markup Language (PNML) network element will have a single pntd URI

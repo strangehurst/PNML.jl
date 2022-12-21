@@ -8,7 +8,8 @@ module PnmlIDRegistrys
 
 using DocStringExtensions
 
-export IDRegistry, register_id!, isregistered
+export PnmlIDRegistry, register_id!, isregistered_id
+export IDRegistry, isregistered #! TODO rename users
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -16,14 +17,17 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct IDRegistry
+struct PnmlIDRegistry
     ids::Set{Symbol}
     lk::ReentrantLock
 end
 
-IDRegistry() = IDRegistry(Set{Symbol}(), ReentrantLock())
+PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock())
 
-function Base.show(io::IO, reg::IDRegistry)
+"TODO rename all current uses?"
+const IDRegistry = PnmlIDRegistry #! TODO rename
+
+function Base.show(io::IO, reg::PnmlIDRegistry)
     print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
 end
 
@@ -44,8 +48,8 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-register_id!(reg::IDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
-function register_id!(reg::IDRegistry, id::Symbol)
+register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
+function register_id!(reg::PnmlIDRegistry, id::Symbol)
     lock(reg.lk) do
         id ∈ reg.ids && duplicate_id_action(id)
         push!(reg.ids, id)
@@ -58,12 +62,15 @@ $(TYPEDSIGNATURES)
 
 Return `true` if `s` is registered in `reg`.
 """
-isregistered(reg::IDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
-function isregistered(reg::IDRegistry, id::Symbol)
+isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+function isregistered_id(reg::PnmlIDRegistry, id::Symbol)
     lock(reg.lk) do
         id ∈ reg.ids
     end
 end
+
+"TODO rename all current uses?"
+const isregistered = isregistered_id #! TODO rename
 
 """
 $(TYPEDSIGNATURES)
@@ -71,7 +78,7 @@ $(TYPEDSIGNATURES)
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
 """
-function reset_registry!(reg::IDRegistry)
+function reset_registry!(reg::PnmlIDRegistry)
     lock(reg.lk) do
         empty!(reg.ids)
     end
@@ -82,7 +89,7 @@ $(TYPEDSIGNATURES)
 
 Is the set of id symbols empty?
 """
-function Base.isempty(reg::IDRegistry)
+function Base.isempty(reg::PnmlIDRegistry)
     lock(reg.lk) do
         isempty(reg.ids)
     end

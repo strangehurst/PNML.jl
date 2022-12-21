@@ -63,7 +63,6 @@ function _harvest_any!(node::XMLNode, pntd::PnmlType, parser; kw...)
         # <tag/> and <tag></tag> will not have any nodecontent.
         dict[:content] = ""  # serves as a flag. (is key present?)
     end
-    #@show dict
     return dict
 end
 

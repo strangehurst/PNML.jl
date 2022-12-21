@@ -300,7 +300,7 @@ function parse_transition(node, pntd; kw...)
         :condition => nothing, #default_condition(pntd),
     )
     parse_transition_2!(pntd, d, node; kw...)
-    #! Allow condition to be nothing.
+    #! Allow condition to be nothing here.
     Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
 end
 
@@ -336,7 +336,7 @@ function parse_arc(node, pntd; kw...)
         :id => register_id!(kw[:reg], node["id"]),
         :source => Symbol(node["source"]),
         :target => Symbol(node["target"]),
-        :inscription => default_inscription(pntd),
+        :inscription => nothing,
     )
     foreach(elements(node)) do child
         parse_arc_labels!(d, child, pntd; kw...) # Dispatch on pntd
@@ -479,9 +479,6 @@ end
 # PNML annotation-label XML element parsers.
 #
 #----------------------------------------------------------
-
-# Place Transition nets (PT-Nets) use only the text tag of a label for
-# the meaning of marking and inscriptions.
 
 """
 $(TYPEDSIGNATURES)

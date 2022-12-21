@@ -34,6 +34,7 @@ include("utils.jl")
 # PNML CORE
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
+
 include("Core/labels.jl")
 include("Core/anyelement.jl")
 include("Core/graphics.jl")
@@ -43,7 +44,15 @@ include("Core/name.jl")
 
 include("IR/ptinscriptions.jl")
 include("IR/ptmarkings.jl")
+
 include("IR/defaults.jl")
+
+include("IR/nodes.jl")
+include("IR/page.jl")
+include("IR/net.jl")
+include("IR/model.jl")
+
+include("IR/flatten.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
@@ -56,15 +65,16 @@ include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
 include("HighLevel/conditions.jl")
 
-include("IR/evaluate.jl")
+# PETRI NET
+include("Net/petrinet.jl")
+include("Net/simplenet.jl")
+include("Net/hlnet.jl")
 
-include("IR/nodes.jl")
-include("IR/page.jl")
-include("IR/net.jl")
-include("IR/model.jl")
+include("Continuous/rates.jl")
+include("Net/transition_function.jl")
 
-include("IR/flatten.jl")
 include("IR/show.jl")
+include("IR/evaluate.jl")
 
 # PARSE
 include("Parse/parseutils.jl")
@@ -75,12 +85,6 @@ include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 
-# PETRI NET
-include("Net/petrinet.jl")
-include("Net/simplenet.jl")
-include("Net/hlnet.jl")
-include("Continuous/rates.jl")
-include("Net/transition_function.jl")
 
 export @xml_str,
     xmlroot,

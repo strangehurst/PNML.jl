@@ -1,16 +1,10 @@
 # Core types and methods documented in interfaces.jl.
 
-"""
-Alias for union of type `T` or `nothing`.
-$(TYPEDEF)
-"""
+"Alias for union of type `T` or `Nothing`."
 const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------
-"""
-$(TYPEDEF)
-Alias for Dict with Symbol as key.
-"""
+"Alias for `Dict` with `Symbol` as key."
 const PnmlDict = IdDict{Symbol, Any}
 
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
@@ -82,7 +76,6 @@ refid(r::ReferenceNode) = r.ref
 #--------------------------------------------
 """
 $(TYPEDEF)
-
 Tool specific objects can be attached to
 [`PnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
 """

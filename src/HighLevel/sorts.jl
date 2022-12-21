@@ -1,5 +1,5 @@
 """
-$(TYPEDSIGNATURES)
+$(TYPEDEF)
 
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 
@@ -11,7 +11,7 @@ struct BuiltInSort <: AbstractSort
 end
 
 """
-$(TYPEDSIGNATURES)
+$(TYPEDEF)
 
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
@@ -20,7 +20,7 @@ struct MultisetSort <: AbstractSort
 end
 
 """
-$(TYPEDSIGNATURES)
+$(TYPEDEF)
 
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 Should contain an ordered collection of sorts.
@@ -30,7 +30,7 @@ struct ProductSort <: AbstractSort
 end
 
 """
-$(TYPEDSIGNATURES)
+$(TYPEDEF)
 
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
@@ -39,9 +39,10 @@ struct UserSort <: AbstractSort
 end
 
 """
-Return default sort based on `PNTD`. Has meaning of empty, as in `zero`.
+Return instance of default sort based on `PNTD`. Has meaning of empty, as in `zero`.
 """
 function default_sort end
+
 default_sort(::PnmlType)              = zero(Integer) #!
 default_sort(::AbstractContinuousNet) = zero(Float64) #!
 default_sort(::AbstractHLCore)        = Sort() #!

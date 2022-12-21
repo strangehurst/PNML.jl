@@ -16,7 +16,6 @@ end
 
 """
 $(TYPEDEF)
-
 $(TYPEDFIELDS)
 """
 struct MalformedException <: PnmlException

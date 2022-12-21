@@ -12,11 +12,13 @@ struct PnmlNet{PNTD<:PnmlType,D}
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
-end
 
-function PnmlNet(pntd::PnmlType, id::Symbol, pages, declare, name,
-                    oc::ObjectCommon, xml::XMLNode)
-    PnmlNet{typeof(pntd),typeof(declare)}(pntd, id, pages, declare, name, oc, xml)
+    function PnmlNet(pntd::PnmlType, id::Symbol, pages, declare, name,
+                     oc::ObjectCommon, xml::XMLNode)
+        isempty(pages) && throw(ArgumentError("PnmlNet cannot have empty `pages`"))
+        pages isa Vector{Page} || throw(ArgumentError("PnmlNet `pages`` must be a Vector{Page}"))
+        new{typeof(pntd),typeof(declare)}(pntd, id, pages, declare, name, oc, xml)
+    end
 end
 
 pid(net::PnmlNet)          = net.id
@@ -42,7 +44,8 @@ refplaces(net::PnmlNet)      = _reduce(refplaces, net, RefPlace[])
 reftransitions(net::PnmlNet) = _reduce(reftransitions, net, RefTransition[])
 
 # Apply `f` to pages of net. Return first non-nothing. Else return default.
-_ppages(f, x::Union{PnmlNet, Page}, id::Symbol, default=nothing) = begin
+function _ppages(f::F, x::Union{PnmlNet, Page}, id::Symbol, default=nothing) where {F}
+    #@show "_ppages $(typeof(x)) $(pid(x))"
     for pg in pages(x)
         pl = f(pg, id)
         !isnothing(pl) && return pl
@@ -55,16 +58,13 @@ place_ids(net::PnmlNet)             = _reduce(place_ids, net)
 has_place(net::PnmlNet, id::Symbol) = _ppages(has_place, net, id, false)
 
 marking(net::PnmlNet, placeid::Symbol) = _ppages(marking, net, id)
-currentMarkings(net::PnmlNet) = begin
-    #@info "initialMarking net $(pid(net))"
-    LVector((;[p=>marking(place(net, p))() for p in place_ids(net)]...))
-end
+currentMarkings(net::PnmlNet) = LVector((;[p=>marking(place(net, p))() for p in place_ids(net)]...))
 
 transition(net::PnmlNet, id::Symbol)     = _ppages(transition, net, id)
 transition_ids(net::PnmlNet,)            = _reduce(transition_ids, net)
 has_transition(net::PnmlNet, id::Symbol) = _ppages(has_transition, net, id, false)
 
-condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition,net, trans_id)
+condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition, net, trans_id)
 conditions(net::PnmlNet) =
     LVector((;[t=>condition(transition(net, t)) for t in transition_ids(net)]...))
 
@@ -72,13 +72,16 @@ arc(net::PnmlNet, id::Symbol)      = _ppages(arc, net, id)
 arc_ids(net::PnmlNet)              = _reduce(arc_ids, net)
 has_arc(net::PnmlNet, id::Symbol)  = _ppages(has_arc, net, id, false)
 
-all_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(all_arcs,id), net)
-src_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(src_arcs,id), net)
-tgt_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(tgt_arcs,id), net)
+all_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(all_arcs, id), net)
+src_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(src_arcs, id), net)
+tgt_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(tgt_arcs, id), net)
 
 inscription(net::PnmlNet, arc_id::Symbol) = _ppages(inscription, net, arc_id)
 
-refplace(net::PnmlNet, id::Symbol)      = _ppage(refplace, net, id)
+refplace(net::PnmlNet, id::Symbol)      = begin
+    #@show "refplace net $(pid(net)) $id"
+    _ppage(refplace, net, id)
+end
 refplace_ids(net::PnmlNet)              = _reduce(refplace_ids, net)
 has_refP(net::PnmlNet, ref_id::Symbol)  = _ppage(has_refP, net, ref_id, false)
 
@@ -100,6 +103,12 @@ place_ids(net::PnmlNet, page_idx)             = place_ids(pages(net)[page_idx])
 has_place(net::PnmlNet, id::Symbol, page_idx) = has_place(pages(net)[page_idx], id)
 
 marking(net::PnmlNet, placeid::Symbol, page_idx) = marking(pages(net)[page_idx], placeid)
+#! TODO  Subpages
+"""
+    currentMarkings(n) -> LVector{markingvaluetype(n)}
+
+LVector labelled with place id and holding marking's value.
+"""
 currentMarkings(net::PnmlNet, page_idx) = currentMarkings(pages(net)[page_idx])
 
 transition(net::PnmlNet, id::Symbol, page_idx)     = transition(pages(net)[page_idx], id)

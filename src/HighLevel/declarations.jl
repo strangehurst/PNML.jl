@@ -10,11 +10,10 @@ abstract type AbstractOperator <: AbstractTerm end
 abstract type AbstractSort end
 
 """
+$(TYPEDEF)
 Declarations are the core of high-level Petri Net.
 They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
-
-$(TYPEDEF)
 """
 abstract type AbstractDeclaration <: HLAnnotation end
 
@@ -114,7 +113,6 @@ end
 
 """
 Label of a high-level net or page that holds zero or more [`AbstractDeclaration`](@ref).
-Implemented as `Any[]` so beware type-stability issues.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -130,6 +128,7 @@ Declaration() = Declaration(Any[], ObjectCommon(), nothing)
 declarations(d::Declaration) = d.declarations
 xmlnode(d::Declaration) = d.xml
 #
+#TODO Document/implement/test collection interface of Declaration.
 Base.length(d::Declaration) = (length ∘ declarations)(d)
 
 # Flattening pages combines declarations into the first page.

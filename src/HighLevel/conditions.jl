@@ -29,7 +29,7 @@ false
 mutable struct Condition{PNTD,T} <: HLAnnotation
     pntd::PNTD
     text::Maybe{String}
-    term::T #! Rname to value.
+    term::T #! Rexname to value.
     com::ObjectCommon
 
     function Condition(pntd, t, v, c)

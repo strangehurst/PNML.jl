@@ -77,9 +77,8 @@ makedocs(;
                                 # CI means publish documentation on GitHub.
                                 prettyurls=get(ENV, "CI", nothing) == "true",
                                 canonical="https://strangehurst.github.io/PNML.jl",
-                                assets=String[],
-                                sidebar_sitename=true,
-                                prerender=false,
+                                #assets=String[],
+                                #prerender=false,
                                 #no highlight.js
                                 ),
          sitename="PNML.jl",

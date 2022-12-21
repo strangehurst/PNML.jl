@@ -44,15 +44,14 @@ refplaces(page::Page)      = page.refPlaces
 reftransitions(page::Page) = page.refTransitions
 
 #! Subpages need to be traversed.
-place(page::Page, id::Symbol)        =  getfirst(Fix2(haspid, id), places(page))
+place(page::Page, id::Symbol)        = getfirst(Fix2(haspid, id), places(page))
 place_ids(page::Page)                = map(pid, places(page))
 has_place(page::Page, id::Symbol)    = any(Fix2(haspid, id), places(page))
 
 marking(page::Page, placeid::Symbol) = marking(place(page, placeid))
+
 currentMarkings(page::Page)           = currentMarkings(page, place_ids(page))
-currentMarkings(page::Page, id_vec::Vector{Symbol}) = begin
-    LVector((;[p=>marking(page, p)() for p in id_vec]...))
-end
+currentMarkings(page::Page, id_vec::Vector{Symbol}) = LVector((;[p=>marking(page, p)() for p in id_vec]...))
 
 transition(page::Page, id::Symbol)      = getfirst(Fix2(haspid, id), transitions(page))
 transition_ids(page::Page)              = map(pid, page.transitions)
@@ -60,8 +59,8 @@ has_transition(page::Page, id::Symbol)  = any(ispid(id), transition_ids(page))
 
 condition(page::Page, trans_id::Symbol) = condition(transition(page, trans_id))
 conditions(page::Page)                  = conditions(page, transition_ids(page))
-conditions(page::Page, idvec::Vector{Symbol}) =
-                    LVector((;[t=>condition(page, t) for t in idvec]...))
+conditions(page::Page,
+           idvec::Vector{Symbol}) = LVector((;[t=>condition(page, t) for t in idvec]...))
 
 arc(page::Page, id::Symbol)      = getfirst(Fix2(haspid, id), arcs(page))
 arc_ids(page::Page)              = map(pid, arcs(page))

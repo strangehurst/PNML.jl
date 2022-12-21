@@ -52,4 +52,3 @@ $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(hli.term)
-#!(hli::HLInscription)() = isnothing(hli.term) ? default_one_term() : _evaluate(hli.term)

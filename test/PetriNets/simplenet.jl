@@ -81,11 +81,22 @@ testlogger = TestLogger()
     #@show typeof(first(pages(net.net)))
     #@show typeof(net.net)
     #@show typeof(net)
+    #println()
+    #! ispid a function that acts on things that have a pnml id, not id directly.
+    # @show ispid(:foo)
+    # @show typeof(ispid(:foo))
+    # @test_call ispid(:foo)
+    # @show filter(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
+    # @test any(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
+    # @test !any(ispid(:DDD), [:a, :b, :x, :X, :x, :y, :z])
+    #println()
 
     for top in [first(pages(net.net)), net.net, net]
         @test_call places(top)
-        #@show typeof(places(top))
+        #@show typeof(top)
         for p in @inferred places(top)
+            #@show "place $(pid(p))"
+            @test_call has_place(top, pid(p))
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
@@ -98,7 +109,9 @@ testlogger = TestLogger()
     for top in [net, net.net, first(pages(net.net))]
         @test_call transitions(top)
         for t in @inferred transitions(top)
+            #@show "transition $(pid(t))"
             @test ispid(pid(t))(pid(t))
+            @test_call has_transition(top, pid(t))
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
@@ -112,6 +125,7 @@ testlogger = TestLogger()
     for top in [net, net.net, first(pages(net.net))]
         @test_call arcs(top)
         for a in @inferred arcs(top)
+            #@show "arc $(pid(a))"
             #@show a
             #@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
             #@show has_arc(top, pid(a))
