@@ -23,12 +23,12 @@ default_marking(x::Any) = error("no default marking for $(typeof(x))")
 #------------------------------------------------------------------------------
 default_condition(p::PnmlType) = Condition(p, true)
 default_inscription(::PnmlType) = one(Int)
-default_marking(::PnmlType) = PTMarking(zero(Int))
+default_marking(::PnmlType) = Marking(zero(Int))
 
 #------------------------------------------------------------------------------
 default_condition(p::AbstractContinuousNet) = Condition(p, true)
 default_inscription(::AbstractContinuousNet) = one(Float64)
-default_marking(::AbstractContinuousNet) = PTMarking(zero(Float64))
+default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
 
 #------------------------------------------------------------------------------
 default_condition(p::AbstractHLCore) = Condition(p, true) #! should be a term

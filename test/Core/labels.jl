@@ -139,25 +139,25 @@ end
     """
 
     n = parse_node(node; reg = IDRegistry())
-    @test typeof(n) <: PNML.PTMarking
+    @test typeof(n) <: PNML.Marking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(n.value) <: Union{Int,Float64}
     @test n.value == n()
 
-    mark1 = PNML.PTMarking(2)
-    @test_call PNML.PTMarking(2)
+    mark1 = PNML.Marking(2)
+    @test_call PNML.Marking(2)
     @test typeof(mark1()) == typeof(2)
     @test mark1() == 2
     @test_call mark1()
 
-    mark2 = PNML.PTMarking(3.5)
-    @test_call PNML.PTMarking(3.5)
+    mark2 = PNML.Marking(3.5)
+    @test_call PNML.Marking(3.5)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
     @test_call mark2()
 
-    mark3 = PNML.PTMarking()
-    @test_call PNML.PTMarking()
+    mark3 = PNML.Marking()
+    @test_call PNML.Marking()
     @test typeof(mark3()) == typeof(default_marking(PnmlCore())())
     @test mark3() == default_marking(PnmlCore())()
     @test_call mark3()
@@ -167,7 +167,7 @@ end
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
         n = parse_node(node; reg = IDRegistry())
-        @test typeof(n) <: PNML.PTInscription
+        @test typeof(n) <: PNML.Inscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test n.value == 12
         @test n.com.graphics === nothing

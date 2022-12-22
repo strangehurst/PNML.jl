@@ -102,15 +102,15 @@ julia> i()
 ```
 
 
-```jldoctest; setup=:(using PNML; using PNML: default_marking, PTMarking, HLMarking, pnmltype)
+```jldoctest; setup=:(using PNML; using PNML: default_marking, Marking, HLMarking, pnmltype)
 julia> m = default_marking(PnmlCore())
-PTMarking(0, )
+Marking(0, )
 
 julia> m()
 0
 
 julia> m = default_marking(ContinuousNet())
-PTMarking(0.0, )
+Marking(0.0, )
 
 julia> m()
 0.0

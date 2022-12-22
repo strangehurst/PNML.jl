@@ -25,13 +25,11 @@ Use PNML type as trait to select type of inscription.
 """
 function inscriptionvaluetype end
 
-markingtype(::PnmlType) = PTMarking
-
+markingtype(::PnmlType) = Marking
 markingvaluetype(::PnmlType) = Int
 markingvaluetype(::AbstractContinuousNet) = Float64
 
-inscriptiontype(::PnmlType) = PTInscription
-
+inscriptiontype(::PnmlType) = Inscription
 inscriptionvaluetype(::PnmlType) = Int
 inscriptionvaluetype(::AbstractContinuousNet) = Float64
 

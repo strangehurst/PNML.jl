@@ -507,7 +507,7 @@ function parse_initialMarking(node, pntd; kw...)
         @warn "missing  <initialMarking> value"
         d[:value] = _evaluate(default_marking(pntd))
     end
-    PTMarking(d[:value], ObjectCommon(d))
+    Marking(d[:value], ObjectCommon(d))
 end
 
 """
@@ -530,7 +530,7 @@ function parse_inscription(node, pntd::PnmlType; kw...)
         end
         d[:value] = _evaluate(default_inscription(pntd))
     end
-    PTInscription(d[:value], ObjectCommon(d))
+    Inscription(d[:value], ObjectCommon(d))
 end
 
 """

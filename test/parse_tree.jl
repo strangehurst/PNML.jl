@@ -64,7 +64,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 @test nodename(p) == "place"
                 i = parse_node(firstchild("initialMarking", p); reg)
                 @test_call firstchild("initialMarking", p)
-                @test typeof(i) <: PNML.PTMarking
+                @test typeof(i) <: PNML.Marking
                 @test typeof(i.value) <: Union{Int,Float64}
                 @test i.value >= 0
                 #@test xmlnode(i) isa Maybe{EzXML.Node}
@@ -83,7 +83,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 ins = firstchild("inscription", a)
                 if ins !== nothing
                     i = parse_node(ins; reg)
-                    @test typeof(i) <: PNML.PTInscription
+                    @test typeof(i) <: PNML.Inscription
                     @test typeof(i.value) <: Union{Int,Float64}
                     @test i.value > 0
                     #@test xmlnode(i) isa Maybe{EzXML.Node}

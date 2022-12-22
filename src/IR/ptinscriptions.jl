@@ -6,30 +6,30 @@ Labels an Arc.
 
 # Examples
 
-```jldoctest; setup=:(using PNML: PTInscription)
-julia> i = PTInscription()
-PTInscription(1, )
+```jldoctest; setup=:(using PNML: Inscription)
+julia> i = Inscription()
+Inscription(1, )
 
 julia> i()
 1
 
-julia> i = PTInscription(3)
-PTInscription(3, )
+julia> i = Inscription(3)
+Inscription(3, )
 
 julia> i()
 3
 ```
 """
-struct PTInscription{T<:Union{Int,Float64}}  <: Annotation
+struct Inscription{T<:Union{Int,Float64}}  <: Annotation
     value::T
     com::ObjectCommon
 end
 
-PTInscription() = PTInscription(one(Int))
-PTInscription(value::Union{Int,Float64}) = PTInscription(value, ObjectCommon())
+Inscription() = Inscription(one(Int))
+Inscription(value::Union{Int,Float64}) = Inscription(value, ObjectCommon())
 
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`PTInscription`](@ref).
+Evaluate a [`Inscription`](@ref).
 """
-(inscription::PTInscription)() = _evaluate(inscription.value)
+(inscription::Inscription)() = _evaluate(inscription.value)

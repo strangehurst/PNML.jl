@@ -52,8 +52,8 @@ Todo: Continuous Petri Net
 
 | Abbreviation | Full Name     | Node       | Label Description                                   |
 |:-------------|:--------------|:-----------|:----------------------------------------------------|
-| PTM          | PTMarking     | Place      |                                                     |
-| PTI          | PTInscription | Arc        |                                                     |
+| PTM          | Marking     | Place      |                                                     |
+| PTI          | Inscription | Arc        |                                                     |
 | HLM          | HLMarking     | Place      |                                                     |
 | HLI          | HLInscription | Arc        |                                                     |
 | Cond         | Condition     | Transition |                                                     |
@@ -76,8 +76,8 @@ Page, Arc, Place, Transition define the graph of a petri net.
 type_tree(PNML.PnmlObject) # hide
 ```
 ## AbstractLabel
-Labels are attached to `PnmlObject`s. 
-Kinds of label include: marking, inscription, condition and 
+Labels are attached to `PnmlObject`s.
+Kinds of label include: marking, inscription, condition and
 declarations of sorts, operators, and variables.
 ```@example type
 type_tree(PNML.AbstractLabel) # hide
@@ -106,11 +106,11 @@ Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 type_tree(PNML.AbstractDeclaration) # hide
 ```
 ## AbstractSort
-High-level net's `Place` has a sort. 
+High-level net's `Place` has a sort.
 ```@example type
 type_tree(PNML.AbstractSort) # hide
 ```
-## AbstractTerm 
+## AbstractTerm
 Part of the *many-sorted algebra* of a High-level net.
 ```@example type
 type_tree(PNML.AbstractTerm) # hide

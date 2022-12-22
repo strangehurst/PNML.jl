@@ -56,12 +56,12 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{PNTD,ITYPE} <: PnmlObject{PNTD}
+mutable struct Arc{PNTD,I} <: PnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     source::Symbol
     target::Symbol
-    inscription::ITYPE #Union{PTInscription,HLInscription}}
+    inscription::I
     name::Maybe{Name}
     com::ObjectCommon
 

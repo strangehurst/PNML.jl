@@ -404,16 +404,16 @@ end
 #-------------------------------------------------------------------------------------
 
 #-------------------
-Base.summary(io::IO, ptm::PTMarking)  = summary(io, summary(ptm))
-function Base.summary(ptm::PTMarking)
+Base.summary(io::IO, ptm::Marking)  = summary(io, summary(ptm))
+function Base.summary(ptm::Marking)
     string(typeof(ptm))
 end
 
-function Base.show(io::IO, ptm::PTMarking)
+function Base.show(io::IO, ptm::Marking)
     pprint(io, ptm)
 end
 
-quoteof(m::PTMarking) = :(PTMarking($(quoteof(m.value)), $(quoteof(m.com))))
+quoteof(m::Marking) = :(Marking($(quoteof(m.value)), $(quoteof(m.com))))
 
 #-------------------
 Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
@@ -439,13 +439,13 @@ end
 quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(c.term)), $(quoteof(c.com))))
 
 #-------------------
-function Base.show(io::IO, inscription::PTInscription)
+function Base.show(io::IO, inscription::Inscription)
     pprint(io, inscription)
 end
-function Base.show(io::IO, ::MIME"text/plain", inscription::PTInscription)
+function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
     show(io, inscription)
 end
-quoteof(i::PTInscription) = :(PTInscription($(quoteof(i.value)), $(quoteof(i.com))))
+quoteof(i::Inscription) = :(Inscription($(quoteof(i.value)), $(quoteof(i.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
