@@ -55,12 +55,12 @@ using PNML
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 
-for m ∈ [PNML]
-    for i ∈ propertynames(m)
-       xxx = getproperty(m, i)
-       println(xxx)
-    end
- end
+# for m ∈ [PNML]
+#     for i ∈ propertynames(m)
+#        xxx = getproperty(m, i)
+#        println(xxx)
+#     end
+#  end
 
 @info("Running `makedocs` from make.jl.")
 
@@ -84,17 +84,16 @@ makedocs(;
          sitename="PNML.jl",
          pages=[
             "Petri Net Markup Language" => "pnml.md",
+            "Status" => "status.md",
             "Subpackages" => "subpackages.md",
             "Intermediate Representation" => "IR.md",
             "Type Hierarchies" => "type_hierarchies.md",
             "Interfaces" => "interface.md",
-            "API" => [
-                "PNML"      => "API/library.md",
-               # "PnmlTypeDefs" => "API/pnmltypes.md"
-            ],
             "Default Values"   => "defaults.md",
+            "Evaluate" => "evaluate.md",
             "Parser" => "parser.md",
             "Examples"   => "examples.md",
+            "API" => "API/library.md",
             "Index" => "index.md",
             "acknowledgments.md",
           ],

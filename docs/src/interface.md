@@ -7,9 +7,9 @@ Pages = ["interface.md"]
 Depth = 5
 ```
 # Interface
- 
+
 !!! warning
-    Being a work in progress, there will be obsolote, opportunistic or incoherent bits.
+    Being a work in progress, there will be obsolete, optimistic or incoherent bits.
 
     Eventually this section will cover interfaces in a useful way.
 
@@ -64,7 +64,7 @@ One example is enforcing integer, non-negative, positive.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are 1st parsed into [`PnmlDict`](@ref) 
+XML <net> tags are 1st parsed into [`PnmlDict`](@ref)
 which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
@@ -164,14 +164,14 @@ methods(PNML.pid) # hide
 
 ### name - get name
 
-`PnmlObject`s and `PnmlNet`s have a name label. 
+`PnmlObject`s and `PnmlNet`s have a name label.
 [`Declaration`](@ref)s have a name attribute.
 [`ToolInfo](@ref)s have a toolname attribute.
 
 [`PNML.name`](@ref)
 ```@example methods
 methods(PNML.name) # hide
-``` 
+```
 
 ### tag - access XML tag symbol
 
@@ -179,7 +179,7 @@ methods(PNML.name) # hide
 ```@example methods
 methods(PNML.tag) # hide
 ```
-
+w
 ### has\_xml - is xml attached
 
 [`PNML.has_xml`](@ref)
@@ -491,14 +491,13 @@ methods(PNML.default_one_term) # hide
 ```
 
 Things that are functors:
-  - Marking: return `Int`, `Float64`, or `Term` 
-  - Inscription: return `Int`, `Float64`, or `Term` 
-  - Condition: return `Int`, `Float64`, or `Term` 
+  - Marking: return `Int`, `Float64`, or `Term`
+  - Inscription: return `Int`, `Float64`, or `Term`
+  - Condition: return `Int`, `Float64`, or `Term`
   - Term: return a sort's value
 
 Defaults
-  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term 
+  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term
   - inscription: return one(`Int`), one(`Float64`), or default_one_term
   - condition: return `true`, or boolean sort's true value
   - Term: return boolean sort's true value
-

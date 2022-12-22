@@ -9,18 +9,68 @@ Examples are place _initial marking_, arc _inscription_, transition _condition_,
   - transition condition is assumed to be true
   - graphics data, e.g. token position, line width, are chosen by application
 
-The specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to allow continuous values. Parsing the string for a value is first tried as 'Int' and then 'Float64'.  But it allows for nonstandard continuous and hybrid valued Petri Nets.
+The specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'.
+I choose to also allow continuous values by trying to parse the XML string first as 'Int',
+and then as 'Float64'.  Allows for nonstandard continuous and hybrid valued Petri Nets.
+Makes generating default values more interesting.
 
-See [PnmlType - Petri Net Type Definition](@ref). There are 3 kinds of nets supported by PNML.jl: discrete, continuous/hybrid, and high-level (discrete).
+There are multiple kinds of nets supported by PNML.jl differing by (among other properties)
+the kind on number they use:
+  - discrete,
+  - continuous,
+  - and multi-sorted algebra
+See [PnmlType - Petri Net Type Definition](@ref) for the full hierarchy.
 
-High-level nets are not completely implemented (as of November 2022). Also supporting continuous/hybrid high-level nets may not be possible.
+This means there are at least 3 sets of default value types. We use the pntd
 
-The values used for markings, inscriptions, conditions arepart of a multi-sorted algebra.
+A consequence is that the default value's type ripples through the type system.
 
-  - default\_sort, where sort is for the many-sorted algebra defined for high-level nets.
-  - default\_one\_term
-  - default\_zero\_term
 
+```@setup methods
+using AbstractTrees, PNML, InteractiveUtils, Markdown
+```
+
+## Methods
+
+[`PNML.default_marking`](@ref)
+```@example methods
+methods(PNML.default_marking) # hide
+```
+
+[`PNML.default_inscription`](@ref)
+```@example methods
+methods(PNML.default_inscription) # hide
+```
+
+[`PNML.default_condition`](@ref)
+```@example methods
+methods(PNML.default_condition) # hide
+```
+
+[`PNML.default_sort`](@ref)
+```@example methods
+methods(PNML.default_sort) # hide
+```
+
+[`PNML.default_term`](@ref)
+```@example methods
+methods(PNML.default_term) # hide
+```
+
+[`PNML.default_one_term`](@ref)
+```@example methods
+methods(PNML.default_one_term) # hide
+```
+
+[`PNML.default_zero_term`](@ref)
+```@example methods
+methods(PNML.default_zero_term) # hide
+```
+
+
+## Examples
+
+[`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)
 julia> m = default_condition(PnmlCore())

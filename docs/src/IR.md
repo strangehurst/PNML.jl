@@ -66,11 +66,3 @@ Some instances of `PnmlDict` are still present in the parsing mechanism.
 
 As experience with building & using more complicated pnml network models,
 more of the IR will be implemented or changed.
-
-## Default Values
-
-  - marking - zero or empty
-  - inscription - one
-  - condition - true
-
-[`default_one_term`](@ref), [`default_zero_term`](@ref)

@@ -6,43 +6,18 @@ CurrentModule = PNML
 Pages = ["library.md"]
 Depth = 2
 ```
-# PNML Reference
 
+## PNML Reference
 ```@autodocs
-Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
-Order = [:module]
+Modules = [PNML]
 ```
 
-## Types
-
+## PnmlTypeDefs Reference
 ```@autodocs
-Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
-Order = [:type]
+Modules = [PnmlTypeDefs]
 ```
 
-## Constants
-
-Docstrings for constants. This includes type  aliases.
-
+## PnmlIDRegistrys Reference
 ```@autodocs
-Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
-Order = [:constant]
-```
-
-## Functions
-
-Docstrings for functions.
-
-```@autodocs
-Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
-Order = [:function]
-```
-
-## Macros
-
-Docstrings for macros.
-
-```@autodocs
-Modules = [PNML, PnmlTypeDefs, PnmlIDRegistrys]
-Order = [:macro]
+Modules = [PnmlIDRegistrys]
 ```
