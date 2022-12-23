@@ -46,3 +46,17 @@ $(TYPEDSIGNATURES)
 Evaluate a [`Marking`](@ref) instance by returning its value.
 """
 (mark::Marking)() = _evaluate(value(mark))
+
+"""
+Use PNML type as trait to select type of marking.
+"""
+function markingtype end
+
+"""
+Use PNML type as trait to select valuetype of marking.
+"""
+function markingvaluetype end
+
+markingtype(::PnmlType) = Marking
+markingvaluetype(::PnmlType) = Int
+markingvaluetype(::AbstractContinuousNet) = Float64

@@ -44,3 +44,6 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 (hlm::HLMarking)() = _evaluate(value(hlm))
 #TODO convert to sort
 #TODO query sort
+
+markingtype(::AbstractHLCore) = HLMarking
+markingvaluetype(::AbstractHLCore) = Term

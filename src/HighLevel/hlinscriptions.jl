@@ -54,3 +54,6 @@ $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
+
+inscriptiontype(::AbstractHLCore) = HLInscription
+inscriptionvaluetype(::AbstractHLCore) = Term

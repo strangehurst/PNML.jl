@@ -36,3 +36,17 @@ $(TYPEDSIGNATURES)
 Evaluate an [`Inscription`](@ref)'s `value`.
 """
 (inscription::Inscription)() = _evaluate(value(inscription))
+
+"""
+Use PNML type as trait to select type of inscription.
+"""
+function inscriptiontype end
+
+"""
+Use PNML type as trait to select type of inscription.
+"""
+function inscriptionvaluetype end
+
+inscriptiontype(::PnmlType) = Inscription
+inscriptionvaluetype(::PnmlType) = Int
+inscriptionvaluetype(::AbstractContinuousNet) = Float64
