@@ -42,17 +42,17 @@ include("Core/toolinfos.jl")
 include("Core/objcommon.jl")
 include("Core/name.jl")
 
-include("IR/ptinscriptions.jl")
-include("IR/ptmarkings.jl")
+include("Core/inscriptions.jl")
+include("Core/markings.jl")
 
-include("IR/defaults.jl")
+include("Core/defaults.jl")
 
-include("IR/nodes.jl")
-include("IR/page.jl")
-include("IR/net.jl")
-include("IR/model.jl")
+include("Core/nodes.jl")
+include("Core/page.jl")
+include("Core/net.jl")
+include("Core/model.jl")
 
-include("IR/flatten.jl")
+include("Core/flatten.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
