@@ -9,8 +9,8 @@ Add `node` to `d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:
 function add_label!(d::PnmlDict, node::XMLNode, pntd; kw...)
     # Pnml considers any "unknown" element to be a label so its key is `:labels`.
 
-    # The value is initialized to `nothing since it is expected that most labels
-    # will have defined tags and semantics. And be given a key `:tag`.
+    # Initialized to `nothing since it is expected that most labels
+    # will have defined tags and semantics.
     # Will convert value to a vector on first use.
     if d[:labels] === nothing
         d[:labels] = PnmlLabel[]
@@ -20,14 +20,15 @@ end
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd; kw...)
     #@show "add label! $(nodename(node))"
-    #! make info optional
-    let tag=node.name
-        if haskey(tagmap, tag) &&
-                tag != "structure"
-            @info "$(tag) is known tag being treated as unclaimed."
+    if @load_preference("warn_on_unclaimed", false)
+        let tag=nodename(node)
+            #
+            if haskey(tagmap, tag) && tag != "structure"
+                @info "$(tag) is known tag being treated as unclaimed."
+            end
         end
     end
-    label = PnmlLabel(unclaimed_label(node, pntd; kw...), node) #TODO handle types
+    label = PnmlLabel(unclaimed_label(node, pntd; kw...), node)
     push!(v, label)
     return v
 end
@@ -38,17 +39,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Add [`ToolInfo`](@ref) `node` to `d[:tools]`. Return updated `d[:tools]`.
+Add [`ToolInfo`](@ref) `d[:tools]`. Return updated `d[:tools]`.
 
 The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
 function add_toolinfo!(d::PnmlDict, node, pntd; kw...)
     if d[:tools] === nothing
-        d[:tools] = ToolInfo[] #TODO: Pick type based on PNTD/Trait?
+        d[:tools] = ToolInfo[]
         #TODO TokenGraphics is a known flavor.
-        #TODO Tools may induce additional subtype, but if is hoped that
-        #TODO label based parsing is general & flexible enough to suffice.
     end
     add_toolinfo!(d[:tools], node, pntd; kw...)
 end
@@ -59,8 +58,6 @@ function add_toolinfo!(v::Vector{ToolInfo}, node, pntd; kw...)
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Does any toolinfo attached to `d` have a matching `toolname`.
 """
 function has_toolinfo end
@@ -84,8 +81,6 @@ function has_toolinfo(v::Vector{PnmlDict},
 end
 
 """
-$(TYPEDSIGNATURES)
-
 Return first toolinfo having a matching toolname and version.
 """
 function get_toolinfo end
@@ -112,24 +107,20 @@ function get_toolinfos(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"
 end
 
 """
-$(TYPEDSIGNATURES)
-Match toolname and version.
+    _match(ti::ToolInfo, name::AbstractString)
+    _match(ti::ToolInfo, name::String, version::String)
+    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex)
+
+Match toolname and version. Default is any version.
 """
 function _match end
-function _match(ti::ToolInfo, name::AbstractString)
-    #@show "match toolinfo $name"
-    _match(ti.info, Regex(name))
-end
-function _match(ti::ToolInfo, name::String, version::String)
-    #@show "match toolinfo $name, $version"
-    _match(ti.inf, Regex(name), Regex(version))
-end
+_match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
+_match(ti::ToolInfo, name::String, version::String) = _match(ti.inf, Regex(name), Regex(version))
+
 function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
     #@show "match toolinfo $namerex, $versionrex"
     match_name = match(namerex, name(ti))
     match_version = match(versionrex, version(ti))
-    #@show match_name
-    #@show match_version
     !isnothing(match_name) && !isnothing(match_version)
 end
 
@@ -163,10 +154,12 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Merge `xs` into dictonary with default pnml HLannotation label tags.
-Used on pnml tags below a [`PnmlNode`](@ref) tag.
-Label level tags include: name, inscription, initialMarking.
-Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name tag.
+Merge `xs` into dictonary with default common keys and
+High-Level annotation label keys `text` and `structure'.
+
+Used on pnml label below a [`PnmlNode`](@ref).
+
+Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name.
 See also: [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(node, xs...)
@@ -176,7 +169,6 @@ function pnml_label_defaults(node, xs...)
              xs...)
 end
 
-
 #---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -185,8 +177,8 @@ Update `d` with any graphics, tools, and label child of `node`.
 Used by [`parse_pnml_node_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
 
 Note that "labels" are the "everything else" option and this should be called after parsing
-any elements that has an expected tag. Any tag that is encountered in an unexpected location
-should be treated as an anonymous label for parsing.
+any elements that has an expected tag. Any tag that is in an unexpected location
+should be treated as an anonymous label.
 """
 function parse_pnml_common!(d::PnmlDict, node, pntd; kw...)
     @match nodename(node) begin
@@ -229,8 +221,6 @@ end
 
 #---------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-
 Parse string as a number. First try integer then float.
 """
 function number_value(s::AbstractString)
