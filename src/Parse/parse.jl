@@ -1,12 +1,3 @@
-function check_nodename(n, s)
-    if nodename(n) == s
-        return s # used to be nodename
-    else
-      throw(ArgumentError(string("element name wrong, expected ", s,
-                                 ", got ", nodename(n))))
-    end
-end
-
 """
 $(TYPEDSIGNATURES)
 
@@ -185,7 +176,7 @@ function parse_page(node, pntd; kw...)
         :declaration => Declaration(), #! HL
         :pages => Page[],
     )
-    parse_page_2!(pntd, d, node; kw...)
+    parse_page_2!(d, node, pntd; kw...)
     #pprintln(IOContext(stdout, :displaysize => (24, 120)), d)
     #println()
     #@show typeof(d[:places]), d[:places]
@@ -206,10 +197,10 @@ function parse_page(node, pntd; kw...)
     )
 end
 
-""
+
 function parse_page_2! end
 
-function parse_page_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
+function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType; kw...)
     foreach(elements(node)) do child
         #!@show "parse_page_2! $pntd $(nodename(child))"
         @match nodename(child) begin
@@ -223,23 +214,7 @@ function parse_page_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
-end
-
-function parse_page_2!(pntd::PnmlType, d::PnmlDict, node::XMLNode; kw...)
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "place" => push!(d[:places], parse_place(child, pntd; kw...))
-            "transition" => push!(d[:trans], parse_transition(child, pntd; kw...))
-            "arc" => push!(d[:arcs], parse_arc(child, pntd; kw...))
-            "referencePlace" => push!(d[:refP], parse_refPlace(child, pntd; kw...))
-            "referenceTransition" =>
-                push!(d[:refT], parse_refTransition(child, pntd; kw...))
-            # See note above about declarations vs. declaration.
-            "declaration" => (d[:declaration] = parse_declaration(child, pntd; kw...)) #! HL
-            "page" => push!(d[:pages], parse_page(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
-        end
-    end
+    return d
 end
 
 """
