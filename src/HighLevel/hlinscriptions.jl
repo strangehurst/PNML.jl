@@ -37,8 +37,7 @@ julia> i4()
 """
 struct HLInscription <: HLAnnotation
     text::Maybe{String}
-    "Any <structure> child must be a many-sorted algebra term for a <hlinscription>."
-    term::Any #! rename to value
+    term::Any # <structure> content must be a many-sorted algebra term.
     com::ObjectCommon
 end
 
@@ -47,8 +46,10 @@ HLInscription(s::AbstractString) = HLInscription(s, nothing)
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
+value(i::HLInscription) = i.term
+
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
-(hli::HLInscription)() = _evaluate(hli.term)
+(hli::HLInscription)() = _evaluate(value(hli))

@@ -33,11 +33,13 @@ HLMarking(s::AbstractString) = HLMarking(s, nothing)
 HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon())
 HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
 
+value(m::HLMarking) = m.term
+
 #! HLMarking is a multiset, not an expression.
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.
 """
-(hlm::HLMarking)() = _evaluate(hlm.term)
+(hlm::HLMarking)() = _evaluate(value(hlm))
 #TODO convert to sort
 #TODO query sort

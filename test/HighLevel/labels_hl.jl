@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode
+using PNML: Maybe, tag, pid, xmlnode, value
 
 @testset "HL initMarking" begin
     str = """
@@ -27,13 +27,13 @@ using PNML: Maybe, tag, pid, xmlnode
     @test typeof(n) <: PNML.HLMarking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test n.text == "<All,All>"
-    @test n.term !== nothing
-    @test n.term isa PNML.AbstractTerm
+    @test value(n) !== nothing
+    @test value(n) isa PNML.AbstractTerm
 
-    @test tag(n.term) === :tuple
-    @test n.term.dict[:subterm][1][:all] !== nothing
-    @test n.term.dict[:subterm][1][:all][:usersort][:declaration] == "N1"
-    @test n.term.dict[:subterm][2][:all][:usersort][:declaration] == "N2"
+    @test tag(value(n)) === :tuple
+    @test value(n).dict[:subterm][1][:all] !== nothing
+    @test value(n).dict[:subterm][1][:all][:usersort][:declaration] == "N1"
+    @test value(n).dict[:subterm][2][:all][:usersort][:declaration] == "N2"
 end
 
 @testset "hlinscription" begin
@@ -55,9 +55,9 @@ end
     n = parse_node(n1, HLCore(); reg = PNML.IDRegistry())
     @test typeof(n) <: PNML.HLInscription
     #@test xmlnode(n) isa Maybe{EzXML.Node}
-    @test tag(n.term) === :tuple
-    @test n.term.dict[:subterm][1][:variable][:refvariable] == "x"
-    @test n.term.dict[:subterm][2][:variable][:refvariable] == "v"
+    @test tag(value(n)) === :tuple
+    @test value(n).dict[:subterm][1][:variable][:refvariable] == "x"
+    @test value(n).dict[:subterm][2][:variable][:refvariable] == "v"
     @test n.text == "<x,v>"
 end
 
@@ -116,8 +116,8 @@ end
         n = parse_node(node, PnmlCore(); reg = PNML.IDRegistry())
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
-        @test n.term !== nothing
-        @test tag(n.term) === :or
+        @test value(n) !== nothing
+        @test tag(value(n)) === :or
         @test n.com.graphics === nothing
         @test n.com.tools === nothing || isempty(n.com.tools)
         @test n.com.labels === nothing || isempty(n.com.labels)

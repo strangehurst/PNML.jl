@@ -413,7 +413,7 @@ function Base.show(io::IO, ptm::Marking)
     pprint(io, ptm)
 end
 
-quoteof(m::Marking) = :(Marking($(quoteof(m.value)), $(quoteof(m.com))))
+quoteof(m::Marking) = :(Marking($(quoteof(value(m))), $(quoteof(m.com))))
 
 #-------------------
 Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
@@ -426,7 +426,7 @@ function Base.show(io::IO, hlm::HLMarking)
     pprint(io, hlm)
 end
 
-quoteof(m::HLMarking) = :(HLMarking($(quoteof(m.text)), $(quoteof(m.term)), $(quoteof(m.com))))
+quoteof(m::HLMarking) = :(HLMarking($(quoteof(m.text)), $(quoteof(value(m))), $(quoteof(m.com))))
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
@@ -436,7 +436,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
     show(io, cond)
 end
-quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(c.term)), $(quoteof(c.com))))
+quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(value(c))), $(quoteof(c.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::Inscription)
@@ -445,7 +445,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
     show(io, inscription)
 end
-quoteof(i::Inscription) = :(Inscription($(quoteof(i.value)), $(quoteof(i.com))))
+quoteof(i::Inscription) = :(Inscription($(quoteof(value(i))), $(quoteof(i.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
@@ -456,7 +456,7 @@ function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
 end
 
 quoteof(i::HLInscription) =
-    :(HLInscription($(quoteof(i.text)), $(quoteof(i.term)), $(quoteof(i.com))))
+    :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))), $(quoteof(i.com))))
 
 #-------------------
 function Base.show(io::IO, declarations::Vector{AbstractDeclaration})

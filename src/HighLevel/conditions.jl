@@ -6,7 +6,7 @@ $(TYPEDFIELDS)
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: Condition, HLMarking, Term)
+```jldoctest; setup=:(using PNML; using PNML: Condition)
 julia> c = Condition(PnmlCore())
 Condition(nothing, true, )
 
@@ -26,7 +26,7 @@ julia> c()
 false
 ```
 """
-mutable struct Condition{PNTD,T} <: HLAnnotation
+mutable struct Condition{PNTD,T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
     term::T #! Rexname to value.
@@ -42,8 +42,9 @@ Condition(pntd) = Condition(pntd, nothing, true, ObjectCommon())
 Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
 Condition(pntd, text, value) = Condition(pntd, text, value, ObjectCommon())
 
+value(c::Condition) = c.term
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`Condition`](@ref) instance.
 """
-(c::Condition)() = _evaluate(c.term)
+(c::Condition)() = _evaluate(value(c))

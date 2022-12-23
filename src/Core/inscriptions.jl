@@ -28,8 +28,10 @@ end
 Inscription() = Inscription(one(Int))
 Inscription(value::Union{Int,Float64}) = Inscription(value, ObjectCommon())
 
+value(i::Inscription) = i.value
+
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`Inscription`](@ref).
+Evaluate an [`Inscription`](@ref)'s `value`.
 """
-(inscription::Inscription)() = _evaluate(inscription.value)
+(inscription::Inscription)() = _evaluate(value(inscription))

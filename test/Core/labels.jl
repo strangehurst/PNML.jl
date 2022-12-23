@@ -1,16 +1,10 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
         unclaimed_label, anyelement, PnmlLabel, AnyElement,
-        has_label, get_label, get_labels, default_marking, add_label!,
-        default_marking,
-        default_inscription,
-        default_condition,
-        default_term,
-        default_one_term,
-        default_zero_term,
-        default_sort,
-        default_term
-
+        has_label, get_label, get_labels, add_label!,
+        default_marking, default_inscription, default_condition ,default_sort,
+        default_term, default_one_term, default_zero_term,
+        value
 
 @testset "default values" begin
     pntd = PNML.PnmlCore()
@@ -141,8 +135,8 @@ end
     n = parse_node(node; reg = IDRegistry())
     @test typeof(n) <: PNML.Marking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(n.value) <: Union{Int,Float64}
-    @test n.value == n()
+    @test typeof(value(n)) <: Union{Int,Float64}
+    @test value(n) == n()
 
     mark1 = PNML.Marking(2)
     @test_call PNML.Marking(2)
@@ -169,7 +163,7 @@ end
         n = parse_node(node; reg = IDRegistry())
         @test typeof(n) <: PNML.Inscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
-        @test n.value == 12
+        @test value(n) == 12
         @test n.com.graphics === nothing
         @test n.com.tools === nothing || isempty(n.com.tools)
         @test n.com.labels === nothing || isempty(n.com.labels)

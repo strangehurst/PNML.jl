@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, firstpage, parse_file, parse_name,
      PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
      nets, pages, arcs, places, transitions,
-     allchildren, firstchild
+     allchildren, firstchild, value
 using .PnmlIDRegistrys
 
 str = """
@@ -65,8 +65,8 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 i = parse_node(firstchild("initialMarking", p); reg)
                 @test_call firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
-                @test typeof(i.value) <: Union{Int,Float64}
-                @test i.value >= 0
+                @test typeof(value(i)) <: Union{Int,Float64}
+                @test value(i) >= 0
                 #@test xmlnode(i) isa Maybe{EzXML.Node}
             end
 
@@ -84,8 +84,8 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 if ins !== nothing
                     i = parse_node(ins; reg)
                     @test typeof(i) <: PNML.Inscription
-                    @test typeof(i.value) <: Union{Int,Float64}
-                    @test i.value > 0
+                    @test typeof(value(i)) <: Union{Int,Float64}
+                    @test value(i) > 0
                     #@test xmlnode(i) isa Maybe{EzXML.Node}
                 end
             end

@@ -38,8 +38,10 @@ end
 Marking() = Marking(zero(Int))
 Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
 
+value(m::Marking) = m.value
+
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`Marking`](@ref) instance by returning its value.
 """
-(mark::Marking)() = _evaluate(mark.value)
+(mark::Marking)() = _evaluate(value(mark))
