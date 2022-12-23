@@ -4,6 +4,14 @@ function getfirst(f::Function, v)
     isnothing(i) ? nothing : v[i]
 end
 
+
+"""
+$(TYPEDSIGNATURES)
+Some objects evaluate a value that may be simple or a functor.
+"""
+function _evaluate end
+_evaluate(x::Any) = x # identity
+
 #! TODO Move this somewhere.
 """
 Use PNML type as trait to select type of marking.
@@ -27,10 +35,12 @@ function inscriptionvaluetype end
 
 markingtype(::PnmlType) = Marking
 markingvaluetype(::PnmlType) = Int
+
 markingvaluetype(::AbstractContinuousNet) = Float64
 
 inscriptiontype(::PnmlType) = Inscription
 inscriptionvaluetype(::PnmlType) = Int
+
 inscriptionvaluetype(::AbstractContinuousNet) = Float64
 
 markingtype(::AbstractHLCore) = HLMarking

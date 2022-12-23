@@ -55,6 +55,7 @@ include("Core/net.jl")
 include("Core/model.jl")
 
 include("Core/flatten.jl")
+include("Core/show.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
@@ -65,6 +66,7 @@ include("HighLevel/terms.jl")
 include("HighLevel/sorts.jl")
 include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
+include("HighLevel/hlshow.jl")
 
 # PETRI NET
 include("Net/petrinet.jl")
@@ -73,9 +75,6 @@ include("Net/hlnet.jl")
 
 include("Continuous/rates.jl")
 include("Net/transition_function.jl")
-
-include("IR/show.jl")
-include("IR/evaluate.jl")
 
 # PARSE
 include("Parse/parseutils.jl")

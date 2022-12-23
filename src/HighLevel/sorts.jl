@@ -46,6 +46,7 @@ function default_sort end
 default_sort(::PnmlType)              = zero(Integer) #!
 default_sort(::AbstractContinuousNet) = zero(Float64) #!
 default_sort(::AbstractHLCore)        = Sort() #!
+default_sort(::Any) = error("no default sort for $(typeof(x))")
 
 """
 $(TYPEDEF)

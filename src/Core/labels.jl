@@ -32,6 +32,8 @@ labels(l::AbstractLabel) = labels(l.com)
 
 has_label(l::AbstractLabel, tag::Symbol) = has_labels(l) ? has_label(labels(l), tag) : false
 
+_evaluate(x::AbstractLabel) = x() # functor
+
 #--------------------------------------------
 """
 $(TYPEDEF)

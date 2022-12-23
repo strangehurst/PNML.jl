@@ -9,6 +9,9 @@ abstract type AbstractTerm end
 abstract type AbstractOperator <: AbstractTerm end
 abstract type AbstractSort end
 
+_evaluate(x::AbstractTerm) = x() # functor
+_evaluate(x::AbstractSort) = x() # functor
+
 """
 $(TYPEDEF)
 Declarations are the core of high-level Petri Net.
