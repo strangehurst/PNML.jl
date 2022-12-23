@@ -24,6 +24,7 @@ end
 pid(net::PnmlNet)          = net.id
 pages(net::PnmlNet)        = net.pages
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward
+common(net::PnmlNet)       = net.com
 
 has_labels(net::PnmlNet) = has_labels(net.com)
 xmlnode(net::PnmlNet)    = net.xml

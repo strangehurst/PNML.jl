@@ -44,6 +44,8 @@ include("Core/name.jl")
 
 include("Core/inscriptions.jl")
 include("Core/markings.jl")
+include("Core/conditions.jl")
+include("Core/declarations.jl")
 
 include("Core/defaults.jl")
 
@@ -58,12 +60,11 @@ include("Core/flatten.jl")
 include("HighLevel/hltypes.jl")
 include("HighLevel/structure.jl")
 include("HighLevel/hllabels.jl")
-include("HighLevel/declarations.jl")
+include("HighLevel/hldeclarations.jl")
 include("HighLevel/terms.jl")
 include("HighLevel/sorts.jl")
 include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
-include("HighLevel/conditions.jl")
 
 # PETRI NET
 include("Net/petrinet.jl")

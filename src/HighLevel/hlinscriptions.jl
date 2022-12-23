@@ -47,6 +47,7 @@ HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
 value(i::HLInscription) = i.term
+common(i::HLInscription) = i.com
 
 """
 $(TYPEDSIGNATURES)

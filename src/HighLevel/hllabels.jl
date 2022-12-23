@@ -14,3 +14,5 @@ struct HLLabel{PNTD} <: HLAnnotation
     xml::XMLNode
     #TODO validate in constructor: must have text or structure
 end
+
+common(l::HLLabel) = i.com

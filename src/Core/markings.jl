@@ -39,6 +39,7 @@ Marking() = Marking(zero(Int))
 Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
 
 value(m::Marking) = m.value
+common(m::Marking) = m.com
 
 """
 $(TYPEDSIGNATURES)

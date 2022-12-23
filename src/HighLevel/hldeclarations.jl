@@ -110,34 +110,3 @@ struct UserOperator <: AbstractOperator
     "Identity of operators's declaration."
     declaration::Symbol #
 end
-
-"""
-Label of a high-level net or page that holds zero or more [`AbstractDeclaration`](@ref).
-
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct Declaration <: HLAnnotation
-    declarations::Vector{Any}
-    com::ObjectCommon
-    xml::Maybe{XMLNode}
-end
-
-Declaration() = Declaration(Any[], ObjectCommon(), nothing)
-
-declarations(d::Declaration) = d.declarations
-xmlnode(d::Declaration) = d.xml
-#
-#TODO Document/implement/test collection interface of Declaration.
-Base.length(d::Declaration) = (length ∘ declarations)(d)
-
-# Flattening pages combines declarations into the first page.
-function Base.append!(l::Declaration, r::Declaration)
-    append!(declarations(l), declarations(r))
-    append!(l.com, r.com) # Only merges collections.
-end
-
-function Base.empty!(d::Declaration)
-    empty!(declarations(d))
-    empty!(d.com)
-end

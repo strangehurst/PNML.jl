@@ -34,6 +34,7 @@ HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon())
 HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
 
 value(m::HLMarking) = m.term
+common(m::HLMarking) = m.com
 
 #! HLMarking is a multiset, not an expression.
 """

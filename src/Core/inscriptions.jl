@@ -29,6 +29,7 @@ Inscription() = Inscription(one(Int))
 Inscription(value::Union{Int,Float64}) = Inscription(value, ObjectCommon())
 
 value(i::Inscription) = i.value
+common(i::Inscription) = i.com
 
 """
 $(TYPEDSIGNATURES)

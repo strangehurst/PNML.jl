@@ -43,6 +43,7 @@ Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
 Condition(pntd, text, value) = Condition(pntd, text, value, ObjectCommon())
 
 value(c::Condition) = c.term
+common(c::Condition) = c.com
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`Condition`](@ref) instance.

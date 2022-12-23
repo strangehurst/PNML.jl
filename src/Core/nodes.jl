@@ -24,6 +24,7 @@ end
 
 marking(place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
+common(p::Place) = place.com
 
 #-------------------
 """
@@ -45,9 +46,9 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
     end
 end
 
-condition(transition) = transition.condition()
-
+condition(transition::Transition) = transition.condition()
 default_condition(transition::Transition) = default_condition(transition.pntd)
+common(t::Transition) = t.com
 
 #-------------------
 """
@@ -75,8 +76,8 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
 
 inscription(arc) = _evaluate(arc.inscription)
-
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
+common(a::Arc) = a.com
 
 """
 $(TYPEDSIGNATURES)
@@ -106,6 +107,7 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     name::Maybe{Name}
     com::ObjectCommon
 end
+common(r::RefPlace) = r.com
 
 #-------------------
 """
@@ -121,3 +123,4 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     name::Maybe{Name}
     com::ObjectCommon
 end
+common(r::RefTransition) = r.com

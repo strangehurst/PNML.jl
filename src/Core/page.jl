@@ -42,6 +42,7 @@ transitions(page::Page)    = page.transitions
 arcs(page::Page)           = page.arcs
 refplaces(page::Page)      = page.refPlaces
 reftransitions(page::Page) = page.refTransitions
+common(page::Page)         = page.com
 
 #! Subpages need to be traversed.
 place(page::Page, id::Symbol)        = getfirst(Fix2(haspid, id), places(page))
