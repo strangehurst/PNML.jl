@@ -51,9 +51,6 @@ struct VariableDeclaration{S}  <: AbstractDeclaration
     #xml::XMLNode
 end
 
-VariableDeclaration(pdict::PnmlDict, xml::XMLNode) =
-    VariableDeclaration(PnmlLabel(pdict, xml), ObjectCommon(pdict), xml)
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)

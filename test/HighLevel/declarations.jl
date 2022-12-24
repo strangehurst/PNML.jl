@@ -8,15 +8,15 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
 end
 
 @testset "parse_sort" begin
-    parse_sort(xml"<bool/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<finiteenumeration/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<finiteintrange/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<cyclicenumeration/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<dot/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<mulitsetsort/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<productsort/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<usersort/>", PnmlCore(); reg = PNML.IDRegistry())
-    parse_sort(xml"<partition/>", PnmlCore(); reg = PNML.IDRegistry())
+    parse_sort(xml"<bool/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<dot/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<productsort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<usersort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<partition/>", PnmlCoreNet(); reg = PNML.IDRegistry())
 end
 
 @testset "empty declarations" begin

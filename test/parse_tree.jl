@@ -38,7 +38,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
     foreach(allchildren("net", pnmldoc)) do net
         @test nodename(net) == "net"
 
-        nn = parse_name(firstchild("name", net), PnmlCore(); reg)
+        nn = parse_name(firstchild("name", net), PnmlCoreNet(); reg)
         @test isa(nn, PNML.Name)
         @test nn.text == "P/T Net with one place"
         @test nn.graphics === nothing

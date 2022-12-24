@@ -10,14 +10,15 @@ using PNML: IDRegistry, XMLNode, pnmltype, tagmap
     @testset "tag $t" for t in keys(tagmap)
         @test !isempty(methods(tagmap[t], (XMLNode, PnmlType)))
         @test isempty(methods(tagmap[t], (XMLNode,)))
+        @show t, tagmap[t]
 
         #! Some tags only HighLevel
         highleveltags = ["hlmarking", "hlinitialMarking", "hlinscription",
                         "namedoperator", "declarations", "declaration"]
         if any(==(t), highleveltags)
-            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), HLCore(); reg=IDRegistry() )
+            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), HLCoreNet(); reg=IDRegistry() )
         else
-            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), PnmlCore(); reg=IDRegistry() )
+            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), PnmlCoreNet(); reg=IDRegistry() )
         end
 
     end
@@ -54,7 +55,7 @@ end
 
 @testset "pnmltype" begin
     #@test_call PNML.PnmlTypeDefs.default_pntd_map()
-    @test_call pnmltype(PnmlCore())
+    @test_call pnmltype(PnmlCoreNet())
     @test_call pnmltype("pnmlcore")
     @test_call pnmltype(:pnmlcore)
 
@@ -62,10 +63,10 @@ end
     @test_throws MethodError pnmltype(Any[])
     @test_throws DomainError pnmltype(:garbage)
 
-    @test pnmltype(PnmlCore()) === PnmlCore()
+    @test pnmltype(PnmlCoreNet()) === PnmlCoreNet()
     @test pnmltype(ContinuousNet()) === ContinuousNet()
     @test pnmltype(PTNet()) === PTNet()
-    @test pnmltype(HLCore()) === HLCore()
+    @test pnmltype(HLCoreNet()) === HLCoreNet()
     @test pnmltype(HLPNG()) === HLPNG()
     @test pnmltype(OpenNet()) === OpenNet()
     @test pnmltype(PT_HLPNG()) === PT_HLPNG()
@@ -73,30 +74,30 @@ end
     @test pnmltype(SymmetricNet()) === SymmetricNet()
     @test pnmltype(TimedNet()) === TimedNet()
 
-    @test pnmltype("foo") === PnmlCore()
+    @test pnmltype("foo") === PnmlCoreNet()
 
     @test pnmltype("http://www.pnml.org/version-2009/grammar/ptnet") === PTNet()
     @test pnmltype("http://www.pnml.org/version-2009/grammar/highlevelnet") === HLPNG()
-    @test pnmltype("http://www.pnml.org/version-2009/grammar/pnmlcoremodel") === PnmlCore()
-    @test pnmltype("http://www.pnml.org/version-2009/grammar/pnmlcore") === PnmlCore()
+    @test pnmltype("http://www.pnml.org/version-2009/grammar/pnmlcoremodel") === PnmlCoreNet()
+    @test pnmltype("http://www.pnml.org/version-2009/grammar/pnmlcore") === PnmlCoreNet()
     @test pnmltype("http://www.pnml.org/version-2009/grammar/pt-hlpng") === PT_HLPNG()
     @test pnmltype("http://www.pnml.org/version-2009/grammar/symmetricnet") === SymmetricNet()
-    @test pnmltype("pnmlcore"  ) === PnmlCore()
+    @test pnmltype("pnmlcore"  ) === PnmlCoreNet()
     @test pnmltype("ptnet"     ) === PTNet()
     @test pnmltype("hlnet"     ) === HLPNG()
-    @test pnmltype("hlcore"    ) === HLCore()
+    @test pnmltype("hlcore"    ) === HLCoreNet()
     @test pnmltype("pt-hlpng"  ) === PT_HLPNG()
     @test pnmltype("pt_hlpng"  ) === PT_HLPNG()
     @test pnmltype("symmetric" ) === SymmetricNet()
     @test pnmltype("symmetricnet") === SymmetricNet()
     @test pnmltype("stochastic"  ) === StochasticNet()
     @test pnmltype("timed"       ) === TimedNet()
-    @test pnmltype("nonstandard" ) === PnmlCore()
-    @test pnmltype("open"        ) === PnmlCore()
+    @test pnmltype("nonstandard" ) === PnmlCoreNet()
+    @test pnmltype("open"        ) === PnmlCoreNet()
     @test pnmltype("continuous"  ) === ContinuousNet()
 
-    @test pnmltype(:pnmlcore)   === PnmlCore()
-    @test pnmltype(:hlcore)     === HLCore()
+    @test pnmltype(:pnmlcore)   === PnmlCoreNet()
+    @test pnmltype(:hlcore)     === HLCoreNet()
     @test pnmltype(:ptnet)      === PTNet()
     @test pnmltype(:hlnet)      === HLPNG()
     @test pnmltype(:pt_hlpng)   === PT_HLPNG()

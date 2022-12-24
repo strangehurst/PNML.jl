@@ -7,19 +7,19 @@ $(TYPEDFIELDS)
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
-julia> c = Condition(PnmlCore())
+julia> c = Condition(PnmlCoreNet())
 Condition(nothing, true, )
 
 julia> c()
 true
 
-julia> c = Condition(PnmlCore(), false)
+julia> c = Condition(PnmlCoreNet(), false)
 Condition(nothing, false, )
 
 julia> c()
 false
 
-julia> c = Condition(PnmlCore(), "xx", false)
+julia> c = Condition(PnmlCoreNet(), "xx", false)
 Condition("xx", false, )
 
 julia> c()

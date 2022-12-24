@@ -52,8 +52,6 @@ function Base.show(io::IO, term::AbstractTerm)
     pprint(io, term)
 end
 quoteof(t::AbstractTerm) = :(AbstractTerm($(quoteof(t.tag)), $(quoteof(t.dict))))
-#         $(quoteof(t.com))))
-
 
 function Base.show(io::IO, term::Term)
     pprint(io, term)

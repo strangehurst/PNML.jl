@@ -110,7 +110,7 @@ testlogger = TestLogger()
         @test_call transitions(top)
         for t in @inferred transitions(top)
             #@show "transition $(pid(t))"
-            @test ispid(pid(t))(pid(t))
+            @test PnmlCore.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
             @test @inferred has_transition(top, pid(t))
             @test t == @inferred Maybe{Transition} transition(top, pid(t))

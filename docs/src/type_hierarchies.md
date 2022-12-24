@@ -17,15 +17,15 @@ See [`PnmlTypeDefs`](@ref) module page.
 
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
-[`PnmlCore`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCore` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
+[`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
+`PnmlCoreNet` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
 It is a nonstandard extension to the ISO specification.
 
-[`HLCore`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
-`HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
+[`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
+`HLCoreNet` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
 The IR does not try to impose semantics on the model. Those semantics should
@@ -38,9 +38,9 @@ type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 
 | PnmlType     | Place | Trans | Arc  | Description                                               |
 | :---------   | :---- | :---- | :--- | :-------------------------------------------------------- |
-| PnmlCore     |       |       |      | <name> is only defined label                              |
+| PnmlCoreNet     |       |       |      | <name> is only defined label                              |
 | PTNet        | PTM   | none  | PTI  | <initialMarking>, <inscription> labels only have <text>   |
-| HLCore       | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
+| HLCoreNet       | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
 | PT-HLPNG     | HLM   | Cond  | HLI  | restrict sort to dot, condition always true               |
 | SymmetricNet | HLM   | Cond  | HLI  | restrict sorts to finite, annotations have <structure>    |
 | HLNet        | HLM   | Cond  | HLI  | extend symmetric with arbitrary sorts                     |

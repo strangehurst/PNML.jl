@@ -5,7 +5,7 @@ CurrentModule = PNML
 # PNML.jl
 
 Documentation for the GitHub [PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
-Which defines a Julia module named `PNML`.  
+Which defines a Julia module named `PNML`.
 Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup language.
 
 ```@eval
@@ -38,7 +38,7 @@ versioninfo()
 In this section 'PNML' refers to the markup language, its specification and schemas, not this software.
 
 <http://www.pnml.org> has publications and tutorials covering PNML at
-various points in its evolution. 
+various points in its evolution.
 
 Site has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
 
@@ -48,8 +48,8 @@ The cannonical site for the RELAX-NG XML schemas that define the grammer of seve
   - Symmetric Net
 
 These are instances of the 2 flavors currently covered by PNML. Discrete intger-valued vs High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers. Also the core and high-level layers.
- 
-It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site. 
+
+It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
 
 There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
 
@@ -74,10 +74,10 @@ Note that we use PNML.jl to refer to all the packages in the monorepo (multiple 
 
 Since validation is not a goal of PNML.jl, non-standard pntds can be used for the
 URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard`
-are mapped to PnmlCore.
+are mapped to PnmlCoreNet.
 
-PnmlCore is the minimum level of meaning that any pnml file can hold.
-PNML.jl should be able to create a valid intermediate representation using PnmlCore
+PnmlCoreNet is the minimum level of meaning that any pnml file can hold.
+PNML.jl should be able to create a valid intermediate representation using PnmlCoreNet
 since all the higher-level meaning is expressed as pnml labels, restrictions,
 and required XML tag names.
 
@@ -94,7 +94,7 @@ Note that the official pntd schema files are in the grammer directory.
 
 Within PNML.jl no schema-level validation is done.
 
-Note that, depending on context, 'PNML' may refer to either 
+Note that, depending on context, 'PNML' may refer to either
 the markup language or the Julia code.
 
 In is allowed by the PNML specification to omit validation with the presumption that
@@ -104,7 +104,7 @@ used for inter-tool communication with lower overhead in each tool.
 Also omiting pntd validation allows "duck typing" of Petri Nets built upon the
 PNML intermediate representration.
 
-Of some note it that PNML.jl extends PNML. These, non-standard pntd do not 
+Of some note it that PNML.jl extends PNML. These, non-standard pntd do not
 (yet) have a schema written. See [`ContinuousNet`](@ref).
 
 ## PNTD Maps
@@ -125,7 +125,7 @@ The implementation of Labels supports _annotation_ and _attribute_ format labels
 
 ### Annotation Labels
 
-_annotation_ format labels are expected to have either a <text> element, 
+_annotation_ format labels are expected to have either a <text> element,
 a <structure> element or both. Often the <text> is a human-readable representation
 of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
 
@@ -138,11 +138,11 @@ Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 ### Attribute Labels
 
 _attribute_ format labels are present in the UML model of pnml.
-They differ from _annotation_ by omitting the `Graphics` element, 
+They differ from _annotation_ by omitting the `Graphics` element,
 but retain the `ToolInfo` element. Unless an optimization is identified,
 both _attribute_ and _annotation_ will share the same implementation.
 
-A standard-conforming pnml model would not have any `Graphics` element 
+A standard-conforming pnml model would not have any `Graphics` element
 so that field would be `nothing`.
 
 ## High-level Petri Net Concepts
@@ -156,8 +156,8 @@ Arc inscriptions are expressions that are evaluated.
 
 Place markings are multisets of tokens of a sort/type.
 
-Transition conditions are boolean expressions that are evaluated. 
-Used to determine if transition is enabled. 
+Transition conditions are boolean expressions that are evaluated.
+Used to determine if transition is enabled.
 
 Expressions in _pnml_ can be many-sorted algebras.
 Declaration, Term, Sort, Multiset, Variable, are among the concepts

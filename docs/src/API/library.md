@@ -12,6 +12,11 @@ Depth = 2
 Modules = [PNML]
 ```
 
+## PNML Core
+```@autodocs
+Modules = [PnmlCore]
+```
+
 ## PnmlTypeDefs Reference
 ```@autodocs
 Modules = [PnmlTypeDefs]
