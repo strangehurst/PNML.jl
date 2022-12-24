@@ -19,46 +19,58 @@ using MLStyle: @match
 using DocStringExtensions
 using AutoHashEquals
 using PrettyPrinting
+import PrettyPrinting: quoteof
 using AbstractTrees
 using LabelledArrays
 using Reexport
 using Preferences
 
-@reexport using PnmlTypeDefs
-@reexport using PnmlIDRegistrys
+using Base: Fix1, Fix2
+import PnmlCore
+@reexport using PnmlCore
 
-include("xmlutils.jl")
-include("exceptions.jl")
-include("utils.jl")
+using PnmlCore: AbstractContinuousNet, AbstractHLCore, AbstractLabel,
+AbstractPnmlCore, AbstractPnmlTool, @xml_str,
+Annotation, AnyElement, Arc, Condition,
+ContinuousNet, Coordinate, Declaration,
+Fill, Font, Graphics, HLCoreNet, HLPNG, IDRegistry, Inscription, Line,
+MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
+OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
+PnmlIDRegistry, PnmlIDRegistrys, PnmlLabel, PnmlModel, PnmlNet, PnmlNode,
+PnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
+StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
+XMLNode
 
-# PNML CORE
-include("Core/interfaces.jl") # Function docstrings
-include("Core/types.jl") # Abstract Types
 
-include("Core/labels.jl")
-include("Core/anyelement.jl")
-include("Core/graphics.jl")
-include("Core/toolinfos.jl")
-include("Core/objcommon.jl")
-include("Core/name.jl")
+import PnmlCore: _evaluate, _ppages, _reduce,
+all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
+check_nodename, common, condition, conditions, currentMarkings,
+declarations, default_condition, default_inscription,
+default_marking, deref!, deref_place, deref_transition, dict,
+find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
+get_label, get_labels, getfirst, graphics,
+has_arc, has_graphics, has_label, has_labels, has_name, has_place,
+has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
+hastag, haspid,
+ispid, idregistry, inc_indent, indent, indent_width, infos,
+initialMarking, inscription, inscriptiontype, inscriptionvaluetype,
+isregistered, isregistered_id, labels,
+marking, markingtype, markingvaluetype,
+name, namespace, nets, nettype,
+pages, pid, place, place_ids, places, pnml_ns,
+pnmltype, pntd_symbol, refid, refplace, refplace_ids, refplaces,
+reftransition, reftransition_ids, reftransitions, register_id!,
+show_common, show_page_field, shownames, source,
+src_arcs, structure, tag, target, text, tgt_arcs, tools,
+transition, transition_ids, transitions,
+update_maybe!, value, version,
+xmlnode, xmlroot
 
-include("Core/inscriptions.jl")
-include("Core/markings.jl")
-include("Core/conditions.jl")
-include("Core/declarations.jl")
 
-include("Core/defaults.jl")
-
-include("Core/nodes.jl")
-include("Core/page.jl")
-include("Core/net.jl")
-include("Core/model.jl")
-
-include("Core/flatten.jl")
-include("Core/show.jl")
 
 # High-Level
 include("HighLevel/hltypes.jl")
+include("HighLevel/hldefaults.jl")
 include("HighLevel/structure.jl")
 include("HighLevel/hllabels.jl")
 include("HighLevel/hldeclarations.jl")

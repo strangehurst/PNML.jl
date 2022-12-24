@@ -1,4 +1,4 @@
-using PNML, PnmlTypeDefs, PnmlIDRegistrys
+using PNML, PnmlTypeDefs, PnmlIDRegistrys, PnmlCore
 #using PrettyPrinting
 using Documenter
 
@@ -6,14 +6,11 @@ using PnmlTypeDefs: PnmlType,
     StochasticNet,
     SymmetricNet,
     TimedNet,
-    PnmlCore,
+    PnmlCoreNet,
     OpenNet,
-    HLCore,
+    HLCoreNet,
     HLPNG # High-Level Petri Net Graph
 
-
-
-using PNML
 
 # Makie.jl is a source of many of these good ideas. (Bad ones are mine?)
 
@@ -67,7 +64,7 @@ DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML, PnmlTypeDefs, PnmlIDRegistrys],
+         modules=[PNML, PnmlTypeDefs, PnmlIDRegistrys, PnmlCore],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          repo="/home/jeff/PNML/{path}",

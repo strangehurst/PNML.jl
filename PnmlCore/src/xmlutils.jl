@@ -53,7 +53,7 @@ function allchildren(tag, el, ns::String = pnml_ns)
 end
 
 
-function check_nodename(n, s)
+function check_nodename(n::XMLNode, s)
     if EzXML.nodename(n) == s
         return s # used to be nodename
     else

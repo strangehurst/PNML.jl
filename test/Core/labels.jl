@@ -7,7 +7,7 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
         value
 
 @testset "default values" begin
-    pntd = PNML.PnmlCore()
+    pntd = PNML.PnmlCoreNet()
     default_marking(pntd)
     default_inscription(pntd)
     default_condition(pntd)
@@ -72,7 +72,7 @@ end
         reg1 = IDRegistry()
         reg2 = IDRegistry()
 
-        u = unclaimed_label(node, reg=reg1)
+        u = unclaimed_label(node, PnmlCoreNet(); reg=reg1)
         l = PnmlLabel(u, node)
         a = anyelement(node, reg=reg2)
 
@@ -80,7 +80,7 @@ end
         #@show l
         #@show a
 
-        @test_call unclaimed_label(node, reg=reg1)
+        @test_call unclaimed_label(node, PnmlCoreNet(); reg=reg1)
         @test_call PnmlLabel(u, node)
         @test_call anyelement(node, reg=reg2)
 
@@ -152,8 +152,8 @@ end
 
     mark3 = PNML.Marking()
     @test_call PNML.Marking()
-    @test typeof(mark3()) == typeof(default_marking(PnmlCore())())
-    @test mark3() == default_marking(PnmlCore())()
+    @test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
+    @test mark3() == default_marking(PnmlCoreNet())()
     @test_call mark3()
 end
 
@@ -208,8 +208,8 @@ end
     for i in 1:4 # add 4 labels
         x = i<3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call add_label!(d, node, PnmlCore(); reg)
-        n = add_label!(d, node, PnmlCore(); reg)
+        @test_call add_label!(d, node, PnmlCoreNet(); reg)
+        n = add_label!(d, node, PnmlCoreNet(); reg)
         @test n isa Vector{PnmlLabel}
         #@show n
         @test length(labels(d)) == i

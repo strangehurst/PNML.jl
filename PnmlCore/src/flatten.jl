@@ -9,7 +9,7 @@ Note that refrence nodes are still present. They can be removed later
 with [`deref!`](@ref).
 """
 function flatten_pages! end
-flatten_pages!(model::PNML.PnmlModel) = flatten_pages!.(nets(model))
+flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
 
 """
 $(TYPEDSIGNATURES)

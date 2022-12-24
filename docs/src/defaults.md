@@ -73,25 +73,25 @@ methods(PNML.default_zero_term) # hide
 [`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)
-julia> m = default_condition(PnmlCore())
+julia> m = default_condition(PnmlCoreNet())
 Condition(nothing, true, )
 
 julia> m = default_condition(ContinuousNet())
 Condition(nothing, true, )
 
-julia> m = default_condition(HLCore())
+julia> m = default_condition(HLCoreNet())
 Condition(nothing, true, )
 ```
 
 
 ```jldoctest; setup=:(using PNML; using PNML: PnmlDict, default_inscription)
-julia> i = default_inscription(PnmlCore())
+julia> i = default_inscription(PnmlCoreNet())
 1
 
 julia> i = default_inscription(ContinuousNet())
 1.0
 
-julia> i = default_inscription(HLCore())
+julia> i = default_inscription(HLCoreNet())
 Term(:empty, IdDict{Symbol, Any}(:value => 1))
 
 julia> PnmlDict
@@ -103,7 +103,7 @@ julia> i()
 
 
 ```jldoctest; setup=:(using PNML; using PNML: default_marking, Marking, HLMarking, pnmltype)
-julia> m = default_marking(PnmlCore())
+julia> m = default_marking(PnmlCoreNet())
 Marking(0, )
 
 julia> m()
@@ -115,7 +115,7 @@ Marking(0.0, )
 julia> m()
 0.0
 
-julia> m = default_marking(HLCore())
+julia> m = default_marking(HLCoreNet())
 HLMarking(nothing, Term(:empty, IdDict{Symbol, Any}(:value => 0)), )
 
 julia> PnmlDict

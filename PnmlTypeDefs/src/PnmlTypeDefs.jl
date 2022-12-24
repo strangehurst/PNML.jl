@@ -19,8 +19,8 @@ export PnmlType,
        AbstractContinuousNet
 
 # Singletons (concrete types)
-export PnmlCore, PTNet,
-       HLCore, PT_HLPNG, SymmetricNet, HLPNG,
+export PnmlCoreNet, PTNet,
+       HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG,
        StochasticNet, TimedNet, OpenNet,
        ContinuousNet
 
@@ -45,7 +45,7 @@ abstract type PnmlType end
 $(TYPEDEF)
 Base of token/integer-based Petri Net pntds.
 
-See [`PnmlCore`](@ref), [`PTNet`](@ref) and others.
+See [`PnmlCoreNet`](@ref), [`PTNet`](@ref) and others.
 """
 abstract type AbstractPnmlCore <: PnmlType end
 
@@ -56,7 +56,7 @@ The most minimal concrete Petri Net.
 Used to implement and test the core PNML support.
 Covers the complete graph infrastructure including labels attached to nodes and arcs.
 """
-struct PnmlCore <: AbstractPnmlCore end
+struct PnmlCoreNet <: AbstractPnmlCore end
 
 """
 $(TYPEDEF)
@@ -73,17 +73,17 @@ $(TYPEDEF)
 Base of High Level Petri Net pntds which add large extensions to PNML core.
 hlinitialMarking, hlinscription, and defined label structures.
 
-See [`HLCore`](@ref), [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
+See [`HLCoreNet`](@ref), [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
 """
 abstract type AbstractHLCore <: PnmlType end
 
 """
 $(TYPEDEF)
-`HLCore` can be used for generic high-level nets.
-We try to implement and test all function at `PnmlCore` level, but
+`HLCoreNet` can be used for generic high-level nets.
+We try to implement and test all function at `PnmlCoreNet level, but
 expect to find use for a concrete type at this level for testing high-level extensions.
 """
-struct HLCore <: AbstractHLCore end
+struct HLCoreNet <: AbstractHLCore end
 
 """
 
@@ -97,7 +97,7 @@ struct HLPNG <: AbstractHLCore end
 
 """
 $(TYPEDEF)
-Place-Transition Net in HLCore notation.
+Place-Transition Net in HLCoreNet notation.
 """
 struct PT_HLPNG <: AbstractHLCore end
 
@@ -190,8 +190,8 @@ $(TYPEDEF)
 
 The key Symbols are the supported kinds of Petri Nets.
 """
-const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCore(),
-                                            :hlcore => HLCore(),
+const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
+                                            :hlcore => HLCoreNet(),
                                             :ptnet => PTNet(),
                                             :hlnet => HLPNG(),
                                             :pt_hlpng => PT_HLPNG(),
@@ -239,11 +239,11 @@ Unknown `symbol` throws a `DomainError` exception.
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML.PnmlTypeDefs: pnmltype, pntd_symbol)
-julia> pnmltype(PnmlCore())
-PnmlCore()
+julia> pnmltype(PnmlCoreNet())
+PnmlCoreNet()
 
 julia> pnmltype("nonstandard")
-PnmlCore()
+PnmlCoreNet()
 
 julia> pnmltype(:symmetric)
 SymmetricNet()

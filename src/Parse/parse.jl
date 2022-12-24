@@ -5,7 +5,7 @@ Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exist
 otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_node end
-parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
+parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCoreNet(); kw...)
 function parse_node(node::XMLNode, pntd::PnmlType; kw...)
     if haskey(tagmap, nodename(node))
         return tagmap[nodename(node)](node, pntd; kw...) # Various types returned here.

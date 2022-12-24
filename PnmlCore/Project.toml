@@ -1,7 +1,7 @@
-name = "PNML"
-uuid = "1f34f301-fe8c-4464-8328-ff2334f05424"
-authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
-version = "0.0.3"
+name = "PnmlCore"
+uuid = "56db2244-46d2-4fb3-beea-a7d1dd6fbe82"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.1.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
@@ -10,22 +10,8 @@ DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
-ModuleDocstrings = "982ee2ff-df44-427b-be98-c6c9fd49f925"
-PnmlCore = "56db2244-46d2-4fb3-beea-a7d1dd6fbe82"
 PnmlIDRegistrys = "3ce11b44-b057-481c-a673-d1befee9aa42"
 PnmlTypeDefs = "bf569b50-707c-4e9e-b371-6d3a192cb2e8"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 PrettyPrinting = "54e16d92-306c-5ea0-a30b-337be88ac337"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
-
-[compat]
-AbstractTrees = "0.3, 0.4"
-AutoHashEquals = "0.2"
-DocStringExtensions = "0.8, 0.9"
-EzXML = "1"
-LabelledArrays = "1"
-MLStyle = "0.4"
-ModuleDocstrings = "0.1"
-PrettyPrinting = "0.4"
-Reexport = "1"
-julia = "1.6"

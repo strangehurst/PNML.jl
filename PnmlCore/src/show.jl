@@ -6,17 +6,6 @@
 #
 # TODO: use  MIME"application/vnd.julia-vscode.diagnostics" for runtime diagnostics
 #
-import PrettyPrinting: quoteof
-
-"Indention increment."
-const indent_width = 4
-
-"Return string of current indent size in `io`."
-indent(io::IO) = repeat(' ', get(io, :indent, 0))
-
-"Increment the `:indent` value by `indent_width`."
-inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width)
-
 #-------------------
 function Base.show(io::IO, fill::Fill)
     pprint(io, fill)

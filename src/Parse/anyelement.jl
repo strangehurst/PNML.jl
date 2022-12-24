@@ -7,7 +7,7 @@ a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement end
-anyelement(node; kw...) =  anyelement(node, PnmlCore(); kw...)
+anyelement(node; kw...) =  anyelement(node, PnmlCoreNet(); kw...)
 function anyelement(node, pntd; kw...)::AnyElement
     AnyElement(unclaimed_label(node, pntd; kw...), node)
 end
@@ -21,9 +21,7 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`Structure`](@ref)
 [`Term`](@ref) or other specialized label. These wrappers add type to the
 nested dictionary holding the contents of the label.
 """
-function unclaimed_label end
-unclaimed_label(node; kw...) = unclaimed_label(node, PnmlCore(); kw...)
-function unclaimed_label(node, pntd; kw...)::Pair{Symbol,PnmlDict}
+function unclaimed_label(node::XMLNode, pntd; kw...)::Pair{Symbol,PnmlDict}
     @assert haskey(kw, :reg)
     return Symbol(nodename(node)) => _harvest_any!(node, pntd, _harvest_any!; kw...)
 end
