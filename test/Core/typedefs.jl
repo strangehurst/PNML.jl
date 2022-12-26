@@ -1,6 +1,7 @@
 using PNML, EzXML
 using JET
-using PNML: IDRegistry, XMLNode, pnmltype, tagmap
+using PNML: XMLNode, pnmltype, tagmap
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "tagmap" begin
     # Tags handled differently (no pntd argument) are not in the map.

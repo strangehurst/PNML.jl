@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "graphics" begin
     str = """
@@ -15,7 +16,7 @@ using PNML: tag, pid
            style="normal" weight="normal" />
     </graphics>
     """
-    n = parse_node(xmlroot(str); reg=IDRegistry())
+    n = parse_node(xmlroot(str); reg=PnmlIDRegistry())
 
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
@@ -102,7 +103,7 @@ end
                                                              str4=>4,
                                                              str5=>1,
                                                              str6=>2]
-        n = parse_node(xmlroot(s); reg=IDRegistry())
+        n = parse_node(xmlroot(s); reg=PnmlIDRegistry())
         @test n isa PNML.TokenGraphics
         @test length(n.positions) == l
     end

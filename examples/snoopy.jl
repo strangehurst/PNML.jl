@@ -29,12 +29,11 @@ str = """<?xml version="1.0"?>
 """
 #xmlroot(s::String) = root(EzXML.parsexml(s))
 const pnmlroot = PNML.xmlroot(str)
-#const reg = IDRegistry()
 
 #tinf = @snoopi_deep begin end
 function test1(proot, n=10)
     for i in 1:n
-        model = parse_pnml(proot; reg=PNML.IDRegistry())
+        model = parse_pnml(proot; reg=PnmlIDRegistry())
     end
 end
 
@@ -42,4 +41,4 @@ end
 #PnmlIDRegistrys.reset_registry!(reg)
 #ProfileView.
 #@profview test1(pnmlroot)
-#@profview IDRegistry()
+#@profview PnmlIDRegistry()

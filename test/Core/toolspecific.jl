@@ -2,6 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
     has_tools, tools
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "parse tools" begin
     str1 = (tool="JARP", version="1.2", str = """

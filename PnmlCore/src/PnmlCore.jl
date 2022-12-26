@@ -2,6 +2,10 @@
 Infrastructure implementing the core of the Petri Net Modeling Language.
 Upon this base is built mechanisms for Place-Transition, High-Level Petri Nets,
 and extensions.
+
+$(DocStringExtensions.IMPORTS)
+$(DocStringExtensions.EXPORTS)
+
 """
 module PnmlCore
 
@@ -20,6 +24,7 @@ using Base: Fix1, Fix2
 
 @reexport using PnmlTypeDefs
 @reexport using PnmlIDRegistrys
+using PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 include("xmlutils.jl")
 include("exceptions.jl")
@@ -53,10 +58,6 @@ include("show.jl")
 export @xml_str,
     xmlroot,
     PnmlDict,
-    parse_str,
-    parse_file,
-    parse_pnml,
-    parse_node,
     PnmlException,
     MissingIDException,
     MalformedException

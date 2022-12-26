@@ -2,6 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_xml, has_name, name,
     pid, marking, condition, inscription
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "place" begin
     node = xml"""

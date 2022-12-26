@@ -9,7 +9,6 @@ module PnmlIDRegistrys
 using DocStringExtensions
 
 export PnmlIDRegistry, register_id!, isregistered_id
-export IDRegistry, isregistered #! TODO rename users
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -62,15 +61,12 @@ $(TYPEDSIGNATURES)
 
 Return `true` if `s` is registered in `reg`.
 """
-isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered_id(reg, Symbol(s))
 function isregistered_id(reg::PnmlIDRegistry, id::Symbol)
     lock(reg.lk) do
         id ∈ reg.ids
     end
 end
-
-"TODO rename all current uses?"
-const isregistered = isregistered_id #! TODO rename
 
 """
 $(TYPEDSIGNATURES)

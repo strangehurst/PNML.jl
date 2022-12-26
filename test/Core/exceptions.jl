@@ -1,11 +1,12 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
-using .PnmlIDRegistrys
+#using .PnmlIDRegistrys
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
     try
-        n  = f(node; reg=IDRegistry())
+        n  = f(node; reg=PnmlIDRegistry())
         error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
@@ -22,7 +23,7 @@ end
     @test_logs  match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <pnml><net id="1" type="foo"><page id="pg1"/></net>
         </pnml>
-        """; reg=IDRegistry())
+        """; reg=PnmlIDRegistry())
     @test_logs match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <?xml version="1.0" encoding="UTF-8"?>
         <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>"""; reg=IDRegistry())

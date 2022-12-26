@@ -2,7 +2,7 @@
 using PNML, EzXML, ModuleDocstrings, InteractiveUtils
 
 node = EzXML.ElementNode("n1/")
-reg = PNML.IDRegistry()
+reg = PnmlIDRegistry()
 pdict = PNML.PnmlDict()
 pntd = PnmlCoreNet()
 

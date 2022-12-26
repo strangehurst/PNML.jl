@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
+using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "Declaration()" begin
     d = PNML.Declaration()
@@ -87,8 +88,8 @@ end
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
 
-        @test PNML.isregistered(reg, pid(d))
-        @test_call PNML.isregistered(reg, pid(d))
+        @test PNML.isregistered_id(reg, pid(d))
+        @test_call PNML.isregistered_id(reg, pid(d))
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
         @test d.def isa PNML.AnyElement #TODO implement definitions?
         @test tag(d.def) === :cyclicenumeration
@@ -96,7 +97,7 @@ end
 
         for x in d.def.dict[:feconstant]
             @test x isa PnmlDict
-            @test PNML.isregistered(reg, pid(x))
+            @test PNML.isregistered_id(reg, pid(x))
             @test x[:name] isa String
             @test endswith(string(pid(x)), x[:name])
         end
