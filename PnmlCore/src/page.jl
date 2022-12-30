@@ -60,8 +60,7 @@ has_transition(page::Page, id::Symbol)  = any(ispid(id), transition_ids(page))
 
 condition(page::Page, trans_id::Symbol) = condition(transition(page, trans_id))
 conditions(page::Page)                  = conditions(page, transition_ids(page))
-conditions(page::Page,
-           idvec::Vector{Symbol}) = LVector((;[t=>condition(page, t) for t in idvec]...))
+conditions(page::Page, idvec::Vector{Symbol}) = LVector((;[t=>condition(page, t) for t in idvec]...))
 
 arc(page::Page, id::Symbol)      = getfirst(Fix2(haspid, id), arcs(page))
 arc_ids(page::Page)              = map(pid, arcs(page))

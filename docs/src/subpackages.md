@@ -1,7 +1,13 @@
 # Sub-packages of PNML
 
+## PnmlCore
+
+[`PnmlCore`](@ref)
+
 ## PnmlTypeDefs
+
+See [`PnmlTypeDefs`](@ref)
 
 ## PnmlIDRegistrys
 
-Provides IDRegistry.
+See [`PnmlIDRegisterys`](@ref)

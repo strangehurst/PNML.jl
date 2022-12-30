@@ -1,9 +1,9 @@
-## PNML
+## PNML has High Level
 ```@index
 Modules = [PNML]
 ```
 
-## PnmlCore
+## PnmlCore Has Place Transition
 ```@index
 Modules = [PnmlCore]
 ```

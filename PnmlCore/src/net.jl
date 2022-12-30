@@ -66,8 +66,7 @@ transition_ids(net::PnmlNet,)            = _reduce(transition_ids, net)
 has_transition(net::PnmlNet, id::Symbol) = _ppages(has_transition, net, id, false)
 
 condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition, net, trans_id)
-conditions(net::PnmlNet) =
-    LVector((;[t=>condition(transition(net, t)) for t in transition_ids(net)]...))
+conditions(net::PnmlNet) = xLVector((;[t=>condition(transition(net, t)) for t in transition_ids(net)]...))
 
 arc(net::PnmlNet, id::Symbol)      = _ppages(arc, net, id)
 arc_ids(net::PnmlNet)              = _reduce(arc_ids, net)
