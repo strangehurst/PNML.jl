@@ -1,3 +1,11 @@
+using Pkg
+cd(@__DIR__)
+Pkg.activate(".")
+pkg"dev .. ../PnmlTypeDefs ../PnmlIDRegistrys ../PnmlCore"
+#pkg"add MeshIO GeometryBasics"
+Pkg.instantiate()
+Pkg.precompile()
+
 using PNML, PnmlTypeDefs, PnmlIDRegistrys, PnmlCore
 #using PrettyPrinting
 using Documenter
@@ -51,6 +59,9 @@ using PnmlTypeDefs: PnmlType,
 ################################################################################
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
+DocMeta.setdocmeta!(PnmlCore, :DocTestSetup, :(using PnmlCore); recursive=true)
+DocMeta.setdocmeta!(PnmlTypeDefs, :DocTestSetup, :(using PnmlTypeDefs); recursive=true)
+DocMeta.setdocmeta!(PnmlIDRegistrys, :DocTestSetup, :(using PnmlIDRegistrys); recursive=true)
 
 # for m ∈ [PNML]
 #     for i ∈ propertynames(m)
