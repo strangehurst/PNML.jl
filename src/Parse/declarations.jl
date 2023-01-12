@@ -39,7 +39,7 @@ function decl_structure(node, pntd; kw...)
     nn = check_nodename(node, "structure")
     @debug nn
     #TODO warn if more than one?
-    declarations = getfirst("declarations", node)
+    declarations = firstchild("declarations", node)
     isnothing(declarations) ? AbstractDeclaration[] :
                             parse_declarations(declarations, pntd; kw...)
 end
@@ -51,7 +51,6 @@ Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
 """
 function parse_declarations(node, pntd; kw...)
     nn = check_nodename(node, "declarations")
-    @debug nn
 
     v = AbstractDeclaration[]
     foreach(elements(node)) do child
@@ -96,9 +95,11 @@ function parse_namedoperator(node, pntd; kw...)
     # <parameter> holds zero or more VariableDeclaration
     parnode = getfirst("parameter", node)
     isnothing(parnode) && error("namedoperator does not have a <parameters>")
-    parameters = isnothing(parnode) ? [default_term()] :
-                     parse_variabledecl.(elements(parnode), Ref(pntd); kw...)
-
+    parameters = if isnothing(parnode)
+        [default_term(pntd)]
+    else
+        [x->parse_variabledecl(x, pntd; kw...) in elements(parnode)]
+    end
     NamedOperator(register_id!(kw[:reg], node["id"]), node["name"], parameters, def)
 end
 
@@ -107,7 +108,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_variabledecl(node, pntd; kw...)
     nn = check_nodename(node, "variabledecl")
-    @debug nn
+
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
     # Assert only 1 element
@@ -125,7 +126,9 @@ function parse_unknowndecl(node, pntd; kw...)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
-    content = anyelement.(elements(node), Ref(pntd); kw...) #TODO Turn children into?
+    #    content = anyelement.(elements(node), Ref(pntd); kw...) #TODO Turn children into?
+    content = [x->anyelement(x, pntd; kw...) in elements(node)] #TODO Turn children into?
+    @show length(content), typeof(content)
     UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
 end
 

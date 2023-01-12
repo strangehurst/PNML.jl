@@ -40,7 +40,7 @@ testlogger = TestLogger()
         </net>
     </pnml>
     """
-    @test_call parse_str(str)
+    @test_call target_modules=target_modules parse_str(str)
     model = @inferred parse_str(str)
 
     @test_call PNML.find_nets(model, :continuous)
@@ -89,18 +89,21 @@ testlogger = TestLogger()
     # @show filter(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
     # @test any(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
     # @test !any(ispid(:DDD), [:a, :b, :x, :X, :x, :y, :z])
-    #println()
+    #
+    println()
+
 
     for top in [first(pages(net.net)), net.net, net]
         @test_call places(top)
-        #@show typeof(top)
+        @show typeof(top)
+
         for p in @inferred places(top)
             #@show "place $(pid(p))"
             @test_call has_place(top, pid(p))
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
-            @test place(top, :bogus) === nothing
+            @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
             @test typeof(marking(p)) <: typeof(default_marking(p))
             @test @inferred(marking(p)) isa typeof(default_marking(p))
         end
@@ -166,11 +169,12 @@ end
         </net>
     </pnml>
     """
-    model = parse_str(str)
+    model = @inferred parse_str(str)
     net = PNML.first_net(model)
-    snet = PNML.SimpleNet(net)
+    @test net isa PnmlCore.PnmlNet
+    snet = @inferred PNML.SimpleNet(net)
     #@show snet
-    β = PNML.rates(snet)
+    β = @inferred PNML.rates(snet)
     #@show β
     @test β == LVector(birth=0.3)
 end
@@ -185,23 +189,23 @@ end
             <transition id ="birth">     <rate> <text>0.3</text> </rate> </transition>
             <transition id ="predation"> <rate> <text>0.015</text> </rate> </transition>
             <transition id ="death">     <rate> <text>0.7</text> </rate> </transition>
-            <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2</text> </inscription> </arc>
-            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1</text> </inscription> </arc>
-            <arc id="a5" source="predation" target="wolves"> <inscription><text>2</text> </inscription> </arc>
-            <arc id="a6" source="wolves"    target="death"> <inscription><text>1</text> </inscription> </arc>
+            <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2.0</text> </inscription> </arc>
+            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a5" source="predation" target="wolves"> <inscription><text>2.0</text> </inscription> </arc>
+            <arc id="a6" source="wolves"    target="death"> <inscription><text>1.0</text> </inscription> </arc>
         </page>
         </net>
     </pnml>
     """
-    model = parse_str(str)
-    net1 = PNML.first_net(model)
+    model = @inferred parse_str(str)
+    net1 = @inferred PNML.first_net(model)
 
-    snet = PNML.SimpleNet(net1)
+    snet = @inferred PNML.SimpleNet(net1)
 
-    S = PNML.place_ids(snet) # [:rabbits, :wolves]
-    T = PNML.transition_ids(snet)
+    S = @inferred PNML.place_ids(snet) # [:rabbits, :wolves]
+    T = @inferred PNML.transition_ids(snet)
     #!@show S, T
     #!for t in T
     #!@show PNML.in_out(snet, t)
@@ -209,7 +213,7 @@ end
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription (integer?)
-    Δ = PNML.transition_function(snet)#,T)
+    Δ = @inferred PNML.transition_function(snet)#,T)
     tfun = LVector(
         birth=(LVector(rabbits=1), LVector(rabbits=2)),
         predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
@@ -223,11 +227,11 @@ end
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = PNML.currentMarkings(snet)
+    u0 = @inferred PNML.currentMarkings(snet)
     @test u0 == uX
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
-    β = PNML.rates(snet)
+    β = @inferred PNML.rates(snet)
     #!@show Δ
     #!@show u0
     #!@show uX

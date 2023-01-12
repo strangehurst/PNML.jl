@@ -46,9 +46,11 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
         @test nn.tools === nothing || isempty(nn.tools)
 
         nd = allchildren("declaration", net)
-        @test_call allchildren("declaration", net)
         @test isempty(nd)
         @test isempty(parse_node.(nd; reg))
+        #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
+        #@test_opt  allchildren("declaration", net)
+        @test_call target_modules=target_modules allchildren("declaration", net)
 
         nt = allchildren("toolspecific", net)
         @test isempty(nt)
@@ -64,7 +66,8 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             foreach(allchildren("place", page)) do p
                 @test nodename(p) == "place"
                 i = parse_node(firstchild("initialMarking", p); reg)
-                @test_call firstchild("initialMarking", p)
+                #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
+                @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
                 @test typeof(value(i)) <: Union{Int,Float64}
                 @test value(i) >= 0
@@ -102,20 +105,20 @@ end
 
     foreach(nets(pnml_ir)) do net
         @test net isa PnmlNet
-        @test net.id isa Symbol
+        @test pid(net) isa Symbol
 
-        foreach(net.pages) do page
+        foreach(pages(net)) do page
             @test page isa Page
             @test pid(page) isa Symbol
-            foreach(page.places) do place
+            foreach(places(page)) do place
                 @test place isa Place
                 @test pid(place) isa Symbol
             end
-            foreach(page.transitions) do transition
+            foreach(transitions(page)) do transition
                 @test transition isa Transition
                 @test pid(transition) isa Symbol
             end
-            foreach(page.arcs) do arc
+            foreach(arcs(page)) do arc
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
@@ -136,22 +139,18 @@ end
     pnml_dir = joinpath(@__DIR__, "data")
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
 
-    @test_call  parse_file(testfile)
 
     model = parse_file(testfile)
-
     @test model isa PnmlModel
-    @test_call nets(model)
 
     netvec = nets(model)
-
-    @test netvec isa Vector{Any}
+    @test netvec isa Vector{PnmlNet}
     @test length(netvec) == 1
 
     net = first(netvec)
-
     @test net isa PnmlNet
     @test net isa PnmlNet{<:PnmlType}
+
     @test pages(net) isa Vector{<:Page}
     @test length(pages(net)) == 1
     @test firstpage(net) isa Page
@@ -161,4 +160,8 @@ end
     @test !isempty(transitions(firstpage(net)))
     @test !isempty(transitions(first(pages(net))))
     @test !isempty(transitions(pages(net)[1]))
+
+    #@test_opt function_filter=pnml_function_filter parse_file(testfile)
+    @test_call target_modules=target_modules parse_file(testfile)
+    @test_call nets(model)
 end

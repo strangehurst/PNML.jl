@@ -21,7 +21,7 @@ function flatten_pages!(net::PnmlNet)
     # Place content of subpages of 1st page before sibling page's content.
     subpages = firstpage(net).subpages
     if subpages !== nothing
-        foldl(flatten_pages!, subpages; init=firstpage(net))
+         foldl(flatten_pages!, subpages; init=firstpage(net))
         empty!(subpages)
     end
     # Sibling pages.
@@ -62,7 +62,7 @@ function append_page!(l::Page, r::Page;
         update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
     end
 
-    l
+    return l
 end
 
 # Property/Field `key` is to be set or appended.
@@ -112,16 +112,20 @@ deref!(net::PnmlNet, page_idx=1) = deref!(pages(net)[page_idx])
 function deref!(page::Page)
     for arc in arcs(page)
         while arc.source ∈ refplace_ids(page)
-            arc.source = deref_place(page, arc.source)
+            s = deref_place(page, arc.source)
+            arc.source =  s
         end
         while arc.target ∈ refplace_ids(page)
-            arc.target = deref_place(page, arc.target)
+            t = deref_place(page, arc.target)
+            arc.target = t
         end
         while arc.source ∈ reftransition_ids(page)
-            arc.source = deref_transition(page, arc.source)
+            s = deref_transition(page, arc.source)
+            @set arc.source = s
         end
         while arc.target ∈ reftransition_ids(page)
-            arc.target = deref_transition(page, arc.target)
+            t = deref_transition(page, arc.target)
+            @set arc.target = t
         end
     end
     # Remove reference nodes.

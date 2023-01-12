@@ -38,15 +38,15 @@ Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
                                    (has_tools(oc) && !isempty(oc.tools)) ||
                                    (has_labels(oc) && !isempty(oc.labels)))
 
+#convert(::Type{Maybe{Nothing,Vector{PnmlCore.ToolInfo}}) =
 function Base.empty!(oc::ObjectCommon)
     #! isnothing(oc.graphics) || replace with Graphics()
-    if oc.tools !== nothing
-        # JET needs help avoiding the Nothing union split.
-        t::Vector{ToolInfo} = oc.tools
+    t = oc.tools # JET needs help avoiding the Nothing union split.
+    if !isnothing(t)
         empty!(t)
     end
-    if has_labels(oc)
-        l::Vector{PnmlLabel} = oc.labels
+    l = oc.labels
+    if !isnothing(l)
         empty!(l)
     end
 end

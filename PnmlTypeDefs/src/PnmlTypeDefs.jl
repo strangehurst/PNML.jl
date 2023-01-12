@@ -119,28 +119,24 @@ abstract type AbstractContinuousNet <: PnmlType end
 """
 $(TYPEDEF)
 TODO: Continuous Petri Net
-Concrete type.
 """
 struct ContinuousNet <: AbstractContinuousNet end
 
 """
-TODO: Open Petri Net
-
 $(TYPEDEF)
+TODO: Open Petri Net
 """
 struct OpenNet <: AbstractContinuousNet end
 
 """
-TODO: Stochastic Petri Net
-
 $(TYPEDEF)
+TODO: Stochastic Petri Net
 """
 struct StochasticNet <: AbstractHLCore end
 
 """
-TODO: Timed Petri Net
-
 $(TYPEDEF)
+TODO: Timed Petri Net
 """
 struct TimedNet <: AbstractHLCore end
 
@@ -157,11 +153,8 @@ There is a companion map [`pnmltype_map`](@ref) that takes the symbol to a type 
 The URI is a string and may be the full URL of a pntd schema,
 just the schema file name, or a placeholder for a future schema.
 
-
-# Examples
-
-The 'pntd symbol' should match the name used in the URI with inconvinient characters
-removed or replaced. For example, '-' is replaced by '_'.
+For readability, the 'pntd symbol' should match the name used in the URI
+with inconvinient characters removed or replaced. For example, '-' is replaced by '_'.
 """
 const default_pntd_map =
     Dict{String, Symbol}("http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
@@ -226,12 +219,13 @@ pntd_symbol(s::String) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcor
 """
     pnmltype(pntd::T; kw...)
     pnmltype(uri::AbstractString; kw...)
-    function pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
+    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
 
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The [`PnmlTypeDefs.pnmltype_map`](@ref) and [`PnmlTypeDefs.default_pntd_map`](@ref) are both assumed to be correct here.
+The [`PnmlTypeDefs.pnmltype_map`](@ref) and [`PnmlTypeDefs.default_pntd_map`](@ref)
+are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore`.
 Unknown `symbol` throws a `DomainError` exception.
@@ -254,7 +248,7 @@ pnmltype(pntd::PnmlType; kw...) = pntd
 pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
     typemap = pnmltype_map::IdDict{Symbol, PnmlType}
-    !haskey(typemap, s) && throw(DomainError("Unknown PNTD symbol $s"))
+    haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
 end
 

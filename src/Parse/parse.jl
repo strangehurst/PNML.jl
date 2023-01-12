@@ -117,7 +117,11 @@ function parse_net(node, pntd::Maybe{PnmlType} = nothing; kw...)::PnmlNet
         node,
         :tag => Symbol(nn),
         :id => register_id!(kw[:reg], node["id"]),
-        :pages => Page[],
+        :pages => Page{typeof(pntd),
+                        marking_type(pntd),
+                        inscription_type(pntd),
+                        condition_type(pntd),
+                        sort_type(pntd)}[],
         :declaration => Declaration(),
     ) #! declaration is High Level
     # Go through children looking for expected tags, delegating common tags and labels.
@@ -158,9 +162,9 @@ end
 $(TYPEDSIGNATURES)
 PNML requires at least one page.
 """
-function parse_page(node, pntd; kw...)
+function parse_page(node, pntd::PnmlType; kw...)
     nn = check_nodename(node, "page")
-    @debug "parse_page $nn $pntd"
+    #@show "parse_page $nn $pntd"
     haskey(node, "id") || throw(MissingIDException(nn, node))
     @assert haskey(kw, :reg)
 
@@ -168,20 +172,24 @@ function parse_page(node, pntd; kw...)
         node,
         :tag => Symbol(nn),
         :id => register_id!(kw[:reg], node["id"]),
-        :places => Place[],
-        :trans => Transition[],
-        :arcs => Arc[],
-        :refP => RefPlace[],
-        :refT => RefTransition[],
+
+        # Rather than use an abstract type here, assume we have a consistent model where
+        # all places, transitions and arcs are parsed into type-stable, compatible objects.
+        # The PNTD is used to deduce the expected types.
+        :places => Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}[],
+        :trans =>  Transition{typeof(pntd), condition_type(pntd)}[],
+        :arcs =>   Arc{typeof(pntd), inscription_type(pntd)}[],
+        :refP =>   RefPlace{typeof(pntd)}[],
+        :refT =>   RefTransition{typeof(pntd)}[],
         :declaration => Declaration(), #! HL
-        :pages => Page[],
+        :pages => Page{typeof(pntd),
+                       marking_type(pntd),
+                       inscription_type(pntd),
+                       condition_type(pntd),
+                       sort_type(pntd)}[],
     )
     parse_page_2!(d, node, pntd; kw...)
-    #pprintln(IOContext(stdout, :displaysize => (24, 120)), d)
-    #println()
-    #@show typeof(d[:places]), d[:places]
 
-    @assert d[:places] isa Vector{Place}
     Page(
         pntd,
         d[:id],
@@ -225,17 +233,19 @@ function parse_place(node, pntd; kw...)
     @debug nn
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     @assert haskey(kw, :reg)
-    #!@show "parse_place $(node["id"]) $pntd"
     d = pnml_node_defaults(
         node,
         :tag => Symbol(nn),
         :id => register_id!(kw[:reg], node["id"]),
-        :marking => default_marking(pntd),
-        :type => default_sort(pntd), # Different from net's type (this is a sort).
+        #!:marking => default_marking(pntd),
+        #!:type => default_sort(pntd), # Different from net's type (this is a sort).
     )
     parse_place_labels!(d, node, pntd; kw...)
 
-    Place(pntd, d[:id], d[:marking], d[:type], d[:name], ObjectCommon(d))
+    Place(pntd, d[:id],
+            get(d, :marking, default_marking(pntd)),
+            get(d, :type, default_sort(pntd)),
+            d[:name], ObjectCommon(d))
 end
 
 "Specialize place label parsing."
@@ -251,9 +261,9 @@ end
 function parse_place_labels!(d::PnmlDict, node::XMLNode, pntd::AbstractHLCore; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...)) #!L
+            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...))
             # Here type means `sort`. Re: Many-sorted algebra.
-            "type" => (d[:type] = parse_type(child, pntd; kw...)) #! HL
+            "type" => (d[:type] = Sort(parse_type(child, pntd; kw...))) #! HL sorttype
             _ => parse_pnml_node_common!(d, child, pntd; kw...)
         end
     end
@@ -311,12 +321,14 @@ function parse_arc(node, pntd; kw...)
         :id => register_id!(kw[:reg], node["id"]),
         :source => Symbol(node["source"]),
         :target => Symbol(node["target"]),
-        :inscription => nothing,
     )
     foreach(elements(node)) do child
         parse_arc_labels!(d, child, pntd; kw...) # Dispatch on pntd
     end
-    Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
+
+    Arc(pntd, d[:id], d[:source], d[:target],
+        get(d, :inscription, default_inscription(pntd)),
+        d[:name], ObjectCommon(d))
 end
 
 """
@@ -410,19 +422,20 @@ function parse_name(node, pntd; kw...)
 
     # Assumes there are no other children with this tag (like the specification says).
     textnode = firstchild("text", node)
-    if isnothing(textnode)
-        @warn "$(nn) missing <text> element" #TODO Make optional.
-        # There are pnml files that break the rules & do not have a text element here.
-        # Ex: PetriNetPlans-PNP/parallel.jl
-        # Attempt to harvest content of <name> element instead of the child <text> element.
+    # There are pnml files that break the rules & do not have a text element here.
+    # Ex: PetriNetPlans-PNP/parallel.jl
+    # Attempt to harvest content of <name> element instead of the child <text> element.
+    if !isnothing(textnode)
+        text = string(strip(nodecontent(textnode)))
+    elseif @load_preference("text_element_optional", true)
+        @warn "$nn missing <text> element"
         text = string(strip(nodecontent(node)))
     else
-        text = string(strip(nodecontent(textnode)))
+        throw(ArgumentError("$nn missing <text> element"))
     end
 
     graphicsnode = firstchild("graphics", node)
-    graphics =
-        isnothing(graphicsnode) ? nothing :
+    graphics = isnothing(graphicsnode) ? nothing :
         parse_graphics(graphicsnode, pntd; kw..., verbose = false)
 
     toolspecific = allchildren("toolspecific", node)
@@ -503,7 +516,7 @@ function parse_inscription(node, pntd::PnmlType; kw...)
         if @load_preference("warn_on_fixup", false)
             @warn("missing or unparsable <inscription> value")
         end
-        d[:value] = _evaluate(default_inscription(pntd))
+        d[:value] = default_inscription(pntd)()
     end
     Inscription(d[:value], ObjectCommon(d))
 end
@@ -526,9 +539,11 @@ function parse_hlinitialMarking(node, pntd::AbstractHLCore; kw...)
     foreach(elements(node)) do child
         @match nodename(child) begin
             "structure" => (
-                d[:structure] =
-                    haselement(child) ? parse_term(firstelement(child), pntd; kw...) :
+                d[:structure] = if haselement(child)
+                    parse_term(firstelement(child), pntd; kw...)
+                else
                     default_marking(pntd)
+                end
             ) #! sort of place
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end

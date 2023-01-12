@@ -5,34 +5,48 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD,D} <: PnmlObject{PNTD}
+struct Page{PNTD<:PnmlType, M, I, C, S} <: PnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
-    places::Vector{Place{PNTD}}
+    places::Vector{Place{PNTD, M, S}}
     refPlaces::Vector{RefPlace{PNTD}}
-    transitions::Vector{Transition{PNTD}}
+    transitions::Vector{Transition{PNTD, C}}
     refTransitions::Vector{RefTransition{PNTD}}
-    arcs::Vector{Arc{PNTD}}
-    declaration::D
-    subpages::Maybe{Vector{Page{PNTD}}}
+    arcs::Vector{Arc{PNTD, I}}
+    declaration::Declaration
+
+    #! XXX TODO Use AbstractTree?
+    #!subpages::Vector{Any} #! XXX TODO
+    subpages::Vector{Page{PNTD, M, I, C, S}} #! XXX TODO page_type(pntd)
+
     name::Maybe{Name}
     com::ObjectCommon
 
-    function Page(pntd::PnmlType, id::Symbol, places, refp, transitions, reft, arcs,
-                  declare, pages, name, oc::ObjectCommon)
-        places isa Vector{Place} || throw(ArgumentError("Page places must be a Vector"))
-        transitions isa Vector{Transition} || throw(ArgumentError("Page transitions must be a Vector"))
-        arcs isa Vector{Arc} || throw(ArgumentError("Page arcs must be a Vector"))
-        #isempty(places) && throw(ArgumentError("Page cannot have empty places"))
-        #isempty(transitions) && throw(ArgumentError("Page cannot have empty places"))
-        #isempty(places) && throw(ArgumentError("Page cannot have empty places"))
+    # function Page(pntd::PnmlType,
+    #             id::Symbol,
+    #             places::Vector{Place}, refp::Vector{RefPlace},
+    #             transitions::Vector{Transition}, reft::Vector{RefTransition},
+    #             arcs::Vector{Arc},
+    #             declare, pages, name,
+    #             oc::ObjectCommon)
 
-        #TODO Any more validation, perhaps configurable
-        new{typeof(pntd), typeof(declare)}(pntd, id, places, refp, transitions, reft, arcs,
-                                           declare, pages, name, oc)
-    end
+    #     isempty(places) && throw(ArgumentError("Page cannot have empty places"))
+    #     isempty(transitions) && throw(ArgumentError("Page cannot have empty transitions"))
+    #     isempty(arcs) && throw(ArgumentError("Page cannot have empty arcs"))
+
+    #     new{typeof(pntd), typeof(declare)}(pntd, id,
+    #                                        places, refp,
+    #                                        transitions, reft,
+    #                                        arcs,
+    #                                        declare, pages, name, oc)
+    # end
 end
 
+place_type(pntd::PnmlType) = Place{typeof(pntd),  marking_type(pntd), sort_type(pntd)}
+transition_type(pntd::PnmlType) = Transition{typeof(pntd), condition_type(pntd)}
+arc_type(pntd::PnmlType) = Arc{typeof(pntd), inscription_type(pntd)}
+refplace_type(pntd::PnmlType) = RefPlace{typeof(pntd)}
+reftransition_type(pntd::PnmlType) = RefTransition{typeof(pntd)}
 
 # Note that declaration wraps a vector of AbstractDeclarations.
 declarations(page::Page)   = declarations(page.declaration)
@@ -87,6 +101,8 @@ function Base.empty!(page::Page)
     empty!(page.arcs)
     empty!(page.declaration)
     !isnothing(page.subpages) && empty!(page.subpages)
-    has_tools(page.com) && empty!(page.com.tools)
-    has_labels(page.com) && empty!(page.com.labels)
+    t = (tools ∘ common)(page)
+    !isnothing(t) && empty!(t)
+    l = labels(page.com)
+    !isnothing(l) && empty!(l)
 end

@@ -1,8 +1,8 @@
 """
-Label of a Transition that determines when the transition fires.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Label of a Transition that determines when the transition fires.
 
 # Examples
 
@@ -26,10 +26,10 @@ julia> c()
 false
 ```
 """
-mutable struct Condition{PNTD,T} <: Annotation
+struct Condition{PNTD,T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
-    term::T #! Rexname to value.
+    term::T #! Rename to value? Must be mutable!
     com::ObjectCommon
 
     function Condition(pntd, t, v, c)
@@ -49,3 +49,10 @@ $(TYPEDSIGNATURES)
 Evaluate a [`Condition`](@ref) instance.
 """
 (c::Condition)() = _evaluate(value(c))
+
+
+condition_type(pntd::PnmlType) = Condition{typeof(pntd), condition_value_type(pntd)}
+condition_type(::Type{T}) where {T <: PnmlType} = Condition{T, conditionvalue_type(T())}
+
+condition_value_type(pntd::PnmlType) = Bool
+condition_value_type(::Type{T}) where {T <: PnmlType} = condition_value_type(T())

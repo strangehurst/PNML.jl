@@ -25,46 +25,49 @@ using LabelledArrays
 using Reexport
 using Preferences
 
-using Base: Fix1, Fix2
-import PnmlCore
+using Base: Fix1, Fix2, @kwdef
+
 @reexport using PnmlCore
 
-using PnmlCore: AbstractContinuousNet, AbstractHLCore, AbstractLabel,
-AbstractPnmlCore, AbstractPnmlTool, @xml_str,
-Annotation, AnyElement, Arc, Condition,
-ContinuousNet, Coordinate, Declaration,
-Fill, Font, Graphics, HLCoreNet, HLPNG, IDRegistry, Inscription, Line,
-MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
-OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
-PnmlIDRegistry, PnmlIDRegistrys, PnmlLabel, PnmlModel, PnmlNet, PnmlNode,
-PnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
-StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
-XMLNode
+using PnmlCore:
+    AbstractContinuousNet, AbstractHLCore, AbstractLabel,
+    AbstractPnmlCore, AbstractPnmlTool, @xml_str,
+    Annotation, AnyElement, Arc, Condition,
+    ContinuousNet, Coordinate, Declaration,
+    Fill, Font, Graphics, HLCoreNet, HLPNG, IDRegistry, Inscription, Line,
+    MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
+    OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
+    PnmlIDRegistry, PnmlIDRegistrys, PnmlLabel, PnmlModel, PnmlNet, PnmlNode,
+    PnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
+    StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
+    XMLNode
 
 
-import PnmlCore: _evaluate, _ppages, _reduce,
-all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
-check_nodename, common, condition, conditions, currentMarkings,
-declarations, default_condition, default_inscription,
-default_marking, deref!, deref_place, deref_transition, dict,
-find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
-get_label, get_labels, getfirst, graphics,
-has_arc, has_graphics, has_label, has_labels, has_name, has_place,
-has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
-hastag, haspid,
-ispid, idregistry, inc_indent, indent, indent_width, infos,
-initialMarking, inscription, inscriptiontype, inscriptionvaluetype,
-isregistered_id, labels,
-marking, markingtype, markingvaluetype,
-name, namespace, nets, nettype,
-pages, pid, place, place_ids, places, pnml_ns,
-pnmltype, pntd_symbol, refid, refplace, refplace_ids, refplaces,
-reftransition, reftransition_ids, reftransitions, register_id!,
-show_common, show_page_field, shownames, source,
-src_arcs, structure, tag, target, text, tgt_arcs, tools,
-transition, transition_ids, transitions,
-update_maybe!, value, version,
-xmlnode, xmlroot
+import PnmlCore:
+    PnmlCore, _evaluate, _ppages, _reduce,
+    all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
+    check_nodename, common, condition, conditions, currentMarkings, condition_type,
+    declarations, default_condition, default_inscription, default_marking, default_sort,
+    deref!, deref_place, deref_transition, dict,
+    find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
+    get_label, get_labels, getfirst, graphics,
+    has_arc, has_graphics, has_label, has_labels, has_name, has_place,
+    has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
+    hastag, haspid,
+    ispid, idregistry, inc_indent, indent, indent_width, infos,
+    initialMarking, inscription, inscription_type, inscription_value_type,
+    isregistered_id, labels,
+    marking, marking_type, marking_value_type,
+    name, namespace, nets, nettype,
+    pages, pid, place, place_ids, places, pnml_ns,
+    pnmltype, pntd_symbol, refid, refplace, refplace_ids, refplaces,
+    reftransition, reftransition_ids, reftransitions, register_id!,
+    show_common, show_page_field, shownames, source, sort_type,
+    src_arcs, structure, tag, target, text, tgt_arcs, tools,
+    transition, transition_ids, transitions,
+    update_maybe!, value, version,
+    xmlnode, xmlroot,
+    arc_type, place_type, transition_type, refplace_type, reftransition_type
 
 
 

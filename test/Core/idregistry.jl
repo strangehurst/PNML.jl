@@ -5,8 +5,15 @@ using .PnmlIDRegistrys: duplicate_id_action, reset_registry!
 using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "ID registry" begin
-    @test_call IDRegistry()
     reg = IDRegistry()
+
+    #@test_opt IDRegistry()
+    #@test_opt target_modules=(@__MODULE__,) register_id!(reg, :p)
+    #@test_opt target_modules=(@__MODULE__,) register_id!(reg, "p")
+    #@test_opt target_modules=(@__MODULE__,) reset_registry!(reg)
+    #@test_opt target_modules=(@__MODULE__,) duplicate_id_action(:p; action=:bogus)
+
+    @test_call IDRegistry()
     @test_call register_id!(reg, :p)
     @test_call register_id!(reg, "p")
     @test_call reset_registry!(reg)

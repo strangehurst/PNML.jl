@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Vector{Any} #! Yes it is abstract.
+    nets::Vector{PnmlNet} #! Yes it is abstract.
     namespace::String
     reg::IDRegistry # Shared by all nets.
     xml::XMLNode

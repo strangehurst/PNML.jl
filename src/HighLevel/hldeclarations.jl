@@ -34,7 +34,7 @@ struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
     name::String
     nodename::String
-    content::Vector{AnyElement}
+    content::Vector{Any} #! Vector{AnyElement}
     #sort::S
     #com::ObjectCommon
 end

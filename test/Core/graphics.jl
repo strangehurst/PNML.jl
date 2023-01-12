@@ -22,7 +22,9 @@ using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
     @test n.dimension isa PNML.Coordinate
     @test n.position isa Vector{PNML.Coordinate}
 
+    #@test_opt PNML.Coordinate(1,2)
     @test_call PNML.Coordinate(1,2)
+    #@test_opt PNML.Coordinate(1.1,2.2)
     @test_call PNML.Coordinate(1.1,2.2)
 
     # There can only be one offset, last tag parsed wins.

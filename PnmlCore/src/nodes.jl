@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 Place node of a Petri Net Markup Language graph.
 """
-mutable struct Place{PNTD,M,S} <: PnmlNode{PNTD}
+struct Place{PNTD,M,S} <: PnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
 
@@ -15,16 +15,17 @@ mutable struct Place{PNTD,M,S} <: PnmlNode{PNTD}
     name::Maybe{Name}
     com::ObjectCommon
 
-    function Place(pntd::PnmlType, id::Symbol, initMarking, sort, name, oc::ObjectCommon)
-        initmark = isnothing(initMarking) ? default_marking(pntd) : initMarking
-        new{typeof(pntd),typeof(initmark),typeof(sort)}(pntd, id, initmark, initmark,
-                                                       sort, name, oc)
-    end
+end
+
+function Place(pntd::PnmlType, id::Symbol, initMarking, sort,
+               name::Maybe{Name}, oc::ObjectCommon)
+    initmark = isnothing(initMarking) ? default_marking(pntd) : initMarking
+    Place(pntd, id, initmark, initmark, sort, name, oc)
 end
 
 marking(place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
-common(p::Place) = place.com
+common(place::Place) = place.com
 
 #-------------------
 """

@@ -19,7 +19,7 @@ using AbstractTrees
 using LabelledArrays
 using Reexport
 using Preferences
-
+using Accessors
 using Base: Fix1, Fix2
 
 @reexport using PnmlTypeDefs

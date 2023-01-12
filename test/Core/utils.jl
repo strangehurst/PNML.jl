@@ -28,13 +28,14 @@ end
     </test>
     """
 
-    @test_call getfirst("a", node)
+    #@test_call target_modules=(PNML,) getfirst("a", node)
+    @test_call target_modules=target_modules getfirst("a", node)
     @test_call nodename(getfirst("a", node))
     @test nodename(getfirst("a", node)) == "a"
     @test getfirst("a", node)["name"] == "a1"
     @test getfirst("b", node) === nothing
     @test nodename(getfirst("c", node)) == "c"
 
-    a = @test_call allchildren("a", node)
-    @test map(c->c["name"], allchildren("a", node)) == ["a1", "a2", "a3"]
+    a = @test_call target_modules=target_modules allchildren("a", node)
+    @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]
 end

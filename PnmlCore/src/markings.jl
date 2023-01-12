@@ -57,6 +57,9 @@ Use PNML type as trait to select valuetype of marking.
 """
 function markingvaluetype end
 
-markingtype(::PnmlType) = Marking
-markingvaluetype(::PnmlType) = Int
-markingvaluetype(::AbstractContinuousNet) = Float64
+marking_type(pntd::PnmlType) = Marking{marking_value_type(pntd)}
+marking_type(::Type{T}) where {T <: PnmlType} = marking_type(T())
+
+marking_value_type(::PnmlType) = Int
+marking_value_type(::AbstractContinuousNet) = Float64
+marking_value_type(::Type{T}) where {T <: PnmlType} = marking_value_type(T())

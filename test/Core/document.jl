@@ -44,7 +44,8 @@ end
     @test :net ∉ reg.ids
 
     parse_pnml(xmlroot(str); reg)
-    @test_call parse_pnml(xmlroot(str); reg)
+    #@test_opt parse_pnml(xmlroot(str); reg)
+    @test_call target_modules=target_modules parse_pnml(xmlroot(str); reg)
     #@show reg
 
     @test isregistered_id(reg, :net)
@@ -67,6 +68,8 @@ end
     model = parse_str(str)
 
     v1 = PNML.find_nets(model, :ptnet)
+
+    #@test_opt pnmltype(:ptnet)
     @test_call pnmltype(:ptnet)
     foreach(v1) do net
         @test net.type === pnmltype(:ptnet)

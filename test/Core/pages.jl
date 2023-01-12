@@ -3,7 +3,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
     PnmlNet, Page,
     arcs, places, transitions, refplaces, reftransitions,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
-    flatten_pages!
+    flatten_pages!, nets
 
 @testset "pages" begin
     str = """
@@ -56,12 +56,14 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
         </net>
     </pnml>
     """
-    model = parse_str(str)
+    model = @inferred parse_str(str)
+    #@show typeof(nets(model))
+    # The nets of a model is an array of abstract types so not infred.er
     net = first_net(model)
 
     @test net isa PnmlNet
     @test typeof(net) <: PnmlNet
-    @test typeof(firstpage(net)) <: Page
+    @test typeof(@inferred(firstpage(net))) <: Page
 
     @test_broken arc_ids(net)           == [:a11, :a12, :a21, :a22, :a31, :a311]
     @test_broken place_ids(net)         == [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
@@ -82,7 +84,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
     @test reftransitions(net) !== nothing
 
     @testset "flatten" begin
-        flatten_pages!(net)
+        @inferred flatten_pages!(net)
 
         expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
         expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]

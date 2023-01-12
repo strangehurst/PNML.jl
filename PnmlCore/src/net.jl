@@ -4,11 +4,11 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType,D}
+struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
-    pages::Vector{Page{PNTD}}
-    declaration::D #! High-level thing.
+    pages::Vector{Page{PNTD, M, I, C, S}}
+    declaration::Declaration #! High-level thing.
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
@@ -16,8 +16,12 @@ struct PnmlNet{PNTD<:PnmlType,D}
     function PnmlNet(pntd::PnmlType, id::Symbol, pages, declare, name,
                      oc::ObjectCommon, xml::XMLNode)
         isempty(pages) && throw(ArgumentError("PnmlNet cannot have empty `pages`"))
-        pages isa Vector{Page} || throw(ArgumentError("PnmlNet `pages`` must be a Vector{Page}"))
-        new{typeof(pntd),typeof(declare)}(pntd, id, pages, declare, name, oc, xml)
+        #pages isa Vector{Page} || throw(ArgumentError("PnmlNet `pages` must be a Vector{Page}"))
+        new{typeof(pntd),
+            marking_type(pntd),
+            inscription_type(pntd),
+            condition_type(pntd),
+            sort_type(pntd)}(pntd, id, pages, declare, name, oc, xml)
     end
 end
 
@@ -38,11 +42,12 @@ firstpage(net::PnmlNet) = first(pages(net))
 # Mapreduce `f` using `append!` over all pages of the net.
 _reduce(f, net, init=Symbol[]) = mapreduce(f, append!, pages(net); init)
 
-places(net::PnmlNet)         = _reduce(places, net, Place[])
-transitions(net::PnmlNet)    = _reduce(transitions, net, Transition[])
-arcs(net::PnmlNet)           = _reduce(arcs, net, Arc[])
-refplaces(net::PnmlNet)      = _reduce(refplaces, net, RefPlace[])
-reftransitions(net::PnmlNet) = _reduce(reftransitions, net, RefTransition[])
+#! XXX not type-stable? inferred as Any for SimpleNet!
+places(net::PnmlNet)         = _reduce(places, net, place_type(net.type)[])
+transitions(net::PnmlNet)    = _reduce(transitions, net, transition_type(net.type)[])
+arcs(net::PnmlNet)           = _reduce(arcs, net, arc_type(net.type)[])
+refplaces(net::PnmlNet)      = _reduce(refplaces, net, refplace_type(net.type)[])
+reftransitions(net::PnmlNet) = _reduce(reftransitions, net, reftransition_type(net.type)[])
 
 # Apply `f` to pages of net. Return first non-nothing. Else return default.
 function _ppages(f::F, x::Union{PnmlNet, Page}, id::Symbol, default=nothing) where {F}
@@ -105,7 +110,7 @@ has_place(net::PnmlNet, id::Symbol, page_idx) = has_place(pages(net)[page_idx], 
 marking(net::PnmlNet, placeid::Symbol, page_idx) = marking(pages(net)[page_idx], placeid)
 #! TODO  Subpages
 """
-    currentMarkings(n) -> LVector{markingvaluetype(n)}
+    currentMarkings(n) -> LVector{marking_value_type(n)}
 
 LVector labelled with place id and holding marking's value.
 """

@@ -19,7 +19,9 @@ labels(pdict::PnmlDict) = pdict[:labels]
 get_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? get_label(labels(d), tagvalue) : nothing
 get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
 
-#--------------------------------------------
+
+#--------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------
 """
 $(TYPEDEF)
 

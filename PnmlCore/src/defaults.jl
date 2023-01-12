@@ -20,12 +20,21 @@ Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`
 function default_marking end
 default_marking(x::Any) = error("no default marking for $(typeof(x))")
 
-#------------------------------------------------------------------------------
-default_condition(p::PnmlType) = Condition(p, true)
-default_inscription(::PnmlType) = one(Int)
-default_marking(::PnmlType) = Marking(zero(Int))
+"""
+$(TYPEDSIGNATURES)
+Return instance of default sort based on `PNTD`. Has meaning of empty, as in `zero`.
+"""
+function default_sort end
+default_sort(::Any) = error("no default sort for $(typeof(x))")
 
 #------------------------------------------------------------------------------
-default_condition(p::AbstractContinuousNet) = Condition(p, true)
-default_inscription(::AbstractContinuousNet) = one(Float64)
-default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
+default_condition(p::PnmlType)  = Condition(p, true)
+default_inscription(::PnmlType) = Inscription(one(Int))
+default_marking(::PnmlType)     = Marking(zero(Int))
+default_sort(::PnmlType)        = one(Int)
+
+#------------------------------------------------------------------------------
+default_condition(p::AbstractContinuousNet)  = Condition(p, true)
+default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
+default_marking(::AbstractContinuousNet)     = Marking(zero(Float64))
+default_sort(::AbstractContinuousNet)        = zero(Float64)

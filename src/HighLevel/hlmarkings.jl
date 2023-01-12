@@ -20,10 +20,10 @@ julia> m()
 3
 ```
 """
-struct HLMarking <: HLAnnotation
+struct HLMarking{T} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
     "Any <structure> must be a many-sorted algebra term for a <hlmarking>."
-    term::Any
+    term::T
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
@@ -45,5 +45,5 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 #TODO convert to sort
 #TODO query sort
 
-markingtype(::AbstractHLCore) = HLMarking
-markingvaluetype(::AbstractHLCore) = Term
+marking_type(pntd::AbstractHLCore) = HLMarking{marking_value_type(pntd)}
+marking_value_type(::AbstractHLCore) = Term{PnmlDict}

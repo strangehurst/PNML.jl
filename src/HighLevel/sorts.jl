@@ -38,15 +38,6 @@ struct UserSort <: AbstractSort
     dict::AnyElement
 end
 
-"""
-Return instance of default sort based on `PNTD`. Has meaning of empty, as in `zero`.
-"""
-function default_sort end
-
-default_sort(::PnmlType)              = zero(Integer) #!
-default_sort(::AbstractContinuousNet) = zero(Float64) #!
-default_sort(::AbstractHLCore)        = Sort() #!
-default_sort(::Any) = error("no default sort for $(typeof(x))")
 
 """
 $(TYPEDEF)
@@ -55,10 +46,16 @@ $(TYPEDFIELDS)
 Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 Is content of a <structure> element of a High-Level label.
 """
-struct Sort #TODO
-    dict::PnmlDict #TODO AnyElement for bring-up? What should be here?
+struct Sort{T<:AbstractDict}
+    tag::Symbol
+    dict::T #TODO What should be here?
     #TODO xml
 end
 
-Sort() = Sort(PnmlDict())
+Sort() = Sort(:empty, PnmlDict())
+Sort(p::Pair{Symbol,PnmlDict}; kw...) = Sort(p.first, p.second)
+Sort(a::AnyElement) = Sort(a.tag, a.dict)
+
 convert(::Type{Maybe{Sort}}, pdict::PnmlDict) = Sort(pdict)
+
+sort_type(::AbstractHLCore) = Sort{PnmlDict}

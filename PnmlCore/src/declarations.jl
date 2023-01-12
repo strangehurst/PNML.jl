@@ -30,3 +30,8 @@ function Base.empty!(d::Declaration)
     empty!(declarations(d))
     empty!(common(d))
 end
+
+#! Where should this live?
+sort_type(::PnmlType) = Int
+sort_type(::AbstractContinuousNet) = Float64
+sort_type(::Type{T}) where {T <: PnmlType} = sort_type(T())

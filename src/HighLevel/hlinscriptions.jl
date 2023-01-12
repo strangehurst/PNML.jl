@@ -7,12 +7,6 @@ Labels an Arc.
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, PnmlDict, Term)
-julia> i1 = HLInscription()
-HLInscription(nothing, nothing, )
-
-julia> i1()
-
-
 julia> i2 = HLInscription(Term(:term, PnmlDict(:value=>3)))
 HLInscription(nothing, Term(:term, IdDict{Symbol, Any}(:value => 3)), )
 
@@ -41,7 +35,7 @@ struct HLInscription <: HLAnnotation
     com::ObjectCommon
 end
 
-HLInscription() = HLInscription(nothing, nothing, ObjectCommon())
+#!HLInscription() = HLInscription(nothing, nothing, ObjectCommon())
 HLInscription(s::AbstractString) = HLInscription(s, nothing)
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
@@ -55,5 +49,5 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-inscriptiontype(::AbstractHLCore) = HLInscription
-inscriptionvaluetype(::AbstractHLCore) = Term
+inscription_type(::AbstractHLCore) = HLInscription
+inscription_value_type(::AbstractHLCore) = Term{PnmlDict} #!

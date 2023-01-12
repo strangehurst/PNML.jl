@@ -1,8 +1,8 @@
 using Pkg
 cd(@__DIR__)
 Pkg.activate(".")
-pkg"dev .. ../PnmlTypeDefs ../PnmlIDRegistrys ../PnmlCore"
-#pkg"add MeshIO GeometryBasics"
+# The `dev` the various packages in the monorepo.
+Pkg.develop(["..", "../PnmlTypeDefs", "../PnmlIDRegistrys", "../PnmlCore"])
 Pkg.instantiate()
 Pkg.precompile()
 

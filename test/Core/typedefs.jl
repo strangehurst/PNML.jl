@@ -4,24 +4,22 @@ using PNML: XMLNode, pnmltype, tagmap
 using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "tagmap" begin
-    # Tags handled differently (no pntd argument) are not in the map.
     @test !haskey(tagmap, "pnml")
     @test !haskey(tagmap, "net")
     # Visit every entry in the map.  All require pntd.
     @testset "tag $t" for t in keys(tagmap)
         @test !isempty(methods(tagmap[t], (XMLNode, PnmlType)))
+        # Tags handled differently (no pntd argument) ARE NOT in the map.
         @test isempty(methods(tagmap[t], (XMLNode,)))
-        @show t, tagmap[t]
 
         #! Some tags only HighLevel
         highleveltags = ["hlmarking", "hlinitialMarking", "hlinscription",
                         "namedoperator", "declarations", "declaration"]
-        if any(==(t), highleveltags)
-            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), HLCoreNet(); reg=IDRegistry() )
-        else
-            @test_call tagmap[t](xmlroot("<$(t)></$(t)>"), PnmlCoreNet(); reg=IDRegistry() )
-        end
+        pntd = any(==(t), highleveltags) ? HLCoreNet() : PnmlCoreNet()
 
+        @show t, tagmap[t], pntd
+        # Parse trivial XML.
+        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd; reg=IDRegistry() )
     end
     #TODO: Add non-trivial tests.
 end
