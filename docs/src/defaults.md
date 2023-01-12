@@ -73,29 +73,29 @@ methods(PNML.default_zero_term) # hide
 [`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)
-julia> m = default_condition(PnmlCoreNet())
+julia> c = default_condition(PnmlCoreNet())
 Condition(nothing, true, )
 
-julia> m = default_condition(ContinuousNet())
+julia> c()
+true
+
+julia> c = default_condition(ContinuousNet())
 Condition(nothing, true, )
 
-julia> m = default_condition(HLCoreNet())
-Condition(nothing, true, )
+julia> c = default_condition(HLCoreNet())
+Condition(nothing, Term(:empty, IdDict{Symbol, Any}(:value => true)), )
 ```
 
 
 ```jldoctest; setup=:(using PNML; using PNML: PnmlDict, default_inscription)
 julia> i = default_inscription(PnmlCoreNet())
-1
+Inscription(1, )
 
 julia> i = default_inscription(ContinuousNet())
-1.0
+Inscription(1.0, )
 
 julia> i = default_inscription(HLCoreNet())
-Term(:empty, IdDict{Symbol, Any}(:value => 1))
-
-julia> PnmlDict
-IdDict{Symbol, Any}
+HLInscription("default", Term(:empty, IdDict{Symbol, Any}(:value => 1)), )
 
 julia> i()
 1
