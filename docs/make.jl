@@ -2,7 +2,10 @@ using Pkg
 cd(@__DIR__)
 Pkg.activate(".")
 # The `dev` the various packages in the monorepo.
-Pkg.develop(["..", "../PnmlTypeDefs", "../PnmlIDRegistrys", "../PnmlCore"])
+Pkg.develop(path="..")
+Pkg.develop(path="../PnmlTypeDefs")
+Pkg.develop(path="../PnmlIDRegistrys")
+Pkg.develop(path="../PnmlCore")
 Pkg.instantiate()
 Pkg.precompile()
 
