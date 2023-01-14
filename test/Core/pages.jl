@@ -1,9 +1,11 @@
-using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
-    PnmlNet, Page,
+using PNML, EzXML, ..TestUtils, JET, AbstractTrees
+using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
+    PnmlNet, Page, pages, pid,
     arcs, places, transitions, refplaces, reftransitions,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
-    flatten_pages!, nets
+    flatten_pages!, nets,
+    place_type, transition_type, arc_type, refplace_type, reftransition_type,
+    currentMarkings
 
 @testset "pages" begin
     str = """
@@ -82,6 +84,45 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net,
     @test transitions(net) !== nothing
     @test refplaces(net) !== nothing
     @test reftransitions(net) !== nothing
+
+    @testset "pagetree" begin
+        AbstractTrees.print_tree(net)
+        println()
+        @show typeof(AbstractTrees.children(net))
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), typeof(x)
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), place_type(nettype(x))
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), transition_type(nettype(x))
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), arc_type(nettype(x))
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), refplace_type(nettype(x))
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), reftransition_type(nettype(x))
+        end
+        println()
+        for x in AbstractTrees.PreOrderDFS(net)
+            @show pid(x), currentMarkings(x)
+        end
+        println()
+    end
 
     @testset "flatten" begin
         @inferred flatten_pages!(net)

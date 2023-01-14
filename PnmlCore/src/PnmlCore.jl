@@ -50,6 +50,7 @@ include("defaults.jl")
 include("nodes.jl")
 include("page.jl")
 include("net.jl")
+include("pagetree.jl")
 include("model.jl")
 
 include("flatten.jl")

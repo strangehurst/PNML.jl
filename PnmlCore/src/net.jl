@@ -49,50 +49,50 @@ arcs(net::PnmlNet)           = _reduce(arcs, net, arc_type(net.type)[])
 refplaces(net::PnmlNet)      = _reduce(refplaces, net, refplace_type(net.type)[])
 reftransitions(net::PnmlNet) = _reduce(reftransitions, net, reftransition_type(net.type)[])
 
-# Apply `f` to pages of net. Return first non-nothing. Else return default.
-function _ppages(f::F, x::Union{PnmlNet, Page}, id::Symbol, default=nothing) where {F}
-    #@show "_ppages $(typeof(x)) $(pid(x))"
-    for pg in pages(x)
-        pl = f(pg, id)
-        !isnothing(pl) && return pl
+# Apply `f` to pages of net/page. Return first non-nothing. Else return `nothing`.
+function _find_x(@nospecialize(f::F), x::Union{PnmlNet, Page}, id::Symbol) where {F<:Function}
+    for pg in PreOrderDFS(x)
+        y = getfirst(Fix2(haspid, id), f(pg))
+        !isnothing(y) && return y
     end
-    return default
+    return nothing
 end
 
-place(net::PnmlNet, id::Symbol)     = _ppages(place, net, id, nothing)
+place(net::PnmlNet, id::Symbol)     = _find_x(places, net, id) # Note the plural.
 place_ids(net::PnmlNet)             = _reduce(place_ids, net)
-has_place(net::PnmlNet, id::Symbol) = _ppages(has_place, net, id, false)
+has_place(net::PnmlNet, id::Symbol) = any(Fix2(has_place, id), pages(net))
 
-marking(net::PnmlNet, placeid::Symbol) = _ppages(marking, net, id)
-currentMarkings(net::PnmlNet) = LVector((;[p=>marking(place(net, p))() for p in place_ids(net)]...))
+marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
+currentMarkings(net::PnmlNet) = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
 
-transition(net::PnmlNet, id::Symbol)     = _ppages(transition, net, id)
+transition(net::PnmlNet, id::Symbol)     = _find_x(transitions, net, id)
 transition_ids(net::PnmlNet,)            = _reduce(transition_ids, net)
-has_transition(net::PnmlNet, id::Symbol) = _ppages(has_transition, net, id, false)
+has_transition(net::PnmlNet, id::Symbol) = any(Fix2(has_transition, id), pages(net))
 
-condition(net::PnmlNet, trans_id::Symbol) = _ppages(condition, net, trans_id)
-conditions(net::PnmlNet) = xLVector((;[t=>condition(transition(net, t)) for t in transition_ids(net)]...))
+condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
+conditions(net::PnmlNet) = Vector((;[t=>condition(net, t)() for t in transition_ids(net)]...))
 
-arc(net::PnmlNet, id::Symbol)      = _ppages(arc, net, id)
+arc(net::PnmlNet, id::Symbol)      = _find_x(arcs, net, id)
 arc_ids(net::PnmlNet)              = _reduce(arc_ids, net)
-has_arc(net::PnmlNet, id::Symbol)  = _ppages(has_arc, net, id, false)
+has_arc(net::PnmlNet, id::Symbol)  = any(Fix2(has_arc, id), pages(net))
 
 all_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(all_arcs, id), net)
 src_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(src_arcs, id), net)
 tgt_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(tgt_arcs, id), net)
 
-inscription(net::PnmlNet, arc_id::Symbol) = _ppages(inscription, net, arc_id)
+inscription(net::PnmlNet, arc_id::Symbol) = _find_x(inscriptions, net, arc_id)
+inscriptionV(net::PnmlNet) = Vector((;[t=>inscription(net, t)() for t in transition_ids(net)]...))
 
-refplace(net::PnmlNet, id::Symbol)      = begin
-    #@show "refplace net $(pid(net)) $id"
-    _ppage(refplace, net, id)
-end
+
+#! refplace and reftransition should only be used to derefrence, flatten pages.
+#TODO Add dereferenceing for place, transition, arc traversal.
+refplace(net::PnmlNet, id::Symbol)      = _find_x(refplace, net, id)
 refplace_ids(net::PnmlNet)              = _reduce(refplace_ids, net)
-has_refP(net::PnmlNet, ref_id::Symbol)  = _ppage(has_refP, net, ref_id, false)
+has_refP(net::PnmlNet, ref_id::Symbol)  = any(Fix2(has_refP, ref_id), pages(net))
 
-reftransition(net::PnmlNet, id::Symbol) = _ppages(reftransition, net, id)
+reftransition(net::PnmlNet, id::Symbol) = _find_x(reftransition, net, id)
 reftransition_ids(net::PnmlNet)         = _reduce(reftransition_ids, net)
-has_refT(net::PnmlNet, ref_id::Symbol)  = _ppages(has_refP, net, ref_id, false)
+has_refT(net::PnmlNet, ref_id::Symbol)  = any(Fix2(has_refP, ref_id), page(net))
 
 #------------------------------
 # Handle individual pages here.

@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, LabelledArrays
+using PNML, EzXML, ..TestUtils, JET, LabelledArrays, AbstractTrees
 using PNML: tag, pid, xmlnode, parse_str,
     Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
     nets, pages,
@@ -94,11 +94,19 @@ testlogger = TestLogger()
 
 
     for top in [first(pages(net.net)), net.net, net]
+        @show typeof(top), length(pages(top))
         @test_call places(top)
-        @show typeof(top)
+
+        #@show print_tree(net)
 
         for p in @inferred places(top)
-            #@show "place $(pid(p))"
+            @show "place $(pid(p))"
+            print_tree(top)
+            for x in AbstractTrees.PreOrderDFS(top)
+                @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
+                @show pid(x), length(pages(x))
+            end
+
             @test_call has_place(top, pid(p))
             @test @inferred has_place(top, pid(p))
             @test p == @inferred Maybe{Place} place(top, pid(p))
@@ -107,6 +115,7 @@ testlogger = TestLogger()
             @test typeof(marking(p)) <: typeof(default_marking(p))
             @test @inferred(marking(p)) isa typeof(default_marking(p))
         end
+        println()
     end
 
     for top in [net, net.net, first(pages(net.net))]
@@ -173,9 +182,9 @@ end
     net = PNML.first_net(model)
     @test net isa PnmlCore.PnmlNet
     snet = @inferred PNML.SimpleNet(net)
-    #@show snet
+    @show snet
     β = @inferred PNML.rates(snet)
-    #@show β
+    @show β
     @test β == LVector(birth=0.3)
 end
 
