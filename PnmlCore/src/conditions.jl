@@ -52,7 +52,7 @@ Evaluate a [`Condition`](@ref) instance.
 
 
 condition_type(pntd::PnmlType) = Condition{typeof(pntd), condition_value_type(pntd)}
-condition_type(::Type{T}) where {T <: PnmlType} = Condition{T, conditionvalue_type(T())}
+condition_type(::Type{T}) where {T <: PnmlType} = Condition{T, condition_value_type(T())}
 
 condition_value_type(pntd::PnmlType) = Bool
 condition_value_type(::Type{T}) where {T <: PnmlType} = condition_value_type(T())
