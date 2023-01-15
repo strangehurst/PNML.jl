@@ -50,12 +50,12 @@ Evaluate a [`Marking`](@ref) instance by returning its value.
 """
 Use PNML type as trait to select type of marking.
 """
-function markingtype end
+function marking_type end
 
 """
 Use PNML type as trait to select valuetype of marking.
 """
-function markingvaluetype end
+function marking_value_type end
 
 marking_type(pntd::PnmlType) = Marking{marking_value_type(pntd)}
 marking_type(::Type{T}) where {T <: PnmlType} = marking_type(T())
