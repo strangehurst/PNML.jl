@@ -1,7 +1,7 @@
 name = "PnmlCore"
 uuid = "56db2244-46d2-4fb3-beea-a7d1dd6fbe82"
 authors = ["Jeff <strangehurst@gmail.com>"]
-version = "0.1.0"
+version = "0.0.3"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
