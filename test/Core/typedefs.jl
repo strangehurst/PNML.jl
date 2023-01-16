@@ -17,7 +17,7 @@ using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
                         "namedoperator", "declarations", "declaration"]
         pntd = any(==(t), highleveltags) ? HLCoreNet() : PnmlCoreNet()
 
-        @show t, tagmap[t], pntd
+        #@show t, tagmap[t], pntd
         # Parse trivial XML.
         @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd; reg=IDRegistry() )
     end

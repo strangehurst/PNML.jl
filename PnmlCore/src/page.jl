@@ -14,39 +14,12 @@ struct Page{PNTD<:PnmlType, M, I, C, S} <: PnmlObject{PNTD}
     refTransitions::Vector{RefTransition{PNTD}}
     arcs::Vector{Arc{PNTD, I}}
     declaration::Declaration
-
-    #! XXX TODO Use AbstractTree?
-    #!subpages::Vector{Any} #! XXX TODO
-    subpages::Vector{Page{PNTD, M, I, C, S}} #! XXX TODO page_type(pntd)
-
+    subpages::Vector{Page{PNTD, M, I, C, S}}
     name::Maybe{Name}
     com::ObjectCommon
-
-    # function Page(pntd::PnmlType,
-    #             id::Symbol,
-    #             places::Vector{Place}, refp::Vector{RefPlace},
-    #             transitions::Vector{Transition}, reft::Vector{RefTransition},
-    #             arcs::Vector{Arc},
-    #             declare, pages, name,
-    #             oc::ObjectCommon)
-
-    #     isempty(places) && throw(ArgumentError("Page cannot have empty places"))
-    #     isempty(transitions) && throw(ArgumentError("Page cannot have empty transitions"))
-    #     isempty(arcs) && throw(ArgumentError("Page cannot have empty arcs"))
-
-    #     new{typeof(pntd), typeof(declare)}(pntd, id,
-    #                                        places, refp,
-    #                                        transitions, reft,
-    #                                        arcs,
-    #                                        declare, pages, name, oc)
-    # end
 end
 
-place_type(pntd::PnmlType) = Place{typeof(pntd),  marking_type(pntd), sort_type(pntd)}
-transition_type(pntd::PnmlType) = Transition{typeof(pntd), condition_type(pntd)}
-arc_type(pntd::PnmlType) = Arc{typeof(pntd), inscription_type(pntd)}
-refplace_type(pntd::PnmlType) = RefPlace{typeof(pntd)}
-reftransition_type(pntd::PnmlType) = RefTransition{typeof(pntd)}
+nettype(::Page{T}) where {T <: PnmlType} = T
 
 # Note that declaration wraps a vector of AbstractDeclarations.
 declarations(page::Page)   = declarations(page.declaration)
@@ -58,14 +31,18 @@ refplaces(page::Page)      = page.refPlaces
 reftransitions(page::Page) = page.refTransitions
 common(page::Page)         = page.com
 
-#! Subpages need to be traversed.
+#_reduce(f, pg::Page, init=Symbol[]) = mapreduce(f, append!, pages(pg); init)
+
+# Subpages MAY need to be traversed here also. Unless we ignore subpages here.
+# A likely use case is to flatten any multi-page net for performance reasons, so we will
+# delay any implementation&test effort here. There is implementation at the net level!
 place(page::Page, id::Symbol)        = getfirst(Fix2(haspid, id), places(page))
 place_ids(page::Page)                = map(pid, places(page))
 has_place(page::Page, id::Symbol)    = any(Fix2(haspid, id), places(page))
 
 marking(page::Page, placeid::Symbol) = marking(place(page, placeid))
 
-currentMarkings(page::Page)           = currentMarkings(page, place_ids(page))
+currentMarkings(page::Page)          = currentMarkings(page, place_ids(page))
 currentMarkings(page::Page, id_vec::Vector{Symbol}) = LVector((;[p=>marking(page, p)() for p in id_vec]...))
 
 transition(page::Page, id::Symbol)      = getfirst(Fix2(haspid, id), transitions(page))

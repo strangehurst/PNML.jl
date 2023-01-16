@@ -23,6 +23,8 @@ function Place(pntd::PnmlType, id::Symbol, initMarking, sort,
     Place(pntd, id, initmark, initmark, sort, name, oc)
 end
 
+nettype(::Place{T}) where {T <: PnmlType} = T
+
 marking(place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
 common(place::Place) = place.com
@@ -46,6 +48,8 @@ struct Transition{PNTD,C}  <: PnmlNode{PNTD}
         new{typeof(pntd), typeof(condition)}(pntd, i, condition, n, com)
     end
 end
+
+nettype(::Transition{T}) where {T <: PnmlType} = T
 
 condition(transition::Transition) = transition.condition()
 default_condition(transition::Transition) = default_condition(transition.pntd)
@@ -75,6 +79,8 @@ end
 
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
+
+nettype(::Arc{T}) where {T <: PnmlType} = T
 
 inscription(arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)

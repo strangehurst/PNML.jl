@@ -1,7 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET, AbstractTrees
 using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     PnmlNet, Page, pages, pid,
-    arcs, places, transitions, refplaces, reftransitions,
+    arc, arcs, place, places, transition, transitions,
+    refplace, refplaces, reftransition, reftransitions,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
     flatten_pages!, nets,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
@@ -59,25 +60,45 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     </pnml>
     """
     model = @inferred parse_str(str)
-    #@show typeof(nets(model))
-    # The nets of a model is an array of abstract types so not infred.er
+    @show typeof(model)
+    @show typeof(nets(model))
+    # The nets of a model is an array of abstract types so not inferred.
     net = first_net(model)
+    AbstractTrees.print_tree(net)
+    println()
 
     @test net isa PnmlNet
     @test typeof(net) <: PnmlNet
     @test typeof(@inferred(firstpage(net))) <: Page
 
-    @test_broken arc_ids(net)           == [:a11, :a12, :a21, :a22, :a31, :a311]
-    @test_broken place_ids(net)         == [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
-    @test_broken transition_ids(net)    == [:t1, :t2, :t3, :t31]
-    @test refplace_ids(net)      == [:rp1, :rp2]
-    @test reftransition_ids(net) == [:rt2]
+    @show arc_ids(net)
+    @show place_ids(net)
+    @show transition_ids(net)
+    @show refplace_ids(net)
+    @show reftransition_ids(net)
 
-    #@show arc_ids(net)
-    #@show place_ids(net)
-    #@show transition_ids(net)
-    #@show refplace_ids(net)
-    #@show reftransition_ids(net)
+    exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
+    exp_place_ids         = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
+    exp_transition_ids    = [:t1, :t2, :t3, :t31]
+    exp_refplace_ids      = [:rp1, :rp2]
+    exp_reftransition_ids = [:rt2]
+
+    @test @inferred(arc_ids(net) )          == exp_arc_ids
+    @test @inferred(place_ids(net))         == exp_place_ids
+    @test @inferred(transition_ids(net))    == exp_transition_ids
+    @test @inferred(refplace_ids(net))      == exp_refplace_ids
+    @test @inferred(reftransition_ids(net)) == exp_reftransition_ids
+
+    for aid in exp_arc_ids
+    end
+    for aid in exp_arc_ids
+        @show aid
+        a = @inferred Maybe{arc_type(net)} arc(net, aid)
+        @show a
+        @test !isnothing(a)
+        #! Pages do not decend subpages!
+        #!@test typeof(arc(net, aid)) === typeof(arc(firstpage(net), aid))
+    end
 
     @test arcs(net) !== nothing
     @test places(net) !== nothing
@@ -86,8 +107,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @test reftransitions(net) !== nothing
 
     @testset "pagetree" begin
-        AbstractTrees.print_tree(net)
-        println()
+
         @show typeof(AbstractTrees.children(net))
         println()
         for x in AbstractTrees.PreOrderDFS(net)
@@ -136,7 +156,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test arc_ids(net) == expected_a
         @test arc_ids(firstpage(net)) == expected_a
         @test arc_ids(net) == arc_ids(firstpage(net))
-        @test_call arc_ids(net)
+        @test_call target_modules=target_modules arc_ids(net)
         @test_call arc_ids(firstpage(net))
 
         for a ∈ expected_a
@@ -146,7 +166,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test place_ids(net) == expected_p
         @test place_ids(firstpage(net)) == expected_p
         @test place_ids(net) == place_ids(firstpage(net))
-        @test_call place_ids(net)
+        @test_call target_modules=target_modules place_ids(net)
         @test_call place_ids(firstpage(net))
 
         for p ∈ expected_p
@@ -156,7 +176,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test transition_ids(net) == expected_t
         @test transition_ids(firstpage(net)) == expected_t
         @test transition_ids(net) == transition_ids(firstpage(net))
-        @test_call transition_ids(net)
+        @test_call target_modules=target_modules transition_ids(net)
         @test_call transition_ids(firstpage(net))
 
         for t ∈ expected_t
@@ -166,7 +186,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test reftransition_ids(net) == expected_rt
         @test reftransition_ids(firstpage(net)) == expected_rt
         @test reftransition_ids(net) == reftransition_ids(firstpage(net))
-        @test_call reftransition_ids(net)
+        @test_call target_modules=target_modules reftransition_ids(net)
         @test_call reftransition_ids(firstpage(net))
 
         for rt ∈ expected_rt
@@ -176,7 +196,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test refplace_ids(net) == expected_rp
         @test refplace_ids(firstpage(net)) == expected_rp
         @test refplace_ids(net) == refplace_ids(firstpage(net))
-        @test_call refplace_ids(net)
+        @test_call target_modules=target_modules refplace_ids(net)
         @test_call refplace_ids(firstpage(net))
 
         for rp ∈ expected_rp

@@ -58,6 +58,9 @@ testlogger = TestLogger()
     net1 = @inferred SimpleNet SimpleNet(model)
     net2 = @inferred SimpleNet SimpleNet(PNML.first_net(model))
 
+    @show typeof(net)
+    @show typeof(net.net)
+
     for accessor in [pid, place_ids, transition_ids, arc_ids,
                      reftransition_ids, refplace_ids]
         @test accessor(net1) == accessor(net)
@@ -95,7 +98,7 @@ testlogger = TestLogger()
 
     for top in [first(pages(net.net)), net.net, net]
         @show typeof(top), length(pages(top))
-        @test_call places(top)
+        @test_call target_modules=target_modules places(top)
 
         #@show print_tree(net)
 

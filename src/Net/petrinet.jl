@@ -22,16 +22,7 @@ by [`flatten_pages!`](@ref) without losing any Petri Net semantics.
 """
 abstract type PetriNet{PNTD<:PnmlType} end
 
-#! move nettype
-# Example of the idiom of handling the three "top level" components.
-# Usually in the form of a cascade, without type parameters.
 nettype(::PetriNet{T}) where {T <: PnmlType} = T
-nettype(::PnmlNet{T}) where {T <: PnmlType} = T
-nettype(::Page{T}) where {T <: PnmlType} = T
-
-nettype(::Place{T}) where {T <: PnmlType} = T
-nettype(::Transition{T}) where {T <: PnmlType} = T
-nettype(::Arc{T}) where {T <: PnmlType} = T
 
 #------------------------------------------------------------------------------------------
 # Methods that should be implemented by concrete subtypes of PetriNet will throw an error.

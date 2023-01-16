@@ -43,7 +43,7 @@ referenceTransitions & referencePlaces, and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: PetriNet{PNTD}
     id::Symbol # Not needed except for dispatch to inner constructor.
-    net::PnmlNet{PNTD}
+    net::PnmlNet{PNTD} #! M, I, C, S} #! Add type parameters to make fully specified.
 end
 
 # Construct from the flattened first network of the pnml model created from valid XML.
@@ -51,6 +51,7 @@ end
 SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
 SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
 SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
+
 function SimpleNet(net::PnmlNet)
     netcopy = deepcopy(net) #TODO Is copy needed?
     flatten_pages!(netcopy)
