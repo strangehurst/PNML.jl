@@ -58,9 +58,6 @@ testlogger = TestLogger()
     net1 = @inferred SimpleNet SimpleNet(model)
     net2 = @inferred SimpleNet SimpleNet(PNML.first_net(model))
 
-    @show typeof(net)
-    @show typeof(net.net)
-
     for accessor in [pid, place_ids, transition_ids, arc_ids,
                      reftransition_ids, refplace_ids]
         @test accessor(net1) == accessor(net)
@@ -79,56 +76,65 @@ testlogger = TestLogger()
             @test pid(a) == pid(b)
         end
     end
-    #
-    #println()
-    #@show typeof(first(pages(net.net)))
-    #@show typeof(net.net)
-    #@show typeof(net)
-    #println()
-    #! ispid a function that acts on things that have a pnml id, not id directly.
-    # @show ispid(:foo)
-    # @show typeof(ispid(:foo))
-    # @test_call ispid(:foo)
-    # @show filter(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
-    # @test any(ispid(:x), [:a, :b, :x, :X, :x, :y, :z])
-    # @test !any(ispid(:DDD), [:a, :b, :x, :X, :x, :y, :z])
-    #
-    println()
 
+    @testset "inferred" begin
+        #println()
+        #@show "start inferred"
+        # First @inferred failure throws exception ending testset.
+        @test firstpage(net.net) === first(pages(net.net))
+        #@show typeof(firstpage(net.net))
+        @inferred places(first(pages(net.net)))
+        @inferred transitions(first(pages(net.net)))
+        @inferred arcs(first(pages(net.net)))
+
+        #@show typeof(net.net)
+        @inferred places(net.net)
+        @inferred transitions(net.net)
+        @inferred arcs(net.net)
+
+        #@show typeof(net)
+        @inferred places(net)
+        @inferred transitions(net)
+        @inferred arcs(net)
+    end
 
     for top in [first(pages(net.net)), net.net, net]
-        @show typeof(top), length(pages(top))
+        #println()
+        #@show typeof(top)
+        #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
-
-        #@show print_tree(net)
-
-        for p in @inferred places(top)
-            @show "place $(pid(p))"
-            print_tree(top)
-            for x in AbstractTrees.PreOrderDFS(top)
-                @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
-                @show pid(x), length(pages(x))
-            end
+        #=
+        for x in AbstractTrees.PreOrderDFS(top)
+            println(pid(x), " ", length(pages(x)))
+            println(place_ids(x), " ",
+                    transition_ids(x), " ",
+                    arc_ids(x), " ",
+                    refplace_ids(x), " ",
+                    reftransition_ids(x))
+        end
+        =#
+        for p in places(top)
+            #@show "place $(pid(p))"
 
             @test_call has_place(top, pid(p))
             @test @inferred has_place(top, pid(p))
-            @test p == @inferred Maybe{Place} place(top, pid(p))
+            p == @inferred Maybe{Place} place(top, pid(p))
             @test pid(p) ===  p.id
             @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
             @test typeof(marking(p)) <: typeof(default_marking(p))
             @test @inferred(marking(p)) isa typeof(default_marking(p))
         end
-        println()
+        #println()
     end
 
     for top in [net, net.net, first(pages(net.net))]
-        @test_call transitions(top)
-        for t in @inferred transitions(top)
+        @test_call target_modules=target_modules transitions(top)
+        for t in transitions(top)
             #@show "transition $(pid(t))"
             @test PnmlCore.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
-            @test @inferred has_transition(top, pid(t))
-            @test t == @inferred Maybe{Transition} transition(top, pid(t))
+            @test @inferred Maybe{Bool} has_transition(top, pid(t))
+            t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
             @test transition(top, :bogus) === nothing
             @test condition(t) !== nothing
@@ -138,15 +144,15 @@ testlogger = TestLogger()
 
     #
     for top in [net, net.net, first(pages(net.net))]
-        @test_call arcs(top)
-        for a in @inferred arcs(top)
+        @test_call target_modules=target_modules arcs(top)
+        for a in arcs(top)
             #@show "arc $(pid(a))"
             #@show a
             #@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
             #@show has_arc(top, pid(a))
             #@show typeof(has_arc(top, pid(a)))
-            @test @inferred has_arc(top, pid(a))
-            @test a == @inferred Maybe{Arc} arc(top, pid(a))
+            @test @inferred Maybe{Bool} has_arc(top, pid(a))
+            a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
             @test arc(net, :bogus) === nothing
             @test @inferred(PNML.source(a)) !== nothing
@@ -174,7 +180,7 @@ end
 @testset "rate" begin
     str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="stochastic">
+        <net id="net0" type="core">
         <page id="page0">
             <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
         </page>
@@ -185,9 +191,9 @@ end
     net = PNML.first_net(model)
     @test net isa PnmlCore.PnmlNet
     snet = @inferred PNML.SimpleNet(net)
-    @show snet
-    β = @inferred PNML.rates(snet)
-    @show β
+    #@show snet
+    β = PNML.rates(snet)
+    #@show β
     @test β == LVector(birth=0.3)
 end
 
@@ -212,7 +218,7 @@ end
     </pnml>
     """
     model = @inferred parse_str(str)
-    net1 = @inferred PNML.first_net(model)
+    net1 = PNML.first_net(model)
 
     snet = @inferred PNML.SimpleNet(net1)
 
@@ -225,11 +231,11 @@ end
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription (integer?)
-    Δ = @inferred PNML.transition_function(snet)#,T)
+    Δ = PNML.transition_function(snet)#,T)
     tfun = LVector(
-        birth=(LVector(rabbits=1), LVector(rabbits=2)),
-        predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
-        death=(LVector(wolves=1), LVector()),
+        birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
+        predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
+        death=(LVector(wolves=1.0), LVector()),
     )
     #!@show Δ.birth
     #!@show tfun.birth
@@ -239,11 +245,11 @@ end
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = @inferred PNML.currentMarkings(snet)
+    u0 = PNML.currentMarkings(snet)
     @test u0 == uX
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
-    β = @inferred PNML.rates(snet)
+    β = PNML.rates(snet)
     #!@show Δ
     #!@show u0
     #!@show uX

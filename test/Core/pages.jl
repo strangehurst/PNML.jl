@@ -60,8 +60,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     </pnml>
     """
     model = @inferred parse_str(str)
-    @show typeof(model)
-    @show typeof(nets(model))
+    #@show typeof(model)
+    #@show typeof(nets(model))
     # The nets of a model is an array of abstract types so not inferred.
     net = first_net(model)
     AbstractTrees.print_tree(net)
@@ -71,11 +71,11 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @test typeof(net) <: PnmlNet
     @test typeof(@inferred(firstpage(net))) <: Page
 
-    @show arc_ids(net)
-    @show place_ids(net)
-    @show transition_ids(net)
-    @show refplace_ids(net)
-    @show reftransition_ids(net)
+    #@show arc_ids(net)
+    #@show place_ids(net)
+    #@show transition_ids(net)
+    #@show refplace_ids(net)
+    #@show reftransition_ids(net)
 
     exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
     exp_place_ids         = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
@@ -92,9 +92,9 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     for aid in exp_arc_ids
     end
     for aid in exp_arc_ids
-        @show aid
+        #@show aid
         a = @inferred Maybe{arc_type(net)} arc(net, aid)
-        @show a
+        #@show a
         @test !isnothing(a)
         #! Pages do not decend subpages!
         #!@test typeof(arc(net, aid)) === typeof(arc(firstpage(net), aid))
@@ -106,43 +106,42 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @test refplaces(net) !== nothing
     @test reftransitions(net) !== nothing
 
-    @testset "pagetree" begin
-
-        @show typeof(AbstractTrees.children(net))
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), typeof(x)
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), place_type(nettype(x))
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), transition_type(nettype(x))
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), arc_type(nettype(x))
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), refplace_type(nettype(x))
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), reftransition_type(nettype(x))
-        end
-        println()
-        for x in AbstractTrees.PreOrderDFS(net)
-            @show pid(x), currentMarkings(x)
-        end
-        println()
-    end
+    # @testset "pagetree" begin
+    #     @show typeof(AbstractTrees.children(net))
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), typeof(x)
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), place_type(nettype(x))
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), transition_type(nettype(x))
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), arc_type(nettype(x))
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), refplace_type(nettype(x))
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), reftransition_type(nettype(x))
+    #     end
+    #     println()
+    #     for x in AbstractTrees.PreOrderDFS(net)
+    #         @show pid(x), currentMarkings(x)
+    #     end
+    #     println()
+    # end
 
     @testset "flatten" begin
         @inferred flatten_pages!(net)
