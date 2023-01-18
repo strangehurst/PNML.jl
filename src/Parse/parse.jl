@@ -594,7 +594,6 @@ See [`AbstractTerm`](@ref).
 """
 function parse_condition(node, pntd; kw...)
     nn = check_nodename(node, "condition")
-    @debug nn
     d = pnml_label_defaults(node, :tag => Symbol(nn))
 
     foreach(elements(node)) do child
@@ -603,12 +602,13 @@ function parse_condition(node, pntd; kw...)
             _ => parse_pnml_label_common!(d, child, pntd; kw...)
         end
     end
+
+    #@show pntd, d[:structure]
     Condition(pntd, d[:text], d[:structure], ObjectCommon(d))
 end
 
 function parse_condition_structure(node, pntd::PnmlType; kw...)
     nn = check_nodename(node, "structure")
-    @debug nn
 
     if haselement(node)
         term = firstelement(node)

@@ -16,7 +16,7 @@ end
 include("TestUtils.jl")
 using .TestUtils
 
-"Return true if one of the GROUP environment variable's values if found in 'v'."
+"Return true if one of the GROUP environment variable's values is found in 'v'."
 select(v...) = any(any(==(g), v) for g in split(GROUP))
 
 if select("None")
