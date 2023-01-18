@@ -16,7 +16,6 @@ struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     function PnmlNet(pntd::PnmlType, id::Symbol, pages, declare, name,
                      oc::ObjectCommon, xml::XMLNode)
         isempty(pages) && throw(ArgumentError("PnmlNet cannot have empty `pages`"))
-        #pages isa Vector{Page} || throw(ArgumentError("PnmlNet `pages` must be a Vector{Page}"))
         new{typeof(pntd),
             marking_type(pntd),
             inscription_type(pntd),
@@ -75,15 +74,17 @@ name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 firstpage(net::PnmlNet) = first(pages(net))
 
 # Apply `f` over all pages of the net, returning a vector.
-_reduce(f::F, net::PnmlNet; init=Symbol[]) where {F<:Function} =
-    reduce(vcat, mapreduce(f, vcat, PreOrderDFS(pg); init) for pg in pages(net))
+function _reduce(f::F, net::PnmlNet; init=Symbol[]) where {F<:Function}
+    reduce(vcat,
+           mapreduce(f, vcat, PreOrderDFS(pg); init) for pg in pages(net) if !isnothing(pg))
+end
 #! XXX not type-stable? inferred as Any for SimpleNet!
 
-places(net::PnmlNet)         = _reduce(places, net;      init = place_type(net.type)[])
-transitions(net::PnmlNet)    = _reduce(transitions, net; init = transition_type(net.type)[])
-arcs(net::PnmlNet)           = _reduce(arcs, net;        init = arc_type(net.type)[])
-refplaces(net::PnmlNet)      = _reduce(refplaces, net;   init = refplace_type(net.type)[])
-reftransitions(net::PnmlNet) = _reduce(reftransitions, net; init = reftransition_type(net.type)[])
+places(net::PnmlNet)         = _reduce(places, net;      init = place_type(net.type)[])::Vector{place_type(net)}
+transitions(net::PnmlNet)    = _reduce(transitions, net; init = transition_type(net.type)[])::Vector{transition_type(net)}
+arcs(net::PnmlNet)           = _reduce(arcs, net;        init = arc_type(net.type)[])::Vector{arc_type(net)}
+refplaces(net::PnmlNet)      = _reduce(refplaces, net;   init = refplace_type(net.type)[])::Vector{refplace_type(net)}
+reftransitions(net::PnmlNet) = _reduce(reftransitions, net; init = reftransition_type(net.type)[])::Vector{reftransition_type(net)}
 
 # Apply `f` to pages of net/page. Return first non-nothing. Else return `nothing`.
 function _find_x(@nospecialize(f::F), x::Union{PnmlNet, Page}, id::Symbol) where {F<:Function}
