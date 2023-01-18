@@ -47,3 +47,5 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 
 marking_type(pntd::AbstractHLCore) = HLMarking{marking_value_type(pntd)}
 marking_value_type(::AbstractHLCore) = Term{PnmlDict}
+
+condition_value_type(::AbstractHLCore) = Bool #Term{PnmlDict}
