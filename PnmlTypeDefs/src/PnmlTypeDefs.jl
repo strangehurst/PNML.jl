@@ -1,11 +1,5 @@
 """
 Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
-
-# Imports
-$(DocStringExtensions.IMPORTS)
-
-# Exports
-$(DocStringExtensions.EXPORTS)
 """
 module PnmlTypeDefs
 
@@ -25,7 +19,8 @@ export PnmlCoreNet, PTNet,
        ContinuousNet
 
 # Functions
-export pnmltype, pntd_symbol
+export pnmltype, pntd_symbol,
+    isdiscrete, iscontinuous, ishighlevel
 
 """
 $(TYPEDEF)
@@ -251,5 +246,23 @@ function pnmltype(s::Symbol)
     haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
 end
+
+# Traits
+"""
+Use PnmlType singletons as traits.
+"""
+isdiscrete(pntd::PnmlType) = false
+iscontinuous(pntd::PnmlType) = false
+ishighlevel(pntd::PnmlType) = false
+isdiscrete(pntd::AbstractPnmlCore) = true
+iscontinuous(pntd::AbstractContinuousNet) = true
+ishighlevel(pntd::AbstractHLCore) = true
+
+isdiscrete(::Type{<:PnmlType}) = false
+iscontinuous(::Type{<:PnmlType}) = false
+ishighlevel(::Type{<:PnmlType}) = false
+isdiscrete(::Type{<:AbstractPnmlCore}) = true
+iscontinuous(::Type{<:AbstractContinuousNet}) = true
+ishighlevel(::Type{<:AbstractHLCore}) = true
 
 end # module PnmlTypeDefs
