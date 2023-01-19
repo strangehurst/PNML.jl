@@ -36,6 +36,6 @@ end
     @test getfirst("b", node) === nothing
     @test nodename(getfirst("c", node)) == "c"
 
-    a = @test_call target_modules=target_modules allchildren("a", node)
+    @test_call target_modules=target_modules allchildren("a", node)
     @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]
 end
