@@ -44,7 +44,7 @@ using PnmlCore:
 
 
 import PnmlCore:
-    PnmlCore, _evaluate, _ppages, _reduce,
+    PnmlCore, _evaluate, _reduce,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
     check_nodename, common, condition, conditions, currentMarkings, condition_type,
     declarations, default_condition, default_inscription, default_marking, default_sort,
