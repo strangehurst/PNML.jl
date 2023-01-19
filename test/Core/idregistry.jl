@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 #using PNML: Maybe
 using .PnmlIDRegistrys
-using .PnmlIDRegistrys: duplicate_id_action, reset_registry!
+using .PnmlIDRegistrys: duplicate_id_warn,duplicate_id_error, ,duplicate_id_none, reset_registry!
 using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "ID registry" begin
@@ -17,7 +17,9 @@ using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
     @test_call register_id!(reg, :p)
     @test_call register_id!(reg, "p")
     @test_call reset_registry!(reg)
-    @test_call duplicate_id_action(:p; action=:bogus)
+    @test_call duplicate_id_warn(:p)
+    @test_call duplicate_id_error(:p)
+    @test_call duplicate_id_none(:p)
 
     register_id!(reg, "p")
     @test @inferred isregistered_id(reg, "p")

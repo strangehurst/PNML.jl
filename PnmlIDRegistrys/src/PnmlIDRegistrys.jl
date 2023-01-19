@@ -19,9 +19,10 @@ $(TYPEDFIELDS)
 struct PnmlIDRegistry
     ids::Set{Symbol}
     lk::ReentrantLock
+    duplicate_id::Function
 end
 
-PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock())
+PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock(), duplicate_id_warn)
 
 "TODO rename all current uses?"
 const IDRegistry = PnmlIDRegistry #! TODO rename
@@ -33,14 +34,13 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Duplicated pnml id `id` has been detected, perform `action`.
-Default `action` is to issue a warning.
+Duplicated pnml id `id` has been detected.
 """
-function duplicate_id_action(id::Symbol; action = :warn)
-    action === :warn && @warn "ID already registered: $id"
-    action === :error && throw(ArgumentError("ID already registered: $id"))
-    return nothing
-end
+function duplicate_id_action end
+duplicate_id_warn(id::Symbol)  = @warn( "ID already registered: $id")
+duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
+duplicate_id_none(id::Symbol)  = nothing
+
 
 """
 $(TYPEDSIGNATURES)
@@ -50,7 +50,7 @@ Register `id` symbol and return the symbol.
 register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)
     lock(reg.lk) do
-        id ∈ reg.ids && duplicate_id_action(id)
+        id ∈ reg.ids && reg.duplicate_id(id)
         push!(reg.ids, id)
     end
     id
