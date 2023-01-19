@@ -1,13 +1,10 @@
 """
 Petri Net Markup Language identifier registry.
-
-$(DocStringExtensions.IMPORTS)
-$(DocStringExtensions.EXPORTS)
 """
 module PnmlIDRegistrys
 
 using DocStringExtensions
-
+using Base: @kwdef
 export PnmlIDRegistry, register_id!, isregistered_id
 
 """
@@ -16,19 +13,20 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct PnmlIDRegistry
-    ids::Set{Symbol}
-    lk::ReentrantLock
-    duplicate_id::Function
+@kwdef struct PnmlIDRegistry
+    ids::Set{Symbol}    = Set{Symbol}()
+    lk::ReentrantLock   = ReentrantLock()
+    duplicate::Function = duplicate_id_warn
 end
 
-PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock(), duplicate_id_warn)
+#PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock(), duplicate_id_warn)
 
 "TODO rename all current uses?"
 const IDRegistry = PnmlIDRegistry #! TODO rename
 
 function Base.show(io::IO, reg::PnmlIDRegistry)
-    print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
+    print(io, typeof(reg), " ", length(reg.ids),
+        " ids: ", reg.ids, " duplicate action: ", nameof(reg.duplicate))
 end
 
 """
@@ -50,7 +48,7 @@ Register `id` symbol and return the symbol.
 register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)
     lock(reg.lk) do
-        id ∈ reg.ids && reg.duplicate_id(id)
+        id ∈ reg.ids && reg.duplicate(id)
         push!(reg.ids, id)
     end
     id
