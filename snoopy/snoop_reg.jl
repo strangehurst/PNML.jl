@@ -1,16 +1,20 @@
 # SnoopCompile
 using SnoopCompileCore
 
-invalidations = @snoopr using PnmlIDRegistrys
-tinf = @snoopi_deep begin
-    reg = PnmlIDRegistry()
-    register_id!(reg, :p)
-    register_id!(reg, :p)
-    !isregistered_id(reg, "p")
-    !isregistered_id(reg, :p)
+invalidations = @snoopr begin
+    using PnmlIDRegistrys
+
+    tinf = @snoopi_deep begin
+        reg = PnmlIDRegistry()
+        register_id!(reg, :p)
+        register_id!(reg, :p)
+        !isregistered_id(reg, "p")
+        !isregistered_id(reg, :p)
+    end
 end
 
 using SnoopCompile
+
 trees = SnoopCompile.invalidation_trees(invalidations);
 staletrees = precompile_blockers(trees, tinf)
 

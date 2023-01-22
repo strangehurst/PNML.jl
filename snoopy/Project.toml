@@ -1,0 +1,11 @@
+name = "snoopy"
+uuid = "417cbc22-0cbf-45bf-9611-02e6a703c6cf"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PnmlCore = "56db2244-46d2-4fb3-beea-a7d1dd6fbe82"
+PnmlIDRegistrys = "3ce11b44-b057-481c-a673-d1befee9aa42"
+PnmlTypeDefs = "bf569b50-707c-4e9e-b371-6d3a192cb2e8"
