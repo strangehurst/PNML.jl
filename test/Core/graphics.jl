@@ -1,6 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "graphics" begin
     str = """

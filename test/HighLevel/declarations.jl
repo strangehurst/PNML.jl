@@ -1,6 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "Declaration()" begin
     d = PNML.Declaration()
@@ -9,15 +8,15 @@ using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 end
 
 @testset "parse_sort" begin
-    parse_sort(xml"<bool/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<dot/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<productsort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<usersort/>", PnmlCoreNet(); reg = PNML.IDRegistry())
-    parse_sort(xml"<partition/>", PnmlCoreNet(); reg = PNML.IDRegistry())
+    parse_sort(xml"<bool/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<dot/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<productsort/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<usersort/>", PnmlCoreNet(); reg = PnmlIDRegistry())
+    parse_sort(xml"<partition/>", PnmlCoreNet(); reg = PnmlIDRegistry())
 end
 
 @testset "empty declarations" begin
@@ -29,7 +28,7 @@ end
            </declarations>
           </structure>
         </declaration>
-        """; reg = PNML.IDRegistry())
+        """; reg = PNML.PnmlIDRegistry())
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -75,7 +74,7 @@ end
         </structure>
     </declaration>
     """
-    reg = PNML.IDRegistry()
+    reg = PNML.PnmlIDRegistry()
     n = parse_node(node; reg)
 
     @test typeof(n) <: PNML.Declaration

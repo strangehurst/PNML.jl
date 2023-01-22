@@ -157,7 +157,7 @@ $(TYPEDSIGNATURES)
 Merge `xs` into dictonary with default common keys and
 High-Level annotation label keys `text` and `structure'.
 
-Used on pnml label below a [`PnmlNode`](@ref).
+Used on pnml label below a [`AbstractPnmlNode`](@ref).
 
 Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name.
 See also: [`pnml_common_defaults`](@ref).

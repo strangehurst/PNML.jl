@@ -34,7 +34,7 @@ At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
 
 [`Page`](@ref) is mostly present for visual presentation to humans.
-It also contains [`PnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
+It also contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
 
 [`ObjectCommon`](@ref) is a field of most types.
 This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
@@ -154,7 +154,7 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 Objects within a pnml graph have unique identifiers,
 which are used for referring to the object.
 This includes:
-[`PnmlObject`](@ref) subtypes,
+[`AbstractPnmlObject`](@ref) subtypes,
 [`PnmlNet`](@ref).
 
 [`PNML.pid`](@ref)
@@ -164,7 +164,7 @@ methods(PNML.pid) # hide
 
 ### name - get name
 
-`PnmlObject`s and `PnmlNet`s have a name label.
+`AbstractPnmlObject`s and `PnmlNet`s have a name label.
 [`Declaration`](@ref)s have a name attribute.
 [`ToolInfo](@ref)s have a toolname attribute.
 

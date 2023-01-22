@@ -27,24 +27,37 @@ $(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 """
-abstract type PnmlObject{PNTD<:PnmlType} end
+abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
-pid(o::PnmlObject)        = o.id
-tag(o::PnmlObject)        = o.tag
-has_name(o::PnmlObject)   = o.name !== nothing
-name(o::PnmlObject)       = has_name(o) ? o.name.text : ""
-xmlnode(o::PnmlObject)    = has_xml(o) ? o.xml : nothing
-has_labels(o::PnmlObject) = has_labels(o.com)
-labels(o::PnmlObject)     = labels(o.com)
+function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
+    if prop_name === :id
+        return getfield(o, :id)::Symbol
+    elseif prop_name === :pntd
+        return getfield(o, :pntd)::PnmlType #! abstract
+    elseif prop_name === :name
+        return getfield(o, :name)::Maybe{Name}
+    elseif prop_name === :com
+        return getfield(o, :com)::ObjectCommon
+    end
+    return getfield(o, prop_name)
+end
 
-has_label(o::PnmlObject, tagvalue::Symbol) =
+pid(o::AbstractPnmlObject)        = o.id
+#!tag(o::AbstractPnmlObject)        = o.tag not an Object field
+has_name(o::AbstractPnmlObject)   = o.name !== nothing
+name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
+xmlnode(o::AbstractPnmlObject)    = has_xml(o) ? o.xml : nothing
+has_labels(o::AbstractPnmlObject) = has_labels(o.com)
+labels(o::AbstractPnmlObject)     = labels(o.com)
+
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
     if has_labels(o)
         l = labels(o)
         l !== nothing ? has_label(l, tagvalue) : false
     else
         false
     end
-get_label(o::PnmlObject, tagvalue::Symbol) =
+get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
     if has_labels(o)
         l = labels(o)
         l !== nothing ? get_label(l, tagvalue) : nothing
@@ -52,8 +65,8 @@ get_label(o::PnmlObject, tagvalue::Symbol) =
         nothing
     end
 
-has_tools(o::PnmlObject) = has_tools(o.com) && !isnothing(tools(o.com))
-tools(o::PnmlObject)     = tools(o.com)
+has_tools(o::AbstractPnmlObject) = has_tools(o.com) && !isnothing(tools(o.com))
+tools(o::AbstractPnmlObject)     = tools(o.com)
 #TODO has_tool, get_tool
 
 
@@ -63,14 +76,14 @@ $(TYPEDEF)
 Petri Net Graph nodes are [`Place`](@ref), [`Transition`](@ref).
 They are the source or target of an [`Arc`](@ref)
 """
-abstract type PnmlNode{PNTD} <: PnmlObject{PNTD} end
+abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject{PNTD} end
 
 """
 $(TYPEDEF)
 For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref)
 used to connect [`Page`](@ref) together.
 """
-abstract type ReferenceNode{PNTD} <: PnmlNode{PNTD} end
+abstract type ReferenceNode{PNTD} <: AbstractPnmlNode{PNTD} end
 
 "Return the `id` of the referenced node."
 refid(r::ReferenceNode) = r.ref
@@ -79,7 +92,7 @@ refid(r::ReferenceNode) = r.ref
 """
 $(TYPEDEF)
 Tool specific objects can be attached to
-[`PnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
+[`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 

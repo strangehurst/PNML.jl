@@ -5,7 +5,6 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     default_marking, default_inscription, default_condition, default_sort,
     default_term, default_one_term, default_zero_term,
     value
-    using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "default values" begin
     pntd = PNML.PnmlCoreNet()

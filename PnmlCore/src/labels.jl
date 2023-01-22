@@ -3,7 +3,7 @@
 #------------------------------------------------------------------------------
 """
 $(TYPEDEF)
-Labels are attached to the Petri Net Graph objects. See [`PnmlObject`](@ref).
+Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
 """
 abstract type AbstractLabel end
 

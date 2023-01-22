@@ -70,13 +70,13 @@ Todo: Continuous Petri Net
 type_tree(PNML.PetriNet) # hide
 ```
 
-## PnmlObject
+## AbstractPnmlObject
 Page, Arc, Place, Transition define the graph of a petri net.
 ```@example type
-type_tree(PNML.PnmlObject) # hide
+type_tree(PNML.AbstractPnmlObject) # hide
 ```
 ## AbstractLabel
-Labels are attached to `PnmlObject`s.
+Labels are attached to `AbstractPnmlObject`s.
 Kinds of label include: marking, inscription, condition and
 declarations of sorts, operators, and variables.
 ```@example type

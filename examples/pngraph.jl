@@ -19,7 +19,7 @@ begin
 	import Pkg
     Pkg.activate(Base.current_project())
     Pkg.instantiate()
-		
+
 	using PlutoUI, LabelledArrays, EzXML, BenchmarkTools
     using Plots, MetaGraphsNext, Graphs, GraphPlot, Compose
     using PNML: PNML, pid
@@ -83,8 +83,8 @@ Base.show(io::IO, ::MIME{Symbol("image/svg+xml")}, ::AbstractVector{Union{}}) = 
 Δ = PNML.transition_function(net)
 
 # ╔═╡ 7d77e7ca-ad32-435a-895e-697dc91c340d
-petri = MetaGraph( DiGraph(); 
-		VertexData = PNML.PnmlNode, #String, # marking, condition
+petri = MetaGraph( DiGraph();
+		VertexData = PNML.AbstractPnmlNode, #String, # marking, condition
 		EdgeData = PNML.Arc, #Symbol,  # inscription
 		graph_data = "graph_of_pnml")
 
@@ -149,7 +149,7 @@ end
 @benchmark [pid(petri[label_for(petri,src(e)), label_for(petri,dst(e))]) for e in edges(petri)]
 
 # ╔═╡ ed61c205-1b45-45f2-b6fa-76095e7c898e
-gplot(petri; 
+gplot(petri;
 	nodelabel=collect(label_for.(Ref(petri),vertices(petri))),
 	edgelabel=[pid(petri[label_for(petri,src(e)), label_for(petri,dst(e))]) for e in edges(petri)]
 	)
@@ -171,7 +171,7 @@ md"### Analysis"
 md"""
 Incidence Matrix
 
-D = D- - D+- 
+D = D- - D+-
 """
 
 # ╔═╡ 327bb59d-7426-47a3-9cda-01986d6e89e1

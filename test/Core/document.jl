@@ -1,6 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "Show" begin
 str =
@@ -27,19 +26,19 @@ str =
   </net>
 </pnml>
     """
-    model = parse_pnml(xmlroot(str); reg=IDRegistry())
+    model = parse_pnml(xmlroot(str); reg=PnmlIDRegistry())
     @test model isa PnmlModel
     #@show model
 end
 
-@testset "Document & IDRegistry" begin
+@testset "Document & ID Registry" begin
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """
-    reg = IDRegistry()
+    reg = PnmlIDRegistry()
     @test !isregistered_id(reg, :net)
     @test :net ∉ reg.ids
 

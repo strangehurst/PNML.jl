@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD<:PnmlType, M, I, C, S} <: PnmlObject{PNTD}
+struct Page{PNTD<:PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     places::Vector{Place{PNTD, M, S}}

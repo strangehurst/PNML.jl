@@ -24,7 +24,6 @@ using Base: Fix1, Fix2
 
 @reexport using PnmlTypeDefs
 @reexport using PnmlIDRegistrys
-using PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 include("xmlutils.jl")
 include("exceptions.jl")

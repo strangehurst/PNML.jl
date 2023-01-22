@@ -40,7 +40,7 @@ See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_str(str::AbstractString)
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    reg = IDRegistry()
+    reg = PnmlIDRegistry()
     # Good place for debugging.
     parse_pnml(xmlroot(str); reg)
 end
@@ -54,7 +54,7 @@ See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 function parse_file(fname::AbstractString)
     isempty(fname) &&
         throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    reg = IDRegistry()
+    reg = PnmlIDRegistry()
     # Good place for debugging.
     parse_pnml(root(EzXML.readxml(fname)); reg)
 end

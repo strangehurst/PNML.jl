@@ -1,7 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
 #using .PnmlIDRegistrys
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
@@ -26,14 +25,17 @@ end
         """; reg=PnmlIDRegistry())
     @test_logs match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <?xml version="1.0" encoding="UTF-8"?>
-        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>"""; reg=IDRegistry())
+        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""";
+        reg=PnmlIDRegistry())
     @test_logs match_mode=:any (:warn, emsg) parse_pnml(xml"""
         <?xml version="1.0" encoding="UTF-8"?>
-        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>"""; reg=IDRegistry())
+        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""";
+        reg=PnmlIDRegistry())
 end
 
 @testset "empty name" begin
-    @test_logs match_mode=:any (:warn, r"missing <text>") parse_node(xml"<name></name>"; reg=PNML.IDRegistry())
+    @test_logs match_mode=:any (:warn, r"missing <text>") parse_node(xml"<name></name>";
+    reg=PnmlIDRegistry())
 end
 
 @testset "malformed" begin
@@ -91,13 +93,15 @@ end
 end
 
 @testset "missing id" begin
-    @test_throws MissingIDException parse_net(xml"<net type='test'></net>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<page></page>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<place></place>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<transition></transition>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<arc></arc>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>"; reg=IDRegistry())
-    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>"; reg=IDRegistry())
+    @test_throws MissingIDException parse_net(xml"<net type='test'></net>"; reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<page></page>"; reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<place></place>"; reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<transition></transition>"; reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<arc></arc>"; reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>";
+                                        reg=PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>";
+                                        reg=PnmlIDRegistry())
 end
 
 @testset "graphics" begin

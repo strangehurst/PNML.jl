@@ -4,7 +4,6 @@ using PNML: Maybe, tag, pid, xmlnode, firstpage, parse_file, parse_name,
      nets, pages, arcs, places, transitions,
      allchildren, firstchild, value
 using .PnmlIDRegistrys
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
@@ -34,7 +33,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
     @test EzXML.nodename(pnmldoc) == "pnml"
     @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
 
-    reg = IDRegistry()
+    reg = PnmlIDRegistry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
     foreach(allchildren("net", pnmldoc)) do net
         @test nodename(net) == "net"
@@ -99,7 +98,7 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    reg = IDRegistry()
+    reg = PnmlIDRegistry()
     pnml_ir = parse_pnml(pnmldoc; reg)
     @test typeof(pnml_ir) <: PnmlModel
 

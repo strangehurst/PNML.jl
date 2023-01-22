@@ -34,11 +34,13 @@ using PnmlCore:
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
     Annotation, AnyElement, Arc, Condition,
     ContinuousNet, Coordinate, Declaration,
-    Fill, Font, Graphics, HLCoreNet, HLPNG, IDRegistry, Inscription, Line,
+    Fill, Font, Graphics, HLCoreNet, HLPNG,
+    Inscription, Line,
     MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
     OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
-    PnmlIDRegistry, PnmlIDRegistrys, PnmlLabel, PnmlModel, PnmlNet, PnmlNode,
-    PnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
+    PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,
+    AbstractPnmlNode,
+    AbstractPnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode
 

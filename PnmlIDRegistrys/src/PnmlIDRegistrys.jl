@@ -19,11 +19,6 @@ $(TYPEDFIELDS)
     duplicate::Function = duplicate_id_warn
 end
 
-#PnmlIDRegistry() = PnmlIDRegistry(Set{Symbol}(), ReentrantLock(), duplicate_id_warn)
-
-"TODO rename all current uses?"
-const IDRegistry = PnmlIDRegistry #! TODO rename
-
 function Base.show(io::IO, reg::PnmlIDRegistry)
     print(io, typeof(reg), " ", length(reg.ids),
         " ids: ", reg.ids, " duplicate action: ", nameof(reg.duplicate))

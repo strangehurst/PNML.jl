@@ -4,13 +4,14 @@ $(TYPEDFIELDS)
 
 Place node of a Petri Net Markup Language graph.
 """
-struct Place{PNTD,M,S} <: PnmlNode{PNTD}
+struct Place{PNTD,M,S} <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
 
     marking::M
     initialMarking::M
     # High-level Petri Nets place's markings have sorts.
+    # Others might not have
     sorttype::S # Place type is different from pntd/PnmlType. #! HL
     name::Maybe{Name}
     com::ObjectCommon
@@ -36,7 +37,7 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Transition{PNTD,C}  <: PnmlNode{PNTD}
+struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     condition::C
@@ -62,7 +63,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{PNTD,I} <: PnmlObject{PNTD}
+mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     source::Symbol

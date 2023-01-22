@@ -1,7 +1,6 @@
 using PNML, EzXML
 using JET
 using PNML: XMLNode, pnmltype, tagmap
-using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
 @testset "tagmap" begin
     @test !haskey(tagmap, "pnml")
@@ -19,7 +18,7 @@ using .PnmlIDRegistrys: PnmlIDRegistry as IDRegistry
 
         #@show t, tagmap[t], pntd
         # Parse trivial XML.
-        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd; reg=IDRegistry() )
+        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd; reg=PnmlIDRegistry() )
     end
     #TODO: Add non-trivial tests.
 end
