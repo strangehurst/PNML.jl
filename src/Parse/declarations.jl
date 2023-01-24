@@ -120,14 +120,13 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node, pntd; kw...)
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType; kw...)
     nn = nodename(node)
     @info("unknown declaration: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
-    #    content = anyelement.(elements(node), Ref(pntd); kw...) #TODO Turn children into?
-    content = [x->anyelement(x, pntd; kw...) in elements(node)] #TODO Turn children into?
+    content = [anyelement(x, pntd; kw...) for x in elements(node) if x !== nothing] #TODO Turn children into?
     @show length(content), typeof(content)
     UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
 end
@@ -140,7 +139,7 @@ Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place is different from the "type" of a net or "pntd".
 
 """
-function parse_type(node, pntd; kw...)
+function parse_type(node::XMLNode, pntd::PnmlType; kw...)
     nn = check_nodename(node, "type")
     @debug nn
     anyelement(node, pntd; kw...) #TODO implement sort type

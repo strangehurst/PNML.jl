@@ -4,12 +4,12 @@
 const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------
-"Alias for `Dict` with `Symbol` as key."
+"Alias for dictionary with `Symbol` as key."
 const PnmlDict = IdDict{Symbol, Any}
 
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]
-xmlnode(pdict::PnmlDict) = pdict[:xml]
+xmlnode(pdict::PnmlDict)::XMLNode = pdict[:xml]
 
 has_labels(pdict::PnmlDict) = haskey(pdict, :labels)
 has_label(d::PnmlDict, tag::Symbol) = has_labels(d) ? has_label(labels(d), tag) : false
@@ -43,7 +43,6 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 end
 
 pid(o::AbstractPnmlObject)        = o.id
-#!tag(o::AbstractPnmlObject)        = o.tag not an Object field
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
 xmlnode(o::AbstractPnmlObject)    = has_xml(o) ? o.xml : nothing
@@ -81,9 +80,16 @@ abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject{PNTD} end
 """
 $(TYPEDEF)
 For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref)
-used to connect [`Page`](@ref) together.
+used to connect [`Page`](@ref) together. Adds a `ref` field to a node.
 """
 abstract type ReferenceNode{PNTD} <: AbstractPnmlNode{PNTD} end
+
+function Base.getproperty(rn::ReferenceNode, name::Symbol)
+    if name === :ref
+        return getfield(rn, :ref)::Symbol
+    end
+    return getfield(rn, name)
+end
 
 "Return the `id` of the referenced node."
 refid(r::ReferenceNode) = r.ref

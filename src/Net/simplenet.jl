@@ -53,7 +53,7 @@ SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
 SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
 
 function SimpleNet(net::PnmlNet)
-    netcopy = deepcopy(net) #TODO Is copy needed?
+    netcopy = net #!deepcopy(net) #TODO Is copy needed?
     flatten_pages!(netcopy)
     SimpleNet(netcopy.id, netcopy)
 end

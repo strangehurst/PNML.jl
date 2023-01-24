@@ -38,9 +38,9 @@ type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 
 | PnmlType     | Place | Trans | Arc  | Description                                               |
 | :---------   | :---- | :---- | :--- | :-------------------------------------------------------- |
-| PnmlCoreNet     |       |       |      | <name> is only defined label                              |
+| PnmlCoreNet  |       |       |      | <name> is only defined label                              |
 | PTNet        | PTM   | none  | PTI  | <initialMarking>, <inscription> labels only have <text>   |
-| HLCoreNet       | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
+| HLCoreNet    | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
 | PT-HLPNG     | HLM   | Cond  | HLI  | restrict sort to dot, condition always true               |
 | SymmetricNet | HLM   | Cond  | HLI  | restrict sorts to finite, annotations have <structure>    |
 | HLNet        | HLM   | Cond  | HLI  | extend symmetric with arbitrary sorts                     |
@@ -52,8 +52,8 @@ Todo: Continuous Petri Net
 
 | Abbreviation | Full Name     | Node       | Label Description                                   |
 |:-------------|:--------------|:-----------|:----------------------------------------------------|
-| PTM          | Marking     | Place      |                                                     |
-| PTI          | Inscription | Arc        |                                                     |
+| PTM          | Marking       | Place      |                                                     |
+| PTI          | Inscription   | Arc        |                                                     |
 | HLM          | HLMarking     | Place      |                                                     |
 | HLI          | HLInscription | Arc        |                                                     |
 | Cond         | Condition     | Transition |                                                     |
@@ -71,10 +71,21 @@ type_tree(PNML.PetriNet) # hide
 ```
 
 ## AbstractPnmlObject
-Page, Arc, Place, Transition define the graph of a petri net.
+[`Page`](@ref), [`Arc`](@ref), [`Place`](@ref), [`Transition`](@ref) define the graph of a petri net.
+
 ```@example type
 type_tree(PNML.AbstractPnmlObject) # hide
 ```
+
+Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
+
+| Name     | Type |
+|:---------|:-----------------------------------|
+| id       | Symbol |
+| pntd     | <: PnmlType |
+| name     | Maybe{Name} |
+| com      | ObjectCommon |
+
 ## AbstractLabel
 Labels are attached to `AbstractPnmlObject`s.
 Kinds of label include: marking, inscription, condition and

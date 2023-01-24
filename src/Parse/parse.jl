@@ -417,7 +417,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Name`](@ref) label holding text value and optional tool & GUI information.
 """
-function parse_name(node, pntd; kw...)
+function parse_name(node::XMLNode, pntd::PnmlType; kw...)
     nn = check_nodename(node, "name")
 
     # Assumes there are no other children with this tag (like the specification says).
@@ -439,8 +439,7 @@ function parse_name(node, pntd; kw...)
         parse_graphics(graphicsnode, pntd; kw..., verbose = false)
 
     toolspecific = allchildren("toolspecific", node)
-    tools =
-        isempty(toolspecific) ? nothing :
+    tools = isempty(toolspecific) ? nothing :
         parse_toolspecific.(toolspecific, Ref(pntd); kw..., verbose = false)
 
     Name(; text, graphics, tools)

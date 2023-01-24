@@ -19,22 +19,39 @@ most naturally a varity of Petri Net.
 
 High-Level Petri Net Graphs (HLPNG) can be expressed in a pnml model.
 
-[`PnmlDict`](@ref) is an alias for `Dict{Symbol,Any}`.
-Each XML tag is first parsed into a `PnmlDict`, many are then used
-to create higher-level types. Some parts will continue to find
+We start a description of the net IR here.
+
+## PnmlDict
+
+[`PnmlDict`](@ref) is an alias for a dictionary implementation over `{Symbol,Any}`.
+There are pnml IDs and XML element tag names are used as `PnmlDict` keys.
+
+!!! warning
+    TODO Identify any uses of pnml ID as dictonary key!
+
+Each XML tag is first parsed (recursivly) into a `PnmlDict`, with tags as the keys, then used to create higher-level types. Some parts will continue to find
 use for `PnmlDict`'s flexibility.
 
-[`AnyElement`](@ref) wraps a `PnmlDict` and `XMLNode`.
-
-We start a description of the net IR here.
+Wraps a `PnmlDict`:
+  * [`AnyElement`](@ref)
+  * [`PnmlLabel`](@ref)
+  * [`Sort`](@ref)
+  * [`Term`](@ref)
 
 ## Top Level: Model, Net, Page
 
-At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
+At the top level[^layers] a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
 
-[`Page`](@ref) is mostly present for visual presentation to humans.
-It also contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
+[`Page`](@ref)
+ is a required element mostly present for visual presentation to humans.
+It contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
+
+[^layers]:
+    `Page` inside a `PnmlNet` inside a `PetriNet`.
+    Where the Petri Net part is expressed as a Petri Net Type Definition XML schema
+    file (.pntd) identified by a URI. Or would if our nonstandard extensions had schemas
+    defined. Someday there will be such schemas.
 
 [`ObjectCommon`](@ref) is a field of most types.
 This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
@@ -55,12 +72,17 @@ but is not the arena or the initial use cases (in no paticular order):
 adapting to use graph tools, agent based modeling, sciml, etc.
 
 [`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
+Note the **Pnml** to **Petri**.
+
+
+
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
 A concrete `PetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
 
 `PetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
+One mechanism used is type parameters.
 
 Remember, the IR trys to be as promiscuous as possible.
 

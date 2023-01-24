@@ -10,6 +10,7 @@ with [`deref!`](@ref).
 """
 function flatten_pages! end
 flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
+# foreach(flatten_pages!, nets(model))
 
 """
 $(TYPEDSIGNATURES)
@@ -142,7 +143,7 @@ Return id of referenced place.
 function deref_place end
 
 deref_place(net::PnmlNet, id::Symbol, page_idx=1) = deref_place(pages(net)[page_idx], id)
-deref_place(p::Page, id::Symbol) = begin
+deref_place(p::Page, id::Symbol)::Symbol = begin
     #@show "deref_place page $(pid(p)) $id"
     #@show refplaces(p)
     rp = refplace(p, id)
@@ -171,7 +172,7 @@ end
 function deref_transition(net::PnmlNet, id::Symbol, age_idx)
     deref_transition(net.pages[page_idx], id)
 end
-function deref_transition(page::Page, id::Symbol)
+function deref_transition(page::Page, id::Symbol)::Symbol
     #@show "deref_transition page $(pid(page)) id $id"
     #@show refplaces(page)
     rt = reftransition(page, id)
