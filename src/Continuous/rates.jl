@@ -10,7 +10,9 @@ Return a transition-id labelled vector of rate values for transitions of net.
 """
 function rates end
 
-const rate_value_type = Float64
+rate_value_type(pntd::PnmlType) = Float64
+rate_value_type(::Type{T}) where {T <: PnmlType} = rate_value_type(T())
+rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
 
 function rates(pn::PetriNet)
     ishighlevel(nettype(pn)) && error("""
@@ -51,7 +53,7 @@ function rate(transition)::Float64
     """)
     r = get_label(transition, :rate)
     if isnothing(r)
-        return zero(rate_value_type)
+        return zero(rate_value_type(nettype(transition)))
     else
         @assert tag(r) === :rate
         if haskey(r.dict, :text)
@@ -64,6 +66,6 @@ function rate(transition)::Float64
         else
             value = nothing
         end
-        return isnothing(value) ? zero(rate_value_type) : value
+        return isnothing(value) ? zero(rate_value_type(nettype(transition))) : value
     end
 end
