@@ -6,7 +6,13 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
     flatten_pages!, nets,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    currentMarkings
+    currentMarkings,
+    arc_type, place_type, transition_type,
+    condition_type, condition_value_type,
+    sort_type,
+    inscription_type, inscription_value_type,
+    marking_type, marking_value_type, page_type, refplace_type, reftransition_type,
+    rate_value_type
 
 @testset "pages" begin
     str = """
@@ -76,6 +82,56 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     #@show transition_ids(net)
     #@show refplace_ids(net)
     #@show reftransition_ids(net)
+    @testset "x_types" begin
+        if false
+            #!  Move to documentation.
+        @show arc_type(net)
+        @show place_type(net)
+        @show transition_type(net)
+        @show condition_type(net)
+        @show condition_value_type(net)
+        @show sort_type(net) # sorts are a place-related concept.
+        @show inscription_type(net)
+        @show inscription_value_type(net)
+        @show marking_type(net)
+        @show marking_value_type(net)
+        @show page_type(net)
+        @show refplace_type(net)
+        @show reftransition_type(net)
+        #!@show rate_type(net) `rate` is a generic label tag.
+        @show rate_value_type(net)
+        end
+
+        @test arc_type(net) isa Type
+        @test place_type(net) isa Type
+        @test transition_type(net) isa Type
+        @test condition_type(net) isa Type
+        @test condition_value_type(net) isa Type
+        @test sort_type(net) isa Type
+        @test inscription_type(net) isa Type
+        @test inscription_value_type(net) isa Type
+        @test marking_type(net) isa Type
+        @test marking_value_type(net) isa Type
+        @test page_type(net) isa Type
+        @test refplace_type(net) isa Type
+        @test reftransition_type(net) isa Type
+        @test rate_value_type(net) isa Type
+
+        @test_call arc_type(net)
+        @test_call place_type(net)
+        @test_call transition_type(net)
+        @test_call condition_type(net)
+        @test_call condition_value_type(net)
+        @test_call sort_type(net)
+        @test_call inscription_type(net)
+        @test_call inscription_value_type(net)
+        @test_call marking_type(net)
+        @test_call marking_value_type(net)
+        @test_call page_type(net)
+        @test_call refplace_type(net)
+        @test_call reftransition_type(net)
+        @test_call rate_value_type(net)
+    end
 
     exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
     exp_place_ids         = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
