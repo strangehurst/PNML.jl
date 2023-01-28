@@ -29,7 +29,6 @@ nettype(::PnmlNet{T}) where {T <: PnmlType} = T
 page_type(pntd::PnmlType) = Page{typeof(pntd),
                                  marking_type(pntd),
                                  inscription_type(pntd),
-                                 condition_type(pntd),
                                  sort_type(pntd)}
 place_type(pntd::PnmlType)         = Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}
 transition_type(pntd::PnmlType)    = Transition{typeof(pntd), condition_type(pntd)}
@@ -58,6 +57,9 @@ transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_t
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
+
+condition_type(net::PnmlNet)      = condition_type(nettype(net))
+condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
 
 pid(net::PnmlNet)          = net.id
 pages(net::PnmlNet)        = net.pages
@@ -95,22 +97,30 @@ function _find_x(@nospecialize(f::F), x::Union{PnmlNet, Page}, id::Symbol) where
     #return nothing #! Assume exists!
 end
 
+sort_type(net::PnmlNet) = sort_type(nettype(net))
+
 place(net::PnmlNet, id::Symbol)     = _find_x(places, net, id) # Note the plural.
 place_ids(net::PnmlNet)::Vector{Symbol} = _reduce(place_ids, net)
 has_place(net::PnmlNet, id::Symbol) = any(Fix2(has_place, id), pages(net))
 
 marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
-currentMarkings(net::PnmlNet) = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
-
+currentMarkings(net::PnmlNet) = begin
+    #@show marking_value_type(net)
+    m1 = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
+    #@show typeof(m1)
+    return m1
+end
 transition(net::PnmlNet, id::Symbol)     = _find_x(transitions, net, id)
 transition_ids(net::PnmlNet)::Vector{Symbol} = _reduce(transition_ids, net)
 has_transition(net::PnmlNet, id::Symbol) = any(Fix2(has_transition, id), pages(net))
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
-conditions(net::PnmlNet) = Vector((;[t=>condition(net, t)() for t in transition_ids(net)]...))
+conditions(net::PnmlNet) =
+    LVector{condition_value_type(net)}((;[t => condition(net, t) for t in transition_ids(net)]...))
 
 arc(net::PnmlNet, id::Symbol)      = _find_x(arcs, net, id)
 arc_ids(net::PnmlNet)::Vector{Symbol} = _reduce(arc_ids, net)
+
 has_arc(net::PnmlNet, id::Symbol)  = any(Fix2(has_arc, id), pages(net))
 
 all_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(all_arcs, id), net; init=arc_type(net.type)[])
@@ -120,6 +130,8 @@ tgt_arcs(net::PnmlNet, id::Symbol) = _reduce(Fix2(tgt_arcs, id), net; init=arc_t
 inscription(net::PnmlNet, arc_id::Symbol) = _find_x(inscriptions, net, arc_id)
 inscriptionV(net::PnmlNet) = Vector((;[t=>inscription(net, t)() for t in transition_ids(net)]...))
 
+inscription_type(net::PnmlNet) = inscription_type(nettype(net))
+inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
 
 #! refplace and reftransition should only be used to derefrence, flatten pages.
 #TODO Add dereferenceing for place, transition, arc traversal.
@@ -145,6 +157,10 @@ place_ids(net::PnmlNet, page_idx)             = place_ids(pages(net)[page_idx])
 has_place(net::PnmlNet, id::Symbol, page_idx) = has_place(pages(net)[page_idx], id)
 
 marking(net::PnmlNet, placeid::Symbol, page_idx) = marking(pages(net)[page_idx], placeid)
+
+marking_type(net::PnmlNet) = marking_type(nettype(net))
+marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
+
 #! TODO  Subpages
 """
     currentMarkings(n) -> LVector{marking_value_type(n)}
