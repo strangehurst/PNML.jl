@@ -37,7 +37,7 @@ $(TYPEDSIGNATURES)
 
 Return first child with `tag` or nothing.
 """
-function getfirst(tag::AbstractString, el::XMLNode, ns = pnml_ns)
+function getfirst(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
     x = firstchild(tag, el, ns)
     isnothing(x) ? nothing : x
 end
@@ -48,14 +48,14 @@ $(TYPEDSIGNATURES)
 
 Return vector of `el`'s immediate children with `tag`.
 """
-function allchildren(tag, el, ns::String = pnml_ns)
+function allchildren(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
 
 function check_nodename(n::XMLNode, s)
     if EzXML.nodename(n) == s
-        return s # used to be nodename
+        return s
     else
       throw(ArgumentError(string("element name wrong, expected ", s,
                                  ", got ", nodename(n))))
