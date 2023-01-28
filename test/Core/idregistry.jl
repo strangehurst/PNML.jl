@@ -9,7 +9,7 @@ using .PnmlIDRegistrys: duplicate_id_warn, duplicate_id_error, duplicate_id_none
     #@test_opt target_modules=(@__MODULE__,) register_id!(reg, :p)
 
     action = duplicate_id_warn
-    @show reg = PnmlIDRegistry(; duplicate=action)
+    reg = PnmlIDRegistry(; duplicate=action)
     reset_registry!(reg)
 
     register_id!(reg, "p")

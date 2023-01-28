@@ -18,11 +18,10 @@ $(TYPEDSIGNATURES)
 Collect keys from all pages and move to first page.
 """
 function flatten_pages!(net::PnmlNet)
-    #@show "flatten_pages!(net::PnmlNet)"
     # Place content of subpages of 1st page before sibling page's content.
     subpages = firstpage(net).subpages
     if subpages !== nothing
-         foldl(flatten_pages!, subpages; init=firstpage(net))
+        foldl(flatten_pages!, subpages; init=firstpage(net))
         empty!(subpages)
     end
     # Sibling pages.
@@ -30,7 +29,7 @@ function flatten_pages!(net::PnmlNet)
         foldl(flatten_pages!, pages(net))
         resize!(net.pages, 1)
     end
-    deref!(net) # Resolve reference nodes
+    deref!(net) # Resolve reference nodes # TODO Hides illegal interpage references?
     return net
 end
 

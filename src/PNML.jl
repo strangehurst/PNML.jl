@@ -48,7 +48,8 @@ using PnmlCore:
 import PnmlCore:
     PnmlCore, _evaluate, _reduce,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
-    check_nodename, common, condition, conditions, currentMarkings, condition_type,
+    check_nodename, common, condition, conditions, currentMarkings,
+    condition_type, condition_value_type,
     declarations, default_condition, default_inscription, default_marking, default_sort,
     deref!, deref_place, deref_transition, dict,
     find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
@@ -57,19 +58,20 @@ import PnmlCore:
     has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
     hastag, haspid,
     ispid, idregistry, inc_indent, indent, indent_width, infos,
-    initialMarking, inscription, inscription_type, inscription_value_type,
+    initialMarking, marking, marking_type, marking_value_type,
+    inscription, inscription_type, inscription_value_type,
     isregistered_id, labels,
-    marking, marking_type, marking_value_type,
     name, namespace, nets, nettype,
     pages, pid, place, place_ids, places, pnml_ns,
     pnmltype, pntd_symbol, refid, refplace, refplace_ids, refplaces,
     reftransition, reftransition_ids, reftransitions, register_id!,
-    show_common, show_page_field, shownames, source, sort_type,
+    show_common, show_page_field, shownames, source,
     src_arcs, structure, tag, target, text, tgt_arcs, tools,
     transition, transition_ids, transitions,
     update_maybe!, value, version,
     xmlnode, xmlroot,
-    arc_type, place_type, transition_type, refplace_type, reftransition_type
+    arc_type, place_type, transition_type, refplace_type, reftransition_type,
+    page_type, rate_value_type, sort_type
 
 
 

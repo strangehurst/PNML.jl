@@ -38,7 +38,6 @@ Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) ||
                                    (has_tools(oc) && !isempty(oc.tools)) ||
                                    (has_labels(oc) && !isempty(oc.labels)))
 
-#convert(::Type{Maybe{Nothing,Vector{PnmlCore.ToolInfo}}) =
 function Base.empty!(oc::ObjectCommon)
     #! isnothing(oc.graphics) || replace with Graphics()
     t = oc.tools # JET needs help avoiding the Nothing union split.

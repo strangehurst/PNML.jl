@@ -53,16 +53,16 @@ SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
 SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
 
 function SimpleNet(net::PnmlNet)
-    netcopy = net #!deepcopy(net) #TODO Is copy needed?
-    flatten_pages!(netcopy)
-    SimpleNet(netcopy.id, netcopy)
+    #! deepcopy(net) # TODO Is copy needed?
+    flatten_pages!(net) #TODO
+    SimpleNet(pid(net), net)
 end
 
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface. See interface.jl for docstrings.
 #-------------------------------------------------------------------------------
 
-pid(spn::SimpleNet) = pid(spn.net)
+pid(spn::SimpleNet) = pid(spn.net) # Use since we used it for dispatch.
 
 pages(spn::SimpleNet)          = pages(spn.net)
 places(spn::SimpleNet)         = places(spn.net) #.places
