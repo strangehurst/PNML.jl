@@ -1,4 +1,8 @@
-# SnoopCompile
+# SnoopCompile driver script.
+# Usage:
+#   cd PNML/snoopy
+#   julia --startup-file="no" --project=@.
+#   include("snoop_pnml.jl")
 using SnoopCompileCore
 invalidations = @snoopr begin
     using PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs
@@ -48,15 +52,35 @@ invalidations = @snoopr begin
     end
 end
 using SnoopCompile
+@show tinf
+
 trees = SnoopCompile.invalidation_trees(invalidations);
 staletrees = precompile_blockers(trees, tinf)
+itrigs = inference_triggers(tinf; exclude_toplevel=false)
 
+#@show first(itrigs)
+
+@show length(trees)
+@show length(staletrees)
+@show length(itrigs)
 @show length(SnoopCompile.uinvalidated(invalidations)) # show total invalidations
 
+if isempty(trees)
+    println("no invalidation_trees found")
+end
+
+println("methinvs")
 methinvs = trees[end];
 show(methinvs) # show the most invalidating method
-root = first(methinvs.backedges)
+println()
+
+println("root")
+root = methinvs.backedges[end]
 show(root; maxdepth=10)
+println()
+
+using ProfileView
+ProfileView.view(flamegraph(tinf))
 
 # Count number of children (number of invalidations per invalidated method)
 n_invalidations = map(SnoopCompile.countchildren, trees)
@@ -69,3 +93,5 @@ Plots.plot(
     xlabel="i-th method invalidation",
     label="Number of children per method invalidations"
 )
+
+using AbstractTrees

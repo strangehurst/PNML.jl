@@ -90,7 +90,7 @@ snet = @inferred SimpleNet SimpleNet(model)
 
 @testset "JUNK" begin
     @testset "opt" begin
-        @test_opt SimpleNet(model)
+        @report_opt SimpleNet(model)
     end
 
     @test snet isa SimpleNet
@@ -100,7 +100,7 @@ snet = @inferred SimpleNet SimpleNet(model)
         @show typeof(n)
         p = places(n)
         @show typeof(p)
-        @test_call target_modules = target_modules places(n)
+        @test_call target_modules=target_modules places(n)
         @inferred places(n)
     end
     @testset "snet" begin
