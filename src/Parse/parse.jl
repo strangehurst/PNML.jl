@@ -80,8 +80,8 @@ function parse_pnml(node::XMLNode; kw...)
 
     # Do not yet have a PNTD defined, so call parse_net directly.
     net_vec = parse_net.(nets; kw...)
-    net_tup = tuple(netvec...)
-    PnmlModel(nettup, namespace, kw[:reg], node)
+    net_tup = tuple(net_vec...)
+    PnmlModel(net_tup, namespace, kw[:reg], node)
 end
 
 """
