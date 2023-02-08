@@ -68,12 +68,6 @@ function parse_pnml(node::XMLNode; kw...)
     nn = check_nodename(node, "pnml")
     @assert haskey(kw, :reg)
 
-    nets = allchildren("net", node)
-    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
-
-    # Do not yet have a PNTD defined, so call parse_net directly.
-    netvec = parse_net.(nets; kw...)
-
     namespace = if EzXML.hasnamespace(node)
         EzXML.namespace(node)
     else
@@ -81,7 +75,13 @@ function parse_pnml(node::XMLNode; kw...)
         pnml_ns # Use default value
     end
 
-    PnmlModel(netvec, namespace, kw[:reg], node)
+    nets = allchildren("net", node)
+    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
+
+    # Do not yet have a PNTD defined, so call parse_net directly.
+    net_vec = parse_net.(nets; kw...)
+    net_tup = tuple(netvec...)
+    PnmlModel(nettup, namespace, kw[:reg], node)
 end
 
 """
