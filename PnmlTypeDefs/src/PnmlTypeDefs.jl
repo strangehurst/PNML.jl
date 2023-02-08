@@ -169,6 +169,7 @@ const default_pntd_map =
                          # extensions
                          "stochastic" => :stochastic,
                          "timed" => :timednet,
+                         "timednet" => :timednet,
                          "nonstandard" => :pnmlcore,
                          "open" => :pnmlcore,
                          "continuous" => :continuous)
