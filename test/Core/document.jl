@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel
+using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel,
+    PnmlNet
 
 @testset "Show" begin
 str =
@@ -43,7 +44,7 @@ end
     @test :net ∉ reg.ids
 
     parse_pnml(xmlroot(str); reg)
-    #@test_opt parse_pnml(xmlroot(str); reg)
+    @report_opt parse_pnml(xmlroot(str); reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str); reg)
     #@show reg
 
@@ -64,16 +65,16 @@ end
       <net id="net5" type="pt_hlpng"> <page id="page5"/> </net>
     </pnml>
     """
-    model = parse_str(str)
+    model = @inferred parse_str(str)
 
-    v1 = PNML.find_nets(model, :ptnet)
+    v1 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :ptnet)
 
-    #@test_opt pnmltype(:ptnet)
+    @report_opt pnmltype(:ptnet)
     @test_call pnmltype(:ptnet)
     foreach(v1) do net
         @test net.type === pnmltype(:ptnet)
     end
-    v2 = PNML.find_nets(model, "ptnet")
+    v2 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, "ptnet")
     foreach(v2) do net
         @test net.type === PNML.PnmlTypeDefs.pnmltype(:ptnet)
     end

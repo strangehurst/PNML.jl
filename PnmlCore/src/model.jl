@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Vector{PnmlNet} #! Yes it is abstract.
+    nets::Tuple{Vararg{PnmlNet{<:PnmlType}}} #! Yes it is abstract.
     namespace::String
     reg::PnmlIDRegistry # Shared by all nets.
     xml::XMLNode #! NOT USED?
@@ -15,9 +15,10 @@ end
 $(TYPEDSIGNATURES)
 """
 
-PnmlModel(net::PnmlNet) = PnmlModel([net])
-PnmlModel(nets::Vector{PnmlNet}) = PnmlModel(nets, pnml_ns, PnmlIDRegistry(), nothing)
-PnmlModel(nets::Vector{PnmlNet}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg, nothing)
+PnmlModel(net::PnmlNet) = PnmlModel((net,))
+PnmlModel(nets::Vector{PnmlNet{<:PnmlType}}) = PnmlModel(tuple(nets...), pnml_ns, PnmlIDRegistry(), nothing)
+PnmlModel(nets::Tuple{Vararg{PnmlNet{<:PnmlType}}}) = PnmlModel(tuple(nets...), pnml_ns, PnmlIDRegistry(), nothing)
+PnmlModel(nets::Tuple{Vararg{PnmlNet{<:PnmlType}}}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg, nothing)
 
 """
 $(TYPEDSIGNATURES)

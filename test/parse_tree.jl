@@ -138,12 +138,11 @@ end
     pnml_dir = joinpath(@__DIR__, "data")
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
 
-
     model = parse_file(testfile)
     @test model isa PnmlModel
 
     netvec = nets(model)
-    @test netvec isa Vector{PnmlNet}
+    @test netvec isa Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
 
     net = first(netvec)
