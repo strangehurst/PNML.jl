@@ -44,7 +44,6 @@ using PnmlCore:
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode
 
-
 import PnmlCore:
     PnmlCore, _evaluate, _reduce,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
@@ -71,7 +70,7 @@ import PnmlCore:
     update_maybe!, value, version,
     xmlnode, xmlroot,
     arc_type, place_type, transition_type, refplace_type, reftransition_type,
-    page_type, rate_value_type, sort_type
+    page_type, sort_type
 
 
 
@@ -115,4 +114,14 @@ export @xml_str,
     PnmlException,
     MissingIDException,
     MalformedException
+
+using SnoopPrecompile
+
+SnoopPrecompile.@precompile_setup begin
+    #! data = ...
+    SnoopPrecompile.@precompile_all_calls begin
+        #! call_some_code(data, ...)
+    end
 end
+
+end # module PNML
