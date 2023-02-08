@@ -72,9 +72,9 @@ end
         #@show l
         #@show a
 
-        #@test_opt unclaimed_label(node, PnmlCoreNet(); reg=reg1)
-        #@test_opt PnmlLabel(u, node)
-        #@test_opt anyelement(node, reg=reg2)
+        #!@test_opt unclaimed_label(node, PnmlCoreNet(); reg=reg1)
+        @test_opt PnmlLabel(u, node)
+        #!@test_opt anyelement(node, reg=reg2)
 
         @test_call unclaimed_label(node, PnmlCoreNet(); reg=reg1)
         @test_call PnmlLabel(u, node)
@@ -112,7 +112,7 @@ end
         haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
         haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
 
-        #@test_opt isregistered_id(reg2, :id)
+        #@report_opt isregistered_id(reg2, :id)
         @test_call isregistered_id(reg2, :id)
     end
 end
@@ -136,11 +136,11 @@ end
     @test value(n) == n()
 
     mark1 = PNML.Marking(2)
-    #@test_opt PNML.Marking(2)
+    #@report_opt PNML.Marking(2)
     @test_call PNML.Marking(2)
     @test typeof(mark1()) == typeof(2)
     @test mark1() == 2
-    #@test_opt mark1()
+    #@report_opt mark1()
     @test_call mark1()
 
     mark2 = PNML.Marking(3.5)

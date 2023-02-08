@@ -69,7 +69,7 @@ end
 
     v1 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :ptnet)
 
-    @report_opt pnmltype(:ptnet)
+    @test_opt pnmltype(:ptnet)
     @test_call pnmltype(:ptnet)
     foreach(v1) do net
         @test net.type === pnmltype(:ptnet)

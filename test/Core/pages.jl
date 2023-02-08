@@ -131,6 +131,21 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         @test_call refplace_type(net)
         @test_call reftransition_type(net)
         @test_call rate_value_type(net)
+
+        @test_opt arc_type(net)
+        @test_opt place_type(net)
+        @test_opt transition_type(net)
+        @test_opt condition_type(net)
+        @test_opt condition_value_type(net)
+        @test_opt sort_type(net)
+        @test_opt inscription_type(net)
+        @test_opt inscription_value_type(net)
+        @test_opt marking_type(net)
+        @test_opt marking_value_type(net)
+        @test_opt page_type(net)
+        @test_opt refplace_type(net)
+        @test_opt reftransition_type(net)
+        @test_opt rate_value_type(net)
     end
 
     exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
