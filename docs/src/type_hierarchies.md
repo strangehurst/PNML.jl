@@ -18,18 +18,18 @@ See [`PnmlTypeDefs`](@ref) module page.
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
 [`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCoreNet` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
+`PnmlCoreNet` is used by some `AbstractPetriNet` concrete types ([`SimpleNet`](@ref)).
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
 It is a nonstandard extension to the ISO specification.
 
 [`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
-`HLCoreNet` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
+`HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
 The IR does not try to impose semantics on the model. Those semantics should
-be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
+be part of [`AbstractPetriNet`](@ref).  The IR tries to represent the model (all models)
 at a structural level. It may paramertize types to facilitate specilization.
 
 ```@example type
@@ -63,11 +63,11 @@ Todo: Continuous Petri Net
 |              |               |            |                                                     |
 
 
-## PetriNet
-[`PetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
+## AbstractPetriNet
+[`AbstractPetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
 
 ```@example type
-type_tree(PNML.PetriNet) # hide
+type_tree(PNML.AbstractPetriNet) # hide
 ```
 
 ## AbstractPnmlObject

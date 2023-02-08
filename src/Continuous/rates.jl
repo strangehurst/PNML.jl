@@ -14,7 +14,7 @@ rate_value_type(pntd::PnmlType) = Float64
 rate_value_type(::Type{T}) where {T <: PnmlType} = rate_value_type(T())
 rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
 
-function rates(pn::PetriNet)
+function rates(pn::AbstractPetriNet)
     ishighlevel(nettype(pn)) && error("""
     The `rate` label is not supported for High-Level Petri Nets.
     Is recommended to use a `ContinuousNet`.
@@ -22,7 +22,7 @@ function rates(pn::PetriNet)
     rates(pn, transition_ids(pn))
 end
 
-function rates(pn::PetriNet, idvec::Vector{Symbol})
+function rates(pn::AbstractPetriNet, idvec::Vector{Symbol})
     ishighlevel(nettype(pn)) && error("""
     The `rate` label is not supported for High-Level Petri Nets.
     Is recommended to use a `ContinuousNet`.
@@ -37,7 +37,7 @@ Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
 """
 function rate end
 
-function rate(pn::PetriNet, tid::Symbol)
+function rate(pn::AbstractPetriNet, tid::Symbol)
     ishighlevel(nettype(pn)) && error("""
     The `rate` label is not supported for High-Level Petri Nets.
     Is recommended to us a `ContinuousNet`.

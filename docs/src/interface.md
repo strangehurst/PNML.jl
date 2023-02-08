@@ -48,7 +48,7 @@ each described by a <net> tag and one or more <page> tags.
 It contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
 
 [^layers]:
-    `Page` inside a `PnmlNet` inside a `PetriNet`.
+    `Page` inside a `PnmlNet` inside a `AbstractPetriNet`.
     Where the Petri Net part is expressed as a Petri Net Type Definition XML schema
     file (.pntd) identified by a URI. Or would if our nonstandard extensions had schemas
     defined. Someday there will be such schemas.
@@ -71,16 +71,16 @@ Using them unflattened is not supposed to be impossible,
 but is not the arena or the initial use cases (in no paticular order):
 adapting to use graph tools, agent based modeling, sciml, etc.
 
-[`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
+[`AbstractPetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 Note the **Pnml** to **Petri**.
 
 
 
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
-A concrete `PetriNet` type uses the IR to produce higher-level behavior.
+A concrete `AbstractPetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
 
-`PetriNet` is the level of most Petri Net Graph semantics.
+`AbstractPetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
 One mechanism used is type parameters.
 
@@ -155,14 +155,14 @@ Demonstrates the expressiveness of pnml.
 ## Petri Net Graphs and Networks
 
 There are 3 top-level forms:
-  - [`PetriNet`](@ref) subtypes wraping a single `PnmlNet`.
+  - [`AbstractPetriNet`](@ref) subtypes wraping a single `PnmlNet`.
   - [`PnmlNet`](@ref)  maybe multiple pages.
-  - [`Page`](@ref) when the only page of the only net in a petrinet.
+  - [`Page`](@ref) when the only page of the only net in a Abstractpetrinet.
 
 The simplest arrangement is a pnml model with a single <net> element having
 a single page. Any <net> may be flatten to a single page.
 
-The initial `PetriNet` subtypes are built using the assumption that
+The initial `AbstractPetriNet` subtypes are built using the assumption that
 multiple pages will be flattened to a single page.
 
 ```@setup methods

@@ -81,7 +81,7 @@ PNML.jl should be able to create a valid intermediate representation using PnmlC
 since all the higher-level meaning is expressed as pnml labels, restrictions,
 and required XML tag names.
 
-Further parsing of labels is specialized upon subtypes of [`PNML.PetriNet`](@ref).
+Further parsing of labels is specialized upon subtypes of [`PNML.AbstractPetriNet`](@ref).
 See [Traits](@ref) for more details.
 
 If you want interchangability of pnml models, you will have to stick to

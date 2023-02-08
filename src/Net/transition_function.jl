@@ -8,7 +8,7 @@ Values are inscriptions of the arc.
 """
 function transition_function end
 
-transition_function(petrinet::PetriNet)     = transition_function(petrinet.net)
+transition_function(petrinet::AbstractPetriNet)     = transition_function(petrinet.net)
 transition_function(net::PnmlNet)           = transition_function(net.pages[begin])
 transition_function(net::PnmlNet, page_idx) = transition_function(net.pages[page_idx])
 transition_function(page::Page)             = transition_function(page, transition_ids(page))
@@ -24,7 +24,7 @@ value of arc inscription's value for use as a transition function.
 """
 function in_out end
 
-in_out(petrinet::PetriNet, transition_id::Symbol)     = in_out(petrinet.net, transition_id)
+in_out(petrinet::AbstractPetriNet, transition_id::Symbol) = in_out(petrinet.net, transition_id)
 in_out(net::PnmlNet, transition_id::Symbol)           = in_out(net.pages[begin], transition_id)
 in_out(net::PnmlNet, transition_id::Symbol, page_idx) = in_out(net.pages[page_idx], transition_id)
 in_out(page::Page, transition_id::Symbol) =
