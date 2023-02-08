@@ -13,10 +13,10 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef struct PnmlIDRegistry
+@kwdef struct PnmlIDRegistry{F<:Function}
     ids::Set{Symbol}    = Set{Symbol}()
     lk::ReentrantLock   = ReentrantLock()
-    duplicate::Function = duplicate_id_warn
+    duplicate::F = duplicate_id_warn
 end
 
 function Base.show(io::IO, reg::PnmlIDRegistry)
@@ -41,7 +41,7 @@ $(TYPEDSIGNATURES)
 Register `id` symbol and return the symbol.
 """
 register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
-function register_id!(reg::PnmlIDRegistry, id::Symbol)
+function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
     lock(reg.lk) do
         id ∈ reg.ids && reg.duplicate(id)
         push!(reg.ids, id)
@@ -55,7 +55,7 @@ $(TYPEDSIGNATURES)
 Return `true` if `s` is registered in `reg`.
 """
 isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered_id(reg, Symbol(s))
-function isregistered_id(reg::PnmlIDRegistry, id::Symbol)
+function isregistered_id(reg::PnmlIDRegistry, id::Symbol)::Bool
     lock(reg.lk) do
         id ∈ reg.ids
     end
@@ -78,7 +78,7 @@ $(TYPEDSIGNATURES)
 
 Is the set of id symbols empty?
 """
-function Base.isempty(reg::PnmlIDRegistry)
+function Base.isempty(reg::PnmlIDRegistry)::Bool
     lock(reg.lk) do
         isempty(reg.ids)
     end

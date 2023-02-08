@@ -12,7 +12,7 @@ $(TYPEDSIGNATURES)
 See [`xmlroot`](@ref).
 """
 macro xml_str(s)
-    isempty(s) && throw(ArgumentError("empty XML string in macro"))
+    #! isempty(s) && throw(ArgumentError("empty XML string in macro"))
     xmlroot(s)
 end
 
@@ -28,7 +28,7 @@ $(TYPEDSIGNATURES)
 
 Return up to 1 immediate child of `el` that is a `tag`.
 """
-function firstchild(tag, el::XMLNode, ns = pnml_ns)
+function firstchild(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
@@ -58,7 +58,7 @@ function check_nodename(n::XMLNode, s)
         return s
     else
       throw(ArgumentError(string("element name wrong, expected ", s,
-                                 ", got ", nodename(n))))
+                                 ", got ", EzXML.nodename(n))))
     end
 end
 

@@ -86,7 +86,7 @@ Term() = Term(PnmlDict())
 Term(d::PnmlDict) = Term(:empty, d)
 Term(p::Pair{Symbol,PnmlDict}; kw...) = Term(p.first, p.second)
 
-convert(::Type{Maybe{Term}}, pdict::PnmlDict) = Term(pdict)
+convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
 
 tag(t::Term)::Symbol = t.tag
 dict(t::Term) = t.dict
