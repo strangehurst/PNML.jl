@@ -14,7 +14,6 @@ using MLStyle: @match
 using DocStringExtensions
 using AutoHashEquals
 using PrettyPrinting
-import PrettyPrinting: quoteof
 using AbstractTrees
 using LabelledArrays
 using Reexport

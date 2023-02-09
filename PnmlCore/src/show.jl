@@ -11,31 +11,33 @@ function Base.show(io::IO, fill::Fill)
     pprint(io, fill)
 end
 
-quoteof(f::Fill) = :(Fill($(quoteof(f.color)),
-        $(quoteof(f.image)),
-        $(quoteof(f.gradient_color)),
-        $(quoteof(f.gradient_rotation))))
+PrettyPrinting.quoteof(f::Fill) = :(Fill($(PrettyPrinting.quoteof(f.color)),
+                                         $(PrettyPrinting.quoteof(f.image)),
+                                         $(PrettyPrinting.quoteof(f.gradient_color)),
+                                         $(PrettyPrinting.quoteof(f.gradient_rotation))))
 
 #-------------------
 function Base.show(io::IO, font::Font)
     pprint(io, font)
 end
 
-quoteof(f::Font) = :(Font($(quoteof(f.family)),
-            $(quoteof(f.style)),
-            $(quoteof(f.weight)),
-            $(quoteof(f.size)),
-            $(quoteof(f.align)),
-            $(quoteof(f.rotation)),
-            $(quoteof(f.decoration)) ))
+PrettyPrinting.quoteof(f::Font) = :(Font($(PrettyPrinting.quoteof(f.family)),
+                                         $(PrettyPrinting.quoteof(f.style)),
+                                         $(PrettyPrinting.quoteof(f.weight)),
+                                         $(PrettyPrinting.quoteof(f.size)),
+                                         $(PrettyPrinting.quoteof(f.align)),
+                                         $(PrettyPrinting.quoteof(f.rotation)),
+                                         $(PrettyPrinting.quoteof(f.decoration))))
 
 #-------------------
 function Base.show(io::IO, line::Line)
     pprint(io, line)
 end
 
-quoteof(l::Line) = :(Line($(quoteof(l.color)), $(quoteof(l.style)),
-            $(quoteof(l.shape)), $(quoteof(l.width))))
+PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
+                                         $(PrettyPrinting.quoteof(l.style)),
+                                         $(PrettyPrinting.quoteof(l.shape)),
+                                         $(PrettyPrinting.quoteof(l.width))))
 
 #-------------------
 function Base.show(io::IO, c::Coordinate)
@@ -92,7 +94,8 @@ function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
     pprint(io, label)
 end
 
-quoteof(l::PnmlLabel) = :(PnmlLabel($(quoteof(l.tag)), $(quoteof(l.dict))))
+PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
+                                                   $(PrettyPrinting.quoteof(l.dict))))
 
 #-------------------
 function Base.show(io::IO, elvector::Vector{AnyElement})
@@ -116,7 +119,8 @@ function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make pa
     pprint(io, el)
 end
 
-quoteof(a::AnyElement) = :(AnyElement($(quoteof(a.tag)), $(quoteof(a.dict))))
+PrettyPrinting.quoteof(a::AnyElement) = :(AnyElement($(PrettyPrinting.quoteof(a.tag)),
+                                                     $(PrettyPrinting.quoteof(a.dict))))
 
 #-------------------
 Base.summary(io::IO, ti::ToolInfo) = print(io, summary(ti))
@@ -136,7 +140,9 @@ function Base.show(io::IO, ti::ToolInfo)
     pprint(io, ti)
 end
 
-quoteof(ti::ToolInfo) = :($(quoteof(ti.toolname)), $(quoteof(ti.version)), $(quoteof(ti.infos)))
+PrettyPrinting.quoteof(ti::ToolInfo) = :($(PrettyPrinting.quoteof(ti.toolname)),
+                                         $(PrettyPrinting.quoteof(ti.version)),
+                                         $(PrettyPrinting.quoteof(ti.infos)))
 
 #-------------------
 function Base.show(io::IO, tg::TokenGraphics)
@@ -402,7 +408,8 @@ function Base.show(io::IO, ptm::Marking)
     pprint(io, ptm)
 end
 
-quoteof(m::Marking) = :(Marking($(quoteof(value(m))), $(quoteof(m.com))))
+PrettyPrinting.quoteof(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
+                                               $(PrettyPrinting.quoteof(m.com))))
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
@@ -412,7 +419,9 @@ end
 function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
     show(io, cond)
 end
-quoteof(c::Condition) = :(Condition($(quoteof(c.text)), $(quoteof(value(c))), $(quoteof(c.com))))
+PrettyPrinting.quoteof(c::Condition) = :(Condition($(PrettyPrinting.quoteof(c.text)),
+                                                   $(PrettyPrinting.quoteof(value(c))),
+                                                   $(PrettyPrinting.quoteof(c.com))))
 
 #-------------------
 function Base.show(io::IO, inscription::Inscription)
@@ -421,4 +430,5 @@ end
 function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
     show(io, inscription)
 end
-quoteof(i::Inscription) = :(Inscription($(quoteof(value(i))), $(quoteof(i.com))))
+PrettyPrinting.quoteof(i::Inscription) = :(Inscription($(PrettyPrinting.quoteof(value(i))),
+                                                       $(PrettyPrinting.quoteof(i.com))))
