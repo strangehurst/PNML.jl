@@ -117,11 +117,12 @@ function parse_net(node, pntd::Maybe{PnmlType} = nothing; kw...)::PnmlNet
         node,
         :tag => Symbol(nn),
         :id => register_id!(kw[:reg], node["id"]),
-        :pages => Page{typeof(pntd),
-                        marking_type(pntd),
-                        inscription_type(pntd),
-                        condition_type(pntd),
-                        sort_type(pntd)}[],
+        :pages => page_type(pntd)[],
+        #Page{typeof(pntd),
+        #                marking_type(pntd),
+        #                inscription_type(pntd),
+        #                condition_type(pntd),
+        #                sort_type(pntd)}[],
         :declaration => Declaration(),
     ) #! declaration is High Level
     # Go through children looking for expected tags, delegating common tags and labels.
@@ -176,17 +177,18 @@ function parse_page(node, pntd::PnmlType; kw...)
         # Rather than use an abstract type here, assume we have a consistent model where
         # all places, transitions and arcs are parsed into type-stable, compatible objects.
         # The PNTD is used to deduce the expected types.
-        :places => Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}[],
-        :trans =>  Transition{typeof(pntd), condition_type(pntd)}[],
-        :arcs =>   Arc{typeof(pntd), inscription_type(pntd)}[],
-        :refP =>   RefPlace{typeof(pntd)}[],
-        :refT =>   RefTransition{typeof(pntd)}[],
+        :places => place_type(pntd)[], #!Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}[],
+        :trans =>  transition_type(pntd)[], #!Transition{typeof(pntd), condition_type(pntd)}[],
+        :arcs =>   arc_type(pntd)[], #!Arc{typeof(pntd), inscription_type(pntd)}[],
+        :refP =>   refplace_type(pntd)[], #!RefPlace{typeof(pntd)}[],
+        :refT =>   reftransition_type(pntd)[], #!RefTransition{typeof(pntd)}[],
         :declaration => Declaration(), #! HL
-        :pages => Page{typeof(pntd),
-                       marking_type(pntd),
-                       inscription_type(pntd),
-                       condition_type(pntd),
-                       sort_type(pntd)}[],
+        :pages => page_type(pntd)[],
+        #Page{typeof(pntd),
+        #               marking_type(pntd),
+        #               inscription_type(pntd),
+        #               condition_type(pntd),
+        #               sort_type(pntd)}[],
     )
     parse_page_2!(d, node, pntd; kw...)
 

@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, AbstractTrees
+using PNML, .PnmlTypeDefs, EzXML, ..TestUtils, JET, AbstractTrees
 using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     PnmlNet, Page, pages, pid,
     arc, arcs, place, places, transition, transitions,
@@ -12,7 +12,14 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     sort_type,
     inscription_type, inscription_value_type,
     marking_type, marking_value_type, page_type, refplace_type, reftransition_type,
-    rate_value_type
+    rate_value_type,
+    default_inscription,
+    default_marking,
+    default_sort,
+    default_condition,
+    default_term,
+    default_one_term,
+    default_zero_term
 
 @testset "pages" begin
     str = """
@@ -68,10 +75,10 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     model = @inferred parse_str(str)
     #@show typeof(model)
     #@show typeof(nets(model))
-    # The nets of a model is an array of abstract types so not inferred.
-    net = first_net(model)
-    AbstractTrees.print_tree(net)
-    println()
+
+    net = first_net(model) # The nets of a model not inferred.
+
+    # AbstractTrees.print_tree(net);  println()
 
     @test net isa PnmlNet
     @test typeof(net) <: PnmlNet
@@ -83,24 +90,85 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     #@show refplace_ids(net)
     #@show reftransition_ids(net)
     @testset "x_types" begin
-        if false
-            #!  Move to documentation.
-        @show arc_type(net)
-        @show place_type(net)
-        @show transition_type(net)
-        @show condition_type(net)
-        @show condition_value_type(net)
-        @show sort_type(net) # sorts are a place-related concept.
-        @show inscription_type(net)
-        @show inscription_value_type(net)
-        @show marking_type(net)
-        @show marking_value_type(net)
-        @show page_type(net)
-        @show refplace_type(net)
-        @show reftransition_type(net)
-        #!@show rate_type(net) `rate` is a generic label tag.
-        @show rate_value_type(net)
+        if true   #!  Move to documentation or snoopy.
+            println()
+            println("# lookup types by net")
+            @show arc_type(net)
+            @show condition_type(net)
+            @show condition_value_type(net)
+            @show inscription_type(net)
+            @show inscription_value_type(net)
+            @show marking_type(net)
+            @show marking_value_type(net)
+            @show page_type(net)
+            @show place_type(net)
+            @show rate_value_type(net)
+            @show refplace_type(net)
+            @show reftransition_type(net)
+            @show sort_type(net) # sorts are a place-related concept.
+            @show transition_type(net)
+            println()
         end
+        @show PNTD = values(PnmlTypeDefs.pnmltype_map)
+        println()
+        for pntd in PNTD
+            println("# lookup types for $pntd")
+            @show arc_type(typeof(pntd))
+            @show condition_type(typeof(pntd))
+            @show condition_value_type(typeof(pntd))
+            @show inscription_type(typeof(pntd))
+            @show inscription_value_type(typeof(pntd))
+            @show marking_type(typeof(pntd))
+            @show marking_value_type(typeof(pntd))
+            @show page_type(typeof(pntd))
+            @show place_type(typeof(pntd))
+            @show rate_value_type(typeof(pntd))
+            @show refplace_type(typeof(pntd))
+            @show reftransition_type(typeof(pntd))
+            @show sort_type(typeof(pntd)) # sorts are a place-related concept.
+            @show transition_type(typeof(pntd))
+            println()
+        end
+        println("### lookup types inverted")
+        println()
+        for fun in (arc_type,
+                    place_type,
+                    transition_type,
+                    condition_type,
+                    condition_value_type,
+                    sort_type,
+                    inscription_type,
+                    inscription_value_type,
+                    marking_type,
+                    marking_value_type,
+                    page_type,
+                    refplace_type,
+                    reftransition_type,
+                    rate_value_type)
+            println("# $fun $(typeof.(PNTD))")
+            for T in typeof.(PNTD)
+                @show fun(T)
+            end
+            println()
+        end
+        println()
+        println("### defaults")
+        println()
+        for def in (default_inscription,
+                    default_marking,
+                    default_sort,
+                    default_condition,
+                    default_term,
+                    default_one_term,
+                    default_zero_term
+                    )
+            println("# $def $PNTD")
+            for pntd in PNTD
+                @show def(pntd)
+            end
+            println()
+        end
+        println()
 
         @test arc_type(net) isa Type
         @test place_type(net) isa Type

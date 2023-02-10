@@ -7,7 +7,7 @@ One Petri Net of a PNML model.
 struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
-    pages::Vector{Page{PNTD, M, I, C, S}}
+    pages::Vector{Page{PNTD, M, I, C, S}} #! make tree node wrapper?
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
@@ -26,21 +26,17 @@ end
 
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
 
-page_type(pntd::PnmlType) = Page{typeof(pntd),
-                                 marking_type(pntd),
-                                 inscription_type(pntd),
-                                 sort_type(pntd)}
-place_type(pntd::PnmlType)         = Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}
-transition_type(pntd::PnmlType)    = Transition{typeof(pntd), condition_type(pntd)}
-arc_type(pntd::PnmlType)           = Arc{typeof(pntd), inscription_type(pntd)}
-refplace_type(pntd::PnmlType)      = RefPlace{typeof(pntd)}
-reftransition_type(pntd::PnmlType) = RefTransition{typeof(pntd)}
-
+pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet(T,
+                                                      marking_type(T),
+                                                      inscription_type(T),
+                                                      condition_type(T),
+                                                      sort_type(T)
+                                       )
 page_type(::Type{T}) where {T<:PnmlType} = Page{T,
-                                                marking_type(T),
-                                                inscription_type(T),
-                                                condition_type(T),
-                                                sort_type(T)}
+                                        marking_type(T),
+                                        inscription_type(T),
+                                        condition_type(T),
+                                        sort_type(T)}
 place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T), sort_type(T)}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
@@ -48,21 +44,28 @@ refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition{T}
 
 page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
-                                                marking_type(T),
-                                                inscription_type(T),
-                                                condition_type(T),
-                                                sort_type(T)}
+                                        marking_type(T),
+                                        inscription_type(T),
+                                        condition_type(T),
+                                        sort_type(T)}
 place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T, marking_type(T), sort_type(T)}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
 
+sort_type(net::PnmlNet) = sort_type(nettype(net))
+
 condition_type(net::PnmlNet)      = condition_type(nettype(net))
 condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
 
+
 pid(net::PnmlNet)          = net.id
-pages(net::PnmlNet)        = net.pages
+
+pages(net::PnmlNet)        = net.pages #! Make this return an iteratable/iterator over tree.
+"Usually the only interesting page."
+firstpage(net::PnmlNet)    = (first ∘ pages)(net)
+
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward
 common(net::PnmlNet)       = net.com
 
@@ -72,32 +75,32 @@ xmlnode(net::PnmlNet)    = net.xml
 has_name(net::PnmlNet) = !isnothing(net.name)
 name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 
-"Usually the only interesting page."
-firstpage(net::PnmlNet) = first(pages(net))
-
-# Apply `f` over all pages of the net, returning a vector.
+# Apply `f` over all pages of the net using `PreOrderDFS`, returning a vector.
+# The type of init matters for type stability.
 function _reduce(f::F, net::PnmlNet; init=Symbol[]) where {F<:Function}
     reduce(vcat,
            mapreduce(f, vcat, PreOrderDFS(pg); init) for pg in pages(net) if !isnothing(pg))
 end
-#! XXX not type-stable? inferred as Any for SimpleNet!
+#! XXX not type-stable?
+
+# Apply `f` to pages of net/page using `PreOrderDFS`.
+# Return first non-nothing returned by `f`.
+#TODO use a mutator to fill the will-typed output.
+function _find_x(f::F, x::Union{PnmlNet, Page}, id::Symbol) where {F<:Function}
+    for pg in PreOrderDFS(x)
+        y = getfirst(Fix2(haspid, id), f(pg))
+        !isnothing(y) && return y
+    end
+    # Assume exists (that is what has_x is for).
+    # By excluding `nothing` maybe it will be type stable.
+    error("$f returned nothing for $id on pid $(pid(x)) $(typeof(x))")
+end
 
 places(net::PnmlNet)         = _reduce(places, net;      init = place_type(net.type)[])::Vector{place_type(net)}
 transitions(net::PnmlNet)    = _reduce(transitions, net; init = transition_type(net.type)[])::Vector{transition_type(net)}
 arcs(net::PnmlNet)           = _reduce(arcs, net;        init = arc_type(net.type)[])::Vector{arc_type(net)}
 refplaces(net::PnmlNet)      = _reduce(refplaces, net;   init = refplace_type(net.type)[])::Vector{refplace_type(net)}
 reftransitions(net::PnmlNet) = _reduce(reftransitions, net; init = reftransition_type(net.type)[])::Vector{reftransition_type(net)}
-
-# Apply `f` to pages of net/page. Return first non-nothing. Else return `nothing`.
-function _find_x(@nospecialize(f::F), x::Union{PnmlNet, Page}, id::Symbol) where {F<:Function}
-    for pg in PreOrderDFS(x)
-        y = getfirst(Fix2(haspid, id), f(pg))
-        !isnothing(y) && return y
-    end
-    #return nothing #! Assume exists!
-end
-
-sort_type(net::PnmlNet) = sort_type(nettype(net))
 
 place(net::PnmlNet, id::Symbol)     = _find_x(places, net, id) # Note the plural.
 place_ids(net::PnmlNet)::Vector{Symbol} = _reduce(place_ids, net)

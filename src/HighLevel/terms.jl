@@ -86,7 +86,7 @@ Term() = Term(PnmlDict())
 Term(d::PnmlDict) = Term(:empty, d)
 Term(p::Pair{Symbol,PnmlDict}; kw...) = Term(p.first, p.second)
 
-convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
+Base.convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
 
 tag(t::Term)::Symbol = t.tag
 dict(t::Term) = t.dict
@@ -116,4 +116,4 @@ julia> t(2.3)
 """
 (t::Term)(default =  default_one_term(HLCoreNet())) = _evaluate(get(t.dict, :value, default))
 
-condition_type(pntd::AbstractHLCore) = Condition{typeof(pntd), Term{PnmlDict}}
+condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term{PnmlDict}}

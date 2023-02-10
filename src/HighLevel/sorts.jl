@@ -56,6 +56,8 @@ Sort() = Sort(:empty, PnmlDict())
 Sort(p::Pair{Symbol,PnmlDict}; kw...) = Sort(p.first, p.second)
 Sort(a::AnyElement) = Sort(a.tag, a.dict)
 
-convert(::Type{Maybe{Sort}}, pdict::PnmlDict)::Sort = Sort(pdict)
+Base.convert(::Type{Maybe{Sort}}, pdict::PnmlDict)::Sort = Sort(pdict)
 
-sort_type(::AbstractHLCore) = Sort{PnmlDict}
+sort_type(::Type{<:PnmlType}) = Int
+sort_type(::Type{<:AbstractContinuousNet}) = Float64
+sort_type(::Type{<:AbstractHLCore}) = Sort{PnmlDict}

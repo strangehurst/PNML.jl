@@ -102,4 +102,25 @@ Tool specific objects can be attached to
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-#--------------------------------------------
+#---------------------------------------------------------------------------
+# Collect the Singleton to Type translations here.
+# The part that needs to know Type details is defined elsewhere. :)
+#---------------------------------------------------------------------------
+pnmlnet_type(pntd::PnmlType)       = pnmlnet_type(typeof(pntd))
+page_type(pntd::PnmlType)          = page_type(typeof(pntd))
+place_type(pntd::PnmlType)         = place_type(typeof(pntd))
+transition_type(pntd::PnmlType)    = transition_type(typeof(pntd))
+arc_type(pntd::PnmlType)           = arc_type(typeof(pntd))
+refplace_type(pntd::PnmlType)      = refplace_type(typeof(pntd))
+reftransition_type(pntd::PnmlType) = reftransition_type(typeof(pntd))
+
+condition_type(pntd::PnmlType)       = condition_type(typeof(pntd))
+condition_value_type(pntd::PnmlType) = condition_value_type(typeof(pntd))
+
+inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
+inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
+
+marking_type(pntd::PnmlType)       = marking_type(typeof(pntd))
+marking_value_type(pntd::PnmlType) = marking_value_type(typeof(pntd))
+
+sort_type(pntd::PnmlType) = sort_type(typeof(pntd))

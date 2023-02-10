@@ -29,14 +29,13 @@ julia> i4()
 3
 ```
 """
-struct HLInscription <: HLAnnotation
+struct HLInscription{T<:Term} <: HLAnnotation
     text::Maybe{String}
-    term::Any # <structure> content must be a many-sorted algebra term.
+    term::T # <structure> content must be a many-sorted algebra term.
     com::ObjectCommon
 end
 
-#!HLInscription() = HLInscription(nothing, nothing, ObjectCommon())
-HLInscription(s::AbstractString) = HLInscription(s, nothing)
+HLInscription(s::AbstractString) = HLInscription(s, Term(:empty, PnmlDict(:value => zero(Int))))
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
@@ -49,5 +48,5 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-inscription_type(::AbstractHLCore) = HLInscription
-inscription_value_type(::AbstractHLCore) = Term{PnmlDict} #!
+inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{inscription_value_type(T)}
+inscription_value_type(::Type{<:AbstractHLCore}) = Term{PnmlDict}
