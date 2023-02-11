@@ -64,7 +64,6 @@ end
 
 pid(spn::SimpleNet) = pid(spn.net) # Use since we used it for dispatch.
 
-#!  not needed pages(spn::SimpleNet)          = pages(spn.net)
 places(spn::SimpleNet)         = places(spn.net) #.places
 transitions(spn::SimpleNet)    = transitions(spn.net)#.transitions
 arcs(spn::SimpleNet)           = arcs(spn.net)#.arcs

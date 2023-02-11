@@ -38,7 +38,7 @@ nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
 #------------------------------------------------------------------------------------------
 
 pid(::AbstractPetriNet)   = error("must implement id accessor")
-#! pages(::AbstractPetriNet) = error("not implemented")
+
 places(::AbstractPetriNet)         = error("not implemented")
 transitions(::AbstractPetriNet)    = error("not implemented")
 arcs(::AbstractPetriNet)           = error("not implemented")
@@ -70,8 +70,9 @@ all_arcs(petrinet::AbstractPetriNet, id::Symbol) = all_arcs(petrinet.net, id)
 src_arcs(petrinet::AbstractPetriNet, id::Symbol) = src_arcs(petrinet.net, id)
 tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(petrinet.net, id)
 
-inscription(petrinet::AbstractPetriNet, arc_id::Symbol)  = inscription(petrinet.net, arc_id)
+inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(petrinet.net, arc_id)
 #! TODO inscriptions? For completeness?
+
 #------------------------------------------------------------------
 refplace_ids(petrinet::AbstractPetriNet)              = refplace_ids(petrinet.net)
 has_refP(petrinet::AbstractPetriNet, ref_id::Symbol)  = has_refP(petrinet.net, ref_id)
