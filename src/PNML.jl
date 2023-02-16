@@ -24,6 +24,7 @@ using AbstractTrees
 using LabelledArrays
 using Reexport
 using Preferences
+using FunctionWrappers
 
 using Base: Fix1, Fix2, @kwdef
 
@@ -114,6 +115,11 @@ export @xml_str,
     PnmlException,
     MissingIDException,
     MalformedException
+
+
+#TODO ============================================
+#TODO precompile setup.
+#TODO ============================================
 
 using SnoopPrecompile
 
