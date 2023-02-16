@@ -124,3 +124,5 @@ marking_type(pntd::PnmlType)       = marking_type(typeof(pntd))
 marking_value_type(pntd::PnmlType) = marking_value_type(typeof(pntd))
 
 sort_type(pntd::PnmlType) = sort_type(typeof(pntd))
+
+term_value_type(pntd::PnmlType) =  term_value_type(typeof(pntd))
