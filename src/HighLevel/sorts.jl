@@ -53,7 +53,7 @@ struct Sort{T<:AbstractDict}
 end
 
 Sort() = Sort(:empty, PnmlDict())
-Sort(p::Pair{Symbol,PnmlDict}; kw...) = Sort(p.first, p.second)
+Sort(p::Pair{Symbol,PnmlDict}) = Sort(p.first, p.second)
 Sort(a::AnyElement) = Sort(a.tag, a.dict)
 
 Base.convert(::Type{Maybe{Sort}}, pdict::PnmlDict)::Sort = Sort(pdict)

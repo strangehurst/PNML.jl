@@ -64,10 +64,10 @@ let
 	d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
 	reg = PnmlIDRegistry()
 	pntd = PnmlCoreNet()
-	PNML.add_label!(d, PNML.xmlroot("<test1> 1 </test1>"), pntd; reg)
-	PNML.add_label!(d, PNML.xmlroot("<test2> 2.0 </test2>"), pntd; reg)
-	PNML.add_label!(d, PNML.xmlroot("<test3> true </test3>"), pntd; reg)
-	PNML.add_label!(d, PNML.xmlroot("<test4> Pnml.Term() </test4>"), pntd; reg)
+	PNML.add_label!(d, PNML.xmlroot("<test1> 1 </test1>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test2> 2.0 </test2>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test3> true </test3>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test4> Pnml.Term() </test4>"), pntd, reg)
 end
 
 # ╔═╡ ddacb450-31cb-4f7d-b62f-c81d0c2df858

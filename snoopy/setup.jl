@@ -1,4 +1,5 @@
 using PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs, EzXML, JET, AbstractTrees
+using PNML: rate_value_type, default_term, default_one_term, default_zero_term
 using PnmlCore:
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
@@ -8,8 +9,7 @@ using PnmlCore:
     Inscription, Line,
     MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
     OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
-    PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,
-    AbstractPnmlNode,
+    PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,    AbstractPnmlNode,
     AbstractPnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode,
@@ -43,22 +43,25 @@ using PnmlCore:
 const fname = "test1.pnml"
 @time x = EzXML.root(EzXML.readxml(fname));
 @time r = PnmlIDRegistry();
-@time m = parse_pnml(x; reg=r);
+@time m = parse_pnml(x, r);
 
 function_filter(@nospecialize(ft)) =
     ft !== typeof(EzXML.throw_xml_error) &&
     ft !== typeof(Base.lock)
 
-#@show @report_opt function_filter=function_filter EzXML.root(EzXML.readxml(fname))
-#@show @report_opt function_filter=function_filter PnmlIDRegistry()
-#@show @report_opt function_filter=function_filter parse_pnml(x; reg=r)
-
+#=
+julia> @report_opt function_filter=function_filter EzXML.root(EzXML.readxml(fname))
+julia> @report_opt function_filter=function_filter PnmlIDRegistry()
+julia> @report_opt function_filter=function_filter parse_pnml(x, r)
+julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_pnml(x, r)
+=#
 @show pid.(nets(m))
 @show nettype.(nets(m))
 
-foreach(nets(m)) do n
+# usage: showtree.(nets(m))
+function showtree(n)
     println()
     AbstractTrees.print_tree(n)
 end
-
+include("defaults_types.jl")
 nothing

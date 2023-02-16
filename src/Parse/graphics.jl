@@ -4,7 +4,7 @@ $(TYPEDSIGNATURES)
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
 """
-function parse_tokengraphics(node::XMLNode, pntd::PnmlType; kw...)
+function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
     nn = nodename(node)
     nn == "tokengraphics" || error("element name wrong: $nn")
     positions = allchildren("tokenposition", node)
@@ -12,7 +12,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType; kw...)
         TokenGraphics() # Empty is legal.
     else
         #TODO: Enforce type sameness of position coordinates? How?
-        tpos = parse_tokenposition.(positions, Ref(pntd))
+        tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg))
         (isnothing(tpos) ||isempty(tpos)) && throw(MalformedException("$nn has no positions", node))
         TokenGraphics(tpos)
     end
@@ -23,11 +23,11 @@ $(TYPEDSIGNATURES)
 
 Cartesian coordinate relative to containing element.
 """
-function parse_tokenposition(node, pntd; kw...)
+function parse_tokenposition(node, pntd, reg)
     nn = nodename(node)
     nn == "tokenposition" || error("element name wrong: $nn")
 
-    parse_graphics_coordinate(node, pntd; kw...)
+    parse_graphics_coordinate(node, pntd, reg)
 end
 
 """
@@ -36,7 +36,7 @@ $(TYPEDSIGNATURES)
 Arcs, Annotations and Nodes have different graphics semantics.
 Return a [`Graphics`](@ref) holding the union of possibilities.
 """
-function parse_graphics(node, pntd; kw...)
+function parse_graphics(node, pntd, reg)
     nn = check_nodename(node, "graphics")
     @debug nn
 
@@ -45,12 +45,12 @@ function parse_graphics(node, pntd; kw...)
                  :fill => nothing, :font => nothing, :offset => nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child, pntd; kw...))
-            "fill"      => (d[:fill] = parse_graphics_fill(child, pntd; kw...))
-            "font"      => (d[:font] = parse_graphics_font(child, pntd; kw...))
-            "line"      => (d[:line] = parse_graphics_line(child, pntd; kw...))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child, pntd; kw...))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child, pntd; kw...)))
+            "dimension" => (d[:dimension] = parse_graphics_coordinate(child, pntd, reg))
+            "fill"      => (d[:fill] = parse_graphics_fill(child, pntd, reg))
+            "font"      => (d[:font] = parse_graphics_font(child, pntd, reg))
+            "line"      => (d[:line] = parse_graphics_line(child, pntd, reg))
+            "offset"    => (d[:offset] = parse_graphics_coordinate(child, pntd, reg))
+            "position"  => (push!(d[:positions], parse_graphics_coordinate(child, pntd, reg)))
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
@@ -68,7 +68,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Line`](@ref).
 """
-function parse_graphics_line(node, pntd; kw...)
+function parse_graphics_line(node, pntd, reg)
     nn = nodename(node)
     (nn == "line") || error("element name wrong: $nn")
 
@@ -86,7 +86,7 @@ $(TYPEDSIGNATURES)
 Return [`Coordinate`](@ref).
 Specification seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node, pntd; kw...)
+function parse_graphics_coordinate(node, pntd, reg)
     nn = nodename(node)
     (nn=="position" || nn=="dimension" ||
      nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
@@ -102,7 +102,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Fill`](@ref)
 """
-function parse_graphics_fill(node, pntd; kw...)
+function parse_graphics_fill(node, pntd, reg)
     nn = nodename(node)
     (nn == "fill") || error("element name wrong: $nn")
 
@@ -111,7 +111,7 @@ function parse_graphics_fill(node, pntd; kw...)
     gclr = EzXML.haskey(node, "gradient-color")    ? node["gradient-color"] : nothing
     grot = EzXML.haskey(node, "gradient-rotation") ? node["gradient-rotation"] : nothing
 
-    Fill(color=clr, image=img, gradient_color=gclr, gradient_rotation=grot)
+    Fill(; color=clr, image=img, gradient_color=gclr, gradient_rotation=grot)
 end
 
 """
@@ -119,7 +119,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Font`](@ref).
 """
-function parse_graphics_font(node, pntd; kw...)
+function parse_graphics_font(node, pntd, reg)
     nn = nodename(node)
     (nn == "font") || error("element name wrong: $nn")
 

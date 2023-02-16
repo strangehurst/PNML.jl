@@ -160,6 +160,7 @@ const default_pntd_map =
                          "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
                          "pnmlcore" => :pnmlcore,
                          "ptnet" => :ptnet,
+                         "highlevelnet" => :hlnet,
                          "hlnet" => :hlnet,
                          "hlcore" => :hlcore,
                          "pt-hlpng" => :pt_hlpng,
@@ -213,9 +214,9 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 pntd_symbol(s::String) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)
 
 """
-    pnmltype(pntd::T; kw...)
-    pnmltype(uri::AbstractString; kw...)
-    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, kw...)
+    pnmltype(pntd::T, reg)
+    pnmltype(uri::AbstractString, reg)
+    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, reg)
 
 Map either a text string or a symbol to a dispatch type singlton.
 
@@ -240,8 +241,8 @@ SymmetricNet()
 ```
 """
 function pnmltype end
-pnmltype(pntd::PnmlType; kw...) = pntd
-pnmltype(uri::AbstractString; kw...) = pnmltype(pntd_symbol(uri))
+pnmltype(pntd::PnmlType) = pntd
+pnmltype(uri::AbstractString) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
     typemap = pnmltype_map::IdDict{Symbol, PnmlType}
     haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))

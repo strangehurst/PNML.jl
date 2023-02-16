@@ -61,8 +61,7 @@ of the structure defined by the pntd schema.
     xml::XMLNode
 end
 
-#! PnmlLabel(node::XMLNode; kw...) = PnmlLabel(unclaimed_label(node; kw...), node)
-PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode; kw...) = PnmlLabel(p.first, p.second, node; kw...)
+PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode) = PnmlLabel(p.first, p.second, node)
 
 tag(label::PnmlLabel) = label.tag
 dict(label::PnmlLabel) = label.dict

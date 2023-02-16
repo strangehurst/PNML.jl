@@ -7,7 +7,7 @@ using PNML: XMLNode, pnmltype, tagmap
     @test !haskey(tagmap, "net")
     # Visit every entry in the map.  All require pntd.
     @testset "tag $t" for t in keys(tagmap)
-        @test !isempty(methods(tagmap[t], (XMLNode, PnmlType)))
+        @test !isempty(methods(tagmap[t], (XMLNode, PnmlType, PnmlIDRegistry)))
         # Tags handled differently (no pntd argument) ARE NOT in the map.
         @test isempty(methods(tagmap[t], (XMLNode,)))
 
@@ -18,7 +18,7 @@ using PNML: XMLNode, pnmltype, tagmap
 
         #@show t, tagmap[t], pntd
         # Parse trivial XML.
-        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd; reg=PnmlIDRegistry() )
+        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, PnmlIDRegistry() )
     end
     #TODO: Add non-trivial tests.
 end
@@ -103,4 +103,8 @@ end
     @test pnmltype(:stochastic) === StochasticNet()
     @test pnmltype(:timednet)   === TimedNet()
     @test pnmltype(:continuous) === ContinuousNet()
+end
+
+@testset "pnml traits" begin
+
 end

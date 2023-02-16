@@ -38,7 +38,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
     foreach(allchildren("net", pnmldoc)) do net
         @test nodename(net) == "net"
 
-        nn = parse_name(firstchild("name", net), PnmlCoreNet(); reg)
+        nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
         @test isa(nn, PNML.Name)
         @test nn.text == "P/T Net with one place"
         @test nn.graphics === nothing
@@ -46,14 +46,16 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
 
         nd = allchildren("declaration", net)
         @test isempty(nd)
-        @test isempty(parse_node.(nd; reg))
+        ndx = parse_node.(nd, Ref(reg))
+        @show ndx
+        @test isempty(ndx)
         #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
         #@test_opt  allchildren("declaration", net)
         @test_call target_modules=target_modules allchildren("declaration", net)
 
         nt = allchildren("toolspecific", net)
         @test isempty(nt)
-        @test isempty(parse_node.(nt; reg))
+        @test isempty(parse_node.(nt, Ref(reg)))
 
         pages = allchildren("page", net)
         @test !isempty(pages)
@@ -64,7 +66,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             @test !isempty(allchildren("place", page))
             foreach(allchildren("place", page)) do p
                 @test nodename(p) == "place"
-                i = parse_node(firstchild("initialMarking", p); reg)
+                i = parse_node(firstchild("initialMarking", p), reg)
                 #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
                 @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
@@ -85,7 +87,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 @test nodename(a) == "arc"
                 ins = firstchild("inscription", a)
                 if ins !== nothing
-                    i = parse_node(ins; reg)
+                    i = parse_node(ins, reg)
                     @test typeof(i) <: PNML.Inscription
                     @test typeof(value(i)) <: Union{Int,Float64}
                     @test value(i) > 0
@@ -99,7 +101,7 @@ end
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
     reg = PnmlIDRegistry()
-    pnml_ir = parse_pnml(pnmldoc; reg)
+    pnml_ir = parse_pnml(pnmldoc, reg)
     @test typeof(pnml_ir) <: PnmlModel
 
     foreach(nets(pnml_ir)) do net

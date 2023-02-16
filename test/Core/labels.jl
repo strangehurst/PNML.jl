@@ -6,79 +6,80 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     default_term, default_one_term, default_zero_term,
     value
 
-@testset "default values" begin
-    pntd = PNML.PnmlCoreNet()
-    default_marking(pntd)
-    default_inscription(pntd)
-    default_condition(pntd)
-    default_term(pntd)
-    default_one_term(pntd)
-    default_zero_term(pntd)
-    default_sort(pntd)
-    default_term(pntd)
+@testset "ObjectCommon" begin
+    println()
+
+    oc = @inferred PNML.ObjectCommon()
+    @show typeof(oc)
+    @show typeof(PNML.graphics(oc))
+    @show typeof(PNML.tools(oc))
+    @show typeof(PNML.labels(oc))
+
+    @show d = PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
+    oc = @inferred PNML.ObjectCommon(d)
+    @show typeof(oc)
+    @show typeof(PNML.graphics(oc))
+    @show typeof(PNML.tools(oc))
+    @show typeof(PNML.labels(oc))
+
+    println()
 end
 
 @testset "unclaimed" begin
     # node => [key => value] expected to be in the PnmlDict after parsing node.
-    ctrl = [
-        xml"""<declarations> </declarations>""" =>
-            [:content => ""], xml"""<declarations atag="test1"> </declarations>""" =>
-            [:atag => "test1", :content => ""], xml"""<declarations atag="test2">
-                                                        <something> some content </something>
-                                                        <something> other stuff </something>
-                                                        <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
-                                                      </declarations>""" => [
-            :atag => "test2",
-            :something => [PnmlDict(:content => "some content"),
-                PnmlDict(:content => "other stuff")],
-            :something2 => PnmlDict(:value => [
-                    PnmlDict(:content => ""),
-                    PnmlDict(:tag3 => "three", :content => "")
-                ],
-                :tag2 => "two")
-        ], xml"""<foo><declarations> </declarations></foo>""" =>
-            [:declarations => PnmlDict(:content => "")],
-
+    ctrl =
+    [
+        ("""<declarations> </declarations>""", [:content => ""]),
+        ("""<declarations atag="test1"> </declarations>""",
+            [:atag => "test1", :content => ""]),
+        ("""<declarations atag="test2">
+                    <something> some content </something>
+                    <something> other stuff </something>
+                    <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
+                </declarations>""",
+            [:atag => "test2",
+             :something => [PnmlDict(:content => "some content"),
+                            PnmlDict(:content => "other stuff")],
+             :something2 => PnmlDict(:value => [PnmlDict(:content => ""),
+                                                PnmlDict(:tag3 => "three", :content => "")],
+                                        :tag2 => "two")]),
+        ("""<foo><declarations> </declarations></foo>""",
+            [:declarations => PnmlDict(:content => "")]),
         # no content, no attribute results in empty PnmlDict.
-        xml"""<null></null>""" => [],
-        xml"""<null2/>""" => [],
+        ("""<null></null>""", []),
+        ("""<null2/>""", []),
         # no content, with attribute
-        xml"""<null at="null"></null>""" =>
-            [:at => "null"],
-        xml"""<null2 at="null2" />""" =>
-            [:at => "null2"],
-
+        ("""<null at="null"></null>""", [:at => "null"]),
+        ("""<null2 at="null2" />""", [:at => "null2"]),
         # empty content, no attribute
-        xml"""<empty> </empty>""" =>
-            [:content => ""],
+        ("""<empty> </empty>""", [:content => ""]),
         # empty content, with attribute
-        xml"""<empty at="empty"> </empty>""" => [
-            :content => "",
-            :at => "empty"
-        ], xml"""<foo id="testid"/>""" =>
-            [:id => :testid],
+        ("""<empty at="empty"> </empty>""", [:content => "", :at => "empty"]),
+        ("""<foo id="testid"/>""", [:id => :testid]),
     ]
 
-    for (node, funk) in ctrl
-
+    for (s, funk) in ctrl
+        println()
+        println(s)
+        node::XMLNode = xmlroot(s)
         reg1 = PnmlIDRegistry()
         reg2 = PnmlIDRegistry()
 
-        u = unclaimed_label(node, PnmlCoreNet(); reg=reg1)
+        u = unclaimed_label(node, PnmlCoreNet(), reg1)
+        @show typeof(u)
+        @show u
         l = PnmlLabel(u, node)
-        a = anyelement(node, reg=reg2)
+        @show l
+        a = anyelement(node, reg2)
+        @show a
 
-        #@show u
-        #@show l
-        #@show a
-
-        #!@test_opt unclaimed_label(node, PnmlCoreNet(); reg=reg1)
+        @test_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) unclaimed_label(node, PnmlCoreNet(), reg1)
         @test_opt PnmlLabel(u, node)
-        #!@test_opt anyelement(node, reg=reg2)
+        @test_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) anyelement(node, reg2)
 
-        @test_call unclaimed_label(node, PnmlCoreNet(); reg=reg1)
+        @test_call unclaimed_label(node, PnmlCoreNet(), reg1) #!
         @test_call PnmlLabel(u, node)
-        @test_call anyelement(node, reg=reg2)
+        @test_call anyelement(node, reg2) #!
 
         @test !isnothing(u)
         @test !isnothing(l)
@@ -111,7 +112,7 @@ end
         haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
         haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
         haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
-
+<
         #@report_opt isregistered_id(reg2, :id)
         @test_call isregistered_id(reg2, :id)
     end
@@ -129,7 +130,7 @@ end
     </initialMarking>
     """
 
-    n = parse_node(node; reg=PnmlIDRegistry())
+    n = parse_node(node, PnmlIDRegistry())
     @test typeof(n) <: PNML.Marking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(value(n)) <: Union{Int,Float64}
@@ -159,7 +160,7 @@ end
 @testset "PT inscription" begin
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
-        n = parse_node(node; reg=PnmlIDRegistry())
+        n = parse_node(node, PnmlIDRegistry())
         @test typeof(n) <: PNML.Inscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test value(n) == 12
@@ -171,7 +172,7 @@ end
 
 @testset "text" begin
     str1 = """<text>ready</text>"""
-    n = parse_node(xmlroot(str1); reg=PnmlIDRegistry())
+    n = parse_node(xmlroot(str1), PnmlIDRegistry())
     @test n == "ready"
 
     str2 = """
@@ -179,13 +180,13 @@ end
 ready
 </text>
     """
-    n = parse_node(xmlroot(str2); reg=PnmlIDRegistry())
+    n = parse_node(xmlroot(str2), PnmlIDRegistry())
     @test n == "ready"
 
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(xmlroot(str3); reg=PnmlIDRegistry())
+    n = parse_node(xmlroot(str3), PnmlIDRegistry())
     @test n == "ready"
 
     str4 = """
@@ -193,7 +194,7 @@ ready
 to
 go</text>
     """
-    n = parse_node(xmlroot(str4); reg=PnmlIDRegistry())
+    n = parse_node(xmlroot(str4), PnmlIDRegistry())
     @test n == "ready\nto\ngo"
 end
 
@@ -207,8 +208,8 @@ end
     for i in 1:4 # add 4 labels
         x = i < 3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call add_label!(d, node, PnmlCoreNet(); reg)
-        n = add_label!(d, node, PnmlCoreNet(); reg)
+        @test_call add_label!(d, node, PnmlCoreNet(), reg)
+        n = add_label!(d, node, PnmlCoreNet(), reg)
         @test n isa Vector{PnmlLabel}
         #@show n
         @test length(labels(d)) == i

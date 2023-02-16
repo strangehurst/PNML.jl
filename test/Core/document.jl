@@ -27,7 +27,7 @@ str =
   </net>
 </pnml>
     """
-    model = parse_pnml(xmlroot(str); reg=PnmlIDRegistry())
+    model = parse_pnml(xmlroot(str), PnmlIDRegistry())
     @test model isa PnmlModel
     #@show model
 end
@@ -43,9 +43,9 @@ end
     @test !isregistered_id(reg, :net)
     @test :net ∉ reg.ids
 
-    parse_pnml(xmlroot(str); reg)
-    @report_opt parse_pnml(xmlroot(str); reg)
-    @test_call target_modules=target_modules parse_pnml(xmlroot(str); reg)
+    parse_pnml(xmlroot(str), reg)
+    @report_opt parse_pnml(xmlroot(str), reg)
+    @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
     #@show reg
 
     @test isregistered_id(reg, :net)

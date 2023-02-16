@@ -33,7 +33,7 @@ const pnmlroot = PNML.xmlroot(str)
 #tinf = @snoopi_deep begin end
 function test1(proot, n=10)
     for i in 1:n
-        model = parse_pnml(proot; reg=PnmlIDRegistry())
+        model = parse_pnml(proot, PnmlIDRegistry())
     end
 end
 
