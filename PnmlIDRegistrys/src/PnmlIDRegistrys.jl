@@ -15,7 +15,8 @@ $(TYPEDFIELDS)
 """
 @kwdef struct PnmlIDRegistry{F<:Function}
     ids::Set{Symbol}    = Set{Symbol}()
-    lk::ReentrantLock   = ReentrantLock()
+    #!lk::ReentrantLock   = ReentrantLock()
+    lk::Base.Threads.SpinLock   = Base.Threads.SpinLock()
     duplicate::F = duplicate_id_warn
 end
 
@@ -42,11 +43,11 @@ Register `id` symbol and return the symbol.
 """
 register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
-    lock(reg.lk) do
+    @lock reg.lk begin
         id ∈ reg.ids && reg.duplicate(id)
         push!(reg.ids, id)
     end
-    id
+    return id
 end
 
 """
