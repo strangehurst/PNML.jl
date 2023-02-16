@@ -9,22 +9,17 @@ struct ObjectCommon
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}} #! #TODO Make toolinfo generic.
     labels::Maybe{Vector{PnmlLabel}} #! #TODO Make label generic.
-    function ObjectCommon(g, t, l)
-        # isnothing(tools) ||
-        #     tools isa Vector ||
-        #     throw(ArgumentError("ObjectCommon tools must be a Vector"))
-        # isnothing(labels) ||
-        #     labels isa Vector ||
-        #     throw(ArgumentError("ObjectCommon labels must be a Vector"))
-        new(g, t, l)
-    end
 end
 
-ObjectCommon(pdict::PnmlDict) = ObjectCommon(
-    get(pdict, :graphics, nothing),
-    get(pdict, :tools, nothing),
-    get(pdict, :labels, nothing)
-)
+function ObjectCommon(pdict::PnmlDict)
+    @assert haskey(pdict, :graphics)
+    @assert haskey(pdict, :tools)
+    @assert haskey(pdict, :labels)
+    g = pdict[:graphics]::Maybe{Graphics}
+    t = pdict[:tools]::Maybe{Vector{ToolInfo}}
+    l = pdict[:labels]::Maybe{Vector{PnmlLabel}}
+    ObjectCommon(g, t, l)
+end
 ObjectCommon() = ObjectCommon(nothing, nothing, nothing)
 
 has_graphics(oc::ObjectCommon) = oc.graphics !== nothing
