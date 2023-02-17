@@ -25,6 +25,7 @@ using LabelledArrays
 using Reexport
 using Preferences
 using FunctionWrappers
+import FunctionWrappers: FunctionWrapper
 
 using Base: Fix1, Fix2, @kwdef
 
