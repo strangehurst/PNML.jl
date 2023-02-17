@@ -47,25 +47,24 @@ end
 
 function rate(transition)::Float64
     # <rate> <text>0.3</text> </rate>
-    ishighlevel(nettype(transition)) && error("""
+    ishighlevel(nettype(transition)) && throw(ArgumentError("""
     The `rate` label is not supported for High-Level Petri Nets.
-    Is recommended to us a `ContinuousNet`.
-    """)
+    Is recommended to use a `ContinuousNet`.
+    """))
+    pntd = nettype(transition)
     r = get_label(transition, :rate)
-    if isnothing(r)
-        return zero(rate_value_type(nettype(transition)))
-    else
-        @assert tag(r) === :rate
+    if !isnothing(r)
         if haskey(r.dict, :text)
             !isnothing(r.dict[:text])
             # The unclaimed label mechanism adds a :content key for text elements.
-            value = number_value(r.dict[:text][:content])
+            value = number_value(r.dict[:text][:content])::rate_value_type(pntd)
         elseif haskey(r.dict, :content)
             # When the text element is elided, there is still a :content.
-            value = number_value(r.dict[:content])
+            value = number_value(r.dict[:content])::rate_value_type(pntd)
         else
-            value = nothing
+            throw(ArgumentError("`rate` tag missing a value"))
         end
-        return isnothing(value) ? zero(rate_value_type(nettype(transition))) : value
+        return value
     end
+    return zero(rate_value_type(pntd))
 end
