@@ -4,11 +4,25 @@
         <name> <text>pnmlcore with nested pages</text> </name>
         <page id="page1">
             <place id="p1">
-	        <name><text>place name</text></name>
-	        <initialMarking> <text> 1 </text> </initialMarking>
-	    </place>
-            <transition id ="t1"> </transition>
-            <arc id="a11" source="p1" target="t1"> <inscription> <text> 2 </text> </inscription> </arc>
+	            <name>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <text>place name</text>
+                </name>
+	            <graphics><position x="100" y="100"/></graphics>
+                <initialMarking>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <text> 1 </text> </initialMarking>
+	        </place>
+            <transition id ="t1">
+	            <name>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <text>transition name</text>
+                </name>
+	            <graphics><position x="100" y="100"/></graphics>
+            </transition>
+            <arc id="a11" source="p1" target="t1">
+                <inscription> <text> 2 </text> </inscription>
+            </arc>
             <arc id="a12" source="t1" target="rp1"> </arc>
             <arc id="a13" source="p1" target="rt1"> </arc>
             <referencePlace id="rp1" ref="p2"/>
@@ -46,9 +60,159 @@
     </net>
     <net id="net2" type="ptnet"> <page id="net2page"/> </net>
     <net id="net3" type="hlcore"> <page id="net3page"/> </net>
-    <net id="net4" type="hlnet"> <page id="net4page"/> </net>
+
+    <net id="net4" type="hlnet">
+        <name><text>net4 name</text></name>
+        <declaration>
+	        <text>text of hl label</text>
+	        <structure>
+	            <declarations>
+	                <!-- Sorts declaration -->
+	                <namedsort id="dot" name="Dot">
+	                    <dot/>
+	                </namedsort>
+	                <!-- Variables declaration -->
+	                <variabledecl id="varx" name="x">
+	                    <usersort declaration="pro"/>
+	                </variabledecl>
+	           </declarations>
+	        </structure>
+        </declaration>
+        <page id="net4page">
+	        <place id="pOwn">
+	            <graphics><position x="35" y="35"/></graphics>
+	            <name><text>OwnMemAcc</text></name>
+	            <type><structure><usersort declaration="pro"/></structure></type>
+	        </place>
+    	    <place id="pActive">
+	            <graphics><position x="35" y="70"/></graphics>
+	            <name><text>Active</text></name>
+	            <type><structure><usersort declaration="pro"/></structure></type>
+	            <hlinitialMarking>
+	                <structure>
+		                <add>
+		                    <subterm>
+			                    <numberof>
+			                        <subterm>
+			                            <numberconstant value="1"><natural/></numberconstant>
+			                        </subterm>
+			                        <subterm>
+			                            <finiteintrangeconstant value="1">
+				                            <finiteintrange start="1" end="10"/>
+			                            </finiteintrangeconstant>
+			                        </subterm>
+			                    </numberof>
+		                    </subterm>
+		                    <subterm>
+			                    <numberof>
+			                        <subterm>
+			                            <numberconstant value="1"><natural/></numberconstant>
+			                        </subterm>
+			                        <subterm>
+			                            <finiteintrangeconstant value="2">
+				                            <finiteintrange start="1" end="10"/>
+			                            </finiteintrangeconstant>
+			                        </subterm>
+			                    </numberof>
+		                    </subterm>
+						</add>
+					</structure>
+				</hlinitialMarking>
+			</place>
+
+			<transition id="tBO">
+				<graphics><position x="30" y="50"/></graphics>
+				<name><text>Begin_Own_Acc</text></name>
+			</transition>
+			<transition id="tEO">
+				<condition>
+					<structure>
+						<equality>
+							<subterm><variable refvariable="varm"/></subterm>
+							<subterm><variable refvariable="varx"/></subterm>
+						</equality>
+					</structure>
+				</condition>
+			</transition>
+        </page>
+    </net>
+
     <net id="net5" type="pt_hlpng"> <page id="net5page"/> </net>
-    <net id="net6" type="symmetric"> <page id="net6page"/> </net>
+    <net id="net6" type="symmetric">
+        <page id="net6page">
+			<place id="stp5">
+				<name><text>stp5</text></name>
+				<type>
+					<text>Dot</text>
+					<structure><usersort declaration="dot"/></structure>
+				</type>
+				<hlinitialMarking>
+					<text>1'(dot)</text>
+					<structure>
+						<numberof>
+							<subterm>
+								<numberconstant value="1">
+									<positive/>
+								</numberconstant>
+							</subterm>
+							<subterm>
+								<dotconstant/>
+							</subterm>
+						</numberof>
+					</structure>
+				</hlinitialMarking>
+			</place>
+
+			<transition id="t3_1">
+				<name><text>t3_1</text></name>
+				<condition>
+					<text>(A) lt (Altitude10) and (A) ineq (Altitude20)</text>
+					<structure>
+						<and>
+							<subterm>
+								<lessthan>
+									<subterm>
+										<variable refvariable="varA"/>
+									</subterm>
+									<subterm>
+										<useroperator declaration="Altitude10"/>
+									</subterm>
+								</lessthan>
+							</subterm>
+							<subterm>
+								<inequality>
+									<subterm>
+										<variable refvariable="varA"/>
+									</subterm>
+									<subterm>
+										<useroperator declaration="Altitude20"/>
+									</subterm>
+								</inequality>
+							</subterm>
+						</and>
+					</structure>
+				</condition>
+			</transition>
+			<arc id="arc41" source="stp3" target="getAlt">
+				<name><text>41</text></name>
+				<hlinscription>
+					<text>1'(dot)</text>
+					<structure>
+						<numberof>
+							<subterm>
+								<numberconstant value="1">
+									<positive/>
+								</numberconstant>
+							</subterm>
+							<subterm>
+								<dotconstant/>
+							</subterm>
+						</numberof>
+					</structure>
+				</hlinscription>
+			</arc>
+        </page>
+    </net>
     <net id="net7" type="timednet"> <page id="net7page"/> </net>
     <net id="net8" type="continuous"> <page id="net8page"/> </net>
     <net id="net9" type="bogus"> <page id="net9page"/> </net>
