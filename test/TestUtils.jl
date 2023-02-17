@@ -16,11 +16,10 @@ end
 const target_modules = (PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs,)
 
 # ignore some dynamically-designed functions
-function pnml_function_filter(@nospecialize ft)
+function pnml_function_filter(@nospecialize(ft))
     #@show ft
-    if ft === typeof(Base.lock) ||
-       ft === typeof(EzXML.findall) ||
-       ft === typeof(allchildren) ||
+    if ft === typeof(PnmlIDRegistrys.register_id!) ||
+       ft === typeof(PNML.EzXML.nodename)
        false
         return false
     end

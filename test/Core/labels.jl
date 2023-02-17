@@ -73,9 +73,12 @@ end
         a = anyelement(node, reg2)
         @show a
 
-        @test_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) unclaimed_label(node, PnmlCoreNet(), reg1)
+        function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
+
+        @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
+        @test_opt function_filter=function_filter target_modules=(PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) unclaimed_label(node, PnmlCoreNet(), reg1)
         @test_opt PnmlLabel(u, node)
-        @test_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) anyelement(node, reg2)
+        @test_opt function_filter=function_filter target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) anyelement(node, reg2)
 
         @test_call unclaimed_label(node, PnmlCoreNet(), reg1) #!
         @test_call PnmlLabel(u, node)

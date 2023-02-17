@@ -29,7 +29,7 @@ end
         <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_opt parse_node(node, PnmlIDRegistry())
+    @test_opt function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlIDRegistry())
     @test_call parse_node(node, PnmlIDRegistry())
     n = @inferred Place parse_node(node, PnmlIDRegistry())
     @test typeof(n) <: Place
