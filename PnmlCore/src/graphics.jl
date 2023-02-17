@@ -7,12 +7,15 @@ Cartesian Coordinate.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Coordinate
-    x::Union{Int,Float64}
-    y::Union{Int,Float64}
+struct Coordinate{T}
+    x::T
+    y::T
 end
 Coordinate() = Coordinate(0, 0)
 Coordinate(x::Union{Int,Float64}) = Coordinate(x, zero(x))
+
+coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
+coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
 
 #-------------------
 """

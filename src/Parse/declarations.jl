@@ -144,7 +144,7 @@ $(TYPEDSIGNATURES)
 
 Sorts are found within a <structure> element.
 """
-function parse_sort(node, pntd, reg)
+function parse_sort(node::XMLNode, pntd::PnmlType, reg)
     nn = nodename(node)
     sort_tags = [
         "bool",

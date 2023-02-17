@@ -126,3 +126,6 @@ marking_value_type(pntd::PnmlType) = marking_value_type(typeof(pntd))
 sort_type(pntd::PnmlType) = sort_type(typeof(pntd))
 
 term_value_type(pntd::PnmlType) =  term_value_type(typeof(pntd))
+
+coordinate_type(pntd::PnmlType)       =  coordinate_type(typeof(pntd))
+coordinate_value_type(pntd::PnmlType) =  coordinate_value_type(typeof(pntd))
