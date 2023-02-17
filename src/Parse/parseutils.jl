@@ -231,4 +231,6 @@ Parse string as a number. First try integer then float.
 function number_value(s::AbstractString)
     x = tryparse(Int, s)
     x = isnothing(x) ?  tryparse(Float64, s) : x
+    isnothing(x) && throw(ArgumentError("cannot parse is `Int` or `Float64`: $s"))
+    return x
 end
