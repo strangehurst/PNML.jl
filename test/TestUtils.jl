@@ -1,6 +1,6 @@
 module TestUtils
 using PNML, .PnmlCore, .PnmlIDRegistrys, .PnmlTypeDefs
-using EzXML
+using EzXML, Preferences
 
 const PRINT_PNML = parse(Bool, get(ENV, "PRINT_PNML", "true"))
 
@@ -12,6 +12,8 @@ function showsize(ob,k)
         @show k,summarysz
     end
 end
+
+runopt::Bool = false
 
 const target_modules = (PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs,)
 
@@ -27,6 +29,6 @@ function pnml_function_filter(@nospecialize(ft))
 end
 
 export PRINT_PNML, VERBOSE_PNML, SHOW_SUMMARYSIZE, printnode, header, showsize,
-        pnml_function_filter, target_modules
+        pnml_function_filter, target_modules, runopt
 
 end # module TestUtils

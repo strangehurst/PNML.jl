@@ -47,7 +47,6 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
         nd = allchildren("declaration", net)
         @test isempty(nd)
         ndx = parse_node.(nd, Ref(reg))
-        @show ndx
         @test isempty(ndx)
         #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
         #@test_opt  allchildren("declaration", net)
@@ -150,6 +149,8 @@ end
     net = first(netvec)
     @test net isa PnmlNet
     @test net isa PnmlNet{<:PnmlType}
+    @test net isa PnmlNet{<:AbstractHLCore}
+    @test net isa PnmlNet{<:SymmetricNet}
 
     @test pages(net) isa Vector{<:Page}
     @test length(pages(net)) == 1

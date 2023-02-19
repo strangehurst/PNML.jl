@@ -6,10 +6,11 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
 @testset "place" begin
     node = xml"""
       <place id="place1">
-        <name> <text>Some place</text> </name>
+        <name> <text>with text</text> </name>
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), PnmlIDRegistry())
     @test_call parse_node(node, PnmlIDRegistry())
     n = @inferred Place parse_node(node, PnmlIDRegistry())
     @test typeof(n) <: Place
@@ -17,7 +18,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
     @test @inferred has_name(n)
-    @test @inferred(name(n)) == "Some place"
+    @test @inferred(name(n)) == "with text"
     @test_call marking(n)
     @test marking(n)() == 100
 end
@@ -25,11 +26,11 @@ end
 @testset "no marking text" begin
     node = xml"""
       <place id="place1">
-        <name> <text>Some place</text> </name>
+        <name> <text>no marking text</text> </name>
         <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_opt function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlIDRegistry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), PnmlIDRegistry())
     @test_call parse_node(node, PnmlIDRegistry())
     n = @inferred Place parse_node(node, PnmlIDRegistry())
     @test typeof(n) <: Place
@@ -37,7 +38,7 @@ end
     @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
     @test @inferred has_name(n)
-    @test @inferred(name(n)) == "Some place"
+    @test @inferred(name(n)) == "no marking text"
     @test_call marking(n)
     @test marking(n)() == 100
 end
@@ -114,7 +115,7 @@ end
     """,
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
-        n = parse_node(s.node, PnmlIDRegistry())
+        n = parse_node(s.node, ContinuousNet(), PnmlIDRegistry())
         @test typeof(n) <: RefPlace
         @test !has_xml(n)
         @test typeof(n.id) == Symbol

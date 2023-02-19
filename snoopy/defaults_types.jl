@@ -36,6 +36,7 @@ function showme(net) #TODO iterate on nets
         inscription_value_type,
         marking_type,
         marking_value_type,
+        net_type,
         page_type,
         refplace_type,
         reftransition_type,

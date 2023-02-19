@@ -18,10 +18,11 @@ $(TYPEDSIGNATURES)
 Collect keys from all pages and move to first page.
 """
 function flatten_pages!(net::PnmlNet)
-    # Place content of subpages of 1st page before sibling page's content.
+    #! Change to a page tree. Use a depth first traversal to append.
+    # recursivly Place content of subpages of 1st page before sibling page's content.
     subpages = firstpage(net).subpages
     if subpages !== nothing
-        foldl(flatten_pages!, subpages; init=firstpage(net))
+        foldl(flatten_pages!, subpages; init = firstpage(net))
         empty!(subpages)
     end
     # Sibling pages.

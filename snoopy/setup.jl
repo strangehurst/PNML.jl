@@ -45,14 +45,20 @@ const fname = "test1.pnml"
 @time r = PnmlIDRegistry();
 @time m = parse_pnml(x, r);
 
-function_filter(@nospecialize(ft)) =
-    ft !== typeof(EzXML.throw_xml_error) &&
-    ft !== typeof(Base.lock)
+function pnml_ff(@nospecialize(ft))
+    #@show ft
+    if ft === typeof(PnmlIDRegistrys.register_id!) ||
+       ft === typeof(PNML.EzXML.nodename) ||
+       false
+        return false
+    end
+    return true
+end
 
 #=
-julia> @report_opt function_filter=function_filter EzXML.root(EzXML.readxml(fname))
-julia> @report_opt function_filter=function_filter PnmlIDRegistry()
-julia> @report_opt function_filter=function_filter parse_pnml(x, r)
+julia> @report_opt function_filter=pnml_ff EzXML.root(EzXML.readxml(fname))
+julia> @report_opt function_filter=pnml_ff PnmlIDRegistry()
+julia> @report_opt function_filter=pnml_ff parse_pnml(x, r)
 julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_pnml(x, r)
 =#
 @show pid.(nets(m))

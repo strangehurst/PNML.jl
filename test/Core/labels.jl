@@ -124,7 +124,7 @@ end
 @testset "PT initMarking" begin
     node = xml"""
     <initialMarking>
-        <text>1.0</text>
+        <text>1</text>
         <toolspecific tool="org.pnml.tool" version="1.0">
             <tokengraphics>
                 <tokenposition x="6" y="9"/>
