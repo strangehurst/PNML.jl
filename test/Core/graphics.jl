@@ -56,56 +56,58 @@ end
 
 
 @testset "tokengraphics" begin
-    str0 = """
- <tokengraphics>
- </tokengraphics>
-"""
-    str1 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
- </tokengraphics>
-"""
-    str2 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
- </tokengraphics>
-"""
-    str3 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
-     <tokenposition x="-2" y="2"/>
- </tokengraphics>
-"""
-    str4 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
-     <tokenposition x="-2" y="2"/>
-     <tokenposition x="-2" y="-22"/>
- </tokengraphics>
-"""
-    str5 = """
- <tokengraphics>
-     <tokenposition x="-1.2" y="-22.33"/>
- </tokengraphics>
-"""
-    str6 = """
- <tokengraphics>
-     <tokenposition x="-1" y="-2"/>
-     <tokenposition x="-1.2" y="-22.33"/>
- </tokengraphics>
-"""
-    @testset "tokengraphics $l tokenpositions" for (s,l) in [str0=>0,
-                                                             str1=>1,
-                                                             str2=>2,
-                                                             str3=>3,
-                                                             str4=>4,
-                                                             str5=>1,
-                                                             str6=>2]
-        n = parse_node(xmlroot(s), PnmlIDRegistry())
-        @test n isa PNML.TokenGraphics
-        @test length(n.positions) == l
-    end
+
+    str0 = """<tokengraphics></tokengraphics>"""
+    n = parse_node(xmlroot(str0), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 0
+
+    str1 = """<tokengraphics>
+                <tokenposition x="-9" y="-2"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str1), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 1
+
+    str2 = """<tokengraphics>
+                <tokenposition x="-9" y="-2"/>
+                <tokenposition x="2"  y="3"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str2), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 2
+
+    str3 = """<tokengraphics>
+                    <tokenposition x="-9" y="-2"/>
+                    <tokenposition x="2"  y="3"/>
+                    <tokenposition x="-2" y="2"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str3), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 3
+
+    str4 = """<tokengraphics>
+                    <tokenposition x="-9" y="-2"/>
+                    <tokenposition x="2"  y="3"/>
+                    <tokenposition x="-2" y="2"/>
+                    <tokenposition x="-2" y="-22"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str4), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 4
+
+    str5 = """<tokengraphics>
+                    <tokenposition x="-1.2" y="-22.33"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str5), ContinuousNet(), PnmlIDRegistry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 1
+
+    str6 = """<tokengraphics>
+                    <tokenposition x="-1" y="-2"/>
+                    <tokenposition x="-1.2" y="-22.33"/>
+            </tokengraphics>"""
+    n = parse_node(xmlroot(str6), ContinuousNet(), PnmlIDRegistry()) # hubrid?
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 2
 end

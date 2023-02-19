@@ -16,6 +16,7 @@ Coordinate(x::Union{Int,Float64}) = Coordinate(x, zero(x))
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
 coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
+coordinate_value_type(::Type{T}) where {T <: AbstractContinuousNet} = Float64
 
 #-------------------
 """
