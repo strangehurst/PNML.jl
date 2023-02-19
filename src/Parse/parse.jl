@@ -7,10 +7,13 @@ Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exist
 otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_node end
+
 parse_node(node::XMLNode, reg::PIDR) = parse_node(node, PnmlCoreNet(), reg)
+
 function parse_node(node::XMLNode, pntd::PnmlType, reg::PIDR)
     if haskey(tagmap, EzXML.nodename(node))
         parsefun = tagmap[EzXML.nodename(node)]
+        #@show pntd, nameof(parsefun), typeof(parsefun), methods(parsefun)
         return parsefun(node, pntd, reg) # Various types returned here.
     else
         return PnmlLabel(unclaimed_label(node, pntd, reg), node)
@@ -473,7 +476,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, reg::PIDR)
         @warn "missing  <initialMarking> content"
         nothing
     else
-        number_value((strip ∘ nodecontent)(node))::marking_value_type(pntd)
+        number_value(marking_value_type(pntd), (strip ∘ nodecontent)(node))
     end
 
     d = pnml_label_defaults(node, :tag => Symbol(nn), :value => val)
@@ -481,7 +484,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, reg::PIDR)
     foreach(elements(node)) do child
         @match nodename(child) begin
             # We extend to real numbers.
-            "text" => (d[:value] = number_value((string∘strip∘nodecontent)(child))::marking_value_type(pntd)
+            "text" => (d[:value] = number_value(marking_value_type(pntd), (string∘strip∘nodecontent)(child))
             )
             _ => parse_pnml_label_common!(d, child, pntd, reg)
         end
@@ -502,7 +505,7 @@ function parse_inscription(node, pntd::PnmlType, reg::PIDR)
     d = pnml_label_defaults(node, :tag => Symbol(nn), :value => nothing)
     foreach(elements(node)) do child
         @match nodename(child) begin
-            "text" => (d[:value] = number_value((string∘strip∘nodecontent)(child))::inscription_value_type(pntd))
+            "text" => (d[:value] = number_value(inscription_value_type(pntd), (string∘strip∘nodecontent)(child)))
             # Should not have a structure.
             _ => parse_pnml_label_common!(d, child, pntd, reg)
         end

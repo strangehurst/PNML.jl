@@ -72,7 +72,7 @@ import PnmlCore:
     update_maybe!, value, version,
     xmlnode, xmlroot,
     arc_type, place_type, transition_type, refplace_type, reftransition_type,
-    page_type, sort_type
+    page_type, sort_type, coordinate_type, coordinate_value_type
 
 
 

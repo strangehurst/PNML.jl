@@ -94,7 +94,8 @@ function parse_graphics_coordinate(node, pntd, reg)
     EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x", node))
     EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y", node))
 
-    Coordinate(number_value(node["x"]), number_value(node["y"]))
+    Coordinate(number_value(coordinate_value_type(pntd), node["x"]),
+               number_value(coordinate_value_type(pntd), node["y"]))
 end
 
 """

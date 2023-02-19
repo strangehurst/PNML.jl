@@ -57,10 +57,10 @@ function rate(transition)::Float64
         if haskey(r.dict, :text)
             !isnothing(r.dict[:text])
             # The unclaimed label mechanism adds a :content key for text elements.
-            value = number_value(r.dict[:text][:content])::rate_value_type(pntd)
+            value = number_value(rate_value_type(pntd), r.dict[:text][:content])
         elseif haskey(r.dict, :content)
             # When the text element is elided, there is still a :content.
-            value = number_value(r.dict[:content])::rate_value_type(pntd)
+            value = number_value(rate_value_type(pntd), r.dict[:content])
         else
             throw(ArgumentError("`rate` tag missing a value"))
         end

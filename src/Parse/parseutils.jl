@@ -228,9 +228,8 @@ end
 """
 Parse string as a number. First try integer then float.
 """
-function number_value(s::AbstractString)
-    x = tryparse(Int, s)
-    x = isnothing(x) ?  tryparse(Float64, s) : x
-    isnothing(x) && throw(ArgumentError("cannot parse is `Int` or `Float64`: $s"))
+function number_value(::Type{T}, s::AbstractString) where {T}
+    x = tryparse(T, s)
+    isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
     return x
 end
