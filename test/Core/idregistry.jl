@@ -6,7 +6,7 @@ using .PnmlIDRegistrys: duplicate_id_warn, duplicate_id_error, duplicate_id_none
 @testset "ID registry" for action in (duplicate_id_warn,duplicate_id_error,duplicate_id_none)
     action = duplicate_id_warn
     @test_opt PnmlIDRegistry()
-    reg = PnmlIDRegistry(; duplicate=action)
+    reg = PnmlIDRegistry()#; duplicate=action)
     @test_opt target_modules=(@__MODULE__,) register_id!(reg, :p)
     reset_registry!(reg)
 
@@ -21,9 +21,9 @@ using .PnmlIDRegistrys: duplicate_id_warn, duplicate_id_error, duplicate_id_none
 end
 
 @testset "test_call"  for action in (duplicate_id_warn,duplicate_id_error,duplicate_id_none)
-    @test_call PnmlIDRegistry(; duplicate=action)
-    @test_opt PnmlIDRegistry(; duplicate=action)
-    reg = PnmlIDRegistry(; duplicate=action)
+    @test_call PnmlIDRegistry() #; duplicate=action)
+    @test_opt PnmlIDRegistry() #; duplicate=action)
+    reg = PnmlIDRegistry() #; duplicate=action)
     @test_call register_id!(reg, :p)
     @test_call register_id!(reg, "p")
     @test_call reset_registry!(reg)
