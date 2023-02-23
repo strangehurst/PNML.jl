@@ -53,13 +53,12 @@ function allchildren(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
 end
 
 
-function check_nodename(n::XMLNode, s)
-    if EzXML.nodename(n) == s
-        return s
-    else
+function check_nodename(n::XMLNode, s::String)
+    if EzXML.nodename(n) != s
         throw(ArgumentError(string("element name wrong, expected ", s,
                                    ", got ", EzXML.nodename(n))))
     end
+    return s
 end
 
 #-------------------------------------------------------------------
