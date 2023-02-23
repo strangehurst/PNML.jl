@@ -19,7 +19,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     default_condition,
     default_term,
     default_one_term,
-    default_zero_term
+    default_zero_term,
+    pnmlnet_type
 
 @testset "pages" begin
     str = """
@@ -89,6 +90,64 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     #@show transition_ids(net)
     #@show refplace_ids(net)
     #@show reftransition_ids(net)
+
+
+    @testset "by pntd" begin
+
+        type_funs = (
+            arc_type,
+            place_type,
+            transition_type,
+            condition_type,
+            condition_value_type,
+            sort_type,
+            inscription_type,
+            inscription_value_type,
+            marking_type,
+            marking_value_type,
+            page_type,
+            refplace_type,
+            reftransition_type,
+            rate_value_type,
+            )
+
+        def_funs = (
+            default_inscription,
+            default_marking,
+            default_sort,
+            default_condition,
+            default_term,
+            default_one_term,
+            default_zero_term,
+            )
+
+            #println()
+            for fun in type_funs
+                #println()
+                for pntd in values(PnmlTypeDefs.pnmltype_map)
+                    #print("$fun($pntd) \t ")
+                    #println(fun(pntd))
+                    @test_opt fun(pntd)
+                    @test_call fun(pntd)
+                end
+                #println()
+            end
+            #println()
+            #println("###############################################")
+            #println()
+            for fun in type_funs
+                #println()
+                for pntd in values(PnmlTypeDefs.pnmltype_map)
+                    pt = typeof(pntd)
+                    #print("$fun($pt) \t ")
+                    #println(fun(pt))
+                    @test_opt fun(pt)
+                    @test_call fun(pt)
+                end
+                #println()
+            end
+            #println()
+    end
 
     @testset "x_types" begin
         @test arc_type(net) isa Type
