@@ -15,7 +15,7 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     @show typeof(PNML.tools(oc))
     @show typeof(PNML.labels(oc))
 
-    @show d = PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
+    d = PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
     oc = @inferred PNML.ObjectCommon(d)
     @show typeof(oc)
     @show typeof(PNML.graphics(oc))

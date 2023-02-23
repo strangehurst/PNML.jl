@@ -20,7 +20,7 @@ end
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
 
-    @show "add label! $(nodename(node))"
+    #@show "add label! $(nodename(node))"
 
     if @load_preference("warn_on_unclaimed", false)
         let tag=nodename(node)
@@ -56,7 +56,7 @@ end
 
 function add_toolinfo!(v::Vector{ToolInfo}, node, pntd, reg)
 
-    @show "add_toolinfo! $(nodename(node))"
+    #@show "add_toolinfo! $(nodename(node))"
 
     ti = parse_toolspecific(node, pntd, reg) # Here is that tag name in use.
     push!(v,ti)
@@ -185,8 +185,8 @@ Note that "labels" are the "everything else" option and this should be called af
 any elements that has an expected tag. Any tag that is in an unexpected location
 should be treated as an anonymous label.
 """
-function parse_pnml_common!(d::PnmlDict, node::XMLNode, pntd, reg)
-    @match nodename(node) begin
+function parse_pnml_common!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+    @match EzXML.nodename(node) begin
         "graphics"     => (d[:graphics] = parse_graphics(node, pntd, reg))
         "toolspecific" => add_toolinfo!(d, node, pntd, reg)
         _ => add_label!(d, node, pntd, reg) # label with a label allows any node to be attached & parsable.
@@ -199,12 +199,14 @@ $(TYPEDSIGNATURES)
 
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
-function parse_pnml_node_common!(d::PnmlDict, node, pntd, reg)
-    @match nodename(node) begin
-        "name" => (d[:name] = parse_name(node, pntd, reg))
-        _ => parse_pnml_common!(d, node, pntd, reg)
+function parse_pnml_node_common!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+    tag = EzXML.nodename(node)
+    if tag == "name"
+        d[:name] = parse_name(node, pntd, reg)
+    else
+        parse_pnml_common!(d, node, pntd, reg)
     end
-    d
+    return d
 end
 
 """
