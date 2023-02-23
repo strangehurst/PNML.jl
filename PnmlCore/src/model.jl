@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Tuple{Vararg{PnmlNet{<:PnmlType}}} #! Yes it is abstract.
+    nets::Tuple{Vararg{PnmlNet}} #! Yes it is abstract.
     namespace::String
     reg::PnmlIDRegistry # Shared by all nets.
     xml::XMLNode #! NOT USED?
@@ -15,10 +15,8 @@ end
 $(TYPEDSIGNATURES)
 """
 
-PnmlModel(net::PnmlNet) = PnmlModel((net,))
-PnmlModel(nets::Vector{PnmlNet{<:PnmlType}}) = PnmlModel(tuple(nets...), pnml_ns, PnmlIDRegistry(), nothing)
-PnmlModel(nets::Tuple{Vararg{PnmlNet{<:PnmlType}}}) = PnmlModel(tuple(nets...), pnml_ns, PnmlIDRegistry(), nothing)
-PnmlModel(nets::Tuple{Vararg{PnmlNet{<:PnmlType}}}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg, nothing)
+PnmlModel(nets::Tuple{Vararg{PnmlNet}}) = PnmlModel(nets, pnml_ns, PnmlIDRegistry(), nothing)
+PnmlModel(nets::Tuple{Vararg{PnmlNet}}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg, nothing)
 
 """
 $(TYPEDSIGNATURES)
@@ -37,8 +35,8 @@ Return nets matching pntd `type` given as string, symbol or pnmltype singleton.
 See [`PnmlTypeDefs.pntd_symbol`](@ref), [`PnmlTypeDefs.pnmltype`](@ref).
 """
 function find_nets end
-find_nets(model, type::AbstractString) = find_nets(model, pntd_symbol(type))
-find_nets(model, type::Symbol) = find_nets(model, pnmltype(type))
+find_nets(model, pntype::AbstractString) = find_nets(model, pntd_symbol(pntype))
+find_nets(model, pntype::Symbol) = find_nets(model, pnmltype(pntype))
 find_nets(model, pntd::PnmlType) = filter(n -> isa(n.type, typeof(pntd)), nets(model))
 #find_nets(model, pntd::PnmlType) = filter(Fix2(isa, typeof(pntd)), nets(model))
 
