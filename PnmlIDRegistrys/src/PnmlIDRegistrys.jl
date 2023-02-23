@@ -13,16 +13,16 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef struct PnmlIDRegistry{F<:Function}
+@kwdef struct PnmlIDRegistry #!{F<:Function}
     ids::Set{Symbol}    = Set{Symbol}()
     #!lk::ReentrantLock   = ReentrantLock()
     lk::Base.Threads.SpinLock   = Base.Threads.SpinLock()
-    duplicate::F = duplicate_id_warn
+    #!#duplicate::F = duplicate_id_warn
 end
 
 function Base.show(io::IO, reg::PnmlIDRegistry)
-    print(io, typeof(reg), " ", length(reg.ids),
-        " ids: ", reg.ids, " duplicate action: ", nameof(reg.duplicate))
+    print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
+    # , " duplicate action: ", nameof(reg.duplicate))
 end
 
 """
@@ -33,18 +33,19 @@ Duplicated pnml id `id` has been detected.
 function duplicate_id_action end
 duplicate_id_warn(id::Symbol)  = @warn( "ID already registered: $id")
 duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
-duplicate_id_none(id::Symbol)  = nothing
+duplicate_id_none(_::Symbol)  = nothing
 
+Base.Enums.@enum DuplicateActions none warn error
 
 """
 $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
+register_id!(reg::PnmlIDRegistry, s::String) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
     @lock reg.lk begin
-        id ∈ reg.ids && reg.duplicate(id)
+        id ∈ reg.ids && @warn( "ID already registered: $id") #reg.duplicate(id) #! is error OK here?
         push!(reg.ids, id)
     end
     return id
