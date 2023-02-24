@@ -76,7 +76,9 @@ function parse_pnml(node::XMLNode, reg::PIDR)
     namespace = if EzXML.hasnamespace(node)
         EzXML.namespace(node)
     else
-        @warn("$nn missing namespace")
+        if @load_preference("warn_on_namespace", true)
+            @warn("$nn missing namespace")
+        end
         pnml_ns # Use default value
     end
 
@@ -84,8 +86,10 @@ function parse_pnml(node::XMLNode, reg::PIDR)
     isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
 
     # Do not yet have a PNTD defined, so call parse_net directly.
-    net_vec = parse_net.(nets, Ref(reg))
-    net_tup = tuple(net_vec...)
+    # When there are multiple net types
+    #net_vec = parse_net.(nets, Ref(reg))
+    net_vec = PnmlNet[parse_net(net, reg, nothing) for net in nets] #! abstract Vector
+    net_tup = tuple(net_vec...)  #! abstract Tuple
     PnmlModel(net_tup, namespace, reg, node)
 end
 
@@ -93,7 +97,7 @@ end
 $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
-function parse_net(node::XMLNode, reg::PIDR, pntd::Maybe{PnmlType}=nothing)::PnmlNet
+function parse_net(node::XMLNode, reg::PIDR, pntd_override::Maybe{PnmlType}=nothing)::PnmlNet
     nn = check_nodename(node, "net")
     haskey(node, "id") || throw(MissingIDException(nn, node))
     haskey(node, "type") || throw(MalformedException("$nn missing type", node))
@@ -106,9 +110,10 @@ function parse_net(node::XMLNode, reg::PIDR, pntd::Maybe{PnmlType}=nothing)::Pnm
     # Although the specification says the petri net type definition (pntd) must be attached
     # to the <net> element, it is allowed by this package to override that value.
     pn_typedef = pnmltype(node["type"])
-    if isnothing(pntd)
+    if isnothing(pntd_override)
         pntd = pn_typedef
     else
+        pntd = pntd_override
         @info "parse_net pntd set to $pntd, overrides $pn_typedef"
     end
 
@@ -117,17 +122,25 @@ function parse_net(node::XMLNode, reg::PIDR, pntd::Maybe{PnmlType}=nothing)::Pnm
     # Optional key values are nothing for single object or empty vector when multiples.
     # Keys that have pural names usually have a vector value.
     # The 'graphics' key is one exception and has a single value.
-    d = pnml_node_defaults(
-        node,
-        :tag => Symbol(nn),
-        :id => register_id!(reg, node["id"]),
-        :pages => page_type(pntd)[],        #Page{typeof(pntd),
-        #                marking_type(pntd),
-        #                inscription_type(pntd),
-        #                condition_type(pntd),
-        #                sort_type(pntd)}[],
-        :declaration => Declaration(),
-    ) #! declaration is High Level
+    d = let pntd=pntd
+        pgtyp = page_type(pntd)   #!not inferrable?
+        @show pgtyp
+        pt2 = Page{typeof(pntd),
+                    marking_type(pntd),
+                    inscription_type(pntd),
+                    condition_type(pntd),
+                    sort_type(pntd)}
+        @show pt2
+        empty_pages = pgtyp[] #! this is OK
+        @show empty_pages
+        pnml_node_defaults(
+            node,
+            :tag => Symbol(nn),
+            :id => register_id!(reg, node["id"]),
+            :pages => empty_pages,
+            :declaration => Declaration(),
+        ) #! declaration is High Level
+    end
     # Go through children looking for expected tags, delegating common tags and labels.
     parse_net_2!(d, node, pntd, reg)
     PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
@@ -137,27 +150,31 @@ end
 function parse_net_2! end
 
 function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
-    for child in elements(node)
-        @match nodename(child) begin
-            "page" => push!(d[:pages], parse_page(child, pntd, reg))
-            # Leave the empty `Declaration` alone.
-            _ => parse_pnml_node_common!(d, child, pntd, reg)
+    for childnode in elements(node)
+        tag = EzXML.nodename(childnode)
+        if tag == "page"
+            push!(d[:pages], parse_page(childnode, pntd, reg))
+        else
+            parse_pnml_node_common!(d, childnode, pntd, reg)
         end
-    end
+        # Leave the empty `Declaration` alone.
+end
 end
 
 function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::AbstractHLCore, reg::PIDR)
-    for child in elements(node)
-        @match nodename(child) begin
-            "page" => push!(d[:pages], parse_page(child, pntd, reg))
-
+    for childnode in elements(node)
+        tag = EzXML.nodename(childnode)
+        if tag == "page"
+            push!(d[:pages], parse_page(childnode, pntd, reg))
+        elseif tag == "declaration"
             # For nets and pages the <declaration> tag is optional.
             # <declaration> ia a High-Level Annotation with a <structure> holding
             # zero or more <declarations>. Is complicated. You have been warned!
             # Expected XML structure:
             #  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
-            "declaration" => (d[:declaration] = parse_declaration(child, pntd, reg))
-            _ => parse_pnml_node_common!(d, child, pntd, reg)
+            d[:declaration] = parse_declaration(childnode, pntd, reg)
+        else
+            parse_pnml_node_common!(d, childnode, pntd, reg)
         end
     end
 end

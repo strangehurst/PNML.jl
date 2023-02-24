@@ -7,6 +7,7 @@ One Petri Net of a PNML model.
 struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
+    #pgs::PageTreeNode{Page{PNTD, M, I, C, S}}
     pages::Vector{Page{PNTD, M, I, C, S}} #! make tree node wrapper?
     declaration::Declaration
     name::Maybe{Name}
@@ -90,7 +91,7 @@ end
 
 # Apply `f` to pages of net/page using `PreOrderDFS`.
 # Return first non-nothing returned by `f`.
-#TODO use a mutator to fill the will-typed output.
+#TODO use a mutator to fill the well-typed output.
 function _find_x(f::F, x::Union{PnmlNet, Page}, id::Symbol) where {F<:Function}
     for pg in PreOrderDFS(x)
         y = getfirst(Fix2(haspid, id), f(pg))

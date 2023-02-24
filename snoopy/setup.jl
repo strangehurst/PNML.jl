@@ -1,5 +1,8 @@
-using PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs, EzXML, JET, AbstractTrees
-using PNML: rate_value_type, default_term, default_one_term, default_zero_term
+using PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs
+using EzXML, JET, AbstractTrees
+using Preferences
+using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
+        parse_net
 using PnmlCore:
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
@@ -41,28 +44,60 @@ using PnmlCore:
     page_type, sort_type
 
 const fname = "test1.pnml"
-@time x = EzXML.root(EzXML.readxml(fname));
-@time r = PnmlIDRegistry();
-@time m = parse_pnml(x, r);
+
+const x = EzXML.root(EzXML.readxml(fname));
+const r = PnmlIDRegistry();
+const m = parse_pnml(x, r);
+
+function parse_top_net(node::XMLNode, i)
+    nn = check_nodename(node, "pnml")
+    reg = PnmlIDRegistry()
+    nets = allchildren("net", node)
+    net_tup = tuple(parse_net(nets[i], reg),)
+    PnmlModel(net_tup, pnml_ns, reg, node)
+end
+
+function timed_parse(node::XMLNode)
+    #! DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
+    #! Does not match original source!!!!
+    reg = PnmlIDRegistry()
+    nn = check_nodename(node, "pnml")
+    nets = allchildren("net", node)
+    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
+    # Do not yet have a PNTD defined, so call parse_net directly.
+    net_vec = parse_net.(nets, Ref(reg))
+    net_tup = tuple(net_vec...)
+    PnmlModel(net_tup, pnml_ns, reg, node)
+end
 
 function pnml_ff(@nospecialize(ft))
     #@show ft
     if ft === typeof(PnmlIDRegistrys.register_id!) ||
-       ft === typeof(PNML.EzXML.nodename) ||
-       false
+        ft === typeof(PNML.PnmlModel) ||
+        ft === typeof(PNML.EzXML.nodename) ||
+        false
         return false
     end
     return true
 end
 
 #=
+
 julia> @report_opt function_filter=pnml_ff EzXML.root(EzXML.readxml(fname))
 julia> @report_opt function_filter=pnml_ff PnmlIDRegistry()
 julia> @report_opt function_filter=pnml_ff parse_pnml(x, r)
 julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_pnml(x, r)
+
+julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_top_net(x,1)
+
+julia> @code_warntype parse_pnml(x, r)
+
 =#
+
 @show pid.(nets(m))
 @show nettype.(nets(m))
+
+@show typeof(nets(m)[1])
 
 # usage: showtree.(nets(m))
 function showtree(n)

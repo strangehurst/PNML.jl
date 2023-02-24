@@ -80,6 +80,7 @@ function showme(net) #TODO iterate on nets
         println()
     end
 
+
     println()
     println("### lookup types by type")
     println()

@@ -1,5 +1,5 @@
-struct PageTreeNode{T<:PnmlType}
-    node::Union{PnmlNet{T},Page{T}} #! Partially specified types.
+struct PageTreeNode{T<:Page}
+    pages::Vector{T}
 end
 
 AbstractTrees.children(p::Union{PnmlNet,Page}) = pages(p)
