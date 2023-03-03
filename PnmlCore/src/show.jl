@@ -329,17 +329,17 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "refPlaces:",      refplaces(page))
     show_page_field(inc_io, "refTransitions:", reftransitions(page))
     show_common(io, page)
-    show_page_field(inc_io, "subpages:",       pages(page))
+    #!show_page_field(inc_io, "subpages:",       pages(page))
 end
 
-function Base.show(io::IO, ::MIME"text/plain", pages::Vector{Page})
-    show(io, pages)
+function Base.show(io::IO, ::MIME"text/plain", pagevec::Vector{Page}) #!dict, iterator
+    show(io, pagevec)
 end
 function Base.show(io::IO, pages::Vector{Page})
-    isempty(pages) && return
-    for (i,page) in enumerate(pages)
+    isempty(pagevec) && return
+    for (i,page) in enumerate(pagevec)
         show(io, MIME"text/plain"(), page)
-        i < length(pages) && print(io, "\n")
+        i < length(pagevec) && println(io)#, "\n")
     end
 end
 

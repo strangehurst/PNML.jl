@@ -22,7 +22,7 @@ function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
 
     #@show "add label! $(nodename(node))"
 
-    if @load_preference("warn_on_unclaimed", false)
+    if CONFIG.warn_on_unclaimed
         let tag=nodename(node)
             #
             if haskey(tagmap, tag) && tag != "structure"
@@ -133,8 +133,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return Dict of tags common to both pnml nodes and pnml labels.
-See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).
+Return PnmlDict of tags common to both pnml nodes and pnml labels.
+See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).x
 """
 function pnml_common_defaults(::XMLNode)
     PnmlDict(:graphics => nothing, # graphics tag is single despite the 's'.

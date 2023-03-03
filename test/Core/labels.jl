@@ -7,21 +7,22 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     value
 
 @testset "ObjectCommon" begin
-    println()
-
+    noisy::Bool = false
     oc = @inferred PNML.ObjectCommon()
-    @show typeof(oc)
-    @show typeof(PNML.graphics(oc))
-    @show typeof(PNML.tools(oc))
-    @show typeof(PNML.labels(oc))
-
+    if noisy
+        @show typeof(oc)
+        @show typeof(PNML.graphics(oc))
+        @show typeof(PNML.tools(oc))
+        @show typeof(PNML.labels(oc))
+    end
     d = PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
     oc = @inferred PNML.ObjectCommon(d)
-    @show typeof(oc)
-    @show typeof(PNML.graphics(oc))
-    @show typeof(PNML.tools(oc))
-    @show typeof(PNML.labels(oc))
-
+    if noisy
+        @show typeof(oc)
+        @show typeof(PNML.graphics(oc))
+        @show typeof(PNML.tools(oc))
+        @show typeof(PNML.labels(oc))
+    end
     println()
 end
 
@@ -58,20 +59,20 @@ end
         ("""<foo id="testid"/>""", [:id => :testid]),
     ]
 
+    noisy::Bool = false
     for (s, funk) in ctrl
-        println()
-        println(s)
+        noisy && print("\n", s, "\n")
         node::XMLNode = xmlroot(s)
         reg1 = PnmlIDRegistry()
         reg2 = PnmlIDRegistry()
 
         u = unclaimed_label(node, PnmlCoreNet(), reg1)
-        @show typeof(u)
-        @show u
+        noisy && @show typeof(u)
+        noisy && noisy && @show u
         l = PnmlLabel(u, node)
-        @show l
+        noisy && @show l
         a = anyelement(node, reg2)
-        @show a
+        noisy && @show a
 
         function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
 

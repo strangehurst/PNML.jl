@@ -10,45 +10,34 @@ with [`deref!`](@ref).
 """
 function flatten_pages! end
 flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
-# foreach(flatten_pages!, nets(model))
 
-"""
-$(TYPEDSIGNATURES)
-
-Collect keys from all pages and move to first page.
-"""
 function flatten_pages!(net::PnmlNet)
-    #! Change to a page tree. Use a depth first traversal to append.
-    # recursivly Place content of subpages of 1st page before sibling page's content.
-    subpages = firstpage(net).subpages
-    if subpages !== nothing
-        foldl(flatten_pages!, subpages; init = firstpage(net))
-        empty!(subpages)
-    end
-    # Sibling pages.
-    if length(pages(net)) > 1
-        foldl(flatten_pages!, pages(net))
-        resize!(net.pages, 1)
-    end
-    deref!(net) # Resolve reference nodes # TODO Hides illegal interpage references?
-    return net
-end
+    if length(net.pagedict) > 1
+        # TODO Check for illegal intra-page references?
+        # Place content of other pages into 1st page.
+        pageids = keys(net.pagedict)
+        @show pageids #! debug
+        @assert first(pageids) == pid(first(values(net.pagedict)))
+        key1,val1 = popfirst!(net.pagedict) # Want the non-mergable bits from the first page.
+        @show key1, pageids #! debug
+        @assert key1 ∉ pageids
 
-"After appending `r` to `l`, recursivly flatten `r` into `l`, then empty `r`."
-function flatten_pages!(l::Page, r::Page)
-    #@show "flatten_pages!($(pid(l)), $(pid(r)))"
-    append_page!(l, r)
-    if r.subpages !== nothing
-        foldl(flatten_pages!, r.subpages; init=l)
+        while !isempty(net.pagedict)
+            _, cutval = popfirst!(net.pagedict)
+            append_page!(val1, cutval)
+        end
+        @assert isempty(net.pagedict)
+        deref!(val1) # Resolve reference nodes
+
+        net.pagedict[key1] = val1 # Put the one-true-page back in the dictionary.
+        @assert !isempty(net.pagedict)
     end
-    r !== nothing && empty!(r)
-    return l
+    return net
 end
 
 """
 Append selected fields of `r` to fields of `l`.
-NB: subpages are omitted from `append_page!` See [`flatten_pages!`](@ref).
-Names and xml are omitted because they are scalar values, not collections.
+Some, like Names and xml, are omitted because they are scalar values, not collections.
 """
 function append_page!(l::Page, r::Page;
                       keys = [:places, :transitions, :arcs,
@@ -98,7 +87,7 @@ end
 $(TYPEDSIGNATURES)
 
 Remove reference nodes from arcs. Expects [`flatten_pages!`](@ref) to have
-been applied so that everything is on one page (default is first page).
+been applied so that everything is on one page (the first page).
 
 # Axioms
   1) All ids in a network are unique in that they only have one instance in the XML.
@@ -106,10 +95,6 @@ been applied so that everything is on one page (default is first page).
   3) All ids are valid.
   4) No cycles.
 """
-function deref! end
-
-deref!(net::PnmlNet, page_idx=1) = deref!(pages(net)[page_idx])
-
 function deref!(page::Page)
     for arc in arcs(page)
         while arc.source ∈ refplace_ids(page)
@@ -122,7 +107,7 @@ function deref!(page::Page)
         end
         while arc.source ∈ reftransition_ids(page)
             s = deref_transition(page, arc.source)
-            @set arc.source = s
+            @set arc.source = s #! Why @set here but not places.
         end
         while arc.target ∈ reftransition_ids(page)
             t = deref_transition(page, arc.target)
@@ -140,21 +125,18 @@ end
 
 Return id of referenced place.
 """
-function deref_place end
-
-deref_place(net::PnmlNet, id::Symbol, page_idx=1) = deref_place(pages(net)[page_idx], id)
 deref_place(p::Page, id::Symbol)::Symbol = begin
     #@show "deref_place page $(pid(p)) $id"
     #@show refplaces(p)
     rp = refplace(p, id)
     #@show rp
     if isnothing(rp) # Something is really, really wrong.
-        @show reftransition_ids(p)
+        error("failed to lookup reference place id $id in page $(pid(p))")
         @show refplace_ids(p)
+        @show reftransition_ids(p)
         @show place_ids(p)
         @show arc_ids(p)
         @show transition_ids(p)
-        error("failed to lookup reference place id $id in page $(pid(p))")
     end
     return rp.ref
 end
@@ -164,27 +146,18 @@ $(TYPEDSIGNATURES)
 
 Return id of referenced transition.
 """
-function deref_transition end
-
-function deref_transition(net::PnmlNet, id::Symbol)
-    deref_transition(net.pages[begin], id)
-end
-function deref_transition(net::PnmlNet, id::Symbol, age_idx)
-    deref_transition(net.pages[page_idx], id)
-end
 function deref_transition(page::Page, id::Symbol)::Symbol
     #@show "deref_transition page $(pid(page)) id $id"
     #@show refplaces(page)
     rt = reftransition(page, id)
     #@show rt
     if isnothing(rt) # Something is really, really wrong.
+        error("failed to lookup reference transition id $id in page $(pid(page))")
         @show refplace_ids(page)
         @show reftransition_ids(page)
         @show place_ids(page)
         @show arc_ids(page)
         @show transition_ids(page)
-        @show reftransition_ids(page)
-        error("failed to lookup reference transition id $id in page $(pid(page))")
     end
     return rt.ref
 end

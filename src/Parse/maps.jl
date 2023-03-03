@@ -6,9 +6,11 @@ Map XML tag names to parser functions.
 $(TYPEDEF)
 """
 const tagmap = Dict{String,Function}(
-    #! <pnml> and <net> should not be found by parse_node. Called directly.
-    # "pnml" => parse_pnml, 
+    # Not called by parse_node. Called directly, perhaps with varying arguments.
+    # --------------------------
+    # "pnml" => parse_pnml,
     # "net" => parse_net,
+    # "page"  => parse_page,
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
@@ -32,7 +34,6 @@ const tagmap = Dict{String,Function}(
     "namedoperator" => parse_namedoperator,
     "not" => parse_not,
     "or" => parse_or,
-    "page"  => parse_page,
     "place"  => parse_place,
     "productsort" => parse_productsort,
     "referencePlace"  => parse_refPlace,
@@ -53,6 +54,8 @@ const tagmap = Dict{String,Function}(
     "variable" => parse_variable,
     "variabledecl" => parse_variabledecl,
 
+    # High-Level Petri Net labels are part of a many-sorted algebra.
+    # ----------------------------
     # "add" => unclaimed_label,
     # "addition" => unclaimed_label,
     # "all" => unclaimed_label,
@@ -149,4 +152,3 @@ const tagmap = Dict{String,Function}(
     # "value" => unclaimed_label,
     # "zeroOrMore" => unclaimed_label,
 )
-

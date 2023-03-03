@@ -103,14 +103,14 @@ end
     pnml_ir = parse_pnml(pnmldoc, reg)
     @test typeof(pnml_ir) <: PnmlModel
 
-    foreach(nets(pnml_ir)) do net
+    for net in nets(pnml_ir)
         @test net isa PnmlNet
         @test pid(net) isa Symbol
 
-        foreach(pages(net)) do page
+        for page in pages(net)
             @test page isa Page
             @test pid(page) isa Symbol
-            foreach(places(page)) do place
+            for place in places(page)
                 @test place isa Place
                 @test pid(place) isa Symbol
             end
@@ -118,17 +118,17 @@ end
                 @test transition isa Transition
                 @test pid(transition) isa Symbol
             end
-            foreach(arcs(page)) do arc
+            for arc in arcs(page)
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
-            foreach(PNML.declarations(page)) do decl
+            for decl in PNML.declarations(page)
                 @test decl isa Declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
-        foreach(PNML.declarations(net)) do decl
+        for decl in PNML.declarations(net)
             @test decl isa Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end
@@ -152,7 +152,7 @@ end
     @test net isa PnmlNet{<:AbstractHLCore}
     @test net isa PnmlNet{<:SymmetricNet}
 
-    @test pages(net) isa Vector{<:Page}
+    @test_broken pages(net) isa Vector{<:Page}
     @test length(pages(net)) == 1
     @test firstpage(net) isa Page
     @test !isempty(arcs(firstpage(net)))
@@ -160,7 +160,7 @@ end
     # 3 ways to do the same thing
     @test !isempty(transitions(firstpage(net)))
     @test !isempty(transitions(first(pages(net))))
-    @test !isempty(transitions(pages(net)[1]))
+    #! @test !isempty(transitions(pages(net)[1]))
 
     #@test_opt function_filter=pnml_function_filter parse_file(testfile)
     @test_call target_modules=target_modules parse_file(testfile)

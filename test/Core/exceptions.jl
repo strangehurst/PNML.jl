@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlnode, parse_net, nets, firstpage
+using OrderedCollections
+using PNML: tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type
 #using .PnmlIDRegistrys
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
@@ -103,7 +104,12 @@ end
 
 @testset "missing id" begin
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", PnmlIDRegistry())
-    @test_throws MissingIDException parse_node(xml"<page></page>", PnmlIDRegistry())
+
+    #parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
+    #                xml"<page></page>", PnmlCoreNet(), PnmlIDRegistry())
+    @test_throws MissingIDException parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
+                    xml"<page></page>", PnmlCoreNet(), PnmlIDRegistry())
+
     @test_throws MissingIDException parse_node(xml"<place></place>", PnmlIDRegistry())
     @test_throws MissingIDException parse_node(xml"<transition></transition>", PnmlIDRegistry())
     @test_throws MissingIDException parse_node(xml"<arc></arc>", PnmlIDRegistry())

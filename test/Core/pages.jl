@@ -75,21 +75,21 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     """
     model = @inferred parse_str(str)
     #@show typeof(model)
-    #@show typeof(nets(model))
+    @show typeof(nets(model))
 
     net = first_net(model) # The nets of a model not inferred.
 
-    # AbstractTrees.print_tree(net);  println()
+    #AbstractTrees.print_tree(net);  println()
 
     @test net isa PnmlNet
     @test typeof(net) <: PnmlNet
     @test typeof(@inferred(firstpage(net))) <: Page
 
-    #@show arc_ids(net)
-    #@show place_ids(net)
-    #@show transition_ids(net)
-    #@show refplace_ids(net)
-    #@show reftransition_ids(net)
+    @show arc_ids(net)
+    @show place_ids(net)
+    @show transition_ids(net)
+    @show refplace_ids(net)
+    @show reftransition_ids(net)
 
 
     @testset "by pntd" begin
@@ -202,11 +202,11 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     exp_refplace_ids      = [:rp1, :rp2]
     exp_reftransition_ids = [:rt2]
 
-    @test @inferred(arc_ids(net) )          == exp_arc_ids
-    @test @inferred(place_ids(net))         == exp_place_ids
-    @test @inferred(transition_ids(net))    == exp_transition_ids
-    @test @inferred(refplace_ids(net))      == exp_refplace_ids
-    @test @inferred(reftransition_ids(net)) == exp_reftransition_ids
+    @test sort(@inferred(arc_ids(net)))          == exp_arc_ids
+    @test sort(@inferred(place_ids(net)))         == exp_place_ids
+    @test sort(@inferred(transition_ids(net)))    == exp_transition_ids
+    @test sort(@inferred(refplace_ids(net)))      == exp_refplace_ids
+    @test sort(@inferred(reftransition_ids(net))) == exp_reftransition_ids
 
     for aid in exp_arc_ids
     end
@@ -271,8 +271,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         expected_rt = [] # removed by flatten
         expected_rp = [] # removed by flatten
 
-        @test arc_ids(net) == expected_a
-        @test arc_ids(firstpage(net)) == expected_a
+        @test sort(arc_ids(net)) == expected_a
+        @test sort(arc_ids(firstpage(net))) == expected_a
         @test arc_ids(net) == arc_ids(firstpage(net))
         @test_call target_modules=target_modules arc_ids(net)
         @test_call arc_ids(firstpage(net))
@@ -281,8 +281,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
             @test a ∈ arc_ids(net)
         end
 
-        @test place_ids(net) == expected_p
-        @test place_ids(firstpage(net)) == expected_p
+        @test sort(place_ids(net)) == expected_p
+        @test sort(place_ids(firstpage(net))) == expected_p
         @test place_ids(net) == place_ids(firstpage(net))
         @test_call target_modules=target_modules place_ids(net)
         @test_call place_ids(firstpage(net))
@@ -291,9 +291,9 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
             @test p ∈ place_ids(net)
         end
 
-        @test transition_ids(net) == expected_t
-        @test transition_ids(firstpage(net)) == expected_t
-        @test transition_ids(net) == transition_ids(firstpage(net))
+        @test sort(transition_ids(net)) == expected_t
+        @test sort(transition_ids(firstpage(net))) == expected_t
+        @test sort(transition_ids(net)) == sort(transition_ids(firstpage(net)))
         @test_call target_modules=target_modules transition_ids(net)
         @test_call transition_ids(firstpage(net))
 
@@ -301,8 +301,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
             @test t ∈ transition_ids(net)
         end
 
-        @test reftransition_ids(net) == expected_rt
-        @test reftransition_ids(firstpage(net)) == expected_rt
+        @test sort(reftransition_ids(net)) == expected_rt
+        @test sort(reftransition_ids(firstpage(net))) == expected_rt
         @test reftransition_ids(net) == reftransition_ids(firstpage(net))
         @test_call target_modules=target_modules reftransition_ids(net)
         @test_call reftransition_ids(firstpage(net))
@@ -311,8 +311,8 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
             @test rt ∈ reftransition_ids(net)
         end
 
-        @test refplace_ids(net) == expected_rp
-        @test refplace_ids(firstpage(net)) == expected_rp
+        @test sort(refplace_ids(net)) == expected_rp
+        @test sort(refplace_ids(firstpage(net))) == expected_rp
         @test refplace_ids(net) == refplace_ids(firstpage(net))
         @test_call target_modules=target_modules refplace_ids(net)
         @test_call refplace_ids(firstpage(net))

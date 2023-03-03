@@ -15,7 +15,8 @@ using PNML: XMLNode, pnmltype, tagmap
                         "namedoperator", "declarations", "declaration"]
         pntd = any(==(t), highleveltags) ? HLCoreNet() : PnmlCoreNet()
 
-        @show t, tagmap[t], pntd
+        # @show t, tagmap[t], pntd
+
         # Parse trivial XML.
         runopt && @test_opt function_filter=pnml_function_filter target_modules=target_modules tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, PnmlIDRegistry() )
         @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, PnmlIDRegistry() )

@@ -14,16 +14,20 @@ struct Page{PNTD<:PnmlType,M,I,C,S} <: AbstractPnmlObject{PNTD}
     refTransitions::Vector{RefTransition{PNTD}}
     arcs::Vector{Arc{PNTD,I}}
     declaration::Declaration
-    subpages::Vector{Page{PNTD,M,I,C,S}} #! make tree node wrapper?
     name::Maybe{Name}
     com::ObjectCommon
+
+    pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}}  #! PAGE TREE
+    pageset::OrderedSet{Symbol} #! #! PAGE TREE NODE tuple if page ids
 end
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
 # Note that declaration wraps a vector of AbstractDeclarations.
 declarations(page::Page) = declarations(page.declaration)
-pages(page::Page) = page.subpages
+
+#! pages(page::Page) = values(page.pagedict) # iterator
+
 places(page::Page) = page.places
 transitions(page::Page) = page.transitions
 arcs(page::Page) = page.arcs
@@ -75,9 +79,9 @@ function Base.empty!(page::Page)
     empty!(page.refTransitions)
     empty!(page.arcs)
     empty!(page.declaration)
-    !isnothing(page.subpages) && empty!(page.subpages)
+    !isnothing(page.pageset) && empty!(page.pageset) #! PAGE
     t = (tools ∘ common)(page)
     !isnothing(t) && empty!(t)
-    l = labels(page.com)
+    l = (labels ∘ common)(page)
     !isnothing(l) && empty!(l)
 end

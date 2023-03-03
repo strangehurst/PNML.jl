@@ -83,7 +83,7 @@ julia> c = default_condition(ContinuousNet())
 Condition(nothing, true, )
 
 julia> c = default_condition(HLCoreNet())
-Condition(nothing, Term(:empty, IdDict{Symbol, Any}(:value => true)), )
+Condition(nothing, Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}(:value => true)), )
 ```
 
 
@@ -95,7 +95,7 @@ julia> i = default_inscription(ContinuousNet())
 Inscription(1.0, )
 
 julia> i = default_inscription(HLCoreNet())
-HLInscription("default", Term(:empty, IdDict{Symbol, Any}(:value => 1)), )
+HLInscription("default", Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}(:value => 1)), )
 
 julia> i()
 1
@@ -116,10 +116,10 @@ julia> m()
 0.0
 
 julia> m = default_marking(HLCoreNet())
-HLMarking(nothing, Term(:empty, IdDict{Symbol, Any}(:value => 0)), )
+HLMarking(nothing, Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}(:value => 0)), )
 
 julia> PnmlDict
-IdDict{Symbol, Any}
+OrderedCollections.OrderedDict{Symbol, Any}
 
 julia> m()
 0

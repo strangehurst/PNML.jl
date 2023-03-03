@@ -4,13 +4,23 @@ function getfirst(f::Function, v)
     isnothing(i) ? nothing : v[i]
 end
 
-
 """
-$(TYPEDSIGNATURES)
-Some objects evaluate a value that may be simple or a functor.
+    _evaluate(x) -> identity(x)
+    _evaluate(x::Base.Callable) -> (x)()
+
+Return the value of "x", defaults to identity.
+
+# Examples
+
+Since High-level PNML schemas are based on Natural numbers and booleans,
+it seems reasonable to assume `Number`, which includes Bool, for the non-callable type.
+A functor is expected as the callable type allowing expressions in the many-sorted algebra
+to be evaluated to a `Number`.
+    _evaluate(value(c))
 """
 function _evaluate end
-_evaluate(x::Any) = x # identity
+_evaluate(x::Number) = identity(x)
+_evaluate(x::Base.Callable) = (x)()
 
 """
 $(TYPEDSIGNATURES)
@@ -20,12 +30,9 @@ ispid(x::Symbol) = Fix2(===, x)
 haspid(x, id::Symbol) = pid(x) === id
 haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
-
-"Indention increment."
-const indent_width = @load_preference("indent_width", 4)
-
 "Return string of current indent size in `io`."
 indent(io::IO) = repeat(' ', get(io, :indent, 0))
 
+#using PNML: CONFIG
 "Increment the `:indent` value by `indent_width`."
-inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + indent_width)
+inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + 4) #! HARDCODED

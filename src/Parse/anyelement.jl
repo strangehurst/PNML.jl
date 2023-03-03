@@ -86,7 +86,6 @@ are multiple instances of a tag in `nodes` and scalar otherwise.
 function _anyelement_content!(dict::PnmlDict, nodes::Vector{XMLNode}, ha!::HarvestAny)::PnmlDict
     namevec = [nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
     tagnames = unique(map(first, namevec))
-    ###dict = PnmlDict()
     for tagname in tagnames
         tags = filter(x -> x.first === tagname, namevec)
         dict[Symbol(tagname)] =

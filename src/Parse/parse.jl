@@ -70,13 +70,13 @@ $(TYPEDSIGNATURES)
 Start parse from the pnml root `node` of a well formed XML document.
 Return a [`PnmlModel`](@ref)..
 """
-function parse_pnml(node::XMLNode, reg::PIDR)
+function parse_pnml(node::XMLNode, idregistry::PIDR)
     nn = check_nodename(node, "pnml")
 
     namespace = if EzXML.hasnamespace(node)
         EzXML.namespace(node)
     else
-        if @load_preference("warn_on_namespace", true)
+        if CONFIG.warn_on_namespace
             @warn("$nn missing namespace")
         end
         pnml_ns # Use default value
@@ -86,24 +86,35 @@ function parse_pnml(node::XMLNode, reg::PIDR)
     isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
 
     # Do not yet have a PNTD defined, so call parse_net directly.
-    # When there are multiple net types
-    #net_vec = parse_net.(nets, Ref(reg))
-    net_vec = PnmlNet[parse_net(net, reg, nothing) for net in nets] #! abstract Vector
+    # When there are multiple net types will be a vector of incomplete generic types
+    net_vec = PnmlNet[parse_net(net, idregistry) for net in nets] #! abstract Vector
     net_tup = tuple(net_vec...)  #! abstract Tuple
-    PnmlModel(net_tup, namespace, reg, node)
+    if CONFIG.verbose
+        println("PnmlModel nets")
+        for n in net_tup
+            print("  ", pid(n), " :: ", typeof(n))
+            println()
+        end
+    end
+    PnmlModel(net_tup, namespace, idregistry, node)
 end
 
 """
 $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
-function parse_net(node::XMLNode, reg::PIDR, pntd_override::Maybe{PnmlType}=nothing)::PnmlNet
+function parse_net(node::XMLNode,
+                    idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)::PnmlNet
     nn = check_nodename(node, "net")
     haskey(node, "id") || throw(MissingIDException(nn, node))
     haskey(node, "type") || throw(MalformedException("$nn missing type", node))
 
-    # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
-    # May result in undefined behavior and/or require ideosyncratic parsing.
+    if CONFIG.verbose
+        println()
+        println("=====")
+        println("""parse_net $(node["id"]) $(node["type"]) $(pntd_override)""")
+    end
+
     isempty(allchildren("page", node)) &&
         throw(MalformedException("$nn does not have any pages", node))
 
@@ -114,7 +125,7 @@ function parse_net(node::XMLNode, reg::PIDR, pntd_override::Maybe{PnmlType}=noth
         pntd = pn_typedef
     else
         pntd = pntd_override
-        @info "parse_net pntd set to $pntd, overrides $pn_typedef"
+        @info "net $(node["id"]) pntd set to $pntd, overrides $pn_typedef" #TODO preference
     end
 
     # Create a PnmlDict with keys for possible child tags.
@@ -122,129 +133,200 @@ function parse_net(node::XMLNode, reg::PIDR, pntd_override::Maybe{PnmlType}=noth
     # Optional key values are nothing for single object or empty vector when multiples.
     # Keys that have pural names usually have a vector value.
     # The 'graphics' key is one exception and has a single value.
-    d = let pntd=pntd
-        pgtyp = page_type(pntd)   #!not inferrable?
-        @show pgtyp
-        pt2 = Page{typeof(pntd),
-                    marking_type(pntd),
-                    inscription_type(pntd),
-                    condition_type(pntd),
-                    sort_type(pntd)}
-        @show pt2
-        empty_pages = pgtyp[] #! this is OK
-        @show empty_pages
+    d = let pntd=pntd, pgdict=OrderedDict{Symbol,page_type(pntd)}(), pgset=OrderedSet{Symbol}()
         pnml_node_defaults(
             node,
             :tag => Symbol(nn),
-            :id => register_id!(reg, node["id"]),
-            :pages => empty_pages,
+            :id => register_id!(idregistry, node["id"]),
+            :pageset => pgset, # Root of the page id tree (pageset is per-tree-node data).
+            :pagedict => pgdict, # All pages
             :declaration => Declaration(),
-        ) #! declaration is High Level
+        )
     end
-    # Go through children looking for expected tags, delegating common tags and labels.
-    parse_net_2!(d, node, pntd, reg)
-    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
+
+    if CONFIG.verbose
+        #println("parse_net $(node["id"]) $pntd")
+    end
+    parse_net_2!(d, node, pntd, idregistry)
+
+    for pgid in d[:pageset]
+        @assert pid(d[:pagedict][pgid]) === pgid
+    end
+    if CONFIG.verbose
+        println("Net ", d[:id], ", ", length(d[:pagedict]), " Pages: ",  keys(d[:pagedict]))
+        print(" page ids:")
+        for pgid in d[:pageset] #TODO print pageset tree HERE
+            print(" ", pgid)
+        end
+        println()
+    end
+
+    net = let pntd=pntd, id=d[:id], pgset=d[:pageset], pgdict=d[:pagedict]
+        PnmlNet(pntd, id, pgdict, pgset, d[:declaration], d[:name], ObjectCommon(d), node)
+    end
+    if CONFIG.verbose
+        println()
+        PnmlCore.pagetree(net)
+        println()
+        AbstractTrees.print_tree(net)
+        println()
+    end
+    return net
 end
 
-"Specialize net parsing on pntd"
+"""
+    parse_net_2!(d, node, pntd, id_registry)
+
+Specialize on `pntd`. Go through children of `node` looking for expected tags,
+delegating common tags and labels.
+"""
 function parse_net_2! end
 
-function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
+function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType}
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
-            push!(d[:pages], parse_page(childnode, pntd, reg))
+            pg = parse_net_page!(d[:pagedict], childnode, pntd, reg)
+            push!(d[:pageset], pid(pg))
         else
             parse_pnml_node_common!(d, childnode, pntd, reg)
         end
         # Leave the empty `Declaration` alone.
-end
+    end
 end
 
-function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::AbstractHLCore, reg::PIDR)
+function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:AbstractHLCore}
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
-            push!(d[:pages], parse_page(childnode, pntd, reg))
+            pg = parse_net_page!(d[:pagedict], childnode, pntd, reg)
+            push!(d[:pageset], pid(pg))
         elseif tag == "declaration"
             # For nets and pages the <declaration> tag is optional.
             # <declaration> ia a High-Level Annotation with a <structure> holding
             # zero or more <declarations>. Is complicated. You have been warned!
-            # Expected XML structure:
-            #  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
+            # Expect
+             #  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
             d[:declaration] = parse_declaration(childnode, pntd, reg)
         else
             parse_pnml_node_common!(d, childnode, pntd, reg)
         end
     end
+    return nothing
+end
+
+
+function parse_net_page!(pdict, node, pntd, reg)
+    pg = parse_page!(pdict, node, pntd, reg) #! pass pagedict
+    pageid = pid(pg)
+    pdict[pageid] = pg #! PAGE: add to dictonary AND page id set XXX FIXME
+    if CONFIG.verbose
+        println("parse_net_page! $pntd $pageid")
+    end
+    return pg
 end
 
 """
-$(TYPEDSIGNATURES)
-PNML requires at least one page.
+    parse_page([pagedict,] node, pntd, id_registry)
+
+Place `Page` in `pagedict` using id as the key.
 """
+function parse_page end
+
+# Legacy adapter (also for tagmap)
 function parse_page(node, pntd::PnmlType, reg::PIDR)
+    error("Legacy adapter should not be used, use parse_page!")
+    let pagedict = OrderedDict{Symbol,page_type(pntd)}()
+        parse_page!(pagedict, node, pntd, reg)
+    end
+end
+
+function parse_page!(dict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType, P<:Page{T}}
     nn = check_nodename(node, "page")
-    #@show "parse_page $nn $pntd"
     haskey(node, "id") || throw(MissingIDException(nn, node))
+    if CONFIG.verbose
+        println("parse_page! $nn $pntd $(node["id"])")
+    end
 
-    d = pnml_node_defaults(
-        node,
-        :tag => Symbol(nn),
-        :id => register_id!(reg, node["id"]),
+    d = let pgset=OrderedSet{Symbol}()
+        pnml_node_defaults(
+            node,
+            :tag => Symbol(nn),
+            :id => register_id!(reg, node["id"]),
 
-        # Rather than use an abstract type here, assume we have a consistent model where
-        # all places, transitions and arcs are parsed into type-stable, compatible objects.
-        # The PNTD is used to deduce the expected types.
-        :places => place_type(pntd)[], #!Place{typeof(pntd), marking_type(pntd), sort_type(pntd)}[],
-        :trans => transition_type(pntd)[], #!Transition{typeof(pntd), condition_type(pntd)}[],
-        :arcs => arc_type(pntd)[], #!Arc{typeof(pntd), inscription_type(pntd)}[],
-        :refP => refplace_type(pntd)[], #!RefPlace{typeof(pntd)}[],
-        :refT => reftransition_type(pntd)[], #!RefTransition{typeof(pntd)}[],
-        :declaration => Declaration(), #! HL
-        :pages => page_type(pntd)[],
-        #Page{typeof(pntd),
-        #               marking_type(pntd),
-        #               inscription_type(pntd),
-        #               condition_type(pntd),
-        #               sort_type(pntd)}[],
-    )
+            :places => place_type(pntd)[],
+            :trans => transition_type(pntd)[],
+            :arcs => arc_type(pntd)[],
+            :refP => refplace_type(pntd)[],
+            :refT => reftransition_type(pntd)[],
+            :declaration => Declaration(), #! HL
+
+            :pageset => pgset,
+            :pagedict => dict, #! PAGE: propagate dictionary
+        )
+    end
+
     parse_page_2!(d, node, pntd, reg)
 
-    Page(
-        pntd,
-        d[:id],
-        d[:places],
-        d[:refP],
-        d[:trans],
-        d[:refT],
-        d[:arcs],
-        d[:declaration],
-        d[:pages],
-        d[:name],
-        ObjectCommon(d),
-    )
-end
+    if CONFIG.verbose
+        println("Page ", d[:id], " add to ",  keys(d[:pagedict]))
+        print(" subpage ids:")
+        for pgid in d[:pageset]
+            print(" ", pgid)
+        end
+        println()
+    end
 
+    let pntd=pntd, pgdict=d[:pagedict], pgset=d[:pageset]
+        Page(
+            pntd,
+            d[:id],
+            d[:places],
+            d[:refP],
+            d[:trans],
+            d[:refT],
+            d[:arcs],
+            d[:declaration],
+            d[:name],
+            ObjectCommon(d),
+            pgdict,
+            pgset, #! Make into Set (not vector or tuple) of page ids
+        )
+    end
+end
 
 function parse_page_2! end
 
-function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
+function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType}
     for child in elements(node)
-        #!@show "parse_page_2! $pntd $(nodename(child))"
+        if CONFIG.verbose
+            println("""parse_page_2! $(nodename(child)) $(child["id"])""")
+        end
+
         @match nodename(child) begin
             "place" => push!(d[:places], parse_place(child, pntd, reg))
             "transition" => push!(d[:trans], parse_transition(child, pntd, reg))
             "arc" => push!(d[:arcs], parse_arc(child, pntd, reg))
             "referencePlace" => push!(d[:refP], parse_refPlace(child, pntd, reg))
-            "referenceTransition" =>
-                push!(d[:refT], parse_refTransition(child, pntd, reg))
-            "page" => push!(d[:pages], parse_page(child, pntd, reg))
+            "referenceTransition" => push!(d[:refT], parse_refTransition(child, pntd, reg))
+            "page" => parse_subpage!(d, child, pntd, reg)
             _ => parse_pnml_node_common!(d, child, pntd, reg)
         end
     end
     return d
 end
+
+function parse_subpage!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
+    pdict = d[:pagedict]
+    let pg = parse_page!(pdict, node, pntd, reg), pageid = pid(pg)
+        pdict[pageid] = pg #! PAGE: add to dictonary and set
+        push!(d[:pageset], pageid)
+
+        if CONFIG.verbose
+            println("parse_subpage! $pntd $pageid")
+        end
+    end
+ end
 
 """
 $(TYPEDSIGNATURES)
@@ -443,7 +525,7 @@ function parse_name(node::XMLNode, pntd::PnmlType, reg::PIDR)
     # Attempt to harvest content of <name> element instead of the child <text> element.
     if !isnothing(textnode)
         text = string(strip(nodecontent(textnode)))
-    elseif @load_preference("text_element_optional", true)
+    elseif CONFIG.text_element_optional
         @warn "$nn missing <text> element"
         text = string(strip(nodecontent(node)))
     else
@@ -529,7 +611,7 @@ function parse_inscription(node, pntd::PnmlType, reg::PIDR)
     end
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(d[:value])
-        if @load_preference("warn_on_fixup", false)
+        if CONFIG.warn_on_fixup
             @warn("missing or unparsable <inscription> value")
         end
         d[:value] = default_inscription(pntd)()

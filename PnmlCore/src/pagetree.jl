@@ -2,9 +2,9 @@ struct PageTreeNode{T<:Page}
     pages::Vector{T}
 end
 
-AbstractTrees.children(p::Union{PnmlNet,Page}) = pages(p)
+AbstractTrees.children(p::Union{PnmlNet,Page}) = get.(Ref(p.pagedict), p.pageset, nothing)
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
-AbstractTrees.printnode(io::IO, p::Page) = print(io, pid(p), "::", typeof(p),
+AbstractTrees.printnode(io::IO, p::Page) = print(io, pid(p), #"::", typeof(p),
             " ", arc_ids(p),
             " ", place_ids(p), " ",
             " ", transition_ids(p),

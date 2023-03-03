@@ -3,7 +3,7 @@ using EzXML, JET, AbstractTrees
 using Preferences
 using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
         parse_net
-using PnmlCore:
+using PnmlCore: CONFIG,
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
     Annotation, AnyElement, Arc, Condition,
@@ -16,7 +16,7 @@ using PnmlCore:
     AbstractPnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode,
-    PnmlCore, _evaluate, _reduce,
+    PnmlCore, _evaluate,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
     check_nodename, common, condition, conditions, currentMarkings,
     condition_type, condition_value_type,
@@ -27,7 +27,7 @@ using PnmlCore:
     has_arc, has_graphics, has_label, has_labels, has_name, has_place,
     has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
     hastag, haspid,
-    ispid, idregistry, inc_indent, indent, indent_width, infos,
+    ispid, idregistry, inc_indent, indent, infos,
     initialMarking, marking, marking_type, marking_value_type,
     inscription, inscription_type, inscription_value_type,
     isregistered_id, labels,

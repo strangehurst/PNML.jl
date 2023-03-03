@@ -20,6 +20,7 @@ using Reexport
 using Preferences
 using Accessors
 using Base: Fix1, Fix2
+using OrderedCollections
 
 @reexport using PnmlTypeDefs
 @reexport using PnmlIDRegistrys

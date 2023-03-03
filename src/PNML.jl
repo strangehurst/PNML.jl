@@ -9,6 +9,41 @@ $(DocStringExtensions.EXPORTS)
 """
 module PNML
 
+
+Base.@kwdef mutable struct PnmlConfig
+    indent_width::Int = 4
+    warn_on_namespace::Bool = true
+    text_element_optional::Bool = true
+    warn_on_fixup::Bool = false
+    warn_on_unclaimed::Bool = false
+    verbose::Bool = false
+end
+
+"""
+    PNML.CONFIG
+
+# Options
+- `indent_width::Int`: Indention of nested lines. Defaults to `$(PnmlConfig().indent_width)`.
+- `warn_on_namespace::Bool`: There are pnml files that break the rules &
+do not have an xml namespace. Initial state of toggle defaults to `true`.
+- `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
+Initial state of warning toggle defaults to `true`.
+- `warn_on_fixup::Bool`: When an missing value is replaced by a default value,
+issue a warning. Initial state of "warn_on_fixup" toggle defaults to `false`.
+- `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined.
+While allowed, there will be code required to do anything useful with the label.
+Initial state of "warn" toggle defaults to `false`.
+- `verbose::Bool`: Print information as runs.  Initial state of "verbose" toggle.
+Defaults to `false`.
+"""
+const CONFIG = PnmlConfig()
+
+using Preferences
+include("preferences.jl")
+__init__() = read_config!(CONFIG)
+
+
+
 # Width for printing.
 if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
@@ -23,9 +58,9 @@ import PrettyPrinting: quoteof
 using AbstractTrees
 using LabelledArrays
 using Reexport
-using Preferences
 using FunctionWrappers
 import FunctionWrappers: FunctionWrapper
+import OrderedCollections: OrderedDict, OrderedSet
 
 using Base: Fix1, Fix2, @kwdef
 
@@ -46,8 +81,8 @@ using PnmlCore:
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode
 
-import PnmlCore:
-    PnmlCore, _evaluate, _reduce,
+import PnmlCore: CONFIG,
+    PnmlCore, _evaluate,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
     check_nodename, common, condition, conditions, currentMarkings,
     condition_type, condition_value_type,
@@ -58,7 +93,7 @@ import PnmlCore:
     has_arc, has_graphics, has_label, has_labels, has_name, has_place,
     has_refP, has_refT, has_structure, has_text, has_tools, has_transition, has_xml,
     hastag, haspid,
-    ispid, idregistry, inc_indent, indent, indent_width, infos,
+    ispid, idregistry, inc_indent, indent, infos,
     initialMarking, marking, marking_type, marking_value_type,
     inscription, inscription_type, inscription_value_type,
     isregistered_id, labels,

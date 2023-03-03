@@ -104,16 +104,7 @@ testlogger = TestLogger()
         #@show typeof(top)
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
-        #=
-        for x in AbstractTrees.PreOrderDFS(top)
-            println(pid(x), " ", length(pages(x)))
-            println(place_ids(x), " ",
-                    transition_ids(x), " ",
-                    arc_ids(x), " ",
-                    refplace_ids(x), " ",
-                    reftransition_ids(x))
-        end
-        =#
+
         for p in places(top)
             #@show "place $(pid(p))"
 
