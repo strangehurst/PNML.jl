@@ -87,11 +87,9 @@ name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 
 # Return first non-nothing returned by `f`.
 #TODO use a mutator to fill the well-typed output.
-function _find_x(f::F, net::PnmlNet, id::Symbol) where {F<:Function}
-    for pg in pages(net)
-        y = getfirst(Fix2(haspid, id), f(pg))
-        !isnothing(y) && return y
-    end
+function _find_x(id::Symbol, itr)
+    y = getfirst(Fix2(haspid, id), itr)
+    !isnothing(y) && return y
     # Assume exists (that is what has_x is for).
     # By excluding `nothing` maybe it will be type stable.
     error("$f returned nothing for $id on pid $(pid(x)) $(typeof(x))")
@@ -103,7 +101,7 @@ arcs(net::PnmlNet)           = mapreduce(arcs, vcat, pages(net);        init = a
 refplaces(net::PnmlNet)      = mapreduce(refplaces, vcat, pages(net);   init = refplace_type(net.type)[])::Vector{refplace_type(net)}
 reftransitions(net::PnmlNet) = mapreduce(reftransitions, vcat, pages(net); init = reftransition_type(net.type)[])::Vector{reftransition_type(net)}
 
-place(net::PnmlNet, id::Symbol)         = _find_x(places, net, id) # Note the plural.
+place(net::PnmlNet, id::Symbol)         = _find_x(id, places(net)) # Note the plural.
 place_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(place_ids, vcat, pages(net); init = Vector{Symbol}[])
 has_place(net::PnmlNet, id::Symbol)     = any(Fix2(has_place, id), pages(net))
 
@@ -117,7 +115,7 @@ currentMarkings(net::PnmlNet) = begin
     m1 = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
     return m1
 end
-transition(net::PnmlNet, id::Symbol)         = _find_x(transitions, net, id)
+transition(net::PnmlNet, id::Symbol)         = _find_x(id, transitions(net))
 transition_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(transition_ids, vcat, pages(net); init = Vector{Symbol}[])
 has_transition(net::PnmlNet, id::Symbol)     = any(Fix2(has_transition, id), pages(net))
 
@@ -125,30 +123,24 @@ condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 conditions(net::PnmlNet) =
     LVector{condition_value_type(net)}((;[t => condition(net, t) for t in transition_ids(net)]...))
 
-arc(net::PnmlNet, id::Symbol)         = _find_x(arcs, net, id)
-#!arc_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(arc_ids, vcat, pages(net); init = Vector{Symbol}[])
-arc_ids(net::PnmlNet)::Vector{Symbol} = begin
-    for pg in pages(net)
-        print("arc_ids(", pid(pg), ") = ", arc_ids(pg), "\n")
-    end
-    mapreduce(arc_ids, vcat, pages(net); init = Vector{Symbol}[])
-end
+arc(net::PnmlNet, id::Symbol)         = _find_x(id, arcs(net))
+arc_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(arc_ids, vcat, pages(net); init = Vector{Symbol}[])
 has_arc(net::PnmlNet, id::Symbol)     = any(Fix2(has_arc, id), pages(net))
 
 all_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(all_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
 src_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(src_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
 tgt_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(tgt_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
 
-inscription(net::PnmlNet, arc_id::Symbol) = _find_x(inscriptions, net, arc_id)
+inscription(net::PnmlNet, arc_id::Symbol) = _find_x(arc_id, inscriptions(net))
 inscriptionV(net::PnmlNet) = Vector((;[t=>inscription(net, t)() for t in transition_ids(net)]...))
 
 #! refplace and reftransition should only be used to derefrence, flatten pages.
 #TODO Add dereferenceing for place, transition, arc traversal.
-refplace(net::PnmlNet, id::Symbol)         = _find_x(refplace, net, id)
+refplace(net::PnmlNet, id::Symbol)         = _find_x(id, refplace(net))
 refplace_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(refplace_ids, vcat, pages(net))
 has_refP(net::PnmlNet, ref_id::Symbol)     = any(Fix2(has_refP, ref_id), pages(net))
 
-reftransition(net::PnmlNet, id::Symbol)         = _find_x(reftransition, net, id)
+reftransition(net::PnmlNet, id::Symbol)         = _find_x(id, reftransition(net))
 reftransition_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(reftransition_ids, vcat, pages(net); init = Vector{Symbol}[])
 has_refT(net::PnmlNet, ref_id::Symbol)          = any(Fix2(has_refP, ref_id), pages(net))
 
