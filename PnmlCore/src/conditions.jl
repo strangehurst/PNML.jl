@@ -26,10 +26,10 @@ julia> c()
 false
 ```
 """
-struct Condition{PNTD,T} <: Annotation
+mutable struct Condition{PNTD,T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
-    term::T #! Rename to value? Must be mutable!
+    value::T #! Must be mutable!  XXX
     com::ObjectCommon
 
     function Condition(pntd, t, v, c)
@@ -40,9 +40,9 @@ end
 
 Condition(pntd) = Condition(pntd, nothing, true, ObjectCommon())
 Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
-Condition(pntd, text, value) = Condition(pntd, text, value, ObjectCommon())
+Condition(pntd, text::String, value) = Condition(pntd, text, value, ObjectCommon())
 
-value(c::Condition) = c.term
+value(c::Condition) = c.value
 common(c::Condition) = c.com
 
 """
