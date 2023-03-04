@@ -3,17 +3,16 @@ cd(@__DIR__)
 Pkg.activate(".")
 # The `dev` the various packages in the monorepo.
 Pkg.develop(path="..")
-Pkg.develop(path="../PnmlTypeDefs")
-Pkg.develop(path="../PnmlIDRegistrys")
 Pkg.develop(path="../PnmlCore")
 Pkg.instantiate()
 Pkg.precompile()
 
-using PNML, PnmlTypeDefs, PnmlIDRegistrys, PnmlCore
+using PNML, PnmlCore
 #using PrettyPrinting
 using Documenter
 
-using PnmlTypeDefs: PnmlType,
+using PNML:
+    PnmlType,
     StochasticNet,
     SymmetricNet,
     TimedNet,
@@ -63,8 +62,6 @@ using PnmlTypeDefs: PnmlType,
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 DocMeta.setdocmeta!(PnmlCore, :DocTestSetup, :(using PnmlCore); recursive=true)
-DocMeta.setdocmeta!(PnmlTypeDefs, :DocTestSetup, :(using PnmlTypeDefs); recursive=true)
-DocMeta.setdocmeta!(PnmlIDRegistrys, :DocTestSetup, :(using PnmlIDRegistrys); recursive=true)
 
 # for m ∈ [PNML]
 #     for i ∈ propertynames(m)
@@ -78,7 +75,7 @@ DocMeta.setdocmeta!(PnmlIDRegistrys, :DocTestSetup, :(using PnmlIDRegistrys); re
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML, PnmlTypeDefs, PnmlIDRegistrys, PnmlCore],
+         modules=[PNML, PnmlCore],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          repo="/home/jeff/PNML/{path}",

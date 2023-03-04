@@ -1,7 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using OrderedCollections
 using PNML: tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type
-#using .PnmlIDRegistrys
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)

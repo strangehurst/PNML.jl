@@ -1,3 +1,3 @@
 # JET configuration for PNML
 #ignored_modules=(Base.CoreLogging,)
-target_modules = (PNML,) #,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,)
+target_modules = (PNML,)

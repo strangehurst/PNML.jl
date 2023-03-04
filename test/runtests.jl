@@ -28,7 +28,7 @@ end
 
 # Check for ambiguous methods.
 @time "ambiguous" begin
-    ambiguous = detect_ambiguities(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+    ambiguous = detect_ambiguities(PNML; recursive=true)
     for amb in ambiguous
         @show amb
     end
@@ -36,7 +36,7 @@ end
 end
 # Check for unbound type parameters.
 @time "unbound" begin
-    unbound = detect_unbound_args(PNML, PnmlTypeDefs, PnmlIDRegistrys; recursive=true)
+    unbound = detect_unbound_args(PNML; recursive=true)
     for unb in unbound
         @show unb
     end

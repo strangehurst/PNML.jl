@@ -12,7 +12,7 @@ using PNML: Maybe,
 using Base: Fix1, Fix2
 
 "For JET"
-const target_modules = (PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs,)
+const target_modules = (PNML, PnmlCore,)
 
 str = """
 <?xml version="1.0"?>

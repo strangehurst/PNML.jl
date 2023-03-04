@@ -1,5 +1,5 @@
 module TestUtils
-using PNML, .PnmlCore, .PnmlIDRegistrys, .PnmlTypeDefs
+using PNML, .PnmlCore
 using EzXML, Preferences
 
 const PRINT_PNML = parse(Bool, get(ENV, "PRINT_PNML", "true"))
@@ -15,7 +15,7 @@ end
 
 runopt::Bool = false
 
-const target_modules = (PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs,)
+const target_modules = (PNML, PnmlCore)
 
 # ignore some dynamically-designed functions
 function pnml_function_filter(@nospecialize(ft))

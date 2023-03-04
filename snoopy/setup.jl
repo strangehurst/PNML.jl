@@ -1,4 +1,4 @@
-using PNML, PnmlCore, PnmlIDRegistrys, PnmlTypeDefs
+using PNML, PnmlCore
 using EzXML, JET, AbstractTrees
 using Preferences
 using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
@@ -13,7 +13,7 @@ using PnmlCore:
     MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
     OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
     PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,    AbstractPnmlNode,
-    AbstractPnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
+    AbstractPnmlObject, PnmlType, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode,
     PnmlCore, _evaluate,

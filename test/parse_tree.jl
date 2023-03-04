@@ -3,7 +3,6 @@ using PNML: Maybe, tag, pid, xmlnode, firstpage, parse_file, parse_name,
      PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
      nets, pages, arcs, places, transitions,
      allchildren, firstchild, value
-using .PnmlIDRegistrys
 
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->

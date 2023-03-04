@@ -5,8 +5,6 @@
     pid(x) -> Symbol
 
 Return pnml id symbol.
-
-See module [`PnmlIDRegistrys`](@ref).
 """
 function pid end
 

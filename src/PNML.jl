@@ -77,7 +77,7 @@ using PnmlCore:
     OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
     PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,
     AbstractPnmlNode,
-    AbstractPnmlObject, PnmlType, PnmlTypeDefs, RefPlace, RefTransition, ReferenceNode,
+    AbstractPnmlObject, PnmlType, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode
 

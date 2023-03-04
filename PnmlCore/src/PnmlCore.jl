@@ -22,8 +22,10 @@ using Accessors
 using Base: Fix1, Fix2
 using OrderedCollections
 
-@reexport using PnmlTypeDefs
-@reexport using PnmlIDRegistrys
+include("PnmlTypeDefs.jl")
+@reexport using .PnmlTypeDefs
+include("PnmlIDRegistrys.jl")
+@reexport using .PnmlIDRegistrys
 
 include("xmlutils.jl")
 include("exceptions.jl")

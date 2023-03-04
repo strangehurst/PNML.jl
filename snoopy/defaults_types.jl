@@ -1,6 +1,7 @@
 #=
-using PNML, PnmlTypeDefs, EzXML, JET, AbstractTrees, PrettyTables
-using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
+using PNML, EzXML, JET, AbstractTrees, PrettyTables
+using PNML:
+    Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     PnmlNet, Page, pages, pid,
     arc, arcs, place, places, transition, transitions,
     refplace, refplaces, reftransition, reftransitions,
@@ -23,6 +24,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     default_zero_term
 =#
 using Printf
+
 function showme(net) #TODO iterate on nets
 
     type_funs = (

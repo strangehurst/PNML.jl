@@ -183,8 +183,7 @@ function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
-            pg = parse_net_page!(d[:pagedict], childnode, pntd, reg)
-            push!(d[:pageset], pid(pg))
+            parse_net_page!(d, childnode, pntd, reg)
         else
             parse_pnml_node_common!(d, childnode, pntd, reg)
         end

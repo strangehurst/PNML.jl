@@ -1,4 +1,4 @@
-using PNML, .PnmlTypeDefs, EzXML, ..TestUtils, JET, AbstractTrees
+using PNML, EzXML, ..TestUtils, JET, AbstractTrees
 using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     PnmlNet, Page, pages, pid,
     arc, arcs, place, places, transition, transitions,

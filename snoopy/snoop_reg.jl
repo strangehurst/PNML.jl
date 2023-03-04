@@ -2,7 +2,7 @@
 using SnoopCompileCore
 
 invalidations = @snoopr begin
-    using PnmlIDRegistrys
+    #!using PnmlIDRegistrys
 
     tinf = @snoopi_deep begin
         reg = PnmlIDRegistry()
