@@ -3,7 +3,7 @@ using EzXML, JET, AbstractTrees
 using Preferences
 using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
         parse_net
-using PnmlCore: CONFIG,
+using PnmlCore:
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
     Annotation, AnyElement, Arc, Condition,

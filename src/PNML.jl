@@ -141,7 +141,7 @@ include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 
 
-export @xml_str,
+export @xml_str, CONFIG,
     xmlroot,
     PnmlDict,
     parse_str,
