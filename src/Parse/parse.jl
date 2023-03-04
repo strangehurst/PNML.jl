@@ -87,13 +87,16 @@ function parse_pnml(node::XMLNode, idregistry::PIDR)
 
     # Do not yet have a PNTD defined, so call parse_net directly.
     # When there are multiple net types will be a vector of incomplete generic types
-    net_vec = PnmlNet[parse_net(net, idregistry) for net in nets] #! abstract Vector
-    net_tup = tuple(net_vec...)  #! abstract Tuple
+    #    net_vec = PnmlNet[parse_net(net, idregistry) for net in nets] #! abstract Vector
+    net_tup = tuple([parse_net(net, idregistry) for net in nets]...)
+
     if CONFIG.verbose
         println("PnmlModel nets")
         for n in net_tup
-            print("  ", pid(n), " :: ", typeof(n))
-            println()
+            let n=n
+                print("  ", pid(n), " :: ", typeof(n))
+                println()
+            end
         end
     end
     PnmlModel(net_tup, namespace, idregistry, node)
@@ -104,7 +107,7 @@ $(TYPEDSIGNATURES)
 Return a dictonary of the pnml net with keys matching their XML tag names.
 """
 function parse_net(node::XMLNode,
-                    idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)::PnmlNet
+                   idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
     haskey(node, "id") || throw(MissingIDException(nn, node))
     haskey(node, "type") || throw(MalformedException("$nn missing type", node))
@@ -116,10 +119,11 @@ function parse_net(node::XMLNode,
     end
 
     isempty(allchildren("page", node)) &&
-        throw(MalformedException("$nn does not have any pages", node))
+        throw(MalformedException("$nn $(node["id"]) does not have any pages", node))
 
     # Although the specification says the petri net type definition (pntd) must be attached
     # to the <net> element, it is allowed by this package to override that value.
+
     pn_typedef = pnmltype(node["type"])
     if isnothing(pntd_override)
         pntd = pn_typedef
@@ -133,8 +137,8 @@ function parse_net(node::XMLNode,
     # Optional key values are nothing for single object or empty vector when multiples.
     # Keys that have pural names usually have a vector value.
     # The 'graphics' key is one exception and has a single value.
-    d = let pntd=pntd, pgdict=OrderedDict{Symbol,page_type(pntd)}(), pgset=OrderedSet{Symbol}()
-        pnml_node_defaults(
+    d = let pntd=pntd, pgtype=page_type(pntd), pgdict=OrderedDict{Symbol, pgtype}(), pgset=OrderedSet{Symbol}()
+        dict = pnml_node_defaults(
             node,
             :tag => Symbol(nn),
             :id => register_id!(idregistry, node["id"]),
@@ -142,29 +146,22 @@ function parse_net(node::XMLNode,
             :pagedict => pgdict, # All pages
             :declaration => Declaration(),
         )
-    end
-
-    if CONFIG.verbose
-        #println("parse_net $(node["id"]) $pntd")
-    end
-    parse_net_2!(d, node, pntd, idregistry)
-
-    for pgid in d[:pageset]
-        @assert pid(d[:pagedict][pgid]) === pgid
-    end
-    if CONFIG.verbose
-        println("Net ", d[:id], ", ", length(d[:pagedict]), " Pages: ",  keys(d[:pagedict]))
-        print(" page ids:")
-        for pgid in d[:pageset] #TODO print pageset tree HERE
-            print(" ", pgid)
-        end
-        println()
+        parse_net_2!(dict, node, pntd, idregistry)
+        dict
     end
 
     net = let pntd=pntd, id=d[:id], pgset=d[:pageset], pgdict=d[:pagedict]
         PnmlNet(pntd, id, pgdict, pgset, d[:declaration], d[:name], ObjectCommon(d), node)
     end
+
     if CONFIG.verbose
+        println()
+        println("Net ", d[:id], ", ", length(d[:pagedict]), " Pages: ",  keys(d[:pagedict]))
+        print(" page ids:")
+        for pgid in d[:pageset]
+            print(" ", pgid)
+            @assert pid(d[:pagedict][pgid]) == pgid
+        end
         println()
         PnmlCore.pagetree(net)
         println()
@@ -193,14 +190,14 @@ function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:
         end
         # Leave the empty `Declaration` alone.
     end
+    return nothing
 end
 
 function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:AbstractHLCore}
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
-            pg = parse_net_page!(d[:pagedict], childnode, pntd, reg)
-            push!(d[:pageset], pid(pg))
+            parse_net_page!(d, childnode, pntd, reg)
         elseif tag == "declaration"
             # For nets and pages the <declaration> tag is optional.
             # <declaration> ia a High-Level Annotation with a <structure> holding
@@ -215,23 +212,26 @@ function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:
     return nothing
 end
 
-
-function parse_net_page!(pdict, node, pntd, reg)
-    pg = parse_page!(pdict, node, pntd, reg) #! pass pagedict
-    pageid = pid(pg)
-    pdict[pageid] = pg #! PAGE: add to dictonary AND page id set XXX FIXME
-    if CONFIG.verbose
-        println("parse_net_page! $pntd $pageid")
+#See also parse_subpage.
+function parse_net_page!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
+    pgdict = d[:pagedict]
+    let pg = parse_page!(pgdict, node, pntd, reg) #! Pass pagedict to pages.
+        pageid = pid(pg)
+        pgdict[pageid] = pg #! PAGE: add to dictonary AND page id set
+        push!(d[:pageset], pageid)
+        if CONFIG.verbose
+            println("parse_net_page! $pntd $pageid")
+        end
     end
-    return pg
+    return nothing
 end
 
 """
-    parse_page([pagedict,] node, pntd, id_registry)
+    parse_page!(pagedict, node, pntd, id_registry)
 
 Place `Page` in `pagedict` using id as the key.
 """
-function parse_page end
+function parse_page! end
 
 # Legacy adapter (also for tagmap)
 function parse_page(node, pntd::PnmlType, reg::PIDR)
@@ -241,7 +241,7 @@ function parse_page(node, pntd::PnmlType, reg::PIDR)
     end
 end
 
-function parse_page!(dict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType, P<:Page{T}}
+function parse_page!(pgdict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType, P<:Page{T}}
     nn = check_nodename(node, "page")
     haskey(node, "id") || throw(MissingIDException(nn, node))
     if CONFIG.verbose
@@ -262,7 +262,7 @@ function parse_page!(dict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg::P
             :declaration => Declaration(), #! HL
 
             :pageset => pgset,
-            :pagedict => dict, #! PAGE: propagate dictionary
+            :pagedict => pgdict, #! PAGE: propagate dictionary
         )
     end
 
@@ -289,8 +289,8 @@ function parse_page!(dict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg::P
             d[:declaration],
             d[:name],
             ObjectCommon(d),
-            pgdict,
-            pgset, #! Make into Set (not vector or tuple) of page ids
+            pgdict, # Dictionary of pages shared by net and all pages.
+            pgset, # Set of page ids of subpages of this page.
         )
     end
 end
@@ -316,16 +316,18 @@ function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<
     return d
 end
 
+# See also parse_net_page
 function parse_subpage!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PIDR)
-    pdict = d[:pagedict]
-    let pg = parse_page!(pdict, node, pntd, reg), pageid = pid(pg)
-        pdict[pageid] = pg #! PAGE: add to dictonary and set
+    pgdict = d[:pagedict]
+    let pg = parse_page!(pgdict, node, pntd, reg), pageid = pid(pg)
+        pgdict[pageid] = pg #! PAGE: add to dictonary and set
         push!(d[:pageset], pageid)
 
         if CONFIG.verbose
             println("parse_subpage! $pntd $pageid")
         end
     end
+    return nothing
  end
 
 """
