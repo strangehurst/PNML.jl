@@ -27,7 +27,7 @@ str =
   </net>
 </pnml>
     """
-    model = parse_pnml(xmlroot(str), PnmlIDRegistry())
+    model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
     #@show model
 end
@@ -39,7 +39,7 @@ end
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """
-    reg = PnmlIDRegistry()
+    reg = registry()
     @test !isregistered_id(reg, :net)
     @test :net ∉ reg.ids
 
@@ -67,6 +67,15 @@ end
     """
     model = @inferred parse_str(str)
 
+    println()
+    for net in PNML.nets(model)
+        t = PNML.nettype(net)
+        ntup = PNML.find_nets(model, t)
+        @show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+        for n in ntup
+            @test t === PNML.nettype(n)
+        end
+    end
     v1 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :ptnet)
 
     @test_opt pnmltype(:ptnet)

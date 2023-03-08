@@ -8,15 +8,15 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
 end
 
 @testset "parse_sort" begin
-    parse_sort(xml"<bool/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<dot/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<productsort/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<usersort/>", PnmlCoreNet(), PnmlIDRegistry())
-    parse_sort(xml"<partition/>", PnmlCoreNet(), PnmlIDRegistry())
+    parse_sort(xml"<bool/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<dot/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<productsort/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<usersort/>", PnmlCoreNet(), registry())
+    parse_sort(xml"<partition/>", PnmlCoreNet(), registry())
 end
 
 @testset "empty declarations" begin
@@ -28,7 +28,7 @@ end
            </declarations>
           </structure>
         </declaration>
-        """, PNML.PnmlIDRegistry())
+        """, PNML.registry())
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -74,7 +74,7 @@ end
         </structure>
     </declaration>
     """
-    reg = PNML.PnmlIDRegistry()
+    reg = PNML.registry()
     n = parse_node(node, reg)
 
     @test typeof(n) <: PNML.Declaration

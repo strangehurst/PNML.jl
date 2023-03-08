@@ -63,8 +63,8 @@ end
     for (s, funk) in ctrl
         noisy && print("\n", s, "\n")
         node::XMLNode = xmlroot(s)
-        reg1 = PnmlIDRegistry()
-        reg2 = PnmlIDRegistry()
+        reg1 = registry()
+        reg2 = registry()
 
         u = unclaimed_label(node, PnmlCoreNet(), reg1)
         noisy && @show typeof(u)
@@ -134,7 +134,7 @@ end
     </initialMarking>
     """
 
-    n = parse_node(node, PnmlIDRegistry())
+    n = parse_node(node, registry())
     @test typeof(n) <: PNML.Marking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(value(n)) <: Union{Int,Float64}
@@ -164,7 +164,7 @@ end
 @testset "PT inscription" begin
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
-        n = parse_node(node, PnmlIDRegistry())
+        n = parse_node(node, registry())
         @test typeof(n) <: PNML.Inscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test value(n) == 12
@@ -176,7 +176,7 @@ end
 
 @testset "text" begin
     str1 = """<text>ready</text>"""
-    n = parse_node(xmlroot(str1), PnmlIDRegistry())
+    n = parse_node(xmlroot(str1), registry())
     @test n == "ready"
 
     str2 = """
@@ -184,13 +184,13 @@ end
 ready
 </text>
     """
-    n = parse_node(xmlroot(str2), PnmlIDRegistry())
+    n = parse_node(xmlroot(str2), registry())
     @test n == "ready"
 
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(xmlroot(str3), PnmlIDRegistry())
+    n = parse_node(xmlroot(str3), registry())
     @test n == "ready"
 
     str4 = """
@@ -198,7 +198,7 @@ ready
 to
 go</text>
     """
-    n = parse_node(xmlroot(str4), PnmlIDRegistry())
+    n = parse_node(xmlroot(str4), registry())
     @test n == "ready\nto\ngo"
 end
 
@@ -206,7 +206,7 @@ end
     # Exersize the :labels of a PnmlDict
 
     d = PnmlDict(:labels => PnmlLabel[])
-    reg = PnmlIDRegistry()
+    reg = registry()
     @test_call labels(d)
     @test labels(d) isa Vector{PnmlLabel}
     for i in 1:4 # add 4 labels

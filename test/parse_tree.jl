@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, firstpage, parse_file, parse_name,
      PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
-     nets, pages, arcs, places, transitions,
+     nets, pages, arcs, place, places, transitions, has_place,
      allchildren, firstchild, value
 
 str = """
@@ -32,9 +32,9 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
     @test EzXML.nodename(pnmldoc) == "pnml"
     @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
 
-    reg = PnmlIDRegistry()
+    reg = registry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
-    foreach(allchildren("net", pnmldoc)) do net
+    for net in allchildren("net", pnmldoc)
         @test nodename(net) == "net"
 
         nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
@@ -58,11 +58,11 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
         pages = allchildren("page", net)
         @test !isempty(pages)
 
-        foreach(pages) do page
+        for page in pages
             @test nodename(page) == "page"
 
             @test !isempty(allchildren("place", page))
-            foreach(allchildren("place", page)) do p
+            for p in allchildren("place", page)
                 @test nodename(p) == "place"
                 i = parse_node(firstchild("initialMarking", p), reg)
                 #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
@@ -74,14 +74,14 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             end
 
             @test !isempty(allchildren("transition", page))
-            foreach(allchildren("transition", page)) do t
+            for t in allchildren("transition", page)
                 @test nodename(t) == "transition"
                 cond = firstchild("condition", t)
                 @test cond === nothing
             end
 
             @test !isempty(allchildren("arc", page))
-            foreach(allchildren("arc", page)) do a
+            for a in allchildren("arc", page)
                 @test nodename(a) == "arc"
                 ins = firstchild("inscription", a)
                 if ins !== nothing
@@ -98,7 +98,7 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    reg = PnmlIDRegistry()
+    reg = registry()
     pnml_ir = parse_pnml(pnmldoc, reg)
     @test typeof(pnml_ir) <: PnmlModel
 
@@ -109,11 +109,14 @@ end
         for page in pages(net)
             @test page isa Page
             @test pid(page) isa Symbol
-            for place in places(page)
-                @test place isa Place
-                @test pid(place) isa Symbol
+            for p in places(page)
+                @test p isa Place
+                placeid = pid(p)
+                @test placeid isa Symbol
+                @test has_place(page, placeid)
+                @test pid(place(page, placeid)) === placeid
             end
-            foreach(transitions(page)) do transition
+            for transition in transitions(page)
                 @test transition isa Transition
                 @test pid(transition) isa Symbol
             end

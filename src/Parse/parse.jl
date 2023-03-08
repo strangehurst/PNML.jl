@@ -46,7 +46,7 @@ See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_str(str::AbstractString)
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    reg = PnmlIDRegistry()
+    reg = registry()
     # Good place for debugging.
     parse_pnml(xmlroot(str), reg)
 end
@@ -60,7 +60,7 @@ See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 function parse_file(fname::AbstractString)
     isempty(fname) &&
         throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    reg = PnmlIDRegistry()
+    reg = registry()
     # Good place for debugging.
     parse_pnml(root(EzXML.readxml(fname)), reg)
 end
@@ -253,7 +253,8 @@ function parse_page!(pgdict::OrderedDict{Symbol,P}, node::XMLNode, pntd::T, reg:
             :tag => Symbol(nn),
             :id => register_id!(reg, node["id"]),
 
-            :places => place_type(pntd)[],
+            #!:places => place_type(pntd)[],
+            :places => OrderedDict{Symbol, place_type(pntd)}(),
             :trans => transition_type(pntd)[],
             :arcs => arc_type(pntd)[],
             :refP => refplace_type(pntd)[],
@@ -299,11 +300,12 @@ function parse_page_2! end
 function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<:PnmlType}
     for child in elements(node)
         if CONFIG.verbose
-            println("""parse_page_2! $(nodename(child)) $(child["id"])""")
+            println("""parse $(nodename(child)) $(child["id"])""")
         end
 
         @match nodename(child) begin
-            "place" => push!(d[:places], parse_place(child, pntd, reg))
+            #!"place" => push!(d[:places], parse_place(child, pntd, reg))
+            "place" => parse_place!(d[:places], child, pntd, reg)
             "transition" => push!(d[:trans], parse_transition(child, pntd, reg))
             "arc" => push!(d[:arcs], parse_arc(child, pntd, reg))
             "referencePlace" => push!(d[:refP], parse_refPlace(child, pntd, reg))
@@ -313,6 +315,32 @@ function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::T, reg::PIDR) where {T<
         end
     end
     return d
+end
+
+function parse_place!(dict, child, pntd, reg)
+    id, p = parse_place(child, pntd, reg)
+    dict[id] = p
+    return nothing
+end
+function parse_transition!(dict, child, pntd, reg)
+    p = parse_transition!(child, pntd, reg)
+    dict[pid(p)] = p
+    return nothing
+end
+function parse_arc!(dict, child, pntd, reg)
+    #id, p = parse_arc(child, pntd, reg)
+    #dict[id] = p
+    return nothing
+end
+function parse_refPlace!(dict, child, pntd, reg)
+    #id, p = parse_refPlace(child, pntd, reg)
+    #dict[id] = p
+    return nothing
+end
+function parse_refTransition!(dict, child, pntd, reg)
+    #id, p = parse_refTransition(child, pntd, reg)
+    #dict[id] = p
+    return nothing
 end
 
 # See also parse_net_page
@@ -345,7 +373,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, reg::PIDR)
     )
     parse_place_labels!(d, node, pntd, reg)
 
-    Place(pntd, d[:id],
+    d[:id] =>Place(pntd, d[:id],
         get(d, :marking, default_marking(pntd)),
         get(d, :type, default_sort(pntd)),
         d[:name], ObjectCommon(d))

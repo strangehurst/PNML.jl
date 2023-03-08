@@ -120,7 +120,7 @@ Match toolname and version. Default is any version.
 """
 function _match end
 _match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
-_match(ti::ToolInfo, name::String, version::String) = _match(ti.inf, Regex(name), Regex(version))
+_match(ti::ToolInfo, name::AbstractString, version::AbstractString) = _match(ti.inf, Regex(name), Regex(version))
 
 function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
     #@show "match toolinfo $namerex, $versionrex"

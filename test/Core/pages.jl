@@ -86,7 +86,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @test typeof(@inferred(firstpage(net))) <: Page
 
     @show arc_ids(net)
-    @show place_ids(net)
+    @show collect(place_ids(net))
     @show transition_ids(net)
     @show refplace_ids(net)
     @show reftransition_ids(net)
@@ -202,8 +202,9 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     exp_refplace_ids      = [:rp1, :rp2]
     exp_reftransition_ids = [:rt2]
 
-    @test sort(@inferred(arc_ids(net)))          == exp_arc_ids
-    @test sort(@inferred(place_ids(net)))         == exp_place_ids
+    @test (sort∘ collect)(@inferred(place_ids(net))) == exp_place_ids
+    #!@test sort(@inferred(place_ids(net)))         == exp_place_ids
+    @test sort(@inferred(arc_ids(net)))           == exp_arc_ids
     @test sort(@inferred(transition_ids(net)))    == exp_transition_ids
     @test sort(@inferred(refplace_ids(net)))      == exp_refplace_ids
     @test sort(@inferred(reftransition_ids(net))) == exp_reftransition_ids

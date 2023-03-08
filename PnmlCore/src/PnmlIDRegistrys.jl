@@ -5,7 +5,8 @@ module PnmlIDRegistrys
 
 using DocStringExtensions
 using Base: @kwdef
-export PnmlIDRegistry, register_id!, isregistered_id
+#using Base.Threads
+export PnmlIDRegistry, register_id!, isregistered_id, registry
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -13,12 +14,19 @@ Holds a set of pnml id symbols and a lock to allow safe reentrancy.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef struct PnmlIDRegistry
-    ids::Set{Symbol}    = Set{Symbol}()
-    lk::ReentrantLock   = ReentrantLock()
-    #lk::Base.Threads.SpinLock   = Base.Threads.SpinLock()
+struct PnmlIDRegistry{L <: Base.AbstractLock}
+    ids::Set{Symbol}
+    lk::L
     #!#duplicate::F
 end
+"""
+    registry([lock]) -> PnmlIDRegistry
+
+Construct a PNML ID registry using the supplied lock or a `ReentrantLock``.
+"""
+function registry end
+registry() = registry(ReentrantLock())
+registry(lock::L) where {L <: Base.AbstractLock} = PnmlIDRegistry(Set{Symbol}(), lock)
 
 function Base.show(io::IO, reg::PnmlIDRegistry)
     print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
@@ -36,10 +44,10 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-register_id!(reg::PnmlIDRegistry, s::String) = register_id!(reg, Symbol(s))
+register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
     @lock reg.lk begin
-        id ∈ reg.ids && @warn( "ID already registered: $id") #reg.duplicate(id) #! is error OK here?
+        id ∈ reg.ids && duplicate_id_warn(id)
         push!(reg.ids, id)
     end
     return id

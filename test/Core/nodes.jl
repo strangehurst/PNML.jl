@@ -10,9 +10,10 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), PnmlIDRegistry())
-    @test_call parse_node(node, PnmlIDRegistry())
-    n = @inferred Place parse_node(node, PnmlIDRegistry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), registry())
+    @test_call parse_node(node, registry())
+    id,n = parse_node(node, registry())
+    @test id === :place1
     @test typeof(n) <: Place
     @test_call has_xml(n)
     @test !has_xml(n)
@@ -30,9 +31,10 @@ end
         <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), PnmlIDRegistry())
-    @test_call parse_node(node, PnmlIDRegistry())
-    n = @inferred Place parse_node(node, PnmlIDRegistry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), registry())
+    @test_call parse_node(node, registry())
+    id, n = parse_node(node, registry())
+    @test id === :place1
     @test typeof(n) <: Place
     @test_call has_xml(n)
     @test !has_xml(n)
@@ -51,7 +53,7 @@ end
         <condition> <text>foo</text><structure>100</structure> </condition>
       </transition>
     """
-    n = @inferred Transition parse_node(node, PnmlIDRegistry())
+    n = @inferred Transition parse_node(node, registry())
     @test typeof(n) <: Transition
     @test !has_xml(n)
     @test pid(n) === :transition1
@@ -60,13 +62,13 @@ end
     @test condition(n) isa Bool #! define non-HL other's semantics.
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    #@test_throws ErrorException parse_node(node, PnmlIDRegistry())
-    @test parse_node(node, PnmlIDRegistry()) !== nothing
+    #@test_throws ErrorException parse_node(node, registry())
+    @test parse_node(node, registry()) !== nothing
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    #@test_throws ErrorException parse_node(node, PnmlIDRegistry())
-    @test parse_node(node, PnmlIDRegistry()) !== nothing
+    #@test_throws ErrorException parse_node(node, registry())
+    @test parse_node(node, registry()) !== nothing
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    t = parse_node(node, PnmlIDRegistry())
+    t = parse_node(node, registry())
     @test t isa Transition
     @test_call condition(t)
     @test condition(t) === true
@@ -79,7 +81,7 @@ end
         <inscription> <text>6</text> </inscription>
       </arc>
     """
-    n = @inferred Arc parse_node(node, PnmlIDRegistry())
+    n = @inferred Arc parse_node(node, registry())
     @test typeof(n) <: Arc
     @test !has_xml(n)
     @test pid(n) === :arc1
@@ -93,7 +95,7 @@ end
     node = xml"""
         <referenceTransition id="rt1" ref="t1"/>
     """
-    n = parse_node(node, PnmlIDRegistry())
+    n = parse_node(node, registry())
     @test n isa RefTransition
     @test !has_xml(n)
     @test pid(n) === :rt1
@@ -115,7 +117,7 @@ end
     """,
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
-        n = parse_node(s.node, ContinuousNet(), PnmlIDRegistry())
+        n = parse_node(s.node, ContinuousNet(), registry())
         @test typeof(n) <: RefPlace
         @test !has_xml(n)
         @test typeof(n.id) == Symbol

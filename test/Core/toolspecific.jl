@@ -47,7 +47,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """, contentparse = (c) -> begin end)
 
     @testset for s in [str1, str2, str3, str4, str5]
-        n = parse_node(xmlroot(s.str), PnmlIDRegistry())
+        n = parse_node(xmlroot(s.str), registry())
         @test typeof(n) <: ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test_call xmlnode(n)
@@ -96,8 +96,8 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         model = parse_str(str)
         #@show model
 
-        page = firstpage(first_net(model))
-        @test_call firstpage(first_net(model))
+        page = firstpage(model.net)
+        @test_call firstpage(PNML.first_net(model))
 
         @test !has_tools(page)
         @test_call has_tools(page)
@@ -131,7 +131,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
                 @test y[1].dict == y[2].dict
             end
 
-            x = parse_node(xmlroot(s.str), PnmlIDRegistry())
+            x = parse_node(xmlroot(s.str), registry())
 
             @test typeof(t[i].infos) == typeof(x.infos)
             for y in zip(t[i].infos, x.infos)

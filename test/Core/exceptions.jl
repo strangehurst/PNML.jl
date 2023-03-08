@@ -5,7 +5,7 @@ using PNML: tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_typ
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
     try
-        n = f(node, PnmlIDRegistry())
+        n = f(node, registry())
         error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
@@ -22,17 +22,17 @@ end
     @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
          <pnml><net id="1" type="foo"><page id="pg1"/></net>
          </pnml>
-         """, PnmlIDRegistry())
+         """, registry())
     @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
           <?xml version="1.0" encoding="UTF-8"?>
-          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", PnmlIDRegistry())
+          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
     @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
           <?xml version="1.0" encoding="UTF-8"?>
-          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", PnmlIDRegistry())
+          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
 end
 
 @testset "empty name" begin
-    @test_logs match_mode = :any (:warn, r"missing <text>") parse_node(xml"<name></name>", PnmlIDRegistry())
+    @test_logs match_mode = :any (:warn, r"missing <text>") parse_node(xml"<name></name>", registry())
 end
 
 @testset "malformed" begin
@@ -102,18 +102,18 @@ end
 end
 
 @testset "missing id" begin
-    @test_throws MissingIDException parse_net(xml"<net type='test'></net>", PnmlIDRegistry())
+    @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
 
     #parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
-    #                xml"<page></page>", PnmlCoreNet(), PnmlIDRegistry())
+    #                xml"<page></page>", PnmlCoreNet(), registry())
     @test_throws MissingIDException parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
-                    xml"<page></page>", PnmlCoreNet(), PnmlIDRegistry())
+                    xml"<page></page>", PnmlCoreNet(), registry())
 
-    @test_throws MissingIDException parse_node(xml"<place></place>", PnmlIDRegistry())
-    @test_throws MissingIDException parse_node(xml"<transition></transition>", PnmlIDRegistry())
-    @test_throws MissingIDException parse_node(xml"<arc></arc>", PnmlIDRegistry())
-    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>", PnmlIDRegistry())
-    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>", PnmlIDRegistry())
+    @test_throws MissingIDException parse_node(xml"<place></place>", registry())
+    @test_throws MissingIDException parse_node(xml"<transition></transition>", registry())
+    @test_throws MissingIDException parse_node(xml"<arc></arc>", registry())
+    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>", registry())
+    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>", registry())
 end
 
 @testset "graphics" begin

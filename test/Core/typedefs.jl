@@ -18,8 +18,8 @@ using PNML: XMLNode, pnmltype, tagmap
         # @show t, tagmap[t], pntd
 
         # Parse trivial XML.
-        runopt && @test_opt function_filter=pnml_function_filter target_modules=target_modules tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, PnmlIDRegistry() )
-        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, PnmlIDRegistry() )
+        runopt && @test_opt function_filter=pnml_function_filter target_modules=target_modules tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, registry() )
+        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, registry() )
     end
     #TODO: Add non-trivial tests.
 end

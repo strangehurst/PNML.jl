@@ -15,7 +15,7 @@ using PNML: tag, pid
            style="normal" weight="normal" />
     </graphics>
     """
-    n = parse_node(xmlroot(str), PnmlIDRegistry())
+    n = parse_node(xmlroot(str), registry())
 
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
@@ -58,14 +58,14 @@ end
 @testset "tokengraphics" begin
 
     str0 = """<tokengraphics></tokengraphics>"""
-    n = parse_node(xmlroot(str0), PnmlIDRegistry())
+    n = parse_node(xmlroot(str0), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
     str1 = """<tokengraphics>
                 <tokenposition x="-9" y="-2"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str1), PnmlIDRegistry())
+    n = parse_node(xmlroot(str1), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
@@ -73,7 +73,7 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <tokenposition x="2"  y="3"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str2), PnmlIDRegistry())
+    n = parse_node(xmlroot(str2), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 2
 
@@ -82,7 +82,7 @@ end
                     <tokenposition x="2"  y="3"/>
                     <tokenposition x="-2" y="2"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str3), PnmlIDRegistry())
+    n = parse_node(xmlroot(str3), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 3
 
@@ -92,14 +92,14 @@ end
                     <tokenposition x="-2" y="2"/>
                     <tokenposition x="-2" y="-22"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str4), PnmlIDRegistry())
+    n = parse_node(xmlroot(str4), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 4
 
     str5 = """<tokengraphics>
                     <tokenposition x="-1.2" y="-22.33"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str5), ContinuousNet(), PnmlIDRegistry())
+    n = parse_node(xmlroot(str5), ContinuousNet(), registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
@@ -107,7 +107,7 @@ end
                     <tokenposition x="-1" y="-2"/>
                     <tokenposition x="-1.2" y="-22.33"/>
             </tokengraphics>"""
-    n = parse_node(xmlroot(str6), ContinuousNet(), PnmlIDRegistry()) # hubrid?
+    n = parse_node(xmlroot(str6), ContinuousNet(), registry()) # hubrid?
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 2
 end
