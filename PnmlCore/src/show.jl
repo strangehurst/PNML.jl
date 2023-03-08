@@ -300,7 +300,7 @@ function Base.summary( page::Page)
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
            length(page.refPlaces), " refP, ",
            length(page.refTransitions), " refT, ",
-           length(page.subpages), " subpages",
+           length(page.pageset), " subpages",
            summary(page.com)
            )
 end

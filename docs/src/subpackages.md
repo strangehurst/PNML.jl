@@ -10,4 +10,4 @@ See [`PnmlTypeDefs`](@ref)
 
 ## PnmlIDRegistrys
 
-See [`PnmlIDRegisterys`](@ref)
+See [`PnmlIDRegistrys`](@ref)

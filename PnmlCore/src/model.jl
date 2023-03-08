@@ -15,7 +15,7 @@ end
 $(TYPEDSIGNATURES)
 """
 
-PnmlModel(nets::Tuple{Vararg{PnmlNet}}) = PnmlModel(nets, pnml_ns, PnmlIDRegistry(), nothing)
+PnmlModel(nets::Tuple{Vararg{PnmlNet}}) = PnmlModel(nets, pnml_ns, registry(), nothing)
 PnmlModel(nets::Tuple{Vararg{PnmlNet}}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg, nothing)
 
 """
@@ -34,10 +34,12 @@ $(TYPEDSIGNATURES)
 Return nets matching pntd `type` given as string, symbol or pnmltype singleton.
 """
 function find_nets end
-find_nets(model, pntype::AbstractString) = find_nets(model, pntd_symbol(pntype))
-find_nets(model, pntype::Symbol) = find_nets(model, pnmltype(pntype))
-find_nets(model, pntd::PnmlType) = filter(n -> isa(n.type, typeof(pntd)), nets(model))
-#find_nets(model, pntd::PnmlType) = filter(Fix2(isa, typeof(pntd)), nets(model))
+find_nets(model, str::AbstractString) = find_nets(model, pntd_symbol(str))
+find_nets(model, sym::Symbol) = find_nets(model, pnmltype(sym))
+#!find_nets(model, pntd::PnmlType) = filter(n -> isa(n.type, typeof(pntd)), nets(model))
+find_nets(model, pntd::PnmlType) = find_nets(model, typeof(pntd))
+find_nets(model, ::Type{T}) where {T<:PnmlType} = filter((Fix1(===, T) ∘ nettype), nets(model))
+
 
 """
 $(TYPEDSIGNATURES)

@@ -87,9 +87,9 @@ function _anyelement_content!(dict::PnmlDict, nodes::Vector{XMLNode}, ha!::Harve
     namevec = [nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
     tagnames = unique(map(first, namevec))
     for tagname in tagnames
-        tags = filter(x -> x.first === tagname, namevec)
-        dict[Symbol(tagname)] =
-            if length(tags) > 1 # Now its a symbol.
+        tags = filter((Fix2(===, tagname) ∘ first), namevec)
+        dict[Symbol(tagname)] = # Now its a symbol.
+            if length(tags) > 1
                  [ha!(t) for t in map(x -> x.second, tags)] # vector
             else
                 ha!(tags[1].second) # scalar

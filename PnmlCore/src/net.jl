@@ -71,6 +71,7 @@ marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
 #--------------------------------------
 pid(net::PnmlNet)          = net.id
 
+# Return iterator over pages.
 pages(net::PnmlNet)        = values(net.pagedict) #! Returns an iterator.
 
 "Usually the only interesting page."
@@ -95,17 +96,19 @@ function _find_x(id::Symbol, itr)
     error("$f returned nothing for $id on pid $(pid(x)) $(typeof(x))")
 end
 
-places(net::PnmlNet)         = mapreduce(places, vcat, pages(net);      init = place_type(net.type)[])::Vector{place_type(net)}
+#!places(net::PnmlNet)         = mapreduce(places, vcat, pages(net);      init = place_type(net.type)[])::Vector{place_type(net)}
+places(net::PnmlNet)         = Iterators.flatten(places.(pages(net)))
 transitions(net::PnmlNet)    = mapreduce(transitions, vcat, pages(net); init = transition_type(net.type)[])::Vector{transition_type(net)}
 arcs(net::PnmlNet)           = mapreduce(arcs, vcat, pages(net);        init = arc_type(net.type)[])::Vector{arc_type(net)}
 refplaces(net::PnmlNet)      = mapreduce(refplaces, vcat, pages(net);   init = refplace_type(net.type)[])::Vector{refplace_type(net)}
 reftransitions(net::PnmlNet) = mapreduce(reftransitions, vcat, pages(net); init = reftransition_type(net.type)[])::Vector{reftransition_type(net)}
 
-place(net::PnmlNet, id::Symbol)         = _find_x(id, places(net)) # Note the plural.
-place_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(place_ids, vcat, pages(net); init = Vector{Symbol}[])
-has_place(net::PnmlNet, id::Symbol)     = any(Fix2(has_place, id), pages(net))
+place(net::PnmlNet, id::Symbol)        = first(===(id), places(net))#!_find_x(id, places(net)) # Note the plural.
+place_ids(net::PnmlNet)                = Iterators.flatten(place_ids.(pages(net)))
+has_place(net::PnmlNet, id::Symbol)    = any(Fix2(haspid, id), places(net))
 
 marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
+
 """
     currentMarkings(net) -> LVector{marking_value_type(n)}
 
@@ -115,7 +118,7 @@ currentMarkings(net::PnmlNet) = begin
     m1 = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
     return m1
 end
-transition(net::PnmlNet, id::Symbol)         = _find_x(id, transitions(net))
+transition(net::PnmlNet, id::Symbol)         = getfirst(Fix2(haspid,id), transitions(net))
 transition_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(transition_ids, vcat, pages(net); init = Vector{Symbol}[])
 has_transition(net::PnmlNet, id::Symbol)     = any(Fix2(has_transition, id), pages(net))
 
@@ -136,7 +139,7 @@ inscriptionV(net::PnmlNet) = Vector((;[t=>inscription(net, t)() for t in transit
 
 #! refplace and reftransition should only be used to derefrence, flatten pages.
 #TODO Add dereferenceing for place, transition, arc traversal.
-refplace(net::PnmlNet, id::Symbol)         = _find_x(id, refplace(net))
+refplace(net::PnmlNet, id::Symbol)         = _find_x(id, refplace_ids(net))
 refplace_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(refplace_ids, vcat, pages(net))
 has_refP(net::PnmlNet, ref_id::Symbol)     = any(Fix2(has_refP, ref_id), pages(net))
 

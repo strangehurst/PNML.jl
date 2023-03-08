@@ -8,17 +8,18 @@ There must be at least 1 Page for a valid pnml model.
 struct Page{PNTD<:PnmlType,M,I,C,S} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
-    places::Vector{Place{PNTD,M,S}}
-    refPlaces::Vector{RefPlace{PNTD}}
-    transitions::Vector{Transition{PNTD,C}}
-    refTransitions::Vector{RefTransition{PNTD}}
-    arcs::Vector{Arc{PNTD,I}}
+    #!places::Vector{Place{PNTD,M,S}}
+    placedict::OrderedDict{Symbol, Place{PNTD,M,S}}
+    refPlaces::Vector{RefPlace{PNTD}} # OrderedDict{Symbol, RefPlace{PNTD}}
+    transitions::Vector{Transition{PNTD,C}} # OrderedDict{Symbol, Transition{PNTD,C}}
+    refTransitions::Vector{RefTransition{PNTD}} # OrderedDict{Symbol, RefTransition{PNTD}}
+    arcs::Vector{Arc{PNTD,I}} # OrderedDict{Symbol, Arc{PNTD,I}}
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
 
-    pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}}  #! PAGE TREE
-    pageset::OrderedSet{Symbol} #! #! PAGE TREE NODE tuple if page ids
+    pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}}  #! Shared by net and its pages
+    pageset::OrderedSet{Symbol} # PAGE TREE NODE is set of page ids
 end
 
 nettype(::Page{T}) where {T<:PnmlType} = T
@@ -28,21 +29,18 @@ declarations(page::Page) = declarations(page.declaration)
 
 #! pages(page::Page) = values(page.pagedict) # iterator
 
-places(page::Page) = page.places
+places(page::Page) = values(page.placedict)
 transitions(page::Page) = page.transitions
 arcs(page::Page) = page.arcs
 refplaces(page::Page) = page.refPlaces
 reftransitions(page::Page) = page.refTransitions
 common(page::Page) = page.com
 
-# Subpages MAY need to be traversed here also. Unless we ignore subpages here.
-# A likely use case is to flatten any multi-page net for performance reasons, so we will
-# delay any implementation&test effort here. There is implementation at the net level!
-place(page::Page, id::Symbol) = getfirst(Fix2(haspid, id), places(page))
-place_ids(page::Page) = map(pid, places(page))
-has_place(page::Page, id::Symbol) = any(Fix2(haspid, id), places(page))
+place(page::Page, id::Symbol) = page.placedict[id]
+place_ids(page::Page) = keys(page.placedict) # map(pid, places(page))
+has_place(page::Page, id::Symbol) = any(==(id), keys(page.placedict))
 
-marking(page::Page, placeid::Symbol) = marking(place(page, placeid))
+marking(page::Page, placeid::Symbol) = marking(page.placedict[placeid])
 
 currentMarkings(page::Page) = currentMarkings(page, place_ids(page))
 currentMarkings(page::Page, id_vec::Vector{Symbol}) = LVector((; [p => marking(page, p)() for p in id_vec]...))
@@ -73,7 +71,7 @@ reftransition_ids(page::Page) = map(pid, page.refTransitions)
 has_refT(page::Page, id::Symbol) = any(ispid(id), reftransition_ids(page))
 
 function Base.empty!(page::Page)
-    empty!(page.places)
+    empty!(page.placedict)
     empty!(page.refPlaces)
     empty!(page.transitions)
     empty!(page.refTransitions)

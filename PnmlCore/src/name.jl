@@ -12,5 +12,3 @@ end
 
 Name(; text::AbstractString = "", graphics=nothing, tools=nothing) =
     Name(text, graphics, tools)
-
-

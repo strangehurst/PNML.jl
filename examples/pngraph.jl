@@ -133,7 +133,7 @@ collect(edges(petri))
 # ╔═╡ 2700ad27-4a1e-4410-b9c3-e288059473f9
 # ╠═╡ show_logs = false
 map(edges(petri)) do e
-	@show src(e), dst(e)
+	@show src(e) dst(e)
 	pid(petri[label_for(petri,src(e)), label_for(petri,dst(e))])
 end
 
