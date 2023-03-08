@@ -5,7 +5,7 @@ invalidations = @snoopr begin
     #!using PnmlIDRegistrys
 
     tinf = @snoopi_deep begin
-        reg = PnmlIDRegistry()
+        reg = registry()
         register_id!(reg, :p)
         register_id!(reg, :p)
         !isregistered_id(reg, "p")

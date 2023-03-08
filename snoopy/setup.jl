@@ -46,12 +46,12 @@ using PnmlCore:
 const fname = "test1.pnml"
 
 const x = EzXML.root(EzXML.readxml(fname));
-const r = PnmlIDRegistry();
+const r = registry();
 const m = parse_pnml(x, r);
 
 function parse_top_net(node::XMLNode, i)
     nn = check_nodename(node, "pnml")
-    reg = PnmlIDRegistry()
+    reg = registry()
     nets = allchildren("net", node)
     net_tup = tuple(parse_net(nets[i], reg),)
     PnmlModel(net_tup, pnml_ns, reg, node)
@@ -60,7 +60,7 @@ end
 function timed_parse(node::XMLNode)
     #! DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
     #! Does not match original source!!!!
-    reg = PnmlIDRegistry()
+    reg = registry()
     nn = check_nodename(node, "pnml")
     nets = allchildren("net", node)
     isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
@@ -84,7 +84,7 @@ end
 #=
 
 julia> @report_opt function_filter=pnml_ff EzXML.root(EzXML.readxml(fname))
-julia> @report_opt function_filter=pnml_ff PnmlIDRegistry()
+julia> @report_opt function_filter=pnml_ff registry()
 julia> @report_opt function_filter=pnml_ff parse_pnml(x, r)
 julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_pnml(x, r)
 

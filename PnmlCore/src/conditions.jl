@@ -40,7 +40,7 @@ end
 
 Condition(pntd) = Condition(pntd, nothing, true, ObjectCommon())
 Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
-Condition(pntd, text::String, value) = Condition(pntd, text, value, ObjectCommon())
+Condition(pntd, text::AbstractString, value) = Condition(pntd, text, value, ObjectCommon())
 
 value(c::Condition) = c.value
 common(c::Condition) = c.com

@@ -33,7 +33,7 @@ const pnmlroot = PNML.xmlroot(str)
 #tinf = @snoopi_deep begin end
 function test1(proot, n=10)
     for i in 1:n
-        model = parse_pnml(proot, PnmlIDRegistry())
+        model = parse_pnml(proot, registry())
     end
 end
 
@@ -41,4 +41,4 @@ end
 #PnmlIDRegistrys.reset!(reg)
 #ProfileView.
 #@profview test1(pnmlroot)
-#@profview PnmlIDRegistry()
+#@profview registry()

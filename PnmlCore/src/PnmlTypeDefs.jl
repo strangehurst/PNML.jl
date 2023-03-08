@@ -3,7 +3,6 @@ Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 """
 module PnmlTypeDefs
 
-#using PNML
 using DocStringExtensions
 
 # Abstract Types
@@ -211,7 +210,7 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::String) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)
+pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)
 
 """
     pnmltype(pntd::T, reg)
@@ -248,6 +247,7 @@ function pnmltype(s::Symbol)
     haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
 end
+
 
 # Traits
 """

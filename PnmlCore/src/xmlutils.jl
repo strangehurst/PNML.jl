@@ -21,14 +21,14 @@ Parse string `s` into EzXML node.
 
 $(TYPEDSIGNATURES)
  """
-xmlroot(s::String) = root(EzXML.parsexml(s))
+xmlroot(s::AbstractString) = root(EzXML.parsexml(s))
 
 """
 $(TYPEDSIGNATURES)
 
 Return up to 1 immediate child of `el` that is a `tag`.
 """
-function firstchild(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
+function firstchild(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
     EzXML.findfirst("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
@@ -37,7 +37,7 @@ $(TYPEDSIGNATURES)
 
 Return first child with `tag` or nothing.
 """
-function getfirst(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
+function getfirst(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
     x = firstchild(tag, el, ns)
     isnothing(x) ? nothing : x
 end
@@ -48,12 +48,12 @@ $(TYPEDSIGNATURES)
 
 Return vector of `el`'s immediate children with `tag`.
 """
-function allchildren(tag::AbstractString, el::XMLNode, ns::String = pnml_ns)
+function allchildren(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
 
-function check_nodename(n::XMLNode, s::String)
+function check_nodename(n::XMLNode, s::AbstractString)
     if EzXML.nodename(n) != s
         throw(ArgumentError(string("element name wrong, expected ", s,
                                    ", got ", EzXML.nodename(n))))

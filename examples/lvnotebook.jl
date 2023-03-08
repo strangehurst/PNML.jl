@@ -62,7 +62,7 @@ md"""
 # ╔═╡ a995864c-937e-4a0d-b99a-31fd134e23dc
 let
 	d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
-	reg = PnmlIDRegistry()
+	reg = registry()
 	pntd = PnmlCoreNet()
 	PNML.add_label!(d, PNML.xmlroot("<test1> 1 </test1>"), pntd, reg)
 	PNML.add_label!(d, PNML.xmlroot("<test2> 2.0 </test2>"), pntd, reg)
