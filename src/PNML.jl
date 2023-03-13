@@ -58,9 +58,8 @@ import PrettyPrinting: quoteof
 using AbstractTrees
 using LabelledArrays
 using Reexport
-using FunctionWrappers
-import FunctionWrappers: FunctionWrapper
 import OrderedCollections: OrderedDict, OrderedSet
+using NamedTupleTools
 
 using Base: Fix1, Fix2, @kwdef
 
@@ -110,35 +109,11 @@ import PnmlCore: CONFIG,
     page_type, sort_type, coordinate_type, coordinate_value_type, pnmlnet_type
 
 
-
-# High-Level
-include("HighLevel/hltypes.jl")
-include("HighLevel/hldefaults.jl")
-include("HighLevel/structure.jl")
-include("HighLevel/hllabels.jl")
-include("HighLevel/hldeclarations.jl")
-include("HighLevel/terms.jl")
-include("HighLevel/sorts.jl")
-include("HighLevel/hlinscriptions.jl")
-include("HighLevel/hlmarkings.jl")
-include("HighLevel/hlshow.jl")
-
-# PETRI NET
 include("Net/petrinet.jl")
 include("Net/simplenet.jl")
 include("Net/hlnet.jl")
-
 include("Continuous/rates.jl")
 include("Net/transition_function.jl")
-
-# PARSE
-include("Parse/parseutils.jl")
-include("Parse/anyelement.jl")
-include("Parse/parse.jl")
-include("Parse/graphics.jl")
-include("Parse/declarations.jl")
-include("Parse/toolspecific.jl")
-include("Parse/maps.jl")
 
 
 export @xml_str, CONFIG,

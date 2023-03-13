@@ -1,20 +1,27 @@
 # Ideas from MathML.jl
 
 """
-Map XML tag names to parser functions.
-
 $(TYPEDEF)
+Map XML <tag> names to parser functions named "parse_tag".
+Allows associative lookup of parser using ideas from Tim Holy's MathML package.
+
 """
 const tagmap = Dict{String,Function}(
-    # Not called by parse_node. Called directly, perhaps with varying arguments.
+    # Some are not called by parse_node. Called directly, perhaps with varying arguments.
+    # So replace any calls through this path with a warning/error. Usually caused by tests.
     # --------------------------
-    # "pnml" => parse_pnml,
-    # "net" => parse_net,
-    # "page"  => parse_page,
+    "pnml" => parse_excluded,
+    "net" => parse_excluded,
+    "page"  => parse_excluded,
+    "place"  => parse_excluded,
+    "arc"  => parse_excluded,
+    "transition"  => parse_excluded,
+    "referencePlace"  => parse_excluded,
+    "referenceTransition"  => parse_excluded,
+
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
-    "arc"  => parse_arc,
     "bool" => parse_bool,
     "booleanconstant" => parse_booleanconstant,
     "condition" => parse_condition,
@@ -34,10 +41,7 @@ const tagmap = Dict{String,Function}(
     "namedoperator" => parse_namedoperator,
     "not" => parse_not,
     "or" => parse_or,
-    "place"  => parse_place,
     "productsort" => parse_productsort,
-    "referencePlace"  => parse_refPlace,
-    "referenceTransition"  => parse_refTransition,
     "sort" => parse_sort,
     "structure" => parse_structure,
     "term" => parse_term, #TODO is this valid?
@@ -45,7 +49,6 @@ const tagmap = Dict{String,Function}(
     "tokengraphics"  => parse_tokengraphics,
     "tokenposition" => parse_tokenposition,
     "toolspecific"  => parse_toolspecific,
-    "transition"  => parse_transition,
     "tuple" => parse_tuple,
     "type" => parse_type,
     "unparsed" => parse_unparsed,

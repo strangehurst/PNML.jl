@@ -1,30 +1,41 @@
+
+# struct PnmlNetData{PNTD, M, I, C, S}
+#     place_dict::OrderedDict{Symbol, Place{PNTD,M,S}}
+#     refPlace_dict::OrderedDict{Symbol, RefPlace{PNTD}}
+#     transition_dict::OrderedDict{Symbol, Transition{PNTD,C}}
+#     refTransition_dict::OrderedDict{Symbol, RefTransition{PNTD}}
+#     arc_dict::OrderedDict{Symbol, Arc{PNTD,I}}
+# end
+
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
+struct PnmlNet{PNTD<:PnmlType, PG,PL,TR,AR,RP,RT}  #!M, I, C, S}
     type::PNTD
     id::Symbol
 
-    pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}}  #! PAGE TREE
+    #pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}}  #! PAGE TREE
+    netdata::PnmlNetData{PNTD,PG,PL,TR,AR,RP,RT}
     pageset::OrderedSet{Symbol}  #! PAGE TREE NODE set of page ids
+
+    #TODO add dicts shared with pages for places, transitions, arcs, refs
 
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
     xml::XMLNode
 
-    function PnmlNet(pntd::PnmlType, id::Symbol, pagedict, pages, declare, name,
-                     oc::ObjectCommon, xml::XMLNode)
-        isempty(pages) && throw(ArgumentError("PnmlNet must have at least one page"))
-        new{typeof(pntd),
-            marking_type(pntd),
-            inscription_type(pntd),
-            condition_type(pntd),
-            sort_type(pntd)}(pntd, id, pagedict, pages, declare, name, oc, xml)
-    end
+    # function PnmlNet(pntd::PNTD, id::Symbol, netdata::PnmlNetData{PG,PL,TR,AR,RP,RT}, pageset, declare, name,
+    #                  oc::ObjectCommon, xml::XMLNode)
+    #     isempty(pages) && throw(ArgumentError("PnmlNet must have at least one page"))
+    #     #new{typeof(pntd),marking_type(pntd),inscription_type(pntd),condition_type(pntd),sort_type(pntd)}
+    #     new(pntd, id, pagedict, netdata, pageset,
+    #             declare, name, oc, xml)
+    # end
 end
 
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
@@ -86,24 +97,13 @@ xmlnode(net::PnmlNet)    = net.xml
 has_name(net::PnmlNet) = !isnothing(net.name)
 name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 
-# Return first non-nothing returned by `f`.
-#TODO use a mutator to fill the well-typed output.
-function _find_x(id::Symbol, itr)
-    y = getfirst(Fix2(haspid, id), itr)
-    !isnothing(y) && return y
-    # Assume exists (that is what has_x is for).
-    # By excluding `nothing` maybe it will be type stable.
-    error("$f returned nothing for $id on pid $(pid(x)) $(typeof(x))")
-end
-
-#!places(net::PnmlNet)         = mapreduce(places, vcat, pages(net);      init = place_type(net.type)[])::Vector{place_type(net)}
 places(net::PnmlNet)         = Iterators.flatten(places.(pages(net)))
-transitions(net::PnmlNet)    = mapreduce(transitions, vcat, pages(net); init = transition_type(net.type)[])::Vector{transition_type(net)}
-arcs(net::PnmlNet)           = mapreduce(arcs, vcat, pages(net);        init = arc_type(net.type)[])::Vector{arc_type(net)}
-refplaces(net::PnmlNet)      = mapreduce(refplaces, vcat, pages(net);   init = refplace_type(net.type)[])::Vector{refplace_type(net)}
-reftransitions(net::PnmlNet) = mapreduce(reftransitions, vcat, pages(net); init = reftransition_type(net.type)[])::Vector{reftransition_type(net)}
+transitions(net::PnmlNet)    = Iterators.flatten(transitions.(pages(net)))
+arcs(net::PnmlNet)           = Iterators.flatten(arcs.(pages(net)))
+refplaces(net::PnmlNet)      = Iterators.flatten(refplaces.(pages(net)))
+reftransitions(net::PnmlNet) = Iterators.flatten(reftransitions.(pages(net)))
 
-place(net::PnmlNet, id::Symbol)        = first(===(id), places(net))#!_find_x(id, places(net)) # Note the plural.
+place(net::PnmlNet, id::Symbol)        = first(Fix2(haspid,id), places(net))
 place_ids(net::PnmlNet)                = Iterators.flatten(place_ids.(pages(net)))
 has_place(net::PnmlNet, id::Symbol)    = any(Fix2(haspid, id), places(net))
 
@@ -115,36 +115,37 @@ marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
 LVector labelled with place id and holding marking's value.
 """
 currentMarkings(net::PnmlNet) = begin
-    m1 = LVector((;[p=>marking(net, p)() for p in place_ids(net)]...))
+    m1 = LVector((;[p => marking(net, p)() for p in place_ids(net)]...)) #! does this allocate?
     return m1
 end
-transition(net::PnmlNet, id::Symbol)         = getfirst(Fix2(haspid,id), transitions(net))
-transition_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(transition_ids, vcat, pages(net); init = Vector{Symbol}[])
-has_transition(net::PnmlNet, id::Symbol)     = any(Fix2(has_transition, id), pages(net))
+
+transition(net::PnmlNet, id::Symbol)         = first(Iterators.filter(Fix2(haspid,id), transitions(net)))
+transition_ids(net::PnmlNet)                 = Iterators.flatten(transition_ids.(pages(net)))
+has_transition(net::PnmlNet, id::Symbol)     = any(Fix2(haspid, id), transitions(net))
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 conditions(net::PnmlNet) =
     LVector{condition_value_type(net)}((;[t => condition(net, t) for t in transition_ids(net)]...))
 
-arc(net::PnmlNet, id::Symbol)         = _find_x(id, arcs(net))
-arc_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(arc_ids, vcat, pages(net); init = Vector{Symbol}[])
+arc(net::PnmlNet, id::Symbol)         = first(Iterators.filter(Fix2(haspid,id), arcs(net)))
+arc_ids(net::PnmlNet)                 = Iterators.flatten(arc_ids.(pages(net)))
 has_arc(net::PnmlNet, id::Symbol)     = any(Fix2(has_arc, id), pages(net))
 
-all_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(all_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
-src_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(src_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
-tgt_arcs(net::PnmlNet, id::Symbol) = mapreduce(Fix2(tgt_arcs, id), vcat, pages(net); init = arc_type(net.type)[])
+all_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id || target(a) === id, arcs(net))
+src_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id, arcs(net))
+tgt_arcs(net::PnmlNet, id::Symbol) = filter(a -> target(a) === id, arcs(net))
 
-inscription(net::PnmlNet, arc_id::Symbol) = _find_x(arc_id, inscriptions(net))
+inscription(net::PnmlNet, arc_id::Symbol) = first(Iterators.filter(Fix2(haspid,arc_id), arcs(net)))
 inscriptionV(net::PnmlNet) = Vector((;[t=>inscription(net, t)() for t in transition_ids(net)]...))
 
 #! refplace and reftransition should only be used to derefrence, flatten pages.
 #TODO Add dereferenceing for place, transition, arc traversal.
-refplace(net::PnmlNet, id::Symbol)         = _find_x(id, refplace_ids(net))
-refplace_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(refplace_ids, vcat, pages(net))
+refplace(net::PnmlNet, id::Symbol)         = first(Iterators.filter(Fix2(haspid,id), refplaces(net)))
+refplace_ids(net::PnmlNet)                 = Iterators.flatten(refplace_ids.(pages(net)))
 has_refP(net::PnmlNet, ref_id::Symbol)     = any(Fix2(has_refP, ref_id), pages(net))
 
-reftransition(net::PnmlNet, id::Symbol)         = _find_x(id, reftransition(net))
-reftransition_ids(net::PnmlNet)::Vector{Symbol} = mapreduce(reftransition_ids, vcat, pages(net); init = Vector{Symbol}[])
+reftransition(net::PnmlNet, id::Symbol)         = find(id, reftransitions(net))
+reftransition_ids(net::PnmlNet)                 = Iterators.flatten(reftransition_ids.(pages(net)))
 has_refT(net::PnmlNet, ref_id::Symbol)          = any(Fix2(has_refP, ref_id), pages(net))
 
 #--------------

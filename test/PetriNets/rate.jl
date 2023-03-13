@@ -2,9 +2,9 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode
 
 @testset "get rate label" begin
-    n = parse_node(xml"""<transition id ="birth">
+    n = parse_transition(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
-    </transition>""", registry())
+    </transition>""", PnmlCoreNet(), registry())
     l = PNML.labels(n)
     @test PNML.tag(first(l)) === :rate # only label
     @test PNML.get_label(n, :rate) === first(PNML.labels(n))

@@ -202,12 +202,11 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     exp_refplace_ids      = [:rp1, :rp2]
     exp_reftransition_ids = [:rt2]
 
-    @test (sort∘ collect)(@inferred(place_ids(net))) == exp_place_ids
-    #!@test sort(@inferred(place_ids(net)))         == exp_place_ids
-    @test sort(@inferred(arc_ids(net)))           == exp_arc_ids
-    @test sort(@inferred(transition_ids(net)))    == exp_transition_ids
-    @test sort(@inferred(refplace_ids(net)))      == exp_refplace_ids
-    @test sort(@inferred(reftransition_ids(net))) == exp_reftransition_ids
+    @test (sort ∘ collect)(@inferred(place_ids(net)))         == exp_place_ids
+    @test (sort ∘ collect)(@inferred(arc_ids(net)))           == exp_arc_ids
+    @test (sort ∘ collect)(@inferred(transition_ids(net)))    == exp_transition_ids
+    @test (sort ∘ collect)(@inferred(refplace_ids(net)))      == exp_refplace_ids
+    @test (sort ∘ collect)(@inferred(reftransition_ids(net))) == exp_reftransition_ids
 
     for aid in exp_arc_ids
     end

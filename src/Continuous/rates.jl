@@ -1,7 +1,9 @@
 #---------------------------------------------------------------------------
 # For some nets a transition is labeled with a floating point rate.
-# NB: condition labels are part of high-level nets
 #---------------------------------------------------------------------------
+rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
+rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
+rate_value_type(::Type{T}) where {T <: PnmlType} = Float64
 
 """
 $(TYPEDSIGNATURES)
@@ -10,42 +12,16 @@ Return a transition-id labelled vector of rate values for transitions of net.
 """
 function rates end
 
-rate_value_type(pntd::PnmlType) = Float64
-rate_value_type(::Type{T}) where {T <: PnmlType} = rate_value_type(T())
-rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
-
 function rates(pn::AbstractPetriNet)
-    ishighlevel(nettype(pn)) && error("""
-    The `rate` label is not supported for High-Level Petri Nets.
-    Is recommended to use a `ContinuousNet`.
-    """)
-    rates(pn, transition_ids(pn))
-end
-
-function rates(pn::AbstractPetriNet, idvec::Vector{Symbol})
-    ishighlevel(nettype(pn)) && error("""
-    The `rate` label is not supported for High-Level Petri Nets.
-    Is recommended to use a `ContinuousNet`.
-    """)
-    LVector( (; [transitionid => rate(pn, transitionid) for transitionid in idvec]...))
+    LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_ids(pn)]...))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
+Return rate value of `transition`.  Missing rate labels are defaulted to 0.0.
 """
-function rate end
-
-function rate(pn::AbstractPetriNet, tid::Symbol)
-    ishighlevel(nettype(pn)) && error("""
-    The `rate` label is not supported for High-Level Petri Nets.
-    Is recommended to us a `ContinuousNet`.
-    """)
-    (rate ∘ transition)(pn, tid)
-end
-
-function rate(transition)::Float64
+function rate(transition)
     # <rate> <text>0.3</text> </rate>
     ishighlevel(nettype(transition)) && throw(ArgumentError("""
     The `rate` label is not supported for High-Level Petri Nets.

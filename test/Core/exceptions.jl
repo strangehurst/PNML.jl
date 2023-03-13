@@ -1,6 +1,9 @@
 using PNML, EzXML, ..TestUtils, JET
 using OrderedCollections
-using PNML: tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type
+using PNML:
+    tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type,
+    place_type, refplace_type, transition_type, reftransition_type, arc_type,
+    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition
 
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, node)
@@ -101,19 +104,34 @@ end
              <visible>true</visible> </toolspecific>""")
 end
 
+
 @testset "missing id" begin
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
+    pntd = PnmlCoreNet()
 
-    #parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
-    #                xml"<page></page>", PnmlCoreNet(), registry())
-    @test_throws MissingIDException parse_page!(OrderedDict{Symbol,page_type(PnmlCoreNet())}(),
-                    xml"<page></page>", PnmlCoreNet(), registry())
+    pgdict = OrderedDict{Symbol,page_type(pntd)}()
+    @test_throws MissingIDException parse_page!(pgdict, xml"<page></page>", pntd, registry())
 
-    @test_throws MissingIDException parse_node(xml"<place></place>", registry())
-    @test_throws MissingIDException parse_node(xml"<transition></transition>", registry())
-    @test_throws MissingIDException parse_node(xml"<arc></arc>", registry())
-    @test_throws MissingIDException parse_node(xml"<referencePlace></referencePlace>", registry())
-    @test_throws MissingIDException parse_node(xml"<referenceTransition></referenceTransition>", registry())
+    d = PnmlDict(
+        :id => :test_id,
+        :places => OrderedDict{Symbol, place_type(pntd)}(),
+        :refP => OrderedDict{Symbol, refplace_type(pntd)}(),
+        :transitions => OrderedDict{Symbol, transition_type(pntd)}(),
+        :refT => OrderedDict{Symbol, reftransition_type(pntd)}(),
+        :arcs => OrderedDict{Symbol, arc_type(pntd)}()
+        )
+
+    #PNML.parse_place(xml"<place></place>", pntd, registry())
+    #PNML.parse_transition(xml"<transition></transition>", pntd, registry())
+    #PNML.parse_arc(xml"<arc></arc>", pntd, registry())
+    #PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry())
+    #PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", registry())
+
+    @test_throws MissingIDException PNML.parse_place(xml"<place></place>", pntd, registry())
+    @test_throws MissingIDException PNML.parse_transition(xml"<transition></transition>", pntd, registry())
+    @test_throws MissingIDException PNML.parse_arc(xml"<arc></arc>", pntd, registry())
+    @test_throws MissingIDException PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry())
+    @test_throws MissingIDException PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry())
 end
 
 @testset "graphics" begin

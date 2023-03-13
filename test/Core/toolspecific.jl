@@ -96,7 +96,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         model = parse_str(str)
         #@show model
 
-        page = firstpage(model.net)
+        page = (firstpage ∘ first_net)(model)
         @test_call firstpage(PNML.first_net(model))
 
         @test !has_tools(page)

@@ -12,6 +12,9 @@ abstract type AbstractSort end
 _evaluate(x::AbstractTerm) = x() # functor
 _evaluate(x::AbstractSort) = x() # functor
 
+#!
+#! move to PnmlCore
+#!
 """
 $(TYPEDEF)
 Declarations are the core of high-level Petri Net.
@@ -23,9 +26,6 @@ abstract type AbstractDeclaration <: HLAnnotation end
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name
 
-abstract type SortDeclaration <: AbstractDeclaration end
-abstract type OperatorDeclaration <: AbstractDeclaration end
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -35,9 +35,13 @@ struct UnknownDeclaration  <: AbstractDeclaration
     name::String
     nodename::String
     content::Vector{Any} #! Vector{AnyElement}
-    #sort::S
-    #com::ObjectCommon
 end
+#!
+#!
+#!
+
+abstract type SortDeclaration <: AbstractDeclaration end
+abstract type OperatorDeclaration <: AbstractDeclaration end
 
 """
 $(TYPEDEF)

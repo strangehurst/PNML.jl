@@ -28,8 +28,8 @@ $(TYPEDSIGNATURES)
 
 Return up to 1 immediate child of `el` that is a `tag`.
 """
-function firstchild(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findfirst("./x:$tag | ./$tag", el, ["x" => ns])
+function firstchild(tag::AbstractString, node::XMLNode, ns::AbstractString = pnml_ns)
+    EzXML.findfirst("./x:$tag | ./$tag", node, ["x" => ns])
 end
 
 """

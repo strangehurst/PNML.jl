@@ -22,7 +22,7 @@ select(v...) = any(any(==(g), v) for g in split(GROUP))
 if select("None")
     return
 end
-@show @__DIR__
+
 #############################################################################
 @time "ALL TESTS" begin
 
@@ -42,8 +42,9 @@ end
     end
     @test length(unbound) == 0
 end
-#@testset verbose=true failfast=false showtiming=true "PNML.jl" begin
-@testset verbose=true showtiming=true "PNML.jl" begin
+
+#@testset verbose=true showtiming=true "PNML.jl" begin
+@testset verbose=true failfast=true showtiming=true "PNML.jl" begin
     if select("All", "Base")
         @time "typedefs" @safetestset "typedefs"  begin include("Core/typedefs.jl") end
         @time "registry" @safetestset "registry"  begin include("Core/idregistry.jl") end
