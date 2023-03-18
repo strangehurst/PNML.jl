@@ -50,6 +50,7 @@ function append_page!(l::Page, r::Page;
         #append!(l, r)
         update_maybe!(getproperty(l, k), getproperty(r, k))
     end
+
     # merge netsets
     for s in [:place_set, :transition_set, :arc_set, :refplace_set, :reftransition_set]
         #@show s

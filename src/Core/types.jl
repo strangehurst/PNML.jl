@@ -5,8 +5,8 @@ const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------
 "Alias for dictionary with `Symbol` as key."
-#!const PnmlDict = IdDict{Symbol, Any}
 const PnmlDict = OrderedDict{Symbol, Any}
+#!const PnmlDict = IdDict{Symbol, Any}
 
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]

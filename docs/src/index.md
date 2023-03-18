@@ -3,11 +3,6 @@
 Modules = [PNML]
 ```
 
-## PnmlCore Has Place Transition
-```@index
-Modules = [PnmlCore]
-```
-
 ## PnmlTypeDefs
 ```@index
 Modules = [PnmlTypeDefs]

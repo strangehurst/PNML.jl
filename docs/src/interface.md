@@ -100,7 +100,7 @@ which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
 
-XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@ref) which is used to construct a [`Page`](@ref):
+XML <page> tags are also 1st parsed by [`parse_page!`](@ref) into [`PnmlDict`](@ref) which is used to construct a [`Page`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
@@ -188,7 +188,7 @@ methods(PNML.pid) # hide
 
 `AbstractPnmlObject`s and `PnmlNet`s have a name label.
 [`Declaration`](@ref)s have a name attribute.
-[`ToolInfo](@ref)s have a toolname attribute.
+[`ToolInfo`](@ref)s have a toolname attribute.
 
 [`PNML.name`](@ref)
 ```@example methods
@@ -201,7 +201,7 @@ methods(PNML.name) # hide
 ```@example methods
 methods(PNML.tag) # hide
 ```
-w
+
 ### has\_xml - is xml attached
 
 [`PNML.has_xml`](@ref)
@@ -364,7 +364,7 @@ methods(PNML.inscription)  # hide
 ```@example methods
 methods(PNML.deref!)  # hide
 ```
-### deref\_place - derefeence one place
+### deref\_place - dereference one place
 [`deref_place`](@ref)
 ```@example methods
 methods(PNML.deref_place)  # hide

@@ -77,7 +77,7 @@ end
     parse_pnml(xmlnode, idregistry) -> PnmlModel
 
 Start parse from the root `node` of a well formed pnml XML document.
-Return a [`PnmlModel`](@ref) holding one or more [`PnmlNets`](@ref).
+Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
 """
 function parse_pnml(node::XMLNode, idregistry::PIDR)
     nn = check_nodename(node, "pnml")

@@ -250,12 +250,18 @@ end
 
 
 # Traits
-"""
-Use PnmlType singletons as traits.
-"""
+
+"Values are integers."
+function isdiscrete end
+"Values are floating point."
+function iscontinuous end
+"Values are many-sorted."
+function ishighlevel end
+
 isdiscrete(pntd::PnmlType) = false
 iscontinuous(pntd::PnmlType) = false
 ishighlevel(pntd::PnmlType) = false
+
 isdiscrete(pntd::AbstractPnmlCore) = true
 iscontinuous(pntd::AbstractContinuousNet) = true
 ishighlevel(pntd::AbstractHLCore) = true
@@ -263,6 +269,7 @@ ishighlevel(pntd::AbstractHLCore) = true
 isdiscrete(::Type{<:PnmlType}) = false
 iscontinuous(::Type{<:PnmlType}) = false
 ishighlevel(::Type{<:PnmlType}) = false
+
 isdiscrete(::Type{<:AbstractPnmlCore}) = true
 iscontinuous(::Type{<:AbstractContinuousNet}) = true
 ishighlevel(::Type{<:AbstractHLCore}) = true
