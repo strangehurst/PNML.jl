@@ -1,5 +1,5 @@
 #!
-#! move to PnmlCore. Will split the HL* namespace into two
+#! move to Core. Will split the HL* namespace into two
 #!
 """
 $(TYPEDEF)

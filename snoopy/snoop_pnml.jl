@@ -5,7 +5,7 @@
 #   include("snoop_pnml.jl")
 using SnoopCompileCore
 invalidations = @snoopr begin
-    using PNML, PnmlCore
+    using PNML
 
     tinf = @snoopi_deep begin
         m = parse_str("""

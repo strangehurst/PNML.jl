@@ -1,9 +1,9 @@
-using PNML, PnmlCore
+using PNML
 using EzXML, JET, AbstractTrees
 using Preferences
 using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
         parse_net
-using PnmlCore:
+using Pnml:
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
     Annotation, AnyElement, Arc, Condition,
@@ -16,7 +16,7 @@ using PnmlCore:
     AbstractPnmlObject, PnmlType, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,
     XMLNode,
-    PnmlCore, _evaluate,
+    _evaluate,
     all_arcs, allchildren, append_page!, arc, arc_ids, arcs,
     check_nodename, common, condition, conditions, currentMarkings,
     condition_type, condition_value_type,
@@ -86,9 +86,9 @@ end
 julia> @report_opt function_filter=pnml_ff EzXML.root(EzXML.readxml(fname))
 julia> @report_opt function_filter=pnml_ff registry()
 julia> @report_opt function_filter=pnml_ff parse_pnml(x, r)
-julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_pnml(x, r)
+julia> @report_opt target_modules = (PNML,) parse_pnml(x, r)
 
-julia> @report_opt target_modules = (PNML,PnmlCore,PnmlIDRegistrys,PnmlTypeDefs,) parse_top_net(x,1)
+julia> @report_opt target_modules = (PNML,) parse_top_net(x,1)
 
 julia> @code_warntype parse_pnml(x, r)
 

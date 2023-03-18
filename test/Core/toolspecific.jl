@@ -102,7 +102,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         @test !has_tools(page)
         @test_call has_tools(page)
 
-        place = first(page.places)
+        place = first(PNML.places(page))
         @test has_tools(place)
         @test_call has_tools(place)
         t = tools(place)

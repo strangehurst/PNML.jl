@@ -1,15 +1,12 @@
-struct PageTreeNode{T<:Page}
-    pages::Vector{T}
-end
+AbstractTrees.children(p::Union{PnmlNet,Page}) = get.(Ref(p.pagedict), p.netsets.page_set, nothing)
 
-AbstractTrees.children(p::Union{PnmlNet,Page}) = get.(Ref(p.pagedict), p.pageset, nothing)
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
-AbstractTrees.printnode(io::IO, p::Page) = print(io, pid(p), #"::", typeof(p),
-            " ", arc_ids(p),
-            " ", place_ids(p), " ",
-            " ", transition_ids(p),
-            " ", reftransition_ids(p),
-            " ", refplace_ids(p))
+AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page), #"::", typeof(p),
+            " arcs ", (collect ∘ values ∘ arc_ids)(page),
+            " places ", (collect ∘ values ∘ place_ids)(page), " ",
+            " transitions ", (collect ∘ values ∘ transition_ids)(page),
+            " refplace ", (collect ∘ values ∘ reftransition_ids)(page),
+            " reftransitions ", (collect ∘ values ∘ refplace_ids)(page))
 
 # For type stability we need some/all of these.
 

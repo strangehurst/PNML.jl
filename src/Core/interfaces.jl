@@ -276,14 +276,14 @@ $(TYPEDSIGNATURES)
 function has_refT end
 
 """
-refplace_ids(x) -> Vector{Symbol}
+refplace_ids(x) -> Vector{Symbol} #TODO iterator?
 
 Return reference place pnml ids.
 """
 function refplace_ids end
 
 """
-reftransition_ids(x) -> Vector{Symbol}
+reftransition_ids(x) -> Vector{Symbol} #TODO iterator?
 
 Return reference transition pnml ids.
 """

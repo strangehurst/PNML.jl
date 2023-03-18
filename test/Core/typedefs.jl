@@ -1,6 +1,5 @@
-using PNML, .PnmlCore, EzXML, ..TestUtils, JET
-using PNML: XMLNode, pnmltype
-using .PnmlCore: tagmap
+using PNML, EzXML, ..TestUtils, JET
+using PNML: XMLNode, pnmltype, tagmap
 
 @testset "tagmap" begin
     #@test !haskey(tagmap, "pnml") # parse_excluded warning

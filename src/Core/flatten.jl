@@ -12,14 +12,17 @@ function flatten_pages! end
 flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
 
 function flatten_pages!(net::PnmlNet)
+    println("flatten_pages! $(length(net.pagedict))") #! debug
     if length(net.pagedict) > 1
         # TODO Check for illegal intra-page references?
         # Place content of other pages into 1st page.
+        # Most content is already in the PnmlNetData database.
+        #
         pageids = keys(net.pagedict)
-        @show pageids #! debug
         @assert first(pageids) == pid(first(values(net.pagedict)))
+        #@show pageids #! debug before pop
         key1,val1 = popfirst!(net.pagedict) # Want the non-mergable bits from the first page.
-        @show key1, pageids #! debug
+        #@show key1 pageids #! debug
         @assert key1 ∉ pageids
 
         while !isempty(net.pagedict)
@@ -40,15 +43,22 @@ Append selected fields of `r` to fields of `l`.
 Some, like Names and xml, are omitted because they are scalar values, not collections.
 """
 function append_page!(l::Page, r::Page;
-                      keys = [:places, :transitions, :arcs,
-                              :refTransitions, :refPlaces, :declaration],
+                      keys = [:declaration],
                       comk = [:tools, :labels])
-    #@show "append_page!($(pid(l)), $(pid(r)))"
-    foreach(keys) do key
-        update_maybe!(getproperty(l, key), getproperty(r, key))
+    @show "append_page!($(pid(l)), $(pid(r)))"
+    for k in keys
+        #append!(l, r)
+        update_maybe!(getproperty(l, k), getproperty(r, k))
     end
+    # merge netsets
+    for s in [:place_set, :transition_set, :arc_set, :refplace_set, :reftransition_set]
+        #@show s
+        @eval union!($l.netsets.$s, $r.netsets.$s)
+        #@eval println($l.netsets.$s, "  ", $r.netsets.$s)
+    end
+
     # Optional fields to append.
-    foreach(comk) do key
+    for key in comk
         update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
     end
 
@@ -114,9 +124,10 @@ function deref!(page::Page)
             @set arc.target = t
         end
     end
-    # Remove reference nodes.
-    empty!(page.refPlaces)
-    empty!(page.refTransitions)
+    # Remove reference node idsets for this page.
+    # Nodes still exist in `netdata` and can be accesses at `PnmlNet` level.
+    empty!(page.netsets.refplace_set)
+    empty!(page.netsets.reftransition_set)
     page
 end
 
@@ -129,7 +140,7 @@ deref_place(p::Page, id::Symbol)::Symbol = begin
     #@show "deref_place page $(pid(p)) $id"
     #@show refplaces(p)
     rp = refplace(p, id)
-    #@show rp
+    #@show typeof(rp)
     if isnothing(rp) # Something is really, really wrong.
         error("failed to lookup reference place id $id in page $(pid(p))")
         @show refplace_ids(p)
@@ -150,7 +161,7 @@ function deref_transition(page::Page, id::Symbol)::Symbol
     #@show "deref_transition page $(pid(page)) id $id"
     #@show refplaces(page)
     rt = reftransition(page, id)
-    #@show rt
+    #@show typeof(rt)
     if isnothing(rt) # Something is really, really wrong.
         error("failed to lookup reference transition id $id in page $(pid(page))")
         @show refplace_ids(page)

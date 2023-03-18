@@ -94,23 +94,23 @@ testlogger = TestLogger()
         @inferred arcs(net.net)
 
         #@show typeof(net)
-        @inferred places(net)
-        @inferred transitions(net)
-        @inferred arcs(net)
+        @inferred Base.ValueIterator places(net)
+        @inferred Base.ValueIterator transitions(net)
+        @inferred Base.ValueIterator arcs(net)
     end
 
     for top in [first(pages(net.net)), net.net, net]
         #println()
-        #@show typeof(top)
+        @show typeof(top)
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
 
-        for placeid in places(top)
-            #@show "place $(pid(p))"
-
+        for placeid in place_ids(top)
+            @show "place $(placeid)"
+            has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)
-            p == @inferred Maybe{Place} place(top, placeid)
+            p = @inferred Maybe{Place} place(top, placeid)
             #@test pid(p) ===  p.id
             #! errors @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
             #@test typeof(marking(placeid)) <: typeof(default_marking(p))
@@ -123,7 +123,7 @@ testlogger = TestLogger()
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
             #@show "transition $(pid(t))"
-            @test PnmlCore.ispid(pid(t))(pid(t))
+            @test PNML.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
             t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -179,7 +179,7 @@ end
     """
     model = @inferred parse_str(str)
     net = PNML.first_net(model)
-    @test net isa PnmlCore.PnmlNet
+    @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
     #@show snet
     β = PNML.rates(snet)
@@ -212,9 +212,9 @@ end
 
     snet = @inferred PNML.SimpleNet(net1)
 
-    S = @inferred PNML.place_ids(snet) # [:rabbits, :wolves]
-    T = @inferred PNML.transition_ids(snet)
-    #!@show S, T
+    S = @inferred collect(PNML.place_ids(snet)) # [:rabbits, :wolves]
+    T = @inferred collect(PNML.transition_ids(snet))
+    @show S T
     #!for t in T
     #!@show PNML.in_out(snet, t)
     #!end
@@ -227,8 +227,7 @@ end
         predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
         death=(LVector(wolves=1.0), LVector()),
     )
-    #!@show Δ.birth
-    #!@show tfun.birth
+    @show Δ.birth tfun.birth
     @test typeof(Δ)   == typeof(tfun)
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation

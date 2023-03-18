@@ -64,8 +64,8 @@ end
 
 pid(spn::SimpleNet) = pid(spn.net) # Use since we used it for dispatch.
 
-places(spn::SimpleNet)         = places(spn.net) #.places
-transitions(spn::SimpleNet)    = transitions(spn.net)#.transitions
-arcs(spn::SimpleNet)           = arcs(spn.net)#.arcs
-refplaces(spn::SimpleNet)      = refPlaces(spn.net)#.refPlaces
-reftransitions(spn::SimpleNet) = refTransitions(spn.net)#.refTransitions
+places(spn::SimpleNet)         = places(spn.net)
+transitions(spn::SimpleNet)    = transitions(spn.net)
+arcs(spn::SimpleNet)           = arcs(spn.net)
+refplaces(spn::SimpleNet)      = refPlaces(spn.net)
+reftransitions(spn::SimpleNet) = refTransitions(spn.net)

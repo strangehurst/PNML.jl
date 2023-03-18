@@ -109,7 +109,17 @@ end
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
     pntd = PnmlCoreNet()
 
-    pgdict = OrderedDict{Symbol,page_type(pntd)}()
+    pgdict = PnmlDict( #OrderedDict{Symbol,page_type(pntd)}(
+        :pagedict => OrderedDict{Symbol, page_type(pntd)}(),
+        :netdata => PNML.PnmlNetData(
+            pntd,
+            OrderedDict{Symbol, place_type(pntd)}(),
+            OrderedDict{Symbol, transition_type(pntd)}(),
+            OrderedDict{Symbol, arc_type(pntd)}(),
+            OrderedDict{Symbol, refplace_type(pntd)}(),
+            OrderedDict{Symbol, reftransition_type(pntd)}())
+    )
+    #parse_page!(pgdict, xml"<page></page>", pntd, registry())
     @test_throws MissingIDException parse_page!(pgdict, xml"<page></page>", pntd, registry())
 
     d = PnmlDict(

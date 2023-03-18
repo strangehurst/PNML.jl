@@ -7,6 +7,19 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 """
 abstract type AbstractLabel end
 
+function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
+    if prop_name === :id
+        return getfield(o, :id)::Symbol
+    elseif prop_name === :pntd
+        return getfield(o, :pntd)::PnmlType #! abstract
+    elseif prop_name === :xml
+        return getfield(o, :xml)::XMLNode
+    elseif prop_name === :com
+        return getfield(o, :com)::ObjectCommon
+    end
+    return getfield(o, prop_name)
+end
+
 xmlnode(::T) where {T<:AbstractLabel} = error("missing implementation of `xmlnode` for $T")
 
 "Return `true` if label has `text` field."
@@ -21,8 +34,8 @@ has_structure(l::AbstractLabel) = hasproperty(l, :structure) && !isnothing(l.str
 "Return `structure` field."
 structure(l::AbstractLabel) = has_structure(l) ? l.structure : nothing
 
-has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
-graphics(l::AbstractLabel) = has_graphics(l) ? l.graphics : nothing
+has_graphics(l::AbstractLabel) = has_graphics(l.com)
+graphics(l::AbstractLabel) =  graphics(l.com)
 
 has_tools(l::AbstractLabel) = has_tools(l.com)
 tools(l::AbstractLabel) = tools(l.com)

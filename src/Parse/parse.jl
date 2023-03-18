@@ -99,7 +99,7 @@ function parse_pnml(node::XMLNode, idregistry::PIDR)
     net_tup = tuple([parse_net(net, idregistry) for net in nets]...) #! Allocation?
     @assert length(net_tup) > 0
     if CONFIG.verbose
-        println("PnmlModel nets")
+        println("PnmlModel $(length(net_tup)) nets")
         for n in net_tup
             let n=n
                 print("  ", pid(n), " :: ", typeof(n))
@@ -147,17 +147,10 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     d = let pntd = pntd,
             PNTD = typeof(pntd),
             pgtype = page_type(pntd),
-            #!pgdict = OrderedDict{Symbol, pgtype}(), #! moved to pnd::PnmlNetData
-            pgset = OrderedSet{Symbol}(),
-            # tup = namedtuple(:place, :transition, :arc, :refTransition, :refPlace)(
-            #     OrderedDict{Symbol, place_type(PNTD)}(), #Place{PNTD,M,S}},
-            #     OrderedDict{Symbol, transition_type(PNTD)}(), #Transition{PNTD,C}},
-            #     OrderedDict{Symbol, arc_type(PNTD)}(), #Arc{PNTD,I}}
-            #     OrderedDict{Symbol, refplace_type(PNTD)}(), # RefPlace{PNTD}},
-            #     OrderedDict{Symbol, reftransition_type(PNTD)}(), #RefTransition{PNTD}},
-            #     ),
-            pnd = PnmlNetData{PNTD}(
-                        OrderedDict{Symbol, page_type(PNTD)}(),
+            pgdict = OrderedDict{Symbol, pgtype}(),
+            netsets = PnmlNetSets(),
+            pnd = PnmlNetData(
+                        pntd,
                         OrderedDict{Symbol, place_type(PNTD)}(),
                         OrderedDict{Symbol, transition_type(PNTD)}(),
                         OrderedDict{Symbol, arc_type(PNTD)}(),
@@ -165,25 +158,22 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
                         OrderedDict{Symbol, reftransition_type(PNTD)}())
 
         # println()
-        # @show typeof(tup)
-        # println()
-        # @show tup.place tup.transition tup.arc tup.refPlace tup.refTransition
-        println()
-        println("--------------------------------------------")
-        @show typeof(pnd) propertynames(pnd)
-        for x in  propertynames(pnd)
-            @show length(getproperty(pnd, x))
-        end
-        println("--------------------------------------------")
-
+        # println("--------------------------------------------")
+        # @show typeof(pnd) propertynames(pnd)
+        # @show length(pnd.place_dict)
+        # @show length(pnd.transition_dict)
+        # @show length(pnd.arc_dict)
+        # @show length(pnd.reftransition_dict)
+        # @show length(pnd.refplace_dict)
+        # println("--------------------------------------------")
 
         dict = pnml_node_defaults(
             node,
             :tag => Symbol(nn),
             :id => register_id!(idregistry, node["id"]),
-            :pageset => pgset, # Root of the page id tree (pageset is per-tree-node data).
-            #:pagedict => pgdict, # All pages & net share
-            :netdata => pnd,
+            :netsets => netsets, # Per-page-tree-node data.
+            :pagedict => pgdict, # All pages & net share.
+            :netdata => pnd,# All pages & net share.
             :declaration => Declaration(),
             )
 
@@ -193,21 +183,22 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
 
     if CONFIG.verbose
         println()
-        println("Net ", d[:id], ", ", length(d[:netdata][:page]), " Pages: ",  keys(d[:netdata][:page]))
+        println("Net ", d[:id], ", ", length(d[:pagedict]), " Pages: ",  keys(d[:pagedict]))
         print(" page ids:")
-        for pgid in d[:pageset]
+        for pgid in d[:netsets].page_set
             print(" ", pgid)
             @assert pid(d[:pagedict][pgid]) == pgid
         end
     end
 
-    net = let pntd=pntd, id=d[:id], pgset=d[:pageset]
-        PnmlNet(pntd, id, d[:netdata], pgset, d[:declaration], d[:name], ObjectCommon(d), node)
+    net = let pntd=pntd
+        PnmlNet(pntd, d[:id], d[:pagedict], d[:netdata], d[:netsets],
+                d[:declaration], d[:name], ObjectCommon(d), node)
     end
 
     if CONFIG.verbose
         println()
-        PnmlCore.pagetree(net)
+        PNML.pagetree(net)
         println()
         AbstractTrees.print_tree(net)
         println()
@@ -259,7 +250,7 @@ end
 function parse_net_page!(d::PnmlDict, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     let pg = parse_page!(d, node, pntd, idregistry), pageid = pid(pg)
         d[:pagedict][pageid] = pg #! PAGE: add to dictonary and id set
-        push!(d[:pageset], pageid)
+        push!(d[:netsets].page_set, pageid)
         if CONFIG.verbose
             println("parse_net_page! $pntd $pageid")
         end
@@ -271,7 +262,7 @@ end
 function parse_subpage!(d::PnmlDict, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     let pg = parse_page!(d, node, pntd, idregistry), pageid = pid(pg)
         d[:pagedict][pageid] = pg #! PAGE: add to dictonary and id set
-        push!(d[:pageset], pageid)
+        push!(d[:netsets].page_set, pageid)
 
         if CONFIG.verbose
             println("parse_subpage! $pntd $pageid")
@@ -292,31 +283,29 @@ function parse_page!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) wher
         println("parse $nn $pntd $(node["id"])")
     end
 
-    d2 = let pgset = OrderedSet{Symbol}()
-        pnml_node_defaults(
+    d2 = pnml_node_defaults(
             node,
             :tag => Symbol(nn),
             :id => register_id!(idregistry, node["id"]),
             :declaration => Declaration(), #! HL
-            :pageset => pgset,
-            :netdata
-            :pagedict => d[:pagedict], #! PAGE: propagate dictionary
+            :netsets => PnmlNetSets(),
+            :pagedict => d[:pagedict],
             :netdata => d[:netdata] #! propagate to nodes
         )
-    end
 
     #! parse_page_2!(d2, node, pntd, idregistry)
     for child in elements(node)
         if CONFIG.verbose
             println("""parse $(nodename(child)) $(child["id"])""")
         end
-        #@assert haskey(d, :netdata)
+        @assert haskey(d2, :netdata)
+        @assert haskey(d2, :netsets)
         @match nodename(child) begin
-            "place"               => parse_place!(d2[:netdata].place, child, pntd, idregistry)
-            "transition"          => parse_transition!(d2[:netdata].transition, child, pntd, idregistry)
-            "arc"                 => parse_arc!(d2[:netdata].arc, child, pntd, idregistry)
-            "referencePlace"      => parse_refPlace!(d2[:netdata].refPlace, child, pntd, idregistry)
-            "referenceTransition" => parse_refTransition!(d2[:netdata].refTransition, child, pntd, idregistry)
+            "place"               => parse_place!(d2, child, pntd, idregistry)
+            "transition"          => parse_transition!(d2, child, pntd, idregistry)
+            "arc"                 => parse_arc!(d2, child, pntd, idregistry)
+            "referencePlace"      => parse_refPlace!(d2, child, pntd, idregistry)
+            "referenceTransition" => parse_refTransition!(d2, child, pntd, idregistry)
             "page" => parse_subpage!(d2, child, pntd, idregistry)
             _ => parse_pnml_node_common!(d2, child, pntd, idregistry)
         end
@@ -325,72 +314,58 @@ function parse_page!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) wher
     if CONFIG.verbose
         println("Page ", d2[:id], " add to ",  keys(d[:pagedict]))
         print(" subpage ids:")
-        for pgid in d2[:pageset]
+        for pgid in d2[:netsets].page_set
             print(" ", pgid)
         end
         println()
     end
 
-    let pntd=pntd, pgdict=d2[:pagedict], pgset=d2[:pageset]
+    let pntd=pntd
         Page(
             pntd,
             d2[:id],
             d2[:declaration],
             d2[:name],
             ObjectCommon(d),
-            pgdict, # Dictionary of pages shared by net and all pages.
-            d2[:netdata], # NamedTuple
-            pgset, # Set of page ids of subpages of this page.
+            d2[:pagedict], #! shared by net and all pages.
+            d2[:netdata], #! shared by net and all pages.
+            d2[:netsets], # Set of ids "owned" by this page.
         )
     end
 end
 
-# function parse_page_2!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
-#     for child in elements(node)
-#         if CONFIG.verbose
-#             println("""parse $(nodename(child)) $(child["id"])""")
-#         end
-#         @assert haskey(d, :netdata)
-#         @match nodename(child) begin
-#             "place"               => parse_place!(d[:netdata].place, child, pntd, idregistry)
-#             "transition"          => parse_transition!(d[:netdata].transition, child, pntd, idregistry)
-#             "arc"                 => parse_arc!(d[:netdata].arc, child, pntd, idregistry)
-#             "referencePlace"      => parse_refPlace!(d[:netdata].refPlace, child, pntd, idregistry)
-#             "referenceTransition" => parse_refTransition!(d[:netdata].refTransition, child, pntd, idregistry)
-#             "page" => parse_subpage!(d, child, pntd, idregistry)
-#             _ => parse_pnml_node_common!(d, child, pntd, idregistry)
-#         end
-#     end
-#     return d
-# end
-
-function parse_place!(placedict, child, pntd, idregistry)
+function parse_place!(d2, child, pntd, idregistry)
     id, p = parse_place(child, pntd, idregistry)
-    placedict[id] = p
+    push!(d2[:netsets].place_set, id)
+    d2[:netdata].place_dict[id] = p
     return nothing
 end
 
-function parse_transition!(transdict, child, pntd, idregistry)
+function parse_transition!(d2, child, pntd, idregistry)
     p = parse_transition(child, pntd, idregistry)
-    transdict[pid(p)] = p
+    push!(d2[:netsets].transition_set, pid(p))
+    d2[:netdata].transition_dict[pid(p)] = p
     return nothing
 end
 
-function parse_arc!(arcdict, child, pntd, idregistry)
+function parse_arc!(d2, child, pntd, idregistry)
     p = parse_arc(child, pntd, idregistry)
-    arcdict[pid(p)] = p
+    push!(d2[:netsets].arc_set, pid(p))
+    d2[:netdata].arc_dict[pid(p)] = p
     return nothing
 end
 
-function parse_refPlace!(refdict, child, pntd, idregistry)
+function parse_refPlace!(d2, child, pntd, idregistry)
     p = parse_refPlace(child, pntd, idregistry)
-    refdict[pid(p)] = p
+    push!(d2[:netsets].refplace_set, pid(p))
+    d2[:netdata].refplace_dict[pid(p)] = p
     return nothing
 end
 
-function parse_refTransition!(refdict, child, pntd, idregistry)
+function parse_refTransition!(d2, child, pntd, idregistry)
     p = parse_refTransition(child, pntd, idregistry)
-    refdict[pid(p)] = p
+    push!(d2[:netsets].reftransition_set, pid(p))
+    d2[:netdata].reftransition_dict[pid(p)] = p
     return nothing
 end
 
@@ -550,7 +525,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     d = pnml_node_defaults(
         node,
         :tag => Symbol(nn),
-        :id => idregistryister_id!(idregistry, node["id"]),
+        :id => register_id!(idregistry, node["id"]),
         :ref => Symbol(node["ref"]),
     )
 

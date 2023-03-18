@@ -1,14 +1,12 @@
 using Pkg
-cd(@__DIR__)
-Pkg.activate(".")
+#cd(@__DIR__)
+#Pkg.activate(".")
 # The `dev` the various packages in the monorepo.
-Pkg.develop(path="..")
-Pkg.develop(path="../PnmlCore")
-Pkg.instantiate()
-Pkg.precompile()
+#Pkg.develop(path="..")
+#Pkg.instantiate()
+#Pkg.precompile()
 
-using PNML, PnmlCore
-#using PrettyPrinting
+using PNML
 using Documenter
 
 using PNML:
@@ -61,7 +59,6 @@ using PNML:
 ################################################################################
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
-DocMeta.setdocmeta!(PnmlCore, :DocTestSetup, :(using PnmlCore); recursive=true)
 
 # for m ∈ [PNML]
 #     for i ∈ propertynames(m)
@@ -75,7 +72,7 @@ DocMeta.setdocmeta!(PnmlCore, :DocTestSetup, :(using PnmlCore); recursive=true)
 makedocs(;
          clean = true,
          doctest=true,
-         modules=[PNML, PnmlCore],
+         modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          repo="/home/jeff/PNML/{path}",

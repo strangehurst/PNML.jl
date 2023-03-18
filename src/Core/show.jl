@@ -140,9 +140,9 @@ function Base.show(io::IO, ti::ToolInfo)
     pprint(io, ti)
 end
 
-PrettyPrinting.quoteof(ti::ToolInfo) = :($(PrettyPrinting.quoteof(ti.toolname)),
+PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
                                          $(PrettyPrinting.quoteof(ti.version)),
-                                         $(PrettyPrinting.quoteof(ti.infos)))
+                                         $(PrettyPrinting.quoteof(ti.infos))))
 
 #-------------------
 function Base.show(io::IO, tg::TokenGraphics)
@@ -294,13 +294,13 @@ Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
            " name '", name(page), "', ",
-           length(page.places), " places, ",
-           length(page.transitions), " transitions, ",
-           length(page.arcs), " arcs, ",
+           length(places(page)), " places, ",
+           length(transitions(page)), " transitions, ",
+           length(arcs(page)), " arcs, ",
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
-           length(page.refPlaces), " refP, ",
-           length(page.refTransitions), " refT, ",
-           length(page.pageset), " subpages",
+           length(refPlaces(page)), " refP, ",
+           length(refTransitions(page)), " refT, ",
+           length(page.netsets.page_set), " subpages",
            summary(page.com)
            )
 end

@@ -1,6 +1,5 @@
-using PNML, .PnmlCore, EzXML, ..TestUtils, JET
-using PNML: Maybe
-using .PnmlCore:
+using PNML, EzXML, ..TestUtils, JET
+using PNML: Maybe,
     tag, pid, xmlnode, firstpage, parse_file, parse_name,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
     nets, pages, arcs, place, places, transitions, has_place,

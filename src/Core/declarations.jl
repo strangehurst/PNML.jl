@@ -7,8 +7,7 @@ Other PNTDs may introduce non-standard uses for declarations.
 
 # Notes
 `declarations` is implemented as a collection of `Any`
-We can use [`PnmlCore`](@ref) infrastructure implemented for HL nets to provide
-nonstandard extensions.
+We can use infrastructure implemented for HL nets to provide nonstandard extensions.
 """
 struct Declaration <: Annotation
     declarations::Vector{Any} #TODO dictionary? Type parameter?

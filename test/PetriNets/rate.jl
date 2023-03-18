@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode
 
 @testset "get rate label" begin
-    n = parse_transition(xml"""<transition id ="birth">
+    n = PNML.parse_transition(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
     </transition>""", PnmlCoreNet(), registry())
     l = PNML.labels(n)

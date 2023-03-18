@@ -77,13 +77,13 @@ end
         function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
 
         @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
-        @test_opt function_filter=function_filter target_modules=(PNML,PnmlCore,) unclaimed_label(node, PnmlCoreNet(), reg1)
+        @test_opt function_filter=function_filter target_modules=(PNML,) unclaimed_label(node, PnmlCoreNet(), reg1)
         @test_opt PnmlLabel(u, node)
-        @test_opt function_filter=function_filter target_modules = (PNML,PnmlCore,) anyelement(node, reg2)
+        @test_opt function_filter=function_filter target_modules = (PNML,) anyelement(node, reg2)
 
-        @test_call unclaimed_label(node, PnmlCoreNet(), reg1) #!
-        @test_call PnmlLabel(u, node)
-        @test_call anyelement(node, reg2) #!
+        @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1) #!
+        @test_call target_modules = (PNML,) PnmlLabel(u, node)
+        @test_call target_modules = (PNML,) anyelement(node, reg2) #!
 
         @test !isnothing(u)
         @test !isnothing(l)
@@ -116,7 +116,7 @@ end
         haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
         haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
         haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
-<
+
         #@report_opt isregistered_id(reg2, :id)
         @test_call isregistered_id(reg2, :id)
     end
@@ -212,7 +212,7 @@ end
     for i in 1:4 # add 4 labels
         x = i < 3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call add_label!(d, node, PnmlCoreNet(), reg)
+        @test_call target_modules = (PNML,) add_label!(d, node, PnmlCoreNet(), reg)
         n = add_label!(d, node, PnmlCoreNet(), reg)
         @test n isa Vector{PnmlLabel}
         #@show n
