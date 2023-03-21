@@ -18,10 +18,12 @@ function parse_toolspecific(node, pntd, reg)
 
     d[:content] = AnyElement[] #
 
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         #TODO: Specialize/verify on tool, version. User supplied?
         #TODO: Register additional tool specific parsers?
         push!(d[:content], anyelement(child, pntd, reg))
     end
-    ToolInfo(d[:tool], d[:version], d[:content], node)
+    let tool=d[:tool], version=d[:version], content=d[:content]
+        ToolInfo(tool, version, content, node)
+    end
 end

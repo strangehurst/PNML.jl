@@ -47,7 +47,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 """, contentparse = (c) -> begin end)
 
     @testset for s in [str1, str2, str3, str4, str5]
-        n = parse_node(xmlroot(s.str), registry())
+        n = parse_node(xmlroot(s.str), PnmlCoreNet(), registry())
         @test typeof(n) <: ToolInfo
         @test xmlnode(n) isa Maybe{EzXML.Node}
         @test_call xmlnode(n)
@@ -70,7 +70,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test n.infos isa Vector{AnyElement}
         @test PNML.infos(n) isa Vector{AnyElement}
-        foreach(n.infos) do toolinfo
+        for toolinfo in n.infos
             @test toolinfo isa AnyElement
             # Content may optionally attach its xml.
             @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
@@ -131,7 +131,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
                 @test y[1].dict == y[2].dict
             end
 
-            x = parse_node(xmlroot(s.str), registry())
+            x = parse_node(xmlroot(s.str), PnmlCoreNet(), registry())
 
             @test typeof(t[i].infos) == typeof(x.infos)
             for y in zip(t[i].infos, x.infos)

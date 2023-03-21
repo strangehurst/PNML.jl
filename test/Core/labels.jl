@@ -6,6 +6,8 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     default_term, default_one_term, default_zero_term,
     value
 
+const pntd = PnmlCoreNet()
+
 @testset "ObjectCommon" begin
     noisy::Bool = false
     oc = @inferred PNML.ObjectCommon()
@@ -134,7 +136,7 @@ end
     </initialMarking>
     """
 
-    n = parse_node(node, registry())
+    n = parse_node(node, pntd, registry())
     @test typeof(n) <: PNML.Marking
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test typeof(value(n)) <: Union{Int,Float64}
@@ -164,7 +166,7 @@ end
 @testset "PT inscription" begin
     n1 = xml"<inscription> <text> 12 </text> </inscription>"
     @testset for node in [n1]
-        n = parse_node(node, registry())
+        n = parse_node(node, pntd, registry())
         @test typeof(n) <: PNML.Inscription
         #@test xmlnode(n) isa Maybe{EzXML.Node}
         @test value(n) == 12
@@ -176,7 +178,7 @@ end
 
 @testset "text" begin
     str1 = """<text>ready</text>"""
-    n = parse_node(xmlroot(str1), registry())
+    n = parse_node(xmlroot(str1), pntd, registry())
     @test n == "ready"
 
     str2 = """
@@ -184,13 +186,13 @@ end
 ready
 </text>
     """
-    n = parse_node(xmlroot(str2), registry())
+    n = parse_node(xmlroot(str2), pntd, registry())
     @test n == "ready"
 
     str3 = """
  <text>    ready  </text>
     """
-    n = parse_node(xmlroot(str3), registry())
+    n = parse_node(xmlroot(str3), pntd, registry())
     @test n == "ready"
 
     str4 = """
@@ -198,7 +200,7 @@ ready
 to
 go</text>
     """
-    n = parse_node(xmlroot(str4), registry())
+    n = parse_node(xmlroot(str4), pntd, registry())
     @test n == "ready\nto\ngo"
 end
 
@@ -223,7 +225,7 @@ end
 
     @test length(d[:labels]) == 4
     @test length(labels(d)) == 4
-    foreach(labels(d)) do l
+    for l in labels(d)
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
         @test xmlnode(l) isa Maybe{EzXML.Node}

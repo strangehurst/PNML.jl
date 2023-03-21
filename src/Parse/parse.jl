@@ -8,10 +8,6 @@ otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
 All uses are expected to be pnml labels attached to pnml graph nodes, arcs, nets, pages,
 that are excluded from this parsing pathway.
 """
-function parse_node end
-
-parse_node(node::XMLNode, idregistry::PIDR) = parse_node(node, PnmlCoreNet(), idregistry)
-
 function parse_node(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     #println("parse_node $(EzXML.nodename(node))") # Useful for debug.
     if haskey(tagmap, EzXML.nodename(node))
@@ -96,7 +92,7 @@ function parse_pnml(node::XMLNode, idregistry::PIDR)
 
     # Do not yet have a PNTD defined, so call parse_net directly.
     # Each net can be subtype/specialization of generic Net subtype.
-    net_tup = tuple([parse_net(net, idregistry) for net in nets]...) #! Allocation?
+    net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation?
     @assert length(net_tup) > 0
     if CONFIG.verbose
         println("PnmlModel $(length(net_tup)) nets")
@@ -112,7 +108,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Return a dictonary of the pnml net with keys matching their XML tag names.
+Return a [`PnmlNet`](@ref)`.
 """
 function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
@@ -120,9 +116,11 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     haskey(node, "type") || throw(MalformedException("$nn missing type", node))
 
     if CONFIG.verbose
-        println()
-        println("=====")
-        println("""parse_net $(node["id"]) $(node["type"]) $(pntd_override)""")
+        println("""
+
+        =========
+        parse_net $(node["id"]) $(node["type"]) $(pntd_override)
+        """)
     end
 
     isempty(allchildren("page", node)) &&
@@ -130,71 +128,15 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
 
     # Although the specification says the petri net type definition (pntd) must be attached
     # to the <net> element, it is allowed by this package to override that value.
-
-    pn_typedef = pnmltype(node["type"])
+     pn_typedef = pnmltype(node["type"])
     if isnothing(pntd_override)
         pntd = pn_typedef
     else
         pntd = pntd_override
         @info "net $(node["id"]) pntd set to $pntd, overrides $pn_typedef"
     end
-
-    # Create a PnmlDict with keys for possible child tags.
-    # Some keys have known/required values.
-    # Optional key values are nothing for single object or empty vector when multiples.
-    # Keys that have pural names usually have a vector value.
-    # The 'graphics' key is one exception and has a single value.
-    d = let pntd = pntd,
-            PNTD = typeof(pntd),
-            pgtype = page_type(pntd),
-            pgdict = OrderedDict{Symbol, pgtype}(),
-            netsets = PnmlNetSets(),
-            pnd = PnmlNetData(
-                        pntd,
-                        OrderedDict{Symbol, place_type(PNTD)}(),
-                        OrderedDict{Symbol, transition_type(PNTD)}(),
-                        OrderedDict{Symbol, arc_type(PNTD)}(),
-                        OrderedDict{Symbol, refplace_type(PNTD)}(),
-                        OrderedDict{Symbol, reftransition_type(PNTD)}())
-
-        # println()
-        # println("--------------------------------------------")
-        # @show typeof(pnd) propertynames(pnd)
-        # @show length(pnd.place_dict)
-        # @show length(pnd.transition_dict)
-        # @show length(pnd.arc_dict)
-        # @show length(pnd.reftransition_dict)
-        # @show length(pnd.refplace_dict)
-        # println("--------------------------------------------")
-
-        dict = pnml_node_defaults(
-            node,
-            :tag => Symbol(nn),
-            :id => register_id!(idregistry, node["id"]),
-            :netsets => netsets, # Per-page-tree-node data.
-            :pagedict => pgdict, # All pages & net share.
-            :netdata => pnd,# All pages & net share.
-            :declaration => Declaration(),
-            )
-
-        parse_net_2!(dict, node, pntd, idregistry)
-        dict
-    end
-
-    if CONFIG.verbose
-        println()
-        println("Net ", d[:id], ", ", length(d[:pagedict]), " Pages: ",  keys(d[:pagedict]))
-        print(" page ids:")
-        for pgid in d[:netsets].page_set
-            print(" ", pgid)
-            @assert pid(d[:pagedict][pgid]) == pgid
-        end
-    end
-
-    net = let pntd=pntd
-        PnmlNet(pntd, d[:id], d[:pagedict], d[:netdata], d[:netsets],
-                d[:declaration], d[:name], ObjectCommon(d), node)
-    end
+    # Now we know the PNTD and can parse.
+    net = parse_net_1(node, pntd, idregistry)
 
     if CONFIG.verbose
         println()
@@ -203,7 +145,49 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
         AbstractTrees.print_tree(net)
         println()
     end
-    return net
+
+    net
+end
+
+"Parse net with a defined PNTD"
+function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD <: PnmlType}
+
+    dict = let pntd = pntd, PNTD = typeof(pntd),
+        mtype = marking_type(PNTD),
+        itype = inscription_type(PNTD),
+        ctype = condition_type(PNTD),
+        stype = sort_type(PNTD),
+        pgtype = Page{PNTD, mtype, itype, ctype, stype},
+        pgdict = OrderedDict{Symbol, pgtype}(),
+        netsets = PnmlNetSets(),
+        pnd = PnmlNetData(pntd,
+                    OrderedDict{Symbol, Place{PNTD, mtype, stype}}(),
+                    OrderedDict{Symbol, Transition{PNTD, ctype}}(),
+                    OrderedDict{Symbol, Arc{PNTD, itype}}(),
+                    OrderedDict{Symbol, RefPlace{PNTD}}(),
+                    OrderedDict{Symbol, RefTransition{PNTD}}())
+
+        # Create a PnmlDict with keys for possible child tags.
+        dict = pnml_node_defaults(
+            node,
+            :tag => Symbol(nodename(node)),
+            :id => register_id!(idregistry, node["id"]),
+            :netsets => netsets, # Per-page-tree-node data.
+            :pagedict => pgdict, # All pages & net share.
+            :netdata => pnd,# All pages & net share.
+            :declaration => Declaration(),)
+    end
+    # Fill the dictionary.
+    parse_net_2!(dict, node, pntd, idregistry)
+
+    if CONFIG.verbose
+        println("""
+                Net  $(dict[:id]), $(length(dict[:pagedict]))  Pages, keys:  $(keys(dict[:pagedict]))
+                    page ids: $(collect(values(dict[:netsets].page_set)))
+                """)
+    end
+    return PnmlNet(pntd, dict[:id], dict[:pagedict], dict[:netdata], dict[:netsets],
+                        dict[:declaration], dict[:name], ObjectCommon(dict), node)
 end
 
 """
@@ -336,8 +320,10 @@ end
 
 function parse_place!(d2, child, pntd, idregistry)
     id, p = parse_place(child, pntd, idregistry)
-    push!(d2[:netsets].place_set, id)
-    d2[:netdata].place_dict[id] = p
+    let pset = d2[:netsets].place_set, pdict = d2[:netdata].place_dict
+        push!(pset, id)
+        pdict[id] = p
+    end
     return nothing
 end
 
@@ -432,7 +418,7 @@ end
 "Specialize transition label parsing on Petri Net Type Definition."
 function parse_transition_2! end
 function parse_transition_2!(d::PnmlDict, pntd::PnmlType, node::XMLNode, idregistry::PIDR)
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         @match nodename(child) begin
             "condition" => (d[:condition] = parse_condition(child, pntd, idregistry))
             _ => parse_pnml_node_common!(d, child, pntd, idregistry)
@@ -461,7 +447,7 @@ function parse_arc(node, pntd, idregistry::PIDR)
         :source => Symbol(node["source"]),
         :target => Symbol(node["target"]),
     )
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         parse_arc_labels!(d, child, pntd, idregistry) # Dispatch on pntd
     end
 
@@ -505,7 +491,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         :ref => Symbol(node["ref"]),
     )
 
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         @match nodename(child) begin
             _ => parse_pnml_node_common!(d, child, pntd, idregistry)
         end
@@ -529,7 +515,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         :ref => Symbol(node["ref"]),
     )
 
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         @match nodename(child) begin
             _ => parse_pnml_node_common!(d, child, pntd, idregistry)
         end
@@ -619,7 +605,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     d = pnml_label_defaults(node, :tag => Symbol(nn), :value => val)
 
-    foreach(elements(node)) do child
+    for child in elements(node)
         @match nodename(child) begin
             # We extend to real numbers.
             "text" => (d[:value] = number_value(marking_value_type(pntd), (string∘strip∘nodecontent)(child))
@@ -641,7 +627,7 @@ $(TYPEDSIGNATURES)
 function parse_inscription(node, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "inscription")
     d = pnml_label_defaults(node, :tag => Symbol(nn), :value => nothing)
-    foreach(elements(node)) do child
+    for child in elements(node)
         @match nodename(child) begin
             "text" => (d[:value] = number_value(inscription_value_type(pntd), (string∘strip∘nodecontent)(child)))
             # Should not have a structure.
@@ -698,7 +684,7 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
     nn = check_nodename(node, "hlinscription")
     @debug nn
     d = pnml_label_defaults(node, :tag => Symbol(nn))
-    foreach(elements(node)) do child
+    for child in elements(node)
         @match nodename(child) begin
             # Expect <structure> to contain a single Term as a child tag.
             # Otherwise use the default inscription Term.
@@ -733,7 +719,7 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "condition")
     d = pnml_label_defaults(node, :tag => Symbol(nn))
 
-    foreach(elements(node)) do child
+    for child in elements(node)
         @match nodename(child) begin
             "structure" => (d[:structure] = parse_condition_structure(child, pntd, idregistry))
             _ => parse_pnml_label_common!(d, child, pntd, idregistry)

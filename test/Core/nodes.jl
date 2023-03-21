@@ -4,6 +4,8 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     pid, marking, condition, inscription,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
+const pntd = PnmlCoreNet()
+
 @testset "place" begin
     node = xml"""
       <place id="place1">
@@ -11,9 +13,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), registry())
-    @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
-    id,n = parse_place(node, PnmlCoreNet(), registry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
+    @test_call target_modules = target_modules parse_place(node, pntd, registry())
+    id,n = parse_place(node, pntd, registry())
     @test id === :place1
     @test typeof(n) <: Place
     @test_call has_xml(n)
@@ -63,13 +65,13 @@ end
     @test condition(n) isa Bool #! define non-HL other's semantics.
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    #@test_throws ErrorException parse_node(node, registry())
-    @test parse_transition(node, PnmlCoreNet(), registry()) !== nothing
+    #@test_throws ErrorException parse_node(node, pntd, registry())
+    @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    #@test_throws ErrorException parse_node(node, registry())
-    @test parse_transition(node, PnmlCoreNet(), registry()) !== nothing
+    #@test_throws ErrorException parse_node(node, pntd, registry())
+    @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    t = parse_transition(node, PnmlCoreNet(), registry())
+    t = parse_transition(node, pntd, registry())
     @test t isa Transition
     @test_call condition(t)
     @test condition(t) === true

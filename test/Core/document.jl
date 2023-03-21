@@ -80,11 +80,11 @@ end
 
     @test_opt pnmltype(:ptnet)
     @test_call pnmltype(:ptnet)
-    foreach(v1) do net
+    for net in v1
         @test net.type === pnmltype(:ptnet)
     end
     v2 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, "ptnet")
-    foreach(v2) do net
+    for net in v2
         @test net.type === PNML.PnmlTypeDefs.pnmltype(:ptnet)
     end
 
@@ -92,7 +92,7 @@ end
     @test length(v1) == 2
 
     v3 = PNML.find_nets(model, :pnmlcore)
-    foreach(v3) do net
+    for net in v3
         @test net.type === pnmltype(:pnmlcore)
     end
 
@@ -100,7 +100,7 @@ end
     @test v3 != v1
 
     @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
-        foreach(PNML.find_nets(model, t)) do net
+        for net in PNML.find_nets(model, t)
             @test net.type === pnmltype(t)
         end
     end

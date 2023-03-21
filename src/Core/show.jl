@@ -57,7 +57,7 @@ function shownames(io::IO, g::Graphics)
         ", font=",      g.font,
         ", line=",      g.line,
         ", offset=",    g.offset,
-        ", position=",  g.position, ")")
+        ", positions=",  g.positions, ")")
 end
 
 function Base.show(io::IO, g::Graphics)
@@ -67,7 +67,7 @@ function Base.show(io::IO, g::Graphics)
             g.font, ", ",
             g.line, ", ",
             g.offset, ", ",
-            g.position, ")")
+            g.positions, ")")
 end
 
 #-------------------
@@ -294,12 +294,12 @@ Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
            " name '", name(page), "', ",
-           length(places(page)), " places, ",
-           length(transitions(page)), " transitions, ",
-           length(arcs(page)), " arcs, ",
+           length(place_ids(page)), " places, ",
+           length(transition_ids(page)), " transitions, ",
+           length(arc_ids(page)), " arcs, ",
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
-           length(refPlaces(page)), " refP, ",
-           length(refTransitions(page)), " refT, ",
+           length(page.netsets.refplace_set), " refP, ",
+           length(page.netsets.reftransition_set), " refT, ",
            length(page.netsets.page_set), " subpages",
            summary(page.com)
            )
@@ -322,12 +322,12 @@ function Base.show(io::IO, page::Page)
     # Start indent here. Will indent subpages.
     inc_io = inc_indent(io)
 
-    show_page_field(inc_io, "places:",         places(page))
-    show_page_field(inc_io, "transitions:",    transitions(page))
-    show_page_field(inc_io, "arcs:",           arcs(page))
+    show_page_field(inc_io, "places:",         place_ids(page))
+    show_page_field(inc_io, "transitions:",    transition_ids(page))
+    show_page_field(inc_io, "arcs:",           arc_ids(page))
     show_page_field(inc_io, "declaration:",    declarations(page))
-    show_page_field(inc_io, "refPlaces:",      refplaces(page))
-    show_page_field(inc_io, "refTransitions:", reftransitions(page))
+    show_page_field(inc_io, "refPlaces:",      page.netsets.refplace_set)
+    show_page_field(inc_io, "refTransitions:", page.netsets.reftransition_set)
     show_common(io, page)
     #!show_page_field(inc_io, "subpages:",       pages(page))
 end
@@ -358,7 +358,7 @@ end
 function Base.show(io::IO, net::PnmlNet)
     println(io, summary(net))
     iio = inc_indent(io) # Indent any declarations.
-    foreach(declarations(net)) do decl
+    for decl in declarations(net)
         print(iio, indent(io))
         show(iio, MIME"text/plain"(), decl)
         println(iio, "\n")

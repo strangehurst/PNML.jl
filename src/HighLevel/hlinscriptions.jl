@@ -48,5 +48,5 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{inscription_value_type(T)}
-inscription_value_type(::Type{<:AbstractHLCore}) = Term{PnmlDict}
+inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term{PnmlDict}}
+inscription_value_type(::Type{<:AbstractHLCore}) = Int #!Term{PnmlDict}

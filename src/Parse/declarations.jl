@@ -23,7 +23,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "declaration")
     d = pnml_label_defaults(node, :tag=>Symbol(nn))
 
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         @match nodename(child) begin
             "structure" => (d[:structure] = decl_structure(child, pntd, reg))
             _ => parse_pnml_label_common!(d, child, pntd, reg)
@@ -51,7 +51,7 @@ function parse_declarations(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "declarations")
 
     v = AbstractDeclaration[]
-    foreach(elements(node)) do child
+    for child in eachelement(node)
         @match nodename(child) begin
             "namedsort" => push!(v, parse_namedsort(child, pntd, reg))
             "namedoperator" => push!(v, parse_namedoperator(child, pntd, reg))
@@ -135,7 +135,7 @@ NB: The "type" of a place is different from the "type" of a net or "pntd".
 
 """
 function parse_type(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "type")
+    check_nodename(node, "type")
     anyelement(node, pntd, reg) #TODO implement sort type
 end
 

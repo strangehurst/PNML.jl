@@ -65,7 +65,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             @test !isempty(allchildren("place", page))
             for p in allchildren("place", page)
                 @test nodename(p) == "place"
-                i = parse_node(firstchild("initialMarking", p), reg)
+                i = parse_node(firstchild("initialMarking", p), PnmlCoreNet(), reg)
                 #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
                 @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
@@ -86,7 +86,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 @test nodename(a) == "arc"
                 ins = firstchild("inscription", a)
                 if ins !== nothing
-                    i = parse_node(ins, reg)
+                    i = parse_node(ins, PnmlCoreNet(), reg)
                     @test typeof(i) <: PNML.Inscription
                     @test typeof(value(i)) <: Union{Int,Float64}
                     @test value(i) > 0

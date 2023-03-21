@@ -9,6 +9,7 @@ See [`ToolInfo`](@ref) for one intended use-case.
 function anyelement end
 anyelement(node::XMLNode, reg) = anyelement(node, PnmlCoreNet(), reg)
 function anyelement(node::XMLNode, pntd::PnmlType, reg)::AnyElement
+    @nospecialize
     AnyElement(unclaimed_label(node, pntd, reg), node)
 end
 
@@ -59,13 +60,10 @@ function _harvest_any!(node::XMLNode, ha!::HarvestAny)::PnmlDict
         dict[Symbol(a.name)] = a.name == "id" ? register_id!(ha!.reg, a.content) : a.content
     end
 
-    # Extract children or content
+    # Extract children or content.
     children = elements(node)
-    #@show length(children)
     if !isempty(children)
-        c = _anyelement_content!(dict, children, ha!)
-        #@show typeof(c), typeof(c) == typeof(dict)
-        #merge!(dict, c)
+        _anyelement_content!(dict, children, ha!)
     elseif !isempty(nodecontent(node))
         # <tag> </tag> will have nodecontent, though the whitespace is discarded.
         dict[:content] = (strip ∘ nodecontent)(node)
@@ -90,7 +88,7 @@ function _anyelement_content!(dict::PnmlDict, nodes::Vector{XMLNode}, ha!::Harve
         tags = filter((Fix2(===, tagname) ∘ first), namevec)
         dict[Symbol(tagname)] = # Now its a symbol.
             if length(tags) > 1
-                 [ha!(t) for t in map(x -> x.second, tags)] # vector
+                 [ha!(t) for t in map(x -> x.second, tags)] # vector #! NOT iterator
             else
                 ha!(tags[1].second) # scalar
             end

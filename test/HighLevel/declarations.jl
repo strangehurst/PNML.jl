@@ -1,5 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort
+using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort, registry
+
+const pntd = PnmlCoreNet()
 
 @testset "Declaration()" begin
     d = PNML.Declaration()
@@ -19,6 +21,7 @@ end
     parse_sort(xml"<partition/>", PnmlCoreNet(), registry())
 end
 
+
 @testset "empty declarations" begin
     # The attribute should be ignored.
     n = parse_node(xml"""
@@ -28,7 +31,7 @@ end
            </declarations>
           </structure>
         </declaration>
-        """, PNML.registry())
+        """, pntd, registry())
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}
@@ -75,7 +78,7 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    n = parse_node(node, reg)
+    n = parse_node(node, pntd, reg)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}

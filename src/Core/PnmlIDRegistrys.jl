@@ -46,6 +46,7 @@ Register `id` symbol and return the symbol.
 """
 register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
 function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
+    @nospecialize
     @lock reg.lk begin
         id ∈ reg.ids && duplicate_id_warn(id)
         push!(reg.ids, id)

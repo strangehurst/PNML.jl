@@ -127,3 +127,4 @@ julia> t(2.3)
     return value
 end
 condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term{PnmlDict}}
+condition_tvalue_ype(::Type{T}) where {T<:AbstractHLCore} = Bool

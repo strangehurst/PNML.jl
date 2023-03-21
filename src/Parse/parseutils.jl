@@ -230,7 +230,7 @@ end
 """
 Parse string as a number. First try integer then float.
 """
-function number_value(::Type{T}, s::AbstractString) where {T}
+function number_value(::Type{T}, s::AbstractString) where {T <: Number}
     x = tryparse(T, s)
     isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
     return x
