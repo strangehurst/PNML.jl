@@ -1,9 +1,9 @@
 using PNML
 using EzXML, JET, AbstractTrees
 using Preferences
-using PNML: rate_value_type, default_term, default_one_term, default_zero_term,
-        parse_net
-using Pnml:
+using PNML:
+    rate_value_type, default_term, default_one_term, default_zero_term,
+    parse_net,
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
     Annotation, AnyElement, Arc, Condition,
@@ -49,12 +49,9 @@ const x = EzXML.root(EzXML.readxml(fname));
 const r = registry();
 const m = parse_pnml(x, r);
 
-function parse_top_net(node::XMLNode, i)
-    nn = check_nodename(node, "pnml")
-    reg = registry()
-    nets = allchildren("net", node)
-    net_tup = tuple(parse_net(nets[i], reg),)
-    PnmlModel(net_tup, pnml_ns, reg, node)
+function top_net(x::XMLNode)
+    netxml = first(allchildren("net", x))
+    @report_opt target_modules = (PNML,) parse_net_1(netxml, pnmltype(netxml["type"]), registry())
 end
 
 function timed_parse(node::XMLNode)
@@ -72,9 +69,7 @@ end
 
 function pnml_ff(@nospecialize(ft))
     #@show ft
-    if ft === typeof(PnmlIDRegistrys.register_id!) ||
-        ft === typeof(PNML.PnmlModel) ||
-        ft === typeof(PNML.EzXML.nodename) ||
+    if ft === typeof(PNML.EzXML.nodename) ||
         false
         return false
     end
@@ -87,11 +82,12 @@ julia> @report_opt function_filter=pnml_ff EzXML.root(EzXML.readxml(fname))
 julia> @report_opt function_filter=pnml_ff registry()
 julia> @report_opt function_filter=pnml_ff parse_pnml(x, r)
 julia> @report_opt target_modules = (PNML,) parse_pnml(x, r)
+julia> @report_opt target_modules = (PNML,) parse_pnml(x, r)
 
 julia> @report_opt target_modules = (PNML,) parse_top_net(x,1)
 
 julia> @code_warntype parse_pnml(x, r)
-
+import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time include("setup.jl")
 =#
 
 @show pid.(nets(m))
