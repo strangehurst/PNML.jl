@@ -41,29 +41,29 @@ function parse_graphics(node, pntd, reg)
     nn = check_nodename(node, "graphics")
     @debug nn
 
-    d = PnmlDict(:tag => Symbol(nn),
-                :dimension => Coordinate{coordinate_value_type(pntd)}(),
-                :line => nothing,
-                :fill => nothing,
-                :font => nothing,
-                :offset => Coordinate{coordinate_value_type(pntd)}(),
-                :positions => Coordinate{coordinate_value_type(pntd)}[],
-    )
+    #d = PnmlDict(:tag => Symbol(nn),
+    dimension = Coordinate{coordinate_value_type(pntd)}()
+    line = nothing
+    fill = nothing
+    font = nothing
+    offset = Coordinate{coordinate_value_type(pntd)}()
+    positions = Coordinate{coordinate_value_type(pntd)}[]
+
     for child in eachelement(node)
         @match nodename(child) begin
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child, pntd, reg))
-            "fill"      => (d[:fill] = parse_graphics_fill(child, pntd, reg))
-            "font"      => (d[:font] = parse_graphics_font(child, pntd, reg))
-            "line"      => (d[:line] = parse_graphics_line(child, pntd, reg))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child, pntd, reg))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child, pntd, reg)))
+            "dimension" => (dimension = parse_graphics_coordinate(child, pntd, reg))
+            "fill"      => (fill = parse_graphics_fill(child, pntd, reg))
+            "font"      => (font = parse_graphics_font(child, pntd, reg))
+            "line"      => (line = parse_graphics_line(child, pntd, reg))
+            "offset"    => (offset = parse_graphics_coordinate(child, pntd, reg))
+            "position"  => (push!(positions, parse_graphics_coordinate(child, pntd, reg)))
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
-    let PNTD=typeof(pntd), dimension = d[:dimension], fill = d[:fill], font = d[:font], line = d[:line], offset = d[:offset], positions = d[:positions]
+    #et PNTD=typeof(pntd), dimension, fill, font, line, offset, positions
         @show typeof(dimension) typeof(fill) typeof(font) typeof(line) typeof(offset) typeof(positions)
         Graphics( ; dimension, fill, font, line, offset, positions)
-    end
+    #end
 end
 
 """
