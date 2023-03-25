@@ -319,10 +319,13 @@ function parse_page!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) wher
 end
 
 function parse_place!(d2, child, pntd, idregistry)
-    id, p = parse_place(child, pntd, idregistry)
+    pl = parse_place(child, pntd, idregistry)
+    id = pid(pl)
+    println()
+    @show id typeof(pl)
     let pset = d2[:netsets].place_set, pdict = d2[:netdata].place_dict
         push!(pset, id)
-        pdict[id] = p
+        pdict[id] = pl
     end
     return nothing
 end
@@ -370,7 +373,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     )
     parse_place_labels!(d, node, pntd, idregistry)
 
-    d[:id] => Place(pntd, d[:id],
+    Place(pntd, d[:id],
         get(d, :marking, default_marking(pntd)),
         get(d, :type, default_sort(pntd)),
         d[:name], ObjectCommon(d))

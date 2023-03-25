@@ -103,7 +103,7 @@ end
 @testset "missing id" begin
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
 
-    pgdict = PnmlDict( #OrderedDict{Symbol,page_type(pntd)}(
+    pgdict = PnmlDict(
         :pagedict => OrderedDict{Symbol, page_type(pntd)}(),
         :netdata => PNML.PnmlNetData(
             pntd,

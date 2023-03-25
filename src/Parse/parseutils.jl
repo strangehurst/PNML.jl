@@ -137,9 +137,9 @@ Return PnmlDict of tags common to both pnml nodes and pnml labels.
 See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).x
 """
 function pnml_common_defaults(::XMLNode)
-    PnmlDict(:graphics => nothing, # graphics tag is single despite the 's'.
-             :tools => nothing, # Here the 's' indicates multiples are allowed.
-             :labels => nothing) # ditto
+    PnmlDict(:graphics => nothing,
+             :tools => nothing,
+             :labels => nothing)
 end
 
 """

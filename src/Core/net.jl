@@ -9,7 +9,7 @@ struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
 
-    pagedict::OrderedDict{Symbol,Page{PNTD, M, I, C, S}} # shared
+    pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} # shared
     netdata::PnmlNetData{PNTD, M, I, C, S} # dicts for places, transitions, arcs, refs
     #! pageset::OrderedSet{Symbol}  #! PAGE TREE NODE set of page ids
     netsets::PnmlNetSets #!

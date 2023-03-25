@@ -120,11 +120,9 @@ julia> t(2.3)
 """
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
     value = if haskey(t.dict, :value)
-        t.dict[:value]
+        @inbounds t.dict[:value]
     else
         _evaluate(default)
     end
     return value
 end
-condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term{PnmlDict}}
-condition_tvalue_ype(::Type{T}) where {T<:AbstractHLCore} = Bool

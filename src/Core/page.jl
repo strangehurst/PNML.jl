@@ -18,8 +18,10 @@ struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
 
 end
 
-Page(pntd, pl, tr, ar, rp, rt) = Page{typeof(pntd), typeof(pl),
-        typeof(tr), typeof(ar), typeof(rp), typeof(rt)}(pntd, pl, tr, ar, rp, rt)
+#!Page(pntd, pl, tr, ar, rp, rt) =
+Page(pntd, i, dec, nam, pdict, ndata, nsets) =
+Page{typeof(pntd), marking_type(pntd), inscription_type(pntd),
+         condition_typeof(pntd), sort_type(pntd)}(pntd, i, dec, nam, pdict, ndata, nsets)
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
@@ -40,22 +42,18 @@ reftransitions(page::Page) = Iterators.filter(v -> pid(v) in page.netsets.reftra
 common(page::Page) = page.com
 
 place(page::Page, id::Symbol) = netdata(page).place_dict[id]
-#!place_ids(page::Page) = keys(netdata(page).place) # map(pid, places(page))
 place_ids(page::Page) = page.netsets.place_set
-has_place(page::Page, id::Symbol) = (id in page.netsets.place_set) #!haskey(netdata(page).place_dict, id)
+has_place(page::Page, id::Symbol) = (id in page.netsets.place_set)
 
 #marking(page::Page, placeid::Symbol) = marking(netdata(page).place_dict[placeid])
 currentMarkings(page::Page) = LVector((; [pid(p) => marking(p)() for p in places(page)]...))
 
 transition(page::Page, id::Symbol) = netdata(page).transition_dict[id]
-transition_ids(page::Page) = page.netsets.transition_set #!keys(netdata(page).transition)
+transition_ids(page::Page) = page.netsets.transition_set
 has_transition(page::Page, id::Symbol) = (id in page.netsets.transition_set)
 
-#!condition(page::Page, trans_id::Symbol) = condition(transition(page, trans_id))
-#!conditions(page::Page) =  LVector((; [t => condition(page, t) for t in transition_ids(page)]...))
-
 arc(page::Page, id::Symbol) = netdata(page).arc_dict[id]
-arc_ids(page::Page) = page.netsets.arc_set #!keys(netdata(page).arc)
+arc_ids(page::Page) = page.netsets.arc_set
 has_arc(page::Page, id::Symbol) = (id in page.netsets.arc_set)
 
 # Currently, "all" means either end of the arc.
@@ -66,11 +64,11 @@ tgt_arcs(page::Page, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(
 inscription(page::Page, arc_id::Symbol) = inscription(arc(page, arc_id))
 
 refplace(page::Page, id::Symbol) = netdata(page).refplace_dict[id]
-refplace_ids(page::Page) = page.netsets.refplace_set #!keys(netdata(page).refplace)
+refplace_ids(page::Page) = page.netsets.refplace_set
 has_refP(page::Page, id::Symbol) = (id in page.netsets.refplace_set)
 
 reftransition(page::Page, id::Symbol) = netdata(page).reftransition_dict[id]
-reftransition_ids(page::Page) = page.netsets.reftransition_set #!keys(netdata(page).reftransition)
+reftransition_ids(page::Page) = page.netsets.reftransition_set
 has_refT(page::Page, id::Symbol) = (id in page.netsets.reftransition_set)
 
 function Base.empty!(page::Page)

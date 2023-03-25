@@ -32,8 +32,10 @@ using PNML: Maybe, tag, pid, xmlnode, value
 
     @test tag(value(n)) === :tuple
     @test value(n).dict[:subterm][1][:all] !== nothing
-    @test value(n).dict[:subterm][1][:all][:usersort][:declaration] == "N1"
-    @test value(n).dict[:subterm][2][:all][:usersort][:declaration] == "N2"
+    @test value(n).dict[:subterm][1][:all][1][:usersort][1][:declaration] == "N1"
+    @test value(n).dict[:subterm][1][:all][1][:usersort][1][:content] == ""
+    @test value(n).dict[:subterm][2][:all][1][:usersort][1][:declaration] == "N2"
+    @test value(n).dict[:subterm][2][:all][1][:usersort][1][:content] == ""
 end
 
 @testset "hlinscription" begin
@@ -56,8 +58,8 @@ end
     @test typeof(n) <: PNML.HLInscription
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(value(n)) === :tuple
-    @test value(n).dict[:subterm][1][:variable][:refvariable] == "x"
-    @test value(n).dict[:subterm][2][:variable][:refvariable] == "v"
+    @test value(n).dict[:subterm][1][:variable][1][:refvariable] == "x"
+    @test value(n).dict[:subterm][2][:variable][1][:refvariable] == "v"
     @test n.text == "<x,v>"
 end
 
@@ -85,8 +87,8 @@ end
     @test tag(n) === :structure
     @test n.dict isa PnmlDict
     @test tag(n) === :structure
-    @test n.dict[:tuple][:subterm][1][:all][:usersort][:declaration] == "N1"
-    @test n.dict[:tuple][:subterm][2][:all][:usersort][:declaration] == "N2"
+    @test n.dict[:tuple][1][:subterm][1][:all][1][:usersort][1][:declaration] == "N1"
+    @test n.dict[:tuple][1][:subterm][2][:all][1][:usersort][1][:declaration] == "N2"
 end
 
 @testset "type" begin
@@ -100,8 +102,8 @@ end
         n = parse_node(node, HLCoreNet(), registry())
         @test typeof(n) <: PNML.AnyElement
         @test tag(n) === :type
-        @test n.dict[:text][:content] == "N2"
-        @test n.dict[:structure][:usersort][:declaration] == "N2"
+        @test n.dict[:text][1][:content] == "N2"
+        @test n.dict[:structure][1][:usersort][1][:declaration] == "N2"
     end
 end
 

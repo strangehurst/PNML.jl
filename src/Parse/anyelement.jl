@@ -52,46 +52,52 @@ Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
 """
-function _harvest_any!(node::XMLNode, ha!::HarvestAny)::PnmlDict
-    dict = PnmlDict()
+function _harvest_any!(node::XMLNode, ha!::HarvestAny)
+    vec = Vector{Pair}()
     # Extract XML attributes. Register IDs as symbols.
     for a in eachattribute(node)
         # ID attributes can appear in various places. Each is unique and added to the registry.
-        dict[Symbol(a.name)] = a.name == "id" ? register_id!(ha!.reg, a.content) : a.content
+        push!(vec, Symbol(a.name) => a.name == "id" ? register_id!(ha!.reg, a.content) : a.content)
     end
 
     # Extract children or content.
-    children = elements(node)
-    if !isempty(children)
-        _anyelement_content!(dict, children, ha!)
+    if haselement(node)
+        children = elements(node)
+        _anyelement_content!(vec, children, ha!)
     elseif !isempty(nodecontent(node))
         # <tag> </tag> will have nodecontent, though the whitespace is discarded.
-        dict[:content] = (strip ∘ nodecontent)(node)
+        push!(vec, :content => (strip ∘ nodecontent)(node))
     else
         # <tag/> and <tag></tag> will not have any nodecontent.
-        dict[:content] = ""
+        push!(vec, :content => "")
     end
-    return dict
+    @show vec
+    return PnmlDict(vec)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Apply `parser` to each node in `nodes`.
-Return PnmlDict with values that are vectors when there
+Apply `ha!` to each node in `nodes`.
+Return pairs Symbol => values that are vectors when there
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function _anyelement_content!(dict::PnmlDict, nodes::Vector{XMLNode}, ha!::HarvestAny)::PnmlDict
+function _anyelement_content!(vec::Vector{Pair}, nodes::Vector{XMLNode}, ha!::HarvestAny)
+
     namevec = [nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
     tagnames = unique(map(first, namevec))
+    @show tagnames
+
     for tagname in tagnames
         tags = filter((Fix2(===, tagname) ∘ first), namevec)
-        dict[Symbol(tagname)] = # Now its a symbol.
-            if length(tags) > 1
-                 [ha!(t) for t in map(x -> x.second, tags)] # vector #! NOT iterator
-            else
-                ha!(tags[1].second) # scalar
-            end
+        push!(vec, Symbol(tagname) => [ha!(t.second) for t in tags]) # Now its a symbol.)
     end
-    return dict
+
+#           if length(tags) > 1
+#            [ha!(t.second) for t in tags] # vector #! NOT iterator
+#       else
+#           ha!(tags[1].second) # scalar
+#       end)
+    @show length(vec) vec typeof(vec)
+    return nothing
 end

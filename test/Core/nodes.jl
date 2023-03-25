@@ -15,7 +15,8 @@ const pntd = PnmlCoreNet()
     """
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
     @test_call target_modules = target_modules parse_place(node, pntd, registry())
-    id,n = parse_place(node, pntd, registry())
+    n = parse_place(node, pntd, registry())
+    id = pid(n)
     @test id === :place1
     @test typeof(n) <: Place
     @test_call has_xml(n)
@@ -36,8 +37,7 @@ end
     """
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), registry())
     @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
-    id, n = parse_place(node, PnmlCoreNet(), registry())
-    @test id === :place1
+    n = parse_place(node, PnmlCoreNet(), registry())
     @test typeof(n) <: Place
     @test_call has_xml(n)
     @test !has_xml(n)

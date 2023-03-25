@@ -60,7 +60,7 @@ import FunctionWrappers: FunctionWrapper
 using LabelledArrays
 using MLStyle: @match
 using NamedTupleTools
-import OrderedCollections: OrderedDict, OrderedSet
+import OrderedCollections: OrderedDict, OrderedSet, LittleDict
 using Preferences
 using PrettyPrinting
 import PrettyPrinting: quoteof

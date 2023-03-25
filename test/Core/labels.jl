@@ -32,7 +32,8 @@ end
     # node => [key => value] expected to be in the PnmlDict after parsing node.
     ctrl =
     [
-        ("""<declarations> </declarations>""", [:content => ""]),
+        ("""<declarations> </declarations>""",
+            [:content => ""]),
         ("""<declarations atag="test1"> </declarations>""",
             [:atag => "test1", :content => ""]),
         ("""<declarations atag="test2">
@@ -43,11 +44,11 @@ end
             [:atag => "test2",
              :something => [PnmlDict(:content => "some content"),
                             PnmlDict(:content => "other stuff")],
-             :something2 => PnmlDict(:value => [PnmlDict(:content => ""),
-                                                PnmlDict(:tag3 => "three", :content => "")],
-                                        :tag2 => "two")]),
+             :something2 => [PnmlDict(:value => [PnmlDict(:content => ""),
+                                                 PnmlDict(:tag3 => "three", :content => "")],
+                                      :tag2 => "two")]]),
         ("""<foo><declarations> </declarations></foo>""",
-            [:declarations => PnmlDict(:content => "")]),
+            [:declarations => [PnmlDict(:content => "")]]),
         # no content, no attribute results in empty PnmlDict.
         ("""<null></null>""", []),
         ("""<null2/>""", []),
@@ -106,7 +107,7 @@ end
 
         # test each key,value pair
         for (key, val) in funk
-            #@show typeof(key), typeof(val)#@show key#@show val
+            @show key, typeof(key), typeof(val)#@show key#@show val
             @test haskey(u.second, key)
             @test u.second[key] == val
             @test haskey(l.dict, key)

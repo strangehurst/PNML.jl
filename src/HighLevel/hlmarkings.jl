@@ -47,5 +47,3 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 
 marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking{Term{PnmlDict}}
 marking_value_type(::Type{T}) where {T<:AbstractHLCore} = Int
-
-condition_value_type(::Type{<:AbstractHLCore}) = Bool #Term{PnmlDict} #! RELOCATE for HL

@@ -1,6 +1,6 @@
 """
 Collect each of the `PnmlNodes`s & `Arc`s of a Petri Net Graph into one collection.
-Accessed via pnml ID key or iterate over values of an `OrderedDict`.
+Accessed via pnml ID key or iterate over values of an `LittleDict`.
 
 In the 'pnml' specification there is a `Page` structure that can be removed by `flatten_pages!`,
 removing some display-related information, leaving a functional Petri Net Graph as described
@@ -15,11 +15,18 @@ struct PnmlNetData{PNTD <: PnmlType, M, I, C, S}
     arc_dict::OrderedDict{Symbol, Arc{PNTD,I}}
     refplace_dict::OrderedDict{Symbol, RefPlace{PNTD}}
     reftransition_dict::OrderedDict{Symbol, RefTransition{PNTD}}
+#    place_dict::LittleDict{        Symbol,  Place{PNTD,M,S},            Vector{Symbol}, Vector{Place{PNTD,M,S}}}
+#    transition_dict::LittleDict{   Symbol,  Transition{PNTD,C},         Vector{Symbol}, Vector{Transition{PNTD,C}}}
+#    arc_dict::LittleDict{          Symbol,  Arc{PNTD,I},                Vector{Symbol}, Vector{Arc{PNTD,I}}}
+#    refplace_dict::LittleDict{     Symbol,  Vector{RefPlace{PNTD}},      Vector{Symbol}, Vector{RefPlace{PNTD}}}
+#    reftransition_dict::LittleDict{Symbol,  Vector{RefTransition{PNTD}}, Vector{Symbol}, Vector{RefTransition{PNTD}}}
 end
 PnmlNetData(pntd, pl, tr, ar, rp, rt) =
     PnmlNetData{typeof(pntd),
-                typeof(pl), typeof(tr), typeof(ar),
-                typeof(rp), typeof(rt)}(pntd, pl, tr, ar, rp, rt)
+                marking_type(pntd),
+                inscription_type(pntd),
+                condition_type(pntd),
+                sort_type(pntd)}(pntd, pl, tr, ar, rp, rt)
 
 """
 ID sets for pages, places, arcs, et al. start as empty sets.

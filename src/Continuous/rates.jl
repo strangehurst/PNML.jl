@@ -33,7 +33,7 @@ function rate(transition)
         if haskey(r.dict, :text)
             !isnothing(r.dict[:text])
             # The unclaimed label mechanism adds a :content key for text elements.
-            value = number_value(rate_value_type(pntd), r.dict[:text][:content])
+            value = number_value(rate_value_type(pntd), r.dict[:text][1][:content])
         elseif haskey(r.dict, :content)
             # When the text element is elided, there is still a :content.
             value = number_value(rate_value_type(pntd), r.dict[:content])

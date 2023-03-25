@@ -5,8 +5,8 @@ const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------
 "Alias for dictionary with `Symbol` as key."
+#const PnmlDict = LittleDict{Symbol, Any, Vector{Symbol}, Vector{Any}}
 const PnmlDict = OrderedDict{Symbol, Any}
-#!const PnmlDict = IdDict{Symbol, Any}
 
 pid(pdict::PnmlDict)::Symbol = pdict[:id]
 tag(pdict::PnmlDict)::Symbol = pdict[:tag]
@@ -19,7 +19,6 @@ labels(pdict::PnmlDict) = pdict[:labels]
 
 get_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? get_label(labels(d), tagvalue) : nothing
 get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
-
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------

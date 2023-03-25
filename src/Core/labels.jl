@@ -70,7 +70,7 @@ of the structure defined by the pntd schema.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    dict::PnmlDict
+    dict::PnmlDict #! make into tuple
     xml::XMLNode
 end
 
