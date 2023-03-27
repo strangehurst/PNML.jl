@@ -106,7 +106,7 @@ testlogger = TestLogger()
         @test_call target_modules=target_modules places(top)
 
         for placeid in place_ids(top)
-            @show "place $(placeid)"
+            println("place ", placeid)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)

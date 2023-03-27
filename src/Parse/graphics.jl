@@ -41,7 +41,6 @@ function parse_graphics(node, pntd, reg)
     nn = check_nodename(node, "graphics")
     @debug nn
 
-    #d = PnmlDict(:tag => Symbol(nn),
     dimension = Coordinate{coordinate_value_type(pntd)}()
     line = nothing
     fill = nothing
@@ -60,10 +59,9 @@ function parse_graphics(node, pntd, reg)
             _ => @warn "ignoring <graphics> child '$(child)'"
         end
     end
-    #et PNTD=typeof(pntd), dimension, fill, font, line, offset, positions
-        @show typeof(dimension) typeof(fill) typeof(font) typeof(line) typeof(offset) typeof(positions)
-        Graphics( ; dimension, fill, font, line, offset, positions)
-    #end
+
+    @show typeof(dimension) typeof(fill) typeof(font) typeof(line) typeof(offset) typeof(positions)
+    Graphics( ; dimension, fill, font, line, offset, positions)
 end
 
 """

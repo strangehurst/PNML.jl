@@ -53,6 +53,7 @@ Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, ha!::HarvestAny)
+    println("_harvest_any! ", nodename(node))
     vec = Vector{Pair}()
     # Extract XML attributes. Register IDs as symbols.
     for a in eachattribute(node)
@@ -71,7 +72,7 @@ function _harvest_any!(node::XMLNode, ha!::HarvestAny)
         # <tag/> and <tag></tag> will not have any nodecontent.
         push!(vec, :content => "")
     end
-    @show vec
+    # @show vec
     return PnmlDict(vec)
 end
 
@@ -98,6 +99,6 @@ function _anyelement_content!(vec::Vector{Pair}, nodes::Vector{XMLNode}, ha!::Ha
 #       else
 #           ha!(tags[1].second) # scalar
 #       end)
-    @show length(vec) vec typeof(vec)
+    #@show length(vec) vec typeof(vec)
     return nothing
 end

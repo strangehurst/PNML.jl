@@ -21,7 +21,7 @@ Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 """
 function parse_declaration(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "declaration")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn))
+    d = pnml_label_defaults(:tag=>Symbol(nn))
 
     for child in eachelement(node)
         @match nodename(child) begin
