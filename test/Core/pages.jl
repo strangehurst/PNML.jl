@@ -314,7 +314,7 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
 
         @test_broken (sort ∘ collect)(refplace_ids(net)) == expected_rp
         @test (sort ∘ collect)(refplace_ids(firstpage(net))) == expected_rp
-        @test_broken (sort ∘ collect)(efplace_ids(net)) == (sort ∘ collect)(refplace_ids(firstpage(net)))
+        @test_broken (sort ∘ collect)(refplace_ids(net)) == (sort ∘ collect)(refplace_ids(firstpage(net)))
         @test_call target_modules=target_modules refplace_ids(net)
         @test_call refplace_ids(firstpage(net))
 

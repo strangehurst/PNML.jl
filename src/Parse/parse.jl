@@ -139,7 +139,7 @@ the marking, inscription, condition and sort type parameters.
 """
 function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD <: PnmlType}
     # create dictionary #! tuplize
-    dict = let pntd = pntd, PNTD = typeof(pntd),
+    tup = let pntd = pntd, PNTD = typeof(pntd),
         mtype   = marking_type(PNTD),
         itype   = inscription_type(PNTD),
         ctype   = condition_type(PNTD),
@@ -163,9 +163,11 @@ function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD <:
             :netdata => pnd,# All pages & net share.
             :declaration => Declaration(),)
     end
-    # Fill the pagedict, netsets, netdata.
-    parse_net_2!(dict, node, pntd, idregistry)
 
+    # Fill the pagedict, netsets, netdata.
+    parse_net_2!(tup, node, pntd, idregistry)
+    dict = PnmlDict(pairs(tup))
+    @show typeof(tup) typeof(dict)
     if CONFIG.verbose
         println("""
                 Net  $(dict[:id]), $(length(dict[:pagedict]))  Pages, keys:  $(keys(dict[:pagedict]))
@@ -187,33 +189,42 @@ delegating common tags and labels.
 """
 function parse_net_2! end
 
-function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
+# For nets and pages the <declaration> tag is optional.
+# <declaration> ia a High-Level Annotation with a <structure> holding
+# zero or more <declarations>. Is complicated. You have been warned!
+# Expect
+#  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
+
+function parse_net_2!(tup, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
+            d = PnmlDict(pairs(tup)) #! tuplize
             parse_net_page!(d, childnode, pntd, idregistry)
+            tup = namedtuple(d)
         else
+            d = PnmlDict(pairs(tup)) #! tuplize
             parse_pnml_node_common!(d, childnode, pntd, idregistry)
+            tup = namedtuple(d)
         end
         # Leave the empty `Declaration` alone.
     end
     return nothing
 end
 
-function parse_net_2!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore}
+function parse_net_2!(tup, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore}
     for childnode in elements(node)
         tag = EzXML.nodename(childnode)
         if tag == "page"
+            d = PnmlDict(pairs(tup)) #! tuplize
             parse_net_page!(d, childnode, pntd, idregistry)
+            tup = namedtuple(d)
         elseif tag == "declaration"
-            # For nets and pages the <declaration> tag is optional.
-            # <declaration> ia a High-Level Annotation with a <structure> holding
-            # zero or more <declarations>. Is complicated. You have been warned!
-            # Expect
-             #  <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
-            d[:declaration] = parse_declaration(childnode, pntd, idregistry) #! tuplize
+            tup = merge(tup, (; :declaration => parse_declaration(childnode, pntd, idregistry))) #! tuplize
         else
+            d = PnmlDict(pairs(tup)) #! tuplize
             parse_pnml_node_common!(d, childnode, pntd, idregistry)
+            tup = namedtuple(d)
         end
     end
     return nothing
@@ -256,7 +267,7 @@ function parse_page!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) wher
         println("parse $nn $pntd $(node["id"])")
     end
 
-    d2 = pnml_node_defaults(
+    tup = pnml_node_defaults(
             :tag => Symbol(nn),
             :id => register_id!(idregistry, node["id"]),
             :declaration => Declaration(), #! HL
@@ -264,13 +275,15 @@ function parse_page!(d::PnmlDict, node::XMLNode, pntd::T, idregistry::PIDR) wher
             :pagedict => d[:pagedict],
             :netdata => d[:netdata] #! propagate to nodes
         )
-
+    d2 = PnmlDict(pairs(tup))
     #! parse_page_2!(d2, node, pntd, idregistry)
     for child in elements(node)
         tag = nodename(child)
         id = child["id"]
         CONFIG.verbose && println("parse $tag $id")
 
+        @assert hasproperty(tup, :netdata)
+        @assert hasproperty(tup, :netsets)
         @assert haskey(d2, :netdata)
         @assert haskey(d2, :netsets)
 
@@ -351,12 +364,13 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "place")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     # disconnect from page dictonary
-    d = pnml_node_defaults( #! tuplize
+    tup = pnml_node_defaults( #! tuplize
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
         #!:marking => default_marking(pntd),
         #!:type => default_sort(pntd), # Different from net's type (this is a sort).
     )
+    d = PnmlDict(pairs(tup))
     parse_place_labels!(d, node, pntd, idregistry)
 
     Place(pntd, d[:id],
@@ -394,11 +408,12 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "transition")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
 
-    d = pnml_node_defaults(
+    tup = pnml_node_defaults(
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
         :condition => nothing,
     )
+    d = PnmlDict(pairs(tup))
     parse_transition_2!(d, pntd, node, idregistry)
     Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
 end
@@ -428,12 +443,14 @@ function parse_arc(node, pntd, idregistry::PIDR)
     @assert haskey(node, "source")
     @assert haskey(node, "target")
 
-    d = pnml_node_defaults(
+    tup = pnml_node_defaults(
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
         :source => Symbol(node["source"]),
         :target => Symbol(node["target"]),
     )
+    d = PnmlDict(pairs(tup))
+
     for child in eachelement(node)
         parse_arc_labels!(d, child, pntd, idregistry) # Dispatch on pntd
     end
@@ -471,11 +488,12 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     EzXML.haskey(node, "ref") ||
         throw(MalformedException("$(nn) missing ref attribute", node))
 
-    d = pnml_node_defaults(
+    tup = pnml_node_defaults(
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
         :ref => Symbol(node["ref"]),
     )
+    d = PnmlDict(pairs(tup))
 
     for child in eachelement(node)
         @match nodename(child) begin
@@ -494,11 +512,12 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     EzXML.haskey(node, "ref") ||
         throw(MalformedException("$(nn) missing ref attribute", node))
 
-    d = pnml_node_defaults(
+    tup = pnml_node_defaults(
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
         :ref => Symbol(node["ref"]),
     )
+    d = PnmlDict(pairs(tup))
 
     for child in eachelement(node)
         @match nodename(child) begin
@@ -565,7 +584,7 @@ Should be inside of an label.
 A "claimed" label usually elids the <structure> level (does not call this method).
 """
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    nn = check_nodename(node, "structure")
+    check_nodename(node, "structure")
     Structure(unclaimed_label(node, pntd, idregistry), node)
 end
 
@@ -587,17 +606,17 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     else
         number_value(marking_value_type(pntd), (strip ∘ nodecontent)(node))
     end
-
-    d = pnml_label_defaults(:tag => Symbol(nn), :value => val)
+    tup = pnml_label_defaults(:tag => Symbol(nn), :value => val)
+    d = PnmlDict(pairs(tup))
 
     for child in elements(node)
         @match nodename(child) begin
             # We extend to real numbers.
-            "text" => (d[:value] = number_value(marking_value_type(pntd), (string∘strip∘nodecontent)(child))
-            )
+            "text" => (d[:value] = number_value(marking_value_type(pntd), (string∘strip∘nodecontent)(child)))
             _ => parse_pnml_label_common!(d, child, pntd, idregistry)
         end
     end
+
     # Treat missing value as if the <initialMarking> element was absent.
     if isnothing(d[:value])
         @warn "missing  <initialMarking> value"
@@ -611,7 +630,8 @@ $(TYPEDSIGNATURES)
 """
 function parse_inscription(node, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "inscription")
-    d = pnml_label_defaults(:tag => Symbol(nn), :value => nothing)
+    tup = pnml_label_defaults(:tag => Symbol(nn), :value => nothing)
+    d = PnmlDict(pairs(tup))
     for child in elements(node)
         @match nodename(child) begin
             "text" => (d[:value] = number_value(inscription_value_type(pntd), (string∘strip∘nodecontent)(child)))
@@ -638,11 +658,12 @@ parsed to `Int` and `Float64`.
 """
 function parse_hlinitialMarking(node, pntd::AbstractHLCore, idregistry::PIDR)
     nn = check_nodename(node, "hlinitialMarking")
-    d = pnml_label_defaults(
+    tup = pnml_label_defaults(
         :tag => Symbol(nn),
         :text => nothing,
         :structure => nothing,
     )
+    d = PnmlDict(pairs(tup))
     for child in elements(node)
         @match nodename(child) begin
             "structure" => (
@@ -667,7 +688,8 @@ hlinscriptions are expressions.
 function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
     nn = check_nodename(node, "hlinscription")
     @debug nn
-    d = pnml_label_defaults(:tag => Symbol(nn))
+    tup = pnml_label_defaults(:tag => Symbol(nn))
+    d = PnmlDict(pairs(tup))
     for child in elements(node)
         @match nodename(child) begin
             # Expect <structure> to contain a single Term as a child tag.
@@ -701,7 +723,8 @@ See [`AbstractTerm`](@ref).
 """
 function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "condition")
-    d = pnml_label_defaults(:tag => Symbol(nn))
+    tup = pnml_label_defaults(:tag => Symbol(nn))
+    d = PnmlDict(pairs(tup))
 
     for child in elements(node)
         @match nodename(child) begin

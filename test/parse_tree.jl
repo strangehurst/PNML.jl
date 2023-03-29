@@ -65,7 +65,8 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             @test !isempty(allchildren("place", page))
             for p in allchildren("place", page)
                 @test nodename(p) == "place"
-                i = parse_node(firstchild("initialMarking", p), PnmlCoreNet(), reg)
+                fc = firstchild("initialMarking", p)
+                i = parse_node(fc, PnmlCoreNet(), reg)
                 #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
                 @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking

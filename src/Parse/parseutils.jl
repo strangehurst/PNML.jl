@@ -17,6 +17,12 @@ function add_label!(d::PnmlDict, node::XMLNode, pntd, reg)
     end
     add_label!(d[:labels], node, pntd, reg)
 end
+function add_label!(tup::NamedTuple, node::XMLNode, pntd, reg)
+    if !hasproperty(tup, :labels)
+        tup = merge(tup, (; :labels => PnmlLabel[]))
+    end
+    add_label!(tup.labels, node, pntd, reg)
+end
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
 
@@ -24,7 +30,6 @@ function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
 
     if CONFIG.warn_on_unclaimed
         let tag=nodename(node)
-            #
             if haskey(tagmap, tag) && tag != "structure"
                 @info "$(tag) is known tag being treated as unclaimed."
             end
@@ -133,7 +138,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return PnmlDict of tags common to both pnml nodes and pnml labels.
+Return tags common to both pnml nodes and pnml labels.
 See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).x
 """
 function pnml_common_defaults()
@@ -144,35 +149,25 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Merge `xs` into dictonary with default pnml node tags.
-Used on: net, page ,place, transition, arc.
-Usually default value will be `nothing` or empty vector.
+Merge `xs` with default pnml node tags.
 See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 """
 function pnml_node_defaults(xs...)
-
-    #println()
+    #dict = PnmlDict(pairs(pnml_common_defaults())..., :name => nothing, xs...)
     tup = merge(pnml_common_defaults(), (name = nothing,), (; xs...))
-    #@show typeof(tup) tup
-    dict = PnmlDict(pairs(pnml_common_defaults())..., :name => nothing, xs...)
-    #@show typeof(dict) dict
-    return dict
+    return tup
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Merge `xs` into dictonary with default common keys and
-High-Level annotation label keys `text` and `structure'.
-
-Used on pnml label below a [`AbstractPnmlNode`](@ref).
-
-Notable differences from [`pnml_node_defaults`](@ref): text, structure, no name.
-See also: [`pnml_common_defaults`](@ref).
+Merge `xs` with default common keys and annotation label keys `text` and `structure'.
+See also [`pnml_node_defaults`](@ref), [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(xs...)
-    #PnmlDict(pnml_common_defaults(node)..., :text => nothing, :structure => nothing, xs...)
-    PnmlDict(pairs(pnml_common_defaults())..., :text => nothing, :structure => nothing, xs...)
+    #dict =PnmlDict(pairs(pnml_common_defaults())..., :text => nothing, :structure => nothing, xs...)
+    tup = merge(pnml_common_defaults(), (text = nothing, structure = nothing), (; xs...))
+    return tup
 end
 
 #---------------------------------------------------------------------
@@ -198,13 +193,13 @@ end
 
 function parse_pnml_common_tup!(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
 
-    tup = (; :tuple => "base")  # strart with a visuial aid
+    tup = (; :tuplekind => "base")  # strart with a visuial aid
     tag = EzXML.nodename(node)
     # tools and labels were vectors, change to nested tuple?
     if tag == "graphics"
-        merge!(tup, :graphics => parse_graphics(node, pntd, reg))
+        tup = merge(tup, (graphics = parse_graphics(node, pntd, reg),))
     elseif tag == "toolspecific"
-        merge!(tup, :tools => add_toolinfo!(d, node, pntd, reg))
+        tup = merge(tup, :tools => add_toolinfo!(d, node, pntd, reg))
     end
     return tup
 end
@@ -215,12 +210,13 @@ $(TYPEDSIGNATURES)
 Update `d` with `name` children, defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_node_common!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    tup = (; :tuple => "node")  # strart with a visuial aid
     tag = EzXML.nodename(node)
     if tag == "name"
-        d[:name] = parse_name(node, pntd, reg)
+        n = parse_name(node, pntd, reg)
+        d[:name] = n
     elseif tag == "graphics"
-        d[:graphics] = parse_graphics(node, pntd, reg)
+        g = parse_graphics(node, pntd, reg)
+        d[:graphics] = g
     elseif tag == "toolspecific"
         add_toolinfo!(d, node, pntd, reg)
     else
@@ -228,11 +224,27 @@ function parse_pnml_node_common!(d::PnmlDict, node::XMLNode, pntd::PnmlType, reg
     end
     return d
 end
-
-
-
-
-
+function parse_pnml_node_common!(tup::NamedTuple, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+    tup = merge(tup, (tuplekind = "node",))  # start with a visual aid
+    tag = EzXML.nodename(node)
+    if tag == "name"
+        n = parse_name(node, pntd, reg)
+        tup = merge(tup, (name = n,))
+    elseif tag == "graphics"
+        g = parse_graphics(node, pntd, reg)
+        tup = merge(tup, (graphics = g,))
+    elseif tag == "toolspecific"
+        #ti = parse_toolspecific(node, pntd, reg)
+        #tup = merge(tup, (tools = ti,)) #! vector
+        add_toolinfo!(tup, node, pntd, reg)
+    else
+        #l = PnmlLabel(unclaimed_label(node, pntd, reg), node)
+        #tup = merge(tup, (labels = l,)) #! vector
+        add_label!(tup, node, pntd, reg)
+    end
+    @show tup
+    return d
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -241,18 +253,27 @@ Update `d` with  'text' and 'structure' children of `node`,
 defering other tags to [`parse_pnml_common!`](@ref).
 """
 function parse_pnml_label_common!(d::PnmlDict, node, pntd, reg)
-    tup = (; :tuple => "label")  # strart with a visuial aid
+    tup = (; :tuplekind => "label")  # start with a visual aid
     tag = EzXML.nodename(node)
     if tag == "text"
-        d[:text] = parse_text(node, pntd, reg)
+        t = parse_text(node, pntd, reg)
+        tup = merge(tup, (text = t,))
+        d[:text] = t
     elseif tag == "structure"
         # Fallback since a "claimed" label's parser should have already consumed the tag.
-        d[:structure] = parse_structure(node, pntd, reg)
+        s = parse_structure(node, pntd, reg)
+        tup = merge(tup, (structure = s,))
+        d[:structure] = s
     elseif tag == "graphics"
-        d[:graphics] = parse_graphics(node, pntd, reg)
+        g = parse_graphics(node, pntd, reg)
+        tup = merge(tup, (graphics = g,))
+        d[:graphics]  = g
     elseif tag == "toolspecific"
+        ti = parse_toolspecific(node, pntd, reg)
+        tup = merge(tup, (tools = ti,)) #! vector
         add_toolinfo!(d, node, pntd, reg)
     end
+    @show tup
     return d
 end
 
