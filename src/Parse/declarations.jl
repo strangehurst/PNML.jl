@@ -21,45 +21,37 @@ Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 """
 function parse_declaration(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "declaration")
-    d = PnmlDict(pairs(pnml_label_defaults(:tag=>Symbol(nn))))
+    tup = pnml_label_defaults(:tag=>Symbol(nn))
+    #!d = PnmlDict(pairs(tup))
 
     for child in eachelement(node)
-        @match nodename(child) begin
-            "structure" => (d[:structure] = decl_structure(child, pntd, reg))
-            _ => parse_pnml_label_common!(d, child, pntd, reg)
+        tag = nodename(child)
+        if tag == "structure"
+            tup = merge(tup, (structure = decl_structure(child, pntd, reg),))
+        else
+            parse_pnml_label_common!(tup, child, pntd, reg)
          end
     end
-    Declaration(d[:structure], ObjectCommon(d), node)
+    Declaration(tup.structure, ObjectCommon(tup), node)
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
 # optional, required,  zero or more
 function decl_structure(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "structure")
-    #TODO warn if more than one?
+    check_nodename(node, "structure")
     declarations = firstchild("declarations", node)
-    isnothing(declarations) ? AbstractDeclaration[] :
-                            parse_declarations(declarations, pntd, reg)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return an Vector{[`AbstractDeclaration`](@ref)} subtype,
-"""
-function parse_declarations(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "declarations")
-
-    v = AbstractDeclaration[]
-    for child in eachelement(node)
-        @match nodename(child) begin
-            "namedsort" => push!(v, parse_namedsort(child, pntd, reg))
-            "namedoperator" => push!(v, parse_namedoperator(child, pntd, reg))
-            "variabledecl" => push!(v, parse_variabledecl(child, pntd, reg))
-            _ =>  push!(v, parse_unknowndecl(child, pntd, reg))
+    decs = AbstractDeclaration[]
+    if isnothing(declarations)
+        for child in eachelement(declarations)
+            @match nodename(child) begin
+                "namedsort" => push!(decs, parse_namedsort(child, pntd, reg))
+                "namedoperator" => push!(decs, parse_namedoperator(child, pntd, reg))
+                "variabledecl" => push!(decs, parse_variabledecl(child, pntd, reg))
+                _ =>  push!(decs, parse_unknowndecl(child, pntd, reg))
+            end
         end
     end
-    return v
+    return decs
 end
 
 """
@@ -132,12 +124,23 @@ $(TYPEDSIGNATURES)
 
 Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place is different from the "type" of a net or "pntd".
-
 """
-function parse_type(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_type end
+
+function parse_type(node::XMLNode, pntd::PNTD, reg::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
     check_nodename(node, "type")
-    anyelement(node, pntd, reg) #TODO implement sort type
+    Sort(anyelement(node, pntd, reg)) # TODO TBD Define a `Sort` interface.
 end
+# Sort type for non-high-level meaning is TBD and non-standard.
+function parse_type(node::XMLNode, pntd::PNTD, reg::PnmlIDRegistry) where {PNTD <: PnmlType}
+    check_nodename(node, "type")
+    # Parse as unclaimed label. Then assume it is a `number_value` for non-High-Level nets.
+    # First use-case is `rate` of `ContinuousNet`.
+    ucl = unclaimed_label(node, pntd, idregistry)
+    @show ucl
+    numeric_label_value(ucl) #TODO This should conform to the TBD `Sort` interface.
+end
+
 
 """
 $(TYPEDSIGNATURES)

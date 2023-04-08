@@ -8,16 +8,13 @@ Markings default to zero and inscriptions default to 1
 
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> m = default_one_term(HLCoreNet())
-Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}(:value => 1))
-
-julia> PnmlDict
-OrderedCollections.OrderedDict{Symbol, Any}
+Term(:empty, (; :value => 1))
 
 julia> m()
 1
 
 julia> m = default_zero_term(HLCoreNet())
-Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}(:value => 0))
+Term(:empty, (; :value => 0))
 
 julia> m()
 0
@@ -37,7 +34,7 @@ function default_one_term end
 default_one_term() = default_one_term(PnmlCoreNet())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCoreNet #!relocate
 default_one_term(::AbstractContinuousNet) = one(Float64) #!relocate
-default_one_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => one(Int)))
+default_one_term(::AbstractHLCore) = Term(:empty, namedtuple(:value => one(Int)))
 default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 term_value_type(::Type{<:PnmlType}) = Int
@@ -53,13 +50,13 @@ function default_zero_term end
 default_zero_term() = default_zero_term(PnmlCoreNet())
 default_zero_term(::PnmlType) = zero(Int) #!relocate
 default_zero_term(::AbstractContinuousNet) = zero(Float64) #!relocate
-default_zero_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => zero(Int)))
+default_zero_term(::AbstractHLCore) = Term(:empty, namedtuple(:value => zero(Int)))
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
 Boolean termdefault_one_term(default_one_term(
 """
-default_bool_term(::AbstractHLCore) = Term(:empty, PnmlDict(:value => true))
+default_bool_term(::AbstractHLCore) = Term(:empty, (; :value => true))
 
 """
 $(TYPEDEF)
@@ -73,24 +70,27 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> t = Term()
-Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}())
+Term(:empty, (; ))
 
 julia> t()
 1
 ```
 #! Term as functor requires a default value for missing values.
 """
-struct Term{T<:AbstractDict}  <: AbstractTerm #TODO make mutable?
+struct Term <: AbstractTerm #TODO make mutable?
     tag::Symbol
-    dict::T
+    dict::NamedTuple
   #TODO xml
 end
 
-Term() = Term(PnmlDict())
-Term(d::PnmlDict) = Term(:empty, d)
-Term(p::Pair{Symbol,PnmlDict}) = Term(p.first, p.second)
+Term() = Term(NamedTuple())
+Term(tup::NamedTuple) = Term(:empty, tup)
+Term(p::Pair{Symbol,<:NamedTuple}) = Term(p.first, p.second)
+Term(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}) = Term(p.first, namedtuple(p.second...))
 
-Base.convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
+Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
+#!Base.convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
+Base.convert(::Type{Maybe{Term}}, v::Vector{Pair{Symbol,Any}})::Term = Term(namedtuple(v))
 
 tag(t::Term)::Symbol = t.tag
 dict(t::Term) = t.dict

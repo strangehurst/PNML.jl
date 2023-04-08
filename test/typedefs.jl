@@ -4,6 +4,7 @@ using PNML: XMLNode, pnmltype, tagmap
 @testset "tagmap" begin
     #@test !haskey(tagmap, "pnml") # parse_excluded warning
     #@test !haskey(tagmap, "net")  # parse_excluded warning
+
     # Visit every entry in the map.  All require pntd.
     @testset "tag $t" for t in keys(tagmap)
         @test !isempty(methods(tagmap[t], (XMLNode, PnmlType, PnmlIDRegistry)))

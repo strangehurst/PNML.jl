@@ -6,29 +6,29 @@ Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
 struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
-    #! {M, I, C, S} # PL, TR, AR, RP, RT}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
-    pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} #! Shared by net and its pages
-    netdata::PnmlNetData{PNTD, M, I, C, S}    #! Shared by net and its pages
+    pagedict::OrderedDict{Symbol, Page{PNTD}} #, M, I, C, S}} #! Shared by net and its pages
+    netdata::PnmlNetData{PNTD} #, M, I, C, S}    #! Shared by net and its pages
     netsets::PnmlNetSets
 
 end
 
-#!Page(pntd, pl, tr, ar, rp, rt) =
-Page(pntd, i, dec, nam, pdict, ndata, nsets) =
-Page{typeof(pntd), marking_type(pntd), inscription_type(pntd),
-         condition_typeof(pntd), sort_type(pntd)}(pntd, i, dec, nam, pdict, ndata, nsets)
+Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
+    Page{typeof(pntd),
+         marking_type(pntd),
+         inscription_type(pntd),
+         condition_type(pntd),
+         sort_type(pntd)}(pntd, i, dec, nam, c, pdict, ndata, nsets)
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
 # Note that declaration wraps a vector of AbstractDeclarations.
 declarations(page::Page) = declarations(page.declaration)
 # subpages
-#!pages(page::Page) = [page.pagedict[id] for id in page.netsets.page_set] #! Vector not iterator
 pages(page::Page) = Iterators.filter(v -> pid(v) in page.netsets.page_set, values(page.pagedict)) # iterator
 
 netdata(p::Page) = p.netdata

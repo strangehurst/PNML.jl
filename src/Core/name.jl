@@ -10,5 +10,4 @@ struct Name <: Annotation
     tools::Maybe{Vector{ToolInfo}}
 end
 
-Name(; text::AbstractString = "", graphics=nothing, tools=nothing) =
-    Name(text, graphics, tools)
+Name(; text::AbstractString = "", graphics = nothing, tools = nothing) = Name(text, graphics, tools)

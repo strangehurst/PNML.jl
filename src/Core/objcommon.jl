@@ -11,7 +11,17 @@ struct ObjectCommon
     labels::Maybe{Vector{PnmlLabel}} #! #TODO Make label generic.
 end
 
+function ObjectCommon(tup::NamedTuple) #! make into tuple
+    @assert hasproperty(tup, :graphics)
+    @assert hasproperty(tup, :tools)
+    @assert hasproperty(tup, :labels)
+    g::Maybe{Graphics} = tup.graphics
+    t::Maybe{Vector{ToolInfo}} = tup.tools
+    l::Maybe{Vector{PnmlLabel}} = tup.labels
+    ObjectCommon(g, t, l)
+end
 function ObjectCommon(pdict::PnmlDict) #! make into tuple
+    error("uses PnmlDict")
     @assert haskey(pdict, :graphics)
     @assert haskey(pdict, :tools)
     @assert haskey(pdict, :labels)

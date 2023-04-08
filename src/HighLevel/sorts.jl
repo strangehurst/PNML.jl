@@ -46,18 +46,19 @@ $(TYPEDFIELDS)
 Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 Is content of a <structure> element of a High-Level label.
 """
-struct Sort{T<:AbstractDict}
+struct Sort #{T <: NamedTuple} #! AbstractDict}
     tag::Symbol
-    dict::T #TODO What should be here?
+    dict::NamedTuple #{Symbol,Any} #TODO What should be here?
     #TODO xml
 end
 
-Sort() = Sort(:empty, PnmlDict())
-Sort(p::Pair{Symbol,PnmlDict}) = Sort(p.first, p.second)
+Sort() = Sort(:empty, NamedTuple())
+Sort(p::Pair{Symbol, <:NamedTuple}) = Sort(p.first, p.second)
 Sort(a::AnyElement) = Sort(a.tag, a.dict)
 
 Base.convert(::Type{Maybe{Sort}}, pdict::PnmlDict)::Sort = Sort(pdict)
+Base.convert(::Type{Maybe{Sort}}, tup::NamedTuple)::Sort = Sort(tup)
 
 sort_type(::Type{<:PnmlType}) = Int
 sort_type(::Type{<:AbstractContinuousNet}) = Float64
-sort_type(::Type{<:AbstractHLCore}) = Sort{PnmlDict}
+sort_type(::Type{<:AbstractHLCore}) = Sort

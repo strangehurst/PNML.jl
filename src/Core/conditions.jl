@@ -52,7 +52,7 @@ Evaluate a [`Condition`](@ref) instance.
 (c::Condition)() = _evaluate(value(c))
 
 condition_type(::Type{T}) where {T <: PnmlType} = Condition{T, Bool}
-condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term{PnmlDict}}
+condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term}
 
 condition_value_type(::Type{T}) where {T <: PnmlType} = Bool
 condition_value_type(::Type{T}) where {T<:AbstractHLCore} = Bool

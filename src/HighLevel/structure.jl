@@ -6,7 +6,7 @@ Used by/in unclaimed high-level pnml labels.
 Is an abstract syntax tree (ast) expressed in XML.
 Note the structural similarity to [`PnmlLabel`](@ref) and [`AnyElement`](@ref)
 
-# Extra 
+# Extra
 There are various defined structure ast variants:
   - Sort of a Place type [builtin, multi, product, user]
   - Term of Place HLMarking  [variable, operator]
@@ -19,7 +19,7 @@ struct Structure{T} #TODO
     dict::T
     xml::XMLNode
 end
-Structure(p::Pair{Symbol,PnmlDict}, node::XMLNode) = Structure(p.first, p.second, node)
+Structure(p::Pair{Symbol,<:NamedTuple}, node::XMLNode) = Structure(p.first, p.second, node)
 
 tag(s::Structure) = s.tag
 dict(s::Structure) = s.dict

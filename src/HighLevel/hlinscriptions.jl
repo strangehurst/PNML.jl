@@ -7,8 +7,8 @@ Labels an Arc.
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, PnmlDict, Term)
-julia> i2 = HLInscription(Term(:term, PnmlDict(:value=>3)))
-HLInscription(nothing, Term(:term, OrderedCollections.OrderedDict{Symbol, Any}(:value => 3)), )
+julia> i2 = HLInscription(Term(:term, (; :value=>3)))
+HLInscription(nothing, Term(:term, (; :value => 3)), )
 
 julia> PnmlDict
 OrderedCollections.OrderedDict{Symbol, Any}
@@ -35,7 +35,7 @@ struct HLInscription{T<:Term} <: HLAnnotation
     com::ObjectCommon
 end
 
-HLInscription(s::AbstractString) = HLInscription(s, Term(:empty, PnmlDict(:value => zero(Int))))
+HLInscription(s::AbstractString) = HLInscription(s, Term(:empty, namedtuple(:value => zero(Int))))
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
@@ -48,5 +48,5 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term{PnmlDict}}
+inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
 inscription_value_type(::Type{<:AbstractHLCore}) = Int

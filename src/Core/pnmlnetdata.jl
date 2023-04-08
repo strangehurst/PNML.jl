@@ -8,7 +8,6 @@ in this structure. It is intended to be a per-`PnmlNet` database that is mutated
 is parsed.
 """
 struct PnmlNetData{PNTD <: PnmlType, M, I, C, S}
-    #{PNTD, PL, TR, AR, RP, RT}
     pntd::PNTD #
     place_dict::OrderedDict{Symbol, Place{PNTD,M,S}}
     transition_dict::OrderedDict{Symbol, Transition{PNTD,C}}
@@ -26,7 +25,7 @@ PnmlNetData(pntd, pl_dict, tr_dict, ar_dict, rp_dict, rt_dict) =
 """
 ID sets for pages, places, arcs, et al. start as empty sets.
 
-There is an ordered collection of `Pages` for each `PnmlNet`.
+There is a single ordered collection of `Pages` for each `PnmlNet`.
 It is accompanied by a tree of ordered sets of keys (page ID symbols).
 
 1st wave:

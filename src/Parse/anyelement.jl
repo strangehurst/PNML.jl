@@ -1,7 +1,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Return [`AnyElement`](@ref) wraping a `tag` symbol and `PnmlDict` holding
+Return [`AnyElement`](@ref) wraping a `tag` symbol and `Vector{Pair{Symbol}}` holding
 a well-formed XML node.
 
 See [`ToolInfo`](@ref) for one intended use-case.
@@ -16,21 +16,46 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return `tag` => `PnmlDict` holding a pnml label and its children.
+Return `tag` => `tuple` holding a pnml label and its children.
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`Structure`](@ref),
 [`Term`](@ref) or other specialized label. These wrappers add type to the
 nested dictionary holding the contents of the label.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, reg)::Pair{Symbol,PnmlDict}
-    ha! = HarvestAny(_harvest_any!, pntd, reg)
-    dict = ha!(node)
-    return Symbol(nodename(node)) => dict
+function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry)#!::Pair{Symbol,Vector{Pair{Symbol,Any}}}
+    ha! = HarvestAny(_harvest_any!, pntd, idregistry)
+    #x::Vector{Pair{Symbol,Any}}
+    x = ha!(node)
+    @show typeof(x) typeof((; x...))
+    return Symbol(nodename(node)) => x
+end
+
+text_content(ucl) = if haskey(ucl.dict, :text)
+    @assert !isnothing(ucl.dict[:text])
+    ucl.dict[:text][1][:content]
+elseif haskey(ucl.dict, :content)
+    ucl.dict[:content]
+else
+    throw(ArgumentError("tag missing a content"))
+end
+
+# Expected patterns. Note only first is standard-conforming, extensible, prefeered.
+#   <tag><text>1.23</text><tag>
+#   <tag>1.23<tag>
+# The unclaimed label mechanism adds a :content key for text XML elements.
+# When the text element is elided, there is still a :content.
+function numeric_label_value(T, ucl)
+    @assert !isnothing(ucl)
+    number_value(T, text_content(ucl))
 end
 
 # Functor
+"""
+Wrap a function and two of its arguments.
+"""
 struct HarvestAny
-    fun::FunctionWrapper{PnmlDict, Tuple{XMLNode, HarvestAny}}
+    #!fun::FunctionWrapper{Vector{Pair{Symbol,Any}}, Tuple{XMLNode, HarvestAny}}
+    fun::FunctionWrapper{NamedTuple, Tuple{XMLNode, HarvestAny}}
     pntd::PnmlType
     reg::PnmlIDRegistry
 end
@@ -53,8 +78,8 @@ Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, ha!::HarvestAny)
-    println("_harvest_any! ", nodename(node))
-    vec = Vector{Pair}()
+    println("harvest ", nodename(node)) #! debug
+    vec = Vector{Pair{Symbol,Any}}()
     # Extract XML attributes. Register IDs as symbols.
     for a in eachattribute(node)
         # ID attributes can appear in various places. Each is unique and added to the registry.
@@ -73,7 +98,7 @@ function _harvest_any!(node::XMLNode, ha!::HarvestAny)
         push!(vec, :content => "")
     end
     # @show vec
-    return PnmlDict(vec)
+    return (; vec...)  #NamedTuple #of Pairs PnmlDict(vec)
 end
 
 """
@@ -83,22 +108,23 @@ Apply `ha!` to each node in `nodes`.
 Return pairs Symbol => values that are vectors when there
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function _anyelement_content!(vec::Vector{Pair}, nodes::Vector{XMLNode}, ha!::HarvestAny)
+function _anyelement_content!(vec::Vector{Pair{Symbol,Any}},
+                              nodes::Vector{XMLNode},
+                              ha!::HarvestAny)
 
     namevec = [nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
     tagnames = unique(map(first, namevec))
     @show tagnames
 
     for tagname in tagnames
-        tags = filter((Fix2(===, tagname) ∘ first), namevec)
-        push!(vec, Symbol(tagname) => [ha!(t.second) for t in tags]) # Now its a symbol.)
+        tags = collect(filter((Fix2(===, tagname) ∘ first), namevec))
+        #tags = filter((Fix2(===, tagname) ∘ first), namevec)
+        if length(tags) > 1
+            push!(vec,  Symbol(tagname) => [ha!(t.second) for t in tags]) # Now its a symbol.)
+        else
+            push!(vec,  Symbol(tagname) => ha!(tags[1].second)) # Now its a symbol.)
+        end
     end
 
-#           if length(tags) > 1
-#            [ha!(t.second) for t in tags] # vector #! NOT iterator
-#       else
-#           ha!(tags[1].second) # scalar
-#       end)
-    #@show length(vec) vec typeof(vec)
     return nothing
 end

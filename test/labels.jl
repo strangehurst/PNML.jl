@@ -1,5 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
+using PNML:
+    Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     unclaimed_label, anyelement, PnmlLabel, AnyElement,
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
@@ -7,9 +8,9 @@ using PNML: Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     value
 
 const pntd = PnmlCoreNet()
+const noisy::Bool = true
 
 @testset "ObjectCommon" begin
-    noisy::Bool = false
     oc = @inferred PNML.ObjectCommon()
     if noisy
         @show typeof(oc)
@@ -29,27 +30,107 @@ const pntd = PnmlCoreNet()
 end
 
 @testset "unclaimed" begin
-    # node => [key => value] expected to be in the PnmlDict after parsing node.
-    ctrl =
-    [
-        ("""<declarations> </declarations>""",
-            [:content => ""]),
-        ("""<declarations atag="test1"> </declarations>""",
-            [:atag => "test1", :content => ""]),
+
+    function test_unclaimed(xmlstring::String, funk::NamedTuple)#Vector{<:Pair})
+        noisy && print("+++++++++++++++++++\n",
+                       "XML: ", xmlstring, "\n",
+                       "funk: ", funk, "\n",
+                       "-------------------\n")
+
+        node::XMLNode = xmlroot(xmlstring)
+        reg1 = registry()
+        reg2 = registry()
+
+        u = unclaimed_label(node, PnmlCoreNet(), reg1)
+        l = PnmlLabel(u, node)
+        a = anyelement(node, reg2)
+        noisy && @show typeof(u) u typeof(l) l typeof(a) a
+
+        # unclaimed_label returns Pair{Symbol,Vector{Pair{Symbol,Any}}}
+        # Where the outer symbol is the label name and the vector is the label's contents.
+        # function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
+
+        @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
+        @test_opt broken=false PnmlLabel(u, node)
+        @test_opt broken=true function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
+
+        @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1) #!
+        @test_call target_modules = (PNML,) PnmlLabel(u, node)
+        @test_call target_modules = (PNML,) anyelement(node, reg2) #!
+
+        @test !isnothing(u)
+        @test !isnothing(l)
+        @test !isnothing(a)
+
+
+        @test u isa Pair{Symbol, <:NamedTuple}
+        #@test u isa Pair{Symbol, Vector{Pair{Symbol,NamedTuple{Symbol}}}}
+        @test l isa PnmlLabel
+        @test a isa AnyElement
+
+        @show nn = Symbol(nodename(node))
+        @test u.first === nn
+        @test tag(l) === nn
+        @test tag(a) === nn
+
+        @test u.second isa NamedTuple #!Vector{<:Pair}
+        #@test u.second isa Vector{<:Pair{Symbol}}
+        #@test u.second isa Vector{<:Pair{Symbol,Any}}
+        #@test_broken u.second isa Vector{<:Pair{Symbol,<:NamedTuple}}
+        @test l.dict isa NamedTuple
+        @test a.dict isa NamedTuple
+
+        @show typeof(funk)
+        # test each key,value pair
+        println("-------------------")
+        for (key, val) in pairs(funk) # NamedTuple
+            @show key typeof(key)
+            @show val typeof(val) eltype(val)
+            @show typeof(l.dict) eltype(l.dict) typeof(a.dict) eltype(a.dict)
+            #@show vec = [v.first for v in u.second]
+            #@test hasproperty(u.second, key)
+            #@est any(==(key), vec)
+            #inx = Base.findfirst(==(val), [v.first for v in u.second])
+            #@test !isnothing(inx)
+            #@test u.second[inx].first == val
+            println()
+            @test hasproperty(l.dict, key)
+            @show typeof(l.dict) typeof(l.dict[key])
+            @test hasproperty(a.dict, key)
+            @show typeof(a.dict) typeof(a.dict[key])
+            @test l.dict[key] == val
+            @test a.dict[key] == val
+        end
+        println("^^^^^^^^^^^^^^^^^^^")
+
+        #haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
+        haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
+        haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
+
+        #@report_opt isregistered_id(reg2, :id)
+        @test_call isregistered_id(reg2, :id)
+    end
+
+    ctrl = [
+        ("""<declarations> </declarations>""", (; :content => "")),
+        ("""<declarations atag="test1"> </declarations>""", (; :atag => "test1", :content => "")),
         ("""<declarations atag="test2">
-                    <something> some content </something>
-                    <something> other stuff </something>
-                    <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
-                </declarations>""",
-            [:atag => "test2",
-             :something => [PnmlDict(:content => "some content"),
-                            PnmlDict(:content => "other stuff")],
-             :something2 => [PnmlDict(:value => [PnmlDict(:content => ""),
-                                                 PnmlDict(:tag3 => "three", :content => "")],
-                                      :tag2 => "two")]]),
+                <something> some content </something>
+                <something> other stuff </something>
+                <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
+            </declarations>""",
+            (; :atag => "test2",
+               :something => [(; :content => "some content"),
+                              (; :content => "other stuff")],
+               :something2 => [(; :tag2 => "two",
+                                  :value => [(; :content => ""),
+                                             (; :tag3 => "three", :content => "")],
+                                )]),
+                (tag2 = "two", value = NamedTuple[(content = "",), (tag3 = "three", content = "")])
+        ),
         ("""<foo><declarations> </declarations></foo>""",
-            [:declarations => [PnmlDict(:content => "")]]),
-        # no content, no attribute results in empty PnmlDict.
+             [:declarations => [(; :content => "")]]),
+            # no content, no attribute results in empty PnmlDict.
         ("""<null></null>""", []),
         ("""<null2/>""", []),
         # no content, with attribute
@@ -62,66 +143,8 @@ end
         ("""<foo id="testid"/>""", [:id => :testid]),
     ]
 
-    noisy::Bool = false
     for (s, funk) in ctrl
-        noisy && print("\n", s, "\n")
-        node::XMLNode = xmlroot(s)
-        reg1 = registry()
-        reg2 = registry()
-
-        u = unclaimed_label(node, PnmlCoreNet(), reg1)
-        noisy && @show typeof(u)
-        noisy && noisy && @show u
-        l = PnmlLabel(u, node)
-        noisy && @show l
-        a = anyelement(node, reg2)
-        noisy && @show a
-
-        function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
-
-        @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
-        @test_opt function_filter=function_filter target_modules=(PNML,) unclaimed_label(node, PnmlCoreNet(), reg1)
-        @test_opt PnmlLabel(u, node)
-        @test_opt function_filter=function_filter target_modules = (PNML,) anyelement(node, reg2)
-
-        @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1) #!
-        @test_call target_modules = (PNML,) PnmlLabel(u, node)
-        @test_call target_modules = (PNML,) anyelement(node, reg2) #!
-
-        @test !isnothing(u)
-        @test !isnothing(l)
-        @test !isnothing(a)
-
-        @test u isa Pair{Symbol,PnmlDict}
-        @test l isa PnmlLabel
-        @test a isa AnyElement
-
-        nn = Symbol(nodename(node))
-        @test u.first === nn
-        @test tag(l) === nn
-        @test tag(a) === nn
-
-        @test u.second isa PnmlDict
-        @test l.dict isa PnmlDict
-        @test a.dict isa PnmlDict
-
-        # test each key,value pair
-        for (key, val) in funk
-            @show key, typeof(key), typeof(val)#@show key#@show val
-            @test haskey(u.second, key)
-            @test u.second[key] == val
-            @test haskey(l.dict, key)
-            @test l.dict[key] == val
-            @test haskey(a.dict, key)
-            @test a.dict[key] == val
-        end
-
-        haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
-        haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
-        haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
-
-        #@report_opt isregistered_id(reg2, :id)
-        @test_call isregistered_id(reg2, :id)
+        test_unclaimed(s, funk)
     end
 end
 

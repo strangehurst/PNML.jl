@@ -1,5 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET
-#using PNML: Maybe
 
 @testset "ID registry" begin
     @test_opt registry()

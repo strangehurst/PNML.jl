@@ -4,15 +4,14 @@ $(TYPEDFIELDS)
 
 Place node of a Petri Net Markup Language graph.
 """
-struct Place{PNTD,M,S} <: AbstractPnmlNode{PNTD}
+struct Place{PNTD,M,S}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
 
     marking::M
     initialMarking::M
-    # High-level Petri Nets place's markings have sorts.
-    # Others might not have
-    sorttype::S # Place type is different from pntd/PnmlType. #! HL
+    # High-level Petri Net place's have sorts with meaning, others TBD.
+    sorttype::S
     name::Maybe{Name}
     com::ObjectCommon
 
@@ -21,7 +20,9 @@ end
 function Place(pntd::PnmlType, id::Symbol, initMarking, sort,
                name::Maybe{Name}, oc::ObjectCommon)
     initmark = isnothing(initMarking) ? default_marking(pntd) : initMarking
-    Place(pntd, id, initmark, initmark, sort, name, oc)
+    Place{typeof(pntd),
+          typeof(initmark),
+          typeof(sort)}(pntd, id, initmark, initmark, sort, name, oc)
 end
 
 nettype(::Place{T}) where {T <: PnmlType} = T

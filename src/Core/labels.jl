@@ -70,11 +70,15 @@ of the structure defined by the pntd schema.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    dict::PnmlDict #! make into tuple
+    dict::NamedTuple #! make into tuple
     xml::XMLNode
 end
 
-PnmlLabel(p::Pair{Symbol,PnmlDict}, node::XMLNode) = PnmlLabel(p.first, p.second, node)
+PnmlLabel(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}, xml::XMLNode) = begin
+    @show p.first typeof(p) typeof(p.second) typeof((; p.second...)) typeof(namedtuple(p.second))
+    PnmlLabel(p.first, namedtuple(p.second), xml)
+end
+PnmlLabel(p::Pair{Symbol,<:NamedTuple}, node::XMLNode) = PnmlLabel(p.first, p.second, node)
 
 tag(label::PnmlLabel) = label.tag
 dict(label::PnmlLabel) = label.dict
