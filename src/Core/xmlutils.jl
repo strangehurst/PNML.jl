@@ -5,7 +5,7 @@ const XMLNode = EzXML.Node
 const pnml_ns = "http://www.pnml.org/version-2009/grammar/pnml"
 
 """
-Parse string `s` into EzXML node.
+Parse string into EzXML node.
 
 $(TYPEDSIGNATURES)
 
@@ -17,11 +17,11 @@ macro xml_str(s)
 end
 
 """
-Parse string `s` into EzXML node.
-
 $(TYPEDSIGNATURES)
- """
-xmlroot(s::AbstractString) = root(EzXML.parsexml(s))
+
+Parse string `s` into EzXML node.
+"""
+xmlroot(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
 
 """
 $(TYPEDSIGNATURES)
@@ -39,7 +39,7 @@ Return first child with `tag` or nothing.
 """
 function getfirst(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
     x = firstchild(tag, el, ns)
-    isnothing(x) ? nothing : x
+    isnothing(x) ? nothing : x #TODO why
 end
 
 

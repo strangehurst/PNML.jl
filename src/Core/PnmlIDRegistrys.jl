@@ -28,9 +28,9 @@ function registry end
 registry() = registry(ReentrantLock())
 registry(lock::L) where {L <: Base.AbstractLock} = PnmlIDRegistry(Set{Symbol}(), lock)
 
-function Base.show(io::IO, reg::PnmlIDRegistry)
-    print(io, typeof(reg), " ", length(reg.ids), " ids: ", reg.ids)
-    # , " duplicate action: ", nameof(reg.duplicate))
+function Base.show(io::IO, idregistry::PnmlIDRegistry)
+    print(io, typeof(idregistry), " ", length(idregistry.ids), " ids: ", idregistry.ids)
+    # , " duplicate action: ", nameof(idregistry.duplicate))
 end
 
 duplicate_id_warn(id::Symbol)  = @warn( "ID already registered: $id")
@@ -44,12 +44,14 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-register_id!(reg::PnmlIDRegistry, s::AbstractString) = register_id!(reg, Symbol(s))
-function register_id!(reg::PnmlIDRegistry, id::Symbol)::Symbol
+function register_id!(idregistry::PnmlIDRegistry, s::AbstractString)
+    register_id!(idregistry, Symbol(s))
+end
+function register_id!(idregistry::PnmlIDRegistry, id::Symbol)::Symbol
     @nospecialize
-    @lock reg.lk begin
-        id ∈ reg.ids && duplicate_id_warn(id)
-        push!(reg.ids, id)
+    @lock idregistry.lk begin
+        id ∈ idregistry.ids && duplicate_id_warn(id)
+        push!(idregistry.ids, id)
     end
     return id
 end
@@ -60,9 +62,10 @@ $(TYPEDSIGNATURES)
 Return `true` if `s` is registered in `reg`.
 """
 isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered_id(reg, Symbol(s))
-function isregistered_id(reg::PnmlIDRegistry, id::Symbol)::Bool
-    lock(reg.lk) do
-        id ∈ reg.ids
+function isregistered_id(idregistry::PnmlIDRegistry, id::Symbol)::Bool
+    @nospecialize
+    lock(idregistry.lk) do
+        id ∈ idregistry.ids
     end
 end
 
@@ -72,9 +75,10 @@ $(TYPEDSIGNATURES)
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
 """
-function reset!(reg::PnmlIDRegistry)
-    lock(reg.lk) do
-        empty!(reg.ids)
+function reset!(idregistry::PnmlIDRegistry)
+    @nospecialize
+    lock(idregistry.lk) do
+        empty!(idregistry.ids)
     end
 end
 
@@ -83,9 +87,10 @@ $(TYPEDSIGNATURES)
 
 Is the set of id symbols empty?
 """
-function Base.isempty(reg::PnmlIDRegistry)::Bool
-    lock(reg.lk) do
-        isempty(reg.ids)
+function Base.isempty(idregistry::PnmlIDRegistry)::Bool
+    @nospecialize
+    lock(idregistry.lk) do
+        isempty(idregistry.ids)
     end
 end
 

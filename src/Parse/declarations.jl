@@ -132,13 +132,13 @@ function parse_type(node::XMLNode, pntd::PNTD, reg::PnmlIDRegistry) where {PNTD 
     Sort(anyelement(node, pntd, reg)) # TODO TBD Define a `Sort` interface.
 end
 # Sort type for non-high-level meaning is TBD and non-standard.
-function parse_type(node::XMLNode, pntd::PNTD, reg::PnmlIDRegistry) where {PNTD <: PnmlType}
+function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
     check_nodename(node, "type")
     # Parse as unclaimed label. Then assume it is a `number_value` for non-High-Level nets.
     # First use-case is `rate` of `ContinuousNet`.
     ucl = unclaimed_label(node, pntd, idregistry)
     @show ucl
-    numeric_label_value(ucl) #TODO This should conform to the TBD `Sort` interface.
+    numeric_label_value(sort_type(pntd), ucl) #TODO This should conform to the TBD `Sort` interface.
 end
 
 
