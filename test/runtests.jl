@@ -50,9 +50,6 @@ end
         @time "registry" @safetestset "registry"  begin include("idregistry.jl") end
         @time "utils"    @safetestset "utils"     begin include("utils.jl") end
     end
-    if select("ALL", "PARSE") # Overall full flow test - fail early
-        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
-    end
     if select("ALL", "CORE")
         @time "labels"       @safetestset "labels"       begin include("labels.jl") end
         @time "graphics"     @safetestset "graphics"     begin include("graphics.jl") end
@@ -66,6 +63,10 @@ end
     if select("ALL", "HIGHLEVEL")
         @time "declarations" @safetestset "declarations" begin include("declarations.jl") end
         @time "labels_hl"    @safetestset "labels_hl"    begin include("labels_hl.jl") end
+    end
+
+    if select("ALL", "PARSE") # Overall full flow test
+        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("ALL", "NET")
         @time "rate"      @safetestset "rate"         begin include("rate.jl") end
