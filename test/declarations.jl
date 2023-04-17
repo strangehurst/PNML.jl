@@ -24,7 +24,7 @@ end
 
 @testset "empty declarations" begin
     # The attribute should be ignored.
-    n = parse_node(xml"""
+    n = parse_declaration(xml"""
         <declaration key="test">
           <structure>
            <declarations>
@@ -78,7 +78,7 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    n = parse_node(node, pntd, reg)
+    n = parse_declaration(node, pntd, reg)
 
     @test typeof(n) <: PNML.Declaration
     @test xmlnode(n) isa Maybe{EzXML.Node}

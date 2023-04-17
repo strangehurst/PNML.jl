@@ -8,17 +8,15 @@ const Maybe{T} = Union{T, Nothing}
 #const PnmlDict = LittleDict{Symbol, Any, Vector{Symbol}, Vector{Any}}
 const PnmlDict = OrderedDict{Symbol, Any}
 
-pid(pdict::PnmlDict)::Symbol = pdict[:id]
-tag(pdict::PnmlDict)::Symbol = pdict[:tag]
-xmlnode(pdict::PnmlDict)::XMLNode = pdict[:xml]
+pid(tup::NamedTuple)::Symbol = tup.id
+tag(tup::NamedTuple)::Symbol = tup.tag
+labels(tup::NamedTuple) = tup.labels
+xmlnode(tup::NamedTuple)::XMLNode = tup.xml
 
-has_labels(pdict::PnmlDict) = haskey(pdict, :labels)
-has_label(d::PnmlDict, tag::Symbol) = has_labels(d) ? has_label(labels(d), tag) : false
-
-labels(pdict::PnmlDict) = pdict[:labels]
-
-get_label(d::PnmlDict, tagvalue::Symbol) = has_labels(d) ? get_label(labels(d), tagvalue) : nothing
-get_labels(d::PnmlDict, tagvalue::Symbol) = get_labels(labels(d), tagvalue)
+has_labels(tup::NamedTuple) = hasproperty(tup, :labels)
+get_labels(tup::NamedTuple, tagvalue::Symbol) = get_labels(labels(tup), tagvalue)
+has_label(tup::NamedTuple, tag::Symbol) = has_labels(tup) ? has_label(labels(tup), tag) : false
+get_label(tup::NamedTuple, tagvalue::Symbol) = has_labels(tup) ? get_label(labels(tup), tagvalue) : nothing
 
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------

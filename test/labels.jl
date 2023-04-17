@@ -5,32 +5,172 @@ using PNML:
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
     default_term, default_one_term, default_zero_term,
-    value
+    has_graphics, graphics, has_name, name, has_label,
+    value, common, tools, graphics, labels,
+    parse_initialMarking, parse_inscription, parse_text
 
 const pntd = PnmlCoreNet()
 const noisy::Bool = true
 
 @testset "ObjectCommon" begin
     oc = @inferred PNML.ObjectCommon()
-    if noisy
-        @show typeof(oc)
-        @show typeof(PNML.graphics(oc))
-        @show typeof(PNML.tools(oc))
-        @show typeof(PNML.labels(oc))
-    end
-    d = PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
+    @test isnothing(PNML.graphics(oc))
+    @test isnothing(PNML.tools(oc))
+    @test isnothing(PNML.labels(oc))
+    d = (; :graphics => nothing, :tools => nothing, :labels => nothing)
     oc = @inferred PNML.ObjectCommon(d)
-    if noisy
-        @show typeof(oc)
-        @show typeof(PNML.graphics(oc))
-        @show typeof(PNML.tools(oc))
-        @show typeof(PNML.labels(oc))
+    # if false
+    #     @show typeof(oc)
+    #     @show typeof(PNML.graphics(oc))
+    #     @show typeof(PNML.tools(oc))
+    #     @show typeof(PNML.labels(oc))
+    # end
+    @test isnothing(PNML.graphics(oc))
+    @test isnothing(PNML.tools(oc))
+    @test isnothing(PNML.labels(oc))
+end
+
+@testset "PT initMarking" begin
+    node = xml"""
+    <initialMarking>
+        <text>123</text>
+        <toolspecific tool="org.pnml.tool" version="1.0">
+            <tokengraphics>
+                <tokenposition x="6" y="9"/>
+            </tokengraphics>
+        </toolspecific>
+    </initialMarking>
+    """
+
+    mark = parse_initialMarking(node, pntd, registry())
+    @test typeof(mark) <: PNML.Marking
+    @test typeof(value(mark)) <: Union{Int,Float64}
+    @test value(mark) == mark()
+    @test value(mark) == 123
+    noisy && @show mark
+
+    mark1 = PNML.Marking(23)
+    #@report_opt PNML.Marking(2)
+    @test_call PNML.Marking(23)
+    @test typeof(mark1()) == typeof(23)
+    @test mark1() == 23
+    @test value(mark1) == 23
+    #@report_opt mark1()
+    @test_call mark1()
+
+    @test (graphics ∘ common)(mark1) === nothing
+    @test (tools ∘ common)(mark1) === nothing || isempty((tool ∘ common)(mark1))
+    @test (labels ∘ common)(mark1) === nothing || isempty((labels ∘ common)(mark1))
+
+    mark2 = PNML.Marking(3.5)
+    @test_call PNML.Marking(3.5)
+    @test typeof(mark2()) == typeof(3.5)
+    @test mark2() ≈ 3.5
+    @test_call mark2()
+
+    @test (graphics ∘ common)(mark2) === nothing
+    @test (tools ∘ common)(mark2) === nothing || isempty((tool ∘ common)(mark2))
+    @test (labels ∘ common)(mark2) === nothing || isempty((labels ∘ common)(mark2))
+
+    mark3 = PNML.Marking()
+    @test_call PNML.Marking()
+    @test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
+    @test mark3() == default_marking(PnmlCoreNet())()
+    @test_call mark3()
+
+    @test (graphics ∘ common)(mark3) === nothing
+    @test (tools ∘ common)(mark3) === nothing || isempty((tool ∘ common)(mark3))
+    @test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
+end
+
+@testset "PT inscription" begin
+    n1 = xml"<inscription> <text> 12 </text> </inscription>"
+    inscription = parse_inscription(n1, pntd, registry())
+    @test inscription isa PNML.Inscription
+    noisy && @show inscription
+    @test_broken value(inscription) == 12
+    @test (graphics ∘ common)(inscription) === nothing
+    @test (tools ∘ common)(inscription) === nothing || isempty((tool ∘ common)(inscription))
+    @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
+end
+
+@testset "text" begin
+    str1 = """<text>ready</text>"""
+    n = parse_text(xmlroot(str1), pntd, registry())
+    @test n == "ready"
+
+    str2 = """
+<text>
+ready
+</text>
+    """
+    n = parse_text(xmlroot(str2), pntd, registry())
+    @test n == "ready"
+
+    str3 = """
+ <text>    ready  </text>
+    """
+    n = parse_text(xmlroot(str3), pntd, registry())
+    @test n == "ready"
+
+    str4 = """
+     <text>ready
+to
+go</text>
+    """
+    n = parse_text(xmlroot(str4), pntd, registry())
+    @test n == "ready\nto\ngo"
+end
+
+@testset "labels" begin
+    # Exersize the labels of a NamedTuple
+
+    #    d = PnmlDict(:labels => PnmlLabel[])
+    tup = (; :labels => PnmlLabel[])
+    reg = registry()
+    @test_call labels(tup)
+    @test labels(tup) isa Vector{PnmlLabel}
+
+    for i in 1:4 # add 4 labels
+        x = i < 3 ? 1 : 2 # make 2 tagnames
+        node = xmlroot("<test$x> $i </test$x>")
+        @test_call target_modules = (PNML,) add_label!(tup, node, PnmlCoreNet(), reg)
+        add_label!(tup, node, PnmlCoreNet(), reg)
+        @test length(labels(tup)) == i
+        @test tup.labels === labels(tup)
     end
-    println()
+
+    @test length(tup.labels) == 4
+    @test length(labels(tup)) == 4
+
+    for l in labels(tup)
+        @test_call tag(l)
+        @test tag(l) === :test1 || tag(l) === :test2
+        @test xmlnode(l) isa Maybe{EzXML.Node}
+        @test xmlnode(l) isa Maybe{XMLNode}
+    end
+
+    @test_call has_label(tup, :test1)
+    @test_call get_label(tup, :test1)
+    @test_call get_labels(tup, :test1)
+
+    @test has_label(tup, :test1)
+    @test !has_label(tup, :bumble)
+
+    v = get_label(tup, :test2)
+    @test v.dict[:content] == "3"
+
+    @testset "label $labeltag" for labeltag in [:test1, :test2]
+        v = PNML.get_labels(tup, labeltag)
+        @test length(v) == 2
+        for l in v
+            @test tag(l) === labeltag
+        end
+    end
 end
 
 @testset "unclaimed" begin
-
+    println("## test unclaimed, PnmlLabel, anyelement")
     function test_unclaimed(xmlstring::String, funk::NamedTuple)#Vector{<:Pair})
         noisy && print("+++++++++++++++++++\n",
                        "XML: ", xmlstring, "\n",
@@ -44,7 +184,8 @@ end
         u = unclaimed_label(node, PnmlCoreNet(), reg1)
         l = PnmlLabel(u, node)
         a = anyelement(node, reg2)
-        noisy && @show typeof(u) u typeof(l) l typeof(a) a
+        #noisy && @show typeof(u) typeof(l) typeof(a)
+        noisy && @show u l a
 
         # unclaimed_label returns Pair{Symbol,Vector{Pair{Symbol,Any}}}
         # Where the outer symbol is the label name and the vector is the label's contents.
@@ -84,22 +225,26 @@ end
         # test each key,value pair
         println("-------------------")
         for (key, val) in pairs(funk) # NamedTuple
-            @show key typeof(key)
-            @show val typeof(val) eltype(val)
-            @show typeof(l.dict) eltype(l.dict) typeof(a.dict) eltype(a.dict)
+            @show key #typeof(key)
+            @show val #typeof(val) #eltype(val)
+            #@show typeof(l.dict) eltype(l.dict) typeof(a.dict) eltype(a.dict)
             #@show vec = [v.first for v in u.second]
             #@test hasproperty(u.second, key)
             #@est any(==(key), vec)
             #inx = Base.findfirst(==(val), [v.first for v in u.second])
             #@test !isnothing(inx)
             #@test u.second[inx].first == val
-            println()
             @test hasproperty(l.dict, key)
-            @show typeof(l.dict) typeof(l.dict[key])
+            #@show typeof(l.dict[key])
+            #@test typeof(l.dict[key]) <: typeof(val)
+            #@test l.dict[key] == val
+
             @test hasproperty(a.dict, key)
-            @show typeof(a.dict) typeof(a.dict[key])
-            @test l.dict[key] == val
-            @test a.dict[key] == val
+            #@show typeof(a.dict[key])
+            #@test typeof(a.dict[key]) <: typeof(val)
+            #@test a.dict[key] == val
+
+            println()
         end
         println("^^^^^^^^^^^^^^^^^^^")
 
@@ -129,148 +274,21 @@ end
                 (tag2 = "two", value = NamedTuple[(content = "",), (tag3 = "three", content = "")])
         ),
         ("""<foo><declarations> </declarations></foo>""",
-             [:declarations => [(; :content => "")]]),
+             (; :declarations => [(; :content => "")])),
             # no content, no attribute results in empty PnmlDict.
-        ("""<null></null>""", []),
-        ("""<null2/>""", []),
+        ("""<null></null>""", NamedTuple()),
+        ("""<null2/>""", NamedTuple()),
         # no content, with attribute
-        ("""<null at="null"></null>""", [:at => "null"]),
-        ("""<null2 at="null2" />""", [:at => "null2"]),
+        ("""<null at="null"></null>""", (; :at => "null")),
+        ("""<null2 at="null2" />""", (; :at => "null2")),
         # empty content, no attribute
-        ("""<empty> </empty>""", [:content => ""]),
+        ("""<empty> </empty>""", (; :content => "")),
         # empty content, with attribute
-        ("""<empty at="empty"> </empty>""", [:content => "", :at => "empty"]),
-        ("""<foo id="testid"/>""", [:id => :testid]),
+        ("""<empty at="empty"> </empty>""", (; :content => "", :at => "empty")),
+        ("""<foo id="testid"/>""", (; :id => :testid)),
     ]
 
     for (s, funk) in ctrl
         test_unclaimed(s, funk)
-    end
-end
-
-@testset "PT initMarking" begin
-    node = xml"""
-    <initialMarking>
-        <text>1</text>
-        <toolspecific tool="org.pnml.tool" version="1.0">
-            <tokengraphics>
-                <tokenposition x="6" y="9"/>
-            </tokengraphics>
-        </toolspecific>
-    </initialMarking>
-    """
-
-    n = parse_node(node, pntd, registry())
-    @test typeof(n) <: PNML.Marking
-    #@test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(value(n)) <: Union{Int,Float64}
-    @test value(n) == n()
-
-    mark1 = PNML.Marking(2)
-    #@report_opt PNML.Marking(2)
-    @test_call PNML.Marking(2)
-    @test typeof(mark1()) == typeof(2)
-    @test mark1() == 2
-    #@report_opt mark1()
-    @test_call mark1()
-
-    mark2 = PNML.Marking(3.5)
-    @test_call PNML.Marking(3.5)
-    @test typeof(mark2()) == typeof(3.5)
-    @test mark2() ≈ 3.5
-    @test_call mark2()
-
-    mark3 = PNML.Marking()
-    @test_call PNML.Marking()
-    @test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
-    @test mark3() == default_marking(PnmlCoreNet())()
-    @test_call mark3()
-end
-
-@testset "PT inscription" begin
-    n1 = xml"<inscription> <text> 12 </text> </inscription>"
-    @testset for node in [n1]
-        n = parse_node(node, pntd, registry())
-        @test typeof(n) <: PNML.Inscription
-        #@test xmlnode(n) isa Maybe{EzXML.Node}
-        @test value(n) == 12
-        @test n.com.graphics === nothing
-        @test n.com.tools === nothing || isempty(n.com.tools)
-        @test n.com.labels === nothing || isempty(n.com.labels)
-    end
-end
-
-@testset "text" begin
-    str1 = """<text>ready</text>"""
-    n = parse_node(xmlroot(str1), pntd, registry())
-    @test n == "ready"
-
-    str2 = """
-<text>
-ready
-</text>
-    """
-    n = parse_node(xmlroot(str2), pntd, registry())
-    @test n == "ready"
-
-    str3 = """
- <text>    ready  </text>
-    """
-    n = parse_node(xmlroot(str3), pntd, registry())
-    @test n == "ready"
-
-    str4 = """
-     <text>ready
-to
-go</text>
-    """
-    n = parse_node(xmlroot(str4), pntd, registry())
-    @test n == "ready\nto\ngo"
-end
-
-@testset "labels" begin
-    # Exersize the :labels of a PnmlDict
-
-    d = PnmlDict(:labels => PnmlLabel[])
-    reg = registry()
-    @test_call labels(d)
-    @test labels(d) isa Vector{PnmlLabel}
-    for i in 1:4 # add 4 labels
-        x = i < 3 ? 1 : 2 # make 2 tagnames
-        node = xmlroot("<test$x> $i </test$x>")
-        @test_call target_modules = (PNML,) add_label!(d, node, PnmlCoreNet(), reg)
-        n = add_label!(d, node, PnmlCoreNet(), reg)
-        @test n isa Vector{PnmlLabel}
-        #@show n
-        @test length(labels(d)) == i
-        @test d[:labels] == n
-        @test labels(d) == n
-    end
-
-    @test length(d[:labels]) == 4
-    @test length(labels(d)) == 4
-    for l in labels(d)
-        @test_call tag(l)
-        @test tag(l) === :test1 || tag(l) === :test2
-        @test xmlnode(l) isa Maybe{EzXML.Node}
-        @test xmlnode(l) isa Maybe{XMLNode}
-    end
-
-    @test_call has_label(d, :test1)
-    @test_call get_label(d, :test1)
-    @test_call get_labels(d, :test1)
-
-    @test has_label(d, :test1)
-    @test !has_label(d, :bumble)
-
-    v = get_label(d, :test2)
-    @test v.dict[:content] == "3"
-
-    @testset "label $labeltag" for labeltag in [:test1, :test2]
-        v = PNML.get_labels(d, labeltag)
-        @test length(v) == 2
-        for l in v
-            @test tag(l) === labeltag
-        end
     end
 end

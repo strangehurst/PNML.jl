@@ -60,7 +60,7 @@ function parse_graphics(node, pntd, reg)
         end
     end
 
-    @show typeof(dimension) typeof(fill) typeof(font) typeof(line) typeof(offset) typeof(positions)
+    #!@show typeof(dimension) typeof(fill) typeof(font) typeof(line) typeof(offset) typeof(positions)
     Graphics( ; dimension, fill, font, line, offset, positions)
 end
 

@@ -21,7 +21,7 @@ using PNML: Maybe, tag, pid, xmlnode, value
      </structure>
  </hlinitialMarking>
     """
-    n = parse_node(xmlroot(str), HLCoreNet(), registry())
+    n = parse_hlinitialMarking(xmlroot(str), HLCoreNet(), registry())
 
     @test typeof(n) <: PNML.AbstractLabel
     @test typeof(n) <: PNML.HLMarking
@@ -54,7 +54,7 @@ end
         </structure>
     </hlinscription>
     """
-    n = parse_node(n1, HLCoreNet(), registry())
+    n = parse_hlinscription(n1, HLCoreNet(), registry())
     @test typeof(n) <: PNML.HLInscription
     #@test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(value(n)) === :tuple
@@ -81,7 +81,7 @@ end
      </structure>
     """
 
-    n = parse_node(node, HLCoreNet(), registry())
+    n = parse_structure(node, HLCoreNet(), registry())
     @test n isa PNML.Structure
     @test xmlnode(n) isa Maybe{EzXML.Node}
     @test tag(n) === :structure
@@ -99,7 +99,7 @@ end
  </type>
     """
     @testset for node in [n1]
-        n = parse_node(node, HLCoreNet(), registry())
+        n = parse_type(node, HLCoreNet(), registry())
         @test typeof(n) <: PNML.AnyElement
         @test tag(n) === :type
         @test n.dict[:text][1][:content] == "N2"
@@ -115,7 +115,7 @@ end
  </condition>
     """
     @testset for node in [n1]
-        n = parse_node(node, PnmlCoreNet(), registry())
+        n = parse_condition(node, PnmlCoreNet(), registry())
         @test typeof(n) <: PNML.Condition
         @test n.text !== nothing
         @test value(n) !== nothing

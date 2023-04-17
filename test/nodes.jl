@@ -2,6 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_xml, has_name, name,
     pid, marking, condition, inscription,
+    has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
 const pntd = PnmlCoreNet()
@@ -14,6 +15,8 @@ const pntd = PnmlCoreNet()
       </place>
     """
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, pntd, registry())
+
     @test_call target_modules = target_modules parse_place(node, pntd, registry())
     n = parse_place(node, pntd, registry())
     id = pid(n)
@@ -37,7 +40,7 @@ end
         <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, PnmlCoreNet(), registry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, PnmlCoreNet(), registry())
     @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
     n = parse_place(node, PnmlCoreNet(), registry())
     @test typeof(n) <: Place
@@ -67,10 +70,10 @@ end
     @test condition(n) isa Bool #! define non-HL other's semantics.
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    #@test_throws ErrorException parse_node(node, pntd, registry())
+    #@test_throws ErrorException parse_transition(node, pntd, registry())
     @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    #@test_throws ErrorException parse_node(node, pntd, registry())
+    #@test_throws ErrorException parse_transition(node, pntd, registry())
     @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     t = parse_transition(node, pntd, registry())

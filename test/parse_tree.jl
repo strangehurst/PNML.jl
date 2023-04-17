@@ -1,6 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe,
-    tag, pid, xmlnode, firstpage, parse_file, parse_name,
+    tag, pid, xmlnode, firstpage,
+    parse_file, parse_name, parse_initialMarking, parse_inscription,
+    parse_declaration, parse_transition,  parse_toolspecific,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
     nets, pages, arcs, place, places, transitions, has_place,
     allchildren, firstchild, value
@@ -46,7 +48,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
 
         nd = allchildren("declaration", net)
         @test isempty(nd)
-        ndx = parse_node.(nd, Ref(reg))
+        ndx = parse_declaration.(nd, Ref(reg))
         @test isempty(ndx)
         #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
         #@test_opt  allchildren("declaration", net)
@@ -54,7 +56,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
 
         nt = allchildren("toolspecific", net)
         @test isempty(nt)
-        @test isempty(parse_node.(nt, Ref(reg)))
+        @test isempty(parse_toolspecific.(nt, Ref(reg)))
 
         pages = allchildren("page", net)
         @test !isempty(pages)
@@ -66,7 +68,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
             for p in allchildren("place", page)
                 @test nodename(p) == "place"
                 fc = firstchild("initialMarking", p)
-                i = parse_node(fc, PnmlCoreNet(), reg)
+                i = parse_initialMarking(fc, PnmlCoreNet(), reg)
                 #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
                 @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
@@ -87,7 +89,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
                 @test nodename(a) == "arc"
                 ins = firstchild("inscription", a)
                 if ins !== nothing
-                    i = parse_node(ins, PnmlCoreNet(), reg)
+                    i = parse_inscription(ins, PnmlCoreNet(), reg)
                     @test typeof(i) <: PNML.Inscription
                     @test typeof(value(i)) <: Union{Int,Float64}
                     @test value(i) > 0

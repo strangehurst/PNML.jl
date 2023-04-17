@@ -34,7 +34,7 @@ function default_one_term end
 default_one_term() = default_one_term(PnmlCoreNet())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCoreNet #!relocate
 default_one_term(::AbstractContinuousNet) = one(Float64) #!relocate
-default_one_term(::AbstractHLCore) = Term(:empty, namedtuple(:value => one(Int)))
+default_one_term(::AbstractHLCore) = Term(:empty, (; :value => one(Int)))
 default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 term_value_type(::Type{<:PnmlType}) = Int
@@ -50,7 +50,7 @@ function default_zero_term end
 default_zero_term() = default_zero_term(PnmlCoreNet())
 default_zero_term(::PnmlType) = zero(Int) #!relocate
 default_zero_term(::AbstractContinuousNet) = zero(Float64) #!relocate
-default_zero_term(::AbstractHLCore) = Term(:empty, namedtuple(:value => zero(Int)))
+default_zero_term(::AbstractHLCore) = Term(:empty, (; :value => zero(Int)))
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
@@ -86,7 +86,7 @@ end
 Term() = Term(NamedTuple())
 Term(tup::NamedTuple) = Term(:empty, tup)
 Term(p::Pair{Symbol,<:NamedTuple}) = Term(p.first, p.second)
-Term(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}) = Term(p.first, namedtuple(p.second...))
+Term(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}) = Term(p.first, namedtuple(p.second))
 
 Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
 #!Base.convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)

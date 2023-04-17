@@ -52,7 +52,7 @@ end
 using AbstractTrees
 using Accessors
 using AutoHashEquals
-using Base: Fix1, Fix2, @kwdef
+using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
 using EzXML
 using FunctionWrappers

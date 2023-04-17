@@ -3,10 +3,12 @@ using OrderedCollections
 using PNML:
     tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type,
     place_type, refplace_type, transition_type, reftransition_type, arc_type,
-    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition
+    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
+    parse_name+
 
 const pntd = PnmlCoreNet()
 
+println("exceptions")
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
 function test_malformed(emsg, f, xs...)
     try
@@ -37,7 +39,7 @@ end
 end
 
 @testset "empty name" begin
-    @test_logs match_mode = :any (:warn, r"missing <text>") parse_node(xml"<name></name>", pntd, registry())
+    @test_logs match_mode = :any (:warn, r"missing <text>") parse_name(xml"<name></name>", pntd, registry())
 end
 
 @testset "malformed" begin
@@ -103,7 +105,7 @@ end
 @testset "missing id" begin
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
 
-    pgdict = PnmlDict(
+    pgdict = (;
         :pagedict => OrderedDict{Symbol, page_type(pntd)}(),
         :netdata => PNML.PnmlNetData(
             pntd,
@@ -113,17 +115,9 @@ end
             OrderedDict{Symbol, refplace_type(pntd)}(),
             OrderedDict{Symbol, reftransition_type(pntd)}())
     )
+
     #parse_page!(pgdict, xml"<page></page>", pntd, registry())
     @test_throws MissingIDException parse_page!(pgdict, xml"<page></page>", pntd, registry())
-
-    d = PnmlDict(
-        :id => :test_id,
-        :places => OrderedDict{Symbol, place_type(pntd)}(),
-        :refP => OrderedDict{Symbol, refplace_type(pntd)}(),
-        :transitions => OrderedDict{Symbol, transition_type(pntd)}(),
-        :refT => OrderedDict{Symbol, reftransition_type(pntd)}(),
-        :arcs => OrderedDict{Symbol, arc_type(pntd)}()
-        )
 
     #PNML.parse_place(xml"<place></place>", pntd, registry())
     #PNML.parse_transition(xml"<transition></transition>", pntd, registry())

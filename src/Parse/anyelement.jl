@@ -7,8 +7,8 @@ a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement end
-anyelement(node::XMLNode, reg) = anyelement(node, PnmlCoreNet(), reg)
-function anyelement(node::XMLNode, pntd::PnmlType, reg)::AnyElement
+anyelement(node::XMLNode, reg::PnmlIDRegistry) = anyelement(node, PnmlCoreNet(), reg)
+function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
     @nospecialize
     AnyElement(unclaimed_label(node, pntd, reg), node)
 end
@@ -22,11 +22,11 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`Structure`](@ref)
 [`Term`](@ref) or other specialized label. These wrappers add type to the
 nested dictionary holding the contents of the label.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry)#!::Pair{Symbol,Vector{Pair{Symbol,Any}}}
+function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)#!::Pair{Symbol,Vector{Pair{Symbol,Any}}}
     ha! = HarvestAny(_harvest_any!, pntd, idregistry)
     #x::Vector{Pair{Symbol,Any}}
     x = ha!(node)
-    @show typeof(x) typeof((; x...))
+    #!@show typeof(x) typeof((; x...))
     return Symbol(nodename(node)) => x
 end
 
