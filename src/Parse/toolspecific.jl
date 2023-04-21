@@ -14,7 +14,7 @@ function parse_toolspecific(node, pntd, reg)
     tool    = node["tool"]
     version = node["version"]
     content = AnyElement[]
-
+    println("$nn $tool $version")
     for child in eachelement(node)
         #TODO: Specialize/verify on tool, version. User supplied?
         #TODO: Register additional tool specific parsers?

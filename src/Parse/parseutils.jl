@@ -6,27 +6,17 @@ $(TYPEDSIGNATURES)
 
 Add `node` to `d[:labels]`, a vector of [`PnmlLabel`](@ref). Return updated `d[:labels]`.
 """
-function add_label!(d::PnmlDict, node::XMLNode, pntd, reg)
-    error("add_label! uses PnmlDict")
-    # Pnml considers any "unknown" element to be a label. So initialized to `nothing
-    # since it is expected that most labels will have defined tags and semantics and
-    # not use this mechanisim. Convert to a vector on first use.
-    if d[:labels] === nothing
-        d[:labels] = PnmlLabel[]
-    end
-    add_label!(d[:labels], node, pntd, reg)
-end
 function add_label!(tup::NamedTuple, node::XMLNode, pntd, reg)
     if !hasproperty(tup, :labels) || isnothing(tup.labels)
         tup = merge(tup, (; :labels => PnmlLabel[]))
     end
+    @assert tup.labels isa Vector{PnmlLabel} #! debug
     add_label!(tup.labels, node, pntd, reg)
+    return tup
 end
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
-
     println("add label! ", nodename(node))
-
     if CONFIG.warn_on_unclaimed
         let tag=nodename(node)
             if haskey(tagmap, tag) && tag != "structure"
@@ -50,23 +40,14 @@ Add [`ToolInfo`](@ref) `d[:tools]`. Return updated `d[:tools]`.
 The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
-function add_toolinfo!(dict::PnmlDict, node, pntd, reg)
-    error("add_toolinfo! uses PnmlDict")
-    if dict[:tools] === nothing
-        dict[:tools] = ToolInfo[]
-    end
-    add_toolinfo!(dict[:tools], node, pntd, reg)
-end
 function add_toolinfo!(tup, node, pntd, reg)
     println("add_toolinfo! tup")
     if !hasproperty(tup, :tools) || isnothing(tup.tools)
         tup = merge(tup, (; :tools => ToolInfo[]))
-        println("  create tools[] ", typeof(tup.tools)) #! debug
-    else
-        println("  has vector ", typeof(tup.tools)) #! debug
     end
     @assert tup.tools isa Vector{ToolInfo} #! debug
     add_toolinfo!(tup.tools, node, pntd, reg)
+    return tup
 end
 
 function add_toolinfo!(v::Vector{ToolInfo}, node, pntd, reg)
@@ -161,7 +142,6 @@ Merge `xs` with default pnml node tags.
 See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 """
 function pnml_node_defaults(xs...)
-    #dict = PnmlDict(pairs(pnml_common_defaults())..., :name => nothing, xs...)
     tup = merge(pnml_common_defaults(), (name = nothing,), (; xs...))
     println("node default tup = ", tup)
     return tup
@@ -174,9 +154,8 @@ Merge `xs` with default common keys and annotation label keys `text` and `struct
 See also [`pnml_node_defaults`](@ref), [`pnml_common_defaults`](@ref).
 """
 function pnml_label_defaults(xs...)
-    #dict =PnmlDict(pairs(pnml_common_defaults())..., :text => nothing, :structure => nothing, xs...)
     tup = merge(pnml_common_defaults(), (text = nothing, structure = nothing,), (; xs...))
-    println("label default tup = ", tup)
+    #println("label default tup = ", tup)
     return tup
 end
 
@@ -184,7 +163,7 @@ end
 """
 
 Update `d` with any graphics, tools, and label child of `node`.
-Used by [`parse_pnml_object_common!`](@ref) & [`parse_pnml_label_common!`](@ref).
+Used by [`parse_pnml_object_common`](@ref) & [`parse_pnml_label_common`](@ref).
 
 """
 # text, structure, name & graphics are singles;
@@ -192,25 +171,23 @@ Used by [`parse_pnml_object_common!`](@ref) & [`parse_pnml_label_common!`](@ref)
 """
 $(TYPEDSIGNATURES)
 
-Update tuple with pnml object properties and labels.
+Return updated tuple accumulating pnml object labels.
 """
-function parse_pnml_object_common!(tup::NamedTuple, node::XMLNode, pntd::PnmlType, idreg::PnmlIDRegistry)
-    tup = merge(tup, (tuplekind = "object",))  # start with a visual aid
+function parse_pnml_object_common(tup0::NamedTuple, node::XMLNode, pntd::PnmlType, idreg::PnmlIDRegistry)
+    tup = (; tup0...)
     tag = EzXML.nodename(node)
     if tag == "name" # Pnml objects have names but labels do not.
-        n = parse_name(node, pntd, idreg)
-        tup = merge(tup, (name = n,))
+        tup = merge(tup, (; :name => parse_name(node, pntd, idreg)))
     elseif tag == "graphics"
-        g = parse_graphics(node, pntd, idreg)
-        tup = merge(tup, (graphics = g,))
+        tup = merge(tup, (; :graphics => parse_graphics(node, pntd, idreg)))
     elseif tag == "toolspecific"
-        add_toolinfo!(tup, node, pntd, idreg)
+        tup = add_toolinfo!(tup, node, pntd, idreg) #! make collection
     else
         # Note that here "labels" are the "everything else" option.
         # Should be consumed before/instead of being treated as an anonymous label.
-        add_label!(tup, node, pntd, idreg) # Only pnmlobjects have unclaimed labels, not labels.
+        tup = add_label!(tup, node, pntd, idreg) # Only pnmlobjects have unclaimed labels, not labels.
     end
-    println("return from parse_pnml_object_common! tup = ", tup)
+    #! noisy println("return from parse_pnml_object_common tup = ", tup)
     return tup
 end
 
@@ -219,7 +196,7 @@ $(TYPEDSIGNATURES)
 
 Update tuple with label of a pnml object.
 """
-function parse_pnml_label_common!(tup::NamedTuple, node, pntd, reg)
+function parse_pnml_label_common(tup::NamedTuple, node, pntd, reg)
     tup = merge(tup, (tuplekind = "label",))  # start with a visual aid
     tag = EzXML.nodename(node)
     if tag == "text"
@@ -233,7 +210,7 @@ function parse_pnml_label_common!(tup::NamedTuple, node, pntd, reg)
         g = parse_graphics(node, pntd, reg)
         tup = merge(tup, (graphics = g,))
     elseif tag == "toolspecific"
-        add_toolinfo!(tup, node, pntd, reg)
+        tup = add_toolinfo!(tup, node, pntd, reg)
     end
     #@show tup
     return tup

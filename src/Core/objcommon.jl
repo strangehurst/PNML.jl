@@ -12,12 +12,9 @@ struct ObjectCommon
 end
 
 function ObjectCommon(tup::NamedTuple)
-    @assert hasproperty(tup, :graphics)
-    @assert hasproperty(tup, :tools)
-    @assert hasproperty(tup, :labels)
-    g::Maybe{Graphics} = tup.graphics
-    t::Maybe{Vector{ToolInfo}} = tup.tools
-    l::Maybe{Vector{PnmlLabel}} = tup.labels
+    g::Maybe{Graphics} = hasproperty(tup, :graphics) ? tup.graphics : nothing
+    t::Maybe{Vector{ToolInfo}} = hasproperty(tup, :tools) ? tup.tools : nothing
+    l::Maybe{Vector{PnmlLabel}} = hasproperty(tup, :labels) ? tup.labels : nothing
     ObjectCommon(g, t, l)
 end
 

@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode, value
+using PNML: Maybe, tag, pid, xmlnode, value, text
 
 @testset "HL initMarking" begin
     str = """
@@ -21,21 +21,24 @@ using PNML: Maybe, tag, pid, xmlnode, value
      </structure>
  </hlinitialMarking>
     """
-    n = parse_hlinitialMarking(xmlroot(str), HLCoreNet(), registry())
+    mark = PNML.parse_hlinitialMarking(xmlroot(str), HLCoreNet(), registry())
 
-    @test typeof(n) <: PNML.AbstractLabel
-    @test typeof(n) <: PNML.HLMarking
-    #@test xmlnode(n) isa Maybe{EzXML.Node}
-    @test n.text == "<All,All>"
-    @test value(n) !== nothing
-    @test value(n) isa PNML.AbstractTerm
+    @test typeof(mark) <: PNML.AbstractLabel
+    @test typeof(mark) <: PNML.HLMarking
+    @test text(mark) == "<All,All>"
+    @test value(mark) !== nothing
+    @test value(mark) isa PNML.AbstractTerm
+    @test tag(value(mark)) === :tuple
 
-    @test tag(value(n)) === :tuple
-    @test value(n).dict[:subterm][1][:all] !== nothing
-    @test value(n).dict[:subterm][1][:all][1][:usersort][1][:declaration] == "N1"
-    @test value(n).dict[:subterm][1][:all][1][:usersort][1][:content] == ""
-    @test value(n).dict[:subterm][2][:all][1][:usersort][1][:declaration] == "N2"
-    @test value(n).dict[:subterm][2][:all][1][:usersort][1][:content] == ""
+    @show value(mark).dict.subterm[1].all.usersort.declaration
+    @show value(mark).dict.subterm[1].all.usersort.content
+    @show value(mark).dict.subterm[2].all.usersort.declaration
+    @show value(mark).dict.subterm[2].all.usersort.content
+
+    @test value(mark).dict.subterm[1].all.usersort.declaration == "N1"
+    @test value(mark).dict.subterm[1].all.usersort.content == ""
+    @test value(mark).dict.subterm[2].all.usersort.declaration == "N2"
+    @test value(mark).dict.subterm[2].all.usersort.content == ""
 end
 
 @testset "hlinscription" begin
@@ -54,13 +57,13 @@ end
         </structure>
     </hlinscription>
     """
-    n = parse_hlinscription(n1, HLCoreNet(), registry())
-    @test typeof(n) <: PNML.HLInscription
-    #@test xmlnode(n) isa Maybe{EzXML.Node}
-    @test tag(value(n)) === :tuple
-    @test value(n).dict[:subterm][1][:variable][1][:refvariable] == "x"
-    @test value(n).dict[:subterm][2][:variable][1][:refvariable] == "v"
-    @test n.text == "<x,v>"
+    insc = PNML.parse_hlinscription(n1, HLCoreNet(), registry())
+    @test typeof(insc) <: PNML.HLInscription
+    @test tag(value(insc)) === :tuple
+    @show value(insc)
+    @test value(insc).dict.subterm[1].variable.:refvariable == "x"
+    @test value(insc).dict.subterm[2].variable.refvariable == "v"
+    @test text(insc) == "<x,v>"
 end
 
 @testset "structure" begin
@@ -81,14 +84,16 @@ end
      </structure>
     """
 
-    n = parse_structure(node, HLCoreNet(), registry())
-    @test n isa PNML.Structure
-    @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test tag(n) === :structure
-    @test n.dict isa PnmlDict
-    @test tag(n) === :structure
-    @test n.dict[:tuple][1][:subterm][1][:all][1][:usersort][1][:declaration] == "N1"
-    @test n.dict[:tuple][1][:subterm][2][:all][1][:usersort][1][:declaration] == "N2"
+    stru = PNML.parse_structure(node, HLCoreNet(), registry())
+    @test stru isa PNML.Structure
+    @test xmlnode(stru) isa Maybe{EzXML.Node}
+    @show stru
+    @test tag(stru) === :structure
+    @test stru.dict isa NamedTuple
+    @test tag(stru) === :structure
+    @show stru.dict.tuple
+    @test stru.dict.tuple.subterm[1].all.usersort.declaration == "N1"
+    @test stru.dict.tuple.subterm[2].all.usersort.declaration == "N2"
 end
 
 @testset "type" begin
@@ -99,11 +104,12 @@ end
  </type>
     """
     @testset for node in [n1]
-        n = parse_type(node, HLCoreNet(), registry())
-        @test typeof(n) <: PNML.AnyElement
-        @test tag(n) === :type
-        @test n.dict[:text][1][:content] == "N2"
-        @test n.dict[:structure][1][:usersort][1][:declaration] == "N2"
+        typ = PNML.parse_type(node, HLCoreNet(), registry())
+        @show typ
+        @test typ isa PNML.Sort
+        @test tag(typ) === :type
+        @test typ.dict.text.content == "N2"
+        @test typ.dict.structure.usersort.declaration == "N2"
     end
 end
 
@@ -115,13 +121,14 @@ end
  </condition>
     """
     @testset for node in [n1]
-        n = parse_condition(node, PnmlCoreNet(), registry())
-        @test typeof(n) <: PNML.Condition
-        @test n.text !== nothing
-        @test value(n) !== nothing
-        @test tag(value(n)) === :or
-        @test n.com.graphics === nothing
-        @test n.com.tools === nothing || isempty(n.com.tools)
-        @test n.com.labels === nothing || isempty(n.com.labels)
+        con = PNML.parse_condition(node, PnmlCoreNet(), registry())
+        @show con
+        @test typeof(con) <: PNML.Condition
+        @test text(con) !== nothing
+        @test value(con) !== nothing
+        @test tag(value(con)) === :or
+        @test (PNML.graphics ∘ PNML.common)(con) === nothing
+        @test (PNML.tools ∘ PNML.common)(con) === nothing || !has_tools(con)
+        @test (PNML.labels ∘ PNML.common)(con) ===  nothing || !has_labels(con)
     end
 end

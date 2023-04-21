@@ -30,6 +30,7 @@ function rate(transition)
     pntd = nettype(transition)
     R = rate_value_type(pntd)
     r = get_label(transition, :rate)
+    #@show pntd R r
     return isnothing(r) ? zero(R) : numeric_label_value(R, r)
     # if !isnothing(r)
     #     if haskey(r.dict, :text)

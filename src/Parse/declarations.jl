@@ -18,35 +18,48 @@ or additional processing is desired. Some are defined here anyway.
 $(TYPEDSIGNATURES)
 
 Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
+Assume behavior of a High-level Net label in that the meaning is in a <struct>.
 """
 function parse_declaration(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "declaration")
     tup = pnml_label_defaults(:tag=>Symbol(nn))
-    #!d = PnmlDict(pairs(tup))
-
+    println("parse_declaration")
     for child in eachelement(node)
         tag = nodename(child)
+        println("    $tag")
         if tag == "structure"
-            tup = merge(tup, (structure = decl_structure(child, pntd, reg),))
+            tup = merge(tup, [:decls => _parse_decl_structure(child, pntd, reg)])
         else
-            parse_pnml_label_common!(tup, child, pntd, reg)
-         end
+            # This is here <text> gets parsed.
+            tup = parse_pnml_label_common(tup, child, pntd, reg)
+        end
     end
-    Declaration(tup.structure, ObjectCommon(tup), node)
+
+    @show tup
+    decls = hasproperty(tup, :decls) ? tup.decls : Any[]
+    Declaration(decls, ObjectCommon(tup), node)
+end
+
+"Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
+function _parse_decl_structure(node::XMLNode, pntd::T, reg) where {T <: PnmlType}
+    decl_structure(node, pntd, reg)
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
 # optional, required,  zero or more
+"Return vector of "
 function decl_structure(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     check_nodename(node, "structure")
     declarations = firstchild("declarations", node)
     decs = AbstractDeclaration[]
-    if isnothing(declarations)
+    if !isnothing(declarations)
         for child in eachelement(declarations)
-            @match nodename(child) begin
-                "namedsort" => push!(decs, parse_namedsort(child, pntd, reg))
+            tag = EzXML.nodename(child)
+            println("    $tag")
+            @match tag begin
+                "namedsort"     => push!(decs, parse_namedsort(child, pntd, reg))
                 "namedoperator" => push!(decs, parse_namedoperator(child, pntd, reg))
-                "variabledecl" => push!(decs, parse_variabledecl(child, pntd, reg))
+                "variabledecl"  => push!(decs, parse_variabledecl(child, pntd, reg))
                 _ =>  push!(decs, parse_unknowndecl(child, pntd, reg))
             end
         end
@@ -84,7 +97,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     parnode = getfirst("parameter", node)
     isnothing(parnode) && error("namedoperator does not have a <parameters>")
     parameters = if isnothing(parnode)
-        [default_term(pntd)]
+        [default_term(pntd)] # Vector for type stability.
     else
         [x->parse_variabledecl(x, pntd, reg) in elements(parnode)]
     end

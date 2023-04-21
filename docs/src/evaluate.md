@@ -9,6 +9,6 @@ julia> _evaluate(1)
 julia> _evaluate(true)
 true
 
-julia> _evaluate(Term(:term, PnmlDict(:value => 3))())
+julia> _evaluate(Term(:term, (value = 3,))())
 3
 ```

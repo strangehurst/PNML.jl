@@ -4,7 +4,7 @@ using PNML:
     tag, pid, xmlnode, parse_net, parse_page!, nets, firstpage, page_type,
     place_type, refplace_type, transition_type, reftransition_type, arc_type,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
-    parse_name+
+    parse_name
 
 const pntd = PnmlCoreNet()
 

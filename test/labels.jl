@@ -88,7 +88,7 @@ end
     inscription = parse_inscription(n1, pntd, registry())
     @test inscription isa PNML.Inscription
     noisy && @show inscription
-    @test_broken value(inscription) == 12
+    @test value(inscription) == 12
     @test (graphics ∘ common)(inscription) === nothing
     @test (tools ∘ common)(inscription) === nothing || isempty((tool ∘ common)(inscription))
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))

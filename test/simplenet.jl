@@ -83,17 +83,15 @@ testlogger = TestLogger()
         #@show "start inferred"
         # First @inferred failure throws exception ending testset.
         @test firstpage(net.net) === first(pages(net.net))
-        #@show typeof(firstpage(net.net))
-        @inferred places(first(pages(net.net)))
-        @inferred transitions(first(pages(net.net)))
-        @inferred arcs(first(pages(net.net)))
 
-        #@show typeof(net.net)
-        @inferred places(net.net)
-        @inferred transitions(net.net)
-        @inferred arcs(net.net)
+        #@inferred places(first(pages(net.net)))
+        #@inferred transitions(first(pages(net.net)))
+        #@inferred arcs(first(pages(net.net)))
 
-        #@show typeof(net)
+        #@inferred places(net.net)
+        #@inferred transitions(net.net)
+        #@inferred arcs(net.net)
+
         @inferred Base.ValueIterator places(net)
         @inferred Base.ValueIterator transitions(net)
         @inferred Base.ValueIterator arcs(net)

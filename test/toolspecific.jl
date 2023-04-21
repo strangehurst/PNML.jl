@@ -1,10 +1,9 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode,
+using PNML: Maybe, tag, pid, xmlnode, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
     has_tools, tools, parse_toolspecific, place, parse_place
 
-@testset "parse tools" begin
-    str1 = (tool="JARP", version="1.2", str = """
+str1 = (tool="JARP", version="1.2", str = """
  <toolspecific tool="JARP" version="1.2">
         <FrameColor>
           <value>java.awt.Color[r=0,g=0,b=0]</value>
@@ -15,13 +14,13 @@ using PNML: Maybe, tag, pid, xmlnode,
  </toolspecific>
 """, contentparse = (c) -> begin end)
 
-    str2 = (tool="de.uni-freiburg.telematik.editor", version="1.0", str = """
+str2 = (tool="de.uni-freiburg.telematik.editor", version="1.0", str = """
  <toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0">
      <visible>true</visible>
  </toolspecific>
 """, contentparse = (c) -> begin end)
 
-    str3 = (tool="petrinet3", version="1.0", str = """
+str3 = (tool="petrinet3", version="1.0", str = """
  <toolspecific tool="petrinet3" version="1.0">
      <placeCapacity capacity="0"/>
  </toolspecific>
@@ -36,7 +35,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
  </toolspecific>
 """, contentparse = (c) -> begin end)
 
-    str5 = (tool="org.pnml.tool", version="1.0", str = """
+str5 = (tool="org.pnml.tool", version="1.0", str = """
  <toolspecific tool="org.pnml.tool" version="1.0">
     <tokengraphics>
          <tokenposition x="-9" y="-2"/>
@@ -46,7 +45,8 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
  </toolspecific>
 """, contentparse = (c) -> begin end)
 
-    @testset for s in [str1, str2, str3, str4, str5]
+@testset "parse tools" begin
+    for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
         @test typeof(tooli) <: ToolInfo
         @test xmlnode(tooli) isa Maybe{EzXML.Node}
@@ -87,12 +87,16 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
         </place>
         """
         @show str
-        place1 = parse_place(xmlroot(str), PnmlCoreNet(), registry())
-        @show typeof(place1) place1
-        @test has_tools(place1)
-        @test_call has_tools(place1)
-        t = tools(place1)
-        @test_call tools(place1)
+        println()
+        n::XMLNode = xmlroot(str)
+        p0 = parse_place(n, PnmlCoreNet(), registry())
+        println()
+        @show typeof(p0)
+        println(p0)
+        @test has_tools(p0)
+        @test_call has_tools(p0)
+        t = tools(p0)
+        @test_call tools(p0)
         @test t isa Vector{ToolInfo}
         @test length(t) == 5
 
@@ -125,36 +129,5 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
                 @test y[1].dict == y[2].dict
             end
         end
-    end
-end
-
-
-@testset "combined2" begin
-    str0 = """
-<?xml version="1.0"?>
-<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
- <net id="net0" type="pnmlcore">
- <page id="page0">
- <place id="place0">
-    $(str1.str)
-    $(str2.str)
-    $(str3.str)
-    $(str4.str)
-    $(str5.str)
- </place>
- </page>
- </net>
-</pnml>
-"""
-model = parse_place(str)
-        #@show model
-
-        page = (firstpage ∘ first_net)(model)
-        @test_call firstpage(PNML.first_net(model))
-
-        @test !has_tools(page)
-        @test_call has_tools(page)
-
-        place = first(PNML.places(page))
     end
 end

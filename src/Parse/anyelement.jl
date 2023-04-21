@@ -30,11 +30,10 @@ function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegist
     return Symbol(nodename(node)) => x
 end
 
-text_content(ucl) = if haskey(ucl.dict, :text)
-    @assert !isnothing(ucl.dict[:text])
-    ucl.dict[:text][1][:content]
-elseif haskey(ucl.dict, :content)
-    ucl.dict[:content]
+text_content(ucl) = if hasproperty(ucl.dict, :text)
+    ucl.dict.text.content
+elseif hasproperty(ucl.dict, :content)
+    ucl.dict.content # Nonstandard fallback. Allows omitting text wapper (usually works?)?
 else
     throw(ArgumentError("tag missing a content"))
 end

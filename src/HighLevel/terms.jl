@@ -8,13 +8,13 @@ Markings default to zero and inscriptions default to 1
 
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> m = default_one_term(HLCoreNet())
-Term(:empty, (; :value => 1))
+Term(:empty, (value = 1,))
 
 julia> m()
 1
 
 julia> m = default_zero_term(HLCoreNet())
-Term(:empty, (; :value => 0))
+Term(:empty, (value = 0,))
 
 julia> m()
 0
@@ -70,7 +70,7 @@ Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
 
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> t = Term()
-Term(:empty, (; ))
+Term(:empty, ())
 
 julia> t()
 1
@@ -105,7 +105,7 @@ Default term value defaults to 1. Use the default argument to specify a default.
 
 ```jldoctest; setup=:(using PNML; using PNML: default_term, default_one_term, default_zero_term, Term)
 julia> t = Term()
-Term(:empty, OrderedCollections.OrderedDict{Symbol, Any}())
+Term(:empty, ())
 
 julia> t()
 1

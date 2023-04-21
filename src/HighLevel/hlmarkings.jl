@@ -10,11 +10,8 @@ $(TYPEDFIELDS)
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, PnmlDict, Term)
-julia> m = HLMarking("the text", Term(:term, PnmlDict(:value=>3)))
-HLMarking("the text", Term(:term, OrderedCollections.OrderedDict{Symbol, Any}(:value => 3)), )
-
-julia> PnmlDict
-OrderedCollections.OrderedDict{Symbol, Any}
+julia> m = HLMarking("the text", Term(:term, (; :value => 3)))
+HLMarking("the text", Term(:term, (value = 3,)), )
 
 julia> m()
 3

@@ -1,31 +1,32 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort, registry
+using PNML:
+    Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort, parse_declaration
+    registry
 
 const pntd = PnmlCoreNet()
 
 @testset "Declaration()" begin
-    d = PNML.Declaration()
-    @test length(PNML.declarations(d)) == 0
+    decl = PNML.Declaration()
+    @test length(PNML.declarations(decl)) == 0
     @test_call PNML.Declaration()
 end
 
 @testset "parse_sort" begin
-    parse_sort(xml"<bool/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<dot/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<productsort/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<usersort/>", PnmlCoreNet(), registry())
-    parse_sort(xml"<partition/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<bool/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<dot/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<productsort/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<usersort/>", PnmlCoreNet(), registry())
+    @show parse_sort(xml"<partition/>", PnmlCoreNet(), registry())
 end
-
 
 @testset "empty declarations" begin
     # The attribute should be ignored.
-    n = parse_declaration(xml"""
-        <declaration key="test">
+    decl = parse_declaration(xml"""
+        <declaration key="test empty">
           <structure>
            <declarations>
            </declarations>
@@ -33,59 +34,60 @@ end
         </declaration>
         """, pntd, registry())
 
-    @test typeof(n) <: PNML.Declaration
-    @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(PNML.declarations(n)) <: Vector{Any} #TODO {AbstractDeclaration}
-    @test length(PNML.declarations(n)) == 0
+    @test typeof(decl) <: PNML.Declaration
+    @test xmlnode(decl) isa Maybe{EzXML.Node}
+    @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
+    @test length(PNML.declarations(decl)) == 0
 
-    @test typeof(n.com) <: PNML.ObjectCommon
-    @test PNML.graphics(n) === nothing
-    @test PNML.tools(n) === nothing
-    @test PNML.labels(n) === nothing
-    @test isempty(n.com)
+    @test typeof(PNML.common(decl)) <: PNML.ObjectCommon
+    @test PNML.graphics(decl) === nothing
+    @test PNML.tools(decl) === nothing
+    @test PNML.labels(decl) === nothing
+    @test isempty(PNML.common(decl))
 
-    @test_call PNML.declarations(n)
-    @test_call PNML.graphics(n)
-    @test_call PNML.tools(n)
-    @test_call PNML.labels(n)
+    @test_call PNML.declarations(decl)
+    @test_call PNML.graphics(decl)
+    @test_call PNML.tools(decl)
+    @test_call PNML.labels(decl)
 end
 
 @testset "declaration tree" begin
-        node = xml"""
-        <declaration>
-            <structure>
-                <declarations>
-                    <namedsort id="LegalResident" name="LegalResident">
-                        <cyclicenumeration>
-                            <feconstant id="LegalResident0" name="0"/>
-                            <feconstant id="LegalResident1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
-                    <namedsort id="MICSystem" name="MICSystem">
-                        <cyclicenumeration>
-                            <feconstant id="MICSystem0" name="0"/>
-                            <feconstant id="MICSystem1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
-                    <namedsort id="CINFORMI" name="CINFORMI">
-                        <cyclicenumeration>
-                            <feconstant id="CINFORMI0" name="0"/>
-                            <feconstant id="CINFORMI1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
+    node = xml"""
+    <declaration>
+        <structure>
+            <declarations>
+                <namedsort id="LegalResident" name="LegalResident">
+                    <cyclicenumeration>
+                        <feconstant id="LegalResident0" name="0"/>
+                        <feconstant id="LegalResident1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
+                <namedsort id="MICSystem" name="MICSystem">
+                    <cyclicenumeration>
+                        <feconstant id="MICSystem0" name="0"/>
+                        <feconstant id="MICSystem1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
+                <namedsort id="CINFORMI" name="CINFORMI">
+                    <cyclicenumeration>
+                        <feconstant id="CINFORMI0" name="0"/>
+                        <feconstant id="CINFORMI1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
             </declarations>
         </structure>
     </declaration>
     """
     reg = PNML.registry()
-    n = parse_declaration(node, pntd, reg)
+    decl = parse_declaration(node, pntd, reg)
 
-    @test typeof(n) <: PNML.Declaration
-    @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test length(PNML.declarations(n)) == 3
-    @test_call PNML.declarations(n)
+    @test typeof(decl) <: PNML.Declaration
+    @test xmlnode(decl) isa Maybe{EzXML.Node}
+    @show decl
+    @test length(PNML.declarations(decl)) == 3
+    @test_call PNML.declarations(decl)
 
-    for d in PNML.declarations(n)
+    for d in PNML.declarations(decl)
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
@@ -98,7 +100,7 @@ end
         @test haskey(d.def.dict, :feconstant)
 
         for x in d.def.dict[:feconstant]
-            @test x isa PnmlDict
+            @test x isa NamedTuple
             @test PNML.isregistered_id(reg, pid(x))
             @test x[:name] isa String
             @test endswith(string(pid(x)), x[:name])

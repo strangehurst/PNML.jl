@@ -10,7 +10,7 @@ Other PNTDs may introduce non-standard uses for declarations.
 We can use infrastructure implemented for HL nets to provide nonstandard extensions.
 """
 struct Declaration <: Annotation
-    declarations::Vector{Any} #TODO dictionary? Type parameter?
+    declarations::Vector{Any} #TODO Type parameter?
     com::ObjectCommon
     xml::Maybe{XMLNode}
 end

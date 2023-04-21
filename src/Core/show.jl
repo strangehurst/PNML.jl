@@ -166,24 +166,26 @@ end
 #-------------------
 Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
-    string(isnothing(oc.graphics) ? ", no graphics, " : ", has graphics, ",
-           isnothing(oc.tools)  ? 0 : length(oc.tools),  " tools, ",
-           isnothing(oc.labels) ? 0 : length(oc.labels), " labels")
+    string(", ",
+            has_graphics(oc) ? "with " : "no ", " graphics, ",
+            has_tools(oc) ? length(oc.tools) : 0,  " tools, ",
+            has_labels(oc) ? length(oc.labels) : 0, " labels")
 end
 
 function Base.show(io::IO, oc::ObjectCommon)
     io = inc_indent(io)
-    #if !isnothing(oc.graphics) ||
-    if !isnothing(oc.tools) || !isnothing(oc.labels)
+    if has_tools(oc) || has_labels(oc) || has_graphics(oc)
         print(io, ", ")
-        #!isnothing(oc.graphics) && pprint(io, oc.graphics)
-        if !isnothing(oc.tools)
-            println(io, "\n", indent(io), "tools:")
-            show(inc_indent(io), oc.tools)
+        if has_graphics(oc)
+            pprint(io, graphics(oc))
         end
-        if !isnothing(oc.labels)
+        if has_tools(oc)
+            println(io, "\n", indent(io), "tools:")
+            show(inc_indent(io), tools(oc))
+        end
+        if has_labels(oc)
             println(io, "\n", indent(io), "labels:")
-            show(inc_indent(io), oc.labels)
+            show(inc_indent(io), labels(oc))
         end
     end
 end
