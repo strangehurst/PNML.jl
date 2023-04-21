@@ -86,8 +86,8 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         $(str5.str)
         </place>
         """
-        @show str
-        println()
+        #@show str
+        #println()
         n::XMLNode = xmlroot(str)
         p0 = parse_place(n, PnmlCoreNet(), registry())
         println()

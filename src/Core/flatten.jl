@@ -45,7 +45,9 @@ Some, like Names and xml, are omitted because they are scalar values, not collec
 function append_page!(l::Page, r::Page;
                       keys = [:declaration],
                       comk = [:tools, :labels])
-    @show "append_page!($(pid(l)), $(pid(r)))"
+
+    CONFIG.verbose && println("append_page!($(pid(l)), $(pid(r)))")
+
     for k in keys
         #append!(l, r)
         update_maybe!(getproperty(l, k), getproperty(r, k))

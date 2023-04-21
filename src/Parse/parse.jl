@@ -363,8 +363,8 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     name     = hasproperty(plabels, :name) ? plabels.name : nothing
     #@show typeof(mark) typeof(sorttype)
     #@show plabels.labels plabels.tools plabels.graphics
-    @show objcom = ObjectCommon(plabels)
-    @show tools(objcom) labels(objcom) graphics(objcom)
+    objcom = ObjectCommon(plabels)
+    #@show tools(objcom) labels(objcom) graphics(objcom)
     Place(pntd, tup.id, mark, sorttype, name, objcom)
 end
 
