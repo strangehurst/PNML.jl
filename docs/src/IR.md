@@ -11,11 +11,11 @@ to be implemented using the IR.
 
 The IR is constructed by traversing the XML and using tag names as dictonary keys.
 
-In the first part of parsing, a [`PnmlDict`](@ref) is filled with appropriate
+In the first part of parsing, a named tuple is filled with appropriate
 initial values for each xml tag. Then optional child keys have values bound
 as they are parsed.
 
-The second part of parsing instantiates objects using a `PnmlDict` as input.
+The second part of parsing instantiates objects using the named tuple as input.
 
 The structure of the IR follows the tree structure of a well-formed XML document
 and the PNML specification.
@@ -56,13 +56,6 @@ as wrappers holdind unparsed XML. In fact, parts of pnml are specified as holdin
 any well-formed XML.
 
 ## History of this IR
-
-Started as nested IdDict{Symbol, Any} see [`PnmlDict`](@ref).
-
-2021-12-15, Began the process of moving to a struct-based scheme
-based on [`PnmlModel`](@ref) and the rest of the intermediate representation.
-
-Some instances of `PnmlDict` are still present in the parsing mechanism.
 
 As experience with building & using more complicated pnml network models,
 more of the IR will be implemented or changed.

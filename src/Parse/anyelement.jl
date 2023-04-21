@@ -64,7 +64,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return `PnmlDict` holding a well-formed XML `node`.
+Return `NamedTuple` holding a well-formed XML `node`.
 
 If element `node` has any children, each is placed in the dictonary with the
 child's tag name symbol as the key, repeated tags produce a vector as the value.
@@ -97,7 +97,7 @@ function _harvest_any!(node::XMLNode, ha!::HarvestAny)
         push!(vec, :content => "")
     end
     # @show vec
-    return (; vec...)  #NamedTuple #of Pairs PnmlDict(vec)
+    return (; vec...)
 end
 
 """

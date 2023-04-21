@@ -4,9 +4,8 @@
 const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------
-"Alias for dictionary with `Symbol` as key."
-#const PnmlDict = LittleDict{Symbol, Any, Vector{Symbol}, Vector{Any}}
-const PnmlDict = OrderedDict{Symbol, Any}
+#!"Alias for dictionary with `Symbol` as key."
+#!const PnmlDict = OrderedDict{Symbol, Any}
 
 pid(tup::NamedTuple)::Symbol = tup.id
 tag(tup::NamedTuple)::Symbol = tup.tag

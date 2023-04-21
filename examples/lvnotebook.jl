@@ -61,7 +61,7 @@ md"""
 
 # ╔═╡ a995864c-937e-4a0d-b99a-31fd134e23dc
 let
-	d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
+	d = (; :labels => PNML.PnmlLabel[])
 	reg = registry()
 	pntd = PnmlCoreNet()
 	PNML.add_label!(d, PNML.xmlroot("<test1> 1 </test1>"), pntd, reg)

@@ -87,7 +87,7 @@ Condition(nothing, Term(:empty, (value = true,)), )
 ```
 
 
-```jldoctest; setup=:(using PNML; using PNML: PnmlDict, default_inscription)
+```jldoctest; setup=:(using PNML; using PNML: default_inscription)
 julia> i = default_inscription(PnmlCoreNet())
 Inscription(1, )
 
@@ -117,9 +117,6 @@ julia> m()
 
 julia> m = default_marking(HLCoreNet())
 HLMarking(nothing, Term(:empty, (value = 0,)), )
-
-julia> PnmlDict
-OrderedCollections.OrderedDict{Symbol, Any}
 
 julia> m()
 0

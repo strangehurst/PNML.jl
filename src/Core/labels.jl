@@ -62,7 +62,7 @@ abstract type Annotation <: AbstractLabel end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `PnmlDict` for an `XMLNode` that is treated as a pnml label. Use the XML tag as identifier.
+Wrap a `NamedTuple` holding as a pnml label. Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
@@ -70,7 +70,7 @@ of the structure defined by the pntd schema.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    dict::NamedTuple #! make into tuple
+    dict::NamedTuple
     xml::XMLNode
 end
 

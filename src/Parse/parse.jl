@@ -157,7 +157,6 @@ function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD<:P
             OrderedDict{Symbol,RefPlace{PNTD}}(),
             OrderedDict{Symbol,RefTransition{PNTD}}())
 
-        # Create a PnmlDict with keys for possible child tags. #! tuplize
         pnml_node_defaults(
             :tag => Symbol(nodename(node)),
             :id => register_id!(idregistry, node["id"]),
@@ -170,7 +169,7 @@ function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD<:P
     # Fill the pagedict, netsets, netdata.
     parse_net_2!(tup, node, pntd, idregistry)
 
-    @show typeof(tup)
+    #!@show typeof(tup)
     if CONFIG.verbose
         println("""
                 Net  $(tup.id), $(length(tup.pagedict))  Pages:  $(keys(tup.pagedict))
@@ -259,12 +258,11 @@ function parse_page!(tup1::NamedTuple, node::XMLNode, pntd::T, idregistry::PIDR)
     tup2 = pnml_node_defaults(
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
-        #!:declaration => Declaration(), #! HL
-        :netsets => netsets, #  PnmlNetSets() # per page-tree-node data
-        :pagedict => pagedict, # tup1.pagedict
-        :netdata => netdata #  tup1.netdata,
+        :netsets => netsets, # per page-tree-node data
+        :pagedict => pagedict, # shared
+        :netdata => netdata # shared
         )
-    println("parse_page tup2 = ", tup2) #! debug
+    #println("parse_page tup2 = ", tup2) #! debug
 
     for child in elements(node)
         tag = nodename(child)
@@ -289,7 +287,7 @@ function parse_page!(tup1::NamedTuple, node::XMLNode, pntd::T, idregistry::PIDR)
     end
 
     if CONFIG.verbose
-        @show typeof(tup2)
+        #!@show typeof(tup2)
         println("Page ", tup2.id, " add to ", keys(tup2.pagedict))
         print(" subpage ids:")
         for pgid in tup2.netsets.page_set
@@ -403,7 +401,7 @@ function parse_place_labels!(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             tup = parse_pnml_object_common(tup, child, pntd, idregistry)
         end
     end
-    println("on return from  parse_place_labels! tup = ", tup)
+    #println("on return from  parse_place_labels! tup = ", tup)
     return tup
 end
 
@@ -462,8 +460,8 @@ function parse_arc(node, pntd, idregistry::PIDR)
             tup = parse_pnml_object_common(tup, child, pntd, idregistry)
         end
     end
-    println("arc tup = ", tup)
-    println("on return from  parse_place_labels! tup = ", tup)
+    #println("arc tup = ", tup)
+    #println("on return from  parse_place_labels! tup = ", tup)
 
     name     = hasproperty(tup, :name) ? tup.name : nothing
     inscription = hasproperty(tup, :inscription) ? tup.inscription : default_inscription(pntd)
@@ -585,13 +583,13 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Structure`](@ref) wrapping a `PnmlDict` holding a <structure>.
+Return [`Structure`](@ref) wrapping an [`unclaimed_label`](@ref) holding a <structure>.
 Should be inside of an label.
 A "claimed" label usually elids the <structure> level (does not call this method).
 """
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     check_nodename(node, "structure")
-    Structure(unclaimed_label(node, pntd, idregistry), node)
+    Structure(unclaimed_label(node, pntd, idregistry), node) #TODO anyelement
 end
 
 #----------------------------------------------------------
@@ -770,7 +768,7 @@ end
 $(TYPEDSIGNATURES)
 
 Should not often have a '<label>' tag, this will bark if one is found.
-Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
+Return NamedTuple (tag,node), to defer parsing the xml.
 """
 function parse_label(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     @assert node !== nothing

@@ -131,7 +131,6 @@ Return tags common to both pnml nodes and pnml labels.
 See also: [`pnml_label_defaults`](@ref), [`pnml_node_defaults`](@ref).x
 """
 function pnml_common_defaults()
-    #PnmlDict(:graphics => nothing, :tools => nothing, :labels => nothing)
     (; :graphics => nothing, :tools => nothing, :labels => nothing)
 end
 
@@ -143,7 +142,7 @@ See also: [`pnml_label_defaults`](@ref), [`pnml_common_defaults`](@ref).
 """
 function pnml_node_defaults(xs...)
     tup = merge(pnml_common_defaults(), (name = nothing,), (; xs...))
-    println("node default tup = ", tup)
+    #println("node default tup = ", tup)
     return tup
 end
 

@@ -9,7 +9,7 @@ $(TYPEDFIELDS)
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: HLMarking, PnmlDict, Term)
+```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:term, (; :value => 3)))
 HLMarking("the text", Term(:term, (value = 3,)), )
 

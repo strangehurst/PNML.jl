@@ -2,7 +2,7 @@
 
 # Examples
 
-```jldoctest; setup=(using PNML: _evaluate, Term, PnmlDict)
+```jldoctest; setup=(using PNML: _evaluate, Term)
 julia> _evaluate(1)
 1
 

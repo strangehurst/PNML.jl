@@ -11,7 +11,7 @@ using PNML:
     Fill, Font, Graphics, HLCoreNet, HLPNG,
     Inscription, Line,
     MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
-    OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlDict, PnmlException,
+    OpenNet, PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlException,
     PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet,    AbstractPnmlNode,
     AbstractPnmlObject, PnmlType, RefPlace, RefTransition, ReferenceNode,
     StochasticNet, SymmetricNet, TimedNet, TokenGraphics, ToolInfo, Transition,

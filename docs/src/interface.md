@@ -21,18 +21,15 @@ High-Level Petri Net Graphs (HLPNG) can be expressed in a pnml model.
 
 We start a description of the net IR here.
 
-## PnmlDict
+## PnmlDict or NamedTuple
 
-[`PnmlDict`](@ref) is an alias for a dictionary implementation over `{Symbol,Any}`.
-There are pnml IDs and XML element tag names are used as `PnmlDict` keys.
+Switch from `PnmlDict`, a dictionary over `{Symbol,Any}` to `NamedTuple`s.
+There are pnml IDs and XML element tag names are used as names.
 
-!!! warning
-    TODO Identify any uses of pnml ID as dictonary key!
+Each XML tag is first parsed (recursivly) into a named tuple, with tags as the names,
+then tuple is used to create higher-level types.
 
-Each XML tag is first parsed (recursivly) into a `PnmlDict`, with tags as the keys, then used to create higher-level types. Some parts will continue to find
-use for `PnmlDict`'s flexibility.
-
-Wraps a `PnmlDict`:
+Wraps a `NamedTuple`:
   * [`AnyElement`](@ref)
   * [`PnmlLabel`](@ref)
   * [`Sort`](@ref)
@@ -86,7 +83,7 @@ One mechanism used is type parameters.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are 1st parsed into [`PnmlDict`](@ref)
+XML <net> tags are 1st parsed into `NamedTuple`
 which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
@@ -100,7 +97,8 @@ which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
 
-XML <page> tags are also 1st parsed by [`parse_page!`](@ref) into [`PnmlDict`](@ref) which is used to construct a [`Page`](@ref):
+XML <page> tags are also 1st parsed by [`parse_page!`](@ref) into `NamedTuple`
+which is used to construct a [`Page`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |

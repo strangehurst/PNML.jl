@@ -125,7 +125,6 @@ end
 @testset "labels" begin
     # Exersize the labels of a NamedTuple
 
-    #    d = PnmlDict(:labels => PnmlLabel[])
     tup = (; :labels => PnmlLabel[])
     reg = registry()
     @test_call labels(tup)
@@ -275,7 +274,7 @@ end
         ),
         ("""<foo><declarations> </declarations></foo>""",
              (; :declarations => [(; :content => "")])),
-            # no content, no attribute results in empty PnmlDict.
+        # no content, no attribute results in empty tuple.
         ("""<null></null>""", NamedTuple()),
         ("""<null2/>""", NamedTuple()),
         # no content, with attribute

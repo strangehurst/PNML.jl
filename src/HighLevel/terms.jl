@@ -89,7 +89,6 @@ Term(p::Pair{Symbol,<:NamedTuple}) = Term(p.first, p.second)
 Term(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}) = Term(p.first, namedtuple(p.second))
 
 Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
-#!Base.convert(::Type{Maybe{Term}}, pdict::PnmlDict)::Term = Term(pdict)
 Base.convert(::Type{Maybe{Term}}, v::Vector{Pair{Symbol,Any}})::Term = Term(namedtuple(v))
 
 tag(t::Term)::Symbol = t.tag

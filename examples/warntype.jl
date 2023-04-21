@@ -3,7 +3,6 @@ using PNML, EzXML, ModuleDocstrings, InteractiveUtils
 
 node = EzXML.ElementNode("n1/")
 reg = registry()
-pdict = PNML.PnmlDict()
 pntd = PnmlCoreNet()
 
 InteractiveUtils.@code_warntype PNML.parse_file("file")

@@ -12,7 +12,6 @@ module PnmlCore
 # Parse
 export @xml_str,
     xmlroot,
-    PnmlDict,
     parse_str,
     parse_file,
     parse_pnml,
