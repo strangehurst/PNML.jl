@@ -76,10 +76,13 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     model = @inferred parse_str(str)
     #@show typeof(model)
     @show typeof(nets(model))
-
     net = first_net(model) # The nets of a model not inferred.
 
-    #AbstractTrees.print_tree(net);  println()
+    println()
+    PNML.pagetree(net)
+    println()
+    AbstractTrees.print_tree(net)
+    println()
 
     @test net isa PnmlNet
     @test typeof(net) <: PnmlNet

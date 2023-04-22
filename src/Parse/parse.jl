@@ -126,13 +126,6 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
 
     # Now we know the PNTD and can parse.
     net = parse_net_1(node, pntd, idregistry)
-    if CONFIG.verbose
-        println()
-        PNML.pagetree(net)
-        println()
-        AbstractTrees.print_tree(net)
-        println()
-    end
     return net
 end
 
@@ -169,7 +162,6 @@ function parse_net_1(node::XMLNode, pntd::PNTD, idregistry::PIDR) where {PNTD<:P
     # Fill the pagedict, netsets, netdata.
     parse_net_2!(tup, node, pntd, idregistry)
 
-    #!@show typeof(tup)
     if CONFIG.verbose
         println("""
                 Net  $(tup.id), $(length(tup.pagedict))  Pages:  $(keys(tup.pagedict))
@@ -299,9 +291,9 @@ function parse_page!(tup1::NamedTuple, node::XMLNode, pntd::T, idregistry::PIDR)
     decl = hasproperty(tup2, :declaration) ? tup2.declaration :  Declaration()
 
     Page(pntd, tup2.id, decl, name, ObjectCommon(tup2),
-        tup2.pagedict, #! shared by net and all pages.
-        tup2.netdata, #! shared by net and all pages.
-        tup2.netsets, # Set of ids "owned" by this page.
+        tup2.pagedict, # shared by net and all pages.
+        tup2.netdata,  # shared by net and all pages.
+        tup2.netsets,  # Set of ids "owned" by this page.
     )
 end
 
@@ -311,7 +303,7 @@ function parse_place!(place_set, place_dict, child, pntd, idregistry)
     id = pid(pl)
     println(id, "  ", typeof(pl))
     push!(place_set, id)
-    setindex!(place_dict, pl, id) # place_dict[id] = pl
+    setindex!(place_dict, pl, id)
     return nothing
 end
 
@@ -353,18 +345,14 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         :tag => Symbol(nn), # XML tag
         :id => register_id!(idregistry, node["id"]),
     )
+    println("parse place $(tup.id)")
 
-    #println("before parse_place_labels! tup = ", tup)
-    plabels = parse_place_labels!(node, pntd, idregistry)
-    #println("after parse_place_labels! labels  = ", plabels)
-
+    plabels  = parse_place_labels!(node, pntd, idregistry)
     mark     = hasproperty(plabels, :marking) ? plabels.marking : default_marking(pntd)
     sorttype = hasproperty(plabels, :type) ? plabels.type : default_sort(pntd)
     name     = hasproperty(plabels, :name) ? plabels.name : nothing
-    #@show typeof(mark) typeof(sorttype)
-    #@show plabels.labels plabels.tools plabels.graphics
-    objcom = ObjectCommon(plabels)
-    #@show tools(objcom) labels(objcom) graphics(objcom)
+    objcom   = ObjectCommon(plabels)
+
     Place(pntd, tup.id, mark, sorttype, name, objcom)
 end
 
@@ -381,7 +369,7 @@ end
 
 "place label parsing updates tuple."
 function parse_place_labels!(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    print("parse_place_labels! ") #! debug
+    #print("parse_place_labels! ") #! debug
     let
         labels = EzXML.elements(node)
         isempty(labels) || print(EzXML.nodename.(labels))
@@ -390,7 +378,6 @@ function parse_place_labels!(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     tup = NamedTuple()
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        println("    $tag")
         if tag == "initialMarking" || tag == "hlinitialMarking"
             tup = merge(tup, [:marking => _parse_marking(child, pntd, idregistry)])
         elseif tag == "type"
@@ -416,11 +403,11 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         :tag => Symbol(nn),
         :id => register_id!(idregistry, node["id"]),
     )
+    println("parse transition $(tup.id)")
 
     #!parse_transition_2!(tup, pntd, node, idregistry)
     for child in eachelement(node)
         tag = EzXML.nodename(child)
-        println("    $tag")
         if tag == "condition"
             tup = merge(tup, (; :condition => parse_condition(child, pntd, idregistry)))
         else
@@ -450,19 +437,15 @@ function parse_arc(node, pntd, idregistry::PIDR)
 
     tup = pnml_node_defaults(:tag => Symbol(nn), :id => register_id!(idregistry, nodeid))
 
-    println("arc $(tup.id) $(source) -> $(target) has ")
+    println("parse arc $(tup.id) $(source) -> $(target)")
     for child in eachelement(node)
         tag = EzXML.nodename(child)
-        println("    $tag")
         if tag == "inscription"
             tup = merge(tup, (; :inscription => _parse_inscription(child, pntd, idregistry)))
         else
             tup = parse_pnml_object_common(tup, child, pntd, idregistry)
         end
     end
-    #println("arc tup = ", tup)
-    #println("on return from  parse_place_labels! tup = ", tup)
-
     name     = hasproperty(tup, :name) ? tup.name : nothing
     inscription = hasproperty(tup, :inscription) ? tup.inscription : default_inscription(pntd)
 
@@ -551,7 +534,7 @@ Return [`Name`](@ref) label holding text value and optional tool & GUI informati
 """
 function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "name")
-    print("parse_name ") #! debug
+    print("parse name ") #! debug
     # Assumes there are no other children with this tag (like the specification says).
     textnode = firstchild("text", node)
     # There are pnml files that break the rules & do not have a text element here.
@@ -572,7 +555,7 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     toolspecific = allchildren("toolspecific", node) # multiple
     tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific, Ref(pntd), idregistry)
-
+    @assert isnothing(tools) || tools isa Vector{ToolInfo}
     Name(; text, graphics, tools)
 end
 
@@ -636,7 +619,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "inscription")
-    println("parse_inscription ", nn)
+    println("parse inscription ", nn)
     tup = pnml_label_defaults(:tag => Symbol(nn), :value => nothing)
 
     for child in eachelement(node)
@@ -646,7 +629,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             txt = (string ∘ strip ∘ EzXML.nodecontent)(child)
             val = number_value(inscription_value_type(pntd), txt)
             tup = merge(tup, (; :value => val))
-            println(txt, " -> ", val)
+            #println(txt, " -> ", val)
         else
             # Should not have a structure.
             tup = parse_pnml_label_common(tup, child, pntd, idregistry)
