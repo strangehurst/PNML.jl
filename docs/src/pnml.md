@@ -6,7 +6,7 @@ CurrentModule = PNML
 
 Documentation for the GitHub [PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
 Which defines a Julia module named `PNML`.
-Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup language.
+Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup Language.
 
 ```@eval
 using Markdown
@@ -37,17 +37,15 @@ versioninfo()
 
 In this section 'PNML' refers to the markup language, its specification and schemas, not this software.
 
-<http://www.pnml.org> has publications and tutorials covering PNML at
-various points in its evolution.
+<http://www.pnml.org>
+  - has publications and tutorials covering PNML at various points in its evolution.
+  - has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
+  - is the cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd), including:
+      - PT Net (Place/Transition Net)
+      - High-level Place/Transition Net
+      - Symmetric Net
 
-Site has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
-
-The cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd), including:
-  - PT Net (Place/Transition Net)
-  - High-level Place/Transition Net
-  - Symmetric Net
-
-These are instances of the 2 flavors currently covered by PNML. Discrete intger-valued vs High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers. Also the core and high-level layers.
+There are 2 flavors currently covered by PNML: Discrete intger-valued & High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers.
 
 It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
 
@@ -55,7 +53,7 @@ There is GUI focus in the core pnml. Most of the Petri Net components, including
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will make more sense if you are familiar with the primer's contents.
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents.
 
 
 ## Interoperability
@@ -67,10 +65,8 @@ For interchange of pnml between tools it should be enough to support the same pn
 
 Note that ISO is working on part 3 of the PNML standard covering pntd (as of October 2021).
 
-It is possibly to create a non-standard pntd. And more will be standardized, either
+It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
-
-Note that we use PNML.jl to refer to all the packages in the monorepo (multiple package repository).
 
 Since validation is not a goal of PNML.jl, non-standard pntds can be used for the
 URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard`

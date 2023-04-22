@@ -60,13 +60,13 @@ reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
 
 sort_type(net::PnmlNet) = sort_type(nettype(net))
 
-condition_type(net::PnmlNet)      = condition_type(nettype(net))
+condition_type(net::PnmlNet)       = condition_type(nettype(net))
 condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
 
-inscription_type(net::PnmlNet) = inscription_type(nettype(net))
+inscription_type(net::PnmlNet)       = inscription_type(nettype(net))
 inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
 
-marking_type(net::PnmlNet) = marking_type(nettype(net))
+marking_type(net::PnmlNet)       = marking_type(nettype(net))
 marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
 
 #--------------------------------------
@@ -87,7 +87,7 @@ xmlnode(net::PnmlNet)    = net.xml
 has_name(net::PnmlNet) = !isnothing(net.name)
 name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
 
-places(net::PnmlNet)         = values(net.netdata.place_dict) #!Iterators.flatten(places.(pages(net)))
+places(net::PnmlNet)         = values(net.netdata.place_dict) # !Iterators.flatten(places.(pages(net)))
 transitions(net::PnmlNet)    = values(net.netdata.transition_dict)
 arcs(net::PnmlNet)           = values(net.netdata.arc_dict)
 refplaces(net::PnmlNet)      = values(net.netdata.refplace_dict)
@@ -109,23 +109,23 @@ currentMarkings(net::PnmlNet) = begin
     return m1
 end
 
-transition(net::PnmlNet, id::Symbol)         = net.netdata.transition_dict[id]
-transition_ids(net::PnmlNet)                 = keys(net.netdata.transition_dict)
-has_transition(net::PnmlNet, id::Symbol)     = haskey(net.netdata.transition_dict, id)
+transition(net::PnmlNet, id::Symbol)      = net.netdata.transition_dict[id]
+transition_ids(net::PnmlNet)              = keys(net.netdata.transition_dict)
+has_transition(net::PnmlNet, id::Symbol)  = haskey(net.netdata.transition_dict, id)
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 conditions(net::PnmlNet) =
 LVector{condition_value_type(net)}((;[t => condition(net, t) for (id,t) in pairs(net.netdata.transition_dict)]...))
 
-arc(net::PnmlNet, id::Symbol)         = net.netdata.arc_dict[id]
-arc_ids(net::PnmlNet)                 = keys(net.netdata.arc_dict)
-has_arc(net::PnmlNet, id::Symbol)     = haskey(net.netdata.arc_dict, id)
+arc(net::PnmlNet, id::Symbol)      = net.netdata.arc_dict[id]
+arc_ids(net::PnmlNet)              = keys(net.netdata.arc_dict)
+has_arc(net::PnmlNet, id::Symbol)  = haskey(net.netdata.arc_dict, id)
 
 all_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id || target(a) === id, arcs(net))
 src_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = filter(a -> target(a) === id, arcs(net))
 
-inscription(net::PnmlNet, arc_id::Symbol) = fnet.netdata.arc_dict[id]
+inscription(net::PnmlNet, arc_id::Symbol) = net.netdata.arc_dict[arc_id]
 inscriptionV(net::PnmlNet) = Vector((;[id => inscription(net, t)() for (id,t) in pairs(net.netdata.transition_dict)]...))
 
 #! refplace and reftransition should only be used to derefrence, flatten pages.

@@ -35,7 +35,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Add [`ToolInfo`](@ref) `d[:tools]`. Return updated `d[:tools]`.
+Add [`ToolInfo`](@ref) to tuple. Return updated tuple.
 
 The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.

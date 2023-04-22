@@ -71,7 +71,7 @@ src_arcs(petrinet::AbstractPetriNet, id::Symbol) = src_arcs(petrinet.net, id)
 tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(petrinet.net, id)
 
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(petrinet.net, arc_id)
-#! TODO inscriptions? For completeness?
+#! TODO inscriptions (plural)? For completeness?
 
 #------------------------------------------------------------------
 refplace_ids(petrinet::AbstractPetriNet)              = refplace_ids(petrinet.net)
