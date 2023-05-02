@@ -3,7 +3,10 @@ $(TYPEDEF)
 Terms are part of the multi-sorted algebra that is part of High-Level Petri Net
 markings, inscriptions and conditions.
 
-See also [`AbstractDeclaration`](@ref).
+`Term` is an abstract type in the pnml specification, not having any matching XML element.
+Concrete `Term`s are found within the <structure> element of a [`HLAnnotation`](@ref).
+
+See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
 """
 abstract type AbstractTerm end
 abstract type AbstractOperator <: AbstractTerm end
@@ -45,7 +48,6 @@ struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
     name::String
     sort::S
-    #com::ObjectCommon
     #xml::XMLNode
 end
 
@@ -95,6 +97,7 @@ struct Variable <: AbstractTerm
     variableDecl::Symbol
 end
 
+#TODO Define something for these. They are not really traits.
 struct BuiltInOperator <: AbstractOperator end
 struct BuiltInConst <: AbstractOperator end
 struct MultiSetOperator <: AbstractOperator end

@@ -5,7 +5,7 @@ using PNML: Maybe,
     pages, firstpage,
     arc, place, inscription, haspid, getfirst,
     arc_type, place_type,
-    arc_ids, place_ids, transition_ids,
+    arc_idset, place_idset, transition_idset,
     arcs, places,
     SimpleNet
 
@@ -94,7 +94,7 @@ snet = @inferred SimpleNet SimpleNet(model)
     end
 
     @test snet isa SimpleNet
-    @test arc_ids(n) == exp_arc_ids
+    @test arc_idset(n) == exp_arc_ids
 
     @testset "n" begin
         @show typeof(n)

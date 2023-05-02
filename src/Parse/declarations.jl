@@ -5,9 +5,9 @@ The common usage is that 'label' usually be read as annotation-label.
 Attribute-labels do not have associated graphics elements. Since <graphics> are
 optional for annotation-labels they share the same implementation.
 
-Unknown tags get parsed by unclaimed_label.  Annotation-labels usually have
-known tags and dedicated dictonary keys. Pnml-node-elements put unregistered children
-into the :labels collection.  It can include annotations and attributes.
+Unknown tags get parsed by `unclaimed_label`.  Annotation-labels usually have
+known tags and dedicated parsers. `parse_pnml_object_common` puts unregistered children
+into the labels collection of a [`AbstractPnmlObject`].  It can include annotations and attributes.
 
 Because any tag not present in the tagmap are processed by `unclaimed_label`
 it is not necessary to define a parse method unless valididation, documentation,
@@ -99,7 +99,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     parameters = if isnothing(parnode)
         [default_term(pntd)] # Vector for type stability.
     else
-        [x->parse_variabledecl(x, pntd, reg) in elements(parnode)]
+        [x->parse_variabledecl(x, pntd, reg) in EzXML.eachelement(parnode)]
     end
     NamedOperator(register_id!(reg, node["id"]), node["name"], parameters, def)
 end
@@ -126,7 +126,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute", node))
 
-    content = [anyelement(x, pntd, reg) for x in elements(node) if x !== nothing] #TODO Turn children into?
+    content = [anyelement(x, pntd, reg) for x in EzXML.eachelement(node) if x !== nothing]
     @show length(content), typeof(content)
     UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
 end
@@ -136,14 +136,40 @@ end
 $(TYPEDSIGNATURES)
 
 Defines the "sort" of tokens held by the place and semantics of the marking.
-NB: The "type" of a place is different from the "type" of a net or "pntd".
+NB: The "type" of a place from _many-sorted algebra_ is different from
+the Petri Net "type" of a net or "pntd".
+Neither is directly a julia type.
 """
 function parse_type end
 
-function parse_type(node::XMLNode, pntd::PNTD, reg::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
-    check_nodename(node, "type")
-    Sort(anyelement(node, pntd, reg)) # TODO TBD Define a `Sort` interface.
+function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
+    nn = check_nodename(node, "type")
+    tup = pnml_label_defaults(:tag => Symbol(nn))
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "structure"
+            tup = parse_sorttype_term(tup, child, pntd, idregistry)
+        else
+            tup = parse_pnml_label_common(tup, child, pntd, idregistry)
+        end
+    end
+
+    term = hasproperty(tup, :term) ? tup.term : default_sort(pntd)
+    SortType(tup.text, term, ObjectCommon(tup))
 end
+
+parse_sorttype_term(tup::NamedTuple, node, pntd, idregistry) = begin
+    check_nodename(node, "structure")
+    if EzXML.haselement(node)
+        t = parse_term(EzXML.firstelement(node), pntd, idregistry)
+    else
+        # Handle an empty <structure>.
+        t = default_sort(pntd)
+    end
+    return merge(tup, (; :term => t))
+end
+
 # Sort type for non-high-level meaning is TBD and non-standard.
 function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
     check_nodename(node, "type")
@@ -199,6 +225,8 @@ $(TYPEDSIGNATURES)
 
 There will be no node <term>.
 Instead it is the interpertation of the child of some <structure> elements.
+The PNML specification describes Terms and Sorts as abstract types for the <structure>
+element of some [`HLAnnotation`](@ref).
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = nodename(node)
@@ -206,8 +234,7 @@ function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     Term(unclaimed_label(node, pntd, reg))
 end
 
-#! TODO Variable is one kind of term.
-#! TODO Operator is another kind of term.
+#! TODO Terms kinds are Variable and Operator
 
 """
 $(TYPEDSIGNATURES)

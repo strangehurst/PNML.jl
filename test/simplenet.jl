@@ -5,7 +5,7 @@ using PNML: tag, pid, xmlnode, parse_str,
     place, places, has_place,
     transition, transitions, has_transition,
     arc, arcs, has_arc,
-    place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
+    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
     marking, default_marking,  currentMarkings,
     condition, default_condition,
     inscription, default_inscription,
@@ -59,8 +59,8 @@ testlogger = TestLogger()
     net1 = @inferred SimpleNet SimpleNet(model)
     net2 = @inferred SimpleNet SimpleNet(PNML.first_net(model))
 
-    for accessor in [pid, place_ids, transition_ids, arc_ids,
-                     reftransition_ids, refplace_ids]
+    for accessor in [pid, place_idset, transition_idset, arc_idset,
+                     reftransition_idset, refplace_idset]
         @test accessor(net1) == accessor(net)
         @test accessor(net2) == accessor(net1)
         @test accessor(net2) == accessor(net)
@@ -103,7 +103,7 @@ testlogger = TestLogger()
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
 
-        for placeid in place_ids(top)
+        for placeid in place_idset(top)
             println("place ", placeid)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
@@ -210,8 +210,8 @@ end
 
     snet = @inferred PNML.SimpleNet(net1)
 
-    S = @inferred collect(PNML.place_ids(snet)) # [:rabbits, :wolves]
-    T = @inferred collect(PNML.transition_ids(snet))
+    S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
+    T = @inferred collect(PNML.transition_idset(snet))
     @show S T
     #!for t in T
     #!@show PNML.in_out(snet, t)

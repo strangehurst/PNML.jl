@@ -1,10 +1,8 @@
 """
 $(TYPEDSIGNATURES)
 
-Return [`AnyElement`](@ref) wraping a `tag` symbol and `Vector{Pair{Symbol}}` holding
-a well-formed XML node.
-
-See [`ToolInfo`](@ref) for one intended use-case.
+Return [`AnyElement`](@ref) wraping a `tag` symbol and `tuple` holding
+a well-formed XML node. See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement end
 anyelement(node::XMLNode, reg::PnmlIDRegistry) = anyelement(node, PnmlCoreNet(), reg)
@@ -18,24 +16,21 @@ $(TYPEDSIGNATURES)
 
 Return `tag` => `tuple` holding a pnml label and its children.
 
-The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`Structure`](@ref),
-[`Term`](@ref) or other specialized label. These wrappers add type to the
-nested dictionary holding the contents of the label.
+The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
+[`Term`](@ref) or other specialized label.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)#!::Pair{Symbol,Vector{Pair{Symbol,Any}}}
-    ha! = HarvestAny(_harvest_any!, pntd, idregistry)
-    #x::Vector{Pair{Symbol,Any}}
-    x = ha!(node)
-    #!@show typeof(x) typeof((; x...))
+function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    ha! = HarvestAny(_harvest_any!, pntd, idregistry) # Create a functor.
+    x = ha!(node) # Apply functor.
     return Symbol(nodename(node)) => x
 end
 
-text_content(ucl) = if hasproperty(ucl.dict, :text)
-    ucl.dict.text.content
-elseif hasproperty(ucl.dict, :content)
-    ucl.dict.content # Nonstandard fallback. Allows omitting text wapper (usually works?)?
+text_content(ucl) = if hasproperty(ucl.elements, :text)
+    ucl.elements.text.content
+elseif hasproperty(ucl.elements, :content)
+    ucl.elements.content # Nonstandard fallback. Allows omitting text wapper (usually works?)?
 else
-    throw(ArgumentError("tag missing a content"))
+    throw(ArgumentError("tag missing content"))
 end
 
 # Expected patterns. Note only first is standard-conforming, extensible, prefeered.
@@ -87,11 +82,11 @@ function _harvest_any!(node::XMLNode, ha!::HarvestAny)
 
     # Extract children or content.
     if haselement(node)
-        children = elements(node)
+        children = EzXML.elements(node)
         _anyelement_content!(vec, children, ha!)
-    elseif !isempty(nodecontent(node))
+    elseif !isempty(EzXML.nodecontent(node))
         # <tag> </tag> will have nodecontent, though the whitespace is discarded.
-        push!(vec, :content => (strip ∘ nodecontent)(node))
+        push!(vec, :content => (strip ∘ EzXML.nodecontent)(node))
     else
         # <tag/> and <tag></tag> will not have any nodecontent.
         push!(vec, :content => "")

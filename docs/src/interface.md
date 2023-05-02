@@ -32,7 +32,7 @@ then tuple is used to create higher-level types.
 Wraps a `NamedTuple`:
   * [`AnyElement`](@ref)
   * [`PnmlLabel`](@ref)
-  * [`Sort`](@ref)
+  * [`SortType`](@ref)
   * [`Term`](@ref)
 
 ## Top Level: Model, Net, Page

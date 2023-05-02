@@ -7,7 +7,7 @@ From the 'primer': built-in sorts of Symmetric Nets are the following:
   Booleans, range of integers, finite enumerations, cyclic enumerations and dots
 """
 struct BuiltInSort <: AbstractSort
-    dict::AnyElement
+    ae::AnyElement
 end
 
 """
@@ -16,7 +16,7 @@ $(TYPEDEF)
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
 struct MultisetSort <: AbstractSort
-    dict::AnyElement
+    ae::AnyElement
 end
 
 """
@@ -26,7 +26,7 @@ Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 Should contain an ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
-    dict::AnyElement
+    ae::AnyElement
 end
 
 """
@@ -35,7 +35,7 @@ $(TYPEDEF)
 Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 """
 struct UserSort <: AbstractSort
-    dict::AnyElement
+    ae::AnyElement
 end
 
 
@@ -43,23 +43,27 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
-Is content of a <structure> element of a High-Level label.
+Part of the many-sorted algebra of a High-level Petri Net Graph.
+A label whose <structure> element holds an [`AbstractSort`](@ref) term.
 """
-struct Sort
-    tag::Symbol
-    dict::NamedTuple #{Symbol,Any} #TODO What should be here?
+struct SortType{T <: Term} <: HLAnnotation
+    text::Maybe{String} # Supposed to be for human consumption.
+    sort::T # Content of <structure> must be a many-sorted algebra term.
+    com::ObjectCommon
     #TODO xml
 end
+# TODO TBD Define a `SortType` interface.text(i::HLInscription)  = i.text
 
-Sort() = Sort(:empty, NamedTuple())
-Sort(p::Pair{Symbol, <:NamedTuple}) = Sort(p.first, p.second)
-Sort(a::AnyElement) = Sort(a.tag, a.dict)
+#! SortType() = SortType(nothing, Term(), ObjectCommon())
+SortType(t::Term) = SortType(nothing, t, ObjectCommon())
+SortType(s::AbstractString, t::Term) = SortType(s, t, ObjectCommon())
 
-Base.convert(::Type{Maybe{Sort}}, tup::NamedTuple)::Sort = Sort(tup)
+Base.convert(::Type{Maybe{SortType}}, tup::NamedTuple)::SortType = SortType(tup)
 
-tag(s::Sort) = s.tag
+text(t::SortType)  = t.text
+value(t::SortType) = t.sort
+common(t::SortType) = t.com
 
 sort_type(::Type{<:PnmlType}) = Int
 sort_type(::Type{<:AbstractContinuousNet}) = Float64
-sort_type(::Type{<:AbstractHLCore}) = Sort
+sort_type(::Type{<:AbstractHLCore}) = typeof(SortType(Term())) #! Should be AbstractSort Term

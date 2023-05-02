@@ -162,7 +162,7 @@ net = PNML.SimpleNet(xml2)
 # ╠═╡ show_logs = false
 lotka = let
 	# **Step 1:**
-	@show S = PNML.place_ids(net) # [:rabbits, :wolves]
+	@show S = PNML.place_idset(net) # [:rabbits, :wolves]
 	@show Δ = PNML.transition_function(net)
 	Petri.Model(S, Δ)
 end;

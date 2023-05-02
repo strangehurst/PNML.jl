@@ -1,11 +1,11 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, EzXML, ..TestUtils, JET, OrderedCollections
 using PNML: Maybe,
     tag, pid, xmlnode, firstpage,
     parse_file, parse_name, parse_initialMarking, parse_inscription,
     parse_declaration, parse_transition,  parse_toolspecific,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
     nets, pages, arcs, place, places, transitions, has_place,
-    allchildren, firstchild, value
+    allchildren, firstchild, value, allpages
 
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
@@ -158,8 +158,9 @@ end
     @test net isa PnmlNet{<:AbstractHLCore}
     @test net isa PnmlNet{<:SymmetricNet}
 
-    @test_broken pages(net) isa Vector{<:Page}
-    @test length(pages(net)) == 1
+    #@show typeof(pages(net))
+    @test pages(net) isa Base.Iterators.Filter
+    @test length(allpages(net)) == 1
     @test firstpage(net) isa Page
     @test !isempty(arcs(firstpage(net)))
     @test !isempty(places(firstpage(net)))

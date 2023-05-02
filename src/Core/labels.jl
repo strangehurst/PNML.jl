@@ -8,10 +8,12 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    if prop_name === :id
+    if prop_name === :id #! TODO do labels have ids?
         return getfield(o, :id)::Symbol
+    elseif prop_name === :text
+        return getfield(o, :text)::Maybe{String}
     elseif prop_name === :pntd
-        return getfield(o, :pntd)::PnmlType #! abstract
+        return getfield(o, :pntd)::PnmlType #! abstract, do labels have this? XXX
     elseif prop_name === :xml
         return getfield(o, :xml)::XMLNode
     elseif prop_name === :com
@@ -67,21 +69,28 @@ Wrap a `NamedTuple` holding as a pnml label. Use the XML tag as identifier.
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
 of the structure defined by the pntd schema.
+
+See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
+while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
+
+
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    dict::NamedTuple
+    elements::NamedTuple
     xml::XMLNode
 end
 
-PnmlLabel(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}, xml::XMLNode) = begin
-    @show p.first typeof(p) typeof(p.second) typeof((; p.second...)) typeof(namedtuple(p.second))
+PnmlLabel(p::Pair{Symbol, Vector{Pair{Symbol,Any}}}, xml::XMLNode) = begin
+    #@show p.first typeof(p)
     PnmlLabel(p.first, namedtuple(p.second), xml)
 end
-PnmlLabel(p::Pair{Symbol,<:NamedTuple}, node::XMLNode) = PnmlLabel(p.first, p.second, node)
+PnmlLabel(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
 
 tag(label::PnmlLabel) = label.tag
-dict(label::PnmlLabel) = label.dict
+elements(label::PnmlLabel) = label.elements
+#text(label::PnmlLabel) = label.elements
+#structure(label::PnmlLabel) = label.elements
 xmlnode(label::PnmlLabel) = label.xml
 
 function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)

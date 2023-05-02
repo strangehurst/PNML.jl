@@ -37,7 +37,7 @@ net = PNML.SimpleNet(str)
 # Here we have 2 states, wolves and rabbits, and transitions to
 # model predation between the two species in the system
 
-S = PNML.place_ids(net) # [:rabbits, :wolves]
+S = PNML.place_idset(net) # [:rabbits, :wolves]
 Δ = PNML.transition_function(net)
 # keys are transition ids,
 # values are tuple of input, output vectors

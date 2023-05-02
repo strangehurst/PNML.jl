@@ -44,10 +44,9 @@ end
 end
 
 UNDER_CI = (get(ENV, "CI", nothing) == "true")
-#@testset verbose=true showtiming=true "PNML.jl" begin
-#@testset verbose=true failfast=true showtiming=true "PNML.jl" begin
 
-@testset verbose=true "PNML.jl" begin
+@testset verbose=true failfast=true showtiming=true "PNML.jl" begin
+#@testset verbose=true "PNML.jl" begin
     if select("ALL", "BASE")
         println("BASE")
         @time "typedefs" @safetestset "typedefs"  begin include("typedefs.jl") end

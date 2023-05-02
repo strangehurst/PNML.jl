@@ -3,10 +3,6 @@
 "Alias for union of type `T` or `Nothing`."
 const Maybe{T} = Union{T, Nothing}
 
-#--------------------------------------------
-#!"Alias for dictionary with `Symbol` as key."
-#!const PnmlDict = OrderedDict{Symbol, Any}
-
 pid(tup::NamedTuple)::Symbol = tup.id
 tag(tup::NamedTuple)::Symbol = tup.tag
 labels(tup::NamedTuple) = tup.labels
@@ -38,7 +34,7 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     end
     return getfield(o, prop_name)
 end
-
+pid() = error("not defined")
 pid(o::AbstractPnmlObject)        = o.id
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""

@@ -2,7 +2,8 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Labels an Arc.
+Labels an Arc. The <structure> element is a term in a many-sorted algebra.
+The `term` field
 
 # Examples
 
@@ -28,7 +29,7 @@ julia> i4()
 """
 struct HLInscription{T<:Term} <: HLAnnotation
     text::Maybe{String}
-    term::T # <structure> content must be a many-sorted algebra term.
+    term::T # Content of <structure> content must be a many-sorted algebra term.
     com::ObjectCommon
 end
 
@@ -36,6 +37,7 @@ HLInscription(s::AbstractString) = HLInscription(s, Term(:empty, (; :value => ze
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
+text(i::HLInscription)  = i.text
 value(i::HLInscription) = i.term
 common(i::HLInscription) = i.com
 

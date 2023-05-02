@@ -1,6 +1,6 @@
 """
 Wrap a single pnml net. Presumes that the net does not need to be flattened
-as all content is in firstpage.
+as all content is in first page.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)

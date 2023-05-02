@@ -1,26 +1,76 @@
-using PNML, EzXML, ..TestUtils, JET, AbstractTrees
-using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
-    PnmlNet, Page, pages, pid,
+using PNML, EzXML, ..TestUtils, JET, AbstractTrees, PrettyPrinting
+using PNML:
+    Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
+    PnmlNet, Page, nets, pages, pid,
     arc, arcs, place, places, transition, transitions,
     refplace, refplaces, reftransition, reftransitions,
-    place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
-    flatten_pages!, nets,
+    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
+    flatten_pages!,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
+    pnmlnet_type, page_type, arc_type, place_type, transition_type,
+    condition_type, condition_value_type, inscription_type, inscription_value_type,
+    marking_type, marking_value_type, refplace_type, reftransition_type,
+    rate_value_type, sort_type,
+    default_inscription, default_marking, default_sort, default_condition,
+    default_term, default_one_term, default_zero_term,
     currentMarkings,
-    arc_type, place_type, transition_type,
-    condition_type, condition_value_type,
-    sort_type,
-    inscription_type, inscription_value_type,
-    marking_type, marking_value_type, page_type, refplace_type, reftransition_type,
-    rate_value_type,
-    default_inscription,
-    default_marking,
-    default_sort,
-    default_condition,
-    default_term,
-    default_one_term,
-    default_zero_term,
-    pnmlnet_type
+    netsets, netdata, page_idset, pagedict
+
+
+function verify_sets(net::PnmlNet)
+    println("\nverify sets and structure ++++++++++++++++++++++")
+
+    @show arc_idset(net)
+    @show place_idset(net)
+    @show transition_idset(net)
+    @show refplace_idset(net)
+    @show reftransition_idset(net)
+    println()
+
+    @show arc_idset(firstpage(net))
+    @show place_idset(firstpage(net))
+    @show transition_idset(firstpage(net))
+    @show refplace_idset(firstpage(net))
+    @show reftransition_idset(firstpage(net))
+    println()
+
+    @show netdata(net)
+    @show netdata(firstpage(net))
+    @test netdata(net) === netdata(firstpage(net))
+    println()
+
+    #@show netsets(net)
+    @show pid(firstpage(net))
+    @show netsets(firstpage(net))
+    println()
+
+    for page in pages(net)
+        @show pid(page)
+        @show netsets(page)
+        @test netdata(net) === netdata(page)
+    end
+    println()
+
+    for pageid in PNML.page_idset(net)
+        @show pageid
+        @show netsets(pagedict(net)[pageid])
+        @show netdata(pagedict(net)[pageid])
+        @test netdata(net) === netdata(pagedict(net)[pageid])
+    end
+    println()
+
+    # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
+    # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
+    @show typeof(arc_idset(net))
+    println()
+    for page in pages(net)
+        @show pid(page) (typeof ∘ values ∘ arc_idset)(page)  #(collect ∘ values ∘ arc_idset)(page)
+    end
+    println()
+    @show arc_idset(net)
+    @show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
+    println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+end
 
 @testset "pages" begin
     str = """
@@ -78,22 +128,29 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @show typeof(nets(model))
     net = first_net(model) # The nets of a model not inferred.
 
+    @test net isa PnmlNet
+    @show typeof(firstpage(net))
+    @test @inferred(firstpage(net)) isa Page
+
     println()
     PNML.pagetree(net)
     println()
     AbstractTrees.print_tree(net)
     println()
 
-    @test net isa PnmlNet
-    @test typeof(net) <: PnmlNet
-    @test typeof(@inferred(firstpage(net))) <: Page
-
-    @show arc_ids(net)
-    @show collect(place_ids(net))
-    @show transition_ids(net)
-    @show refplace_ids(net)
-    @show reftransition_ids(net)
-
+    verify_sets(net)
+    # @show arc_idset(net)
+    # @show place_idset(net)
+    # @show transition_idset(net)
+    # @show refplace_idset(net)
+    # @show reftransition_idset(net)
+    # println()
+    # @show arc_idset(firstpage(net))
+    # @show place_idset(firstpage(net))
+    # @show transition_idset(firstpage(net))
+    # @show refplace_idset(firstpage(net))
+    # @show reftransition_idset(firstpage(net))
+    # println()
 
     @testset "by pntd" begin
 
@@ -205,18 +262,16 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     exp_refplace_ids      = [:rp1, :rp2]
     exp_reftransition_ids = [:rt2]
 
-    @test (sort ∘ collect)(@inferred(place_ids(net)))         == exp_place_ids
-    @test (sort ∘ collect)(@inferred(arc_ids(net)))           == exp_arc_ids
-    @test (sort ∘ collect)(@inferred(transition_ids(net)))    == exp_transition_ids
-    @test (sort ∘ collect)(@inferred(refplace_ids(net)))      == exp_refplace_ids
-    @test (sort ∘ collect)(@inferred(reftransition_ids(net))) == exp_reftransition_ids
+    @test (sort ∘ collect)(@inferred(place_idset(net)))         == exp_place_ids
+    @test (sort ∘ collect)(@inferred(arc_idset(net)))           == exp_arc_ids
+    @test (sort ∘ collect)(@inferred(transition_idset(net)))    == exp_transition_ids
+    @test (sort ∘ collect)(@inferred(refplace_idset(net)))      == exp_refplace_ids
+    @test (sort ∘ collect)(@inferred(reftransition_idset(net))) == exp_reftransition_ids
 
-    for aid in exp_arc_ids
+    for arcid in exp_arc_ids
     end
-    for aid in exp_arc_ids
-        #@show aid
-        a = @inferred Maybe{arc_type(net)} arc(net, aid)
-        #@show a
+    for arcid in exp_arc_ids
+        a = @inferred Maybe{arc_type(net)} arc(net, arcid)
         @test !isnothing(a)
         #! Pages do not decend subpages!
         #!@test typeof(arc(net, aid)) === typeof(arc(firstpage(net), aid))
@@ -228,45 +283,16 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
     @test refplaces(net) !== nothing
     @test reftransitions(net) !== nothing
 
-    # @testset "pagetree" begin
-    #     @show typeof(AbstractTrees.children(net))
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), place_ids(x), transition_ids(x), arc_ids(x), refplace_ids(x), reftransition_ids(x)
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), typeof(x)
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), place_type(nettype(x))
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), transition_type(nettype(x))
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), arc_type(nettype(x))
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), refplace_type(nettype(x))
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), reftransition_type(nettype(x))
-    #     end
-    #     println()
-    #     for x in AbstractTrees.PreOrderDFS(net)
-    #         @show pid(x), currentMarkings(x)
-    #     end
-    #     println()
-    # end
+    println("---------------")
+    @show (collect ∘ values ∘ page_idset)(net)
+    println("---------------")
 
     @testset "flatten" begin
         @inferred flatten_pages!(net)
+        println("---------------")
+        @show netsets(firstpage(net))
+        @show netdata(net)
+        println("---------------")
 
         expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
         expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
@@ -274,55 +300,67 @@ using PNML: Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
         expected_rt = [] # removed by flatten
         expected_rp = [] # removed by flatten
 
-        @test (sort ∘ collect)(arc_ids(net)) == expected_a
-        @test (sort ∘ collect)(arc_ids(firstpage(net))) == expected_a
-        @test arc_ids(net) == arc_ids(firstpage(net))
-        @test_call target_modules=target_modules arc_ids(net)
-        @test_call arc_ids(firstpage(net))
+
+        println()
+        @show (collect ∘ values ∘ page_idset)(net)
+        AbstractTrees.print_tree(net)
+        println()
+        PNML.pagetree(net)
+        println()
+
+        @test (sort ∘ collect)(arc_idset(net)) == expected_a
+        @test (sort ∘ collect)(arc_idset(firstpage(net))) == expected_a
+        @test arc_idset(net) == arc_idset(firstpage(net))
+        @test_call target_modules=target_modules arc_idset(net)
+        @test_call arc_idset(firstpage(net))
 
         for a ∈ expected_a
-            @test a ∈ arc_ids(net)
+            @test a ∈ arc_idset(net)
         end
 
-        @test (sort ∘ collect)(place_ids(net)) == expected_p
-        @test (sort ∘ collect)(place_ids(firstpage(net))) == expected_p
-        @test place_ids(net) == place_ids(firstpage(net))
-        @test_call target_modules=target_modules place_ids(net)
-        @test_call place_ids(firstpage(net))
+        @test (sort ∘ collect)(place_idset(net)) == expected_p
+        @test (sort ∘ collect)(place_idset(firstpage(net))) == expected_p
+        @test place_idset(net) == place_idset(firstpage(net))
+        @test_call target_modules=target_modules place_idset(net)
+        @test_call place_idset(firstpage(net))
 
         for p ∈ expected_p
-            @test p ∈ place_ids(net)
+            @test p ∈ place_idset(net)
         end
 
-        @test (sort ∘ collect)(transition_ids(net)) == expected_t
-        @test (sort ∘ collect)(transition_ids(firstpage(net))) == expected_t
-        @test (sort ∘ collect)(transition_ids(net)) == (sort ∘ collect)(transition_ids(firstpage(net)))
-        @test_call target_modules=target_modules transition_ids(net)
-        @test_call transition_ids(firstpage(net))
+        @test (sort ∘ collect)(transition_idset(net)) == expected_t
+        @test (sort ∘ collect)(transition_idset(firstpage(net))) == expected_t
+        @test (sort ∘ collect)(transition_idset(net)) == (sort ∘ collect)(transition_idset(firstpage(net)))
+        @test_call target_modules=target_modules transition_idset(net)
+        @test_call transition_idset(firstpage(net))
 
         for t ∈ expected_t
-            @test t ∈ transition_ids(net)
+            @test t ∈ transition_idset(net)
         end
 
         # After flatten reference nodes remain in the netdata dictonary.
-        @test_broken (sort ∘ collect)(reftransition_ids(net)) == expected_rt
-        @test (sort ∘ collect)(reftransition_ids(firstpage(net))) == expected_rt
-        @test_broken (sort ∘ collect)(reftransition_ids(net)) == (sort ∘ collect)(reftransition_ids(firstpage(net)))
-        @test_call target_modules=target_modules reftransition_ids(net)
-        @test_call reftransition_ids(firstpage(net))
+        @show (sort ∘ collect)(reftransition_idset(net)) (
+        @show sort ∘ collect)(reftransition_idset(firstpage(net)))
+        @show expected_rt
+
+        @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
+        @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
+        @test (sort ∘ collect)(reftransition_idset(net)) == (sort ∘ collect)(reftransition_idset(firstpage(net)))
+        @test_call target_modules=target_modules reftransition_idset(net)
+        @test_call reftransition_idset(firstpage(net))
 
         for rt ∈ expected_rt
-            @test rt ∈ reftransition_ids(net)
+            @test rt ∈ reftransition_idset(net)
         end
 
-        @test_broken (sort ∘ collect)(refplace_ids(net)) == expected_rp
-        @test (sort ∘ collect)(refplace_ids(firstpage(net))) == expected_rp
-        @test_broken (sort ∘ collect)(refplace_ids(net)) == (sort ∘ collect)(refplace_ids(firstpage(net)))
-        @test_call target_modules=target_modules refplace_ids(net)
-        @test_call refplace_ids(firstpage(net))
+        @test (sort ∘ collect)(refplace_idset(net)) == expected_rp
+        @test (sort ∘ collect)(refplace_idset(firstpage(net))) == expected_rp
+        @test (sort ∘ collect)(refplace_idset(net)) == (sort ∘ collect)(refplace_idset(firstpage(net)))
+        @test_call target_modules=target_modules refplace_idset(net)
+        @test_call refplace_idset(firstpage(net))
 
         for rp ∈ expected_rp
-            @test rp ∈ refplace_ids(net)
+            @test rp ∈ refplace_idset(net)
         end
     end
 end # pages

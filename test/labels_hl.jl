@@ -1,5 +1,5 @@
-using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode, value, text
+using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
+using PNML: Maybe, tag, pid, xmlnode, value, text, elements
 
 @testset "HL initMarking" begin
     str = """
@@ -30,15 +30,15 @@ using PNML: Maybe, tag, pid, xmlnode, value, text
     @test value(mark) isa PNML.AbstractTerm
     @test tag(value(mark)) === :tuple
 
-    @show value(mark).dict.subterm[1].all.usersort.declaration
-    @show value(mark).dict.subterm[1].all.usersort.content
-    @show value(mark).dict.subterm[2].all.usersort.declaration
-    @show value(mark).dict.subterm[2].all.usersort.content
+    @show value(mark).elements.subterm[1].all.usersort.declaration
+    @show value(mark).elements.subterm[1].all.usersort.content
+    @show value(mark).elements.subterm[2].all.usersort.declaration
+    @show value(mark).elements.subterm[2].all.usersort.content
 
-    @test value(mark).dict.subterm[1].all.usersort.declaration == "N1"
-    @test value(mark).dict.subterm[1].all.usersort.content == ""
-    @test value(mark).dict.subterm[2].all.usersort.declaration == "N2"
-    @test value(mark).dict.subterm[2].all.usersort.content == ""
+    @test value(mark).elements.subterm[1].all.usersort.declaration == "N1"
+    @test value(mark).elements.subterm[1].all.usersort.content == ""
+    @test value(mark).elements.subterm[2].all.usersort.declaration == "N2"
+    @test value(mark).elements.subterm[2].all.usersort.content == ""
 end
 
 @testset "hlinscription" begin
@@ -59,10 +59,12 @@ end
     """
     insc = PNML.parse_hlinscription(n1, HLCoreNet(), registry())
     @test typeof(insc) <: PNML.HLInscription
+    @test text(insc) isa Union{Nothing,AbstractString}
+    @test value(insc) isa PNML.Term
+    @show insc value(insc)
     @test tag(value(insc)) === :tuple
-    @show value(insc)
-    @test value(insc).dict.subterm[1].variable.:refvariable == "x"
-    @test value(insc).dict.subterm[2].variable.refvariable == "v"
+    @test value(insc).elements.subterm[1].variable.refvariable == "x"
+    @test value(insc).elements.subterm[2].variable.refvariable == "v"
     @test text(insc) == "<x,v>"
 end
 
@@ -87,13 +89,13 @@ end
     stru = PNML.parse_structure(node, HLCoreNet(), registry())
     @test stru isa PNML.Structure
     @test xmlnode(stru) isa Maybe{EzXML.Node}
-    @show stru
+    print("Structure = "); pprint(stru)
     @test tag(stru) === :structure
-    @test stru.dict isa NamedTuple
+    @test elements(stru) isa NamedTuple
     @test tag(stru) === :structure
-    @show stru.dict.tuple
-    @test stru.dict.tuple.subterm[1].all.usersort.declaration == "N1"
-    @test stru.dict.tuple.subterm[2].all.usersort.declaration == "N2"
+    @show elements(stru).tuple
+    @test elements(stru).tuple.subterm[1].all.usersort.declaration == "N1"
+    @test elements(stru).tuple.subterm[2].all.usersort.declaration == "N2"
 end
 
 @testset "type" begin
@@ -105,11 +107,13 @@ end
     """
     @testset for node in [n1]
         typ = PNML.parse_type(node, HLCoreNet(), registry())
-        @show typ
-        @test typ isa PNML.Sort
-        @test tag(typ) === :type
-        @test typ.dict.text.content == "N2"
-        @test typ.dict.structure.usersort.declaration == "N2"
+        print("SortType = "); pprintln(typ)
+        @test typ isa PNML.SortType
+        @test text(typ) == "N2"
+        @test value(typ) isa PNML.Term
+        @test (tag ∘ value)(typ) === :usersort
+        @test (elements ∘ value)(typ) isa NamedTuple
+        @test (elements ∘ value)(typ).declaration == "N2"
     end
 end
 

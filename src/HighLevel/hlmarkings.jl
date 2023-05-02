@@ -17,17 +17,16 @@ julia> m()
 3
 ```
 """
-struct HLMarking{T} <: HLAnnotation
+struct HLMarking{T <: Term} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    "Any <structure> must be a many-sorted algebra term for a <hlmarking>."
-    term::T
+    term::T # Content of <structure> must be a many-sorted algebra term.
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
 
 HLMarking() = HLMarking(nothing, nothing)
 HLMarking(s::AbstractString) = HLMarking(s, nothing)
-HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon())
+HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon()) #! ::Term
 HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
 
 value(m::HLMarking) = m.term

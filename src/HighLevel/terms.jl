@@ -62,7 +62,18 @@ default_bool_term(::AbstractHLCore) = Term(:empty, (; :value => true))
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Part of the many-sorted algebra attached to nodes on a Petri Net Graph.
+Part of the many-sorted algebra attached to nodes on a Petri Net Graph, `Term`s are
+contained within the <structure> element of a `HLAnnotation`.
+
+#! Note that Term is is an abstract element in the specification with no PNML tag.
+
+Should conform to
+the [`HLAnnotation`](@ref) interface. Namely <text>, <structure>, where <structure>
+contains one element.  The element tag name is paired with its content:
+a NamedTuple{Tag, Content} of children elements.
+
+Note that 'structure' is not present in tag or tuple. This can be done for a `HLAnnotation`.
+For more general well-formed-XML handling see [`AnyElement`](@ref).
 
  ast variants:
   - variable
@@ -77,10 +88,10 @@ julia> t()
 ```
 #! Term as functor requires a default value for missing values.
 """
-struct Term <: AbstractTerm #TODO make mutable?
+struct Term <: AbstractTerm
     tag::Symbol
-    dict::NamedTuple
-  #TODO xml
+    elements::NamedTuple
+    #TODO xml
 end
 
 Term() = Term(NamedTuple())
@@ -92,12 +103,12 @@ Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
 Base.convert(::Type{Maybe{Term}}, v::Vector{Pair{Symbol,Any}})::Term = Term(namedtuple(v))
 
 tag(t::Term)::Symbol = t.tag
-dict(t::Term) = t.dict
+elements(t::Term) = t.elements
 #TODO xml(t::Term) = t.xml
 
 """
-Evaluate a term by returning the ':value' in `dict` or a default value.
-Assumes that `dict` is an `AbstractDictionary`.
+Evaluate a term by returning the ':value' in `elements` or a default value.
+
 Default term value defaults to 1. Use the default argument to specify a default.
 
 # Examples
@@ -118,8 +129,8 @@ julia> t(2.3)
 ```
 """
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
-    value = if haskey(t.dict, :value)
-        @inbounds t.dict[:value]
+    value = if haskey(t.elements, :value)
+        @inbounds t.elements[:value]
     else
         _evaluate(default)
     end

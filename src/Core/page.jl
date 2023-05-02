@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
+mutable struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
@@ -13,7 +13,7 @@ struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     com::ObjectCommon
     pagedict::OrderedDict{Symbol, Page{PNTD}} #, M, I, C, S}} #! Shared by net and its pages
     netdata::PnmlNetData{PNTD} #, M, I, C, S}    #! Shared by net and its pages
-    netsets::PnmlNetSets
+    netsets::PnmlNetKeys #TODO page's keys of items owned in netdata/pagedict.
 
 end
 
@@ -26,35 +26,34 @@ Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
-# Note that declaration wraps a vector of AbstractDeclarations.
+pagedict(p::Page) = p.pagedict
+netdata(p::Page)  = p.netdata
+netsets(p::Page)  = p.netsets
+
+
+pages(page::Page)       = Iterators.filter(v -> pid(v) in page_idset(page), values(pagedict(page)))
+places(page::Page)      = Iterators.filter(v -> pid(v) in place_idset(page), values(placedict(page)))
+transitions(page::Page) = Iterators.filter(v -> pid(v) in transition_idset(page), values(transitiondict(page)))
+arcs(page::Page)        = Iterators.filter(v -> pid(v) in arc_idset(page), values(arcdict(page)))
+refplaces(page::Page)   = Iterators.filter(v -> pid(v) in refplace_idset(page), values(refplacedict(page)))
+reftransitions(page::Page) = Iterators.filter(v -> pid(v) in reftransition_idset(page), values(reftransitiondict(page)))
+
 declarations(page::Page) = declarations(page.declaration)
-# subpages
-pages(page::Page) = Iterators.filter(v -> pid(v) in page.netsets.page_set, values(page.pagedict)) # iterator
-
-netdata(p::Page) = p.netdata
-
-places(page::Page)      = Iterators.filter(v -> pid(v) in page.netsets.place_set, values(netdata(page).place_dict))
-transitions(page::Page) = Iterators.filter(v -> pid(v) in page.netsets.transition_set, values(netdata(page).transition_dict))
-arcs(page::Page)        = Iterators.filter(v -> pid(v) in page.netsets.arc_set, values(netdata(page).arc_dict))
-refplaces(page::Page)   = Iterators.filter(v -> pid(v) in page.netsets.refplace_set, values(netdata(page).refplace_dict))
-reftransitions(page::Page) = Iterators.filter(v -> pid(v) in page.netsets.reftransition_set, values(netdata(page).reftransition_dict))
-
 common(page::Page) = page.com
 
-place(page::Page, id::Symbol) = netdata(page).place_dict[id]
-place_ids(page::Page) = page.netsets.place_set
-has_place(page::Page, id::Symbol) = (id in page.netsets.place_set)
+page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
+
+place(page::Page, id::Symbol) = placedict(page)[id]
+has_place(page::Page, id::Symbol) = (id in place_idset(page))
 
 #marking(page::Page, placeid::Symbol) = marking(netdata(page).place_dict[placeid])
 currentMarkings(page::Page) = LVector((; [pid(p) => marking(p)() for p in places(page)]...))
 
-transition(page::Page, id::Symbol) = netdata(page).transition_dict[id]
-transition_ids(page::Page) = page.netsets.transition_set
-has_transition(page::Page, id::Symbol) = (id in page.netsets.transition_set)
+transition(page::Page, id::Symbol) = transitiondict(page)[id]
+has_transition(page::Page, id::Symbol) = (id in transition_idset(page))
 
-arc(page::Page, id::Symbol) = netdata(page).arc_dict[id]
-arc_ids(page::Page) = page.netsets.arc_set
-has_arc(page::Page, id::Symbol) = (id in page.netsets.arc_set)
+arc(page::Page, id::Symbol) = arcdict(page)[id]
+has_arc(page::Page, id::Symbol) = (id in arc_idset(page))
 
 # Currently, "all" means either end of the arc.
 all_arcs(page::Page, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(page))
@@ -63,13 +62,11 @@ tgt_arcs(page::Page, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(
 
 inscription(page::Page, arc_id::Symbol) = inscription(arc(page, arc_id))
 
-refplace(page::Page, id::Symbol) = netdata(page).refplace_dict[id]
-refplace_ids(page::Page) = page.netsets.refplace_set
-has_refP(page::Page, id::Symbol) = (id in page.netsets.refplace_set)
+refplace(page::Page, id::Symbol) = refplacedict(page)[id]
+has_refP(page::Page, id::Symbol) = (id in refplace_idset(page))
 
-reftransition(page::Page, id::Symbol) = netdata(page).reftransition_dict[id]
-reftransition_ids(page::Page) = page.netsets.reftransition_set
-has_refT(page::Page, id::Symbol) = (id in page.netsets.reftransition_set)
+reftransition(page::Page, id::Symbol) = reftransitiondict(page)[id]
+has_refT(page::Page, id::Symbol) = (id in reftransition_idset(page))
 
 function Base.empty!(page::Page)
     #empty!(netdata(page).place)
@@ -78,7 +75,7 @@ function Base.empty!(page::Page)
     #empty!(netdata(page).reftransition)
     #empty!(netdata(page).arc)
     empty!(page.declaration)
-    # !isnothing(page.pageset) && empty!(page.pageset) #! PAGE TREE NODE
+    # !isnothing(page.page_idset) && empty!(page.page_idset) #! PAGE TREE NODE
     t = (tools ∘ common)(page)
     !isnothing(t) && empty!(t)
     l = (labels ∘ common)(page)

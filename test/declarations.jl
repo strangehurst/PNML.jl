@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML:
-    Maybe, tag, xmlnode, labels, firstpage, pid, parse_sort, parse_declaration
+    Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration
     registry
 
 const pntd = PnmlCoreNet()
@@ -97,9 +97,9 @@ end
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
         @test d.def isa PNML.AnyElement #TODO implement definitions?
         @test tag(d.def) === :cyclicenumeration
-        @test haskey(d.def.dict, :feconstant)
+        @test haskey(d.def.elements, :feconstant)
 
-        for x in d.def.dict[:feconstant]
+        for x in d.def.elements[:feconstant]
             @test x isa NamedTuple
             @test PNML.isregistered_id(reg, pid(x))
             @test x[:name] isa String

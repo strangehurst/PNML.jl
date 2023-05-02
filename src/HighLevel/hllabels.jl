@@ -13,7 +13,7 @@ Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
 """
 struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
-    structure::Maybe{Structure}
+    structure::Maybe{AnyElement}
     com::ObjectCommon
     xml::XMLNode
     #TODO validate in constructor: must have text or structure (depends on pntd?)

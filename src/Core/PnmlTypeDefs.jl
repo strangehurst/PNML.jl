@@ -194,7 +194,7 @@ $(TYPEDSIGNATURES)
 
 Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
 """
-add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType) = dict[s] = pntd #! test this
+add_nettype!(elements::AbstractDict, s::Symbol, pntd::PnmlType) = elements[s] = pntd #! test this
 
 """
 $(TYPEDSIGNATURES)

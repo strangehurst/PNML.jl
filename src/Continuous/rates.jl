@@ -13,7 +13,7 @@ Return a transition-id labelled vector of rate values for transitions of net.
 function rates end
 
 function rates(pn::AbstractPetriNet)
-    LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_ids(pn)]...))
+    LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
 end
 
 """
@@ -33,13 +33,13 @@ function rate(transition)
     #@show pntd R r
     return isnothing(r) ? zero(R) : numeric_label_value(R, r)
     # if !isnothing(r)
-    #     if haskey(r.dict, :text)
-    #         @assert !isnothing(r.dict[:text])
+    #     if haskey(r.elements, :text)
+    #         @assert !isnothing(r.elements[:text])
     #         # The unclaimed label mechanism adds a :content key for text elements.
-    #         value = number_value(rate_value_type(pntd), r.dict[:text][1][:content])
-    #     elseif haskey(r.dict, :content)
+    #         value = number_value(rate_value_type(pntd), r.elements[:text][1][:content])
+    #     elseif haskey(r.elements, :content)
     #         # When the text element is elided, there is still a :content.
-    #         value = number_value(rate_value_type(pntd), r.dict[:content])
+    #         value = number_value(rate_value_type(pntd), r.elements[:content])
     #     else
     #         throw(ArgumentError("`rate` tag missing a value"))
     #     end

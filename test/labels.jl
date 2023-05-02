@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools
 using PNML:
     Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     unclaimed_label, anyelement, PnmlLabel, AnyElement,
@@ -157,7 +157,8 @@ end
     @test !has_label(tup, :bumble)
 
     v = get_label(tup, :test2)
-    @test v.dict[:content] == "3"
+    @test v isa PnmlLabel
+    @test v.elements.content == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
         v = PNML.get_labels(tup, labeltag)
@@ -168,115 +169,116 @@ end
     end
 end
 
-@testset "unclaimed" begin
-    println("## test unclaimed, PnmlLabel, anyelement")
-    function test_unclaimed(xmlstring::String, funk::NamedTuple)#Vector{<:Pair})
-        noisy && print("+++++++++++++++++++\n",
-                       "XML: ", xmlstring, "\n",
-                       "funk: ", funk, "\n",
-                       "-------------------\n")
 
-        node::XMLNode = xmlroot(xmlstring)
-        reg1 = registry()
-        reg2 = registry()
+function test_unclaimed(xmlstring::String)#, funk::NamedTuple)
+    if noisy
+        println("+++++++++++++++++++")
+        println("XML: ", xmlstring)
+        #print("funk: "); pprint(funk); println()
+        println("-------------------")
+    end
+    node::XMLNode = xmlroot(xmlstring)
+    reg1 = registry()
+    reg2 = registry()
 
-        u = unclaimed_label(node, PnmlCoreNet(), reg1)
-        l = PnmlLabel(u, node)
-        a = anyelement(node, reg2)
-        #noisy && @show typeof(u) typeof(l) typeof(a)
-        noisy && @show u l a
+    u = unclaimed_label(node, PnmlCoreNet(), reg1)
+    l = PnmlLabel(u, node)
+    a = anyelement(node, reg2)
+    if noisy
+        # @show typeof(u) typeof(l) typeof(a)
+        print("u = "); pprintln(u)
+        print("l = "); pprintln(l)
+        print("a = "); pprintln(a)
+        end
+    # unclaimed_label returns Pair{Symbol,Vector{Pair{Symbol,Any}}}
+    # Where the outer symbol is the label name and the vector is the label's contents.
+    # function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
 
-        # unclaimed_label returns Pair{Symbol,Vector{Pair{Symbol,Any}}}
-        # Where the outer symbol is the label name and the vector is the label's contents.
-        # function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
+    @test_opt broken=false PnmlLabel(u, node)
+    @test_opt broken=true function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
 
-        @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
-        @test_opt broken=false PnmlLabel(u, node)
-        @test_opt broken=true function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
+    @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1)
+    @test_call target_modules = (PNML,) PnmlLabel(u, node)
+    @test_call target_modules = (PNML,) anyelement(node, reg2)
 
-        @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1) #!
-        @test_call target_modules = (PNML,) PnmlLabel(u, node)
-        @test_call target_modules = (PNML,) anyelement(node, reg2) #!
+    @test !isnothing(u)
+    @test !isnothing(l)
+    @test !isnothing(a)
 
-        @test !isnothing(u)
-        @test !isnothing(l)
-        @test !isnothing(a)
+    @test u isa Pair{Symbol, <:NamedTuple}
+    @test l isa PnmlLabel
+    @test a isa AnyElement
 
-
-        @test u isa Pair{Symbol, <:NamedTuple}
-        #@test u isa Pair{Symbol, Vector{Pair{Symbol,NamedTuple{Symbol}}}}
-        @test l isa PnmlLabel
-        @test a isa AnyElement
-
-        @show nn = Symbol(nodename(node))
+    let nn = Symbol(nodename(node))
         @test u.first === nn
         @test tag(l) === nn
         @test tag(a) === nn
-
-        @test u.second isa NamedTuple #!Vector{<:Pair}
-        #@test u.second isa Vector{<:Pair{Symbol}}
-        #@test u.second isa Vector{<:Pair{Symbol,Any}}
-        #@test_broken u.second isa Vector{<:Pair{Symbol,<:NamedTuple}}
-        @test l.dict isa NamedTuple
-        @test a.dict isa NamedTuple
-
-        @show typeof(funk)
-        # test each key,value pair
-        println("-------------------")
-        for (key, val) in pairs(funk) # NamedTuple
-            @show key #typeof(key)
-            @show val #typeof(val) #eltype(val)
-            #@show typeof(l.dict) eltype(l.dict) typeof(a.dict) eltype(a.dict)
-            #@show vec = [v.first for v in u.second]
-            #@test hasproperty(u.second, key)
-            #@est any(==(key), vec)
-            #inx = Base.findfirst(==(val), [v.first for v in u.second])
-            #@test !isnothing(inx)
-            #@test u.second[inx].first == val
-            @test hasproperty(l.dict, key)
-            #@show typeof(l.dict[key])
-            #@test typeof(l.dict[key]) <: typeof(val)
-            #@test l.dict[key] == val
-
-            @test hasproperty(a.dict, key)
-            #@show typeof(a.dict[key])
-            #@test typeof(a.dict[key]) <: typeof(val)
-            #@test a.dict[key] == val
-
-            println()
-        end
-        println("^^^^^^^^^^^^^^^^^^^")
-
-        #haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
-        haskey(l.dict, :id) && @test isregistered_id(reg1, l.dict[:id])
-        haskey(a.dict, :id) && @test isregistered_id(reg2, a.dict[:id])
-
-        #@report_opt isregistered_id(reg2, :id)
-        @test_call isregistered_id(reg2, :id)
     end
+    @test u.second isa NamedTuple
+    @test l.elements isa NamedTuple
+    @test a.elements isa NamedTuple
+    haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
+    haskey(l.elements, :id) && @test isregistered_id(reg1, l.elements[:id])
+    haskey(a.elements, :id) && @test isregistered_id(reg2, a.elements[:id])
+    #@report_opt isregistered_id(reg2, :id)
+    @test_call isregistered_id(reg2, :id)
+
+    return l, a
+end
+ntd(t) = Dict(zip(keys(t), values(t)))
+
+function cmptup(tup, val)
+    @assert tup isa NamedTuple
+    @assert val isa NamedTuple
+    t = convert(Dict, tup)
+    v = convert(Dict, val)
+    print("tup = "); pprintln(tup)
+    print("val = "); pprintln(val)
+    #print("t = "); pprintln(t)
+    #print("v = "); pprintln(v)
+    #return t == v
+    for k in keys(val)
+        @show k
+        if val[k] isa NamedTuple
+            if !cmptup(tup[k], val[k])
+                @show tup val
+                return false
+            end
+        else
+            if tup[k] != val[k]
+                @show tup val
+                return false
+            end
+        end
+        return true
+    end
+end
+
+function test_elements(l, a, funk)
+    @show keys(funk)
+    @test funk isa NamedTuple
+    for key in keys(funk)
+        @test hasproperty(l.elements, key)
+        @test hasproperty(a.elements, key)
+    end
+    @test cmptup(l.elements, funk)
+    @test cmptup(a.elements, funk)
+end
+
+@testset "unclaimed" begin
+    println("## test unclaimed, PnmlLabel, anyelement")
 
     ctrl = [
         ("""<declarations> </declarations>""", (; :content => "")),
-        ("""<declarations atag="test1"> </declarations>""", (; :atag => "test1", :content => "")),
-        ("""<declarations atag="test2">
-                <something> some content </something>
-                <something> other stuff </something>
-                <something2 tag2="two"> <value/> <value tag3="three"/> </something2>
-            </declarations>""",
-            (; :atag => "test2",
-               :something => [(; :content => "some content"),
-                              (; :content => "other stuff")],
-               :something2 => [(; :tag2 => "two",
-                                  :value => [(; :content => ""),
-                                             (; :tag3 => "three", :content => "")],
-                                )]),
-                (tag2 = "two", value = NamedTuple[(content = "",), (tag3 = "three", content = "")])
-        ),
+
+        ("""<declarations atag="atag1"> </declarations>""", (; :atag => "atag1", :content => "")),
+
         ("""<foo><declarations> </declarations></foo>""",
-             (; :declarations => [(; :content => "")])),
-        # no content, no attribute results in empty tuple.
-        ("""<null></null>""", NamedTuple()),
-        ("""<null2/>""", NamedTuple()),
+             (; :declarations => (; :content => ""))),
+        # no content, no attribute maybe results in empty tuple.
+        ("""<null></null>""", (; :content => "")),
+        ("""<null2/>""", (; :content => "")),
         # no content, with attribute
         ("""<null at="null"></null>""", (; :at => "null")),
         ("""<null2 at="null2" />""", (; :at => "null2")),
@@ -288,6 +290,32 @@ end
     ]
 
     for (s, funk) in ctrl
-        test_unclaimed(s, funk)
+        l, a = test_unclaimed(s)#!, funk)
+        println("-------------------")
+        test_elements(l, a, funk)
+        #for (key, val) in pairs(funk); test_elements(l, a, funk); end
     end
+    println()
+
+    s2 = """<declarations atag="atag2">
+                <something> some content </something>
+                <something> other stuff </something>
+                <something2 tag2="tagtwo"> <value/> <value tag3="tagthree"/> </something2>
+            </declarations>"""
+    x = namedtuple([:atag => "atag2",
+                    :something => [(; :content => "some content"),
+                                (; :content => "other stuff")],
+                    :something2 => [(; :tag2 => "tagtwo",
+                                   :value => [(; :content => ""),
+                                              (; :tag3 => "tagthree", :content => "")],
+                                )]
+                ])
+
+    l, a = test_unclaimed(s2)
+    println("-------------------")
+    test_elements(l, a, x)
+    println("-------------------")
+    println("-------------------")
+    println("-------------------")
+
 end

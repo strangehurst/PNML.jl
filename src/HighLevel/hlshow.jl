@@ -51,12 +51,12 @@ end
 function Base.show(io::IO, term::AbstractTerm)
     pprint(io, term)
 end
-quoteof(t::AbstractTerm) = :(AbstractTerm($(quoteof(t.tag)), $(quoteof(t.dict))))
+quoteof(t::AbstractTerm) = :(AbstractTerm($(quoteof(t.tag)), $(quoteof(t.elements))))
 
 function Base.show(io::IO, term::Term)
     pprint(io, term)
 end
-quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.dict))))
+quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
 
 #-------------------
 function Base.show(io::IO, nsorts::Vector{NamedSort})

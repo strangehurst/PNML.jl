@@ -10,9 +10,9 @@ function transition_function end
 
 transition_function(petrinet::AbstractPetriNet) = transition_function(petrinet.net)
 transition_function(net::PnmlNet) = transition_function((first ∘ pages)(net)) #! Assumes flattened!
-transition_function(page::Page)   = transition_function(page, transition_ids(page))
+transition_function(page::Page)   = transition_function(page, transition_idset(page))
 #TODO Use iterator
-transition_function(page::Page, t_ids) = LVector((;[tid => in_out(page, tid) for tid in t_ids]...))
+transition_function(page::Page, idset) = LVector((;[tid => in_out(page, tid) for tid in idset]...))
 
 """
 $(TYPEDSIGNATURES)

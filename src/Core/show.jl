@@ -95,7 +95,7 @@ function Base.show(io::IO, mime::MIME"text/plain", label::PnmlLabel)
 end
 
 PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
-                                                   $(PrettyPrinting.quoteof(l.dict))))
+                                                   $(PrettyPrinting.quoteof(l.elements))))
 
 #-------------------
 function Base.show(io::IO, elvector::Vector{AnyElement})
@@ -120,7 +120,7 @@ function Base.show(io::IO, mime::MIME"text/plain", el::AnyElement) #TODO Make pa
 end
 
 PrettyPrinting.quoteof(a::AnyElement) = :(AnyElement($(PrettyPrinting.quoteof(a.tag)),
-                                                     $(PrettyPrinting.quoteof(a.dict))))
+                                                     $(PrettyPrinting.quoteof(a.elements))))
 
 #-------------------
 Base.summary(io::IO, ti::ToolInfo) = print(io, summary(ti))
@@ -296,13 +296,13 @@ Base.summary(io::IO, page::Page) = print(io, summary(page))
 function Base.summary( page::Page)
     string(typeof(page)," id ", page.id, ", ",
            " name '", name(page), "', ",
-           length(place_ids(page)), " places, ",
-           length(transition_ids(page)), " transitions, ",
-           length(arc_ids(page)), " arcs, ",
+           length(place_idset(page)), " places, ",
+           length(transition_idset(page)), " transitions, ",
+           length(arc_idset(page)), " arcs, ",
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
-           length(page.netsets.refplace_set), " refP, ",
-           length(page.netsets.reftransition_set), " refT, ",
-           length(page.netsets.page_set), " subpages",
+           length(refplace_idset(page)), " refP, ",
+           length(reftransition_idset(page)), " refT, ",
+           length(page_idset(page)), " subpages",
            summary(page.com)
            )
 end
@@ -324,20 +324,20 @@ function Base.show(io::IO, page::Page)
     # Start indent here. Will indent subpages.
     inc_io = inc_indent(io)
 
-    show_page_field(inc_io, "places:",         place_ids(page))
-    show_page_field(inc_io, "transitions:",    transition_ids(page))
-    show_page_field(inc_io, "arcs:",           arc_ids(page))
+    show_page_field(inc_io, "places:",         place_idset(page))
+    show_page_field(inc_io, "transitions:",    transition_idset(page))
+    show_page_field(inc_io, "arcs:",           arc_idset(page))
     show_page_field(inc_io, "declaration:",    declarations(page))
-    show_page_field(inc_io, "refPlaces:",      page.netsets.refplace_set)
-    show_page_field(inc_io, "refTransitions:", page.netsets.reftransition_set)
+    show_page_field(inc_io, "refPlaces:",      refplace_idset(page))
+    show_page_field(inc_io, "refTransitions:", reftransition_idset(page))
     show_common(io, page)
-    #!show_page_field(inc_io, "subpages:",       pages(page))
+    show_page_field(inc_io, "subpages:",       page_idset(page))
 end
 
-function Base.show(io::IO, ::MIME"text/plain", pagevec::Vector{Page}) #!dict, iterator
+function Base.show(io::IO, ::MIME"text/plain", pagevec::Vector{Page})
     show(io, pagevec)
 end
-function Base.show(io::IO, pages::Vector{Page})
+function Base.show(io::IO, pagevec::Vector{Page})
     isempty(pagevec) && return
     for (i,page) in enumerate(pagevec)
         show(io, MIME"text/plain"(), page)
@@ -351,7 +351,7 @@ function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", "', ",
             " type ", nettype(net), ", ",
-            length(pages(net)), " pages ",
+            length(pagedict(net)), " pages ",
             length(declarations(net)), " declarations",
             summary(net.com))
 end

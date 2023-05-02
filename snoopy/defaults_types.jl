@@ -5,7 +5,7 @@ using PNML:
     PnmlNet, Page, pages, pid,
     arc, arcs, place, places, transition, transitions,
     refplace, refplaces, reftransition, reftransitions,
-    place_ids, transition_ids, arc_ids, refplace_ids, reftransition_ids,
+    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
     flatten_pages!, nets,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
     currentMarkings,

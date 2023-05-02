@@ -118,7 +118,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
             for y in zip(t[i].infos, ti.infos)
                 @test tag(y[1]) == tag(y[2])
-                @test y[1].dict == y[2].dict
+                @test y[1].elements == y[2].elements
             end
             # need to use tag agnostic parse here.
             x = parse_node(xmlroot(s.str), PnmlCoreNet(), registry())
@@ -126,7 +126,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
             @test typeof(t[i].infos) == typeof(x.infos)
             for y in zip(t[i].infos, x.infos)
                 @test tag(y[1]) == tag(y[2])
-                @test y[1].dict == y[2].dict
+                @test y[1].elements == y[2].elements
             end
         end
     end

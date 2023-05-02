@@ -12,59 +12,80 @@ function flatten_pages! end
 flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
 
 function flatten_pages!(net::PnmlNet)
-    println("flatten_pages! $(length(net.pagedict))") #! debug
+    CONFIG.verbose &&
+        println("\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
     if length(net.pagedict) > 1
         # TODO Check for illegal intra-page references?
         # Place content of other pages into 1st page.
         # Most content is already in the PnmlNetData database.
-        #
         pageids = keys(net.pagedict)
         @assert first(pageids) == pid(first(values(net.pagedict)))
         #@show pageids #! debug before pop
         key1,val1 = popfirst!(net.pagedict) # Want the non-mergable bits from the first page.
-        #@show key1 pageids #! debug
+        #@show key1 pageids #! debug (note the expected change!)
         @assert key1 ∉ pageids
 
         while !isempty(net.pagedict)
-            _, cutval = popfirst!(net.pagedict)
-            append_page!(val1, cutval)
+            cutid, cutpage = popfirst!(net.pagedict)
+            @assert cutid ∉ pageids
+            append_page!(val1, cutpage)
+            delete!(page_idset(net), cutid) #! remove from set of page ids owned
         end
         @assert isempty(net.pagedict)
-        deref!(val1) # Resolve reference nodes
 
-        net.pagedict[key1] = val1 # Put the one-true-page back in the dictionary.
+        pagedict(net)[key1] = val1 # Put the one-true-page back in the dictionary.
+        push!(page_idset(net), key1) #! add the collected page (netsets updated)
         @assert !isempty(net.pagedict)
+        @assert key1 ∈ pageids
+
+        @show (sort ∘ collect ∘ reftransition_idset)(net)
+        @show (sort ∘ collect ∘ refplace_idset)(net)
+        println("============")
+        deref!(net)
+        println("============")
+        @show (sort ∘ collect ∘ reftransition_idset)(net)
+        @show (sort ∘ collect ∘ refplace_idset)(net)
+
     end
+
     return net
 end
 
 """
 Append selected fields of `r` to fields of `l`.
 Some, like Names and xml, are omitted because they are scalar values, not collections.
+
+pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not modified here.
+netsets hold pnml IDs "owned"
 """
 function append_page!(l::Page, r::Page;
-                      keys = [:declaration],
+                      keys = [:declaration], # netsets
                       comk = [:tools, :labels])
 
-    CONFIG.verbose && println("append_page!($(pid(l)), $(pid(r)))")
+    if CONFIG.verbose
+        println("append_page! ", pid(l), " ", pid(r))
+        @show netsets(l) netsets(r)
+    end
 
     for k in keys
-        #append!(l, r)
         update_maybe!(getproperty(l, k), getproperty(r, k))
     end
 
-    # merge netsets
-    for s in [:place_set, :transition_set, :arc_set, :refplace_set, :reftransition_set]
-        #@show s
-        @eval union!($l.netsets.$s, $r.netsets.$s)
-        #@eval println($l.netsets.$s, "  ", $r.netsets.$s)
+    # Merge netsets except for page_idset
+    for s in [place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset]
+        union!(s(l), s(r))
     end
 
-    # Optional fields to append.
+    # Optional fields from common to append.
     for key in comk
-        update_maybe!(getproperty(l.com,key), getproperty(r.com,key))
+        update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
     end
 
+    delete!(page_idset(l), pid(r))
+
+    println("after append_page! netsets(r) = ", netsets(r))
+
+    #! Verify netsets
     return l
 end
 
@@ -99,59 +120,73 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Remove reference nodes from arcs. Expects [`flatten_pages!`](@ref) to have
-been applied so that everything is on one page (the first page).
+Remove reference nodes from arcs.
 
-# Axioms
+Operates on the [`PnmlNetData`](@ref) at the net level.
+Expects that the [`PnmlNetKeys`](@ref) of the firstpage will have to be cleaned
+as part of [`flatten_pages!`](@ref),
+
+# Axiomsof
   1) All ids in a network are unique in that they only have one instance in the XML.
   2) A chain of reference Places or Transitions always ends at a Place or Transition.
   3) All ids are valid.
   4) No cycles.
 """
-function deref!(page::Page)
-    for arc in arcs(page)
-        while arc.source ∈ refplace_ids(page)
-            s = deref_place(page, arc.source)
+function deref!(net::PnmlNet) #!page::Page)
+    @show "deref! net $(pid(net))"
+    for id in arc_idset(net)
+        arc = PNML.arc(net, id)
+        @show arc.source arc.target
+        while arc.source ∈ refplace_idset(net)
+            s = deref_place(net, arc.source)
             arc.source =  s
+            @show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
         end
-        while arc.target ∈ refplace_ids(page)
-            t = deref_place(page, arc.target)
+        while arc.target ∈ refplace_idset(net)
+            t = deref_place(net, arc.target)
             arc.target = t
+            @show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
         end
-        while arc.source ∈ reftransition_ids(page)
-            s = deref_transition(page, arc.source)
-            @set arc.source = s #! Why @set here but not places.
+        while arc.source ∈ reftransition_idset(net)
+            s = deref_transition(net, arc.source)
+            arc.source = s
+            @show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
         end
-        while arc.target ∈ reftransition_ids(page)
-            t = deref_transition(page, arc.target)
-            @set arc.target = t
+        while arc.target ∈ reftransition_idset(net)
+            t = deref_transition(net, arc.target)
+            arc.target = t
+            @show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
         end
     end
     # Remove reference node idsets for this page.
     # Nodes still exist in `netdata` and can be accesses at `PnmlNet` level.
-    empty!(page.netsets.refplace_set)
-    empty!(page.netsets.reftransition_set)
-    page
+    empty!(refplace_idset(firstpage(net)))
+    empty!(reftransition_idset(firstpage(net)))
+    return net
 end
 
 """
-    deref_place(page, id) -> Symbol
+    deref_place(net, id) -> Symbol
 
 Return id of referenced place.
 """
-deref_place(p::Page, id::Symbol)::Symbol = begin
-    #@show "deref_place page $(pid(p)) $id"
-    #@show refplaces(p)
-    rp = refplace(p, id)
-    #@show typeof(rp)
-    if isnothing(rp) # Something is really, really wrong.
-        error("failed to lookup reference place id $id in page $(pid(p))")
-        @show refplace_ids(p)
-        @show reftransition_ids(p)
-        @show place_ids(p)
-        @show arc_ids(p)
-        @show transition_ids(p)
+deref_place(net::PnmlNet, id::Symbol)::Symbol = begin
+    CONFIG.verbose && println("deref_place net $(pid(net)) $id")
+    rp = refplace(net, id) #!
+    if isnothing(rp) # Something is really, really wrong.,
+        error("failed to lookup reference place id $id in net $(pid(net))")
     end
+    # Remove from reftransition_idset reftransitiondict.
+    #@show (sort ∘ collect ∘ values ∘ reftransition_idset)(net)
+    #delete!(reftransition_idset(net), id)
+    #@show (sort ∘ collect ∘ values ∘ reftransition_idset)(net)
+
+    #@show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
+    has_refP(net, id) || error("expected refP $id")
+    delete!(refplacedict(net), id)
+    #@show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
+    has_refP(net, id) && error("did not expect refP $id")
+    @assert has_place(net, rp.ref)
     return rp.ref
 end
 
@@ -160,18 +195,18 @@ $(TYPEDSIGNATURES)
 
 Return id of referenced transition.
 """
-function deref_transition(page::Page, id::Symbol)::Symbol
-    #@show "deref_transition page $(pid(page)) id $id"
-    #@show refplaces(page)
-    rt = reftransition(page, id)
-    #@show typeof(rt)
+function deref_transition(net::PnmlNet, id::Symbol)::Symbol
+    CONFIG.verbose && println("deref_transition net $(pid(net)) id $id")
+    rt = reftransition(net, id)
     if isnothing(rt) # Something is really, really wrong.
-        error("failed to lookup reference transition id $id in page $(pid(page))")
-        @show refplace_ids(page)
-        @show reftransition_ids(page)
-        @show place_ids(page)
-        @show arc_ids(page)
-        @show transition_ids(page)
+        error("failed to lookup reference transition id $id in net $(pid(net))")
     end
+     # Remove from refplace_idset refplacedict.
+     #@show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
+     has_refT(net, id) || error("expected refT $id")
+     delete!(reftransitiondict(net), id)
+     #@show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
+     has_refT(net, id) && error("did not expect refT $id")
+     @assert has_transition(net, rt.ref)
     return rt.ref
 end

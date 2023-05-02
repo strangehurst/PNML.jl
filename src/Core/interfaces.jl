@@ -115,7 +115,7 @@ $(TYPEDSIGNATURES)
 
 Return vector of all place IDs.
 """
-function place_ids end
+function place_idset end
 
 """
 $(TYPEDSIGNATURES)
@@ -172,7 +172,7 @@ function transition end
 """
 $(TYPEDSIGNATURES)
 """
-function transition_ids end
+function transition_idset end
 
 """
 $(TYPEDSIGNATURES)
@@ -194,11 +194,11 @@ function condition end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of all arcs.
+Return set arc ids.
 """
 function arcs end
 """
-$(TYPEDSIGNATURES)
+$(TYPEDSIGNATURES)+
 
 Return `true` if any `arc` has `id`.
 """
@@ -215,7 +215,7 @@ $(TYPEDSIGNATURES)
 
 Return vector of all arc ids.
 """
-function arc_ids end
+function arc_idset end
 
 """
 $(TYPEDSIGNATURES)
@@ -276,18 +276,18 @@ $(TYPEDSIGNATURES)
 function has_refT end
 
 """
-refplace_ids(x) -> Vector{Symbol} #TODO iterator?
+refplace_idset(x) -> Vector{Symbol} #TODO iterator?
 
 Return reference place pnml ids.
 """
-function refplace_ids end
+function refplace_idset end
 
 """
-reftransition_ids(x) -> Vector{Symbol} #TODO iterator?
+reftransition_idset(x) -> Vector{Symbol} #TODO iterator?
 
 Return reference transition pnml ids.
 """
-function reftransition_ids end
+function reftransition_idset end
 
 """
 Return reference place matching `id`.
