@@ -29,11 +29,11 @@ false
 mutable struct Condition{PNTD,T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
-    value::T #! Must be mutable!  XXX
+    value::T
     com::ObjectCommon
 
     function Condition(pntd, t, v, c)
-        val = isnothing(v) ? default_condition(pntd) : v
+        val = something(v, true)
         new{typeof(pntd), typeof(val)}(pntd, t, val, c)
     end
 end

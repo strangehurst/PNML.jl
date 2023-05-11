@@ -81,27 +81,29 @@ end
     reg = PNML.registry()
     decl = parse_declaration(node, pntd, reg)
 
+    @show typeof(decl)
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
-    @show decl
     @test length(PNML.declarations(decl)) == 3
     @test_call PNML.declarations(decl)
 
     for d in PNML.declarations(decl)
+        @show d
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
 
-        @test PNML.isregistered_id(reg, pid(d))
-        @test_call PNML.isregistered_id(reg, pid(d))
+        @test PNML.isregistered(reg, pid(d))
+        @test_call PNML.isregistered(reg, pid(d))
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
         @test d.def isa PNML.AnyElement #TODO implement definitions?
         @test tag(d.def) === :cyclicenumeration
         @test haskey(d.def.elements, :feconstant)
 
         for x in d.def.elements[:feconstant]
+            @show x
             @test x isa NamedTuple
-            @test PNML.isregistered_id(reg, pid(x))
+            @test PNML.isregistered(reg, pid(x))
             @test x[:name] isa String
             @test endswith(string(pid(x)), x[:name])
         end

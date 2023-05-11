@@ -156,8 +156,8 @@ end
 #-------------------
 function Base.show(io::IO, name::Name)
     print(io, typeof(name), " '", name.text, "'")
-    !isnothing(name.graphics) && print(io, ", has graphics")
-    !isnothing(name.tools)    && print(io, ", ", length(name.tools), " tool info")
+    isnothing(name.graphics) || print(io, ", has graphics")
+    isnothing(name.tools)    || print(io, ", ", length(name.tools), " tool info")
 end
 function Base.show(io::IO, ::MIME"text/plain", name::Name)
     print(io, name)

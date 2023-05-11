@@ -28,7 +28,7 @@ Return function to be used like: any(ispid(sym), iterate_with_pid)
 """
 ispid(x::Symbol) = Fix2(===, x)
 haspid(x, id::Symbol) = pid(x) === id
-haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
+haspid(s::Any) = throw(ArgumentError(lazy"haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 "Return string of current indent size in `io`."
 indent(io::IO) = repeat(' ', get(io, :indent, 0))

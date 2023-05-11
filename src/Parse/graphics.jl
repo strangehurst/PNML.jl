@@ -115,7 +115,7 @@ function parse_graphics_fill(node, pntd, reg)
         gradient_color = EzXML.haskey(node, "gradient-color")    ? node["gradient-color"] : nothing,
         gradient_rotation = EzXML.haskey(node, "gradient-rotation") ? node["gradient-rotation"] : nothing
         @nospecialize
-        Fill( ; color , image, gradient_color, gradient_rotation)
+        Fill( color =color, image = image, gradient_color = gradient_color,  gradient_rotation = gradient_rotation)
     end
 end
 

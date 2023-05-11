@@ -19,6 +19,12 @@ using PNML:
 
 function verify_sets(net::PnmlNet)
     println("\nverify sets and structure ++++++++++++++++++++++")
+    @test typeof(page_idset(net))  == typeof(page_idset(firstpage(net)))
+    @test typeof(arc_idset(net))  == typeof(arc_idset(firstpage(net)))
+    @test typeof(place_idset(net)) == typeof(place_idset(firstpage(net)))
+    @test typeof(transition_idset(net)) == typeof(transition_idset(firstpage(net)))
+    @test typeof(refplace_idset(net))  == typeof(refplace_idset(firstpage(net)))
+    @test typeof(reftransition_idset(net)) ==  typeof(reftransition_idset(firstpage(net)))
 
     @show arc_idset(net)
     @show place_idset(net)

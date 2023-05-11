@@ -75,6 +75,13 @@ arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
 
+# page_idset(tup::NamedTuple) = page_idset(tup.netsets)
+# place_idset(tup::NamedTuple) = (place_idsettup.netsets)
+# transition_idset(tup::NamedTuple) = transition_idset(tup.netsets)
+# arc_idset(tup::NamedTuple) = arc_idset(tup.netsets)
+# reftransition_idset(tup::NamedTuple) = reftransition_idset(tup.netsets)
+# refplace_idset(tup::NamedTuple) = trefplace_idset(up.netsets)
+
 page_idset(x)          = page_idset(netsets(x))
 place_idset(x)         = place_idset(netsets(x))
 transition_idset(x)    = transition_idset(netsets(x))
@@ -95,12 +102,18 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    length(page_idset(pns)) > 0 && print(io, "pages: ", (sort ∘ collect ∘ values ∘ page_idset)(pns), ", ")
-    length(place_idset(pns)) > 0 && print(io, "places: ", (sort ∘ collect ∘ values ∘ place_idset)(pns), ", ")
-    length(transition_idset(pns)) > 0 && print(io, "transitions: ", (sort ∘ collect ∘ values ∘ transition_idset)(pns), ", ")
-    length(arc_idset(pns)) > 0 && print(io, "arcs: ", (sort ∘ collect ∘ values ∘ arc_idset)(pns), ", ")
-    length(refplace_idset(pns)) > 0 && print(io, "refplaces: ", (sort ∘ collect ∘ values ∘ refplace_idset)(pns), ", ")
-    length(reftransition_idset(pns)) > 0 && print(io, "refTransitions: ", (sort ∘ collect ∘ values ∘ reftransition_idset)(pns), ", ")
+    length(page_idset(pns)) > 0 &&
+        print(io, "pages: ", (sort ∘ collect ∘ values ∘ page_idset)(pns), ", ")
+    length(place_idset(pns)) > 0 &&
+        print(io, "places: ", (sort ∘ collect ∘ values ∘ place_idset)(pns), ", ")
+    length(transition_idset(pns)) > 0 &&
+        print(io, "transitions: ", (sort ∘ collect ∘ values ∘ transition_idset)(pns), ", ")
+    length(arc_idset(pns)) > 0 &&
+        print(io, "arcs: ", (sort ∘ collect ∘ values ∘ arc_idset)(pns), ", ")
+    length(refplace_idset(pns)) > 0 &&
+        print(io, "refplaces: ", (sort ∘ collect ∘ values ∘ refplace_idset)(pns), ", ")
+    length(reftransition_idset(pns)) > 0 &&
+        print(io, "refTransitions: ", (sort ∘ collect ∘ values ∘ reftransition_idset)(pns), ", ")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", pns::PnmlNetKeys)

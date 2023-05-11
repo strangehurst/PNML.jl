@@ -9,7 +9,20 @@ Concrete `Term`s are found within the <structure> element of a [`HLAnnotation`](
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
 """
 abstract type AbstractTerm end
+
+"""
+$(TYPEDEF)
+Part of the high-level pnml many-sorted algebra.
+"""
 abstract type AbstractOperator <: AbstractTerm end
+
+"""
+$(TYPEDEF)
+Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
+
+NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
+The pnml specification sometimes uses overlapping language.
+"""
 abstract type AbstractSort end
 
 _evaluate(x::AbstractTerm) = x() # functor

@@ -72,27 +72,33 @@ Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, ha!::HarvestAny)
-    println("harvest ", nodename(node)) #! debug
-    vec = Vector{Pair{Symbol,Any}}()
+    CONFIG.verbose && println("harvest ", nodename(node))
+    tup = NamedTuple()
     # Extract XML attributes. Register IDs as symbols.
     for a in eachattribute(node)
-        # ID attributes can appear in various places. Each is unique and added to the registry.
-        push!(vec, Symbol(a.name) => a.name == "id" ? register_id!(ha!.reg, a.content) : a.content)
+        # ID attributes can appear in various places.
+        # Each is unique, symbolized and added to the registry.
+        # Other names have unmodified content (some string) as the value.
+        val = a.name == "id" ? register_id!(ha!.reg, a.content) : a.content
+        tup = merge(tup, (; Symbol(a.name) => val))
     end
 
     # Extract children or content.
     if haselement(node)
         children = EzXML.elements(node)
-        _anyelement_content!(vec, children, ha!)
+        #!_anyelement_content!(vec, children, ha!)
+        tup = merge(tup, _anyelement_content(tup, children, ha!))
     elseif !isempty(EzXML.nodecontent(node))
         # <tag> </tag> will have nodecontent, though the whitespace is discarded.
-        push!(vec, :content => (strip ∘ EzXML.nodecontent)(node))
+        #!push!(vec, :content => (strip ∘ EzXML.nodecontent)(node))
+        tup = merge(tup, (; :content => (strip ∘ EzXML.nodecontent)(node)))
     else
         # <tag/> and <tag></tag> will not have any nodecontent.
-        push!(vec, :content => "")
+        #!push!(vec, :content => "")
+        tup = merge(tup, (; :content => ""))
     end
     # @show vec
-    return (; vec...)
+    return tup #(; vec...)
 end
 
 """
@@ -102,23 +108,26 @@ Apply `ha!` to each node in `nodes`.
 Return pairs Symbol => values that are vectors when there
 are multiple instances of a tag in `nodes` and scalar otherwise.
 """
-function _anyelement_content!(vec::Vector{Pair{Symbol,Any}},
-                              nodes::Vector{XMLNode},
-                              ha!::HarvestAny)
+function _anyelement_content(tup::NamedTuple,
+                             nodes::Vector{XMLNode},
+                             ha!::HarvestAny)::NamedTuple
 
-    namevec = [nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
-    tagnames = unique(map(first, namevec))
-    @show tagnames
+    namevec = Pair{String,XMLNode}[nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
+    tagnames::Vector{String} = unique(map(first, namevec))
+
+    CONFIG.verbose && @show tagnames
 
     for tagname in tagnames
-        tags = collect(filter((Fix2(===, tagname) ∘ first), namevec))
+        tags::Vector{Pair{String,XMLNode}} = collect(filter((Fix2(===, tagname) ∘ first), namevec))
         #tags = filter((Fix2(===, tagname) ∘ first), namevec)
         if length(tags) > 1
-            push!(vec,  Symbol(tagname) => [ha!(t.second) for t in tags]) # Now its a symbol.)
+            #!push!(vec,  Symbol(tagname) => NamedTuple[ha!(t.second) for t in tags]) # Now its a symbol.)
+            tup = merge(tup, (; Symbol(tagname) => NamedTuple[ha!(t.second) for t in tags])) # Now its a symbol.)
         else
-            push!(vec,  Symbol(tagname) => ha!(tags[1].second)) # Now its a symbol.)
+            #!push!(vec,  Symbol(tagname) => ha!(tags[1].second)::NamedTuple) # Now its a symbol.)
+            tup = merge(tup, (; Symbol(tagname) => ha!(tags[1].second)))# Now its a symbol.)
         end
     end
 
-    return nothing
+    return tup
 end

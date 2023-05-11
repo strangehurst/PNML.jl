@@ -50,6 +50,6 @@ function Base.append!(l::ObjectCommon, r::ObjectCommon)
     #! if !has_name(l);     l.name     = r.name; end
     #! if !has_graphics(l); l.graphics = r.graphics; end
 
-    update_maybe!(l, r, :tools)
-    update_maybe!(l, r, :labels)
+    _update_maybe!(l, r, :tools)
+    _update_maybe!(l, r, :labels)
 end

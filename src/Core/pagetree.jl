@@ -41,7 +41,7 @@ function pagetree(n::Union{PnmlNet, Page}, inc = 0)
         if sp in page_keys
             pagetree(n.pagedict[sp], inc+1)
         else
-            msg = """id $sp not in page collection with keys: $page_keys"""
+            msg = lazy"""id $sp not in page collection with keys: $page_keys"""
             throw(ArgumentError(msg))
         end
     end

@@ -22,7 +22,7 @@ true
 julia> PNML.save_config!(PNML.CONFIG) # Will be automatically read next time you `using PNML`
 ```
 """
-function save_config!(config::PnmlConfig=CONFIG)
+function save_config!(config::PnmlConfig = CONFIG)
     @set_preferences!(
         "indent_width" => config.indent_width,
         "warn_on_namespace" => config.warn_on_namespace,

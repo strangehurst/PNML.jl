@@ -11,9 +11,9 @@ with [`deref!`](@ref).
 function flatten_pages! end
 flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
 
-function flatten_pages!(net::PnmlNet)
+function flatten_pages!(net::PnmlNet, trim::Bool = true, verbose::Bool = false)
     CONFIG.verbose &&
-        println("\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
+        println(lazy"\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
     if length(net.pagedict) > 1
         # TODO Check for illegal intra-page references?
         # Place content of other pages into 1st page.
@@ -38,14 +38,13 @@ function flatten_pages!(net::PnmlNet)
         @assert !isempty(net.pagedict)
         @assert key1 ∈ pageids
 
-        @show (sort ∘ collect ∘ reftransition_idset)(net)
-        @show (sort ∘ collect ∘ refplace_idset)(net)
-        println("============")
-        deref!(net)
-        println("============")
-        @show (sort ∘ collect ∘ reftransition_idset)(net)
-        @show (sort ∘ collect ∘ refplace_idset)(net)
-
+        #@show (sort ∘ collect ∘ reftransition_idset)(net)
+        #@show (sort ∘ collect ∘ refplace_idset)(net)
+        #println("============")
+        deref!(net), trim
+        #println("============")
+        #@show (sort ∘ collect ∘ reftransition_idset)(net)
+        #@show (sort ∘ collect ∘ refplace_idset)(net)
     end
 
     return net
@@ -68,7 +67,7 @@ function append_page!(l::Page, r::Page;
     end
 
     for k in keys
-        update_maybe!(getproperty(l, k), getproperty(r, k))
+        _update_maybe!(getproperty(l, k), getproperty(r, k))
     end
 
     # Merge netsets except for page_idset
@@ -78,12 +77,12 @@ function append_page!(l::Page, r::Page;
 
     # Optional fields from common to append.
     for key in comk
-        update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
+        _update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
     end
 
     delete!(page_idset(l), pid(r))
 
-    println("after append_page! netsets(r) = ", netsets(r))
+    CONFIG.verbose && println("after append_page! netsets(r) = ", netsets(r))
 
     #! Verify netsets
     return l
@@ -96,7 +95,7 @@ end
 # the merged page's field could replace an optional field of the first page.
 # Implemented by testing lhs.key for nothing. This works because anything else is assumed
 # to be appendable.
-function update_maybe!(l, r, key::Symbol)
+function _update_maybe!(l, r, key::Symbol)
     if !isnothing(getproperty(r, key))
         if isnothing(getproperty(l, key))
             setproperty!(l, key, getproperty(r, key))
@@ -107,7 +106,7 @@ function update_maybe!(l, r, key::Symbol)
 end
 
 # See above.
-function update_maybe!(l, r)
+function _update_maybe!(l, r)
     if !isnothing(r)
         if isnothing(l)
             l = r
@@ -126,87 +125,73 @@ Operates on the [`PnmlNetData`](@ref) at the net level.
 Expects that the [`PnmlNetKeys`](@ref) of the firstpage will have to be cleaned
 as part of [`flatten_pages!`](@ref),
 
-# Axiomsof
+# Axioms
   1) All ids in a network are unique in that they only have one instance in the XML.
   2) A chain of reference Places or Transitions always ends at a Place or Transition.
   3) All ids are valid.
   4) No cycles.
 """
-function deref!(net::PnmlNet) #!page::Page)
-    @show "deref! net $(pid(net))"
+function deref!(net::PnmlNet, trim::Bool = true)
+    CONFIG.verbose && @show "deref! net $(pid(net))"
     for id in arc_idset(net)
         arc = PNML.arc(net, id)
-        @show arc.source arc.target
         while arc.source ∈ refplace_idset(net)
-            s = deref_place(net, arc.source)
-            arc.source =  s
-            @show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
+            arc.source = deref_place(net, arc.source, trim)
         end
         while arc.target ∈ refplace_idset(net)
-            t = deref_place(net, arc.target)
-            arc.target = t
-            @show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
+            arc.target = deref_place(net, arc.target, trim)
         end
         while arc.source ∈ reftransition_idset(net)
-            s = deref_transition(net, arc.source)
-            arc.source = s
-            @show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
+            arc.source = deref_transition(net, arc.source, trim)
         end
         while arc.target ∈ reftransition_idset(net)
-            t = deref_transition(net, arc.target)
-            arc.target = t
-            @show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
+            arc.target = deref_transition(net, arc.target, trim)
         end
     end
-    # Remove reference node idsets for this page.
-    # Nodes still exist in `netdata` and can be accesses at `PnmlNet` level.
-    empty!(refplace_idset(firstpage(net)))
-    empty!(reftransition_idset(firstpage(net)))
+    if trim
+        # Remove any reference node idsets from the only remaining page after flattening.
+        empty!(refplace_idset(firstpage(net)))
+        empty!(reftransition_idset(firstpage(net)))
+    end
     return net
 end
 
 """
-    deref_place(net, id) -> Symbol
+    deref_place(net, id[, trim] ) -> Symbol
 
-Return id of referenced place.
+Return id of referenced place. If trim is true (default) the reference is removed.
 """
-deref_place(net::PnmlNet, id::Symbol)::Symbol = begin
-    CONFIG.verbose && println("deref_place net $(pid(net)) $id")
-    rp = refplace(net, id) #!
-    if isnothing(rp) # Something is really, really wrong.,
-        error("failed to lookup reference place id $id in net $(pid(net))")
+deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol = begin
+    CONFIG.verbose && println(lazy"deref_place net $(pid(net)) $id")
+    has_refP(net, id) || error(lazy"expected refP $id")
+    rp = refplace(net, id)
+    if isnothing(rp) # Something is really, really wrong.
+        error(lazy"failed to lookup reference place id $id in net $(pid(net))")
     end
-    # Remove from reftransition_idset reftransitiondict.
-    #@show (sort ∘ collect ∘ values ∘ reftransition_idset)(net)
-    #delete!(reftransition_idset(net), id)
-    #@show (sort ∘ collect ∘ values ∘ reftransition_idset)(net)
-
-    #@show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
-    has_refP(net, id) || error("expected refP $id")
-    delete!(refplacedict(net), id)
-    #@show (sort ∘ collect ∘ keys ∘ refplacedict)(net)
-    has_refP(net, id) && error("did not expect refP $id")
     @assert has_place(net, rp.ref)
+    if trim #! Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
+        delete!(refplacedict(net), id)
+        has_refP(net, id) && error(lazy"did not expect refP $id")
+    end
     return rp.ref
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return id of referenced transition.
+Return id of referenced transition. If trim is true (default) the reference is removed.
 """
-function deref_transition(net::PnmlNet, id::Symbol)::Symbol
-    CONFIG.verbose && println("deref_transition net $(pid(net)) id $id")
+function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
+    CONFIG.verbose && println(lazy"deref_transition net $(pid(net)) id $id")
+    has_refT(net, id) || error(lazy"expected refT $id")
     rt = reftransition(net, id)
     if isnothing(rt) # Something is really, really wrong.
-        error("failed to lookup reference transition id $id in net $(pid(net))")
+        error(lazy"failed to lookup reference transition id $id in net $(pid(net))")
     end
-     # Remove from refplace_idset refplacedict.
-     #@show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
-     has_refT(net, id) || error("expected refT $id")
-     delete!(reftransitiondict(net), id)
-     #@show (sort ∘ collect ∘ keys ∘ reftransitiondict)(net)
-     has_refT(net, id) && error("did not expect refT $id")
-     @assert has_transition(net, rt.ref)
+    @assert has_transition(net, rt.ref)
+    if trim #! Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
+        delete!(reftransitiondict(net), id)
+        has_refT(net, id) && error(lazy"did not expect refT $id")
+    end
     return rt.ref
 end

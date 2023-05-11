@@ -19,7 +19,7 @@ end
 
 function Place(pntd::PnmlType, id::Symbol, initMarking, sort,
                name::Maybe{Name}, oc::ObjectCommon)
-    initmark = isnothing(initMarking) ? default_marking(pntd) : initMarking
+    initmark = something(initMarking, default_marking(pntd))
     Place{typeof(pntd),
           typeof(initmark),
           typeof(sort)}(pntd, id, initmark, initmark, sort, name, oc)
@@ -46,7 +46,7 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     com::ObjectCommon
 
     function Transition(pntd, i, c, n, com)
-        condition = isnothing(c) ? default_condition(pntd) : c
+        condition = something(c, default_condition(pntd))
         new{typeof(pntd), typeof(condition)}(pntd, i, condition, n, com)
     end
 end
@@ -74,7 +74,7 @@ mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
     com::ObjectCommon
 
     function Arc(pntd, i, src, tgt, ins, n, c)
-        inscript = isnothing(ins) ? default_inscription(pntd) : ins
+        inscript = something(ins, default_inscription(pntd))
         new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, c)
     end
 end

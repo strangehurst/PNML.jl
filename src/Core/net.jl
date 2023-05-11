@@ -63,7 +63,7 @@ pid(net::PnmlNet)  = net.id
 
 pagedict(n::PnmlNet) = n.pagedict
 netdata(n::PnmlNet)  = n.netdata
-netsets(n::PnmlNet)  = error("PnmlNet does not have a PnmlKeySet")
+netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet")
 page_idset(n::PnmlNet)  = n.page_set
 
 # `pagedist` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages
