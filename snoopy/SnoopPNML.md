@@ -40,7 +40,7 @@ julia> @code_warntype PNML.all_arcs(n, :a11)
 julia> @code_warntype PNML.arc(n, :a11)
 
 julia> @code_warntype PNML.idregistry(m)
-julia> @code_warntype PNML.isregistered_id(PNML.idregistry(m), :a11)
+julia> @code_warntype PNML.isregistered(PNML.idregistry(m), :a11)
 ```
 
 An example of the minimal non-empty pnml model. The parser will still throw a `MalformedException` because there are no <net> elements.

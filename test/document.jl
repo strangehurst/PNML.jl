@@ -40,7 +40,7 @@ end
     </pnml>
     """
     reg = registry()
-    @test !isregistered_id(reg, :net)
+    @test !isregistered(reg, :net)
     @test :net ∉ reg.ids
 
     parse_pnml(xmlroot(str), reg)
@@ -48,7 +48,7 @@ end
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
     #@show reg
 
-    @test isregistered_id(reg, :net)
+    @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end
 

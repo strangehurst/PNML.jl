@@ -6,7 +6,7 @@ module PnmlIDRegistrys
 using DocStringExtensions
 using Base: @kwdef
 #using Base.Threads
-export PnmlIDRegistry, register_id!, isregistered_id, registry
+export PnmlIDRegistry, register_id!, isregistered, registry
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -33,8 +33,8 @@ function Base.show(io::IO, idregistry::PnmlIDRegistry)
     # , " duplicate action: ", nameof(idregistry.duplicate))
 end
 
-duplicate_id_warn(id::Symbol)  = @warn( "ID already registered: $id")
-duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
+duplicate_id_warn(id::Symbol)  = @warn(lazy"ID already registered: $id")
+duplicate_id_error(id::Symbol) = throw(ArgumentError(lazy"ID already registered: $id"))
 duplicate_id_none(_::Symbol)  = nothing
 
 Base.Enums.@enum DuplicateActions none warn error
@@ -61,8 +61,8 @@ $(TYPEDSIGNATURES)
 
 Return `true` if `s` is registered in `reg`.
 """
-isregistered_id(reg::PnmlIDRegistry, s::AbstractString) = isregistered_id(reg, Symbol(s))
-function isregistered_id(idregistry::PnmlIDRegistry, id::Symbol)::Bool
+isregistered(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+function isregistered(idregistry::PnmlIDRegistry, id::Symbol)::Bool
     @nospecialize
     lock(idregistry.lk) do
         id ∈ idregistry.ids

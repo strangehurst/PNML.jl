@@ -218,16 +218,17 @@ function test_unclaimed(xmlstring::String)#, funk::NamedTuple)
     @test u.second isa NamedTuple
     @test l.elements isa NamedTuple
     @test a.elements isa NamedTuple
-    haskey(u.second, :id) && @test isregistered_id(reg1, u.second[:id])
-    haskey(l.elements, :id) && @test isregistered_id(reg1, l.elements[:id])
-    haskey(a.elements, :id) && @test isregistered_id(reg2, a.elements[:id])
-    #@report_opt isregistered_id(reg2, :id)
-    @test_call isregistered_id(reg2, :id)
+    haskey(u.second, :id) && @test isregistered(reg1, u.second[:id])
+    haskey(l.elements, :id) && @test isregistered(reg1, l.elements[:id])
+    haskey(a.elements, :id) && @test isregistered(reg2, a.elements[:id])
+    #@report_opt isregistered(reg2, :id)
+    @test_call isregistered(reg2, :id)
 
     return l, a
 end
 ntd(t) = Dict(zip(keys(t), values(t)))
 
+"Compare tuples."
 function cmptup(tup, val)
     @assert tup isa NamedTuple
     @assert val isa NamedTuple
@@ -286,7 +287,8 @@ end
         ("""<empty> </empty>""", (; :content => "")),
         # empty content, with attribute
         ("""<empty at="empty"> </empty>""", (; :content => "", :at => "empty")),
-        ("""<foo id="testid"/>""", (; :id => :testid)),
+        ("""<foo id="testid1" />""", (; :id => :testid1, :content => "")),
+        ("""<foo id="testid2"/>""", (; :id => :testid2, :content => "")),
     ]
 
     for (s, funk) in ctrl

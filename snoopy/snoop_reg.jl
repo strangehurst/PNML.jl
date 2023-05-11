@@ -8,8 +8,8 @@ invalidations = @snoopr begin
         reg = registry()
         register_id!(reg, :p)
         register_id!(reg, :p)
-        !isregistered_id(reg, "p")
-        !isregistered_id(reg, :p)
+        !isregistered(reg, "p")
+        !isregistered(reg, :p)
     end
 end
 
