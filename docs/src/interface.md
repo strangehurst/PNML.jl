@@ -307,32 +307,34 @@ methods(PNML.refplace)  # hide
 methods(PNML.reftransition)  # hide
 ```
 
-## Node ID Vector
+## Node ID Iteratables
 
-### place\_ids
-[`PNML.place_ids`](@ref)
+Better to iterate than allocate. Using a set abstraction that iterates consistently, perhaps in insertion order.
+
+### place\_idset
+[`PNML.place_idset`](@ref)
 ```@example methods
-methods(PNML.place_ids)  # hide
+methods(PNML.place_idset)  # hide
 ```
-### transition\_ids
-[`PNML.transition_ids`](@ref)
+### transition\_idset
+[`PNML.transition_idset`](@ref)
 ```@example methods
-methods(PNML.transition_ids)  # hide
+methods(PNML.transition_idset)  # hide
 ```
-### arc\_ids
-[`PNML.arc_ids`](@ref)
+### arc\_idset
+[`PNML.arc_idset`](@ref)
 ```@example methods
-methods(PNML.arc_ids)  # hide
+methods(PNML.arc_idset)  # hide
 ```
-### refplace\_ids
-[`PNML.refplace_ids`](@ref)
+### refplace\_idset
+[`PNML.refplace_idset`](@ref)
 ```@example methods
-methods(PNML.refplace_ids)  # hide
+methods(PNML.refplace_idset)  # hide
 ```
-### reftransition\_ids
-[`PNML.reftransition_ids`](@ref)
+### reftransition\_idset
+[`PNML.reftransition_idset`](@ref)
 ```@example methods
-methods(PNML.reftransition_ids)  # hide
+methods(PNML.reftransition_idset)  # hide
 ```
 
 ## Arc Related
