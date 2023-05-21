@@ -79,50 +79,6 @@ function has_toolinfo(v::Vector{<:NamedTuple},
     end
 end
 
-"""
-Return first toolinfo having a matching toolname and version.
-"""
-function get_toolinfo end
-
-get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo(ti, Regex(name))
-get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) =
-    get_toolinfo(ti, Regex(name), Regex(version))
-get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
-    get_toolinfo(ti, Regex(name),  versionrex)
-get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
-    get_toolinfo([ti], namerex, versionrex)
-
-get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, version::AbstractString) =
-    get_toolinfo(v, Regex(name), Regex(version))
-get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, versionrex::Regex) =
-    get_toolinfo(v, Regex(name), versionrex)
-
-function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    first(get_toolinfos(v, namerex, versionrex))
-end
-
-function get_toolinfos(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    filter(ti -> _match(ti, namerex, versionrex), v)
-end
-
-"""
-    _match(ti::ToolInfo, name::AbstractString)
-    _match(ti::ToolInfo, name::String, version::String)
-    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex)
-
-Match toolname and version. Default is any version.
-"""
-function _match end
-_match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
-_match(ti::ToolInfo, name::AbstractString, version::AbstractString) = _match(ti.inf, Regex(name), Regex(version))
-
-function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
-    #@show "match toolinfo $namerex, $versionrex"
-    match_name = match(namerex, name(ti))
-    match_version = match(versionrex, version(ti))
-    !isnothing(match_name) && !isnothing(match_version)
-end
-
 #---------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
@@ -177,19 +133,19 @@ Return updated tuple accumulating pnml object labels.
 function parse_pnml_object_common(tup0::NamedTuple, node::XMLNode, pntd::PnmlType, idreg::PnmlIDRegistry)
     tup = (; tup0...)
     tag = EzXML.nodename(node)
-    if tag == "name" # Pnml objects have names but labels do not.
-        tup = merge(tup, (; :name => parse_name(node, pntd, idreg)))
-    elseif tag == "graphics"
-        tup = merge(tup, (; :graphics => parse_graphics(node, pntd, idreg)))
-    elseif tag == "toolspecific"
+    # if tag == "name" # Pnml objects have names but labels do not.
+    #     tup = merge(tup, (; :name => parse_name(node, pntd, idreg)))
+    # elseif tag == "graphics"
+    #     tup = merge(tup, (; :graphics => parse_graphics(node, pntd, idreg)))
+    # else
+    if tag == "toolspecific"
         tup = add_toolinfo!(tup, node, pntd, idreg) #! make/add collection
     else
         # Note that here "labels" are the "everything else" option.
         # Should be consumed before/instead of being treated as an anonymous label.
         tup = add_label!(tup, node, pntd, idreg) #! make/add collection
     end
-    #! noisy println("return from parse_pnml_object_common tup = ", tup)
-    return tup
+    return tup #! TODO make return ObjectCommon
 end
 
 """
@@ -197,6 +153,8 @@ $(TYPEDSIGNATURES)
 
 Update tuple with label of a pnml object.
 """
+#function parse_pnml_label_common(node, pntd, reg)
+#    tup = NamedTuple() #merge(tup, (tuplekind = "label",))  # start with a visual aid
 function parse_pnml_label_common(tup::NamedTuple, node, pntd, reg)::NamedTuple
     tup = merge(tup, (tuplekind = "label",))  # start with a visual aid
     tag = EzXML.nodename(node)
@@ -211,7 +169,7 @@ function parse_pnml_label_common(tup::NamedTuple, node, pntd, reg)::NamedTuple
         g = parse_graphics(node, pntd, reg)
         tup = merge(tup, (graphics = g,))
     elseif tag == "toolspecific"
-        tup = add_toolinfo!(tup, node, pntd, reg)
+        tup = add_toolinfo!(tup, node, pntd, reg) #! Add tool to collections
     end
     #@show tup
     return tup
@@ -221,7 +179,7 @@ end
 """
 Parse string as a number. First try integer then float.
 """
-function number_value(::Type{T}, s::AbstractString) where {T <: Number}
+function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     x = tryparse(T, s)
     isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
     return x
