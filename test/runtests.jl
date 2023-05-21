@@ -44,17 +44,17 @@ end
 end
 
 UNDER_CI = (get(ENV, "CI", nothing) == "true")
-
+const noisy::Bool = false
 @testset verbose=true failfast=true showtiming=true "PNML.jl" begin
 #@testset verbose=true "PNML.jl" begin
     if select("ALL", "BASE")
-        println("BASE")
+        noisy && println("BASE")
         @time "typedefs" @safetestset "typedefs"  begin include("typedefs.jl") end
         @time "registry" @safetestset "registry"  begin include("idregistry.jl") end
         @time "utils"    @safetestset "utils"     begin include("utils.jl") end
     end
     if select("ALL", "CORE")
-        println("CORE")
+        noisy && println("CORE")
         @time "labels"       @safetestset "labels"       begin include("labels.jl") end
         @time "nodes"        @safetestset "nodes"        begin include("nodes.jl") end
         @time "pages"        @safetestset "pages"        begin include("pages.jl") end
@@ -64,18 +64,18 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
         @time "toolspecific" @safetestset "toolspecific" begin include("toolspecific.jl") end
     end
     if select("ALL", "HIGHLEVEL")
-        println("HIGHLEVEL")
+        noisy && println("HIGHLEVEL")
         @time "declarations" @safetestset "declarations" begin include("declarations.jl") end
         @time "labels_hl"    @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select("ALL", "PARSE") # Overall full flow test
-        println("PARSE")
+        noisy && println("PARSE")
         @time "document"  @safetestset "document"     begin include("document.jl") end
         @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("ALL", "NET")
-        println("NET")
+        noisy && println("NET")
         @time "rate"      @safetestset "rate"         begin include("rate.jl") end
         @time "simplenet" @safetestset "simplenet"    begin include("simplenet.jl") end
     end

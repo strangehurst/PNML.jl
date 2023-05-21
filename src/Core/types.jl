@@ -39,25 +39,14 @@ pid(o::AbstractPnmlObject)        = o.id
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
 xmlnode(o::AbstractPnmlObject)    = has_xml(o) ? o.xml : nothing
+
 has_labels(o::AbstractPnmlObject) = has_labels(o.com)
-labels(o::AbstractPnmlObject)     = labels(o.com)
+labels(o::AbstractPnmlObject)     = labels(o.com) # Iteratable required
 
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
-    if has_labels(o)
-        l = labels(o)
-        l !== nothing ? has_label(l, tagvalue) : false
-    else
-        false
-    end
-get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
-    if has_labels(o)
-        l = labels(o)
-        l !== nothing ? get_label(l, tagvalue) : nothing
-    else
-        nothing
-    end
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && has_label(labels(o), tagvalue)
+get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
 
-has_tools(o::AbstractPnmlObject) = has_tools(o.com) && !isnothing(tools(o.com))
+has_tools(o::AbstractPnmlObject) = has_tools(o.com)
 tools(o::AbstractPnmlObject)     = tools(o.com)
 #TODO has_tool, get_tool
 

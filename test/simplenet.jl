@@ -99,12 +99,12 @@ testlogger = TestLogger()
 
     for top in [first(pages(net.net)), net.net, net]
         #println()
-        @show typeof(top)
+        #@show typeof(top)
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
 
         for placeid in place_idset(top)
-            println("place ", placeid)
+            #println("place ", placeid)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)

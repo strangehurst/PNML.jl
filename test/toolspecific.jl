@@ -77,7 +77,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         end
     end
     @testset "combined" begin
-        println("combined toolinfos")
+        #println("combined toolinfos")
         str = """<place id="place0">
         $(str1.str)
         $(str2.str)
@@ -90,9 +90,9 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         #println()
         n::XMLNode = xmlroot(str)
         p0 = parse_place(n, PnmlCoreNet(), registry())
-        println()
-        @show typeof(p0)
-        println(p0)
+        #println()
+        #@show typeof(p0)
+        #println(p0)
         @test has_tools(p0)
         @test_call has_tools(p0)
         t = tools(p0)

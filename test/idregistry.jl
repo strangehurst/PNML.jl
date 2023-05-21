@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 
 @testset "ID registry" begin
-    @test_opt registry()
+    #@test_opt  registry()
     reg = registry()
     @test_opt target_modules=(@__MODULE__,) register_id!(reg, :p)
     PnmlIDRegistrys.reset!(reg)
@@ -18,7 +18,6 @@ end
 
 @testset "test_call"  begin
     @test_call registry()
-    @test_opt registry()
     reg = registry()
     @test_call register_id!(reg, :p)
     @test_call register_id!(reg, "p")

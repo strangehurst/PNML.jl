@@ -7,12 +7,6 @@ Label of a Transition that determines when the transition fires.
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
-julia> c = Condition(PnmlCoreNet())
-Condition(nothing, true, )
-
-julia> c()
-true
-
 julia> c = Condition(PnmlCoreNet(), false)
 Condition(nothing, false, )
 
@@ -25,20 +19,15 @@ Condition("xx", false, )
 julia> c()
 false
 ```
+#TODO Add high-level
 """
-mutable struct Condition{PNTD,T} <: Annotation
+mutable struct Condition{PNTD, T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
     value::T
     com::ObjectCommon
-
-    function Condition(pntd, t, v, c)
-        val = something(v, true)
-        new{typeof(pntd), typeof(val)}(pntd, t, val, c)
-    end
 end
 
-Condition(pntd) = Condition(pntd, nothing, true, ObjectCommon())
 Condition(pntd, value) = Condition(pntd, nothing, value, ObjectCommon())
 Condition(pntd, text::AbstractString, value) = Condition(pntd, text, value, ObjectCommon())
 
@@ -52,7 +41,7 @@ Evaluate a [`Condition`](@ref) instance.
 (c::Condition)() = _evaluate(value(c))
 
 condition_type(::Type{T}) where {T <: PnmlType} = Condition{T, Bool}
-condition_type(::Type{T}) where {T<:AbstractHLCore} = Condition{T, Term}
+condition_type(::Type{T}) where {T <: AbstractHLCore} = Condition{T, Term}
 
 condition_value_type(::Type{T}) where {T <: PnmlType} = Bool
-condition_value_type(::Type{T}) where {T<:AbstractHLCore} = Bool
+condition_value_type(::Type{T}) where {T <: AbstractHLCore} = Term

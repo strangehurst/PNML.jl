@@ -29,24 +29,17 @@ function flatten_pages!(net::PnmlNet, trim::Bool = true, verbose::Bool = false)
             cutid, cutpage = popfirst!(net.pagedict)
             @assert cutid ∉ pageids
             append_page!(val1, cutpage)
-            delete!(page_idset(net), cutid) #! remove from set of page ids owned
+            delete!(page_idset(net), cutid) # remove from set of page ids owned
         end
         @assert isempty(net.pagedict)
 
         pagedict(net)[key1] = val1 # Put the one-true-page back in the dictionary.
-        push!(page_idset(net), key1) #! add the collected page (netsets updated)
+        push!(page_idset(net), key1)
         @assert !isempty(net.pagedict)
         @assert key1 ∈ pageids
 
-        #@show (sort ∘ collect ∘ reftransition_idset)(net)
-        #@show (sort ∘ collect ∘ refplace_idset)(net)
-        #println("============")
         deref!(net), trim
-        #println("============")
-        #@show (sort ∘ collect ∘ reftransition_idset)(net)
-        #@show (sort ∘ collect ∘ refplace_idset)(net)
     end
-
     return net
 end
 

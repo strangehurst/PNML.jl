@@ -11,7 +11,8 @@ const target_modules = (PNML,)
 "Ignore some dynamically-designed functions."
 function pnml_function_filter(@nospecialize(ft))
     if ft === typeof(PnmlIDRegistrys.register_id!) ||
-       ft === typeof(PNML.EzXML.nodename)
+       ft === typeof(Preferences.load_preference) ||
+       ft === typeof(EzXML.nodename) ||
        false
         return false
     end

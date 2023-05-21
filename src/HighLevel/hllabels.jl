@@ -14,7 +14,7 @@ Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
 struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
-    com::ObjectCommon
+    com::ObjectCommon #! why do hl labels have a common?
     xml::XMLNode
     #TODO validate in constructor: must have text or structure (depends on pntd?)
 end

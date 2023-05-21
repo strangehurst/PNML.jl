@@ -16,9 +16,10 @@ using PNML:
     currentMarkings,
     netsets, netdata, page_idset, pagedict
 
+const noisy::Bool = false
 
 function verify_sets(net::PnmlNet)
-    println("\nverify sets and structure ++++++++++++++++++++++")
+    #println("\nverify sets and structure ++++++++++++++++++++++")
     @test typeof(page_idset(net))  == typeof(page_idset(firstpage(net)))
     @test typeof(arc_idset(net))  == typeof(arc_idset(firstpage(net)))
     @test typeof(place_idset(net)) == typeof(place_idset(firstpage(net)))
@@ -26,56 +27,56 @@ function verify_sets(net::PnmlNet)
     @test typeof(refplace_idset(net))  == typeof(refplace_idset(firstpage(net)))
     @test typeof(reftransition_idset(net)) ==  typeof(reftransition_idset(firstpage(net)))
 
-    @show arc_idset(net)
-    @show place_idset(net)
-    @show transition_idset(net)
-    @show refplace_idset(net)
-    @show reftransition_idset(net)
-    println()
+    #@show arc_idset(net)
+    #@show place_idset(net)
+    #@show transition_idset(net)
+    #@show refplace_idset(net)
+    #@show reftransition_idset(net)
+    #println()
 
-    @show arc_idset(firstpage(net))
-    @show place_idset(firstpage(net))
-    @show transition_idset(firstpage(net))
-    @show refplace_idset(firstpage(net))
-    @show reftransition_idset(firstpage(net))
-    println()
+    #@show arc_idset(firstpage(net))
+    #@show place_idset(firstpage(net))
+    #@show transition_idset(firstpage(net))
+    #@show refplace_idset(firstpage(net))
+    #@show reftransition_idset(firstpage(net))
+    #println()
 
-    @show netdata(net)
-    @show netdata(firstpage(net))
+    #@show netdata(net)
+    #@show netdata(firstpage(net))
     @test netdata(net) === netdata(firstpage(net))
-    println()
+    #println()
 
     #@show netsets(net)
-    @show pid(firstpage(net))
-    @show netsets(firstpage(net))
-    println()
+    #@show pid(firstpage(net))
+    #@show netsets(firstpage(net))
+    #println()
 
     for page in pages(net)
-        @show pid(page)
-        @show netsets(page)
+        #@show pid(page)
+        #@show netsets(page)
         @test netdata(net) === netdata(page)
     end
-    println()
+    #println()
 
     for pageid in PNML.page_idset(net)
-        @show pageid
-        @show netsets(pagedict(net)[pageid])
-        @show netdata(pagedict(net)[pageid])
+        #@show pageid
+        #@show netsets(pagedict(net)[pageid])
+        #@show netdata(pagedict(net)[pageid])
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
-    println()
+    #println()
 
     # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
     # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
-    @show typeof(arc_idset(net))
-    println()
-    for page in pages(net)
-        @show pid(page) (typeof ∘ values ∘ arc_idset)(page)  #(collect ∘ values ∘ arc_idset)(page)
-    end
-    println()
-    @show arc_idset(net)
-    @show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
-    println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+    #@show typeof(arc_idset(net))
+    #println()
+    #for page in pages(net)
+    #    @show pid(page) (typeof ∘ values ∘ arc_idset)(page)  #(collect ∘ values ∘ arc_idset)(page)
+    #end
+    #println()
+    #@show arc_idset(net)
+    #@show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
+    #println("+++++++++++++++++++++++++++++++++++++++++++++++++")
 end
 
 @testset "pages" begin
@@ -131,18 +132,18 @@ end
     """
     model = @inferred parse_str(str)
     #@show typeof(model)
-    @show typeof(nets(model))
+    #@show typeof(nets(model))
     net = first_net(model) # The nets of a model not inferred.
 
     @test net isa PnmlNet
-    @show typeof(firstpage(net))
+    #@show typeof(firstpage(net))
     @test @inferred(firstpage(net)) isa Page
 
-    println()
-    PNML.pagetree(net)
-    println()
-    AbstractTrees.print_tree(net)
-    println()
+    #println()
+    #PNML.pagetree(net)
+    #println()
+    #AbstractTrees.print_tree(net)
+    #println()
 
     verify_sets(net)
     # @show arc_idset(net)
@@ -289,16 +290,16 @@ end
     @test refplaces(net) !== nothing
     @test reftransitions(net) !== nothing
 
-    println("---------------")
-    @show (collect ∘ values ∘ page_idset)(net)
-    println("---------------")
+    noisy && println("---------------")
+    noisy && @show (collect ∘ values ∘ page_idset)(net)
+    noisy && println("---------------")
 
     @testset "flatten" begin
         @inferred flatten_pages!(net)
-        println("---------------")
-        @show netsets(firstpage(net))
-        @show netdata(net)
-        println("---------------")
+        #println("---------------")
+        #@show netsets(firstpage(net))
+        #@show netdata(net)
+        #println("---------------")
 
         expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
         expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
@@ -307,12 +308,12 @@ end
         expected_rp = [] # removed by flatten
 
 
-        println()
-        @show (collect ∘ values ∘ page_idset)(net)
-        AbstractTrees.print_tree(net)
-        println()
-        PNML.pagetree(net)
-        println()
+        noisy && println()
+        #@show (collect ∘ values ∘ page_idset)(net)
+        noisy && AbstractTrees.print_tree(net)
+        noisy && println()
+        noisy && PNML.pagetree(net)
+        noisy && println()
 
         @test (sort ∘ collect)(arc_idset(net)) == expected_a
         @test (sort ∘ collect)(arc_idset(firstpage(net))) == expected_a
@@ -345,9 +346,9 @@ end
         end
 
         # After flatten reference nodes remain in the netdata dictonary.
-        @show (sort ∘ collect)(reftransition_idset(net)) (
-        @show sort ∘ collect)(reftransition_idset(firstpage(net)))
-        @show expected_rt
+        #@show (sort ∘ collect)(reftransition_idset(net)) (
+        #@show sort ∘ collect)(reftransition_idset(firstpage(net)))
+        #@show expected_rt
 
         @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
         @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt

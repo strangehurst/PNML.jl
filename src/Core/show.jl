@@ -157,7 +157,7 @@ end
 function Base.show(io::IO, name::Name)
     print(io, typeof(name), " '", name.text, "'")
     isnothing(name.graphics) || print(io, ", has graphics")
-    isnothing(name.tools)    || print(io, ", ", length(name.tools), " tool info")
+    isempty(name.tools)    || print(io, ", ", length(name.tools), " tool info")
 end
 function Base.show(io::IO, ::MIME"text/plain", name::Name)
     print(io, name)
@@ -168,8 +168,8 @@ Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
 function Base.summary(oc::ObjectCommon)
     string(", ",
             has_graphics(oc) ? "with " : "no ", " graphics, ",
-            has_tools(oc) ? length(oc.tools) : 0,  " tools, ",
-            has_labels(oc) ? length(oc.labels) : 0, " labels")
+            length(oc.tools), " tools, ",
+            length(oc.labels), " labels")
 end
 
 function Base.show(io::IO, oc::ObjectCommon)

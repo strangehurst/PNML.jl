@@ -12,13 +12,14 @@ struct Coordinate{T}
     y::T
 end
 
-Coordinate{T}() where {T <: Union{Int,Float64}} = Coordinate(zero(T), zero(T))
-Coordinate(x::T) where {T <: Union{Int,Float64}} = Coordinate(x, zero(x))
+Coordinate{T}() where {T <: Union{ Int,Float64}} = Coordinate{T}(zero(T), zero(T))
+#Coordinate(x::T) where {T <: Union{Int,Float64}} = Coordinate(x, zero(x))
 #Coordinate(x::T, y::T) where {T <: Union{Int,Float64}} = Coordinate(x, y)
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
 coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
 coordinate_value_type(::Type{T}) where {T <: AbstractContinuousNet} = Float64
+eltype(::Coordinate{T}) where {T <: Union{Int, Float64}} = T
 
 #-------------------
 """
@@ -28,14 +29,11 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Fill
-    color::Maybe{String} = nothing
-    image::Maybe{String} = nothing
-    gradient_color::Maybe{String} = nothing
-    gradient_rotation::Maybe{String} = nothing
+    color::String = ""
+    image::String = ""
+    gradient_color::String = ""
+    gradient_rotation::String = ""
 end
-#function Fill(; color=nothing, image=nothing, gradient_color=nothing, gradient_rotation=nothing)
-#    Fill(color, image, gradient_color, gradient_rotation )
-#end
 
 #-------------------
 """
@@ -45,18 +43,14 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Font
-    family    ::Maybe{String} = nothing
-    style     ::Maybe{String} = nothing
-    weight    ::Maybe{String} = nothing
-    size      ::Maybe{String} = nothing
-    align     ::Maybe{String} = nothing
-    rotation  ::Maybe{String} = nothing
-    decoration::Maybe{String} = nothing
+    family    ::String = ""
+    style     ::String = ""
+    weight    ::String = ""
+    size      ::String = ""
+    align     ::String = ""
+    rotation  ::String = ""
+    decoration::String = ""
 end
-#function Font(; family=nothing, style=nothing, weight=nothing,
-#              size=nothing, align=nothing, rotation=nothing, decoration=nothing)
-#    Font(family, style, weight, size, align, rotation, decoration)
-#end
 
 #-------------------
 """
@@ -66,14 +60,11 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Line
-    color::Maybe{String} = nothing
-    shape::Maybe{String} = nothing
-    style::Maybe{String} = nothing
-    width::Maybe{String} = nothing
+    color::String = ""
+    shape::String = ""
+    style::String = ""
+    width::String = ""
 end
-#function Line(; color=nothing, shape=nothing, style=nothing, width=nothing)
-#    Line(color, shape, style, width)
-#end
 
 #-------------------
 """
@@ -82,30 +73,31 @@ PNML Graphics can be attached to many parts of PNML models.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef struct Graphics{COORD} #{COORD,FILL,FONT,LINE}
-    dimension::COORD
-    fill::Maybe{Fill}
-    font::Maybe{Font}
-    line::Maybe{Line}
-    offset::COORD
-    positions::Vector{COORD} = Vector{COORD}[]
+@kwdef struct Graphics{T <: Union{Int, Float64}}
+    #{COORD,FILL,FONT,LINE}
+    dimension::Coordinate{T} = Coordinate{T}()
+    fill::Fill = Fill()
+    font::Font = Font()
+    line::Line = Line()
+    offset::Coordinate{T} = Coordinate{T}()
+    positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
 end
 
-@kwdef struct ArcGraphics{COORD}
-    line::Line
-    positions::Vector{COORD} # ordered
+@kwdef struct ArcGraphics{T <: Union{Int, Float64}}
+    line::Line = line()
+    positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
 end
 
-@kwdef struct NodeGraphics{COORD}
-    postion::COORD
-    dimension::COORD
-    line::Line
-    fill::Fill
+@kwdef struct NodeGraphics{T <: Union{Int, Float64}}
+    postion::Coordinate{T} = Coordinate{T}()
+    dimension::Coordinate{T} = Coordinate(one(T), one(T))
+    line::Line = Line()
+    fill::Fill = Fill()
 end
 
-@kwdef struct AnnotationGraphics{COORD}
-    fill::Fill
-    offset::COORD
-    line::Line
-    font::Font
+@kwdef struct AnnotationGraphics{T <: Union{Int, Float64}}
+    fill::Fill = Fill()
+    offset::Coordinate{T} = Coordinate{T}()
+    line::Line = Line()
+    font::Font = Font()
 end

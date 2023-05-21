@@ -7,7 +7,6 @@ a well-formed XML node. See [`ToolInfo`](@ref) for one intended use-case.
 function anyelement end
 anyelement(node::XMLNode, reg::PnmlIDRegistry) = anyelement(node, PnmlCoreNet(), reg)
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    @nospecialize
     AnyElement(unclaimed_label(node, pntd, reg), node)
 end
 
@@ -21,16 +20,20 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref
 """
 function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     ha! = HarvestAny(_harvest_any!, pntd, idregistry) # Create a functor.
-    x = ha!(node) # Apply functor.
-    return Symbol(nodename(node)) => x
+    ucpair = Symbol(EzXML.nodename(node)) => ha!(node) # Apply functor.
+    return  ucpair # Not type stable because of NamedTuples
 end
 
-text_content(ucl) = if hasproperty(ucl.elements, :text)
-    ucl.elements.text.content
-elseif hasproperty(ucl.elements, :content)
-    ucl.elements.content # Nonstandard fallback. Allows omitting text wapper (usually works?)?
-else
-    throw(ArgumentError("tag missing content"))
+text_content(l::PnmlLabel) = text_content(elements(l))
+text_content(tup::NamedTuple) = begin
+    if hasproperty(tup, :text)
+        return tup.text[1].content
+    elseif hasproperty(tup, :content)
+        # Nonstandard fallback. Allows omitting text wapper (usually works?)?
+        return tup.content
+    else
+        throw(ArgumentError("tag missing text content"))
+    end
 end
 
 # Expected patterns. Note only first is standard-conforming, extensible, prefeered.
@@ -38,9 +41,8 @@ end
 #   <tag>1.23<tag>
 # The unclaimed label mechanism adds a :content key for text XML elements.
 # When the text element is elided, there is still a :content.
-function numeric_label_value(T, ucl)
-    @assert !isnothing(ucl)
-    number_value(T, text_content(ucl))
+function numeric_label_value(T, l)
+    number_value(T, text_content(l))
 end
 
 # Functor
@@ -48,86 +50,77 @@ end
 Wrap a function and two of its arguments.
 """
 struct HarvestAny
-    #!fun::FunctionWrapper{Vector{Pair{Symbol,Any}}, Tuple{XMLNode, HarvestAny}}
     fun::FunctionWrapper{NamedTuple, Tuple{XMLNode, HarvestAny}}
-    pntd::PnmlType
+    pntd::PnmlType # Maybe want to specialize sometime.
     reg::PnmlIDRegistry
 end
 
 (ha!::HarvestAny)(node::XMLNode) = ha!.fun(node, ha!)
+
+"Extract XML attributes. Register/convert IDs value as symbols."
+_attribute_value(a, ha!) = a.name == "id" ? register_id!(ha!.reg, a.content) : a.content
 
 """
 $(TYPEDSIGNATURES)
 
 Return `NamedTuple` holding a well-formed XML `node`.
 
-If element `node` has any children, each is placed in the dictonary with the
-child's tag name symbol as the key, repeated tags produce a vector as the value.
-Any XML attributes found are added as as key,value pairs.
+If element `node` has any attributes &/or children, each is placed in the tuple using
+attribute name or child's tag name symbol. Repeated tags produce a plain tuple as the value.
+There will always be a `content` field in the returned tupel.
 
-Descend the well-formed XML using `parser` on child nodes.
+Descend the well-formed XML using parser function `ha!` on child nodes.
 
 Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, ha!::HarvestAny)
-    CONFIG.verbose && println("harvest ", nodename(node))
+    CONFIG.verbose && println("harvest ", EzXML.nodename(node))
     tup = NamedTuple()
-    # Extract XML attributes. Register IDs as symbols.
+
+    #
+    #! Use consistent named tuple prototypes (tuple of symbols)?
+    #! Is it worth the effort to avoid (howmuch?) dynamic dispatch in a parser?
+    #! Once formed the objects better be type stable.
+
     for a in eachattribute(node)
         # ID attributes can appear in various places.
         # Each is unique, symbolized and added to the registry.
         # Other names have unmodified content (some string) as the value.
-        val = a.name == "id" ? register_id!(ha!.reg, a.content) : a.content
-        tup = merge(tup, (; Symbol(a.name) => val))
+        if a.name == "id"
+            tup = (; tup..., Symbol(a.name) => register_id!(ha!.reg, a.content))
+        else
+            tup = (; tup..., Symbol(a.name) => a.content)
+        end
     end
 
-    # Extract children or content.
-    if haselement(node)
-        children = EzXML.elements(node)
-        #!_anyelement_content!(vec, children, ha!)
-        tup = merge(tup, _anyelement_content(tup, children, ha!))
-    elseif !isempty(EzXML.nodecontent(node))
-        # <tag> </tag> will have nodecontent, though the whitespace is discarded.
-        #!push!(vec, :content => (strip ∘ EzXML.nodecontent)(node))
+    if EzXML.haselement(node) # Children exist, extract them.
+        tup = merge(tup, _anyelement_content(node, ha!)) #! iterate, returning named tuple
+    elseif !isempty(EzXML.nodecontent(node)) # <tag> </tag> will have nodecontent, though the whitespace is discarded.
         tup = merge(tup, (; :content => (strip ∘ EzXML.nodecontent)(node)))
-    else
-        # <tag/> and <tag></tag> will not have any nodecontent.
-        #!push!(vec, :content => "")
+    else # <tag/> and <tag></tag> will not have any nodecontent, give it an empty one.
         tup = merge(tup, (; :content => ""))
     end
-    # @show vec
-    return tup #(; vec...)
+
+    #CONFIG.verbose &&
+    #    println("anyelement fields ", propertynames(tup))
+    return tup
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Apply `ha!` to each node in `nodes`.
-Return pairs Symbol => values that are vectors when there
-are multiple instances of a tag in `nodes` and scalar otherwise.
+Apply `ha!` to each child node of `node`.
+Return named tuple where names are tags and values are tuples.
 """
-function _anyelement_content(tup::NamedTuple,
-                             nodes::Vector{XMLNode},
-                             ha!::HarvestAny)::NamedTuple
-
-    namevec = Pair{String,XMLNode}[nodename(node) => node for node in nodes if node !== nothing] # Not yet Symbols.
-    tagnames::Vector{String} = unique(map(first, namevec))
-
-    CONFIG.verbose && @show tagnames
-
-    for tagname in tagnames
-        tags::Vector{Pair{String,XMLNode}} = collect(filter((Fix2(===, tagname) ∘ first), namevec))
-        #tags = filter((Fix2(===, tagname) ∘ first), namevec)
-        if length(tags) > 1
-            #!push!(vec,  Symbol(tagname) => NamedTuple[ha!(t.second) for t in tags]) # Now its a symbol.)
-            tup = merge(tup, (; Symbol(tagname) => NamedTuple[ha!(t.second) for t in tags])) # Now its a symbol.)
-        else
-            #!push!(vec,  Symbol(tagname) => ha!(tags[1].second)::NamedTuple) # Now its a symbol.)
-            tup = merge(tup, (; Symbol(tagname) => ha!(tags[1].second)))# Now its a symbol.)
-        end
+function _anyelement_content(node::XMLNode, ha!::HarvestAny)
+    dict = Dict{Symbol,Any}()
+    for n in EzXML.eachelement(node) #! iterate
+        tag = Symbol(EzXML.nodename(n))
+        tup = get(dict, tag, tuple()) # get/initialize tuple for tag name
+        dict[tag] = tuple(tup..., ha!(n)) #! accumulate duplicates
     end
-
-    return tup
+    @assert !isempty(dict)
+    return namedtuple(pairs(dict))
 end

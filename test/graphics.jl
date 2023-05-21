@@ -4,10 +4,10 @@ using PNML: tag, pid, parse_graphics, parse_tokengraphics
 const pntd = PnmlCoreNet()
 @testset "coordinate" begin
     #@test_opt
-    @show PNML.Coordinate(1,2)
+    #@show PNML.Coordinate(1,2)
     @test_call PNML.Coordinate(1,2)
     #@test_opt
-    @show PNML.Coordinate(1.1,2.2)
+    #@show PNML.Coordinate(1.1,2.2)
     @test_call PNML.Coordinate(1.1,2.2)
 end
 
@@ -31,7 +31,7 @@ end
     @test n.dimension isa PNML.Coordinate
     @test n.positions isa Vector{PNML.Coordinate{Int}}
 
-    @show n.offset n.dimension n.positions
+    #@show n.offset n.dimension n.positions
     # There can only be one offset, last tag parsed wins.
     @test n.offset == PNML.Coordinate(7,8)
     @test n.dimension == PNML.Coordinate(5,6)
@@ -46,7 +46,7 @@ end
 
     @test n.fill isa PNML.Fill
     @test n.fill.color == "fillcolor"
-    @test n.fill.image === nothing
+    @test isempty(n.fill.image) # === nothing
     @test n.fill.gradient_color == "none"
     @test n.fill.gradient_rotation === "horizontal"
 
@@ -55,7 +55,7 @@ end
     @test n.font.style == "normal"
     @test n.font.weight == "normal"
     @test n.font.size == "11"
-    @test n.font.decoration === nothing
+    @test isempty(n.font.decoration) # === nothing
     @test n.font.align == "center"
     @test n.font.rotation == "0.0"
 end

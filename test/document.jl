@@ -67,11 +67,11 @@ end
     """
     model = @inferred parse_str(str)
 
-    println()
+    #println()
     for net in PNML.nets(model)
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
-        @show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+        #@show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
         for n in ntup
             @test t === PNML.nettype(n)
         end

@@ -4,19 +4,19 @@ using PNML: Maybe, tag, pid, xmlnode
 println()
 
 @testset "get rate label" begin
-    n = PNML.parse_transition(xml"""<transition id ="birth">
+    tr = PNML.parse_transition(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>
     </transition>""", PnmlCoreNet(), registry())
-    l = PNML.labels(n)
-    @show n l
-    @show PNML.rate(n)
-    @test PNML.tag(first(l)) === :rate # only label
-    @test PNML.get_label(n, :rate) === first(PNML.labels(n))
-    @test PNML.rate(n) ≈ 0.3
+    lab = PNML.labels(tr)
+    #@show tr lab
+    #@show PNML.rate(tr)
+    @test PNML.tag(first(lab)) === :rate # only label
+    @test PNML.get_label(tr, :rate) === first(PNML.labels(tr))
+    @test PNML.rate(tr) ≈ 0.3
 
-    @test_call PNML.has_labels(n)
-    @test_call PNML.labels(n)
-    @test_call PNML.has_label(n, :rate)
-    @test_call PNML.get_label(n, :rate)
-    @test_call PNML.rate(n)
+    @test_call PNML.has_labels(tr)
+    @test_call PNML.labels(tr)
+    @test_call PNML.has_label(tr, :rate)
+    @test_call PNML.get_label(tr, :rate)
+    @test_call PNML.rate(tr)
 end

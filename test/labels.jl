@@ -10,13 +10,14 @@ using PNML:
     parse_initialMarking, parse_inscription, parse_text
 
 const pntd = PnmlCoreNet()
-const noisy::Bool = true
+const noisy::Bool = false
 
 @testset "ObjectCommon" begin
     oc = @inferred PNML.ObjectCommon()
+
     @test isnothing(PNML.graphics(oc))
-    @test isnothing(PNML.tools(oc))
-    @test isnothing(PNML.labels(oc))
+    @test isempty(PNML.tools(oc))
+    @test isempty(PNML.labels(oc))
     d = (; :graphics => nothing, :tools => nothing, :labels => nothing)
     oc = @inferred PNML.ObjectCommon(d)
     # if false
@@ -26,8 +27,8 @@ const noisy::Bool = true
     #     @show typeof(PNML.labels(oc))
     # end
     @test isnothing(PNML.graphics(oc))
-    @test isnothing(PNML.tools(oc))
-    @test isnothing(PNML.labels(oc))
+    @test isempty(PNML.tools(oc))
+    @test isempty(PNML.labels(oc))
 end
 
 @testset "PT initMarking" begin
@@ -59,7 +60,7 @@ end
     @test_call mark1()
 
     @test (graphics ∘ common)(mark1) === nothing
-    @test (tools ∘ common)(mark1) === nothing || isempty((tool ∘ common)(mark1))
+    @test (tools ∘ common)(mark1) === nothing || isempty((tools ∘ common)(mark1))
     @test (labels ∘ common)(mark1) === nothing || isempty((labels ∘ common)(mark1))
 
     mark2 = PNML.Marking(3.5)
@@ -69,7 +70,7 @@ end
     @test_call mark2()
 
     @test (graphics ∘ common)(mark2) === nothing
-    @test (tools ∘ common)(mark2) === nothing || isempty((tool ∘ common)(mark2))
+    @test (tools ∘ common)(mark2) === nothing || isempty((tools ∘ common)(mark2))
     @test (labels ∘ common)(mark2) === nothing || isempty((labels ∘ common)(mark2))
 
     mark3 = PNML.Marking()
@@ -79,7 +80,7 @@ end
     @test_call mark3()
 
     @test (graphics ∘ common)(mark3) === nothing
-    @test (tools ∘ common)(mark3) === nothing || isempty((tool ∘ common)(mark3))
+    @test (tools ∘ common)(mark3) === nothing || isempty((tools ∘ common)(mark3))
     @test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
 end
 
@@ -90,7 +91,7 @@ end
     noisy && @show inscription
     @test value(inscription) == 12
     @test (graphics ∘ common)(inscription) === nothing
-    @test (tools ∘ common)(inscription) === nothing || isempty((tool ∘ common)(inscription))
+    @test (tools ∘ common)(inscription) === nothing || isempty((tools ∘ common)(inscription))
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
 end
 
@@ -161,7 +162,7 @@ end
     @test v.elements.content == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
-        v = PNML.get_labels(tup, labeltag)
+        v = PNML.get_labels(tup, labeltag) |> collect
         @test length(v) == 2
         for l in v
             @test tag(l) === labeltag
@@ -170,11 +171,11 @@ end
 end
 
 
-function test_unclaimed(xmlstring::String)#, funk::NamedTuple)
+function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     if noisy
-        println("+++++++++++++++++++")
+        println("\n+++++++++++++++++++")
         println("XML: ", xmlstring)
-        #print("funk: "); pprint(funk); println()
+        #print("expected: "); pprint(expected); println()
         println("-------------------")
     end
     node::XMLNode = xmlroot(xmlstring)
@@ -189,10 +190,7 @@ function test_unclaimed(xmlstring::String)#, funk::NamedTuple)
         print("u = "); pprintln(u)
         print("l = "); pprintln(l)
         print("a = "); pprintln(a)
-        end
-    # unclaimed_label returns Pair{Symbol,Vector{Pair{Symbol,Any}}}
-    # Where the outer symbol is the label name and the vector is the label's contents.
-    # function_filter(@nospecialize(ft)) = ft !== typeof(PnmlIDRegistrys.register_id!)
+    end
 
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
     @test_opt broken=false PnmlLabel(u, node)
@@ -229,26 +227,21 @@ end
 ntd(t) = Dict(zip(keys(t), values(t)))
 
 "Compare tuples."
-function cmptup(tup, val)
-    @assert tup isa NamedTuple
-    @assert val isa NamedTuple
-    t = convert(Dict, tup)
-    v = convert(Dict, val)
-    print("tup = "); pprintln(tup)
-    print("val = "); pprintln(val)
-    #print("t = "); pprintln(t)
-    #print("v = "); pprintln(v)
-    #return t == v
-    for k in keys(val)
-        @show k
-        if val[k] isa NamedTuple
-            if !cmptup(tup[k], val[k])
-                @show tup val
+function cmptup(tup, expected)
+    #@assert tup isa NamedTuple
+    #@assert expected isa NamedTuple
+    #print("tup = "); pprintln(tup)
+    #print("expected = "); pprintln(expected)
+    for k in keys(expected)
+        #@show k
+        if expected[k] isa NamedTuple
+            if !cmptup(tup[k], expected[k])
+                #@show tup expected
                 return false
             end
         else
-            if tup[k] != val[k]
-                @show tup val
+            if tup[k] != expected[k]
+                #@show tup expected
                 return false
             end
         end
@@ -256,19 +249,19 @@ function cmptup(tup, val)
     end
 end
 
-function test_elements(l, a, funk)
-    @show keys(funk)
-    @test funk isa NamedTuple
-    for key in keys(funk)
+function test_elements(l, a, expected)
+    #@show keys(expected)
+    @test expected isa NamedTuple
+    for key in keys(expected)
         @test hasproperty(l.elements, key)
         @test hasproperty(a.elements, key)
     end
-    @test cmptup(l.elements, funk)
-    @test cmptup(a.elements, funk)
+    @test cmptup(l.elements, expected)
+    @test cmptup(a.elements, expected)
 end
 
 @testset "unclaimed" begin
-    println("## test unclaimed, PnmlLabel, anyelement")
+    noisy && println("## test unclaimed, PnmlLabel, anyelement")
 
     ctrl = [
         ("""<declarations> </declarations>""", (; :content => "")),
@@ -276,7 +269,7 @@ end
         ("""<declarations atag="atag1"> </declarations>""", (; :atag => "atag1", :content => "")),
 
         ("""<foo><declarations> </declarations></foo>""",
-             (; :declarations => (; :content => ""))),
+             (; :declarations => ((; :content => ""),))),
         # no content, no attribute maybe results in empty tuple.
         ("""<null></null>""", (; :content => "")),
         ("""<null2/>""", (; :content => "")),
@@ -289,35 +282,38 @@ end
         ("""<empty at="empty"> </empty>""", (; :content => "", :at => "empty")),
         ("""<foo id="testid1" />""", (; :id => :testid1, :content => "")),
         ("""<foo id="testid2"/>""", (; :id => :testid2, :content => "")),
+        ("""<foo id="repeats">
+            <one>ONE</one>
+            <one>TWO</one>
+            <one>TRI</one>
+        </foo>""", (; :id => :repeats, :one => ((content = "ONE",), (content = "TWO",), (content = "TRI",),) )),
     ]
 
-    for (s, funk) in ctrl
-        l, a = test_unclaimed(s)#!, funk)
-        println("-------------------")
-        test_elements(l, a, funk)
-        #for (key, val) in pairs(funk); test_elements(l, a, funk); end
+    for (s, expected) in ctrl
+        l, a = test_unclaimed(s)#!, expected)
+        noisy && println("-------------------")
+        test_elements(l, a, expected)
+        #for (key, expected) in pairs(expected); test_elements(l, a, expected); end
     end
-    println()
+    noisy && println()
 
     s2 = """<declarations atag="atag2">
                 <something> some content </something>
                 <something> other stuff </something>
                 <something2 tag2="tagtwo"> <value/> <value tag3="tagthree"/> </something2>
             </declarations>"""
-    x = namedtuple([:atag => "atag2",
-                    :something => [(; :content => "some content"),
-                                (; :content => "other stuff")],
-                    :something2 => [(; :tag2 => "tagtwo",
-                                   :value => [(; :content => ""),
-                                              (; :tag3 => "tagthree", :content => "")],
-                                )]
-                ])
+    x = namedtuple([
+        :atag => "atag2",
+        :something => ((; :content => "some content"), # tuple of named tuples
+                       (; :content => "other stuff")),
+        :something2 => ((; :tag2 => "tagtwo",
+                           :value => ((; :content => ""),
+                                      (; :tag3 => "tagthree", :content => "")),
+                        ))
+    ])
 
     l, a = test_unclaimed(s2)
-    println("-------------------")
+    noisy && println("-------------------")
     test_elements(l, a, x)
-    println("-------------------")
-    println("-------------------")
-    println("-------------------")
-
+    noisy && println("-------------------")
 end

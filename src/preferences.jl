@@ -13,13 +13,11 @@ The saved preferences will be automatically loaded next time you `using PNML`
 ```julia
 julia> using PNML
 
-julia> PNML.CONFIG.verbose = true
-true
+julia> PNML.CONFIG.verbose = true;
 
-julia> PNML.CONFIG.warn_on_unclaimed = true     # Customize some defaults
-true
+julia> PNML.CONFIG.warn_on_unclaimed = true;     # Customize some defaults
 
-julia> PNML.save_config!(PNML.CONFIG) # Will be automatically read next time you `using PNML`
+julia> PNML.save_config!(PNML.CONFIG); # Will be automatically read next time you `using PNML`
 ```
 """
 function save_config!(config::PnmlConfig = CONFIG)
@@ -30,6 +28,7 @@ function save_config!(config::PnmlConfig = CONFIG)
         "warn_on_fixup" => config.warn_on_fixup,
         "warn_on_unclaimed" => config.warn_on_unclaimed,
         "verbose" => config.verbose,
+        "lock_registry" => config.lock_registry,
         )
 end
 
@@ -40,4 +39,5 @@ function read_config!(config::PnmlConfig)
     config.warn_on_fixup = @load_preference("warn_on_fixup", config.warn_on_fixup)
     config.warn_on_unclaimed = @load_preference("warn_on_fixup", config.warn_on_unclaimed)
     config.verbose = @load_preference("verbose", config.verbose)
+    config.lock_registry = @load_preference("lock_registry", config.lock_registry)
 end

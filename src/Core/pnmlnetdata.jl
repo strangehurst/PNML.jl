@@ -11,11 +11,11 @@ See [`PnmlNetKeys`](@ref) for page-level pnml ID of "owners" net data.
 """
 struct PnmlNetData{PNTD <: PnmlType, M, I, C, S}
     pntd::PNTD #
-    place_dict::OrderedDict{Symbol, Place{PNTD,M,S}}
-    transition_dict::OrderedDict{Symbol, Transition{PNTD,C}}
-    arc_dict::OrderedDict{Symbol, Arc{PNTD,I}}
-    refplace_dict::OrderedDict{Symbol, RefPlace{PNTD}}
-    reftransition_dict::OrderedDict{Symbol, RefTransition{PNTD}}
+    place_dict::OrderedDict{Symbol, Any} # Place{PNTD,M,S}}
+    transition_dict::OrderedDict{Symbol, Any} # Transition{PNTD,C}}
+    arc_dict::OrderedDict{Symbol, Any} # Arc{PNTD,I}}
+    refplace_dict::OrderedDict{Symbol, Any} # RefPlace{PNTD}}
+    reftransition_dict::OrderedDict{Symbol, Any} # RefTransition{PNTD}}
 end
 PnmlNetData(pntd, pl_dict, tr_dict, ar_dict, rp_dict, rt_dict) =
     PnmlNetData{typeof(pntd),

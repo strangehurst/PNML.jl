@@ -22,11 +22,11 @@ const pntd = PnmlCoreNet()
     id = pid(n)
     @test id === :place1
     @test typeof(n) <: Place
-    @show n
+    #@show n
     @test_call has_xml(n)
     @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
-    @show has_name(n)
+    #@show has_name(n)
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test_call marking(n)

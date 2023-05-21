@@ -29,16 +29,17 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements
     @test value(mark) !== nothing
     @test value(mark) isa PNML.AbstractTerm
     @test tag(value(mark)) === :tuple
+    #println()
+    #@show dump(value(mark))
+    #@show value(mark).elements.subterm[1].all[1].usersort[1].declaration
+    #@show value(mark).elements.subterm[1].all[1].usersort[1].content
+    #@show value(mark).elements.subterm[2].all[1].usersort[1].declaration
+    #@show value(mark).elements.subterm[2].all[1].usersort[1].content
 
-    @show value(mark).elements.subterm[1].all.usersort.declaration
-    @show value(mark).elements.subterm[1].all.usersort.content
-    @show value(mark).elements.subterm[2].all.usersort.declaration
-    @show value(mark).elements.subterm[2].all.usersort.content
-
-    @test value(mark).elements.subterm[1].all.usersort.declaration == "N1"
-    @test value(mark).elements.subterm[1].all.usersort.content == ""
-    @test value(mark).elements.subterm[2].all.usersort.declaration == "N2"
-    @test value(mark).elements.subterm[2].all.usersort.content == ""
+    @test value(mark).elements.subterm[1].all[1].usersort[1].declaration == "N1"
+    @test value(mark).elements.subterm[1].all[1].usersort[1].content == ""
+    @test value(mark).elements.subterm[2].all[1].usersort[1].declaration == "N2"
+    @test value(mark).elements.subterm[2].all[1].usersort[1].content == ""
 end
 
 @testset "hlinscription" begin
@@ -61,10 +62,10 @@ end
     @test typeof(insc) <: PNML.HLInscription
     @test text(insc) isa Union{Nothing,AbstractString}
     @test value(insc) isa PNML.Term
-    @show insc value(insc)
+    #@show insc value(insc)
     @test tag(value(insc)) === :tuple
-    @test value(insc).elements.subterm[1].variable.refvariable == "x"
-    @test value(insc).elements.subterm[2].variable.refvariable == "v"
+    @test value(insc).elements.subterm[1].variable[1].refvariable == "x"
+    @test value(insc).elements.subterm[2].variable[1].refvariable == "v"
     @test text(insc) == "<x,v>"
 end
 
@@ -89,13 +90,17 @@ end
     stru = PNML.parse_structure(node, HLCoreNet(), registry())
     @test stru isa PNML.Structure
     @test xmlnode(stru) isa Maybe{EzXML.Node}
-    print("Structure = "); pprint(stru)
+    #print("Structure = "); pprint(stru)
     @test tag(stru) === :structure
     @test elements(stru) isa NamedTuple
     @test tag(stru) === :structure
-    @show elements(stru).tuple
-    @test elements(stru).tuple.subterm[1].all.usersort.declaration == "N1"
-    @test elements(stru).tuple.subterm[2].all.usersort.declaration == "N2"
+    #println()
+    #println()
+    #println()
+    #println()
+    #@show dump(elements(stru))
+    @test elements(stru).tuple[1].subterm[1].all[1].usersort[1].declaration == "N1"
+    @test elements(stru).tuple[1].subterm[2].all[1].usersort[1].declaration == "N2"
 end
 
 @testset "type" begin
@@ -107,7 +112,7 @@ end
     """
     @testset for node in [n1]
         typ = PNML.parse_type(node, HLCoreNet(), registry())
-        print("SortType = "); pprintln(typ)
+        #print("SortType = "); pprintln(typ)
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
         @test value(typ) isa PNML.Term
@@ -125,14 +130,14 @@ end
  </condition>
     """
     @testset for node in [n1]
-        con = PNML.parse_condition(node, PnmlCoreNet(), registry())
-        @show con
-        @test typeof(con) <: PNML.Condition
-        @test text(con) !== nothing
-        @test value(con) !== nothing
-        @test tag(value(con)) === :or
-        @test (PNML.graphics ∘ PNML.common)(con) === nothing
-        @test (PNML.tools ∘ PNML.common)(con) === nothing || !has_tools(con)
-        @test (PNML.labels ∘ PNML.common)(con) ===  nothing || !has_labels(con)
+        cond = PNML.parse_condition(node, PnmlCoreNet(), registry())
+        #@show cond
+        @test typeof(cond) <: PNML.Condition
+        @test text(cond) !== nothing
+        @test value(cond) !== nothing
+        @test tag(value(cond)) === :or
+        @test !PNML.has_graphics(cond)
+        @test !PNML.has_tools(cond)
+        @test !PNML.has_labels(cond)
     end
 end

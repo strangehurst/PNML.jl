@@ -177,7 +177,8 @@ function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where
     # First use-case is `rate` of `ContinuousNet`.
     ucl = unclaimed_label(node, pntd, idregistry)
     CONFIG.verbose && @show ucl
-    numeric_label_value(sort_type(pntd), ucl) #TODO This should conform to the TBD `Sort` interface.
+    #@show dump(ucl)
+    return numeric_label_value(sort_type(pntd), ucl.second) #TODO This should conform to the TBD `Sort` interface.
 end
 
 
