@@ -72,37 +72,32 @@ of the structure defined by the pntd schema.
 
 See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
-
-
 """
-@auto_hash_equals struct PnmlLabel <: Annotation
+@auto_hash_equals struct PnmlLabel{T <: NamedTuple} <: Annotation
     tag::Symbol
-    elements::NamedTuple
+    elements::T # This is a label made of the attributes and children of `tag``.
     xml::XMLNode
 end
 
-PnmlLabel(p::Pair{Symbol, Vector{Pair{Symbol,Any}}}, xml::XMLNode) = begin
-    #@show p.first typeof(p)
-    PnmlLabel(p.first, namedtuple(p.second), xml)
-end
 PnmlLabel(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
-#text(label::PnmlLabel) = label.elements
-#structure(label::PnmlLabel) = label.elements
 xmlnode(label::PnmlLabel) = label.xml
-
-function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    any(Fix2(hastag, tagvalue), v)
-end
 
 hastag(l, tagvalue) = tag(l) === tagvalue
 
-function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    getfirst(Fix2(hastag, tagvalue), v)
+#function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)
+function get_labels(v, tagvalue::Symbol)
+    Iterators.filter(Fix2(hastag, tagvalue), v)
 end
 
-function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)
-    filter(Fix2(hastag, tagvalue), v)
+#function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
+function get_label(v, tagvalue::Symbol)
+    first(get_labels(v, tagvalue))
+end
+
+#function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
+function has_label(v, tagvalue::Symbol)
+    !isempty(get_labels(v, tagvalue))
 end

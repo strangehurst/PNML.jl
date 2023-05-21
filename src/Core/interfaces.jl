@@ -48,9 +48,9 @@ Return attached xml node.
 """
 function xmlnode end
 
-#--------------------------------
-# LABELS
-#--------------------------------
+#-------------------------------------------------------
+# LABELS  #! note that they are similar to TOOLINFO which should be documented hereabouts in interfaces
+#-------------------------------------------------------
 
 """
     has_labels(x) -> Bool
@@ -60,11 +60,11 @@ Does x have any labels.
 function has_labels end
 
 """
-    labels(x) -> Vector
+    labels(x) -> Iterateable
 
-Return vector of labels attached to `x`.
+Return iterator of labels attached to `x`.
 """
-function labels(x) end
+function labels(x)::Vector{PnmlLabel} end #! Annotate to flush out the nothings
 
 """
     has_label(x, tag::Symbol) -> Bool
@@ -192,9 +192,11 @@ function condition end
 # ARCS & INSCRIPTIONS
 #--------------------------------------------
 """
-$(TYPEDSIGNATURES)
+    arcs(p::Page) -> iterator
+    arcs(n::PnmlNet) -> iterator
+    arcs(p::AbstractPetriNet) -> iterator
 
-Return set arc ids.
+Return iterator over arc ids.
 """
 function arcs end
 """
@@ -213,13 +215,13 @@ function arc end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of all arc ids.
+Return set arc ids.
 """
 function arc_idset end
 
 """
 $(TYPEDSIGNATURES)
-Return vector of arcs that have a source or target of transition `id`.
+Return arcs that have a source or target of transition `id`.
 
 See also [`src_arcs`](@ref), [`tgt_arcs`](@ref).
 """
@@ -228,7 +230,7 @@ function all_arcs end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of arcs that have a source of transition `id`.
+Return arcs that have a source of transition `id`.
 
 See also [`all_arcs`](@ref), [`tgt_arcs`](@ref).
 """
@@ -237,7 +239,7 @@ function src_arcs end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of arcs that have a target of transition `id`.
+Return arcs that have a target of transition `id`.
 
 See also [`all_arcs`](@ref), [`src_arcs`](@ref).
 """
@@ -276,27 +278,27 @@ $(TYPEDSIGNATURES)
 function has_refT end
 
 """
-refplace_idset(x) -> Vector{Symbol} #TODO iterator?
+    refplace_idset(x) -> Set{Symbol} #TODO iterator?
 
 Return reference place pnml ids.
 """
 function refplace_idset end
 
 """
-reftransition_idset(x) -> Vector{Symbol} #TODO iterator?
+    reftransition_idset(x) -> Set{Symbol} #TODO iterator?
 
 Return reference transition pnml ids.
 """
 function reftransition_idset end
 
 """
-Return reference place matching `id`.
 $(TYPEDSIGNATURES)
+Return reference place matching `id`.
 """
 function refplace end
 
 """
-Return reference transition matching `id`.
 $(TYPEDSIGNATURES)
+Return reference transition matching `id`.
 """
 function reftransition end

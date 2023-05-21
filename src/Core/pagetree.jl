@@ -1,8 +1,8 @@
 # TODO Keep pagedict and page_set(s) in sync.
 #! Start out in sync, but `flatten!` must keep sync also!
 # Vector of pages resulting from using keys in set to access pagedict.
-AbstractTrees.children(n::PnmlNet) = collect(pages(n))
-AbstractTrees.children(p::Page)    = collect(pages(p))
+AbstractTrees.children(n::PnmlNet) = pages(n)
+AbstractTrees.children(p::Page)    = pages(p)
 
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
 AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page), #"::", typeof(p),
@@ -35,13 +35,16 @@ AbstractTrees.nodetype(::Type{Page{T}}) where {T<:PnmlType} = page_type(T)
 
 function pagetree(n::Union{PnmlNet, Page}, inc = 0)
     inc += 1
-    println("    "^inc, "pid ", pid(n), ": ", (collect ∘ values ∘ page_idset)(n))
-    page_keys = (collect ∘ keys ∘ pagedict)(n)
+    print("    "^inc, "pid ", pid(n), ":")
+    for i in (page_idset)(n)
+        print(" ", i)
+    end
+    println()
     for sp in page_idset(n)
-        if sp in page_keys
+        if haskey(pagedict(n), sp)
             pagetree(n.pagedict[sp], inc+1)
         else
-            msg = lazy"""id $sp not in page collection with keys: $page_keys"""
+            msg = lazy"""id $sp not in page collection with keys: $((collect ∘ keys ∘ pagedict)(n))"""
             throw(ArgumentError(msg))
         end
     end

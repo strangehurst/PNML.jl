@@ -88,19 +88,17 @@ julia> t()
 ```
 #! Term as functor requires a default value for missing values.
 """
-struct Term <: AbstractTerm
+struct Term{T <: NamedTuple} <: AbstractTerm
     tag::Symbol
-    elements::NamedTuple
+    elements::T
     #TODO xml
 end
 
 Term() = Term(NamedTuple())
 Term(tup::NamedTuple) = Term(:empty, tup)
 Term(p::Pair{Symbol,<:NamedTuple}) = Term(p.first, p.second)
-Term(p::Pair{Symbol,Vector{Pair{Symbol,Any}}}) = Term(p.first, namedtuple(p.second))
 
 Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
-Base.convert(::Type{Maybe{Term}}, v::Vector{Pair{Symbol,Any}})::Term = Term(namedtuple(v))
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements

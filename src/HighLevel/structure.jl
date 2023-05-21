@@ -7,7 +7,6 @@ High-level Annotation Labels place meaning in <structure>.
 Is an abstract syntax tree (ast) expressed in XML.
 Note the structural similarity to [`PnmlLabel`](@ref) and [`AnyElement`](@ref)
 
-
 # Extra
 There are various defined structure ast variants:
   - Sort of a Place type [builtin, multi, product, user]
@@ -16,16 +15,12 @@ There are various defined structure ast variants:
   - Term of Arc Inscription [variable, operator]
   - Declarations of Declaration * [sort, variable, operator]
 """
-struct Structure{T} #TODO
+struct Structure{T<:NamedTuple} #TODO
     tag::Symbol
     el::T
     xml::XMLNode
 end
 
-Structure(p::Pair{Symbol, Vector{Pair{Symbol,Any}}}, xml::XMLNode) = begin
-    #@show p.first typeof(p)
-    Structure(p.first, namedtuple(p.second), xml)
-end
 Structure(p::Pair{Symbol,<:NamedTuple}, node::XMLNode) = Structure(p.first, p.second, node)
 
 tag(s::Structure) = s.tag
