@@ -7,14 +7,13 @@ Cartesian Coordinate.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Coordinate{T}
+struct Coordinate{T <: Union{Int,Float64}}
     x::T
     y::T
 end
 
 Coordinate{T}() where {T <: Union{ Int,Float64}} = Coordinate{T}(zero(T), zero(T))
-#Coordinate(x::T) where {T <: Union{Int,Float64}} = Coordinate(x, zero(x))
-#Coordinate(x::T, y::T) where {T <: Union{Int,Float64}} = Coordinate(x, y)
+# Coordinate(x::T, y::T) where {T <: Union{Int,Float64}} = Coordinate(x, y)
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
 coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
@@ -29,7 +28,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Fill
-    color::String = ""
+    color::String = "black" # Required
     image::String = ""
     gradient_color::String = ""
     gradient_rotation::String = ""
@@ -45,7 +44,7 @@ $(TYPEDFIELDS)
 @kwdef struct Font
     family    ::String = ""
     style     ::String = ""
-    weight    ::String = ""
+    weight    ::String = "black" # Required
     size      ::String = ""
     align     ::String = ""
     rotation  ::String = ""
@@ -60,7 +59,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Line
-    color::String = ""
+    color::String = "black" # Required
     shape::String = ""
     style::String = ""
     width::String = ""
@@ -75,29 +74,29 @@ $(TYPEDFIELDS)
 """
 @kwdef struct Graphics{T <: Union{Int, Float64}}
     #{COORD,FILL,FONT,LINE}
-    dimension::Coordinate{T} = Coordinate{T}()
-    fill::Fill = Fill()
-    font::Font = Font()
-    line::Line = Line()
-    offset::Coordinate{T} = Coordinate{T}()
+    dimension::Coordinate{T} = Coordinate{T}(one(T), one(T))
+    fill::Fill = Fill(; color = "black")
+    font::Font = Font(; weight = "black")
+    line::Line = Line(; color = "black")
+    offset::Coordinate{T} = Coordinate{T}(zero(T), zero(T))
     positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
 end
 
 @kwdef struct ArcGraphics{T <: Union{Int, Float64}}
-    line::Line = line()
+    line::Line = Line(; color = "black")
     positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
 end
 
 @kwdef struct NodeGraphics{T <: Union{Int, Float64}}
     postion::Coordinate{T} = Coordinate{T}()
     dimension::Coordinate{T} = Coordinate(one(T), one(T))
-    line::Line = Line()
-    fill::Fill = Fill()
+    line::Line = Line(; color = "black")
+    fill::Fill = Fill(; color = "black")
 end
 
 @kwdef struct AnnotationGraphics{T <: Union{Int, Float64}}
-    fill::Fill = Fill()
-    offset::Coordinate{T} = Coordinate{T}()
-    line::Line = Line()
-    font::Font = Font()
+    fill::Fill = Fill(; color = "black")
+    offset::Coordinate{T} = Coordinate{T}(zero(T), zero(T))
+    line::Line = Line(; color = "black")
+    font::Font = Font(; weight = "black")
 end

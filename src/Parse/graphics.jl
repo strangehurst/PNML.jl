@@ -37,22 +37,21 @@ Return a [`Graphics`](@ref) holding the union of possibilities.
 """
 function parse_graphics(node, pntd, reg)
     nn = check_nodename(node, "graphics")
+    args = Dict()
     _positions = Coordinate{coordinate_value_type(pntd)}[]
-    args = NamedTuple()
     for child in eachelement(node)
         @match nodename(child) begin
-            "dimension" => (args = merge(args, (dimension = parse_graphics_coordinate(child, pntd, reg),)))
-            "fill"      => (args = merge(args, (fill = parse_graphics_fill(child, pntd, reg),)))
-            "font"      => (args = merge(args, (font = parse_graphics_font(child, pntd, reg),)))
-            "line"      => (args = merge(args, (line = parse_graphics_line(child, pntd, reg),)))
-            "offset"    => (args = merge(args, (offset = parse_graphics_coordinate(child, pntd, reg),)))
+            "dimension" => (args[:dimension] = parse_graphics_coordinate(child, pntd, reg))
+            "fill"      => (args[:fill] = parse_graphics_fill(child, pntd, reg))
+            "font"      => (args[:font] = parse_graphics_font(child, pntd, reg))
+            "line"      => (args[:line] = parse_graphics_line(child, pntd, reg))
+            "offset"    => (args[:offset] = parse_graphics_coordinate(child, pntd, reg))
             "position"  => push!(_positions, parse_graphics_coordinate(child, pntd, reg))
             _ => @warn "$nn ignoring <graphics> child '$child'"
         end
     end
-    args = merge(args, (positions = _positions,))
-
-    Graphics{coordinate_value_type(pntd)}(; args...)
+    args[:positions] = _positions
+    Graphics{coordinate_value_type(pntd)}(; pairs(args)...)
 end
 
 """
@@ -62,12 +61,12 @@ Return [`Line`](@ref).
 """
 function parse_graphics_line(node, pntd, reg)
     check_nodename(node, "line")
-    args = NamedTuple()
-    EzXML.haskey(node, "color") && (args = merge(args, (color = node["color"],)))
-    EzXML.haskey(node, "shape") && (args = merge(args, (shape = node["shape"],)))
-    EzXML.haskey(node, "style") && (args = merge(args, (style = node["style"],)))
-    EzXML.haskey(node, "width") && (args = merge(args, (width = node["width"],)))
-    isempty(args) ? Line() : Line(; args...)
+    args = Dict()
+    EzXML.haskey(node, "color") && (args[:color] = node["color"])
+    EzXML.haskey(node, "shape") && (args[:shape] = node["shape"])
+    EzXML.haskey(node, "style") && (args[:style] = node["style"])
+    EzXML.haskey(node, "width") && (args[:width] = node["width"])
+    Line(; pairs(args)...)
 end
 
 """
@@ -96,12 +95,12 @@ Return [`Fill`](@ref)
 """
 function parse_graphics_fill(node, pntd, reg)
     check_nodename(node, "fill")
-    args = NamedTuple()
-    EzXML.haskey(node, "color") && (args = merge(args, (color = node["color"],)))
-    EzXML.haskey(node, "image") && (args = merge(args, (image = node["image"],)))
-    EzXML.haskey(node, "gradient-color")    && (args = merge(args, (gradient_color = node["gradient-color"],)))
-    EzXML.haskey(node, "gradient-rotation") && (args = merge(args, (gradient_rotation = node["gradient-rotation"],)))
-    isempty(args) ? Fill() : Fill(; args...)
+    args = Dict()
+    EzXML.haskey(node, "color") && (args[:color] = node["color"])
+    EzXML.haskey(node, "image") &&  (args[:image] = node["image"])
+    EzXML.haskey(node, "gradient-color")    && (args[:gradient_color] = node["gradient-color"])
+    EzXML.haskey(node, "gradient-rotation") && (args[:gradient_rotation] = node["gradient-rotation"])
+    Fill(; args...)
 end
 
 """
@@ -111,13 +110,13 @@ Return [`Font`](@ref).
 """
 function parse_graphics_font(node, pntd, reg)
     check_nodename(node, "font")
-    args = NamedTuple()
-    EzXML.haskey(node, "style")      && (args = merge(args, (style = node["style"],)))
-    EzXML.haskey(node, "align")      && (args = merge(args, (align = node["align"],)))
-    EzXML.haskey(node, "decoration") && (args = merge(args, (decoration = node["decoration"],)))
-    EzXML.haskey(node, "family")     && (args = merge(args, (family = node["family"],)))
-    EzXML.haskey(node, "rotation")   && (args = merge(args, (rotation = node["rotation"],)))
-    EzXML.haskey(node, "size")       && (args = merge(args, (size   = node["size"],)))
-    EzXML.haskey(node, "weight")     && (args = merge(args, (weight = node["weight"],)))
-    isempty(args) ? Font() : Font(; args...)
+    args = Dict()
+    EzXML.haskey(node, "weight")     && (args[:weight] = node["weight"])
+    EzXML.haskey(node, "style")      && (args[:style] = node["style"])
+    EzXML.haskey(node, "align")      && (args[:align] = node["align"])
+    EzXML.haskey(node, "decoration") && (args[:decoration] = node["decoration"])
+    EzXML.haskey(node, "family")     && (args[:family] = node["family"])
+    EzXML.haskey(node, "rotation")   && (args[:rotation] = node["rotation"])
+    EzXML.haskey(node, "size")       && (args[:size]   = node["size"])
+    Font(; pairs(args)...)
 end
