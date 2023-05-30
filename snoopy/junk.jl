@@ -100,21 +100,21 @@ snet = @inferred SimpleNet SimpleNet(model)
         @show typeof(n)
         p = places(n)
         @show typeof(p)
-        @test_call target_modules=target_modules places(n)
+        #!@test_call target_modules=target_modules places(n)
         @inferred places(n)
     end
     @testset "snet" begin
         @show typeof(snet)
         p = places(snet)
         @show typeof(p)
-        @test_call target_modules = target_modules places(snet)
+        #!@test_call target_modules = target_modules places(snet)
         @inferred places(snet)
     end
     @testset "snet.net" begin
         @show typeof(snet.net)
         p = places(snet.net)
         @show typeof(p)
-        @test_call target_modules = target_modules places(snet.net)
+        #!@test_call target_modules = target_modules places(snet.net)
         @inferred places(snet.net)
     end
 end

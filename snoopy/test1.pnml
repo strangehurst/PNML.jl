@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-    <net id="net0" type="pnmlcore">
+    <net id="net1" type="pnmlcore">
         <name> <text>pnmlcore with nested pages</text> </name>
         <page id="page1">
             <place id="p1">
@@ -11,7 +11,8 @@
 	            <graphics><position x="100" y="100"/></graphics>
                 <initialMarking>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <text> 1 </text> </initialMarking>
+                    <text> 1 </text>
+                </initialMarking>
 	        </place>
             <transition id ="t1">
 	            <name>
@@ -29,12 +30,12 @@
             <referenceTransition id="rt1" ref="t11"/>
             <page id="page11">
                 <transition id ="t11"> </transition>
-		<arc id="a111" source="p11" target="rp11"> </arc>
-		<referencePlace id="rp11" ref="p111"/>
+		        <arc id="a111" source="p11" target="rp11"> </arc>
+		        <referencePlace id="rp11" ref="p111"/>
                 <page id="page111">
                     <place id="p111"> <initialMarking> <text> 111 </text> </initialMarking> </place>
-		    <arc id="a1111" source="p111" target="rt111"> </arc>
-		    <referenceTransition id="rt111" ref="rt2"/>
+		            <arc id="a1111" source="p111" target="rt111"> </arc>
+		            <referenceTransition id="rt111" ref="rt2"/>
                 </page>
             </page>
         </page>
@@ -55,14 +56,14 @@
             <referencePlace id="rp3" ref="p1"/>
         </page>
     </net>
-    <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
-        <page id="net1page"/>
+    <net id="net2" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <page id="net2page"/>
     </net>
-    <net id="net2" type="ptnet"> <page id="net2page"/> </net>
-    <net id="net3" type="hlcore"> <page id="net3page"/> </net>
+    <net id="net3" type="ptnet"> <page id="net3page"/> </net>
+    <net id="net4" type="hlcore"> <page id="net4page"/> </net>
 
-    <net id="net4" type="hlnet">
-        <name><text>net4 name</text></name>
+    <net id="net5" type="hlnet">
+        <name><text>net5 name</text></name>
         <declaration>
 	        <text>text of hl label</text>
 	        <structure>
@@ -78,7 +79,7 @@
 	           </declarations>
 	        </structure>
         </declaration>
-        <page id="net4page">
+        <page id="net5page">
 	        <place id="pOwn">
 	            <graphics><position x="35" y="35"/></graphics>
 	            <name><text>OwnMemAcc</text></name>
@@ -137,9 +138,10 @@
         </page>
     </net>
 
-    <net id="net5" type="pt_hlpng"> <page id="net5page"/> </net>
-    <net id="net6" type="symmetric">
-        <page id="net6page">
+    <net id="net6" type="pt_hlpng"> <page id="net6page"/> </net>
+
+    <net id="net7" type="symmetric">
+        <page id="net7page">
 			<place id="stp5">
 				<name><text>stp5</text></name>
 				<type>
@@ -213,7 +215,9 @@
 			</arc>
         </page>
     </net>
-    <net id="net7" type="timednet"> <page id="net7page"/> </net>
-    <net id="net8" type="continuous"> <page id="net8page"/> </net>
-    <net id="net9" type="bogus"> <page id="net9page"/> </net>
+
+    <net id="net8" type="timednet"> <page id="net8page"/> </net>
+    <net id="net9" type="continuous"> <page id="net9page"/> </net>
+    <!-- unclaimed labels, rate -->
+    <net id="net10" type="bogus"> <page id="net10page"/> </net>
 </pnml>
