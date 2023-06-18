@@ -83,7 +83,7 @@ julia> c = default_condition(ContinuousNet())
 Condition(nothing, true, )
 
 julia> c = default_condition(HLCoreNet())
-Condition(nothing, Term(:empty, (value = true,)), )
+Condition(nothing, Term(:bool, true), )
 ```
 
 
@@ -95,7 +95,7 @@ julia> i = default_inscription(ContinuousNet())
 Inscription(1.0, )
 
 julia> i = default_inscription(HLCoreNet())
-HLInscription("default", Term(:empty, (value = 1,)), )
+HLInscription("default", Term(:one, 1), )
 
 julia> i()
 1
@@ -116,7 +116,7 @@ julia> m()
 0.0
 
 julia> m = default_marking(HLCoreNet())
-HLMarking(nothing, Term(:empty, (value = 0,)), )
+HLMarking(nothing, Term(:zero, 0), )
 
 julia> m()
 0

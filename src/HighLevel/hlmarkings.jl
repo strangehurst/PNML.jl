@@ -10,24 +10,24 @@ $(TYPEDFIELDS)
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
-julia> m = HLMarking("the text", Term(:term, (; :value => 3)))
-HLMarking("the text", Term(:term, (value = 3,)), )
+julia> m = HLMarking("the text", Term(:value, 3))
+HLMarking("the text", Term(:value, 3), )
 
 julia> m()
 3
 ```
 """
-struct HLMarking{T <: Term} <: HLAnnotation
+struct HLMarking{T <: AbstractTerm} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
     term::T # Content of <structure> must be a many-sorted algebra term.
     com::ObjectCommon
     #TODO check that there is a text or structure (or both)
 end
 
-HLMarking() = HLMarking(nothing, nothing)
+#HLMarking() = HLMarking(nothing, nothing)
 HLMarking(s::AbstractString) = HLMarking(s, nothing)
-HLMarking(t::Any) = HLMarking(nothing, t, ObjectCommon()) #! ::Term
-HLMarking(s::AbstractString, t::Any) = HLMarking(s, t, ObjectCommon())
+HLMarking(t::AbstractTerm) = HLMarking(nothing, t, ObjectCommon()) #! ::Term
+HLMarking(s::AbstractString, t::AbstractTerm) = HLMarking(s, t, ObjectCommon())
 
 value(m::HLMarking) = m.term
 common(m::HLMarking) = m.com

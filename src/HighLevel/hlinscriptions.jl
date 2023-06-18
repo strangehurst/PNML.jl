@@ -8,20 +8,20 @@ The `term` field
 # Examples
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
-julia> i2 = HLInscription(Term(:term, (; :value=>3)))
-HLInscription(nothing, Term(:term, (value = 3,)), )
+julia> i2 = HLInscription(Term(:value, 3))
+HLInscription(nothing, Term(:value, 3), )
 
 julia> i2()
 3
 
-julia> i3 = HLInscription("text", Term())
-HLInscription("text", Term(:empty, ()), )
+julia> i3 = HLInscription("text", Term(:empty, 1))
+HLInscription("text", Term(:empty, 1), )
 
 julia> i3()
 1
 
-julia> i4 = HLInscription("text", Term(:term, (; :value=>3)))
-HLInscription("text", Term(:term, (value = 3,)), )
+julia> i4 = HLInscription("text", Term(:value, 3))
+HLInscription("text", Term(:value, 3), )
 
 julia> i4()
 3
@@ -33,7 +33,7 @@ struct HLInscription{T<:Term} <: HLAnnotation
     com::ObjectCommon
 end
 
-HLInscription(s::AbstractString) = HLInscription(s, Term(:empty, (; :value => zero(Int))))
+HLInscription(s::AbstractString) = HLInscription(s, Term(:value, zero(Int)))
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 

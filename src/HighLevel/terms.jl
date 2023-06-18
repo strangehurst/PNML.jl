@@ -8,13 +8,13 @@ Markings default to zero and inscriptions default to 1
 
 ```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
 julia> m = default_one_term(HLCoreNet())
-Term(:empty, (value = 1,))
+Term(:one, 1)
 
 julia> m()
 1
 
 julia> m = default_zero_term(HLCoreNet())
-Term(:empty, (value = 0,))
+Term(:zero, 0)
 
 julia> m()
 0
@@ -22,8 +22,11 @@ julia> m()
 ```
 """
 function default_term end
-default_term() = default_term(PnmlCoreNet()) #!relocate
 default_term(t::PnmlType) = default_one_term(t) #!relocate
+
+#=
+    Should be booleanconstant/numberconstant: one_term, zero_term, bool_term
+=#
 
 """
 $(TYPEDSIGNATURES)
@@ -34,7 +37,7 @@ function default_one_term end
 default_one_term() = default_one_term(PnmlCoreNet())
 default_one_term(::PnmlType) = one(Int)# PTNet & PnmlCoreNet #!relocate
 default_one_term(::AbstractContinuousNet) = one(Float64) #!relocate
-default_one_term(::AbstractHLCore) = Term(:empty, (; :value => one(Int)))
+default_one_term(::AbstractHLCore) = Term(:one, one(Int)) #! make Variable
 default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 term_value_type(::Type{<:PnmlType}) = Int
@@ -50,13 +53,10 @@ function default_zero_term end
 default_zero_term() = default_zero_term(PnmlCoreNet())
 default_zero_term(::PnmlType) = zero(Int) #!relocate
 default_zero_term(::AbstractContinuousNet) = zero(Float64) #!relocate
-default_zero_term(::AbstractHLCore) = Term(:empty, (; :value => zero(Int)))
+default_zero_term(::AbstractHLCore) = Term(:zero, zero(Int))
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
-"""
-Boolean termdefault_one_term(default_one_term(
-"""
-default_bool_term(::AbstractHLCore) = Term(:empty, (; :value => true))
+default_bool_term(::AbstractHLCore) = Term(:bool, true)
 
 """
 $(TYPEDEF)
@@ -67,70 +67,56 @@ contained within the <structure> element of a `HLAnnotation`.
 
 #! Note that Term is is an abstract element in the specification with no PNML tag.
 
-Should conform to
-the [`HLAnnotation`](@ref) interface. Namely <text>, <structure>, where <structure>
-contains one element.  The element tag name is paired with its content:
-a NamedTuple{Tag, Content} of children elements.
+Should conform to the [`HLAnnotation`](@ref) interface. Namely <text>, <structure>,
+where <structure> contains one element, a `Term`.  The `Term`s element tag name is
+paired with its content: a NamedTuple{Tag, Content} of its children elements.
 
-Note that 'structure' is not present in tag or tuple. This can be done for a `HLAnnotation`.
 For more general well-formed-XML handling see [`AnyElement`](@ref).
 
  ast variants:
   - variable
   - operator
 
-```jldoctest; setup=:(using PNML; using PNML: default_one_term, default_zero_term, Term)
-julia> t = Term()
-Term(:empty, ())
-
-julia> t()
-1
-```
 #! Term as functor requires a default value for missing values.
 """
-struct Term{T <: NamedTuple} <: AbstractTerm
-    tag::Symbol
-    elements::T
-    #TODO xml
+struct Term <: AbstractTerm
+    tag::Symbol #! Does this serve any function?
+    elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
 
-Term() = Term(NamedTuple())
-Term(tup::NamedTuple) = Term(:empty, tup)
-Term(p::Pair{Symbol,<:NamedTuple}) = Term(p.first, p.second)
+#Term(tag::Symbol, x) = Term(tag, [x])
+Term(ax::AnyXmlNode) = Term(:empty, [ax])
+Term(p::Pair{Symbol,Vector{AnyXmlNode}}) = Term(p.first, p.second)
 
-Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
+#Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
-#TODO xml(t::Term) = t.xml
 
 """
-Evaluate a term by returning the ':value' in `elements` or a default value.
+Evaluate a term by returning `:value` in `elements` or a default value.
 
-Default term value defaults to 1. Use the default argument to specify a default.
+Defaults to evauluating `default_one_term(HLCoreNet())`.
+Use the `default` keyword argument to specify a different default.
 
-# Examples
+The pnml specification treats 'Term' as an abstract UML2 type. We make it a concrete type.
+See parse_sorttype_term, parse_type, parse_marking_term,
+parse_condition_term, parse_inscription_term.
 
-```jldoctest; setup=:(using PNML; using PNML: default_term, default_one_term, default_zero_term, Term)
-julia> t = Term()
-Term(:empty, ())
-
-julia> t()
-1
-
-julia> t(0)
-0
-
-julia> t(2.3)
-2.3
-
-```
+_Warning:_ Much of the high-level is WORK-IN-PROGRES. Term is implemented as a wrapper of
+Vector{AnyXmlNode}. This is a tree of symbols with leafs that are strings.
 """
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
-    value = if haskey(t.elements, :value)
-        @inbounds t.elements[:value]
+    if t.elements isa Number
+        return t.elements
     else
-        _evaluate(default)
+        i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements) # elements might be number
+        if !isnothing(i)
+            return @inbounds value(t.elements[i])
+        else
+            return _evaluate(default)
+        end
     end
-    return value
 end
+
+has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
