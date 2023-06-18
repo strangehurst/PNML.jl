@@ -1,10 +1,11 @@
 """
 $(TYPEDEF)
-Terms are part of the multi-sorted algebra that is part of High-Level Petri Net
-markings, inscriptions and conditions.
+Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
 
-`Term` is an abstract type in the pnml specification, not having any matching XML element.
-Concrete `Term`s are found within the <structure> element of a [`HLAnnotation`](@ref).
+An abstract type in the pnml XML specification, concrete `Term`s are
+found within the <structure> element of a [`HLAnnotation`](@ref) label.
+
+Notably, a `Term` is not a PnmlLabel.
 
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
 """
@@ -61,7 +62,6 @@ struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
     name::String
     sort::S
-    #xml::XMLNode
 end
 
 """

@@ -11,7 +11,6 @@ Use exception to allow dispatch and additional data presentation to user.
 """
 struct MissingIDException <: PnmlException
     msg::String
-    node::XMLNode
 end
 
 """
@@ -20,7 +19,6 @@ $(TYPEDFIELDS)
 """
 struct MalformedException <: PnmlException
     msg::String
-    node::XMLNode
 end
 
 Base.showerror(exc::MissingIDException) = showerror(stderr, exc)

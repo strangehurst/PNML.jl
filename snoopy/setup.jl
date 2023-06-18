@@ -76,13 +76,13 @@ function timed_parse(node::XMLNode)
     #
     nn = check_nodename(node, "pnml") # Top of the pnml model.
     nets = allchildren("net", node) # That can have one or more nets of any pnml net definition types.
-    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements", node))
+    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements"))
 
     reg = registry()
     # Call parse_net directly.
     net_vec = parse_net.(nets, Ref(reg))
     net_tup = tuple(net_vec...)
-    PnmlModel(net_tup, pnml_ns, reg, node) #! pnml_ns
+    PnmlModel(net_tup, pnml_ns, reg) #! pnml_ns
 end
 
 
