@@ -23,15 +23,12 @@ Objects of a Petri Net Graph are pages, arcs, nodes.
 abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
 function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
-    if prop_name === :id
-        return getfield(o, :id)::Symbol
-    elseif prop_name === :pntd
-        return getfield(o, :pntd)::PnmlType #! abstract
-    elseif prop_name === :name
-        return getfield(o, :name)::Maybe{Name}
-    elseif prop_name === :com
-        return getfield(o, :com)::ObjectCommon
-    end
+    prop_name === :id   && return getfield(o, :id)::Symbol
+    prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
+    prop_name === :name && return getfield(o, :name)::Maybe{Name}
+    prop_name === :com  && return getfield(o, :com)::ObjectCommon
+    prop_name === :xml  && return getfield(o, :xml)::XMLNode
+
     return getfield(o, prop_name)
 end
 pid() = error("not defined")
@@ -62,14 +59,12 @@ abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject{PNTD} end
 """
 $(TYPEDEF)
 For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref)
-used to connect [`Page`](@ref) together. Adds a `ref` field to a node.
+used to connect [`Page`](@ref) together.
 """
 abstract type ReferenceNode{PNTD} <: AbstractPnmlNode{PNTD} end
 
 function Base.getproperty(rn::ReferenceNode, name::Symbol)
-    if name === :ref
-        return getfield(rn, :ref)::Symbol
-    end
+    name === :ref && return getfield(rn, :ref)::Symbol
     return getfield(rn, name)
 end
 

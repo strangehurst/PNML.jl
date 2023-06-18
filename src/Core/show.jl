@@ -41,7 +41,7 @@ PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
 
 #-------------------
 function Base.show(io::IO, c::Coordinate)
-    compact = get(io, :compact, false)
+    compact = get(io, :compact, false)::Bool
     print(io, "(", c.x, ",", c.y, ")")
 end
 

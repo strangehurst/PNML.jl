@@ -210,7 +210,7 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)
+pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
 
 """
     pnmltype(pntd::T, reg)

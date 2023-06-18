@@ -1,5 +1,5 @@
 "Return first true `f` of `v` or `nothing`."
-function getfirst(f::F, v) where {F} #! Array not iterator
+function getfirst(f, v) # getfirst(f::F, v) where {F}
     i = findfirst(f, v) # Cannot use nothing as an index.
     isnothing(i) ? nothing : v[i]
 end
@@ -31,8 +31,8 @@ haspid(x, id::Symbol) = pid(x) === id
 haspid(s::Any) = throw(ArgumentError(lazy"haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 "Return string of current indent size in `io`."
-indent(io::IO) = repeat(' ', get(io, :indent, 0))
+indent(io::IO) = repeat(' ', get(io, :indent, 0)::Int)
 
 #using PNML: CONFIG
 "Increment the `:indent` value by `indent_width`."
-inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0) + 4) #! HARDCODED
+inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0)::Int + 4) #! HARDCODED

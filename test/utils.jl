@@ -1,6 +1,6 @@
 using PNML, ..TestUtils, JET
 import EzXML
-using PNML: Maybe, getfirst, allchildren
+using PNML: Maybe, getfirst, firstchild, allchildren
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -27,12 +27,12 @@ end
         <c name="c2"/>
     </test>
     """
-    @test_call target_modules=target_modules getfirst("a", node)
-    @test_call EzXML.nodename(getfirst("a", node))
-    @test EzXML.nodename(getfirst("a", node)) == "a"
-    @test getfirst("a", node)["name"] == "a1"
-    @test getfirst("b", node) === nothing
-    @test EzXML.nodename(getfirst("c", node)) == "c"
+    @test_call target_modules=target_modules firstchild("a", node)
+    @test_call EzXML.nodename(firstchild("a", node))
+    @test EzXML.nodename(firstchild("a", node)) == "a"
+    @test firstchild("a", node)["name"] == "a1"
+    @test firstchild("b", node) === nothing
+    @test EzXML.nodename(firstchild("c", node)) == "c"
 
     @test_call target_modules=target_modules allchildren("a", node)
     @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]

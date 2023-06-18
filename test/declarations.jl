@@ -1,9 +1,9 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML:
     Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
-    registry, AnyElement
+    registry, AnyElement, AnyXmlNode, name, value, isregistered
 
-const pntd = PnmlCoreNet()
+const pntd::PnmlType = PnmlCoreNet()
 
 @testset "Declaration()" begin
     decl = PNML.Declaration()
@@ -81,33 +81,44 @@ end
     reg = PNML.registry()
     decl = parse_declaration(node, pntd, reg)
 
-    #@show dump(decl)
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(decl)) == 3
     @test_call PNML.declarations(decl)
 
     # Examine each declaration in the vector: 3 named sorts
+    #println("dump(decl)"); dump(decl)
     for d in PNML.declarations(decl)
-        #@show dump(d)
+        #println("\n  declaration $(pid(d))"); dump(d)
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
         # named sort -> cyclic enumeration -> fe constant
-        @test PNML.isregistered(reg, pid(d))
-        @test_call PNML.isregistered(reg, pid(d))
+        @test isregistered(reg, pid(d))
+        @test_call isregistered(reg, pid(d))
+        sortname = PNML.name(d)
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
         @test d.def isa PNML.AnyElement
         @test tag(d.def) === :cyclicenumeration
-        @test d.def.elements isa NamedTuple
-        @test haskey(d.def.elements, :feconstant)
-        let x = d.def.elements.feconstant
-            #@show typeof(x) # isa Tuple{NamedTuple}
-            for fec in x
-                @test PNML.isregistered(reg, fec.id)
-                @test fec.name isa String
-                @test endswith(string(fec.id), fec.name)
-            end
+        @test d.def.elements isa Vector{PNML.AnyXmlNode}
+
+        @test tag(d.def.elements[1]) === :feconstant
+        let x = value(d.def.elements[1])
+            @test x isa Vector{AnyXmlNode}
+
+            @test tag(x[1]) === :id
+            idstring = value(x[1])
+            @test idstring isa AbstractString
+            #@test idstring == "LegalResident0"
+            @test startswith(idstring, sortname)
+            @test_call isregistered(reg, Symbol(idstring)) # unclaimed id
+            @test !isregistered(reg, Symbol(idstring)) # unclaimed id
+
+            @test tag(x[2]) === :name
+            namestring = value(x[2])
+            @test namestring isa AbstractString
+            @test namestring == "0"
+            @test endswith(idstring, namestring)
         end
     end
 end

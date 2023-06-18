@@ -1,46 +1,52 @@
 # Flatten the pages of a Petri Net Markup Language
+# TODO Check for illegal intra-page references? WHERE?
 
 """
-$(TYPEDSIGNATURES)
+    flatten_pages!(net::PnmlNet[; options])
 
-Merge page content into the 1st page of each pnml net.
+Merge page content into the 1st page of the net.
 
-Note that refrence nodes are still present. They can be removed later
-with [`deref!`](@ref).
+Options
+    trim::Bool Remove refrence nodes (default `false`). See [`deref!`](@ref).
+    verbose::Bool Print breadcrumbs (default `false`).
 """
 function flatten_pages! end
-flatten_pages!(model::PnmlModel) = flatten_pages!.(nets(model))
 
-function flatten_pages!(net::PnmlNet, trim::Bool = true, verbose::Bool = false)
-    CONFIG.verbose &&
+# Most content is already in the PnmlNetData database so mostly involves shuffling keys
+function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
+    verbose &&
         println(lazy"\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
-    if length(net.pagedict) > 1
-        # TODO Check for illegal intra-page references?
-        # Place content of other pages into 1st page.
-        # Most content is already in the PnmlNetData database.
+    if length(net.pagedict) > 1 # Place content of other pages into 1st page.
         pageids = keys(net.pagedict)
         @assert first(pageids) == pid(first(values(net.pagedict)))
-        #@show pageids #! debug before pop
-        key1,val1 = popfirst!(net.pagedict) # Want the non-mergable bits from the first page.
-        #@show key1 pageids #! debug (note the expected change!)
-        @assert key1 ∉ pageids
+
+        key1, val1 = popfirst!(net.pagedict)
+        @assert key1 ∉ pageids # Note the coupling of pageids and net.pagedict.
 
         while !isempty(net.pagedict)
             cutid, cutpage = popfirst!(net.pagedict)
             @assert cutid ∉ pageids
             append_page!(val1, cutpage)
-            delete!(page_idset(net), cutid) # remove from set of page ids owned
+            delete!(page_idset(net), cutid) # Remove from set of page ids owned by net.
         end
         @assert isempty(net.pagedict)
 
         pagedict(net)[key1] = val1 # Put the one-true-page back in the dictionary.
         push!(page_idset(net), key1)
-        @assert !isempty(net.pagedict)
-        @assert key1 ∈ pageids
 
-        deref!(net), trim
+        @assert length(net.pagedict) == 1
+        @assert key1 == only(pageids)
+
+        deref!(net, trim)
     end
-    return net
+    return nothing
+end
+
+
+# Do each net in model.
+flatten_pages!(model::PnmlModel; kw...) = for net in nets(model)
+    flatten_pages!(net; kw...)
+    return nothing
 end
 
 """
@@ -127,6 +133,7 @@ as part of [`flatten_pages!`](@ref),
 function deref!(net::PnmlNet, trim::Bool = true)
     CONFIG.verbose && @show "deref! net $(pid(net))"
     for id in arc_idset(net)
+        #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
         while arc.source ∈ refplace_idset(net)
             arc.source = deref_place(net, arc.source, trim)

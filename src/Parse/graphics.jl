@@ -6,15 +6,13 @@ defined for token graphics. Contains <tokenposition> tags.
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
     nn = check_nodename(node, "tokengraphics")
-    if !haselement(node)
+    positions = allchildren("tokenposition", node) # returns Vector{XMLNode}
+    if isnothing(positions) || isempty(positions)
+        @warn "$nn does not have any <tokenposition> elements"
         TokenGraphics{coordinate_value_type(pntd)}() # Empty is legal.
     else
-        positions = allchildren("tokenposition", node) #TODO use iterator
-        isempty(positions) &&
-                throw(MalformedException("$nn must have at least one <tokenposition>, found none"), node)
         tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg))
-        (isnothing(tpos) || isempty(tpos)) &&
-                throw(MalformedException("$nn did not parse positions", node))
+        (isnothing(tpos) || isempty(tpos)) && throw(MalformedException("$nn did not parse positions"))
         TokenGraphics{coordinate_value_type(pntd)}(tpos)
     end
 end
@@ -78,11 +76,11 @@ Specification seems to only use integers, we also allow real numbers.
 function parse_graphics_coordinate(node, pntd, reg)
     nn = nodename(node)
     if !(nn=="position" || nn=="dimension" || nn=="offset" || nn=="tokenposition")
-        error("element name wrong: $nn")
+        throw(ArgumentError("element name wrong: $nn"))
     end
 
-    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x", node))
-    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y", node))
+    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x"))
+    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y"))
 
     Coordinate(number_value(coordinate_value_type(pntd), node["x"]),
                number_value(coordinate_value_type(pntd), node["y"]))

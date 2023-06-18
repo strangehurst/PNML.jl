@@ -8,17 +8,12 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    if prop_name === :id #! TODO do labels have ids?
-        return getfield(o, :id)::Symbol
-    elseif prop_name === :text
-        return getfield(o, :text)::Maybe{String}
-    elseif prop_name === :pntd
-        return getfield(o, :pntd)::PnmlType #! abstract, do labels have this? XXX
-    elseif prop_name === :xml
-        return getfield(o, :xml)::XMLNode
-    elseif prop_name === :com
-        return getfield(o, :com)::ObjectCommon
-    end
+    prop_name === :id   && return getfield(o, :id)::Symbol #! TODO do labels have ids?
+    prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
+    prop_name === :com  && return getfield(o, :com)::ObjectCommon
+    prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract, do labels have this? XXX
+    prop_name === :xml  && return getfield(o, :xml)::XMLNode
+
     return getfield(o, prop_name)
 end
 
@@ -55,7 +50,35 @@ $(TYPEDEF)
 Label that may be displayed.
 Differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
 """
+
 abstract type Annotation <: AbstractLabel end
+"""
+$(TYPEDEF)
+Annotation label that uses <text> and <structure>.
+"""
+abstract type HLAnnotation <: AbstractLabel end
+
+#TODO #! Add abstract options here.
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+"""
+Node in a tree formed from XML. `tag`s are XML tags or attribute names.
+Leaf `val` are strings.
+NB: Assumes XML "content" nodes do not have child XML nodes.
+"""
+struct AnyXmlNode #! Needed by PnmlLabel, AnyElement
+    tag::Symbol
+    val::Union{Vector{AnyXmlNode}, String, SubString}
+end
+
+AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
+
+tag(axn::AnyXmlNode) = axn.tag
+value(axn::AnyXmlNode) = axn.val
+
 
 #------------------------------------------------------------------------------
 # Pnml Label
@@ -73,13 +96,14 @@ of the structure defined by the pntd schema.
 See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
-@auto_hash_equals struct PnmlLabel{T <: NamedTuple} <: Annotation
+@auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::T # This is a label made of the attributes and children of `tag``.
+    elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag``.
     xml::XMLNode
 end
 
-PnmlLabel(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
+PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
+#!PnmlLabel(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
@@ -87,17 +111,14 @@ xmlnode(label::PnmlLabel) = label.xml
 
 hastag(l, tagvalue) = tag(l) === tagvalue
 
-#function get_labels(v::Vector{PnmlLabel}, tagvalue::Symbol)
 function get_labels(v, tagvalue::Symbol)
     Iterators.filter(Fix2(hastag, tagvalue), v)
 end
 
-#function get_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
 function get_label(v, tagvalue::Symbol)
     first(get_labels(v, tagvalue))
 end
 
-#function has_label(v::Vector{PnmlLabel}, tagvalue::Symbol)
 function has_label(v, tagvalue::Symbol)
     !isempty(get_labels(v, tagvalue))
 end

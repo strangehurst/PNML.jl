@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
 """
-mutable struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
+struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
@@ -14,7 +14,6 @@ mutable struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     pagedict::OrderedDict{Symbol, Page{PNTD}} #, M, I, C, S}} #! Shared by net and its pages
     netdata::PnmlNetData{PNTD} #, M, I, C, S}    #! Shared by net and its pages
     netsets::PnmlNetKeys #TODO page's keys of items owned in netdata/pagedict.
-
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
@@ -69,13 +68,7 @@ reftransition(page::Page, id::Symbol) = reftransitiondict(page)[id]
 has_refT(page::Page, id::Symbol) = (id in reftransition_idset(page))
 
 function Base.empty!(page::Page)
-    #empty!(netdata(page).place)
-    #empty!(netdata(page).refplace)
-    #empty!(netdata(page).transition)
-    #empty!(netdata(page).reftransition)
-    #empty!(netdata(page).arc)
     empty!(page.declaration)
-    # !isnothing(page.page_idset) && empty!(page.page_idset) #! PAGE TREE NODE
     t = (tools ∘ common)(page)
     !isnothing(t) && empty!(t)
     l = (labels ∘ common)(page)

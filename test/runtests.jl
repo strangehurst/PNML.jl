@@ -1,9 +1,8 @@
-using PNML #, EzXML
+using PNML
 using AbstractTrees, Test, SafeTestsets
 using PrettyPrinting
-#u sing IfElse
-# Run the tests embedded in docstrings.
-using Documenter, LabelledArrays
+using Documenter
+#, LabelledArrays
 using JET
 
 const GROUPS = (split ∘ uppercase)(get(ENV, "GROUP", "ALL"))
@@ -79,7 +78,7 @@ const noisy::Bool = false
         @time "rate"      @safetestset "rate"         begin include("rate.jl") end
         @time "simplenet" @safetestset "simplenet"    begin include("simplenet.jl") end
     end
-    if select("ALL", "DOC")
+    if true && select("ALL", "DOC")
         @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end

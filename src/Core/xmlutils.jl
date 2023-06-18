@@ -32,15 +32,15 @@ function firstchild(tag::AbstractString, node::XMLNode, ns::AbstractString = pnm
     EzXML.findfirst("./x:$tag | ./$tag", node, ["x" => ns])
 end
 
-"""
-$(TYPEDSIGNATURES)
+# """
+# $(TYPEDSIGNATURES)
 
-Return first child with `tag` or nothing.
-"""
-function getfirst(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
-    x = firstchild(tag, el, ns)
-    isnothing(x) ? nothing : x #TODO why
-end
+# Return first child with `tag` or nothing.
+# """
+# function __getfirst(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
+#     x = firstchild(tag, el, ns)
+#     isnothing(x) ? nothing : x #TODO why
+# end
 
 
 """

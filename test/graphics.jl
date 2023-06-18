@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, parse_graphics, parse_tokengraphics
 
-const pntd = PnmlCoreNet()
+const pntd::PnmlType = PnmlCoreNet()
 @testset "coordinate" begin
     #@test_opt
     #@show PNML.Coordinate(1,2)

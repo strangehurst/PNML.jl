@@ -5,7 +5,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
-const pntd = PnmlCoreNet()
+const pntd::PnmlType = PnmlCoreNet()
 
 @testset "place" begin
     node = xml"""
@@ -17,8 +17,9 @@ const pntd = PnmlCoreNet()
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
     @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, pntd, registry())
 
-    @test_call target_modules = target_modules parse_place(node, pntd, registry())
     n = parse_place(node, pntd, registry())
+    #println("parse_place "); dump(n)
+    @test_call target_modules = target_modules parse_place(node, pntd, registry())
     id = pid(n)
     @test id === :place1
     @test typeof(n) <: Place

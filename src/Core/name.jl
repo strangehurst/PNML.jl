@@ -4,10 +4,8 @@ $(TYPEDFIELDS)
 
 Name is for display, possibly in a tool specific way.
 """
-struct Name <: Annotation
-    text::String
-    graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+@kwdef struct Name <: Annotation
+    text::String = ""
+    graphics::Maybe{Graphics} = nothing
+    tools::Vector{ToolInfo}  = ToolInfo[] #! make ToolInfo concrete?
 end
-
-Name(; text::AbstractString = "", graphics = nothing, tools = nothing) = Name(text, graphics, tools)

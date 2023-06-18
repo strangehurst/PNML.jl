@@ -96,6 +96,9 @@ include("Core/markings.jl")
 include("Core/conditions.jl")
 include("Core/declarations.jl")
 
+include("HighLevel/hldeclarations.jl")
+include("HighLevel/sorts.jl")
+
 include("Core/defaults.jl")
 
 include("Core/nodes.jl")
@@ -113,9 +116,9 @@ include("HighLevel/hltypes.jl")
 include("HighLevel/hldefaults.jl")
 include("HighLevel/structure.jl")
 include("HighLevel/hllabels.jl")
-include("HighLevel/hldeclarations.jl")
+
 include("HighLevel/terms.jl")
-include("HighLevel/sorts.jl")
+
 include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
 include("HighLevel/hlshow.jl")

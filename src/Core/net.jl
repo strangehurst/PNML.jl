@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-mutable struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
+struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} # shared for pages
@@ -18,11 +18,11 @@ end
 
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
 
-pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet(T,
+pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
                                                       marking_type(T),
                                                       inscription_type(T),
                                                       condition_type(T),
-                                                      sort_type(T))
+                                                      sort_type(T)}
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T,
                                                 marking_type(T),

@@ -21,7 +21,7 @@ false
 ```
 #TODO Add high-level
 """
-mutable struct Condition{PNTD, T} <: Annotation
+struct Condition{PNTD, T} <: Annotation
     pntd::PNTD
     text::Maybe{String}
     value::T
