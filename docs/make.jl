@@ -1,13 +1,4 @@
-using Pkg
-#cd(@__DIR__)
-#Pkg.activate(".")
-# The `dev` the various packages in the monorepo.
-#Pkg.develop(path="..")
-#Pkg.instantiate()
-#Pkg.precompile()
-
-using PNML
-using Documenter
+using Pkg, Documenter, PNML
 
 using PNML:
     PnmlType,
