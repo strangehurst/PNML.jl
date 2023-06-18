@@ -2,7 +2,7 @@
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
     <net id="net1" type="pnmlcore">
         <name> <text>pnmlcore with nested pages</text> </name>
-        <page id="page1">
+        <page id="net1page1">
             <place id="p1">
 	            <name>
                     <graphics><offset x="0" y="0"/></graphics>
@@ -28,18 +28,18 @@
             <arc id="a13" source="p1" target="rt1"> </arc>
             <referencePlace id="rp1" ref="p2"/>
             <referenceTransition id="rt1" ref="t11"/>
-            <page id="page11">
+            <page id="net1page11">
                 <transition id ="t11"> </transition>
 		        <arc id="a111" source="p11" target="rp11"> </arc>
 		        <referencePlace id="rp11" ref="p111"/>
-                <page id="page111">
+                <page id="net1page111">
                     <place id="p111"> <initialMarking> <text> 111 </text> </initialMarking> </place>
 		            <arc id="a1111" source="p111" target="rt111"> </arc>
 		            <referenceTransition id="rt111" ref="rt2"/>
                 </page>
             </page>
         </page>
-        <page id="page2">
+        <page id="net1page2">
             <place id="p2"></place>
             <transition id ="t2"></transition>
             <arc id="a21" source="p2" target="t2"></arc>
@@ -48,7 +48,7 @@
             <referencePlace id="rp2" ref="p3"/>
             <referenceTransition id="rt2" ref="t3"/>
         </page>
-        <page id="page3">
+        <page id="net1page3">
             <place id="p3"/>
             <transition id ="t3"/>
             <arc id="a31" source="p3" target="t3"/>
@@ -120,7 +120,6 @@
 					</structure>
 				</hlinitialMarking>
 			</place>
-
 			<transition id="tBO">
 				<graphics><position x="30" y="50"/></graphics>
 				<name><text>Begin_Own_Acc</text></name>
