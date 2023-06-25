@@ -1,5 +1,6 @@
 """
-Wrap a single pnml net.
+Wrap a single pnml net. Presumes that the net does not need to be flattened
+as all content is in first page.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -7,12 +8,12 @@ $(TYPEDFIELDS)
 # Details
 
 """
-struct HLPetriNet{PNTD} <: PetriNet{PNTD}
+struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
-"Construct from string of valid pnml XML using the first network"
+"Construct from string of valid pnml XML, using the first network in model."
 HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
-HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
+HLPetriNet(model::PnmlModel)    = HLPetriNet(first_net(model))
 
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface.
@@ -22,8 +23,8 @@ HLPetriNet(model::PnmlModel)  = HLPetriNet(first_net(model))
 pid(hlpn::HLPetriNet) = pid(hlpn.net)
 
 # Flattened to page[1], so simple vectors.
-places(hlpn::HLPetriNet)      = places(firstpage(hlpn.net))
-transitions(hlpn::HLPetriNet) = transitions(firstpage(hlpn.net))
-arcs(hlpn::HLPetriNet)        = arcs(firstpage(hlpn.net))
-refplaces(hlpn::HLPetriNet)   = refPlaces(firstpage(hlpn.net))
-reftransitions(hlpn::HLPetriNet) = refPlaces(firstpage(hlpn.net))
+places(hlpn::HLPetriNet)      = places(hlpn.net)
+transitions(hlpn::HLPetriNet) = transitions(hlpn.net)
+arcs(hlpn::HLPetriNet)        = arcs(hlpn.net)
+refplaces(hlpn::HLPetriNet)   = refPlaces(hlpn.net)
+reftransitions(hlpn::HLPetriNet) = refPlaces(hlpn.net)

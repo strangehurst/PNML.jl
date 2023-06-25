@@ -8,28 +8,47 @@ Depth = 5
 ```
 # Interface
 
+!!! warning
+    Being a work in progress, there will be obsolete, optimistic or incoherent bits.
+
+    Eventually this section will cover interfaces in a useful way.
+
 The intermediate representation is used to implement networks
 expressed in a pnml model. The consumer of the IR is a network,
 most naturally a varity of Petri Net.
 
 High-Level Petri Net Graphs (HLPNG) can be expressed in a pnml model.
 
-[`PnmlDict`](@ref) is an alias for `Dict{Symbol,Any}`.
-Each XML tag is first parsed into a `PnmlDict`, many are then used
-to create higher-level types. Some parts will continue to find
-use for `PnmlDict`'s flexibility.
-
-[`AnyElement`](@ref) wraps a `PnmlDict` and `XMLNode`.
-
 We start a description of the net IR here.
+
+## PnmlDict or NamedTuple
+
+Switch from `PnmlDict`, a dictionary over `{Symbol,Any}` to `NamedTuple`s.
+There are pnml IDs and XML element tag names are used as names.
+
+Each XML tag is first parsed (recursivly) into a named tuple, with tags as the names,
+then tuple is used to create higher-level types.
+
+Wraps a `NamedTuple`:
+  * [`AnyElement`](@ref)
+  * [`PnmlLabel`](@ref)
+  * [`SortType`](@ref)
+  * [`Term`](@ref)
 
 ## Top Level: Model, Net, Page
 
-At the top level a <pnml> model is one or more networks::[`PnmlNet`](@ref),
+At the top level[^layers] a <pnml> model is one or more networks::[`PnmlNet`](@ref),
 each described by a <net> tag and one or more <page> tags.
 
-[`Page`](@ref) is mostly present for visual presentation to humans.
-It also contains [`PnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
+[`Page`](@ref)
+ is a required element mostly present for visual presentation to humans.
+It contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
+
+[^layers]:
+    `Page` inside a `PnmlNet` inside a `AbstractPetriNet`.
+    Where the Petri Net part is expressed as a Petri Net Type Definition XML schema
+    file (.pntd) identified by a URI. Or would if our nonstandard extensions had schemas
+    defined. Someday there will be such schemas.
 
 [`ObjectCommon`](@ref) is a field of most types.
 This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
@@ -49,22 +68,27 @@ Using them unflattened is not supposed to be impossible,
 but is not the arena or the initial use cases (in no paticular order):
 adapting to use graph tools, agent based modeling, sciml, etc.
 
-[`PetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
+[`AbstractPetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
+Note the **Pnml** to **Petri**.
+
+
+
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
-A concrete `PetriNet` type uses the IR to produce higher-level behavior.
+A concrete `AbstractPetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
 
-`PetriNet` is the level of most Petri Net Graph semantics.
+`AbstractPetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
+One mechanism used is type parameters.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are 1st parsed into [`PnmlDict`](@ref) 
+XML <net> tags are 1st parsed into `NamedTuple`
 which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
-| tag          | XML tag name is standard in the IR             |
+| tag          | XML tag symbol `:net`                          |
 | id           | unique ID                                      |
 | name         | text name, optional                            |
 | tools        | list of tool specific - possibly empty         |
@@ -73,11 +97,12 @@ which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
 | declarations | defines high-level semantics of a net          |
 | pages        | list of pages - not empty                      |
 
-XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@ref) which is used to construct a [`Page`](@ref):
+XML <page> tags are also 1st parsed by [`parse_page!`](@ref) into `NamedTuple`
+which is used to construct a [`Page`](@ref):
 
 | key          | value description                              |
 | :----------- | :--------------------------------------------  |
-| tag          | XML tag name is standard in the IR             |
+| tag          | XML tag symbol `:page`                         |
 | id           | unique ID                                      |
 | name         | text name, optional                            |
 | tools        | list of tool specific - possibly empty         |
@@ -88,6 +113,7 @@ XML <page> tags are also 1st parsed by [`parse_page`](@ref) into [`PnmlDict`](@r
 | refP         | references to place on different page          |
 | refT         | references to transition on different page     |
 | declarations | only net & page tags have declarations         |
+| pages        | pages can be nested                            |
 
 ## Places
 
@@ -127,14 +153,14 @@ Demonstrates the expressiveness of pnml.
 ## Petri Net Graphs and Networks
 
 There are 3 top-level forms:
-  - [`PetriNet`](@ref) subtypes wraping a single `PnmlNet`.
+  - [`AbstractPetriNet`](@ref) subtypes wraping a single `PnmlNet`.
   - [`PnmlNet`](@ref)  maybe multiple pages.
-  - [`Page`](@ref) when the only page of the only net in a petrinet.
+  - [`Page`](@ref) when the only page of the only net in a Abstractpetrinet.
 
 The simplest arrangement is a pnml model with a single <net> element having
 a single page. Any <net> may be flatten to a single page.
 
-The initial `PetriNet` subtypes are built using the assumption that
+The initial `AbstractPetriNet` subtypes are built using the assumption that
 multiple pages will be flattened to a single page.
 
 ```@setup methods
@@ -148,23 +174,24 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 Objects within a pnml graph have unique identifiers,
 which are used for referring to the object.
 This includes:
-[`PnmlObject`](@ref) subtypes,
+[`AbstractPnmlObject`](@ref) subtypes,
 [`PnmlNet`](@ref).
 
 [`PNML.pid`](@ref)
 ```@example methods
 methods(PNML.pid) # hide
 ```
+
 ### name - get name
 
-`PnmlObject`s and `PnmlNet`s have a name label. 
+`AbstractPnmlObject`s and `PnmlNet`s have a name label.
 [`Declaration`](@ref)s have a name attribute.
-[`ToolInfo](@ref)s have a toolname attribute.
+[`ToolInfo`](@ref)s have a toolname attribute.
 
 [`PNML.name`](@ref)
 ```@example methods
 methods(PNML.name) # hide
-``` 
+```
 
 ### tag - access XML tag symbol
 
@@ -280,32 +307,34 @@ methods(PNML.refplace)  # hide
 methods(PNML.reftransition)  # hide
 ```
 
-## Node ID Vector
+## Node ID Iteratables
 
-### place\_ids
-[`PNML.place_ids`](@ref)
+Better to iterate than allocate. Using a set abstraction that iterates consistently, perhaps in insertion order.
+
+### place\_idset
+[`PNML.place_idset`](@ref)
 ```@example methods
-methods(PNML.place_ids)  # hide
+methods(PNML.place_idset)  # hide
 ```
-### transition\_ids
-[`PNML.transition_ids`](@ref)
+### transition\_idset
+[`PNML.transition_idset`](@ref)
 ```@example methods
-methods(PNML.transition_ids)  # hide
+methods(PNML.transition_idset)  # hide
 ```
-### arc\_ids
-[`PNML.arc_ids`](@ref)
+### arc\_idset
+[`PNML.arc_idset`](@ref)
 ```@example methods
-methods(PNML.arc_ids)  # hide
+methods(PNML.arc_idset)  # hide
 ```
-### refplace\_ids
-[`PNML.refplace_ids`](@ref)
+### refplace\_idset
+[`PNML.refplace_idset`](@ref)
 ```@example methods
-methods(PNML.refplace_ids)  # hide
+methods(PNML.refplace_idset)  # hide
 ```
-### reftransition\_ids
-[`PNML.reftransition_ids`](@ref)
+### reftransition\_idset
+[`PNML.reftransition_idset`](@ref)
 ```@example methods
-methods(PNML.reftransition_ids)  # hide
+methods(PNML.reftransition_idset)  # hide
 ```
 
 ## Arc Related
@@ -335,7 +364,7 @@ methods(PNML.inscription)  # hide
 ```@example methods
 methods(PNML.deref!)  # hide
 ```
-### deref\_place - derefeence one place
+### deref\_place - dereference one place
 [`deref_place`](@ref)
 ```@example methods
 methods(PNML.deref_place)  # hide
@@ -455,7 +484,7 @@ methods(PNML.get_toolinfo) # hide
 
 ## PnmlType traits
 
-See [PnmlTypes](@ref) for details of the module.
+See [`PnmlTypeDefs`](@ref) for details of the module.
 
 ## _evaluate, functors, markings,  inscriptions
 
@@ -484,14 +513,13 @@ methods(PNML.default_one_term) # hide
 ```
 
 Things that are functors:
-  - Marking: return `Int`, `Float64`, or `Term` 
-  - Inscription: return `Int`, `Float64`, or `Term` 
-  - Condition: return `Int`, `Float64`, or `Term` 
+  - Marking: return `Int`, `Float64`, or `Term`
+  - Inscription: return `Int`, `Float64`, or `Term`
+  - Condition: return `Int`, `Float64`, or `Term`
   - Term: return a sort's value
 
 Defaults
-  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term 
+  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term
   - inscription: return one(`Int`), one(`Float64`), or default_one_term
   - condition: return `true`, or boolean sort's true value
   - Term: return boolean sort's true value
-

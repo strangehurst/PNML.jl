@@ -1,31 +1,42 @@
+const PIDR = PnmlIDRegistry
+
 """
 $(TYPEDSIGNATURES)
 
-Call the method matching `node.name` from [`tagmap`](@ref) if that mapping exists,
+Call any method matching xml node's tag` in [`tagmap`](@ref),
 otherwise parse as [`unclaimed_label`](@ref) wrapped in a [`PnmlLabel`](@ref).
+All uses are expected to be pnml labels attached to pnml graph nodes, arcs, nets, pages,
+that are excluded from this parsing pathway.
 """
-function parse_node end
-parse_node(node::XMLNode; kw...) = parse_node(node, PnmlCore(); kw...)
-function parse_node(node::XMLNode, pntd::PNTD; kw...) where {PNTD <: PnmlType}
-    if haskey(tagmap, nodename(node))
-        return tagmap[nodename(node)](node, pntd; kw...) # Various types returned here.
+function parse_node(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    CONFIG.verbose && println(lazy"PARSE_NODE $(EzXML.nodename(node))") # Useful for debug.
+    if haskey(tagmap, EzXML.nodename(node))
+        parsefun = @inline tagmap[EzXML.nodename(node)]
+        #@show nameof(parsefun) typeof(parsefun) methods(parsefun) # Useful for debug.
+        return parsefun(node, pntd, idregistry) # Various types returned here.
     else
-        return PnmlLabel(unclaimed_label(node, pntd; kw...), node)
+        return PnmlLabel(unclaimed_label(node, pntd, idregistry), node)
     end
 end
 
+function parse_excluded(node::XMLNode, _, _)
+    @warn "Attempt to parse excluded tag: $(EzXML.nodename(node))"
+end
+
 #TODO test pnml_namespace
+
 """
 $(TYPEDSIGNATURES)
 
-Return namespace of `node. When `node` does not have a namespace return default value [`pnml_ns`](@ref)."
+Return namespace. When `node` does not have a namespace return default value [`pnml_ns`](@ref)
+and warn or throw an error.
 """
-function pnml_namespace(node::XMLNode; missing_ns_fatal=false, default_ns=pnml_ns)
-    if EzXML.hasnamespace(node) 
-         return EzXML.namespace(node)
+function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool=false, default_ns::String=pnml_ns)
+    if EzXML.hasnamespace(node)
+        return EzXML.namespace(node)
     else
-        emsg = "$(nodename(node)) missing namespace"
-        missing_ns_fatal===false ? @warn(emsg) : error(emsg)
+        emsg = "$(EzXML.nodename(node)) missing namespace"
+        missing_ns_fatal ? throw(ArgumentError(emsg)) : @warn(emsg)
         return default_ns
     end
 end
@@ -33,303 +44,493 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Start parse from the pnml root `node` of a well formed XML document.
-Return a [`PnmlModel`](@ref)..
+Build a PnmlModel from a string containing XML.
+See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_pnml(node; kw...)
-    nn = nodename(node)
-    nn == "pnml" || error("element name wrong: $nn" )
-    
-    @assert haskey(kw, :reg)
-    # Do not yet have a PNTD defined, so call parse_net directly.
-    PnmlModel(parse_net.(allchildren("net", node), nothing; kw...), 
-              pnml_namespace(node),
-              kw[:reg], 
-              node)
+function parse_str(str::AbstractString)
+    isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
+    idregistry = registry()
+    # Good place for debugging.
+    parse_pnml(xmlroot(str), idregistry)
 end
 
 """
 $(TYPEDSIGNATURES)
-Return a dictonary of the pnml net with keys matching their XML tag names.
-"""
-function parse_net(node, pntd=nothing; kw...)::PnmlNet
-    nn = nodename(node)
-    nn == "net" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id")   || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "type") || throw(MalformedException("$nn missing type", node))
-    @assert haskey(kw, :reg)
 
-    # Missing the page level in the pnml heirarchy causes nodes to be placed in :labels.
-    # May result in undefined behparse_pnmlavior and/or require ideosyncratic parsing.
+Build a PnmlModel from a file containing XML.
+See [`parse_str`](@ref) and [`parse_pnml`](@ref).
+"""
+function parse_file(fname::AbstractString)
+    isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
+    idregistry = registry()
+    # Good place for debugging.
+    parse_pnml(root(EzXML.readxml(fname)), idregistry)
+end
+
+"""
+    parse_pnml(xmlnode, idregistry) -> PnmlModel
+
+Start parse from the root `node` of a well formed pnml XML document.
+Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
+"""
+function parse_pnml(node::XMLNode, idregistry::PIDR)
+    nn = check_nodename(node, "pnml")
+    namespace = pnml_namespace(node)
+    nets = allchildren("net", node)
+    isempty(nets) && throw(MalformedException(lazy"$nn does not have any <net> elements"))
+
+    # Do not yet have a PNTD defined. Each net can be different Net speciaization.
+    net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation?
+    @assert length(net_tup) > 0
+    if CONFIG.verbose
+        @warn "CONFIG.verbose is true"
+        println("PnmlModel $(length(net_tup)) nets")
+        for n in net_tup
+            println("  ", pid(n), " :: ", typeof(n))
+        end
+    end
+    PnmlModel(net_tup, namespace, idregistry)
+end
+
+"""
+$(TYPEDSIGNATURES)
+Return a [`PnmlNet`](@ref)`.
+"""
+function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
+    nn = check_nodename(node, "net")
+    haskey(node, "id") || throw(MissingIDException(nn))
+    haskey(node, "type") || throw(MalformedException(lazy"$nn missing type"))
+    type = node["type"]
+    if CONFIG.verbose
+        println(lazy"""
+
+        =========
+        parse_net: $(node["id"]) $type $(pntd_override !== nothing && pntd_override)
+        """)
+    end
+
     isempty(allchildren("page", node)) &&
-         throw(MalformedException("$nn does not have any pages"))
+        throw(MalformedException(lazy"""$nn $(node["id"]) does not have any pages"""))
 
-    # Although the petri net type definition (pntd) must be attached to the <net> element,
-    # it is allowed by this package to override that value.
-    pntypedef = pnmltype(node["type"])
-    if isnothing(pntd)
-        pntd = pntypedef
+    # Although the specification says the petri net type definition (pntd) MUST BE attached
+    # to the <net> element, it is allowed by this package to override that value.
+    pn_typedef = pnmltype(type)
+    if isnothing(pntd_override)
+        pntd = pn_typedef
     else
-        @info """
-        parse_net pntd set to $pntd
-                    should be $pntypedef
-        """
+        pntd = pntd_override
+        @info lazy"net $id pntd set to $pntd, overrides $pn_typedef"
     end
-    # Create a PnmlDict with keys for possible child tags.
-    # Some keys have known/required values.
-    # Optional key values are nothing for single object or empty vector when multiples.
-    # Keys that have pural names usually have a vector value.
-    # The 'graphics' key is one exception and has a single value.
-    d = pnml_node_defaults(node, :tag => Symbol(nn),
-                           :id => register_id!(kw[:reg], node["id"]),
-                           :pages => Page[],
-                           :declaration => Declaration())
 
-    #!##pntd = d[:pntd] # Pass the PNTD down the parse tree with keyword arguments.
+    # Now we know the PNTD and can parse.
+    net = parse_net_1(node, pntd, idregistry)
+    return net
+end
 
-    # Go through children looking for expected tags, delegating common tags and labels.
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "page"         => push!(d[:pages], parse_page(child, pntd; kw...))
-            
-            # For nets and pages the <declaration> tag is optional 
-            # <declaration> ia a High-Level Annotation with a <structure> holding
-            # zero or more <declarations>. Is complicated. You have been warned!
-            "declaration"  => (d[:declaration] = parse_declaration(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+"""
+Parse net with a defined PnmlType. The PNTD is used to set
+the marking, inscription, condition and sort type parameters.
+"""
+function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PNTD<:PnmlType}
+    PNTD = typeof(pntd)
+    mtype = marking_type(PNTD)
+    itype = inscription_type(PNTD)
+    ctype = condition_type(PNTD)
+    stype = sort_type(PNTD)
+    pgtype = Page{typeof(pntd), mtype, itype, ctype, stype}
+    #@show mtype itype ctype stype pgtype
+
+    pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
+    netsets = PnmlNetKeys()
+    netdata = PnmlNetData(pntd,
+            OrderedDict{Symbol, Any}(), # Place{PNTD,mtype,stype}}(),
+            OrderedDict{Symbol, Any}(), # Transition{PNTD,ctype}}(),
+            OrderedDict{Symbol, Any}(), # Arc{PNTD,itype}}(),
+            OrderedDict{Symbol, Any}(), # RefPlace{PNTD}}(),
+            OrderedDict{Symbol, Any}()) # RefTransition{PNTD}}())
+
+    id   = register_id!(idregistry, node["id"])
+    name = nothing
+    decl::Maybe{Declaration} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    # Fill the pagedict, netsets, netdata by depth first traversal.
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "page"
+            _parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
+        elseif tag == "declaration" # Make non-high-level also have declaration of some kind.
+            decl = parse_declaration(child, pntd, idregistry)
+        elseif tag == "name"
+            name = parse_name(child, pntd, idregistry)
+        elseif tag == "graphics"
+            @warn "<net> ignoring unexpected <graphics> element"
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
         end
     end
-    PnmlNet(pntd, d[:id], d[:pages], d[:declaration], d[:name], ObjectCommon(d), node)
+
+    if CONFIG.verbose
+        println(lazy"""
+                Net $id, $(length(pagedict))  Pages:  $(keys(pagedict))
+                    page ids: $(collect(values(netsets.page_set)))
+                """)
+    end
+    return PnmlNet(pntd, id, pagedict, netdata, page_idset(netsets),
+                    something(decl, Declaration()), name,
+                    ObjectCommon(nothing, tools, labels), node)
 end
-# Expected XML structure:
-#    <declaration> <structure> <declarations> <namedsort id="weight" name="Weight"> ...
+
+"Call `parse_page!`, add page to dictionary and id set"
+function _parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    pg = parse_page!(pagedict, netdata, node, pntd, idregistry)
+    # Add to dictonary and id set.
+    pageid = pid(pg)
+    pagedict[pageid] = pg
+    push!(page_idset(netsets), pageid)
+    return nothing
+end
+
+"""
+    parse_page!(tup, node, pntd, idregistry) -> Page
+
+Place `Page` in `pagedict` using id as the key.
+"""
+function parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
+    nn = check_nodename(node, "page")
+    haskey(node, "id") || throw(MissingIDException(nn))
+    pageid = register_id!(idregistry, node["id"])
+    CONFIG.verbose && println("""parse $nn $pntd $pageid""")
+    netsets = PnmlNetKeys() # per-page data
+
+    a = @allocated begin
+    decl::Maybe{Declaration} = nothing
+    name = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    place_set      = place_idset(netsets)
+    transition_set = transition_idset(netsets)
+    arc_set        = arc_idset(netsets)
+    rp_set         = refplace_idset(netsets)
+    rt_set         = reftransition_idset(netsets)
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        #CONFIG.verbose && println(lazy"""parse $tag $(child["id"])""")
+        @match tag begin
+            "place"               => parse_place!(place_set, netdata.place_dict, child, pntd, idregistry)
+            "transition"          => parse_transition!(transition_set, netdata.transition_dict, child, pntd, idregistry)
+            "arc"                 => parse_arc!(arc_set, netdata.arc_dict, child, pntd, idregistry)
+            "referencePlace"      => parse_refPlace!(rp_set, netdata.refplace_dict, child, pntd, idregistry)
+            "referenceTransition" => parse_refTransition!(rt_set, netdata.reftransition_dict, child, pntd, idregistry)
+             "page"               => _parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
+            "declaration"         => (decl = parse_declaration(child, pntd, idregistry))
+            "name"                => (name = parse_name(child, pntd, idregistry))
+            "graphics"            => (graphics = parse_graphics(child, pntd, idregistry))
+            "toolspecific"        => add_toolinfo!(tools, child, pntd, idregistry)
+            _                     => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
+        end
+    end
+    end; println("parse_page! $pageid allocated: ", a)
+
+    CONFIG.verbose && println("Page $pageid name '$name' add to ", keys(pagedict))
+
+    return Page(pntd, pageid, something(decl, Declaration()), name,
+                ObjectCommon(graphics, tools, labels),
+                pagedict, # shared by net and all pages.
+                netdata,  # shared by net and all pages.
+                netsets,  # Set of ids "owned" by this page.
+                )
+end
+
+# set is per-Page, dict is per-Net
+function parse_place!(place_set, place_dict, child, pntd, idregistry)
+    pl = parse_place(child, pntd, idregistry)
+    push!(place_set, pid(pl))
+    place_dict[pid(pl)] = pl
+    return nothing
+end
+
+function parse_transition!(transition_set, transition_dict, child, pntd, idregistry)
+    tr = parse_transition(child, pntd, idregistry)
+    push!(transition_set, pid(tr))
+    transition_dict[pid(tr)] = tr
+    return nothing
+end
+
+function parse_arc!(arc_set, arc_dict, child, pntd, idregistry)
+    a = parse_arc(child, pntd, idregistry)
+    push!(arc_set, pid(a))
+    arc_dict[pid(a)] = a
+    return nothing
+end
+
+function parse_refPlace!(refplace_set, refplace_dict, child, pntd, idregistry)
+    rp = parse_refPlace(child, pntd, idregistry)
+    push!(refplace_set, pid(rp))
+    refplace_dict[pid(rp)] = rp
+    return nothing
+end
+
+function parse_refTransition!(reftransition_set, reftransition_dict, child, pntd, idregistry)
+    rt = parse_refTransition(child, pntd, idregistry)
+    push!(reftransition_set, pid(rt))
+    reftransition_dict[pid(rt)] = rt
+    return nothing
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "place")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    id       = register_id!(idregistry, node["id"])
+    mark     = nothing
+    sorttype = nothing
+    name     = nothing
+    graphics = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "initialMarking" || tag == "hlinitialMarking"
+            a = @allocated begin
+                mark = _parse_marking(child, pntd, idregistry)
+            end; a > 0 && println("_parse_marking $id allocated ", a)
+        elseif tag == "type"
+            a = @allocated begin
+                sorttype = parse_type(child, pntd, idregistry)
+            end; a > 0 && println("parse_type $id allocated ", a)
+        elseif tag == "name"
+            a = @allocated begin
+                name = parse_name(child, pntd, idregistry)
+            end; a > 0 && println("place parse_name $id allocated ", a)
+        elseif tag == "graphics"
+            a = @allocated begin
+                graphics = parse_graphics(child, pntd, idregistry)
+            end; a > 0 && println("place parse_graphics $id allocated ", a)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
+        end
+    end
+    end; println("parse_place $id allocated: ", a)
+
+    Place(pntd, id, something(mark,default_marking(pntd)), something(sorttype, default_sort(pntd)),
+            name, ObjectCommon(graphics, tools, labels))
+end
+
+# By generalizing place marking label parsing we hope to return stable type.
+# Calls marking parser specialized on the pntd.
+_parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType} = parse_initialMarking(node, pntd, idregistry)
+_parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore} = parse_hlinitialMarking(node, pntd, idregistry)
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "transition")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    id   = register_id!(idregistry, node["id"])
+    name = nothing
+    cond::Maybe{Condition} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "condition"
+            cond = parse_condition(child, pntd, idregistry)
+        elseif tag == "name"
+            name = parse_name(child, pntd, idregistry)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
+        end
+    end
+    end; println("parse_transition $id allocated: ", a)
+
+    Transition(pntd, id, something(cond, default_condition(pntd)), name, ObjectCommon(graphics, tools, labels))
+end
+
+"""
+    parse_arc(node::XMLNode, pntd::PnmlType, idregistry) -> Arc{typeof(pntd), typeof(inscription)}
+
+Construct an `Arc` with labels specialized for the PnmlType.
+"""
+function parse_arc(node, pntd, idregistry::PIDR)
+    nn = check_nodename(node, "arc")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    nodeid = register_id!(idregistry, node["id"])
+    haskey(node, "source") || throw(ArgumentError("missing source for arc $nodeid"))
+    haskey(node, "target") || throw(ArgumentError("missing target for arc $nodeid"))
+    source = Symbol(node["source"])
+    target = Symbol(node["target"])
+
+    name = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+    inscription::Maybe{Any} = nothing # 2 kinds of inscriptions
+    graphics::Maybe{Graphics} = nothing
+
+    CONFIG.verbose && println("parse arc $nodeid $source -> $target")
+
+    a = @allocated begin
+
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "inscription" || tag == "hlinscription"
+            inscription = _parse_inscription(child, pntd, idregistry)
+        elseif tag == "name"
+            name = parse_name(child, pntd, idregistry)
+        elseif tag == "graphics"
+            graphics => parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
+        end
+    end
+    end; println("parse_arc $nodeid allocated ", a)
+
+    Arc(pntd, nodeid, source, target, something(inscription, default_inscription(pntd)),
+                name, ObjectCommon(graphics, tools, labels))
+end
+
+# By specializing arc inscription label parsing we hope to return stable type.
+_parse_inscription(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType} = parse_inscription(node, pntd, idregistry)
+_parse_inscription(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore} = parse_hlinscription(node, pntd, idregistry)
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "referencePlace")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    id = register_id!(idregistry, node["id"])
+    EzXML.haskey(node, "ref") || throw(MalformedException("$nn $id missing ref attribute"))
+    ref = Symbol(node["ref"])
+    name = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+    graphics::Maybe{Graphics} = nothing
+
+    a = @allocated begin
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "name"
+            name => parse_name(child, pntd, idregistry)
+        elseif tag === "graphics"
+            graphics => parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
+        end
+    end
+    end; println("parse_refPlace $id allocated ", a)
+
+    RefPlace(pntd, id, ref, name, ObjectCommon(graphics, tools, labels))
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "referenceTransition")
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    id = register_id!(idregistry, node["id"])
+    EzXML.haskey(node, "ref") || throw(MalformedException("$nn $id missing ref attribute"))
+    ref = Symbol(node["ref"])
+    name = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+    graphics::Maybe{Graphics} = nothing
+
+    a = @allocated begin
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "name"
+            name = parse_name(child, pntd, idregistry)
+        elseif tag == "graphics"
+            graphics => parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
+        end
+    end
+    end; println("parse_refTransition $id allocated ", a)
+
+    RefTransition(pntd, id, ref, name, ObjectCommon(graphics, tools, labels))
+end
+
+#----------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)
 
-PNML requires at least one page.
+Return the stripped string of node's content.
 """
-function parse_page(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "page" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    @assert haskey(kw, :reg)
-
-    d = pnml_node_defaults(node, :tag => Symbol(nn),
-                           :id => register_id!(kw[:reg], node["id"]),
-                           :places => Place[],
-                           :trans => Transition[],
-                           :arcs => Arc[],
-                           :refP => RefPlace[],
-                           :refT => RefTransition[],
-                           :declaration => Declaration(),
-                           :pages => Page[])
-
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "place"       => push!(d[:places], parse_place(child, pntd; kw...))
-            "transition"  => push!(d[:trans], parse_transition(child, pntd; kw...))
-            "arc"         => push!(d[:arcs], parse_arc(child, pntd; kw...))
-            "referencePlace"      => push!(d[:refP], parse_refPlace(child, pntd; kw...))
-            "referenceTransition" => push!(d[:refT], parse_refTransition(child, pntd; kw...))
-            # See note above about declarations vs. declaration.
-            "declaration" => (d[:declaration] = parse_declaration(child, pntd; kw...))
-            "page"        => push!(d[:pages], parse_page(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
-        end
-    end
-    Page(pntd, d[:id],
-        d[:places], d[:refP],
-        d[:trans], d[:refT],
-        d[:arcs],
-        d[:declaration], d[:pages], d[:name], ObjectCommon(d))
+function parse_text(node::XMLNode, _::PnmlType, _::PIDR)
+    check_nodename(node, "text")
+    return string(strip(nodecontent(node)))
 end
 
 """
 $(TYPEDSIGNATURES)
-"""
-function parse_place(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "place" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    @assert haskey(kw, :reg)
 
-    d = pnml_node_defaults(node, :tag => Symbol(nn),
-                           :id => register_id!(kw[:reg], node["id"]),
-                           :marking => default_marking(pntd),
-                           :type => default_sort(pntd)) # Different from net's.
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            # Tags initialMarking and hlinitialMarking are mutually exclusive.
-            "initialMarking"   => (d[:marking] = parse_initialMarking(child, pntd; kw...))
-            "hlinitialMarking" => (d[:marking] = parse_hlinitialMarking(child, pntd; kw...))
-            # Here type means `sort`. Re: Many-sorted algebra.
-            "type"             => (d[:type] = parse_type(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
+Return [`Name`](@ref) label holding text value and optional tool & GUI information.
+"""
+function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "name")
+    CONFIG.verbose && print("parse name ") #! debug
+
+    text::Maybe{String} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools = ToolInfo[]
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            text = string(strip(nodecontent(child)))
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # No labels here
+            @warn "unexpected child of <name>: $tag"
         end
     end
 
-    Place(pntd, d[:id], d[:marking], d[:type], d[:name], ObjectCommon(d))
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_transition(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "transition" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    @assert haskey(kw, :reg)
-
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kw[:reg], node["id"]),
-                           :condition=>default_condition(pntd))
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "condition"    => (d[:condition] = parse_condition(child, pntd; kw...))
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
-        end
-    end
-    Transition(pntd, d[:id], d[:condition], d[:name], ObjectCommon(d))
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_arc(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "arc" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    @assert haskey(node, "source")
-    @assert haskey(node, "target")
-    @assert haskey(kw, :reg)
-
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kw[:reg], node["id"]),
-                           :source=>Symbol(node["source"]),
-                           :target=>Symbol(node["target"]),
-                           :inscription=>default_inscription(pntd))
-    foreach(elements(node)) do child
-        if pntd isa AbstractHLCore
-            @match nodename(child) begin
-                # Mutually exclusive tags: inscription, hlinscription
-                "hlinscription"  => (d[:inscription] = parse_hlinscription(child, pntd; kw...))
-                _ => parse_pnml_node_common!(d, child, pntd; kw...)
-            end
+    # There are pnml files that break the rules & do not have a text element here.
+    # Ex: PetriNetPlans-PNP/parallel.jl
+    # Attempt to harvest content of <name> element instead of the child <text> element.
+    if isnothing(text)
+        if CONFIG.text_element_optional
+            @warn lazy"$nn missing <text> element" # Remove when CONFIG default set to false.
+            text = string(strip(nodecontent(node)))
         else
-            @match nodename(child) begin
-                # Mutually exclusive tags: inscription, hlinscription
-                "inscription"    => (d[:inscription] = parse_inscription(child, pntd; kw...))
-                _ => parse_pnml_node_common!(d, child, pntd; kw...)
-            end
+            throw(ArgumentError(lazy"$nn missing <text> element"))
         end
     end
-    Arc(pntd, d[:id], d[:source], d[:target], d[:inscription], d[:name], ObjectCommon(d))
-end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_refPlace(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "referencePlace" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id")  || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "ref") || throw(MalformedException("$(nn) missing ref attribute", node))
-    @assert haskey(kw, :reg)
-
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kw[:reg], node["id"]),
-                           :ref=>Symbol(node["ref"]))
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
-        end
-    end
-    RefPlace(pntd, d[:id], d[:ref], d[:name], ObjectCommon(d))
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_refTransition(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "referenceTransition" || error("element name wrong: $nn")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn, node))
-    EzXML.haskey(node, "ref") || throw(MalformedException("$(nn) missing ref attribute", node))
-    @assert haskey(kw, :reg)
-
-    d = pnml_node_defaults(node, :tag=>Symbol(nn),
-                           :id=>register_id!(kw[:reg], node["id"]),
-                           :ref=>Symbol(node["ref"]))
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            _ => parse_pnml_node_common!(d, child, pntd; kw...)
-        end
-    end
-    RefTransition(pntd, d[:id], d[:ref], d[:name], ObjectCommon(d))
-end
-
-#----------------------------------------------------------
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the stripped string of nodecontent.
-"""
-function parse_text(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "text" || error("$nn nodename wrong")
-    string(strip(nodecontent(node)))
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return [`Name`](@ref) holding text value and optional tool & GUI information.
-"""
-function parse_name(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "name" || error("element nodename wrong")
-
-    # Using firstchild or allchildren can cause parse_node to be passed nothing
-    # for optional or missing child nodes.
-
-    textnode = firstchild("text", node)
-    if isnothing(textnode)
-        @warn "$(nn) missing <text> element"
-        # There are pnml files that break the rules & do not have a text element here.
-        # Ex: PetriNetPlans-PNP/parallel.jl
-        # Attempt to harvest content of <name> element instead of the child <text> element.
-        # Assumes there are no other children elements.
-        text = string(strip(nodecontent(node)))
-    else
-        text = string(strip(nodecontent(textnode)))
-    end
-
-    graphicsnode = firstchild("graphics", node)
-    graphics = isnothing(graphicsnode) ? nothing : parse_graphics(graphicsnode, pntd; kw..., verbose=false)
-
-    toolspecific = allchildren("toolspecific", node)
-    tools = isempty(toolspecific) ? nothing : parse_toolspecific.(toolspecific, Ref(pntd); kw..., verbose=false)
-
-    Name(; text, graphics, tools)
-end
-
-#----------------------------------------------------------
-#
-#----------------------------------------------------------
-
-"""
-$(TYPEDSIGNATURES)
-
-Return [`Structure`](@ref) wrapping a `PnmlDict` holding a <structure>.
-Should be inside of an label. 
-A "claimed" label usually elids the <structure> level (does not call this method).
-"""
-function parse_structure(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "structure" || error("element name wrong: $nn")
-    Structure(unclaimed_label(node, pntd; kw...), node)
+    isempty(text) && @info "empty name"
+    CONFIG.verbose && println("parsed name $text") #! debug
+    return Name(text, graphics, tools)
 end
 
 #----------------------------------------------------------
@@ -338,99 +539,166 @@ end
 #
 #----------------------------------------------------------
 
-# Place Transition nets (PT-Nets) use only the text tag of a label for
-# the meaning of marking and inscriptions.
-
 """
 $(TYPEDSIGNATURES)
 """
-function parse_initialMarking(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "initialMarking" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), 
-        :value=>isempty(nodecontent(node)) ? _evaluate(default_marking(pntd)) :
-                    number_value(strip(nodecontent(node)))
-                    )
+function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "initialMarking")
+    value = nothing
+    structure = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
 
-    foreach(elements(node)) do child
-        @match nodename(child) begin
+    if isempty(EzXML.nodecontent(node))
+        # Treat missing value as if the <initialMarking> element was absent.
+        @warn lazy"missing  <initialMarking> nodecontent, using default $(_evaluate(default_marking(pntd)))"
+        value = _evaluate(default_marking(pntd))
+    else
+        a = @allocated begin
+        for child in EzXML.eachelement(node)
+            tag = nodename(child)
             # We extend to real numbers.
-            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            _ => parse_pnml_label_common!(d, child, pntd; kw...)
+            if tag == "text"
+                value = number_value(marking_value_type(pntd), (string ∘ strip ∘ nodecontent)(child))
+            elseif tag == "structure"
+                # Allow <structure> for non-high-level labels.
+                structure = parse_structure(child, pntd, idregistry)
+                @warn "$nn <structure> element not implement" structure
+            elseif tag == "graphics"
+                graphics = parse_graphics(child, pntd, idregistry)
+            elseif tag == "toolspecific"
+                add_toolinfo!(tools, child, pntd, idregistry) #! Add tool to collections
+            else
+                @warn "$nn ignoring unknown child '$tag'"
+            end
         end
+        end; a > 0 && println("parse_initialMarking allocated ", a)
     end
-    PTMarking(d[:value], ObjectCommon(d))
+
+    Marking(something(value, number_value(marking_value_type(pntd), (strip ∘ strip ∘ nodecontent)(node))),
+            ObjectCommon(graphics, tools, labels))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_inscription(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "inscription" || error("element name wrong: $nn'")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn),
-        :value=>isempty(nodecontent(node)) ? _evaluate(default_inscription(pntd)) :
-                                    number_value(strip(nodecontent(node))))
+function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "inscription")
+    CONFIG.verbose && println("parse inscription ", nn)
 
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "text" => (d[:value] = number_value(string(strip(nodecontent(child)))))
-            # Should not have a sturucture.
-            _ => parse_pnml_label_common!(d, child, pntd; kw...)
+    value = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            txt = (string ∘ strip ∘ EzXML.nodecontent)(child)
+            value = number_value(inscription_value_type(pntd), txt)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
         end
     end
-    PTInscription(d[:value], ObjectCommon(d))
+    end; a > 0 && println("parse_inscription allocated ", a)
+    # Treat missing value as if the <inscription> element was absent.
+    if isnothing(value) && CONFIG.warn_on_fixup
+        @warn("missing or unparsable <inscription> value")
+    end
+    Inscription(something(value, default_inscription(pntd)()), ObjectCommon(graphics, tools, labels))
 end
 
-# High-Level Nets, includeing PT-HLPNG, are expected to use the structure child node to
-# define the semantics of marking and inscriptions.
-# 
 """
 $(TYPEDSIGNATURES)
 
 High-level initial marking labels are expected to have a [`Term`](@ref) in the <structure>
-child. We extend the pnml standard by allowing node content to be numeric: 
+child. We extend the pnml standard by allowing node content to be numeric:
 parsed to `Int` and `Float64`.
 """
-function parse_hlinitialMarking(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "hlinitialMarking" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn), 
-                            :text=>nothing, 
-                            :structure=>nothing)
-    foreach(elements(node)) do child
-        @match nodename(child) begin
-            "structure" => (d[:structure] =
-                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_marking(pntd)())
-            _ => parse_pnml_label_common!(d, child, pntd; kw...)
+function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
+    nn = check_nodename(node, "hlinitialMarking")
+    text::Maybe{AbstractString} = nothing
+    term::Maybe{AbstractTerm} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            text = string(strip(nodecontent(child)))
+        elseif tag == "structure"
+            term = parse_marking_term(child, pntd, idregistry)
+            #! TODO match sort of place
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
         end
     end
-    HLMarking(d[:text], d[:structure], ObjectCommon(d))
+    end; a > 0 && println("parse_hlinitialMarking allocated ", a)
+
+    HLMarking(text, something(term, default_marking(pntd)), ObjectCommon(graphics, tools, labels))
+end
+
+parse_marking_term(marknode, pntd, idregistry) = begin
+    check_nodename(marknode, "structure")
+    if EzXML.haselement(marknode)
+        parse_term(EzXML.firstelement(marknode), pntd, idregistry)
+    else
+        # Handle an empty <structure>.
+        default_marking(pntd)
+    end
 end
 
 """
 $(TYPEDSIGNATURES)
-w"""
-function parse_hlinscription(node, pntd::T; kw...) where {T <: AbstractHLCore}
-    @debug node
-    nn = nodename(node)
-    nn == "hlinscription" || error("element name wrong: $nn'")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    foreach(elements(node)) do child
+
+hlinscriptions are expressions.
+"""
+function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
+    check_nodename(node, "hlinscription")
+
+    text::Maybe{AbstractString} = nothing
+    term::Maybe{AbstractTerm} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
         @match nodename(child) begin
-        # Expect <structure> to contain a Term as a child tag.
-        #! If no Term and there is content parse content as a number.
-        # Otherwise use the default inscription 
-        "structure" => (d[:structure] = 
-                haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                #! !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                default_inscription(pntd)()) 
-        _ => parse_pnml_label_common!(d, child, pntd; kw...)
+            "text"         => (text = parse_text(child, pntd, idregistry))
+            "structure"    => (term = parse_inscription_term(child, pntd, idregistry))
+            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
+            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
+            _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
         end
     end
-    HLInscription(d[:text], d[:structure], ObjectCommon(d))
+    end; println("parse_hlinscription allocated ", a)
+
+    HLInscription(text, something(term, default_inscription(pntd)),
+                    ObjectCommon(graphics, tools, labels))
+end
+
+parse_inscription_term(inscriptionnode, pntd, idregistry)::Term = begin
+    check_nodename(inscriptionnode, "structure")
+    if EzXML.haselement(inscriptionnode)
+        parse_term(EzXML.firstelement(inscriptionnode), pntd, idregistry)
+    else
+        # Handle an empty <structure>.
+        default_inscription(pntd)
+    end
 end
 
 """
@@ -442,29 +710,45 @@ Label of transition nodes.
 
 Condition is defined by the ISO Specification as a High-level Annotation,
 meaning it has <text> and <structure> elements. With all meaning in the element
-that the <structure> holds. 
+that the <structure> holds evaluating to a boolean value.
+We extend this to anything that evaluates to a boolean value when
+treated as a functor.
 
-We extend Condition by allowing <structure> to have _context_ instead of of a child element.
-This content is treated as either an Integer or Float64. 
-
-A Condition should evaluate to a boolean. We defer that evaluation to a higher level.
+A Condition should evaluate to a boolean.
 See [`AbstractTerm`](@ref).
 """
-function parse_condition(node, pntd; kw...)
-    @debug node
-    nn = nodename(node)
-    nn == "condition" || error("element name wrong: $nn")
-    d = pnml_label_defaults(node, :tag=>Symbol(nn))
-    foreach(elements(node)) do child
+function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    check_nodename(node, "condition")
+    text::Maybe{AbstractString} = nothing
+    term::Maybe{Any} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
+    a = @allocated begin
+    for child in EzXML.eachelement(node)
         @match nodename(child) begin
-            "structure" => (d[:structure] = 
-                    haselement(child) ? parse_term(firstelement(child), pntd; kw...) : 
-                    !isempty(nodecontent(child)) ? number_value(strip(nodecontent(child))) :
-                    default_condition(pntd)())
-            _ => parse_pnml_label_common!(d, child, pntd; kw...)
+            "text"         => (text = parse_text(child, pntd, idregistry))
+            "structure"    => (term = parse_condition_term(child, pntd, idregistry))
+            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
+            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
+            _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
         end
     end
-    Condition(d[:text], d[:structure], ObjectCommon(d))
+    end; println("parse_condition allocated ", a)
+
+    Condition(pntd, text, something(term, default_bool_term(pntd)), ObjectCommon(graphics, tools, labels))
+end
+# <structure> contains a a pnml term
+function parse_condition_term(conditionnode, pntd::PnmlType, idregistry)
+    check_nodename(conditionnode, "structure")
+
+    if EzXML.haselement(conditionnode)
+        parse_term(EzXML.firstelement(conditionnode), pntd, idregistry)
+    else
+        # Handle an empty <structure>.
+        default_bool_term(pntd)
+    end
 end
 
 #---------------------------------------------------------------------
@@ -473,11 +757,11 @@ end
 $(TYPEDSIGNATURES)
 
 Should not often have a '<label>' tag, this will bark if one is found.
-Return minimal PnmlDict holding (tag,node), to defer parsing the xml.
+Return NamedTuple (tag,node), to defer parsing the xml.
 """
-function parse_label(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "label" || error("element name wrong: $nn")
-    @warn "parse_label '$(node !== nothing && nn)'"
-    PnmlDict(:tag=>Symbol(nn), :xml=>node) # Always add xml because this is unexpected.
+function parse_label(node::XMLNode, _::PnmlType, _::PIDR)
+    @assert node !== nothing
+    nn = check_nodename(node, "label")
+    @warn "parse_label means there is a label names 'label'"
+    (; :tag => Symbol(nn), :xml => node) # Always add xml because this is unexpected.
 end

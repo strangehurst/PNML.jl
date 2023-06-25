@@ -1,7 +1,12 @@
-using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode, parse_name, nets
+using PNML, EzXML, ..TestUtils, JET, OrderedCollections
+using PNML: Maybe,
+    tag, pid, xmlnode, firstpage,
+    parse_file, parse_name, parse_initialMarking, parse_inscription,
+    parse_declaration, parse_transition,  parse_toolspecific,
+    PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
+    nets, pages, arcs, place, places, transitions, has_place,
+    allchildren, firstchild, value, allpages
 
-header("parse tree")
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -24,117 +29,147 @@ str = """
   </net>
 </pnml>
 """
-doc = EzXML.parsexml(str) # shared by testsets
-
-#if PRINT_PNML
-#    EzXML.prettyprint(doc);
-#    println()
-#end
+pnmldoc = PNML.xmlroot(str) # shared by testsets
 
 @testset "parse tree" begin
-    pnml = root(doc)
-    @test EzXML.nodename(pnml) == "pnml"
-    @test EzXML.namespace(pnml) == "http://www.pnml.org/version-2009/grammar/pnml"
+    @test EzXML.nodename(pnmldoc) == "pnml"
+    @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
 
-    reg = PNML.IDRegistry()
+    reg = registry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
-    foreach(PNML.allchildren("net", pnml)) do net
+    for net in allchildren("net", pnmldoc)
         @test nodename(net) == "net"
 
-        nn = parse_name(PNML.firstchild("name", net), PnmlCore(); reg)
+        nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
         @test isa(nn, PNML.Name)
         @test nn.text == "P/T Net with one place"
         @test nn.graphics === nothing
         @test nn.tools === nothing || isempty(nn.tools)
 
-        nd = PNML.allchildren("declaration", net)
-        @test_call PNML.allchildren("declaration", net)
+        nd = allchildren("declaration", net)
         @test isempty(nd)
-        @test isempty(parse_node.(nd; reg)) # Empty elements are leaf-enough.
+        ndx = parse_declaration.(nd, Ref(reg))
+        @test isempty(ndx)
+        #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
+        #@test_opt  allchildren("declaration", net)
+        @test_call target_modules=target_modules allchildren("declaration", net)
 
-        nt = PNML.allchildren("toolspecific", net)
+        nt = allchildren("toolspecific", net)
         @test isempty(nt)
-        @test isempty(parse_node.(nt; reg))
+        @test isempty(parse_toolspecific.(nt, Ref(reg)))
 
-        pages = PNML.allchildren("page", net)
+        pages = allchildren("page", net)
         @test !isempty(pages)
 
-        foreach(pages) do page
+        for page in pages
             @test nodename(page) == "page"
 
-            @test !isempty(PNML.allchildren("place", page))
-            foreach(PNML.allchildren("place", page)) do p
+            @test !isempty(allchildren("place", page))
+            for p in allchildren("place", page)
                 @test nodename(p) == "place"
-                i = parse_node(PNML.firstchild("initialMarking", p); reg)
-                @test_call PNML.firstchild("initialMarking", p)
-                @test typeof(i) <: PNML.PTMarking
-                @test typeof(i.value) <: Number
-                @test i.value >= 0
-                @test xmlnode(i) isa Maybe{EzXML.Node}
+                fc = firstchild("initialMarking", p)
+                i = parse_initialMarking(fc, PnmlCoreNet(), reg)
+                #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
+                @test_call target_modules=target_modules firstchild("initialMarking", p)
+                @test typeof(i) <: PNML.Marking
+                @test typeof(value(i)) <: Union{Int,Float64}
+                @test value(i) >= 0
+                #@test xmlnode(i) isa Maybe{EzXML.Node}
             end
 
-            @test !isempty(PNML.allchildren("transition", page))
-            foreach(PNML.allchildren("transition", page)) do t
+            @test !isempty(allchildren("transition", page))
+            for t in allchildren("transition", page)
                 @test nodename(t) == "transition"
-                cond = PNML.firstchild("condition", t)
+                cond = firstchild("condition", t)
                 @test cond === nothing
-                #i = parse_node(PNML.firstchild("condition", t); reg)
             end
 
-            @test !isempty(PNML.allchildren("arc", page))
-            foreach(PNML.allchildren("arc", page)) do a
+            @test !isempty(allchildren("arc", page))
+            for a in allchildren("arc", page)
                 @test nodename(a) == "arc"
-                ins = PNML.firstchild("inscription", a)
+                ins = firstchild("inscription", a)
                 if ins !== nothing
-                    i = parse_node(ins; reg)
-                    @test typeof(i) <: PNML.PTInscription
-                    @test typeof(i.value) <: Number
-                    @test i.value > 0
-                    @test xmlnode(i) isa Maybe{EzXML.Node}
+                    i = parse_inscription(ins, PnmlCoreNet(), reg)
+                    @test typeof(i) <: PNML.Inscription
+                    @test typeof(value(i)) <: Union{Int,Float64}
+                    @test value(i) > 0
+                    #@test xmlnode(i) isa Maybe{EzXML.Node}
                 end
             end
         end
     end
-    PNML.reset_registry!(reg)
 end
 
 @testset "parse node level" begin
-
     # Do a full parse and maybe print the generated data structure.
-    reg = PNML.IDRegistry()
-    pnml_ir = parse_pnml(root(doc); reg)
-    @test typeof(pnml_ir) <: PNML.PnmlModel
+    reg = registry()
+    pnml_ir = parse_pnml(pnmldoc, reg)
+    @test typeof(pnml_ir) <: PnmlModel
 
-    foreach(nets(pnml_ir)) do net
-        @test net isa PNML.PnmlNet
-        @test net.id isa Symbol
+    for net in nets(pnml_ir)
+        @test net isa PnmlNet
+        @test pid(net) isa Symbol
 
-        foreach(net.pages) do page
-            @test page isa PNML.Page
+        for page in pages(net)
+            @test page isa Page
             @test pid(page) isa Symbol
-            foreach(page.places) do place
-                @test place isa PNML.Place
-                @test pid(place) isa Symbol
+            for p in places(page)
+                @test p isa Place
+                placeid = pid(p)
+                @test placeid isa Symbol
+                @test has_place(page, placeid)
+                @test pid(place(page, placeid)) === placeid
             end
-            foreach(page.transitions) do transition
-                @test transition isa PNML.Transition
+            for transition in transitions(page)
+                @test transition isa Transition
                 @test pid(transition) isa Symbol
             end
-            foreach(page.arcs) do arc
-                @test arc isa PNML.Arc
+            for arc in arcs(page)
+                @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
-            foreach(PNML.declarations(page)) do decl
-                @test decl isa PNML.Declaration
+            for decl in PNML.declarations(page)
+                @test decl isa Declaration
                 @test decl[:text] !== nothing || decl[:structure] !== nothing
             end
         end
 
-        foreach(PNML.declarations(net)) do decl
-            @test decl isa PNML.Declaration
+        for decl in PNML.declarations(net)
+            @test decl isa Declaration
             @test decl[:text] !== nothing || decl[:structure] !== nothing
         end
     end
+end
 
-    PNML.reset_registry!(reg)
+@testset "AirplaneLD pnml file" begin
+    pnml_dir = joinpath(@__DIR__, "data")
+    testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
+
+    model = parse_file(testfile)
+    @test model isa PnmlModel
+
+    netvec = nets(model)
+    @test netvec isa Tuple{Vararg{PnmlNet{<:PnmlType}}}
+    @test length(netvec) == 1
+
+    net = first(netvec)
+    @test net isa PnmlNet
+    @test net isa PnmlNet{<:PnmlType}
+    @test net isa PnmlNet{<:AbstractHLCore}
+    @test net isa PnmlNet{<:SymmetricNet}
+
+    #@show typeof(pages(net))
+    @test pages(net) isa Base.Iterators.Filter
+    @test length(allpages(net)) == 1
+    @test firstpage(net) isa Page
+    @test !isempty(arcs(firstpage(net)))
+    @test !isempty(places(firstpage(net)))
+    # 3 ways to do the same thing
+    @test !isempty(transitions(firstpage(net)))
+    @test !isempty(transitions(first(pages(net))))
+    #! @test !isempty(transitions(pages(net)[1]))
+
+    #@test_opt function_filter=pnml_function_filter parse_file(testfile)
+    @test_call target_modules=target_modules parse_file(testfile)
+    @test_call nets(model)
 end

@@ -1,7 +1,16 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid
+using PNML: tag, pid, parse_graphics, parse_tokengraphics
 
-header("GRAPHICS")
+const _pntd::PnmlType = PnmlCoreNet()
+@testset "coordinate" begin
+    #@test_opt
+    #@show PNML.Coordinate(1,2)
+    @test_call PNML.Coordinate(1,2)
+    #@test_opt
+    #@show PNML.Coordinate(1.1,2.2)
+    @test_call PNML.Coordinate(1.1,2.2)
+end
+
 @testset "graphics" begin
     str = """
     <graphics>
@@ -16,22 +25,18 @@ header("GRAPHICS")
            style="normal" weight="normal" />
     </graphics>
     """
-    doc = EzXML.parsexml(str)
-    n = parse_node(root(doc); reg=PNML.IDRegistry())
-    printnode(n)
-    
+    n = parse_graphics(xmlroot(str), _pntd, registry())
+
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
-    @test n.position isa Vector{PNML.Coordinate}
+    @test n.positions isa Vector{PNML.Coordinate{Int}}
 
-    @test_call PNML.Coordinate(1,2)
-    @test_call PNML.Coordinate(1.1,2.2)
-
+    #@show n.offset n.dimension n.positions
     # There can only be one offset, last tag parsed wins.
     @test n.offset == PNML.Coordinate(7,8)
     @test n.dimension == PNML.Coordinate(5,6)
-    @test length(n.position) == 2
-    @test n.position == [PNML.Coordinate(1,2), PNML.Coordinate(3,4)]
+    @test length(n.positions) == 2
+    @test n.positions == [PNML.Coordinate(1,2), PNML.Coordinate(3,4)]
 
     @test n.line isa PNML.Line
     @test n.line.color == "linecolor"
@@ -41,7 +46,7 @@ header("GRAPHICS")
 
     @test n.fill isa PNML.Fill
     @test n.fill.color == "fillcolor"
-    @test n.fill.image === nothing
+    @test isempty(n.fill.image) # === nothing
     @test n.fill.gradient_color == "none"
     @test n.fill.gradient_rotation === "horizontal"
 
@@ -50,67 +55,65 @@ header("GRAPHICS")
     @test n.font.style == "normal"
     @test n.font.weight == "normal"
     @test n.font.size == "11"
-    @test n.font.decoration === nothing
+    @test isempty(n.font.decoration) # === nothing
     @test n.font.align == "center"
     @test n.font.rotation == "0.0"
 end
 
 
 @testset "tokengraphics" begin
-    str0 = """
- <tokengraphics>
- </tokengraphics>
-"""
-    str1 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
- </tokengraphics>
-"""
-    str2 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
- </tokengraphics>
-"""
-    str3 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
-     <tokenposition x="-2" y="2"/>
- </tokengraphics>
-"""
-    str4 = """
- <tokengraphics>
-     <tokenposition x="-9" y="-2"/>
-     <tokenposition x="2"  y="3"/>
-     <tokenposition x="-2" y="2"/>
-     <tokenposition x="-2" y="-22"/>
- </tokengraphics>
-"""
-    str5 = """
- <tokengraphics>
-     <tokenposition x="-1.2" y="-22.33"/>
- </tokengraphics>
-"""
-    str6 = """
- <tokengraphics>
-     <tokenposition x="-1" y="-2"/>
-     <tokenposition x="-1.2" y="-22.33"/>
- </tokengraphics>
-"""
-    @testset "tokengraphics $l tokenpositions" for (s,l) in [str0=>0,
-                                                             str1=>1,
-                                                             str2=>2,
-                                                             str3=>3,
-                                                             str4=>4,
-                                                             str5=>1,
-                                                             str6=>2]
-        n = parse_node(root(EzXML.parsexml(s)); reg=PNML.IDRegistry())
-        @test n isa PNML.TokenGraphics
-        @test length(n.positions) == l
-        #for p in n.positions
-        #    @show p, PNML.eltype(p.x)
-        #end
-    end
-end
 
+    str0 = """<tokengraphics></tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str0), _pntd, registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 0
+
+    str1 = """<tokengraphics>
+                <tokenposition x="-9" y="-2"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str1), _pntd, registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 1
+
+    str2 = """<tokengraphics>
+                <tokenposition x="-9" y="-2"/>
+                <tokenposition x="2"  y="3"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str2), _pntd, registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 2
+
+    str3 = """<tokengraphics>
+                    <tokenposition x="-9" y="-2"/>
+                    <tokenposition x="2"  y="3"/>
+                    <tokenposition x="-2" y="2"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str3), _pntd, registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 3
+
+    str4 = """<tokengraphics>
+                    <tokenposition x="-9" y="-2"/>
+                    <tokenposition x="2"  y="3"/>
+                    <tokenposition x="-2" y="2"/>
+                    <tokenposition x="-2" y="-22"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str4), _pntd, registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 4
+
+    str5 = """<tokengraphics>
+                    <tokenposition x="-1.2" y="-22.33"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str5), ContinuousNet(), registry())
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 1
+
+    str6 = """<tokengraphics>
+                    <tokenposition x="-1" y="-2"/>
+                    <tokenposition x="-1.2" y="-22.33"/>
+            </tokengraphics>"""
+    n = parse_tokengraphics(xmlroot(str6), ContinuousNet(), registry()) # hubrid?
+    @test n isa PNML.TokenGraphics
+    @test length(n.positions) == 2
+end

@@ -1,8 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode
 
-header("FLATTEN")
-
 @testset "deref" begin
     str = """
     <?xml version="1.0"?>
@@ -30,13 +28,14 @@ header("FLATTEN")
             </page>
         </net>
     </pnml>
-    """ 
+    """
     model = parse_str(str)
     net = PNML.first_net(model)
+    #@test_opt PNML.first_net(model)
     @test_call PNML.first_net(model)
 
     PNML.flatten_pages!(net)
-    @test_call PNML.flatten_pages!(net)
+    #@test_opt PNML.flatten_pages!(net)
     @test typeof(net) <: PNML.PnmlNet
     #@show net
 end

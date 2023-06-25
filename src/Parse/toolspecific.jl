@@ -6,22 +6,19 @@ Return [`ToolInfo`](@ref) with tool & version attributes and content.
 The content can be one or more well-formed xml elements.
 Each are wrapped in a [`PnmlLabel`](@ref).
 """
-function parse_toolspecific(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "toolspecific" || error("element name wrong: $nn")
-    EzXML.haskey(node, "tool") || throw(MalformedException("$(nn) missing tool attribute", node))
-    EzXML.haskey(node, "version") || throw(MalformedException("$(nn) missing version attribute", node))
-    
-    d = PnmlDict(
-                :tool    => node["tool"],
-                :version => node["version"])
-    
-    d[:content] = AnyElement[] # 
+function parse_toolspecific(node, pntd, reg)
+    nn = check_nodename(node, "toolspecific")
+    EzXML.haskey(node, "tool") || throw(MalformedException(lazy"$nn missing tool attribute"))
+    EzXML.haskey(node, "version") || throw(MalformedException(lazy"$nn missing version attribute"))
 
-    foreach(elements(node)) do child
+    tool    = node["tool"]
+    version = node["version"]
+    content = AnyElement[]
+    CONFIG.verbose && println(lazy"$nn $tool $version")
+    for child in eachelement(node)
         #TODO: Specialize/verify on tool, version. User supplied?
         #TODO: Register additional tool specific parsers?
-        push!(d[:content], anyelement(child, pntd; kw...))
+        push!(content, anyelement(child, pntd, reg))
     end
-    ToolInfo(d[:tool], d[:version], d[:content], node)
+    ToolInfo(tool, version, content, node)
 end

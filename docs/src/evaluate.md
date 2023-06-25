@@ -1,0 +1,11 @@
+## Evaluate possible functors
+
+# Examples
+
+```jldoctest; setup=(using PNML: _evaluate, Term)
+julia> _evaluate(1)
+1
+
+julia> _evaluate(true)
+true
+```

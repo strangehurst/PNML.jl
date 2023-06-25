@@ -1,7 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlnode, parse_pnml
-
-header("DOCUMENT")
+using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel,
+    PnmlNet
 
 @testset "Show" begin
 str =
@@ -28,28 +27,28 @@ str =
   </net>
 </pnml>
     """
-    pnml_ir = parse_pnml(root(parsexml(str)); reg=PNML.IDRegistry())
-    @test typeof(pnml_ir) <: PNML.PnmlModel
-    @show pnml_ir
+    model = parse_pnml(xmlroot(str), registry())
+    @test model isa PnmlModel
+    #@show model
 end
 
-header("### Registry")
-@testset "Document & IDRegistry" begin
+@testset "Document & ID Registry" begin
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """
-    reg = PNML.IDRegistry()
-    @test !PNML.isregistered(reg, :net)
+    reg = registry()
+    @test !isregistered(reg, :net)
     @test :net ∉ reg.ids
 
-    parse_pnml(root(parsexml(str)); reg)
-    @test_call parse_pnml(root(parsexml(str)); reg)
+    parse_pnml(xmlroot(str), reg)
+    @report_opt parse_pnml(xmlroot(str), reg)
+    @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
     #@show reg
 
-    @test PNML.isregistered(reg, :net)
+    @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end
 
@@ -57,43 +56,52 @@ end
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-      <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet"> <page id="page1"/> </net>
+      <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <page id="page1"/>
+      </net>
       <net id="net2" type="pnmlcore"> <page id="page2"/> </net>
       <net id="net3" type="ptnet"> <page id="page3"/> </net>
       <net id="net4" type="hlcore"> <page id="page4"/> </net>
       <net id="net5" type="pt_hlpng"> <page id="page5"/> </net>
     </pnml>
     """
+    model = @inferred parse_str(str)
 
-    @show model = parse_str(str)
-
-    v1 = PNML.find_nets(model, :ptnet)
-    printnode(v1, label="v1")
-    @test_call PNML.PnmlTypes.pnmltype(:ptnet)
-    foreach(v1) do net
-        @test net.type === PNML.PnmlTypes.pnmltype(:ptnet)
+    #println()
+    for net in PNML.nets(model)
+        t = PNML.nettype(net)
+        ntup = PNML.find_nets(model, t)
+        #@show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+        for n in ntup
+            @test t === PNML.nettype(n)
+        end
     end
-    v2 = PNML.find_nets(model, "ptnet")
-    printnode(v2, label="v2")
-    foreach(v2) do net
-        @test net.type === PNML.PnmlTypes.pnmltype(:ptnet)
+    v1 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :ptnet)
+
+    @test_opt pnmltype(:ptnet)
+    @test_call pnmltype(:ptnet)
+    for net in v1
+        @test net.type === pnmltype(:ptnet)
+    end
+    v2 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, "ptnet")
+    for net in v2
+        @test net.type === PNML.PnmlTypeDefs.pnmltype(:ptnet)
     end
 
     @test v1 == v2
     @test length(v1) == 2
 
     v3 = PNML.find_nets(model, :pnmlcore)
-    printnode(v3, label="v3")
-    foreach(v3) do net
-        @test net.type === PNML.PnmlTypes.pnmltype(:pnmlcore)
+    for net in v3
+        @test net.type === pnmltype(:pnmlcore)
     end
 
     @test !isempty(v3)
     @test v3 != v1
 
     @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
-        foreach(PNML.find_nets(model, t)) do net
-            @test net.type === PNML.PnmlTypes.pnmltype(t)
+        for net in PNML.find_nets(model, t)
+            @test net.type === pnmltype(t)
         end
     end
 end
@@ -110,5 +118,5 @@ end
     """
 
     model = parse_str(str)
-    @test model isa PNML.PnmlModel
+    @test model isa PnmlModel
 end

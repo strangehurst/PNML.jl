@@ -1,101 +1,85 @@
-using PNML #, EzXML
+using PNML
 using AbstractTrees, Test, SafeTestsets
 using PrettyPrinting
-using IfElse
-# Run the tests embedded in docstrings.
-using Documenter, LabelledArrays
+using Documenter
+#, LabelledArrays
 using JET
 
-const GROUP = get(ENV, "GROUP", "All")
+const GROUPS = (split ∘ uppercase)(get(ENV, "GROUP", "ALL"))
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
 
-module TestUtils
-using EzXML
-
-"Turn string into XML node."
-to_node(s::AbstractString) = root(EzXML.parsexml(s))
-
-const PRINT_PNML = parse(Bool, get(ENV, "PRINT_PNML", "true"))
-
-"Print `node` prepended by optional label string."
-function printnode(io::IO, node; label=nothing, kw...)
-    if PRINT_PNML
-        !isnothing(label) && print(io, label, " ")
-        show(io, MIME"text/plain"(), node)
-        println(io, "\n")
-    end
-end
-function printnode(n; kw...)
-    printnode(stdout, n; kw...)
-end
-
-function printnodeln(io::IO, n; kw...)
-    printnode(io, n; kw...)
-    PRINT_PNML && println(io)
-end
-
-const VERBOSE_PNML = parse(Bool, get(ENV, "VERBOSE_PNML", "true"))
-
-header(s) = if VERBOSE_PNML
-    println("##### ", s)
-end
-
-const SHOW_SUMMARYSIZE = parse(Bool, get(ENV, "SHOW_SUMMARYSIZE", "false"))
-
-function showsize(ob,k)
-    if SHOW_SUMMARYSIZE && PRINT_PNML
-        summarysz = Base.summarysize(ob[k])
-        @show k,summarysz
-    end
-end
-
-export PRINT_PNML, VERBOSE_PNML, SHOW_SUMMARYSIZE,
-    to_node, printnode, header, showsize
-
-end # module TestUtils
-
+include("TestUtils.jl")
 using .TestUtils
 
-"Return true if one of the GROUP environment variable's values if found in 'v'."
-select(v...) = any(any(==(g), v) for g in split(GROUP))
+"Return true if one of the GROUP environment variable's values is found in 'v'."
+select(v...) = any(any(==(g), v) for g in GROUPS)
 
 if select("None")
     return
 end
 
-@testset verbose=false "PNML.jl" begin
-    if select("All", "Base")
-        TestUtils.header("Base")
-        @safetestset "maps"         begin include("maps.jl") end
-        @safetestset "utils"        begin include("utils.jl") end
+#############################################################################
+@time "ALL TESTS" begin
+
+# Check for ambiguous methods.
+@time "ambiguous" begin
+    ambiguous = detect_ambiguities(PNML; recursive=true)
+    for amb in ambiguous
+        @show amb
     end
-    if select("All", "IR")
-        header("IR")
-        @safetestset "nodes"        begin include("nodes.jl") end
-        @safetestset "graphics"     begin include("graphics.jl") end
-        @safetestset "labels"       begin include("labels.jl") end
-        @safetestset "parse_labels" begin include("parse_labels.jl") end
-        @safetestset "declarations" begin include("declarations.jl") end
-        @safetestset "toolspecific" begin include("toolspecific.jl") end
-        @safetestset "exceptions"   begin include("exceptions.jl") end
-        @safetestset "parse_tree"   begin include("parse_tree.jl") end
-        @safetestset "pages"        begin include("pages.jl") end
-        @safetestset "flatten"      begin include("flatten.jl") end
+    @test length(ambiguous) == 0
+end
+# Check for unbound type parameters.
+@time "unbound" begin
+    unbound = detect_unbound_args(PNML; recursive=true)
+    for unb in unbound
+        @show unb
     end
-    if select("All", "Examples")
-            @safetestset "example file" begin include("parse_examples.jl") end
+    @test length(unbound) == 0
+end
+
+UNDER_CI = (get(ENV, "CI", nothing) == "true")
+const noisy::Bool = false
+@testset verbose=true failfast=true showtiming=true "PNML.jl" begin
+#@testset verbose=true "PNML.jl" begin
+    if select("ALL", "BASE")
+        noisy && println("BASE")
+        @time "typedefs" @safetestset "typedefs"  begin include("typedefs.jl") end
+        @time "registry" @safetestset "registry"  begin include("idregistry.jl") end
+        @time "utils"    @safetestset "utils"     begin include("utils.jl") end
     end
-    if select("All", "Net")
-        header("Net")
-        @safetestset "document"     begin include("document.jl") end
-        @safetestset "simplenet"    begin include("simplenet.jl") end
+    if select("ALL", "CORE")
+        noisy && println("CORE")
+        @time "labels"       @safetestset "labels"       begin include("labels.jl") end
+        @time "nodes"        @safetestset "nodes"        begin include("nodes.jl") end
+        @time "pages"        @safetestset "pages"        begin include("pages.jl") end
+        @time "exceptions"   @safetestset "exceptions"   begin include("exceptions.jl") end
+        @time "flatten"      @safetestset "flatten"      begin include("flatten.jl") end
+        @time "graphics"     @safetestset "graphics"     begin include("graphics.jl") end
+        @time "toolspecific" @safetestset "toolspecific" begin include("toolspecific.jl") end
     end
-    if select("All", "Doc")
-        header("Doctests")
-        @testset "doctest" begin doctest(PNML, manual = true) end
+    if select("ALL", "HIGHLEVEL")
+        noisy && println("HIGHLEVEL")
+        @time "declarations" @safetestset "declarations" begin include("declarations.jl") end
+        @time "labels_hl"    @safetestset "labels_hl"    begin include("labels_hl.jl") end
+    end
+
+    if select("ALL", "PARSE") # Overall full flow test
+        noisy && println("PARSE")
+        @time "document"  @safetestset "document"     begin include("document.jl") end
+        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
+    end
+    if select("ALL", "NET")
+        noisy && println("NET")
+        @time "rate"      @safetestset "rate"         begin include("rate.jl") end
+        @time "simplenet" @safetestset "simplenet"    begin include("simplenet.jl") end
+    end
+    if select("ALL", "DOC")
+        @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end
+end # time

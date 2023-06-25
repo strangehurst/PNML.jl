@@ -1,0 +1,7 @@
+name = "PnmlIDRegistrys"
+uuid = "3ce11b44-b057-481c-a673-d1befee9aa42"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"

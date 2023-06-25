@@ -1,36 +1,24 @@
-using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe
- 
-@testset "ID registry" begin
-    @test_call PNML.IDRegistry()
-    reg = PNML.IDRegistry()
-    @test_call PNML.register_id!(reg, :p)
-    @test_call PNML.register_id!(reg, "p")
-    @test_call PNML.reset_registry!(reg)
-    @test_call PNML.duplicate_id_action(:p; action=:bogus)
-    
-    PNML.register_id!(reg, "p")
-    @test @inferred PNML.isregistered(reg, "p")
-    @test @inferred PNML.isregistered(reg, :p)
-    PNML.reset_registry!(reg)
-    @test !PNML.isregistered(reg, "p")
-    @test !PNML.isregistered(reg, :p)
+using PNML, ..TestUtils, JET
+import EzXML
+using PNML: Maybe, getfirst, firstchild, allchildren
 
-    @test_logs (:warn,"ID 'p' already registered") PNML.duplicate_id_action(:p)
-    @test_logs (:warn,"ID 'p' already registered") PNML.duplicate_id_action(:p; action=:warn)
-    @test_throws ErrorException PNML.duplicate_id_action(:p; action=:error)
-    @test @inferred( PNML.duplicate_id_action(:p; action=:bogus) ) === nothing
-end
-
-header("GETFIRST")
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
-    @test_call PNML.getfirst(==("3"), v)
-    @test "3" == @inferred Maybe{String} PNML.getfirst(==("3"), v)
-    @test nothing === @inferred Maybe{String} PNML.getfirst(==("33"), v)
+    @test_call getfirst(==("3"), v)
+    @test "3" == @inferred Maybe{String} getfirst(==("3"), v)
+    @test nothing === @inferred Maybe{String} getfirst(==("33"), v)
 end
 
-@testset "getfirst XMLNode" begin
+@testset "ExXML" begin
+    @test_throws ArgumentError xmlroot("")
+    @test_throws "empty XML string" xmlroot("")
+    # This kills the testset. Macros cannot throw?
+    #@test_throws( ArgumentError, xml"")
+
+    @test_throws MethodError EzXML.namespace(nothing)
+end
+
+ @testset "getfirst XMLNode" begin
     node = xml"""<test>
         <a name="a1"/>
         <a name="a2"/>
@@ -39,8 +27,13 @@ end
         <c name="c2"/>
     </test>
     """
-    @test_call nodename(PNML.getfirst("a", node))
-    @test nodename(PNML.getfirst("a", node)) == "a"
-    @test PNML.getfirst("b", node) === nothing
-    @test nodename(PNML.getfirst("c", node)) == "c"
+    @test_call target_modules=target_modules firstchild("a", node)
+    @test_call EzXML.nodename(firstchild("a", node))
+    @test EzXML.nodename(firstchild("a", node)) == "a"
+    @test firstchild("a", node)["name"] == "a1"
+    @test firstchild("b", node) === nothing
+    @test EzXML.nodename(firstchild("c", node)) == "c"
+
+    @test_call target_modules=target_modules allchildren("a", node)
+    @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]
 end

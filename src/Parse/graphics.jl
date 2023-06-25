@@ -4,28 +4,27 @@ $(TYPEDSIGNATURES)
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
 defined for token graphics. Contains <tokenposition> tags.
 """
-function parse_tokengraphics(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "tokengraphics" || error("element name wrong: $nn")
-    positions = allchildren("tokenposition", node)
-    if isempty(positions) 
-        TokenGraphics() # Empty is legal.
+function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
+    nn = check_nodename(node, "tokengraphics")
+    positions = allchildren("tokenposition", node) # returns Vector{XMLNode}
+    if isnothing(positions) || isempty(positions)
+        @warn "$nn does not have any <tokenposition> elements"
+        TokenGraphics{coordinate_value_type(pntd)}() # Empty is legal.
     else
-        #TODO: Enforce type sameness of position coordinates? How?
-        TokenGraphics(parse_tokenposition.(positions, Ref(pntd); kw...))
+        tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg))
+        (isnothing(tpos) || isempty(tpos)) && throw(MalformedException("$nn did not parse positions"))
+        TokenGraphics{coordinate_value_type(pntd)}(tpos)
     end
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Cartesian coordinate relative to containing element.
+Return Cartesian [`Coordinate`](@ref) relative to containing element.
 """
-function parse_tokenposition(node, pntd; kw...)
-    nn = nodename(node)
-    nn == "tokenposition" || error("element name wrong: $nn")
-
-    parse_graphics_coordinate(node, pntd; kw...)
+function parse_tokenposition(node, pntd, reg)
+    check_nodename(node, "tokenposition")
+    parse_graphics_coordinate(node, pntd, reg)
 end
 
 """
@@ -34,32 +33,23 @@ $(TYPEDSIGNATURES)
 Arcs, Annotations and Nodes have different graphics semantics.
 Return a [`Graphics`](@ref) holding the union of possibilities.
 """
-function parse_graphics(node, pntd; kw...)
-    @debug node
-    nn = nodename(node)
-    nn == "graphics" || error("element name wrong: $nn")
-
-    d = PnmlDict(:tag => Symbol(nn),
-                 :line => nothing, :positions => Coordinate[], :dimension => nothing,
-                 :fill => nothing, :font => nothing, :offset => nothing)
-    foreach(elements(node)) do child
-        @match nodename(child) begin 
-            "dimension" => (d[:dimension] = parse_graphics_coordinate(child, pntd; kw...))
-            "fill"      => (d[:fill] = parse_graphics_fill(child, pntd; kw...))
-            "font"      => (d[:font] = parse_graphics_font(child, pntd; kw...))
-            "line"      => (d[:line] = parse_graphics_line(child, pntd; kw...))
-            "offset"    => (d[:offset] = parse_graphics_coordinate(child, pntd; kw...))
-            "position"  => (push!(d[:positions], parse_graphics_coordinate(child, pntd; kw...)))
-            _ => @warn "ignoring <graphics> child '$(child)'"
+function parse_graphics(node, pntd, reg)
+    nn = check_nodename(node, "graphics")
+    args = Dict()
+    _positions = Coordinate{coordinate_value_type(pntd)}[]
+    for child in eachelement(node)
+        @match nodename(child) begin
+            "dimension" => (args[:dimension] = parse_graphics_coordinate(child, pntd, reg))
+            "fill"      => (args[:fill] = parse_graphics_fill(child, pntd, reg))
+            "font"      => (args[:font] = parse_graphics_font(child, pntd, reg))
+            "line"      => (args[:line] = parse_graphics_line(child, pntd, reg))
+            "offset"    => (args[:offset] = parse_graphics_coordinate(child, pntd, reg))
+            "position"  => push!(_positions, parse_graphics_coordinate(child, pntd, reg))
+            _ => @warn "$nn ignoring <graphics> child '$child'"
         end
     end
-    Graphics(;
-             dim=d[:dimension],
-             fill=d[:fill],
-             font=d[:font],
-             line=d[:line],
-             offset=d[:offset],
-             position=d[:positions])
+    args[:positions] = _positions
+    Graphics{coordinate_value_type(pntd)}(; pairs(args)...)
 end
 
 """
@@ -67,16 +57,14 @@ $(TYPEDSIGNATURES)
 
 Return [`Line`](@ref).
 """
-function parse_graphics_line(node, pntd; kw...)
-    nn = nodename(node)
-    (nn == "line") || error("element name wrong: $nn")
-
-    color = EzXML.haskey(node, "color") ? node["color"] : nothing
-    shape = EzXML.haskey(node, "shape") ? node["shape"] : nothing
-    style = EzXML.haskey(node, "style") ? node["style"] : nothing
-    width = EzXML.haskey(node, "width") ? node["width"] : nothing
-
-    Line(; shape, color, width, style)
+function parse_graphics_line(node, pntd, reg)
+    check_nodename(node, "line")
+    args = Dict()
+    EzXML.haskey(node, "color") && (args[:color] = node["color"])
+    EzXML.haskey(node, "shape") && (args[:shape] = node["shape"])
+    EzXML.haskey(node, "style") && (args[:style] = node["style"])
+    EzXML.haskey(node, "width") && (args[:width] = node["width"])
+    Line(; pairs(args)...)
 end
 
 """
@@ -85,15 +73,17 @@ $(TYPEDSIGNATURES)
 Return [`Coordinate`](@ref).
 Specification seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node, pntd; kw...)
-    nn = nodename(node)    
-    (nn=="position" || nn=="dimension" ||
-     nn=="offset" || nn=="tokenposition") || error("element name wrong: $nn")
+function parse_graphics_coordinate(node, pntd, reg)
+    nn = nodename(node)
+    if !(nn=="position" || nn=="dimension" || nn=="offset" || nn=="tokenposition")
+        throw(ArgumentError("element name wrong: $nn"))
+    end
 
-    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x", node))
-    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y", node))
+    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x"))
+    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y"))
 
-    Coordinate(number_value(node["x"]), number_value(node["y"]))
+    Coordinate(number_value(coordinate_value_type(pntd), node["x"]),
+               number_value(coordinate_value_type(pntd), node["y"]))
 end
 
 """
@@ -101,16 +91,14 @@ $(TYPEDSIGNATURES)
 
 Return [`Fill`](@ref)
 """
-function parse_graphics_fill(node, pntd; kw...)
-    nn = nodename(node)
-    (nn == "fill") || error("element name wrong: $nn")
-    
-    clr  = EzXML.haskey(node, "color") ? node["color"] : nothing
-    img  = EzXML.haskey(node, "image") ? node["image"] : nothing
-    gclr = EzXML.haskey(node, "gradient-color")    ? node["gradient-color"] : nothing
-    grot = EzXML.haskey(node, "gradient-rotation") ? node["gradient-rotation"] : nothing
-    
-    Fill(color=clr, image=img, gradient_color=gclr, gradient_rotation=grot)
+function parse_graphics_fill(node, pntd, reg)
+    check_nodename(node, "fill")
+    args = Dict()
+    EzXML.haskey(node, "color") && (args[:color] = node["color"])
+    EzXML.haskey(node, "image") &&  (args[:image] = node["image"])
+    EzXML.haskey(node, "gradient-color")    && (args[:gradient_color] = node["gradient-color"])
+    EzXML.haskey(node, "gradient-rotation") && (args[:gradient_rotation] = node["gradient-rotation"])
+    Fill(; args...)
 end
 
 """
@@ -118,18 +106,15 @@ $(TYPEDSIGNATURES)
 
 Return [`Font`](@ref).
 """
-function parse_graphics_font(node, pntd; kw...)
-    nn = nodename(node)
-    (nn == "font") || error("element name wrong: $nn")
-    
-    align  = EzXML.haskey(node, "align")      ? node["align"] : nothing
-    deco   = EzXML.haskey(node, "decoration") ? node["decoration"] : nothing
-    family = EzXML.haskey(node, "family")     ? node["family"] : nothing
-    rot    = EzXML.haskey(node, "rotation")   ? node["rotation"] : nothing
-    size   = EzXML.haskey(node, "size")       ? node["size"] : nothing
-    style  = EzXML.haskey(node, "style")      ? node["style"] : nothing
-    weight = EzXML.haskey(node, "weight")     ? node["weight"] : nothing
-    
-    Font(; family, style, weight, size, decoration=deco, align, rotation=rot)
+function parse_graphics_font(node, pntd, reg)
+    check_nodename(node, "font")
+    args = Dict()
+    EzXML.haskey(node, "weight")     && (args[:weight] = node["weight"])
+    EzXML.haskey(node, "style")      && (args[:style] = node["style"])
+    EzXML.haskey(node, "align")      && (args[:align] = node["align"])
+    EzXML.haskey(node, "decoration") && (args[:decoration] = node["decoration"])
+    EzXML.haskey(node, "family")     && (args[:family] = node["family"])
+    EzXML.haskey(node, "rotation")   && (args[:rotation] = node["rotation"])
+    EzXML.haskey(node, "size")       && (args[:size]   = node["size"])
+    Font(; pairs(args)...)
 end
-

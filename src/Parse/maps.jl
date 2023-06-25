@@ -1,23 +1,32 @@
 # Ideas from MathML.jl
 
 """
-Map XML tag names to parser functions.
-
 $(TYPEDEF)
+Map XML <tag> names to parser functions named "parse_tag".
+Allows associative lookup of parser using ideas from Tim Holy's MathML package.
+
 """
 const tagmap = Dict{String,Function}(
-    #! <pnml> and <net> should not be found by parse_node. Called directly.
-    # "pnml" => parse_pnml, 
-    # "net" => parse_net,
+    # Some are not called by parse_node. Called directly, perhaps with varying arguments.
+    # So replace any calls through this path with a warning/error. Usually caused by tests.
+    # --------------------------
+    "pnml" => parse_excluded,
+    "net" => parse_excluded,
+    "page"  => parse_excluded,
+    "place"  => parse_excluded,
+    "arc"  => parse_excluded,
+    "transition"  => parse_excluded,
+    "referencePlace"  => parse_excluded,
+    "referenceTransition"  => parse_excluded,
+
     "and" => parse_and,
     "arbitraryoperator" => parse_arbitraryoperator,
     "arbitrarysort" => parse_arbitrarysort,
-    "arc"  => parse_arc,
     "bool" => parse_bool,
     "booleanconstant" => parse_booleanconstant,
     "condition" => parse_condition,
     "declaration" => parse_declaration,
-    "declarations"  => parse_declarations,
+    #"declarations"  => parse_declarations,
     "equality" => parse_equality,
     "graphics" => parse_graphics,
     "hlinitialMarking" => parse_hlinitialMarking,
@@ -32,11 +41,7 @@ const tagmap = Dict{String,Function}(
     "namedoperator" => parse_namedoperator,
     "not" => parse_not,
     "or" => parse_or,
-    "page"  => parse_page,
-    "place"  => parse_place,
     "productsort" => parse_productsort,
-    "referencePlace"  => parse_refPlace,
-    "referenceTransition"  => parse_refTransition,
     "sort" => parse_sort,
     "structure" => parse_structure,
     "term" => parse_term, #TODO is this valid?
@@ -44,7 +49,6 @@ const tagmap = Dict{String,Function}(
     "tokengraphics"  => parse_tokengraphics,
     "tokenposition" => parse_tokenposition,
     "toolspecific"  => parse_toolspecific,
-    "transition"  => parse_transition,
     "tuple" => parse_tuple,
     "type" => parse_type,
     "unparsed" => parse_unparsed,
@@ -53,6 +57,8 @@ const tagmap = Dict{String,Function}(
     "variable" => parse_variable,
     "variabledecl" => parse_variabledecl,
 
+    # High-Level Petri Net labels are part of a many-sorted algebra.
+    # ----------------------------
     # "add" => unclaimed_label,
     # "addition" => unclaimed_label,
     # "all" => unclaimed_label,
@@ -149,4 +155,3 @@ const tagmap = Dict{String,Function}(
     # "value" => unclaimed_label,
     # "zeroOrMore" => unclaimed_label,
 )
-

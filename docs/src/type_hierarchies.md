@@ -12,33 +12,35 @@ AbstractTrees.children(x::Type) = subtypes(x)
 type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition
-See [PnmlTypes](@ref) module page.
 
-There are levels:  Core (Place-Transition), Continuous and High-Level PNG.
+See [`PnmlTypeDefs`](@ref) module page.
 
-[`PnmlCore`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCore` is used by some `PetriNet` concrete types ([`SimpleNet`](@ref)).
+There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
-[`ContinuousNet`](@ref) uses floating point marking and inscriptions.
-It is an extension to the ISO specification.
+[`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
+`PnmlCoreNet` is used by some `AbstractPetriNet` concrete types ([`SimpleNet`](@ref)).
 
-[`HLCore`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
-`HLCore` is used by some `PetriNet` concrete types ([`HLPetriNet`](@ref)).
+[`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
+`ContinuousNet` uses floating point marking and inscriptions.
+It is a nonstandard extension to the ISO specification.
+
+[`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
+`HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
 The IR does not try to impose semantics on the model. Those semantics should
-be part of [`PetriNet`](@ref).  The IR tries to represent the model (all models)
-at a structural level. It may paramertize types to facilitate specilaization.
+be part of [`AbstractPetriNet`](@ref).  The IR tries to represent the model (all models)
+at a structural level. It may paramertize types to facilitate specilization.
 
 ```@example type
-type_tree(PNML.PnmlTypes.PnmlType) # hide
+type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 ```
 
 | PnmlType     | Place | Trans | Arc  | Description                                               |
 | :---------   | :---- | :---- | :--- | :-------------------------------------------------------- |
-| PnmlCore     |       |       |      | <name> is only defined label                              |
+| PnmlCoreNet  |       |       |      | <name> is only defined label                              |
 | PTNet        | PTM   | none  | PTI  | <initialMarking>, <inscription> labels only have <text>   |
-| HLCore       | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
+| HLCoreNet    | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
 | PT-HLPNG     | HLM   | Cond  | HLI  | restrict sort to dot, condition always true               |
 | SymmetricNet | HLM   | Cond  | HLI  | restrict sorts to finite, annotations have <structure>    |
 | HLNet        | HLM   | Cond  | HLI  | extend symmetric with arbitrary sorts                     |
@@ -50,8 +52,8 @@ Todo: Continuous Petri Net
 
 | Abbreviation | Full Name     | Node       | Label Description                                   |
 |:-------------|:--------------|:-----------|:----------------------------------------------------|
-| PTM          | PTMarking     | Place      |                                                     |
-| PTI          | PTInscription | Arc        |                                                     |
+| PTM          | Marking       | Place      |                                                     |
+| PTI          | Inscription   | Arc        |                                                     |
 | HLM          | HLMarking     | Place      |                                                     |
 | HLI          | HLInscription | Arc        |                                                     |
 | Cond         | Condition     | Transition |                                                     |
@@ -61,21 +63,32 @@ Todo: Continuous Petri Net
 |              |               |            |                                                     |
 
 
-## PetriNet
-[`PetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
+## AbstractPetriNet
+[`AbstractPetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
 
 ```@example type
-type_tree(PNML.PetriNet) # hide
+type_tree(PNML.AbstractPetriNet) # hide
 ```
 
-## PnmlObject
-Page, Arc, Place, Transition define the graph of a petri net.
+## AbstractPnmlObject
+[`Page`](@ref), [`Arc`](@ref), [`Place`](@ref), [`Transition`](@ref) define the graph of a petri net.
+
 ```@example type
-type_tree(PNML.PnmlObject) # hide
+type_tree(PNML.AbstractPnmlObject) # hide
 ```
+
+Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
+
+| Name     | Type |
+|:---------|:-----------------------------------|
+| id       | Symbol |
+| pntd     | <: PnmlType |
+| name     | Maybe{Name} |
+| com      | ObjectCommon |
+
 ## AbstractLabel
-Labels are attached to `PnmlObject`s. 
-Kinds of label include: marking, inscription, condition and 
+Labels are attached to `AbstractPnmlObject`s.
+Kinds of label include: marking, inscription, condition and
 declarations of sorts, operators, and variables.
 ```@example type
 type_tree(PNML.AbstractLabel) # hide
@@ -98,17 +111,31 @@ type_tree(PNML.AbstractPnmlTool) # hide
 ```@example type
 type_tree(PNML.PnmlException) # hide
 ```
+# Many-sorted Algebra Concepts
+The PNML Specification builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
+
+Implemented loosely so that it is mostly part of the PnmlCore implementation. Both <text> and <structure> are optional. Presumption is that the consumer will have good tests and defenses. **TODO: Seems like a layer boundary in the degign.**
+
+And we allow all net types to have probably-nonstandard julia declaration, sort-type objects.
+
+The <type> label is meant to be a _sort_ of a _many-sorted algebra_. We call it sort-type to reduce the confusion.
+
+For nets other than high-level nets we implemented the sort-type object to be `one(Int64)` or `one(Float64)`. Whereas for high-level nets the sort-type object is an [`HLAnnotation`](@ref).
+
+The sort-type HLAnnotation label's <structure> will be parsed into a [`SortType`](@ref).
+Unsurprisingly, <text> is parsed to `String`.
+
 ## AbstractDeclaration
 Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 ```@example type
 type_tree(PNML.AbstractDeclaration) # hide
 ```
 ## AbstractSort
-High-level net's `Place` has a sort. 
+High-level net's `Place` has a sort.
 ```@example type
 type_tree(PNML.AbstractSort) # hide
 ```
-## AbstractTerm 
+## AbstractTerm
 Part of the *many-sorted algebra* of a High-level net.
 ```@example type
 type_tree(PNML.AbstractTerm) # hide

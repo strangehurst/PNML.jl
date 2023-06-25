@@ -1,106 +1,124 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, xmlnode, labels, firstpage, pid
+using PNML:
+    Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
+    registry, AnyElement, AnyXmlNode, name, value, isregistered
 
-header("DECLARATIONS")
+const _pntd::PnmlType = PnmlCoreNet()
+
 @testset "Declaration()" begin
-    @show d = PNML.Declaration()
-    @test length(PNML.declarations(d)) == 0
-    @show Core.fieldtype(PNML.Declaration, 1)
+    decl = PNML.Declaration()
+    @test length(PNML.declarations(decl)) == 0
     @test_call PNML.Declaration()
-end # declarations
+end
+
+@testset "parse_sort" begin
+    @test parse_sort(xml"<bool/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<dot/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<productsort/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<usersort/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<partition/>", PnmlCoreNet(), registry()) isa AnyElement
+end
 
 @testset "empty declarations" begin
     # The attribute should be ignored.
-    n = parse_node(xml"""
-        <declaration key="test">
+    decl = parse_declaration(xml"""
+        <declaration key="test empty">
           <structure>
            <declarations>
            </declarations>
           </structure>
         </declaration>
-        """; reg = PNML.IDRegistry())
+        """, _pntd, registry())
 
-    @show typeof(n), fieldnames(typeof(n))
-    printnode(n)
+    @test typeof(decl) <: PNML.Declaration
+    @test xmlnode(decl) isa Maybe{EzXML.Node}
+    @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
+    @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
-    @test typeof(n) <: PNML.Declaration
-    @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test typeof(PNML.declarations(n)) <: Vector{Any} #TODO {PNML.AbstractDeclaration}
-    @test length(PNML.declarations(n)) == 0
+    @test typeof(PNML.common(decl)) <: PNML.ObjectCommon
+    @test PNML.graphics(decl) === nothing
+    @test PNML.tools(decl) !== nothing
+    @test PNML.labels(decl) !== nothing
+    @test isempty(PNML.common(decl))
 
-    @test typeof(n.com) <: PNML.ObjectCommon
-    @test PNML.graphics(n) === nothing
-    @test PNML.tools(n) === nothing
-    @test PNML.labels(n) === nothing
-    @test isempty(n.com)
-
-    @test_call PNML.declarations(n)
-    @test_call PNML.graphics(n)
-    @test_call PNML.tools(n)
-    @test_call PNML.labels(n)
+    @test_call PNML.declarations(decl)
+    @test_call PNML.graphics(decl)
+    @test_call PNML.tools(decl)
+    @test_call PNML.labels(decl)
 end
 
 @testset "declaration tree" begin
-        node = xml"""
-        <declaration>
-            <structure>
-                <declarations>
-                    <namedsort id="LegalResident" name="LegalResident">
-                        <cyclicenumeration>
-                            <feconstant id="LegalResident0" name="0"/>
-                            <feconstant id="LegalResident1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
-                    <namedsort id="MICSystem" name="MICSystem">
-                        <cyclicenumeration>
-                            <feconstant id="MICSystem0" name="0"/>
-                            <feconstant id="MICSystem1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
-                    <namedsort id="CINFORMI" name="CINFORMI">
-                        <cyclicenumeration>
-                            <feconstant id="CINFORMI0" name="0"/>
-                            <feconstant id="CINFORMI1" name="1"/>
-                        </cyclicenumeration>
-                    </namedsort>
+    node = xml"""
+    <declaration>
+        <structure>
+            <declarations>
+                <namedsort id="LegalResident" name="LegalResident">
+                    <cyclicenumeration>
+                        <feconstant id="LegalResident0" name="0"/>
+                        <feconstant id="LegalResident1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
+                <namedsort id="MICSystem" name="MICSystem">
+                    <cyclicenumeration>
+                        <feconstant id="MICSystem0" name="0"/>
+                        <feconstant id="MICSystem1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
+                <namedsort id="CINFORMI" name="CINFORMI">
+                    <cyclicenumeration>
+                        <feconstant id="CINFORMI0" name="0"/>
+                        <feconstant id="CINFORMI1" name="1"/>
+                    </cyclicenumeration>
+                </namedsort>
             </declarations>
         </structure>
     </declaration>
     """
-    reg = PNML.IDRegistry()
-    n = parse_node(node; reg)
-    printnode(n)
+    reg = PNML.registry()
+    decl = parse_declaration(node, _pntd, reg)
+    #@show decl
+    @test typeof(decl) <: PNML.Declaration
+    @test xmlnode(decl) isa Maybe{EzXML.Node}
+    @test length(PNML.declarations(decl)) == 3
+    @test_call PNML.declarations(decl)
 
-    @test typeof(n) <: PNML.Declaration
-    @test xmlnode(n) isa Maybe{EzXML.Node}
-    @test length(PNML.declarations(n)) == 3
-    @test_call PNML.declarations(n)
-
-    for d in PNML.declarations(n)
-        @show typeof(d)
+    # Examine each declaration in the vector: 3 named sorts
+    #println("dump(decl)"); dump(decl)
+    for d in PNML.declarations(decl)
+        #println("\n  declaration $(pid(d))"); dump(d)
         @test typeof(d) <: PNML.AbstractDeclaration
         @test typeof(d) <: PNML.SortDeclaration
         @test typeof(d) <: PNML.NamedSort
-
-        @show d
-        @show fieldtypes(typeof(d))
-        @show fieldnames(typeof(d))
-        @show fieldtypes(typeof(d.def))
-        @show fieldnames(typeof(d.def))
-
-        @test PNML.isregistered(reg, pid(d))
-        @test_call PNML.isregistered(reg, pid(d))
+        # named sort -> cyclic enumeration -> fe constant
+        @test isregistered(reg, pid(d))
+        @test_call isregistered(reg, pid(d))
+        sortname = PNML.name(d)
         @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
-        @test d.def isa PNML.AnyElement #TODO implement definitions?
+        @test d.def isa PNML.AnyElement
         @test tag(d.def) === :cyclicenumeration
-        @test haskey(d.def.dict, :feconstant)
+        @test d.def.elements isa Vector{PNML.AnyXmlNode}
 
-        for x in d.def.dict[:feconstant]
-            @test x isa PnmlDict
-            @test PNML.isregistered(reg, pid(x))
-            @test x[:name] isa String
-            @test endswith(string(pid(x)), x[:name])
+        @test tag(d.def.elements[1]) === :feconstant
+        let x = value(d.def.elements[1])
+            @test x isa Vector{AnyXmlNode}
+
+            @test tag(x[1]) === :id
+            idstring = value(x[1])
+            @test idstring isa AbstractString
+            #@test idstring == "LegalResident0"
+            @test startswith(idstring, sortname)
+            @test_call isregistered(reg, Symbol(idstring)) # unclaimed id
+            @test !isregistered(reg, Symbol(idstring)) # unclaimed id
+
+            @test tag(x[2]) === :name
+            namestring = value(x[2])
+            @test namestring isa AbstractString
+            @test namestring == "0"
+            @test endswith(idstring, namestring)
         end
-        #println()
     end
 end

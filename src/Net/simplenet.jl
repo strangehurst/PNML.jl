@@ -32,109 +32,40 @@ A less-simple consumer of the IR can impose standards-checking.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-**TODO: Rename SimpleNet to TBD** 
-SimpleNet wraps one net. This is a `PetriNet` wrapping a `PnmlNet`.
+**TODO: Rename SimpleNet to TBD**
 
-Omits the page level of the pnml-defined hierarchy by flattening pages.
-A multi-page net can be flattened by removing referenceTransitions & referencePlaces,
-and merging pages into the first page.
+SimpleNet is a concrete `AbstractPetriNet` wrapping a `PnmlNet`.
 
-Only selected fields are merged.
+Uses a flattened net to avoid the page level of the pnml hierarchy.
+
+A multi-page petri net can always be flattened by removing
+referenceTransitions & referencePlaces, and merging pages into the first page.
 """
-struct SimpleNet{PNTD} <: PetriNet{PNTD}
-    id::Symbol
-    net::PnmlNet{PNTD}
+struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
+    id::Symbol # Not needed except for dispatch to inner constructor.
+    net::PnmlNet{PNTD} #! M, I, C, S} #! Add type parameters to make fully specified.
 end
 
-"Construct from string of valid pnml XML using the first network"
+# Construct from the flattened first network of the pnml model created from valid XML.
+
 SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
-SimpleNet(model::PnmlModel)  = SimpleNet(first_net(model))
-SimpleNet(node::XMLNode)  = SimpleNet(PnmlModel(node))
+SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
+SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
 
 function SimpleNet(net::PnmlNet)
-    netcopy = deepcopy(net) #TODO Is copy needed?
-    flatten_pages!(netcopy)
-    SimpleNet(netcopy.id, netcopy)
-end
-
-Base.summary(io::IO, spn::SimpleNet{P}) where {P} = print(io, summary(spn))
-function Base.summary(spn::SimpleNet{P}) where {P} 
-    string(typeof(spn), " id ", pid(spn), ", ",
-        length(places(spn)), " places, ",
-        length(transitions(spn)), " transitions, ",
-        length(arcs(spn)), " arcs")
-end
-
-function Base.show(io::IO, spn::SimpleNet{P}) where {P}
-    println(io, summary(spn))
-    println(io, "places")
-    println(io, places(spn))
-    println(io, "transitions")
-    println(io, transitions(spn))
-    println(io, "arcs")
-    print(io, arcs(spn))
+    #! deepcopy(net) # TODO Is copy needed?
+    flatten_pages!(net) #TODO
+    SimpleNet(pid(net), net)
 end
 
 #-------------------------------------------------------------------------------
-# Implement PNML Petri Net interface.
-#TODO Where is the interface documented?
+# Implement PNML Petri Net interface. See interface.jl for docstrings.
 #-------------------------------------------------------------------------------
 
-pid(spn::SimpleNet) = pid(spn.net)
+pid(spn::SimpleNet) = pid(spn.net) # Use since we used it for dispatch.
 
-places(spn::SimpleNet)         = firstpage(spn.net).places
-transitions(spn::SimpleNet)    = firstpage(spn.net).transitions
-arcs(spn::SimpleNet)           = firstpage(spn.net).arcs
-refplaces(spn::SimpleNet)      = firstpage(spn.net).refPlaces
-reftransitions(spn::SimpleNet) = firstpage(spn.net).refTransitions
-
-#---------------------------------------------
-# For Stochastic Nets, a transition is not labeled with a boolean condition,
-# but with a  floating point rate. 
-#TODO Which can be turned into a boolean with a comparison.
-#---------------------------------------------
-
-"""
-$(TYPEDSIGNATURES)
-
-Return a transition-id labelled vector of rate values for transitions of net `s`.
-"""
-function rates end
-
-rates(spn::N) where {T<:PnmlType, N<:PetriNet{T}} =
-    rates(spn, transition_ids(spn))
-
-function rates(spn::N, idvec::Vector{Symbol}) where {T<:PnmlType, N<:PetriNet{T}}
-    LVector( (; [transitionid => rate(spn, transitionid) for transitionid in idvec]...))
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return rate value of `transition`.  Mising rate labels are defaulted to 0.0.
-"""
-function rate end
-function rate(transition)::Number #! where {T<:PnmlType, N<:PetriNet{T}}
-    r = get_label(transition, :rate)
-    if !isnothing(r)
-        @assert tag(r) === :rate
-        if haskey(r.dict, :text)
-            !isnothing(r.dict[:text])
-            # The unclaimed label mechanism adds a :content key for text elements.
-            value = number_value(r.dict[:text][:content])
-        elseif haskey(r.dict, :content)
-            # When the text element is elided,, there is still a :content.
-            value = number_value(r.dict[:content])
-        else
-            value = zero(Float64)
-        end
-        return isnothing(value) ? zero(Float64) : value #! specialize default value?
-    else
-        return zero(Float64)
-    end
-end
-
-function rate(spn::N, tid::Symbol) where {T<:PnmlType, N<:PetriNet{T}}
-    rate(transition(spn, tid))
-end
-
+places(spn::SimpleNet)         = places(spn.net)
+transitions(spn::SimpleNet)    = transitions(spn.net)
+arcs(spn::SimpleNet)           = arcs(spn.net)
+refplaces(spn::SimpleNet)      = refPlaces(spn.net)
+reftransitions(spn::SimpleNet) = refTransitions(spn.net)

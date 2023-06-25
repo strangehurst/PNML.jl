@@ -1,72 +1,85 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Place, Transition, Arc, 
-  pid, marking, condition, inscription
+using PNML: Place, Transition, Arc, RefPlace, RefTransition,
+    has_xml, has_name, name,
+    pid, marking, condition, inscription,
+    has_graphics, graphics, has_name, name, has_label,
+    parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
-header("NODES")
+const pntd::PnmlType = PnmlCoreNet()
 
 @testset "place" begin
     node = xml"""
       <place id="place1">
-        <name> <text>Some place</text> </name>
+        <name> <text>with text</text> </name>
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
-    @test_call parse_node(node; reg = PNML.IDRegistry())
-    n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, pntd, registry())
+
+    n = parse_place(node, pntd, registry())
+    #println("parse_place "); dump(n)
+    @test_call target_modules = target_modules parse_place(node, pntd, registry())
+    id = pid(n)
+    @test id === :place1
     @test typeof(n) <: Place
-    @test_call PNML.has_xml(n)
-    @test !PNML.has_xml(n)
+    #@show n
+    @test_call has_xml(n)
+    @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
-    @test @inferred PNML.has_name(n)
-    @test @inferred(PNML.name(n)) == "Some place"
+    #@show has_name(n)
+    @test has_name(n)
+    @test @inferred(name(n)) == "with text"
     @test_call marking(n)
-    @test marking(n) == 100
+    @test marking(n)() == 100
 end
 
-@testset "no text" begin
+@testset "no marking text" begin
     node = xml"""
       <place id="place1">
-        <name> <text>Some place</text> </name>
-        <initialMarking>100</initialMarking>
+        <name> <text>no marking text</text> </name>
+        <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_call parse_node(node; reg = PNML.IDRegistry())
-    n = @inferred Place parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
+    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, PnmlCoreNet(), registry())
+    @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
+    n = parse_place(node, PnmlCoreNet(), registry())
     @test typeof(n) <: Place
-    @test_call PNML.has_xml(n)
-    @test !PNML.has_xml(n)
+    @test_call has_xml(n)
+    @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
-    @test @inferred PNML.has_name(n)
-    @test @inferred(PNML.name(n)) == "Some place"
+    @test @inferred has_name(n)
+    @test @inferred(name(n)) == "no marking text"
     @test_call marking(n)
-    @test marking(n) == 100
+    @test marking(n)() == 100
 end
 
+#! <condition> is High-Level is specification.
+#
 @testset "transition" begin
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
-        <condition> <structure>100</structure> </condition>
+        <condition> <text>foo</text><structure>100</structure> </condition>
       </transition>
     """
-    n = @inferred Transition parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
-    @test typeof(n) <: PNML.Transition
-    @test !PNML.has_xml(n)
+    n = @inferred Transition parse_transition(node, PnmlCoreNet(), registry())
+    @test typeof(n) <: Transition
+    @test !has_xml(n)
     @test pid(n) === :transition1
-    @test PNML.has_name(n)
-    @test PNML.name(n) == "Some transition"
-    @test condition(n) == 100
+    @test has_name(n)
+    @test name(n) == "Some transition"
+    @test condition(n) isa Bool #! define non-HL other's semantics.
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())
+    #@test_throws ErrorException parse_transition(node, pntd, registry())
+    @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test_throws ErrorException parse_node(node; reg = PNML.IDRegistry())
+    #@test_throws ErrorException parse_transition(node, pntd, registry())
+    @test parse_transition(node, pntd, registry()) !== nothing
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    t = parse_node(node; reg = PNML.IDRegistry())
-    @test t isa PNML.Transition
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
     @test_call condition(t)
     @test condition(t) === true
 end
@@ -78,26 +91,23 @@ end
         <inscription> <text>6</text> </inscription>
       </arc>
     """
-    n = @inferred Arc parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
-    @test typeof(n) <: PNML.Arc
-    @test !PNML.has_xml(n)
+    n = @inferred Arc parse_arc(node, PnmlCoreNet(), registry())
+    @test typeof(n) <: Arc
+    @test !has_xml(n)
     @test pid(n) === :arc1
-    @test PNML.has_name(n)
-    @test PNML.name(n) == "Some arc"
+    @test has_name(n)
+    @test name(n) == "Some arc"
     @test_call inscription(n)
-    @show PNML.inscription(n)
-    @test PNML.inscription(n) == 6
+    @test inscription(n) == 6
 end
 
 @testset "ref Trans" begin
     node = xml"""
         <referenceTransition id="rt1" ref="t1"/>
     """
-    n = parse_node(node; reg = PNML.IDRegistry())
-    printnode(n)
-    @test typeof(n) <: PNML.RefTransition
-    @test !PNML.has_xml(n)
+    n = parse_refTransition(node, PnmlCoreNet(), registry())
+    @test n isa RefTransition
+    @test !has_xml(n)
     @test pid(n) === :rt1
     @test n.ref === :t1
 end
@@ -117,10 +127,9 @@ end
     """,
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
-        n = parse_node(s.node; reg = PNML.IDRegistry())
-        printnode(n)
-        @test typeof(n) <: PNML.RefPlace
-        @test !PNML.has_xml(n)
+        n = parse_refPlace(s.node, ContinuousNet(), registry())
+        @test typeof(n) <: RefPlace
+        @test !has_xml(n)
         @test typeof(n.id) == Symbol
         @test typeof(n.ref) == Symbol
         @test n.id === Symbol(s.id)

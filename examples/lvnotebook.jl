@@ -26,7 +26,7 @@ begin
 	Pkg.add("EzXML")
 	Pkg.add("Plots")
 	Pkg.add("Petri")
-	
+
 	using PlutoUI
     using PNML, LabelledArrays, OrdinaryDiffEq
 	using EzXML
@@ -61,19 +61,19 @@ md"""
 
 # ╔═╡ a995864c-937e-4a0d-b99a-31fd134e23dc
 let
-	d = PNML.PnmlDict(:labels => PNML.PnmlLabel[])
-	reg = PNML.IDRegistry()
-	pntd = PnmlCore()
-	PNML.add_label!(d,root(EzXML.parsexml("<test1> 1 </test1>")), pntd; reg)
-	PNML.add_label!(d,root(EzXML.parsexml("<test2> 2.0 </test2>")), pntd; reg)
-	PNML.add_label!(d,root(EzXML.parsexml("<test3> true </test3>")), pntd; reg)
-	PNML.add_label!(d,root(EzXML.parsexml("<test4> Pnml.Term() </test4>")), pntd; reg)
+	d = (; :labels => PNML.PnmlLabel[])
+	reg = registry()
+	pntd = PnmlCoreNet()
+	PNML.add_label!(d, PNML.xmlroot("<test1> 1 </test1>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test2> 2.0 </test2>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test3> true </test3>"), pntd, reg)
+	PNML.add_label!(d, PNML.xmlroot("<test4> PNML.Term() </test4>"), pntd, reg)
 end
 
 # ╔═╡ ddacb450-31cb-4f7d-b62f-c81d0c2df858
 md"""
 ## Step 1: Define the states and transitions of the Petri Net
-	 
+
 Here we have 2 states, wolves and rabbits, and transitions to model predation between the two species in the system.
 """
 
@@ -161,8 +161,8 @@ net = PNML.SimpleNet(xml2)
 # ╔═╡ a73fda08-7414-4d21-9f0e-0edf5f7cb876
 # ╠═╡ show_logs = false
 lotka = let
-	# **Step 1:** 
-	@show S = PNML.place_ids(net) # [:rabbits, :wolves]
+	# **Step 1:**
+	@show S = PNML.place_idset(net) # [:rabbits, :wolves]
 	@show Δ = PNML.transition_function(net)
 	Petri.Model(S, Δ)
 end;
@@ -171,7 +171,7 @@ end;
 Graph(lotka)
 
 # ╔═╡ 0c300670-010b-42c9-8f62-f681668050c3
-u0 = PNML.initialMarking(net)
+u0 = PNML.currentMarkings(net)
 
 # ╔═╡ 2a1dc647-9aa8-4907-89f3-a15f13b45eb2
 β = PNML.rates(net)

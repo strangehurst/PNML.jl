@@ -5,8 +5,8 @@ CurrentModule = PNML
 # PNML.jl
 
 Documentation for the GitHub [PNML.jl](https://github.com/strangehurst/PNML.jl) repository.
-Which defines a Julia module named `PNML`.  
-Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup language.
+Which defines a Julia module named `PNML`.
+Which handles an XML markup language with the acronym 'PNML' -- Petri Net Markup Language.
 
 ```@eval
 using Markdown
@@ -35,29 +35,25 @@ versioninfo()
 
 ## www.pnml.org
 
-In this section 'PNML' refers to the markup language, its specification and schemas.
+In this section 'PNML' refers to the markup language, its specification and schemas, not this software.
 
-<http://www.pnml.org> has publications and tutorials covering PNML at
-various points in its evolution. Is the cannonical site for the
-RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd),
-including:
-  - PT Net 
-  - High-level Place/Transition Net
-  - Symmetric Net
+<http://www.pnml.org>
+  - has publications and tutorials covering PNML at various points in its evolution.
+  - has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
+  - is the cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd), including:
+      - PT Net (Place/Transition Net)
+      - High-level Place/Transition Net
+      - Symmetric Net
 
-These are instances of the 3 flavors currently covered by PNML.
+There are 2 flavors currently covered by PNML: Discrete intger-valued & High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers.
 
-There are links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
+It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
 
-It seems the people behind PNML are of the Model Driven Engineering (MDE) camp
-and have chosen Java, Eclipse and its EMF. There is GUI focus. 
-One can find some PNML implementations in other languages
+There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf)
-for more details. The rest of this page will make more sense if you are
-familiar with the primer's contents.
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents.
 
 
 ## Interoperability
@@ -69,23 +65,24 @@ For interchange of pnml between tools it should be enough to support the same pn
 
 Note that ISO is working on part 3 of the PNML standard covering pntd (as of October 2021).
 
-It is possibly to create a non-standard pntd. And more will be standardized, either
+It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
 
 Since validation is not a goal of PNML.jl, non-standard pntds can be used for the
 URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard`
-are mapped to PnmlCore.
+are mapped to PnmlCoreNet.
 
-PnmlCore is the minimum level of meaning that any pnml file can hold.
-PNML.jl should be able to create a valid intermediate representation using PnmlCore,
+PnmlCoreNet is the minimum level of meaning that any pnml file can hold.
+PNML.jl should be able to create a valid intermediate representation using PnmlCoreNet
 since all the higher-level meaning is expressed as pnml labels, restrictions,
 and required XML tag names.
 
-Further parsing of labels are delegated to some subtype of [`PNML.PetriNet`](@ref).
+Further parsing of labels is specialized upon subtypes of [`PNML.AbstractPetriNet`](@ref).
+See [Traits](@ref) for more details.
 
 If you want interchangability of pnml models, you will have to stick to
 the standard pnml pntds. The High Level Petri Net, even when restricted to
-symmetricnet.pntd, is very expressive. Even the base pnmlcore.pntd is useful.
+_symmetricnet.pntd_, is very expressive. Even the base _pnmlcore.pntd_ is useful.
 
 Note that the official pntd schema files are in the grammer directory.
 
@@ -93,31 +90,30 @@ Note that the official pntd schema files are in the grammer directory.
 
 Within PNML.jl no schema-level validation is done.
 
-Note that, depending on context, 'PNML' may refer to either 
+Note that, depending on context, 'PNML' may refer to either
 the markup language or the Julia code.
 
 In is allowed by the PNML specification to omit validation with the presumption that
 some specialized, external tool can be applied, thus allowing the file format to be
 used for inter-tool communication with lower overhead in each tool.
 
-Also a desire to allow "duck typing" of Petri Nets built upon the
+Also omiting pntd validation allows "duck typing" of Petri Nets built upon the
 PNML intermediate representration.
 
-Also, non-standard pntd that do not (yet) have a schema written are part of
-the PNML implementation. See [`ContinuousNet`](@ref).
+Of some note it that PNML.jl extends PNML. These, non-standard pntd do not
+(yet) have a schema written. See [`ContinuousNet`](@ref).
 
 ## PNTD Maps
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
+using PNML; foreach(println, sort(collect(pairs(PnmlTypeDefs.default_pntd_map)))) #hide
 ```
 
 PnmlType map (pntd symbol to singleton):
 ```@example
-using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
+using PNML; foreach(println, pairs(PnmlTypeDefs.pnmltype_map)) #hide
 ```
-
 
 ## Handling Labels
 
@@ -125,7 +121,7 @@ The implementation of Labels supports _annotation_ and _attribute_ format labels
 
 ### Annotation Labels
 
-_annotation_ format labels are expected to have either a <text> element, 
+_annotation_ format labels are expected to have either a <text> element,
 a <structure> element or both. Often the <text> is a human-readable representation
 of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
 
@@ -138,11 +134,11 @@ Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 ### Attribute Labels
 
 _attribute_ format labels are present in the UML model of pnml.
-They differ from _annotation_ by omitting the `Graphics` element, 
+They differ from _annotation_ by omitting the `Graphics` element,
 but retain the `ToolInfo` element. Unless an optimization is identified,
 both _attribute_ and _annotation_ will share the same implementation.
 
-A standard-conforming pnml model would not have any `Graphics` element 
+A standard-conforming pnml model would not have any `Graphics` element
 so that field would be `nothing`.
 
 ## High-level Petri Net Concepts
@@ -156,8 +152,8 @@ Arc inscriptions are expressions that are evaluated.
 
 Place markings are multisets of tokens of a sort/type.
 
-Transition conditions are boolean expressions that are evaluated. 
-Used to determine if transition is enabled. 
+Transition conditions are boolean expressions that are evaluated.
+Used to determine if transition is enabled.
 
 Expressions in _pnml_ can be many-sorted algebras.
 Declaration, Term, Sort, Multiset, Variable, are among the concepts
@@ -216,6 +212,8 @@ inscription/marking.
 
 ## References
 
-See [`PnmlTypes.PnmlType `](@ref),
-[`PnmlTypes.default_pntd_map`](@ref),
-[`PnmlTypes.pnmltype_map`](@ref)
+[www.pnml.org](https://www.pnml.org/)
+
+[*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)
+
+ISO/IEC: Software and Systems Engineering – High-level Petri Nets, Part 1: Concepts Definitions and Graphical Notation, International Standard ISO/IEC 15909 (2004)
