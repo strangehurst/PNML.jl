@@ -11,8 +11,7 @@ Wrap `NamedTuple` holding well-formed XML. See also [`ToolInfo`](@ref) and [`Pnm
 end
 
 AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}, xml::XMLNode) = AnyElement(p.first, p.second, xml)
-#!AnyElement(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = AnyElement(p.first, p.second, xml)
 
 tag(a::AnyElement) = a.tag
-elements(a::AnyElement) = a.elements  #! tuple
+elements(a::AnyElement) = a.elements
 xmlnode(a::AnyElement) = a.xml

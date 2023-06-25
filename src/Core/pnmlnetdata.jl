@@ -45,22 +45,11 @@ function Base.show(io::IO, pnd::PnmlNetData)
 end
 
 """
-ID sets for pages, places, arcs, et al. start as empty sets.
-
-There is one collection of `Pages` for each `PnmlNet` that is not part of `PnmlNetData`: `pagedict`.
-It is accompanied by a tree of ordered sets of page ID symbols: `page_set`.
-
-1st wave:
-The `PnmlNet` and each `Page` use these key sets to represent their page-tree children.
-
-Each `Page` "owns" the objects it places into the PnmlNetData database.
-Allows for interactive display (NOT IMPLEMENTD) and testing.
-
-Access to subtrees may be useful, so the page-tree-node becomes a per-page structure
-of `OrderedSet`s of pnml IDs for each "owned" [`AbstractPnmlObject`](@ref)
+Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and
+[`AbstractPnmlObject`](@ref).
 """
-@kwdef struct PnmlNetKeys # PAGE TREE NODE is the set of page ids
-    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}() #! Subpages of page
+@kwdef struct PnmlNetKeys
+    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}() # Subpages of page
     place_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
     transition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
     arc_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
@@ -74,13 +63,6 @@ transition_idset(s::PnmlNetKeys) = s.transition_set
 arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
-
-# page_idset(tup::NamedTuple) = page_idset(tup.netsets)
-# place_idset(tup::NamedTuple) = (place_idsettup.netsets)
-# transition_idset(tup::NamedTuple) = transition_idset(tup.netsets)
-# arc_idset(tup::NamedTuple) = arc_idset(tup.netsets)
-# reftransition_idset(tup::NamedTuple) = reftransition_idset(tup.netsets)
-# refplace_idset(tup::NamedTuple) = trefplace_idset(up.netsets)
 
 page_idset(x)          = page_idset(netsets(x))
 place_idset(x)         = place_idset(netsets(x))

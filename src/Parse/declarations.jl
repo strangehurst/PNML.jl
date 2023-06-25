@@ -19,49 +19,57 @@ $(TYPEDSIGNATURES)
 
 Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
 Assume behavior of a High-level Net label in that the meaning is in a <struct>.
+
+Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsort/> ...
 """
-function parse_declaration(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "declaration")
-    tup = pnml_label_defaults(:tag=>Symbol(nn))
+function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    check_nodename(node, "declaration")
+    decls::Maybe{Vector{AbstractDeclaration}} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
     CONFIG.verbose && println("parse_declaration")
     for child in eachelement(node)
-        tag = nodename(child)
-        CONFIG.verbose && println(lazy"    $tag")
+        tag = EzXML.nodename(child)
+        CONFIG.verbose && println("    $tag")
         if tag == "structure"
-            tup = merge(tup, [:decls => _parse_decl_structure(child, pntd, reg)])
-        else
-            # This is here <text> gets parsed.
-            tup = parse_pnml_label_common(tup, child, pntd, reg)
+            decls = _parse_decl_structure(child, pntd, idregistry)
+        elseif tag == "graphics"
+            graphics => parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else # labels (unclaimed) are everything-else
+            add_label!(labels, child, pntd, idregistry)
         end
     end
 
-    #@show tup
-    decls = hasproperty(tup, :decls) ? tup.decls : Any[]
-    Declaration(decls, ObjectCommon(tup), node)
+    Declaration(something(decls, AbstractDeclaration[]),
+                ObjectCommon(graphics, tools, labels), node)
 end
 
 "Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
-function _parse_decl_structure(node::XMLNode, pntd::T, reg) where {T <: PnmlType}
-    decl_structure(node, pntd, reg)
+function _parse_decl_structure(node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
+    decl_structure(node, pntd, idregistry)
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
 # optional, required,  zero or more
 "Return vector of AbstractDeclaration subtypes."
-function decl_structure(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     EzXML.haselement(node) || throw(ArgumentError("missing <declarations> element"))
-    declarations = firstelement(node)
+    declarations = EzXML.firstelement(node)
     check_nodename(declarations, "declarations")
     decs = AbstractDeclaration[]
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
-        CONFIG.verbose && println(lazy"    $tag")
+        CONFIG.verbose && println("    $tag")
         @match tag begin
-            "namedsort"     => push!(decs, parse_namedsort(child, pntd, reg))
-            "namedoperator" => push!(decs, parse_namedoperator(child, pntd, reg))
-            "variabledecl"  => push!(decs, parse_variabledecl(child, pntd, reg))
-            _ =>  push!(decs, parse_unknowndecl(child, pntd, reg))
+            "namedsort"     => push!(decs, parse_namedsort(child, pntd, idregistry))
+            "namedoperator" => push!(decs, parse_namedoperator(child, pntd, idregistry))
+            "variabledecl"  => push!(decs, parse_variabledecl(child, pntd, idregistry))
+            _ =>  push!(decs, parse_unknowndecl(child, pntd, idregistry))
         end
     end
     return decs
@@ -73,52 +81,57 @@ $(TYPEDSIGNATURES)
 function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "namedsort")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    EzXML.haskey(node, "name") || throw(MalformedException(lazy"$nn missing name attribute"))
+    id = register_id!(reg, node["id"])
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
+    name = node["name"]
 
-    def = parse_sort(firstelement(node), pntd, reg)
-    NamedSort(register_id!(reg, node["id"]), node["name"], def)
+    def = parse_sort(EzXML.firstelement(node), pntd, reg)
+    NamedSort(id, name, def)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_namedoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "namedoperator")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    EzXML.haskey(node, "name") || throw(MalformedException(lazy"$nn missing name attribute"))
+    id = register_id!(idregistry, node["id"])
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
+    name = node["name"]
 
     @warn "namedoperator under development"
-    args = Dict()
+
+    def::Maybe{AbstractSort} = nothing
+    parameters = VariableDeclaration[]
     for child in eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "def"
-            args[:def] = parse_sort(child, pntd, reg)
+            def = parse_sort(child, pntd, idregistry)
         elseif tag == "parameter"
-            # <parameter> holds zero or more VariableDeclaration, ordered
-            args[:parameters] = VariableDeclaration[]
             for vdecl in EzXML.eachelement(child)
-                push!(args[:parameters], parse_variabledecl(vdecl, pntd, reg))
+                push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
             end
         else
             @warn "$tag invalid, valid children of <namedoperator>: def, parameter"
         end
     end
-    haskey(args, :def) || error("<namedoperator> does not have a <def>")
-    haskey(args, :parameters) || error("<namedoperator> does not have a <parameter>")
-    NamedOperator(register_id!(reg, node["id"]), node["name"], args[:parameters], args[:def])
+    isnothing(def) && error("<namedoperator> $name $id does not have a <def>")
+    NamedOperator(id, name, parameters, def)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_variabledecl(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "variabledecl")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException(lazy"$nn missing name attribute"))
+    name = node["name"]
     # Assert only 1 element
-    sort = parse_sort(firstelement(node), pntd, reg)
+    sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
     # XML attributes and the sort
-    VariableDeclaration(Symbol(node["id"]), node["name"], sort) #TODO register id?
+    VariableDeclaration(id, name, sort) #TODO register id?
 end
 
 """
@@ -126,13 +139,15 @@ $(TYPEDSIGNATURES)
 """
 function parse_unknowndecl(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = nodename(node)
-    @info("unknown declaration: $nn")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    EzXML.haskey(node, "name") || throw(MalformedException(lazy"$nn missing name attribute"))
+    id = register_id!(idregistry, node["id"])
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
+    name = node["name"]
+
+    @info("unknown declaration: $nn $id $name")
 
     content = [anyelement(x, pntd, reg) for x in EzXML.eachelement(node) if x !== nothing]
-    #@show length(content), typeof(content)
-    UnknownDeclaration(Symbol(node["id"]), node["name"], nn, content)
+    UnknownDeclaration(id, name, nn, content)
 end
 
 #------------------------
@@ -147,21 +162,25 @@ Neither is directly a julia type.
 function parse_type end
 
 function parse_type(hlnode::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
-    nn = check_nodename(hlnode, "type")
-    tup = pnml_label_defaults(:tag => Symbol(nn))
-    sorttype = nothing
+    check_nodename(hlnode, "type")
+    text::Maybe{AbstractString} = nothing
+    term::Maybe{Any} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+    labels = PnmlLabel[]
+
     for child in EzXML.eachelement(hlnode)
         tag = EzXML.nodename(child)
-        if tag == "structure"
-            @assert EzXML.haselement(child)
-            sorttype = parse_sorttype_term(child, pntd, idregistry)
-        else
-            tup = parse_pnml_label_common(tup, child, pntd, idregistry)
+        @match nodename(child) begin
+            "text"         => (text = parse_text(child, pntd, idregistry))
+            "structure"    => (term = parse_sorttype_term(child, pntd, idregistry))
+            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
+            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
+            _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
         end
     end
-    term = !isnothing(sorttype) ? sorttype : default_sort(pntd)
-    @assert term isa AbstractTerm
-    SortType(tup.text, term, ObjectCommon(tup))
+
+    SortType(text, something(term, default_sort(pntd)), ObjectCommon(graphics, tools, labels))
 end
 
 # Sort type for non-high-level meaning is TBD and non-standard.
@@ -171,7 +190,6 @@ function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where
     # First use-case of technique is `rate` of `ContinuousNet`.
     ucl = unclaimed_label(node, pntd, idregistry)
     CONFIG.verbose && @show ucl
-    #println("parse_type ucl ");  dump(ucl)
     SortType("default sorttype", Term(:sorttype, [AnyXmlNode(ucl)]))
     @assert ucl.second[1] isa AbstractString
     return numeric_label_value(sort_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
@@ -182,17 +200,13 @@ parse_sorttype_term(typenode, pntd, idregistry) = begin
     check_nodename(typenode, "structure")
     term = EzXML.firstelement(typenode)
     if !isnothing(term)
-        t = parse_term(EzXML.firstelement(typenode), pntd, idregistry)
+        t = parse_term(term, pntd, idregistry)
     else
         # Handle an empty <structure>.
         t = default_sort(pntd)
     end
-    #@assert t isa AbstractSort
-    #@show typeof(t)
-    #dump(t)
     return t
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -211,7 +225,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
         "productsort", # ordered list of sorts
         "usersort",
         "partition"]
-    any(==(nn), sort_tags) || error(lazy"'$nn' is not a known sort in $sort_tags")
+    any(==(nn), sort_tags) || error("'$nn' is not a known sort in $sort_tags")
     anyelement(node, pntd, reg)
 end
 
@@ -223,7 +237,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "usersort")
-    EzXML.haskey(node, "declaration") || throw(MalformedException(lazy"$nn missing declaration attribute"))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
     UserSort(anyelement(node, pntd, reg))
 end
 
@@ -237,7 +251,7 @@ The PNML specification describes Terms and Sorts as abstract types for the <stru
 element of some [`HLAnnotation`](@ref).
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = nodename(node)
+    nn = EzXML.nodename(node)
     #TODO Validate that it is a kind of term? How? nn == "term" || error("element name wrong: $nn")
     Term(unclaimed_label(node, pntd, reg))
 end
@@ -371,8 +385,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_variable(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    check_nodename(node, "variable")
+    nn = check_nodename(node, "variable")
     # The 'primer' UML2 uses variableDecl
-    EzXML.haskey(node, "refvariable") || throw(MalformedException(lazy"$nn missing refvariable attribute"))
+    EzXML.haskey(node, "refvariable") || throw(MalformedException("$nn missing refvariable attribute"))
     Variable(Symbol(node["refvariable"]))
 end

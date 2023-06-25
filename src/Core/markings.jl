@@ -32,8 +32,7 @@ julia> m()
 struct Marking{N<:Union{Int,Float64}} <: Annotation
     value::N
     com::ObjectCommon
-    # Marking does not use ObjectCommon.graphics,
-    # but rather, TokenGraphics in ObjectCommon.tools.
+    # Marking does not use ObjectCommon.graphics, rather, TokenGraphics in ObjectCommon.tools.
 end
 Marking() = Marking(zero(Int))
 Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
@@ -54,7 +53,7 @@ function marking_type end
 
 """
 $(TYPEDSIGNATURES)
-Use PNML type as trait to select valuetype of marking.
+Use PNML type as trait to select value type of marking.
 """
 function marking_value_type end
 

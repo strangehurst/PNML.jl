@@ -18,8 +18,8 @@ Return `tag` => `AnyXmlNode` holding well formed XML tree/forest.
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
 [`Term`](@ref) or other specialized label.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    harvest! = HarvestAny(_harvest_any!, pntd, idregistry) # Create a functor.
+function unclaimed_label(node::XMLNode, pntd::PnmlType, _::PnmlIDRegistry)
+    harvest! = HarvestAny(_harvest_any!, pntd) # Create a functor.
     anyel = harvest!(node) # Apply functor.
     #println("unclaimed: "); dump(anyel)
     @assert length(anyel) >= 1 # Even empty elements have content.
@@ -33,15 +33,10 @@ text_content(vx::Vector{AnyXmlNode}) = begin
     tc = findfirst(x -> tag(x) === :text, vx)
     isnothing(tc) && throw(ArgumentError("missing <text>"))
     txt = value(vx[tc])
-    #println("text"); dump(txt)
-
     tc = findfirst(x -> !isa(value(x), Number) && tag(x) === :content, txt)
     isnothing(tc) && throw(ArgumentError("missing text <content>"))
-    #println("tc"); dump(tc)
     cnt = txt[tc]
-    #println("content"); dump(cnt)
     val = value(cnt)
-    #println("val"); dump(val)
     val isa AbstractString ||
         throw(ArgumentError("text content type '$(typeof(val))', expected <:AbstractString:\n$(dump(val))"))
     #println("text_content = ", val)
@@ -68,26 +63,23 @@ function numeric_label_value(T, l::AnyXmlNode)
     number_value(T, text_content(l))
 end
 
-
-
 # Functor
 """
 Wrap a function and two of its arguments.
 """
 struct HarvestAny
-    #!    fun::FunctionWrapper{NamedTuple, Tuple{XMLNode, HarvestAny}} #! returns unparamterized generic type
-    fun::FunctionWrapper{Vector{AnyXmlNode}, Tuple{XMLNode, HarvestAny}} #! returns unparamterized generic type
+    fun::FunctionWrapper{Vector{AnyXmlNode}, Tuple{XMLNode, HarvestAny}}
     pntd::PnmlType # Maybe want to specialize sometime.
-    reg::PnmlIDRegistry
+    #reg::PnmlIDRegistry
 end
 
 (harvest!::HarvestAny)(node::XMLNode) = harvest!.fun(node, harvest!)
 
-"Extract XML attributes. Register/convert IDs value as symbols."
-function _attribute_value(a, harvest!)::Union{Symbol, String}
-    a.name == "id" ? register_id!(harvest!.reg, a.content) : a.content
-    #! Note type differs in legs: symbol and string
-end
+# "Extract XML attributes. Register/convert IDs value as symbols."
+# function _attribute_value(a, harvest!)::Union{Symbol, String}
+#     a.name == "id" ? register_id!(harvest!.reg, a.content) : a.content
+#     #! Note type differs in legs: symbol and string
+# end
 
 """
 $(TYPEDSIGNATURES)
@@ -106,18 +98,12 @@ the hierarchy. And neither children nor content nor attribute may be present.
 """
 function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
     CONFIG.verbose && println("_harvest_any! ", EzXML.nodename(node))
-    #tup = NamedTuple()
-    vec = AnyXmlNode[]
-    #
-    #! Use consistent named tuple prototypes (tuple of symbols)?
-    #! Is it worth the effort to avoid (howmuch?) dynamic dispatch in a parser?
-    #! Once formed the objects better be type stable.
 
-    for a in eachattribute(node)
+    vec = AnyXmlNode[]
+    for a in EzXML.eachattribute(node)
         # ID attributes can appear in various places.
         #! See _attribute_value Each is unique, symbolized and added to the registry.
         #! ALL use unmodified content (some string) as the value.
-        #tup = (; tup..., Symbol(a.name) => a.content) #_attribute_value(a, ha!)) #! ha! used for idregistry
         push!(vec, AnyXmlNode(Symbol(a.name), a.content))
     end
 
@@ -130,8 +116,8 @@ function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
             push!(vec, AnyXmlNode(:content, "")) #! :content might collide
         end
     end
-    #CONFIG.verbose && println("anyelement fields ", propertynames(tup))
-    return vec #! tup
+
+    return vec
 end
 
 """

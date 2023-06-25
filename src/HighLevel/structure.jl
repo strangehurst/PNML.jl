@@ -24,7 +24,6 @@ struct Structure
 end
 
 Structure(p::Pair{Symbol, Vector{AnyXmlNode}}, node::XMLNode) = Structure(p.first, p.second, node)
-#!Structure(p::Pair{Symbol,<:NamedTuple}, node::XMLNode) = Structure(p.first, p.second, node)
 
 tag(s::Structure) = s.tag
 elements(s::Structure) = s.el

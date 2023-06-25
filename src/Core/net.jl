@@ -7,9 +7,9 @@ One Petri Net of a PNML model.
 struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
     type::PNTD
     id::Symbol
-    pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} # shared for pages
-    netdata::PnmlNetData{PNTD, M, I, C, S} # shared for places, transitions, arcs, refs
-    page_set::OrderedSet{Symbol} # keys of top-level pages in pagedict
+    pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} # Shared by pages, holds all pages.
+    netdata::PnmlNetData{PNTD, M, I, C, S} # Shared by pages, holds all places, transitions, arcs, refs
+    page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree.
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
@@ -63,10 +63,10 @@ pid(net::PnmlNet)  = net.id
 
 pagedict(n::PnmlNet) = n.pagedict
 netdata(n::PnmlNet)  = n.netdata
-netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet")
+netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
 page_idset(n::PnmlNet)  = n.page_set
 
-# `pagedist` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages
+# `pagedist` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages of net.
 place_idset(n::PnmlNet)         = union([place_idset(p) for p in allpages(n)]...)
 transition_idset(n::PnmlNet)    = union([transition_idset(p) for p in allpages(n)]...)
 arc_idset(n::PnmlNet)           = union([arc_idset(p) for p in allpages(n)]...)
@@ -74,6 +74,7 @@ reftransition_idset(n::PnmlNet) = union([reftransition_idset(p) for p in allpage
 refplace_idset(n::PnmlNet)      = union([refplace_idset(p) for p in allpages(n)]...)
 
 allpages(net::PnmlNet) = (values ∘ pagedict)(net)
+
 "Return iterator of `Pages` directly owned by `net`."
 pages(net::PnmlNet) = Iterators.filter(v -> pid(v) in page_idset(net), allpages(net))
 

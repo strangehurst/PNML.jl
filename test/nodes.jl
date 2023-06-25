@@ -54,7 +54,8 @@ end
     @test marking(n)() == 100
 end
 
-#! <condition> is High-Level
+#! <condition> is High-Level is specification.
+#
 @testset "transition" begin
     node = xml"""
       <transition id="transition1">

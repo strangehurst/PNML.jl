@@ -11,9 +11,10 @@ struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
+    # pagedict and netdata do npot overlap
     pagedict::OrderedDict{Symbol, Page{PNTD}} #, M, I, C, S}} #! Shared by net and its pages
     netdata::PnmlNetData{PNTD} #, M, I, C, S}    #! Shared by net and its pages
-    netsets::PnmlNetKeys #TODO page's keys of items owned in netdata/pagedict.
+    netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =

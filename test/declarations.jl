@@ -3,7 +3,7 @@ using PNML:
     Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
     registry, AnyElement, AnyXmlNode, name, value, isregistered
 
-const pntd::PnmlType = PnmlCoreNet()
+const _pntd::PnmlType = PnmlCoreNet()
 
 @testset "Declaration()" begin
     decl = PNML.Declaration()
@@ -32,12 +32,12 @@ end
            </declarations>
           </structure>
         </declaration>
-        """, pntd, registry())
+        """, _pntd, registry())
 
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
-    @test length(PNML.declarations(decl)) == 0
+    @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
     @test typeof(PNML.common(decl)) <: PNML.ObjectCommon
     @test PNML.graphics(decl) === nothing
@@ -79,8 +79,8 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    decl = parse_declaration(node, pntd, reg)
-
+    decl = parse_declaration(node, _pntd, reg)
+    #@show decl
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(decl)) == 3

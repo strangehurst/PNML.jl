@@ -3,17 +3,6 @@
 "Alias for union of type `T` or `Nothing`."
 const Maybe{T} = Union{T, Nothing}
 
-pid(tup::NamedTuple)::Symbol = tup.id
-tag(tup::NamedTuple)::Symbol = tup.tag
-labels(tup::NamedTuple) = tup.labels
-xmlnode(tup::NamedTuple)::XMLNode = tup.xml
-
-has_labels(tup::NamedTuple) = hasproperty(tup, :labels)
-get_labels(tup::NamedTuple, tagvalue::Symbol) = get_labels(labels(tup), tagvalue)
-has_label(tup::NamedTuple, tag::Symbol) = has_labels(tup) ? has_label(labels(tup), tag) : false
-get_label(tup::NamedTuple, tagvalue::Symbol) = has_labels(tup) ? get_label(labels(tup), tagvalue) : nothing
-
-#--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
 """
 $(TYPEDEF)

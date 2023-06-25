@@ -126,44 +126,39 @@ end
 @testset "labels" begin
     # Exersize the labels of a NamedTuple
 
-    tup = (; :labels => PnmlLabel[])
+    lab = PnmlLabel[]
     reg = registry()
-    @test_call labels(tup)
-    @test labels(tup) isa Vector{PnmlLabel}
 
     for i in 1:4 # add 4 labels
         x = i < 3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call target_modules = (PNML,) add_label!(tup, node, PnmlCoreNet(), reg)
-        add_label!(tup, node, PnmlCoreNet(), reg)
-        @test length(labels(tup)) == i
-        @test tup.labels === labels(tup)
+        @test_call target_modules = (PNML,) add_label!(lab, node, PnmlCoreNet(), reg)
+        add_label!(lab, node, PnmlCoreNet(), reg)
     end
 
-    @test length(tup.labels) == 4
-    @test length(labels(tup)) == 4
+    @test length(lab) == 4
 
-    for l in labels(tup)
+    for l in lab
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
         @test xmlnode(l) isa Maybe{EzXML.Node}
         @test xmlnode(l) isa Maybe{XMLNode}
     end
 
-    @test_call has_label(tup, :test1)
-    @test_call get_label(tup, :test1)
-    @test_call get_labels(tup, :test1)
+    @test_call has_label(lab, :test1)
+    @test_call get_label(lab, :test1)
+    @test_call get_labels(lab, :test1)
 
-    @test has_label(tup, :test1)
-    @test !has_label(tup, :bumble)
+    @test has_label(lab, :test1)
+    @test !has_label(lab, :bumble)
 
-    v = get_label(tup, :test2)
+    v = get_label(lab, :test2)
     @test v isa PnmlLabel
     @test v.elements[1].tag === :content
     @test v.elements[1].val == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
-        v = PNML.get_labels(tup, labeltag) |> collect
+        v = PNML.get_labels(lab, labeltag) |> collect
         @test length(v) == 2
         for l in v
             @test tag(l) === labeltag

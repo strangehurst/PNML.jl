@@ -64,7 +64,7 @@ function has_labels end
 
 Return iterator of labels attached to `x`.
 """
-function labels(x)::Vector{PnmlLabel} end #! Annotate to flush out the nothings
+function labels(x) end
 
 """
     has_label(x, tag::Symbol) -> Bool

@@ -13,12 +13,11 @@ struct Coordinate{T <: Union{Int,Float64}}
 end
 
 Coordinate{T}() where {T <: Union{ Int,Float64}} = Coordinate{T}(zero(T), zero(T))
-# Coordinate(x::T, y::T) where {T <: Union{Int,Float64}} = Coordinate(x, y)
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
 coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
 coordinate_value_type(::Type{T}) where {T <: AbstractContinuousNet} = Float64
-eltype(::Coordinate{T}) where {T <: Union{Int, Float64}} = T
+eltype(::Coordinate{T}) where {T} = T
 
 #-------------------
 """

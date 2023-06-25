@@ -69,12 +69,6 @@ end
 
 SortType(t::AbstractTerm) = SortType(nothing, t, ObjectCommon())
 SortType(s::AbstractString, t::AbstractTerm) = SortType(s, t, ObjectCommon())
-SortType(s::AbstractString, tup::NamedTuple) = begin
-    t = AnyXmlNode(:term, tup)
-    SortType(s, t, ObjectCommon())
-end
-
-Base.convert(::Type{Maybe{SortType}}, tup::NamedTuple)::SortType = SortType(tup)
 
 text(t::SortType)  = t.text
 value(t::SortType) = t.sort

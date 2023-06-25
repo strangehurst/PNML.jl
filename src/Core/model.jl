@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets and an ID Registry shared by all nets.
 """
 struct PnmlModel
-    nets::Tuple{Vararg{PnmlNet}} #! Yes it is abstract.
+    nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
     reg::PnmlIDRegistry # Shared by all nets.
 end

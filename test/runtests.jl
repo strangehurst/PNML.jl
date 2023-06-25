@@ -78,7 +78,7 @@ const noisy::Bool = false
         @time "rate"      @safetestset "rate"         begin include("rate.jl") end
         @time "simplenet" @safetestset "simplenet"    begin include("simplenet.jl") end
     end
-    if true && select("ALL", "DOC")
+    if select("ALL", "DOC")
         @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end

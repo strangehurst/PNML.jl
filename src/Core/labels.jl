@@ -8,7 +8,7 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    prop_name === :id   && return getfield(o, :id)::Symbol #! TODO do labels have ids?
+    #prop_name === :id   && return getfield(o, :id)::Symbol #! TODO do labels have ids?
     prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
     prop_name === :com  && return getfield(o, :com)::ObjectCommon
     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract, do labels have this? XXX
@@ -42,7 +42,8 @@ labels(l::AbstractLabel) = labels(l.com)
 
 has_label(l::AbstractLabel, tag::Symbol) = has_labels(l) ? has_label(labels(l), tag) : false
 
-_evaluate(x::AbstractLabel) = x() # functor
+# Labels include functors: markings, inscription, conditions #TODO test for Callable
+_evaluate(x::AbstractLabel) = x()
 
 #--------------------------------------------
 """
@@ -103,7 +104,6 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 end
 
 PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
-#!PnmlLabel(p::Pair{Symbol, <:NamedTuple}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements

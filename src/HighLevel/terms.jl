@@ -56,7 +56,8 @@ default_zero_term(::AbstractContinuousNet) = zero(Float64) #!relocate
 default_zero_term(::AbstractHLCore) = Term(:zero, zero(Int))
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
-default_bool_term(::AbstractHLCore) = Term(:bool, true)
+#TODO
+default_bool_term(::PnmlType) = Term(:bool, true)
 
 """
 $(TYPEDEF)

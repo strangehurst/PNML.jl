@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, parse_graphics, parse_tokengraphics
 
-const pntd::PnmlType = PnmlCoreNet()
+const _pntd::PnmlType = PnmlCoreNet()
 @testset "coordinate" begin
     #@test_opt
     #@show PNML.Coordinate(1,2)
@@ -25,7 +25,7 @@ end
            style="normal" weight="normal" />
     </graphics>
     """
-    n = parse_graphics(xmlroot(str), pntd, registry())
+    n = parse_graphics(xmlroot(str), _pntd, registry())
 
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
@@ -64,14 +64,14 @@ end
 @testset "tokengraphics" begin
 
     str0 = """<tokengraphics></tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str0), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str0), _pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
     str1 = """<tokengraphics>
                 <tokenposition x="-9" y="-2"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str1), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str1), _pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
@@ -79,7 +79,7 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <tokenposition x="2"  y="3"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str2), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str2), _pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 2
 
@@ -88,7 +88,7 @@ end
                     <tokenposition x="2"  y="3"/>
                     <tokenposition x="-2" y="2"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str3), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str3), _pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 3
 
@@ -98,7 +98,7 @@ end
                     <tokenposition x="-2" y="2"/>
                     <tokenposition x="-2" y="-22"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str4), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str4), _pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 4
 

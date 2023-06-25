@@ -2,9 +2,10 @@
 # TODO Check for illegal intra-page references? WHERE?
 
 """
-    flatten_pages!(net::PnmlNet[; options])
+flatten_pages!(net::PnmlNet[; options])
+flatten_pages!(model::PnmlModel[; options])
 
-Merge page content into the 1st page of the net.
+Merge page content into the 1st page of the net or all nets of a model.
 
 Options
     trim::Bool Remove refrence nodes (default `false`). See [`deref!`](@ref).
@@ -14,8 +15,8 @@ function flatten_pages! end
 
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
-    verbose &&
-        println(lazy"\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
+    verbose && println("\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
+
     if length(net.pagedict) > 1 # Place content of other pages into 1st page.
         pageids = keys(net.pagedict)
         @assert first(pageids) == pid(first(values(net.pagedict)))
@@ -44,8 +45,10 @@ end
 
 
 # Do each net in model.
-flatten_pages!(model::PnmlModel; kw...) = for net in nets(model)
-    flatten_pages!(net; kw...)
+function flatten_pages!(model::PnmlModel; kw...)
+    for net in nets(model)
+        flatten_pages!(net; kw...)
+    end
     return nothing
 end
 
@@ -161,17 +164,17 @@ end
 
 Return id of referenced place. If trim is true (default) the reference is removed.
 """
-deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol = begin
+function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     CONFIG.verbose && println(lazy"deref_place net $(pid(net)) $id")
     has_refP(net, id) || error(lazy"expected refP $id")
     rp = refplace(net, id)
     if isnothing(rp) # Something is really, really wrong.
-        error(lazy"failed to lookup reference place id $id in net $(pid(net))")
+        error("failed to lookup reference place id $id in net $(pid(net))")
     end
     @assert has_place(net, rp.ref)
-    if trim #! Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
+    if trim # Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
         delete!(refplacedict(net), id)
-        has_refP(net, id) && error(lazy"did not expect refP $id")
+        has_refP(net, id) && error("did not expect refP $id in net $(pid(net)) after delete")
     end
     return rp.ref
 end
@@ -182,16 +185,16 @@ $(TYPEDSIGNATURES)
 Return id of referenced transition. If trim is true (default) the reference is removed.
 """
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
-    CONFIG.verbose && println(lazy"deref_transition net $(pid(net)) id $id")
-    has_refT(net, id) || error(lazy"expected refT $id")
+    CONFIG.verbose && println("deref_transition net $(pid(net)) id $id")
+    has_refT(net, id) || error("expected refT $id")
     rt = reftransition(net, id)
     if isnothing(rt) # Something is really, really wrong.
-        error(lazy"failed to lookup reference transition id $id in net $(pid(net))")
+        error("failed to lookup reference transition id $id in net $(pid(net))")
     end
     @assert has_transition(net, rt.ref)
-    if trim #! Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
+    if trim
         delete!(reftransitiondict(net), id)
-        has_refT(net, id) && error(lazy"did not expect refT $id")
+        has_refT(net, id) && error("did not expect refT $id in net $(pid(net))")
     end
     return rt.ref
 end

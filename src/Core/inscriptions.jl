@@ -19,7 +19,6 @@ struct Inscription{T<:Union{Int,Float64}}  <: Annotation
     com::ObjectCommon
 end
 
-#!Inscription() = Inscription(one(Int)) #
 Inscription(value::Union{Int,Float64}) = Inscription(value, ObjectCommon())
 
 value(i::Inscription) = i.value
@@ -34,12 +33,12 @@ Evaluate an [`Inscription`](@ref)'s `value`.
 """
 Use PNML type as trait to select type of inscription.
 """
-function inscriptiontype end
+function inscription_type end
 
 """
 Use PNML type as trait to select type of inscription.
 """
-function inscriptionvaluetype end
+function inscription_value_type end
 
 inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{Int}
 inscription_type(::Type{T}) where {T <: AbstractContinuousNet} = Inscription{Float64}
