@@ -61,8 +61,14 @@ end
 end
 
 
-@testset "tokengraphics" begin
+@testset "graphics exception" begin
+    str0 = """<bogus x="1" y="2" />"""
 
+    @test_throws ArgumentError PNML.parse_graphics_coordinate(xmlroot(str0),  _pntd, registry())
+end
+
+
+@testset "tokengraphics" begin
     str0 = """<tokengraphics></tokengraphics>"""
     n = parse_tokengraphics(xmlroot(str0), _pntd, registry())
     @test n isa PNML.TokenGraphics
