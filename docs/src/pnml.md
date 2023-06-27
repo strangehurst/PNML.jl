@@ -49,7 +49,7 @@ There are 2 flavors currently covered by PNML: Discrete intger-valued & High-lev
 
 It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
 
-There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation lables, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
+There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation labels, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
@@ -91,7 +91,7 @@ Note that the official pntd schema files are in the grammer directory.
 Within PNML.jl no schema-level validation is done.
 
 Note that, depending on context, 'PNML' may refer to either
-the markup language or the Julia code.
+the markup language or the Julia code in the following.
 
 In is allowed by the PNML specification to omit validation with the presumption that
 some specialized, external tool can be applied, thus allowing the file format to be
@@ -126,7 +126,7 @@ a <structure> element or both. Often the <text> is a human-readable representati
 of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
 
 For `PTNet` (and `pnmlcore`) only the `Name` label with a <text> element
-(and no <structure> element) is defined.
+(and no <structure> element) is defined by the specification.
 
 Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 "require" all meaning to reside in the <structure>.
@@ -143,7 +143,7 @@ so that field would be `nothing`.
 
 ## High-level Petri Net Concepts
 
-From a draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - Part 1:
+Based on a draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - Part 1:
 Concepts, definitions and graphical notation._
 
 Useful for setting the ontology.
@@ -162,11 +162,10 @@ used to define expressions.
 
 ### Terms
 
-Terms have _sort_s: the sort of the variable or the output sort of the operator.
+Terms have *sort*s: the sort of the variable or the output sort of the operator.
 
 Terms can be buit from built-in *operator*s and *sort*s, and user-defined *variable*s.
-These are defined in *variable declaration*s, a kind of
-*annotation* label attached to *page*s and *net*s.
+These are defined in *variable declaration*s, a kind of *annotation* label attached to *page*s and *net*s.
 
 A *transition* can have a *condition*, a term of *sort* boolean,
 which imposes restrictions on when the transition may fire.
@@ -175,8 +174,8 @@ which imposes restrictions on when the transition may fire.
 
 *named sort*s are constructed from existing *sort*s and given a new name.
 
-*arbitrary sort* is not defined in core, is not allowed in Symmetric Nets.
-HLPNG adds arbitrary declarations, sorts of lists, strings, integers to Symmetric Nets.
+*arbitrary sort* is not defined in core, is not allowed in *Symmetric Nets*.
+HLPNG adds *arbitrary declarations*, sorts of *lists*, *strings*, *integers* to *Symmetric Nets*.
 
 The sort of a term is the sort of the *variable* or the output sort of the *operator*.
 
@@ -204,7 +203,7 @@ wants an integer. This allows continuous nets.
 
 See [Petri.jl](https://github.com/mehalter/Petri.jl)
 and [AlgebraicPetri.jl](https://github.com/AlgebraicJulia/AlgebraicPetri.jl)
-for some continuous use-cases.
+for some continuous Petri Net use-cases.
 
 TODO: Hybrid nets combining floating point/continuous and integer/discrete
 inscription/marking.
@@ -216,4 +215,4 @@ inscription/marking.
 
 [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)
 
-ISO/IEC: Software and Systems Engineering – High-level Petri Nets, Part 1: Concepts Definitions and Graphical Notation, International Standard ISO/IEC 15909 (2004)
+*ISO/IEC: Software and Systems Engineering – High-level Petri Nets, Part 1: Concepts Definitions and Graphical Notation, International Standard ISO/IEC 15909 (2004)*

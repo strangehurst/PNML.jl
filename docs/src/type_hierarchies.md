@@ -36,32 +36,33 @@ at a structural level. It may paramertize types to facilitate specilization.
 type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 ```
 
-| PnmlType     | Place | Trans | Arc  | Description                                               |
-| :---------   | :---- | :---- | :--- | :-------------------------------------------------------- |
-| PnmlCoreNet  |       |       |      | <name> is only defined label                              |
-| PTNet        | PTM   | none  | PTI  | <initialMarking>, <inscription> labels only have <text>   |
-| HLCoreNet    | HLM   | Cond  | HLI  | support structure used by all HL Petri Net Graphs         |
-| PT-HLPNG     | HLM   | Cond  | HLI  | restrict sort to dot, condition always true               |
-| SymmetricNet | HLM   | Cond  | HLI  | restrict sorts to finite, annotations have <structure>    |
-| HLNet        | HLM   | Cond  | HLI  | extend symmetric with arbitrary sorts                     |
-| Stochastic   |       | Rate  |      | continuous or discrete                                    |
-| Timed        |       |       |      | continuous or discrete                                    |
-| Open         |       |       |      | continuous or discrete                                    |
+| PnmlType     | Description                                               |
+| :---------   | :-------------------------------------------------------- |
+| PnmlCoreNet  | <name> is only defined label                              |
+| PTNet        | <initialMarking>, <inscription> labels only have <text>   |
+| HLCoreNet    | support structure used by all HL Petri Net Graphs         |
+| PT-HLPNG     | restrict sort to dot, condition always true               |
+| SymmetricNet | restrict sorts to finite, annotations have <structure>    |
+| HLNet        | extend symmetric with arbitrary sorts                     |
+| Stochastic   | continuous or discrete                                    |
+| Timed        | continuous or discrete                                    |
+| Open         | continuous or discrete                                    |
 
 Todo: Continuous Petri Net
 
-| Abbreviation | Full Name     | Node       | Label Description                                   |
-|:-------------|:--------------|:-----------|:----------------------------------------------------|
-| PTM          | Marking       | Place      |                                                     |
-| PTI          | Inscription   | Arc        |                                                     |
-| HLM          | HLMarking     | Place      |                                                     |
-| HLI          | HLInscription | Arc        |                                                     |
-| Cond         | Condition     | Transition |                                                     |
-| Rate         | Rate          | Transition | random variable or function of marking, firing rate |
-| Pri          | Priority      | Transition | firing order of enabled transitions                 |
-| We           | Weight        | Transition | firing tiebreaker                                   |
-|              |               |            |                                                     |
+| Full Name     | Node       | Label Description                                   |
+|:--------------|:-----------|:----------------------------------------------------|
+| Marking       | Place      |                                                     |
+| Inscription   | Arc        |                                                     |
+| HLMarking     | Place      |                                                     |
+| HLInscription | Arc        |                                                     |
+| Condition     | Transition |                                                     |
+| Rate          | Transition | random variable or function of marking, firing rate |
+| Priority      | Transition | firing order of enabled transitions                 |
+| Weight        | Transition | firing tiebreaker                                   |
 
+Note that *Rate*, *Priority* and *Weight* are not part of base specification.
+See [Unclaimed Labels](@ref)
 
 ## AbstractPetriNet
 [`AbstractPetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
@@ -118,11 +119,11 @@ Implemented loosely so that it is mostly part of the PnmlCore implementation. Bo
 
 And we allow all net types to have probably-nonstandard julia declaration, sort-type objects.
 
-The <type> label is meant to be a _sort_ of a _many-sorted algebra_. We call it sort-type to reduce the confusion.
+The <type> label is meant to be a _sort_ of a _many-sorted algebra_. We call it sorttype to reduce the confusion.
 
-For nets other than high-level nets we implemented the sort-type object to be `one(Int64)` or `one(Float64)`. Whereas for high-level nets the sort-type object is an [`HLAnnotation`](@ref).
+For nets other than high-level nets we implemented the sorttype object to be `one(Int64)` or `one(Float64)`. Whereas for high-level nets the sorttype object is an [`HLAnnotation`](@ref).
 
-The sort-type HLAnnotation label's <structure> will be parsed into a [`SortType`](@ref).
+The sorttype HLAnnotation label's <structure> will be parsed into a [`SortType`](@ref).
 Unsurprisingly, <text> is parsed to `String`.
 
 ## AbstractDeclaration
