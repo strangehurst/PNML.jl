@@ -4,25 +4,26 @@ using PNML
 using DataFrames, DataFramesMeta, Dates, CSV
 
 function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = "examples",
-                  outdir = "/tmp/testpmnl")
+                  outdir = "/home/jeff/Jules/testpmnl")
     pnml = endswith(".pnml")
     df = DataFrame() # Collects data from tests.
-    # make outdir
-    subd = Dates.format(now(), dateformat"yyyymmddHHSS")
+    indir  = joinpath(topdir, dir)
+    subd = Dates.format(now(), dateformat"yyyymmddHHMM")
     outdir = joinpath(outdir, subd)
     mkpath(outdir)
     @show outdir
-    cd(joinpath(topdir, dir)) do
+    cd(indir) do
         for (root, dirs, files) in walkdir(".")
             for file in filter(pnml, files)
                 f = lstrip(joinpath(root, file), ['.', '/'])
                 println(f, " size = ", filesize(f)) # Display path to file and size.
                 try
                     # Collect per-file output.
-                    outfile = joinpath(outdir, (first ∘ splitext ∘ basename)(f)) #! collisions?
-                    isfile(outfile) && println("overwrite")
+                    outfile = joinpath(outdir, (first ∘ splitext ∘ basename)(f))
+                    isfile(outfile) && println("Warning overwriting $outfile")
                     Base.redirect_stdio(stdout=outfile, stderr=outfile) do
                         println(f)
+                        println()
                         stats = @timed parse_file(f)
                         push!(df, (file=f, fsize=filesize(f), time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
                         # Display PnmlModel as a test of parsing, creation and show().
@@ -41,7 +42,7 @@ function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = 
             end
         end
     end
-    # Display the gathered data frame.
+
     sort!(df, [:time])
     write(joinpath(outdir, "DataFrame.txt"), repr(df))
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
