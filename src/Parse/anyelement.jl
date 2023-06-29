@@ -26,6 +26,12 @@ function unclaimed_label(node::XMLNode, pntd::PnmlType, _::PnmlIDRegistry)
     return Symbol(EzXML.nodename(node)) => anyel
 end
 
+"""
+$(TYPEDSIGNATURES)
+Find :text in AnyXmlNode[]
+"""
+function text_content end
+
 text_content(l::PnmlLabel) = text_content(elements(l))
 text_content(l::AnyElement) = text_content(elements(l))
 
@@ -34,11 +40,12 @@ text_content(vx::Vector{AnyXmlNode}) = begin
     isnothing(tc) && throw(ArgumentError("missing <text>"))
     txt = value(vx[tc])
     tc = findfirst(x -> !isa(value(x), Number) && tag(x) === :content, txt)
-    isnothing(tc) && throw(ArgumentError("missing text <content>"))
+    isnothing(tc) && throw(ArgumentError("missing <text> <content>"))
     cnt = txt[tc]
     val = value(cnt)
     val isa AbstractString ||
-        throw(ArgumentError("text content type '$(typeof(val))', expected <:AbstractString:\n$(dump(val))"))
+        throw(ArgumentError(lazy"""text content type '$(typeof(val))',
+                                expected <:AbstractString:\n$(dump(val))"""))
     #println("text_content = ", val)
     return val
 end
@@ -70,49 +77,43 @@ Wrap a function and two of its arguments.
 struct HarvestAny
     fun::FunctionWrapper{Vector{AnyXmlNode}, Tuple{XMLNode, HarvestAny}}
     pntd::PnmlType # Maybe want to specialize sometime.
-    #reg::PnmlIDRegistry
 end
 
 (harvest!::HarvestAny)(node::XMLNode) = harvest!.fun(node, harvest!)
 
-# "Extract XML attributes. Register/convert IDs value as symbols."
-# function _attribute_value(a, harvest!)::Union{Symbol, String}
-#     a.name == "id" ? register_id!(harvest!.reg, a.content) : a.content
-#     #! Note type differs in legs: symbol and string
-# end
-
 """
 $(TYPEDSIGNATURES)
 
-Return `NamedTuple` holding a well-formed XML `node`.
+Return `AnyXmlNode` vector holding a well-formed XML `node`.
 
-If element `node` has any attributes &/or children, each is placed in the tuple using
-attribute name or child's tag name symbol. Repeated tags produce a plain tuple as the value.
-There will always be a `content` field in the returned tupel.
+If element `node` has any attributes &/or children, use
+attribute name or child's name as tag.  (Empty is well-formed.)
 
 Descend the well-formed XML using parser function `harvest!` on child nodes.
 
 Note the assumption that "children" and "content" are mutually exclusive.
 Content is always a leaf element. However XML attributes can be anywhere in
 the hierarchy. And neither children nor content nor attribute may be present.
+
+Leaf `AnyXmlNode`'s contain an String or SubString.
 """
 function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
     CONFIG.verbose && println("_harvest_any! ", EzXML.nodename(node))
 
     vec = AnyXmlNode[]
     for a in EzXML.eachattribute(node)
-        # ID attributes can appear in various places.
-        #! See _attribute_value Each is unique, symbolized and added to the registry.
-        #! ALL use unmodified content (some string) as the value.
+        # Defer further :id attribute parsing by treating as a string here.
         push!(vec, AnyXmlNode(Symbol(a.name), a.content))
     end
 
     if EzXML.haselement(node) # Children exist, extract them.
         _anyelement_content!(vec, node, harvest!)
-    elseif isempty(vec) # Has attributes so does not get empty content.
-        if !isempty(EzXML.nodecontent(node)) # <tag> </tag> will have nodecontent
-            push!(vec, AnyXmlNode(:content, (strip ∘ EzXML.nodecontent)(node)))
-        else # <tag/> and <tag></tag> will not have any nodecontent, give it an empty one.
+    else # No children, is there content?
+        content_string = strip(EzXML.nodecontent(node))
+        if !all(isspace, content_string) # Non-blank content after strip are leafs.
+            push!(vec, AnyXmlNode(:content, content_string))
+        elseif isempty(vec) # No need to make empty leaf.
+            # <tag/> and <tag></tag> will not have any nodecontent.
             push!(vec, AnyXmlNode(:content, "")) #! :content might collide
         end
     end
@@ -123,36 +124,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Apply `harvest!` to each child node of `node`.
-Return named tuple where names are tags of children and values are tuples of namedtuples.
-Refer to `AnyElement`, `PnmlLabel` for similar usage that pairs a tag with a single NamedTuple.
-
-Example of a node that has repeated children elements:
-<tag2>
-    <child/>
-    <child/>
-</tag2>
-
-Collectd by recursively applying `harvest!` as:
-dictionary[tag2] == tuple(child1namedtuple, child2namedtuple)
-
-Returnd as
-NamedTuple(:tag2 => tuple(NamedTuple(:child1content => NamedTuple)), NamedTuple(:child2content => NamedTuple) )
+Apply `harvest!` to each child node of `node`, appending to `vec`.
 """
-function _anyelement_content(node::XMLNode, harvest!::HarvestAny)
-    dict = IdDict{Symbol, Tuple}()
-    for n in EzXML.eachelement(node) #! iterate
-        tag = Symbol(EzXML.nodename(n))
-        content = harvest!(n) #! Recurse
-        if !haskey(dict, tag)
-            dict[tag] = tuple(content) # get/initialize collection for tag name
-        else
-            @inbounds dict[tag] = (dict[tag]..., content) #! accumulate duplicates, maintain order, DO NOT replace
-        end
-    end
-    @assert !isempty(dict)
-    return namedtuple(pairs(dict))
-end
 function _anyelement_content!(vec, node::XMLNode, harvest!::HarvestAny)
     for n in EzXML.eachelement(node) #! iterate
         push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
