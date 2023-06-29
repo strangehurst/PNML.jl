@@ -86,23 +86,27 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         $(str5.str)
         </place>
         """
-        #@show str
-        #println()
         n::XMLNode = xmlroot(str)
         p0 = parse_place(n, PnmlCoreNet(), registry())
-        #println()
-        #@show typeof(p0)
-        #println(p0)
+
         @test has_tools(p0)
         @test_call has_tools(p0)
         t = tools(p0)
         @test_call tools(p0)
         @test t isa Vector{ToolInfo}
         @test length(t) == 5
+        #println("toolinfo test"); dump(t)
 
         for ti in t
             @test ti isa ToolInfo
         end
+
+        @test PNML.has_toolinfo(t, r"petrinet3", r"1\.*")
+        @test PNML.has_toolinfo(t, "petrinet3", "1.0")
+        @test PNML.has_toolinfo(t, "petrinet3")
+        @test !PNML.has_toolinfo(t, "XXX")
+        @test !PNML.has_toolinfo(t, "petrinet3", "2.0")
+
         for (i,s) in enumerate([str1, str2, str3, str4, str5])
             ti = get_toolinfo(t, s.tool, s.version)
             @test ti isa ToolInfo

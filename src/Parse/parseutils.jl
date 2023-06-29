@@ -6,7 +6,7 @@ function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
     nn = EzXML.nodename(node)
     CONFIG.verbose && println("add label! $nn")
     if CONFIG.warn_on_unclaimed
-        if haskey(tagmap, tag) && tag != "structure"
+        if haskey(tagmap, nn) && nn != "structure"
             @info "$nn is known tag being treated as unclaimed."
         end
     end
@@ -38,20 +38,16 @@ Does any toolinfo attached to `d` have a matching `toolname`.
 function has_toolinfo end
 
 # tools vector
-function has_toolinfo(v::Vector{<:NamedTuple},
-                      toolname::AbstractString)
+function has_toolinfo(v::Vector{<:ToolInfo}, toolname)
     has_toolinfo(v, Regex(toolname))
 end
-function has_toolinfo(v::Vector{<:NamedTuple},
-                      toolname::AbstractString,
-                      version::AbstractString)
+function has_toolinfo(v::Vector{<:ToolInfo}, toolname, version)
     has_toolinfo(v, Regex(toolname), Regex(version))
 end
-function has_toolinfo(v::Vector{<:NamedTuple},
-                      namerex::Regex,
-                      versionrex::Regex=r"^.*$")
+function has_toolinfo(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
     any(v) do tool
-       match(namerex, tool.toolname) && match(versionrex, tool.version)
+       !isnothing(match(namerex, tool.toolname)) &&
+            !isnothing(match(versionrex, tool.version))
     end
 end
 
