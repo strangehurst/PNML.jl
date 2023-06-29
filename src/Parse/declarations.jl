@@ -186,11 +186,11 @@ end
 # Sort type for non-high-level meaning is TBD and non-standard.
 function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
     check_nodename(node, "type")
-    # Parse as unclaimed label. Then assume it is a `number_value` for non-High-Level nets.
+    # Parse as unclaimed label. Then assume it is a `numberic_label_value`.
     # First use-case of technique is `rate` of `ContinuousNet`.
     ucl = unclaimed_label(node, pntd, idregistry)
     CONFIG.verbose && @show ucl
-    SortType("default sorttype", Term(:sorttype, [AnyXmlNode(ucl)]))
+    #!SortType("default sorttype", Term(:sorttype, [AnyXmlNode(ucl)]))
     @assert ucl.second[1] isa AbstractString
     return numeric_label_value(sort_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
 end
