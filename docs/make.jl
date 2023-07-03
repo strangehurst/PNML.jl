@@ -103,8 +103,8 @@ makedocs(;
 if !isempty(get(ENV, "DOCUMENTER_KEY", ""))
     deploydocs(;
                repo="github.com/strangehurst/PNML.jl",
-               devbranch = "monorepo",
-               #devbranch = "main",
+               #devbranch = "monorepo",
+               devbranch = "main",
                push_preview = true,
                )
 end
