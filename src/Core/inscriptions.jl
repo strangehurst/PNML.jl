@@ -30,16 +30,6 @@ Evaluate an [`Inscription`](@ref)'s `value`.
 """
 (inscription::Inscription)() = _evaluate(value(inscription))
 
-"""
-Use PNML type as trait to select type of inscription.
-"""
-function inscription_type end
-
-"""
-Use PNML type as trait to select type of inscription.
-"""
-function inscription_value_type end
-
 inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{Int}
 inscription_type(::Type{T}) where {T <: AbstractContinuousNet} = Inscription{Float64}
 

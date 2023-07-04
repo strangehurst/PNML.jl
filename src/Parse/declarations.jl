@@ -195,7 +195,9 @@ function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where
     return numeric_label_value(sort_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
 end
 
-# not a label
+"""
+$(TYPEDSIGNATURES)
+"""
 parse_sorttype_term(typenode, pntd, idregistry) = begin
     check_nodename(typenode, "structure")
     term = EzXML.firstelement(typenode)

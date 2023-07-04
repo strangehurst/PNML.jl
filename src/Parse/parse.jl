@@ -650,6 +650,9 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
     HLMarking(text, something(term, default_marking(pntd)), ObjectCommon(graphics, tools, labels))
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 parse_marking_term(marknode, pntd, idregistry) = begin
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
@@ -691,6 +694,9 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
                     ObjectCommon(graphics, tools, labels))
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 parse_inscription_term(inscriptionnode, pntd, idregistry)::Term = begin
     check_nodename(inscriptionnode, "structure")
     if EzXML.haselement(inscriptionnode)
@@ -739,7 +745,10 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     Condition(pntd, text, something(term, default_bool_term(pntd)), ObjectCommon(graphics, tools, labels))
 end
-# <structure> contains a a pnml term
+
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_condition_term(conditionnode, pntd::PnmlType, idregistry)
     check_nodename(conditionnode, "structure")
 
@@ -762,6 +771,6 @@ Return NamedTuple (tag,node), to defer parsing the xml.
 function parse_label(node::XMLNode, _::PnmlType, _::PIDR)
     @assert node !== nothing
     nn = check_nodename(node, "label")
-    @warn "parse_label means there is a label names 'label'"
+    @warn "parse_label means there is a label named 'label'"
     (; :tag => Symbol(nn), :xml => node) # Always add xml because this is unexpected.
 end

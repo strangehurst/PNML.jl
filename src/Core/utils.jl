@@ -5,7 +5,7 @@ function getfirst(f, v) # getfirst(f::F, v) where {F}
 end
 
 """
-    _evaluate(x) -> identity(x)
+    _evaluate(x::Number) -> identity(x)
     _evaluate(x::Base.Callable) -> (x)()
 
 Return the value of "x", defaults to identity.
@@ -13,10 +13,9 @@ Return the value of "x", defaults to identity.
 # Examples
 
 Since High-level PNML schemas are based on Natural numbers and booleans,
-it seems reasonable to assume `Number`, which includes Bool, for the non-callable type.
+it seems reasonable to assume `Number`, which includes `Bool``, for the non-callable type.
 A functor is expected as the callable type allowing expressions in the many-sorted algebra
 to be evaluated to a `Number`.
-    _evaluate(value(c))
 """
 function _evaluate end
 _evaluate(x::Number) = identity(x)

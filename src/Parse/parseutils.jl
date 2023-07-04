@@ -33,6 +33,8 @@ function add_toolinfo!(v::Vector{ToolInfo}, node, pntd, reg)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Does any toolinfo attached to `d` have a matching `toolname`.
 """
 function has_toolinfo end
@@ -52,7 +54,9 @@ function has_toolinfo(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r
 end
 
 """
-Parse string as a number. First try integer then float.
+$(TYPEDSIGNATURES)
+
+Parse string as a type T <: Number.
 """
 function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     x = tryparse(T, s)

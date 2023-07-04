@@ -302,3 +302,105 @@ $(TYPEDSIGNATURES)
 Return reference transition matching `id`.
 """
 function reftransition end
+
+#--------------------------------------------
+#
+#--------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+"""
+function pnmlnet_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of Page.
+"""
+function page_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of Place.
+"""
+function place_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of TYransition.
+"""
+function transition_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of Arc.
+"""
+function arc_type end
+
+"""
+$(TYPEDSIGNATURES)
+Tyoe of RefPlace.
+"""
+function refplace_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of RefTransition.
+"""
+function reftransition_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of `Condition{condition_value_type(T)}`
+"""
+function condition_type end
+"""
+$(TYPEDSIGNATURES)
+Return value type.
+"""
+function condition_value_type end
+
+"""
+$(TYPEDSIGNATURES)
+Type of Inscription{inscription_value_type(T)}.
+"""
+function inscription_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return value type.
+"""
+function inscription_value_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return type of Marking{marking_value_type(T)}.
+"""
+function marking_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return value type.
+"""
+function marking_value_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return type of sort.
+"""
+function sort_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return value type.
+"""
+function term_value_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return `Coordinate{coordinate_value_type(T)}`
+"""
+function coordinate_type end
+"""
+$(TYPEDSIGNATURES)
+Return type of value in a `Coordinate`.
+"""
+function coordinate_value_type end

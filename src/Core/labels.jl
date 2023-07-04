@@ -8,10 +8,9 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    #prop_name === :id   && return getfield(o, :id)::Symbol #! TODO do labels have ids?
     prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
     prop_name === :com  && return getfield(o, :com)::ObjectCommon
-    prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract, do labels have this? XXX
+    prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
     prop_name === :xml  && return getfield(o, :xml)::XMLNode
 
     return getfield(o, prop_name)
@@ -88,7 +87,7 @@ value(axn::AnyXmlNode) = axn.val
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `NamedTuple` holding as a pnml label. Use the XML tag as identifier.
+Wrap a `AnyXmlNode[]` holding a pnml label. Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use

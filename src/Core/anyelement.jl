@@ -2,9 +2,9 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap `NamedTuple` holding well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+Hold well-formed XML in a Vector{[`AnyXmlNode`](@ref)}. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 """
-@auto_hash_equals struct AnyElement #{T <: NamedTuple}
+@auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
     elements::Vector{AnyXmlNode}
     xml::XMLNode

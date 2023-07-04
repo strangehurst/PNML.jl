@@ -5,7 +5,7 @@ Terms are part of the multi-sorted algebra that is part of a High-Level Petri Ne
 An abstract type in the pnml XML specification, concrete `Term`s are
 found within the <structure> element of a [`HLAnnotation`](@ref) label.
 
-Notably, a `Term` is not a PnmlLabel.
+Notably, a [`Term`](@ref) is not a PnmlLabel.
 
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
 """

@@ -160,9 +160,9 @@ function deref!(net::PnmlNet, trim::Bool = true)
 end
 
 """
-    deref_place(net, id[, trim] ) -> Symbol
+    deref_place(net, id[, trim::Bool] ) -> Symbol
 
-Return id of referenced place. If trim is true (default) the reference is removed.
+Return id of referenced place. If trim is `true` (default) the reference is removed.
 """
 function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     CONFIG.verbose && println(lazy"deref_place net $(pid(net)) $id")
@@ -180,12 +180,12 @@ function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
 end
 
 """
-$(TYPEDSIGNATURES)
+    deref_transition(net, id[, trim::Bool] ) -> Symbol
 
-Return id of referenced transition. If trim is true (default) the reference is removed.
+Return id of referenced transition. If trim is `true` (default) the reference is removed.
 """
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
-    CONFIG.verbose && println("deref_transition net $(pid(net)) id $id")
+    CONFIG.verbose && println("deref_transition net $(pid(net)) refT $id")
     has_refT(net, id) || error("expected refT $id")
     rt = reftransition(net, id)
     if isnothing(rt) # Something is really, really wrong.

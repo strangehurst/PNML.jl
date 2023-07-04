@@ -1,6 +1,8 @@
 #---------------------------------------------------------------------------
 # For some nets a transition is labeled with a floating point rate.
 #---------------------------------------------------------------------------
+"Return rate value type"
+function rate_value_type end
 rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
 rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
 rate_value_type(::Type{T}) where {T <: PnmlType} = Float64

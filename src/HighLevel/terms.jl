@@ -56,57 +56,63 @@ default_zero_term(::AbstractContinuousNet) = zero(Float64) #!relocate
 default_zero_term(::AbstractHLCore) = Term(:zero, zero(Int))
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
-#TODO
-default_bool_term(::PnmlType) = Term(:bool, true)
+
+"""
+$(TYPEDSIGNATURES)
+
+True as boolean or term with a value of `true`.
+"""
+function default_bool_term end
+default_bool_term() = true
+default_bool_term(::PnmlType) = true
+default_bool_term(::AbstractHLCore) = Term(:bool, true)
+default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Part of the many-sorted algebra attached to nodes on a Petri Net Graph, `Term`s are
-contained within the <structure> element of a `HLAnnotation`.
+Note that Term is an abstract element in the pnml specification with no XML tag.
+Here we use it as a concrete wrapper around high-level many-sorted algebra terms
+AND extend to also wrapping "single-sorted" values.
 
-#! Note that Term is is an abstract element in the specification with no PNML tag.
+By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
+to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
 
-Should conform to the [`HLAnnotation`](@ref) interface. Namely <text>, <structure>,
-where <structure> contains one element, a `Term`.  The `Term`s element tag name is
-paired with its content: a NamedTuple{Tag, Content} of its children elements.
+As part of the many-sorted algebra attached to nodes of a High-level Petri Net Graph,
+Term`s are contained within the <structure> element of an annotation label,
+See [`HLAnnotation`](@ref) concrete subtypes.
 
-For more general well-formed-XML handling see [`AnyElement`](@ref).
+#TODO is it safe to assume that Bool, Int, Float64 are in the carrier set/basis set?
 
- ast variants:
-  - variable
-  - operator
+#! HL term is currently implemented as a wrapper of Vector{AnyXmlNode}. A tree of symbols with leafs that are strings.
 
-#! Term as functor requires a default value for missing values.
+# Functor
+
+    (t::Term)([default_one_term(HLCoreNet())])
+
+Term as functor requires a default value for missing values.
+
+As a preliminary implementation evaluate a HL term by returning `:value` in `elements` or
+evaluating `default_one_term(HLCoreNet())`.
+
+See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
+[`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref),
+[`AnyElement`](@ref).
+
+**Warning:** Much of the high-level is WORK-IN-PROGRES.
 """
 struct Term <: AbstractTerm
-    tag::Symbol #! Does this serve any function?
+    tag::Symbol
     elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
 
-#Term(tag::Symbol, x) = Term(tag, [x])
 Term(ax::AnyXmlNode) = Term(:empty, [ax])
-Term(p::Pair{Symbol,Vector{AnyXmlNode}}) = Term(p.first, p.second)
-
-#Base.convert(::Type{Maybe{Term}}, tup::NamedTuple)::Term = Term(tup)
+Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 
-"""
-Evaluate a term by returning `:value` in `elements` or a default value.
-
-Defaults to evauluating `default_one_term(HLCoreNet())`.
-Use the `default` keyword argument to specify a different default.
-
-The pnml specification treats 'Term' as an abstract UML2 type. We make it a concrete type.
-See parse_sorttype_term, parse_type, parse_marking_term,
-parse_condition_term, parse_inscription_term.
-
-_Warning:_ Much of the high-level is WORK-IN-PROGRES. Term is implemented as a wrapper of
-Vector{AnyXmlNode}. This is a tree of symbols with leafs that are strings.
-"""
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
     if t.elements isa Number
         return t.elements
