@@ -33,54 +33,56 @@ end
 
 nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
 
+net(petrinet::AbstractPetriNet) = petrinet.net
+
 #------------------------------------------------------------------------------------------
-# Methods that should be implemented by concrete subtypes of AbstractPetriNet will throw an error.
+#
 #------------------------------------------------------------------------------------------
 
-pid(::AbstractPetriNet)   = error("must implement id accessor")
+pid(petrinet::AbstractPetriNet)   = pid(net(petrinet))
 
-places(::AbstractPetriNet)         = error("not implemented")
-transitions(::AbstractPetriNet)    = error("not implemented")
-arcs(::AbstractPetriNet)           = error("not implemented")
-refplaces(::AbstractPetriNet)      = error("not implemented")
-reftransitions(::AbstractPetriNet) = error("not implemented")
-
-#------------------------------------------------------------------
-place_idset(petrinet::AbstractPetriNet)             = place_idset(petrinet.net)
-has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(petrinet.net, id)
-place(petrinet::AbstractPetriNet, id::Symbol)     = place(petrinet.net, id)
-
-marking(petrinet::AbstractPetriNet, placeid::Symbol) = marking(petrinet.net, placeid)
-currentMarkings(petrinet::AbstractPetriNet) = currentMarkings(petrinet.net)
+places(petrinet::AbstractPetriNet)         = places(net(petrinet))
+transitions(petrinet::AbstractPetriNet)    = transitions(net(petrinet))
+arcs(petrinet::AbstractPetriNet)           = arcs(net(petrinet))
+refplaces(petrinet::AbstractPetriNet)      = refPlaces(net(petrinet))
+reftransitions(petrinet::AbstractPetriNet) = refTransitions(net(petrinet))
 
 #------------------------------------------------------------------
-transition_idset(petrinet::AbstractPetriNet)             = transition_idset(petrinet.net)
-has_transition(petrinet::AbstractPetriNet, id::Symbol) = has_transition(petrinet.net, id)
-transition(petrinet::AbstractPetriNet, id::Symbol)     = transition(petrinet.net, id)
+place_idset(petrinet::AbstractPetriNet)           = place_idset(net(petrinet))
+has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(net(petrinet), id)
+place(petrinet::AbstractPetriNet, id::Symbol)     = place(net(petrinet), id)
 
-condition(petrinet::AbstractPetriNet, trans_id::Symbol) = condition(petrinet.net, trans_id)
-conditions(petrinet::AbstractPetriNet)                  = conditions(petrinet.net)
-
-#------------------------------------------------------------------
-arc_idset(petrinet::AbstractPetriNet)              = arc_idset(petrinet.net)
-has_arc(petrinet::AbstractPetriNet, id::Symbol)  = has_arc(petrinet.net, id)
-arc(petrinet::AbstractPetriNet, id::Symbol)      = arc(petrinet.net, id)
-
-all_arcs(petrinet::AbstractPetriNet, id::Symbol) = all_arcs(petrinet.net, id)
-src_arcs(petrinet::AbstractPetriNet, id::Symbol) = src_arcs(petrinet.net, id)
-tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(petrinet.net, id)
-
-inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(petrinet.net, arc_id)
-#! TODO inscriptions (plural)? For completeness?
+marking(petrinet::AbstractPetriNet, placeid::Symbol) = marking(net(petrinet), placeid)
+currentMarkings(petrinet::AbstractPetriNet) = currentMarkings(net(petrinet))
 
 #------------------------------------------------------------------
-refplace_idset(petrinet::AbstractPetriNet)              = refplace_idset(petrinet.net)
-has_refP(petrinet::AbstractPetriNet, ref_id::Symbol)  = has_refP(petrinet.net, ref_id)
-refplace(petrinet::AbstractPetriNet, id::Symbol)      = refplace(petrinet.net, id)
+transition_idset(petrinet::AbstractPetriNet)           = transition_idset(net(petrinet))
+has_transition(petrinet::AbstractPetriNet, id::Symbol) = has_transition(net(petrinet), id)
+transition(petrinet::AbstractPetriNet, id::Symbol)     = transition(net(petrinet), id)
 
-reftransition_idset(petrinet::AbstractPetriNet)         = reftransition_idset(petrinet.net)
-has_refT(petrinet::AbstractPetriNet, ref_id::Symbol)  = has_refP(petrinet.net, ref_id)
-reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(petrinet.net, id)
+condition(petrinet::AbstractPetriNet, trans_id::Symbol) = condition(net(petrinet), trans_id)
+conditions(petrinet::AbstractPetriNet)                  = conditions(net(petrinet))
+
+#------------------------------------------------------------------
+arc_idset(petrinet::AbstractPetriNet)            = arc_idset(net(petrinet))
+has_arc(petrinet::AbstractPetriNet, id::Symbol)  = has_arc(net(petrinet), id)
+arc(petrinet::AbstractPetriNet, id::Symbol)      = arc(net(petrinet), id)
+
+all_arcs(petrinet::AbstractPetriNet, id::Symbol) = all_arcs(net(petrinet), id)
+src_arcs(petrinet::AbstractPetriNet, id::Symbol) = src_arcs(net(petrinet), id)
+tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(net(petrinet), id)
+
+inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(net(petrinet), arc_id)
+#TODO inscriptions (plural)? For completeness?
+
+#------------------------------------------------------------------
+refplace_idset(petrinet::AbstractPetriNet)            = refplace_idset(net(petrinet))
+has_refP(petrinet::AbstractPetriNet, ref_id::Symbol)  = has_refP(net(petrinet), ref_id)
+refplace(petrinet::AbstractPetriNet, id::Symbol)      = refplace(net(petrinet), id)
+
+reftransition_idset(petrinet::AbstractPetriNet)       = reftransition_idset(net(petrinet))
+has_refT(petrinet::AbstractPetriNet, ref_id::Symbol)  = has_refP(net(petrinet), ref_id)
+reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(net(petrinet), id)
 
 #-----------------------------------------------------------------
 Base.summary(io::IO, pn::AbstractPetriNet) = print(io, summary(pn))

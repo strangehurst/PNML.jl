@@ -18,13 +18,3 @@ HLPetriNet(model::PnmlModel)    = HLPetriNet(first_net(model))
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface.
 #-------------------------------------------------------------------------------
-
-# Delegate to wrapped net.
-pid(hlpn::HLPetriNet) = pid(hlpn.net)
-
-# Flattened to page[1], so simple vectors.
-places(hlpn::HLPetriNet)      = places(hlpn.net)
-transitions(hlpn::HLPetriNet) = transitions(hlpn.net)
-arcs(hlpn::HLPetriNet)        = arcs(hlpn.net)
-refplaces(hlpn::HLPetriNet)   = refPlaces(hlpn.net)
-reftransitions(hlpn::HLPetriNet) = refPlaces(hlpn.net)

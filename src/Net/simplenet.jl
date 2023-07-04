@@ -61,11 +61,3 @@ end
 #-------------------------------------------------------------------------------
 # Implement PNML Petri Net interface. See interface.jl for docstrings.
 #-------------------------------------------------------------------------------
-
-pid(spn::SimpleNet) = pid(spn.net) # Use since we used it for dispatch.
-
-places(spn::SimpleNet)         = places(spn.net)
-transitions(spn::SimpleNet)    = transitions(spn.net)
-arcs(spn::SimpleNet)           = arcs(spn.net)
-refplaces(spn::SimpleNet)      = refPlaces(spn.net)
-reftransitions(spn::SimpleNet) = refTransitions(spn.net)
