@@ -10,15 +10,18 @@ NB: The pnml specification treats BuiltInSort as an abstract UML2 type. We provi
 concrete type for un-implemented sorts.
 """
 struct BuiltInSort <: AbstractSort end
-eltype(::BuiltInSort) = AnyXmlNode
+Base.eltype(::BuiltInSort) = AnyXmlNode
 
 struct BoolSort <: AbstractSort end
-eltype(::BoolSort) = Bool
+Base.eltype(::BoolSort) = Bool
 
 struct DotSort <: AbstractSort end
-eltype(::DotSort) = Int
+Base.eltype(::DotSort) = Int
 
-"Are the sorts the same?"
+"""
+$(TYPEDSIGNATURES)
+Are the sorts `eltype` the same?
+"""
 equals(a::AbstractSort, b::AbstractSort) = eltype(a) == eltytpe(b)
 
 """
