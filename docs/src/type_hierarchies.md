@@ -112,7 +112,9 @@ type_tree(PNML.AbstractPnmlTool) # hide
 ```@example type
 type_tree(PNML.PnmlException) # hide
 ```
+
 # Many-sorted Algebra Concepts
+
 The PNML Specification builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
 
 Implemented loosely so that it is mostly part of the PnmlCore implementation. Both <text> and <structure> are optional. Presumption is that the consumer will have good tests and defenses. **TODO: Seems like a layer boundary in the degign.**
@@ -127,6 +129,7 @@ The sorttype HLAnnotation label's <structure> will be parsed into a [`SortType`]
 Unsurprisingly, <text> is parsed to `String`.
 
 ## AbstractDeclaration
+
 Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 ```@example type
 type_tree(PNML.AbstractDeclaration) # hide

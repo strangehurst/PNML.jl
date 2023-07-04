@@ -13,23 +13,19 @@ Depth = 5
 
     Eventually this section will cover interfaces in a useful way.
 
-The intermediate representation is used to implement networks
-expressed in a pnml model. The consumer of the IR is a network,
-most naturally a varity of Petri Net.
+The intermediate representation is used to implement networks expressed in a pnml model. The consumer of the IR is a network is most naturally a varity of Petri Net.
 
-High-Level Petri Net Graphs (HLPNG) can be expressed in a pnml model.
 
 We start a description of the net IR here.
 
-## PnmlDict or NamedTuple
+## AnyXmlNode
 
-Switch from `PnmlDict`, a dictionary over `{Symbol,Any}` to `NamedTuple`s.
-There are pnml IDs and XML element tag names are used as names.
+XML element tag names and attribute names are uses as key/tag of [`AnyXmlNode`](@ref)
+Leaf nodes have values that are strings. Intermediate nodes have AnyXmlNode as a value.
 
-Each XML tag is first parsed (recursivly) into a named tuple, with tags as the names,
-then tuple is used to create higher-level types.
+Used to hold unparsed XML-as-strings. Use will reduce as more is implemented.
 
-Wraps a `NamedTuple`:
+Used by:
   * [`AnyElement`](@ref)
   * [`PnmlLabel`](@ref)
   * [`SortType`](@ref)
@@ -71,8 +67,6 @@ adapting to use graph tools, agent based modeling, sciml, etc.
 [`AbstractPetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 Note the **Pnml** to **Petri**.
 
-
-
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
 A concrete `AbstractPetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
@@ -83,37 +77,9 @@ One mechanism used is type parameters.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are 1st parsed into `NamedTuple`
-which is used by [`parse_net`](@ref) to construct a [`PnmlNet`](@ref):
+XML <net> tags are parsed by [`parse_net`](@ref) into a [`PnmlNet`](@ref).
 
-| key          | value description                              |
-| :----------- | :--------------------------------------------  |
-| tag          | XML tag symbol `:net`                          |
-| id           | unique ID                                      |
-| name         | text name, optional                            |
-| tools        | list of tool specific - possibly empty         |
-| labels       | list of generic "pnml labels" - possible empty |
-| type         | PnmlType defines schema the XML should meet    |
-| declarations | defines high-level semantics of a net          |
-| pages        | list of pages - not empty                      |
-
-XML <page> tags are also 1st parsed by [`parse_page!`](@ref) into `NamedTuple`
-which is used to construct a [`Page`](@ref):
-
-| key          | value description                              |
-| :----------- | :--------------------------------------------  |
-| tag          | XML tag symbol `:page`                         |
-| id           | unique ID                                      |
-| name         | text name, optional                            |
-| tools        | list of tool specific - possibly empty         |
-| labels       | list of generic "pnml labels" - possible empty |
-| places       | list of places                                 |
-| trans        | list of transitions                            |
-| arcs         | list of arcs                                   |
-| refP         | references to place on different page          |
-| refT         | references to transition on different page     |
-| declarations | only net & page tags have declarations         |
-| pages        | pages can be nested                            |
+XML <page> tags are parsed by [`parse_page!`](@ref) into a [`Page`](@ref).
 
 ## Places
 
@@ -134,13 +100,15 @@ Properties that various transitions may have one or more of:
   * scheduled
 
 The pnml schemas and primer only try to cover the discrete case as Place-Transition and High-Level Petri Nets.
-With a lot of multi-sorted algebra to make High-Level Nets complicated enough to be challenging.
+
+## Extensions to PNML
+
+### Continuous Values
 
 Continous support is present where possible. For instance, when a number appers in the XML
 [`number_value`](@ref) is used to parse the string to `Int` or `Float64`.
 This is currently (2022) "non-standard" so such pnml files will not be generally
 interchangable with other tools.
-
 
 ['Discrete, Continuous, and Hybrid Petri Nets' by Rene David and Hassane Alla](https://link.springer.com/book/10.1007/978-3-642-10669-9)
 
@@ -382,11 +350,6 @@ methods(PNML.deref_transition)  # hide
 ```@example methods
 methods(PNML.marking)  # hide
 ```
-### initialMarking -
-[`initialMarking`](@ref)
-```@example methods
-methods(PNML.initialMarking)  # hide
-```
 
 ## Transition Related
 
@@ -484,42 +447,54 @@ methods(PNML.get_toolinfo) # hide
 
 ## PnmlType traits
 
-See [`PnmlTypeDefs`](@ref) for details of the module.
+See [`PnmlTypeDefs`](@ref) for details of the singleton types used.
 
-## _evaluate, functors, markings,  inscriptions
-
-[`_evaluate`](@ref)
+  - [`pnmlnet_type`](@ref)
 ```@example methods
-methods(PNML._evaluate) # hide
+methods(PNML.pnmlnet_type) # hide
+```
+  - [`page_type`](@ref)
+```@example methods
+methods(PNML.page_type) # hide
+```
+  - [`marking_type`](@ref)
+```@example methods
+methods(PNML.marking_type) # hide
+```
+  - [`inscription_type`](@ref)
+```@example methods
+methods(PNML.inscription_type) # hide
+```
+  - [`condition_type`](@ref)
+```@example methods
+methods(PNML.condition_type) # hide
+```
+  - [`sort_type`](@ref)
+```@example methods
+methods(PNML.sort_type) # hide
 ```
 
-[`default_marking`](@ref)
+  - [`place_type`](@ref)
 ```@example methods
-methods(PNML.default_marking) # hide
+methods(PNML.place_type) # hide
+```
+  - [`transition_type`](@ref)
+```@example methods
+methods(PNML.transition_type) # hide
+```
+  - [`arc_type`](@ref)
+```@example methods
+methods(PNML.arc_type) # hide
+```
+  - [`refplace_type`](@ref)
+```@example methods
+methods(PNML.refplace_type) # hide
+```
+  - [`reftransition_type`](@ref)
+```@example methods
+methods(PNML.reftransition_type) # hide
 ```
 
-[`default_inscription`](@ref)
-```@example methods
-methods(PNML.default_inscription) # hide
-```
-
-[`default_condition`](@ref)
-```@example methods
-methods(PNML.default_condition) # hide
-```
-[`default_one_term`](@ref)
-```@example methods
-methods(PNML.default_one_term) # hide
-```
-
-Things that are functors:
-  - Marking: return `Int`, `Float64`, or `Term`
-  - Inscription: return `Int`, `Float64`, or `Term`
-  - Condition: return `Int`, `Float64`, or `Term`
-  - Term: return a sort's value
-
-Defaults
-  - markings: return zero(`Int`), zero(`Float64`), or default_zero_term
-  - inscription: return one(`Int`), one(`Float64`), or default_one_term
-  - condition: return `true`, or boolean sort's true value
-  - Term: return boolean sort's true value
+!!! info "parse_type is different"
+    [`parse_type`](@ref) is used to parse an XML <type> element.
+    It is not one of these look-up a type trait methods.

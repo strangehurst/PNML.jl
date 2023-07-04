@@ -1,18 +1,33 @@
+```@meta
+CurrentModule = PNML
+```
+
 # Default Values
 
-ISO/IEC 15909-2 defines the _Petri Net Modeling Language (PNML)_ as integer based.
+  - markings: return zero(`Int`), zero(`Float64`), or `default_zero_term(pntd)`
+  - inscription: return one(`Int`), one(`Float64`), or `default_one_term(pntd)`
+  - condition: return `true`, or `default_condition(pntd)`
+  - Term: return boolean sort's true value `default_bool_term(pntd)`
+
+The _ISO/IEC 15909-2_ specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to also allow continuous values to support nonstandard continuous and hybrid valued Petri Nets. Makes generating default values more interesting.
+
+Determine type of `Number` to parse with [`number_value`](@ref) by using `pntd` on:
+  - [`condition_value_type`](@ref)
+  - [`inscription_value_type`](@ref)
+  - [`marking_value_type`](@ref)
+  - [`coordinate_value_type`](@ref)
+  - [`term_value_type`](@ref)
+  - [`rate_value_type`](@ref)
+
+
 There are many items in the XML that are permitted to be missing and a defaut value is assumed.
 Examples are place _initial marking_, arc _inscription_, transition _condition_, graphics data.
 
   - place initial marking is assumed to be empty, i. e. 0.
   - arc inscription is assumed to be 1.
   - transition condition is assumed to be true
-  - graphics data, e.g. token position, line width, are chosen by application
+  - graphics data, e.g. token position, line width, are TBD
 
-The specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'.
-I choose to also allow continuous values by trying to parse the XML string first as 'Int',
-and then as 'Float64'.  Allows for nonstandard continuous and hybrid valued Petri Nets.
-Makes generating default values more interesting.
 
 There are multiple kinds of nets supported by PNML.jl differing by (among other properties)
 the kind on number they use:
@@ -21,10 +36,10 @@ the kind on number they use:
   - and multi-sorted algebra
 See [PnmlType - Petri Net Type Definition](@ref) for the full hierarchy.
 
-This means there are at least 3 sets of default value types. We use the pntd
+This means there are at least 3 sets of default value types.
+We use the pntd [`PnmlType`](@ref) singleton as a trait to determin the default types/values.
 
 A consequence is that the default value's type ripples through the type system.
-
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
@@ -67,7 +82,10 @@ methods(PNML.default_one_term) # hide
 methods(PNML.default_zero_term) # hide
 ```
 
-
+[`PNML.default_bool_term`](@ref)
+```@example methods
+methods(PNML.default_bool_term) # hide
+```
 ## Examples
 
 [`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
