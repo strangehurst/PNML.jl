@@ -18,14 +18,8 @@ const noisy::Bool = false
     @test isnothing(PNML.graphics(oc))
     @test isempty(PNML.tools(oc))
     @test isempty(PNML.labels(oc))
-    d = (; :graphics => nothing, :tools => nothing, :labels => nothing)
-    oc = @inferred PNML.ObjectCommon(d)
-    # if false
-    #     @show typeof(oc)
-    #     @show typeof(PNML.graphics(oc))
-    #     @show typeof(PNML.tools(oc))
-    #     @show typeof(PNML.labels(oc))
-    # end
+
+    oc = @inferred PNML.ObjectCommon(nothing, PNML.ToolInfo[], PNML.PnmlLabel[])
     @test isnothing(PNML.graphics(oc))
     @test isempty(PNML.tools(oc))
     @test isempty(PNML.labels(oc))
@@ -124,8 +118,6 @@ go</text>
 end
 
 @testset "labels" begin
-    # Exersize the labels of a NamedTuple
-
     lab = PnmlLabel[]
     reg = registry()
 
@@ -164,6 +156,11 @@ end
             @test tag(l) === labeltag
         end
     end
+end
+
+@testset "unlaimed structure" begin
+    str0 = """<structure><foo/></structure>"""
+    @test PNML.parse_node(xmlroot(str0), PnmlCoreNet(), registry()) isa PNML.Structure
 end
 
 AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ? a.val : nothing
