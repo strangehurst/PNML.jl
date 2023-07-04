@@ -27,7 +27,7 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 
-marking(place) = place.marking
+marking(place::Place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
 common(place::Place) = place.com
 
@@ -84,7 +84,7 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
 
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
-inscription(arc) = _evaluate(arc.inscription)
+inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 common(a::Arc) = a.com
 
