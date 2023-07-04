@@ -7,8 +7,8 @@ Some optional incidental bits are shared by most PNML objects are also collected
 """
 @kwdef struct ObjectCommon #! Make whole ObjectCommon a Maybe?
     graphics::Maybe{Graphics} = nothing
-    tools::Vector{ToolInfo}   = ToolInfo[] #! #TODO Make toolinfo generic. tuple?
-    labels::Vector{PnmlLabel} = PnmlLabel[] #! #TODO Make label generic. tuple?
+    tools::Vector{ToolInfo}   = ToolInfo[] #! #TODO Make generic? Maybe?
+    labels::Vector{PnmlLabel} = PnmlLabel[] #! #TODO Make generic? Maybe?
 end
 
 has_graphics(oc::ObjectCommon) = oc.graphics !== nothing

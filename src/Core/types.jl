@@ -74,8 +74,10 @@ abstract type AbstractPnmlTool end #TODO see ToolInfo
 #---------------------------------------------------------------------------
 pnmlnet_type(pntd::PnmlType)       = pnmlnet_type(typeof(pntd))
 page_type(pntd::PnmlType)          = page_type(typeof(pntd))
+
 place_type(pntd::PnmlType)         = place_type(typeof(pntd))
 transition_type(pntd::PnmlType)    = transition_type(typeof(pntd))
+
 arc_type(pntd::PnmlType)           = arc_type(typeof(pntd))
 refplace_type(pntd::PnmlType)      = refplace_type(typeof(pntd))
 reftransition_type(pntd::PnmlType) = reftransition_type(typeof(pntd))
