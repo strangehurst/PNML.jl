@@ -65,14 +65,15 @@ Note that *Rate*, *Priority* and *Weight* are not part of base specification.
 See [Unclaimed Labels](@ref)
 
 ## AbstractPetriNet
-[`AbstractPetriNet`](@ref) uses the Intermediate Representation and `PnmlType` to implement a petri Net Graph.
+[`AbstractPetriNet`](@ref) uses the Intermediate Representation's
+[`PnmlNet`](@ref) and `PnmlType` to implement a Petri Net Graph (PNG).
 
 ```@example type
 type_tree(PNML.AbstractPetriNet) # hide
 ```
 
 ## AbstractPnmlObject
-[`Page`](@ref), [`Arc`](@ref), [`Place`](@ref), [`Transition`](@ref) define the graph of a petri net.
+[`Page`](@ref), [`Arc`](@ref), [`Place`](@ref), [`Transition`](@ref) define the graph of a [`PnmlNet`](@ref).
 
 ```@example type
 type_tree(PNML.AbstractPnmlObject) # hide
