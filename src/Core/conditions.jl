@@ -19,7 +19,6 @@ Condition("xx", false, )
 julia> c()
 false
 ```
-#TODO Add high-level
 """
 struct Condition{T} <: Annotation
     text::Maybe{String}
@@ -36,7 +35,6 @@ common(c::Condition) = c.com
 (c::Condition)() = _evaluate(value(c))
 
 condition_type(::Type{T}) where {T <: PnmlType} = Condition{condition_value_type(T)}
-#condition_type(::Type{T}) where {T <: AbstractHLCore} = Condition{condition_value_type(T)}
 
 condition_value_type(::Type{T}) where {T <: PnmlType} = Bool
 condition_value_type(::Type{T}) where {T <: AbstractHLCore} = Term

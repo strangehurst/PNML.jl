@@ -46,8 +46,7 @@ Evaluate a [`Marking`](@ref) instance by returning its value.
 """
 (mark::Marking)() = _evaluate(value(mark))
 
-marking_type(::Type{T}) where {T <: PnmlType} = Marking{Int}
-marking_type(::Type{T}) where {T <: AbstractContinuousNet} = Marking{Float64}
+marking_type(::Type{T}) where {T <: PnmlType} = Marking{marking_value_type(T)}
 
 marking_value_type(::Type{<:PnmlType}) = Int
 marking_value_type(::Type{<:AbstractContinuousNet}) = Float64

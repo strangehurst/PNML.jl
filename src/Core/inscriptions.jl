@@ -30,8 +30,7 @@ Evaluate an [`Inscription`](@ref)'s `value`.
 """
 (inscription::Inscription)() = _evaluate(value(inscription))
 
-inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{Int}
-inscription_type(::Type{T}) where {T <: AbstractContinuousNet} = Inscription{Float64}
+inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{inscription_value_type(T)}
 
 inscription_value_type(::Type{T}) where {T <: PnmlType} = Int
 inscription_value_type(::Type{<:AbstractContinuousNet}) = Float64
