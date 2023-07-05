@@ -743,7 +743,7 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     end; println("parse_condition allocated ", a)
 
-    Condition(pntd, text, something(term, default_bool_term(pntd)), ObjectCommon(graphics, tools, labels))
+    Condition(text, something(term, default_bool_term(pntd)), ObjectCommon(graphics, tools, labels))
 end
 
 """
