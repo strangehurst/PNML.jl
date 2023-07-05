@@ -4,6 +4,9 @@ $(TYPEDFIELDS)
 
 Contain all places, transitions & arcs. Pages are for visual presentation.
 There must be at least 1 Page for a valid pnml model.
+
+`PNTD` binds the other type parameters together to express a specific PNG.
+See [`PnmlNet`](@ref)
 """
 struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
@@ -11,9 +14,9 @@ struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
-    # pagedict and netdata do npot overlap
-    pagedict::OrderedDict{Symbol, Page{PNTD}} #, M, I, C, S}} #! Shared by net and its pages
-    netdata::PnmlNetData{PNTD} #, M, I, C, S}    #! Shared by net and its pages
+    # pagedict and netdata do not overlap
+    pagedict::OrderedDict{Symbol, Page{PNTD}} #! Shared by net and its pages
+    netdata::PnmlNetData{PNTD} #! Shared by net and its pages
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
 end
 
