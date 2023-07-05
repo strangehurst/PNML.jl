@@ -71,6 +71,12 @@ end
 
 ```
 
+## Type Lookup Layers
+
+### PNG Object Types
+
+Paramerize [`PnmlNet`](@ref)s & [`AbstractPnmlObject`](@ref)s by [Label Types](@ref).
+
 ```@example
 using PNML # hide
 PNML.PnmlTypeDefs.pnmltype_map
@@ -90,6 +96,12 @@ list_type(PNML.transition_type)
 ```@example types
 list_type(PNML.arc_type)
 ```
+
+### Label Types
+
+[AbstractLabel](@ref)s are parameterized by [Value Types](@ref).
+
+
 ```@example types
 list_type(PNML.marking_type)
 ```
@@ -105,6 +117,8 @@ list_type(PNML.refplace_type)
 ```@example types
 list_type(PNML.reftransition_type)
 ```
+
+### Value Types
 
 ```@example types
 list_type(PNML.sort_type)
