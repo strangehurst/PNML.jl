@@ -81,6 +81,7 @@ makedocs(;
          pages=[
             "Petri Net Markup Language" => "pnml.md",
             "Status" => "status.md",
+            "Layers of Abstraction" => "layers.md",
             "Subpackages" => "subpackages.md",
             "Intermediate Representation" => "IR.md",
             "Type Hierarchies" => "type_hierarchies.md",
