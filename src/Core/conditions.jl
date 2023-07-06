@@ -31,10 +31,11 @@ Condition(text::AbstractString, value) = Condition(text, value, ObjectCommon())
 
 value(c::Condition) = c.value
 common(c::Condition) = c.com
+Base.eltype(::Condition{T}) where {T} = T
 
 (c::Condition)() = _evaluate(value(c))
 
 condition_type(::Type{T}) where {T <: PnmlType} = Condition{condition_value_type(T)}
 
 condition_value_type(::Type{T}) where {T <: PnmlType} = Bool
-condition_value_type(::Type{T}) where {T <: AbstractHLCore} = Term
+condition_value_type(::Type{T}) where {T <: AbstractHLCore} = Term{Bool}

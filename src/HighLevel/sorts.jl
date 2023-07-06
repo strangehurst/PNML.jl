@@ -79,4 +79,4 @@ common(t::SortType) = t.com
 
 sort_type(::Type{<:PnmlType}) = Int
 sort_type(::Type{<:AbstractContinuousNet}) = Float64
-sort_type(::Type{<:AbstractHLCore}) = eltype(DotSort()) #! Should be AbstractSort Term
+sort_type(::Type{<:AbstractHLCore}) = eltype(DotSort()) # Value type of a Term.

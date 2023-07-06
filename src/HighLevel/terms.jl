@@ -42,7 +42,7 @@ default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(type
 
 term_value_type(::Type{<:PnmlType}) = Int
 term_value_type(::Type{<:AbstractContinuousNet}) = Float64
-term_value_type(::Type{<:AbstractHLCore}) = Int
+term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
 
 """
 $(TYPEDSIGNATURES)
@@ -102,9 +102,9 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
 
 **Warning:** Much of the high-level is WORK-IN-PROGRES.
 """
-struct Term <: AbstractTerm
+struct Term{T <: Union{Bool, Int, Float64, Vector{AnyXmlNode}}} <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
+    elements::T
 end
 
 Term(ax::AnyXmlNode) = Term(:empty, [ax])
@@ -112,10 +112,11 @@ Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
+Base.eltype(::Term{T}) where {T} = T
 
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
-    if t.elements isa Number
-        return t.elements
+    if eltype(t) <: Number
+        return elements(t)
     else
         i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements) # elements might be number
         if !isnothing(i)
@@ -125,5 +126,5 @@ elements(t::Term) = t.elements
         end
     end
 end
-
+""
 has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
