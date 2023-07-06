@@ -101,14 +101,18 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
 [`AnyElement`](@ref).
 
 **Warning:** Much of the high-level is WORK-IN-PROGRES.
+The type parameter is a sort. We enumerate some of the built-in sorts allowed.
+Is expected that the term will evaluate to that type.
+Is that called a 'ground term'? 'basis set'?
+When the elements value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
-struct Term{T <: Union{Bool, Int, Float64, Vector{AnyXmlNode}}} <: AbstractTerm
+struct Term{T <: Union{Bool, Int, Float64}} <: AbstractTerm
     tag::Symbol
-    elements::T
+    elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
 
-Term(ax::AnyXmlNode) = Term(:empty, [ax])
-Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
+Term(s::Symbol, v::Union{Bool, Int, Float64}) = Term{typeof(v)}(s, v)
+#Term(::Symbol, ::Vector{AnyXmlNode}}) requires knowing the sort type.
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
@@ -118,11 +122,16 @@ Base.eltype(::Term{T}) where {T} = T
     if eltype(t) <: Number
         return elements(t)
     else
-        i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements) # elements might be number
+        # Find any `:value` AnyXmlNode in elements. Really anything with a `value`.
+        i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
         if !isnothing(i)
-            return @inbounds value(t.elements[i])
+            v = @inbounds value(t.elements[i])
+            @assert typeof(v) isa eltype(t)
+            return v
         else
-            return _evaluate(default)
+            v = _evaluate(default)
+            @assert typeof(v) isa eltype(t)
+            return v
         end
     end
 end

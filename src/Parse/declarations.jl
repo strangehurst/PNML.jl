@@ -247,15 +247,19 @@ end
 """
 $(TYPEDSIGNATURES)
 
-There will be no node <term>.
-Instead it is the interpertation of the child of some <structure> elements.
-The PNML specification describes Terms and Sorts as abstract types for the <structure>
+There will be no XML node 'term'.
+Instead it is the interpertation of the child of some 'structure' elements.
+The PNML specification describes Terms and Sorts as abstract types for the 'structure'
 element of some [`HLAnnotation`](@ref).
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = EzXML.nodename(node)
-    #TODO Validate that it is a kind of term? How? nn == "term" || error("element name wrong: $nn")
-    Term(unclaimed_label(node, pntd, reg))
+    #TODO Validate that it is a kind of term? How?
+    tag, value = unclaimed_label(node, pntd, reg)
+    # Choose the default HL sort type here (`DotSort` because we do not know how to handle the
+    # many-sorted algebra's abstract syntax tree.
+    # Scalar values (used elsewhere) deduce the sort type.
+    Term{sort_type(pntd)}(tag, value)
 end
 
 #! TODO Terms kinds are Variable and Operator
