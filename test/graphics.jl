@@ -3,11 +3,9 @@ using PNML: tag, pid, parse_graphics, parse_tokengraphics
 
 const _pntd::PnmlType = PnmlCoreNet()
 @testset "coordinate" begin
-    #@test_opt
-    #@show PNML.Coordinate(1,2)
+    @test_opt PNML.Coordinate(1,2)
     @test_call PNML.Coordinate(1,2)
-    #@test_opt
-    #@show PNML.Coordinate(1.1,2.2)
+    @test_opt PNML.Coordinate(1.1,2.2)
     @test_call PNML.Coordinate(1.1,2.2)
 end
 
