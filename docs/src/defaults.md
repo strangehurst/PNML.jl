@@ -43,49 +43,85 @@ A consequence is that the default value's type ripples through the type system.
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
+list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+    println(rpad(pntd, 15), " -> ", f(pntd))
+end
 ```
 
 ## Methods
 
 [`PNML.default_marking`](@ref)
+
+```@example methods
+list_type(PNML.default_marking)
+```
 ```@example methods
 methods(PNML.default_marking) # hide
 ```
 
 [`PNML.default_inscription`](@ref)
+
+```@example methods
+list_type(PNML.default_inscription) # hide
+```
 ```@example methods
 methods(PNML.default_inscription) # hide
 ```
 
 [`PNML.default_condition`](@ref)
+
+```@example methods
+list_type(PNML.default_condition) # hide
+```
 ```@example methods
 methods(PNML.default_condition) # hide
 ```
 
 [`PNML.default_sort`](@ref)
+
+```@example methods
+list_type(PNML.default_sort) # hide
+```
 ```@example methods
 methods(PNML.default_sort) # hide
 ```
 
 [`PNML.default_term`](@ref)
+
+```@example methods
+list_type(PNML.default_term) # hide
+```
 ```@example methods
 methods(PNML.default_term) # hide
 ```
 
 [`PNML.default_one_term`](@ref)
+
+```@example methods
+list_type(PNML.default_one_term) # hide
+```
 ```@example methods
 methods(PNML.default_one_term) # hide
 ```
 
 [`PNML.default_zero_term`](@ref)
+
+```@example methods
+list_type(PNML.default_zero_term) # hide
+```
 ```@example methods
 methods(PNML.default_zero_term) # hide
 ```
 
 [`PNML.default_bool_term`](@ref)
+
+```@example methods
+list_type(PNML.default_bool_term) # hide
+```
 ```@example methods
 methods(PNML.default_bool_term) # hide
 ```
+
 ## Examples
 
 [`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
