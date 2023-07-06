@@ -371,3 +371,54 @@ end
         end
     end
 end # pages
+
+@testset "lookup types $pntd" for pntd in  values(PNML.PnmlTypeDefs.pnmltype_map)
+    @test arc_type(pntd) <: PNML.Arc
+    @test place_type(pntd) <: PNML.Place
+    @test transition_type(pntd) <: PNML.Transition
+    @test condition_type(pntd) <: PNML.Condition
+    @test condition_value_type(pntd) isa Type
+    @test sort_type(pntd) isa Type
+    @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
+    @test inscription_value_type(pntd) isa Type
+    @test marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
+    @test marking_value_type(pntd) isa Type
+    @test page_type(pntd) <: PNML.Page
+    @test refplace_type(pntd) <: PNML.RefPlace
+    @test reftransition_type(pntd) <: PNML.RefTransition
+    @test rate_value_type(pntd) isa Type
+
+
+end
+@testset "dump lookup types" begin
+    noisy && dump_lutypes()
+end
+function dump_lutypes()
+    # Is just the core 3 sufficient? [PnmlCoreNet(), HLCoreNet(), ContinuousNet()]
+    # PTNet(), PT_HLPNG(), SymmetricNet()
+
+    println("------------------------------------------------------------")
+    for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+        println("------------------------------------------------------------")
+        println("\n pnmlnet_type"); dump( pnmlnet_type(pntd))
+        println("\n page_type"); dump( page_type(pntd))
+        println("\n arc_type"); dump( arc_type(pntd))
+        println("\n place_type"); dump( place_type(pntd))
+        println("\n transition_type"); dump( transition_type(pntd))
+        println("\n refplace_type"); dump( refplace_type(pntd))
+        println("\n reftransition_type"); dump( reftransition_type(pntd))
+
+        println("\n marking_type"); dump( marking_type(pntd))
+        println("\n inscription_type"); dump( inscription_type(pntd))
+        println("\n condition_type"); dump( condition_type(pntd))
+
+        println("\n condition_value_type"); dump( condition_value_type(pntd))
+        println("\n sort_type"); dump( sort_type(pntd))
+
+        println("\n inscription_value_type"); dump( inscription_value_type(pntd))
+        println("\n marking_value_type"); dump( marking_value_type(pntd))
+        println("\n rate_value_type"); dump( rate_value_type(pntd))
+        println("------------------------------------------------------------")
+    end
+    println("------------------------------------------------------------")
+end
