@@ -53,7 +53,7 @@ end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
-condition(transition::Transition) = _evaluate(transition.condition)
+condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
 default_condition(transition::Transition) = default_condition(transition.pntd)
 common(t::Transition) = t.com
 
