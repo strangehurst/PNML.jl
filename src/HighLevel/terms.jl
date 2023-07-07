@@ -104,7 +104,7 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
 The type parameter is a sort. We enumerate some of the built-in sorts allowed.
 Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
-When the elements value is a Vector{AnyXmlNode} external information is used to select the output type.
+When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
 struct Term{T <: Union{Bool, Int, Float64}} <: AbstractTerm
     tag::Symbol
@@ -116,7 +116,8 @@ Term(s::Symbol, v::Union{Bool, Int, Float64}) = Term{typeof(v)}(s, v)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
-Base.eltype(::Term{T}) where {T} = T
+output_sort(::Term{T})  where {T} = T
+Base.eltype(t::Term) = typeof(elements(t))
 
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
     if eltype(t) <: Number
