@@ -137,7 +137,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = nodename(node)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
@@ -146,7 +146,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
 
     @info("unknown declaration: $nn $id $name")
 
-    content = [anyelement(x, pntd, reg) for x in EzXML.eachelement(node) if x !== nothing]
+    content = [anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
     UnknownDeclaration(id, name, nn, content)
 end
 
