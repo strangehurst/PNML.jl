@@ -202,7 +202,7 @@ parse_sorttype_term(typenode, pntd, idregistry) = begin
     check_nodename(typenode, "structure")
     term = EzXML.firstelement(typenode)
     if !isnothing(term)
-        t = parse_term(term, pntd, idregistry)
+        t = parse_term(term, sort_type(pntd), pntd, idregistry)
     else
         # Handle an empty <structure>.
         t = default_sort(pntd)
@@ -252,14 +252,11 @@ Instead it is the interpertation of the child of some 'structure' elements.
 The PNML specification describes Terms and Sorts as abstract types for the 'structure'
 element of some [`HLAnnotation`](@ref).
 """
-function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_term(node::XMLNode, output_sort::Type{T}, pntd::PnmlType,
+                    reg::PnmlIDRegistry) where {T <: Union{Bool, Int, Float64}}
     nn = EzXML.nodename(node)
-    #TODO Validate that it is a kind of term? How?
     tag, value = unclaimed_label(node, pntd, reg)
-    # Choose the default HL sort type here (`DotSort` because we do not know how to handle the
-    # many-sorted algebra's abstract syntax tree.
-    # Scalar values (used elsewhere) deduce the sort type.
-    Term{sort_type(pntd)}(tag, value)
+    Term{output_sort}(tag, value)
 end
 
 #! TODO Terms kinds are Variable and Operator

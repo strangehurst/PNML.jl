@@ -364,7 +364,9 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     end; println("parse_transition $id allocated: ", a)
 
-    Transition(pntd, id, something(cond, default_condition(pntd)), name, ObjectCommon(graphics, tools, labels))
+    Transition{typeof(pntd), condition_type(pntd)}(pntd, id,
+                something(cond, default_condition(pntd)),
+                name, ObjectCommon(graphics, tools, labels))
 end
 
 """
@@ -656,7 +658,7 @@ $(TYPEDSIGNATURES)
 parse_marking_term(marknode, pntd, idregistry) = begin
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        parse_term(EzXML.firstelement(marknode), pntd, idregistry)
+        parse_term(EzXML.firstelement(marknode), marking_value_type(pntd), pntd, idregistry)
     else
         # Handle an empty <structure>.
         default_marking(pntd)
@@ -700,7 +702,7 @@ $(TYPEDSIGNATURES)
 parse_inscription_term(inscriptionnode, pntd, idregistry)::Term = begin
     check_nodename(inscriptionnode, "structure")
     if EzXML.haselement(inscriptionnode)
-        parse_term(EzXML.firstelement(inscriptionnode), pntd, idregistry)
+        parse_term(EzXML.firstelement(inscriptionnode), inscription_value_type(pntd), pntd, idregistry)
     else
         # Handle an empty <structure>.
         default_inscription(pntd)
@@ -753,10 +755,11 @@ function parse_condition_term(conditionnode, pntd::PnmlType, idregistry)
     check_nodename(conditionnode, "structure")
 
     if EzXML.haselement(conditionnode)
-        parse_term(EzXML.firstelement(conditionnode), pntd, idregistry)
+        t = parse_term(EzXML.firstelement(conditionnode), condition_value_type(pntd), pntd, idregistry)
+        return t
     else
         # Handle an empty <structure>.
-        default_bool_term(pntd)
+        return default_bool_term(pntd)
     end
 end
 
