@@ -1,4 +1,7 @@
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 Collect each of the `PnmlNodes`s & `Arc`s of a Petri Net Graph into one collection.
 Accessed via pnml ID key or iterate over values of an `OrderedDict`.
 
@@ -45,6 +48,9 @@ function Base.show(io::IO, pnd::PnmlNetData)
 end
 
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
 Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and
 [`AbstractPnmlObject`](@ref).
 """
