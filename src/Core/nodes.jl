@@ -45,15 +45,15 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     name::Maybe{Name}
     com::ObjectCommon
 
-    function Transition(pntd, i, c, n, com)
-        condition = @something(c, default_condition(pntd))
-        new{typeof(pntd), typeof(condition)}(pntd, i, condition, n, com)
-    end
+    # function Transition(pntd, i, c, n, com)
+    #     condition = @something(c, default_condition(pntd))
+    #     new{typeof(pntd), typeof(condition)}(pntd, i, condition, n, com)
+    # end
 end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
-condition(transition::Transition) = transition.condition()
+condition(transition::Transition) = _evaluate(transition.condition)
 default_condition(transition::Transition) = default_condition(transition.pntd)
 common(t::Transition) = t.com
 
