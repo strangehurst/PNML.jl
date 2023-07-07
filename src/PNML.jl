@@ -15,8 +15,8 @@ Base.@kwdef mutable struct PnmlConfig
     indent_width::Int = 4
     warn_on_namespace::Bool = true
     text_element_optional::Bool = true
-    warn_on_fixup::Bool = false
-    warn_on_unclaimed::Bool = false
+    warn_on_fixup::Bool = true #! false
+    warn_on_unclaimed::Bool = true #! false
     verbose::Bool = false
     lock_registry::Bool = true
 end
@@ -82,6 +82,7 @@ include("Core/utils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
+include("HighLevel/hltypes.jl")
 
 include("Core/labels.jl")
 include("Core/anyelement.jl")
@@ -90,13 +91,14 @@ include("Core/toolinfos.jl")
 include("Core/objcommon.jl")
 include("Core/name.jl")
 
+include("HighLevel/hldeclarations.jl")
+include("HighLevel/sorts.jl")
+include("HighLevel/terms.jl")
+
 include("Core/inscriptions.jl")
 include("Core/markings.jl")
 include("Core/conditions.jl")
 include("Core/declarations.jl")
-
-include("HighLevel/hldeclarations.jl")
-include("HighLevel/sorts.jl")
 
 include("Core/defaults.jl")
 
@@ -111,12 +113,9 @@ include("Core/flatten.jl")
 include("Core/show.jl")
 
 # High-Level
-include("HighLevel/hltypes.jl")
 include("HighLevel/hldefaults.jl")
 include("HighLevel/structure.jl")
 include("HighLevel/hllabels.jl")
-
-include("HighLevel/terms.jl")
 
 include("HighLevel/hlinscriptions.jl")
 include("HighLevel/hlmarkings.jl")
