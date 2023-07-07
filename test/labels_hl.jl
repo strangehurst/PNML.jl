@@ -15,21 +15,19 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     """
     mark = PNML.parse_hlinitialMarking(xmlroot(str), HLCoreNet(), registry())
 
-    @test typeof(mark) <: PNML.AbstractLabel
-    @test typeof(mark) <: PNML.HLMarking
+    @test mark isa PNML.AbstractLabel
+    @test mark isa PNML.marking_type(HLCoreNet()) #HLMarking
+
+    # Following HL text,structure label pattern where structure is a `Term`.
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
-    @test value(mark) isa PNML.Term
+    @test value(mark) isa PNML.Term{PNML.marking_value_type(HLCoreNet())}
 
     markterm = value(mark)
-    #println("\n## mark term $(tag(markterm))"); dump(markterm)
-
-    @test tag(markterm) === :tuple #! pnml many-sorted algebra tuple
+    @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
     axn = elements(markterm)
 
-    # expected structure: subterm -> all -> usersort
-
-    #println("\n## axn[1]"); dump(axn[1])
+    # Decend each element of the term.
     sub1 = axn[1]
     @test tag(sub1) === :subterm
     @test value(sub1) isa Vector{AnyXmlNode}
@@ -76,20 +74,15 @@ end
     """
     insc = PNML.parse_hlinscription(n1, HLCoreNet(), registry())
     @test typeof(insc) <: PNML.AbstractLabel
-    @test typeof(insc) <: PNML.HLInscription
+    @test typeof(insc) <: PNML.inscription_type(HLCoreNet())
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
-    @test value(insc) isa PNML.Term
+    @test value(insc) isa PNML.Term{PNML.inscription_value_type(HLCoreNet())}
 
     inscterm = value(insc)
-    #println("\n## unsc term $(tag(inscterm))"); dump(inscterm)
-
-    #@show insc value(insc)
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
-
-    # expected structure: subterm -> variable
 
     sub1 = axn[1]
     @test tag(sub1) === :subterm
@@ -208,11 +201,11 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond = PNML.parse_condition(node, PnmlCoreNet(), registry())
-        #@show cond
-        @test typeof(cond) <: PNML.Condition
-        @test text(cond) !== nothing
-        @test value(cond) !== nothing
+        cond = PNML.parse_condition(node, HLCoreNet(), registry())
+        println("parse_condition"); dump(cond)
+        @test cond isa PNML.condition_type(HLCoreNet())
+        @test text(cond) == "(x==1 and y==1 and d==1)"
+        @test value(cond) isa PNML.Term{PNML.condition_value_type(HLCoreNet())}
         @test tag(value(cond)) === :or
         @test !PNML.has_graphics(cond)
         @test !PNML.has_tools(cond)
