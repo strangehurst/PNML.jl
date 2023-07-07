@@ -13,10 +13,10 @@ struct BuiltInSort <: AbstractSort end
 Base.eltype(::BuiltInSort) = AnyXmlNode
 
 struct BoolSort <: AbstractSort end
-Base.eltype(::BoolSort) = Bool
+Base.eltype(::Type{<:BoolSort}) = Bool
 
 struct DotSort <: AbstractSort end
-Base.eltype(::DotSort) = Int
+Base.eltype(::Type{<:DotSort}) = Int
 
 """
 $(TYPEDSIGNATURES)
