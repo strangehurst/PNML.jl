@@ -64,7 +64,7 @@ function has_labels end
 
 Return iterator of labels attached to `x`.
 """
-function labels(x) end
+function labels end
 
 """
     has_label(x, tag::Symbol) -> Bool
