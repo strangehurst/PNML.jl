@@ -182,7 +182,6 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     l = PnmlLabel(u, node)
     a = anyelement(node, reg2)
     if noisy
-        # @show typeof(u) typeof(l) typeof(a)
         println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
         println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)
         println("a = $(a.tag) " ); dump(a) #AbstractTrees.print_tree.(a.elements)
@@ -214,51 +213,7 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     @test a.elements isa Vector{PNML.AnyXmlNode}
     #! unclaimed id is not registered
     u.second[1].tag === :id    && @test !isregistered(reg1, u.second[1].val)
-    #haskey(l.elements, :id) && @test !isregistered(reg1, l.elements[:id])
-    #haskey(a.elements, :id) && @test !isregistered(reg2, a.elements[:id])
-    #@report_opt isregistered(reg2, :id)
-    #@test_call isregistered(reg2, :id)
-
     return l, a
-end
-ntd(t) = Dict(zip(keys(t), values(t)))
-
-"Compare tuples."
-function cmptup(tup, expected)
-    #@assert tup isa NamedTuple
-    #@assert expected isa NamedTuple
-    #print("tup = "); pprintln(tup)
-    #print("expected = "); pprintln(expected)
-    for k in keys(expected)
-        #@show k
-        if typeof(expected[k]) <: NamedTuple
-            cmptup(tup[k], expected[k])
-            # if !cmptup(tup[k], expected[k])
-            #     @show tup expected
-            #     @show typeof(tup) typeof(expected)
-            #     return false
-            # end
-        else
-            #@show tup expected
-            #@show typeof(tup) typeof(expected)
-            if tup[k] != expected[k]
-                @show tup expected
-                @show typeof(tup) typeof(expected)
-                return false
-            end
-        end
-        return true
-    end
-end
-
-function test_elements(l, a, expected::NamedTuple)
-    @test expected isa NamedTuple
-    for key in keys(expected)
-        @test hasproperty(l.elements, key)
-        @test hasproperty(a.elements, key)
-    end
-    @test cmptup(l.elements, expected)
-    @test cmptup(a.elements, expected)
 end
 
 @testset "unclaimed" begin
