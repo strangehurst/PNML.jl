@@ -13,12 +13,28 @@ function parse_toolspecific(node, pntd, reg)
 
     tool    = node["tool"]
     version = node["version"]
-    content = AnyElement[]
-    CONFIG.verbose && println(lazy"$nn $tool $version")
-    for child in eachelement(node)
-        #TODO: Specialize/verify on tool, version. User supplied?
-        #TODO: Register additional tool specific parsers?
-        push!(content, anyelement(child, pntd, reg))
+    #CONFIG.verbose &&
+    println("$nn $tool $version")
+
+    if tool == "org.pnml.tool" && version == "1.0"
+        child = EzXML.firstelement(node)
+        if nodename(child) == "tokengraphics"
+            tg = parse_tokengraphics(child, pntd, reg)
+            #println("tokengraphics"); dump(tg)
+            return ToolInfo(tool, version, tg, node)
+        else
+            ae = anyelement(child, pntd, reg)
+            @warn "unexpected anyelement toolinfo for $tool $version" dump(ae)
+            return ToolInfo(tool, version, anyelement(child, pntd, reg), node)
+        end
+    else
+        content = AnyElement[]
+        for child in eachelement(node)
+            #TODO: Specialize/verify on tool, version. User supplied?
+            #TODO: Register additional tool specific parsers?
+            push!(content, anyelement(child, pntd, reg))
+        end
+        isempty(content)
+        return ToolInfo(tool, version, content, node)
     end
-    ToolInfo(tool, version, content, node)
 end

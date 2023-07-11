@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
-    has_tools, tools, parse_toolspecific, place, parse_place
+    has_tools, tools, parse_toolspecific, place, parse_place, TokenGraphics
 
 str1 = (tool="JARP", version="1.2", str = """
  <toolspecific tool="JARP" version="1.2">
@@ -12,19 +12,19 @@ str1 = (tool="JARP", version="1.2", str = """
           <value>java.awt.Color[r=255,g=255,b=255]</value>
         </FillColor>
  </toolspecific>
-""", contentparse = (c) -> begin end)
+""", elementtype = Vector{AnyElement})
 
 str2 = (tool="de.uni-freiburg.telematik.editor", version="1.0", str = """
  <toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0">
      <visible>true</visible>
  </toolspecific>
-""", contentparse = (c) -> begin end)
+""", elementtype = Vector{AnyElement})
 
 str3 = (tool="petrinet3", version="1.0", str = """
  <toolspecific tool="petrinet3" version="1.0">
      <placeCapacity capacity="0"/>
  </toolspecific>
-""", contentparse = (c) -> begin end)
+""", elementtype = Vector{AnyElement})
 
 str4 = (tool="org.pnml.tool", version="1.0", str = """
  <toolspecific tool="org.pnml.tool" version="1.0">
@@ -33,7 +33,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
          <tokenposition x="2"  y="3"/>
      </tokengraphics>
  </toolspecific>
-""", contentparse = (c) -> begin end)
+""", elementtype = TokenGraphics{Int64})
 
 str5 = (tool="org.pnml.tool", version="1.0", str = """
  <toolspecific tool="org.pnml.tool" version="1.0">
@@ -43,11 +43,12 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
      </tokengraphics>
      <visible>true</visible>
  </toolspecific>
-""", contentparse = (c) -> begin end)
+""", elementtype = TokenGraphics{Int64})
 
 @testset "parse tools" begin
     for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
+        #println("tooli"); dump(tooli)
         @test typeof(tooli) <: ToolInfo
         @test xmlnode(tooli) isa Maybe{EzXML.Node}
         @test_call xmlnode(tooli)
@@ -65,16 +66,9 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test_call get_toolinfo(tooli, s.tool, s.version)
 
-        #s.contentparse(n.infos) #TODO
-        # contentparse should handle a vector or scalar of well-formed xml.
-
-        @test tooli.infos isa Vector{AnyElement}
-        @test PNML.infos(tooli) isa Vector{AnyElement}
-        for toolinfo in tooli.infos
-            @test toolinfo isa AnyElement
-            # Content may optionally attach its xml.
-            @test !PNML.has_xml(toolinfo) || xmlnode(toolinfo) isa Maybe{EzXML.Node}
-        end
+        @test tooli.infos isa s.elementtype
+        @test PNML.infos(tooli) isa s.elementtype
+        @show PNML.infos(tooli)
     end
     @testset "combined" begin
         #println("combined toolinfos")
@@ -119,20 +113,20 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
             @test_call PNML.version(t[i])
 
             @test typeof(t[i].infos) == typeof(ti.infos)
-            for y in zip(t[i].infos, ti.infos)
-                @test tag(y[1]) == tag(y[2])
-                @test tag(y[1].elements[1]) == tag(y[2].elements[1])
-            end
+            #for y in zip(t[i].infos, ti.infos)
+            #    @test tag(y[1]) == tag(y[2])
+            #    @test tag(y[1].elements[1]) == tag(y[2].elements[1])
+            #end
             # need to use tag agnostic parse here.
             x = parse_node(xmlroot(s.str), PnmlCoreNet(), registry())
 
             @test typeof(t[i].infos) == typeof(x.infos)
-            for y in zip(t[i].infos, x.infos)
-                #combined y[1] "); dump(y[1])
-                #println("combined y[2] "); dump(y[2])
-                @test tag(y[1]) == tag(y[2])
-                @test tag(y[1].elements[1]) == tag(y[2].elements[1])
-            end
+            # for y in zip(t[i].infos, x.infos)
+            #     #combined y[1] "); dump(y[1])
+            #     #println("combined y[2] "); dump(y[2])
+            #     @test tag(y[1]) == tag(y[2])
+            #     @test tag(y[1].elements[1]) == tag(y[2].elements[1])
+            # end
         end
     end
 end

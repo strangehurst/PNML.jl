@@ -8,10 +8,10 @@ It wraps a iteratable collection (currently vector) of well formed elements
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals struct ToolInfo
+@auto_hash_equals struct ToolInfo{T}
     toolname::String
     version::String
-    infos::Vector{AnyElement} #TODO specialize infos.
+    infos::T #Vector{AnyElement} #TODO specialize infos.
     xml::XMLNode
 end
 
@@ -19,8 +19,10 @@ end
 name(ti::ToolInfo) = ti.toolname
 "Version of tool for this tool specific information element."
 version(ti::ToolInfo) = ti.version
-"Iteratable collection of well-formed children."
+"Content of a ToolInfo."
 infos(ti::ToolInfo) = ti.infos
+
+Base.eltype(::ToolInfo{T}) where {T} = T
 
 xmlnode(ti::ToolInfo) = ti.xml
 
@@ -54,16 +56,16 @@ get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
 get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
     get_toolinfo([ti], namerex, versionrex)
 
-get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, version::AbstractString) =
+get_toolinfo(v::Vector{<:ToolInfo}, name::AbstractString, version::AbstractString) =
     get_toolinfo(v, Regex(name), Regex(version))
-get_toolinfo(v::Vector{ToolInfo}, name::AbstractString, versionrex::Regex) =
+get_toolinfo(v::Vector{<:ToolInfo}, name::AbstractString, versionrex::Regex) =
     get_toolinfo(v, Regex(name), versionrex)
 
-function get_toolinfo(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
+function get_toolinfo(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
     first(get_toolinfos(v, namerex, versionrex))
 end
 
-function get_toolinfos(v::Vector{ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
+function get_toolinfos(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
     filter(ti -> _match(ti, namerex, versionrex), v)
 end
 
