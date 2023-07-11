@@ -202,7 +202,7 @@ end
     """
     @testset for node in [n1]
         cond = PNML.parse_condition(node, HLCoreNet(), registry())
-        println("parse_condition"); dump(cond)
+        #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(HLCoreNet())
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa PNML.Term{PNML.condition_value_type(HLCoreNet())}

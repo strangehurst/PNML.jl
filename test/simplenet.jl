@@ -120,7 +120,7 @@ testlogger = TestLogger()
     for top in [net, net.net, first(pages(net.net))]
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
-            #@show "transition $(pid(t))"
+            #println("transition $(pid(t))"); dump(t)
             @test PNML.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))

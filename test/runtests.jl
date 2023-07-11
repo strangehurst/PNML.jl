@@ -54,13 +54,13 @@ const noisy::Bool = false
     end
     if select("ALL", "CORE")
         noisy && println("CORE")
+        @time "graphics"     @safetestset "graphics"     begin include("graphics.jl") end
+        @time "toolspecific" @safetestset "toolspecific" begin include("toolspecific.jl") end
         @time "labels"       @safetestset "labels"       begin include("labels.jl") end
         @time "nodes"        @safetestset "nodes"        begin include("nodes.jl") end
         @time "pages"        @safetestset "pages"        begin include("pages.jl") end
         @time "exceptions"   @safetestset "exceptions"   begin include("exceptions.jl") end
         @time "flatten"      @safetestset "flatten"      begin include("flatten.jl") end
-        @time "graphics"     @safetestset "graphics"     begin include("graphics.jl") end
-        @time "toolspecific" @safetestset "toolspecific" begin include("toolspecific.jl") end
     end
     if select("ALL", "HIGHLEVEL")
         noisy && println("HIGHLEVEL")

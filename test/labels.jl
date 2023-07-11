@@ -7,10 +7,40 @@ using PNML:
     default_term, default_one_term, default_zero_term,
     has_graphics, graphics, has_name, name, has_label,
     value, common, tools, graphics, labels,
-    parse_initialMarking, parse_inscription, parse_text
+    parse_initialMarking, parse_inscription, parse_text,
+    elements
 
 const pntd::PnmlType = PnmlCoreNet()
 const noisy::Bool = false
+
+
+@testset "text" begin
+    str1 = """<text>ready</text>"""
+    n = parse_text(xmlroot(str1), pntd, registry())
+    @test n == "ready"
+
+    str2 = """
+<text>
+ready
+</text>
+    """
+    n = parse_text(xmlroot(str2), pntd, registry())
+    @test n == "ready"
+
+    str3 = """
+ <text>    ready  </text>
+    """
+    n = parse_text(xmlroot(str3), pntd, registry())
+    @test n == "ready"
+
+    str4 = """
+     <text>ready
+to
+go</text>
+    """
+    n = parse_text(xmlroot(str4), pntd, registry())
+    @test n == "ready\nto\ngo"
+end
 
 @testset "ObjectCommon" begin
     oc = @inferred PNML.ObjectCommon()
@@ -36,24 +66,25 @@ end
         </toolspecific>
     </initialMarking>
     """
-
+    #TODO graphics
     mark = parse_initialMarking(node, pntd, registry())
     @test typeof(mark) <: PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
-    @test value(mark) == mark()
+    @test value(mark) == mark() # Uses an identity functor for `Numbers`
     @test value(mark) == 123
     noisy && @show mark
 
     mark1 = PNML.Marking(23)
-    #@report_opt PNML.Marking(2)
+    @test_opt PNML.Marking(23)
     @test_call PNML.Marking(23)
     @test typeof(mark1()) == typeof(23)
     @test mark1() == 23
     @test value(mark1) == 23
-    #@report_opt mark1()
+    @test_opt mark1()
     @test_call mark1()
 
     @test (graphics ∘ common)(mark1) === nothing
+    #! should tokengraphics be a tool?
     @test (tools ∘ common)(mark1) === nothing || isempty((tools ∘ common)(mark1))
     @test (labels ∘ common)(mark1) === nothing || isempty((labels ∘ common)(mark1))
 
@@ -87,34 +118,6 @@ end
     @test (graphics ∘ common)(inscription) === nothing
     @test (tools ∘ common)(inscription) === nothing || isempty((tools ∘ common)(inscription))
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
-end
-
-@testset "text" begin
-    str1 = """<text>ready</text>"""
-    n = parse_text(xmlroot(str1), pntd, registry())
-    @test n == "ready"
-
-    str2 = """
-<text>
-ready
-</text>
-    """
-    n = parse_text(xmlroot(str2), pntd, registry())
-    @test n == "ready"
-
-    str3 = """
- <text>    ready  </text>
-    """
-    n = parse_text(xmlroot(str3), pntd, registry())
-    @test n == "ready"
-
-    str4 = """
-     <text>ready
-to
-go</text>
-    """
-    n = parse_text(xmlroot(str4), pntd, registry())
-    @test n == "ready\nto\ngo"
 end
 
 @testset "labels" begin
@@ -175,33 +178,29 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
         println("-------------------")
     end
     node::XMLNode = xmlroot(xmlstring)
-    reg1 = registry()
-    reg2 = registry()
+    reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
+    reg2 = registry() # Creating multiple things from the same string is not recommended.
 
     u = unclaimed_label(node, PnmlCoreNet(), reg1)
     l = PnmlLabel(u, node)
     a = anyelement(node, reg2)
+    #@show u l a
     if noisy
         println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
         println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)
         println("a = $(a.tag) " ); dump(a) #AbstractTrees.print_tree.(a.elements)
     end
+    @test u isa Pair{Symbol, Vector{PNML.AnyXmlNode}}
+    @test l isa PnmlLabel
+    @test a isa AnyElement
 
-    @test_opt broken=false function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
-    @test_opt broken=false PnmlLabel(u, node)
-    @test_opt broken=false function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
+    @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
+    @test_opt PnmlLabel(u, node)
+    @test_opt function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
 
     @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1)
     @test_call target_modules = (PNML,) PnmlLabel(u, node)
     @test_call target_modules = (PNML,) anyelement(node, reg2)
-
-    @test !isnothing(u)
-    @test !isnothing(l)
-    @test !isnothing(a)
-
-    @test u isa Pair{Symbol, Vector{PNML.AnyXmlNode}}
-    @test l isa PnmlLabel
-    @test a isa AnyElement
 
     let nn = Symbol(nodename(node))
         @test u.first === nn
@@ -212,67 +211,85 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     @test l.elements isa Vector{PNML.AnyXmlNode}
     @test a.elements isa Vector{PNML.AnyXmlNode}
     #! unclaimed id is not registered
-    u.second[1].tag === :id    && @test !isregistered(reg1, u.second[1].val)
+    u.second[1].tag === :id && @test !isregistered(reg1, u.second[1].val)
     return l, a
 end
 
 @testset "unclaimed" begin
     noisy && println("## test unclaimed, PnmlLabel, anyelement")
+    # Even though they are "claimed" by having a parser, thay still may be treated as unclaimed.
+    # For example <declarations>.
+    ctrl = [ # Vector of tuples of XML string, expected result `Pair`.
+        ("""<declarations> </declarations>""",
+            :declarations => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
 
-    ctrl = [
-        ("""<declarations> </declarations>""", (; :content => "")),
+        ("""<declarations atag="atag1"> </declarations>""",
+            :declarations => PNML.AnyXmlNode[PNML.AnyXmlNode(:atag, "atag1")]),
 
-        ("""<declarations atag="atag1"> </declarations>""", (; :atag => "atag1", :content => "")),
-
-        # Tuple{NamedTuple}
         ("""<foo><declarations> </declarations></foo>""",
-             (; :declarations => ((; :content => ""),))),
+            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:declarations, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")])]),
 
         # no content, no attribute maybe results in empty tuple.
-        ("""<null></null>""", (; :content => "")),
-        ("""<null2/>""", (; :content => "")),
+        ("""<null></null>""",
+            :null => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+        ("""<null2/>""",
+            :null2 => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
         # no content, with attribute
-        ("""<null at="null"></null>""", (; :at => "null")),
-        ("""<null2 at="null2" />""", (; :at => "null2")),
+        ("""<null at="null"></null>""",
+            :null => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "null")]),
+        ("""<null2 at="null2" />""",
+            :null2 => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "null2")]),
         # empty content, no attribute
-        ("""<empty> </empty>""", (; :content => "")),
+        ("""<empty> </empty>""",
+            :empty => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
         # empty content, with attribute
-        ("""<empty at="empty"> </empty>""", (; :content => "", :at => "empty")),
+        ("""<empty at="empty"> </empty>""",
+            :empty => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "empty")]),
         # unclaimed do not register id
-        ("""<foo id="testid1" />""", (; :id => "testid1", :content => "")),
-        ("""<foo id="testid2"/>""", (; :id => "testid2", :content => "")),
+        ("""<foo id="testid1" />""",
+            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "testid1")]),
+        ("""<foo id="testid2"/>""",
+            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "testid2")]),
+
         ("""<foo id="repeats">
-            <one>ONE</one>
-            <one>TWO</one>
-            <one>TRI</one>
-        </foo>""", (; :id => "repeats", :one => ((content = "ONE",), (content = "TWO",), (content = "TRI",),) )),
-    ]
+                <one>ONE</one>
+                <one>TWO</one>
+                <one>TRI</one>
+            </foo>""",
+            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "repeats"),
+                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "ONE")]),
+                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "TWO")]),
+                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "TRI")])]),
 
-    for (s, expected) in ctrl
-        l, a = test_unclaimed(s)#!, expected)
-        noisy && println("-------------------")
-        #test_elements(l, a, expected)
-        #for (key, expected) in pairs(expected); test_elements(l, a, expected); end
-    end
-    noisy && println()
-
-    s2 = """<declarations atag="atag2">
+        ("""<declarations atag="atag2">
                 <something> some content </something>
                 <something> other stuff </something>
                 <something2 tag2="tagtwo"> <value/> <value tag3="tagthree"/> </something2>
-            </declarations>"""
-    x = namedtuple([
-        :atag => "atag2",
-        :something => ((; :content => "some content"), # tuple of named tuples
-                       (; :content => "other stuff")),
-        :something2 => ((; :tag2 => "tagtwo",
-                           :value => ((; :content => ""),
-                                      (; :tag3 => "tagthree", :content => "")),
-                        ))
-    ])
+            </declarations>""",
+            :declarations => PNML.AnyXmlNode[
+                        PNML.AnyXmlNode(:atag, "atag2"),
+                        PNML.AnyXmlNode(:something, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "some content")]),
+                        PNML.AnyXmlNode(:something, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "other stuff")]),
+                        PNML.AnyXmlNode(:something2, PNML.AnyXmlNode[PNML.AnyXmlNode(:tag2, "tagtwo"),
+                                                    PNML.AnyXmlNode(:value, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+                                                    PNML.AnyXmlNode(:value, PNML.AnyXmlNode[PNML.AnyXmlNode(:tag3, "tagthree")])])
+                                            ]),
+    ]
 
-    l, a = test_unclaimed(s2)
-    noisy && println("-------------------")
-    #test_elements(l, a, x)
-    noisy && println("-------------------")
+    for (s, expected) in ctrl
+        lab, anye = test_unclaimed(s)
+        # TODO Add equality test, skip xml node.
+        expected_label = PnmlLabel(expected, ElementNode("testelement"))
+        #@show lab expected_label
+        @test tag(lab) == tag(expected_label)
+        @test (length ∘ elements)(lab) == ( length ∘ elements)(expected_label)
+        # TODO recursive compare
+        expected_any = AnyElement(expected, ElementNode("testelement"))
+        #@show anye  expected_any
+        @test tag(anye) == tag(expected_any)
+        @test (length ∘ elements)(anye) == (length ∘ elements)(expected_any)
+        # TODO recursive compare
+        noisy && println("-------------------")
+    end
+    noisy && println()
 end

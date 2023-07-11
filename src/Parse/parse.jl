@@ -102,7 +102,7 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     haskey(node, "type") || throw(MalformedException(lazy"$nn missing type"))
     type = node["type"]
     if CONFIG.verbose
-        println(lazy"""
+        println("""
 
         =========
         parse_net: $(node["id"]) $type $(pntd_override !== nothing && pntd_override)
@@ -110,7 +110,7 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     end
 
     isempty(allchildren("page", node)) &&
-        throw(MalformedException(lazy"""$nn $(node["id"]) does not have any pages"""))
+        throw(MalformedException("""$nn $(node["id"]) does not have any pages"""))
 
     # Although the specification says the petri net type definition (pntd) MUST BE attached
     # to the <net> element, it is allowed by this package to override that value.
@@ -567,9 +567,10 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
                 # Allow <structure> for non-high-level labels.
                 structure = parse_structure(child, pntd, idregistry)
                 @warn "$nn <structure> element not implement" structure
-            elseif tag == "graphics"
+            elseif tag == "graphics" # Specification does not forbid PTNet for using this.
                 graphics = parse_graphics(child, pntd, idregistry)
-            elseif tag == "toolspecific"
+            elseif tag == "toolspecific" # tokengraphics can live here for PTNet (in specification)
+                # Because it is in a `ToolInfo`, `<tokengraphics>`, could appear anywhere and be ignored.
                 add_toolinfo!(tools, child, pntd, idregistry) #! Add tool to collections
             else
                 @warn "$nn ignoring unknown child '$tag'"
