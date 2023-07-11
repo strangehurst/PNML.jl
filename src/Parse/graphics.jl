@@ -11,7 +11,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
         @warn "$nn does not have any <tokenposition> elements"
         TokenGraphics{coordinate_value_type(pntd)}() # Empty is legal.
     else
-        tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg)) #! broadcast fiils array
+        tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg)) #! broadcast fills array
         (isnothing(tpos) || isempty(tpos)) && throw(MalformedException("$nn did not parse positions"))
         TokenGraphics{coordinate_value_type(pntd)}(tpos)
     end
