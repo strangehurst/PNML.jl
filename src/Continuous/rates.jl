@@ -27,9 +27,11 @@ function rate(transition)
     # Expected XML:
     # <rate> <text>0.3</text> </rate>
     #println("rate transition"); dump(transition)
-    ishighlevel(nettype(transition)) &&
-        throw(ArgumentError("The `rate` label is not supported for High-Level Petri Nets." *
-                            "  Recommended to use a `ContinuousNet`."))
+
+    # Allow any net type to have a rate label.
+    #ishighlevel(nettype(transition)) &&
+    #    @warn("The `rate` label is not supported for $(nettype(transition))." *
+    #                        "  Recommended to use a `ContinuousNet`.")
     pntd = nettype(transition)
     R = rate_value_type(pntd)
 
@@ -37,7 +39,6 @@ function rate(transition)
         r = get_label(transition, :rate)
         #println("rate label"); dump(r)
         str = text_content(elements(r))
-        #println("\n# rate str $str"); dump(str)
         return number_value(R, str)
     end
     return zero(R)
