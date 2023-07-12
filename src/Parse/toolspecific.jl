@@ -13,28 +13,26 @@ function parse_toolspecific(node, pntd, reg)
 
     tool    = node["tool"]
     version = node["version"]
-    #CONFIG.verbose &&
-    println("$nn $tool $version")
+    CONFIG.verbose && println("$nn $tool $version")
 
+    # Handle toolinfos that we recognize.
+    # Most will assume only one child element and ignore the rest.
     if tool == "org.pnml.tool" && version == "1.0"
         child = EzXML.firstelement(node)
-        if nodename(child) == "tokengraphics"
+        tag = EzXML.nodename(child)
+        if tag == "tokengraphics"
             tg = parse_tokengraphics(child, pntd, reg)
             #println("tokengraphics"); dump(tg)
             return ToolInfo(tool, version, tg, node)
-        else
-            ae = anyelement(child, pntd, reg)
-            @warn "unexpected anyelement toolinfo for $tool $version" dump(ae)
-            return ToolInfo(tool, version, anyelement(child, pntd, reg), node)
         end
-    else
-        content = AnyElement[]
-        for child in eachelement(node)
-            #TODO: Specialize/verify on tool, version. User supplied?
-            #TODO: Register additional tool specific parsers?
-            push!(content, anyelement(child, pntd, reg))
-        end
-        isempty(content)
-        return ToolInfo(tool, version, content, node)
     end
+    #TODO: Register additional tool specific parsers?
+
+    # Handle all other toolinfos as AnyElement (holding well-formed XML).
+    content = AnyElement[]
+    for child in eachelement(node)
+        push!(content, anyelement(child, pntd, reg))
+    end
+    isempty(content) && @warn "<toolspecific> $tool $version missing content"
+    return ToolInfo(tool, version, content, node)
 end

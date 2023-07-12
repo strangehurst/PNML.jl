@@ -68,7 +68,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test tooli.infos isa s.elementtype
         @test PNML.infos(tooli) isa s.elementtype
-        @show PNML.infos(tooli)
+        #@show PNML.infos(tooli)
     end
     @testset "combined" begin
         #println("combined toolinfos")
