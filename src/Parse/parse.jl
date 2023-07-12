@@ -614,7 +614,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value) && CONFIG.warn_on_fixup
-        @warn("missing or unparsable <inscription> value replaced with default value $(default_inscription(pntd)())")
+        @warn("missing or unparsable <inscription> value for $pntd replaced with default value $(default_inscription(pntd)())")
     end
     Inscription(something(value, default_inscription(pntd)()), ObjectCommon(graphics, tools, labels))
 end
