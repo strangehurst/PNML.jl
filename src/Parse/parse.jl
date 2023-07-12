@@ -9,7 +9,7 @@ All uses are expected to be pnml labels attached to pnml graph nodes, arcs, nets
 that are excluded from this parsing pathway.
 """
 function parse_node(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    CONFIG.verbose && println(lazy"PARSE_NODE $(EzXML.nodename(node))") # Useful for debug.
+    CONFIG.verbose && println("PARSE_NODE $(EzXML.nodename(node))") # Useful for debug.
     if haskey(tagmap, EzXML.nodename(node))
         parsefun = @inline tagmap[EzXML.nodename(node)]
         #@show nameof(parsefun) typeof(parsefun) methods(parsefun) # Useful for debug.
@@ -21,6 +21,7 @@ end
 
 function parse_excluded(node::XMLNode, _, _)
     @warn "Attempt to parse excluded tag: $(EzXML.nodename(node))"
+    return nothing
 end
 
 #TODO test pnml_namespace
@@ -613,7 +614,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value) && CONFIG.warn_on_fixup
-        @warn("missing or unparsable <inscription> value")
+        @warn("missing or unparsable <inscription> value replaced with default value $(default_inscription(pntd)())")
     end
     Inscription(something(value, default_inscription(pntd)()), ObjectCommon(graphics, tools, labels))
 end
