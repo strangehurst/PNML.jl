@@ -5,7 +5,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
-const pntd::PnmlType = PnmlCoreNet()
+const pntd::PnmlType = PnmlCoreNet() # Default pntd
 
 @testset "place" begin
     node = xml"""
@@ -14,20 +14,19 @@ const pntd::PnmlType = PnmlCoreNet()
         <initialMarking> <text>100</text> </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_node(node, pntd, registry())
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, pntd, registry())
-
-    n = parse_place(node, pntd, registry())
+    n  = parse_place(node, pntd, registry())
     #println("parse_place "); dump(n)
-    @test_call target_modules = target_modules parse_place(node, pntd, registry())
-    id = pid(n)
-    @test id === :place1
+
+    @test parse_node(node, pntd, registry()) === nothing
+    @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
+
+    @test_call target_modules=target_modules parse_place(node, pntd, registry())
+
+    @test pid(n) === :place1
     @test typeof(n) <: Place
-    #@show n
     @test_call has_xml(n)
     @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
-    #@show has_name(n)
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test_call marking(n)
@@ -41,7 +40,6 @@ end
         <initialMarking> 100 </initialMarking>
       </place>
     """
-    @test_opt broken=true function_filter=pnml_function_filter target_modules=target_modules parse_place(node, PnmlCoreNet(), registry())
     @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
     n = parse_place(node, PnmlCoreNet(), registry())
     @test typeof(n) <: Place
@@ -54,8 +52,7 @@ end
     @test marking(n)() == 100
 end
 
-#! <condition> is High-Level is specification.
-#
+# <condition> introduced as High-Level in specification. We use it everywhere.
 @testset "transition" begin
     node = xml"""
       <transition id="transition1">
