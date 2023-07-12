@@ -60,7 +60,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     @test value(value(use2)[1]) == "N2"
 end
 
-@testset "hlinscription" begin
+@testset "hlinscription $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     n1 = xml"""
     <hlinscription>
         <text>&lt;x,v&gt;</text>
@@ -72,13 +72,13 @@ end
         </structure>
     </hlinscription>
     """
-    insc = PNML.parse_hlinscription(n1, HLCoreNet(), registry())
+    insc = PNML.parse_hlinscription(n1, pntd, registry())
     @test typeof(insc) <: PNML.AbstractLabel
-    @test typeof(insc) <: PNML.inscription_type(HLCoreNet())
+    @test typeof(insc) <: PNML.inscription_type(pntd)
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
-    @test value(insc) isa PNML.Term{PNML.inscription_value_type(HLCoreNet())}
+    @test value(insc) isa PNML.Term{PNML.inscription_value_type(pntd)}
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
@@ -109,7 +109,7 @@ end
     @test value(ref2) == "v"
 end
 
-@testset "structure" begin
+@testset "structure $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     node = xml"""
      <structure>
          <tuple>
@@ -119,7 +119,7 @@ end
      </structure>
     """
 
-    stru = PNML.parse_structure(node, HLCoreNet(), registry())
+    stru = PNML.parse_structure(node, pntd, registry())
     @test stru isa PNML.Structure
     @test xmlnode(stru) isa Maybe{EzXML.Node}
 
@@ -170,7 +170,7 @@ end
     @test value(dec2) == "N2"
 end
 
-@testset "type" begin
+@testset "type $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     n1 = xml"""
  <type>
      <text>N2</text>
@@ -178,7 +178,7 @@ end
  </type>
     """
     @testset for node in [n1]
-        typ = PNML.parse_type(node, HLCoreNet(), registry())
+        typ = PNML.parse_type(node, pntd, registry())
         #print("SortType = "); pprintln(typ)
         @test typ isa PNML.SortType
         #println("\n## typ "); dump(typ)
@@ -193,7 +193,8 @@ end
     end
 end
 
-@testset "condition" begin
+# conditions are for everybody.
+@testset "condition $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     n1 = xml"""
  <condition>
      <text>(x==1 and y==1 and d==1)</text>
@@ -201,11 +202,12 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond = PNML.parse_condition(node, HLCoreNet(), registry())
+        cond = PNML.parse_condition(node, pntd, registry())
         #println("parse_condition"); dump(cond)
-        @test cond isa PNML.condition_type(HLCoreNet())
+        @test cond isa PNML.condition_type(pntd)
         @test text(cond) == "(x==1 and y==1 and d==1)"
-        @test value(cond) isa PNML.Term{PNML.condition_value_type(HLCoreNet())}
+        @test value(cond) isa Union{PNML.condition_value_type(pntd),
+                                    PNML.Term{PNML.condition_value_type(pntd)}}
         @test tag(value(cond)) === :or
         @test !PNML.has_graphics(cond)
         @test !PNML.has_tools(cond)
