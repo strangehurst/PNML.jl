@@ -151,28 +151,40 @@ For readability, the 'pntd symbol' should match the name used in the URI
 with inconvinient characters removed or replaced. For example, '-' is replaced by '_'.
 """
 const default_pntd_map =
-    Dict{String, Symbol}("http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
-                         "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
-                         "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
-                         "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
-                         "http://www.pnml.org/version-2009/grammar/pt-hlpng" => :pt_hlpng,
-                         "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
-                         "pnmlcore" => :pnmlcore,
-                         "ptnet" => :ptnet,
-                         "highlevelnet" => :hlnet,
-                         "hlnet" => :hlnet,
-                         "hlcore" => :hlcore,
-                         "pt-hlpng" => :pt_hlpng,
-                         "pt_hlpng" => :pt_hlpng,
-                         "symmetric" => :symmetric,
-                         "symmetricnet" => :symmetric,
-                         # extensions
-                         "stochastic" => :stochastic,
-                         "timed" => :timednet,
-                         "timednet" => :timednet,
-                         "nonstandard" => :pnmlcore,
-                         "open" => :pnmlcore,
-                         "continuous" => :continuous)
+    Dict{String, Symbol}(
+            "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
+            "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
+            "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
+            "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
+            "http://www.pnml.org/version-2009/grammar/pt-hlpng" => :pt_hlpng,
+            "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
+
+            "pnmlcore" => :pnmlcore,
+            "ptnet" => :ptnet,
+            "highlevelnet" => :hlnet,
+            "hlnet" => :hlnet,
+            "hlcore" => :hlcore,
+            "pt-hlpng" => :pt_hlpng,
+            "pt_hlpng" => :pt_hlpng,
+            "symmetric" => :symmetric,
+            "symmetricnet" => :symmetric,
+
+            # TODO Implement these.
+            "https://www.pnml.org/version-2009/extensions/resetptnet" => :ptnet,
+            "https://www.pnml.org/version-2009/extensions/inhibitorptnet" => :ptnet,
+            "https://www.pnml.org/version-2009/extensions/resetinhibitorptnet" => :ptnet,
+
+            "resetptnet" => :ptnet,
+            "inhibitorptnet" => :ptnet,
+            "resetinhibitorptnet" => :ptnet,
+
+            "continuous" => :continuous,
+            "stochastic" => :stochastic,
+            "timed" => :timednet,
+            "timednet" => :timednet,
+            "nonstandard" => :pnmlcore,
+            "open" => :pnmlcore,
+            )
 
 """
 $(TYPEDEF)
