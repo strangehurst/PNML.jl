@@ -18,7 +18,7 @@ or additional processing is desired. Some are defined here anyway.
 $(TYPEDSIGNATURES)
 
 Return [`Declaration`](@ref) label of 'net' and 'page' nodes.
-Assume behavior of a High-level Net label in that the meaning is in a <struct>.
+Assume behavior of a High-level Net label in that the meaning is in a <structure>.
 
 Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsort/> ...
 """
@@ -164,7 +164,7 @@ function parse_type end
 function parse_type(hlnode::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
     check_nodename(hlnode, "type")
     text::Maybe{AbstractString} = nothing
-    term::Maybe{Any} = nothing
+    sortterm::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
@@ -173,14 +173,14 @@ function parse_type(hlnode::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) whe
         tag = EzXML.nodename(child)
         @match nodename(child) begin
             "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (term = parse_sorttype_term(child, pntd, idregistry))
+            "structure"    => (sortterm = parse_sorttype_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
             _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
         end
     end
 
-    SortType(text, something(term, default_sort(pntd)), ObjectCommon(graphics, tools, labels))
+    SortType(text, something(sortterm, default_sorttype(pntd)), ObjectCommon(graphics, tools, labels))
 end
 
 # Sort type for non-high-level meaning is TBD and non-standard.
@@ -189,24 +189,37 @@ function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where
     # Parse as unclaimed label. Then assume it is a `numberic_label_value`.
     # First use-case of technique is `rate` of `ContinuousNet`.
     ucl = unclaimed_label(node, pntd, idregistry)
+
     CONFIG.verbose && @show ucl
-    #!SortType("default sorttype", Term(:sorttype, [AnyXmlNode(ucl)]))
-    @assert ucl.second[1] isa AbstractString
-    return numeric_label_value(sort_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
+        @assert ucl.second[1] isa AbstractString
+    val = numeric_label_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
+    return SortType("default sorttype", val)
 end
 
 """
 $(TYPEDSIGNATURES)
+
+`Term` representing the High-level sort is wrapped in a concrete [`AbstractSort`](@ref).
 """
 parse_sorttype_term(typenode, pntd, idregistry) = begin
     check_nodename(typenode, "structure")
     term = EzXML.firstelement(typenode)
     if !isnothing(term)
-        t = parse_term(term, sort_type(pntd), pntd, idregistry)
+        # Expect a sort declaration: usersort or arbitrary sort
+        ucl = unclaimed_label(term, pntd, idregistry)
+        #println("sorttype declaration: "); dump(ucl)
+        @assert ucl.first == :usersort
+        @assert ucl.second isa Vector{AnyXmlNode}
+        d = first(ucl.second)
+        @assert tag(d) == :declaration
+        @assert value(d) isa AbstractString
+        t = UserSort(Symbol(value(d)))
+        # t = ArbitrarySort(unclaimed_label(term, pntd, idregistry))
     else
         # Handle an empty <structure>.
-        t = default_sort(pntd)
+        t = default_sorttype(pntd)
     end
+    println("sorttype_term"); dump(t)
     return t
 end
 
@@ -252,11 +265,9 @@ Instead it is the interpertation of the child of some 'structure' elements.
 The PNML specification describes Terms and Sorts as abstract types for the 'structure'
 element of some [`HLAnnotation`](@ref).
 """
-function parse_term(node::XMLNode, output_sort::Type{T}, pntd::PnmlType,
-                    reg::PnmlIDRegistry) where {T <: Union{Bool, Int, Float64}}
-    nn = EzXML.nodename(node)
+function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     tag, value = unclaimed_label(node, pntd, reg)
-    Term{output_sort}(tag, value)
+    Term(tag, value)
 end
 
 #! TODO Terms kinds are Variable and Operator

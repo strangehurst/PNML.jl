@@ -98,7 +98,7 @@ the hierarchy. And neither children nor content nor attribute may be present.
 Leaf `AnyXmlNode`'s contain an String or SubString.
 """
 function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
-    CONFIG.verbose && println("_harvest_any! ", EzXML.nodename(node))
+    CONFIG.verbose && println("harvest ", EzXML.nodename(node))
 
     vec = AnyXmlNode[]
     for a in EzXML.eachattribute(node)

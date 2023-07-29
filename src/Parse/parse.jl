@@ -77,8 +77,8 @@ Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
 function parse_pnml(node::XMLNode, idregistry::PIDR)
     nn = check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
-    nets = allchildren("net", node)
-    isempty(nets) && throw(MalformedException(lazy"$nn does not have any <net> elements"))
+    nets = allchildren("net", node) #! allocate Vector{XMLNode}
+    isempty(nets) && throw(MalformedException("$nn does not have any <net> elements"))
 
     # Do not yet have a PNTD defined. Each net can be different Net speciaization.
     net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation?
@@ -134,28 +134,19 @@ the marking, inscription, condition and sort type parameters.
 """
 function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PNTD<:PnmlType}
     PNTD = typeof(pntd)
-    mtype = marking_type(PNTD)
-    itype = inscription_type(PNTD)
-    ctype = condition_type(PNTD)
-    stype = sort_type(PNTD)
-    pgtype = Page{typeof(pntd), mtype, itype, ctype, stype}
-    #@show mtype itype ctype stype pgtype
+    pgtype = page_type(PNTD)
 
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netsets = PnmlNetKeys()
-    netdata = PnmlNetData(pntd,
-            OrderedDict{Symbol, Any}(), # Place{PNTD,mtype,stype}}(),
-            OrderedDict{Symbol, Any}(), # Transition{PNTD,ctype}}(),
-            OrderedDict{Symbol, Any}(), # Arc{PNTD,itype}}(),
-            OrderedDict{Symbol, Any}(), # RefPlace{PNTD}}(),
-            OrderedDict{Symbol, Any}()) # RefTransition{PNTD}}())
-
+    netdata = PnmlNetData(pntd)
     id   = register_id!(idregistry, node["id"])
     name = nothing
     decl::Maybe{Declaration} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
-
+    #println("pagedict"); dump(pagedict)
+    #println("netsets"); dump(netsets)
+    #println("netdata"); dump(netdata)
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -251,8 +242,9 @@ end
 
 # set is per-Page, dict is per-Net
 function parse_place!(place_set, place_dict, child, pntd, idregistry)
-    pl = parse_place(child, pntd, idregistry)
+    pl = parse_place(child, pntd, idregistry)::valtype(place_dict)
     push!(place_set, pid(pl))
+    isa(pl, valtype(place_dict)) || @show typeof(pl) valtype(place_dict)
     place_dict[pid(pl)] = pl
     return nothing
 end
@@ -310,6 +302,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             #a = @allocated begin
             sorttype = parse_type(child, pntd, idregistry)
             #end; a > 0 && println("parse_type $id allocated ", a)
+            CONFIG.verbose && println("parse_place $id sorttype $sorttype")
         elseif tag == "name"
             #a = @allocated begin
             name = parse_name(child, pntd, idregistry)
@@ -326,7 +319,8 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     #end; println("parse_place $id allocated: ", a)
 
-    Place(pntd, id, something(mark,default_marking(pntd)), something(sorttype, default_sort(pntd)),
+    Place(pntd, id, something(mark, default_marking(pntd)),
+            something(sorttype, default_sorttype(pntd)),
             name, ObjectCommon(graphics, tools, labels))
 end
 
@@ -500,13 +494,11 @@ $(TYPEDSIGNATURES)
 Return [`Name`](@ref) label holding text value and optional tool & GUI information.
 """
 function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    nn = check_nodename(node, "name")
-    CONFIG.verbose && print("parse name ") #! debug
-
+    check_nodename(node, "name")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
     tools = ToolInfo[]
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             text = string(strip(nodecontent(child)))
@@ -523,16 +515,17 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     # Ex: PetriNetPlans-PNP/parallel.jl
     # Attempt to harvest content of <name> element instead of the child <text> element.
     if isnothing(text)
+        emsg = "<name> missing <text> element"
         if CONFIG.text_element_optional
-            @warn lazy"$nn missing <text> element" # Remove when CONFIG default set to false.
+            @warn emsg # Remove when CONFIG default set to false.
             text = string(strip(nodecontent(node)))
         else
-            throw(ArgumentError(lazy"$nn missing <text> element"))
+            throw(ArgumentError(emsg))
         end
     end
 
-    isempty(text) && @info "empty name"
-    CONFIG.verbose && println("parsed name $text") #! debug
+    isempty(text) && @info "empty name" #TODO control with CONFIG?
+    CONFIG.verbose && println("parsed name '$text'") #! debug
     return Name(text, graphics, tools)
 end
 
@@ -661,7 +654,7 @@ $(TYPEDSIGNATURES)
 parse_marking_term(marknode, pntd, idregistry) = begin
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        parse_term(EzXML.firstelement(marknode), marking_value_type(pntd), pntd, idregistry)
+        parse_term(EzXML.firstelement(marknode), pntd, idregistry)
     else
         # Handle an empty <structure>.
         default_marking(pntd)
@@ -702,10 +695,10 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-parse_inscription_term(inscriptionnode, pntd, idregistry)::Term = begin
-    check_nodename(inscriptionnode, "structure")
-    if EzXML.haselement(inscriptionnode)
-        parse_term(EzXML.firstelement(inscriptionnode), inscription_value_type(pntd), pntd, idregistry)
+parse_inscription_term(inode, pntd, idregistry)::Term = begin
+    check_nodename(inode, "structure")
+    if EzXML.haselement(inode)
+        parse_term(EzXML.firstelement(inode), pntd, idregistry)
     else
         # Handle an empty <structure>.
         default_inscription(pntd)
@@ -754,15 +747,13 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_condition_term(conditionnode, pntd::PnmlType, idregistry)
-    check_nodename(conditionnode, "structure")
+function parse_condition_term(cnode, pntd::PnmlType, idregistry)
+    check_nodename(cnode, "structure")
 
-    if EzXML.haselement(conditionnode)
-        t = parse_term(EzXML.firstelement(conditionnode), condition_value_type(pntd), pntd, idregistry)
-        return t
-    else
-        # Handle an empty <structure>.
-        return default_bool_term(pntd)
+    if EzXML.haselement(cnode)
+        parse_term(EzXML.firstelement(cnode), pntd, idregistry)
+    else # Handle an empty <structure>.
+        default_bool_term(pntd)
     end
 end
 

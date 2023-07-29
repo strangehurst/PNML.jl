@@ -1,33 +1,8 @@
 """
 $(TYPEDEF)
-Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
-
-An abstract type in the pnml XML specification, concrete `Term`s are
-found within the <structure> element of a [`HLAnnotation`](@ref) label.
-
-Notably, a [`Term`](@ref) is not a PnmlLabel.
-
-See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
-"""
-abstract type AbstractTerm end
-
-"""
-$(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 """
 abstract type AbstractOperator <: AbstractTerm end
-
-"""
-$(TYPEDEF)
-Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
-
-NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
-The pnml specification sometimes uses overlapping language.
-"""
-abstract type AbstractSort end
-
-_evaluate(x::AbstractTerm) = x() # functor
-_evaluate(x::AbstractSort) = x() # functor
 
 """
 $(TYPEDEF)
@@ -35,7 +10,7 @@ Declarations are the core of high-level Petri Net.
 They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
 """
-abstract type AbstractDeclaration <: HLAnnotation end
+abstract type AbstractDeclaration <: AbstractLabel end
 
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name
@@ -68,12 +43,11 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct NamedSort{S} <: SortDeclaration
+struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     id::Symbol
     name::String
-    def::S # BuiltInSort, MultisetSort, ProductSort, UserSort
+    def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
-
 
 """
 $(TYPEDEF)
@@ -86,6 +60,22 @@ struct Partition{S,PE} <: SortDeclaration
     name::String
     def::S # Refers to a NamedSort
     element::PE # 0 or more PartitionElements.
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Arbitrary sorts that can be used for constructing terms are
+reserved for/supported by `HLPNG` in the pnml specification.
+"""
+struct ArbitrarySort <: SortDeclaration
+    id::Symbol
+    name::String
+end
+
+function ArbitrarySort()
+    ArbitrarySort(:arbitrarysort, "ArbitrarySort")
 end
 
 """
@@ -123,4 +113,15 @@ $(TYPEDFIELDS)
 struct UserOperator <: AbstractOperator
     "Identity of operators's declaration."
     declaration::Symbol #
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
+    "Identity of operators's declaration."
+    declaration::Symbol
+    input::I
+    output::Vector{AbstractSort} # Sorts
 end

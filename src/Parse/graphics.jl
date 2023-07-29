@@ -2,19 +2,23 @@
 $(TYPEDSIGNATURES)
 
 High-level place-transition nets (HL-PTNet) have a toolspecific structure
-defined for token graphics. Contains <tokenposition> tags.
+defined for token graphics. Contains <tokenposition>s. Returns vector of `Coordinate`s.
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
     nn = check_nodename(node, "tokengraphics")
-    positions = allchildren("tokenposition", node) # returns Vector{XMLNode}
-    if isnothing(positions) || isempty(positions)
-        @warn "$nn does not have any <tokenposition> elements"
-        TokenGraphics{coordinate_value_type(pntd)}() # Empty is legal.
-    else
-        tpos = parse_tokenposition.(positions, Ref(pntd), Ref(reg)) #! broadcast fills array
-        (isnothing(tpos) || isempty(tpos)) && throw(MalformedException("$nn did not parse positions"))
-        TokenGraphics{coordinate_value_type(pntd)}(tpos)
+    tpos = coordinate_type(pntd)[]
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "tokenposition"
+            push!(tpos, parse_tokenposition(child, pntd, reg))
+        else
+            @warn "<tokengraphics> has unexpected element $tag"
+        end
     end
+    if isempty(tpos)
+        @warn "$nn does not have any <tokenposition> elements"
+    end
+    TokenGraphics(tpos)
 end
 
 """

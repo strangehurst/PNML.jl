@@ -32,5 +32,5 @@ Evaluate an [`Inscription`](@ref)'s `value`.
 
 inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{inscription_value_type(T)}
 
-inscription_value_type(::Type{T}) where {T <: PnmlType} = Int
+inscription_value_type(::Type{<: PnmlType}) = Int
 inscription_value_type(::Type{<:AbstractContinuousNet}) = Float64

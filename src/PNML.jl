@@ -17,7 +17,7 @@ Base.@kwdef mutable struct PnmlConfig
     text_element_optional::Bool = true
     warn_on_fixup::Bool = true #! false
     warn_on_unclaimed::Bool = true #! false
-    verbose::Bool = false
+    verbose::Bool = true #! false
     lock_registry::Bool = true
 end
 
@@ -82,25 +82,32 @@ include("Core/utils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
-include("HighLevel/hltypes.jl")
+
+include("HighLevel/terms.jl")
+include("HighLevel/sorts.jl")
+include("HighLevel/hldeclarations.jl")
 
 include("Core/labels.jl")
-include("Core/anyelement.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
 include("Core/objcommon.jl")
 include("Core/name.jl")
 
-include("HighLevel/hldeclarations.jl")
-include("HighLevel/sorts.jl")
-include("HighLevel/terms.jl")
+include("HighLevel/sorttype.jl")
+
+include("HighLevel/hllabels.jl")
 
 include("Core/inscriptions.jl")
+include("HighLevel/hlinscriptions.jl")
 include("Core/markings.jl")
+include("HighLevel/hlmarkings.jl")
 include("Core/conditions.jl")
+
 include("Core/declarations.jl")
 
 include("Core/defaults.jl")
+include("HighLevel/hldefaults.jl")
+include("HighLevel/structure.jl")
 
 include("Core/nodes.jl")
 include("Core/pnmlnetdata.jl") # Used by page, net.
@@ -113,12 +120,6 @@ include("Core/flatten.jl")
 include("Core/show.jl")
 
 # High-Level
-include("HighLevel/hldefaults.jl")
-include("HighLevel/structure.jl")
-include("HighLevel/hllabels.jl")
-
-include("HighLevel/hlinscriptions.jl")
-include("HighLevel/hlmarkings.jl")
 include("HighLevel/hlshow.jl")
 
 # PARSE

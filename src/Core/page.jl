@@ -8,24 +8,25 @@ There must be at least 1 Page for a valid pnml model.
 `PNTD` binds the other type parameters together to express a specific PNG.
 See [`PnmlNet`](@ref)
 """
-struct Page{PNTD <: PnmlType, M, I, C, S} <: AbstractPnmlObject{PNTD}
+struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
     # pagedict and netdata do not overlap
-    pagedict::OrderedDict{Symbol, Page{PNTD}} #! Shared by net and its pages
-    netdata::PnmlNetData{PNTD} #! Shared by net and its pages
+    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} #! Shared by net and its pages
+    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} #! Shared by net and its pages
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
     Page{typeof(pntd),
-         marking_type(pntd),
-         inscription_type(pntd),
-         condition_type(pntd),
-         sort_type(pntd)}(pntd, i, dec, nam, c, pdict, ndata, nsets)
+         place_type(pntd),
+         transition_type(pntd),
+         arc_type(pntd),
+         refplace_type(pntd),
+         reftransition_type(pntd)}(pntd, i, dec, nam, c, pdict, ndata, nsets)
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 

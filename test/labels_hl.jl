@@ -21,7 +21,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     # Following HL text,structure label pattern where structure is a `Term`.
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
-    @test value(mark) isa PNML.Term{PNML.marking_value_type(HLCoreNet())}
+    @test value(mark) isa PNML.Term #!{PNML.marking_value_type(HLCoreNet())}
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
@@ -78,7 +78,7 @@ end
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
-    @test value(insc) isa PNML.Term{PNML.inscription_value_type(pntd)}
+    @test value(insc) isa PNML.Term #!{PNML.inscription_value_type(pntd)}
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
@@ -179,17 +179,11 @@ end
     """
     @testset for node in [n1]
         typ = PNML.parse_type(node, pntd, registry())
-        #print("SortType = "); pprintln(typ)
         @test typ isa PNML.SortType
-        #println("\n## typ "); dump(typ)
+        #println("\n## SortType typ "); dump(typ)
         @test text(typ) == "N2"
-        @test value(typ) isa PNML.Term
-        @test (tag ∘ value)(typ) === :usersort
-        @test (elements ∘ value)(typ) isa Vector{AnyXmlNode}
-
-        axn = (elements ∘ value)(typ)[1]
-        @test tag(axn) === :declaration
-        @test value(axn) == "N2"
+        @test value(typ) isa PNML.AbstractSort
+        @test value(typ).declaration == :N2
     end
 end
 
@@ -207,7 +201,9 @@ end
         @test cond isa PNML.condition_type(pntd)
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd),
-                                    PNML.Term{PNML.condition_value_type(pntd)}}
+                                    PNML.Term #!{PNML.condition_value_type(pntd)}
+                                    }
+
         @test tag(value(cond)) === :or
         @test !PNML.has_graphics(cond)
         @test !PNML.has_tools(cond)

@@ -2,12 +2,12 @@
 # GRAPHICS
 ###############################################################################
 """
-Cartesian Coordinate.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Cartesian Coordinate are actually positive decimals. Ranges from 0 to 999.9.
 """
-struct Coordinate{T <: Union{Int,Float64}}
+struct Coordinate{T <: Union{Int,Float64}} #! decimal 0 to 999.9 is Schema
     x::T
     y::T
 end
@@ -15,8 +15,8 @@ end
 Coordinate{T}() where {T <: Union{Int,Float64}} = Coordinate{T}(zero(T), zero(T))
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
-coordinate_value_type(::Type{T}) where {T <: PnmlType} = Int
-coordinate_value_type(::Type{T}) where {T <: AbstractContinuousNet} = Float64
+coordinate_value_type(::Type{<: PnmlType}) = Int
+coordinate_value_type(::Type{<: AbstractContinuousNet}) = Float64
 Base.eltype(::Coordinate{T}) where {T} = T
 
 #-------------------

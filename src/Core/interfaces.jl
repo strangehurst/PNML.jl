@@ -349,7 +349,7 @@ function reftransition_type end
 
 """
 $(TYPEDSIGNATURES)
-Type of `Condition{condition_value_type(T)}`
+Type of `Condition` #!{condition_value_type(T)}`
 """
 function condition_type end
 """

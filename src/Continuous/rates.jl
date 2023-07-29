@@ -5,7 +5,7 @@
 function rate_value_type end
 rate_value_type(net::PnmlNet) = rate_value_type(nettype(net))
 rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
-rate_value_type(::Type{T}) where {T <: PnmlType} = Float64
+rate_value_type(::Type{<:PnmlType}) = Float64
 
 """
 $(TYPEDSIGNATURES)

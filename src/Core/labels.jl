@@ -1,12 +1,3 @@
-#------------------------------------------------------------------------------
-# Abstract Label
-#------------------------------------------------------------------------------
-"""
-$(TYPEDEF)
-Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
-"""
-abstract type AbstractLabel end
-
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
     prop_name === :com  && return getfield(o, :com)::ObjectCommon
@@ -16,7 +7,6 @@ function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     return getfield(o, prop_name)
 end
 
-xmlnode(::T) where {T<:AbstractLabel} = error("missing implementation of `xmlnode` for $T")
 
 "Return `true` if label has `text` field."
 has_text(l::AbstractLabel) = hasproperty(l, :text) && !isnothing(l.text)
@@ -64,21 +54,6 @@ abstract type HLAnnotation <: AbstractLabel end
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
-"""
-Node in a tree formed from XML. `tag`s are XML tags or attribute names.
-Leaf `val` are strings.
-NB: Assumes XML "content" nodes do not have child XML nodes.
-"""
-struct AnyXmlNode #! Needed by PnmlLabel, AnyElement
-    tag::Symbol
-    val::Union{Vector{AnyXmlNode}, String, SubString}
-end
-
-AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
-
-tag(axn::AnyXmlNode) = axn.tag
-value(axn::AnyXmlNode) = axn.val
-
 
 #------------------------------------------------------------------------------
 # Pnml Label

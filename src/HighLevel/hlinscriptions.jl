@@ -47,5 +47,5 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term{inscription_value_type(T)}}
+inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
 inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())

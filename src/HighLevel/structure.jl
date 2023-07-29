@@ -9,10 +9,10 @@ Note the structural similarity to [`PnmlLabel`](@ref) and [`AnyElement`](@ref)
 
 # Extra
 There are various defined structure ast variants in pnml:
-  - Sort of a Place [builtin, multi, product, user]
-  - Term of Place HLMarking [variable, operator]
-  - Term of Transition Condition [variable, operator]
-  - Term of Arc Inscription [variable, operator]
+  - Sort Type of a Place [builtin, multi, product, user]
+  - Place HLMarking [variable, operator]
+  - Transition Condition [variable, operator]
+  - Arc Inscription [variable, operator]
   - Declarations [sort, variable, operator]
 These should all have dedicated parsers and objects as *claimed lables*.
 Here we provide a fallback for *unclaimed labels*.

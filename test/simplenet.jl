@@ -205,6 +205,7 @@ end
         </net>
     </pnml>
     """
+
     model = @inferred parse_str(str)
     net1 = PNML.first_net(model)
 

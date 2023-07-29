@@ -9,7 +9,14 @@ Other PNTDs may introduce non-standard uses for declarations.
 We can use infrastructure implemented for HL nets to provide nonstandard extensions.
 """
 struct Declaration <: Annotation
-    declarations::Vector{Any} #TODO Type parameter?
+    declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
+    #SortDeclarations               xml:"structure>declarations>namedsort"`
+	#PartitionSortDeclarations      xml:"structure>declarations>partition"
+	#VariableDeclarations           xml:"structure>declarations>variabledecl"
+	#OperatorDeclarations           xml:"structure>declarations>namedoperator"
+	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
+	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
+
     com::ObjectCommon
     xml::Maybe{XMLNode}
 end

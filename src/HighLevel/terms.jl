@@ -42,7 +42,7 @@ default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(type
 
 term_value_type(::Type{<:PnmlType}) = Int
 term_value_type(::Type{<:AbstractContinuousNet}) = Float64
-term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
+term_value_type(::Type{<:AbstractHLCore}) = eltype(IntegerSort()) #!
 
 """
 $(TYPEDSIGNATURES)
@@ -68,16 +68,37 @@ default_bool_term(::PnmlType) = true
 default_bool_term(::AbstractHLCore) = Term(:bool, true)
 default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
+####################################################################################
+#
+####################################################################################
+
+"""
+$(TYPEDEF)
+Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
+
+An abstract type in the pnml XML specification, concrete `Term`s are
+found within the <structure> element of a [`HLAnnotation`](@ref) label.
+
+Notably, a [`Term`](@ref) is not a PnmlLabel.
+
+See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
+"""
+abstract type AbstractTerm end
+
+_evaluate(x::AbstractTerm) = x() # functor
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Note that Term is an abstract element in the pnml specification with no XML tag.
 Here we use it as a concrete wrapper around high-level many-sorted algebra terms
-AND extend to also wrapping "single-sorted" values.
+**AND EXTEND** to also wrapping "single-sorted" values.
 
 By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
 to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
+
+See also [`iscont`]
 
 As part of the many-sorted algebra attached to nodes of a High-level Petri Net Graph,
 Term`s are contained within the <structure> element of an annotation label,
@@ -106,24 +127,21 @@ Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
 When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
-struct Term{T <: Union{Bool, Int, Float64}} <: AbstractTerm
+struct Term <: AbstractTerm #!{T <: Union{Bool, Int, Float64}}
     tag::Symbol
     elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
 
-Term(s::Symbol, v::Union{Bool, Int, Float64}) = Term{typeof(v)}(s, v)
-#Term(::Symbol, ::Vector{AnyXmlNode}}) requires knowing the sort type.
-
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
-output_sort(::Term{T})  where {T} = T
 Base.eltype(t::Term) = typeof(elements(t))
 
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
     if eltype(t) <: Number
         return elements(t)
     else
-        # Find any `:value` AnyXmlNode in elements. Really anything with a `value`.
+        # Find any `:value` tagged in vector of elements.
+        # Fake like we know how to evaluate a expression of the high-level terms.
         i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
         if !isnothing(i)
             v = @inbounds value(t.elements[i])

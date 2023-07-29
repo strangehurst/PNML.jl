@@ -41,7 +41,7 @@ go</text>
     n = parse_text(xmlroot(str4), pntd, registry())
     @test n == "ready\nto\ngo"
 end
-
+#------------------------------------------------
 @testset "ObjectCommon" begin
     oc = @inferred PNML.ObjectCommon()
 
@@ -54,7 +54,33 @@ end
     @test isempty(PNML.tools(oc))
     @test isempty(PNML.labels(oc))
 end
+#------------------------------------------------
+@testset "name $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+    @test_logs match_mode = :any (:warn, r"missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
+    @test_logs match_mode = :any (:warn, r"missing <text>") PNML.parse_name(xml"<name>junk</name>", pntd, registry())
 
+    n = PNML.parse_name(xml"<name></name>", pntd, registry())
+    #println("dump n"); dump(n)
+    @test PNML.text(n) == ""
+
+    n = PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
+    @test n isa PNML.AbstractLabel
+    @test PNML.text(n) == "stuff"
+
+    @test n.graphics === nothing
+    @test n.tools === nothing || isempty(n.tools)
+
+    n = PNML.parse_name(xml"<name><text>some name</text></name>", pntd, registry())
+    @test n isa PNML.Name
+    @test PNML.text(n) == "some name"
+    #TODO add parse_graphics
+    #TODO add toolinfo
+end
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
+#------------------------------------------------
 @testset "PT initMarking" begin
     node = xml"""
     <initialMarking>

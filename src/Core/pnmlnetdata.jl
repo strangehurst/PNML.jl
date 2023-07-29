@@ -12,21 +12,22 @@ is parsed.
 
 See [`PnmlNetKeys`](@ref) for page-level pnml ID of "owners" net data.
 """
-struct PnmlNetData{PNTD <: PnmlType, M, I, C, S}
+struct PnmlNetData{PNTD <: PnmlType, P, T, A, RP, RT}
     pntd::PNTD #
-    place_dict::OrderedDict{Symbol, Any} # Place{PNTD,M,S}}
-    transition_dict::OrderedDict{Symbol, Any} # Transition{PNTD,C}}
-    arc_dict::OrderedDict{Symbol, Any} # Arc{PNTD,I}}
-    refplace_dict::OrderedDict{Symbol, Any} # RefPlace{PNTD}}
-    reftransition_dict::OrderedDict{Symbol, Any} # RefTransition{PNTD}}
+    place_dict::OrderedDict{Symbol, P}
+    transition_dict::OrderedDict{Symbol, T}
+    arc_dict::OrderedDict{Symbol, A}
+    refplace_dict::OrderedDict{Symbol, RP}
+    reftransition_dict::OrderedDict{Symbol, RT}
 end
-PnmlNetData(pntd, pl_dict, tr_dict, ar_dict, rp_dict, rt_dict) =
-    PnmlNetData{typeof(pntd),
-                marking_type(pntd),
-                inscription_type(pntd),
-                condition_type(pntd),
-                sort_type(pntd)}(pntd, pl_dict, tr_dict, ar_dict, rp_dict, rt_dict)
-#
+PnmlNetData(pntd) =
+    PnmlNetData(pntd,
+                OrderedDict{Symbol, place_type(pntd)}(),
+                OrderedDict{Symbol, transition_type(pntd)}(),
+                OrderedDict{Symbol, arc_type(pntd)}(),
+                OrderedDict{Symbol, refplace_type(pntd)}(),
+                OrderedDict{Symbol, reftransition_type(pntd)}())
+
 placedict(d::PnmlNetData) = d.place_dict
 transitiondict(d::PnmlNetData) = d.transition_dict
 arcdict(d::PnmlNetData) = d.arc_dict

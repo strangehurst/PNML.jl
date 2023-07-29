@@ -4,12 +4,12 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType, M, I, C, S}
+struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT} #! M, I, C, S}
     type::PNTD
     id::Symbol
-    pagedict::OrderedDict{Symbol, Page{PNTD, M, I, C, S}} # Shared by pages, holds all pages.
-    netdata::PnmlNetData{PNTD, M, I, C, S} # Shared by pages, holds all places, transitions, arcs, refs
-    page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree.
+    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
+    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
+    page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
     declaration::Declaration
     name::Maybe{Name}
     com::ObjectCommon
@@ -19,35 +19,39 @@ end
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
 
 pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
-                                                      marking_type(T),
-                                                      inscription_type(T),
-                                                      condition_type(T),
-                                                      sort_type(T)}
+                                                      place_type(T),
+                                                      transition_type(T),
+                                                      arc_type(T),
+                                                      refplace_type(T),
+                                                      reftransition_type(T)}
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T,
-                                                marking_type(T),
-                                                inscription_type(T),
-                                                condition_type(T),
-                                                sort_type(T)}
+                                                place_type(T),
+                                                transition_type(T),
+                                                arc_type(T),
+                                                refplace_type(T),
+                                                reftransition_type(T)}
 
-place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T), sort_type(T)}
+place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T), sorttype_type(T)}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition{T}
 
 page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
-                                                   marking_type(T),
-                                                   inscription_type(T),
-                                                   condition_type(T),
-                                                   sort_type(T)}
-place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T, marking_type(T), sort_type(T)}
+                                                   place_type(T),
+                                                   transition_type(T),
+                                                   arc_type(T),
+                                                   refplace_type(T),
+                                                   reftransition_type(T)}
+
+place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T, marking_type(T), sorttype_type(T)}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
 
-sort_type(net::PnmlNet) = sort_type(nettype(net))
+sort_value_type(net::PnmlNet) = sort_value_type(nettype(net))
 
 condition_type(net::PnmlNet)       = condition_type(nettype(net))
 condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))

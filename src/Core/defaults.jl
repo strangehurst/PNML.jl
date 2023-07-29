@@ -22,19 +22,35 @@ default_marking(x::Any) = error("no default marking for $(typeof(x))")
 
 """
 $(TYPEDSIGNATURES)
-Return instance of default sort based on `PNTD`. Has meaning of empty, as in `zero`.
+Return instance of default sort based on `PNTD`.
 """
 function default_sort end
-default_sort(::Any) = error("no default sort for $(typeof(x))")
+default_sort(x::Any) = error("no default sort defined for $(typeof(x))")
+default_sort(pntd::PnmlType) = default_sort(typeof(pntd))
+
+"""
+$(TYPEDSIGNATURES)
+Return instance of default place sort type based on `PNTD`.
+"""
+function default_sorttype end
+default_sorttype(x::Any) = error("no default sorttype defined for $(typeof(x))")
+default_sorttype(::Type{T}) where {T<:PnmlType} = SortType("default", default_sort(T))
+default_sorttype(pntd::PnmlType) = default_sorttype(typeof(pntd))
+
+sorttype_type(::Type{T}) where {T <: PnmlType} = SortType{typeof(default_sort(T))}
+sorttype_type(pntd::PnmlType) = sorttype_type(typeof(pntd))
 
 #------------------------------------------------------------------------------
-default_condition(p::PnmlType)  = Condition(true)
+default_condition(::PnmlType)   = Condition(true)
 default_inscription(::PnmlType) = Inscription(one(Int))
 default_marking(::PnmlType)     = Marking(zero(Int))
-default_sort(::PnmlType)        = one(Int)
+default_sort(::Type{T})  where {T <: PnmlType} = sort_type(T)()
+sort_type(::Type{<:PnmlType})    = IntegerSort
+
 
 #------------------------------------------------------------------------------
-default_condition(p::AbstractContinuousNet)  = Condition(true)
+default_condition(::AbstractContinuousNet)   = Condition(true)
 default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
 default_marking(::AbstractContinuousNet)     = Marking(zero(Float64))
-default_sort(::AbstractContinuousNet)        = zero(Float64)
+default_sort(::Type{<:AbstractContinuousNet})  = RealSort()
+sort_type(::Type{<:AbstractContinuousNet})     = RealSort

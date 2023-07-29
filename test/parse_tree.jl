@@ -38,20 +38,16 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
     reg = registry()
     # Manually decend tree parsing leaf-enough elements because this is a test!
     for net in allchildren("net", pnmldoc)
-        @test nodename(net) == "net"
+        @test EzXML.nodename(net) == "net"
 
         nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
         @test isa(nn, PNML.Name)
-        @test nn.text == "P/T Net with one place"
-        @test nn.graphics === nothing
-        @test nn.tools === nothing || isempty(nn.tools)
+        @test PNML.text(nn) == "P/T Net with one place"
 
         nd = allchildren("declaration", net)
         @test isempty(nd)
-        ndx = parse_declaration.(nd, Ref(reg))
+        ndx = parse_declaration.(nd, Ref(reg)) # test of broadcast over `nothing`
         @test isempty(ndx)
-        #@test_opt function_filter=TestUtils.pnml_function_filter allchildren("declaration", net)
-        #@test_opt  allchildren("declaration", net)
         @test_call target_modules=target_modules allchildren("declaration", net)
 
         nt = allchildren("toolspecific", net)
@@ -62,7 +58,7 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
         @test !isempty(pages)
 
         for page in pages
-            @test nodename(page) == "page"
+            @test EzXML.nodename(page) == "page"
 
             @test !isempty(allchildren("place", page))
             for p in allchildren("place", page)
@@ -102,9 +98,8 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    reg = registry()
-    pnml_ir = parse_pnml(pnmldoc, reg)
-    @test typeof(pnml_ir) <: PnmlModel
+    pnml_ir = parse_pnml(pnmldoc, registry())
+    @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
@@ -141,6 +136,7 @@ end
     end
 end
 
+# Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
     pnml_dir = joinpath(@__DIR__, "data")
     testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
@@ -164,12 +160,10 @@ end
     @test firstpage(net) isa Page
     @test !isempty(arcs(firstpage(net)))
     @test !isempty(places(firstpage(net)))
-    # 3 ways to do the same thing
+    # 2 ways to do the same thing
     @test !isempty(transitions(firstpage(net)))
     @test !isempty(transitions(first(pages(net))))
-    #! @test !isempty(transitions(pages(net)[1]))
 
-    #@test_opt function_filter=pnml_function_filter parse_file(testfile)
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
 end

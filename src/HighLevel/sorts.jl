@@ -1,28 +1,57 @@
 """
 $(TYPEDEF)
+Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
+NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
+The pnml specification sometimes uses overlapping language.
 
 From the 'primer': built-in sorts of Symmetric Nets are the following:
-Booleans, range of integers, finite enumerations, cyclic enumerations and dots.
-
-NB: The pnml specification treats BuiltInSort as an abstract UML2 type. We provide a
-concrete type for un-implemented sorts.
+booleans, range of integers, finite enumerations, cyclic enumerations, permutations and dots.
 """
-struct BuiltInSort <: AbstractSort end
-Base.eltype(::BuiltInSort) = AnyXmlNode
+abstract type AbstractSort end
 
+_evaluate(x::AbstractSort) = x() # functor
+
+"Built-in sort whose `eltype` is `Bool`"
 struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 
+"Built-in sort whose `eltype` is `Int`"
 struct DotSort <: AbstractSort end
 Base.eltype(::Type{<:DotSort}) = Int
+
+"""
+"Built-in sort whose `eltype` is `Int`"
+"""
+struct IntegerSort <: AbstractSort end
+Base.eltype(::Type{<:IntegerSort}) = Int
+
+"""
+"Built-in sort whose `eltype` is `Int`"
+"""
+struct NaturalSort <: AbstractSort end
+Base.eltype(::Type{<:NaturalSort}) = Int # Uint ?
+
+"""
+"Built-in sort whose `eltype` is `Int`"
+"""
+struct PositiveSort <: AbstractSort end
+Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
+
+
+"""
+"Built-in sort whose `eltype` is `Float64`"
+Real numbers are not part of the PNML Specification.
+We stick them into the type hierarchy for convenience rather than mathematical correctness.
+"""
+struct RealSort <: AbstractSort end
+Base.eltype(::Type{<:RealSort}) = Float64
 
 """
 $(TYPEDSIGNATURES)
 Are the sorts `eltype` the same?
 """
-equals(a::AbstractSort, b::AbstractSort) = eltype(a) == eltytpe(b)
+equals(a::AbstractSort, b::AbstractSort) = eltype(a) == eltype(b)
 
 """
 $(TYPEDEF)
@@ -40,43 +69,26 @@ Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 Should contain an ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
-    ae::AnyElement
+    ae::AnyElement # Vector{AbstractSort}
 end
 
 """
 $(TYPEDEF)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
+Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
+[`NamedSort`](@ref) is used to construct a sort out of builtin types.
+Used in a `Place`s sort type property.
 """
 struct UserSort <: AbstractSort
-    ae::AnyElement
+    declaration::Symbol
 end
+UserSort() = UserSort(:integer) #! default to integer
 
-#TODO NamedSort name, id of a sort
 
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Part of the many-sorted algebra of a High-level Petri Net Graph.
-A label whose <structure> element holds an [`AbstractSort`](@ref) concrete subtype for high-level nets.
-
-"""
-struct SortType{T <: AbstractTerm} <: HLAnnotation
-    text::Maybe{String} # Supposed to be for human consumption.
-    sort::T # Content of <structure> must be a many-sorted algebra term.
-    com::ObjectCommon
-    #TODO xml
-end
-# TODO TBD Define a `SortType` interface.text(i::HLInscription)  = i.text
-
-SortType(t::AbstractTerm) = SortType(nothing, t, ObjectCommon())
-SortType(s::AbstractString, t::AbstractTerm) = SortType(s, t, ObjectCommon())
-
-text(t::SortType)  = t.text
-value(t::SortType) = t.sort
-common(t::SortType) = t.com
-
-sort_type(::Type{<:PnmlType}) = Int
-sort_type(::Type{<:AbstractContinuousNet}) = Float64
-sort_type(::Type{<:AbstractHLCore}) = eltype(DotSort()) # Value type of a Term.
+#! sort_value_type(sort_type(pntd))
+# Assume is a numeric sort.
+sort_value_type(::Type{<:PnmlType}) = eltype(sort_type(T))
+# High-level nets are different.
+# Should do a lookup of the usersort's declaration id symbol in registry as validation.
+#
+sort_value_type(::Type{<:AbstractHLCore}) = Integer #! Bool and Int

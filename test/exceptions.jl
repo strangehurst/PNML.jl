@@ -8,11 +8,12 @@ using PNML:
 
 const _pntd = PnmlCoreNet()
 
-println("exceptions")
+#println("exceptions")
+
 "Parse `node` with `f` and expect a MalformedException with message containing `emsg`."
-function test_malformed(emsg, f, xs...)
+function test_malformed(emsg, f, node...)
     try
-        f(xs...)
+        f(node...)  # Splat additional parameters.
         error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
@@ -36,10 +37,6 @@ end
     @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
           <?xml version="1.0" encoding="UTF-8"?>
           <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
-end
-
-@testset "empty name" begin
-    @test_logs match_mode = :any (:warn, r"missing <text>") parse_name(xml"<name></name>", _pntd, registry())
 end
 
 @testset "malformed" begin
@@ -107,12 +104,7 @@ end
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
 
     pagedict = OrderedDict{Symbol, page_type(_pntd)}()
-    netdata = PNML.PnmlNetData(_pntd,
-                                OrderedDict{Symbol, place_type(_pntd)}(),
-                                OrderedDict{Symbol, transition_type(_pntd)}(),
-                                OrderedDict{Symbol, arc_type(_pntd)}(),
-                                OrderedDict{Symbol, refplace_type(_pntd)}(),
-                                OrderedDict{Symbol, reftransition_type(_pntd)}())
+    netdata = PNML.PnmlNetData(_pntd)
 
     #parse_page!(pagedict, netdata, xml"<page></page>", _pntd, registry())
     @test_throws MissingIDException parse_page!(pagedict, netdata, xml"<page></page>", _pntd, registry())

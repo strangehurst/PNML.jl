@@ -20,9 +20,9 @@ julia> c()
 false
 ```
 """
-struct Condition{Bool} <: Annotation
+struct Condition <: Annotation
     text::Maybe{String}
-    value::Union{Bool, Term{Bool}}
+    value::Union{Bool, Term}
     com::ObjectCommon
 end
 
@@ -31,11 +31,11 @@ Condition(text::AbstractString, value) = Condition(text, value, ObjectCommon())
 
 value(c::Condition) = c.value
 common(c::Condition) = c.com
-Base.eltype(::Type{<:Condition}) = Bool # Output sort
+Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate
 
-(c::Condition)() = _evaluate(value(c))
+(c::Condition)() = _evaluate(value(c))::eltype(c)
 
-condition_type(::Type{T}) where {T <: PnmlType} = Condition{condition_value_type(T)}
+condition_type(::Type{<:PnmlType}) = Condition
 
 condition_value_type(::Type{<: PnmlType}) = Bool
-condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort) # Term{Bool}
+condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
