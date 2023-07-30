@@ -225,7 +225,7 @@ function parse_sorttype_term(typenode, pntd, idregistry)
             @assert tag(d) == :declaration
             @assert value(d) isa AbstractString
             idref = Symbol(value(d))
-            @assert !isregistered(idregistry, idref) # unclaimed do not register
+            #@assert !isregistered(idregistry, idref) # unclaimed do not register
             t = UserSort(idref)
         elseif sortid === :dot
             t = DotSort()
@@ -248,7 +248,7 @@ function parse_sorttype_term(typenode, pntd, idregistry)
         # Handle an empty <structure>.
         t = default_sorttype(pntd)
     end
-    println("sorttype_term"); dump(t)
+    #println("sorttype_term"); dump(t)
     return t
 end
 
