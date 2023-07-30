@@ -322,7 +322,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     #end; println("parse_place $id allocated: ", a)
     mark = something(mark, default_marking(pntd))::marking_type(pntd)
     sorttype = something(sorttype, default_sorttype(pntd))::SortType
-    println("parse_place $pntd "); dump(mark); dump(sorttype)
+    #println("parse_place $pntd "); dump(mark); dump(sorttype)
 
     #Place{typeof(pntd), typeof(mark), type(sorttype)}
     Place(pntd, id, mark, mark, sorttype, name,

@@ -29,15 +29,11 @@ function rate(transition)
     #println("rate transition"); dump(transition)
 
     # Allow any net type to have a rate label.
-    #ishighlevel(nettype(transition)) &&
-    #    @warn("The `rate` label is not supported for $(nettype(transition))." *
-    #                        "  Recommended to use a `ContinuousNet`.")
     pntd = nettype(transition)
     R = rate_value_type(pntd)
 
     if has_label(transition, :rate)
         r = get_label(transition, :rate)
-        #println("rate label"); dump(r)
         str = text_content(elements(r))
         return number_value(R, str)
     end
