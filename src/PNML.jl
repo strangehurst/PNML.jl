@@ -15,9 +15,9 @@ Base.@kwdef mutable struct PnmlConfig
     indent_width::Int = 4
     warn_on_namespace::Bool = true
     text_element_optional::Bool = true
-    warn_on_fixup::Bool = true #! false
-    warn_on_unclaimed::Bool = true #! false
-    verbose::Bool = true #! false
+    warn_on_fixup::Bool = false
+    warn_on_unclaimed::Bool = false
+    verbose::Bool = false
     lock_registry::Bool = true
 end
 
