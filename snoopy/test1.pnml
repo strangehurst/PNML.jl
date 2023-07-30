@@ -1,33 +1,72 @@
 <?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
     <net id="net1" type="pnmlcore">
-        <name> <text>pnmlcore with nested pages</text> </name>
+        <name>
+            <text>pnmlcore with nested pages</text>
+            <graphics><offset x="0" y="0"/></graphics>
+            <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        </name>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
         <page id="net1page1">
             <place id="p1">
 	            <name>
-                    <graphics><offset x="0" y="0"/></graphics>
                     <text>place name</text>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
 	            <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
                 <initialMarking>
-                    <graphics><offset x="0" y="0"/></graphics>
                     <text> 1 </text>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
                 </initialMarking>
 	        </place>
             <transition id ="t1">
 	            <name>
-                    <graphics><offset x="0" y="0"/></graphics>
                     <text>transition name</text>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
 	            <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                <condition>
+    	            <name>
+                        <text>condition name</text>
+                        <graphics><offset x="0" y="0"/></graphics>
+                        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    </name>
+                    <text>some expression</text>
+                    <structure> <or/> </or> </structure>
+	                <graphics><position x="100" y="100"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                </condition>
             </transition>
             <arc id="a11" source="p1" target="t1">
                 <inscription> <text> 2 </text> </inscription>
+	            <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
             </arc>
             <arc id="a12" source="t1" target="rp1"> </arc>
             <arc id="a13" source="p1" target="rt1"> </arc>
-            <referencePlace id="rp1" ref="p2"/>
-            <referenceTransition id="rt1" ref="t11"/>
+            <referencePlace id="rp1" ref="p2">
+ 	            <name>
+                    <text>referencePlace name</text>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                </name>
+	            <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+           </referencePlace>
+            <referenceTransition id="rt1" ref="t11">
+	            <name>
+                    <text>referenceTransition name</text>
+                    <graphics><offset x="0" y="0"/></graphics>
+                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                </name>
+	            <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+            </referenceTransition>
             <page id="net1page11">
                 <transition id ="t11"> </transition>
 		        <arc id="a111" source="p11" target="rp11"> </arc>
@@ -56,6 +95,7 @@
             <referencePlace id="rp3" ref="p1"/>
         </page>
     </net>
+
     <net id="net2" type="http://www.pnml.org/version-2009/grammar/ptnet">
         <page id="net2page"/>
     </net>

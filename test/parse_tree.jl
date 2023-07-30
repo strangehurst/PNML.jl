@@ -167,7 +167,30 @@ end
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
 
-    println("\n========================================================")
+    println("========================================================"^2)
+    println("========================================================"^2)
+    println("$testfile")
+    println("========================================================"^2)
+    println("========================================================"^2)
+    @show model
+    println("========================================================\n")
+end
+
+# Read a file
+@testset "test1.pnml file" begin
+    pnml_dir = joinpath(@__DIR__, "../snoopy")
+    testfile = joinpath(pnml_dir, "test1.pnml")
+
+    model = parse_file(testfile)
+    @test model isa PnmlModel
+
+    println("========================================================"^2)
+    println("========================================================"^2)
+
+    println("$testfile")
+    println("========================================================"^2)
+    println("========================================================"^2)
+
     @show model
     println("========================================================\n")
 end
