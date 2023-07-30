@@ -247,34 +247,33 @@ end
 function parse_place!(place_set, place_dict, child, pntd, idregistry)
     pl = parse_place(child, pntd, idregistry)::valtype(place_dict)
     push!(place_set, pid(pl))
-    isa(pl, valtype(place_dict)) || @show typeof(pl) valtype(place_dict)
     place_dict[pid(pl)] = pl
     return nothing
 end
 
 function parse_transition!(transition_set, transition_dict, child, pntd, idregistry)
-    tr = parse_transition(child, pntd, idregistry)
+    tr = parse_transition(child, pntd, idregistry)::valtype(transition_dict)
     push!(transition_set, pid(tr))
     transition_dict[pid(tr)] = tr
     return nothing
 end
 
 function parse_arc!(arc_set, arc_dict, child, pntd, idregistry)
-    a = parse_arc(child, pntd, idregistry)
+    a = parse_arc(child, pntd, idregistry)::valtype(arc_dict)
     push!(arc_set, pid(a))
     arc_dict[pid(a)] = a
     return nothing
 end
 
 function parse_refPlace!(refplace_set, refplace_dict, child, pntd, idregistry)
-    rp = parse_refPlace(child, pntd, idregistry)
+    rp = parse_refPlace(child, pntd, idregistry)::valtype(refplace_dict)
     push!(refplace_set, pid(rp))
     refplace_dict[pid(rp)] = rp
     return nothing
 end
 
 function parse_refTransition!(reftransition_set, reftransition_dict, child, pntd, idregistry)
-    rt = parse_refTransition(child, pntd, idregistry)
+    rt = parse_refTransition(child, pntd, idregistry)::valtype(reftransition_dict)
     push!(reftransition_set, pid(rt))
     reftransition_dict[pid(rt)] = rt
     return nothing
