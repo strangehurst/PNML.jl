@@ -4,12 +4,12 @@ $(TYPEDFIELDS)
 
 Place node of a Petri Net Markup Language graph.
 """
-struct Place{PNTD, M, S}  <: AbstractPnmlNode{PNTD}
+struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     marking::M
     initialMarking::M
-    sorttype::Maybe{SortType{S}}
+    sorttype::S
     name::Maybe{Name}
     com::ObjectCommon
 end

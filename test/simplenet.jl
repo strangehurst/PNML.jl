@@ -127,8 +127,7 @@ testlogger = TestLogger()
             t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
             #! errors @test transition(top, :bogus) === nothing
-            @test condition(t) !== nothing
-            @test @inferred condition(t)
+            @test @inferred(condition(t)) !== nothing
         end
     end
 

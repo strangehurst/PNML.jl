@@ -469,9 +469,9 @@ methods(PNML.inscription_type) # hide
 ```@example methods
 methods(PNML.condition_type) # hide
 ```
-  - [`sort_type`](@ref)
+  - [`default_sort_type`](@ref)
 ```@example methods
-methods(PNML.sort_type) # hide
+methods(PNML.default_sort_type) # hide
 ```
 
   - [`place_type`](@ref)

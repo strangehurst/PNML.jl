@@ -137,10 +137,6 @@ condition_value_type(pntd::PnmlType) = condition_value_type(typeof(pntd))
 inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
 inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
 
-default_sort_type(x::Any) = error("no sort_type defined for $(typeof(x))")
-default_sort_type(pntd::PnmlType)      = default_sort_type(typeof(pntd))
-#!sort_value_type(pntd::PnmlType) = sort_value_type(typeof(pntd))
-
 term_type(x::Any) = error("no term_type defined for $(typeof(x))")
 term_type(pntd::PnmlType)       = term_type(typeof(pntd))
 term_value_type(pntd::PnmlType) = term_value_type(typeof(pntd))

@@ -7,8 +7,8 @@ using PNML, EzXML, ..TestUtils, JET
     PnmlIDRegistrys.reset!(reg)
 
     register_id!(reg, "p")
-    @test @inferred isregistered(reg, "p")
-    @test @inferred isregistered(reg, :p)
+    @test @inferred(isregistered(reg, "p")) == true
+    @test @inferred(isregistered(reg, :p)) == true
     PnmlIDRegistrys.reset!(reg)
     @test !isregistered(reg, "p")
     @test !isregistered(reg, :p)

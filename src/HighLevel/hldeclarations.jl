@@ -26,7 +26,15 @@ struct UnknownDeclaration  <: AbstractDeclaration
     content::Vector{Any} #! Vector{AnyElement}
 end
 
+"""
+$(TYPEDEF)
+
+See [`NamedSort`](@ref) and [`ArbitrarySort`] as concrete subtypes.
+"""
 abstract type SortDeclaration <: AbstractDeclaration end
+"""
+$(TYPEDEF)
+"""
 abstract type OperatorDeclaration <: AbstractDeclaration end
 
 """

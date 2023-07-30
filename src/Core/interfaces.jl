@@ -382,11 +382,11 @@ Return value type.
 """
 function marking_value_type end
 
-"""
-$(TYPEDSIGNATURES)
-Return type of sort.
-"""
-function sort_type end
+# """
+# $(TYPEDSIGNATURES)
+# Return type of sort.
+# """
+# function sort_type end
 
 """
 $(TYPEDSIGNATURES)

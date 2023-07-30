@@ -46,7 +46,7 @@ end
     @test_call has_xml(n)
     @test !has_xml(n)
     @test @inferred(pid(n)) === :place1
-    @test @inferred has_name(n)
+    @test @inferred(has_name(n)) == true
     @test @inferred(name(n)) == "no marking text"
     @test_call marking(n)
     @test marking(n)() == 100

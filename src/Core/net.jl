@@ -32,7 +32,9 @@ page_type(::Type{T}) where {T<:PnmlType} = Page{T,
                                                 refplace_type(T),
                                                 reftransition_type(T)}
 
-place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T), default_sort_type(T)}
+place_type(::Type{T}) where {T<:PnmlType} = Place{T,
+                                                  marking_type(T),
+                                                  SortType{default_sort_type(T)}}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace{T}
@@ -45,7 +47,9 @@ page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
                                                    refplace_type(T),
                                                    reftransition_type(T)}
 
-place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T, marking_type(T), default_sort_type(T)}
+place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T,
+                                                     marking_type(T),
+                                                     SortType{default_sort_type(T)}}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
