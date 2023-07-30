@@ -41,5 +41,5 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 #TODO convert to sort
 #TODO query sort
 
-marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking{Term} #!{marking_value_type(T)}}
+marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking{Term}
 marking_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())

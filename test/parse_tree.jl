@@ -166,4 +166,8 @@ end
 
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
+
+    println("\n========================================================")
+    @show model
+    println("========================================================\n")
 end

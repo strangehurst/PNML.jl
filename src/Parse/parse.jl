@@ -570,7 +570,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
                 graphics = parse_graphics(child, pntd, idregistry)
             elseif tag == "toolspecific" # tokengraphics can live here for PTNet (in specification)
                 # Because it is in a `ToolInfo`, `<tokengraphics>`, could appear anywhere and be ignored.
-                add_toolinfo!(tools, child, pntd, idregistry) #! Add tool to collections
+                add_toolinfo!(tools, child, pntd, idregistry)
             else
                 @warn "$nn ignoring unknown child '$tag'"
             end

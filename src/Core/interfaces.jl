@@ -49,7 +49,7 @@ Return attached xml node.
 function xmlnode end
 
 #-------------------------------------------------------
-# LABELS  #! note that they are similar to TOOLINFO which should be documented hereabouts in interfaces
+# LABELS
 #-------------------------------------------------------
 
 """
@@ -138,7 +138,7 @@ Return marking value of a place.
 """
 function marking end
 
-#! CHANGE NAME
+#! TODO CHANGE NAME
 """
 $(TYPEDSIGNATURES)
 

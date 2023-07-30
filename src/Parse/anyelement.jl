@@ -127,7 +127,7 @@ $(TYPEDSIGNATURES)
 Apply `harvest!` to each child node of `node`, appending to `vec`.
 """
 function _anyelement_content!(vec, node::XMLNode, harvest!::HarvestAny)
-    for n in EzXML.eachelement(node) #! iterate
+    for n in EzXML.eachelement(node)
         push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
     end
     return nothing

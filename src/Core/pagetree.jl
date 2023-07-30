@@ -12,7 +12,7 @@ AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page), #"::", typeof
 
 # For type stability we need some/all of these.
 
-AbstractTrees.childtype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T) #!
+AbstractTrees.childtype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)
 AbstractTrees.childtype(::Type{Page{T}}) where {T<:PnmlType} = page_type(T)
 
 AbstractTrees.nodetype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)

@@ -81,7 +81,6 @@ _match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
 _match(ti::ToolInfo, name::AbstractString, version::AbstractString) = _match(ti.inf, Regex(name), Regex(version))
 
 function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
-    #@show "match toolinfo $namerex, $versionrex"x
     match_name = match(namerex, name(ti))
     match_version = match(versionrex, version(ti))
     !isnothing(match_name) && !isnothing(match_version)

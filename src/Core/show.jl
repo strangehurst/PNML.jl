@@ -191,8 +191,6 @@ function Base.show(io::IO, oc::ObjectCommon)
 end
 
 function show_common(io::IO, x::Union{PnmlNet, AbstractPnmlObject, AbstractLabel})
-    #!isempty(x.com) && return
-    #    print(io, ", ")
     show(io, MIME"text/plain"(), common(x) )
 end
 

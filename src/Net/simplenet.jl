@@ -43,7 +43,7 @@ referenceTransitions & referencePlaces, and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     id::Symbol # Not needed except for dispatch to inner constructor.
-    net::PnmlNet{PNTD} #! M, I, C, S} #! Add type parameters to make fully specified.
+    net::PnmlNet{PNTD}
 end
 
 # Construct from the flattened first network of the pnml model created from valid XML.

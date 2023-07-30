@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT} #! M, I, C, S}
+struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
@@ -54,8 +54,6 @@ transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_t
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
-
-#!sort_value_type(net::PnmlNet) = sort_value_type(nettype(net))
 
 condition_type(net::PnmlNet)       = condition_type(nettype(net))
 condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))

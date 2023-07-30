@@ -42,7 +42,7 @@ default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(type
 
 term_value_type(::Type{<:PnmlType}) = Int
 term_value_type(::Type{<:AbstractContinuousNet}) = Float64
-term_value_type(::Type{<:AbstractHLCore}) = eltype(IntegerSort()) #!
+term_value_type(::Type{<:AbstractHLCore}) = eltype(IntegerSort())
 
 """
 $(TYPEDSIGNATURES)
@@ -127,7 +127,7 @@ Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
 When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
-struct Term <: AbstractTerm #!{T <: Union{Bool, Int, Float64}}
+struct Term <: AbstractTerm
     tag::Symbol
     elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end

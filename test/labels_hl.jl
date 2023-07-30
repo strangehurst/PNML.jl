@@ -21,7 +21,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     # Following HL text,structure label pattern where structure is a `Term`.
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
-    @test value(mark) isa PNML.Term #!{PNML.marking_value_type(HLCoreNet())}
+    @test value(mark) isa PNML.Term
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
@@ -78,7 +78,7 @@ end
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
-    @test value(insc) isa PNML.Term #!{PNML.inscription_value_type(pntd)}
+    @test value(insc) isa PNML.Term
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple

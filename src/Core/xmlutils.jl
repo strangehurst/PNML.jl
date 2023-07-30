@@ -12,7 +12,6 @@ $(TYPEDSIGNATURES)
 See [`xmlroot`](@ref).
 """
 macro xml_str(s)
-    #! isempty(s) && throw(ArgumentError("empty XML string in macro"))
     xmlroot(s)
 end
 

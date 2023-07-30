@@ -15,8 +15,8 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     name::Maybe{Name}
     com::ObjectCommon
     # pagedict and netdata do not overlap
-    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} #! Shared by net and its pages
-    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} #! Shared by net and its pages
+    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by net and its pages.
+    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by net and its pages.
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
 end
 

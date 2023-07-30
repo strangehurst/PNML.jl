@@ -66,7 +66,7 @@ end
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
-    @test condition(n) isa Bool #! define non-HL other's semantics.
+    @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     #@test_throws ErrorException parse_transition(node, pntd, registry())

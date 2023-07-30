@@ -86,7 +86,7 @@ function append_page!(l::Page, r::Page;
 
     CONFIG.verbose && println("after append_page! netsets(r) = ", netsets(r))
 
-    #! Verify netsets
+    #! TODO Verify netsets
     return l
 end
 

@@ -85,13 +85,4 @@ Used in a `Place`s sort type property.
 struct UserSort <: AbstractSort
     declaration::Symbol
 end
-UserSort() = UserSort(:integer) #! default to integer
-
-
-#! sort_value_type(default_sort_type(pntd))
-# Assume is a numeric sort.
-#!sort_value_type(::Type{<:PnmlType}) = eltype(default_sort_type(T))
-
-# High-level nets are different.
-#
-#!sort_value_type(::Type{<:AbstractHLCore}) = Integer #! Bool and Int
+UserSort() = UserSort(:integer)

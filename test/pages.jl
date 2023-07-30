@@ -220,7 +220,6 @@ end
         @test transition_type(net) isa Type
         @test condition_type(net) isa Type
         @test condition_value_type(net) isa Type
-        #!@test sort_value_type(net) isa Type
         @test inscription_type(net) isa Type
         @test inscription_value_type(net) isa Type
         @test marking_type(net) isa Type
@@ -235,7 +234,6 @@ end
         @test_call transition_type(net)
         @test_call condition_type(net)
         @test_call condition_value_type(net)
-        #!@test_call sort_value_type(net)
         @test_call inscription_type(net)
         @test_call inscription_value_type(net)
         @test_call marking_type(net)
@@ -250,7 +248,6 @@ end
         @test_opt transition_type(net)
         @test_opt condition_type(net)
         @test_opt condition_value_type(net)
-        #!@test_opt sort_value_type(net)
         @test_opt inscription_type(net)
         @test_opt inscription_value_type(net)
         @test_opt marking_type(net)
@@ -376,7 +373,6 @@ end # pages
     @test transition_type(pntd) <: PNML.Transition
     @test condition_type(pntd) <: PNML.Condition
     @test condition_value_type(pntd) <: Bool
-    #!@test sort_value_type(pntd) <: Number # May also be a Term?
     @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     @test inscription_value_type(pntd) <: Number
     @test marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}

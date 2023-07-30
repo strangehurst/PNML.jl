@@ -47,8 +47,6 @@ default_sort_type(pntd::PnmlType)     = default_sort_type(typeof(pntd))
 default_sort_type(::Type{<:PnmlType}) = IntegerSort
 default_sort_type(::Type{<:AbstractContinuousNet}) = RealSort
 
-
-#!sorttype_type(pntd::PnmlType) = sorttype_type(typeof(pntd))
 sorttype_type(::Type{T}) where {T <: PnmlType} = eltype(default_sort(T))
 
 #------------------------------------------------------------------------------
