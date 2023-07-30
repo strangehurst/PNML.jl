@@ -48,7 +48,7 @@ Sorts as defined in the specification are based on natural numbers and booleans.
 High-level pntds use a`SortType` Term to define expressions as abstract syntax trees in XML.
 Intermediate implementation of Terms uses [`AnyXmlNode`](@ref) to hold the AST as a tree of key, values where lhe leaf values are strings.
 
-`sort_type(pntd)` returns the type to which a non-boolean term expression evaluates.
+`default_sort_type(pntd)` returns the type to which a non-boolean term expression evaluates.
 Is intended to be used by `Place`s whose markings are multisets of that sort.
 
 | PNTD                  | Sort value        |   |

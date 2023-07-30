@@ -6,9 +6,12 @@ NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
 The pnml specification sometimes uses overlapping language.
 
 From the 'primer': built-in sorts of Symmetric Nets are the following:
-booleans, range of integers, finite enumerations, cyclic enumerations, permutations and dots.
+booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
+
+The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
 """
 abstract type AbstractSort end
+Base.eltype(::Type{<:AbstractSort}) = Int
 
 _evaluate(x::AbstractSort) = x() # functor
 
@@ -85,10 +88,10 @@ end
 UserSort() = UserSort(:integer) #! default to integer
 
 
-#! sort_value_type(sort_type(pntd))
+#! sort_value_type(default_sort_type(pntd))
 # Assume is a numeric sort.
-sort_value_type(::Type{<:PnmlType}) = eltype(sort_type(T))
+#!sort_value_type(::Type{<:PnmlType}) = eltype(default_sort_type(T))
+
 # High-level nets are different.
-# Should do a lookup of the usersort's declaration id symbol in registry as validation.
 #
-sort_value_type(::Type{<:AbstractHLCore}) = Integer #! Bool and Int
+#!sort_value_type(::Type{<:AbstractHLCore}) = Integer #! Bool and Int

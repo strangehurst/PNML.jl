@@ -156,20 +156,22 @@ $(TYPEDSIGNATURES)
 
 Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place from _many-sorted algebra_ is different from
-the Petri Net "type" of a net or "pntd".
-Neither is directly a julia type.
+the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 """
 function parse_type end
 
-function parse_type(hlnode::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: AbstractHLCore}
-    check_nodename(hlnode, "type")
+# Allow all pntd's places to have a <type> label.
+# Non high-level are expecting a numeric sort: eltype(sort) <: Number.flags
+# See default_sort
+function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #where {PNTD <: AbstractHLCore}
+    check_nodename(node, "type")
     text::Maybe{AbstractString} = nothing
     sortterm::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
 
-    for child in EzXML.eachelement(hlnode)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         @match nodename(child) begin
             "text"         => (text = parse_text(child, pntd, idregistry))
@@ -183,38 +185,65 @@ function parse_type(hlnode::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) whe
     SortType(text, something(sortterm, default_sorttype(pntd)), ObjectCommon(graphics, tools, labels))
 end
 
-# Sort type for non-high-level meaning is TBD and non-standard.
-function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
-    check_nodename(node, "type")
-    # Parse as unclaimed label. Then assume it is a `numberic_label_value`.
-    # First use-case of technique is `rate` of `ContinuousNet`.
-    ucl = unclaimed_label(node, pntd, idregistry)
+# # Sort type for non-high-level meaning is TBD and non-standard.
+# function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
+#     check_nodename(node, "type")
+#     # Parse <type> as unclaimed label. Then assume it is a `numberic_label_value`.
+#     # First use-case of technique is `rate` of `ContinuousNet`.
+#     ucl = unclaimed_label(node, pntd, idregistry)
 
-    CONFIG.verbose && @show ucl
-        @assert ucl.second[1] isa AbstractString
-    val = numeric_label_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
-    return SortType("default sorttype", val)
-end
+#     CONFIG.verbose && @show ucl
+#     @assert ucl.second[1] isa AbstractString
+#     val = numeric_label_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
+#     return SortType("default sorttype", val)
+# end
 
 """
 $(TYPEDSIGNATURES)
 
-`Term` representing the High-level sort is wrapped in a concrete [`AbstractSort`](@ref).
+A concrete subtype of [`AbstractSort`](@ref).
+Built from many different elements that contain a Sort:
+type, namedsort, variabledecl, multisetsort, productsort, numberconstant, partition...
+
+Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 """
-parse_sorttype_term(typenode, pntd, idregistry) = begin
+function parse_sorttype_term(typenode, pntd, idregistry)
     check_nodename(typenode, "structure")
     term = EzXML.firstelement(typenode)
     if !isnothing(term)
-        # Expect a sort declaration: usersort or arbitrary sort
+        # Expect a sort: usersort usually. No multiset sort here.
         ucl = unclaimed_label(term, pntd, idregistry)
         #println("sorttype declaration: "); dump(ucl)
-        @assert ucl.first == :usersort
-        @assert ucl.second isa Vector{AnyXmlNode}
-        d = first(ucl.second)
-        @assert tag(d) == :declaration
-        @assert value(d) isa AbstractString
-        t = UserSort(Symbol(value(d)))
-        # t = ArbitrarySort(unclaimed_label(term, pntd, idregistry))
+
+        sort_ids = Symbol[:usersort, :multisetsort, :productsort, :partition,
+            :bool, :cyclicenumeration, :finiteenumeration, :finiteintrange, :integer, :list, :string]
+
+        sortid = ucl.first
+        if sortid === :usersort
+            @assert ucl.second isa Vector{AnyXmlNode}
+            d = first(ucl.second)
+            @assert tag(d) == :declaration
+            @assert value(d) isa AbstractString
+            idref = Symbol(value(d))
+            @assert !isregistered(idregistry, idref) # unclaimed do not register
+            t = UserSort(idref)
+        elseif sortid === :dot
+            t = DotSort()
+        elseif sortid === :integer
+            t = IntegerSort()
+        elseif sortid === :natural
+            t = NaturalSort()
+        elseif sortid === :positive
+            t = PositiveSort()
+        elseif sortid === :bool
+            t = BoolSort()
+
+        #! FINNISH this =============================================================== XXX
+
+        else
+            error("parse_sorttype_term does not handle $sortid")
+        end
+
     else
         # Handle an empty <structure>.
         t = default_sorttype(pntd)
@@ -230,16 +259,15 @@ Sorts are found within a <structure> element.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = nodename(node)
-    sort_tags = [
-        "bool", #TODO BoolSort
-        "finiteenumeration",
-        "finiteintrange",
-        "cyclicenumeration",
-        "dot", #TODO DotSort
-        "mulitsetsort",
-        "productsort", # ordered list of sorts
-        "usersort",
-        "partition"]
+    sort_tags = ["bool",
+                 "finiteenumeration",
+                 "finiteintrange",
+                 "cyclicenumeration",
+                 "dot",
+                 "mulitsetsort",
+                 "productsort", # ordered list of sorts
+                 "usersort",
+                 "partition"]
     any(==(nn), sort_tags) || error("'$nn' is not a known sort in $sort_tags")
     anyelement(node, pntd, reg)
 end

@@ -136,9 +136,12 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     PNTD = typeof(pntd)
     pgtype = page_type(PNTD)
 
+    # Create empty data structures to be filled with the parsed pnml XML.
+    #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netsets = PnmlNetKeys()
     netdata = PnmlNetData(pntd)
+
     id   = register_id!(idregistry, node["id"])
     name = nothing
     decl::Maybe{Declaration} = nothing
@@ -318,10 +321,13 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
     end
     #end; println("parse_place $id allocated: ", a)
+    mark = something(mark, default_marking(pntd))
+    sorttype = something(sorttype, default_sorttype(pntd))
+    println("parse_place $pntd "); dump(mark); dump(sorttype)
 
-    Place(pntd, id, something(mark, default_marking(pntd)),
-            something(sorttype, default_sorttype(pntd)),
-            name, ObjectCommon(graphics, tools, labels))
+
+    Place{typeof(pntd), typeof(mark), type(sorttype)}(pntd, id, mark, mark, sorttype, name,
+          ObjectCommon(graphics, tools, labels))
 end
 
 # By generalizing place marking label parsing we hope to return stable type.

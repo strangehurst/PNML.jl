@@ -27,7 +27,7 @@ Term:   Variable | Operator
 Sort:   BuiltInSort | MultisetSort | ProductSort | UserSort
 Number: Natural | Positive | Integer
 
-Type: simpletextlabel.content, struct Sort
+Type: simpletextlabel.content, structure Sort
 
 ==============================================================
 find .  -type f  -exec grep -nHP '<element name=' \{\} \; |\
