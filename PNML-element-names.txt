@@ -85,6 +85,15 @@ type                    pt-hlpng.pntd:56:
 tokengraphics           pnmlextensions.rng:39:
 tokenposition           pnmlextensions.rng:51:
 
+<parameter>
+  <variabledecl id="id4" name="x">
+    <integer/>
+  </variabledecl>
+  <variabledecl id="id5" name="y">
+    <integer/>
+  </variabledecl>
+</parameter>
+
 ###################################################################################
 
 declarations            terms.rng:24: (namedsort | arbitrarysort| variabledecl | namedoperator)*

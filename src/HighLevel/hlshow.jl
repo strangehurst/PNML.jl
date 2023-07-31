@@ -1,7 +1,6 @@
 #-------------------
 Base.summary(io::IO, hlm::HLMarking) = summary(hlm)
-function
-    Base.summary(hlm::HLMarking)
+function Base.summary(hlm::HLMarking)
     string(typeof(hlm))
 end
 
@@ -35,8 +34,8 @@ end
 function Base.show(io::IO, declare::AbstractDeclaration)
     pprint(io, declare)
 end
-quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name)),
-         $(quoteof(i.sort))))
+quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name))))
+#         $(quoteof(i.sort))))
 #-------------------
 function Base.show(io::IO, terms::Vector{AbstractTerm})
     iio = inc_indent(io)

@@ -94,7 +94,7 @@ struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
     name::String
     parameter::Vector{V}
-    def::T # sort of term
+    def::T # opearator or variable term (with associated sort)
 end
 
 

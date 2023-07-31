@@ -101,21 +101,23 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
 
     @warn "namedoperator under development"
 
-    def::Maybe{AbstractSort} = nothing
+    def::Maybe{Term} = nothing
     parameters = VariableDeclaration[]
     for child in eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "def"
-            def = parse_sort(child, pntd, idregistry)
+            # NamedOperators have a def element that is a operator or variable term.
+            def = parse_term(EzXML.firstelement(child), pntd, idregistry)
+            #!def = parse_sort(EzXML.firstelement(child), pntd, idregistry)
         elseif tag == "parameter"
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
             end
         else
-            @warn "$tag invalid, valid children of <namedoperator>: def, parameter"
+            @warn "$tag invalid as child of <namedoperator>, allowed: def, parameter"
         end
     end
-    isnothing(def) && error("<namedoperator> $name $id does not have a <def>")
+    isnothing(def) && error("<namedoperator> $name $id does not have a <def> element")
     NamedOperator(id, name, parameters, def)
 end
 
@@ -264,11 +266,14 @@ function parse_sort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
                  "finiteintrange",
                  "cyclicenumeration",
                  "dot",
+                 "integer",
+                 "natural",
+                 "positive",
                  "mulitsetsort",
                  "productsort", # ordered list of sorts
                  "usersort",
                  "partition"]
-    any(==(nn), sort_tags) || error("'$nn' is not a known sort in $sort_tags")
+    any(==(nn), sort_tags) || @warn("'$nn' is not a known sort in $sort_tags")
     anyelement(node, pntd, reg)
 end
 
@@ -289,7 +294,7 @@ end
 $(TYPEDSIGNATURES)
 
 There will be no XML node 'term'.
-Instead it is the interpertation of the child of some 'structure' elements.
+Instead it is the interpertation of the child of some 'structure' or `def` elements.
 The PNML specification describes Terms and Sorts as abstract types for the 'structure'
 element of some [`HLAnnotation`](@ref).
 """
