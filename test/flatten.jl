@@ -1,9 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, xmlnode
 
-@testset "deref" begin
-    str = """
-    <?xml version="1.0"?>
+str = """
+<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="pnmlcore">
             <page id="page1">
@@ -28,14 +27,21 @@ using PNML: tag, pid, xmlnode
             </page>
         </net>
     </pnml>
-    """
+"""
+
+@testset "deref1" begin
     model = parse_str(str)
     net = PNML.first_net(model)
-    #@test_opt PNML.first_net(model)
     @test_call PNML.first_net(model)
 
     PNML.flatten_pages!(net)
-    #@test_opt PNML.flatten_pages!(net)
+    @test typeof(net) <: PNML.PnmlNet
+end
+
+@testset "deref2" begin
+    model = parse_str(str)
+    PNML.flatten_pages!(model)
+    net = PNML.first_net(model)
     @test typeof(net) <: PNML.PnmlNet
     #@show net
 end
