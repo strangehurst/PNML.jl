@@ -565,7 +565,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             elseif tag == "structure"
                 # Allow <structure> for non-high-level labels.
                 structure = parse_structure(child, pntd, idregistry)
-                @warn "$nn <structure> element not implement" structure
+                @warn "$nn <structure> element not used" structure
             elseif tag == "graphics" # Specification does not forbid PTNet for using this.
                 graphics = parse_graphics(child, pntd, idregistry)
             elseif tag == "toolspecific" # tokengraphics can live here for PTNet (in specification)
@@ -577,9 +577,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
         #end; a > 0 && println("parse_initialMarking allocated ", a)
     end
-
-    Marking(something(value, number_value(marking_value_type(pntd), (strip ∘ strip ∘ nodecontent)(node))),
-            ObjectCommon(graphics, tools, labels))
+    Marking(something(value, zero(marking_value_type(pntd))), ObjectCommon(graphics, tools, labels))
 end
 
 """

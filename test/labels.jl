@@ -90,6 +90,10 @@ end
                 <tokenposition x="6" y="9"/>
             </tokengraphics>
         </toolspecific>
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
     </initialMarking>
     """
     #TODO graphics
@@ -124,15 +128,15 @@ end
     @test (tools ∘ common)(mark2) === nothing || isempty((tools ∘ common)(mark2))
     @test (labels ∘ common)(mark2) === nothing || isempty((labels ∘ common)(mark2))
 
-    mark3 = PNML.Marking()
-    @test_call PNML.Marking()
-    @test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
-    @test mark3() == default_marking(PnmlCoreNet())()
-    @test_call mark3()
+    #mark3 = PNML.Marking()
+    #@test_call PNML.Marking()
+    #@test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
+    #@test mark3() == default_marking(PnmlCoreNet())()
+    #@test_call mark3()
 
-    @test (graphics ∘ common)(mark3) === nothing
-    @test (tools ∘ common)(mark3) === nothing || isempty((tools ∘ common)(mark3))
-    @test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
+    #@test (graphics ∘ common)(mark3) === nothing
+    #@test (tools ∘ common)(mark3) === nothing || isempty((tools ∘ common)(mark3))
+    #@test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
 end
 
 @testset "PT inscription" begin

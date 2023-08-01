@@ -33,24 +33,24 @@ const pntd::PnmlType = PnmlCoreNet() # Default pntd
     @test marking(n)() == 100
 end
 
-@testset "no marking text" begin
-    node = xml"""
-      <place id="place1">
-        <name> <text>no marking text</text> </name>
-        <initialMarking> 100 </initialMarking>
-      </place>
-    """
-    @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
-    n = parse_place(node, PnmlCoreNet(), registry())
-    @test typeof(n) <: Place
-    @test_call has_xml(n)
-    @test !has_xml(n)
-    @test @inferred(pid(n)) === :place1
-    @test @inferred(has_name(n)) == true
-    @test @inferred(name(n)) == "no marking text"
-    @test_call marking(n)
-    @test marking(n)() == 100
-end
+# @testset "no marking text" begin
+#     node = xml"""
+#       <place id="place1">
+#         <name> <text>no marking text</text> </name>
+#         <initialMarking> 100 </initialMarking>
+#       </place>
+#     """
+#     @test_call target_modules = target_modules parse_place(node, PnmlCoreNet(), registry())
+#     n = parse_place(node, PnmlCoreNet(), registry())
+#     @test typeof(n) <: Place
+#     @test_call has_xml(n)
+#     @test !has_xml(n)
+#     @test @inferred(pid(n)) === :place1
+#     @test @inferred(has_name(n)) == true
+#     @test @inferred(name(n)) == "no marking text"
+#     @test_call marking(n)
+#     @test marking(n)() == 100
+# end
 
 # <condition> introduced as High-Level in specification. We use it everywhere.
 @testset "transition" begin
@@ -86,6 +86,10 @@ end
       <arc source="transition1" target="place1" id="arc1">
         <name> <text>Some arc</text> </name>
         <inscription> <text>6</text> </inscription>
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
       </arc>
     """
     n = @inferred Arc parse_arc(node, PnmlCoreNet(), registry())
@@ -100,7 +104,15 @@ end
 
 @testset "ref Trans" begin
     node = xml"""
-        <referenceTransition id="rt1" ref="t1"/>
+        <referenceTransition id="rt1" ref="t1">
+        <name> <text>refTrans name</text> </name>
+        <graphics><offset x="0" y="0"/></graphics>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
+    </referenceTransition>
     """
     n = parse_refTransition(node, PnmlCoreNet(), registry())
     @test n isa RefTransition
@@ -111,7 +123,21 @@ end
 
 @testset "ref Place" begin
     n1 = (node = xml"""
-    <referencePlace id="rp2" ref="rp1"/>
+    <referencePlace id="rp2" ref="rp1">
+        <name>
+            <text>refPlace name</text>
+            <unknown id="unkn">
+                <name> <text>unknown label</text> </name>
+                <text>content text</text>
+        </unknown>
+        </name>
+        <graphics><offset x="0" y="0"/></graphics>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
+    </referencePlace>
     """,
     id="rp2", ref="rp1" )
     n2 = (node = xml"""

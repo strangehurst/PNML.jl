@@ -10,12 +10,6 @@ $(TYPEDFIELDS)
 # Examples
 
 ```jldoctest; setup=:(using PNML: Marking)
-julia> m = Marking()
-Marking(0, )
-
-julia> m()
-0
-
 julia> m = Marking(1)
 Marking(1, )
 
@@ -34,7 +28,7 @@ struct Marking{N<:Union{Int,Float64}} <: Annotation
     com::ObjectCommon
     # Marking does not use ObjectCommon.graphics, rather, TokenGraphics in ObjectCommon.tools.
 end
-Marking() = Marking(zero(Int))
+#Marking() = Marking(zero(Int)) #! Hardcoded
 Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
 
 value(m::Marking) = m.value
