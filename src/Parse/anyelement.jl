@@ -28,36 +28,30 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Find :text in AnyXmlNode[]
+Find first :text and return content as string.
 """
 function text_content end
-
 text_content(l::PnmlLabel) = text_content(elements(l))
 text_content(l::AnyElement) = text_content(elements(l))
 
-text_content(vx::Vector{AnyXmlNode}) = begin
-    tc = findfirst(x -> tag(x) === :text, vx)
-    isnothing(tc) && throw(ArgumentError("missing <text>"))
-    txt = value(vx[tc])
-    tc = findfirst(x -> !isa(value(x), Number) && tag(x) === :content, txt)
-    isnothing(tc) && throw(ArgumentError("missing <text> <content>"))
-    cnt = txt[tc]
+function text_content(vx::Vector{AnyXmlNode})
+    tc_index = findfirst(x -> tag(x) === :text, vx)
+    isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
+    return text_content(vx[tc_index])
+end
+
+function text_content(axn::AnyXmlNode)
+    #println("\n\n text_content on non vector!"); dump(axn)
+    @assert tag(axn) === :text
+    tc_index = findfirst(x -> !isa(value(x), Number) && tag(x) === :content, value(axn))
+    isnothing(tc_index) && throw(ArgumentError("missing <text> <content> element"))
+    cnt = value(axn)[tc_index]
     val = value(cnt)
     val isa AbstractString ||
-        throw(ArgumentError(lazy"""text content type '$(typeof(val))',
-                                expected <:AbstractString:\n$(dump(val))"""))
-    #println("text_content = ", val)
+            throw(ArgumentError(lazy"""wrong content type  for '$(typeof(val))',
+                                expected <:AbstractString got:
+                                $(dump(val))"""))
     return val
-end
-text_content(x::AnyXmlNode) = begin
-    if tag(x) === :text || tag(x) === :content
-        val = value(x)
-        val isa AbstractString ||
-            throw(ArgumentError(lazy"text content type '$(typeof(val))', expected <:AbstractString"))
-        return val
-    else
-        @warn "missing text content" dump(x)
-    end
 end
 text_content(s::AbstractString) = s
 
@@ -102,13 +96,15 @@ function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
 
     vec = AnyXmlNode[]
     for a in EzXML.eachattribute(node)
-        # Defer further :id attribute parsing by treating as a string here.
+        # Defer further :id attribute parsing/registering by treating as a string here.
         push!(vec, AnyXmlNode(Symbol(a.name), a.content))
     end
 
     if EzXML.haselement(node) # Children exist, extract them.
         _anyelement_content!(vec, node, harvest!)
     else # No children, is there content?
+        # Note: childern and content are mutually exclusive because
+        # `nodecontent` will include children's content.
         content_string = strip(EzXML.nodecontent(node))
         if !all(isspace, content_string) # Non-blank content after strip are leafs.
             push!(vec, AnyXmlNode(:content, content_string))
