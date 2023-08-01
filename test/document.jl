@@ -8,8 +8,33 @@ str =
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
-    <name> <text>P/T Net with one place</text> </name>
+  <name> <text>P/T Net with one place</text> </name>
     <page id="page0">
+      <name> <text>page name</text> </name>
+      <graphics><offset x="0" y="0"/></graphics>
+      <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+      <text>net5 declaration label</text>
+      <graphics><offset x="0" y="0"/></graphics>
+      <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+      <declaration>
+        <structure>
+            <declarations>
+              <namedsort id="dot" name="Dot"><dot/></namedsort>
+              <variabledecl id="varx" name="x"><usersort declaration="pro"/></variabledecl>
+              <namedoperator id="id6" name="g">
+                  <parameter>
+                      <variabledecl id="id4" name="x"><integer/></variabledecl>
+                      <variabledecl id="id5" name="y"><integer/></variabledecl>
+                  </parameter>
+                  <def>
+                      <numberconstant value="1"><positive/></numberconstant>
+                  </def>
+              </namedoperator>
+              <unknowendecl id="unk1" name="u"><foo/></unknowendecl>
+            </declarations>
+        </structure>
+      </declaration>
+
       <place id="place1">
         <name> <text>Some place</text> </name>
         <initialMarking> <text>100</text> </initialMarking>
