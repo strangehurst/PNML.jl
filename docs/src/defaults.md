@@ -86,15 +86,6 @@ list_type(PNML.default_sort) # hide
 methods(PNML.default_sort) # hide
 ```
 
-[`PNML.default_term`](@ref)
-
-```@example methods
-list_type(PNML.default_term) # hide
-```
-```@example methods
-methods(PNML.default_term) # hide
-```
-
 [`PNML.default_one_term`](@ref)
 
 ```@example methods

@@ -625,7 +625,7 @@ parsed to `Int` and `Float64`.
 function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
     nn = check_nodename(node, "hlinitialMarking")
     text::Maybe{AbstractString} = nothing
-    term::Maybe{AbstractTerm} = nothing
+    markterm::Maybe{AbstractTerm} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
@@ -636,7 +636,7 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
         if tag == "text"
             text = string(strip(nodecontent(child)))
         elseif tag == "structure"
-            term = parse_marking_term(child, pntd, idregistry)
+            markterm = parse_marking_term(child, pntd, idregistry)
             #! TODO match sort of place
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
@@ -648,20 +648,18 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
     end
     #end; a > 0 && println("parse_hlinitialMarking allocated ", a)
 
-    HLMarking(text, something(term, default_marking(pntd)), ObjectCommon(graphics, tools, labels))
+    HLMarking(text, something(markterm, default_marking(pntd)),
+                ObjectCommon(graphics, tools, labels))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-parse_marking_term(marknode, pntd, idregistry) = begin
+function parse_marking_term(marknode, pntd, idregistry)
     check_nodename(marknode, "structure")
-    if EzXML.haselement(marknode)
-        parse_term(EzXML.firstelement(marknode), pntd, idregistry)
-    else
-        # Handle an empty <structure>.
-        default_marking(pntd)
-    end
+    EzXML.haselement(marknode) || error("missing marking term element in <structure>")
+    term = EzXML.firstelement(marknode)
+    parse_term(term, pntd, idregistry)
 end
 
 """
@@ -673,7 +671,7 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
     check_nodename(node, "hlinscription")
 
     text::Maybe{AbstractString} = nothing
-    term::Maybe{AbstractTerm} = nothing
+    inscriptterm::Maybe{AbstractTerm} = nothing
     graphics::Maybe{Graphics} = nothing
     tools = ToolInfo[]
     labels = PnmlLabel[]
@@ -683,7 +681,7 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
         tag = EzXML.nodename(child)
         @match nodename(child) begin
             "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (term = parse_inscription_term(child, pntd, idregistry))
+            "structure"    => (inscriptterm = parse_inscription_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
             _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
@@ -691,21 +689,18 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
     end
     #end; println("parse_hlinscription allocated ", a)
 
-    HLInscription(text, something(term, default_inscription(pntd)),
+    HLInscription(text, something(inscriptterm, default_inscription(pntd)),
                     ObjectCommon(graphics, tools, labels))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-parse_inscription_term(inode, pntd, idregistry)::Term = begin
+function parse_inscription_term(inode, pntd, idregistry)::Term
     check_nodename(inode, "structure")
-    if EzXML.haselement(inode)
-        parse_term(EzXML.firstelement(inode), pntd, idregistry)
-    else
-        # Handle an empty <structure>.
-        default_inscription(pntd)
-    end
+    EzXML.haselement(inode) || error("missing inscription term element in <structure>")
+    term = EzXML.firstelement(inode)
+    parse_term(term, pntd, idregistry)
 end
 
 """
@@ -727,7 +722,7 @@ See [`AbstractTerm`](@ref).
 function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     check_nodename(node, "condition")
     text::Maybe{AbstractString} = nothing
-    term::Maybe{Any} = nothing
+    condterm::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
@@ -736,7 +731,7 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     for child in EzXML.eachelement(node)
         @match nodename(child) begin
             "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (term = parse_condition_term(child, pntd, idregistry))
+            "structure"    => (condterm = parse_condition_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
             _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
@@ -744,7 +739,8 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     #end; println("parse_condition allocated ", a)
 
-    Condition(text, something(term, default_bool_term(pntd)), ObjectCommon(graphics, tools, labels))
+    Condition(text, something(condterm, default_bool_term(pntd)),
+                ObjectCommon(graphics, tools, labels))
 end
 
 """
@@ -752,12 +748,9 @@ $(TYPEDSIGNATURES)
 """
 function parse_condition_term(cnode, pntd::PnmlType, idregistry)
     check_nodename(cnode, "structure")
-
-    if EzXML.haselement(cnode)
-        parse_term(EzXML.firstelement(cnode), pntd, idregistry)
-    else # Handle an empty <structure>.
-        default_bool_term(pntd)
-    end
+    EzXML.haselement(cnode) || error("missing condition term element in <structure>")
+    term = EzXML.firstelement(cnode)
+    parse_term(term, pntd, idregistry)
 end
 
 #---------------------------------------------------------------------

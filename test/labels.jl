@@ -4,7 +4,7 @@ using PNML:
     unclaimed_label, anyelement, PnmlLabel, AnyElement,
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
-    default_term, default_one_term, default_zero_term,
+    default_one_term, default_zero_term,
     has_graphics, graphics, has_name, name, has_label,
     value, common, tools, graphics, labels,
     parse_initialMarking, parse_inscription, parse_text,

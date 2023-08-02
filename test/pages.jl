@@ -12,7 +12,7 @@ using PNML:
     marking_type, marking_value_type, refplace_type, reftransition_type,
     rate_value_type,
     default_inscription, default_marking, default_sort, default_condition,
-    default_term, default_one_term, default_zero_term,
+    default_one_term, default_zero_term,
     currentMarkings,
     netsets, netdata, page_idset, pagedict
 
@@ -182,7 +182,6 @@ end
             default_marking,
             default_sort,
             default_condition,
-            default_term,
             default_one_term,
             default_zero_term,
             )

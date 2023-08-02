@@ -19,7 +19,6 @@ using PNML:
     default_marking,
     default_sort,
     default_condition,
-    default_term,
     default_one_term,
     default_zero_term
 =#
@@ -50,7 +49,6 @@ function showme(net) #TODO iterate on nets
         default_marking,
         default_sort,
         default_condition,
-        default_term,
         default_one_term,
         default_zero_term,
         )

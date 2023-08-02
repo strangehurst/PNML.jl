@@ -1,7 +1,7 @@
 using EzXML, JET, AbstractTrees, NamedTupleTools, Preferences
 using PNML
 using PNML:
-    rate_value_type, default_term, default_one_term, default_zero_term,
+    rate_value_type, default_one_term, default_zero_term,
     parse_net,
     AbstractContinuousNet, AbstractHLCore, AbstractLabel,
     AbstractPnmlCore, AbstractPnmlTool, @xml_str,
