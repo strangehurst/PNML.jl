@@ -20,7 +20,7 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 
     return getfield(o, prop_name)
 end
-pid() = error("not defined")
+
 pid(o::AbstractPnmlObject)        = o.id
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
