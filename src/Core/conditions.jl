@@ -20,7 +20,7 @@ julia> c()
 false
 ```
 """
-struct Condition <: Annotation
+@auto_hash_equals struct Condition <: Annotation
     text::Maybe{String}
     value::Union{Bool, Term}
     com::ObjectCommon
