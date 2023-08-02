@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
 using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
 
-@testset "HL initMarking" begin
+@testset "HL initMarking $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     str = """
  <hlinitialMarking>
      <text>&lt;All,All&gt;</text>
@@ -13,7 +13,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
      </structure>
  </hlinitialMarking>
     """
-    mark = PNML.parse_hlinitialMarking(xmlroot(str), HLCoreNet(), registry())
+    mark = PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry())
 
     @test mark isa PNML.AbstractLabel
     @test mark isa PNML.marking_type(HLCoreNet()) #HLMarking

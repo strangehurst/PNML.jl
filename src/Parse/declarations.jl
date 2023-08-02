@@ -184,7 +184,8 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #
         end
     end
 
-    SortType(text, something(sortterm, default_sorttype(pntd)), ObjectCommon(graphics, tools, labels))
+    SortType(text, something(sortterm, default_sorttype(pntd)),
+                ObjectCommon(graphics, tools, labels))
 end
 
 # # Sort type for non-high-level meaning is TBD and non-standard.
@@ -211,45 +212,42 @@ Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 """
 function parse_sorttype_term(typenode, pntd, idregistry)
     check_nodename(typenode, "structure")
+    EzXML.haselement(typenode) || error("missing sort type term element in <structure>")
     term = EzXML.firstelement(typenode)
-    if !isnothing(term)
-        # Expect a sort: usersort usually. No multiset sort here.
-        ucl = unclaimed_label(term, pntd, idregistry)
-        #println("sorttype declaration: "); dump(ucl)
 
-        sort_ids = Symbol[:usersort, :multisetsort, :productsort, :partition,
-            :bool, :cyclicenumeration, :finiteenumeration, :finiteintrange, :integer, :list, :string]
+    # Expect a sort: usersort usually. No multiset sort here.
+    ucl = unclaimed_label(term, pntd, idregistry)
+    #println("sorttype declaration: "); dump(ucl)
 
-        sortid = ucl.first
-        if sortid === :usersort
-            @assert ucl.second isa Vector{AnyXmlNode}
-            d = first(ucl.second)
-            @assert tag(d) == :declaration
-            @assert value(d) isa AbstractString
-            idref = Symbol(value(d))
-            #@assert !isregistered(idregistry, idref) # unclaimed do not register
-            t = UserSort(idref)
-        elseif sortid === :dot
-            t = DotSort()
-        elseif sortid === :integer
-            t = IntegerSort()
-        elseif sortid === :natural
-            t = NaturalSort()
-        elseif sortid === :positive
-            t = PositiveSort()
-        elseif sortid === :bool
-            t = BoolSort()
+    sort_ids = Symbol[:usersort, :multisetsort, :productsort, :partition,
+                      :bool, :cyclicenumeration, :finiteenumeration, :finiteintrange, :integer, :list, :string]
 
-        #! FINNISH this =============================================================== XXX
+    sortid = ucl.first
+    if sortid === :usersort
+        @assert ucl.second isa Vector{AnyXmlNode}
+        d = first(ucl.second)
+        @assert tag(d) == :declaration
+        @assert value(d) isa AbstractString
+        idref = Symbol(value(d))
+        #@assert !isregistered(idregistry, idref) # unclaimed do not register
+        t = UserSort(idref)
+    elseif sortid === :dot
+        t = DotSort()
+    elseif sortid === :integer
+        t = IntegerSort()
+    elseif sortid === :natural
+        t = NaturalSort()
+    elseif sortid === :positive
+        t = PositiveSort()
+    elseif sortid === :bool
+        t = BoolSort()
 
-        else
-            error("parse_sorttype_term does not handle $sortid")
-        end
+        #! XXX FINNISH this =========================================== XXX
 
     else
-        # Handle an empty <structure>.
-        t = default_sorttype(pntd)
+        error("parse_sorttype_term does not handle $sortid")
     end
+
     #println("sorttype_term"); dump(t)
     return t
 end

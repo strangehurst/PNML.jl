@@ -1,6 +1,14 @@
 using PNML, ..TestUtils, JET
 import EzXML
-using PNML: Maybe, getfirst, firstchild, allchildren
+using PNML: Maybe, getfirst, firstchild, allchildren,
+    ishighlevel, PnmlTypeDefs,
+    page_type, place_type, transition_type, arc_type,
+    marking_type, inscription_type, condition_type,
+    Term, default_bool_term, default_zero_term, default_one_term,
+    value, condition_value_type, rate_value_type, term_value_type,
+    tag,
+    BoolSort, IntegerSort, RealSort,
+    Condition, default_condition
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -36,4 +44,51 @@ end
 
     @test_call target_modules=target_modules allchildren("a", node)
     @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]
+end
+
+#@testset "name $pntd" for pntd in Iterators.filter(!ishighlevel, values(PnmlTypeDefs.pnmltype_map))
+@testset "name $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+    @show pntd
+    @show page_type(pntd)
+    @show place_type(pntd) transition_type(pntd) arc_type(pntd)
+    @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
+
+    @show default_bool_term(pntd) typeof(default_bool_term(pntd))
+    @show default_zero_term(pntd) typeof(default_zero_term(pntd))
+    @show default_one_term(pntd) typeof(default_one_term(pntd))
+
+    @show condition_value_type(pntd)
+    @show rate_value_type(pntd)
+
+    b = default_bool_term(pntd)
+    @test b isa Term
+    @test value(b) isa eltype(BoolSort)
+    @test tag(b) === :bool
+    @test value(b) == true
+
+    @test value(default_zero_term(pntd)) == zero(eltype(term_value_type(pntd)))
+    z = default_zero_term(pntd)
+    @test z isa Term
+    @test value(z) isa eltype(term_value_type(pntd))
+    @test tag(z) === :zero
+    @test value(z) == zero(term_value_type(pntd))
+
+    @test value(default_one_term(pntd)) == one(eltype(term_value_type(pntd)))
+    b = default_one_term(pntd)
+    @test b isa Term
+    @test value(b) isa eltype(term_value_type(pntd))
+    @test tag(b) === :one
+    @test value(b) == one(term_value_type(pntd))
+
+
+    @test rate_value_type(pntd) == eltype(RealSort)
+    println()
+end
+@testset "name $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
+    @show pntd default_condition(pntd)  typeof(default_condition(pntd))
+    @show default_bool_term(pntd) typeof(default_bool_term(pntd))
+
+    @test default_bool_term(pntd) isa Term
+    @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
+    println()
 end

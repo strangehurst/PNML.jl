@@ -45,7 +45,6 @@ end
 UNDER_CI = (get(ENV, "CI", nothing) == "true")
 const noisy::Bool = false
 @testset verbose=true failfast=true showtiming=true "PNML.jl" begin
-#@testset verbose=true "PNML.jl" begin
     if select("ALL", "BASE")
         noisy && println("BASE")
         @time "typedefs" @safetestset "typedefs"  begin include("typedefs.jl") end
