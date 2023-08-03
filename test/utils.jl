@@ -8,7 +8,10 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     value, condition_value_type, rate_value_type, term_value_type,
     tag,
     BoolSort, IntegerSort, RealSort,
-    Condition, default_condition
+    Condition, default_condition,
+    default_inscription, default_marking, default_sort, default_sorttype,
+    default_sort_type
+
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -47,7 +50,7 @@ end
 end
 
 #@testset "name $pntd" for pntd in Iterators.filter(!ishighlevel, values(PnmlTypeDefs.pnmltype_map))
-@testset "name $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+@testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
     @show pntd
     @show page_type(pntd)
     @show place_type(pntd) transition_type(pntd) arc_type(pntd)
@@ -84,11 +87,20 @@ end
     @test rate_value_type(pntd) == eltype(RealSort)
     println()
 end
-@testset "name $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
+@testset "condition $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
     @show pntd default_condition(pntd)  typeof(default_condition(pntd))
     @show default_bool_term(pntd) typeof(default_bool_term(pntd))
 
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
     println()
+end
+@testset "exception for Any" begin
+    pntd = "this is not valid" # counts as `::Any`
+    @test_throws ErrorException default_condition(pntd)
+    @test_throws ErrorException default_inscription(pntd)
+    @test_throws ErrorException default_marking(pntd)
+    @test_throws ErrorException default_sort(pntd)
+    @test_throws ErrorException default_sorttype(pntd)
+    @test_throws ErrorException default_sort_type(pntd)
 end
