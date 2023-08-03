@@ -86,9 +86,7 @@ end
     <initialMarking>
         <text>123</text>
         <toolspecific tool="org.pnml.tool" version="1.0">
-            <tokengraphics>
-                <tokenposition x="6" y="9"/>
-            </tokengraphics>
+            <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
         </toolspecific>
         <unknown id="unkn">
             <name> <text>unknown label</text> </name>
@@ -140,7 +138,9 @@ end
 end
 
 @testset "PT inscription" begin
-    n1 = xml"<inscription> <text> 12 </text> </inscription>"
+    n1 = xml"""<inscription>
+            <text> 12 </text>
+        </inscription>"""
     inscription = parse_inscription(n1, pntd, registry())
     @test inscription isa PNML.Inscription
     noisy && @show inscription
@@ -148,6 +148,27 @@ end
     @test (graphics ∘ common)(inscription) === nothing
     @test (tools ∘ common)(inscription) === nothing || isempty((tools ∘ common)(inscription))
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
+end
+
+@testset "PT inscription full" begin
+    n1 = xml"""<inscription>
+            <text> 12 </text>
+            <graphics><offset x="0" y="0"/></graphics>
+            <toolspecific tool="org.pnml.tool" version="1.0">
+                <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
+            </toolspecific>
+            <unknown id="unkn">
+                <name> <text>unknown label</text> </name>
+                <text>unknown content text</text>
+            </unknown>
+        </inscription>"""
+    inscription = parse_inscription(n1, pntd, registry())
+    @test inscription isa PNML.Inscription
+    noisy && @show inscription
+    @test value(inscription) == 12
+    @test (graphics ∘ common)(inscription) !== nothing
+    @test (tools ∘ common)(inscription) === nothing || !isempty((tools ∘ common)(inscription))
+    @test (labels ∘ common)(inscription) === nothing || !isempty((labels ∘ common)(inscription))
 end
 
 @testset "labels" begin
@@ -194,6 +215,13 @@ end
 @testset "unlaimed structure" begin
     str0 = """<structure><foo/></structure>"""
     @test PNML.parse_node(xmlroot(str0), PnmlCoreNet(), registry()) isa PNML.Structure
+end
+
+@testset "<label>" begin
+    str0 = """<label><text>label named label</text></label>"""
+    l = PNML.parse_node(xmlroot(str0), PnmlCoreNet(), registry())
+    println("$str0 "); dump(l)
+    @test l isa NamedTuple
 end
 
 AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ? a.val : nothing

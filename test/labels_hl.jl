@@ -70,7 +70,13 @@ end
               <subterm><variable refvariable="v"/></subterm>
             </tuple>
         </structure>
-    </hlinscription>
+        <graphics><offset x="0" y="0"/></graphics>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
+      </hlinscription>
     """
     insc = PNML.parse_hlinscription(n1, pntd, registry())
     @test typeof(insc) <: PNML.AbstractLabel
