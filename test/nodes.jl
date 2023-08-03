@@ -47,7 +47,7 @@ end
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
-    println(pid(n)); dump(n)
+    #println(pid(n)); dump(n)
     #@test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""

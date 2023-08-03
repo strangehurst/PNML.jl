@@ -51,18 +51,19 @@ end
 
 #@testset "name $pntd" for pntd in Iterators.filter(!ishighlevel, values(PnmlTypeDefs.pnmltype_map))
 @testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
-    @show pntd
-    @show page_type(pntd)
-    @show place_type(pntd) transition_type(pntd) arc_type(pntd)
-    @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
+    if false
+        @show pntd
+        @show page_type(pntd)
+        @show place_type(pntd) transition_type(pntd) arc_type(pntd)
+        @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
 
-    @show default_bool_term(pntd) typeof(default_bool_term(pntd))
-    @show default_zero_term(pntd) typeof(default_zero_term(pntd))
-    @show default_one_term(pntd) typeof(default_one_term(pntd))
+        @show default_bool_term(pntd) typeof(default_bool_term(pntd))
+        @show default_zero_term(pntd) typeof(default_zero_term(pntd))
+        @show default_one_term(pntd) typeof(default_one_term(pntd))
 
-    @show condition_value_type(pntd)
-    @show rate_value_type(pntd)
-
+        @show condition_value_type(pntd)
+        @show rate_value_type(pntd)
+    end
     b = default_bool_term(pntd)
     @test b isa Term
     @test value(b) isa eltype(BoolSort)
@@ -88,9 +89,10 @@ end
     println()
 end
 @testset "condition $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
-    @show pntd default_condition(pntd)  typeof(default_condition(pntd))
-    @show default_bool_term(pntd) typeof(default_bool_term(pntd))
-
+    if false
+        @show pntd default_condition(pntd)  typeof(default_condition(pntd))
+        @show default_bool_term(pntd) typeof(default_bool_term(pntd))
+    end
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
     println()
