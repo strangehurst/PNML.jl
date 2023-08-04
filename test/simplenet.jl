@@ -54,6 +54,7 @@ testlogger = TestLogger()
     @test_call SimpleNet(v[begin])
     @test_call SimpleNet(model)
     @test_call SimpleNet(PNML.first_net(model))
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
 
     net  = @inferred SimpleNet SimpleNet(v[begin])
     net1 = @inferred SimpleNet SimpleNet(model)
@@ -212,6 +213,7 @@ end
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
     @show S T
     #!for t in T
     #!@show PNML.in_out(snet, t)

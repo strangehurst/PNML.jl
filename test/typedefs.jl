@@ -16,6 +16,7 @@ using PNML: XMLNode, pnmltype, tagmap
                         "namedoperator", "declarations", "declaration"]
         pntd = any(==(t), highleveltags) ? HLCoreNet() : PnmlCoreNet()
 
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
         # @show t, tagmap[t], pntd
 
         # Parse trivial XML.

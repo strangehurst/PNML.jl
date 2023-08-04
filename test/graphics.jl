@@ -28,8 +28,10 @@ end
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
     @test n.positions isa Vector{PNML.Coordinate{Int}}
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        @show n
+    end
 
-    #@show n.offset n.dimension n.positions
     # There can only be one offset, last tag parsed wins.
     @test n.offset == PNML.Coordinate(7,8)
     @test n.dimension == PNML.Coordinate(5,6)

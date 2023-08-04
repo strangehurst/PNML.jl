@@ -80,7 +80,9 @@ end
     """
     reg = PNML.registry()
     decl = parse_declaration(node, _pntd, reg)
-    #@show decl
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show decl
+    end
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(decl)) == 3

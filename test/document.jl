@@ -54,7 +54,9 @@ str =
     """
     model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
-    #@show model
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show model
+    end
 end
 
 @testset "Document & ID Registry" begin
@@ -71,8 +73,9 @@ end
     parse_pnml(xmlroot(str), reg)
     @report_opt parse_pnml(xmlroot(str), reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
-    #@show reg
-
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show reg
+    end
     @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end
@@ -96,7 +99,9 @@ end
     for net in PNML.nets(model)
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
-        #@show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+        end
         for n in ntup
             @test t === PNML.nettype(n)
         end

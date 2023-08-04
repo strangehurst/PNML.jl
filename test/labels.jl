@@ -100,8 +100,9 @@ end
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() # Uses an identity functor for `Numbers`
     @test value(mark) == 123
-    noisy && @show mark
-
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show mark
+    end
     mark1 = PNML.Marking(23)
     @test_opt PNML.Marking(23)
     @test_call PNML.Marking(23)
@@ -143,7 +144,9 @@ end
         </inscription>"""
     inscription = parse_inscription(n1, pntd, registry())
     @test inscription isa PNML.Inscription
-    noisy && @show inscription
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show inscription
+    end
     @test value(inscription) == 12
     @test (graphics ∘ common)(inscription) === nothing
     @test (tools ∘ common)(inscription) === nothing || isempty((tools ∘ common)(inscription))
@@ -164,7 +167,9 @@ end
         </inscription>"""
     inscription = parse_inscription(n1, pntd, registry())
     @test inscription isa PNML.Inscription
-    noisy && @show inscription
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show inscription
+    end
     @test value(inscription) == 12
     @test (graphics ∘ common)(inscription) !== nothing
     @test (tools ∘ common)(inscription) === nothing || !isempty((tools ∘ common)(inscription))
@@ -242,7 +247,9 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     u = unclaimed_label(node, PnmlCoreNet(), reg1)
     l = PnmlLabel(u, node)
     a = anyelement(node, reg2)
-    #@show u l a
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show u l a
+    end
     if noisy
         println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
         println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)

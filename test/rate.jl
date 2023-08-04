@@ -8,6 +8,7 @@ println()
         <rate> <text>0.3</text> </rate>
     </transition>""", pntd, registry())
     lab = PNML.labels(tr)
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
     #@show tr lab
     #@show PNML.rate(tr)
     @test PNML.tag(first(lab)) === :rate # only label

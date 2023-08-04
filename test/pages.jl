@@ -27,56 +27,50 @@ function verify_sets(net::PnmlNet)
     @test typeof(refplace_idset(net))  == typeof(refplace_idset(firstpage(net)))
     @test typeof(reftransition_idset(net)) ==  typeof(reftransition_idset(firstpage(net)))
 
-    #@show arc_idset(net)
-    #@show place_idset(net)
-    #@show transition_idset(net)
-    #@show refplace_idset(net)
-    #@show reftransition_idset(net)
-    #println()
-
-    #@show arc_idset(firstpage(net))
-    #@show place_idset(firstpage(net))
-    #@show transition_idset(firstpage(net))
-    #@show refplace_idset(firstpage(net))
-    #@show reftransition_idset(firstpage(net))
-    #println()
-
-    #@show netdata(net)
-    #@show netdata(firstpage(net))
     @test netdata(net) === netdata(firstpage(net))
-    #println()
-
-    #@show netsets(net)
-    #@show pid(firstpage(net))
-    #@show netsets(firstpage(net))
-    #println()
 
     for page in pages(net)
-        #@show pid(page)
-        #@show netsets(page)
         @test netdata(net) === netdata(page)
     end
-    #println()
 
     for pageid in PNML.page_idset(net)
-        #@show pageid
-        #@show netsets(pagedict(net)[pageid])
-        #@show netdata(pagedict(net)[pageid])
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
-    #println()
 
-    # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
-    # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
-    #@show typeof(arc_idset(net))
-    #println()
-    #for page in pages(net)
-    #    @show pid(page) (typeof ∘ values ∘ arc_idset)(page)  #(collect ∘ values ∘ arc_idset)(page)
-    #end
-    #println()
-    #@show arc_idset(net)
-    #@show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
-    #println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show arc_idset(net)
+        @show place_idset(net)
+        @show transition_idset(net)
+        @show refplace_idset(net)
+        @show reftransition_idset(net)
+        println()
+
+        @show arc_idset(firstpage(net))
+        @show place_idset(firstpage(net))
+        @show transition_idset(firstpage(net))
+        @show refplace_idset(firstpage(net))
+        @show reftransition_idset(firstpage(net))
+        println()
+        @show netdata(net)
+        @show netdata(firstpage(net))
+        println()
+        @show pid(firstpage(net))
+        @show netsets(firstpage(net))
+        println()
+
+        # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
+        # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
+        @show typeof(arc_idset(net))
+        println()
+        for page in pages(net)
+            @show pid(page) (typeof ∘ values ∘ arc_idset)(page)
+            @show netsets(page)
+        end
+        println()
+        @show arc_idset(net)
+        @show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
+        println("+++++++++++++++++++++++++++++++++++++++++++++++++")
+    end
 end
 
 @testset "pages" begin
@@ -131,20 +125,19 @@ end
     </pnml>
     """
     model = @inferred parse_str(str)
-    #@show typeof(model)
-    #@show typeof(nets(model))
     net = first_net(model) # The nets of a model not inferred.
 
     @test net isa PnmlNet
-    #@show typeof(firstpage(net))
-    @test @inferred(firstpage(net)) isa Page
+    @test @inferred(firstpage(net)) isa Page #! add parameters
 
-    #println()
-    #PNML.pagetree(net)
-    #println()
-    #AbstractTrees.print_tree(net)
-    #println()
-
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show model
+        println()
+        PNML.pagetree(net)
+        println()
+        AbstractTrees.print_tree(net)
+        println()
+    end
     verify_sets(net)
     # @show arc_idset(net)
     # @show place_idset(net)
