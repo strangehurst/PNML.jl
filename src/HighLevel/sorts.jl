@@ -59,11 +59,12 @@ equals(a::AbstractSort, b::AbstractSort) = eltype(a) == eltype(b)
 """
 $(TYPEDEF)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
+Wrap a [`AbstractSort`](@ref). Use until specialized/cooked.
 """
 struct MultisetSort <: AbstractSort
-    ae::AnyElement
+    ae::AbstractSort
 end
+MultisetSort() = MultisetSort(DotSort())
 
 """
 $(TYPEDEF)
@@ -72,9 +73,9 @@ Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
 Should contain an ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
-    ae::AnyElement # Vector{AbstractSort}
+    ae::Vector{AbstractSort}
 end
-
+ProductSort() = ProductSort(IntegerSort[])
 """
 $(TYPEDEF)
 
