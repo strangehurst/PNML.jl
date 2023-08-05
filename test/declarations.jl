@@ -3,27 +3,49 @@ using PNML:
     Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
     registry, AnyElement, AnyXmlNode, name, value, isregistered
 
-const _pntd::PnmlType = PnmlCoreNet()
-
-@testset "Declaration()" begin
+@testset "Declaration() $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     decl = PNML.Declaration()
     @test length(PNML.declarations(decl)) == 0
     @test_call PNML.Declaration()
 end
 
-@testset "parse_sort" begin
-    @test parse_sort(xml"<bool/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<finiteenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<finiteintrange/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<dot/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<mulitsetsort/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<productsort/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<usersort/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<partition/>", PnmlCoreNet(), registry()) isa AnyElement
+using InteractiveUtils, Printf
+function _subtypes(type::Type)
+    out = Any[]
+    _subtypes!(out, type)
+end
+function _subtypes!(out, type::Type)
+    if !isabstracttype(type)
+        push!(out, type)
+    else
+        foreach(T->_subtypes!(out, T), subtypes(type))
+    end
+    out
 end
 
-@testset "empty declarations" begin
+@testset "AbstractDeclarations $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show _subtypes(PNML.AbstractDeclaration)
+        for decl in _subtypes(PNML.AbstractDeclaration)
+            @show decl decl()
+            #@printf "%-25s %s\n" decl "x"
+        end
+   end
+end
+
+@testset "parse_sort $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+    @test parse_sort(xml"<bool/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<finiteenumeration/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<finiteintrange/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
+    @test parse_sort(xml"<dot/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<mulitsetsort/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<productsort/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<usersort/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<partition/>", pntd, registry()) isa AnyElement
+end
+
+@testset "empty declarations $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     # The attribute should be ignored.
     decl = parse_declaration(xml"""
         <declaration key="test empty">
@@ -32,7 +54,7 @@ end
            </declarations>
           </structure>
         </declaration>
-        """, _pntd, registry())
+        """, pntd, registry())
 
     @test typeof(decl) <: PNML.Declaration
     @test xmlnode(decl) isa Maybe{EzXML.Node}
@@ -51,7 +73,7 @@ end
     @test_call PNML.labels(decl)
 end
 
-@testset "declaration tree" begin
+@testset "declaration tree $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     node = xml"""
     <declaration>
         <structure>
@@ -79,7 +101,7 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    decl = parse_declaration(node, _pntd, reg)
+    decl = parse_declaration(node, pntd, reg)
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show decl
     end

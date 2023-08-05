@@ -25,6 +25,7 @@ struct UnknownDeclaration  <: AbstractDeclaration
     nodename::String
     content::Vector{Any} #! Vector{AnyElement}
 end
+UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [])
 
 """
 $(TYPEDEF)
@@ -46,7 +47,7 @@ struct VariableDeclaration{S}  <: AbstractDeclaration
     name::String
     sort::S
 end
-
+VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -56,6 +57,7 @@ struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     name::String
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
+NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
 
 """
 $(TYPEDEF)
@@ -69,7 +71,7 @@ struct Partition{S,PE} <: SortDeclaration
     def::S # Refers to a NamedSort
     element::PE # 0 or more PartitionElements.
 end
-
+Partition() = Partition(:partition, "Empty Partition", DotSort(),  [])
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -96,7 +98,7 @@ struct NamedOperator{V,T} <: OperatorDeclaration
     parameter::Vector{V}
     def::T # opearator or variable term (with associated sort)
 end
-
+NamedOperator() = NamedOperator(:namedoperator, "Empty Named Oerator", [], nothing)
 
 """
 $(TYPEDEF)
