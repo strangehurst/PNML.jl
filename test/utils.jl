@@ -111,8 +111,10 @@ using Printf
 @testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
     #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))
 
-    @show pntd
-    for sort in InteractiveUtils.subtypes(AbstractSort)
-         @printf "%-20s %-20s %-20s\n" sort eltype(sort) sort()
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show pntd
+        for sort in InteractiveUtils.subtypes(AbstractSort)
+             @printf "%-20s %-20s %-20s\n" sort eltype(sort) sort()
+        end
     end
 end
