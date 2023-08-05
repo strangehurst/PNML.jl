@@ -31,6 +31,9 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show mark
     end
+    @test PNML.has_graphics(mark)
+    @test PNML.has_tools(mark)
+    @test PNML.has_labels(mark)
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
@@ -97,6 +100,9 @@ end
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show insc
     end
+    @test PNML.has_graphics(insc)
+    @test PNML.has_tools(insc)
+    @test PNML.has_labels(insc)
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
@@ -205,10 +211,17 @@ end
         typ = PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
         #println("\n## SortType typ "); dump(typ)
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show typ
+            @show PNML.common(typ)
+        end
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
         @test value(typ).declaration == :N2
-    end
+        @test PNML.has_graphics(PNML.common(typ))
+        @test PNML.has_tools(PNML.common(typ))
+        @test PNML.has_labels(PNML.common(typ))
+        end
 end
 
 # conditions are for everybody.
