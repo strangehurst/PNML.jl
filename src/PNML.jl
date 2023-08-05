@@ -159,7 +159,7 @@ using PrecompileTools
 PrecompileTools.@setup_workload begin
     #! data = ...
     PrecompileTools.@compile_workload begin
-        #! call_some_code(data, ...)
+        println("# call_some_code(data, ...) for @compile_workload")
     end
 end
 

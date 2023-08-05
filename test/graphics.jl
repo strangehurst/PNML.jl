@@ -21,6 +21,7 @@ end
      <fill  color="fillcolor" gradient-color="none" gradient-rotation="horizontal"/>
      <font align="center" family="Dialog" rotation="0.0" size="11"
            style="normal" weight="normal" />
+    <unexpected/>
     </graphics>
     """
     n = parse_graphics(xmlroot(str), _pntd, registry())
@@ -29,7 +30,7 @@ end
     @test n.dimension isa PNML.Coordinate
     @test n.positions isa Vector{PNML.Coordinate{Int}}
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        @show n
+        @show n eltype(n.offset)
     end
 
     # There can only be one offset, last tag parsed wins.
@@ -76,6 +77,7 @@ end
 
     str1 = """<tokengraphics>
                 <tokenposition x="-9" y="-2"/>
+                <unexpected/>
             </tokengraphics>"""
     n = parse_tokengraphics(xmlroot(str1), _pntd, registry())
     @test n isa PNML.TokenGraphics
