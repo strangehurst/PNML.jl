@@ -12,7 +12,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
         if tag == "tokenposition"
             push!(tpos, parse_tokenposition(child, pntd, reg))
         else
-            @warn "<tokengraphics> has unexpected element $tag"
+            @warn "<tokengraphics> ignoring unexpected element '$tag'"
         end
     end
     if isempty(tpos)
