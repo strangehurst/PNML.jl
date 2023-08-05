@@ -98,18 +98,18 @@ PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.ta
                                                    $(PrettyPrinting.quoteof(l.elements))))
 
 #-------------------
-function Base.show(io::IO, elvector::Vector{AnyElement})
-    show(io, MIME"text/plain"(), elvector)
-end
-function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
-    print(io, typeof(elvector), "[")
-    io = inc_indent(io)
-    for (i,el) in enumerate(elvector)
-        print(io, "\n", indent(io), "$i: ")
-        pprint(io, el)
-    end
-    print(io, "]")
-end
+# function Base.show(io::IO, elvector::Vector{AnyElement})
+#     show(io, MIME"text/plain"(), elvector)
+# end
+# function Base.show(io::IO, mime::MIME"text/plain", elvector::Vector{AnyElement})
+#     print(io, typeof(elvector), "[")
+#     io = inc_indent(io)
+#     for (i,el) in enumerate(elvector)
+#         print(io, "\n", indent(io), "$i: ")
+#         pprint(io, el)
+#     end
+#     print(io, "]")
+# end
 
 function Base.show(io::IO, el::AnyElement) #TODO Make parametric.
     pprint(io, el)
