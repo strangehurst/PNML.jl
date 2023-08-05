@@ -4,13 +4,19 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
 @testset "HL initMarking $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     str = """
  <hlinitialMarking>
-     <text>&lt;All,All&gt;</text>
-     <structure>
-            <tuple>
-              <subterm><all><usersort declaration="N1"/></all></subterm>
-              <subterm><all><usersort declaration="N2"/></all></subterm>
-            </tuple>
-     </structure>
+    <text>&lt;All,All&gt;</text>
+    <structure>
+        <tuple>
+            <subterm><all><usersort declaration="N1"/></all></subterm>
+            <subterm><all><usersort declaration="N2"/></all></subterm>
+        </tuple>
+    </structure>
+    <graphics><offset x="0" y="0"/></graphics>
+    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+    <unknown id="unkn">
+        <name> <text>unknown label</text> </name>
+        <text>content text</text>
+    </unknown>
  </hlinitialMarking>
     """
     mark = PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry())
@@ -22,6 +28,9 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
     @test value(mark) isa PNML.Term
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show mark
+    end
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
@@ -85,6 +94,9 @@ end
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
     @test value(insc) isa PNML.Term
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show insc
+    end
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
@@ -118,10 +130,10 @@ end
 @testset "structure $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     node = xml"""
      <structure>
-         <tuple>
+        <tuple>
             <subterm><all><usersort declaration="N1"/></all></subterm>
             <subterm><all><usersort declaration="N2"/></all></subterm>
-         </tuple>
+        </tuple>
      </structure>
     """
 
@@ -178,10 +190,16 @@ end
 
 @testset "type $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
     n1 = xml"""
- <type>
-     <text>N2</text>
-     <structure> <usersort declaration="N2"/> </structure>
- </type>
+<type>
+    <text>N2</text>
+    <structure> <usersort declaration="N2"/> </structure>
+    <graphics><offset x="0" y="0"/></graphics>
+    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+    <unknown id="unkn">
+        <name> <text>unknown label</text> </name>
+        <text>content text</text>
+    </unknown>
+</type>
     """
     @testset for node in [n1]
         typ = PNML.parse_type(node, pntd, registry())
@@ -197,22 +215,31 @@ end
 @testset "condition $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     n1 = xml"""
  <condition>
-     <text>(x==1 and y==1 and d==1)</text>
-     <structure> <or> #TODO </or> </structure>
+    <text>(x==1 and y==1 and d==1)</text>
+    <structure> <or> #TODO </or> </structure>
+    <graphics><offset x="0" y="0"/></graphics>
+    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+    <unknown id="unkn">
+        <name> <text>unknown label</text> </name>
+        <text>content text</text>
+    </unknown>
  </condition>
     """
     @testset for node in [n1]
         cond = PNML.parse_condition(node, pntd, registry())
         #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show cond
+        end
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd),
                                     PNML.Term #!{PNML.condition_value_type(pntd)}
                                     }
 
         @test tag(value(cond)) === :or
-        @test !PNML.has_graphics(cond)
-        @test !PNML.has_tools(cond)
-        @test !PNML.has_labels(cond)
+        @test PNML.has_graphics(cond)
+        @test PNML.has_tools(cond)
+        @test PNML.has_labels(cond)
     end
 end

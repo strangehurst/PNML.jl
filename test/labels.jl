@@ -10,11 +10,10 @@ using PNML:
     parse_initialMarking, parse_inscription, parse_text,
     elements
 
-const pntd::PnmlType = PnmlCoreNet()
 const noisy::Bool = false
 
 
-@testset "text" begin
+@testset "text $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str1 = """<text>ready</text>"""
     n = parse_text(xmlroot(str1), pntd, registry())
     @test n == "ready"
@@ -41,8 +40,9 @@ go</text>
     n = parse_text(xmlroot(str4), pntd, registry())
     @test n == "ready\nto\ngo"
 end
+
 #------------------------------------------------
-@testset "ObjectCommon" begin
+@testset "ObjectCommon $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     oc = @inferred PNML.ObjectCommon()
 
     @test isnothing(PNML.graphics(oc))
@@ -81,7 +81,7 @@ end
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
-@testset "PT initMarking" begin
+@testset "PT initMarking $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     node = xml"""
     <initialMarking>
         <text>123</text>
@@ -138,7 +138,7 @@ end
     #@test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
 end
 
-@testset "PT inscription" begin
+@testset "PT inscription $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     n1 = xml"""<inscription>
             <text> 12 </text>
         </inscription>"""
@@ -153,7 +153,7 @@ end
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
 end
 
-@testset "PT inscription full" begin
+@testset "PT inscription full $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     n1 = xml"""<inscription>
             <text> 12 </text>
             <graphics><offset x="0" y="0"/></graphics>
@@ -176,15 +176,15 @@ end
     @test (labels ∘ common)(inscription) === nothing || !isempty((labels ∘ common)(inscription))
 end
 
-@testset "labels" begin
+@testset "labels $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     lab = PnmlLabel[]
     reg = registry()
 
     for i in 1:4 # add 4 labels
         x = i < 3 ? 1 : 2 # make 2 tagnames
         node = xmlroot("<test$x> $i </test$x>")
-        @test_call target_modules = (PNML,) add_label!(lab, node, PnmlCoreNet(), reg)
-        add_label!(lab, node, PnmlCoreNet(), reg)
+        @test_call target_modules = (PNML,) add_label!(lab, node, pntd, reg)
+        add_label!(lab, node, pntd, reg)
     end
 
     @test length(lab) == 4
@@ -217,15 +217,15 @@ end
     end
 end
 
-@testset "unlaimed structure" begin
+@testset "unlaimed structure $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<structure><foo/></structure>"""
-    @test PNML.parse_node(xmlroot(str0), PnmlCoreNet(), registry()) isa PNML.Structure
+    @test PNML.parse_node(xmlroot(str0), pntd, registry()) isa PNML.Structure
 end
 
-@testset "<label>" begin
+@testset "<label> $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<label><text>label named label</text></label>"""
-    l = PNML.parse_node(xmlroot(str0), PnmlCoreNet(), registry())
-    println("$str0 "); dump(l)
+    l = PNML.parse_node(xmlroot(str0), pntd, registry())
+    #println("$str0 "); dump(l)
     @test l isa NamedTuple
 end
 
@@ -233,7 +233,7 @@ AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ?
 
 AbstractTrees.printnode(io::IO, a::PNML.AnyXmlNode) = print(io, a.tag, "", a.val isa AbstractString && a.val)
 
-function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
+function test_unclaimed(pntd, xmlstring::String)#, expected::NamedTuple)
     if noisy
         println("\n+++++++++++++++++++")
         println("XML: ", xmlstring)
@@ -244,12 +244,9 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    u = unclaimed_label(node, PnmlCoreNet(), reg1)
+    u = unclaimed_label(node, pntd, reg1)
     l = PnmlLabel(u, node)
     a = anyelement(node, reg2)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show u l a
-    end
     if noisy
         println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
         println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)
@@ -258,12 +255,15 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     @test u isa Pair{Symbol, Vector{PNML.AnyXmlNode}}
     @test l isa PnmlLabel
     @test a isa AnyElement
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show u l a [a]
+    end
 
-    @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, PnmlCoreNet(), reg1)
+    @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, pntd, reg1)
     @test_opt PnmlLabel(u, node)
     @test_opt function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
 
-    @test_call target_modules = (PNML,) unclaimed_label(node, PnmlCoreNet(), reg1)
+    @test_call target_modules = (PNML,) unclaimed_label(node, pntd, reg1)
     @test_call target_modules = (PNML,) PnmlLabel(u, node)
     @test_call target_modules = (PNML,) anyelement(node, reg2)
 
@@ -280,7 +280,7 @@ function test_unclaimed(xmlstring::String)#, expected::NamedTuple)
     return l, a
 end
 
-@testset "unclaimed" begin
+@testset "unclaimed $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     noisy && println("## test unclaimed, PnmlLabel, anyelement")
     # Even though they are "claimed" by having a parser, thay still may be treated as unclaimed.
     # For example <declarations>.
@@ -342,7 +342,7 @@ end
     ]
 
     for (s, expected) in ctrl
-        lab, anye = test_unclaimed(s)
+        lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected, ElementNode("testelement"))
         #@show lab expected_label

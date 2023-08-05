@@ -14,7 +14,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     """
     n  = parse_place(node, pntd, registry())
     #println("parse_place "); dump(n)
-
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show n
+    end
     @test parse_node(node, pntd, registry()) === nothing
     @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
 
