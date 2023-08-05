@@ -33,7 +33,7 @@ struct HLInscription{T<:Term} <: HLAnnotation
     com::ObjectCommon
 end
 
-HLInscription(s::AbstractString) = HLInscription(s, Term(:value, zero(Int)))
+#!HLInscription(s::AbstractString) = HLInscription(s, Term(:value, zero(Int)))
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 
