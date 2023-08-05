@@ -12,10 +12,10 @@ struct Coordinate{T <: Union{Int,Float64}} #! is decimal 0 to 999.9 is Schema
     y::T
 end
 
-Coordinate{T}() where {T <: Union{Int,Float64}} = Coordinate{T}(zero(T), zero(T))
+#!Coordinate{T}() where {T <: Union{Int,Float64}} = Coordinate{T}(zero(T), zero(T))
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
-coordinate_value_type(::Type{<: PnmlType}) = Int
+coordinate_value_type(::Type{<: PnmlType}) = Int # spec says decimal
 coordinate_value_type(::Type{<: AbstractContinuousNet}) = Float64
 Base.eltype(::Coordinate{T}) where {T} = T
 
