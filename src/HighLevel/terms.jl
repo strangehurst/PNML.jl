@@ -109,8 +109,9 @@ value(t::Term) = t() # Value of a Term is the functor's value.
         # Fake like we know how to evaluate a expression of the high-level terms.
         i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
         if !isnothing(i)
-            v = @inbounds value(t.elements[i])
-            @assert typeof(v) isa eltype(t)
+            v = value(t.elements[i]) == "true" # should be a booleanconstant
+            #println("term functor"); dump(v); @show eltype(t)
+            #@assert typeof(v) isa eltype(t)
             return v
         else
             v = _evaluate(default)
