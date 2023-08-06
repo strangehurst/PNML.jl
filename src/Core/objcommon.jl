@@ -21,11 +21,11 @@ labels(oc::ObjectCommon)       = oc.labels
 
 Base.isempty(oc::ObjectCommon) = !(has_graphics(oc) || has_tools(oc) || has_labels(oc))
 
-function Base.empty!(oc::ObjectCommon)
-    #! isnothing(oc.graphics) || replace with Graphics()
-    empty!(oc.tools)
-    empty!(oc.labels)
-end
+# function Base.empty!(oc::ObjectCommon)
+#     #! isnothing(oc.graphics) || replace with Graphics()
+#     empty!(oc.tools)
+#     empty!(oc.labels)
+# end
 
 function Base.append!(l::ObjectCommon, r::ObjectCommon)
     # In the flatten use-case do not overwrite scalars.
