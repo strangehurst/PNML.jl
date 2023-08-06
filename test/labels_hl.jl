@@ -98,7 +98,7 @@ end
     @test value(insc) isa PNML.AbstractTerm
     @test value(insc) isa PNML.Term
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show insc
+        @show insc PNML.common(insc)
     end
     @test PNML.has_graphics(insc)
     @test PNML.has_tools(insc)
@@ -243,7 +243,7 @@ end
         #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show cond
+            @show cond PNML.common(cond)
         end
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd),

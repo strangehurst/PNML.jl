@@ -50,10 +50,10 @@ end
     @test has_name(n)
     @test name(n) == "Some transition"
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.default_condition(n) PNML.nettype(n) PNML.common(n)
+        @show n PNML.default_condition(n) PNML.nettype(n) PNML.common(n.condition)
     end
     #println(pid(n)); dump(n)
-    #@test condition(n) isa Bool
+    @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     #@test_throws ErrorException parse_transition(node, pntd, registry())
@@ -80,17 +80,22 @@ end
         </unknown>
       </arc>
     """
-    n = @inferred Arc parse_arc(node, PnmlCoreNet(), registry())
+    a1 = @inferred Arc parse_arc(node, PnmlCoreNet(), registry())
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.default_inscription(n) PNML.nettype(n) PNML.common(n)
+        @show a1 PNML.default_inscription(a1) PNML.nettype(a1) PNML.common(a1)
     end
-    @test typeof(n) <: Arc
-    @test !has_xml(n)
-    @test pid(n) === :arc1
-    @test has_name(n)
-    @test name(n) == "Some arc"
-    @test_call inscription(n)
-    @test inscription(n) == 6
+    a2 = Arc(a1, :newsrc, :newtarget)
+    #println("arc with updated src, tgt:"); dump(a2)
+    @testset "a1,a2" for a in [a1, a2]
+        @test typeof(a) <: Arc
+        @test !has_xml(a)
+        @test pid(a) === :arc1
+        @test has_name(a)
+        @test name(a) == "Some arc"
+        @test_call inscription(a)
+        @test inscription(a) == 6
+    end
+
 end
 
 @testset "ref Trans $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map) #a" begin

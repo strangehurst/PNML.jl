@@ -64,12 +64,13 @@ const noisy::Bool = false
     if select("ALL", "HIGHLEVEL")
         noisy && println("HIGHLEVEL")
         @time "declarations" @safetestset "declarations" begin include("declarations.jl") end
+        @time "sorts"        @safetestset "sorts"        begin include("sort.jl") end
         @time "labels_hl"    @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select("ALL", "PARSE") # Overall full flow test
         noisy && println("PARSE")
-        @time "document"  @safetestset "document"     begin include("document.jl") end
+        @time "document"   @safetestset "document"     begin include("document.jl") end
         @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("ALL", "NET")

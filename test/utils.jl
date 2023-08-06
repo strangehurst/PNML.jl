@@ -12,7 +12,8 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     default_inscription, default_marking, default_sort, default_sorttype,
     default_sort_type,
     AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
-    MultisetSort, ProductSort, RealSort, UserSort
+    MultisetSort, ProductSort, RealSort, UserSort,
+    SortType
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -96,27 +97,4 @@ end
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
     #println()
-end
-
-@testset "exception for Any" begin
-    pntd = "this is not valid" # counts as `::Any`
-    @test_throws ErrorException default_condition(pntd)
-    @test_throws ErrorException default_inscription(pntd)
-    @test_throws ErrorException default_marking(pntd)
-    @test_throws ErrorException default_sort(pntd)
-    @test_throws ErrorException default_sorttype(pntd)
-    @test_throws ErrorException default_sort_type(pntd)
-    @test_throws ArgumentError default_bool_term(pntd)
-end
-
-using Printf
-@testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
-    #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show pntd
-        for sort in InteractiveUtils.subtypes(AbstractSort)
-             @printf "%-20s %-20s %-20s\n" sort eltype(sort) sort()
-        end
-    end
 end
