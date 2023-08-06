@@ -97,6 +97,7 @@ end
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
     #println()
 end
+
 @testset "exception for Any" begin
     pntd = "this is not valid" # counts as `::Any`
     @test_throws ErrorException default_condition(pntd)
@@ -107,6 +108,7 @@ end
     @test_throws ErrorException default_sort_type(pntd)
     @test_throws ArgumentError default_bool_term(pntd)
 end
+
 using Printf
 @testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
     #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))

@@ -29,6 +29,7 @@ str =
                   <def>
                       <numberconstant value="1"><positive/></numberconstant>
                   </def>
+                  <unknown/>
               </namedoperator>
               <unknowendecl id="unk1" name="u"><foo/></unknowendecl>
             </declarations>

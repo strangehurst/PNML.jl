@@ -15,7 +15,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     n  = parse_place(node, pntd, registry())
     #println("parse_place "); dump(n)
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n
+        @show n PNML.default_marking(n) PNML.nettype(n) PNML.common(n)
     end
     @test parse_node(node, pntd, registry()) === nothing
     @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
@@ -49,6 +49,9 @@ end
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show n PNML.default_condition(n) PNML.nettype(n) PNML.common(n)
+    end
     #println(pid(n)); dump(n)
     #@test condition(n) isa Bool
 
@@ -78,6 +81,9 @@ end
       </arc>
     """
     n = @inferred Arc parse_arc(node, PnmlCoreNet(), registry())
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show n PNML.default_inscription(n) PNML.nettype(n) PNML.common(n)
+    end
     @test typeof(n) <: Arc
     @test !has_xml(n)
     @test pid(n) === :arc1
@@ -100,7 +106,10 @@ end
     </referenceTransition>
     """
     n = parse_refTransition(node, PnmlCoreNet(), registry())
-    @test n isa RefTransition
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show n PNML.common(n)
+    end
+   @test n isa RefTransition
     @test !has_xml(n)
     @test pid(n) === :rt1
     @test n.ref === :t1
@@ -136,7 +145,10 @@ end
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
         n = parse_refPlace(s.node, ContinuousNet(), registry())
-        @test typeof(n) <: RefPlace
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show n PNML.common(n)
+        end
+           @test typeof(n) <: RefPlace
         @test !has_xml(n)
         @test typeof(n.id) == Symbol
         @test typeof(n.ref) == Symbol

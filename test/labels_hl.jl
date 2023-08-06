@@ -29,7 +29,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     @test value(mark) isa PNML.AbstractTerm
     @test value(mark) isa PNML.Term
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show mark
+        @show mark PNML.summary(mark)
     end
     @test PNML.has_graphics(mark)
     @test PNML.has_tools(mark)
