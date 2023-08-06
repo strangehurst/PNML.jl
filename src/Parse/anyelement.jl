@@ -53,16 +53,16 @@ function text_content(axn::AnyXmlNode)
                                 $(dump(val))"""))
     return val
 end
-text_content(s::AbstractString) = s
+#text_content(s::AbstractString) = s
 
 # Expected patterns. Note only first is standard-conforming, extensible, prefeered.
 #   <tag><text>1.23</text><tag>
 #   <tag>1.23<tag>
 # The unclaimed label mechanism adds a :content key for text XML elements.
 # When the text element is elided, there is still a :content.
-function numeric_label_value(T, l::AnyXmlNode)
-    number_value(T, text_content(l))
-end
+#function numeric_label_value(T, l::AnyXmlNode)
+#    number_value(T, text_content(l))
+#end
 
 # Functor
 """
