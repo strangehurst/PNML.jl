@@ -43,7 +43,9 @@ using Printf
         @test PNML.type(st2) == sort
 
         for sort2 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-            println("### TEST equals $sort $sort2");
+            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+                println("### TEST equals $sort $sort2");
+            end
             # dump(sort); dump(sort2); dump(sort()); dump(sort2())
             #@test PNML.equals(sort(), sort2())
         end
