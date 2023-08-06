@@ -13,7 +13,7 @@ The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bo
 abstract type AbstractSort end
 Base.eltype(::Type{<:AbstractSort}) = Int
 
-_evaluate(x::AbstractSort) = x() # functor
+#_evaluate(x::AbstractSort) = x() #! functor not for sort?
 
 "Built-in sort whose `eltype` is `Bool`"
 struct BoolSort <: AbstractSort end
