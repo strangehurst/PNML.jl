@@ -20,4 +20,4 @@ struct HLLabel{PNTD} <: HLAnnotation
     #TODO make all labels have text &/or structure
 end
 
-common(l::HLLabel) = i.com
+#! common(l::HLLabel) = i.com test when HLLabel is used
