@@ -114,7 +114,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
                 push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
             end
         else
-            @warn "$tag invalid as child of <namedoperator>, allowed: def, parameter"
+            @warn "element '$tag' invalid as child of <namedoperator>, allowed: def, parameter"
         end
     end
     isnothing(def) && error("<namedoperator> $name $id does not have a <def> element")
@@ -197,7 +197,7 @@ end
 
 #     CONFIG.verbose && @show ucl
 #     @assert ucl.second[1] isa AbstractString
-#     val = numeric_label_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
+#     val = text_content_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
 #     return SortType("default sorttype", val)
 # end
 
