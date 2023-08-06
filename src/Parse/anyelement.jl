@@ -31,8 +31,8 @@ $(TYPEDSIGNATURES)
 Find first :text and return content as string.
 """
 function text_content end
-text_content(l::PnmlLabel) = text_content(elements(l))
-text_content(l::AnyElement) = text_content(elements(l))
+#text_content(l::PnmlLabel) = text_content(elements(l))
+#text_content(l::AnyElement) = text_content(elements(l))
 
 function text_content(vx::Vector{AnyXmlNode})
     tc_index = findfirst(x -> tag(x) === :text, vx)
