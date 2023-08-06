@@ -764,6 +764,6 @@ Return NamedTuple (tag,node), to defer parsing the xml.
 function parse_label(node::XMLNode, _::PnmlType, _::PIDR)
     @assert node !== nothing
     nn = check_nodename(node, "label")
-    @warn "parse_label means there is a label named 'label'"
+    #@warn "parse_label means there is a label named 'label'"
     (; :tag => Symbol(nn), :xml => node) # Always add xml because this is unexpected.
 end
