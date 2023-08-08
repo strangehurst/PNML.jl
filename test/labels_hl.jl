@@ -22,18 +22,22 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     mark = PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry())
 
     @test mark isa PNML.AbstractLabel
-    @test mark isa PNML.marking_type(HLCoreNet()) #HLMarking
+    @test mark isa PNML.marking_type(pntd) #HLMarking
 
     # Following HL text,structure label pattern where structure is a `Term`.
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
     @test value(mark) isa PNML.Term
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show mark PNML.summary(mark)
+        @show mark PNML.summary(mark) PNML.common(mark)
     end
     @test PNML.has_graphics(mark)
     @test PNML.has_tools(mark)
     @test PNML.has_labels(mark)
+
+    @test PNML.has_graphics(PNML.common(mark))
+    @test PNML.has_tools(PNML.common(mark))
+    @test PNML.has_labels(PNML.common(mark))
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
