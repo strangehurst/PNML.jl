@@ -19,7 +19,7 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref
 [`Term`](@ref) or other specialized label.
 """
 function unclaimed_label(node::XMLNode, pntd::PnmlType, _::PnmlIDRegistry)
-    harvest! = HarvestAny(_harvest_any!, pntd) # Create a functor.
+    harvest! = HarvestAny(_harvest_any, pntd) # Create a functor.
     anyel = harvest!(node) # Apply functor.
     #println("unclaimed: "); dump(anyel)
     @assert length(anyel) >= 1 # Even empty elements have content.
@@ -91,7 +91,7 @@ the hierarchy. And neither children nor content nor attribute may be present.
 
 Leaf `AnyXmlNode`'s contain an String or SubString.
 """
-function _harvest_any!(node::XMLNode, harvest!::HarvestAny)
+function _harvest_any(node::XMLNode, harvest!::HarvestAny)
     CONFIG.verbose && println("harvest ", EzXML.nodename(node))
 
     vec = AnyXmlNode[]

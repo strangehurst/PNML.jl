@@ -54,7 +54,7 @@ function pnml_ff(@nospecialize(ft))
     if ft === typeof(PNML.EzXML.nodename) ||
         ft === typeof(PNML.NamedTupleTools.merge) ||
         ft === typeof(PNML.merge) ||
-        ft === typeof(PNML._harvest_any!) ||
+        ft === typeof(PNML._harvest_any) ||
         ft === typeof(PNML.register_id!) ||
         false
         return false
