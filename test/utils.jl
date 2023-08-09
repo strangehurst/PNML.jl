@@ -52,7 +52,7 @@ end
 end
 
 @testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
-    if false
+    if noisy
         @show pntd
         @show page_type(pntd)
         @show place_type(pntd) transition_type(pntd) arc_type(pntd)
@@ -85,12 +85,11 @@ end
     @test tag(b) === :one
     @test value(b) == one(term_value_type(pntd))
 
-
     @test rate_value_type(pntd) == eltype(RealSort)
     #println()
 end
 @testset "condition $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
-    if false
+    if noisy
         @show pntd default_condition(pntd)  typeof(default_condition(pntd))
         @show default_bool_term(pntd) typeof(default_bool_term(pntd))
     end
