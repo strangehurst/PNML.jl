@@ -10,9 +10,6 @@ using PNML:
     parse_initialMarking, parse_inscription, parse_text,
     elements
 
-const noisy::Bool = false
-
-
 @testset "text $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str1 = """<text>ready</text>"""
     n = parse_text(xmlroot(str1), pntd, registry())

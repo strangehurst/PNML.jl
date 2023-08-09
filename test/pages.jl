@@ -16,8 +16,6 @@ using PNML:
     currentMarkings,
     netsets, netdata, page_idset, pagedict
 
-const noisy::Bool = false
-
 function verify_sets(net::PnmlNet)
     #println("\nverify sets and structure ++++++++++++++++++++++")
     @test typeof(page_idset(net))  == typeof(page_idset(firstpage(net)))

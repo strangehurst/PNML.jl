@@ -5,6 +5,9 @@ using PNML, EzXML, Preferences
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false
 
+"Print a lot of information as tests run."
+const noisy::Bool = false
+
 "Only report for our module."
 const target_modules = (PNML,)
 
@@ -22,6 +25,6 @@ function pnml_function_filter(@nospecialize(ft))
     return true
 end
 
-export VERBOSE_PNML, pnml_function_filter, target_modules, runopt, testshow
+export VERBOSE_PNML, pnml_function_filter, target_modules, runopt, testshow, noisy
 
 end # module TestUtils
