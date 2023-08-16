@@ -72,14 +72,16 @@ netdata(n::PnmlNet)  = n.netdata
 netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
 page_idset(n::PnmlNet)  = n.page_set
 
-# `pagedist` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages of net.
-place_idset(n::PnmlNet)         = union([place_idset(p) for p in allpages(n)]...)
-transition_idset(n::PnmlNet)    = union([transition_idset(p) for p in allpages(n)]...)
-arc_idset(n::PnmlNet)           = union([arc_idset(p) for p in allpages(n)]...)
-reftransition_idset(n::PnmlNet) = union([reftransition_idset(p) for p in allpages(n)]...)
-refplace_idset(n::PnmlNet)      = union([refplace_idset(p) for p in allpages(n)]...)
+# `pagedict` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages of net.
+place_idset(n::PnmlNet)         = keys(placedict(n))
+transition_idset(n::PnmlNet)    = keys(transitiondict(n))
+arc_idset(n::PnmlNet)           = keys(arcdict(n))
+reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
+refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
 
-allpages(net::PnmlNet) = (values ∘ pagedict)(net)
+""
+allpages(net::PnmlNet) = allpages(pagedict(net))
+allpages(pd::OrderedDict) = values(pd)
 
 "Return iterator of `Pages` directly owned by `net`."
 pages(net::PnmlNet) = Iterators.filter(v -> pid(v) in page_idset(net), allpages(net))
@@ -140,3 +142,6 @@ has_refP(net::PnmlNet, ref_id::Symbol)     = haskey(refplacedict(net), ref_id)
 
 reftransition(net::PnmlNet, id::Symbol)    = reftransitiondict(net)[id]
 has_refT(net::PnmlNet, ref_id::Symbol)     = haskey(reftransitiondict(net), ref_id)
+
+has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
+has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
