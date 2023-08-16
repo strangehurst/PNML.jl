@@ -529,7 +529,9 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
     end
 
-    isempty(text) && @info "empty name" #TODO control with CONFIG?
+    # Since names are for humans and do not need to be unique we will allow empty strings.
+    # When the "lint" methods are implemented, they can complain.
+    #!isempty(text) && @info "empty name" #TODO Move to a validation method.
     CONFIG.verbose && println("parsed name '$text'") #! debug
     return Name(text, graphics, tools)
 end
