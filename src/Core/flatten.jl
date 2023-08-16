@@ -13,43 +13,62 @@ Options
 """
 function flatten_pages! end
 
+function flatten_pages!(model::PnmlModel; kw...)
+    for net in nets(model)
+        flatten_pages!(net; kw...)
+        post_flat_verify(net; kw...)
+    end
+    return nothing
+end
+
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
-    verbose && println("\nflatten_pages! net $(pid(net)) with $(length(net.pagedict)) pages")
+    verbose &&
+        println("\nflatten_pages! net $(pid(net)) with $(length(pagedict(net))) pages")
 
-    if length(net.pagedict) > 1 # Place content of other pages into 1st page.
-        pageids = keys(net.pagedict)
-        @assert first(pageids) == pid(first(values(net.pagedict)))
+    if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
+        #println("pagedict(net)"); dump(pagedict(net))
+        #println("pageids of $(pid(net))"); typeof(page_idset(net))
 
-        key1, val1 = popfirst!(net.pagedict)
+        pageids = keys(pagedict(net)) #! iterator
+        key1, val1 = popfirst!(pagedict(net))
         @assert key1 ∉ pageids # Note the coupling of pageids and net.pagedict.
 
-        while !isempty(net.pagedict)
-            cutid, cutpage = popfirst!(net.pagedict)
+        while !isempty(pagedict(net))
+            cutid, cutpage = popfirst!(pagedict(net))
             @assert cutid ∉ pageids
             append_page!(val1, cutpage)
             delete!(page_idset(net), cutid) # Remove from set of page ids owned by net.
         end
-        @assert isempty(net.pagedict)
+        @assert isempty(pagedict(net))
 
         pagedict(net)[key1] = val1 # Put the one-true-page back in the dictionary.
         push!(page_idset(net), key1)
 
-        @assert length(net.pagedict) == 1
-        @assert key1 == only(pageids)
+        @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
+        #@assert netkey1 == only(pageids).pagedict[]
 
         deref!(net, trim)
     end
     return nothing
 end
 
+"Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
+function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
+    errors = String[]
+    length(pagedict(net)) == 1 || push!(errors, "pagedict length wrong")
+    isempty(refplacedict(net)) || push!(errors, "refplacedict not empty")
+    isempty(reftransitiondict(net)) || push!(errors, "reftransitiondict not empty")
+    isempty(refplace_idset(net)) || push!(errors, "refplace_idset not empty")
+    isempty(reftransition_idset(net)) || push!(errors, "reftransition_idset not empty")
+    # || push!(errors, " not empty")
+    # || push!(errors, "")
+    # || push!(errors, "")
 
-# Do each net in model.
-function flatten_pages!(model::PnmlModel; kw...)
-    for net in nets(model)
-        flatten_pages!(net; kw...)
-    end
-    return nothing
+    #@show pid(net) errors
+
+    isempty(errors) ||
+        error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
 end
 
 """
@@ -74,7 +93,7 @@ function append_page!(l::Page, r::Page;
 
     # Merge netsets except for page_idset
     for s in [place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset]
-        union!(s(l), s(r))
+        union!(s(l), s(r)) #TODO type assert
     end
 
     # Optional fields from common to append.
@@ -83,9 +102,8 @@ function append_page!(l::Page, r::Page;
     end
 
     delete!(page_idset(l), pid(r))
-
+    @assert pid(r) ∉ page_idset(l)
     CONFIG.verbose && println("after append_page! netsets(r) = ", netsets(r))
-
     #! TODO Verify netsets
     return l
 end
@@ -134,7 +152,8 @@ as part of [`flatten_pages!`](@ref),
   4) No cycles.
 """
 function deref!(net::PnmlNet, trim::Bool = true)
-    CONFIG.verbose && @show "deref! net $(pid(net))"
+    CONFIG.verbose && println("deref! net $(pid(net))")
+    #@show typeof(arc_idset(net))
     for id in arc_idset(net)
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
@@ -155,6 +174,9 @@ function deref!(net::PnmlNet, trim::Bool = true)
         # Remove any reference node idsets from the only remaining page after flattening.
         empty!(refplace_idset(firstpage(net)))
         empty!(reftransition_idset(firstpage(net)))
+        # And the nodes themselves.
+        empty!(reftransitiondict(net))
+        empty!(refplacedict(net))
     end
     return net
 end
@@ -171,7 +193,8 @@ function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     if isnothing(rp) # Something is really, really wrong.
         error("failed to lookup reference place id $id in net $(pid(net))")
     end
-    @assert has_place(net, rp.ref)
+    has_place(net, rp.ref) || has_refplace(net, rp.ref) ||
+        error("$(rp.ref) is not a place or reference place")
     if trim # Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
         delete!(refplacedict(net), id)
         has_refP(net, id) && error("did not expect refP $id in net $(pid(net)) after delete")
@@ -191,10 +214,11 @@ function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     if isnothing(rt) # Something is really, really wrong.
         error("failed to lookup reference transition id $id in net $(pid(net))")
     end
-    @assert has_transition(net, rt.ref)
+    has_transition(net, rt.ref) || has_reftransition(net, rt.ref) ||
+        error("$(rt.ref) is not a transition or reference transition")
     if trim
         delete!(reftransitiondict(net), id)
-        has_refT(net, id) && error("did not expect refT $id in net $(pid(net))")
+        has_refT(net, id) && error("did not expect refT $id in net $(pid(net)) after delete")
     end
     return rt.ref
 end
