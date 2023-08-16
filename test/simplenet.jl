@@ -65,7 +65,9 @@ testlogger = TestLogger()
     #println("- - - - - - - - - - - - - - - -")
 
     @test_call SimpleNet(net0) # works
-    @test_call broken=true SimpleNet(model) # fails
+    jet_broke =  (VERSION < v"1.10-") ? false : true
+    @test_call broken=jet_broke SimpleNet(model)
+
     #! Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
 
     snet  = @inferred SimpleNet SimpleNet(net0)
