@@ -51,9 +51,7 @@ end
 SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
 SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
 SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
-
 function SimpleNet(net::PnmlNet)
-    #! deepcopy(net) # TODO Is copy needed?
     flatten_pages!(net) #TODO
     SimpleNet(pid(net), net)
 end

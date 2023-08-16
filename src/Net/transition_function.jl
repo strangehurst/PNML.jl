@@ -22,7 +22,7 @@ value of arc inscription's value for use as a transition function.
 #TODO When do these get called "pre" and "post"?
 """
 function in_out end
-
+# Look in the PnmlNet
 in_out(petrinet::AbstractPetriNet, transition_id::Symbol) = in_out(petrinet.net, transition_id)
 in_out(net::PnmlNet, transition_id::Symbol) = in_out((first ∘ pages)(net), transition_id)
 in_out(page::Page, transition_id::Symbol)   = (ins(page, transition_id), outs(page, transition_id))

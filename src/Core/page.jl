@@ -18,6 +18,8 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by net and its pages.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by net and its pages.
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
+    # Note: `PnmlNet` only has `page_set` because all net objects are attached to a `Page`.
+    #TODO separate page id set here.
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
@@ -34,7 +36,7 @@ pagedict(p::Page) = p.pagedict
 netdata(p::Page)  = p.netdata
 netsets(p::Page)  = p.netsets
 
-
+# Do not expect the page api to see much use, so it is not very efficient.
 pages(page::Page)       = Iterators.filter(v -> pid(v) in page_idset(page), values(pagedict(page)))
 places(page::Page)      = Iterators.filter(v -> pid(v) in place_idset(page), values(placedict(page)))
 transitions(page::Page) = Iterators.filter(v -> pid(v) in transition_idset(page), values(transitiondict(page)))
@@ -72,6 +74,7 @@ has_refP(page::Page, id::Symbol) = (id in refplace_idset(page))
 reftransition(page::Page, id::Symbol) = reftransitiondict(page)[id]
 has_refT(page::Page, id::Symbol) = (id in reftransition_idset(page))
 
+# When flattening, the only `common` that needs emptying is a `Page`'s.
 function Base.empty!(page::Page)
     empty!(page.declaration)
     t = (tools ∘ common)(page)
