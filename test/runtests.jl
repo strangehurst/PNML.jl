@@ -5,7 +5,7 @@ using Documenter
 #, LabelledArrays
 using JET
 
-const GROUPS = (split ∘ uppercase)(get(ENV, "GROUP", "ALL"))
+@info "Pkg.test ARGS" ARGS
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -15,15 +15,15 @@ end
 include("TestUtils.jl")
 using .TestUtils
 
-"Return true if one of the GROUP environment variable's values is found in 'v'."
-select(v...) = any(any(==(g), v) for g in GROUPS)
+"Return true if one of `v` is found in `ARGS` or `ARGS` is empty."
+select(v...) = length(ARGS) == 0 || any(∈(ARGS), v)
 
-if select("None")
+if select("none", "NONE")
     return
 end
 
 #############################################################################
-@time "ALL TESTS" begin
+@time "TESTS" begin
 
 # Check for ambiguous methods.
 @time "ambiguous" begin

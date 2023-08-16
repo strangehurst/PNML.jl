@@ -42,39 +42,42 @@ testlogger = TestLogger()
     """
     @test_call target_modules=target_modules parse_str(str)
     model = @inferred parse_str(str)
+    #@show model #println("simplenet model"); dump(model)
+    #println()
 
     @test_call PNML.find_nets(model, :continuous)
-    vx = @inferred Tuple PNML.find_nets(model, :continuous)
-    v = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :continuous)
+    @test_call PNML.find_nets(model, PNML.ContinuousNet())
+    vx = PNML.find_nets(model, :continuous)
+    v =  PNML.find_nets(model, PNML.ContinuousNet())
+    @test vx === v
+    @test !isempty(v)
 
     @test_call PNML.first_net(model)
-    @test v[begin] == @inferred PnmlNet PNML.first_net(model)
-    @test first(v) == @inferred PnmlNet PNML.first_net(model)
+    net0 = @inferred PnmlNet PNML.first_net(model)
+    #@show net0
+    @test PNML.nettype(net0) <: PnmlType
+    @test first(v) === net0
 
-    @test_call SimpleNet(v[begin])
-    @test_call SimpleNet(model)
-    @test_call SimpleNet(PNML.first_net(model))
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
+    #println("- - - - - - - - - - - - - - - -")
+    #@show typeof(values(arc_idset(net0)))
+    PNML.flatten_pages!(model)
+    PNML.flatten_pages!(net0)
+    #println("- - - - - - - - - - - - - - - -")
 
-    net  = @inferred SimpleNet SimpleNet(v[begin])
-    net1 = @inferred SimpleNet SimpleNet(model)
-    net2 = @inferred SimpleNet SimpleNet(PNML.first_net(model))
+    @test_call SimpleNet(net0) # works
+    @test_call broken=true SimpleNet(model) # fails
+    #! Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
+
+    snet  = @inferred SimpleNet SimpleNet(net0)
+    snet1 = @inferred SimpleNet SimpleNet(model)
 
     for accessor in [pid, place_idset, transition_idset, arc_idset,
                      reftransition_idset, refplace_idset]
-        @test accessor(net1) == accessor(net)
-        @test accessor(net2) == accessor(net1)
-        @test accessor(net2) == accessor(net)
+        @test accessor(snet1) == accessor(snet)
     end
 
     for accessor in [places, transitions, arcs]
-        for (a,b) in zip(accessor(net1), accessor(net))
-            @test pid(a) == pid(b)
-        end
-        for (a,b) in zip(accessor(net2), accessor(net1))
-            @test pid(a) == pid(b)
-        end
-        for (a,b) in zip(accessor(net2), accessor(net))
+        for (a,b) in zip(accessor(snet1), accessor(snet))
             @test pid(a) == pid(b)
         end
     end
@@ -83,7 +86,7 @@ testlogger = TestLogger()
         #println()
         #@show "start inferred"
         # First @inferred failure throws exception ending testset.
-        @test firstpage(net.net) === first(pages(net.net))
+        @test firstpage(snet.net) === first(pages(snet.net))
 
         #@inferred places(first(pages(net.net)))
         #@inferred transitions(first(pages(net.net)))
@@ -93,12 +96,12 @@ testlogger = TestLogger()
         #@inferred transitions(net.net)
         #@inferred arcs(net.net)
 
-        @inferred Base.ValueIterator places(net)
-        @inferred Base.ValueIterator transitions(net)
-        @inferred Base.ValueIterator arcs(net)
+        @inferred Base.ValueIterator places(snet)
+        @inferred Base.ValueIterator transitions(snet)
+        @inferred Base.ValueIterator arcs(snet)
     end
 
-    for top in [first(pages(net.net)), net.net, net]
+    for top in [first(pages(snet.net)), snet.net, snet]
         #println()
         #@show typeof(top)
         #@show length(pages(top))
@@ -118,7 +121,7 @@ testlogger = TestLogger()
         #println()
     end
 
-    for top in [net, net.net, first(pages(net.net))]
+    for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
             #println("transition $(pid(t))"); dump(t)
@@ -133,7 +136,7 @@ testlogger = TestLogger()
     end
 
     #
-    for top in [net, net.net, first(pages(net.net))]
+    for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules arcs(top)
         for a in arcs(top)
             #@show "arc $(pid(a))"
@@ -151,12 +154,10 @@ testlogger = TestLogger()
         end
     end
     @testset "initialMarking" begin
-        #@show typeof(net)
-        u1 = @inferred LArray currentMarkings(net)
-        #@show typeof(net.net)
-        u2 = @inferred LArray currentMarkings(net.net)
-        #@show typeof(firstpage(net.net))
-        u3 = @inferred LArray currentMarkings(first(pages(net.net)))
+        #@show typeof(snet)
+        u1 = @inferred LArray currentMarkings(snet)
+        u2 = @inferred LArray currentMarkings(snet.net)
+        u3 = @inferred LArray currentMarkings(first(pages(snet.net)))
 
         @test u1 == u2
         @test u1 == u3

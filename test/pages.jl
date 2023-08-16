@@ -18,17 +18,34 @@ using PNML:
 
 function verify_sets(net::PnmlNet)
     #println("\nverify sets and structure ++++++++++++++++++++++")
-    @test typeof(page_idset(net))  == typeof(page_idset(firstpage(net)))
-    @test typeof(arc_idset(net))  == typeof(arc_idset(firstpage(net)))
-    @test typeof(place_idset(net)) == typeof(place_idset(firstpage(net)))
-    @test typeof(transition_idset(net)) == typeof(transition_idset(firstpage(net)))
-    @test typeof(refplace_idset(net))  == typeof(refplace_idset(firstpage(net)))
-    @test typeof(reftransition_idset(net)) ==  typeof(reftransition_idset(firstpage(net)))
+    @test page_idset(net) isa AbstractSet
+    @test page_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(page_idset(net), page_idset(firstpage(net))))
+
+    @test arc_idset(net) isa AbstractSet
+    @test arc_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
+
+    @test place_idset(net) isa AbstractSet
+    @test place_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(place_idset(net), place_idset(firstpage(net))))
+
+    @test transition_idset(net) isa AbstractSet
+    @test transition_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(transition_idset(net), transition_idset(firstpage(net))))
+
+    @test refplace_idset(net) isa AbstractSet
+    @test refplace_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(refplace_idset(net), refplace_idset(firstpage(net))))
+
+    @test reftransition_idset(net) isa AbstractSet
+    @test reftransition_idset(firstpage(net)) isa AbstractSet
+    @test !isempty(setdiff(reftransition_idset(net), reftransition_idset(firstpage(net))))
 
     @test netdata(net) === netdata(firstpage(net))
-
     for page in pages(net)
-        @test netdata(net) === netdata(page)
+        @test netdata(net) === netdata(page)   # There is only 1 netdata.
+        @test pagedict(net) === pagedict(page) # There is only 1 pagedict.
     end
 
     for pageid in PNML.page_idset(net)
@@ -36,6 +53,7 @@ function verify_sets(net::PnmlNet)
     end
 
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        # Test show()
         @show arc_idset(net)
         @show place_idset(net)
         @show transition_idset(net)
@@ -71,9 +89,7 @@ function verify_sets(net::PnmlNet)
     end
 end
 
-@testset "pages" begin
-    str = """
-    <?xml version="1.0"?>
+const str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="pnmlcore">
             <page id="page1">
@@ -121,38 +137,41 @@ end
             </page>
         </net>
     </pnml>
-    """
-    model = @inferred parse_str(str)
-    net = first_net(model) # The nets of a model not inferred.
+"""
+model = @inferred parse_str(str)
+net = first_net(model) # The nets of a model not inferrable.
+@test net isa PnmlNet  # Any concrete subtype.
+@test isconcretetype(typeof(net))
 
-    @test net isa PnmlNet
-    @test @inferred(firstpage(net)) isa Page #! add parameters
+@test @inferred(firstpage(net)) isa Page # add parameters?
+@test length(PNML.allpages(net)) == 14
 
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show model
-        println()
-        PNML.pagetree(net)
-        println()
-        AbstractTrees.print_tree(net)
-        println()
-    end
-    verify_sets(net)
-    # @show arc_idset(net)
-    # @show place_idset(net)
-    # @show transition_idset(net)
-    # @show refplace_idset(net)
-    # @show reftransition_idset(net)
-    # println()
-    # @show arc_idset(firstpage(net))
-    # @show place_idset(firstpage(net))
-    # @show transition_idset(firstpage(net))
-    # @show refplace_idset(firstpage(net))
-    # @show reftransition_idset(firstpage(net))
-    # println()
+Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    @show model
+    println()
+    PNML.pagetree(net)
+    println()
+    AbstractTrees.print_tree(net)
+    println()
+end
 
-    @testset "by pntd" begin
+verify_sets(net)
 
-        type_funs = (
+# @show arc_idset(net)
+# @show place_idset(net)
+# @show transition_idset(net)
+# @show refplace_idset(net)
+# @show reftransition_idset(net)
+# println()
+# @show arc_idset(firstpage(net))
+# @show place_idset(firstpage(net))
+# @show transition_idset(firstpage(net))
+# @show refplace_idset(firstpage(net))
+# @show reftransition_idset(firstpage(net))
+# println()
+
+
+type_funs = (
             arc_type,
             place_type,
             transition_type,
@@ -168,7 +187,7 @@ end
             rate_value_type,
             )
 
-        def_funs = (
+def_funs = (
             default_inscription,
             default_marking,
             default_sort,
@@ -177,110 +196,69 @@ end
             default_zero_term,
             )
 
-            #println()
-            for fun in type_funs
-                #println()
-                for pntd in values(PnmlTypeDefs.pnmltype_map)
-                    #print("$fun($pntd) \t ")
-                    #println(fun(pntd))
-                    @test_opt fun(pntd)
-                    @test_call fun(pntd)
-                end
-                #println()
-            end
-            #println()
-            #println("###############################################")
-            #println()
-            for fun in type_funs
-                #println()
-                for pntd in values(PnmlTypeDefs.pnmltype_map)
-                    pt = typeof(pntd)
-                    #@show pt fun(pt)
-                    @test_opt fun(pt)
-                    @test_call fun(pt)
-                end
-                #println()
-            end
-            #println()
+@testset "by pntd $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+    for fun in type_funs # the *_type(::PnmlType) methods
+        #println("$fun($pntd) \t ", fun(pntd))
+        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pntd)
+        @test_call fun(pntd)
+        pt = typeof(pntd)
+        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pt)
+        @test_call fun(pt)
     end
-
-    @testset "x_types" begin
-        @test arc_type(net) isa Type
-        @test place_type(net) isa Type
-        @test transition_type(net) isa Type
-        @test condition_type(net) isa Type
-        @test condition_value_type(net) isa Type
-        @test inscription_type(net) isa Type
-        @test inscription_value_type(net) isa Type
-        @test marking_type(net) isa Type
-        @test marking_value_type(net) isa Type
-        @test page_type(net) isa Type
-        @test refplace_type(net) isa Type
-        @test reftransition_type(net) isa Type
-        @test rate_value_type(net) isa Type
-
-        @test_call arc_type(net)
-        @test_call place_type(net)
-        @test_call transition_type(net)
-        @test_call condition_type(net)
-        @test_call condition_value_type(net)
-        @test_call inscription_type(net)
-        @test_call inscription_value_type(net)
-        @test_call marking_type(net)
-        @test_call marking_value_type(net)
-        @test_call page_type(net)
-        @test_call refplace_type(net)
-        @test_call reftransition_type(net)
-        @test_call rate_value_type(net)
-
-        @test_opt arc_type(net)
-        @test_opt place_type(net)
-        @test_opt transition_type(net)
-        @test_opt condition_type(net)
-        @test_opt condition_value_type(net)
-        @test_opt inscription_type(net)
-        @test_opt inscription_value_type(net)
-        @test_opt marking_type(net)
-        @test_opt marking_value_type(net)
-        @test_opt page_type(net)
-        @test_opt refplace_type(net)
-        @test_opt reftransition_type(net)
-        @test_opt rate_value_type(net)
+    #println()
+    for fun in def_funs
+        #println("$fun($pntd) \t ", fun(pntd))
+        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pntd)
+        @test_call fun(pntd)
+        # these are not implemented
+        #pt = typeof(pntd)
+        #@show pt fun(pt)
+        #@test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pt)
+        #@test_call fun(pt)
     end
+    #println()
+end
 
-    exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
-    exp_place_ids         = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
-    exp_transition_ids    = [:t1, :t2, :t3, :t31]
-    exp_refplace_ids      = [:rp1, :rp2]
-    exp_reftransition_ids = [:rt2]
-
-    @test (sort ∘ collect)(@inferred(place_idset(net)))         == exp_place_ids
-    @test (sort ∘ collect)(@inferred(arc_idset(net)))           == exp_arc_ids
-    @test (sort ∘ collect)(@inferred(transition_idset(net)))    == exp_transition_ids
-    @test (sort ∘ collect)(@inferred(refplace_idset(net)))      == exp_refplace_ids
-    @test (sort ∘ collect)(@inferred(reftransition_idset(net))) == exp_reftransition_ids
-
-    for arcid in exp_arc_ids
+@testset "x_types(net)" begin
+    for fun in type_funs # the *_type(::PnmlNet) methods
+        #println("$fun($pntd) \t ", fun(pntd))
+        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(net)
+        @test_call fun(net)
+        @test fun(net) isa Type
     end
-    for arcid in exp_arc_ids
-        a = @inferred Maybe{arc_type(net)} arc(net, arcid)
-        @test !isnothing(a)
-        #! Pages do not decend subpages!
-        #!@test typeof(arc(net, aid)) === typeof(arc(firstpage(net), aid))
-    end
+end
 
-    @test arcs(net) !== nothing
-    @test places(net) !== nothing
-    @test transitions(net) !== nothing
-    @test refplaces(net) !== nothing
-    @test reftransitions(net) !== nothing
+exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
+exp_place_ids         = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
+exp_transition_ids    = [:t1, :t2, :t3, :t31]
+exp_refplace_ids      = [:rp1, :rp2]
+exp_reftransition_ids = [:rt2]
 
-    noisy && println("---------------")
-    noisy && @show (collect ∘ values ∘ page_idset)(net)
-    noisy && println("---------------")
+@test isempty(setdiff(@inferred(place_idset(net)), exp_place_ids))
+@test isempty(setdiff(@inferred(arc_idset(net)), exp_arc_ids))
+@test isempty(setdiff(@inferred(transition_idset(net)), exp_transition_ids))
+@test isempty(setdiff(@inferred(refplace_idset(net)), exp_refplace_ids))
+@test isempty(setdiff(@inferred(reftransition_idset(net)), exp_reftransition_ids))
 
-    @testset "flatten" begin
-        @inferred flatten_pages!(net)
+for arcid in exp_arc_ids
+end
+for arcid in exp_arc_ids
+    a = @inferred Maybe{arc_type(net)} arc(net, arcid)
+    @test !isnothing(a)
+end
+
+@test arcs(net) !== nothing
+@test places(net) !== nothing
+@test transitions(net) !== nothing
+@test refplaces(net) !== nothing
+@test reftransitions(net) !== nothing
+
+noisy && println("---------------")
+noisy && @show (collect ∘ values ∘ page_idset)(net)
+noisy && println("---------------")
+
+@testset "flatten" begin
+        flatten_pages!(net)
         #println("---------------")
         #@show netsets(firstpage(net))
         #@show netdata(net)
@@ -300,22 +278,21 @@ end
         noisy && PNML.pagetree(net)
         noisy && println()
 
-        @test (sort ∘ collect)(arc_idset(net)) == expected_a
-        @test (sort ∘ collect)(arc_idset(firstpage(net))) == expected_a
-        @test arc_idset(net) == arc_idset(firstpage(net))
+        @test isempty(setdiff(arc_idset(net), expected_a))
+        @test isempty(setdiff(arc_idset(firstpage(net)), expected_a))
+        @test isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
         @test_call target_modules=target_modules arc_idset(net)
         @test_call arc_idset(firstpage(net))
-
         for a ∈ expected_a
             @test a ∈ arc_idset(net)
+            @test a ∈ arc_idset(firstpage(net))
         end
 
-        @test (sort ∘ collect)(place_idset(net)) == expected_p
-        @test (sort ∘ collect)(place_idset(firstpage(net))) == expected_p
-        @test place_idset(net) == place_idset(firstpage(net))
+        @test isempty(setdiff(place_idset(net), expected_p))
+        @test isempty(setdiff(place_idset(firstpage(net)), expected_p))
+        @test isempty(setdiff(place_idset(net), place_idset(firstpage(net))))
         @test_call target_modules=target_modules place_idset(net)
         @test_call place_idset(firstpage(net))
-
         for p ∈ expected_p
             @test p ∈ place_idset(net)
         end
@@ -325,37 +302,37 @@ end
         @test (sort ∘ collect)(transition_idset(net)) == (sort ∘ collect)(transition_idset(firstpage(net)))
         @test_call target_modules=target_modules transition_idset(net)
         @test_call transition_idset(firstpage(net))
-
         for t ∈ expected_t
             @test t ∈ transition_idset(net)
         end
 
         # After flatten reference nodes remain in the netdata dictonary.
-        #@show (sort ∘ collect)(reftransition_idset(net)) (
-        #@show sort ∘ collect)(reftransition_idset(firstpage(net)))
+        #@show (sort ∘ collect)(reftransition_idset(net))
+        #@show (sort ∘ collect)(reftransition_idset(firstpage(net)))
         #@show expected_rt
 
-        @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
+        @test isempty(reftransition_idset(net))
+        @test isempty(reftransition_idset(firstpage(net)))
         @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
+        @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
         @test (sort ∘ collect)(reftransition_idset(net)) == (sort ∘ collect)(reftransition_idset(firstpage(net)))
         @test_call target_modules=target_modules reftransition_idset(net)
         @test_call reftransition_idset(firstpage(net))
-
         for rt ∈ expected_rt
             @test rt ∈ reftransition_idset(net)
         end
 
+        @test isempty(refplace_idset(net))
+        @test isempty(refplace_idset(firstpage(net)))
         @test (sort ∘ collect)(refplace_idset(net)) == expected_rp
         @test (sort ∘ collect)(refplace_idset(firstpage(net))) == expected_rp
         @test (sort ∘ collect)(refplace_idset(net)) == (sort ∘ collect)(refplace_idset(firstpage(net)))
         @test_call target_modules=target_modules refplace_idset(net)
         @test_call refplace_idset(firstpage(net))
-
         for rp ∈ expected_rp
             @test rp ∈ refplace_idset(net)
         end
-    end
-end # pages
+end
 
 @testset "lookup types $pntd" for pntd in  values(PNML.PnmlTypeDefs.pnmltype_map)
     @test arc_type(pntd) <: PNML.Arc

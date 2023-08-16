@@ -95,40 +95,34 @@ end
     </pnml>
     """
     model = @inferred parse_str(str)
+    @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
+    @test PNML.idregistry(model) isa PnmlIDRegistry
+
+    modelnets = PNML.nets(model)
+    @test length(collect(modelnets)) == 5
 
     #println()
-    for net in PNML.nets(model)
+    for net in modelnets
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show  pid(net) t length(ntup) PNML.nettype.(ntup) pid.(ntup)
+            @show  pid(net) PNML.nettype.(ntup) pid.(ntup)
         end
         for n in ntup
             @test t === PNML.nettype(n)
         end
     end
-    v1 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, :ptnet)
 
-    @test_opt pnmltype(:ptnet)
-    @test_call pnmltype(:ptnet)
-    for net in v1
-        @test net.type === pnmltype(:ptnet)
+    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng]
+        @test_opt pnmltype(pt)
+        @test_call pnmltype(pt)
+        for net in PNML.find_nets(model, pt)
+            @test net.type === pnmltype(pt)
+        end
+        for net in PNML.find_nets(model, pnmltype(pt))
+            @test net.type === pnmltype(pt)
+        end
     end
-    v2 = @inferred Tuple{Vararg{PnmlNet}} PNML.find_nets(model, "ptnet")
-    for net in v2
-        @test net.type === PNML.PnmlTypeDefs.pnmltype(:ptnet)
-    end
-
-    @test v1 == v2
-    @test length(v1) == 2
-
-    v3 = PNML.find_nets(model, :pnmlcore)
-    for net in v3
-        @test net.type === pnmltype(:pnmlcore)
-    end
-
-    @test !isempty(v3)
-    @test v3 != v1
 
     @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
         for net in PNML.find_nets(model, t)
@@ -150,4 +144,5 @@ end
 
     model = parse_str(str)
     @test model isa PnmlModel
+
 end

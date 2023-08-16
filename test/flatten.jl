@@ -33,8 +33,9 @@ str = """
     model = parse_str(str)
     net = PNML.first_net(model)
     @test_call PNML.first_net(model)
-
+    @test length(PNML.allpages(net)) == 3
     PNML.flatten_pages!(net)
+    @test length(PNML.allpages(net)) == 1
     @test typeof(net) <: PNML.PnmlNet
 end
 
@@ -42,6 +43,7 @@ end
     model = parse_str(str)
     PNML.flatten_pages!(model)
     net = PNML.first_net(model)
+    @test length(PNML.allpages(net)) == 1
     @test typeof(net) <: PNML.PnmlNet
     #@show net
 end

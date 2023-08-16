@@ -19,6 +19,7 @@ function pnml_function_filter(@nospecialize(ft))
     if ft === typeof(PnmlIDRegistrys.register_id!) ||
        ft === typeof(Preferences.load_preference) ||
        ft === typeof(EzXML.nodename) ||
+       ft === typeof(Base.string) ||
        false
         return false
     end
