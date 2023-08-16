@@ -46,40 +46,41 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
 
 @testset verbose=true failfast=true showtiming=true "PNML.jl" begin
     if select("ALL", "BASE")
-        noisy && println("BASE")
-        @time "typedefs" @safetestset "typedefs"  begin include("typedefs.jl") end
-        @time "registry" @safetestset "registry"  begin include("idregistry.jl") end
-        @time "utils"    @safetestset "utils"     begin include("utils.jl") end
+        println("BASE")
+        @safetestset "typedefs"  begin include("typedefs.jl") end
+        @safetestset "registry"  begin include("idregistry.jl") end
+        @safetestset "utils"     begin include("utils.jl") end
     end
     if select("ALL", "CORE")
-        noisy && println("CORE")
-        @time "graphics"     @safetestset "graphics"     begin include("graphics.jl") end
-        @time "toolspecific" @safetestset "toolspecific" begin include("toolspecific.jl") end
-        @time "labels"       @safetestset "labels"       begin include("labels.jl") end
-        @time "nodes"        @safetestset "nodes"        begin include("nodes.jl") end
-        @time "pages"        @safetestset "pages"        begin include("pages.jl") end
-        @time "exceptions"   @safetestset "exceptions"   begin include("exceptions.jl") end
-        @time "flatten"      @safetestset "flatten"      begin include("flatten.jl") end
+        println("CORE")
+        @safetestset "graphics"     begin include("graphics.jl") end
+        @safetestset "toolspecific" begin include("toolspecific.jl") end
+        @safetestset "labels"       begin include("labels.jl") end
+        @safetestset "nodes"        begin include("nodes.jl") end
+        @safetestset "pages"        begin include("pages.jl") end
+        @safetestset "exceptions"   begin include("exceptions.jl") end
+        @safetestset "flatten"      begin include("flatten.jl") end
     end
     if select("ALL", "HIGHLEVEL")
-        noisy && println("HIGHLEVEL")
-        @time "declarations" @safetestset "declarations" begin include("declarations.jl") end
-        @time "sorts"        @safetestset "sorts"        begin include("sort.jl") end
-        @time "labels_hl"    @safetestset "labels_hl"    begin include("labels_hl.jl") end
+        println("HIGHLEVEL")
+        @safetestset "declarations" begin include("declarations.jl") end
+        @safetestset "sorts"        begin include("sort.jl") end
+        @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select("ALL", "PARSE") # Overall full flow test
-        noisy && println("PARSE")
-        @time "document"   @safetestset "document"     begin include("document.jl") end
-        @time "parse_tree" @safetestset "parse_tree"   begin include("parse_tree.jl") end
+        println("PARSE")
+        @safetestset "document"     begin include("document.jl") end
+        @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
     if select("ALL", "NET")
-        noisy && println("NET")
-        @time "rate"      @safetestset "rate"         begin include("rate.jl") end
-        @time "simplenet" @safetestset "simplenet"    begin include("simplenet.jl") end
+        println("NET")
+        @safetestset "rate"         begin include("rate.jl") end
+        @safetestset "simplenet"    begin include("simplenet.jl") end
     end
     if select("ALL", "DOC")
-        @time "doctest" @testset "doctest" begin doctest(PNML, manual = true) end
+        println("DOC")
+        @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end
 end # time
