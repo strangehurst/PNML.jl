@@ -7,7 +7,6 @@ using DataFrames, DataFramesMeta, Dates, CSV
 
 function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = "examples",
                   outdir = "/home/jeff/Jules/testpmnl")
-    pnml = endswith(".pnml")
     df = DataFrame() # Collects data from tests.
     indir  = joinpath(topdir, dir)
     subd = Dates.format(now(), dateformat"yyyymmddHHMM")
@@ -16,7 +15,7 @@ function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = 
     @show indir outdir
     cd(indir) do
         for (root, dirs, files) in walkdir(".")
-            for file in filter(pnml, files)
+            for file in filter(endswith(".pnml"), files)
                 f = lstrip(joinpath(root, file), ['.', '/'])
                 println(f, " size = ", filesize(f)) # Display path to file and size.
                 try
