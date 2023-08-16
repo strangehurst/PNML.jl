@@ -38,5 +38,5 @@ end
 
 function Base.empty!(d::Declaration)
     empty!(declarations(d))
-    empty!(common(d))
+    #empty!(common(d))
 end
