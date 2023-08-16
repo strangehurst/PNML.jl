@@ -257,7 +257,7 @@ pnmltype(uri::AbstractString) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
     typemap = pnmltype_map::IdDict{Symbol, PnmlType}
     haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
-    @inbounds typemap[s]
+    typemap[s]
 end
 
 
