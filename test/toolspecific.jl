@@ -1,7 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, xmlnode, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
-    has_tools, tools, parse_toolspecific, place, parse_place, TokenGraphics
+    has_tools, tools, parse_toolspecific, place, parse_place, TokenGraphics,
+    coordinate_value_type
 
 str1 = (tool="JARP", version="1.2", str = """
  <toolspecific tool="JARP" version="1.2">
@@ -33,7 +34,7 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
          <tokenposition x="2"  y="3"/>
      </tokengraphics>
  </toolspecific>
-""", elementtype = TokenGraphics{Int64})
+""", elementtype = TokenGraphics{coordinate_value_type()})
 
 str5 = (tool="org.pnml.tool", version="1.0", str = """
  <toolspecific tool="org.pnml.tool" version="1.0">
@@ -43,7 +44,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
      </tokengraphics>
      <visible>true</visible>
  </toolspecific>
-""", elementtype = TokenGraphics{Int64})
+""", elementtype = TokenGraphics{coordinate_value_type()})
 
 @testset "parse tools" begin
     for s in [str1, str2, str3, str4, str5]
@@ -68,7 +69,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test tooli.infos isa s.elementtype
         @test PNML.infos(tooli) isa s.elementtype
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
         #@show PNML.infos(tooli)
     end
     @testset "combined" begin

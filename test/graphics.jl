@@ -1,15 +1,17 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, parse_graphics, parse_tokengraphics
 
-const _pntd::PnmlType = PnmlCoreNet()
 @testset "coordinate" begin
+    PNML.Coordinate(1,2)
+    PNML.Coordinate(1.1,2.2)
     @test_opt PNML.Coordinate(1,2)
     @test_call PNML.Coordinate(1,2)
     @test_opt PNML.Coordinate(1.1,2.2)
     @test_call PNML.Coordinate(1.1,2.2)
+    #TODO more tests
 end
 
-@testset "graphics" begin
+@testset "graphics $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str = """
     <graphics>
      <offset x="1" y="2" />
@@ -19,16 +21,15 @@ end
      <dimension x="5" y="6" />
      <offset    x="7" y="8" /><!-- override first offset -->
      <fill  color="fillcolor" gradient-color="none" gradient-rotation="horizontal"/>
-     <font align="center" family="Dialog" rotation="0.0" size="11"
+     <font align="center" family="Dialog" rotation="0.0"  size="11"
            style="normal" weight="normal" />
     <unexpected/>
     </graphics>
     """
-    n = parse_graphics(xmlroot(str), _pntd, registry())
-
+    n = @test_logs (:warn,"graphics ignoring <graphics> child '<unexpected/>'") parse_graphics(xmlroot(str), pntd, registry())
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
-    @test n.positions isa Vector{PNML.Coordinate{Int}}
+    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
         @show n eltype(n.offset)
     end
@@ -62,16 +63,16 @@ end
 end
 
 
-@testset "graphics exception" begin
+@testset "graphics exception $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<bogus x="1" y="2" />"""
-
-    @test_throws ArgumentError PNML.parse_graphics_coordinate(xmlroot(str0),  _pntd, registry())
+    #@show PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
+    @test_throws ArgumentError PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
 end
 
 
-@testset "tokengraphics" begin
+@testset "tokengraphics $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<tokengraphics></tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str0), _pntd, registry())
+    n = parse_tokengraphics(xmlroot(str0), pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
@@ -79,7 +80,8 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <unexpected/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str1), _pntd, registry())
+    n = @test_logs((:warn,"<tokengraphics> ignoring unexpected element 'unexpected'"),
+                parse_tokengraphics(xmlroot(str1), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
@@ -87,7 +89,7 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <tokenposition x="2"  y="3"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str2), _pntd, registry())
+    n = parse_tokengraphics(xmlroot(str2), pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 2
 
@@ -96,7 +98,7 @@ end
                     <tokenposition x="2"  y="3"/>
                     <tokenposition x="-2" y="2"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str3), _pntd, registry())
+    n = parse_tokengraphics(xmlroot(str3), pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 3
 
@@ -106,7 +108,7 @@ end
                     <tokenposition x="-2" y="2"/>
                     <tokenposition x="-2" y="-22"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str4), _pntd, registry())
+    n = parse_tokengraphics(xmlroot(str4), pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 4
 

@@ -35,12 +35,12 @@ $(TYPEDFIELDS)
 TokenGraphics is <toolspecific> content.
 Combines the <tokengraphics> and <tokenposition> elements.
 """
-struct TokenGraphics{T} <: AbstractPnmlTool
+struct TokenGraphics{T <: DecFP.DecimalFloatingPoint} <: AbstractPnmlTool
     positions::Vector{Coordinate{T}}
 end
 
 # Empty TokenGraphics is allowed in spec.
-TokenGraphics{T}() where {T} = TokenGraphics{T}(Coordinate{T}[])
+TokenGraphics{T}() where {T <: DecFP.DecimalFloatingPoint} = TokenGraphics{T}(Coordinate{T}[])
 
 ###############################################################################
 """

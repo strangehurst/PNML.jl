@@ -67,6 +67,7 @@ using Preferences
 using PrettyPrinting
 import PrettyPrinting: quoteof
 using Reexport
+using DecFP
 #using Infiltrator: @infiltrate
 
 
