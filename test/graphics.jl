@@ -72,7 +72,7 @@ end
 
 @testset "tokengraphics $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<tokengraphics></tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str0), pntd, registry())
+    n = @test_logs (:warn,"tokengraphics does not have any <tokenposition> elements") parse_tokengraphics(xmlroot(str0), pntd, registry())
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 

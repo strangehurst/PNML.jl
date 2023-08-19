@@ -53,14 +53,14 @@ end
 end
 #------------------------------------------------
 @testset "name $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
-    @test_logs match_mode = :any (:warn, r"missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
-    @test_logs match_mode = :any (:warn, r"missing <text>") PNML.parse_name(xml"<name>junk</name>", pntd, registry())
+    @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
+    @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>junk</name>", pntd, registry())
 
-    n = PNML.parse_name(xml"<name></name>", pntd, registry())
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
     #println("dump n"); dump(n)
     @test PNML.text(n) == ""
 
-    n = PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == "stuff"
 
@@ -92,7 +92,7 @@ end
     </initialMarking>
     """
     #TODO graphics
-    mark = parse_initialMarking(node, pntd, registry())
+    mark = @test_logs (:warn, "<initialMarking> ignoring unknown child 'unknown'") parse_initialMarking(node, pntd, registry())
     @test typeof(mark) <: PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() # Uses an identity functor for `Numbers`
@@ -162,7 +162,7 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscription = parse_inscription(n1, pntd, registry())
+    inscription = @test_logs (:warn, "unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
     @test inscription isa PNML.Inscription
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show inscription
@@ -214,7 +214,7 @@ end
     end
 end
 
-@testset "unlaimed structure $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "unclaimed structure $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     str0 = """<structure><foo/></structure>"""
     @test PNML.parse_node(xmlroot(str0), pntd, registry()) isa PNML.Structure
 end

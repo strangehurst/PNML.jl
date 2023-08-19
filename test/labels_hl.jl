@@ -19,7 +19,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     </unknown>
  </hlinitialMarking>
     """
-    mark = PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry())
+    mark = (@test_logs (:warn,"unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
 
     @test mark isa PNML.AbstractLabel
     @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -94,7 +94,8 @@ end
         </unknown>
       </hlinscription>
     """
-    insc = PNML.parse_hlinscription(n1, pntd, registry())
+    insc = @test_logs (:warn,"unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
+
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
     @test text(insc) isa Union{Nothing,AbstractString}
@@ -212,7 +213,7 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ = PNML.parse_type(node, pntd, registry())
+        typ =  @test_logs (:warn,"unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
         #println("\n## SortType typ "); dump(typ)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
@@ -243,7 +244,7 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond = PNML.parse_condition(node, pntd, registry())
+        cond =  @test_logs (:warn,"unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
         #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
