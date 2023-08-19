@@ -2,6 +2,9 @@
 module TestUtils
 using PNML, EzXML, Preferences
 
+"Often JET has problems with beta julia versions:("
+const jet_broke = (VERSION < v"1.10-") ? false : true
+
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false
 
@@ -26,6 +29,7 @@ function pnml_function_filter(@nospecialize(ft))
     return true
 end
 
-export VERBOSE_PNML, pnml_function_filter, target_modules, runopt, testshow, noisy
+export VERBOSE_PNML, pnml_function_filter, target_modules,
+        jet_broke, runopt, testshow, noisy
 
 end # module TestUtils
