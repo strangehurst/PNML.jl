@@ -180,7 +180,8 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #
             "structure"    => (sortterm = parse_sorttype_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              => add_label!(labels, child, pntd, idregistry) # (unclaimed) are everything-else
+            _              => (@warn("unexpected child of <type>: $tag"),
+                                add_label!(labels, child, pntd, idregistry))
         end
     end
 

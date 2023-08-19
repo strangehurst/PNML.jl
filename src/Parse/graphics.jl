@@ -16,7 +16,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
         end
     end
     if isempty(tpos)
-        @warn "$nn does not have any <tokenposition> elements"
+        @warn "tokengraphics does not have any <tokenposition> elements"
     end
     TokenGraphics(tpos)
 end
