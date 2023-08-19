@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Layers of Abstraction · PNML.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://strangehurst.github.io/PNML.jl/layers/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../pnml/">PNML.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../pnml/">Petri Net Markup Language</a></li><li><a class="tocitem" href="../status/">Status</a></li><li class="is-active"><a class="tocitem" href>Layers of Abstraction</a><ul class="internal"><li><a class="tocitem" href="#Core-Layer"><span>Core Layer</span></a></li><li><a class="tocitem" href="#Type-Lookup-Layers"><span>Type Lookup Layers</span></a></li></ul></li><li><a class="tocitem" href="../subpackages/">Subpackages</a></li><li><a class="tocitem" href="../IR/">Intermediate Representation</a></li><li><a class="tocitem" href="../type_hierarchies/">Type Hierarchies</a></li><li><a class="tocitem" href="../interface/">Interfaces</a></li><li><a class="tocitem" href="../defaults/">Default Values</a></li><li><a class="tocitem" href="../evaluate/">Evaluate</a></li><li><a class="tocitem" href="../parser/">Parser</a></li><li><a class="tocitem" href="../examples/">Examples</a></li><li><a class="tocitem" href="../API/library/">API</a></li><li><a class="tocitem" href="../">Index</a></li><li><a class="tocitem" href="../acknowledgments/">Acknowledgments</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Layers of Abstraction</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Layers of Abstraction</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/strangehurst/PNML.jl/blob/main/docs/src/layers.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Layers-of-Abstraction"><a class="docs-heading-anchor" href="#Layers-of-Abstraction">Layers of Abstraction</a><a id="Layers-of-Abstraction-1"></a><a class="docs-heading-anchor-permalink" href="#Layers-of-Abstraction" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Graphics are elided from this discussion</header><div class="admonition-body"><p>Everywhere there are <code>ToolInfo</code>s in this discussion one may assume that there is also an optional <a href="../API/library/#PNML.Graphics"><code>Graphics</code></a> possible.</p><p>While we parse such XML into &quot;containers of strings&quot; and <a href="../API/library/#PNML.Coordinate"><code>Coordinate</code></a>s. No further use is implemented or planned. And no discussion of use is present.</p></div></div><p>The crude structure required by the pnmlcore schema: PnmlModel</p><ul><li>Net<ul><li>Pages<ul><li>Places, Marking, unclaimed labels  [SortType] [Capacity]</li><li>Transitions, Condition, unclaimed labels [rate]</li><li>Arcs, Inscription, unclaimed labels [ArcType]</li><li>Toolinfos [TokenGraphics]</li><li>Labels unclaimed, [Declaration]</li><li>Subpages</li></ul></li><li>Name (everybody has name)</li><li>Toolinfos</li><li>Labels</li></ul></li></ul><p>It is expected that conforming to pntd will be done at a higher level.</p><table><tr><th style="text-align: right">Level</th><th style="text-align: right">Sorts</th><th style="text-align: right"></th></tr><tr><td style="text-align: right">Core</td><td style="text-align: right">Bool, Int</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">PT</td><td style="text-align: right">Bool, Int</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">Continuous</td><td style="text-align: right">Bool, Float64</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">Hybrid</td><td style="text-align: right">Bool, Int, Float64</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">high-level</td><td style="text-align: right">Bool, Int, Term</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">Symmetric</td><td style="text-align: right">Bool, Int, Term</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">PTHLPNG</td><td style="text-align: right">Bool, Int, Term</td><td style="text-align: right"></td></tr></table><h2 id="Core-Layer"><a class="docs-heading-anchor" href="#Core-Layer">Core Layer</a><a id="Core-Layer-1"></a><a class="docs-heading-anchor-permalink" href="#Core-Layer" title="Permalink"></a></h2><p>What is permitted by the specification in a XML file will be a subset of the implementation.</p><p>Concepts from High-Level Petri Nets will be used in the Core layer.</p><p>Sorts as defined in the specification are based on natural numbers and booleans. High-level pntds use a<code>SortType</code> Term to define expressions as abstract syntax trees in XML. Intermediate implementation of Terms uses <a href="../API/library/#PNML.AnyXmlNode"><code>AnyXmlNode</code></a> to hold the AST as a tree of key, values where lhe leaf values are strings.</p><p><code>default_sort_type(pntd)</code> returns the type to which a non-boolean term expression evaluates. Is intended to be used by <code>Place</code>s whose markings are multisets of that sort.</p><table><tr><th style="text-align: right">PNTD</th><th style="text-align: right">Sort value</th><th style="text-align: right"></th></tr><tr><td style="text-align: right">PnmlType</td><td style="text-align: right">Int</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">AbstractContinuousNet</td><td style="text-align: right">Float64</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">AbstractHLCore</td><td style="text-align: right">eltype(DotSort())</td><td style="text-align: right"></td></tr></table><p>Note that <code>eltype(DotSort())</code> should be <code>Int</code>.</p><p>Use Union{Bool, Int, Float64, Vector{AnyXmlNode}} as the set of types that a <code>Term</code>&#39;s can contain. Consider Bool, Int, Float64 as builtin-sorts, and Vector{AnyXmlNode} as &quot;user defined&quot; sorts.</p><h2 id="Type-Lookup-Layers"><a class="docs-heading-anchor" href="#Type-Lookup-Layers">Type Lookup Layers</a><a id="Type-Lookup-Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Type-Lookup-Layers" title="Permalink"></a></h2><h3 id="PNG-Object-Types"><a class="docs-heading-anchor" href="#PNG-Object-Types">PNG Object Types</a><a id="PNG-Object-Types-1"></a><a class="docs-heading-anchor-permalink" href="#PNG-Object-Types" title="Permalink"></a></h3><p>Paramerize <a href="../API/library/#PNML.PnmlNet"><code>PnmlNet</code></a>s &amp; <a href="../API/library/#PNML.AbstractPnmlObject"><code>AbstractPnmlObject</code></a>s by <a href="#Label-Types">Label Types</a>.</p><h4 id="pnmltype_map"><a class="docs-heading-anchor" href="#pnmltype_map">pnmltype_map</a><a id="pnmltype_map-1"></a><a class="docs-heading-anchor-permalink" href="#pnmltype_map" title="Permalink"></a></h4><pre><code class="language-julia hljs">PNML.PnmlTypeDefs.pnmltype_map</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">IdDict{Symbol, PnmlType} with 9 entries:
+  :pnmlcore   =&gt; PnmlCoreNet()
+  :pt_hlpng   =&gt; PT_HLPNG()
+  :symmetric  =&gt; SymmetricNet()
+  :ptnet      =&gt; PTNet()
+  :timednet   =&gt; TimedNet()
+  :continuous =&gt; ContinuousNet()
+  :hlnet      =&gt; HLPNG()
+  :hlcore     =&gt; HLCoreNet()
+  :stochastic =&gt; StochasticNet()</code></pre><h4 id="pnmlnet_type"><a class="docs-heading-anchor" href="#pnmlnet_type">pnmlnet_type</a><a id="pnmlnet_type-1"></a><a class="docs-heading-anchor-permalink" href="#pnmlnet_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.PnmlNet{PnmlCoreNet, PNML.Place{PnmlCoreNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}, PNML.Transition{PnmlCoreNet, PNML.Condition}, PNML.Arc{PnmlCoreNet, PNML.Inscription{Int64}}, PNML.RefPlace{PnmlCoreNet}, PNML.RefTransition{PnmlCoreNet}}
+PT_HLPNG()      -&gt; PNML.PnmlNet{PT_HLPNG, PNML.Place{PT_HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{PT_HLPNG, PNML.Condition}, PNML.Arc{PT_HLPNG, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{PT_HLPNG}, PNML.RefTransition{PT_HLPNG}}
+SymmetricNet()  -&gt; PNML.PnmlNet{SymmetricNet, PNML.Place{SymmetricNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{SymmetricNet, PNML.Condition}, PNML.Arc{SymmetricNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{SymmetricNet}, PNML.RefTransition{SymmetricNet}}
+PTNet()         -&gt; PNML.PnmlNet{PTNet, PNML.Place{PTNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}, PNML.Transition{PTNet, PNML.Condition}, PNML.Arc{PTNet, PNML.Inscription{Int64}}, PNML.RefPlace{PTNet}, PNML.RefTransition{PTNet}}
+TimedNet()      -&gt; PNML.PnmlNet{TimedNet, PNML.Place{TimedNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{TimedNet, PNML.Condition}, PNML.Arc{TimedNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{TimedNet}, PNML.RefTransition{TimedNet}}
+ContinuousNet() -&gt; PNML.PnmlNet{ContinuousNet, PNML.Place{ContinuousNet, PNML.Marking{Float64}, PNML.SortType{PNML.RealSort}}, PNML.Transition{ContinuousNet, PNML.Condition}, PNML.Arc{ContinuousNet, PNML.Inscription{Float64}}, PNML.RefPlace{ContinuousNet}, PNML.RefTransition{ContinuousNet}}
+HLPNG()         -&gt; PNML.PnmlNet{HLPNG, PNML.Place{HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{HLPNG, PNML.Condition}, PNML.Arc{HLPNG, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{HLPNG}, PNML.RefTransition{HLPNG}}
+HLCoreNet()     -&gt; PNML.PnmlNet{HLCoreNet, PNML.Place{HLCoreNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{HLCoreNet, PNML.Condition}, PNML.Arc{HLCoreNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{HLCoreNet}, PNML.RefTransition{HLCoreNet}}
+StochasticNet() -&gt; PNML.PnmlNet{StochasticNet, PNML.Place{StochasticNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{StochasticNet, PNML.Condition}, PNML.Arc{StochasticNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{StochasticNet}, PNML.RefTransition{StochasticNet}}</code></pre><h4 id="page_type"><a class="docs-heading-anchor" href="#page_type">page_type</a><a id="page_type-1"></a><a class="docs-heading-anchor-permalink" href="#page_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Page{PnmlCoreNet, PNML.Place{PnmlCoreNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}, PNML.Transition{PnmlCoreNet, PNML.Condition}, PNML.Arc{PnmlCoreNet, PNML.Inscription{Int64}}, PNML.RefPlace{PnmlCoreNet}, PNML.RefTransition{PnmlCoreNet}}
+PT_HLPNG()      -&gt; PNML.Page{PT_HLPNG, PNML.Place{PT_HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{PT_HLPNG, PNML.Condition}, PNML.Arc{PT_HLPNG, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{PT_HLPNG}, PNML.RefTransition{PT_HLPNG}}
+SymmetricNet()  -&gt; PNML.Page{SymmetricNet, PNML.Place{SymmetricNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{SymmetricNet, PNML.Condition}, PNML.Arc{SymmetricNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{SymmetricNet}, PNML.RefTransition{SymmetricNet}}
+PTNet()         -&gt; PNML.Page{PTNet, PNML.Place{PTNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}, PNML.Transition{PTNet, PNML.Condition}, PNML.Arc{PTNet, PNML.Inscription{Int64}}, PNML.RefPlace{PTNet}, PNML.RefTransition{PTNet}}
+TimedNet()      -&gt; PNML.Page{TimedNet, PNML.Place{TimedNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{TimedNet, PNML.Condition}, PNML.Arc{TimedNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{TimedNet}, PNML.RefTransition{TimedNet}}
+ContinuousNet() -&gt; PNML.Page{ContinuousNet, PNML.Place{ContinuousNet, PNML.Marking{Float64}, PNML.SortType{PNML.RealSort}}, PNML.Transition{ContinuousNet, PNML.Condition}, PNML.Arc{ContinuousNet, PNML.Inscription{Float64}}, PNML.RefPlace{ContinuousNet}, PNML.RefTransition{ContinuousNet}}
+HLPNG()         -&gt; PNML.Page{HLPNG, PNML.Place{HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{HLPNG, PNML.Condition}, PNML.Arc{HLPNG, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{HLPNG}, PNML.RefTransition{HLPNG}}
+HLCoreNet()     -&gt; PNML.Page{HLCoreNet, PNML.Place{HLCoreNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{HLCoreNet, PNML.Condition}, PNML.Arc{HLCoreNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{HLCoreNet}, PNML.RefTransition{HLCoreNet}}
+StochasticNet() -&gt; PNML.Page{StochasticNet, PNML.Place{StochasticNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}, PNML.Transition{StochasticNet, PNML.Condition}, PNML.Arc{StochasticNet, PNML.HLInscription{PNML.Term}}, PNML.RefPlace{StochasticNet}, PNML.RefTransition{StochasticNet}}</code></pre><h4 id="place_type"><a class="docs-heading-anchor" href="#place_type">place_type</a><a id="place_type-1"></a><a class="docs-heading-anchor-permalink" href="#place_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Place{PnmlCoreNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}
+PT_HLPNG()      -&gt; PNML.Place{PT_HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}
+SymmetricNet()  -&gt; PNML.Place{SymmetricNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}
+PTNet()         -&gt; PNML.Place{PTNet, PNML.Marking{Int64}, PNML.SortType{PNML.IntegerSort}}
+TimedNet()      -&gt; PNML.Place{TimedNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}
+ContinuousNet() -&gt; PNML.Place{ContinuousNet, PNML.Marking{Float64}, PNML.SortType{PNML.RealSort}}
+HLPNG()         -&gt; PNML.Place{HLPNG, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}
+HLCoreNet()     -&gt; PNML.Place{HLCoreNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}
+StochasticNet() -&gt; PNML.Place{StochasticNet, PNML.HLMarking{PNML.Term}, PNML.SortType{PNML.UserSort}}</code></pre><h4 id="transition_type"><a class="docs-heading-anchor" href="#transition_type">transition_type</a><a id="transition_type-1"></a><a class="docs-heading-anchor-permalink" href="#transition_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Transition{PnmlCoreNet, PNML.Condition}
+PT_HLPNG()      -&gt; PNML.Transition{PT_HLPNG, PNML.Condition}
+SymmetricNet()  -&gt; PNML.Transition{SymmetricNet, PNML.Condition}
+PTNet()         -&gt; PNML.Transition{PTNet, PNML.Condition}
+TimedNet()      -&gt; PNML.Transition{TimedNet, PNML.Condition}
+ContinuousNet() -&gt; PNML.Transition{ContinuousNet, PNML.Condition}
+HLPNG()         -&gt; PNML.Transition{HLPNG, PNML.Condition}
+HLCoreNet()     -&gt; PNML.Transition{HLCoreNet, PNML.Condition}
+StochasticNet() -&gt; PNML.Transition{StochasticNet, PNML.Condition}</code></pre><h4 id="arc_type"><a class="docs-heading-anchor" href="#arc_type">arc_type</a><a id="arc_type-1"></a><a class="docs-heading-anchor-permalink" href="#arc_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Arc{PnmlCoreNet, PNML.Inscription{Int64}}
+PT_HLPNG()      -&gt; PNML.Arc{PT_HLPNG, PNML.HLInscription{PNML.Term}}
+SymmetricNet()  -&gt; PNML.Arc{SymmetricNet, PNML.HLInscription{PNML.Term}}
+PTNet()         -&gt; PNML.Arc{PTNet, PNML.Inscription{Int64}}
+TimedNet()      -&gt; PNML.Arc{TimedNet, PNML.HLInscription{PNML.Term}}
+ContinuousNet() -&gt; PNML.Arc{ContinuousNet, PNML.Inscription{Float64}}
+HLPNG()         -&gt; PNML.Arc{HLPNG, PNML.HLInscription{PNML.Term}}
+HLCoreNet()     -&gt; PNML.Arc{HLCoreNet, PNML.HLInscription{PNML.Term}}
+StochasticNet() -&gt; PNML.Arc{StochasticNet, PNML.HLInscription{PNML.Term}}</code></pre><h3 id="Label-Types"><a class="docs-heading-anchor" href="#Label-Types">Label Types</a><a id="Label-Types-1"></a><a class="docs-heading-anchor-permalink" href="#Label-Types" title="Permalink"></a></h3><p><a href="../type_hierarchies/#AbstractLabel">AbstractLabel</a>s are parameterized by <a href="#Value-Types">Value Types</a>.</p><h4 id="marking_type"><a class="docs-heading-anchor" href="#marking_type">marking_type</a><a id="marking_type-1"></a><a class="docs-heading-anchor-permalink" href="#marking_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Marking{Int64}
+PT_HLPNG()      -&gt; PNML.HLMarking{PNML.Term}
+SymmetricNet()  -&gt; PNML.HLMarking{PNML.Term}
+PTNet()         -&gt; PNML.Marking{Int64}
+TimedNet()      -&gt; PNML.HLMarking{PNML.Term}
+ContinuousNet() -&gt; PNML.Marking{Float64}
+HLPNG()         -&gt; PNML.HLMarking{PNML.Term}
+HLCoreNet()     -&gt; PNML.HLMarking{PNML.Term}
+StochasticNet() -&gt; PNML.HLMarking{PNML.Term}</code></pre><h4 id="condition_type"><a class="docs-heading-anchor" href="#condition_type">condition_type</a><a id="condition_type-1"></a><a class="docs-heading-anchor-permalink" href="#condition_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Condition
+PT_HLPNG()      -&gt; PNML.Condition
+SymmetricNet()  -&gt; PNML.Condition
+PTNet()         -&gt; PNML.Condition
+TimedNet()      -&gt; PNML.Condition
+ContinuousNet() -&gt; PNML.Condition
+HLPNG()         -&gt; PNML.Condition
+HLCoreNet()     -&gt; PNML.Condition
+StochasticNet() -&gt; PNML.Condition</code></pre><h4 id="inscription_type"><a class="docs-heading-anchor" href="#inscription_type">inscription_type</a><a id="inscription_type-1"></a><a class="docs-heading-anchor-permalink" href="#inscription_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.Inscription{Int64}
+PT_HLPNG()      -&gt; PNML.HLInscription{PNML.Term}
+SymmetricNet()  -&gt; PNML.HLInscription{PNML.Term}
+PTNet()         -&gt; PNML.Inscription{Int64}
+TimedNet()      -&gt; PNML.HLInscription{PNML.Term}
+ContinuousNet() -&gt; PNML.Inscription{Float64}
+HLPNG()         -&gt; PNML.HLInscription{PNML.Term}
+HLCoreNet()     -&gt; PNML.HLInscription{PNML.Term}
+StochasticNet() -&gt; PNML.HLInscription{PNML.Term}</code></pre><h4 id="refplace_type"><a class="docs-heading-anchor" href="#refplace_type">refplace_type</a><a id="refplace_type-1"></a><a class="docs-heading-anchor-permalink" href="#refplace_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.RefPlace{PnmlCoreNet}
+PT_HLPNG()      -&gt; PNML.RefPlace{PT_HLPNG}
+SymmetricNet()  -&gt; PNML.RefPlace{SymmetricNet}
+PTNet()         -&gt; PNML.RefPlace{PTNet}
+TimedNet()      -&gt; PNML.RefPlace{TimedNet}
+ContinuousNet() -&gt; PNML.RefPlace{ContinuousNet}
+HLPNG()         -&gt; PNML.RefPlace{HLPNG}
+HLCoreNet()     -&gt; PNML.RefPlace{HLCoreNet}
+StochasticNet() -&gt; PNML.RefPlace{StochasticNet}</code></pre><h4 id="reftransition_type"><a class="docs-heading-anchor" href="#reftransition_type">reftransition_type</a><a id="reftransition_type-1"></a><a class="docs-heading-anchor-permalink" href="#reftransition_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.RefTransition{PnmlCoreNet}
+PT_HLPNG()      -&gt; PNML.RefTransition{PT_HLPNG}
+SymmetricNet()  -&gt; PNML.RefTransition{SymmetricNet}
+PTNet()         -&gt; PNML.RefTransition{PTNet}
+TimedNet()      -&gt; PNML.RefTransition{TimedNet}
+ContinuousNet() -&gt; PNML.RefTransition{ContinuousNet}
+HLPNG()         -&gt; PNML.RefTransition{HLPNG}
+HLCoreNet()     -&gt; PNML.RefTransition{HLCoreNet}
+StochasticNet() -&gt; PNML.RefTransition{StochasticNet}</code></pre><h3 id="Value-Types"><a class="docs-heading-anchor" href="#Value-Types">Value Types</a><a id="Value-Types-1"></a><a class="docs-heading-anchor-permalink" href="#Value-Types" title="Permalink"></a></h3><h4 id="default_sort_type"><a class="docs-heading-anchor" href="#default_sort_type">default_sort_type</a><a id="default_sort_type-1"></a><a class="docs-heading-anchor-permalink" href="#default_sort_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; PNML.IntegerSort
+PT_HLPNG()      -&gt; PNML.UserSort
+SymmetricNet()  -&gt; PNML.UserSort
+PTNet()         -&gt; PNML.IntegerSort
+TimedNet()      -&gt; PNML.UserSort
+ContinuousNet() -&gt; PNML.RealSort
+HLPNG()         -&gt; PNML.UserSort
+HLCoreNet()     -&gt; PNML.UserSort
+StochasticNet() -&gt; PNML.UserSort</code></pre><h4 id="condition_value_type"><a class="docs-heading-anchor" href="#condition_value_type">condition_value_type</a><a id="condition_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#condition_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Bool
+PT_HLPNG()      -&gt; Bool
+SymmetricNet()  -&gt; Bool
+PTNet()         -&gt; Bool
+TimedNet()      -&gt; Bool
+ContinuousNet() -&gt; Bool
+HLPNG()         -&gt; Bool
+HLCoreNet()     -&gt; Bool
+StochasticNet() -&gt; Bool</code></pre><h4 id="inscription_value_type"><a class="docs-heading-anchor" href="#inscription_value_type">inscription_value_type</a><a id="inscription_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#inscription_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Int64
+PT_HLPNG()      -&gt; Int64
+SymmetricNet()  -&gt; Int64
+PTNet()         -&gt; Int64
+TimedNet()      -&gt; Int64
+ContinuousNet() -&gt; Float64
+HLPNG()         -&gt; Int64
+HLCoreNet()     -&gt; Int64
+StochasticNet() -&gt; Int64</code></pre><h4 id="marking_value_type"><a class="docs-heading-anchor" href="#marking_value_type">marking_value_type</a><a id="marking_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#marking_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Int64
+PT_HLPNG()      -&gt; Int64
+SymmetricNet()  -&gt; Int64
+PTNet()         -&gt; Int64
+TimedNet()      -&gt; Int64
+ContinuousNet() -&gt; Float64
+HLPNG()         -&gt; Int64
+HLCoreNet()     -&gt; Int64
+StochasticNet() -&gt; Int64</code></pre><h4 id="coordinate_value_type"><a class="docs-heading-anchor" href="#coordinate_value_type">coordinate_value_type</a><a id="coordinate_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#coordinate_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Int64
+PT_HLPNG()      -&gt; Int64
+SymmetricNet()  -&gt; Int64
+PTNet()         -&gt; Int64
+TimedNet()      -&gt; Int64
+ContinuousNet() -&gt; Float64
+HLPNG()         -&gt; Int64
+HLCoreNet()     -&gt; Int64
+StochasticNet() -&gt; Int64</code></pre><h4 id="term_value_type"><a class="docs-heading-anchor" href="#term_value_type">term_value_type</a><a id="term_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#term_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Int64
+PT_HLPNG()      -&gt; Int64
+SymmetricNet()  -&gt; Int64
+PTNet()         -&gt; Int64
+TimedNet()      -&gt; Int64
+ContinuousNet() -&gt; Float64
+HLPNG()         -&gt; Int64
+HLCoreNet()     -&gt; Int64
+StochasticNet() -&gt; Int64</code></pre><h4 id="rate_value_type"><a class="docs-heading-anchor" href="#rate_value_type">rate_value_type</a><a id="rate_value_type-1"></a><a class="docs-heading-anchor-permalink" href="#rate_value_type" title="Permalink"></a></h4><pre class="documenter-example-output"><code class="nohighlight hljs ansi">PnmlCoreNet()   -&gt; Float64
+PT_HLPNG()      -&gt; Float64
+SymmetricNet()  -&gt; Float64
+PTNet()         -&gt; Float64
+TimedNet()      -&gt; Float64
+ContinuousNet() -&gt; Float64
+HLPNG()         -&gt; Float64
+HLCoreNet()     -&gt; Float64
+StochasticNet() -&gt; Float64</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../status/">« Status</a><a class="docs-footer-nextpage" href="../subpackages/">Subpackages »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 19 August 2023 01:06">Saturday 19 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
