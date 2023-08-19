@@ -1,8 +1,8 @@
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
-    prop_name === :com  && return getfield(o, :com)::ObjectCommon
-    prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
-    prop_name === :xml  && return getfield(o, :xml)::XMLNode
+    #prop_name === :com  && return getfield(o, :com)::ObjectCommon
+    #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
+    #prop_name === :xml  && return getfield(o, :xml)::XMLNode
 
     return getfield(o, prop_name)
 end

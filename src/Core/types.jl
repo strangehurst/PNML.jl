@@ -16,7 +16,6 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
     prop_name === :name && return getfield(o, :name)::Maybe{Name}
     prop_name === :com  && return getfield(o, :com)::ObjectCommon
-    prop_name === :xml  && return getfield(o, :xml)::XMLNode
 
     return getfield(o, prop_name)
 end
