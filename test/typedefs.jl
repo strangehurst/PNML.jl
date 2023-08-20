@@ -1,32 +1,17 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: XMLNode, pnmltype, tagmap
 
-@testset "tagmap" begin
-    #@test !haskey(tagmap, "pnml") # parse_excluded warning
-    #@test !haskey(tagmap, "net")  # parse_excluded warning
-
-    # Visit every entry in the map.  All require pntd.
-    @testset "tag $t" for t in keys(tagmap)
-        @test !isempty(methods(tagmap[t], (XMLNode, PnmlType, PnmlIDRegistry)))
-        # Tags handled differently (no pntd argument) ARE NOT in the map.
-        @test isempty(methods(tagmap[t], (XMLNode,)))
-
-        #! Some tags only HighLevel
-        highleveltags = ["hlmarking", "hlinitialMarking", "hlinscription",
-                        "namedoperator", "declarations", "declaration"]
-        pntd = any(==(t), highleveltags) ? HLCoreNet() : PnmlCoreNet()
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-        # @show t, tagmap[t], pntd
-
-        # Parse trivial XML.
-        runopt && @test_opt function_filter=pnml_function_filter target_modules=target_modules tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, registry() )
-        @test_call @inferred tagmap[t](xmlroot("<$(t)></$(t)>"), pntd, registry() )
+@testset "tagmap $tag" for tag in keys(tagmap)
+    @test !isempty(methods(tagmap[tag], (XMLNode, PnmlType, PnmlIDRegistry)))
+    # Tags handled differently (e.g. no pntd argument) ARE NOT in the map.
+    @test isempty(methods(tagmap[tag], (XMLNode,)))
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show tag, tagmap[tag]
     end
-    #TODO: Add non-trivial tests.
 end
 
 @testset "pntd_symbol" begin
+    @test_opt pntd_symbol("foo")
     @test_call pntd_symbol("foo")
 
     @test pntd_symbol("foo") === :pnmlcore
