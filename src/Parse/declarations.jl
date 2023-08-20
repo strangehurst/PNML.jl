@@ -341,7 +341,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_booleanconstant(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "booleanconstant")
-    EzXML.haskey(node, "declaration") || throw(MalformedException(lazy"$nn missing declaration attribute"))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
 
     PnmlLabel(unclaimed_label(node, pntd, reg), node)
 end
@@ -423,7 +423,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_useroperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     check_nodename(node, "useroperator")
-    EzXML.haskey(node, "declaration") || throw(MalformedException(lazy"$nn missing declaration attribute"))
+    EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
     UserOperator(Symbol(node["declaration"]))
 end
 
