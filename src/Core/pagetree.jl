@@ -3,12 +3,13 @@ AbstractTrees.children(n::PnmlNet) = pages(n)
 AbstractTrees.children(p::Page)    = pages(p)
 
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
-AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page), #"::", typeof(p),
-            " arcs ", (collect ∘ values ∘ arc_idset)(page),
-            " places ", (collect ∘ values ∘ place_idset)(page), " ",
-            " transitions ", (collect ∘ values ∘ transition_idset)(page),
-            " reftransitions ", (collect ∘ values ∘ reftransition_idset)(page),
-            " refplaces ", (collect ∘ values ∘ refplace_idset)(page))
+AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page),
+     " arcs ", foreach(x->string(x, ", "), arc_idset(page)),
+     " places ", foreach(x->string(x, ", "), place_idset(page)),
+     " transitions ", foreach(x->string(x, ", "), transition_idset(page)),
+     " reftransitions ", foreach(x->string(x, ", "), reftransition_idset(page)),
+     " refplaces ", foreach(x->string(x, ", "), refplace_idset(page))
+     )
 
 # For type stability we need some/all of these.
 

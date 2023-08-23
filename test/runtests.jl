@@ -5,7 +5,7 @@ using Documenter
 #, LabelledArrays
 using JET
 
-@info "Pkg.test ARGS" ARGS
+println("ARGS = ", ARGS)
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")

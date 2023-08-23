@@ -64,8 +64,7 @@ testlogger = TestLogger()
     PNML.flatten_pages!(net0)
     #println("- - - - - - - - - - - - - - - -")
 
-    @test_call SimpleNet(net0) # works
-    jet_broke =  (VERSION < v"1.10-") ? false : true
+    @test_call SimpleNet(net0)
     @test_call broken=jet_broke SimpleNet(model)
 
     #! Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end

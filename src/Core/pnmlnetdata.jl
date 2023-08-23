@@ -41,11 +41,10 @@ refplacedict(x) = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
 
 function Base.show(io::IO, pnd::PnmlNetData)
-    length(placedict(pnd)) > 0 && print(io, "places: ", (sort ∘ collect ∘ keys ∘ placedict)(pnd), ", ")
-    length(transitiondict(pnd)) > 0 && print(io, "transitions: ", (sort ∘ collect ∘ keys ∘ transitiondict)(pnd), ", ")
-    length(arcdict(pnd)) > 0 && print(io, "arcs: ", (sort ∘ collect ∘ keys ∘ arcdict)(pnd), ", ")
-    length(refplacedict(pnd)) > 0 && print(io, "refplaces: ", (sort ∘ collect ∘ keys ∘ refplacedict)(pnd), ", ")
-    length(reftransitiondict(pnd)) > 0 && print(io, "refTransitions: ", (sort ∘ collect ∘ keys ∘ reftransitiondict)(pnd), ", ")
+    for (f,t) in [(placedict,"places"), (transitiondict,"transitions"), (arcdict,"arcs"), (refplacedict,"refplaces"), (reftransitiondict,"refTransitions")]
+        # println(io, length(f(pnd)), " ", t, ": ", Iterators.map(x->string(x, ", "), (keys ∘ f)(pnd)))
+        println(io, length(f(pnd)), " ", t, ": ", (keys ∘ f)(pnd))
+    end
 end
 
 """
@@ -91,18 +90,10 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    length(page_idset(pns)) > 0 &&
-        print(io, "pages: ", (sort ∘ collect ∘ values ∘ page_idset)(pns), ", ")
-    length(place_idset(pns)) > 0 &&
-        print(io, "places: ", (sort ∘ collect ∘ values ∘ place_idset)(pns), ", ")
-    length(transition_idset(pns)) > 0 &&
-        print(io, "transitions: ", (sort ∘ collect ∘ values ∘ transition_idset)(pns), ", ")
-    length(arc_idset(pns)) > 0 &&
-        print(io, "arcs: ", (sort ∘ collect ∘ values ∘ arc_idset)(pns), ", ")
-    length(refplace_idset(pns)) > 0 &&
-        print(io, "refplaces: ", (sort ∘ collect ∘ values ∘ refplace_idset)(pns), ", ")
-    length(reftransition_idset(pns)) > 0 &&
-        print(io, "refTransitions: ", (sort ∘ collect ∘ values ∘ reftransition_idset)(pns), ", ")
+    for (f,t) in [(page_idset,"pages"), (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"), (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
+        # println(io, length(f(pns)), " ", t, ": ", Iterators.map(x->string(x, ", "), (values ∘ f)(pns)))
+        println(io, length(f(pns)), " ", t, ": ", values(f(pns)))
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", pns::PnmlNetKeys)

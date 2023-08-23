@@ -172,7 +172,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     if CONFIG.verbose
         println(lazy"""
                 Net $id, $(length(pagedict))  Pages:  $(keys(pagedict))
-                    page ids: $(collect(values(netsets.page_set)))
+                    page ids: $(collect(values(page_idset(netsets))))
                 """)
     end
     return PnmlNet(pntd, id, pagedict, netdata, page_idset(netsets),
