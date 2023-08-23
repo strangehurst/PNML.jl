@@ -13,7 +13,8 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     default_sort_type,
     AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
     MultisetSort, ProductSort, RealSort, UserSort,
-    SortType
+    SortType,
+    PnmlNetData, PnmlNetKeys, all_nettypes
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -51,7 +52,7 @@ end
     @test map(c->c["name"], @inferred(allchildren("a", node))) == ["a1", "a2", "a3"]
 end
 
-@testset "types for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+@testset "types for $pntd" for pntd in PNML.all_nettypes()
     if noisy
         @show pntd
         @show page_type(pntd)
@@ -86,14 +87,23 @@ end
     @test value(b) == one(term_value_type(pntd))
 
     @test rate_value_type(pntd) == eltype(RealSort)
-    #println()
 end
-@testset "condition $pntd" for pntd in Iterators.filter(ishighlevel, values(PnmlTypeDefs.pnmltype_map))
+
+@testset "condition $pntd" for pntd in Iterators.filter(ishighlevel, PNML.all_nettypes())
     if noisy
         @show pntd default_condition(pntd)  typeof(default_condition(pntd))
         @show default_bool_term(pntd) typeof(default_bool_term(pntd))
     end
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
-    #println()
+end
+
+@testset "net data for $pntd" for pntd in PNML.all_nettypes()
+    pnd = PnmlNetData(pntd)
+    #@show pnd
+end
+
+@testset "key sets for $pntd" for pntd in PNML.all_nettypes()
+    pns = PnmlNetKeys()
+    #@show pns
 end

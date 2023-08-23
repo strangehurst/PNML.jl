@@ -10,7 +10,7 @@ using PNML:
     parse_initialMarking, parse_inscription, parse_text,
     elements
 
-@testset "text $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "text $pntd" for pntd in PNML.all_nettypes()
     str1 = """<text>ready</text>"""
     n = parse_text(xmlroot(str1), pntd, registry())
     @test n == "ready"
@@ -39,7 +39,7 @@ go</text>
 end
 
 #------------------------------------------------
-@testset "ObjectCommon $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "ObjectCommon $pntd" for pntd in PNML.all_nettypes()
     oc = @inferred PNML.ObjectCommon()
 
     @test isnothing(PNML.graphics(oc))
@@ -52,7 +52,7 @@ end
     @test isempty(PNML.labels(oc))
 end
 #------------------------------------------------
-@testset "name $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "name $pntd" for pntd in PNML.all_nettypes()
     @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
     @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>junk</name>", pntd, registry())
 
@@ -78,7 +78,7 @@ end
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
-@testset "PT initMarking $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "PT initMarking $pntd" for pntd in PNML.all_nettypes()
     node = xml"""
     <initialMarking>
         <text>123</text>
@@ -135,7 +135,7 @@ end
     #@test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
 end
 
-@testset "PT inscription $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "PT inscription $pntd" for pntd in PNML.all_nettypes()
     n1 = xml"""<inscription>
             <text> 12 </text>
         </inscription>"""
@@ -150,7 +150,7 @@ end
     @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
 end
 
-@testset "PT inscription full $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "PT inscription full $pntd" for pntd in PNML.all_nettypes()
     n1 = xml"""<inscription>
             <text> 12 </text>
             <graphics><offset x="0" y="0"/></graphics>
@@ -173,7 +173,7 @@ end
     @test (labels ∘ common)(inscription) === nothing || !isempty((labels ∘ common)(inscription))
 end
 
-@testset "labels $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "labels $pntd" for pntd in PNML.all_nettypes()
     lab = PnmlLabel[]
     reg = registry()
 
@@ -214,12 +214,12 @@ end
     end
 end
 
-@testset "unclaimed structure $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "unclaimed structure $pntd" for pntd in PNML.all_nettypes()
     str0 = """<structure><foo/></structure>"""
     @test PNML.parse_node(xmlroot(str0), pntd, registry()) isa PNML.Structure
 end
 
-@testset "<label> $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "<label> $pntd" for pntd in PNML.all_nettypes()
     str0 = """<label><text>label named label</text></label>"""
     l = PNML.parse_node(xmlroot(str0), pntd, registry())
     #println("$str0 "); dump(l)
@@ -277,7 +277,7 @@ function test_unclaimed(pntd, xmlstring::String)#, expected::NamedTuple)
     return l, a
 end
 
-@testset "unclaimed $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "unclaimed $pntd" for pntd in PNML.all_nettypes()
     noisy && println("## test unclaimed, PnmlLabel, anyelement")
     # Even though they are "claimed" by having a parser, thay still may be treated as unclaimed.
     # For example <declarations>.

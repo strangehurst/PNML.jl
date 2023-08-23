@@ -5,7 +5,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
 
-    @testset "place $pntd" for pntd in Iterators.filter(!PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+    @testset "place $pntd" for pntd in Iterators.filter(!PNML.ishighlevel, PNML.all_nettypes())
         node = xml"""
           <place id="place1">
             <name> <text>with text</text> </name>
@@ -33,7 +33,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test marking(n)() == 100
     end
 
-    @testset "place $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+    @testset "place $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
         node = xml"""
           <place id="place1">
             <name> <text>with text</text> </name>
@@ -62,7 +62,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     end
 
     # <condition> introduced as High-Level in specification. We use it everywhere.
-@testset "transition $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "transition $pntd" for pntd in PNML.all_nettypes()
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
@@ -97,7 +97,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     #@test condition(t) === true
 end
 
-@testset "arc $pntd"  for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "arc $pntd"  for pntd in PNML.all_nettypes()
     insc_xml = if ishighlevel(pntd)
         """<hlinscription>
             <text>6</text>
@@ -140,7 +140,7 @@ end
 
 end
 
-@testset "ref Trans $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map) #a" begin
+@testset "ref Trans $pntd" for pntd in PNML.all_nettypes() #a" begin
     node = xml"""
         <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
@@ -162,7 +162,7 @@ end
     @test n.ref === :t1
 end
 
-@testset "ref Place $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map) #a" begin" begin
+@testset "ref Place $pntd" for pntd in PNML.all_nettypes() #a" begin" begin
     n1 = (node = xml"""
     <referencePlace id="rp2" ref="rp1">
         <name>

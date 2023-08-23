@@ -11,7 +11,7 @@ using PNML: tag, pid, parse_graphics, parse_tokengraphics
     #TODO more tests
 end
 
-@testset "graphics $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "graphics $pntd" for pntd in PNML.all_nettypes()
     str = """
     <graphics>
      <offset x="1" y="2" />
@@ -63,14 +63,14 @@ end
 end
 
 
-@testset "graphics exception $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "graphics exception $pntd" for pntd in PNML.all_nettypes()
     str0 = """<bogus x="1" y="2" />"""
     #@show PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
     @test_throws ArgumentError PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
 end
 
 
-@testset "tokengraphics $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "tokengraphics $pntd" for pntd in PNML.all_nettypes()
     str0 = """<tokengraphics></tokengraphics>"""
     n = @test_logs (:warn,"tokengraphics does not have any <tokenposition> elements") parse_tokengraphics(xmlroot(str0), pntd, registry())
     @test n isa PNML.TokenGraphics

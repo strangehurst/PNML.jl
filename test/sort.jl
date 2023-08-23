@@ -27,7 +27,7 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
 end
 
 using Printf
-@testset "sorts for $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+@testset "sorts for $pntd" for pntd in PNML.all_nettypes()
     #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))
 
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
@@ -43,11 +43,11 @@ using Printf
         @test PNML.type(st2) == sort
 
         for sort2 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-                println("### TEST equals $sort $sort2");
-            end
+            #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            #    println("### TEST equals $sort $sort2");
+            #end
             # dump(sort); dump(sort2); dump(sort()); dump(sort2())
-            #@test PNML.equals(sort(), sort2())
+            # TODO @test_broken PNML.equals(sort(), sort2())
         end
     end
     println("#### TODO test sort equality")

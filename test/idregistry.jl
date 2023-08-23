@@ -17,7 +17,7 @@ using PNML, EzXML, ..TestUtils, JET
 end
 
 @testset "test_call"  begin
-    @test_call registry()
+    @test_call broken=false registry()
     reg = registry()
     @test_call register_id!(reg, :p)
     @test_call register_id!(reg, "p")

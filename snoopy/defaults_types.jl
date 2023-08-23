@@ -53,7 +53,7 @@ function showme(net) #TODO iterate on nets
         default_zero_term,
         )
 
-    PNTD = values(PnmlTypeDefs.pnmltype_map)
+    PNTD = PNML.all_nettypes()
     #@show PNTD
     println()
     println("#----------")

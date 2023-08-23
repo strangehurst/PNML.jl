@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
 using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
 
-@testset "HL initMarking $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+@testset "HL initMarking $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
     str = """
  <hlinitialMarking>
     <text>&lt;All,All&gt;</text>
@@ -76,7 +76,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     @test value(value(use2)[1]) == "N2"
 end
 
-@testset "hlinscription $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+@testset "hlinscription $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
     n1 = xml"""
     <hlinscription>
         <text>&lt;x,v&gt;</text>
@@ -138,7 +138,7 @@ end
     @test value(ref2) == "v"
 end
 
-@testset "structure $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+@testset "structure $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
     node = xml"""
      <structure>
         <tuple>
@@ -199,7 +199,7 @@ end
     @test value(dec2) == "N2"
 end
 
-@testset "type $pntd" for pntd in Iterators.filter(PNML.ishighlevel, values(PNML.PnmlTypeDefs.pnmltype_map))
+@testset "type $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
     n1 = xml"""
 <type>
     <text>N2</text>
@@ -230,7 +230,7 @@ end
 end
 
 # conditions are for everybody.
-@testset "condition $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "condition $pntd" for pntd in PNML.all_nettypes()
     n1 = xml"""
  <condition>
     <text>(x==1 and y==1 and d==1)</text>

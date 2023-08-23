@@ -93,7 +93,7 @@ end
     @test pnmltype(:continuous) === ContinuousNet()
 end
 
-@testset "pnml traits $pntd" for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "pnml traits $pntd" for pntd in PNML.all_nettypes()
     @test isdiscrete(pntd) isa Bool
     @test iscontinuous(pntd) isa Bool
     @test ishighlevel(pntd) isa Bool

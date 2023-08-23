@@ -65,7 +65,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         @test get_toolinfo(tooli, Regex(s.tool), r"^.*$") == tooli
         @test get_toolinfo(tooli, Regex(s.tool)) == tooli
 
-        @test_call get_toolinfo(tooli, s.tool, s.version)
+        @test_call broken=false get_toolinfo(tooli, s.tool, s.version)
 
         @test tooli.infos isa s.elementtype
         @test PNML.infos(tooli) isa s.elementtype

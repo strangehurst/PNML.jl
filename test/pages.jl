@@ -196,7 +196,7 @@ def_funs = (
             default_zero_term,
             )
 
-@testset "by pntd $pntd" for pntd in values(PnmlTypeDefs.pnmltype_map)
+@testset "by pntd $pntd" for pntd in PNML.all_nettypes()
     for fun in type_funs # the *_type(::PnmlType) methods
         #println("$fun($pntd) \t ", fun(pntd))
         @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pntd)
@@ -334,7 +334,7 @@ noisy && println("---------------")
         end
 end
 
-@testset "lookup types $pntd" for pntd in  values(PNML.PnmlTypeDefs.pnmltype_map)
+@testset "lookup types $pntd" for pntd in  PNML.all_nettypes()
     @test arc_type(pntd) <: PNML.Arc
     @test place_type(pntd) <: PNML.Place
     @test transition_type(pntd) <: PNML.Transition

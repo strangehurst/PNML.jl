@@ -18,7 +18,7 @@ export PnmlCoreNet, PTNet,
        ContinuousNet
 
 # Functions
-export pnmltype, pntd_symbol,
+export pnmltype, pntd_symbol, all_nettypes,
     isdiscrete, iscontinuous, ishighlevel
 
 """
@@ -199,14 +199,24 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
                                             :symmetric => SymmetricNet(),
                                             :stochastic => StochasticNet(),
                                             :timednet => TimedNet(),
-                                            :continuous => ContinuousNet())
+                                            :continuous => ContinuousNet()
+                                            )
+
+"Return iterator over [`PnmlType`](@ref) singletons."
+all_nettypes() = values(pnmltype_map)
 
 """
 $(TYPEDSIGNATURES)
 
-Add or replace mapping from symbol `s` to nettype dispatch singleton `t`.
+Add or replace mapping from `s` to [`PnmlType`](@ref) singleton `pntd`.
 """
-add_nettype!(elements::AbstractDict, s::Symbol, pntd::PnmlType) = elements[s] = pntd #! test this
+function add_nettype!(elements::AbstractDict, s::Symbol, pntd::PnmlType)
+    action = s ∈ elements ? "updating" : "adding"
+    @warn  "$action mapping from $s to $pntd in elements::$(typeof(elements))" elements
+    pntd ∉ values(elements) && @warn "$pntd already in elements"
+    elements[s] = pntd
+    @assert s ∈ elements
+end
 
 """
 $(TYPEDSIGNATURES)
