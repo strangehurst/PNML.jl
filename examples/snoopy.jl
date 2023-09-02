@@ -27,7 +27,6 @@ str = """<?xml version="1.0"?>
 </net>
 </pnml>
 """
-#xmlroot(s::String) = root(EzXML.parsexml(s))
 const pnmlroot = PNML.xmlroot(str)
 
 #tinf = @snoopi_deep begin end

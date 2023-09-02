@@ -1,4 +1,4 @@
-# Core types and methods documented in interfaces.jl.
+# Core types and methods are documented in interfaces.jl.
 
 "Alias for union of type `T` or `Nothing`."
 const Maybe{T} = Union{T, Nothing}
@@ -68,8 +68,6 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 """
 abstract type AbstractLabel end
 xmlnode(::T) where {T<:AbstractLabel} = error("missing implementation of `xmlnode` for $T")
-
-
 
 #--------------------------------------------
 """

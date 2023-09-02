@@ -62,11 +62,11 @@ abstract type HLAnnotation <: AbstractLabel end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `AnyXmlNode[]` holding a pnml label. Use the XML tag as identifier.
-
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
 of the structure defined by the pntd schema.
+
+Wrap a `AnyXmlNode[]` holding a pnml label. Use the XML tag as identifier.
 
 See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).

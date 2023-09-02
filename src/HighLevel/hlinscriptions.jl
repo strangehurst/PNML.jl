@@ -3,7 +3,8 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Labels an Arc. The <structure> element is a term in a many-sorted algebra.
-The `term` field
+The `term` field TBD.
+See also [`Inscription`](@ref)
 
 # Examples
 
@@ -33,7 +34,6 @@ struct HLInscription{T<:Term} <: HLAnnotation
     com::ObjectCommon
 end
 
-#!HLInscription(s::AbstractString) = HLInscription(s, Term(:value, zero(Int)))
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
 

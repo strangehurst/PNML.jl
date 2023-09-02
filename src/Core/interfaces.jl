@@ -69,7 +69,7 @@ function labels end
 """
     has_label(x, tag::Symbol) -> Bool
 
-Does `x` have any label have a matching `tagvalue`.
+Does `x` have any label have a matching `tag`.
 """
 function has_label end
 
@@ -94,9 +94,11 @@ See also [`pnmltype`](@ref)
 function nettype end
 
 """
-$(TYPEDSIGNATURES)
+    pages(net::PnmlLabel|page::Page) -> iterator
 
-Return vector of all pages.
+Return iterator of pages directly owned by that object.
+See [`allpages`](@ref) for an iterator over all pages in the PNML network model.
+Maintains order (insertion order).
 """
 function pages end
 
@@ -106,14 +108,14 @@ function pages end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of all places.
+Return iterator of all places.
 """
 function places end
 
 """
 $(TYPEDSIGNATURES)
 
-Return vector of all place IDs.
+Return iterator of all place IDs.
 """
 function place_idset end
 
@@ -153,7 +155,7 @@ function initialMarking end
 #--------------------------------------------
 """
 $(TYPEDSIGNATURES)
-Return vector of all transitions.
+Return iterator of all transitions.
 """
 function transitions end
 
@@ -215,7 +217,7 @@ function arc end
 """
 $(TYPEDSIGNATURES)
 
-Return set arc ids.
+Return iterator over arc ids.
 """
 function arc_idset end
 

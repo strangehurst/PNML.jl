@@ -40,7 +40,6 @@ function allchildren(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml
     EzXML.findall("./x:$tag | ./$tag", el, ["x" => ns])
 end
 
-
 function check_nodename(n::XMLNode, s::AbstractString)
     if EzXML.nodename(n) != s
         throw(ArgumentError(string("element name wrong, expected ", s,

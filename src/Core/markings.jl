@@ -1,11 +1,11 @@
 """
-Number-valued label of [`Place`](@ref).
-See [`PTNet`](@ref), [`ContinuousNet`](@ref).
-
-Is a functor that returns the `value`.
-
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Number-valued label of [`Place`](@ref).
+See [`PTNet`](@ref), [`ContinuousNet`](@ref), [`HLMarking`](@ref).
+
+Is a functor that returns the `value`.
 
 # Examples
 
@@ -26,9 +26,8 @@ julia> m()
 struct Marking{N<:Union{Int,Float64}} <: Annotation
     value::N
     com::ObjectCommon
-    # Marking does not use ObjectCommon.graphics, rather, TokenGraphics in ObjectCommon.tools.
+    # does not use ObjectCommon.graphics, rather, TokenGraphics in ObjectCommon.tools.
 end
-#Marking() = Marking(zero(Int)) #! Hardcoded
 Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
 
 value(m::Marking) = m.value
@@ -36,7 +35,7 @@ common(m::Marking) = m.com
 
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`Marking`](@ref) instance by returning its value.
+Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 """
 (mark::Marking)() = _evaluate(value(mark))
 

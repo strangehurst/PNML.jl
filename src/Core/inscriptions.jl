@@ -2,7 +2,7 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Labels an Arc.
+Labels an Arc. See also [`HLInscription`](@ref).
 
 # Examples
 
