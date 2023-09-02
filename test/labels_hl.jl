@@ -1,7 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
-using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
+using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode,
+all_nettypes, ishighlevel
 
-@testset "HL initMarking $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
+@testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
     str = """
  <hlinitialMarking>
     <text>&lt;All,All&gt;</text>
@@ -76,7 +77,7 @@ using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode
     @test value(value(use2)[1]) == "N2"
 end
 
-@testset "hlinscription $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
+@testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
     n1 = xml"""
     <hlinscription>
         <text>&lt;x,v&gt;</text>
@@ -138,7 +139,7 @@ end
     @test value(ref2) == "v"
 end
 
-@testset "structure $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
+@testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
     node = xml"""
      <structure>
         <tuple>
@@ -199,7 +200,7 @@ end
     @test value(dec2) == "N2"
 end
 
-@testset "type $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
+@testset "type $pntd" for pntd in all_nettypes(ishighlevel)
     n1 = xml"""
 <type>
     <text>N2</text>
@@ -230,7 +231,7 @@ end
 end
 
 # conditions are for everybody.
-@testset "condition $pntd" for pntd in PNML.all_nettypes()
+@testset "condition $pntd" for pntd in all_nettypes()
     n1 = xml"""
  <condition>
     <text>(x==1 and y==1 and d==1)</text>
@@ -251,13 +252,10 @@ end
             @show cond PNML.common(cond)
         end
         @test text(cond) == "(x==1 and y==1 and d==1)"
-        @test value(cond) isa Union{PNML.condition_value_type(pntd),
-                                    PNML.Term #!{PNML.condition_value_type(pntd)}
-                                    }
-
+        @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) === :or
-        @test PNML.has_graphics(cond)
-        @test PNML.has_tools(cond)
-        @test PNML.has_labels(cond)
+        @test PNML.has_graphics(cond) == true
+        @test PNML.has_tools(cond) == true
+        @test PNML.has_labels(cond) == true
     end
 end

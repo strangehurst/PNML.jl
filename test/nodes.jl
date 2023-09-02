@@ -3,9 +3,10 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_xml, has_name, name,
     pid, marking, condition, inscription,
     has_graphics, graphics, has_name, name, has_label,
-    parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace
+    parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace,
+    all_nettypes, ishighlevel, refid
 
-    @testset "place $pntd" for pntd in Iterators.filter(!PNML.ishighlevel, PNML.all_nettypes())
+    @testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
         node = xml"""
           <place id="place1">
             <name> <text>with text</text> </name>
@@ -33,7 +34,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test marking(n)() == 100
     end
 
-    @testset "place $pntd" for pntd in Iterators.filter(PNML.ishighlevel, PNML.all_nettypes())
+    @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
         node = xml"""
           <place id="place1">
             <name> <text>with text</text> </name>
@@ -62,7 +63,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     end
 
     # <condition> introduced as High-Level in specification. We use it everywhere.
-@testset "transition $pntd" for pntd in PNML.all_nettypes()
+@testset "transition $pntd" for pntd in all_nettypes()
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
@@ -97,7 +98,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     #@test condition(t) === true
 end
 
-@testset "arc $pntd"  for pntd in PNML.all_nettypes()
+@testset "arc $pntd"  for pntd in all_nettypes()
     insc_xml = if ishighlevel(pntd)
         """<hlinscription>
             <text>6</text>
@@ -140,7 +141,7 @@ end
 
 end
 
-@testset "ref Trans $pntd" for pntd in PNML.all_nettypes() #a" begin
+@testset "ref Trans $pntd" for pntd in all_nettypes() #a" begin
     node = xml"""
         <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
@@ -156,13 +157,13 @@ end
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show n PNML.common(n)
     end
-   @test n isa RefTransition
+    @test n isa RefTransition
     @test !has_xml(n)
     @test pid(n) === :rt1
-    @test n.ref === :t1
+    @test refid(n) === :t1
 end
 
-@testset "ref Place $pntd" for pntd in PNML.all_nettypes() #a" begin" begin
+@testset "ref Place $pntd" for pntd in all_nettypes() #a" begin" begin
     n1 = (node = xml"""
     <referencePlace id="rp2" ref="rp1">
         <name>
@@ -194,11 +195,9 @@ end
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show n PNML.common(n)
         end
-           @test typeof(n) <: RefPlace
+        @test typeof(n) <: RefPlace
         @test !has_xml(n)
-        @test typeof(n.id) == Symbol
-        @test typeof(n.ref) == Symbol
-        @test n.id === Symbol(s.id)
-        @test n.ref === Symbol(s.ref)
+        @test pid(n) === Symbol(s.id)
+        @test refid(n) === Symbol(s.ref)
     end
 end

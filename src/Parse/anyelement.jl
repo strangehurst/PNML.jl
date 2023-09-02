@@ -1,11 +1,9 @@
 """
 $(TYPEDSIGNATURES)
 
-Return [`AnyElement`](@ref) wraping a `tag` symbol and `tuple` holding
-a well-formed XML node. See [`ToolInfo`](@ref) for one intended use-case.
+Return [`AnyElement`](@ref) holding a well-formed XML node.
+See [`ToolInfo`](@ref) for one intended use-case.
 """
-function anyelement end
-anyelement(node::XMLNode, reg::PnmlIDRegistry) = anyelement(node, PnmlCoreNet(), reg)
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
     AnyElement(unclaimed_label(node, pntd, reg), node)
 end
@@ -18,8 +16,9 @@ Return `tag` => `AnyXmlNode` holding well formed XML tree/forest.
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
 [`Term`](@ref) or other specialized label.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, _::PnmlIDRegistry)
+function unclaimed_label(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
     harvest! = HarvestAny(_harvest_any, pntd) # Create a functor.
+    #println("harvest!: "); dump(harvest!); println()
     anyel = harvest!(node) # Apply functor.
     #println("unclaimed: "); dump(anyel)
     @assert length(anyel) >= 1 # Even empty elements have content.
@@ -31,8 +30,6 @@ $(TYPEDSIGNATURES)
 Find first :text and return content as string.
 """
 function text_content end
-#text_content(l::PnmlLabel) = text_content(elements(l))
-#text_content(l::AnyElement) = text_content(elements(l))
 
 function text_content(vx::Vector{AnyXmlNode})
     tc_index = findfirst(x -> tag(x) === :text, vx)
@@ -41,19 +38,19 @@ function text_content(vx::Vector{AnyXmlNode})
 end
 
 function text_content(axn::AnyXmlNode)
-    #println("\n\n text_content on non vector!"); dump(axn)
+    #println("\ntext_content"); dump(axn)
     @assert tag(axn) === :text
-    tc_index = findfirst(x -> !isa(value(x), Number) && tag(x) === :content, value(axn))
-    isnothing(tc_index) && throw(ArgumentError("missing <text> <content> element"))
+    vals = value(axn)::Vector{AnyXmlNode}
+    tc_index = findfirst(x -> tag(x) === :content, vals)
+    isnothing(tc_index) && throw(ArgumentError("missing <content> element"))
     cnt = value(axn)[tc_index]
     val = value(cnt)
     val isa AbstractString ||
-            throw(ArgumentError(lazy"""wrong content type  for '$(typeof(val))',
+        throw(ArgumentError(lazy"""wrong content type  for '$(typeof(val))',
                                 expected <:AbstractString got:
                                 $(dump(val))"""))
     return val
 end
-#text_content(s::AbstractString) = s
 
 # Expected patterns. Note only first is standard-conforming, extensible, prefeered.
 #   <tag><text>1.23</text><tag>

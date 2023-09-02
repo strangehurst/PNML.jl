@@ -27,7 +27,7 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
 end
 
 using Printf
-@testset "sorts for $pntd" for pntd in PNML.all_nettypes()
+@testset "sorts for $pntd" for pntd in all_nettypes()
     #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))
 
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do

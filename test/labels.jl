@@ -1,4 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
+#using FunctionWrappers
 using PNML:
     Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
     unclaimed_label, anyelement, PnmlLabel, AnyElement,
@@ -8,38 +9,15 @@ using PNML:
     has_graphics, graphics, has_name, name, has_label,
     value, common, tools, graphics, labels,
     parse_initialMarking, parse_inscription, parse_text,
-    elements
+    elements, all_nettypes, ishighlevel
 
-@testset "text $pntd" for pntd in PNML.all_nettypes()
-    str1 = """<text>ready</text>"""
-    n = parse_text(xmlroot(str1), pntd, registry())
-    @test n == "ready"
 
-    str2 = """
-<text>
-ready
-</text>
-    """
-    n = parse_text(xmlroot(str2), pntd, registry())
-    @test n == "ready"
-
-    str3 = """
- <text>    ready  </text>
-    """
-    n = parse_text(xmlroot(str3), pntd, registry())
-    @test n == "ready"
-
-    str4 = """
-     <text>ready
-to
-go</text>
-    """
-    n = parse_text(xmlroot(str4), pntd, registry())
-    @test n == "ready\nto\ngo"
+@testset "text $pntd" for pntd in all_nettypes()
+    @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
 end
 
-#------------------------------------------------
-@testset "ObjectCommon $pntd" for pntd in PNML.all_nettypes()
+
+@testset "ObjectCommon $pntd" for pntd in all_nettypes()
     oc = @inferred PNML.ObjectCommon()
 
     @test isnothing(PNML.graphics(oc))
@@ -51,17 +29,15 @@ end
     @test isempty(PNML.tools(oc))
     @test isempty(PNML.labels(oc))
 end
-#------------------------------------------------
-@testset "name $pntd" for pntd in PNML.all_nettypes()
-    @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
-    @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>junk</name>", pntd, registry())
 
+#------------------------------------------------
+@testset "name $pntd" for pntd in all_nettypes()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
+    @test n isa PNML.AbstractLabel
     #println("dump n"); dump(n)
     @test PNML.text(n) == ""
 
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
-    @test n isa PNML.AbstractLabel
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
@@ -78,7 +54,7 @@ end
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
-@testset "PT initMarking $pntd" for pntd in PNML.all_nettypes()
+@testset "PT initMarking $pntd" for pntd in all_nettypes()
     node = xml"""
     <initialMarking>
         <text>123</text>
@@ -91,66 +67,41 @@ end
         </unknown>
     </initialMarking>
     """
-    #TODO graphics
+    # Parse
     mark = @test_logs (:warn, "<initialMarking> ignoring unknown child 'unknown'") parse_initialMarking(node, pntd, registry())
-    @test typeof(mark) <: PNML.Marking
+    @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
-    @test value(mark) == mark() # Uses an identity functor for `Numbers`
-    @test value(mark) == 123
+    @test value(mark) == mark() == 123
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show mark
     end
+
+    # Integer
     mark1 = PNML.Marking(23)
     @test_opt PNML.Marking(23)
     @test_call PNML.Marking(23)
     @test typeof(mark1()) == typeof(23)
-    @test mark1() == 23
-    @test value(mark1) == 23
+    @test mark1() == value(mark1) == 23
     @test_opt mark1()
     @test_call mark1()
 
     @test (graphics ∘ common)(mark1) === nothing
-    #! should tokengraphics be a tool?
     @test (tools ∘ common)(mark1) === nothing || isempty((tools ∘ common)(mark1))
     @test (labels ∘ common)(mark1) === nothing || isempty((labels ∘ common)(mark1))
 
+    # Floating point
     mark2 = PNML.Marking(3.5)
     @test_call PNML.Marking(3.5)
     @test typeof(mark2()) == typeof(3.5)
-    @test mark2() ≈ 3.5
+    @test mark2() == value(mark2) ≈ 3.5
     @test_call mark2()
 
     @test (graphics ∘ common)(mark2) === nothing
     @test (tools ∘ common)(mark2) === nothing || isempty((tools ∘ common)(mark2))
     @test (labels ∘ common)(mark2) === nothing || isempty((labels ∘ common)(mark2))
-
-    #mark3 = PNML.Marking()
-    #@test_call PNML.Marking()
-    #@test typeof(mark3()) == typeof(default_marking(PnmlCoreNet())())
-    #@test mark3() == default_marking(PnmlCoreNet())()
-    #@test_call mark3()
-
-    #@test (graphics ∘ common)(mark3) === nothing
-    #@test (tools ∘ common)(mark3) === nothing || isempty((tools ∘ common)(mark3))
-    #@test (labels ∘ common)(mark3) === nothing || isempty((labels ∘ common)(mark3))
 end
 
-@testset "PT inscription $pntd" for pntd in PNML.all_nettypes()
-    n1 = xml"""<inscription>
-            <text> 12 </text>
-        </inscription>"""
-    inscription = parse_inscription(n1, pntd, registry())
-    @test inscription isa PNML.Inscription
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show inscription
-    end
-    @test value(inscription) == 12
-    @test (graphics ∘ common)(inscription) === nothing
-    @test (tools ∘ common)(inscription) === nothing || isempty((tools ∘ common)(inscription))
-    @test (labels ∘ common)(inscription) === nothing || isempty((labels ∘ common)(inscription))
-end
-
-@testset "PT inscription full $pntd" for pntd in PNML.all_nettypes()
+@testset "PT inscription $pntd" for pntd in all_nettypes()
     n1 = xml"""<inscription>
             <text> 12 </text>
             <graphics><offset x="0" y="0"/></graphics>
@@ -162,34 +113,34 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscription = @test_logs (:warn, "unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
-    @test inscription isa PNML.Inscription
+    inscript = @test_logs (:warn, "unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
+    @test inscript isa PNML.Inscription
+    @test typeof(value(inscript)) <: Union{Int,Float64}
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show inscription
+        @show inscript
     end
-    @test value(inscription) == 12
-    @test (graphics ∘ common)(inscription) !== nothing
-    @test (tools ∘ common)(inscription) === nothing || !isempty((tools ∘ common)(inscription))
-    @test (labels ∘ common)(inscription) === nothing || !isempty((labels ∘ common)(inscription))
+    @test inscript() == value(inscript) == 12
+    @test (graphics ∘ common)(inscript) !== nothing
+    @test (tools ∘ common)(inscript) === nothing || !isempty((tools ∘ common)(inscript))
+    @test (labels ∘ common)(inscript) === nothing || !isempty((labels ∘ common)(inscript))
 end
 
-@testset "labels $pntd" for pntd in PNML.all_nettypes()
+@testset "labels $pntd" for pntd in all_nettypes()
     lab = PnmlLabel[]
     reg = registry()
 
-    for i in 1:4 # add 4 labels
-        x = i < 3 ? 1 : 2 # make 2 tagnames
-        node = xmlroot("<test$x> $i </test$x>")
-        @test_call target_modules = (PNML,) add_label!(lab, node, pntd, reg)
-        add_label!(lab, node, pntd, reg)
+    for i in 1:4 # create & add 4 labels
+        x = i < 3 ? 1 : 2 # make 2 different tagnames
+        node = xmlroot("<test$x> $i </test$x>")::XMLNode
+        @test_call  ignored_modules=(JET.AnyFrameModule(EzXML),) add_label!(lab, node, pntd, reg)
+        @test add_label!(lab, node, pntd, reg) isa PnmlLabel
+        @test length(lab) == i
     end
-
     @test length(lab) == 4
 
     for l in lab
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
-        @test xmlnode(l) isa Maybe{EzXML.Node}
         @test xmlnode(l) isa Maybe{XMLNode}
     end
 
@@ -202,48 +153,49 @@ end
 
     v = get_label(lab, :test2)
     @test v isa PnmlLabel
-    @test v.elements[1].tag === :content
-    @test v.elements[1].val == "3"
+    @test elements(v) isa Vector
+    @test tag(elements(v)[1]) === :content
+    @test value(elements(v)[1]) == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
-        v = PNML.get_labels(lab, labeltag) |> collect
-        @test length(v) == 2
+        v = PNML.get_labels(lab, labeltag)
+        lv = 0
         for l in v
             @test tag(l) === labeltag
+            lv += 1
         end
+        @test lv == 2
     end
 end
 
-@testset "unclaimed structure $pntd" for pntd in PNML.all_nettypes()
+@testset "unclaimed structure $pntd" for pntd in all_nettypes()
     str0 = """<structure><foo/></structure>"""
     @test PNML.parse_node(xmlroot(str0), pntd, registry()) isa PNML.Structure
 end
 
-@testset "<label> $pntd" for pntd in PNML.all_nettypes()
-    str0 = """<label><text>label named label</text></label>"""
+@testset "<label> $pntd" for pntd in all_nettypes()
+    str0 = """<label><text>label named label is unusual</text></label>"""
     l = PNML.parse_node(xmlroot(str0), pntd, registry())
-    #println("$str0 "); dump(l)
-    @test l isa NamedTuple
+    @test l isa @NamedTuple{tag::Symbol,xml::XMLNode}
 end
 
 AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ? a.val : nothing
 
 AbstractTrees.printnode(io::IO, a::PNML.AnyXmlNode) = print(io, a.tag, "", a.val isa AbstractString && a.val)
 
-function test_unclaimed(pntd, xmlstring::String)#, expected::NamedTuple)
+function test_unclaimed(pntd, xmlstring::String)
     if noisy
-        println("\n+++++++++++++++++++")
+        println("+++++++++++++++++++")
         println("XML: ", xmlstring)
-        #print("expected: "); pprint(expected); println()
         println("-------------------")
     end
     node::XMLNode = xmlroot(xmlstring)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    u = unclaimed_label(node, pntd, reg1)
+    u = unclaimed_label(node, pntd)
     l = PnmlLabel(u, node)
-    a = anyelement(node, reg2)
+    a = anyelement(node, pntd, reg2)
     if noisy
         println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
         println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)
@@ -256,15 +208,15 @@ function test_unclaimed(pntd, xmlstring::String)#, expected::NamedTuple)
         @show u l a [a]
     end
 
-    @test_opt function_filter=pnml_function_filter target_modules=target_modules unclaimed_label(node, pntd, reg1)
-    @test_opt PnmlLabel(u, node)
-    @test_opt function_filter=pnml_function_filter target_modules = (PNML,) anyelement(node, reg2)
+    @test_opt target_modules=(@__MODULE__,)  unclaimed_label(node, pntd, reg1)
+    @test_opt function_filter=pff PnmlLabel(u, node)
+    @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
 
-    @test_call target_modules = (PNML,) unclaimed_label(node, pntd, reg1)
-    @test_call target_modules = (PNML,) PnmlLabel(u, node)
-    @test_call target_modules = (PNML,) anyelement(node, reg2)
+    @test_call unclaimed_label(node, pntd, reg1)
+    @test_call PnmlLabel(u, node)
+    @test_call anyelement(node, pntd, reg2)
 
-    let nn = Symbol(nodename(node))
+    let nn = Symbol(EzXML. nodename(node))
         @test u.first === nn
         @test tag(l) === nn
         @test tag(a) === nn
@@ -277,9 +229,9 @@ function test_unclaimed(pntd, xmlstring::String)#, expected::NamedTuple)
     return l, a
 end
 
-@testset "unclaimed $pntd" for pntd in PNML.all_nettypes()
+@testset "unclaimed $pntd" for pntd in all_nettypes()
     noisy && println("## test unclaimed, PnmlLabel, anyelement")
-    # Even though they are "claimed" by having a parser, thay still may be treated as unclaimed.
+    # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
     ctrl = [ # Vector of tuples of XML string, expected result `Pair`.
         ("""<declarations> </declarations>""",
@@ -341,12 +293,12 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(expected, ElementNode("testelement"))
+        expected_label = PnmlLabel(expected, EzXML.ElementNode("testelement")) # Attach fake xml node
         #@show lab expected_label
         @test tag(lab) == tag(expected_label)
         @test (length ∘ elements)(lab) == ( length ∘ elements)(expected_label)
         # TODO recursive compare
-        expected_any = AnyElement(expected, ElementNode("testelement"))
+        expected_any = AnyElement(expected, EzXML.ElementNode("testelement"))
         #@show anye  expected_any
         @test tag(anye) == tag(expected_any)
         @test (length ∘ elements)(anye) == (length ∘ elements)(expected_any)

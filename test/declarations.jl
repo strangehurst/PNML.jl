@@ -3,7 +3,7 @@ using PNML:
     Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
     registry, AnyElement, AnyXmlNode, name, value, isregistered
 
-@testset "Declaration() $pntd" for pntd in PNML.all_nettypes()
+@testset "Declaration() $pntd" for pntd in all_nettypes()
     decl = PNML.Declaration()
     @test length(PNML.declarations(decl)) == 0
     @test_call PNML.Declaration()
@@ -23,7 +23,7 @@ function _subtypes!(out, type::Type)
     out
 end
 
-@testset "AbstractDeclarations $pntd" for pntd in PNML.all_nettypes()
+@testset "AbstractDeclarations $pntd" for pntd in all_nettypes()
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show _subtypes(PNML.AbstractDeclaration)
         for decl in _subtypes(PNML.AbstractDeclaration)
@@ -33,7 +33,7 @@ end
    end
 end
 
-@testset "parse_sort $pntd" for pntd in PNML.all_nettypes()
+@testset "parse_sort $pntd" for pntd in all_nettypes()
     @test parse_sort(xml"<bool/>", pntd, registry()) isa AnyElement
     @test parse_sort(xml"<finiteenumeration/>", pntd, registry()) isa AnyElement
     @test parse_sort(xml"<finiteintrange/>", pntd, registry()) isa AnyElement
@@ -45,7 +45,7 @@ end
     @test parse_sort(xml"<partition/>", pntd, registry()) isa AnyElement
 end
 
-@testset "empty declarations $pntd" for pntd in PNML.all_nettypes()
+@testset "empty declarations $pntd" for pntd in all_nettypes()
     # The attribute should be ignored.
     decl = parse_declaration(xml"""
         <declaration key="test empty">
@@ -73,7 +73,7 @@ end
     @test_call PNML.labels(decl)
 end
 
-@testset "declaration tree $pntd" for pntd in PNML.all_nettypes()
+@testset "declaration tree $pntd" for pntd in all_nettypes()
     node = xml"""
     <declaration>
         <structure>

@@ -21,7 +21,7 @@ function test_malformed(emsg, f, node...)
     end
 end
 
-@testset "missing namespace $pntd" for pntd in PNML.all_nettypes()
+@testset "missing namespace $pntd" for pntd in all_nettypes()
     emsg = r"missing namespace"
     @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
          <pnml><net id="1" type="foo"><page id="pg1"/></net>
@@ -35,7 +35,7 @@ end
           <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
 end
 
-@testset "malformed $pntd" for pntd in PNML.all_nettypes()
+@testset "malformed $pntd" for pntd in all_nettypes()
     test_malformed("does not have any <net> elements", parse_pnml,
         xml"""
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -95,7 +95,7 @@ end
 end
 
 
-@testset "missing $pntd" for pntd in PNML.all_nettypes()
+@testset "missing $pntd" for pntd in all_nettypes()
 
     #parse_net(xml"<net type='test'></net>", registry()) # Wrong exception debugging.
     @test_throws MissingIDException parse_net(xml"<net type='test'></net>", registry())
@@ -103,15 +103,7 @@ end
     pagedict = OrderedDict{Symbol, page_type(pntd)}()
     netdata = PNML.PnmlNetData(pntd)
 
-    #parse_page!(pagedict, netdata, xml"<page></page>", pntd, registry())
     @test_throws MissingIDException parse_page!(pagedict, netdata, xml"<page></page>", pntd, registry())
-
-    #PNML.parse_place(xml"<place></place>", pntd, registry())
-    #PNML.parse_transition(xml"<transition></transition>", pntd, registry())
-    #PNML.parse_arc(xml"<arc></arc>", pntd, registry())
-    #PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry())
-    #PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", registry())
-
     @test_throws MissingIDException PNML.parse_place(xml"<place></place>", pntd, registry())
     @test_throws MissingIDException PNML.parse_transition(xml"<transition></transition>", pntd, registry())
     @test_throws MissingIDException PNML.parse_arc(xml"<arc></arc>", pntd, registry())
@@ -119,17 +111,7 @@ end
     @test_throws MissingIDException PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry())
 end
 
-@testset "graphics $pntd" for pntd in PNML.all_nettypes()
-    test_malformed("missing x", parse_node,
-        xml"<graphics><offset y='2'/></graphics>", pntd, registry())
-    test_malformed("missing y", parse_node,
-        xml"<graphics><offset x='1'/></graphics>", pntd, registry())
-
-    test_malformed("missing x", parse_node,
-        xml"<graphics><position y='2'/></graphics>", pntd, registry())
-    test_malformed("missing y", parse_node,
-        xml"<graphics><position x='1'/></graphics>", pntd, registry())
-
+@testset "graphics $pntd" for pntd in all_nettypes()
     test_malformed("missing x", parse_node,
         xml"<graphics><dimension y='2'/></graphics>", pntd, registry())
     test_malformed("missing y", parse_node,

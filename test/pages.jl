@@ -14,7 +14,8 @@ using PNML:
     default_inscription, default_marking, default_sort, default_condition,
     default_one_term, default_zero_term,
     currentMarkings,
-    netsets, netdata, page_idset, pagedict
+    netsets, netdata, page_idset, pagedict,
+    all_nettypes, ishighlevel
 
 function verify_sets(net::PnmlNet)
     #println("\nverify sets and structure ++++++++++++++++++++++")
@@ -196,36 +197,33 @@ def_funs = (
             default_zero_term,
             )
 
-@testset "by pntd $pntd" for pntd in PNML.all_nettypes()
+@testset "by pntd $pntd" for pntd in all_nettypes()
     for fun in type_funs # the *_type(::PnmlType) methods
         #println("$fun($pntd) \t ", fun(pntd))
-        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pntd)
+        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
         pt = typeof(pntd)
-        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pt)
+        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
         @test_call fun(pt)
     end
     #println()
     for fun in def_funs
         #println("$fun($pntd) \t ", fun(pntd))
-        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pntd)
+        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
         # these are not implemented
         #pt = typeof(pntd)
         #@show pt fun(pt)
-        #@test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(pt)
+        #@test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
         #@test_call fun(pt)
     end
     #println()
 end
 
-@testset "x_types(net)" begin
-    for fun in type_funs # the *_type(::PnmlNet) methods
-        #println("$fun($pntd) \t ", fun(pntd))
-        @test_opt function_filter=pnml_function_filter target_modules=(@__MODULE__,) fun(net)
-        @test_call fun(net)
-        @test fun(net) isa Type
-    end
+@testset for fun in type_funs # the *_type(::PnmlNet) methods
+    @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
+    @test_call fun(net)
+    @test fun(net) isa Type
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
@@ -240,8 +238,6 @@ exp_reftransition_ids = [:rt2]
 @test isempty(setdiff(@inferred(refplace_idset(net)), exp_refplace_ids))
 @test isempty(setdiff(@inferred(reftransition_idset(net)), exp_reftransition_ids))
 
-for arcid in exp_arc_ids
-end
 for arcid in exp_arc_ids
     a = @inferred Maybe{arc_type(net)} arc(net, arcid)
     @test !isnothing(a)
@@ -306,11 +302,6 @@ noisy && println("---------------")
             @test t ∈ transition_idset(net)
         end
 
-        # After flatten reference nodes remain in the netdata dictonary.
-        #@show (sort ∘ collect)(reftransition_idset(net))
-        #@show (sort ∘ collect)(reftransition_idset(firstpage(net)))
-        #@show expected_rt
-
         @test isempty(reftransition_idset(net))
         @test isempty(reftransition_idset(firstpage(net)))
         @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
@@ -334,7 +325,7 @@ noisy && println("---------------")
         end
 end
 
-@testset "lookup types $pntd" for pntd in  PNML.all_nettypes()
+@testset "lookup types $pntd" for pntd in all_nettypes()
     @test arc_type(pntd) <: PNML.Arc
     @test place_type(pntd) <: PNML.Place
     @test transition_type(pntd) <: PNML.Transition

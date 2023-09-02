@@ -204,8 +204,11 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
 
 "Return iterator over [`PnmlType`](@ref) singletons."
 all_nettypes() = values(pnmltype_map)
+"Return iterator over [`PnmlType`](@ref) singletons."
+all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
 """
+
 $(TYPEDSIGNATURES)
 
 Add or replace mapping from `s` to [`PnmlType`](@ref) singleton `pntd`.
