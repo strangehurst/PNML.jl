@@ -7,7 +7,7 @@ using PNML: Maybe,
     nets, pages, arcs, place, places, transitions, has_place,
     allchildren, firstchild, value, allpages
 
-str = """
+const str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -29,7 +29,7 @@ str = """
   </net>
 </pnml>
 """
-pnmldoc = PNML.xmlroot(str) # shared by testsets
+const pnmldoc = PNML.xmlroot(str) # shared by testsets
 
 @testset "parse tree" begin
     @test EzXML.nodename(pnmldoc) == "pnml"
@@ -62,10 +62,10 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
 
             @test !isempty(allchildren("place", page))
             for p in allchildren("place", page)
-                @test nodename(p) == "place"
+                @test EzXML.nodename(p) == "place"
                 fc = firstchild("initialMarking", p)
                 i = parse_initialMarking(fc, PnmlCoreNet(), reg)
-                #@test_opt function_filter=pnml_function_filter firstchild("initialMarking", p)
+                #@test_opt function_filter=pff firstchild("initialMarking", p)
                 @test_call target_modules=target_modules firstchild("initialMarking", p)
                 @test typeof(i) <: PNML.Marking
                 @test typeof(value(i)) <: Union{Int,Float64}
@@ -75,14 +75,14 @@ pnmldoc = PNML.xmlroot(str) # shared by testsets
 
             @test !isempty(allchildren("transition", page))
             for t in allchildren("transition", page)
-                @test nodename(t) == "transition"
+                @test EzXML.nodename(t) == "transition"
                 cond = firstchild("condition", t)
                 @test cond === nothing
             end
 
             @test !isempty(allchildren("arc", page))
             for a in allchildren("arc", page)
-                @test nodename(a) == "arc"
+                @test EzXML.nodename(a) == "arc"
                 ins = firstchild("inscription", a)
                 if ins !== nothing
                     i = parse_inscription(ins, PnmlCoreNet(), reg)

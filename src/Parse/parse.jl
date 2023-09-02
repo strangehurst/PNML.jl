@@ -65,7 +65,7 @@ function parse_file(fname::AbstractString)
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
     idregistry = registry()
     # Good place for debugging.
-    parse_pnml(root(EzXML.readxml(fname)), idregistry)
+    parse_pnml(EzXML.root(EzXML.readxml(fname)), idregistry)
 end
 
 """
@@ -299,22 +299,14 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "initialMarking" || tag == "hlinitialMarking"
-            #a = @allocated begin
             mark = _parse_marking(child, pntd, idregistry)
-            #end; a > 0 && println("_parse_marking $id allocated ", a)
         elseif tag == "type"
-            #a = @allocated begin
             sorttype = parse_type(child, pntd, idregistry)
-            #end; a > 0 && println("parse_type $id allocated ", a)
             CONFIG.verbose && println("parse_place $id sorttype $sorttype")
         elseif tag == "name"
-            #a = @allocated begin
             name = parse_name(child, pntd, idregistry)
-            #end; a > 0 && println("place parse_name $id allocated ", a)
         elseif tag == "graphics"
-            #a = @allocated begin
             graphics = parse_graphics(child, pntd, idregistry)
-            #end; a > 0 && println("place parse_graphics $id allocated ", a)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
@@ -327,7 +319,6 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     sorttype = something(sorttype, default_sorttype(pntd))::SortType
     #println("parse_place $pntd "); dump(mark); dump(sorttype)
 
-    #Place{typeof(pntd), typeof(mark), type(sorttype)}
     Place(pntd, id, mark, mark, sorttype, name,
           ObjectCommon(graphics, tools, labels))
 end
@@ -351,7 +342,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     labels = PnmlLabel[]
 
     #a = @allocated begin
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "condition"
             cond = parse_condition(child, pntd, idregistry)
@@ -397,7 +388,7 @@ function parse_arc(node, pntd, idregistry::PIDR)
 
     #a = @allocated begin
 
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "inscription" || tag == "hlinscription"
             inscription = _parse_inscription(child, pntd, idregistry)
@@ -437,7 +428,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     graphics::Maybe{Graphics} = nothing
 
     #a = @allocated begin
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "name"
             name => parse_name(child, pntd, idregistry)
@@ -470,7 +461,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     graphics::Maybe{Graphics} = nothing
 
     #a = @allocated begin
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "name"
             name = parse_name(child, pntd, idregistry)
@@ -497,7 +488,7 @@ Return the stripped string of node's content.
 """
 function parse_text(node::XMLNode, _::PnmlType, _::PIDR)
     check_nodename(node, "text")
-    return string(strip(nodecontent(node)))
+    return string(strip(EzXML.nodecontent(node)))
 end
 
 """
@@ -513,7 +504,7 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = string(strip(nodecontent(child)))
+            text = string(strip(EzXML.nodecontent(child)))
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
@@ -530,7 +521,7 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         emsg = "<name> missing <text> element"
         if CONFIG.text_element_optional
             @warn emsg # Remove when CONFIG default set to false.
-            text = string(strip(nodecontent(node)))
+            text = string(strip(EzXML.nodecontent(node)))
         else
             throw(ArgumentError(emsg))
         end
@@ -570,7 +561,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             tag = EzXML.nodename(child)
             # We extend to real numbers.
             if tag == "text"
-                value = number_value(marking_value_type(pntd), (string ∘ strip ∘ nodecontent)(child))
+                value = number_value(marking_value_type(pntd), (string ∘ strip ∘ EzXML.nodecontent)(child))
             elseif tag == "structure"
                 # Allow <structure> for non-high-level labels.
                 structure = parse_structure(child, pntd, idregistry)
@@ -602,7 +593,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     labels = PnmlLabel[]
 
     #a = @allocated begin
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             txt = (string ∘ strip ∘ EzXML.nodecontent)(child)
@@ -644,7 +635,7 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = string(strip(nodecontent(child)))
+            text = string(strip(EzXML.nodecontent(child)))
         elseif tag == "structure"
             markterm = parse_marking_term(child, pntd, idregistry)
             #! TODO match sort of place
@@ -690,7 +681,7 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
     #a = @allocated begin
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        @match nodename(child) begin
+        @match tag begin
             "text"         => (text = parse_text(child, pntd, idregistry))
             "structure"    => (inscriptterm = parse_inscription_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
@@ -712,8 +703,9 @@ function parse_inscription_term(inode, pntd, idregistry)::Term
     check_nodename(inode, "structure")
     if EzXML.haselement(inode)
         term = EzXML.firstelement(inode)
+
         return parse_term(term, pntd, idregistry)
-    else #EzXML.hasnodecontent(inode)
+    else
         content_string = strip(EzXML.nodecontent(inode))
         if !isempty(content_string)
             @warn("inscription term <structure> content value: $content_string")
@@ -749,7 +741,7 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     #a = @allocated begin
     for child in EzXML.eachelement(node)
-        tag = nodename(child)
+        tag = EzXML.nodename(child)
         @match tag begin
             "text"         => (text = parse_text(child, pntd, idregistry))
             "structure"    => (condterm = parse_condition_term(child, pntd, idregistry))

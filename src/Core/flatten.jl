@@ -23,9 +23,8 @@ end
 
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
-    verbose &&
-        println("\nflatten_pages! net $(pid(net)) with $(length(pagedict(net))) pages")
-
+    netid = pid(net)
+    #verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
         #println("pagedict(net)"); dump(pagedict(net))
         #println("pageids of $(pid(net))"); typeof(page_idset(net))
@@ -55,6 +54,7 @@ end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
 function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
+    verbose && println("postflatten verify")
     errors = String[]
     length(pagedict(net)) == 1 || push!(errors, "pagedict length wrong")
     isempty(refplacedict(net)) || push!(errors, "refplacedict not empty")
@@ -69,6 +69,7 @@ function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFI
 
     isempty(errors) ||
         error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
+    return nothing
 end
 
 """
@@ -79,8 +80,11 @@ pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not
 netsets hold pnml IDs "owned"
 """
 function append_page!(l::Page, r::Page;
-                      keys = [:declaration], # netsets
-                      comk = [:tools, :labels])
+                      keys = (:declaration,), # non-idset and non-dict fileds of page
+                      comk = (:tools, :labels,), # common's fields
+                      idsets = (place_idset, transition_idset, arc_idset,
+                                refplace_idset, reftransition_idset,)
+                    )
 
     if CONFIG.verbose
         println("append_page! ", pid(l), " ", pid(r))
@@ -91,8 +95,7 @@ function append_page!(l::Page, r::Page;
         _update_maybe!(getproperty(l, k), getproperty(r, k))
     end
 
-    # Merge netsets except for page_idset
-    for s in [place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset]
+    for s in idsets # except for page_idset
         union!(s(l), s(r)) #TODO type assert
     end
 
@@ -152,9 +155,9 @@ as part of [`flatten_pages!`](@ref),
   4) No cycles.
 """
 function deref!(net::PnmlNet, trim::Bool = true)
-    CONFIG.verbose && println("deref! net $(pid(net))")
-    #@show typeof(arc_idset(net))
-    for id in arc_idset(net)
+    #CONFIG.verbose && println("deref! net ", pid(net))
+    @show typeof(arc_idset(net))
+    for id in arc_idset(net) # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
         while arc.source ∈ refplace_idset(net)
@@ -175,8 +178,8 @@ function deref!(net::PnmlNet, trim::Bool = true)
         empty!(refplace_idset(firstpage(net)))
         empty!(reftransition_idset(firstpage(net)))
         # And the nodes themselves.
-        empty!(reftransitiondict(net))
         empty!(refplacedict(net))
+        empty!(reftransitiondict(net))
     end
     return net
 end
@@ -187,19 +190,20 @@ end
 Return id of referenced place. If trim is `true` (default) the reference is removed.
 """
 function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
-    CONFIG.verbose && println(lazy"deref_place net $(pid(net)) $id")
-    has_refP(net, id) || error(lazy"expected refP $id")
+    netid = pid(net)
+    #CONFIG.verbose && println("deref_place net $netid refP $id")
+    has_refplace(net, id) || error("expected refplace $id to be found in net $netid")
     rp = refplace(net, id)
-    if isnothing(rp) # Something is really, really wrong.
-        error("failed to lookup reference place id $id in net $(pid(net))")
-    end
-    has_place(net, rp.ref) || has_refplace(net, rp.ref) ||
-        error("$(rp.ref) is not a place or reference place")
-    if trim # Not deleting would allow for on-the-fly dereference -- NOT SUPPORTED YET.
+    isnothing(rp) && # Something is really, really wrong.
+        error("failed to lookup reference place id $id in net $netid)")
+    has_place(net, refid(rp)) || has_refplace(net, refid(rp)) ||
+        error("$(refid(rp)) is not a place or reference place")
+    if trim
         delete!(refplacedict(net), id)
-        has_refP(net, id) && error("did not expect refP $id in net $(pid(net)) after delete")
+        has_refplace(net, id) &&
+            error("did not expect refplace $id in net $netid after delete")
     end
-    return rp.ref
+    return refid(rp)
 end
 
 """
@@ -208,17 +212,18 @@ end
 Return id of referenced transition. If trim is `true` (default) the reference is removed.
 """
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
-    CONFIG.verbose && println("deref_transition net $(pid(net)) refT $id")
-    has_refT(net, id) || error("expected refT $id")
+    netid = pid(net)
+    #CONFIG.verbose && println("deref_transition net $netid refT $id")
+    has_reftransition(net, id) || error("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
-    if isnothing(rt) # Something is really, really wrong.
-        error("failed to lookup reference transition id $id in net $(pid(net))")
-    end
-    has_transition(net, rt.ref) || has_reftransition(net, rt.ref) ||
-        error("$(rt.ref) is not a transition or reference transition")
+    isnothing(rt) && # Something is really, really wrong.
+        error("failed to lookup reference transition id $id in net $netid")
+    has_transition(net, refid(rt)) || has_reftransition(net, refid(rt)) ||
+        error("$(refid(rt)) is not a transition or reference transition in net $netid")
     if trim
         delete!(reftransitiondict(net), id)
-        has_refT(net, id) && error("did not expect refT $id in net $(pid(net)) after delete")
+        has_reftransition(net, id) &&
+            error("did not expect reftransition $id in net $netid after delete")
     end
-    return rt.ref
+    return refid(rt)
 end

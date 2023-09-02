@@ -30,7 +30,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     labels = PnmlLabel[]
 
     CONFIG.verbose && println("parse_declaration")
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         CONFIG.verbose && println("    $tag")
         if tag == "structure"
@@ -103,12 +103,11 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
 
     def::Maybe{Term} = nothing
     parameters = VariableDeclaration[]
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "def"
             # NamedOperators have a def element that is a operator or variable term.
             def = parse_term(EzXML.firstelement(child), pntd, idregistry)
-            #!def = parse_sort(EzXML.firstelement(child), pntd, idregistry)
         elseif tag == "parameter"
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
@@ -128,7 +127,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDReg
     nn = check_nodename(node, "variabledecl")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException(lazy"$nn missing name attribute"))
+    EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
     name = node["name"]
     # Assert only 1 element
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
@@ -140,13 +139,13 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    nn = nodename(node)
+    nn = EzXML.nodename(node)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
     name = node["name"]
 
-    @info("unknown declaration: $nn $id $name")
+    @info("unknown declaration: tag = $nn id = $id name = $name")
 
     content = [anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
     UnknownDeclaration(id, name, nn, content)
@@ -163,9 +162,9 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 function parse_type end
 
 # Allow all pntd's places to have a <type> label.
-# Non high-level are expecting a numeric sort: eltype(sort) <: Number.flags
+# Non high-level are expecting a numeric sort: eltype(sort) <: Number.
 # See default_sort
-function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #where {PNTD <: AbstractHLCore}
+function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "type")
     text::Maybe{AbstractString} = nothing
     sortterm::Maybe{Any} = nothing
@@ -175,7 +174,7 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        @match nodename(child) begin
+        @match tag begin
             "text"         => (text = parse_text(child, pntd, idregistry))
             "structure"    => (sortterm = parse_sorttype_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
@@ -188,19 +187,6 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry) #
     SortType(text, something(sortterm, default_sorttype(pntd)),
                 ObjectCommon(graphics, tools, labels))
 end
-
-# # Sort type for non-high-level meaning is TBD and non-standard.
-# function parse_type(node::XMLNode, pntd::PNTD, idregistry::PnmlIDRegistry) where {PNTD <: PnmlType}
-#     check_nodename(node, "type")
-#     # Parse <type> as unclaimed label. Then assume it is a `numberic_label_value`.
-#     # First use-case of technique is `rate` of `ContinuousNet`.
-#     ucl = unclaimed_label(node, pntd, idregistry)
-
-#     CONFIG.verbose && @show ucl
-#     @assert ucl.second[1] isa AbstractString
-#     val = text_content_value(sort_value_type(pntd), ucl.second[1]) #TODO This should conform to the TBD `Sort` interface.
-#     return SortType("default sorttype", val)
-# end
 
 """
 $(TYPEDSIGNATURES)
@@ -220,17 +206,20 @@ function parse_sorttype_term(typenode, pntd, idregistry)
     ucl = unclaimed_label(term, pntd, idregistry)
     #println("sorttype declaration: "); dump(ucl)
 
+    #TODO sort_ids and sort_tags should be "global constants"
     sort_ids = Symbol[:usersort, :multisetsort, :productsort, :partition,
-                      :bool, :cyclicenumeration, :finiteenumeration, :finiteintrange, :integer, :list, :string]
+                      :cyclicenumeration, :finiteenumeration, :finiteintrange,
+                      :bool, :integer, :list, :string]
 
     sortid = ucl.first
+    sortid ∈ sort_ids || @warn("invalid sort type '$sortid', allowed: $sort_ids")
+
     if sortid === :usersort
         @assert ucl.second isa Vector{AnyXmlNode}
         d = first(ucl.second)
         @assert tag(d) == :declaration
         @assert value(d) isa AbstractString
         idref = Symbol(value(d))
-        #@assert !isregistered(idregistry, idref) # unclaimed do not register
         t = UserSort(idref)
     elseif sortid === :dot
         t = DotSort()
@@ -246,7 +235,7 @@ function parse_sorttype_term(typenode, pntd, idregistry)
         #! XXX FINNISH this =========================================== XXX
 
     else
-        error("parse_sorttype_term does not handle $sortid")
+        error("parse_sorttype_term $sortid not implemented")
     end
 
     #println("sorttype_term"); dump(t)
@@ -259,7 +248,7 @@ $(TYPEDSIGNATURES)
 Sorts are found within a <structure> element.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = nodename(node)
+    nn = EzXML.nodename(node)
     sort_tags = ["bool",
                  "finiteenumeration",
                  "finiteintrange",

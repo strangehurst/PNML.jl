@@ -41,8 +41,8 @@ function parse_graphics(node, pntd, reg)
     nn = check_nodename(node, "graphics")
     args = Dict()
     _positions = Coordinate{coordinate_value_type(pntd)}[]
-    for child in eachelement(node)
-        @match nodename(child) begin
+    for child in EzXML.eachelement(node)
+        @match EzXML.nodename(child) begin
             "dimension" => (args[:dimension] = parse_graphics_coordinate(child, pntd, reg))
             "fill"      => (args[:fill] = parse_graphics_fill(child, pntd, reg))
             "font"      => (args[:font] = parse_graphics_font(child, pntd, reg))
@@ -78,7 +78,7 @@ Return [`Coordinate`](@ref).
 Specification seems to only use integers, we also allow real numbers.
 """
 function parse_graphics_coordinate(node, pntd, reg)
-    nn = nodename(node)
+    nn = EzXML.nodename(node)
     if !(nn=="position" || nn=="dimension" || nn=="offset" || nn=="tokenposition")
         throw(ArgumentError("element name wrong: $nn"))
     end

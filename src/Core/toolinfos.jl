@@ -11,7 +11,7 @@ toolname, version tool specifics.
 @auto_hash_equals struct ToolInfo{T}
     toolname::String
     version::String
-    infos::T #Vector{AnyElement} #TODO specialize infos.
+    infos::T
     xml::XMLNode
 end
 
@@ -66,7 +66,7 @@ function get_toolinfo(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r
 end
 
 function get_toolinfos(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    filter(ti -> _match(ti, namerex, versionrex), v)
+    Iterators.filter(ti -> _match(ti, namerex, versionrex), v)
 end
 
 """

@@ -56,7 +56,7 @@ using AbstractTrees
 using AutoHashEquals
 using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
-using EzXML
+using EzXML: EzXML # import no names
 using FunctionWrappers
 import FunctionWrappers: FunctionWrapper
 using LabelledArrays

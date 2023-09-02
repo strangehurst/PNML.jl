@@ -10,7 +10,7 @@ Declarations are the core of high-level Petri Net.
 They define objects/names that are used for conditions, inscriptions, markings.
 They are attached to PNML nets and pages.
 """
-abstract type AbstractDeclaration <: AbstractLabel end
+abstract type AbstractDeclaration end #<: AbstractLabel end
 
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name

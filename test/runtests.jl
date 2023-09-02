@@ -4,6 +4,7 @@ using PrettyPrinting
 using Documenter
 #, LabelledArrays
 using JET
+using FunctionWrappers
 
 println("ARGS = ", ARGS)
 

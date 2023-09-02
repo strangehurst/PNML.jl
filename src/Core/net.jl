@@ -67,12 +67,13 @@ marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
 #--------------------------------------
 pid(net::PnmlNet)  = net.id
 
+# `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(n::PnmlNet) = n.pagedict
-netdata(n::PnmlNet)  = n.netdata
-netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
 page_idset(n::PnmlNet)  = n.page_set
 
-# `pagedict` is all pages in `net`, `page_idset` (and thus `pages`) only for direct pages of net.
+netdata(n::PnmlNet)  = n.netdata
+netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
+
 place_idset(n::PnmlNet)         = keys(placedict(n))
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))
 arc_idset(n::PnmlNet)           = keys(arcdict(n))
@@ -84,7 +85,7 @@ allpages(net::PnmlNet) = allpages(pagedict(net))
 allpages(pd::OrderedDict) = values(pd)
 
 "Return iterator of `Pages` directly owned by `net`."
-pages(net::PnmlNet) = Iterators.filter(v -> pid(v) in page_idset(net), allpages(net))
+pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpages(net))
 
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
@@ -129,19 +130,14 @@ conditions(net::PnmlNet) =
 arc(net::PnmlNet, id::Symbol)      = arcdict(net)[id]
 has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
 
-all_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id || target(a) === id, arcs(net))
-src_arcs(net::PnmlNet, id::Symbol) = filter(a -> source(a) === id, arcs(net))
-tgt_arcs(net::PnmlNet, id::Symbol) = filter(a -> target(a) === id, arcs(net))
+all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(net))
+src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
+tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
 
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict(net)[arc_id])
 inscriptionV(net::PnmlNet) = Vector((;[id => inscription(net, t)() for (id,t) in pairs(arcdict(net))]...))
 
-#TODO Add dereferenceing for place, transition, arc traversal.
-refplace(net::PnmlNet, id::Symbol)         = refplacedict(net)[id]
-has_refP(net::PnmlNet, ref_id::Symbol)     = haskey(refplacedict(net), ref_id)
-
-reftransition(net::PnmlNet, id::Symbol)    = reftransitiondict(net)[id]
-has_refT(net::PnmlNet, ref_id::Symbol)     = haskey(reftransitiondict(net), ref_id)
-
 has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
+refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
+reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]

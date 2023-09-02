@@ -18,18 +18,20 @@ const target_modules = (PNML,)
 const testshow = devnull # nothing turns off redirection
 
 "Ignore some dynamically-designed functions."
-function pnml_function_filter(@nospecialize(ft))
+function pff(@nospecialize(ft))
     if ft === typeof(PnmlIDRegistrys.register_id!) ||
        ft === typeof(Preferences.load_preference) ||
        ft === typeof(EzXML.nodename) ||
        ft === typeof(Base.string) ||
+       ft === typeof(Base.println) ||
+       #ft === typeof(FunctionWrappers.convert_ret) ||
        false
         return false
     end
     return true
 end
 
-export VERBOSE_PNML, pnml_function_filter, target_modules,
+export VERBOSE_PNML, pff, target_modules,
         jet_broke, runopt, testshow, noisy
 
 end # module TestUtils

@@ -12,13 +12,19 @@ struct Coordinate{T <: DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 is S
     y::T
 end
 
-Coordinate(x::T, y::T) where {T <: Union{Int,Float64}} =
-            Coordinate(coordinate_value_type()(x), coordinate_value_type()(y))
+"""
+Construct a Coordinate from mixed Int, Float64.
+"""
+Coordinate(x::T1, y::T2) where {T1 <: Union{Int, Float64}, T2 <: Union{Int, Float64}} =
+            Coordinate(convert(coordinate_value_type(), x),
+                       convert(coordinate_value_type(), y))
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
 coordinate_value_type() = Dec32
 coordinate_value_type(::Type) = Dec32
-#!coordinate_value_type(::Type{<: AbstractContinuousNet}) = Float64
 Base.eltype(::Coordinate{T}) where {T} = T
+x(c::Coordinate) = c.x
+y(c::Coordinate) = c.y
+Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
 #-------------------
 """

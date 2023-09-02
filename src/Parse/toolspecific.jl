@@ -30,7 +30,7 @@ function parse_toolspecific(node, pntd, reg)
 
     # Handle all other toolinfos as AnyElement (holding well-formed XML).
     content = AnyElement[]
-    for child in eachelement(node)
+    for child in EzXML.eachelement(node)
         push!(content, anyelement(child, pntd, reg))
     end
     isempty(content) && @warn "<toolspecific> $tool $version missing content"

@@ -10,9 +10,9 @@ function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
             @info "$nn is known tag being treated as unclaimed."
         end
     end
-    label = PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    label = PnmlLabel(unclaimed_label(node, pntd), node)
     push!(v, label)
-    return nothing
+    return label
 end
 
 #---------------------------------------------------------------------
