@@ -84,9 +84,9 @@ include("Core/utils.jl")
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 
-include("HighLevel/terms.jl")
-include("HighLevel/sorts.jl")
-include("HighLevel/hldeclarations.jl")
+include("Core/terms.jl")
+include("Core/sorts.jl")
+include("Core/hldeclarations.jl")
 
 include("Core/labels.jl")
 include("Core/graphics.jl")
@@ -94,21 +94,21 @@ include("Core/toolinfos.jl")
 include("Core/objcommon.jl")
 include("Core/name.jl")
 
-include("HighLevel/sorttype.jl")
+include("Core/sorttype.jl")
 
-include("HighLevel/hllabels.jl")
+include("Core/hllabels.jl")
 
 include("Core/inscriptions.jl")
-include("HighLevel/hlinscriptions.jl")
+include("Core/hlinscriptions.jl")
 include("Core/markings.jl")
-include("HighLevel/hlmarkings.jl")
+include("Core/hlmarkings.jl")
 include("Core/conditions.jl")
 
 include("Core/declarations.jl")
 
 include("Core/defaults.jl")
-include("HighLevel/hldefaults.jl")
-include("HighLevel/structure.jl")
+include("Core/hldefaults.jl")
+include("Core/structure.jl")
 
 include("Core/nodes.jl")
 include("Core/pnmlnetdata.jl") # Used by page, net.
@@ -121,7 +121,7 @@ include("Core/flatten.jl")
 include("Core/show.jl")
 
 # High-Level
-include("HighLevel/hlshow.jl")
+include("Core/hlshow.jl")
 
 # PARSE
 include("Parse/parseutils.jl")
