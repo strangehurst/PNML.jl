@@ -47,9 +47,3 @@ function check_nodename(n::XMLNode, s::AbstractString)
     end
     return s
 end
-
-#-------------------------------------------------------------------
-# Bindings for viewing tree.
-AbstractTrees.children(n::EzXML.Node) = EzXML.elements(n)
-AbstractTrees.printnode(io::IO, node::EzXML.Node) = print(io, getproperty(node, :name))
-AbstractTrees.nodetype(::EzXML.Node) = EzXML.Node

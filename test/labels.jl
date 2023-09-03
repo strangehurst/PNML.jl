@@ -179,10 +179,6 @@ end
     @test l isa @NamedTuple{tag::Symbol,xml::XMLNode}
 end
 
-AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ? a.val : nothing
-
-AbstractTrees.printnode(io::IO, a::PNML.AnyXmlNode) = print(io, a.tag, "", a.val isa AbstractString && a.val)
-
 function test_unclaimed(pntd, xmlstring::String)
     if noisy
         println("+++++++++++++++++++")
