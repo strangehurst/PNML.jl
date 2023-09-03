@@ -1,10 +1,8 @@
-using PNML
-using AbstractTrees, Test, SafeTestsets
+using PNML, Test, SafeTestsets
+using AbstractTrees
 using PrettyPrinting
 using Documenter
-#, LabelledArrays
-using JET
-#using FunctionWrappers
+using JET, Aqua
 
 println("ARGS = ", ARGS)
 
@@ -23,29 +21,26 @@ if select("none", "NONE")
     return
 end
 
+UNDER_CI = (get(ENV, "CI", nothing) == "true")
+
 #############################################################################
 @time "TESTS" begin
 
-# Check for ambiguous methods.
-@time "ambiguous" begin
-    ambiguous = detect_ambiguities(PNML; recursive=true)
-    for amb in ambiguous
-        @show amb
-    end
-    @test length(ambiguous) == 0
-end
-# Check for unbound type parameters.
-@time "unbound" begin
-    unbound = detect_unbound_args(PNML; recursive=true)
-    for unb in unbound
-        @warn "unbound" unb
-    end
-    @test length(unbound) == 0
-end
-
-UNDER_CI = (get(ENV, "CI", nothing) == "true")
-
 @testset verbose=true failfast=true showtiming=true "PNML.jl" begin
+    if select("ALL", "AQUA")
+        @testset "Aqua" begin
+            Aqua.test_all(PNML;
+              ambiguities=(recursive=false),
+              unbound_args=true,
+              undefined_exports=true,
+              project_extras=true,
+              #stale_deps=(ignore=[:SomePackage],),
+              #deps_compat=(ignore=[:SomeOtherPackage],),
+              project_toml_formatting=true,
+              piracy=false,
+            )
+          end
+    end
     if select("ALL", "BASE")
         println("BASE")
         @safetestset "typedefs"  begin include("typedefs.jl") end
