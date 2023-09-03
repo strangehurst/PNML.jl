@@ -52,11 +52,11 @@ if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
 
-using AbstractTrees
+import AbstractTrees
 using AutoHashEquals
 using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
-using EzXML: EzXML # import no names
+import EzXML
 using FunctionWrappers
 import FunctionWrappers: FunctionWrapper
 using LabelledArrays
