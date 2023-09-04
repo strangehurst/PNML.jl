@@ -84,6 +84,17 @@ reftransition_idset(petrinet::AbstractPetriNet)       = reftransition_idset(pnml
 has_reftransition(petrinet::AbstractPetriNet, id::Symbol) = has_reftransition(pnmlnet(petrinet), id)
 reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(pnmlnet(petrinet), id)
 
+"""
+$(TYPEDSIGNATURES)
+
+Return a transition-id labelled vector of rate values for transitions of a petri net.
+"""
+function rates end
+
+function rates(pn::AbstractPetriNet)
+    LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
+end
+
 #-----------------------------------------------------------------
 Base.summary(io::IO, pn::AbstractPetriNet) = print(io, summary(pn))
 function Base.summary(pn::AbstractPetriNet)

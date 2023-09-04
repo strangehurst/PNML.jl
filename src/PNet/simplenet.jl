@@ -48,8 +48,6 @@ end
 
 # Construct from the flattened first network of the pnml model created from valid XML.
 
-SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
-SimpleNet(node::XMLNode)       = SimpleNet(PnmlModel(node))
 SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
 function SimpleNet(net::PnmlNet)
     flatten_pages!(net) #TODO
