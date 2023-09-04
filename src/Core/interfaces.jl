@@ -406,3 +406,12 @@ $(TYPEDSIGNATURES)
 Return type of value in a `Coordinate`.
 """
 function coordinate_value_type end
+
+#---------------------------------------------------------------------------
+# Extend by allowing a transition to be labeled with a floating point rate.
+#---------------------------------------------------------------------------
+"""
+$(TYPEDSIGNATURES)
+Return rate value type
+"""
+function rate_value_type end

@@ -140,3 +140,6 @@ term_value_type(pntd::PnmlType) = term_value_type(typeof(pntd))
 
 coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))
 coordinate_value_type(pntd::PnmlType) = coordinate_value_type(typeof(pntd))
+
+rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
+rate_value_type(::Type{<:PnmlType}) = Float64

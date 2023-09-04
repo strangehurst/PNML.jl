@@ -60,6 +60,7 @@ condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
 
 inscription_type(net::PnmlNet)       = inscription_type(nettype(net))
 inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
+rate_value_type(net::PnmlNet)        = rate_value_type(nettype(net))
 
 marking_type(net::PnmlNet)       = marking_type(nettype(net))
 marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
