@@ -353,7 +353,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
-            @warn "unexpected child of <transition>: $tag"
+            tag != "rate" && @warn "unexpected child of <transition>: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
     end
