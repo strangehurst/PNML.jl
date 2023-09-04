@@ -53,16 +53,14 @@ str =
   </net>
 </pnml>
     """
-    #logpattern =
-    # model = @test_logs begin
+    #model = @test_logs match_mode=:any begin
     #     (:warn,"unexpected child of <page>: text")
     #     (:warn,"namedoperator under development")
     #     (:warn,r"^element 'unknown' invalid as child of <namedoperator>.*")
     #     (:warn,r"^unknown declaration: unknowendecl unk1 u")
-    #     match_mode=:any
-    # end
-    model = parse_pnml(xmlroot(str), registry())
-    model = parse_pnml(xmlroot(str), registry())
+    #end parse_pnml(xmlroot(str), registry())
+    #@test_logs broken=true (:warn,)
+    model = parse_pnml(xmlroot(str), registry()) #! 1.10.beta broken here
     @test model isa PnmlModel
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show model

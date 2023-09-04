@@ -41,6 +41,7 @@ testlogger = TestLogger()
     </pnml>
     """
     @test_call target_modules=target_modules parse_str(str)
+    #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
     model = @inferred parse_str(str)
     #@show model #println("simplenet model"); dump(model)
     #println()
