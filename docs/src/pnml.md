@@ -37,12 +37,12 @@ In this section 'PNML' refers to the markup language, its specification and sche
 <http://www.pnml.org>
   - has publications and tutorials covering PNML at various points in its evolution.
   - has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
-  - is the cannonical site for the RELAX-NG XML schemas that define the grammer of several Petri Net Type Defintions (pntd), including:
+  - is the cannonical site for the RELAX-NG XML schemas that define the grammar of several Petri Net Type Defintions (pntd), including:
 	  - PT Net (Place/Transition Net)
 	  - High-level Place/Transition Net
 	  - Symmetric Net
 
-There are 2 flavors currently covered by PNML: Discrete intger-valued & High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers.
+There are 2 flavors currently covered by PNML: Discrete integer-valued & High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers.
 
 It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
 
@@ -60,7 +60,7 @@ Petri Net Markup Language files (pnml) are intended to be validated against a pn
 
 For interchange of pnml between tools it should be enough to support the same pntd schema.
 
-Note that ISO is working on part 3 of the PNML standard covering pntd (as of October 2021).
+Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. Some bits are on the [Roadmap](@ref) based on freely viewable table of contents.
 
 It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
@@ -218,6 +218,13 @@ ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
-[github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework) "hosts the source code of PNML Framework,
+[github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework)
+"hosts the source code of PNML Framework,
 the companion tool of the International Standard ISO/IEC 15909-2"
 As an Eclipse/Java construction using Eclipse Public License 1.0,
+
+[github.com/loig/pinimili](https://github.com/loig/pinimili)
+Go language.
+
+[github.com/stackdump/gopetri](https://github.com/stackdump/gopetri)
+Go language.
