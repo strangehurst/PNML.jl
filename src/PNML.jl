@@ -97,6 +97,7 @@ include("Core/name.jl")
 include("Core/sorttype.jl")
 
 include("Core/hllabels.jl")
+include("Core/rates.jl")
 
 include("Core/inscriptions.jl")
 include("Core/hlinscriptions.jl")
@@ -132,12 +133,11 @@ include("Parse/declarations.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 
-# Petri /Nets
-include("Net/petrinet.jl")
-include("Net/simplenet.jl")
-include("Net/hlnet.jl")
-include("Continuous/rates.jl")
-include("Net/transition_function.jl")
+# Petri Nets
+include("PNet/petrinet.jl")
+include("PNet/simplenet.jl")
+include("PNet/hlnet.jl")
+include("PNet/transition_function.jl")
 
 
 export @xml_str,
