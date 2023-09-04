@@ -119,8 +119,7 @@ end
       </arc>
     """)
     #a1 = @test_logs match_mode=:any (:warn, "inscription term <structure> content value: 6") (:warn, "unexpected child of <arc>: unknown")
-    a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown")
-    a1 = parse_arc(node, pntd, registry())
+    a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
 
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show a1 PNML.default_inscription(a1) PNML.nettype(a1) PNML.common(a1)
