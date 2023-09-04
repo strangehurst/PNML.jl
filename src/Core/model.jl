@@ -14,9 +14,6 @@ end
 $(TYPEDSIGNATURES)
 """
 
-PnmlModel(nets::Tuple{Vararg{PnmlNet}}) = PnmlModel(nets, pnml_ns, registry())
-PnmlModel(nets::Tuple{Vararg{PnmlNet}}, ns, reg::PnmlIDRegistry) = PnmlModel(nets, ns, reg)
-
 """
 $(TYPEDSIGNATURES)
 
