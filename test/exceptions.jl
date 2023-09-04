@@ -24,10 +24,10 @@ end
     try
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry())
     catch e
-        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             showerror(e)
             println()
-        #end
+        end
    end
 
     @test_throws("MalformedException: toolspecific missing tool attribute",
