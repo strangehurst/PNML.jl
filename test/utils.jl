@@ -14,7 +14,8 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
     MultisetSort, ProductSort, RealSort, UserSort,
     SortType,
-    PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel
+    PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel, isdiscrete, iscontinuous
+
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -100,10 +101,25 @@ end
 
 @testset "net data for $pntd" for pntd in all_nettypes()
     pnd = PnmlNetData(pntd)
-    #@show pnd
+    @test isempty(PNML.placedict(pnd))
+    @test isempty(PNML.transitiondict(pnd))
+    @test isempty(PNML.arcdict(pnd))
+    @test isempty(PNML.refplacedict(pnd))
+    @test isempty(PNML.reftransitiondict(pnd))
 end
 
 @testset "key sets for $pntd" for pntd in all_nettypes()
     pns = PnmlNetKeys()
-    #@show pns
+    @test isempty(PNML.page_idset(pns))
+    @test isempty(PNML.place_idset(pns))
+    @test isempty(PNML.transition_idset(pns))
+    @test isempty(PNML.arc_idset(pns))
+    @test isempty(PNML.reftransition_idset(pns))
+    @test isempty(PNML.refplace_idset(pns))
+end
+
+@testset "predicates for $pntd" for pntd in all_nettypes()
+    #@show pntd isdiscrete(pntd) ishighlevel(pntd) iscontinuous(pntd)
+    @test Iterators.only(Iterators.filter(==(true),
+                         (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
 end

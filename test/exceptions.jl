@@ -13,6 +13,9 @@ function test_malformed(emsg, f, node...)
         error("expected exception message containing '$emsg`")
     catch e
         if e isa PNML.PnmlException
+            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+                @show e
+            end
             @test e isa PNML.MalformedException
             @test occursin(emsg, e.msg)
         else
@@ -121,4 +124,8 @@ end
         xml"<tokengraphics><tokenposition y='-2'/></tokengraphics>", pntd, registry())
     test_malformed("missing y", parse_node,
         xml"<tokengraphics><tokenposition x='-9'/></tokengraphics>", pntd, registry())
+end
+
+@testset "check_nodename" begin
+    @test_throws "ArgumentError: element name wrong, expected bar, got foo" PNML.check_nodename(xml"<foo></foo>", "bar")
 end
