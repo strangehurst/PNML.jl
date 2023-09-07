@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
+@kwdef struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
@@ -12,7 +12,8 @@ struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
     page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
     declaration::Declaration
     name::Maybe{Name}
-    com::ObjectCommon
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
     xml::XMLNode
 end
 
@@ -34,7 +35,7 @@ page_type(::Type{T}) where {T<:PnmlType} = Page{T,
 
 place_type(::Type{T}) where {T<:PnmlType} = Place{T,
                                                   marking_type(T),
-                                                  SortType{default_sort_type(T)}}
+                                                  SortType}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace{T}
@@ -49,7 +50,7 @@ page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
 
 place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T,
                                                      marking_type(T),
-                                                     SortType{default_sort_type(T)}}
+                                                     SortType}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
@@ -92,9 +93,13 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
 
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward
-common(net::PnmlNet)       = net.com
 
-has_labels(net::PnmlNet) = has_labels(net.com)
+has_tools(net::PnmlNet) = true
+tools(net::PnmlNet)     = net.tools
+
+has_labels(net::PnmlNet) = true
+labels(net::PnmlNet)     = net.labels
+
 xmlnode(net::PnmlNet)    = net.xml
 
 has_name(net::PnmlNet) = !isnothing(net.name)

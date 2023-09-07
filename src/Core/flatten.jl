@@ -80,8 +80,7 @@ pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not
 netsets hold pnml IDs "owned"
 """
 function append_page!(l::Page, r::Page;
-                      keys = (:declaration,), # non-idset and non-dict fileds of page
-                      comk = (:tools, :labels,), # common's fields
+                      keys = (:declaration,:tools, :labels), # non-idset and non-dict fileds of page
                       idsets = (place_idset, transition_idset, arc_idset,
                                 refplace_idset, reftransition_idset,)
                     )
@@ -99,10 +98,10 @@ function append_page!(l::Page, r::Page;
         union!(s(l), s(r)) #TODO type assert
     end
 
-    # Optional fields from common to append.
-    for key in comk
-        _update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
-    end
+    # # Optional fields from common to append.
+    # for key in comk
+    #     _update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
+    # end
 
     delete!(page_idset(l), pid(r))
     @assert pid(r) ∉ page_idset(l)

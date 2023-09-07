@@ -14,9 +14,8 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        #println("parse_place "); dump(n)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n) PNML.common(n)
+            @show n PNML.default_marking(n) PNML.nettype(n)
         end
 
         nothing === @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
@@ -42,9 +41,8 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        #println("parse_place "); dump(n)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n) PNML.common(n)
+            @show n PNML.default_marking(n) PNML.nettype(n)
         end
 
         nothing === @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
@@ -79,7 +77,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test has_name(n)
     @test name(n) == "Some transition"
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.default_condition(n) PNML.nettype(n) PNML.common(n.condition)
+        @show n PNML.default_condition(n) PNML.nettype(n)
     end
     #println(pid(n)); dump(n)
     @test condition(n) isa Bool
@@ -122,7 +120,7 @@ end
     a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
 
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show a1 PNML.default_inscription(a1) PNML.nettype(a1) PNML.common(a1)
+        @show a1 PNML.default_inscription(a1) PNML.nettype(a1)
     end
     #println("arc a1 $pntd:"); dump(a1)
     a2 = Arc(a1, :newsrc, :newtarget)
@@ -154,7 +152,7 @@ end
     """
     n = @test_logs (:warn, "unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.common(n)
+        @show n
     end
     @test n isa RefTransition
     @test !has_xml(n)
@@ -192,7 +190,7 @@ end
     @testset for s in [n1, n2]
         n = @test_logs (:warn, "unexpected child of <referencePlace>: unknown") match_mode=:any parse_refPlace(s.node, ContinuousNet(), registry())
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.common(n)
+            @show n
         end
         @test typeof(n) <: RefPlace
         @test !has_xml(n)

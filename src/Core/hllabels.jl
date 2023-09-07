@@ -14,10 +14,9 @@ Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
 struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
-    com::ObjectCommon # Labels have graphics, toolinfo.
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
     xml::XMLNode
     #TODO validate in constructor: must have text or structure (depends on pntd?)
-    #TODO make all labels have text &/or structure
+    #TODO make all labels have text &/or structure?
 end
-
-#! common(l::HLLabel) = i.com test when HLLabel is used

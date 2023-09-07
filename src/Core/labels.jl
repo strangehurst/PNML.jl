@@ -1,6 +1,5 @@
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    prop_name === :text && return getfield(o, :text)::Maybe{String} # AbstractString?
-    #prop_name === :com  && return getfield(o, :com)::ObjectCommon
+    prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
     #prop_name === :xml  && return getfield(o, :xml)::XMLNode
 
@@ -20,16 +19,14 @@ has_structure(l::AbstractLabel) = hasproperty(l, :structure) && !isnothing(l.str
 "Return `structure` field."
 structure(l::AbstractLabel) = has_structure(l) ? l.structure : nothing
 
-has_graphics(l::AbstractLabel) = has_graphics(l.com)
-graphics(l::AbstractLabel) =  graphics(l.com)
+has_graphics(l::AbstractLabel) = !isnothing(l.graphics)
+graphics(l::AbstractLabel) =  l.graphics
 
-has_tools(l::AbstractLabel) = has_tools(l.com)
-tools(l::AbstractLabel) = tools(l.com)
+has_tools(l::AbstractLabel) = true
+tools(l::AbstractLabel) = l.tools
 
-has_labels(l::AbstractLabel) = has_labels(l.com)
-labels(l::AbstractLabel) = labels(l.com)
-
-has_label(l::AbstractLabel, tag::Symbol) = has_labels(l) ? has_label(labels(l), tag) : false
+has_labels(l::AbstractLabel) = false
+labels(l::AbstractLabel) = error("$(typeof(l)) does not have labels attached")
 
 # Labels include functors: markings, inscription, conditions #TODO test for Callable
 _evaluate(x::AbstractLabel) = x()

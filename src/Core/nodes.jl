@@ -11,21 +11,15 @@ struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     initialMarking::M
     sorttype::S
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
 end
-
-# function Place(pntd::PnmlType, id::Symbol, initMarking, sort,
-#                name::Maybe{Name}, oc::ObjectCommon)
-#     initmark = @something(initMarking, default_marking(pntd))
-#     #Place{typeof(pntd),typeof(initmark),typeof(sort)}
-#     Place(pntd, id, initmark, initmark, sort, name, oc)
-# end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 
 marking(place::Place) = place.marking
 default_marking(place::Place) = default_marking(place.pntd)
-common(place::Place) = place.com
 
 #-------------------
 """
@@ -39,7 +33,9 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     id::Symbol
     condition::C
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
 
     # function Transition(pntd, i, c, n, com)
     #     condition = @something(c, default_condition(pntd))
@@ -51,7 +47,6 @@ nettype(::Transition{T}) where {T <: PnmlType} = T
 
 condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
 default_condition(transition::Transition) = default_condition(transition.pntd)
-common(t::Transition) = t.com
 
 #-------------------
 """
@@ -67,22 +62,23 @@ mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
     target::Symbol
     inscription::I
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
 
-    function Arc(pntd, i, src, tgt, ins, n, c)
+    function Arc(pntd, i, src, tgt, ins, n, g, t, l)
         inscript = @something(ins, default_inscription(pntd))
-        new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, c)
+        new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, g, t, l)
     end
 end
 
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
-    Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.com)
+    Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.graphics, a.tools, a.labels)
 
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
 inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
-common(a::Arc) = a.com
 
 """
 $(TYPEDSIGNATURES)
@@ -110,9 +106,10 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     id::Symbol
     ref::Symbol # Place or RefPlace
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
 end
-common(r::RefPlace) = r.com
 
 #-------------------
 """
@@ -126,6 +123,7 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     id::Symbol
     ref::Symbol # Transition or RefTransition
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
 end
-common(r::RefTransition) = r.com

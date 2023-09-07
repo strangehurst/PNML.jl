@@ -175,9 +175,9 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
                     page ids: $(collect(values(page_idset(netsets))))
                 """)
     end
-    return PnmlNet(pntd, id, pagedict, netdata, page_idset(netsets),
-                    something(decl, Declaration()), name,
-                    ObjectCommon(nothing, tools, labels), node)
+    return PnmlNet(; type = pntd, id, pagedict, netdata, page_set = page_idset(netsets),
+                    declaration = something(decl, Declaration()),
+                    name, tools, labels, xml = node)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
@@ -237,8 +237,7 @@ function parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR
 
     CONFIG.verbose && println("Page $pageid name '$name' add to ", keys(pagedict))
 
-    return Page(pntd, pageid, something(decl, Declaration()), name,
-                ObjectCommon(graphics, tools, labels),
+    return Page(pntd, pageid, something(decl, Declaration()), name, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
                 netsets,  # Set of ids "owned" by this page.
@@ -319,8 +318,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     sorttype = something(sorttype, default_sorttype(pntd))::SortType
     #println("parse_place $pntd "); dump(mark); dump(sorttype)
 
-    Place(pntd, id, mark, mark, sorttype, name,
-          ObjectCommon(graphics, tools, labels))
+    Place(pntd, id, mark, mark, sorttype, name, graphics, tools, labels)
 end
 
 # By generalizing place marking label parsing we hope to return stable type.
@@ -353,6 +351,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
+            # We expecte at least one unclaimed labele here!
             tag != "rate" && @warn "unexpected child of <transition>: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
@@ -360,8 +359,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     #end; println("parse_transition $id allocated: ", a)
 
     Transition{typeof(pntd), condition_type(pntd)}(pntd, id,
-                something(cond, default_condition(pntd)),
-                name, ObjectCommon(graphics, tools, labels))
+                something(cond, default_condition(pntd)), name, graphics, tools, labels)
 end
 
 """
@@ -406,7 +404,7 @@ function parse_arc(node, pntd, idregistry::PIDR)
     #end; println("parse_arc $nodeid allocated ", a)
 
     Arc(pntd, nodeid, source, target, something(inscription, default_inscription(pntd)),
-                name, ObjectCommon(graphics, tools, labels))
+                name, graphics, tools, labels)
 end
 
 # By specializing arc inscription label parsing we hope to return stable type.
@@ -443,7 +441,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     #end; println("parse_refPlace $id allocated ", a)
 
-    RefPlace(pntd, id, ref, name, ObjectCommon(graphics, tools, labels))
+    RefPlace(pntd, id, ref, name, graphics, tools, labels)
 end
 
 """
@@ -476,7 +474,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
     #end; println("parse_refTransition $id allocated ", a)
 
-    RefTransition(pntd, id, ref, name, ObjectCommon(graphics, tools, labels))
+    RefTransition(pntd, id, ref, name, graphics, tools, labels)
 end
 
 #----------------------------------------------------------
@@ -510,7 +508,7 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # No labels here
-            @warn "unexpected child of <name>: $tag"
+            @warn "ignoring unexpected child of <name>: $tag"
         end
     end
 
@@ -548,7 +546,6 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     structure = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
-    labels = PnmlLabel[]
 
     if isempty(EzXML.nodecontent(node))
         # Treat missing value as if the <initialMarking> element was absent.
@@ -576,7 +573,7 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
         #end; a > 0 && println("parse_initialMarking allocated ", a)
     end
-    Marking(something(value, zero(marking_value_type(pntd))), ObjectCommon(graphics, tools, labels))
+    Marking(something(value, zero(marking_value_type(pntd))), graphics, tools)
 end
 
 """
@@ -589,7 +586,6 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     value = nothing
     graphics::Maybe{Graphics} = nothing
     tools = ToolInfo[]
-    labels = PnmlLabel[]
 
     #a = @allocated begin
     for child in EzXML.eachelement(node)
@@ -602,8 +598,8 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
-            @warn "unexpected child of <inscription>: $tag"
-            add_label!(labels, child, pntd, idregistry)
+            @warn("ignoring unexpected child of <inscription>: $tag")
+            #add_label!(labels, child, pntd, idregistry)
         end
     end
     #end; a > 0 && println("parse_inscription allocated ", a)
@@ -612,7 +608,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     if isnothing(value) && CONFIG.warn_on_fixup
         @warn("missing or unparsable <inscription> value for $pntd replaced with default value $(default_inscription(pntd)())")
     end
-    Inscription(something(value, default_inscription(pntd)()), ObjectCommon(graphics, tools, labels))
+    Inscription(something(value, default_inscription(pntd)()), graphics, tools)
 end
 
 """
@@ -628,7 +624,6 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
     markterm::Maybe{AbstractTerm} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
-    labels = PnmlLabel[]
 
     #a = @allocated begin
     for child in EzXML.eachelement(node)
@@ -642,15 +637,13 @@ function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry:
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
-        else # labels (unclaimed) are everything-else
-            @warn "unexpected child of <hlinitialMarking>: $tag"
-            add_label!(labels, child, pntd, idregistry)
+        else
+            @warn("ignoring unexpected child of <hlinitialMarking>: $tag")
         end
     end
     #end; a > 0 && println("parse_hlinitialMarking allocated ", a)
 
-    HLMarking(text, something(markterm, default_zero_term(pntd)),
-                ObjectCommon(graphics, tools, labels))
+    HLMarking(text, something(markterm, default_zero_term(pntd)), graphics, tools)
 end
 
 """
@@ -675,7 +668,6 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
     inscriptterm::Maybe{AbstractTerm} = nothing
     graphics::Maybe{Graphics} = nothing
     tools = ToolInfo[]
-    labels = PnmlLabel[]
 
     #a = @allocated begin
     for child in EzXML.eachelement(node)
@@ -685,14 +677,12 @@ function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PI
             "structure"    => (inscriptterm = parse_inscription_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              => (@warn("unexpected child of <hlinscription>: $tag"),
-                                add_label!(labels, child, pntd, idregistry))
+            _              => @warn("ignoring unexpected child of <hlinscription>: $tag")
         end
     end
     #end; println("parse_hlinscription allocated ", a)
 
-    HLInscription(text, something(inscriptterm, default_one_term(pntd)),
-                    ObjectCommon(graphics, tools, labels))
+    HLInscription(text, something(inscriptterm, default_one_term(pntd)), graphics, tools)
 end
 
 """
@@ -736,7 +726,6 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     condterm::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
-    labels = PnmlLabel[]
 
     #a = @allocated begin
     for child in EzXML.eachelement(node)
@@ -746,14 +735,12 @@ function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             "structure"    => (condterm = parse_condition_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              =>  (@warn("unexpected child of <condition>: $tag"),
-                                add_label!(labels, child, pntd, idregistry))
+            _              =>  @warn("ignoring unexpected child of <condition>: $tag")
         end
     end
     #end; println("parse_condition allocated ", a)
 
-    Condition(text, something(condterm, default_bool_term(pntd)),
-                ObjectCommon(graphics, tools, labels))
+    Condition(text, something(condterm, default_bool_term(pntd)), graphics, tools)
 end
 
 """

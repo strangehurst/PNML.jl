@@ -17,14 +17,14 @@ struct Declaration <: Annotation
 	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
 	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
 
-    com::ObjectCommon
+    graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
+    tools::Vector{ToolInfo}
     xml::Maybe{XMLNode}
 end
 
-Declaration() = Declaration(Any[], ObjectCommon(), nothing)
+Declaration() = Declaration(Any[], nothing, ToolInfo[], nothing)
 
 declarations(d::Declaration) = d.declarations
-common(d::Declaration) = d.com
 xmlnode(d::Declaration) = d.xml
 
 #TODO Document/implement/test collection interface of Declaration.
@@ -33,10 +33,8 @@ Base.length(d::Declaration) = (length ∘ declarations)(d)
 # Flattening pages combines declarations & toolinfos into the first page.
 function Base.append!(l::Declaration, r::Declaration)
     append!(declarations(l), declarations(r))
-    append!(common(l), common(r)) # Only merges collections.
 end
 
 function Base.empty!(d::Declaration)
     empty!(declarations(d))
-    #empty!(common(d))
 end

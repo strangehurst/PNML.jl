@@ -7,7 +7,7 @@ using PNML:
     default_marking, default_inscription, default_condition, default_sort,
     default_one_term, default_zero_term,
     has_graphics, graphics, has_name, name, has_label,
-    value, common, tools, graphics, labels,
+    value, tools, graphics, labels,
     parse_initialMarking, parse_inscription, parse_text,
     elements, all_nettypes, ishighlevel
 
@@ -16,7 +16,7 @@ using PNML:
     @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
 end
 
-
+#=
 @testset "ObjectCommon $pntd" for pntd in all_nettypes()
     oc = @inferred PNML.ObjectCommon()
 
@@ -29,7 +29,7 @@ end
     @test isempty(PNML.tools(oc))
     @test isempty(PNML.labels(oc))
 end
-
+=#
 #------------------------------------------------
 @testset "name $pntd" for pntd in all_nettypes()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
@@ -85,9 +85,8 @@ end
     @test_opt mark1()
     @test_call mark1()
 
-    @test (graphics ∘ common)(mark1) === nothing
-    @test (tools ∘ common)(mark1) === nothing || isempty((tools ∘ common)(mark1))
-    @test (labels ∘ common)(mark1) === nothing || isempty((labels ∘ common)(mark1))
+    @test graphics(mark1) === nothing
+    @test tools(mark1) === nothing || isempty(tools(mark1))
 
     # Floating point
     mark2 = PNML.Marking(3.5)
@@ -96,9 +95,8 @@ end
     @test mark2() == value(mark2) ≈ 3.5
     @test_call mark2()
 
-    @test (graphics ∘ common)(mark2) === nothing
-    @test (tools ∘ common)(mark2) === nothing || isempty((tools ∘ common)(mark2))
-    @test (labels ∘ common)(mark2) === nothing || isempty((labels ∘ common)(mark2))
+    @test graphics(mark2) === nothing
+    @test tools(mark2) === nothing || isempty(tools(mark2))
 end
 
 @testset "PT inscription $pntd" for pntd in all_nettypes()
@@ -113,16 +111,16 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscript = @test_logs (:warn, "unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
+    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show inscript
     end
     @test inscript() == value(inscript) == 12
-    @test (graphics ∘ common)(inscript) !== nothing
-    @test (tools ∘ common)(inscript) === nothing || !isempty((tools ∘ common)(inscript))
-    @test (labels ∘ common)(inscript) === nothing || !isempty((labels ∘ common)(inscript))
+    @test graphics(inscript) !== nothing
+    @test tools(inscript) === nothing || !isempty(tools(inscript))
+    @test_throws ErrorException labels(inscript) # === nothing || !isempty(labels(inscript))
 end
 
 @testset "labels $pntd" for pntd in all_nettypes()
@@ -193,9 +191,9 @@ function test_unclaimed(pntd, xmlstring::String)
     l = PnmlLabel(u, node)
     a = anyelement(node, pntd, reg2)
     if noisy
-        println("u = $(u.first) "); dump(u) #AbstractTrees.print_tree.(u.second) #pprintln(u)
-        println("l = $(l.tag) "); dump(l) #AbstractTrees.print_tree.(l.elements)
-        println("a = $(a.tag) " ); dump(a) #AbstractTrees.print_tree.(a.elements)
+        println("u = $(u.first) "); dump(u)
+        println("l = $(l.tag) ");   dump(l)
+        println("a = $(a.tag) " );  dump(a)
     end
     @test u isa Pair{Symbol, Vector{PNML.AnyXmlNode}}
     @test l isa PnmlLabel

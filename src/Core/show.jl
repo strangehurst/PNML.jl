@@ -163,37 +163,6 @@ function Base.show(io::IO, ::MIME"text/plain", name::Name)
     print(io, name)
 end
 
-#-------------------
-Base.summary(io::IO, oc::ObjectCommon) = print(io, summary(oc))
-function Base.summary(oc::ObjectCommon)
-    string(", ",
-            has_graphics(oc) ? "with " : "no ", " graphics, ",
-            length(oc.tools), " tools, ",
-            length(oc.labels), " labels")
-end
-
-function Base.show(io::IO, oc::ObjectCommon)
-    io = inc_indent(io)
-    if has_tools(oc) || has_labels(oc) || has_graphics(oc)
-        print(io, ", ")
-        if has_graphics(oc)
-            pprint(io, graphics(oc))
-        end
-        if has_tools(oc)
-            println(io, "\n", indent(io), "tools:")
-            show(inc_indent(io), tools(oc))
-        end
-        if has_labels(oc)
-            println(io, "\n", indent(io), "labels:")
-            show(inc_indent(io), labels(oc))
-        end
-    end
-end
-
-function show_common(io::IO, x::Union{PnmlNet, AbstractPnmlObject, AbstractLabel})
-    show(io, MIME"text/plain"(), common(x) )
-end
-
 #---------------------------------------------------------------------------------
 Base.summary(io::IO, place::Place)  = summary(io, summary(place))
 function Base.summary(place::Place)
@@ -206,8 +175,6 @@ function Base.show(io::IO, place::Place)
           ", name '" , has_name(place) ? name(place) : "", "'",
           ", type ", place.sorttype,
           ", marking ", place.marking)
-#          ", name ", place.name)
-    show_common(io, place)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
@@ -231,7 +198,6 @@ function Base.show(io::IO, trans::Transition)
           " id ", trans.id,
           ", name '", has_name(trans) ? name(trans) : "", "'",
           ", condition ", trans.condition)
-    show_common(io, trans)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
@@ -256,7 +222,6 @@ function Base.show(io::IO, ::MIME"text/plain", r::ReferenceNode)
 end
 function Base.show(io::IO, r::ReferenceNode)
     print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r))
-    show_common(io, r)
     print(io, ")")
 end
 
@@ -277,7 +242,6 @@ function Base.show(io::IO, arc::Arc)
           ", source: ", arc.source,
           ", target: ", arc.target,
           ", inscription: ", arc.inscription)
-    show_common(io, arc)
 end
 function Base.show(io::IO, ::MIME"text/plain", arcvector::Vector{Arc})
     for (i,arc) in enumerate(arcvector)
@@ -300,8 +264,10 @@ function Base.summary( page::Page)
            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
            length(refplace_idset(page)), " refP, ",
            length(reftransition_idset(page)), " refT, ",
-           length(page_idset(page)), " subpages",
-           summary(page.com)
+           length(page_idset(page)), " subpages, ",
+           has_graphics(page) ? " has graphics " : " no graphics",
+           length(tools(page)), " tools, ",
+           length(labels(page)), " labels"
            )
 end
 
@@ -328,7 +294,6 @@ function Base.show(io::IO, page::Page)
     show_page_field(inc_io, "declaration:",    declarations(page))
     show_page_field(inc_io, "refPlaces:",      refplace_idset(page))
     show_page_field(inc_io, "refTransitions:", reftransition_idset(page))
-    show_common(io, page)
     show_page_field(inc_io, "subpages:",       page_idset(page))
 end
 
@@ -351,7 +316,9 @@ function Base.summary(net::PnmlNet)
             " type ", nettype(net), ", ",
             length(pagedict(net)), " pages ",
             length(declarations(net)), " declarations",
-            summary(net.com))
+            length(tools(net)), " tools, ",
+            length(labels(net)), " labels"
+             )
 end
 
 # No indent here.
@@ -363,7 +330,6 @@ function Base.show(io::IO, net::PnmlNet)
         show(iio, MIME"text/plain"(), decl)
         println(iio, "\n")
     end
-    show_common(io, net)
     show(io, pages(net))
 end
 
@@ -409,7 +375,8 @@ function Base.show(io::IO, ptm::Marking)
 end
 
 PrettyPrinting.quoteof(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
-                                               $(PrettyPrinting.quoteof(m.com))))
+        $(PrettyPrinting.quoteof(m.graphics)),
+        $(PrettyPrinting.quoteof(m.tools))))
 
 #-------------------
 function Base.show(io::IO, cond::Condition)
@@ -421,7 +388,9 @@ function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
 end
 PrettyPrinting.quoteof(c::Condition) = :(Condition($(PrettyPrinting.quoteof(c.text)),
                                                    $(PrettyPrinting.quoteof(value(c))),
-                                                   $(PrettyPrinting.quoteof(c.com))))
+                                                   $(PrettyPrinting.quoteof(c.graphics)),
+                                                   $(PrettyPrinting.quoteof(c.tools))
+                                                   ))
 
 #-------------------
 function Base.show(io::IO, inscription::Inscription)
@@ -431,4 +400,6 @@ function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
     show(io, inscription)
 end
 PrettyPrinting.quoteof(i::Inscription) = :(Inscription($(PrettyPrinting.quoteof(value(i))),
-                                                       $(PrettyPrinting.quoteof(i.com))))
+                                                    $(PrettyPrinting.quoteof(i.graphics)),
+                                                    $(PrettyPrinting.quoteof(i.tools))
+                                            ))

@@ -10,19 +10,19 @@ See also [`Inscription`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
 julia> i2 = HLInscription(Term(:value, 3))
-HLInscription(nothing, Term(:value, 3), )
+HLInscription(nothing, Term(:value, 3), nothing, [])
 
 julia> i2()
 3
 
 julia> i3 = HLInscription("text", Term(:empty, 1))
-HLInscription("text", Term(:empty, 1), )
+HLInscription("text", Term(:empty, 1), nothing, [])
 
 julia> i3()
 1
 
 julia> i4 = HLInscription("text", Term(:value, 3))
-HLInscription("text", Term(:value, 3), )
+HLInscription("text", Term(:value, 3), nothing, [])
 
 julia> i4()
 3
@@ -31,15 +31,15 @@ julia> i4()
 struct HLInscription{T<:Term} <: HLAnnotation
     text::Maybe{String}
     term::T # Content of <structure> content must be a many-sorted algebra term.
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
 end
 
 HLInscription(t::Term) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, ObjectCommon())
+HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, ToolInfo[])
 
 text(i::HLInscription)  = i.text
 value(i::HLInscription) = i.term
-common(i::HLInscription) = i.com
 
 """
 $(TYPEDSIGNATURES)

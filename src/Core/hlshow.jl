@@ -8,7 +8,8 @@ function Base.show(io::IO, hlm::HLMarking)
     pprint(io, hlm)
 end
 
-quoteof(m::HLMarking) = :(HLMarking($(quoteof(m.text)), $(quoteof(value(m))), $(quoteof(m.com))))
+quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
+                                    $(quoteof(graphics(m))), $(quoteof(tools(m)))))
 #-------------------
 function Base.show(io::IO, inscription::HLInscription)
     pprint(io, inscription)
@@ -18,7 +19,8 @@ function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
 end
 
 quoteof(i::HLInscription) =
-    :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))), $(quoteof(i.com))))
+    :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))),
+                    $(quoteof(graphics(i))), $(quoteof(tools(i)))))
 
 #-------------------
 function Base.show(io::IO, declarations::Vector{AbstractDeclaration})

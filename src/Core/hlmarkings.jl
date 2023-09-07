@@ -11,7 +11,7 @@ $(TYPEDFIELDS)
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text", Term(:value, 3), )
+HLMarking("the text", Term(:value, 3), nothing, [])
 
 julia> m()
 3
@@ -20,14 +20,14 @@ julia> m()
 struct HLMarking{T <: AbstractTerm} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
     term::T # Content of <structure> must be a many-sorted algebra term.
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
 end
 
-HLMarking(t::AbstractTerm)   = HLMarking(nothing, t)#, ObjectCommon())
-HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, ObjectCommon())
+HLMarking(t::AbstractTerm)   = HLMarking(nothing, t)
+HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, nothing, ToolInfo[])
 
 value(m::HLMarking) = m.term
-common(m::HLMarking) = m.com
 
 #! HLMarking is a multiset, not an expression.
 """

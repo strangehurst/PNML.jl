@@ -20,7 +20,7 @@ all_nettypes, ishighlevel
     </unknown>
  </hlinitialMarking>
     """
-    mark = (@test_logs (:warn,"unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
+    mark = (@test_logs (:warn,"ignoring unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
 
     @test mark isa PNML.AbstractLabel
     @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -30,15 +30,11 @@ all_nettypes, ishighlevel
     @test value(mark) isa PNML.AbstractTerm
     @test value(mark) isa PNML.Term
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show mark PNML.summary(mark) PNML.common(mark)
+        @show mark PNML.summary(mark)
     end
-    @test PNML.has_graphics(mark)
-    @test PNML.has_tools(mark)
-    @test PNML.has_labels(mark)
-
-    @test PNML.has_graphics(PNML.common(mark))
-    @test PNML.has_tools(PNML.common(mark))
-    @test PNML.has_labels(PNML.common(mark))
+    @test PNML.has_graphics(mark) == true
+    @test PNML.has_tools(mark) == true
+    @test PNML.has_labels(mark) == false
 
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
@@ -95,7 +91,7 @@ end
         </unknown>
       </hlinscription>
     """
-    insc = @test_logs (:warn,"unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
+    insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
 
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
@@ -104,11 +100,11 @@ end
     @test value(insc) isa PNML.AbstractTerm
     @test value(insc) isa PNML.Term
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show insc PNML.common(insc)
+        @show insc
     end
-    @test PNML.has_graphics(insc)
-    @test PNML.has_tools(insc)
-    @test PNML.has_labels(insc)
+    @test PNML.has_graphics(insc) == true
+    @test PNML.has_tools(insc) == true
+    @test PNML.has_labels(insc) == false
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
@@ -214,19 +210,18 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ =  @test_logs (:warn,"unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
+        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
         #println("\n## SortType typ "); dump(typ)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show typ
-            @show PNML.common(typ)
         end
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
         @test value(typ).declaration == :N2
-        @test PNML.has_graphics(PNML.common(typ))
-        @test PNML.has_tools(PNML.common(typ))
-        @test PNML.has_labels(PNML.common(typ))
+        @test PNML.has_graphics(typ) == true
+        @test PNML.has_tools(typ) == true
+        @test PNML.has_labels(typ) == false
         end
 end
 
@@ -245,17 +240,17 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond =  @test_logs (:warn,"unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
+        cond =  @test_logs (:warn,"ignoring unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
         #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show cond PNML.common(cond)
+            @show cond
         end
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) === :or
         @test PNML.has_graphics(cond) == true
         @test PNML.has_tools(cond) == true
-        @test PNML.has_labels(cond) == true
+        @test PNML.has_labels(cond) == false
     end
 end

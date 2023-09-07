@@ -384,12 +384,6 @@ Return value type.
 """
 function marking_value_type end
 
-# """
-# $(TYPEDSIGNATURES)
-# Return type of sort.
-# """
-# function sort_type end
-
 """
 $(TYPEDSIGNATURES)
 Return value type.
@@ -412,6 +406,6 @@ function coordinate_value_type end
 #---------------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
-Return rate value type
+Return rate value type.
 """
 function rate_value_type end

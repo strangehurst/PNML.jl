@@ -27,7 +27,6 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     decls::Maybe{Vector{AbstractDeclaration}} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
-    labels = PnmlLabel[]
 
     CONFIG.verbose && println("parse_declaration")
     for child in EzXML.eachelement(node)
@@ -40,12 +39,11 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
-            add_label!(labels, child, pntd, idregistry)
+            @warn "ignoring unexpected child of <declaration>: $tag"
         end
     end
 
-    Declaration(something(decls, AbstractDeclaration[]),
-                ObjectCommon(graphics, tools, labels), node)
+    Declaration(something(decls, AbstractDeclaration[]), graphics, tools, node)
 end
 
 "Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
@@ -170,7 +168,6 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     sortterm::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
-    labels = PnmlLabel[]
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -179,19 +176,17 @@ function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
             "structure"    => (sortterm = parse_sorttype_term(child, pntd, idregistry))
             "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
             "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              => (@warn("unexpected child of <type>: $tag"),
-                                add_label!(labels, child, pntd, idregistry))
+            _              => @warn("ignoring unexpected child of <type>: $tag")
         end
     end
 
-    SortType(text, something(sortterm, default_sorttype(pntd)),
-                ObjectCommon(graphics, tools, labels))
+    SortType(text, Ref{AbstractSort}(something(sortterm, default_sort(pntd)())), graphics, tools)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-A concrete subtype of [`AbstractSort`](@ref).
+#TODO where does this belong? A concrete subtype of [`AbstractSort`](@ref).
 Built from many different elements that contain a Sort:
 type, namedsort, variabledecl, multisetsort, productsort, numberconstant, partition...
 
@@ -239,7 +234,7 @@ function parse_sorttype_term(typenode, pntd, idregistry)
     end
 
     #println("sorttype_term"); dump(t)
-    return t
+    return t::AbstractSort
 end
 
 """

@@ -119,28 +119,28 @@ methods(PNML.default_bool_term) # hide
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)
 julia> c = default_condition(PnmlCoreNet())
-Condition(nothing, true, )
+Condition(nothing, true, nothing, [])
 
 julia> c()
 true
 
 julia> c = default_condition(ContinuousNet())
-Condition(nothing, true, )
+Condition(nothing, true, nothing, [])
 
 julia> c = default_condition(HLCoreNet())
-Condition(nothing, Term(:bool, true), )
+Condition(nothing, Term(:bool, true), nothing, [])
 ```
 
 
 ```jldoctest; setup=:(using PNML; using PNML: default_inscription)
 julia> i = default_inscription(PnmlCoreNet())
-Inscription(1, )
+Inscription(1, nothing, [])
 
 julia> i = default_inscription(ContinuousNet())
-Inscription(1.0, )
+Inscription(1.0, nothing, [])
 
 julia> i = default_inscription(HLCoreNet())
-HLInscription("default", Term(:one, 1), )
+HLInscription("default", Term(:one, 1), nothing, [])
 
 julia> i()
 1
@@ -149,19 +149,19 @@ julia> i()
 
 ```jldoctest; setup=:(using PNML; using PNML: default_marking, Marking, HLMarking, pnmltype)
 julia> m = default_marking(PnmlCoreNet())
-Marking(0, )
+Marking(0, nothing, [])
 
 julia> m()
 0
 
 julia> m = default_marking(ContinuousNet())
-Marking(0.0, )
+Marking(0.0, nothing, [])
 
 julia> m()
 0.0
 
 julia> m = default_marking(HLCoreNet())
-HLMarking(nothing, Term(:zero, 0), )
+HLMarking(nothing, Term(:zero, 0), nothing, [])
 
 julia> m()
 0

@@ -61,16 +61,19 @@ end
     @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
-    @test typeof(PNML.common(decl)) <: PNML.ObjectCommon
+    @test PNML.has_graphics(decl) == false
+    @test PNML.has_tools(decl)    == true
+    @test PNML.has_labels(decl)   == false
+
     @test PNML.graphics(decl) === nothing
-    @test PNML.tools(decl) !== nothing
-    @test PNML.labels(decl) !== nothing
-    @test isempty(PNML.common(decl))
+    @test isempty(PNML.tools(decl))
+    #@test PNML.labels(decl) !== nothing
+
 
     @test_call PNML.declarations(decl)
     @test_call PNML.graphics(decl)
     @test_call PNML.tools(decl)
-    @test_call PNML.labels(decl)
+    #@test_call PNML.labels(decl)
 end
 
 @testset "declaration tree $pntd" for pntd in all_nettypes()

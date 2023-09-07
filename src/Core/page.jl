@@ -13,7 +13,9 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     id::Symbol
     declaration::Declaration
     name::Maybe{Name}
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
+    labels::Vector{PnmlLabel}
     # pagedict and netdata do not overlap
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by net and its pages.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by net and its pages.
@@ -45,7 +47,7 @@ refplaces(page::Page)   = Iterators.filter(v -> in(pid(v), refplace_idset(page))
 reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idset(page)), values(reftransitiondict(page)))
 
 declarations(page::Page) = declarations(page.declaration)
-common(page::Page) = page.com
+
 
 page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
 
@@ -77,8 +79,8 @@ has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 # When flattening, the only `common` that needs emptying is a `Page`'s.
 function Base.empty!(page::Page)
     empty!(page.declaration)
-    t = (tools ∘ common)(page)
+    t = tools(page)
     !isnothing(t) && empty!(t)
-    l = (labels ∘ common)(page)
+    l = labels(page)
     !isnothing(l) && empty!(l)
 end

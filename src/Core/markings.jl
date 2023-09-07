@@ -11,13 +11,13 @@ Is a functor that returns the `value`.
 
 ```jldoctest; setup=:(using PNML: Marking)
 julia> m = Marking(1)
-Marking(1, )
+Marking(1, nothing, [])
 
 julia> m()
 1
 
 julia> m = Marking(12.34)
-Marking(12.34, )
+Marking(12.34, nothing, [])
 
 julia> m()
 12.34
@@ -25,13 +25,13 @@ julia> m()
 """
 struct Marking{N<:Union{Int,Float64}} <: Annotation
     value::N
-    com::ObjectCommon
-    # does not use ObjectCommon.graphics, rather, TokenGraphics in ObjectCommon.tools.
+    graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
+    tools::Vector{ToolInfo}
 end
-Marking(value::Union{Int,Float64}) = Marking(value, ObjectCommon())
+
+Marking(value::Union{Int,Float64}) = Marking(value, nothing, ToolInfo[])
 
 value(m::Marking) = m.value
-common(m::Marking) = m.com
 
 """
 $(TYPEDSIGNATURES)

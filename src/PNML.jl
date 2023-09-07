@@ -91,7 +91,6 @@ include("Core/hldeclarations.jl")
 include("Core/labels.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
-include("Core/objcommon.jl")
 include("Core/name.jl")
 
 include("Core/sorttype.jl")

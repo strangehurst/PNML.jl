@@ -8,7 +8,7 @@ Labels an Arc. See also [`HLInscription`](@ref).
 
 ```jldoctest; setup=:(using PNML: Inscription)
 julia> i = Inscription(3)
-Inscription(3, )
+Inscription(3, nothing, [])
 
 julia> i()
 3
@@ -16,13 +16,13 @@ julia> i()
 """
 struct Inscription{T<:Union{Int,Float64}}  <: Annotation
     value::T
-    com::ObjectCommon
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
 end
 
-Inscription(value::Union{Int,Float64}) = Inscription(value, ObjectCommon())
+Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, ToolInfo[])
 
 value(i::Inscription) = i.value
-common(i::Inscription) = i.com
 
 """
 $(TYPEDSIGNATURES)

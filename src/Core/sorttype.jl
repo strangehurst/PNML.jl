@@ -15,17 +15,16 @@ Notes:
 - We use sorts even for non-high-level nets for type-stability.
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
-struct SortType{T <: AbstractSort} # <: AbstractLabel
+struct SortType <: AbstractLabel
     text::Maybe{String} # Supposed to be for human consumption.
-    sort::T # Content of high-level <structure>.
-    com::ObjectCommon
+    sort::Base.RefValue{AbstractSort} # Content of high-level <structure>.
+    graphics::Maybe{Graphics}
+    tools::Vector{ToolInfo}
 end
 
-SortType(t::AbstractSort) = SortType(nothing, t, ObjectCommon())
-SortType(s::AbstractString, t::AbstractSort) = SortType(s, t, ObjectCommon())
+SortType(t::AbstractSort) = SortType(nothing, t) # nothing, ToolInfo[])
+SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, ToolInfo[])
 
 text(t::SortType)  = t.text
-value(t::SortType) = t.sort
-common(t::SortType) = t.com
-
-type(::SortType{T}) where {T} = T # Look a layer deeper.
+value(t::SortType) = t.sort[]
+type(t::SortType) = typeof(value(t)) # Look a layer deeper.
