@@ -131,9 +131,9 @@ list_type(PNML.reftransition_type) # hide
 
 ### Value Types
 
-#### default\_sort\_type
+#### default\_sort
 ```@example types
-list_type(PNML.default_sort_type) # hide
+list_type(PNML.default_sort) # hide
 ```
 #### condition\_value\_type
 ```@example types

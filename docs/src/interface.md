@@ -46,13 +46,10 @@ It contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Grap
     file (.pntd) identified by a URI. Or would if our nonstandard extensions had schemas
     defined. Someday there will be such schemas.
 
-[`ObjectCommon`](@ref) is a field of most types.
-This allows `Graphics` and `ToolInfo` to appear almost anywhere in the PNG.
-
-While [`Graphics`](@ref) is implemented as part of `ObjectCommon`
+While [`Graphics`](@ref) is implemented
 it is not dicussed further (until someone extends/uses it).
 
-`ObjectCommon`  also has [`ToolInfo`](@ref) used to attach well-formed XML.
+[`ToolInfo`](@ref) used to attach well-formed XML almost anywhere in the PNG.
 TODO: Need way to parse <toolspecific> that is flexible/extendable.
 
 Parse pnml for input, worry about writing back out and interchange later (future extensions).
@@ -469,11 +466,6 @@ methods(PNML.inscription_type) # hide
 ```@example methods
 methods(PNML.condition_type) # hide
 ```
-  - [`default_sort_type`](@ref)
-```@example methods
-methods(PNML.default_sort_type) # hide
-```
-
   - [`place_type`](@ref)
 ```@example methods
 methods(PNML.place_type) # hide
