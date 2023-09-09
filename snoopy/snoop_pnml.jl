@@ -51,6 +51,7 @@ invalidations = @snoopr begin
         """)
     end
 end
+
 using SnoopCompile
 @show tinf
 
@@ -76,6 +77,7 @@ println()
 
 println("root")
 root = methinvs.backedges[end]
+#=
 show(root; maxdepth=10)
 println()
 
@@ -95,3 +97,4 @@ Plots.plot(
 )
 
 using AbstractTrees
+=#

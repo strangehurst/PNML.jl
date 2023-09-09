@@ -198,15 +198,21 @@ def_funs = (
             )
 
 @testset "by pntd $pntd" for pntd in all_nettypes()
-    for fun in type_funs # the *_type(::PnmlType) methods
-        #println("$fun($pntd) \t ", fun(pntd))
+    for fun in type_funs
+        #println("$fun $pntd")
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
+
         pt = typeof(pntd)
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
         @test_call fun(pt)
-    end
+
+        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
+        @test_call fun(net)
+        @test fun(net) isa Type
+       end
     #println()
+    println("def_funs $pntd")
     for fun in def_funs
         #println("$fun($pntd) \t ", fun(pntd))
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
@@ -218,12 +224,6 @@ def_funs = (
         #@test_call fun(pt)
     end
     #println()
-end
-
-@testset for fun in type_funs # the *_type(::PnmlNet) methods
-    @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
-    @test_call fun(net)
-    @test fun(net) isa Type
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]

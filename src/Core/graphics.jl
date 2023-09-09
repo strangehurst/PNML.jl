@@ -7,7 +7,7 @@ $(TYPEDFIELDS)
 
 Cartesian Coordinate are actually positive decimals. Ranges from 0 to 999.9.
 """
-struct Coordinate{T <: DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 is Schema
+struct Coordinate{T <: DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 in Schema
     x::T
     y::T
 end

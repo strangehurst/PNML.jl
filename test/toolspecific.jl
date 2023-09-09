@@ -91,7 +91,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         @test_call tools(p0)
         @test t isa Vector{ToolInfo}
         @test length(t) == 5
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
+        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
         #println("toolinfo test"); dump(t)
 
         for ti in t
