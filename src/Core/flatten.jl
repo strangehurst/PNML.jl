@@ -155,7 +155,7 @@ as part of [`flatten_pages!`](@ref),
 """
 function deref!(net::PnmlNet, trim::Bool = true)
     #CONFIG.verbose && println("deref! net ", pid(net))
-    @show typeof(arc_idset(net))
+    #@show typeof(arc_idset(net))
     for id in arc_idset(net) # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)

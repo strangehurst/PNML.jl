@@ -77,7 +77,7 @@ function verify_sets(net::PnmlNet)
 
         # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
         # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
-        @show typeof(arc_idset(net))
+        #@show typeof(arc_idset(net))
         println()
         for page in pages(net)
             @show pid(page) (typeof ∘ values ∘ arc_idset)(page)
@@ -211,8 +211,7 @@ def_funs = (
         @test_call fun(net)
         @test fun(net) isa Type
        end
-    #println()
-    println("def_funs $pntd")
+
     for fun in def_funs
         #println("$fun($pntd) \t ", fun(pntd))
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
