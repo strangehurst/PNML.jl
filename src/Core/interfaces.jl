@@ -186,7 +186,7 @@ function conditions end
 """
 $(TYPEDSIGNATURES)
 
-Return condition value of `transition`.
+Return condition's value of `transition`.
 """
 function condition end
 
@@ -272,12 +272,12 @@ function reftransitions end
 """
 $(TYPEDSIGNATURES)
 """
-function has_refP end
+function has_refplace end
 
 """
 $(TYPEDSIGNATURES)
 """
-function has_refT end
+function has_reftransition end
 
 """
     refplace_idset(x) -> Set{Symbol} #TODO iterator?
@@ -354,6 +354,13 @@ $(TYPEDSIGNATURES)
 Type of `Condition` #!{condition_value_type(T)}`
 """
 function condition_type end
+
+"""
+$(TYPEDSIGNATURES)
+Return value of the composite type argument.
+"""
+function value end
+
 """
 $(TYPEDSIGNATURES)
 Return value type.
@@ -406,6 +413,6 @@ function coordinate_value_type end
 #---------------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
-Return rate value type.
+Return rate value type of argument.
 """
 function rate_value_type end

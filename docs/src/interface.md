@@ -233,15 +233,15 @@ methods(PNML.has_transition)  # hide
 ```@example methods
 methods(PNML.has_arc) # hide
 ```
-### has\_refP
-[`PNML.has_refP`](@ref)
+### has\_refplace
+[`PNML.has_refplace`](@ref)
 ```@example methods
-methods(PNML.has_refP)  # hide
+methods(PNML.has_refplace)  # hide
 ```
-### has\_refT
-[`PNML.has_refT`](@ref)
+### has\_reftransition\
+[`PNML.has_reftransition`](@ref)
 ```@example methods
-methods(PNML.has_refT)  # hide
+methods(PNML.has_reftransition)  # hide
 ```
 
 ## Node Access - uses PNML ID
@@ -403,6 +403,12 @@ methods(PNML.has_structure) # hide
 [`text`](@ref)
 ```@example methods
 methods(PNML.text) # hide
+```
+
+### value
+[`value`](@ref)
+```@example methods
+methods(PNML.value) # hide
 ```
 
 ### structure
