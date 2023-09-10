@@ -38,7 +38,6 @@ end
 HLInscription(t::Term) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, ToolInfo[])
 
-text(i::HLInscription)  = i.text
 value(i::HLInscription) = i.term
 
 """
