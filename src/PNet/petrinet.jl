@@ -40,6 +40,7 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 #------------------------------------------------------------------------------------------
 
 pid(petrinet::AbstractPetriNet)   = pid(pnmlnet(petrinet))
+name(petrinet::AbstractPetriNet)  = name(pnmlnet(petrinet))
 
 places(petrinet::AbstractPetriNet)         = places(pnmlnet(petrinet))
 transitions(petrinet::AbstractPetriNet)    = transitions(pnmlnet(petrinet))
