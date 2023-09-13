@@ -31,6 +31,9 @@ end
 
 Marking(value::Union{Int,Float64}) = Marking(value, nothing, ToolInfo[])
 
+"""
+    value(m::Marking) -> Union{Int,Float64}
+"""
 value(m::Marking) = m.value
 
 """
