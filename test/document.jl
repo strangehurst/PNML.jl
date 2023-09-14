@@ -94,12 +94,13 @@ end
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
+        <name><text>net1</text></name>
         <page id="page1"/>
       </net>
-      <net id="net2" type="pnmlcore"> <page id="page2"/> </net>
-      <net id="net3" type="ptnet"> <page id="page3"/> </net>
-      <net id="net4" type="hlcore"> <page id="page4"/> </net>
-      <net id="net5" type="pt_hlpng"> <page id="page5"/> </net>
+      <net id="net2" type="pnmlcore"> <name><text>net2</text></name> <page id="page2"/> </net>
+      <net id="net3" type="ptnet"> <name><text>net3</text></name> <page id="page3"/> </net>
+      <net id="net4" type="hlcore"> <name><text>net4</text></name> <page id="page4"/> </net>
+      <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """
     model = @inferred parse_str(str)
@@ -113,6 +114,10 @@ end
     for net in modelnets
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
+
+        #println(); dump(net); println()
+
+        @test PNML.name(net) == string(pid(net))
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show  pid(net) PNML.nettype.(ntup) pid.(ntup)
         end
