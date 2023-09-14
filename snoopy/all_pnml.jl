@@ -3,7 +3,7 @@
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 
 using PNML
-using DataFrames, DataFramesMeta, Dates, CSV
+using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 
 function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = "examples",
                   outdir = "/home/jeff/Jules/testpmnl")
@@ -31,6 +31,12 @@ function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = 
                         push!(df, (file=f, fsize=filesize(f), time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
                         # Display PnmlModel as a test of parsing, creation and show().
                         println(stats.value)
+
+                        @show mg = PNML.metagraph(PNML.SimpleNet(stats.value))
+                        @show Graphs.is_bipartite(mg)
+                        @show Graphs.ne(mg)
+                        @show Graphs.nv(mg)
+
                     end
                 catch e
                     if e isa PNML.PnmlException
