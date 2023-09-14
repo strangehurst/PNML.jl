@@ -69,8 +69,8 @@ import PrettyPrinting: quoteof
 using Reexport
 using DecFP
 #using Infiltrator: @infiltrate
-
-
+import Graphs
+import MetaGraphsNext
 
 include("Core/PnmlTypeDefs.jl")
 @reexport using .PnmlTypeDefs
