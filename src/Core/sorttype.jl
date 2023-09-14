@@ -15,14 +15,14 @@ Notes:
 - We use sorts even for non-high-level nets for type-stability.
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
-struct SortType <: AbstractLabel
+struct SortType <: AbstractLabel # Not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort::Base.RefValue{AbstractSort} # Content of high-level <structure>.
+    sort::Base.RefValue{AbstractSort} # Content of <structure>.
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
 end
 
-SortType(t::AbstractSort) = SortType(nothing, t) # nothing, ToolInfo[])
+SortType(t::AbstractSort) = SortType(nothing, t)
 SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, ToolInfo[])
 
 text(t::SortType)  = t.text

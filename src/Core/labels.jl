@@ -10,7 +10,7 @@ end
 "Return `true` if label has `text` field."
 has_text(l::AbstractLabel) = hasproperty(l, :text) && !isnothing(l.text)
 
-"Return `text` field"
+"Return `text` field."
 text(l::AbstractLabel) = l.text
 
 "Return `true` if label has a `structure` field."

@@ -41,8 +41,8 @@ refplacedict(x) = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
 
 function Base.show(io::IO, pnd::PnmlNetData)
-    for (f,t) in [(placedict,"places"), (transitiondict,"transitions"), (arcdict,"arcs"), (refplacedict,"refplaces"), (reftransitiondict,"refTransitions")]
-        # println(io, length(f(pnd)), " ", t, ": ", Iterators.map(x->string(x, ", "), (keys ∘ f)(pnd)))
+    for (f,t) in [(placedict,"places"), (transitiondict,"transitions"), (arcdict,"arcs"),
+                (refplacedict,"refplaces"), (reftransitiondict,"refTransitions")]
         println(io, length(f(pnd)), " ", t, ": ", (keys ∘ f)(pnd))
     end
 end
@@ -70,6 +70,7 @@ arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
 
+# Usual use is for there to be a accessor in every user.
 page_idset(x)          = page_idset(netsets(x))
 place_idset(x)         = place_idset(netsets(x))
 transition_idset(x)    = transition_idset(netsets(x))
@@ -90,9 +91,10 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (f,t) in [(page_idset,"pages"), (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"), (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
-        # println(io, length(f(pns)), " ", t, ": ", Iterators.map(x->string(x, ", "), (values ∘ f)(pns)))
-        println(io, length(f(pns)), " ", t, ": ", values(f(pns)))
+    for (func,tag) in [(page_idset,"pages"),
+                    (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"),
+                    (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
+        println(io, length(func(pns)), " ", t, ": ", values(func(pns))) # needs spaces?
     end
 end
 
