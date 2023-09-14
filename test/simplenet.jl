@@ -12,11 +12,12 @@ using PNML: tag, pid, xmlnode, parse_str,
     nettype, firstpage,
     ispid
 
+using PrettyPrinting
 using Test, Logging
 testlogger = TestLogger()
 
 @testset "SIMPLENET" begin
-        str = """
+        str1 = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="continuous">
@@ -40,9 +41,9 @@ testlogger = TestLogger()
         </net>
     </pnml>
     """
-    @test_call target_modules=target_modules parse_str(str)
+    @test_call target_modules=target_modules parse_str(str1)
     #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
-    model = @inferred parse_str(str)
+    model = @inferred parse_str(str1)
     #@show model #println("simplenet model"); dump(model)
     #println()
 
@@ -169,7 +170,7 @@ testlogger = TestLogger()
 end
 
 @testset "rate" begin
-    str = """<?xml version="1.0"?>
+    str2 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="core">
         <page id="page0">
@@ -178,7 +179,7 @@ end
         </net>
     </pnml>
     """
-    model = @inferred parse_str(str)
+    model = @inferred parse_str(str2)
     net = PNML.first_net(model)
     @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
@@ -189,7 +190,7 @@ end
 end
 
 @testset "lotka-volterra" begin
-    str = """<?xml version="1.0"?>
+    str3 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="continuous">
         <page id="page0">
@@ -209,18 +210,12 @@ end
     </pnml>
     """
 
-    model = @inferred parse_str(str)
-    net1 = PNML.first_net(model)
-
-    snet = @inferred PNML.SimpleNet(net1)
+    model = @inferred parse_str(str3);     #@show typeof(model);
+    net1 = PNML.first_net(model);          #@show typeof(net1)
+    snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-    @show S T
-    #!for t in T
-    #!@show PNML.in_out(snet, t)
-    #!end
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription (integer?)
@@ -230,7 +225,14 @@ end
         predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
         death=(LVector(wolves=1.0), LVector()),
     )
-    @show Δ.birth tfun.birth
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        @show S T Δ
+        #!for t in T
+        #!@show PNML.in_out(snet, t)
+        #!end
+        @show Δ.birth tfun.birth
+    end
+
     @test typeof(Δ)   == typeof(tfun)
     @test Δ.birth     == tfun.birth
     @test Δ.predation == tfun.predation
@@ -242,11 +244,52 @@ end
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
-    #!@show Δ
-    #!@show u0
-    #!@show uX
-    #!@show βx
-    #!@show β
-
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        #!@show uX
+        #!@show u0
+        #!@show βx
+        @show β
+        @show typeof(β)
+    end
     @test β == βx
+end
+
+using Graphs, MetaGraphsNext
+using PNML: AbstractPetriNet
+
+@testset "extract a graph" begin
+    str3 = """<?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        <net id="net0" type="continuous">
+        <name><text>some petri net in pnml</text></name>
+        <page id="page0">
+            <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
+            <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
+            <transition id ="birth">     <rate> <text>0.3</text> </rate> </transition>
+            <transition id ="predation"> <rate> <text>0.015</text> </rate> </transition>
+            <transition id ="death">     <rate> <text>0.7</text> </rate> </transition>
+            <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2.0</text> </inscription> </arc>
+            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1.0</text> </inscription> </arc>
+            <arc id="a5" source="predation" target="wolves"> <inscription><text>2.0</text> </inscription> </arc>
+            <arc id="a6" source="wolves"    target="death"> <inscription><text>1.0</text> </inscription> </arc>
+        </page>
+        </net>
+    </pnml>
+    """
+
+    anet = PNML.SimpleNet(str3)
+    #@show PNML.name(anet)
+    mg = PNML.metagraph(anet)
+
+    @show typeof(mg) mg
+    @show Graphs.betweenness_centrality(mg)
+    @show Graphs.components([1,2,3,4,5])
+    @show Graphs.is_directed(mg)
+    @show Graphs.is_connected(mg)
+    @show Graphs.is_bipartite(mg)
+    @show Graphs.bipartite_map(mg)
+    @show Graphs.ne(mg)
+    @show Graphs.nv(mg)
 end
