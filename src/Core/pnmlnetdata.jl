@@ -94,7 +94,7 @@ function Base.show(io::IO, pns::PnmlNetKeys)
     for (func,tag) in [(page_idset,"pages"),
                     (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"),
                     (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
-        println(io, length(func(pns)), " ", t, ": ", values(func(pns))) # needs spaces?
+        println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
     end
 end
 
