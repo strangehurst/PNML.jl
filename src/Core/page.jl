@@ -55,7 +55,6 @@ place(page::Page, id::Symbol) = placedict(page)[id]
 has_place(page::Page, id::Symbol) = in(id, place_idset(page))
 
 #marking(page::Page, placeid::Symbol) = marking(netdata(page).place_dict[placeid])
-currentMarkings(page::Page) = LVector((; [pid(p) => marking(p)() for p in places(page)]...))
 
 transition(page::Page, id::Symbol) = transitiondict(page)[id]
 has_transition(page::Page, id::Symbol) = in(id, transition_idset(page))

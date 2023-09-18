@@ -116,22 +116,10 @@ has_place(net::PnmlNet, id::Symbol)    = haskey(placedict(net), id)
 
 marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
 
-"""
-    currentMarkings(net) -> LVector{marking_value_type(n)}
-
-LVector labelled with place id and holding marking's value.
-"""
-currentMarkings(net::PnmlNet) = begin
-    m1 = LVector((;[id => marking(p)() for (id,p) in pairs(placedict(net))]...)) #! does this allocate?
-    return m1
-end
-
 transition(net::PnmlNet, id::Symbol)      = transitiondict(net)[id]
 has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict(net), id)
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
-conditions(net::PnmlNet) =
-    LVector{condition_value_type(net)}((;[t => condition(net, t) for (id,t) in pairs(transitiondict(net))]...))
 
 arc(net::PnmlNet, id::Symbol)      = arcdict(net)[id]
 has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)

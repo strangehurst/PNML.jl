@@ -54,7 +54,16 @@ has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(pnmlnet(petrinet),
 place(petrinet::AbstractPetriNet, id::Symbol)     = place(pnmlnet(petrinet), id)
 
 marking(petrinet::AbstractPetriNet, id::Symbol) = marking(pnmlnet(petrinet), id)
-currentMarkings(petrinet::AbstractPetriNet)     = currentMarkings(pnmlnet(petrinet))
+
+"""
+    currentMarkings(petrinet) -> LVector{marking_value_type(pntd)}
+
+LVector labelled with place id and holding marking's value.
+"""
+currentMarkings(pn::AbstractPetriNet) = begin
+    m1 = LVector((;[id => marking(p)() for (id,p) in pairs(placedict(pnmlnet(pn)))]...)) #! does this allocate?
+    return m1
+end
 
 #------------------------------------------------------------------
 transition_idset(petrinet::AbstractPetriNet)           = transition_idset(pnmlnet(petrinet))
@@ -62,7 +71,18 @@ has_transition(petrinet::AbstractPetriNet, id::Symbol) = has_transition(pnmlnet(
 transition(petrinet::AbstractPetriNet, id::Symbol)     = transition(pnmlnet(petrinet), id)
 
 condition(petrinet::AbstractPetriNet, id::Symbol)      = condition(pnmlnet(petrinet), id)
-conditions(petrinet::AbstractPetriNet)                 = conditions(pnmlnet(petrinet))
+
+"""
+    conditions(petrinet) -> LVector{condition_value_type(pntd)}
+
+LVector labelled with transition (#! not id) and holding condition (#! not value).
+"""
+conditions(pn::AbstractPetriNet) = begin
+    net = pnmlnet(pn)
+    LVector{condition_value_type(net)}(
+        #! is it supposed to be transition => condition, instead of id => condition()?
+        (; [t => condition(net, t) for (id,t) in pairs(transitiondict(net))]...))
+end
 
 #------------------------------------------------------------------
 arc_idset(petrinet::AbstractPetriNet)            = arc_idset(pnmlnet(petrinet))
@@ -74,7 +94,8 @@ src_arcs(petrinet::AbstractPetriNet, id::Symbol) = src_arcs(pnmlnet(petrinet), i
 tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(pnmlnet(petrinet), id)
 
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(petrinet), arc_id)
-#TODO inscriptions (plural)? For completeness?
+
+inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
 
 #------------------------------------------------------------------
 refplace_idset(petrinet::AbstractPetriNet)            = refplace_idset(pnmlnet(petrinet))
@@ -95,6 +116,9 @@ function rates end
 function rates(pn::AbstractPetriNet)
     LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
 end
+
+
+
 
 #-----------------------------------------------------------------
 Base.summary(io::IO, pn::AbstractPetriNet) = print(io, summary(pn))

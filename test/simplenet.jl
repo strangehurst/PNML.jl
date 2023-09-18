@@ -159,13 +159,13 @@ testlogger = TestLogger()
     @testset "initialMarking" begin
         #@show typeof(snet)
         u1 = @inferred LArray currentMarkings(snet)
-        u2 = @inferred LArray currentMarkings(snet.net)
-        u3 = @inferred LArray currentMarkings(first(pages(snet.net)))
+        #!u2 = @inferred LArray currentMarkings(snet.net)
+        #!u3 = @inferred LArray currentMarkings(first(pages(snet.net)))
 
-        @test u1 == u2
-        @test u1 == u3
-        @test typeof(u1) == typeof(u2)
-        @test typeof(u1) == typeof(u3)
+        #@test u1 == u2
+        #@test u1 == u3
+        #@test typeof(u1) == typeof(u2)
+        #@test typeof(u1) == typeof(u3)
     end
 end
 
@@ -292,4 +292,6 @@ using PNML: AbstractPetriNet
     @show Graphs.bipartite_map(mg)
     @show Graphs.ne(mg)
     @show Graphs.nv(mg)
+    @show MetaGraphsNext.labels(mg) |> collect
+    @show MetaGraphsNext.edge_labels(mg) |> collect
 end
