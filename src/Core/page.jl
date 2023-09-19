@@ -48,13 +48,10 @@ reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idse
 
 declarations(page::Page) = declarations(page.declaration)
 
-
 page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
 
 place(page::Page, id::Symbol) = placedict(page)[id]
 has_place(page::Page, id::Symbol) = in(id, place_idset(page))
-
-#marking(page::Page, placeid::Symbol) = marking(netdata(page).place_dict[placeid])
 
 transition(page::Page, id::Symbol) = transitiondict(page)[id]
 has_transition(page::Page, id::Symbol) = in(id, transition_idset(page))
@@ -66,8 +63,6 @@ has_arc(page::Page, id::Symbol) = in(id, arc_idset(page))
 all_arcs(page::Page, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(page))
 src_arcs(page::Page, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(page))
 tgt_arcs(page::Page, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(page))
-
-inscription(page::Page, arc_id::Symbol) = inscription(arc(page, arc_id))
 
 refplace(page::Page, id::Symbol)     = refplacedict(page)[id]
 has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
