@@ -80,8 +80,7 @@ LVector labelled with transition (#! not id) and holding condition (#! not value
 conditions(pn::AbstractPetriNet) = begin
     net = pnmlnet(pn)
     LVector{condition_value_type(net)}(
-        #! is it supposed to be transition => condition, instead of id => condition()?
-        (; [t => condition(net, t) for (id,t) in pairs(transitiondict(net))]...))
+        (; [trans_id => condition(t) for (trans_id,t) in pairs(transitiondict(net))]...))
 end
 
 #------------------------------------------------------------------
@@ -95,7 +94,11 @@ tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(pnmlnet(petrinet), i
 
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(petrinet), arc_id)
 
-inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
+inscriptions(petrinet::AbstractPetriNet) = begin
+    net = pnmlnet(petrinet)
+    LVector{inscription_value_type(net)}(
+        (;[arc_id => inscription(a)() for (arc_id,a) in pairs(arcdict(net))]...))
+end
 
 #------------------------------------------------------------------
 refplace_idset(petrinet::AbstractPetriNet)            = refplace_idset(pnmlnet(petrinet))
@@ -113,8 +116,11 @@ Return a transition-id labelled vector of rate values for transitions of a petri
 """
 function rates end
 
-function rates(pn::AbstractPetriNet)
-    LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
+function rates(petrinet::AbstractPetriNet)
+    #LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
+    net = pnmlnet(petrinet)
+    LVector(
+        (;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
 end
 
 

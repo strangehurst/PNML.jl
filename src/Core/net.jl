@@ -129,7 +129,6 @@ src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arc
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
 
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict(net)[arc_id])
-inscriptionV(net::PnmlNet) = Vector((;[id => inscription(net, t)() for (id,t) in pairs(arcdict(net))]...))
 
 has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
 refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
