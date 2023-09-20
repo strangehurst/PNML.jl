@@ -1,10 +1,20 @@
 using Graphs: SimpleDiGraphFromIterator, Edge
 using MetaGraphsNext: MetaGraph
 
-"""
-    metagraph(::AbstractPetriNet) -> graph
+# TODO ============================
+# TODO   Make into a functor?
+# TODO
+# TODO accessors from vertex, edge to PNML Nodes
+# TODO petri net algorithms
+# TODO
+# TODO
+# TODO
+# TODO ============================
 
-Return MetaGraph based on a `SimpleDiGraph` with PNML nodes attached to vertices and edges.
+"""
+    metagraph(::AbstractPetriNet) -> MetaGraph
+
+Return MetaGraph instance based on a `SimpleDiGraph` with PNML nodes attached to vertices and edges.
 """
 function metagraph(pn::AbstractPetriNet)
     # pid symbol converted to/from vertex code for place/transition.
@@ -23,7 +33,7 @@ function metagraph(pn::AbstractPetriNet)
         vertexdata[pid(t)] = (vertex_code[pid(t)], t)
     end
 
-    # map from (src,dst) to arc,
+    # Map from (src,dst) to arc. Uses pid, not vertex codes of graph.
     edgedata = Dict((source(a), target(a)) => a for a in arcs(pn))
 
     MetaGraph(graph, vertex_labels, vertexdata, edgedata, PNML.name(pn),

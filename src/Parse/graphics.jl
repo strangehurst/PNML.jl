@@ -1,8 +1,7 @@
 """
 $(TYPEDSIGNATURES)
 
-High-level place-transition nets (HL-PTNet) have a toolspecific structure
-defined for token graphics. Contains <tokenposition>s. Returns vector of `Coordinate`s.
+Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics. See [`TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
     nn = check_nodename(node, "tokengraphics")

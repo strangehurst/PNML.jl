@@ -2,8 +2,8 @@
 # TODO Check for illegal intra-page references? WHERE?
 
 """
-flatten_pages!(net::PnmlNet[; options])
-flatten_pages!(model::PnmlModel[; options])
+    flatten_pages!(net::PnmlNet[; options])
+    flatten_pages!(model::PnmlModel[; options])
 
 Merge page content into the 1st page of the net or all nets of a model.
 

@@ -14,7 +14,7 @@ There are various defined structure ast variants in pnml:
   - Transition Condition [variable, operator]
   - Arc Inscription [variable, operator]
   - Declarations [sort, variable, operator]
-These should all have dedicated parsers and objects as *claimed lables*.
+These should all have dedicated parsers and objects as *claimed labels*.
 Here we provide a fallback for *unclaimed labels*.
 """
 struct Structure

@@ -27,15 +27,10 @@ end
 Configuration options
 # Options
   - `indent_width::Int`: Indention of nested lines. Defaults to `$(PnmlConfig().indent_width)`.
-  - `warn_on_namespace::Bool`: There are pnml files that break the rules &
-do not have an xml namespace. Initial state of toggle defaults to `true`.
-  - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
-Initial state of warning toggle defaults to `true`.
-  - `warn_on_fixup::Bool`: When an missing value is replaced by a default value,
-issue a warning. Initial state of "warn_on_fixup" toggle defaults to `false`.
-  - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined.
-While allowed, there will be code required to do anything useful with the label.
-Initial state of "warn" toggle defaults to `false`.
+  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace. Initial state defaults to `true`.
+  - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements. Initial state defaults to `true`.
+  - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning. Initial state defaults to `false`.
+  - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label. Initial state defaults to `false`.
   - `verbose::Bool`: Print information as runs.  Initial state of "verbose" toggle defaults to `false`.
   - `lock_registry::Bool`: Default is `true` to use a lock, deefault `Re`.
 """

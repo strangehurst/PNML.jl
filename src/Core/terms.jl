@@ -61,7 +61,7 @@ Here we use it as a concrete wrapper around high-level many-sorted algebra terms
 By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
 to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
 
-See also [`iscont`]
+See also [`iscontinuous`](@ref)
 
 As part of the many-sorted algebra attached to nodes of a High-level Petri Net Graph,
 Term`s are contained within the <structure> element of an annotation label,
@@ -84,7 +84,7 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
 [`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref),
 [`AnyElement`](@ref).
 
-**Warning:** Much of the high-level is WORK-IN-PROGRES.
+**Warning:** Much of the high-level is WORK-IN-PROGRESS.
 The type parameter is a sort. We enumerate some of the built-in sorts allowed.
 Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?

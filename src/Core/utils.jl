@@ -13,7 +13,7 @@ Return the value of "x", defaults to identity.
 # Examples
 
 Since High-level PNML schemas are based on Natural numbers and booleans,
-it seems reasonable to assume `Number`, which includes `Bool``, for the non-callable type.
+it seems reasonable to assume `Number`, which includes `Bool`, for the non-callable type.
 A functor is expected as the callable type allowing expressions in the many-sorted algebra
 to be evaluated to a `Number`.
 """

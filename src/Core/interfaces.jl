@@ -351,7 +351,7 @@ function reftransition_type end
 
 """
 $(TYPEDSIGNATURES)
-Type of `Condition` #!{condition_value_type(T)}`
+Type of `Condition`.
 """
 function condition_type end
 
@@ -368,8 +368,7 @@ Return value type.
 function condition_value_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of Inscription{inscription_value_type(T)}.
+    inscription_type(pntd) -> Inscription{inscription_value_type(pntd)}.
 """
 function inscription_type end
 
@@ -380,8 +379,7 @@ Return value type.
 function inscription_value_type end
 
 """
-$(TYPEDSIGNATURES)
-Return type of Marking{marking_value_type(T)}.
+    marking_type(pntd) -> Marking{marking_value_type(pntd)}.
 """
 function marking_type end
 

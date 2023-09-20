@@ -86,7 +86,7 @@ refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
 allpages(net::PnmlNet) = allpages(pagedict(net))
 allpages(pd::OrderedDict) = values(pd)
 
-"Return iterator of `Pages` directly owned by `net`."
+"Iterator of `Pages` directly owned by `net`."
 pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpages(net))
 
 "Usually the only interesting page."
