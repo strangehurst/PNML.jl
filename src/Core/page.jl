@@ -59,11 +59,6 @@ has_transition(page::Page, id::Symbol) = in(id, transition_idset(page))
 arc(page::Page, id::Symbol) = arcdict(page)[id]
 has_arc(page::Page, id::Symbol) = in(id, arc_idset(page))
 
-# Currently, "all" means either end of the arc.
-all_arcs(page::Page, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(page))
-src_arcs(page::Page, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(page))
-tgt_arcs(page::Page, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(page))
-
 refplace(page::Page, id::Symbol)     = refplacedict(page)[id]
 has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 
