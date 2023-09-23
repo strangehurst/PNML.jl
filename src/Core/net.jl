@@ -124,6 +124,13 @@ condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 arc(net::PnmlNet, id::Symbol)      = arcdict(net)[id]
 has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
 
+
+"""
+Return `Arc` from 's' to 't'. Assumes there is only one.
+"""
+arc(net, s::Symbol, t::Symbol) =
+    first(Iterators.filter(a -> source(a) === s && target(a) === t, arcs(net)))
+
 all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(net))
 src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
