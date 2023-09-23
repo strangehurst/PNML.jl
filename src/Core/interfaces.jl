@@ -194,7 +194,6 @@ function condition end
 # ARCS & INSCRIPTIONS
 #--------------------------------------------
 """
-    arcs(p::Page) -> iterator
     arcs(n::PnmlNet) -> iterator
     arcs(p::AbstractPetriNet) -> iterator
 

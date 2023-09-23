@@ -81,14 +81,14 @@ inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 """
-$(TYPEDSIGNATURES)
+    source(arc) -> Symbol
 
 Return symbol of source of `arc`.
 """
 source(arc)::Symbol = arc.source
 
 """
-$(TYPEDSIGNATURES)
+    target(arc) -> Symbol
 
 Return symbol of target of `arc`.
 """
