@@ -1,4 +1,5 @@
 using Base: Fix2, Fix1
+
 """
 $(TYPEDEF)
 
@@ -77,8 +78,8 @@ condition(petrinet::AbstractPetriNet, id::Symbol)      = condition(pnmlnet(petri
 
 LVector labelled with transition (#! not id) and holding condition (#! not value).
 """
-conditions(pn::AbstractPetriNet) = begin
-    net = pnmlnet(pn)
+conditions(petrinet::AbstractPetriNet) = begin
+    net = pnmlnet(petrinet)
     LVector{condition_value_type(net)}(
         (; [trans_id => condition(t) for (trans_id,t) in pairs(transitiondict(net))]...))
 end
@@ -110,22 +111,41 @@ has_reftransition(petrinet::AbstractPetriNet, id::Symbol) = has_reftransition(pn
 reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(pnmlnet(petrinet), id)
 
 """
-$(TYPEDSIGNATURES)
+    rates(petrinet::AbstractPetriNet) -> LVector
 
-Return a transition-id labelled vector of rate values for transitions of a petri net.
+Return a transition-id labelled vector of rate values.
+
+We allow all PNML nets to be stochastic Petri nets. See [`rate`](@ref).
 """
-function rates end
-
 function rates(petrinet::AbstractPetriNet)
-    #LVector( (; [tid => (rate ∘ transition)(pn, tid) for tid in transition_idset(pn)]...))
     net = pnmlnet(petrinet)
-    LVector(
-        (;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
+    @assert rate_value_type(net) <: Real #! debug?
+    LVector((;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
 end
 
 
+#-----------------------------------------------------------------
+#=
+Given x ∈ S ∪ T
+  - the set •x = {y | (y, x) ∈ F } is the preset of
+  - the set x• = {y | (x, y) ∈ F } is the postset of x.
+=#
+"Iterate input place ids of transition.
+
+See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
+"
+preset(net, transition_id) = Iterators.map(arc->source(arc), tgt_arcs(net, transition_id))
+
+"""
+Iterate output place ids of transition.
+See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
+"""
+postset(net, transition_id) = Iterators.map(arc->target(arc), src_arcs(net, transition_id))
 
 
+
+#-----------------------------------------------------------------
+# Show and Tell Section:
 #-----------------------------------------------------------------
 Base.summary(io::IO, pn::AbstractPetriNet) = print(io, summary(pn))
 function Base.summary(pn::AbstractPetriNet)

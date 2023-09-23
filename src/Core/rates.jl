@@ -2,7 +2,7 @@
  """
 $(TYPEDSIGNATURES)
 
-Return rate value of `transition`.  Missing rate labels are defaulted to zero.
+Return rate value of `transition`.  Missing rate labels are defaulted to zero, or no delay.
 """
 function rate(transition)
     # Expected XML: <rate> <text>0.3</text> </rate>

@@ -61,22 +61,17 @@ Return vector of inscription values labeled with target place id for arcs with `
 """
 outs(net, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
 
-# Given x ∈ S ∪ T , the set •x = {y | (y, x) ∈ F } is the preset of x.
-"Iterate input place ids of transition."
-preset(net, transition_id) = Iterators.map(arc->source(arc), tgt_arcs(net, transition_id))
-
-# Given x ∈ S ∪ T , the set x• = {y | (x, y) ∈ F } is the postset of x.
-"Iterate output place ids of transition."
-postset(net, transition_id) = Iterators.map(arc->target(arc), src_arcs(net, transition_id))
-
-in_inscriptions(net, transitionid) = Iterators.map(preset(net, transitionid)) do placeid
-    a = arc(net, placeid, transitionid)
-    #@show placeid transitionid a source(a) inscription(a)
-    source(a) => inscription(a)
+"Iterate over preset of transition, returning source place id => inscription value pairs."
+function in_inscriptions(net, transitionid)
+    Iterators.map(preset(net, transitionid)) do placeid
+        a = arc(net, placeid, transitionid)
+        source(a) => inscription(a)
+    end
 end
-
-out_inscriptions(net, transitionid) = Iterators.map(postset(net, transitionid)) do placeid
-    a = arc(net, transitionid, placeid)
-    #@show transitionid placeid a target(a) inscription(a)
-    target(a) => inscription(a)
+"Iterate over postset of transition, returning target  place id => inscription value pairs."
+function out_inscriptions(net, transitionid)
+    Iterators.map(postset(net, transitionid)) do placeid
+        a = arc(net, transitionid, placeid)
+        target(a) => inscription(a)
+    end
 end
