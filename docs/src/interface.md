@@ -342,10 +342,10 @@ methods(PNML.deref_transition)  # hide
 
 ## Place Related
 
-### marking - evaluate marking value (or return default)
+### initial_marking - evaluate marking value (or return default)
 [`marking`](@ref)
 ```@example methods
-methods(PNML.marking)  # hide
+methods(PNML.initial_marking)  # hide
 ```
 
 ## Transition Related

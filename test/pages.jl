@@ -13,7 +13,7 @@ using PNML:
     rate_value_type,
     default_inscription, default_marking, default_sort, default_condition,
     default_one_term, default_zero_term,
-    currentMarkings,
+    initial_markings,
     netsets, netdata, page_idset, pagedict,
     all_nettypes, ishighlevel
 

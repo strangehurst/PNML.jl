@@ -174,7 +174,7 @@ function Base.show(io::IO, place::Place)
           " id ", place.id,
           ", name '" , has_name(place) ? name(place) : "", "'",
           ", type ", place.sorttype,
-          ", marking ", place.marking)
+          ", initial marking ", initial_marking(place))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", place::Place)
@@ -197,7 +197,7 @@ function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
           " id ", trans.id,
           ", name '", has_name(trans) ? name(trans) : "", "'",
-          ", condition ", trans.condition)
+          ", condition ", condition(trans))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
@@ -239,8 +239,8 @@ end
 function Base.show(io::IO, arc::Arc)
     print(io, typeof(arc), " id ", arc.id,
           ", name '", has_name(arc) ? name(arc) : "", "'",
-          ", source: ", arc.source,
-          ", target: ", arc.target,
+          ", source: ", source(arc),
+          ", target: ", target(arc),
           ", inscription: ", arc.inscription)
 end
 function Base.show(io::IO, ::MIME"text/plain", arcvector::Vector{Arc})

@@ -114,7 +114,7 @@ reftransitions(net::PnmlNet) = values(reftransitiondict(net))
 place(net::PnmlNet, id::Symbol)        = placedict(net)[id]
 has_place(net::PnmlNet, id::Symbol)    = haskey(placedict(net), id)
 
-marking(net::PnmlNet, placeid::Symbol) = marking(place(net, placeid))
+initial_marking(net::PnmlNet, placeid::Symbol) = initial_marking(place(net, placeid))
 
 transition(net::PnmlNet, id::Symbol)      = transitiondict(net)[id]
 has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict(net), id)

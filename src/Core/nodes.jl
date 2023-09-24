@@ -7,7 +7,7 @@ Place node of a Petri Net Markup Language graph.
 struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    marking::M
+    #!marking::M
     initialMarking::M
     sorttype::S
     name::Maybe{Name}
@@ -18,7 +18,7 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 
-marking(place::Place) = place.marking
+initial_marking(place::Place) = place.initialMarking
 default_marking(place::Place) = default_marking(place.pntd)
 
 #-------------------

@@ -55,7 +55,7 @@ julia> @code_warntype parse_str("<pnml></pnml>")
 
 This returns an incompletely typed LArray (LVector). Would a barrier function help?
 ```julia
-julia> @code_warntype PNML.currentMarkings(n)
+julia> @code_warntype PNML.initial_markings(n)
 ```
 
 

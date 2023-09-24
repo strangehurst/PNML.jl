@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_xml, has_name, name,
-    pid, marking, condition, inscription,
+    pid, initial_marking, condition, inscription,
     has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace,
     all_nettypes, ishighlevel, refid
@@ -29,8 +29,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        @test_call marking(n)
-        @test marking(n)() == 100
+        @show initial_marking(n)
+        @test_call initial_marking(n)
+        @test initial_marking(n)() == 100
     end
 
     @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
@@ -56,8 +57,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        @test_call marking(n)
-        @test marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
+        @show initial_marking(n)
+        @test_call initial_marking(n)
+        @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end
 
     # <condition> introduced as High-Level in specification. We use it everywhere.

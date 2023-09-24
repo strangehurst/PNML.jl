@@ -8,7 +8,7 @@ using PNML:
     place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
     flatten_pages!, nets,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    currentMarkings,
+    initial_markings,
     arc_type, place_type, transition_type,
     condition_type, condition_value_type,
     sort_type,

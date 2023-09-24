@@ -54,17 +54,7 @@ place_idset(petrinet::AbstractPetriNet)           = place_idset(pnmlnet(petrinet
 has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(pnmlnet(petrinet), id)
 place(petrinet::AbstractPetriNet, id::Symbol)     = place(pnmlnet(petrinet), id)
 
-marking(petrinet::AbstractPetriNet, id::Symbol) = marking(pnmlnet(petrinet), id)
-
-"""
-    currentMarkings(petrinet) -> LVector{marking_value_type(pntd)}
-
-LVector labelled with place id and holding marking's value.
-"""
-currentMarkings(pn::AbstractPetriNet) = begin
-    m1 = LVector((;[id => marking(p)() for (id,p) in pairs(placedict(pnmlnet(pn)))]...)) #! does this allocate?
-    return m1
-end
+initial_marking(petrinet::AbstractPetriNet, id::Symbol) = initial_marking(pnmlnet(petrinet), id)
 
 #------------------------------------------------------------------
 transition_idset(petrinet::AbstractPetriNet)           = transition_idset(pnmlnet(petrinet))
@@ -72,17 +62,6 @@ has_transition(petrinet::AbstractPetriNet, id::Symbol) = has_transition(pnmlnet(
 transition(petrinet::AbstractPetriNet, id::Symbol)     = transition(pnmlnet(petrinet), id)
 
 condition(petrinet::AbstractPetriNet, id::Symbol)      = condition(pnmlnet(petrinet), id)
-
-"""
-    conditions(petrinet) -> LVector{condition_value_type(pntd)}
-
-LVector labelled with transition (#! not id) and holding condition (#! not value).
-"""
-conditions(petrinet::AbstractPetriNet) = begin
-    net = pnmlnet(petrinet)
-    LVector{condition_value_type(net)}(
-        (; [trans_id => condition(t) for (trans_id,t) in pairs(transitiondict(net))]...))
-end
 
 #------------------------------------------------------------------
 arc_idset(petrinet::AbstractPetriNet)            = arc_idset(pnmlnet(petrinet))
@@ -127,7 +106,7 @@ end
 #-----------------------------------------------------------------
 #=
 Given x ∈ S ∪ T
-  - the set •x = {y | (y, x) ∈ F } is the preset of
+  - the set •x = {y | (y, x) ∈ F } is the preset of x.
   - the set x• = {y | (x, y) ∈ F } is the postset of x.
 =#
 "Iterate input place ids of transition.
@@ -143,6 +122,40 @@ See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
 postset(net, transition_id) = Iterators.map(arc->target(arc), src_arcs(net, transition_id))
 
 
+
+"""
+    initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
+
+LVector labelled with place id and holding initial marking's value.
+"""
+initial_markings(petrinet::AbstractPetriNet) = begin
+    net = pnmlnet(petrinet)
+    m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
+    return m1
+end
+
+"""
+    conditions(petrinet) -> LVector{condition_value_type(pntd)}
+
+LVector labelled with transition id and holding condition (#! not value).
+"""
+conditions(petrinet::AbstractPetriNet) = begin
+    net = pnmlnet(petrinet)
+    LVector{condition_value_type(net)}(
+        (; [trans_id => condition(t) for (trans_id,t) in pairs(transitiondict(net))]...))
+end
+
+"Returns the set of transitions enabled"
+function enabled(net)
+end
+
+"Returns the marking after firing transition."
+function fire!(net, transaction_id)
+end
+
+""
+function reachability_graph(net)
+end
 
 #-----------------------------------------------------------------
 # Show and Tell Section:

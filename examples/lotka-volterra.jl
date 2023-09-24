@@ -57,7 +57,7 @@ display(Graph(lotka))
 # Once a model is defined, we can define out initial parameters `u0`, a time
 # span `tspan`, and the transition rates of the interactions `β`
 
-u0 = PNML.currentMarkings(net) #LVector(wolves=10.0, rabbits=100.0)
+u0 = PNML.initial_markings(net) #LVector(wolves=10.0, rabbits=100.0)
 tspan = (0.0,100.0)
 β = PNML.rates(net) #LVector(birth=.3, predation=.015, death=.7); # transition rate
 

@@ -6,7 +6,7 @@ using PNML: tag, pid, xmlnode, parse_str,
     transition, transitions, has_transition,
     arc, arcs, has_arc,
     place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
-    marking, default_marking,  currentMarkings,
+    initial_marking, default_marking,  initial_markings,
     condition, default_condition,
     inscription, default_inscription,
     nettype, firstpage,
@@ -118,8 +118,8 @@ testlogger = TestLogger()
             p = @inferred Maybe{Place} place(top, placeid)
             #@test pid(p) ===  p.id
             #! errors @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
-            #@test typeof(marking(placeid)) <: typeof(default_marking(p))
-            #@test @inferred(marking(p)) isa typeof(default_marking(p))
+            #@test typeof(initial_marking(placeid)) <: typeof(default_marking(p))
+            #@test @inferred(initial_marking(p)) isa typeof(default_marking(p))
         end
         #println()
     end
@@ -158,9 +158,9 @@ testlogger = TestLogger()
     end
     @testset "initialMarking" begin
         #@show typeof(snet)
-        u1 = @inferred LArray currentMarkings(snet)
-        #!u2 = @inferred LArray currentMarkings(snet.net)
-        #!u3 = @inferred LArray currentMarkings(first(pages(snet.net)))
+        u1 = @inferred LArray initial_markings(snet)
+        #!u2 = @inferred LArray initial_markings(snet.net)
+        #!u3 = @inferred LArray initial_markings(first(pages(snet.net)))
 
         #@test u1 == u2
         #@test u1 == u3
@@ -183,7 +183,7 @@ end
     net = PNML.first_net(model)
     @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
-    #@show snet
+    @show snet
     β = PNML.rates(snet)
     #@show β
     @test β == LVector(birth=0.3)
@@ -227,9 +227,12 @@ end
     )
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
         @show S T Δ
-        #!for t in T
-        #!@show PNML.in_out(snet, t)
-        #!end
+        #for t in PNML.transition_idset(snet)
+        #    @show t
+        #    @show collect(pairs(PNML.ins(snet, t)))
+        #    @show collect(pairs(PNML.outs(snet, t)))
+        #    @show collect(pairs(PNML.in_out(snet, t)))
+        #end
         @show Δ.birth tfun.birth
     end
 
@@ -239,7 +242,7 @@ end
     @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = PNML.currentMarkings(snet)
+    u0 = PNML.initial_markings(snet)
     @test u0 == uX
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
@@ -284,8 +287,6 @@ using PNML: AbstractPetriNet
     mg = PNML.metagraph(anet)
 
     @show typeof(mg) mg
-    @show Graphs.betweenness_centrality(mg)
-    @show Graphs.components([1,2,3,4,5])
     @show Graphs.is_directed(mg)
     @show Graphs.is_connected(mg)
     @show Graphs.is_bipartite(mg)

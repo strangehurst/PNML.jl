@@ -17,7 +17,7 @@ using PNML:
     XMLNode,
     _evaluate,
     all_arcs, allchildren, append_page!, arc, arc_idset, arcs,
-    check_nodename, common, condition, conditions, currentMarkings,
+    check_nodename, common, condition, conditions, initial_markings,
     condition_type, condition_value_type,
     declarations, default_condition, default_inscription, default_marking, default_sort,
     deref!, deref_place, deref_transition, elements,

@@ -318,7 +318,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     sorttype = something(sorttype, default_sorttype(pntd))::SortType
     #println("parse_place $pntd "); dump(mark); dump(sorttype)
 
-    Place(pntd, id, mark, mark, sorttype, name, graphics, tools, labels)
+    Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
 end
 
 # By generalizing place marking label parsing we hope to return stable type.
@@ -351,7 +351,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
-            # We expecte at least one unclaimed labele here!
+            # We expecte at least one unclaimed label here!
             tag != "rate" && @warn "unexpected child of <transition>: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
