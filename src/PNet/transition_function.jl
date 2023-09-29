@@ -61,6 +61,7 @@ Return vector of inscription values labeled with target place id for arcs with `
 """
 outs(net, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
 
+# See input flow
 "Iterate over preset of transition, returning source place id => inscription value pairs."
 function in_inscriptions(net, transitionid)
     Iterators.map(preset(net, transitionid)) do placeid
@@ -68,6 +69,7 @@ function in_inscriptions(net, transitionid)
         source(a) => inscription(a)
     end
 end
+# See output flow
 "Iterate over postset of transition, returning target  place id => inscription value pairs."
 function out_inscriptions(net, transitionid)
     Iterators.map(postset(net, transitionid)) do placeid
