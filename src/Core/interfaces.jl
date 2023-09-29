@@ -136,19 +136,9 @@ function place end
 """
 $(TYPEDSIGNATURES)
 
-Return marking value of a place.
+Return the initial marking of a place.
 """
-function marking end
-
-#! TODO CHANGE NAME
-"""
-$(TYPEDSIGNATURES)
-
-Return a labelled vector with key of place id and value of its marking.
-Marking value is evaluated to be a number (Int or Float64). High-level nets
-evaluate a `Term` of the many-sorted algebra to an `Int`.
-"""
-function initialMarking end
+function initial_marking end
 
 #--------------------------------------------
 # TRANSITIONS & CONDITIONS

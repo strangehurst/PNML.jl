@@ -29,7 +29,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        @show initial_marking(n)
+        #@show initial_marking(n)
         @test_call initial_marking(n)
         @test initial_marking(n)() == 100
     end
@@ -57,7 +57,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        @show initial_marking(n)
+        #@show initial_marking(n)
         @test_call initial_marking(n)
         @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end

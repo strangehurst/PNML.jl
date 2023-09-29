@@ -27,7 +27,7 @@ using PNML:
     has_refplace, has_reftransition, has_structure, has_text, has_tools, has_transition, has_xml,
     hastag, haspid,
     ispid, idregistry, inc_indent, indent, infos,
-    initialMarking, marking, marking_type, marking_value_type,
+    initialMarking, initial_marking, marking_type, marking_value_type,
     inscription, inscription_type, inscription_value_type,
     isregistered, labels,
     name, namespace, nets, nettype,

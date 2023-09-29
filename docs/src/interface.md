@@ -343,9 +343,14 @@ methods(PNML.deref_transition)  # hide
 ## Place Related
 
 ### initial_marking - evaluate marking value (or return default)
-[`marking`](@ref)
+[`initial_marking`](@ref)
 ```@example methods
 methods(PNML.initial_marking)  # hide
+```
+### initial_markings - return LVector of marking values labeled by place id
+[`initial_markings`](@ref)
+```@example methods
+methods(PNML.initial_markings)  # hide
 ```
 
 ## Transition Related
