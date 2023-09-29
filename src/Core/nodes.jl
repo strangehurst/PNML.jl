@@ -85,14 +85,14 @@ default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 Return symbol of source of `arc`.
 """
-source(arc)::Symbol = arc.source
+source(arc::Arc)::Symbol = arc.source
 
 """
     target(arc) -> Symbol
 
 Return symbol of target of `arc`.
 """
-target(arc)::Symbol = arc.target
+target(arc::Arc)::Symbol = arc.target
 
 #-------------------
 """
