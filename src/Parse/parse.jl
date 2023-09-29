@@ -748,9 +748,23 @@ $(TYPEDSIGNATURES)
 """
 function parse_condition_term(cnode, pntd::PnmlType, idregistry)
     check_nodename(cnode, "structure")
-    EzXML.haselement(cnode) || error("missing condition term element in <structure>")
-    term = EzXML.firstelement(cnode)
-    parse_term(term, pntd, idregistry)
+    #EzXML.haselement(cnode) || error("missing condition term element in <structure>")
+    #term = EzXML.firstelement(cnode)
+    #!parse_term(term, pntd, idregistry)
+
+    check_nodename(cnode, "structure")
+    if EzXML.haselement(cnode)
+        term = EzXML.firstelement(cnode)
+
+        return parse_term(term, pntd, idregistry)
+    else
+        content_string = strip(EzXML.nodecontent(cnode))
+        if !isempty(content_string)
+            @warn("condition term <structure> content value: $content_string")
+            return Term(:value, number_value(condition_value_type(pntd), content_string))
+        end
+    end
+    error("missing condition term element in <structure>")
 end
 
 #---------------------------------------------------------------------

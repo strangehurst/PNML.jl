@@ -102,20 +102,18 @@ Base.eltype(t::Term) = typeof(elements(t))
 value(t::Term) = t() # Value of a Term is the functor's value.
 
 (t::Term)(default = default_one_term(HLCoreNet())) = begin
+    #eltype(default) isa eltype(t) || error("""default $(eltype(default)) is not a $(eltype(t))""")
     if eltype(t) <: Number
         return elements(t)
     else
         # Find any `:value` tagged in vector of elements.
         # Fake like we know how to evaluate a expression of the high-level terms.
         i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
-        if !isnothing(i)
+        if !isnothing(i) # content instead of element should be a boolean string value
             v = value(t.elements[i]) == "true" # should be a booleanconstant
-            #println("term functor"); dump(v); @show eltype(t)
-            #@assert typeof(v) isa eltype(t)
             return v
         else
             v = _evaluate(default)
-            @assert typeof(v) isa eltype(t)
             return v
         end
     end
