@@ -31,12 +31,21 @@ function testpn(; topdir = "/home/jeff/Projects/Resources/PetriNet/PNML", dir = 
                         push!(df, (file=f, fsize=filesize(f), time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
                         # Display PnmlModel as a test of parsing, creation and show().
                         println(stats.value)
-
-                        @show mg = PNML.metagraph(PNML.SimpleNet(stats.value))
-                        @show Graphs.is_bipartite(mg)
-                        @show Graphs.ne(mg)
-                        @show Graphs.nv(mg)
-
+                        println()
+                        # Petri Net & Graph
+                        @showtime anet = PNML.SimpleNet(stats.value)
+                        @showtime mg = PNML.metagraph(anet)
+                        @showtime Graphs.is_bipartite(mg)
+                        @showtime Graphs.ne(mg)
+                        @showtime Graphs.nv(mg)
+                        @showtime MetaGraphsNext.labels(mg) #|> collect
+                        @showtime MetaGraphsNext.edge_labels(mg) #|> collect
+                        println("-----")
+                        #C = PNML.incidence_matrix(anet)
+                        #@showtime C  = PNML.incidence_matrix(anet)
+                        @showtime m₀ = PNML.initial_markings(anet)
+                        #@showtime e  = PNML.enabled(anet, m₀)
+                        println("-----")
                     end
                 catch e
                     if e isa PNML.PnmlException

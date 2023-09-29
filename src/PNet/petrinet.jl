@@ -109,19 +109,68 @@ Given x ∈ S ∪ T
   - the set •x = {y | (y, x) ∈ F } is the preset of x.
   - the set x• = {y | (x, y) ∈ F } is the postset of x.
 =#
-"Iterate input place ids of transition.
+"""
+Iterate ids of input (arc source)) for output transition or place `id`.
 
 See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
-"
-preset(net, transition_id) = Iterators.map(arc->source(arc), tgt_arcs(net, transition_id))
+"""
+preset(net, id) = Iterators.map(arc->source(arc), tgt_arcs(net, id))
 
 """
-Iterate output place ids of transition.
+Iterate ids of output (arc target)) for source transition or place `id`.
+
 See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
 """
-postset(net, transition_id) = Iterators.map(arc->target(arc), src_arcs(net, transition_id))
+postset(net, id) = Iterators.map(arc->target(arc), src_arcs(net, id))
 
+"Input matrix"
+function input_matrix(petrinet::AbstractPetriNet)
+    net = pnmlnet(petrinet)
+    I = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    for (t,transition_id) in enumerate(ransition_idset(net))
+        for (p,place_id) in enumerate(place_idset(net))
+            a = arc(pn, place_id, transition_id)
+            @inbounds I[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+        end
+    end
+    return I
+end
 
+"Output Matrix"
+function output_matrix(petrinet::AbstractPetriNet)
+    net = pnmlnet(petrinet)
+    O = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    for (t,transition_id) in enumerate(ransition_idset(net))
+        for (p,place_id) in enumerate(place_idset(net))
+            a = arc(net, transition_id, place_id)
+            @inbounds O[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+        end
+    end
+    return O
+end
+
+"""
+    incidence_matrix(petrinet) -> LArray
+
+C[transition,place] = inscription(transition,place) - inscription(place,transition)
+"""
+function incidence_matrix(petrinet::AbstractPetriNet)
+    net = pnmlnet(petrinet)
+    #TODO  Make Labelled Matrix? ComponentArray?
+    println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
+    C = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    z = zero(inscription_value_type(net))
+    for (t,transition_id) in enumerate(transition_idset(net))
+        for (p,place_id) in enumerate(place_idset(net))
+            tp = arc(net, transition_id, place_id)
+            pt = arc(net, place_id, transition_id)
+
+            c = (isnothing(tp) ? z : inscription(tp)) - (isnothing(pt) ? z : inscription(pt))
+            @inbounds C[t, p] = c
+        end
+    end
+    return C
+end
 
 """
     initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
@@ -142,14 +191,22 @@ LVector labelled with transition id and holding condition (#! not value).
 conditions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
     LVector{condition_value_type(net)}(
-        (; [trans_id => condition(t) for (trans_id,t) in pairs(transitiondict(net))]...))
+        (; [id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
 end
 
-"Returns the set of transitions enabled"
-function enabled(net)
+"Returns the vector of transitions enabled at marking"
+function enabled(petrinet::AbstractPetriNet, marking)
+    net = pnmlnet(petrinet)
+    LVector( (;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t))
+                    for t in transition_idset(net)]...))
 end
 
-"Returns the marking after firing transition."
+"""
+Return the marking after firing transition.
+M1 = M0 + Cf.
+M0 is the initial marking vector, f is the firing vector, i.e. which transition is to fire
+and C is the incidence matrix.
+"""
 function fire!(net, transaction_id)
 end
 

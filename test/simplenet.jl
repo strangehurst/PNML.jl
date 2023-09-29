@@ -1,16 +1,14 @@
 using PNML, EzXML, ..TestUtils, JET, LabelledArrays, AbstractTrees
 using PNML: tag, pid, xmlnode, parse_str,
     Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
-    nets, pages,
-    place, places, has_place,
-    transition, transitions, has_transition,
-    arc, arcs, has_arc,
+    nets, pages, place, places, transition, transitions, arc, arcs,
+    has_place, has_transition, has_arc,
     place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
     initial_marking, default_marking,  initial_markings,
     condition, default_condition,
     inscription, default_inscription,
-    nettype, firstpage,
-    ispid
+    nettype, firstpage, ispid
+using PNML: incidence_matrix, inscription_value_type
 
 using PrettyPrinting
 using Test, Logging
@@ -258,25 +256,33 @@ end
 end
 
 using Graphs, MetaGraphsNext
-using PNML: AbstractPetriNet
+using PNML: AbstractPetriNet, enabled
 
 @testset "extract a graph" begin
     str3 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="continuous">
-        <name><text>some petri net in pnml</text></name>
+        <net id="net0" type="core">
+        <name><text>test petri net</text></name>
         <page id="page0">
-            <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
-            <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
-            <transition id ="birth">     <rate> <text>0.3</text> </rate> </transition>
-            <transition id ="predation"> <rate> <text>0.015</text> </rate> </transition>
-            <transition id ="death">     <rate> <text>0.7</text> </rate> </transition>
-            <arc id="a1" source="rabbits"   target="birth"> <inscription><text>1.0</text> </inscription> </arc>
-            <arc id="a2" source="birth"     target="rabbits"> <inscription><text>2.0</text> </inscription> </arc>
-            <arc id="a3" source="wolves"    target="predation"> <inscription><text>1.0</text> </inscription> </arc>
-            <arc id="a4" source="rabbits"   target="predation"> <inscription><text>1.0</text> </inscription> </arc>
-            <arc id="a5" source="predation" target="wolves"> <inscription><text>2.0</text> </inscription> </arc>
-            <arc id="a6" source="wolves"    target="death"> <inscription><text>1.0</text> </inscription> </arc>
+            <place id="p1"> <initialMarking> <text>1</text> </initialMarking> </place>
+            <place id="p2"/>
+            <place id="p3"/>
+            <place id="p4"/>
+            <place id="p0"/>
+            <transition id="t1"/>
+            <transition id="t2"/>
+            <transition id="t3"/>
+            <transition id="t4"/>
+            <arc id="a1" source="p1"   target="t1"/>
+            <arc id="a2" source="t1"   target="p2"/>
+            <arc id="a3" source="p2"   target="t2"/>
+            <arc id="a4" source="t2"   target="p3"/>
+            <arc id="a5" source="p3"   target="t3"/>
+            <arc id="a6" source="t3"   target="p4"/>
+            <arc id="a7" source="p4"   target="t4"/>
+            <arc id="a8" source="t4"   target="p1"/>
+
+            <arc id="a9" source="t4"   target="p0"/>
         </page>
         </net>
     </pnml>
@@ -290,9 +296,27 @@ using PNML: AbstractPetriNet
     @show Graphs.is_directed(mg)
     @show Graphs.is_connected(mg)
     @show Graphs.is_bipartite(mg)
-    @show Graphs.bipartite_map(mg)
     @show Graphs.ne(mg)
     @show Graphs.nv(mg)
     @show MetaGraphsNext.labels(mg) |> collect
     @show MetaGraphsNext.edge_labels(mg) |> collect
+
+    @showtime C  = incidence_matrix(anet) # (3,2)
+    #dump(C);
+    @showtime m₀ = initial_markings(anet) # (1,2)
+    #dump(m₀);
+    @showtime e  = enabled(anet, m₀) # (3,1)
+    #dump(e)
+    #@show typeof(C) typeof(m₀) typeof(e)
+    @showtime muladd(C', [1,0,0,0], m₀)
+    @show m₁ =  muladd(C', [1,0,0,0], m₀)
+    @show m₂ =  muladd(C', [0,1,0,0], m₁)
+    @show m₃ =  muladd(C', [0,0,1,0], m₂)
+    @show m₄ =  muladd(C', [0,0,0,1], m₃)
+    @show m₅ =  muladd(C', [1,0,0,0], m₄)
+    @show m₆ =  muladd(C', [0,1,0,0], m₅)
+    @show m₇ =  muladd(C', [0,0,1,0], m₆)
+    @show m₈ =  muladd(C', [0,0,0,1], m₇)
+    @show m₉ =  muladd(C', [1,0,0,0], m₈)
+
 end
