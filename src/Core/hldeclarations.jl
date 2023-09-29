@@ -13,7 +13,7 @@ They are attached to PNML nets and pages.
 abstract type AbstractDeclaration end #<: AbstractLabel end
 
 pid(decl::AbstractDeclaration) = decl.id
-name(decl::AbstractDeclaration) = decl.name
+name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
 
 """
 $(TYPEDEF)

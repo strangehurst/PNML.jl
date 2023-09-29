@@ -172,7 +172,7 @@ end
 function Base.show(io::IO, place::Place)
     print(io, summary(place),
           " id ", place.id,
-          ", name '" , has_name(place) ? name(place) : "", "'",
+          ", name '", name(place), "'",
           ", type ", place.sorttype,
           ", initial marking ", initial_marking(place))
 end
@@ -195,9 +195,7 @@ end
 #-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
-          " id ", trans.id,
-          ", name '", has_name(trans) ? name(trans) : "", "'",
-          ", condition ", condition(trans))
+          " id ", trans.id, ", name '", name(trans), "'", ", condition ", condition(trans))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
