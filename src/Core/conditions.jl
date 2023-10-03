@@ -8,13 +8,13 @@ Label of a Transition that determines when the transition fires.
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
 julia> c = Condition(false)
-Condition(nothing, false, nothing, [])
+Condition(nothing, Term(:bool, false), nothing, [])
 
 julia> c()
 false
 
 julia> c = Condition("xx", false)
-Condition("xx", false, nothing, [])
+Condition("xx", Term(:bool, false), nothing, [])
 
 julia> c()
 false
@@ -22,20 +22,20 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation
     text::Maybe{String}
-    value::Union{Bool, Term}
+    value::Term #!{Bool}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
 end
 
-Condition(value) = Condition(nothing, value, nothing, ToolInfo[])
-Condition(text::AbstractString, value) = Condition(text, value, nothing, ToolInfo[])
+Condition(value::Bool) = Condition(nothing, Term(:bool, value), nothing, ToolInfo[])
+Condition(text::AbstractString, value::Bool) = Condition(text, Term(:bool, value), nothing, ToolInfo[])
+Condition(value::Term) = Condition(nothing, value, nothing, ToolInfo[])
+Condition(text::AbstractString, value::Term) = Condition(text, value, nothing, ToolInfo[])
+condition_type(::Type{<:PnmlType}) = Condition
 
 value(c::Condition) = c.value
 Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate
-
-(c::Condition)() = _evaluate(value(c))::eltype(c)
-
-condition_type(::Type{<:PnmlType}) = Condition
-
 condition_value_type(::Type{<: PnmlType}) = Bool
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
+
+(c::Condition)() = _evaluate(value(c))::eltype(c)

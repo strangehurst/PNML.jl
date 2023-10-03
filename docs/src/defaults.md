@@ -119,13 +119,13 @@ methods(PNML.default_bool_term) # hide
 
 ```jldoctest; setup=:(using PNML; using PNML: default_condition)
 julia> c = default_condition(PnmlCoreNet())
-Condition(nothing, true, nothing, [])
+Condition(nothing, Term(:bool, true), nothing, [])
 
 julia> c()
 true
 
 julia> c = default_condition(ContinuousNet())
-Condition(nothing, true, nothing, [])
+Condition(nothing, Term(:bool, true), nothing, [])
 
 julia> c = default_condition(HLCoreNet())
 Condition(nothing, Term(:bool, true), nothing, [])
