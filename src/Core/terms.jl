@@ -90,7 +90,7 @@ Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
 When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
-struct Term <: AbstractTerm
+struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     tag::Symbol
     elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
@@ -98,25 +98,28 @@ end
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 Base.eltype(t::Term) = typeof(elements(t))
+#Base.eltype(t::Term{T}) where {T} = T
 
-value(t::Term) = t() # Value of a Term is the functor's value.
+#!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
+value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-(t::Term)(default = default_one_term(HLCoreNet())) = begin
-    #eltype(default) isa eltype(t) || error("""default $(eltype(default)) is not a $(eltype(t))""")
-    if eltype(t) <: Number
+(t::Term)() = begin
+    if typeof(elements(t)) <: Number
         return elements(t)
-    else
-        # Find any `:value` tagged in vector of elements.
+    else # is Vector{AnyXmlNode}
         # Fake like we know how to evaluate a expression of the high-level terms.
+        # Find any `:value` tag in elements and assume is a boolean string.
         i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
-        if !isnothing(i) # content instead of element should be a boolean string value
-            v = value(t.elements[i]) == "true" # should be a booleanconstant
-            return v
+        if !isnothing(i)
+            return value(t.elements[i]) == "true" # should be a booleanconstant
         else
-            v = _evaluate(default)
-            return v
+            println("(t::Term) needs to handle term ast!");
+            map(println, elements(t))
+            #! v = _evaluate(default)
+            return nothing
         end
     end
 end
-""
-has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
+#(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end
+#(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
+#(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end
