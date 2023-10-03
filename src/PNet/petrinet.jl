@@ -76,8 +76,8 @@ inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(pe
 
 inscriptions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
-    LVector{inscription_value_type(net)}(
-        (;[arc_id => inscription(a)() for (arc_id,a) in pairs(arcdict(net))]...))
+    #!LVector{inscription_value_type(net)}(
+    LVector((;[arc_id => inscription(a) for (arc_id,a) in pairs(arcdict(net))]...))
 end
 
 #------------------------------------------------------------------
@@ -186,19 +186,23 @@ end
 """
     conditions(petrinet) -> LVector{condition_value_type(pntd)}
 
-LVector labelled with transition id and holding condition (#! not value).
+LVector labelled with transition id and holding its condition's value.
 """
 conditions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
-    LVector{condition_value_type(net)}(
-        (; [id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
+    #!LVector{condition_value_type(net)}(
+    LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
 end
 
-"Returns the vector of transitions enabled at marking"
+"""
+    enabled(::AbstractPetriNet, ::LVector) -> LVector
+
+Returns labelled vector of id=>boolean where `true` means transitionid is enabled at marking.
+"""
 function enabled(petrinet::AbstractPetriNet, marking)
     net = pnmlnet(petrinet)
-    LVector( (;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t))
-                    for t in transition_idset(net)]...))
+    #!LVector{Bool}(
+    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
 end
 
 """
@@ -207,7 +211,9 @@ M1 = M0 + Cf.
 M0 is the initial marking vector, f is the firing vector, i.e. which transition is to fire
 and C is the incidence matrix.
 """
-function fire!(net, transaction_id)
+function fire!(incidence, enabled, mₒ)
+    m₁ = muladd(incidence', enabled, mₒ)
+    LVector(symbols(m₀), m₁)
 end
 
 ""
