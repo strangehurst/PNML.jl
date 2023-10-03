@@ -14,6 +14,12 @@ using PrettyPrinting
 using Test, Logging
 testlogger = TestLogger()
 
+const core_types = ("pnmlcore","ptnet")
+const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric","stochastic","timednet")
+const ex_types = ("continuous",)
+nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
+
+
 @testset "SIMPLENET" begin
         str1 = """
     <?xml version="1.0"?>
@@ -78,6 +84,9 @@ testlogger = TestLogger()
     end
 
     for accessor in [places, transitions, arcs]
+        map(println, places(snet))
+        map(println, transitions(snet))
+        map(println, arcs(snet))
         for (a,b) in zip(accessor(snet1), accessor(snet))
             @test pid(a) == pid(b)
         end
@@ -258,18 +267,35 @@ end
 using Graphs, MetaGraphsNext
 using PNML: AbstractPetriNet, enabled
 
-@testset "extract a graph" begin
+
+#@show nettype_strings()
+
+@testset "extract a graph $pntd" for pntd in nettype_strings()
+    println()
+    @show pntd
+    if pntd in hl_types
+        marktag = "hlinitialMarking"
+        insctag = "hlinscription"
+    else
+        marktag = "initialMarking"
+        insctag = "inscription"
+    end
+
     str3 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="core">
+        <net id="net0" type="$pntd">
         <name><text>test petri net</text></name>
         <page id="page0">
-            <place id="p1"> <initialMarking> <text>1</text> </initialMarking> </place>
+            <place id="p1"> <$marktag> <text>1</text> <structure>1</structure></$marktag> </place>
             <place id="p2"/>
             <place id="p3"/>
             <place id="p4"/>
             <place id="p0"/>
-            <transition id="t1"/>
+            <transition id="t1">
+                <condition>
+                    <text></text><structure><booleanconstant value="true"/></structure>
+                </condition>
+            </transition>
             <transition id="t2"/>
             <transition id="t3"/>
             <transition id="t4"/>
@@ -287,8 +313,10 @@ using PNML: AbstractPetriNet, enabled
         </net>
     </pnml>
     """
-
     anet = PNML.SimpleNet(str3)
+    #show(anet)
+    println("inscriptions"); map(println, PNML.inscriptions(anet))
+    println("conditions"); map(println, PNML.conditions(anet))
     #@show PNML.name(anet)
     mg = PNML.metagraph(anet)
 
@@ -301,22 +329,38 @@ using PNML: AbstractPetriNet, enabled
     @show MetaGraphsNext.labels(mg) |> collect
     @show MetaGraphsNext.edge_labels(mg) |> collect
 
-    @showtime C  = incidence_matrix(anet) # (3,2)
-    #dump(C);
-    @showtime m₀ = initial_markings(anet) # (1,2)
-    #dump(m₀);
-    @showtime e  = enabled(anet, m₀) # (3,1)
-    #dump(e)
-    #@show typeof(C) typeof(m₀) typeof(e)
+    @showtime C  = incidence_matrix(anet)
+    @showtime m₀ = initial_markings(anet)
+    @showtime e  = enabled(anet, m₀)
     @showtime muladd(C', [1,0,0,0], m₀)
-    @show m₁ =  muladd(C', [1,0,0,0], m₀)
-    @show m₂ =  muladd(C', [0,1,0,0], m₁)
-    @show m₃ =  muladd(C', [0,0,1,0], m₂)
+    @show C m₀ e
+
+    @test values(enabled(anet, m₀)) == [true,false,false,false]
+    @test enabled(anet, m₀) == [true,false,false,false]
+    @test enabled(anet, m₀) == Bool[1,0,0,0]
+
+    @show m₁ =  muladd(C', [1,0,0,0], m₀) typeof(m₁)
+    #! no longer a LVector
+    #@test values(enabled(anet, m₁)) == [false,true,false,false]
+
+    @show m₂ =  muladd(C', [0,1,0,0], m₁) typeof(m₂)
+    #@test enabled(anet, m₂) == [false,false,true,false]
+
+    @show m₃ =  muladd(C', [0,0,1,0], m₂) typeof(m₃)
+    #@test enabled(anet, m₃) == [false,false,false,true]
+
     @show m₄ =  muladd(C', [0,0,0,1], m₃)
+    #@test enabled(anet, m₄) == [true,false,false,false]
+
     @show m₅ =  muladd(C', [1,0,0,0], m₄)
+    #@test enabled(anet, m₅) == [false,true,false,false]
     @show m₆ =  muladd(C', [0,1,0,0], m₅)
+    #@test enabled(anet, m₆) == [false,false,true,false]
     @show m₇ =  muladd(C', [0,0,1,0], m₆)
+    #@test enabled(anet, m₇) == [false,false,false,true]
     @show m₈ =  muladd(C', [0,0,0,1], m₇)
+    #@test enabled(anet, m₈) == [true,false,false,false]
     @show m₉ =  muladd(C', [1,0,0,0], m₈)
+    #@test enabled(anet, m₉) == [false,false,false,true]
 
 end

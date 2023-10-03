@@ -87,15 +87,42 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     #@test_throws ErrorException parse_transition(node, pntd, registry())
     @test parse_transition(node, pntd, registry()) !== nothing
+
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
     @test parse_transition(node, pntd, registry()) isa Transition
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     @test_throws ErrorException parse_transition(node, pntd, registry())
-    #t = parse_transition(node, pntd, registry())
-    #@test t isa Transition
-    #@test_call condition(t)
-    #@test condition(t) === true
+
+    node = xml"""<transition id ="t4">
+        <condition>
+        <text>test true</text>
+        <structure>
+        true
+        </structure>
+        </condition>
+    </transition>"""
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
+    @test_call condition(t)
+    @test condition(t) === true
+    @show t
+
+    node = xml"""<transition id ="t4">
+        <condition>
+        <text>test true</text>
+        <structure>
+            <booleanconstant value="true"/>
+        </structure>
+        </condition>
+    </transition>"""
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
+    @test_call condition(t)
+    @test condition(t) === true
+    @show t
+
+
 end
 
 @testset "arc $pntd"  for pntd in all_nettypes()

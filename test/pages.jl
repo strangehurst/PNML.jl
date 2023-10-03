@@ -248,9 +248,17 @@ end
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
 
-noisy && println("---------------")
-noisy && @show (collect ∘ values ∘ page_idset)(net)
-noisy && println("---------------")
+map(println, arcs(net))
+map(println, places(net))
+map(println, transitions(net))
+map(println, refplaces(net))
+map(println, reftransitions(net))
+
+Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    println("---------------")
+    @show (collect ∘ values ∘ page_idset)(net)
+    println("---------------")
+end
 
 @testset "flatten" begin
         flatten_pages!(net)
