@@ -276,10 +276,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-There will be no XML node 'term'.
-Instead it is the interpertation of the child of some 'structure' or `def` elements.
-The PNML specification describes Terms and Sorts as abstract types for the 'structure'
-element of some [`HLAnnotation`](@ref).
+There will be no XML node 'term'. Instead it is the interpertation of the child of some 'structure' or `def` elements.
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     tag, value = unclaimed_label(node, pntd, reg)

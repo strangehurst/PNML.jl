@@ -36,16 +36,16 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
-
-    # function Transition(pntd, i, c, n, com)
-    #     condition = @something(c, default_condition(pntd))
-    #     new{typeof(pntd), typeof(condition)}(pntd, i, condition, n, com)
-    # end
 end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
+"""
+Return value of condition.
+"""
 condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
+#!condition(transition::Transition) = _evaluate(value(transition.condition))::condition_value_type(nettype(transition))
+
 default_condition(transition::Transition) = default_condition(transition.pntd)
 
 #-------------------
@@ -83,14 +83,14 @@ default_inscription(arc::Arc) = default_inscription(arc.pntd)
 """
     source(arc) -> Symbol
 
-Return symbol of source of `arc`.
+Return identity symbol of source of `arc`.
 """
 source(arc::Arc)::Symbol = arc.source
 
 """
     target(arc) -> Symbol
 
-Return symbol of target of `arc`.
+Return identity symbol of target of `arc`.
 """
 target(arc::Arc)::Symbol = arc.target
 

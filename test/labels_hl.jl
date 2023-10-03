@@ -39,7 +39,8 @@ all_nettypes, ishighlevel
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
     axn = elements(markterm)
-
+    #TODO HL implementation not complete:
+    #TODO  evaluate the HL expression, check place sorttype
     # Decend each element of the term.
     sub1 = axn[1]
     @test tag(sub1) === :subterm
@@ -109,6 +110,8 @@ end
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
+
+    #TODO HL implementation not complete:
 
     sub1 = axn[1]
     @test tag(sub1) === :subterm
