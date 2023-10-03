@@ -195,7 +195,7 @@ end
 #-------------------
 function Base.show(io::IO, trans::Transition)
     print(io, typeof(trans),
-          " id ", trans.id, ", name '", name(trans), "'", ", condition ", condition(trans))
+          " id ", pid(trans), ", name '", name(trans), "'", ", condition ", condition(trans))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", transvector::Vector{Transition})
