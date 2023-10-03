@@ -651,9 +651,17 @@ $(TYPEDSIGNATURES)
 """
 function parse_marking_term(marknode, pntd, idregistry)
     check_nodename(marknode, "structure")
-    EzXML.haselement(marknode) || error("missing marking term element in <structure>")
-    term = EzXML.firstelement(marknode)
-    parse_term(term, pntd, idregistry)
+    if EzXML.haselement(marknode)
+        term = EzXML.firstelement(marknode)
+        return parse_term(term, pntd, idregistry)
+    else
+        content_string = strip(EzXML.nodecontent(marknode))
+        if !isempty(content_string)
+            @warn("marking term <structure> content value: $content_string")
+            return Term(:value, number_value(marking_value_type(pntd), content_string))
+        end
+    end
+    error("missing marking term element in <structure>")
 end
 
 """
@@ -692,7 +700,6 @@ function parse_inscription_term(inode, pntd, idregistry)::Term
     check_nodename(inode, "structure")
     if EzXML.haselement(inode)
         term = EzXML.firstelement(inode)
-
         return parse_term(term, pntd, idregistry)
     else
         content_string = strip(EzXML.nodecontent(inode))
@@ -748,14 +755,8 @@ $(TYPEDSIGNATURES)
 """
 function parse_condition_term(cnode, pntd::PnmlType, idregistry)
     check_nodename(cnode, "structure")
-    #EzXML.haselement(cnode) || error("missing condition term element in <structure>")
-    #term = EzXML.firstelement(cnode)
-    #!parse_term(term, pntd, idregistry)
-
-    check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
         term = EzXML.firstelement(cnode)
-
         return parse_term(term, pntd, idregistry)
     else
         content_string = strip(EzXML.nodecontent(cnode))
