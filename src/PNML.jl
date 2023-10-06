@@ -10,7 +10,17 @@ $(DocStringExtensions.EXPORTS)
 module PNML
 
 # CONFIG structure copies from Tim Holy's Cthulhu.jl.
-"TODO"
+"""
+Configuration with default values that can be overidden by a LocalPreferences.toml.
+# Options
+  - `indent_width::Int`: Indention of nested lines.
+  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
+  - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
+  - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning.
+  - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label.
+  - `verbose::Bool`: Print information as runs.
+  - `lock_registry::Bool`: Lock registry with a `ReentrantLock`.
+"""
 Base.@kwdef mutable struct PnmlConfig
     indent_width::Int = 4
     warn_on_namespace::Bool = true
@@ -21,19 +31,7 @@ Base.@kwdef mutable struct PnmlConfig
     lock_registry::Bool = true
 end
 
-"""
-    PnmlConfig
-
-Configuration options
-# Options
-  - `indent_width::Int`: Indention of nested lines. Defaults to `$(PnmlConfig().indent_width)`.
-  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace. Initial state defaults to `true`.
-  - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements. Initial state defaults to `true`.
-  - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning. Initial state defaults to `false`.
-  - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label. Initial state defaults to `false`.
-  - `verbose::Bool`: Print information as runs.  Initial state of "verbose" toggle defaults to `false`.
-  - `lock_registry::Bool`: Default is `true` to use a lock, deefault `Re`.
-"""
+"See [`PnmlConfig`](@ref) for default values."
 const CONFIG = PnmlConfig()
 
 using Preferences
