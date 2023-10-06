@@ -98,11 +98,6 @@ function append_page!(l::Page, r::Page;
         union!(s(l), s(r)) #TODO type assert
     end
 
-    # # Optional fields from common to append.
-    # for key in comk
-    #     _update_maybe!(getproperty(l.com, key), getproperty(r.com, key))
-    # end
-
     delete!(page_idset(l), pid(r))
     @assert pid(r) ∉ page_idset(l)
     CONFIG.verbose && println("after append_page! netsets(r) = ", netsets(r))
