@@ -76,11 +76,9 @@ Return `true` if `s` is registered in `reg`.
 """
 isregistered(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
 function isregistered(idregistry::PnmlIDRegistry{L}, id::Symbol)::Bool where {L <: Base.AbstractLock}
-    lock(idregistry.lk) do
-        id ∈ idregistry.ids
-    end
+    @lock idregistry.lk id ∈ idregistry.ids
 end
-function isregistered(idregistry::PnmlIDRegistry, id::Symbol)::Bool
+function isregistered(idregistry::PnmlIDRegistry{Nothing}, id::Symbol)::Bool
     id ∈ idregistry.ids
 end
 
@@ -91,11 +89,9 @@ Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
 """
 function reset!(idregistry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
-    lock(idregistry.lk) do
-        empty!(idregistry.ids)
+    @lock idregistry.lk empty!(idregistry.ids)
     end
-end
-function reset!(idregistry::PnmlIDRegistry)
+function reset!(idregistry::PnmlIDRegistry{Nothing})
     empty!(idregistry.ids)
 end
 
@@ -105,11 +101,9 @@ $(TYPEDSIGNATURES)
 Is the set of id symbols empty?
 """
 function Base.isempty(idregistry::PnmlIDRegistry{L})::Bool where {L <: Base.AbstractLock}
-    lock(idregistry.lk) do
-        isempty(idregistry.ids)
-    end
+    @lock idregistry.lk isempty(idregistry.ids)
 end
-function Base.isempty(idregistry::PnmlIDRegistry)::Bool
+function Base.isempty(idregistry::PnmlIDRegistry{Nothing})::Bool
     isempty(idregistry.ids)
 end
 
