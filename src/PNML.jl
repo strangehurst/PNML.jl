@@ -77,30 +77,24 @@ include("Core/utils.jl")
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 
-include("Core/terms.jl")
-include("Core/sorts.jl")
-include("Core/hldeclarations.jl")
-
-include("Core/labels.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
+include("Core/labels.jl")
 include("Core/name.jl")
+
+include("Core/terms.jl")
+include("Core/sorts.jl")
 
 include("Core/sorttype.jl")
 
-include("Core/hllabels.jl")
 include("Core/rates.jl")
 
 include("Core/inscriptions.jl")
-include("Core/hlinscriptions.jl")
 include("Core/markings.jl")
-include("Core/hlmarkings.jl")
 include("Core/conditions.jl")
-
 include("Core/declarations.jl")
 
 include("Core/defaults.jl")
-include("Core/hldefaults.jl")
 include("Core/structure.jl")
 
 include("Core/nodes.jl")
@@ -112,9 +106,6 @@ include("Core/model.jl")
 
 include("Core/flatten.jl")
 include("Core/show.jl")
-
-# High-Level
-include("Core/hlshow.jl")
 
 # PARSE
 include("Parse/parseutils.jl")
@@ -153,7 +144,24 @@ using PrecompileTools
 PrecompileTools.@setup_workload begin
     #! data = ...
     PrecompileTools.@compile_workload begin
-        println("# call_some_code(data, ...) for @compile_workload")
+        metagraph(SimpleNet("""<?xml version="1.0"?>
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+    <name> <text>P/T Net with one place</text> </name>
+    <page id="page1">
+      <place id="place1">
+	    <initialMarking> <text>100</text> </initialMarking>
+      </place>
+      <transition id="transition1">
+        <name> <text>Some transition </text> </name>
+      </transition>
+      <arc source="transition1" target="place1" id="arc1">
+        <inscription> <text>12 </text> </inscription>
+      </arc>
+    </page>
+  </net>
+</pnml>"""))
+
     end
 end
 
