@@ -37,14 +37,19 @@ using Printf
         @test PNML.type(st) == sort
         st2 = @inferred SortType(sort())
         @test PNML.type(st2) == sort
+    end
+end
 
+@testset "equal sorts" begin
+    a = PNML.BoolSort()
+    b = PNML.DotSort()
+    @show a b
+    @test !PNML.equals(a, b)
+    @test PNML.equals(a, a)
+
+    for sort1 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
         for sort2 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-            #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            #    println("### TEST equals $sort $sort2");
-            #end
-            # dump(sort); dump(sort2); dump(sort()); dump(sort2())
-            # TODO @test_broken PNML.equals(sort(), sort2())
+            @test PNML.equals(sort1(), sort2()) isa Bool # mix of true and false
         end
     end
-    println("#### TODO test sort equality")
 end

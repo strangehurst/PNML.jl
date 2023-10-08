@@ -52,10 +52,18 @@ Base.eltype(::Type{<:RealSort}) = Float64
 
 """
 $(TYPEDSIGNATURES)
-Are the sorts `eltype` the same?
+Are the sorts `eltype` the same? First the must have the same type. Then any contents of the sorts are compared.
 """
-equals(a::AbstractSort, b::AbstractSort) = eltype(a) == eltype(b)
+equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b)
+equals(a::AbstractSort, b::AbstractSort) = false
 
+# Unless they have content, for example an enumeration, just the types are sufficent.
+equalSorts(a::AbstractSort, b::AbstractSort) = true
+
+#= From pnmlframework
+Returns true if sorts are semantically the same sort, even in two different objects.
+Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
+=#
 """
 $(TYPEDEF)
 
@@ -65,21 +73,24 @@ struct MultisetSort <: AbstractSort
     ae::AbstractSort
 end
 MultisetSort() = MultisetSort(DotSort())
+equalSorts(a::MultisetSort, b::MultisetSort) = a.ae == b.ae
 
 """
 $(TYPEDEF)
 
-Wrap a [`AnyElement`](@ref). Use until specialized/cooked.
-Should contain an ordered collection of sorts.
+An ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
     ae::Vector{AbstractSort}
 end
 ProductSort() = ProductSort(IntegerSort[])
+equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
+
 """
 $(TYPEDEF)
 
 Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
+
 [`NamedSort`](@ref) is used to construct a sort out of builtin types.
 Used in a `Place`s sort type property.
 """
@@ -87,3 +98,4 @@ struct UserSort <: AbstractSort
     declaration::Symbol
 end
 UserSort() = UserSort(:integer)
+equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
