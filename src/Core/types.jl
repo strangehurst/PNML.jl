@@ -1,6 +1,8 @@
 # Core types and methods are documented in interfaces.jl.
 
-"Alias for union of type `T` or `Nothing`."
+"""
+Alias for Union{`T`, `Nothing`}.
+"""
 const Maybe{T} = Union{T, Nothing}
 
 #--------------------------------------------------------------------------------------

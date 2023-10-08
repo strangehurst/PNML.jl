@@ -73,8 +73,6 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @test_call SimpleNet(net0)
     @test_call broken=jet_broke SimpleNet(model)
 
-    #! Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-
     snet  = @inferred SimpleNet SimpleNet(net0)
     snet1 = @inferred SimpleNet SimpleNet(model)
 
@@ -83,15 +81,17 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         @test accessor(snet1) == accessor(snet)
     end
 
-    for accessor in [places, transitions, arcs]
-        map(println, places(snet))
-        map(println, transitions(snet))
-        map(println, arcs(snet))
-        for (a,b) in zip(accessor(snet1), accessor(snet))
-            @test pid(a) == pid(b)
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        println("print simple petri net")
+        for accessor in [places, transitions, arcs]
+            map(println, places(snet))
+            map(println, transitions(snet))
+            map(println, arcs(snet))
+            for (a,b) in zip(accessor(snet1), accessor(snet))
+                @test pid(a) == pid(b)
+            end
         end
     end
-
     @testset "inferred" begin
         #println()
         #@show "start inferred"
@@ -314,20 +314,23 @@ using PNML: AbstractPetriNet, enabled
     </pnml>
     """
     anet = PNML.SimpleNet(str3)
-    #show(anet)
-    println("inscriptions"); map(println, PNML.inscriptions(anet))
-    println("conditions"); map(println, PNML.conditions(anet))
-    #@show PNML.name(anet)
     mg = PNML.metagraph(anet)
 
-    @show typeof(mg) mg
-    @show Graphs.is_directed(mg)
-    @show Graphs.is_connected(mg)
-    @show Graphs.is_bipartite(mg)
-    @show Graphs.ne(mg)
-    @show Graphs.nv(mg)
-    @show MetaGraphsNext.labels(mg) |> collect
-    @show MetaGraphsNext.edge_labels(mg) |> collect
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        #show(anet)
+        println("inscriptions"); map(println, PNML.inscriptions(anet))
+        println("conditions"); map(println, PNML.conditions(anet))
+        #@show PNML.name(anet)
+
+        @show typeof(mg) mg
+        @show Graphs.is_directed(mg)
+        @show Graphs.is_connected(mg)
+        @show Graphs.is_bipartite(mg)
+        @show Graphs.ne(mg)
+        @show Graphs.nv(mg)
+        @show MetaGraphsNext.labels(mg) |> collect
+        @show MetaGraphsNext.edge_labels(mg) |> collect
+    end
 
     @showtime C  = incidence_matrix(anet)
     @showtime m₀ = initial_markings(anet)

@@ -43,7 +43,6 @@ end
 @testset "equal sorts" begin
     a = PNML.BoolSort()
     b = PNML.DotSort()
-    @show a b
     @test !PNML.equals(a, b)
     @test PNML.equals(a, a)
 

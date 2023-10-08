@@ -41,15 +41,8 @@ end
 
 """
 $(TYPEDEF)
-Part of the high-level pnml many-sorted algebra.
-"""
-abstract type AbstractOperator <: AbstractTerm end
-
-"""
-$(TYPEDEF)
-Declarations are the core of high-level Petri Net.
-They define objects/names that are used for conditions, inscriptions, markings.
-They are attached to PNML nets and pages.
+Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
+The definitions are attached to PNML nets and/or pages.
 """
 abstract type AbstractDeclaration end #<: AbstractLabel end
 

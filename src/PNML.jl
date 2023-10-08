@@ -84,9 +84,7 @@ include("Core/name.jl")
 
 include("Core/terms.jl")
 include("Core/sorts.jl")
-
 include("Core/sorttype.jl")
-
 include("Core/rates.jl")
 
 include("Core/inscriptions.jl")
@@ -142,7 +140,6 @@ export @xml_str,
 using PrecompileTools
 
 PrecompileTools.@setup_workload begin
-    #! data = ...
     PrecompileTools.@compile_workload begin
         metagraph(SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -153,10 +150,10 @@ PrecompileTools.@setup_workload begin
 	    <initialMarking> <text>100</text> </initialMarking>
       </place>
       <transition id="transition1">
-        <name> <text>Some transition </text> </name>
+        <name><text>Some transition</text></name>
       </transition>
       <arc source="transition1" target="place1" id="arc1">
-        <inscription> <text>12 </text> </inscription>
+        <inscription><text>12</text></inscription>
       </arc>
     </page>
   </net>

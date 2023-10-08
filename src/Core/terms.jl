@@ -52,6 +52,12 @@ _evaluate(x::AbstractTerm) = x() # functor
 
 """
 $(TYPEDEF)
+Part of the high-level pnml many-sorted algebra.
+"""
+abstract type AbstractOperator <: AbstractTerm end
+
+"""
+$(TYPEDEF)
 $(TYPEDFIELDS)
 
 Note that Term is an abstract element in the pnml specification with no XML tag.
@@ -115,6 +121,8 @@ value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! emp
         else
             println("(t::Term) needs to handle term ast!");
             map(println, elements(t))
+            # Until then, return a random value in the   domain.
+            #
             #! v = _evaluate(default)
             return nothing
         end

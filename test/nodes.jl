@@ -106,7 +106,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test t isa Transition
     @test_call condition(t)
     @test condition(t) === true
-    @show t
 
     node = xml"""<transition id ="t4">
         <condition>
@@ -120,9 +119,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test t isa Transition
     @test_call condition(t)
     @test condition(t) === true
-    @show t
-
-
 end
 
 @testset "arc $pntd"  for pntd in all_nettypes()

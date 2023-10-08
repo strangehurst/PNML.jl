@@ -248,13 +248,13 @@ end
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
 
-map(println, arcs(net))
-map(println, places(net))
-map(println, transitions(net))
-map(println, refplaces(net))
-map(println, reftransitions(net))
-
 Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    println("print net")
+    map(println, arcs(net))
+    map(println, places(net))
+    map(println, transitions(net))
+    map(println, refplaces(net))
+    map(println, reftransitions(net))
     println("---------------")
     @show (collect ∘ values ∘ page_idset)(net)
     println("---------------")
