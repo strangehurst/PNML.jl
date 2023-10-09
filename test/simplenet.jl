@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET, LabelledArrays, AbstractTrees
-using PNML: tag, pid, xmlnode, parse_str,
+using PNML: tag, pid, parse_str,
     Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
     nets, pages, place, places, transition, transitions, arc, arcs,
     has_place, has_transition, has_arc,

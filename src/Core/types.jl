@@ -24,7 +24,6 @@ end
 pid(o::AbstractPnmlObject)        = o.id
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
-xmlnode(o::AbstractPnmlObject)    = has_xml(o) ? o.xml : nothing
 
 has_labels(o::AbstractPnmlObject) = true
 labels(o::AbstractPnmlObject)     = o.labels
@@ -72,7 +71,6 @@ $(TYPEDEF)
 Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
 """
 abstract type AbstractLabel end
-xmlnode(::T) where {T<:AbstractLabel} = error("missing implementation of `xmlnode` for $T")
 
 #--------------------------------------------
 """
@@ -111,15 +109,12 @@ Hold well-formed XML in a Vector{[`AnyXmlNode`](@ref)}. See also [`ToolInfo`](@r
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
     elements::Vector{AnyXmlNode}
-    xml::XMLNode
 end
 
-AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}, xml::XMLNode) = AnyElement(p.first, p.second, xml)
+AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}) = AnyElement(p.first, p.second)
 
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements
-xmlnode(a::AnyElement) = a.xml
-
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

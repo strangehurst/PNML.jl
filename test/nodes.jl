@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
-    has_xml, has_name, name,
+    has_name, name,
     pid, initial_marking, condition, inscription,
     has_graphics, graphics, has_name, name, has_label,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace,
@@ -24,8 +24,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
 
         @test pid(n) === :place1
         @test typeof(n) <: Place
-        @test_call has_xml(n)
-        @test !has_xml(n)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
@@ -52,8 +50,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
 
         @test pid(n) === :place1
         @test typeof(n) <: Place
-        @test_call has_xml(n)
-        @test !has_xml(n)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
@@ -74,7 +70,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     """
     n = @inferred Transition parse_transition(node, PnmlCoreNet(), registry())
     @test typeof(n) <: Transition
-    @test !has_xml(n)
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
@@ -152,7 +147,6 @@ end
     #println("arc a2 with updated src, tgt:"); dump(a2)
     @testset "a1,a2" for a in [a1, a2]
         @test typeof(a) <: Arc
-        @test !has_xml(a)
         @test pid(a) === :arc1
         @test has_name(a)
         @test name(a) == "Some arc"
@@ -180,7 +174,6 @@ end
         @show n
     end
     @test n isa RefTransition
-    @test !has_xml(n)
     @test pid(n) === :rt1
     @test refid(n) === :t1
 end
@@ -218,7 +211,6 @@ end
             @show n
         end
         @test typeof(n) <: RefPlace
-        @test !has_xml(n)
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)
     end

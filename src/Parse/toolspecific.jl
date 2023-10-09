@@ -23,7 +23,7 @@ function parse_toolspecific(node, pntd, reg)
         if tag == "tokengraphics"
             tg = parse_tokengraphics(child, pntd, reg)
             #println("tokengraphics"); dump(tg)
-            return ToolInfo(tool, version, tg, node)
+            return ToolInfo(tool, version, tg)
         end
     end
     #TODO: Register additional tool specific parsers?
@@ -34,5 +34,5 @@ function parse_toolspecific(node, pntd, reg)
         push!(content, anyelement(child, pntd, reg))
     end
     isempty(content) && @warn "<toolspecific> $tool $version missing content"
-    return ToolInfo(tool, version, content, node)
+    return ToolInfo(tool, version, content)
 end

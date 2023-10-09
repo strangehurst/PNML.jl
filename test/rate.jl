@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode
+using PNML: Maybe, tag, pid
 
 println()
 

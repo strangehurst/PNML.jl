@@ -12,7 +12,6 @@ toolname, version tool specifics.
     toolname::String
     version::String
     infos::T
-    xml::XMLNode
 end
 
 "Name of tool to for this tool specific information element."
@@ -23,8 +22,6 @@ version(ti::ToolInfo) = ti.version
 infos(ti::ToolInfo) = ti.infos
 
 Base.eltype(::ToolInfo{T}) where {T} = T
-
-xmlnode(ti::ToolInfo) = ti.xml
 
 ###############################################################################
 

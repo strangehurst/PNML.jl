@@ -43,7 +43,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         end
     end
 
-    Declaration(something(decls, AbstractDeclaration[]), graphics, tools, node)
+    Declaration(something(decls, AbstractDeclaration[]), graphics, tools)
 end
 
 "Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
@@ -298,7 +298,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "arbitraryoperator")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -306,7 +306,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitrarysort(node, pntd, reg)
     nn = check_nodename(node, "arbitrarysort")
-    PnmlLabel(unclaimed_label(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry), node)
+    PnmlLabel(unclaimed_label(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
 end
 
 """
@@ -314,7 +314,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "bool")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -324,7 +324,7 @@ function parse_booleanconstant(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistr
     nn = check_nodename(node, "booleanconstant")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
 
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -332,7 +332,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_equality(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "equality")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -340,7 +340,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_imply(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "imply")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -348,7 +348,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_inequality(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "inequality")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -356,7 +356,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "mulitsetsort")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -364,7 +364,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_not(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "not")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -372,7 +372,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_or(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "or")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -380,7 +380,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "productsort")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -388,7 +388,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_tuple(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "tuple")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """
@@ -396,7 +396,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_unparsed(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     check_nodename(node, "unparsed")
-    PnmlLabel(unclaimed_label(node, pntd, reg), node)
+    PnmlLabel(unclaimed_label(node, pntd, reg))
 end
 
 """

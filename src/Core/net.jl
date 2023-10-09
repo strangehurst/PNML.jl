@@ -14,7 +14,6 @@ One Petri Net of a PNML model.
     name::Maybe{Name}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
-    xml::XMLNode
 end
 
 nettype(::PnmlNet{T}) where {T <: PnmlType} = T
@@ -99,8 +98,6 @@ tools(net::PnmlNet)     = net.tools
 
 has_labels(net::PnmlNet) = true
 labels(net::PnmlNet)     = net.labels
-
-xmlnode(net::PnmlNet)    = net.xml
 
 has_name(net::PnmlNet) = !isnothing(net.name)
 name(net::PnmlNet)     = has_name(net) ? net.name.text : ""

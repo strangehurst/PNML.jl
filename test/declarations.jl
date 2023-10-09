@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML:
-    Maybe, tag, xmlnode, labels, pid, parse_sort, parse_declaration,
+    Maybe, tag, labels, pid, parse_sort, parse_declaration,
     registry, AnyElement, AnyXmlNode, name, value, isregistered
 
 @testset "Declaration() $pntd" for pntd in all_nettypes()
@@ -57,7 +57,6 @@ end
         """, pntd, registry())
 
     @test typeof(decl) <: PNML.Declaration
-    @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
@@ -109,7 +108,6 @@ end
         @show decl
     end
     @test typeof(decl) <: PNML.Declaration
-    @test xmlnode(decl) isa Maybe{EzXML.Node}
     @test length(PNML.declarations(decl)) == 3
     @test_call PNML.declarations(decl)
 

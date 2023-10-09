@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, OrderedCollections
 using PNML: Maybe,
-    tag, pid, xmlnode, firstpage,
+    tag, pid, firstpage,
     parse_file, parse_name, parse_initialMarking, parse_inscription,
     parse_declaration, parse_transition,  parse_toolspecific,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
@@ -70,7 +70,6 @@ const pnmldoc = PNML.xmlroot(str) # shared by testsets
                 @test typeof(i) <: PNML.Marking
                 @test typeof(value(i)) <: Union{Int,Float64}
                 @test value(i) >= 0
-                #@test xmlnode(i) isa Maybe{EzXML.Node}
             end
 
             @test !isempty(allchildren("transition", page))
@@ -89,7 +88,6 @@ const pnmldoc = PNML.xmlroot(str) # shared by testsets
                     @test typeof(i) <: PNML.Inscription
                     @test typeof(value(i)) <: Union{Int,Float64}
                     @test value(i) > 0
-                    #@test xmlnode(i) isa Maybe{EzXML.Node}
                 end
             end
         end

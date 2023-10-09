@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlnode
+using PNML: tag, pid
 
 const str = """
 <?xml version="1.0"?>

@@ -19,13 +19,11 @@ struct Declaration <: Annotation
 
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Vector{ToolInfo}
-    xml::Maybe{XMLNode}
 end
 
-Declaration() = Declaration(Any[], nothing, ToolInfo[], nothing)
+Declaration() = Declaration(Any[], nothing, ToolInfo[])
 
 declarations(d::Declaration) = d.declarations
-xmlnode(d::Declaration) = d.xml
 
 #TODO Document/implement/test collection interface of Declaration.
 Base.length(d::Declaration) = (length ∘ declarations)(d)

@@ -30,24 +30,6 @@ Return name String. Default to empty string.
 """
 function name end
 
-#--------------------------------
-# XML
-#--------------------------------
-"""
-    has_xml(x) -> Bool
-
-Return `true` if `x` has XML attached. Defaults to `false`.
-"""
-function has_xml end
-has_xml(x::Any) = hasproperty(x, :xml)
-
-"""
-    xmlnode(x) -> XMLNode
-
-Return attached xml node.
-"""
-function xmlnode end
-
 #-------------------------------------------------------
 # LABELS
 #-------------------------------------------------------

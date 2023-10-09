@@ -5,7 +5,7 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    AnyElement(unclaimed_label(node, pntd, reg), node)
+    AnyElement(unclaimed_label(node, pntd, reg))
 end
 
 """

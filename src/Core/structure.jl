@@ -20,14 +20,12 @@ Here we provide a fallback for *unclaimed labels*.
 struct Structure
     tag::Symbol
     el::Vector{AnyXmlNode}
-    xml::XMLNode
 end
 
-Structure(p::Pair{Symbol, Vector{AnyXmlNode}}, node::XMLNode) = Structure(p.first, p.second, node)
+Structure(p::Pair{Symbol, Vector{AnyXmlNode}}) = Structure(p.first, p.second)
 
 tag(s::Structure) = s.tag
 elements(s::Structure) = s.el
-xmlnode(s::Structure) = s.xml
 
 """
 $(TYPEDSIGNATURES)
@@ -39,5 +37,5 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     #@warn "parse_structure is not a well defined thing, $pntd."
-    Structure(unclaimed_label(node, pntd, idregistry), node) #TODO anyelement
+    Structure(unclaimed_label(node, pntd, idregistry)) #TODO anyelement
 end

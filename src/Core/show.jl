@@ -351,7 +351,6 @@ function Base.show(io::IO, pnml::PnmlModel)
             print(io, "\n")
         end
     end
-    # Omit display of any xml
 end
 
 function Base.show(io::IO, ::MIME"text/plain", pnml::PnmlModel)

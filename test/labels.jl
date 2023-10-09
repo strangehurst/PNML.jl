@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
 #using FunctionWrappers
 using PNML:
-    Maybe, tag, xmlnode, XMLNode, xmlroot, labels,
+    Maybe, tag, XMLNode, xmlroot, labels,
     unclaimed_label, anyelement, PnmlLabel, AnyElement,
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
@@ -139,7 +139,6 @@ end
     for l in lab
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
-        @test xmlnode(l) isa Maybe{XMLNode}
     end
 
     @test_call has_label(lab, :test1)
@@ -188,7 +187,7 @@ function test_unclaimed(pntd, xmlstring::String)
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
     u = unclaimed_label(node, pntd)
-    l = PnmlLabel(u, node)
+    l = PnmlLabel(u)
     a = anyelement(node, pntd, reg2)
     if noisy
         println("u = $(u.first) "); dump(u)
@@ -203,11 +202,11 @@ function test_unclaimed(pntd, xmlstring::String)
     end
 
     @test_opt target_modules=(@__MODULE__,)  unclaimed_label(node, pntd, reg1)
-    @test_opt function_filter=pff PnmlLabel(u, node)
+    @test_opt function_filter=pff PnmlLabel(u)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
 
     @test_call unclaimed_label(node, pntd, reg1)
-    @test_call PnmlLabel(u, node)
+    @test_call PnmlLabel(u)
     @test_call anyelement(node, pntd, reg2)
 
     let nn = Symbol(EzXML. nodename(node))
@@ -287,12 +286,12 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(expected, EzXML.ElementNode("testelement")) # Attach fake xml node
+        expected_label = PnmlLabel(expected)
         #@show lab expected_label
         @test tag(lab) == tag(expected_label)
         @test (length ∘ elements)(lab) == ( length ∘ elements)(expected_label)
         # TODO recursive compare
-        expected_any = AnyElement(expected, EzXML.ElementNode("testelement"))
+        expected_any = AnyElement(expected)
         #@show anye  expected_any
         @test tag(anye) == tag(expected_any)
         @test (length ∘ elements)(anye) == (length ∘ elements)(expected_any)

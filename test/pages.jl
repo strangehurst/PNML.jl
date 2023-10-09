@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, AbstractTrees, PrettyPrinting
 using PNML:
-    Maybe, tag, xmlnode, labels, firstpage, first_net, nettype,
+    Maybe, tag, labels, firstpage, first_net, nettype,
     PnmlNet, Page, nets, pages, pid,
     arc, arcs, place, places, transition, transitions,
     refplace, refplaces, reftransition, reftransitions,

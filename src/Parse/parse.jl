@@ -15,7 +15,7 @@ function parse_node(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         #@show nameof(parsefun) typeof(parsefun) methods(parsefun) # Useful for debug.
         return parsefun(node, pntd, idregistry) # Various types returned here.
     else
-        return PnmlLabel(unclaimed_label(node, pntd, idregistry), node)
+        return PnmlLabel(unclaimed_label(node, pntd, idregistry))
     end
 end
 
@@ -177,7 +177,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     end
     return PnmlNet(; type = pntd, id, pagedict, netdata, page_set = page_idset(netsets),
                     declaration = something(decl, Declaration()),
-                    name, tools, labels, xml = node)
+                    name, tools, labels)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"

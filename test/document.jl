@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlnode, xmlroot, parse_pnml, PnmlModel,
+using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel,
     PnmlNet
 
 @testset "Show" begin

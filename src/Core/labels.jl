@@ -1,7 +1,6 @@
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
-    #prop_name === :xml  && return getfield(o, :xml)::XMLNode
 
     return getfield(o, prop_name)
 end
@@ -60,7 +59,6 @@ struct HLLabel{PNTD} <: HLAnnotation
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
-    xml::XMLNode
     #TODO validate in constructor: must have text or structure (depends on pntd?)
     #TODO make all labels have text &/or structure?
 end
@@ -92,14 +90,12 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
     elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag``.
-    xml::XMLNode
 end
 
-PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}, xml::XMLNode) = PnmlLabel(p.first, p.second, xml)
+PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
-xmlnode(label::PnmlLabel) = label.xml
 
 hastag(l, tagvalue) = tag(l) === tagvalue
 

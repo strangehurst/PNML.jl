@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, xmlnode, XMLNode,
+using PNML: Maybe, tag, pid, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
     has_tools, tools, parse_toolspecific, place, parse_place, TokenGraphics,
     coordinate_value_type
@@ -51,8 +51,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
         #println("tooli"); dump(tooli)
         @test typeof(tooli) <: ToolInfo
-        @test xmlnode(tooli) isa Maybe{EzXML.Node}
-        @test_call xmlnode(tooli)
         @test tooli.toolname == s.tool
         @test name(tooli) == s.tool
         @test tooli.version == s.version
@@ -69,7 +67,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test tooli.infos isa s.elementtype
         @test PNML.infos(tooli) isa s.elementtype
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
+        #!Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
         #@show PNML.infos(tooli)
     end
     @testset "combined" begin

@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using OrderedCollections
 using PNML:
-    tag, pid, xmlnode, parse_net, parse_page!, nets, page_type,
+    tag, pid, parse_net, parse_page!, nets, page_type,
     place_type, refplace_type, transition_type, reftransition_type, arc_type,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name

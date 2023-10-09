@@ -165,20 +165,6 @@ methods(PNML.name) # hide
 methods(PNML.tag) # hide
 ```
 
-### has\_xml - is xml attached
-
-[`PNML.has_xml`](@ref)
-```@example methods
-methods(PNML.has_xml) # hide
-```
-
-### xmlnode - access xml
-
-[`PNML.xmlnode`](@ref)
-```@example methods
-methods(PNML.xmlnode) # hide
-```
-
 ### nettype - return PnmlType identifying PNTD
 
 [`PNML.nettype`](@ref)

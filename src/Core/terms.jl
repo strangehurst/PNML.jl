@@ -28,7 +28,6 @@ True as boolean or term with a value of `true`.
 """
 function default_bool_term end
 default_bool_term(pntd::PnmlType) = Term(:bool, true)
-
 default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 ####################################################################################

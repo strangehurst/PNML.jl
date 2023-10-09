@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
-using PNML: Maybe, tag, pid, xmlnode, value, text, elements, AnyXmlNode,
+using PNML: Maybe, tag, pid, value, text, elements, AnyXmlNode,
 all_nettypes, ishighlevel
 
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
@@ -150,7 +150,6 @@ end
 
     stru = PNML.parse_structure(node, pntd, registry())
     @test stru isa PNML.Structure
-    @test xmlnode(stru) isa Maybe{EzXML.Node}
 
     #println("\n## stru = "); dump(stru)
     @test tag(stru) === :structure
