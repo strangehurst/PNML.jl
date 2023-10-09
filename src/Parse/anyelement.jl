@@ -25,33 +25,6 @@ function unclaimed_label(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}
     return Symbol(EzXML.nodename(node)) => anyel
 end
 
-"""
-$(TYPEDSIGNATURES)
-Find first :text and return content as string.
-"""
-function text_content end
-
-function text_content(vx::Vector{AnyXmlNode})
-    tc_index = findfirst(x -> tag(x) === :text, vx)
-    isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
-    return text_content(vx[tc_index])
-end
-
-function text_content(axn::AnyXmlNode)
-    #println("\ntext_content"); dump(axn)
-    @assert tag(axn) === :text
-    vals = value(axn)::Vector{AnyXmlNode}
-    tc_index = findfirst(x -> tag(x) === :content, vals)
-    isnothing(tc_index) && throw(ArgumentError("missing <content> element"))
-    cnt = value(axn)[tc_index]
-    val = value(cnt)
-    val isa AbstractString ||
-        throw(ArgumentError(lazy"""wrong content type  for '$(typeof(val))',
-                                expected <:AbstractString got:
-                                $(dump(val))"""))
-    return val
-end
-
 # Expected patterns. Note only first is standard-conforming, extensible, prefeered.
 #   <tag><text>1.23</text><tag>
 #   <tag>1.23<tag>
@@ -121,4 +94,33 @@ function _anyelement_content!(vec, node::XMLNode, harvest!::HarvestAny)
         push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
     end
     return nothing
+end
+
+
+
+
+"""
+$(TYPEDSIGNATURES)
+Find first :text in vx and return its :content as string.
+"""
+function text_content end
+
+function text_content(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
+    tc_index = findfirst(x -> tag(x) === :text, vx)
+    isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
+    return text_content(vx[tc_index])
+end
+
+function text_content(axn::AnyXmlNode)
+    #println("\ntext_content"); dump(axn)
+    @assert tag(axn) === :text
+    vals = value(axn)::Vector{AnyXmlNode} #TODO use nonallocating iteratable collection
+    tc_index = findfirst(x -> tag(x) === :content, vals)
+    isnothing(tc_index) && throw(ArgumentError("missing <content> element"))
+    val = value(vals[tc_index])
+    val isa AbstractString ||
+        throw(ArgumentError(lazy"""wrong content type  for '$(typeof(val))',
+                                expected <:AbstractString got:
+                                $(dump(val))"""))
+    return val
 end
