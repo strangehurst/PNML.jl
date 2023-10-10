@@ -130,3 +130,12 @@ end
 #(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end
 #(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
 #(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end
+
+
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+#
+# PNML many-sorted algebra syntax tree term zoo follows.
+#
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------

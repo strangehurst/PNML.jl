@@ -44,7 +44,8 @@ const tagmap = Dict{String,Function}(
     "productsort" => parse_productsort,
     "sort" => parse_sort,
     "structure" => parse_structure,
-    #"term" => parse_term, # TODO is there such a tag?
+    "subterm" => parse_subterm, # Form expressions in the many-sorted algebra syntax tree.
+    #"term" NO SUCH TAG, is a named child of <structure>, fed to parse_term, et al.
     "text" => parse_text,
     "tokengraphics"  => parse_tokengraphics,
     "tokenposition" => parse_tokenposition,
@@ -57,7 +58,7 @@ const tagmap = Dict{String,Function}(
     "variable" => parse_variable,
     "variabledecl" => parse_variabledecl,
 
-    # High-Level Petri Net labels are part of a many-sorted algebra.
+    # High-Level Petri Net tags are part of a many-sorted algebra.
     # ----------------------------
     # "add" => unclaimed_label,
     # "addition" => unclaimed_label,
@@ -148,7 +149,6 @@ const tagmap = Dict{String,Function}(
     # "stringlength" => unclaimed_label,
     # "sublist"  => unclaimed_label,
     # "substring" => unclaimed_label,
-    # "subterm" => unclaimed_label,
     # "subtract" => unclaimed_label,
     # "subtraction" => unclaimed_label,
     # "successor" => unclaimed_label,

@@ -8,8 +8,8 @@ Each are wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_toolspecific(node, pntd, reg)
     nn = check_nodename(node, "toolspecific")
-    EzXML.haskey(node, "tool") || throw(MalformedException(lazy"$nn missing tool attribute"))
-    EzXML.haskey(node, "version") || throw(MalformedException(lazy"$nn missing version attribute"))
+    EzXML.haskey(node, "tool") || throw(MalformedException("$nn missing tool attribute"))
+    EzXML.haskey(node, "version") || throw(MalformedException("$nn missing version attribute"))
 
     tool    = node["tool"]
     version = node["version"]

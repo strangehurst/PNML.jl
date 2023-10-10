@@ -65,6 +65,7 @@ $(TYPEDEF)
 See [`NamedSort`](@ref) and [`ArbitrarySort`] as concrete subtypes.
 """
 abstract type SortDeclaration <: AbstractDeclaration end
+
 """
 $(TYPEDEF)
 """
@@ -80,6 +81,7 @@ struct VariableDeclaration{S}  <: AbstractDeclaration
     sort::S
 end
 VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -104,6 +106,7 @@ struct Partition{S,PE} <: SortDeclaration
     element::PE # 0 or more PartitionElements.
 end
 Partition() = Partition(:partition, "Empty Partition", DotSort(),  [])
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -130,7 +133,7 @@ struct NamedOperator{V,T} <: OperatorDeclaration
     parameter::Vector{V}
     def::T # opearator or variable term (with associated sort)
 end
-NamedOperator() = NamedOperator(:namedoperator, "Empty Named Oerator", [], nothing)
+NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", [], nothing)
 
 """
 $(TYPEDEF)

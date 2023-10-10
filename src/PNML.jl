@@ -111,6 +111,7 @@ include("Parse/anyelement.jl")
 include("Parse/parse.jl")
 include("Parse/graphics.jl")
 include("Parse/declarations.jl")
+include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
 include("Parse/maps.jl")
 
