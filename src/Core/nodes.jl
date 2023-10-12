@@ -44,7 +44,6 @@ nettype(::Transition{T}) where {T <: PnmlType} = T
 Return value of condition.
 """
 condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
-#!condition(transition::Transition) = _evaluate(value(transition.condition))::condition_value_type(nettype(transition))
 
 default_condition(transition::Transition) = default_condition(transition.pntd)
 

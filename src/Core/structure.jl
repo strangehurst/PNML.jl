@@ -15,7 +15,7 @@ There are various defined structure ast variants in pnml:
   - Arc Inscription [variable, operator]
   - Declarations [sort, variable, operator]
 These should all have dedicated parsers and objects as *claimed labels*.
-Here we provide a fallback for *unclaimed labels*.
+Here we provide a fallback for *unclaimed tags*.
 """
 struct Structure
     tag::Symbol
