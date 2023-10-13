@@ -41,7 +41,7 @@ Terms are part of the multi-sorted algebra that is part of a High-Level Petri Ne
 An abstract type in the pnml XML specification, concrete `Term`s are
 found within the <structure> element of a [`HLAnnotation`](@ref) label.
 
-Notably, a [`Term`](@ref) is not a PnmlLabel.
+Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
 
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
 """
@@ -99,6 +99,7 @@ struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     tag::Symbol
     elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
+Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements

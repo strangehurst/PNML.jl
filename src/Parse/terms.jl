@@ -5,8 +5,8 @@ $(TYPEDSIGNATURES)
 There will be no XML node 'term'. Instead it is the interpertation of the child of some 'structure' or `def` elements.
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    tag, value = unclaimed_label(node, pntd, reg)
-    Term(tag, value)
+    #tag, value = unclaimed_label(node, pntd, reg)
+    Term(unclaimed_label(node, pntd, reg))
 end
 
 #! TODO Terms kinds are Variable and Operator
@@ -18,8 +18,8 @@ $(TYPEDSIGNATURES)
 Used to construct the syntax tree of multi-sorted algebra.
 """
 function parse_subterm(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    tag, value = unclaimed_label(node, pntd, reg)
-    Term(tag, value)
+    #tag, value = unclaimed_label(node, pntd, reg)
+    Term(unclaimed_label(node, pntd, reg))
 end
 
 """
