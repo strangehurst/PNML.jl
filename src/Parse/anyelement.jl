@@ -14,7 +14,7 @@ $(TYPEDSIGNATURES)
 Return `tag` => `AnyXmlNode` holding well formed XML tree/forest.
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
-[`Term`](@ref) or other specialized label.
+[`Term`](@ref) or other.
 """
 function unclaimed_label(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
     harvest! = HarvestAny(_harvest_any, pntd) # Create a functor.
@@ -25,11 +25,10 @@ function unclaimed_label(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}
     return Symbol(EzXML.nodename(node)) => anyel
 end
 
-# Expected patterns. Note only first is standard-conforming, extensible, prefeered.
+# Expected patterns. Note only first is standard-conforming, extensible, preferred.
 #   <tag><text>1.23</text><tag>
 #   <tag>1.23<tag>
 # The unclaimed label mechanism adds a :content key for text XML elements.
-# When the text element is elided, there is still a :content.
 
 # Functor
 """
@@ -62,15 +61,17 @@ function _harvest_any(node::XMLNode, harvest!::HarvestAny)
     CONFIG.verbose && println("harvest ", EzXML.nodename(node))
 
     vec = AnyXmlNode[]
-    for a in EzXML.eachattribute(node)
+    for a in EzXML.eachattribute(node) # Leaf
         # Defer further :id attribute parsing/registering by treating as a string here.
         push!(vec, AnyXmlNode(Symbol(a.name), a.content))
     end
 
     if EzXML.haselement(node) # Children exist, extract them.
-        _anyelement_content!(vec, node, harvest!)
+        for n in EzXML.eachelement(node)
+            push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
+        end
     else # No children, is there content?
-        # Note: childern and content are mutually exclusive because
+        # Note: children and content are mutually exclusive because
         # `nodecontent` will include children's content.
         content_string = strip(EzXML.nodecontent(node))
         if !all(isspace, content_string) # Non-blank content after strip are leafs.
@@ -83,20 +84,6 @@ function _harvest_any(node::XMLNode, harvest!::HarvestAny)
 
     return vec
 end
-
-"""
-$(TYPEDSIGNATURES)
-
-Apply `harvest!` to each child node of `node`, appending to `vec`.
-"""
-function _anyelement_content!(vec, node::XMLNode, harvest!::HarvestAny)
-    for n in EzXML.eachelement(node)
-        push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
-    end
-    return nothing
-end
-
-
 
 
 """
