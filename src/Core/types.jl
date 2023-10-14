@@ -108,7 +108,7 @@ Hold well-formed XML in a Vector{[`AnyXmlNode`](@ref)}. See also [`ToolInfo`](@r
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::Vector{AnyXmlNode}
+    elements::Vector{AnyXmlNode} #TODO remove vector container
 end
 
 AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}) = AnyElement(p.first, p.second)

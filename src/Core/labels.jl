@@ -1,3 +1,58 @@
+#=
+A label may be associated with a node, an arc, or the net itself.
+
+Things that are not labels (will be found as part of label's content) include Terms, Sorts.
+
+Declarations are global labels of a High-level Petri Net attached to net or page and
+used for defining variables, and user-defined sorts and operators.
+
+Meta-models define the labels of the respective Petri net type (pntd).
+
+Note: concepts of sorts, operators, declarations, and terms,
+and how terms are constructed from variables and operators.
+Implies this is 4 or 6 distinct things.
+
+sort of a term is the sort of the variable or the output sort of the operator.
+
+built-in sorts and operators
+- Declarations
+- Multisets
+- Booleans
+- Finite Enumerations, Cyclic Enumerations, and Finite Integer Ranges
+- Partitions allow the definition of finite enumerations that are partitioned into sub-ranges
+- Integer
+- Strings
+- Lists
+
+user-defined variables are defined in a variable declaration
+
+sort of Term is output sort of Operator or sort of Variable
+
+operator can be: built-in constant, built-in operator, multiset operator, or tuple operator.
+
+arbitrary sorts and operators
+... introduce a new symbol without giving a definition
+... used for constructing terms
+
+Unparsed term ... text, which will not be parsed and interpreted by the tools
+
+P/T Nets defined as restricted HLPNGs
+- sorts Bool and Dot only.
+- type of each place must refer to sort Dot
+- no user declarations, nor variables, nor sorts, nor operators.
+- transition conditions need to be the constant true, if this label is present.
+- arc annotations and the initial markings are ground terms of the mulitset sort over Dot.
+
+Symmetric Nets
+- sort of a place must not be a multiset sort
+-  for every sort, there is the operator all, which is a multiset that contains exactly one element of its basis sort
+
+High-Level Petri Net Graphs extends Symmetric Nets
+- declarations for sorts and functions
+- additional built-in sorts for Integer, String, and List.
+
+=#
+
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
