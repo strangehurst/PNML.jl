@@ -16,7 +16,7 @@ end
 ## Unclaimed Labels
 
 XML tags that are not 'claimed' are recursively parsed into a [`AnyXmlNode`](@ref)
-tree whose leaf nodes are strings by [`unclaimed_label`](@ref).
+tree whose leaf nodes are strings by [`unparsed_tag`](@ref).
 
 See [`AnyElement`](@ref), [`anyelement`](@ref), [`PnmlLabel`](@ref), [`Term`](@ref).
 

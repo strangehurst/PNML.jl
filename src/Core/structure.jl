@@ -37,5 +37,5 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     #@warn "parse_structure is not a well defined thing, $pntd."
-    Structure(unclaimed_label(node, pntd, idregistry)) #TODO anyelement
+    Structure(unparsed_tag(node, pntd, idregistry)) #TODO anyelement
 end

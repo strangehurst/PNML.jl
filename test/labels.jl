@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTr
 #using FunctionWrappers
 using PNML:
     Maybe, tag, XMLNode, xmlroot, labels,
-    unclaimed_label, anyelement, PnmlLabel, AnyElement,
+    unparsed_tag, anyelement, PnmlLabel, AnyElement,
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
     default_one_term, default_zero_term,
@@ -186,7 +186,7 @@ function test_unclaimed(pntd, xmlstring::String)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    u = unclaimed_label(node, pntd)
+    u = unparsed_tag(node, pntd)
     l = PnmlLabel(u)
     a = anyelement(node, pntd, reg2)
     if noisy
@@ -201,11 +201,11 @@ function test_unclaimed(pntd, xmlstring::String)
         @show u l a [a]
     end
 
-    @test_opt target_modules=(@__MODULE__,)  unclaimed_label(node, pntd, reg1)
+    @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node, pntd, reg1)
     @test_opt function_filter=pff PnmlLabel(u)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
 
-    @test_call unclaimed_label(node, pntd, reg1)
+    @test_call unparsed_tag(node, pntd, reg1)
     @test_call PnmlLabel(u)
     @test_call anyelement(node, pntd, reg2)
 

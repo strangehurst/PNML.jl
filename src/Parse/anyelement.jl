@@ -5,7 +5,7 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    AnyElement(unclaimed_label(node, pntd, reg))
+    AnyElement(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -16,7 +16,7 @@ Return `tag` => `AnyXmlNode` holding well formed XML tree/forest.
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
 [`Term`](@ref) or other.
 """
-function unclaimed_label(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
+function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
     harvest! = HarvestAny(_harvest_any, pntd) # Create a functor.
     #println("harvest!: "); dump(harvest!); println()
     anyel = harvest!(node) # Apply functor.

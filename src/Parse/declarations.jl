@@ -5,11 +5,11 @@ The common usage is that 'label' usually be read as annotation-label.
 Attribute-labels do not have associated graphics elements. Since <graphics> are
 optional for annotation-labels they share the same implementation.
 
-Unknown tags get parsed by `unclaimed_label`.  Annotation-labels usually have
+Unknown tags get parsed by `unparsed_tag`.  Annotation-labels usually have
 known tags and dedicated parsers. `parse_pnml_object_common` puts unregistered children
 into the labels collection of a [`AbstractPnmlObject`].  It can include annotations and attributes.
 
-Because any tag not present in the tagmap are processed by `unclaimed_label`
+Because any tag not present in the tagmap are processed by `unparsed_tag`
 it is not necessary to define a parse method unless valididation, documentation,
 or additional processing is desired. Some are defined here anyway.
 =#
@@ -198,7 +198,7 @@ function parse_sorttype_term(typenode, pntd, idregistry)
     term = EzXML.firstelement(typenode)
 
     # Expect a sort: usersort usually. No multiset sort here.
-    ucl = unclaimed_label(term, pntd, idregistry)
+    ucl = unparsed_tag(term, pntd, idregistry)
     #println("sorttype declaration: "); dump(ucl)
 
     #TODO sort_ids and sort_tags should be "global constants"
@@ -281,7 +281,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "arbitraryoperator")
-    PnmlLabel(unclaimed_label(node, pntd, reg))
+    PnmlLabel(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -289,7 +289,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitrarysort(node, pntd, reg)
     nn = check_nodename(node, "arbitrarysort")
-    PnmlLabel(unclaimed_label(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
+    PnmlLabel(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
 end
 
 """
@@ -297,7 +297,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "bool")
-    PnmlLabel(unclaimed_label(node, pntd, reg))
+    PnmlLabel(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -305,7 +305,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "mulitsetsort")
-    PnmlLabel(unclaimed_label(node, pntd, reg))
+    PnmlLabel(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -313,7 +313,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "productsort")
-    PnmlLabel(unclaimed_label(node, pntd, reg))
+    PnmlLabel(unparsed_tag(node, pntd, reg))
 end
 
 """
