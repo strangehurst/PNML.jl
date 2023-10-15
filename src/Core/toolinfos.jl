@@ -50,20 +50,22 @@ get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) =
     get_toolinfo(ti, Regex(name), Regex(version))
 get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
     get_toolinfo(ti, Regex(name),  versionrex)
+
 get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
-    get_toolinfo([ti], namerex, versionrex)
+    _match(ti, namerex, versionrex) && ti #!get_toolinfo([ti], namerex, versionrex)
 
-get_toolinfo(v::Vector{<:ToolInfo}, name::AbstractString, version::AbstractString) =
-    get_toolinfo(v, Regex(name), Regex(version))
-get_toolinfo(v::Vector{<:ToolInfo}, name::AbstractString, versionrex::Regex) =
-    get_toolinfo(v, Regex(name), versionrex)
 
-function get_toolinfo(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    first(get_toolinfos(v, namerex, versionrex))
+get_toolinfo(infos, name::AbstractString, version::AbstractString) =
+    get_toolinfo(infos, Regex(name), Regex(version))
+get_toolinfo(infos, name::AbstractString, versionrex::Regex) =
+    get_toolinfo(infos, Regex(name), versionrex)
+
+function get_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
+    first(get_toolinfos(infos, namerex, versionrex))
 end
 
-function get_toolinfos(v::Vector{<:ToolInfo}, namerex::Regex, versionrex::Regex=r"^.*$")
-    Iterators.filter(ti -> _match(ti, namerex, versionrex), v)
+function get_toolinfos(infos, namerex::Regex, versionrex::Regex=r"^.*$")
+    Iterators.filter(ti -> _match(ti, namerex, versionrex), infos)
 end
 
 """
