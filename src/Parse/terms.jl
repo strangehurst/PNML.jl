@@ -26,7 +26,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_and(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "and")
-    PnmlLabel(unparsed_tag(node, pntd, reg), node)
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 
@@ -37,7 +37,7 @@ function parse_booleanconstant(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistr
     nn = check_nodename(node, "booleanconstant")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
 
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -45,7 +45,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_equality(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "equality")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -53,7 +53,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_imply(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "imply")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -61,7 +61,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_inequality(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "inequality")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 
@@ -70,7 +70,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_not(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "not")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -78,7 +78,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_or(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "or")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -86,7 +86,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_tuple(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "tuple")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -94,5 +94,5 @@ $(TYPEDSIGNATURES)
 """
 function parse_unparsed(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     check_nodename(node, "unparsed")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end

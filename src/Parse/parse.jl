@@ -3,7 +3,7 @@ const PIDR = PnmlIDRegistry
 """
 $(TYPEDSIGNATURES)
 
-Call any method matching xml node's tag` in [`tagmap`](@ref),
+Call any method matching xml node's tag in [`tagmap`](@ref),
 otherwise parse as [`unparsed_tag`](@ref) wrapped in a [`PnmlLabel`](@ref).
 All uses are expected to be pnml labels attached to pnml graph nodes, arcs, nets, pages,
 that are excluded from this parsing pathway.

@@ -281,7 +281,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "arbitraryoperator")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -289,7 +289,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_arbitrarysort(node, pntd, reg)
     nn = check_nodename(node, "arbitrarysort")
-    PnmlLabel(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
+    Term(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
 end
 
 """
@@ -297,7 +297,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "bool")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -305,7 +305,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "mulitsetsort")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
@@ -313,7 +313,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "productsort")
-    PnmlLabel(unparsed_tag(node, pntd, reg))
+    Term(unparsed_tag(node, pntd, reg))
 end
 
 """
