@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
 #using FunctionWrappers
 using PNML:
-    Maybe, tag, XMLNode, xmlroot, labels,
+    Maybe, tag, XMLNode, AnyXmlNode, xmlroot, labels,
     unparsed_tag, anyelement, PnmlLabel, AnyElement,
     has_label, get_label, get_labels, add_label!,
     default_marking, default_inscription, default_condition, default_sort,
@@ -194,7 +194,7 @@ function test_unclaimed(pntd, xmlstring::String)
         println("l = $(l.tag) ");   dump(l)
         println("a = $(a.tag) " );  dump(a)
     end
-    @test u isa Pair{Symbol, Vector{PNML.AnyXmlNode}}
+    @test u isa Pair{Symbol, Vector{AnyXmlNode}}
     @test l isa PnmlLabel
     @test a isa AnyElement
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
@@ -214,9 +214,9 @@ function test_unclaimed(pntd, xmlstring::String)
         @test tag(l) === nn
         @test tag(a) === nn
     end
-    @test u.second isa Vector{PNML.AnyXmlNode}
-    @test l.elements isa Vector{PNML.AnyXmlNode}
-    @test a.elements isa Vector{PNML.AnyXmlNode}
+    @test u.second isa Vector{AnyXmlNode}
+    @test l.elements isa Vector{AnyXmlNode}
+    @test a.elements isa Vector{AnyXmlNode}
     #! unclaimed id is not registered
     u.second[1].tag === :id && @test !isregistered(reg1, u.second[1].val)
     return l, a
@@ -228,58 +228,58 @@ end
     # For example <declarations>.
     ctrl = [ # Vector of tuples of XML string, expected result `Pair`.
         ("""<declarations> </declarations>""",
-            :declarations => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+            :declarations => AnyXmlNode[AnyXmlNode(:content, "")]),
 
         ("""<declarations atag="atag1"> </declarations>""",
-            :declarations => PNML.AnyXmlNode[PNML.AnyXmlNode(:atag, "atag1")]),
+            :declarations => AnyXmlNode[AnyXmlNode(:atag, "atag1")]),
 
         ("""<foo><declarations> </declarations></foo>""",
-            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:declarations, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")])]),
+            :foo => AnyXmlNode[AnyXmlNode(:declarations, AnyXmlNode[AnyXmlNode(:content, "")])]),
 
         # no content, no attribute maybe results in empty tuple.
         ("""<null></null>""",
-            :null => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+            :null => AnyXmlNode[AnyXmlNode(:content, "")]),
         ("""<null2/>""",
-            :null2 => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+            :null2 => AnyXmlNode[AnyXmlNode(:content, "")]),
         # no content, with attribute
         ("""<null at="null"></null>""",
-            :null => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "null")]),
+            :null => AnyXmlNode[AnyXmlNode(:at, "null")]),
         ("""<null2 at="null2" />""",
-            :null2 => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "null2")]),
+            :null2 => AnyXmlNode[AnyXmlNode(:at, "null2")]),
         # empty content, no attribute
         ("""<empty> </empty>""",
-            :empty => PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
+            :empty => AnyXmlNode[AnyXmlNode(:content, "")]),
         # empty content, with attribute
         ("""<empty at="empty"> </empty>""",
-            :empty => PNML.AnyXmlNode[PNML.AnyXmlNode(:at, "empty")]),
+            :empty => AnyXmlNode[AnyXmlNode(:at, "empty")]),
         # unclaimed do not register id
         ("""<foo id="testid1" />""",
-            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "testid1")]),
+            :foo => AnyXmlNode[AnyXmlNode(:id, "testid1")]),
         ("""<foo id="testid2"/>""",
-            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "testid2")]),
+            :foo => AnyXmlNode[AnyXmlNode(:id, "testid2")]),
 
         ("""<foo id="repeats">
                 <one>ONE</one>
                 <one>TWO</one>
                 <one>TRI</one>
             </foo>""",
-            :foo => PNML.AnyXmlNode[PNML.AnyXmlNode(:id, "repeats"),
-                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "ONE")]),
-                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "TWO")]),
-                                    PNML.AnyXmlNode(:one, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "TRI")])]),
+            :foo => AnyXmlNode[AnyXmlNode(:id, "repeats"),
+                                    AnyXmlNode(:one, AnyXmlNode[AnyXmlNode(:content, "ONE")]),
+                                    AnyXmlNode(:one, AnyXmlNode[AnyXmlNode(:content, "TWO")]),
+                                    AnyXmlNode(:one, AnyXmlNode[AnyXmlNode(:content, "TRI")])]),
 
         ("""<declarations atag="atag2">
                 <something> some content </something>
                 <something> other stuff </something>
                 <something2 tag2="tagtwo"> <value/> <value tag3="tagthree"/> </something2>
             </declarations>""",
-            :declarations => PNML.AnyXmlNode[
-                        PNML.AnyXmlNode(:atag, "atag2"),
-                        PNML.AnyXmlNode(:something, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "some content")]),
-                        PNML.AnyXmlNode(:something, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "other stuff")]),
-                        PNML.AnyXmlNode(:something2, PNML.AnyXmlNode[PNML.AnyXmlNode(:tag2, "tagtwo"),
-                                                    PNML.AnyXmlNode(:value, PNML.AnyXmlNode[PNML.AnyXmlNode(:content, "")]),
-                                                    PNML.AnyXmlNode(:value, PNML.AnyXmlNode[PNML.AnyXmlNode(:tag3, "tagthree")])])
+            :declarations => AnyXmlNode[
+                        AnyXmlNode(:atag, "atag2"),
+                        AnyXmlNode(:something, AnyXmlNode[AnyXmlNode(:content, "some content")]),
+                        AnyXmlNode(:something, AnyXmlNode[AnyXmlNode(:content, "other stuff")]),
+                        AnyXmlNode(:something2, AnyXmlNode[AnyXmlNode(:tag2, "tagtwo"),
+                                                    AnyXmlNode(:value, AnyXmlNode[AnyXmlNode(:content, "")]),
+                                                    AnyXmlNode(:value, AnyXmlNode[AnyXmlNode(:tag3, "tagthree")])])
                                             ]),
     ]
 
