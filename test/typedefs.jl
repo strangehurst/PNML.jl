@@ -1,14 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: XMLNode, pnmltype, tagmap
-
-@testset "tagmap $tag" for tag in keys(tagmap)
-    @test !isempty(methods(tagmap[tag], (XMLNode, PnmlType, PnmlIDRegistry)))
-    # Tags handled differently (e.g. no pntd argument) ARE NOT in the map.
-    @test isempty(methods(tagmap[tag], (XMLNode,)))
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show tag, tagmap[tag]
-    end
-end
+using PNML: XMLNode, pnmltype
 
 @testset "pntd_symbol" begin
     @test_opt pntd_symbol("foo")

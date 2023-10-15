@@ -1,24 +1,5 @@
 const PIDR = PnmlIDRegistry
 
-"""
-$(TYPEDSIGNATURES)
-
-Call any method matching xml node's tag in [`tagmap`](@ref),
-otherwise parse as [`unparsed_tag`](@ref) wrapped in a [`PnmlLabel`](@ref).
-All uses are expected to be pnml labels attached to pnml graph nodes, arcs, nets, pages,
-that are excluded from this parsing pathway.
-"""
-function parse_node(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    CONFIG.verbose && println("PARSE_NODE $(EzXML.nodename(node))") # Useful for debug.
-    if haskey(tagmap, EzXML.nodename(node))
-        parsefun = @inline tagmap[EzXML.nodename(node)]
-        #@show nameof(parsefun) typeof(parsefun) methods(parsefun) # Useful for debug.
-        return parsefun(node, pntd, idregistry) # Various types returned here.
-    else
-        return PnmlLabel(unparsed_tag(node, pntd, idregistry))
-    end
-end
-
 function parse_excluded(node::XMLNode, _, _)
     @warn "Attempt to parse excluded tag: $(EzXML.nodename(node))"
     return nothing

@@ -113,7 +113,6 @@ include("Parse/graphics.jl")
 include("Parse/declarations.jl")
 include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
-include("Parse/maps.jl")
 
 # Petri Nets
 include("PNet/petrinet.jl")
@@ -128,7 +127,6 @@ export @xml_str,
     parse_str,
     parse_file,
     parse_pnml,
-    parse_node,
     PnmlException,
     MissingIDException,
     MalformedException

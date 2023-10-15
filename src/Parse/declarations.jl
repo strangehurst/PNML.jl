@@ -8,10 +8,6 @@ optional for annotation-labels they share the same implementation.
 Unknown tags get parsed by `unparsed_tag`.  Annotation-labels usually have
 known tags and dedicated parsers. `parse_pnml_object_common` puts unregistered children
 into the labels collection of a [`AbstractPnmlObject`].  It can include annotations and attributes.
-
-Because any tag not present in the tagmap are processed by `unparsed_tag`
-it is not necessary to define a parse method unless valididation, documentation,
-or additional processing is desired. Some are defined here anyway.
 =#
 
 """

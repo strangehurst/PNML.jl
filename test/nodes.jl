@@ -18,8 +18,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             @show n PNML.default_marking(n) PNML.nettype(n)
         end
 
-        nothing === @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
-
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
         @test pid(n) === :place1
@@ -43,8 +41,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show n PNML.default_marking(n) PNML.nettype(n)
         end
-
-        nothing === @test_logs (:warn, r"^Attempt to parse excluded tag") parse_node(node, pntd, registry())
 
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
 

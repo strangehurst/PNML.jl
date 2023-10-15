@@ -5,11 +5,6 @@
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
     nn = EzXML.nodename(node)
     CONFIG.verbose && println("add label $nn")
-    if CONFIG.warn_on_unclaimed
-        if haskey(tagmap, nn) && nn != "structure"
-            @info "$nn is known tag being treated as unclaimed."
-        end
-    end
     label = PnmlLabel(unparsed_tag(node, pntd))
     push!(v, label)
     return label

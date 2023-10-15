@@ -114,20 +114,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
             @test_call PNML.version(t[i])
 
             @test typeof(t[i].infos) == typeof(ti.infos)
-            #for y in zip(t[i].infos, ti.infos)
-            #    @test tag(y[1]) == tag(y[2])
-            #    @test tag(y[1].elements[1]) == tag(y[2].elements[1])
-            #end
-            # need to use tag agnostic parse here.
-            x = parse_node(xmlroot(s.str), PnmlCoreNet(), registry())
-
-            @test typeof(t[i].infos) == typeof(x.infos)
-            # for y in zip(t[i].infos, x.infos)
-            #     #combined y[1] "); dump(y[1])
-            #     #println("combined y[2] "); dump(y[2])
-            #     @test tag(y[1]) == tag(y[2])
-            #     @test tag(y[1].elements[1]) == tag(y[2].elements[1])
-            # end
         end
     end
 end

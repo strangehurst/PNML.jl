@@ -165,17 +165,6 @@ end
     end
 end
 
-@testset "unclaimed structure $pntd" for pntd in all_nettypes()
-    str0 = """<structure><foo/></structure>"""
-    @test PNML.parse_node(xmlroot(str0), pntd, registry()) isa PNML.Structure
-end
-
-@testset "<label> $pntd" for pntd in all_nettypes()
-    str0 = """<label><text>label named label is unusual</text></label>"""
-    l = PNML.parse_node(xmlroot(str0), pntd, registry())
-    @test l isa @NamedTuple{tag::Symbol,xml::XMLNode}
-end
-
 function test_unclaimed(pntd, xmlstring::String)
     if noisy
         println("+++++++++++++++++++")

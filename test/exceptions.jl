@@ -66,12 +66,6 @@ end
 """, registry()))
 
     @test_throws "MalformedException: net missing type" parse_net(xml"""<net id="4712"> </net>""", registry())
-
-    @test_throws "MalformedException: toolspecific missing version attribute" parse_node(
-        xml"""<toolspecific tool="toolname"><visible>true</visible></toolspecific>""", pntd, registry())
-
-    @test_throws "MalformedException: toolspecific missing tool attribute" parse_node(
-        xml"""<toolspecific version="1.0"><visible>true</visible> </toolspecific>""", pntd, registry())
 end
 
 
@@ -97,14 +91,6 @@ end
     @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, registry())
     @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry())
     @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry())
-end
-
-@testset "graphics $pntd" for pntd in all_nettypes()
-    @test_throws "MalformedException: dimension missing x" parse_node(xml"<graphics><dimension y='2'/></graphics>", pntd, registry())
-    @test_throws "MalformedException: dimension missing y" parse_node(xml"<graphics><dimension x='1'/></graphics>", pntd, registry())
-
-    @test_throws "MalformedException: tokenposition missing x" parse_node(xml"<tokengraphics><tokenposition y='-2'/></tokengraphics>", pntd, registry())
-    @test_throws "MalformedException: tokenposition missing y" parse_node(xml"<tokengraphics><tokenposition x='-9'/></tokengraphics>", pntd, registry())
 end
 
 @testset "check_nodename" begin
