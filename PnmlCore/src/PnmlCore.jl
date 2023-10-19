@@ -14,8 +14,7 @@ export @xml_str,
     xmlroot,
     parse_str,
     parse_file,
-    parse_pnml,
-    parse_node
+    parse_pnml
 
 # Exceptions
 export PnmlException,
