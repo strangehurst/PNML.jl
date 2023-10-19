@@ -92,20 +92,38 @@ struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
+sort(namedsort::NamedSort) = namedsort.def
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-User-declared sort.
+Partition sort.
 """
-struct Partition{S,PE} <: SortDeclaration
+struct PartitionSort{S,PE} <: SortDeclaration
     id::Symbol
     name::String
     def::S # Refers to a NamedSort
-    element::PE # 0 or more PartitionElements.
+    element::PE # 1 or more PartitionElements.
+    #
 end
-Partition() = Partition(:partition, "Empty Partition", DotSort(),  [])
+PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  [])
+sort(partition::PartitionSort) = partition.def
+elements(partition::PartitionSort) = partition.element
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Partition sort.
+"""
+struct PartitionElement{} <: SortDeclaration
+    id::Symbol
+    name::String
+    terms::E # 1 or more Terms
+end
+PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  [])
+
 
 """
 $(TYPEDEF)
@@ -134,6 +152,8 @@ struct NamedOperator{V,T} <: OperatorDeclaration
     def::T # opearator or variable term (with associated sort)
 end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", [], nothing)
+operator(no::NamedOperator) = no.def
+parameters(no::NamedOperator) = no.parameter
 
 """
 $(TYPEDEF)
