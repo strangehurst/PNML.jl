@@ -191,7 +191,7 @@ makelist                lists.rng:101: Sort, subterm*
 memberatindex           lists.rng:131: index, subterm*
 sublist                 lists.rng:144: start, length,  subterm*
 
-partition               partitions.rng:50:  ID, name, Sort, partitionelement+
+partition               partitions.rng:50:  ID, name, namedsort, partitionelement+
 partitionelement        partitions.rng:67:  ID, name, Term+
 gtp                     partitions.rng:107: subterm*
 ltp                     partitions.rng:98:  refPartition, subterm*
