@@ -85,9 +85,7 @@ Term as functor requires a default value for missing values.
 As a preliminary implementation evaluate a HL term by returning `:value` in `elements` or
 evaluating `default_one_term(HLCoreNet())`.
 
-See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref),
-[`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref),
-[`AnyElement`](@ref).
+See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref), [`AnyElement`](@ref).
 
 **Warning:** Much of the high-level is WORK-IN-PROGRESS.
 The type parameter is a sort. We enumerate some of the built-in sorts allowed.
@@ -140,3 +138,8 @@ end
 #
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
+
+struct FEConstant
+    id::Symbol
+    name::String
+end
