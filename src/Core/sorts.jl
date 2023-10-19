@@ -59,11 +59,27 @@ equals(a::AbstractSort, b::AbstractSort) = false
 
 # Unless they have content, for example an enumeration, just the types are sufficent.
 equalSorts(a::AbstractSort, b::AbstractSort) = true
-
 #= From pnmlframework
 Returns true if sorts are semantically the same sort, even in two different objects.
 Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
 =#
+
+#------------------------------------------------------------------------------
+"""
+$(TYPEDEF)
+
+Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
+
+[`NamedSort`](@ref) is used to construct a sort out of builtin types.
+Used in a `Place`s sort type property.
+"""
+struct UserSort <: AbstractSort
+    declaration::Symbol
+end
+UserSort() = UserSort(:integer)
+UserSort(s::AbstractString) = UserSort(Symbol(s))
+equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
+
 """
 $(TYPEDEF)
 
@@ -81,21 +97,60 @@ $(TYPEDEF)
 An ordered collection of sorts.
 """
 struct ProductSort <: AbstractSort
-    ae::Vector{AbstractSort}
+    ae::Vector{UserSort}
 end
-ProductSort() = ProductSort(IntegerSort[])
+ProductSort() = ProductSort(UserSort[])
 equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
+
 
 """
 $(TYPEDEF)
-
-Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
-
-[`NamedSort`](@ref) is used to construct a sort out of builtin types.
-Used in a `Place`s sort type property.
 """
-struct UserSort <: AbstractSort
-    declaration::Symbol
+struct CyclicEnumerationSort <: AbstractSort
+    # list of feconstant
+    ae::Vector{FEConstant} # FiniteEnumerationConstant
 end
-UserSort() = UserSort(:integer)
-equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
+CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[])
+elements(s::CyclicEnumerationSort) = s.ae
+equalSorts(a::CyclicEnumerationSort, b::CyclicEnumerationSort) = a.ae == b.ae
+
+"""
+$(TYPEDEF)
+"""
+struct FiniteEnumerationSort <: AbstractSort
+    # list of feconstant
+    ae::Vector{FEConstant}
+end
+FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[])
+equalSorts(a::FiniteEnumerationSort, b::FiniteEnumerationSort) = a.ae == b.ae
+
+"""
+$(TYPEDEF)
+"""
+struct FiniteIntRangeSort{T} <: AbstractSort
+    start::T
+    stop::T
+end
+FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
+equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = a.ae == b.ae
+
+
+"""
+$(TYPEDEF)
+"""
+struct StringSort <: AbstractSort
+    #
+    ae::Vector{AbstractSort}
+end
+StringSort() = StringSort(IntegerSort[])
+equalSorts(a::StringSort, b::StringSort) = a.ae == b.ae
+
+"""
+$(TYPEDEF)
+"""
+struct ListSort <: AbstractSort
+    #
+    ae::Vector{AbstractSort}
+end
+ListSort() = ListSort(IntegerSort[])
+equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
