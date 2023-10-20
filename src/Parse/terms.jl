@@ -17,15 +17,20 @@ $(TYPEDSIGNATURES)
 Used to construct the syntax tree of multi-sorted algebra.
 """
 function parse_subterm(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    #tag, value = unparsed_tag(node, pntd, reg)
+    nn = check_nodename(node, "parse_subterm")
+    # contains one term (not subterm) as a child
     Term(unparsed_tag(node, pntd, reg))
 end
 
+#-----------------------------------------------------------------------------
+# Boolean
+#-----------------------------------------------------------------------------
 """
 $(TYPEDSIGNATURES)
 """
 function parse_and(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "and")
+    # ordered list of subterms
     Term(unparsed_tag(node, pntd, reg))
 end
 
@@ -80,6 +85,10 @@ function parse_or(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "or")
     Term(unparsed_tag(node, pntd, reg))
 end
+
+#-----------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)

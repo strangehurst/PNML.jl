@@ -34,15 +34,41 @@ end
 end
 
 @testset "parse_sort $pntd" for pntd in all_nettypes()
-    @test parse_sort(xml"<bool/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<finiteenumeration/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<finiteintrange/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<cyclicenumeration/>", PnmlCoreNet(), registry()) isa AnyElement
-    @test parse_sort(xml"<dot/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<mulitsetsort/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<productsort/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<usersort/>", pntd, registry()) isa AnyElement
-    @test parse_sort(xml"<partition/>", pntd, registry()) isa AnyElement
+    @test parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry()) isa PNML.UserSort
+    @test parse_sort(xml"<dot/>", pntd, registry()) isa PNML.DotSort
+    @test parse_sort(xml"<bool/>", pntd, registry()) isa PNML.BoolSort
+    @test parse_sort(xml"<integer/>", pntd, registry()) isa PNML.IntegerSort
+    @test parse_sort(xml"<natural/>", pntd, registry()) isa PNML.NaturalSort
+    @test parse_sort(xml"<positive/>", pntd, registry()) isa PNML.PositiveSort
+
+    @test parse_sort(xml"""<cyclicenumeration>
+                                <feconstant id="FE0" name="0"/>
+                                <feconstant id="FE1" name="1"/>
+                           </cyclicenumeration>""", PnmlCoreNet(), registry()) isa PNML.CyclicEnumerationSort
+    @test parse_sort(xml"""<finiteenumeration>
+                                <feconstant id="FE0" name="0"/>
+                                <feconstant id="FE1" name="1"/>
+                           </finiteenumeration>""", pntd, registry()) isa PNML.FiniteEnumerationSort
+
+    @test parse_sort(xml"<finiteintrange start=\"2\" stop=\"3\"/>", pntd, registry()) isa PNML.FiniteIntRangeSort
+
+    @test parse_sort(xml"""<productsort>
+                                <usersort declaration="speed"/>
+                                <usersort declaration="distance"/>
+                           </productsort>""", pntd, registry()) isa PNML.ProductSort
+
+    @test parse_sort(xml"""<partition id="P1" name="P1">
+                                <usersort declaration="pluck"/>
+                                <partitionelement id="bs1" name="bs1">
+                                    <useroperator declaration="b1"/>
+                                    <useroperator declaration="b2"/>
+                                    <useroperator declaration="b3"/>
+                               </partitionelement>
+                           </partition>""", pntd, registry()) isa PNML.PartitionSort
+
+    @test parse_sort(xml"""<multisetsort>
+                                <usersort declaration="duck"/>
+                           </multisetsort>""", pntd, registry()) isa PNML.MultisetSort
 end
 
 @testset "empty declarations $pntd" for pntd in all_nettypes()
@@ -113,37 +139,33 @@ end
 
     # Examine each declaration in the vector: 3 named sorts
     #println("dump(decl)"); dump(decl)
-    for d in PNML.declarations(decl)
-        #println("\n  declaration $(pid(d))"); dump(d)
-        @test typeof(d) <: PNML.AbstractDeclaration
-        @test typeof(d) <: PNML.SortDeclaration
-        @test typeof(d) <: PNML.NamedSort
-        # named sort -> cyclic enumeration -> fe constant
-        @test isregistered(reg, pid(d))
-        @test_call isregistered(reg, pid(d))
-        sortname = PNML.name(d)
-        @test Symbol(PNML.name(d)) === pid(d) # name and id are the same.
-        @test d.def isa PNML.AnyElement
-        @test tag(d.def) === :cyclicenumeration
-        @test d.def.elements isa Vector{PNML.AnyXmlNode}
+    for nsort in PNML.declarations(decl) # named sort -> cyclic enumeration -> fe constant
+        @test typeof(nsort) <: PNML.AbstractDeclaration
+        @test typeof(nsort) <: PNML.SortDeclaration
+        @test typeof(nsort) <: PNML.NamedSort
 
-        @test tag(d.def.elements[1]) === :feconstant
-        let x = value(d.def.elements[1])
-            @test x isa Vector{AnyXmlNode}
+        @test isregistered(reg, pid(nsort))
+        @test_call isregistered(reg, pid(nsort))
+        @test Symbol(PNML.name(nsort)) === pid(nsort) # name and id are the same.
+        #println("declaration"); dump(nsort) #! debug
+        @test PNML.sort(nsort) isa PNML.CyclicEnumerationSort
+        @test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
 
-            @test tag(x[1]) === :id
-            idstring = value(x[1])
-            @test idstring isa AbstractString
+        sortname = PNML.name(nsort)
+        cesort   = PNML.sort(nsort)
+        feconsts = PNML.elements(cesort) # should be iteratable ordered collection
+        @test feconsts isa Vector{PNML.FEConstant}
+        @test length(feconsts) == 2
+        for fec in feconsts
+            @test fec isa PNML.FEConstant
+
+            @test fec.id isa Symbol
+            @test fec.name isa AbstractString
             #@test idstring == "LegalResident0"
-            @test startswith(idstring, sortname)
-            @test_call isregistered(reg, Symbol(idstring)) # unclaimed id
-            @test !isregistered(reg, Symbol(idstring)) # unclaimed id
+            @test_call isregistered(reg, fec.id)
+            @test !isregistered(reg, fec.id) # unregistered id
 
-            @test tag(x[2]) === :name
-            namestring = value(x[2])
-            @test namestring isa AbstractString
-            @test namestring == "0"
-            @test endswith(idstring, namestring)
+            @test endswith(string(fec.id), fec.name)
         end
     end
 end

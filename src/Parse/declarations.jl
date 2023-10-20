@@ -191,73 +191,148 @@ Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 function parse_sorttype_term(typenode, pntd, idregistry)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || error("missing sort type term element in <structure>")
-    term = EzXML.firstelement(typenode)
-
-    # Expect a sort: usersort usually. No multiset sort here.
-    ucl = unparsed_tag(term, pntd, idregistry)
-    #println("sorttype declaration: "); dump(ucl)
-
-    #TODO sort_ids and sort_tags should be "global constants"
-    sort_ids = Symbol[:usersort, :multisetsort, :productsort, :partition,
-                      :cyclicenumeration, :finiteenumeration, :finiteintrange,
-                      :bool, :integer, :list, :string]
-
-    sortid = ucl.first
-    sortid ∈ sort_ids || @warn("invalid sort type '$sortid', allowed: $sort_ids")
-
-    if sortid === :usersort
-        @assert ucl.second isa Vector{AnyXmlNode}
-        d = first(ucl.second)
-        @assert tag(d) == :declaration
-        @assert value(d) isa AbstractString
-        idref = Symbol(value(d))
-        t = UserSort(idref)
-    elseif sortid === :dot
-        t = DotSort()
-    elseif sortid === :integer
-        t = IntegerSort()
-    elseif sortid === :natural
-        t = NaturalSort()
-    elseif sortid === :positive
-        t = PositiveSort()
-    elseif sortid === :bool
-        t = BoolSort()
-
-        #! XXX FINNISH this =========================================== XXX
-
-    else
-        error("parse_sorttype_term $sortid not implemented")
-    end
-
-    #println("sorttype_term"); dump(t)
-    return t::AbstractSort
+    term = EzXML.firstelement(typenode) # Expect only child element to be a sort.
+    # No multiset sort for the sort of a Place. Who checks/cares?
+    parse_sort(term, pntd, idregistry)
 end
+
+isEmptyContent(body::Vector{AnyXmlNode}) = (length(body) == 1 &&
+                                            tag(first(body)) === :content &&
+                                            isempty(value(first(body))))
+
+function parse_feconstants(body::Vector{AnyXmlNode})
+    @assert all(fec -> tag(fec) === :feconstant, body) "zero or more FEConstants"
+    feconstants = FEConstant[]
+    for fec in body
+        onefec = value(fec)::Vector{AnyXmlNode}
+        #println("fconstant"); dump(onefec)
+        @assert all(o -> isa(o, AnyXmlNode), onefec)
+        (id, name) = id_name(onefec)
+        push!(feconstants, FEConstant(id, name))
+    end
+    return feconstants
+end
+
+"The body has only a :declaration, return its value as a string."
+function parse_decl(body::Vector{AnyXmlNode})
+    @assert length(body) == 1
+    d = first(body)
+    @assert tag(d) === :declaration
+    return value(d)::AbstractString
+end
+parse_decl(str::AbstractString) = str
+
+parse_usersort(body::Vector{AnyXmlNode}) = parse_decl(body)
+parse_usersort(str::AbstractString) = str
+
+parse_useroperator(body::Vector{AnyXmlNode}) = parse_decl(body)
+parse_useroperator(str::AbstractString) = str
+
+"Tags used in sort XML elements."
+const sort_ids = (:usersort, :dot, :bool, :integer, :natural, :positive,
+                  :multisetsort, :productsort, :partition, :list, :string,
+                  :cyclicenumeration, :finiteenumeration, :finiteintrange)
 
 """
 $(TYPEDSIGNATURES)
 
 Sorts are found within a <structure> element.
 """
-function parse_sort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = EzXML.nodename(node)
-    sort_tags = ["bool",
-                 "finiteenumeration",
-                 "finiteintrange",
-                 "cyclicenumeration",
-                 "dot",
-                 "integer",
-                 "natural",
-                 "positive",
-                 "mulitsetsort",
-                 "productsort", # ordered list of sorts
-                 "usersort",
-                 "partition"]
-    any(==(nn), sort_tags) || @warn("'$nn' is not a known sort in $sort_tags")
-    anyelement(node, pntd, reg)
+function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+
+    # Use `unparsed_tag`.
+    ucl = unparsed_tag(node, pntd, idregistry)
+
+    sortid = ucl.first::Symbol # Tag identifies sort
+    body = ucl.second::Vector{AnyXmlNode} # value is array
+
+    sortid ∈ sort_ids || (@warn("invalid sort type '$sortid', allowed: $sort_ids"), dump(ucl), false)
+
+    if sortid === :usersort
+        decl = parse_decl(body)
+        srt = UserSort(decl)
+
+    elseif sortid === :dot
+        @assert isEmptyContent(body)
+        srt = DotSort()
+
+    elseif sortid === :bool
+        @assert isEmptyContent(body)
+        srt = BoolSort()
+
+    elseif sortid === :integer
+        @assert isEmptyContent(body)
+        srt = IntegerSort()
+
+    elseif sortid === :natural
+        @assert isEmptyContent(body)
+        srt = NaturalSort()
+
+    elseif sortid === :positive
+        @assert isEmptyContent(body)
+        srt = PositiveSort()
+
+    elseif sortid === :cyclicenumeration
+        #println("$sortid sort: "); dump(body)
+        fec = parse_feconstants(body)
+        srt = CyclicEnumerationSort(fec)
+
+    elseif sortid === :finiteenumeration
+        #println("$sortid sort: "); dump(body)
+        @assert all(x -> tag(x) === :feconstant, body)
+        fec = parse_feconstants(body)
+        srt = FiniteEnumerationSort(fec)
+
+    elseif sortid === :finiteintrange
+        #println("$sortid sort: "); dump(body)
+        (start, stop) = start_stop(body)
+        srt = FiniteIntRangeSort(start, stop)
+
+    elseif sortid === :list
+        println("$sortid sort: "); dump(body)
+        error("IMPLEMENT ME")
+        srt = ListSort()
+    elseif sortid === :string
+        println("$sortid sort: "); dump(body)
+        error("IMPLEMENT ME")
+        srt = StringSort()
+
+    elseif sortid === :multisetsort
+        #println("$sortid sort: "); dump(body)
+        # There will be 1 usersort
+        @assert length(body) == 1
+        usort = first(body)
+        @assert tag(usort) === :usersort
+
+        decl = parse_decl(value(usort))
+        srt = MultisetSort(UserSort(decl))
+
+    elseif sortid === :productsort
+        #println("$sortid sort: "); dump(body)
+        # orderded collection of UserSorts
+        usorts = UserSort[]
+        for axn in body # of productsort
+            @assert tag(axn) === :usersort
+            value(axn) isa Vector{AnyXmlNode} ||
+                error("expected Vector{AnyXmlNode}, got $(typeof(value(axn)))")
+            decl = parse_decl(value(axn))
+            srt2 = UserSort(decl)
+            push!(usorts, srt2)
+        end
+        srt = ProductSort(usorts)
+
+    elseif sortid === :partition
+        #println("$sortid sort: "); dump(body)
+        part = parse_partition(body)
+        srt = PartitionSort(part.id, part.name, part.sort, part.elements)
+
+    else
+        error("parse_sort sort $sortid not implemented")
+    end
+
+    @show srt
+    return srt
 end
-
-
-# NamedSort id, name
 
 """
 $(TYPEDSIGNATURES)

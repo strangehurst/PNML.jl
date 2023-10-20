@@ -34,9 +34,9 @@ using Printf
     end
     for sort in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
         st = @inferred SortType("test", sort())
-        @test PNML.type(st) == sort
+        @test PNML.type(st) <: sort
         st2 = @inferred SortType(sort())
-        @test PNML.type(st2) == sort
+        @test PNML.type(st2) <: sort
     end
 end
 

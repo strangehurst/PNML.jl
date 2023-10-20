@@ -53,8 +53,8 @@ $(TYPEDFIELDS)
 """
 struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
-    name::String
-    nodename::String
+    name::Union{String,SubString}
+    nodename::Union{String,SubString}
     content::Vector{Any} #! Vector{AnyElement}
 end
 UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [])
@@ -70,6 +70,15 @@ abstract type SortDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 """
 abstract type OperatorDeclaration <: AbstractDeclaration end
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct UserOperator <: AbstractOperator
+    "Identity of operators's declaration."
+    declaration::Symbol #
+end
+UserOperator(str::AbstractString) = UserOperator(Symbol(str))
 
 """
 $(TYPEDEF)
@@ -77,7 +86,7 @@ $(TYPEDFIELDS)
 """
 struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
-    name::String
+    name::Union{String,SubString}
     sort::S
 end
 VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
@@ -88,7 +97,7 @@ $(TYPEDFIELDS)
 """
 struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     id::Symbol
-    name::String
+    name::Union{String,SubString}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
@@ -102,12 +111,12 @@ Partition sort.
 """
 struct PartitionSort{S,PE} <: SortDeclaration
     id::Symbol
-    name::String
+    name::Union{String,SubString}
     def::S # Refers to a NamedSort
     element::PE # 1 or more PartitionElements.
     #
 end
-PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  [])
+PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
 sort(partition::PartitionSort) = partition.def
 elements(partition::PartitionSort) = partition.element
 
@@ -115,14 +124,14 @@ elements(partition::PartitionSort) = partition.element
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Partition sort.
+Partition Element.
 """
-struct PartitionElement{} <: SortDeclaration
+struct PartitionElement # <: SortDeclaration should be something for accessors
     id::Symbol
-    name::String
-    terms::E # 1 or more Terms
+    name::Union{String,SubString}
+    terms::Vector{UserOperator} # 1 or more Terms (UserOperator?)
 end
-PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  [])
+PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
 
 
 """
@@ -134,7 +143,7 @@ reserved for/supported by `HLPNG` in the pnml specification.
 """
 struct ArbitrarySort <: SortDeclaration
     id::Symbol
-    name::String
+    name::Union{String,SubString}
 end
 
 function ArbitrarySort()
@@ -147,7 +156,7 @@ $(TYPEDFIELDS)
 """
 struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
-    name::String
+    name::Union{String,SubString}
     parameter::Vector{V}
     def::T # opearator or variable term (with associated sort)
 end
@@ -170,15 +179,6 @@ struct BuiltInOperator <: AbstractOperator end
 struct BuiltInConst <: AbstractOperator end
 struct MultiSetOperator <: AbstractOperator end
 struct PnmlTuple <: AbstractOperator end
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct UserOperator <: AbstractOperator
-    "Identity of operators's declaration."
-    declaration::Symbol #
-end
 
 """
 $(TYPEDEF)

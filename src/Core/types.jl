@@ -93,12 +93,18 @@ end
 AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
 
 tag(axn::AnyXmlNode) = axn.tag
+
 """
     value(axn::AnyXmlNode) -> Union{Vector{AnyXmlNode}, String, Substring}
 
 Return vector of children or content of the node.
 """
 value(axn::AnyXmlNode) = axn.val
+
+# AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}
+# vs.
+# AnyElement Symbol, Vector{AnyXmlNode}
+# also PnmlLabel, Term, Structure
 
 """
 $(TYPEDEF)

@@ -83,13 +83,13 @@ equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
 """
 $(TYPEDEF)
 
-Wrap a [`AbstractSort`](@ref). Use until specialized/cooked.
+Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
 """
 struct MultisetSort <: AbstractSort
-    ae::AbstractSort
+    us::UserSort
 end
-MultisetSort() = MultisetSort(DotSort())
-equalSorts(a::MultisetSort, b::MultisetSort) = a.ae == b.ae
+MultisetSort() = MultisetSort(UserSort())
+equalSorts(a::MultisetSort, b::MultisetSort) = a.us == b.us
 
 """
 $(TYPEDEF)
@@ -132,7 +132,7 @@ struct FiniteIntRangeSort{T} <: AbstractSort
     stop::T
 end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
-equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = a.ae == b.ae
+equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
 
 
 """

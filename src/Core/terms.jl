@@ -53,7 +53,7 @@ _evaluate(x::AbstractTerm) = x() # functor
 $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 """
-abstract type AbstractOperator <: AbstractTerm end
+abstract type AbstractOperator end
 
 """
 $(TYPEDEF)
