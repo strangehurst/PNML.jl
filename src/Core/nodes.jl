@@ -19,6 +19,17 @@ end
 nettype(::Place{T}) where {T <: PnmlType} = T
 
 initial_marking(place::Place) = place.initialMarking
+
+"""
+$(TYPEDSIGNATURES)
+Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+"""
+function default_marking end
+default_marking(x::Any) = error("no default marking for $(typeof(x))")
+default_marking(::PnmlType)              = Marking(zero(Int))
+default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
+default_marking(pntd::AbstractHLCore)    = HLMarking(default_zero_term(pntd))
+
 default_marking(place::Place) = default_marking(place.pntd)
 
 #-------------------
@@ -77,6 +88,17 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
 inscription(arc::Arc) = _evaluate(arc.inscription)
+
+"""
+$(TYPEDSIGNATURES)
+Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
+"""
+function default_inscription end
+default_inscription(x::Any) = error("no default inscription for $(typeof(x))")
+default_inscription(::PnmlType)              = Inscription(one(Int))
+default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
+default_inscription(pntd::AbstractHLCore)    = HLInscription("default", default_one_term(pntd))
+
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 """

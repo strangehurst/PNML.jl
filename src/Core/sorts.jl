@@ -154,3 +154,14 @@ struct ListSort <: AbstractSort
 end
 ListSort() = ListSort(IntegerSort[])
 equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
+
+
+"""
+$(TYPEDSIGNATURES)
+Return instance of default sort based on `PNTD`.
+"""
+function default_sort end
+default_sort(x::Any) = error("no default sort defined for $(typeof(x))")
+default_sort(pntd::PnmlType) = default_sort(typeof(pntd))
+default_sort(::Type{<:PnmlType}) = IntegerSort
+default_sort(::Type{<:AbstractContinuousNet}) = RealSort

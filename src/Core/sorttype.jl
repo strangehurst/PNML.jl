@@ -28,3 +28,14 @@ SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSo
 text(t::SortType)  = t.text
 value(t::SortType) = t.sort[]
 type(t::SortType) = typeof(value(t)) # Look a layer deeper.
+
+
+"""
+$(TYPEDSIGNATURES)
+Return instance of default place sort type based on `PNTD`.
+"""
+function default_sorttype end
+default_sorttype(x::Any) = error("no default sorttype defined for $(typeof(x))")
+default_sorttype(pntd::PnmlType) = default_sorttype(typeof(pntd))
+default_sorttype(::Type{T}) where {T<:PnmlType} =
+        SortType("default", Ref{AbstractSort}(default_sort(T)()), nothing, ToolInfo[] )

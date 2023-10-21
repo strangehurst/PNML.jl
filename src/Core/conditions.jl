@@ -39,3 +39,14 @@ condition_value_type(::Type{<: PnmlType}) = Bool
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 
 (c::Condition)() = _evaluate(value(c))::eltype(c)
+
+"""
+$(TYPEDSIGNATURES)
+Return default condition based on `PNTD`. Has meaning of true or always.
+```
+"""
+function default_condition end
+default_condition(x::Any) = error("no default condition for $(typeof(x))")
+default_condition(::PnmlType)              = Condition(true)
+default_condition(::AbstractContinuousNet) = Condition(true)
+default_condition(pntd::AbstractHLCore)    = Condition(default_bool_term(pntd))
