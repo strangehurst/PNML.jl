@@ -116,8 +116,6 @@ include("Parse/toolspecific.jl")
 
 # Petri Nets
 include("PNet/petrinet.jl")
-include("PNet/simplenet.jl")
-include("PNet/hlnet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
 
