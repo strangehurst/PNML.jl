@@ -4,14 +4,14 @@
 """
     pid(x) -> Symbol
 
-Return pnml id symbol.
+Return pnml id symbol. An id's value is identity/unique. A tag may have multiple of same value.
 """
 function pid end
 
 """
     tag(x) -> Symbol
 
-Return tag symbol.
+Return tag symbol. A tag may have multiple of same value. An id's value is identity/unique.
 """
 function tag end
 
@@ -51,7 +51,7 @@ function labels end
 """
     has_label(x, tag::Symbol) -> Bool
 
-Does `x` have any label have a matching `tag`.
+Does `x` have any label with a matching `tag`.
 """
 function has_label end
 
@@ -327,8 +327,8 @@ Type of `Condition`.
 function condition_type end
 
 """
-$(TYPEDSIGNATURES)
-Return value of the composite type argument.
+    value(x)
+Return value of x. Can be a wrapped value or a derived value.
 """
 function value end
 

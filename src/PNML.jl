@@ -98,9 +98,9 @@ include("Core/nodes.jl")
 include("Core/pnmlnetdata.jl") # Used by page, net.
 include("Core/page.jl")
 include("Core/net.jl")
-include("Core/pagetree.jl")
 include("Core/model.jl")
 
+include("Core/pagetree.jl")
 include("Core/flatten.jl")
 include("Core/show.jl")
 
