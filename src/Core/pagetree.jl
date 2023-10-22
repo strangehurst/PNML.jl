@@ -1,3 +1,5 @@
+import AbstractTrees
+
 # Pages resulting from using keys in set to access pagedict.
 AbstractTrees.children(n::PnmlNet) = pages(n)
 AbstractTrees.children(p::Page)    = pages(p)

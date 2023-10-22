@@ -45,7 +45,6 @@ if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
 
-import AbstractTrees
 using AutoHashEquals
 using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
@@ -77,31 +76,38 @@ include("Core/utils.jl")
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 
-include("Core/graphics.jl")
-include("Core/toolinfos.jl")
-include("Core/labels.jl")
-include("Core/name.jl")
-
+# Parts of Labels and Nodes.
 include("Core/terms.jl")
 include("Core/sorts.jl")
-include("Core/sorttype.jl")
-include("Core/rates.jl")
+include("Core/graphics.jl")
+include("Core/toolinfos.jl")
+include("Core/structure.jl")
 
+# Labels
+include("Core/labels.jl")
+include("Core/name.jl")
 include("Core/inscriptions.jl")
 include("Core/markings.jl")
 include("Core/conditions.jl")
+include("Core/sorttype.jl")
 include("Core/declarations.jl")
+include("Core/rates.jl")
 
-include("Core/structure.jl")
-
-include("Core/nodes.jl")
-include("Core/pnmlnetdata.jl") # Used by page, net.
+# Nodes
+include("Core/nodes.jl") # Concrete place, transition, arc.
+include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
 include("Core/page.jl")
 include("Core/net.jl")
-include("Core/model.jl")
+include("Core/pagetree.jl") # AbstractTree used to print a PnmlNet.
+include("Core/model.jl") # Holds multiple PnmlNets.
 
-include("Core/pagetree.jl")
 include("Core/flatten.jl")
+
+# Petri Nets
+include("PNet/petrinet.jl")
+include("PNet/transition_function.jl")
+include("PNet/metagraph.jl")
+
 include("Core/show.jl")
 
 # PARSE
@@ -113,12 +119,6 @@ include("Parse/declarations.jl")
 include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
 
-# Petri Nets
-include("PNet/petrinet.jl")
-include("PNet/transition_function.jl")
-include("PNet/metagraph.jl")
-
-
 export @xml_str,
     xmlroot,
     parse_str,
@@ -128,15 +128,15 @@ export @xml_str,
     MissingIDException,
     MalformedException
 
-
-#TODO ============================================
-#TODO precompile setup.
-#TODO ============================================
-
 using PrecompileTools
 
 PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin
+
+        #TODO ============================================
+        #!        Do more precompile setup.
+        #TODO ============================================
+
         metagraph(SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -154,7 +154,7 @@ PrecompileTools.@setup_workload begin
     </page>
   </net>
 </pnml>"""))
-
+        #TODO High Level, Continuous
     end
 end
 
