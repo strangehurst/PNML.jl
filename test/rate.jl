@@ -12,8 +12,8 @@ println()
         @show tr lab PNML.rate(tr)
     end
     @test PNML.tag(first(lab)) === :rate # assumes is only label
-    @test PNML.has_labels(tr) isa Bool
-    @test PNML.has_label(tr, :rate) isa Bool
+    @test PNML.has_labels(tr) === true
+    @test PNML.has_label(tr, :rate) === true
     @test PNML.get_label(tr, :rate) === first(PNML.labels(tr))
     @test PNML.get_label(tr, :rate) !== nothing
     @test PNML.rate(tr) ≈ 0.3
