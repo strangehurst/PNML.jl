@@ -734,7 +734,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_condition_term(cnode, pntd::PnmlType, idregistry)
+function parse_condition_term(cnode::XMLNode, pntd::PnmlType, idregistry)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
         term = EzXML.firstelement(cnode)
@@ -748,6 +748,21 @@ function parse_condition_term(cnode, pntd::PnmlType, idregistry)
     end
     error("missing condition term element in <structure>")
 end
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Return [`Structure`](@ref) holding a <structure>.
+Should be inside of an label.
+A "claimed" label usually elids the <structure> level (does not call this method).
+"""
+function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    check_nodename(node, "structure")
+    #@warn "parse_structure is not a well defined thing, $pntd."
+    Structure(unparsed_tag(node, pntd, idregistry)) #TODO anyelement
+end
+
 
 #---------------------------------------------------------------------
 #TODO Will unclaimed_node handle this?

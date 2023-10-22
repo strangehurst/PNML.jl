@@ -69,7 +69,6 @@ include("Core/PnmlTypeDefs.jl")
 include("Core/PnmlIDRegistrys.jl")
 @reexport using .PnmlIDRegistrys
 
-include("Core/xmlutils.jl")
 include("Core/exceptions.jl")
 include("Core/utils.jl")
 
@@ -79,9 +78,9 @@ include("Core/types.jl") # Abstract Types
 # Parts of Labels and Nodes.
 include("Core/terms.jl")
 include("Core/sorts.jl")
+include("Core/structure.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
-include("Core/structure.jl")
 
 # Labels
 include("Core/labels.jl")
@@ -101,7 +100,7 @@ include("Core/net.jl")
 include("Core/pagetree.jl") # AbstractTree used to print a PnmlNet.
 include("Core/model.jl") # Holds multiple PnmlNets.
 
-include("Core/flatten.jl")
+include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
 
 # Petri Nets
 include("PNet/petrinet.jl")
@@ -111,6 +110,7 @@ include("PNet/metagraph.jl")
 include("Core/show.jl")
 
 # PARSE
+include("Core/xmlutils.jl")
 include("Parse/parseutils.jl")
 include("Parse/anyelement.jl")
 include("Parse/parse.jl")
