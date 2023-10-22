@@ -22,16 +22,16 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 end
 
 pid(o::AbstractPnmlObject)        = o.id
+
 has_name(o::AbstractPnmlObject)   = o.name !== nothing
 name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
 
 has_labels(o::AbstractPnmlObject) = true
 labels(o::AbstractPnmlObject)     = o.labels
 
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && has_label(labels(o), tagvalue)
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
 
-has_tools(o::AbstractPnmlObject) = true
 tools(o::AbstractPnmlObject)     = o.tools
 
 has_graphics(o::AbstractPnmlObject) = !isnothing(o.graphics)

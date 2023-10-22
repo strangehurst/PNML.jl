@@ -24,7 +24,7 @@ using PNML:
     find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
     get_label, get_labels, getfirst, graphics,
     has_arc, has_graphics, has_label, has_labels, has_name, has_place,
-    has_refplace, has_reftransition, has_structure, has_text, has_tools, has_transition,
+    has_refplace, has_reftransition, has_transition,
     hastag, haspid,
     ispid, idregistry, inc_indent, indent, infos,
     initialMarking, initial_marking, marking_type, marking_value_type,

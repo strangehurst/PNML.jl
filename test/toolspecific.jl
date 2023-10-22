@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
-    has_tools, tools, parse_toolspecific, place, parse_place, TokenGraphics,
+    tools, parse_toolspecific, place, parse_place, TokenGraphics,
     coordinate_value_type
 
 str1 = (tool="JARP", version="1.2", str = """
@@ -83,8 +83,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         n::XMLNode = xmlroot(str)
         p0 = parse_place(n, PnmlCoreNet(), registry())
 
-        @test has_tools(p0)
-        @test_call has_tools(p0)
         t = tools(p0)
         @test_call tools(p0)
         @test t isa Vector{ToolInfo}

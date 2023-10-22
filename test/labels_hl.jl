@@ -33,7 +33,6 @@ all_nettypes, ishighlevel
         @show mark PNML.summary(mark)
     end
     @test PNML.has_graphics(mark) == true
-    @test PNML.has_tools(mark) == true
     @test PNML.has_labels(mark) == false
 
     markterm = value(mark)
@@ -104,7 +103,6 @@ end
         @show insc
     end
     @test PNML.has_graphics(insc) == true
-    @test PNML.has_tools(insc) == true
     @test PNML.has_labels(insc) == false
 
     inscterm = value(insc)
@@ -222,7 +220,6 @@ end
         @test value(typ) isa PNML.AbstractSort
         @test value(typ).declaration == :N2
         @test PNML.has_graphics(typ) == true
-        @test PNML.has_tools(typ) == true
         @test PNML.has_labels(typ) == false
         end
 end
@@ -252,7 +249,6 @@ end
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) === :or
         @test PNML.has_graphics(cond) == true
-        @test PNML.has_tools(cond) == true
         @test PNML.has_labels(cond) == false
     end
 end

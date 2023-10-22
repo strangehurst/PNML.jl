@@ -53,6 +53,7 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 =#
 
+
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
@@ -60,23 +61,13 @@ function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     return getfield(o, prop_name)
 end
 
-
-"Return `true` if label has `text` field."
-has_text(l::AbstractLabel) = hasproperty(l, :text) && !isnothing(l.text)
-
-"Return `text` field."
+# All Labels are expected to have a `text` field.
+"Return `text` field. All labels must have one that may be `nothing`."
 text(l::AbstractLabel) = l.text
-
-"Return `true` if label has a `structure` field."
-has_structure(l::AbstractLabel) = hasproperty(l, :structure) && !isnothing(l.structure)
-
-"Return `structure` field."
-structure(l::AbstractLabel) = has_structure(l) ? l.structure : nothing
 
 has_graphics(l::AbstractLabel) = !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics
 
-has_tools(l::AbstractLabel) = true
 tools(l::AbstractLabel) = l.tools
 
 has_labels(l::AbstractLabel) = false
@@ -91,8 +82,8 @@ $(TYPEDEF)
 Label that may be displayed.
 Differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
 """
-
 abstract type Annotation <: AbstractLabel end
+
 """
 $(TYPEDEF)
 Annotation label that uses <text> and <structure>.
@@ -152,6 +143,8 @@ PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
+
+"Use with `Fix2` to filter anything with tag accessor."
 hastag(l, tagvalue) = tag(l) === tagvalue
 
 function get_labels(v, tagvalue::Symbol)

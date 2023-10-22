@@ -86,10 +86,6 @@ end
     @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
-    @test PNML.has_graphics(decl) == false
-    @test PNML.has_tools(decl)    == true
-    @test PNML.has_labels(decl)   == false
-
     @test PNML.graphics(decl) === nothing
     @test isempty(PNML.tools(decl))
     #@test PNML.labels(decl) !== nothing
