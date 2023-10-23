@@ -88,17 +88,6 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
 nettype(::Arc{T}) where {T <: PnmlType} = T
 
 inscription(arc::Arc) = _evaluate(arc.inscription)
-
-"""
-$(TYPEDSIGNATURES)
-Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
-"""
-function default_inscription end
-default_inscription(x::Any) = error("no default inscription for $(typeof(x))")
-default_inscription(::PnmlType)              = Inscription(one(Int))
-default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
-default_inscription(pntd::AbstractHLCore)    = HLInscription("default", default_one_term(pntd))
-
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 """

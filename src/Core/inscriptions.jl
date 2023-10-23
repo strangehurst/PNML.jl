@@ -85,3 +85,13 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 
 inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
 inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
+
+"""
+$(TYPEDSIGNATURES)
+Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
+"""
+function default_inscription end
+default_inscription(x::Any) = error("no default inscription for $(typeof(x))")
+default_inscription(::PnmlType)              = Inscription(one(Int))
+default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
+default_inscription(pntd::AbstractHLCore)    = HLInscription("default", default_one_term(pntd))
