@@ -378,18 +378,6 @@ methods(PNML.outs)  # hide
 
 Both have `ObjectCommon`. [`HLAnnotation`](@ref) adds optional <text>, <structure>.
 
-### has\_text
-[`has_text`](@ref)
-```@example methods
-methods(PNML.has_text) # hide
-```
-
-### has\_structure
-[`has_structure`](@ref)
-```@example methods
-methods(PNML.has_structure) # hide
-```
-
 ### text
 [`text`](@ref)
 ```@example methods
@@ -400,12 +388,6 @@ methods(PNML.text) # hide
 [`value`](@ref)
 ```@example methods
 methods(PNML.value) # hide
-```
-
-### structure
-[`structure`](@ref)
-```@example methods
-methods(PNML.structure) # hide
 ```
 
 ### has_labels - do any exist
