@@ -100,7 +100,7 @@ This concrete type is for "unclaimed" labels in a high-level petri net.
 Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
 [`Declaration`](@ref), [`HLMarking`](@ref), [`HLInscription`](@ref).
 """
-struct HLLabel{PNTD} <: HLAnnotation
+struct HLLabel{PNTD} <: Annotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
@@ -109,14 +109,6 @@ struct HLLabel{PNTD} <: HLAnnotation
     #TODO make all labels have text &/or structure?
 end
 
-
-#! TODO Add abstract options here.
-
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-
 #------------------------------------------------------------------------------
 # Pnml Label
 #------------------------------------------------------------------------------
@@ -124,18 +116,18 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
+Wrap a `AnyXmlNode[]` holding a PNML Label. Use the XML tag as identifier.
+
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
 of the structure defined by the pntd schema.
-
-Wrap a `AnyXmlNode[]` holding a pnml label. Use the XML tag as identifier.
 
 See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag``.
+    elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag`.
 end
 
 PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
@@ -145,7 +137,7 @@ elements(label::PnmlLabel) = label.elements
 
 
 "Use with `Fix2` to filter anything with tag accessor."
-hastag(l, tagvalue) = tag(l) === tagvalue
+hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
 function get_labels(v, tagvalue::Symbol)
     Iterators.filter(Fix2(hastag, tagvalue), v)

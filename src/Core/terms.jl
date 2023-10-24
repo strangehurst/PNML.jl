@@ -1,35 +1,3 @@
-#TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
-
-term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
-term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
-
-"""
-$(TYPEDSIGNATURES)
-
-One as integer, float, or empty term with a value of one.
-"""
-function default_one_term end
-default_one_term(pntd::PnmlType) = Term(:one, one(term_value_type(pntd)))
-default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
-
-"""
-$(TYPEDSIGNATURES)
-
-Zero as integer, float, or empty term with a value of zero.
-"""
-function default_zero_term end
-default_zero_term(pntd::PnmlType) = Term(:zero, zero(term_value_type(pntd)))
-default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
-
-"""
-$(TYPEDSIGNATURES)
-
-True as boolean or term with a value of `true`.
-"""
-function default_bool_term end
-default_bool_term(pntd::PnmlType) = Term(:bool, true)
-default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
-
 ####################################################################################
 #
 ####################################################################################
@@ -39,7 +7,7 @@ $(TYPEDEF)
 Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
 
 An abstract type in the pnml XML specification, concrete `Term`s are
-found within the <structure> element of a [`HLAnnotation`](@ref) label.
+found within the <structure> element of a label.
 
 Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
 
@@ -117,9 +85,9 @@ value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! emp
         if !isnothing(i)
             return value(t.elements[i]) == "true" # should be a booleanconstant
         else
-            println("(t::Term) needs to handle term ast!");
+            println("(t::Term) needs to handle term ast! returning nothing");
             map(println, elements(t))
-            # Until then, return a random value in the   domain.
+            #todo Until then, return a random value in the   domain.
             #
             #! v = _evaluate(default)
             return nothing
@@ -133,13 +101,80 @@ end
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Example input: <variable refvariable="varx"/>
+"""
+struct Variable <: AbstractTerm
+    variableDecl::Symbol
+end
+
+#TODO Define something for these. They are not really traits.
+struct BuiltInOperator <: AbstractOperator end
+struct BuiltInConst <: AbstractOperator end
+struct MultiSetOperator <: AbstractOperator end
+struct PnmlTuple <: AbstractOperator end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+User defined operators only define an abbreviation. See [`NamedOperator`](@ref)
+"""
+struct UserOperator <: AbstractOperator
+    declaration::Symbol # of a NamedOperator
+end
+UserOperator(str::AbstractString) = UserOperator(Symbol(str))
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
+    "Identity of operators's declaration."
+    declaration::Symbol
+    input::I
+    output::Vector{AbstractSort} # Sorts
+end
+
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
 #
 # PNML many-sorted algebra syntax tree term zoo follows.
 #
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
 
-struct FEConstant
-    id::Symbol
-    name::String
-end
+#TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
+
+term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
+term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
+
+"""
+$(TYPEDSIGNATURES)
+
+One as integer, float, or empty term with a value of one.
+"""
+function default_one_term end
+default_one_term(pntd::PnmlType) = Term(:one, one(term_value_type(pntd)))
+default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
+
+"""
+$(TYPEDSIGNATURES)
+
+Zero as integer, float, or empty term with a value of zero.
+"""
+function default_zero_term end
+default_zero_term(pntd::PnmlType) = Term(:zero, zero(term_value_type(pntd)))
+default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
+
+"""
+$(TYPEDSIGNATURES)
+
+True as boolean or term with a value of `true`.
+"""
+function default_bool_term end
+default_bool_term(pntd::PnmlType) = Term(:bool, true)
+default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))

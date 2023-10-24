@@ -114,20 +114,17 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
     NamedOperator(id, name, parameters, def)
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
+#! errors?! "$(TYPEDSIGNATURES)"
 function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "variabledecl")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
     name = node["name"]
-    # Assert only 1 element
+    # Assert only 1 element? operator or variable?
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
-    # XML attributes and the sort
     VariableDeclaration(id, name, sort) #TODO register id?
-end
+end,
 
 """
 $(TYPEDSIGNATURES)
@@ -152,12 +149,10 @@ $(TYPEDSIGNATURES)
 Defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place from _many-sorted algebra_ is different from
 the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
-"""
-function parse_type end
 
-# Allow all pntd's places to have a <type> label.
-# Non high-level are expecting a numeric sort: eltype(sort) <: Number.
-# See default_sort
+Allow all pntd's places to have a <type> label.  Non high-level are expecting a numeric sort: eltype(sort) <: Number.
+See [`default_sort`](@ref)`
+"""
 function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "type")
     text::Maybe{AbstractString} = nothing
@@ -325,7 +320,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         #println("$sortid sort: "); dump(body)
         part = parse_partition(body)
         srt = PartitionSort(part.id, part.name, part.sort, part.elements)
-
+        @show typeof(srt) srt
     else
         error("parse_sort sort $sortid not implemented")
     end

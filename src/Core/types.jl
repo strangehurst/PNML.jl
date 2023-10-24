@@ -104,7 +104,7 @@ value(axn::AnyXmlNode) = axn.val
 # AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}
 # vs.
 # AnyElement Symbol, Vector{AnyXmlNode}
-# also PnmlLabel, Term, Structure
+# also PnmlLabel, Term,
 
 """
 $(TYPEDEF)

@@ -76,8 +76,10 @@ include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 
 # Parts of Labels and Nodes.
-include("Core/terms.jl")
-include("Core/sorts.jl")
+include("Core/constterm.jl") #
+include("Core/sorts.jl") # Sorts are used in Variables, Operators
+include("Core/terms.jl") # Variables and Operators
+
 include("Core/structure.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
@@ -89,7 +91,7 @@ include("Core/inscriptions.jl")
 include("Core/markings.jl")
 include("Core/conditions.jl")
 include("Core/sorttype.jl")
-include("Core/declarations.jl")
+include("Core/declarations.jl") # Declarations Label.
 include("Core/rates.jl")
 
 # Nodes

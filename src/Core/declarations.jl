@@ -37,10 +37,13 @@ function Base.empty!(d::Declaration)
     empty!(declarations(d))
 end
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 """
 $(TYPEDEF)
 Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
-The definitions are attached to PNML nets and/or pages.
+The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
 """
 abstract type AbstractDeclaration end #<: AbstractLabel end
 
@@ -70,15 +73,6 @@ abstract type SortDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 """
 abstract type OperatorDeclaration <: AbstractDeclaration end
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct UserOperator <: AbstractOperator
-    "Identity of operators's declaration."
-    declaration::Symbol #
-end
-UserOperator(str::AbstractString) = UserOperator(Symbol(str))
 
 """
 $(TYPEDEF)
@@ -124,7 +118,7 @@ elements(partition::PartitionSort) = partition.element
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Partition Element.
+Partition Element is part of a Partition Sort.
 """
 struct PartitionElement # <: SortDeclaration should be something for accessors
     id::Symbol
@@ -153,40 +147,15 @@ end
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+See [`UserOperator`](@ref)
 """
 struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString}
     parameter::Vector{V}
-    def::T # opearator or variable term (with associated sort)
+    def::T # operator or variable term (with associated sort)
 end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", [], nothing)
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Example input: <variable refvariable="varx"/>
-"""
-struct Variable <: AbstractTerm
-    variableDecl::Symbol
-end
-
-#TODO Define something for these. They are not really traits.
-struct BuiltInOperator <: AbstractOperator end
-struct BuiltInConst <: AbstractOperator end
-struct MultiSetOperator <: AbstractOperator end
-struct PnmlTuple <: AbstractOperator end
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-"""
-struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
-    "Identity of operators's declaration."
-    declaration::Symbol
-    input::I
-    output::Vector{AbstractSort} # Sorts
-end

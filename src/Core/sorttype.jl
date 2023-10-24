@@ -6,7 +6,7 @@ A places's <type> label's <structure> element holds a concrete subtype of [`Abst
 Defines the sort of a place, hence use of `sorttype`.
 
 For high-level nets there will be a rich language of sorts using [`UserSort`](@ref)
-and [`NamedSort`](@ref).
+and [`NamedSort`](@ref). For other `PnmlNet`s they may still be used internally
 
 Notes:
 - `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
@@ -15,7 +15,7 @@ Notes:
 - We use sorts even for non-high-level nets for type-stability.
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
-struct SortType <: AbstractLabel # Not limited to high-level dialects.
+struct SortType <: Annotation # Not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
     sort::Base.RefValue{AbstractSort} # Content of <structure>.
     graphics::Maybe{Graphics}
