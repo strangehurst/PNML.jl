@@ -9,6 +9,15 @@ From the 'primer': built-in sorts of Symmetric Nets are the following:
 booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
 
 The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
+
+# Extras
+
+Notes:
+- `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
+- `UserSort` holds the id symbol of a `NamedSort`.
+- Here 'type' means a 'term' from the many-sorted algebra.
+- We use sorts even for non-high-level nets.
+- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
 abstract type AbstractSort end
 Base.eltype(::Type{<:AbstractSort}) = Int
@@ -57,12 +66,10 @@ Are the sorts `eltype` the same? First the must have the same type. Then any con
 equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b)
 equals(a::AbstractSort, b::AbstractSort) = false
 
-# Unless they have content, for example an enumeration, just the types are sufficent.
+# Returns true if sorts are semantically the same sort, even in two different objects.
+# Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
+# Unless they have content just the types are sufficent.
 equalSorts(a::AbstractSort, b::AbstractSort) = true
-#= From pnmlframework
-Returns true if sorts are semantically the same sort, even in two different objects.
-Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
-=#
 
 #------------------------------------------------------------------------------
 """
@@ -74,9 +81,9 @@ Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
 Used in a `Place`s sort type property.
 """
 struct UserSort <: AbstractSort
-    declaration::Symbol
+    declaration::Symbol #TODO validate as a NamedSort
 end
-UserSort() = UserSort(:integer)
+UserSort() = UserSort(:integer) #! use a better symbol? Is a built-in sort.
 UserSort(s::AbstractString) = UserSort(Symbol(s))
 equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
 

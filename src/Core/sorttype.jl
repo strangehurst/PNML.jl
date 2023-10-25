@@ -7,13 +7,6 @@ Defines the sort of a place, hence use of `sorttype`.
 
 For high-level nets there will be a rich language of sorts using [`UserSort`](@ref)
 and [`NamedSort`](@ref). For other `PnmlNet`s they may still be used internally
-
-Notes:
-- `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
-- `UserSort` holds the id symbol of a `NamedSort`.
-- Here 'type' means a 'term' from the many-sorted algebra.
-- We use sorts even for non-high-level nets for type-stability.
-- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
 struct SortType <: Annotation # Not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
