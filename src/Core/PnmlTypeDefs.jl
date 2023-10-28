@@ -14,7 +14,6 @@ export PnmlType,
 # Singletons (concrete types)
 export PnmlCoreNet, PTNet,
        HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG,
-       StochasticNet, TimedNet, OpenNet,
        ContinuousNet
 
 # Functions
@@ -116,24 +115,6 @@ TODO: Continuous Petri Net
 """
 struct ContinuousNet <: AbstractContinuousNet end
 
-"""
-$(TYPEDEF)
-TODO: Open Petri Net
-"""
-struct OpenNet <: AbstractContinuousNet end
-
-"""
-$(TYPEDEF)
-TODO: Stochastic Petri Net
-"""
-struct StochasticNet <: AbstractHLCore end
-
-"""
-$(TYPEDEF)
-TODO: Timed Petri Net
-"""
-struct TimedNet <: AbstractHLCore end
-
 #----------------------------------------------------------------------------------------
 
 """
@@ -179,9 +160,9 @@ const default_pntd_map =
             "resetinhibitorptnet" => :ptnet,
 
             "continuous" => :continuous,
-            "stochastic" => :stochastic,
-            "timed" => :timednet,
-            "timednet" => :timednet,
+            #"stochastic" => :stochastic,
+            #"timed" => :timednet,
+            #"timednet" => :timednet,
             "nonstandard" => :pnmlcore,
             "open" => :pnmlcore,
             )
@@ -197,8 +178,6 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
                                             :hlnet => HLPNG(),
                                             :pt_hlpng => PT_HLPNG(),
                                             :symmetric => SymmetricNet(),
-                                            :stochastic => StochasticNet(),
-                                            :timednet => TimedNet(),
                                             :continuous => ContinuousNet()
                                             )
 

@@ -14,12 +14,6 @@ using PrettyPrinting
 using Test, Logging
 testlogger = TestLogger()
 
-const core_types = ("pnmlcore","ptnet")
-const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric","stochastic","timednet")
-const ex_types = ("continuous",)
-nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
-
-
 @testset "SIMPLENET" begin
         str1 = """
     <?xml version="1.0"?>
@@ -268,6 +262,10 @@ using Graphs, MetaGraphsNext
 using PNML: AbstractPetriNet, enabled
 
 
+const core_types = ("pnmlcore","ptnet")
+const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric")
+const ex_types = ("continuous",)
+nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()

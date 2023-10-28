@@ -2,11 +2,9 @@ using Pkg, Documenter, PNML
 
 using PNML:
     PnmlType,
-    StochasticNet,
     SymmetricNet,
-    TimedNet,
     PnmlCoreNet,
-    OpenNet,
+    ContinuousNet,
     HLCoreNet,
     HLPNG # High-Level Petri Net Graph
 

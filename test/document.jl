@@ -137,7 +137,7 @@ end
         end
     end
 
-    @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :stochastic, :timednet]
+    @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric]
         for net in PNML.find_nets(model, t)
             @test net.type === pnmltype(t)
         end

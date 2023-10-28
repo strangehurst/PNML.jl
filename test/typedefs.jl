@@ -22,9 +22,6 @@ using PNML: XMLNode, pnmltype
     @test pntd_symbol("symmetric" ) === :symmetric
     @test pntd_symbol("symmetricnet") === :symmetric
 
-
-    @test pntd_symbol("stochastic"  ) === :stochastic
-    @test pntd_symbol("timed"       ) === :timednet
     @test pntd_symbol("nonstandard" ) === :pnmlcore
     @test pntd_symbol("open"        ) === :pnmlcore
     @test pntd_symbol("continuous"  ) === :continuous
@@ -45,11 +42,8 @@ end
     @test pnmltype(PTNet()) === PTNet()
     @test pnmltype(HLCoreNet()) === HLCoreNet()
     @test pnmltype(HLPNG()) === HLPNG()
-    @test pnmltype(OpenNet()) === OpenNet()
     @test pnmltype(PT_HLPNG()) === PT_HLPNG()
-    @test pnmltype(StochasticNet()) === StochasticNet()
     @test pnmltype(SymmetricNet()) === SymmetricNet()
-    @test pnmltype(TimedNet()) === TimedNet()
 
     @test pnmltype("foo") === PnmlCoreNet()
 
@@ -67,10 +61,7 @@ end
     @test pnmltype("pt_hlpng"  ) === PT_HLPNG()
     @test pnmltype("symmetric" ) === SymmetricNet()
     @test pnmltype("symmetricnet") === SymmetricNet()
-    @test pnmltype("stochastic"  ) === StochasticNet()
-    @test pnmltype("timed"       ) === TimedNet()
     @test pnmltype("nonstandard" ) === PnmlCoreNet()
-    @test pnmltype("open"        ) === PnmlCoreNet()
     @test pnmltype("continuous"  ) === ContinuousNet()
 
     @test pnmltype(:pnmlcore)   === PnmlCoreNet()
@@ -79,8 +70,6 @@ end
     @test pnmltype(:hlnet)      === HLPNG()
     @test pnmltype(:pt_hlpng)   === PT_HLPNG()
     @test pnmltype(:symmetric)  === SymmetricNet()
-    @test pnmltype(:stochastic) === StochasticNet()
-    @test pnmltype(:timednet)   === TimedNet()
     @test pnmltype(:continuous) === ContinuousNet()
 end
 
