@@ -50,7 +50,7 @@ end
                                 <feconstant id="FE1" name="1"/>
                            </finiteenumeration>""", pntd, registry()) isa PNML.FiniteEnumerationSort
 
-    @test parse_sort(xml"<finiteintrange start=\"2\" stop=\"3\"/>", pntd, registry()) isa PNML.FiniteIntRangeSort
+    @test parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry()) isa PNML.FiniteIntRangeSort
 
     @test parse_sort(xml"""<productsort>
                                 <usersort declaration="speed"/>

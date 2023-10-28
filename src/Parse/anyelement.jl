@@ -149,7 +149,7 @@ function start_stop(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable c
     start = tryparse(Int, startstr)
     isnothing(start) && throw(ArgumentError("failed to parse as integer: $startstr"))
 
-    stopstr = _attribute(vx, :stop)
+    stopstr = _attribute(vx, :end) # XML Schema used 'end', we use 'stop'.
     stop = tryparse(Int, stopstr)
     isnothing(stop) && throw(ArgumentError("failed to parse as integer: $stopstr"))
     return (start, stop)

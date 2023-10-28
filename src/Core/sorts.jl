@@ -136,7 +136,7 @@ $(TYPEDEF)
 """
 struct FiniteIntRangeSort{T} <: AbstractSort
     start::T
-    stop::T
+    stop::T # XML Schema calls this 'end'.
 end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
 equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
