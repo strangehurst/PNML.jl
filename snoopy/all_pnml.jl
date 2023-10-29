@@ -1,7 +1,7 @@
 #julia -e 'include("all_pnml.jl"); testpn()'
 #julia -e 'include("all_pnml.jl"); testpn(dir="MCC")'
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
-g#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
+#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 
@@ -45,7 +45,7 @@ function testpn(dirs = ("examples",);
 
     expfile = joinpath(outdir, "exceptions.txt")
     cd(outdir) do
-        x =  read(`find . -type f -exec grep -nH 'CAUGHT' \{\} \;`, String)
+        x =  read(`find . -type f -exec grep -nHA3 'CAUGHT' \{\} \;`, String)
         write(expfile, x)
     end
     sort!(df, [:time])
@@ -89,7 +89,7 @@ function per_file!(df, outdir::AbstractString, filename::AbstractString)
             println("-----")
 
         catch e
-            println("\nCAUGHT EXCEPTION: ", sprint(showerror, e))
+            println("\nCAUGHT EXCEPTION: ", sprint(showerror, e, Base.catch_backtrace()))
             if e isa InterruptException
                 rethrow()
             end
