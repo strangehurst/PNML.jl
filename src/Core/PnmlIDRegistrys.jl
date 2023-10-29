@@ -4,8 +4,7 @@ Petri Net Markup Language identifier registry.
 module PnmlIDRegistrys
 using Preferences
 using DocStringExtensions
-using Base: @kwdef
-#using Base.Threads
+
 export PnmlIDRegistry, register_id!, isregistered, registry
 
 """
@@ -37,8 +36,8 @@ function Base.show(io::IO, idregistry::PnmlIDRegistry)
     # , " duplicate action: ", nameof(idregistry.duplicate))
 end
 
-duplicate_id_warn(id::Symbol)  = @warn(lazy"ID already registered: $id")
-duplicate_id_error(id::Symbol) = throw(ArgumentError(lazy"ID already registered: $id"))
+duplicate_id_warn(id::Symbol)  = @warn("ID already registered: $id")
+duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
 duplicate_id_none(_::Symbol)  = nothing
 
 Base.Enums.@enum DuplicateActions none warn error
