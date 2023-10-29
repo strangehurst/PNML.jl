@@ -98,11 +98,10 @@ function text_content end
 function text_content(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
     tc_index = findfirst(x -> tag(x) === :text, vx)
     isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
-    return text_content(vx[tc_index])
+    return @inbounds text_content(vx[tc_index])
 end
 
 function text_content(axn::AnyXmlNode)
-    #println("\ntext_content"); dump(axn)
     @assert tag(axn) === :text
     vals = value(axn)::Vector{AnyXmlNode} #TODO use nonallocating iteratable collection
     _attribute(vals, :content)
@@ -111,9 +110,9 @@ end
 function _attribute(vx, tagid)
     _index = findfirst(x -> tag(x) === tagid, vx)
     isnothing(_index) && throw(ArgumentError("missing $tagid attribute"))
-    val = value(vx[_index])
+    val = @inbounds value(vx[_index])
     val isa AbstractString ||
-        throw(ArgumentError("wrong type, expected AbstractString got $(typeof(val))"))
+        throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(val))"))
     return val
  end
 
@@ -128,7 +127,6 @@ Array{PNML.AnyXmlNode}((2,))
     val: String "0"
 =#
 function id_name(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
-    #println("id_name"); dump(vx)
     idval = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
     return (Symbol(idval), nameval)
@@ -141,17 +139,19 @@ Array{PNML.AnyXmlNode}((2,))
     tag: Symbol start
     val: String "2"
   2: PNML.AnyXmlNode
-    tag: Symbol stop
+    tag: Symbol end
     val: String "3"
 =#
 function start_stop(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
     startstr = _attribute(vx, :start)
     start = tryparse(Int, startstr)
-    isnothing(start) && throw(ArgumentError("failed to parse as integer: $startstr"))
+    isnothing(start) &&
+        throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
 
     stopstr = _attribute(vx, :end) # XML Schema used 'end', we use 'stop'.
     stop = tryparse(Int, stopstr)
-    isnothing(stop) && throw(ArgumentError("failed to parse as integer: $stopstr"))
+    isnothing(stop) &&
+        throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
     return (start, stop)
 end
 
@@ -165,8 +165,8 @@ function parse_partition(vx::Vector{AnyXmlNode}) #TODO use nonallocating iterata
     nameval = _attribute(vx, :name)
 
     sort_index = findfirst(x -> tag(x) === :usersort, vx)
-    isnothing(sort_index) && throw(ArgumentError("missing partition sort"))
-    sortv = value(vx[sort_index])::Vector
+    isnothing(sort_index) && throw(ArgumentError("<partition> missing <usersort> element"))
+    sortv = @inbounds value(vx[sort_index])::Vector
     sortdecl = parse_usersort(sortv)::AbstractString
     sortval = UserSort(sortdecl)
 
@@ -175,6 +175,8 @@ function parse_partition(vx::Vector{AnyXmlNode}) #TODO use nonallocating iterata
         e = parse_partitionelement(value(pe))
         push!(elements, e)
     end
+    @assert !isempty(elements) """partitions are expected to have at least one partition element.
+    id = idval, name = nameval, sort = sortval"""
     return (id = Symbol(idval), name = nameval, sort = sortval, elements = elements)
 end
 
