@@ -14,12 +14,12 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
 
 @testset "exception for Any" begin
     pntd = "this is not valid" # counts as `::Any`
-    @test_throws ErrorException default_condition(pntd)
-    @test_throws ErrorException default_inscription(pntd)
-    @test_throws ErrorException default_marking(pntd)
-    @test_throws ErrorException default_sort(pntd)
-    @test_throws ErrorException default_sorttype(pntd)
-    @test_throws ArgumentError default_bool_term(pntd)
+    @test_throws r"^ArgumentError" default_condition(pntd)
+    @test_throws "ArgumentError: no default inscription for String" default_inscription(pntd)
+    @test_throws "ArgumentError: no default marking for String" default_marking(pntd)
+    @test_throws "ArgumentError: no default sort for String" default_sort(pntd)
+    @test_throws "ArgumentError: no default sorttype for String" default_sorttype(pntd)
+    @test_throws "ArgumentError: expected a PnmlType, got: String" default_bool_term(pntd)
 end
 
 using Printf

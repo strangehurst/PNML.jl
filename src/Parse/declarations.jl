@@ -48,12 +48,11 @@ function _parse_decl_structure(node::XMLNode, pntd::T, idregistry) where {T <: P
 end
 
 # <declaration><structure><declarations><namedsort id="weight" name="Weight">...
-# optional, required,  zero or more
 "Return vector of AbstractDeclaration subtypes."
 function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
-    EzXML.haselement(node) || throw(ArgumentError("missing <declarations> element"))
-    declarations = EzXML.firstelement(node)
+    EzXML.haselement(node) || throw(ArgumentError("missing <declaration> <structure> element"))
+    declarations = EzXML.firstelement(node) # <declaration> contains only <declarations>.
     check_nodename(declarations, "declarations")
     decs = AbstractDeclaration[]
     for child in EzXML.eachelement(declarations)
@@ -77,9 +76,9 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(reg, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = node["name"]
+    name = @inbounds node["name"]
 
-    def = parse_sort(EzXML.firstelement(node), pntd, reg)
+    def = parse_sort(EzXML.firstelement(node), pntd, reg) #! register id?
     NamedSort(id, name, def)
 end
 
@@ -102,6 +101,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
         if tag == "def"
             # NamedOperators have a def element that is a operator or variable term.
             def = parse_term(EzXML.firstelement(child), pntd, idregistry)
+
         elseif tag == "parameter"
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
@@ -110,7 +110,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
             @warn "element '$tag' invalid as child of <namedoperator>, allowed: def, parameter"
         end
     end
-    isnothing(def) && error("<namedoperator> $name $id does not have a <def> element")
+    isnothing(def) && (throw ∘ ArgumentError)("""<namedoperator name="$name" id="$id" does not have a <def> element""")
     NamedOperator(id, name, parameters, def)
 end
 
@@ -120,7 +120,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDReg
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
-    name = node["name"]
+    name = @inbounds node["name"]
     # Assert only 1 element? operator or variable?
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
     VariableDeclaration(id, name, sort) #TODO register id?
@@ -134,7 +134,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = node["name"]
+    name = @inbounds node["name"]
 
     @info("unknown declaration: tag = $nn id = $id name = $name")
 
@@ -185,7 +185,7 @@ Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 """
 function parse_sorttype_term(typenode, pntd, idregistry)
     check_nodename(typenode, "structure")
-    EzXML.haselement(typenode) || error("missing sort type term element in <structure>")
+    EzXML.haselement(typenode) || (throw ∘ ArgumentError)("missing sort type element in <structure>")
     term = EzXML.firstelement(typenode) # Expect only child element to be a sort.
     # No multiset sort for the sort of a Place. Who checks/cares?
     parse_sort(term, pntd, idregistry)
@@ -196,9 +196,9 @@ isEmptyContent(body::Vector{AnyXmlNode}) = (length(body) == 1 &&
                                             isempty(value(first(body))))
 
 function parse_feconstants(body::Vector{AnyXmlNode})
-    @assert all(fec -> tag(fec) === :feconstant, body) "zero or more FEConstants"
     feconstants = FEConstant[]
     for fec in body
+        @assert tag(fec) === :feconstant "only :feconstant allowed, found $(tag(fec))"
         onefec = value(fec)::Vector{AnyXmlNode}
         #println("fconstant"); dump(onefec)
         @assert all(o -> isa(o, AnyXmlNode), onefec)
@@ -241,30 +241,34 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     sortid = ucl.first::Symbol # Tag identifies sort
     body = ucl.second::Vector{AnyXmlNode} # value is array
 
-    sortid ∈ sort_ids || (@warn("invalid sort type '$sortid', allowed: $sort_ids"), dump(ucl), false)
+    sortid ∈ sort_ids || begin
+        @warn("invalid sort type '$sortid', allowed: $sort_ids")
+        dump(ucl)
+        false
+    end
 
     if sortid === :usersort
         decl = parse_decl(body)
         srt = UserSort(decl)
 
     elseif sortid === :dot
-        @assert isEmptyContent(body)
+        @assert isEmptyContent(body) ":dot"
         srt = DotSort()
 
     elseif sortid === :bool
-        @assert isEmptyContent(body)
+        @assert isEmptyContent(body) ":bool"
         srt = BoolSort()
 
     elseif sortid === :integer
-        @assert isEmptyContent(body)
+        @assert isEmptyContent(body) ":integer"
         srt = IntegerSort()
 
     elseif sortid === :natural
-        @assert isEmptyContent(body)
+        @assert isEmptyContent(body) ":natural"
         srt = NaturalSort()
 
     elseif sortid === :positive
-        @assert isEmptyContent(body)
+        @assert isEmptyContent(body) ":positive"
         srt = PositiveSort()
 
     elseif sortid === :cyclicenumeration
@@ -273,43 +277,39 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         srt = CyclicEnumerationSort(fec)
 
     elseif sortid === :finiteenumeration
-        #println("$sortid sort: "); dump(body)
-        @assert all(x -> tag(x) === :feconstant, body)
+        @assert all(x -> tag(x) === :feconstant, body) ":finiteenumeration"
         fec = parse_feconstants(body)
         srt = FiniteEnumerationSort(fec)
 
     elseif sortid === :finiteintrange
-        #println("$sortid sort: "); dump(body)
         (start, stop) = start_stop(body)
         srt = FiniteIntRangeSort(start, stop)
 
     elseif sortid === :list
         println("$sortid sort: "); dump(body)
-        error("IMPLEMENT ME")
+        error("IMPLEMENT ME: sort = $sortid")
         srt = ListSort()
     elseif sortid === :string
         println("$sortid sort: "); dump(body)
-        error("IMPLEMENT ME")
+        error("IMPLEMENT ME: sort = $sortid")
         srt = StringSort()
 
     elseif sortid === :multisetsort
-        #println("$sortid sort: "); dump(body)
         # There will be 1 usersort
-        @assert length(body) == 1
+        @assert length(body) == 1 ":mulitsetsort requires one basis sort"
         usort = first(body)
-        @assert tag(usort) === :usersort
+        @assert tag(usort) === :usersort ":multisetsort holds unexpected sort $(tag(usort))"
 
         decl = parse_decl(value(usort))
         srt = MultisetSort(UserSort(decl))
 
     elseif sortid === :productsort
-        #println("$sortid sort: "); dump(body)
         # orderded collection of UserSorts
         usorts = UserSort[]
         for axn in body # of productsort
-            @assert tag(axn) === :usersort
+            @assert tag(axn) === :usersort ":productsort holds unexpected sort $(tag(axn))"
             value(axn) isa Vector{AnyXmlNode} ||
-                error("expected Vector{AnyXmlNode}, got $(typeof(value(axn)))")
+                (throw ∘ ArgumentError)("expected Vector{AnyXmlNode}, got $(typeof(value(axn)))")
             decl = parse_decl(value(axn))
             srt2 = UserSort(decl)
             push!(usorts, srt2)
@@ -317,79 +317,78 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         srt = ProductSort(usorts)
 
     elseif sortid === :partition
-        #println("$sortid sort: "); dump(body)
         part = parse_partition(body)
         srt = PartitionSort(part.id, part.name, part.sort, part.elements)
-        @show typeof(srt) srt
+        @show typeof(srt) srt #! wrong srt type
     else
-        error("parse_sort sort $sortid not implemented")
+        (throw ∘ ArgumentError)("parse_sort sort $sortid not implemented")
     end
 
     @show srt
     return srt
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "usersort")
-    EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
-    UserSort(anyelement(node, pntd, reg))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     nn = check_nodename(node, "usersort")
+#     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
+#     UserSort(anyelement(node, pntd, reg))
+# end
 
 
 
 
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "arbitraryoperator")
-    Term(unparsed_tag(node, pntd, reg))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     nn = check_nodename(node, "arbitraryoperator")
+#     Term(unparsed_tag(node, pntd, reg))
+# end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_arbitrarysort(node, pntd, reg)
-    nn = check_nodename(node, "arbitrarysort")
-    Term(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_arbitrarysort(node, pntd, reg)
+#     nn = check_nodename(node, "arbitrarysort")
+#     Term(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
+# end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "bool")
-    Term(unparsed_tag(node, pntd, reg))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     nn = check_nodename(node, "bool")
+#     Term(unparsed_tag(node, pntd, reg))
+# end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "mulitsetsort")
-    Term(unparsed_tag(node, pntd, reg))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     nn = check_nodename(node, "mulitsetsort")
+#     Term(unparsed_tag(node, pntd, reg))
+# end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    nn = check_nodename(node, "productsort")
-    Term(unparsed_tag(node, pntd, reg))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     nn = check_nodename(node, "productsort")
+#     Term(unparsed_tag(node, pntd, reg))
+# end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_useroperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    check_nodename(node, "useroperator")
-    EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
-    UserOperator(Symbol(node["declaration"]))
-end
+# """
+# $(TYPEDSIGNATURES)
+# """
+# function parse_useroperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+#     check_nodename(node, "useroperator")
+#     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
+#     UserOperator(Symbol(node["declaration"]))
+# end
 
 """
 $(TYPEDSIGNATURES)

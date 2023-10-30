@@ -73,7 +73,7 @@ pagedict(n::PnmlNet) = n.pagedict
 page_idset(n::PnmlNet)  = n.page_set
 
 netdata(n::PnmlNet)  = n.netdata
-netsets(n::PnmlNet)  = error("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
+netsets(n::PnmlNet)  = (throw ∘ ArgumentError)("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
 
 place_idset(n::PnmlNet)         = keys(placedict(n))
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))

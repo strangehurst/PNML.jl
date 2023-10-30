@@ -71,7 +71,7 @@ graphics(l::AbstractLabel) =  l.graphics
 tools(l::AbstractLabel) = l.tools
 
 has_labels(l::AbstractLabel) = false
-labels(l::AbstractLabel) = error("$(typeof(l)) does not have labels attached")
+labels(l::AbstractLabel) = (throw ∘ ArgumentError)("AbstractLabel $(typeof(l)) does not have labels attached")
 
 # Labels include functors: markings, inscription, conditions #TODO test for Callable
 _evaluate(x::AbstractLabel) = x()

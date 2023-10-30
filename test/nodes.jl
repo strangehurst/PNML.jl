@@ -83,7 +83,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test parse_transition(node, pntd, registry()) isa Transition
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test_throws ErrorException parse_transition(node, pntd, registry())
+    @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd, registry())
 
     node = xml"""<transition id ="t4">
         <condition>

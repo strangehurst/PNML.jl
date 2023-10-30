@@ -81,7 +81,7 @@ Return a [`PnmlNet`](@ref)`.
 function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
     haskey(node, "id") || throw(MissingIDException(nn))
-    haskey(node, "type") || throw(MalformedException(lazy"$nn missing type"))
+    haskey(node, "type") || throw(MalformedException("$nn missing type"))
     type = node["type"]
     if CONFIG.verbose
         println("""
@@ -144,8 +144,8 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
             @warn "<net> ignoring unexpected <graphics> element"
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
-        else # labels (unclaimed) are everything-else
-            @warn "unexpected child of <net>: $tag"
+        else # Labels are everything-else here.
+            @warn "unexpected label child of <net>: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
     end
@@ -331,9 +331,8 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
-        else # labels (unclaimed) are everything-else
-            # We expecte at least one unclaimed label here!
-            tag != "rate" && @warn "unexpected child of <transition>: $tag"
+        else # Labels (unclaimed) are everything-else. We expect at least one here!
+            tag != "rate" && @warn "unexpected label child of <transition>: $tag id=$id name=$name"
             add_label!(labels, child, pntd, idregistry)
         end
     end
@@ -578,7 +577,7 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
-        else # labels (unclaimed) are everything-else
+        else #TODO <structure>?
             @warn("ignoring unexpected child of <inscription>: $tag")
             #add_label!(labels, child, pntd, idregistry)
         end
@@ -642,7 +641,7 @@ function parse_marking_term(marknode, pntd, idregistry)
             return Term(:value, number_value(marking_value_type(pntd), content_string))
         end
     end
-    error("missing marking term element in <structure>")
+    (throw ∘ ArgumentError)("missing marking term element in <structure>")
 end
 
 """
@@ -689,7 +688,7 @@ function parse_inscription_term(inode, pntd, idregistry)::Term
             return Term(:value, number_value(inscription_value_type(pntd), content_string))
         end
     end
-    error("missing inscription term element in <structure>")
+    (throw ∘ ArgumentError)("missing inscription term element in <structure>")
 end
 
 """
@@ -746,7 +745,7 @@ function parse_condition_term(cnode::XMLNode, pntd::PnmlType, idregistry)
             return Term(:value, number_value(condition_value_type(pntd), content_string))
         end
     end
-    error("missing condition term element in <structure>")
+    (throw ∘ ArgumentError)("missing condition term element in <structure>")
 end
 
 

@@ -46,7 +46,7 @@ Return default condition based on `PNTD`. Has meaning of true or always.
 ```
 """
 function default_condition end
-default_condition(x::Any) = error("no default condition for $(typeof(x))")
+default_condition(x::Any) = (throw ∘ ArgumentError)("no default condition for $(typeof(x))")
 default_condition(::PnmlType)              = Condition(true)
 default_condition(::AbstractContinuousNet) = Condition(true)
 default_condition(pntd::AbstractHLCore)    = Condition(default_bool_term(pntd))

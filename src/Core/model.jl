@@ -22,7 +22,7 @@ Return all `nets` of `model`.
 nets(model::PnmlModel) = model.nets
 namespace(model::PnmlModel) = model.namespace
 idregistry(model::PnmlModel) = model.reg
-netsets(m::PnmlModel)  = error("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
+netsets(m::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
 
 """
 $(TYPEDSIGNATURES)

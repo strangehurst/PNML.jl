@@ -25,7 +25,7 @@ $(TYPEDSIGNATURES)
 Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
 """
 function default_marking end
-default_marking(x::Any) = error("no default marking for $(typeof(x))")
+default_marking(x::Any) = (throw ∘ ArgumentError)("no default marking for $(typeof(x))")
 default_marking(::PnmlType)              = Marking(zero(Int))
 default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
 default_marking(pntd::AbstractHLCore)    = HLMarking(default_zero_term(pntd))

@@ -186,12 +186,12 @@ Return id of referenced place. If trim is `true` (default) the reference is remo
 function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
     #CONFIG.verbose && println("deref_place net $netid refP $id")
-    has_refplace(net, id) || error("expected refplace $id to be found in net $netid")
+    has_refplace(net, id) || (throw ∘ ArgumentError)("expected refplace $id to be found in net $netid")
     rp = refplace(net, id)
     isnothing(rp) && # Something is really, really wrong.
-        error("failed to lookup reference place id $id in net $netid)")
+        (throw ∘ ArgumentError)("failed to lookup reference place id $id in net $netid)")
     has_place(net, refid(rp)) || has_refplace(net, refid(rp)) ||
-        error("$(refid(rp)) is not a place or reference place")
+        (throw ∘ ArgumentError)("$(refid(rp)) is not a place or reference place")
     if trim
         delete!(refplacedict(net), id)
         has_refplace(net, id) &&
@@ -208,12 +208,12 @@ Return id of referenced transition. If trim is `true` (default) the reference is
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
     #CONFIG.verbose && println("deref_transition net $netid refT $id")
-    has_reftransition(net, id) || error("expected reftransition $id in net $netid")
+    has_reftransition(net, id) || (throw ∘ ArgumentError)("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
     isnothing(rt) && # Something is really, really wrong.
-        error("failed to lookup reference transition id $id in net $netid")
+        (throw ∘ ArgumentError)("failed to lookup reference transition id $id in net $netid")
     has_transition(net, refid(rt)) || has_reftransition(net, refid(rt)) ||
-        error("$(refid(rt)) is not a transition or reference transition in net $netid")
+        (throw ∘ ArgumentError)("$(refid(rt)) is not a transition or reference transition in net $netid")
     if trim
         delete!(reftransitiondict(net), id)
         has_reftransition(net, id) &&

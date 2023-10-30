@@ -120,7 +120,7 @@ end
     @test inscript() == value(inscript) == 12
     @test graphics(inscript) !== nothing
     @test tools(inscript) === nothing || !isempty(tools(inscript))
-    @test_throws ErrorException labels(inscript) # === nothing || !isempty(labels(inscript))
+    @test_throws "does not have labels attached" labels(inscript) # === nothing || !isempty(labels(inscript))
 end
 
 @testset "labels $pntd" for pntd in all_nettypes()
