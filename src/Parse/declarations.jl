@@ -319,12 +319,12 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     elseif sortid === :partition
         part = parse_partition(body)
         srt = PartitionSort(part.id, part.name, part.sort, part.elements)
-        @show typeof(srt) srt #! wrong srt type
+        #! @show typeof(srt) srt #! wrong srt type
     else
         (throw ∘ ArgumentError)("parse_sort sort $sortid not implemented")
     end
 
-    @show srt
+    #! @show srt
     return srt
 end
 

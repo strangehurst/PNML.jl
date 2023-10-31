@@ -184,7 +184,7 @@ end
     net = PNML.first_net(model)
     @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
-    @show snet
+    #@show snet
     β = PNML.rates(snet)
     #@show β
     @test β == LVector(birth=0.3)
@@ -330,20 +330,19 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         @show MetaGraphsNext.edge_labels(mg) |> collect
     end
 
-    @showtime C  = incidence_matrix(anet)
-    @showtime m₀ = initial_markings(anet)
-    @showtime e  = enabled(anet, m₀)
-    @showtime muladd(C', [1,0,0,0], m₀)
-    @show C m₀ e
+    C  = incidence_matrix(anet)
+    m₀ = initial_markings(anet)
+    e  = enabled(anet, m₀)
+    muladd(C', [1,0,0,0], m₀)
 
     @test values(enabled(anet, m₀)) == [true,false,false,false]
     @test enabled(anet, m₀) == [true,false,false,false]
     @test enabled(anet, m₀) == Bool[1,0,0,0]
 
-    @show m₁ =  muladd(C', [1,0,0,0], m₀) typeof(m₁)
+    m₁ =  muladd(C', [1,0,0,0], m₀)
     #! no longer a LVector
     #@test values(enabled(anet, m₁)) == [false,true,false,false]
-
+#=
     @show m₂ =  muladd(C', [0,1,0,0], m₁) typeof(m₂)
     #@test enabled(anet, m₂) == [false,false,true,false]
 
@@ -363,5 +362,5 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     #@test enabled(anet, m₈) == [true,false,false,false]
     @show m₉ =  muladd(C', [1,0,0,0], m₈)
     #@test enabled(anet, m₉) == [false,false,false,true]
-
+=#
 end

@@ -157,7 +157,7 @@ C[transition,place] = inscription(transition,place) - inscription(place,transiti
 function incidence_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     #TODO  Make Labelled Matrix? ComponentArray?
-    println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
+    #!println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
     C = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
     z = zero(inscription_value_type(net))
     for (t,transition_id) in enumerate(transition_idset(net))
@@ -284,7 +284,7 @@ while building upon and improving the IR. Does not try to conform to any standar
 Much of the complexity possible with pnml is ignored.
 
 The first use is to recreate the lotka-volterra model from Petri.jl examples.
-Find it in the examples folder. This is a stochastic Petri Net.
+Find it in the examples folder. This is a stochastic net or reaction net.
 
 Liberties are taken with pnml, remember that standards-checking is not a goal.
 A less-simple consumer of the IR can impose standards-checking.

@@ -21,7 +21,7 @@ _evaluate(x::AbstractTerm) = x() # functor
 $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 """
-abstract type AbstractOperator end
+abstract type AbstractOperator <: AbstractTerm end
 
 """
 $(TYPEDEF)
@@ -105,7 +105,10 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Example input: <variable refvariable="varx"/>
+Variable refers to a varaible declaration.
+Example input: <variable refvariable="varx"/>.
+
+#TODO examples of use, modifying and accessing
 """
 struct Variable <: AbstractTerm
     variableDecl::Symbol
@@ -114,6 +117,25 @@ end
 #TODO Define something for these. They are not really traits.
 struct BuiltInOperator <: AbstractOperator end
 struct BuiltInConst <: AbstractOperator end
+
+#for sorts: integer, natural, positive
+integer_operators = (addition = "Addition",
+                     subtraction = "Subtraction",
+                     mult = "Multiplication",
+                     div = "Division",
+                     mod = "Modulo",
+                     gt = "GreaterThan",
+                     geq = "GreaterThanOrEqual",
+                     lt = "LessThan",
+                     leq = "LessThanOrEqual",)
+integer_constants = (one = one(Int), zero = zero(Int))
+
+
+
+
+
+
+
 struct MultiSetOperator <: AbstractOperator end
 struct PnmlTuple <: AbstractOperator end
 
