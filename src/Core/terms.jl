@@ -20,6 +20,12 @@ _evaluate(x::AbstractTerm) = x() # functor
 """
 $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
+
+"...can be a built-in constant or a built-in operator, a multiset operator which among others
+can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
+sequence of sorts as its input sorts, and exactly one output sort, which defines its signature."
+
+See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 """
 abstract type AbstractOperator <: AbstractTerm end
 
@@ -27,8 +33,8 @@ abstract type AbstractOperator <: AbstractTerm end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Note that Term is an abstract element in the pnml specification with no XML tag.
-Here we use it as a concrete wrapper around high-level many-sorted algebra terms
+Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm``.
+Here we use `Term` as a concrete wrapper around **unparsed** high-level many-sorted algebra terms
 **AND EXTEND** to also wrapping "single-sorted" values.
 
 By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
@@ -114,6 +120,9 @@ struct Variable <: AbstractTerm
     variableDecl::Symbol
 end
 
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+
 #TODO Define something for these. They are not really traits.
 struct BuiltInOperator <: AbstractOperator end
 struct BuiltInConst <: AbstractOperator end
@@ -153,12 +162,16 @@ UserOperator(str::AbstractString) = UserOperator(Symbol(str))
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+"...arbitrary sorts and operators do not come with a definition of the sort or operation;
+they just introduce a new symbol without giving a definition for it. "
+
+    See [`UserOperator`](@ref)
 """
 struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
-    "Identity of operators's declaration."
     declaration::Symbol
-    input::I
-    output::Vector{AbstractSort} # Sorts
+    input::Vector{AbstractSort} # Sorts
+    output::I # sort of operator
 end
 
 #-----------------------------------------------------------------------------------
