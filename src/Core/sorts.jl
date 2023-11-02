@@ -24,28 +24,35 @@ Base.eltype(::Type{<:AbstractSort}) = Int
 
 #_evaluate(x::AbstractSort) = x() #! functor not for sort?
 
-"Built-in sort whose `eltype` is `Bool`"
+"""
+Built-in sort whose `eltype` is `Bool`
+
+Operators: and, or, not, imply
+Functions: equality, inequality
+"""
 struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 
-"Built-in sort whose `eltype` is `Int`"
+"""
+Built-in sort whose `eltype` is `Int`
+"""
 struct DotSort <: AbstractSort end
 Base.eltype(::Type{<:DotSort}) = Int
 
 """
-"Built-in sort whose `eltype` is `Int`"
+Built-in sort whose `eltype` is `Int`
 """
 struct IntegerSort <: AbstractSort end
 Base.eltype(::Type{<:IntegerSort}) = Int
 
 """
-"Built-in sort whose `eltype` is `Int`"
+Built-in sort whose `eltype` is `Int`
 """
 struct NaturalSort <: AbstractSort end
 Base.eltype(::Type{<:NaturalSort}) = Int # Uint ?
 
 """
-"Built-in sort whose `eltype` is `Int`"
+Built-in sort whose `eltype` is `Int`
 """
 struct PositiveSort <: AbstractSort end
 Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
@@ -53,6 +60,7 @@ Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
 
 """
 "Built-in sort whose `eltype` is `Float64`"
+
 Real numbers are not part of the PNML Specification.
 We stick them into the type hierarchy for convenience rather than mathematical correctness.
 """

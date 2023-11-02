@@ -26,6 +26,11 @@ x(c::Coordinate) = c.x
 y(c::Coordinate) = c.y
 Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
+function Base.show(io::IO, c::Coordinate)
+    compact = get(io, :compact, false)::Bool
+    print(io, "(", c.x, ",", c.y, ")")
+end
+
 #-------------------
 """
 Fill attributes as strings.
@@ -39,6 +44,15 @@ $(TYPEDFIELDS)
     gradient_color::String = ""
     gradient_rotation::String = ""
 end
+
+function Base.show(io::IO, fill::Fill)
+    pprint(io, fill)
+end
+
+PrettyPrinting.quoteof(f::Fill) = :(Fill($(PrettyPrinting.quoteof(f.color)),
+                                         $(PrettyPrinting.quoteof(f.image)),
+                                         $(PrettyPrinting.quoteof(f.gradient_color)),
+                                         $(PrettyPrinting.quoteof(f.gradient_rotation))))
 
 #-------------------
 """
@@ -57,6 +71,18 @@ $(TYPEDFIELDS)
     decoration::String = ""
 end
 
+function Base.show(io::IO, font::Font)
+    pprint(io, font)
+end
+
+PrettyPrinting.quoteof(f::Font) = :(Font($(PrettyPrinting.quoteof(f.family)),
+                                         $(PrettyPrinting.quoteof(f.style)),
+                                         $(PrettyPrinting.quoteof(f.weight)),
+                                         $(PrettyPrinting.quoteof(f.size)),
+                                         $(PrettyPrinting.quoteof(f.align)),
+                                         $(PrettyPrinting.quoteof(f.rotation)),
+                                         $(PrettyPrinting.quoteof(f.decoration))))
+
 #-------------------
 """
 Line attributes as strings.
@@ -70,6 +96,15 @@ $(TYPEDFIELDS)
     style::String = ""
     width::String = ""
 end
+
+function Base.show(io::IO, line::Line)
+    pprint(io, line)
+end
+
+PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
+                                         $(PrettyPrinting.quoteof(l.style)),
+                                         $(PrettyPrinting.quoteof(l.shape)),
+                                         $(PrettyPrinting.quoteof(l.width))))
 
 #-------------------
 """
@@ -87,6 +122,17 @@ $(TYPEDFIELDS)
     offset::Coordinate{T} = Coordinate{T}(zero(T), zero(T))
     positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
 end
+
+function Base.show(io::IO, g::Graphics)
+    print(io, "Graphics(",
+            g.dimension, ", ",
+            g.fill, ", ",
+            g.font, ", ",
+            g.line, ", ",
+            g.offset, ", ",
+            g.positions, ")")
+end
+
 
 @kwdef struct ArcGraphics{T <: coordinate_value_type()}
     line::Line = Line(; color = "black")

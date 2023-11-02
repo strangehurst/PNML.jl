@@ -14,8 +14,9 @@ Implies this is 4 or 6 distinct things.
 
 sort of a term is the sort of the variable or the output sort of the operator.
 
-built-in sorts and operators
-- Declarations
+Declarations ? declarationslabel holding sort, variable, operator
+
+built-in sorts and operators (sorts have associated operators)
 - Multisets
 - Booleans
 - Finite Enumerations, Cyclic Enumerations, and Finite Integer Ranges
@@ -135,7 +136,29 @@ PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
+function Base.show(io::IO, labelvector::Vector{PnmlLabel})
+    show(io, MIME"text/plain"(), labelvector)
+end
+function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel})
+    print(io, indent(io), typeof(labelvector), "[")
+    io = inc_indent(io)
+    for (i,label) in enumerate(labelvector)
+        i > 1 && print(io, indent(io))
+        pprint(io, label)
+        i < length(labelvector) && print(io, "\n")
+    end
+    print(io, "]")
 
+end
+
+function Base.show(io::IO, label::PnmlLabel)
+    pprint(io, label)
+end
+
+PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
+                                                   $(PrettyPrinting.quoteof(l.elements))))
+
+#--------------------------------------
 "Use with `Fix2` to filter anything with tag accessor."
 hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 

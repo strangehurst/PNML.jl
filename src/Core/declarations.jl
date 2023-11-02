@@ -50,6 +50,13 @@ abstract type AbstractDeclaration end #<: AbstractLabel end
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
 
+function Base.show(io::IO, declare::AbstractDeclaration)
+    pprint(io, declare)
+end
+
+quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name))))
+
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -96,6 +103,12 @@ struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
 sort(namedsort::NamedSort) = namedsort.def
+
+function Base.show(io::IO, nsort::NamedSort)
+    pprint(IOContext(io, :displaysize => (24, 180)), nsort)
+end
+
+quoteof(n::NamedSort) = :(NamedSort($(quoteof(n.id)), $(quoteof(n.name)), $(quoteof(n.def))))
 
 """
 $(TYPEDEF)

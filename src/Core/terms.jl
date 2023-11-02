@@ -81,6 +81,8 @@ Base.eltype(t::Term) = typeof(elements(t))
 #!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
+quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
+
 (t::Term)() = begin
     if typeof(elements(t)) <: Number
         return elements(t)

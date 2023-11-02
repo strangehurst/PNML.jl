@@ -73,3 +73,43 @@ function Base.empty!(page::Page)
     l = labels(page)
     !isnothing(l) && empty!(l)
 end
+
+
+function Base.summary( page::Page)
+    string(typeof(page)," id ", page.id, ", ",
+           " name '", name(page), "', ",
+           length(place_idset(page)), " places, ",
+           length(transition_idset(page)), " transitions, ",
+           length(arc_idset(page)), " arcs, ",
+           isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
+           length(refplace_idset(page)), " refP, ",
+           length(reftransition_idset(page)), " refT, ",
+           length(page_idset(page)), " subpages, ",
+           has_graphics(page) ? " has graphics " : " no graphics",
+           length(tools(page)), " tools, ",
+           length(labels(page)), " labels"
+           )
+end
+
+function show_page_field(io::IO, label::AbstractString, x)
+    println(io, indent(io), label)
+    if !isnothing(x) && length(x) > 0
+        show(inc_indent(io), MIME"text/plain"(), x)
+        print(io, "\n")
+    end
+end
+
+function Base.show(io::IO, page::Page)
+    #TODO Add support for :trim and :compact
+    println(io, indent(io), summary(page))
+    # Start indent here. Will indent subpages.
+    inc_io = inc_indent(io)
+
+    show_page_field(inc_io, "places:",         place_idset(page))
+    show_page_field(inc_io, "transitions:",    transition_idset(page))
+    show_page_field(inc_io, "arcs:",           arc_idset(page))
+    show_page_field(inc_io, "declaration:",    declarations(page))
+    show_page_field(inc_io, "refPlaces:",      refplace_idset(page))
+    show_page_field(inc_io, "refTransitions:", reftransition_idset(page))
+    show_page_field(inc_io, "subpages:",       page_idset(page))
+end

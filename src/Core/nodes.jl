@@ -17,20 +17,16 @@ struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
 end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
-
 initial_marking(place::Place) = place.initialMarking
-
-"""
-$(TYPEDSIGNATURES)
-Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
-"""
-function default_marking end
-default_marking(x::Any) = (throw ∘ ArgumentError)("no default marking for $(typeof(x))")
-default_marking(::PnmlType)              = Marking(zero(Int))
-default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
-default_marking(pntd::AbstractHLCore)    = HLMarking(default_zero_term(pntd))
-
 default_marking(place::Place) = default_marking(place.pntd)
+
+function Base.show(io::IO, place::Place)
+    print(io, summary(place),
+          " id ", place.id,
+          ", name '", name(place), "'",
+          ", type ", place.sorttype,
+          ", initial marking ", initial_marking(place))
+end
 
 #-------------------
 """
@@ -57,6 +53,11 @@ Return value of condition.
 condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
 
 default_condition(transition::Transition) = default_condition(transition.pntd)
+
+function Base.show(io::IO, trans::Transition)
+    print(io, typeof(trans),
+          " id ", pid(trans), ", name '", name(trans), "'", ", condition ", condition(trans))
+end
 
 #-------------------
 """
@@ -86,7 +87,6 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.graphics, a.tools, a.labels)
 
 nettype(::Arc{T}) where {T <: PnmlType} = T
-
 inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
@@ -103,6 +103,14 @@ source(arc::Arc)::Symbol = arc.source
 Return identity symbol of target of `arc`.
 """
 target(arc::Arc)::Symbol = arc.target
+
+function Base.show(io::IO, arc::Arc)
+    print(io, typeof(arc), " id ", arc.id,
+          ", name '", has_name(arc) ? name(arc) : "", "'",
+          ", source: ", source(arc),
+          ", target: ", target(arc),
+          ", inscription: ", arc.inscription)
+end
 
 #-------------------
 """
@@ -136,4 +144,8 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
+end
+
+function Base.show(io::IO, r::ReferenceNode)
+    print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r), ")")
 end

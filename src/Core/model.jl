@@ -52,3 +52,18 @@ $(TYPEDSIGNATURES)
 Return first net contained by `doc`.
 """
 first_net(model) = first(nets(model))
+
+# No indent done here.
+function Base.show(io::IO, pnml::PnmlModel)
+    println(io, summary(pnml))
+    println(io, "namespace = ", namespace(pnml))
+    for (i, net) in enumerate(nets(pnml))
+        show(io, MIME"text/plain"(), net)
+        if i < length(nets(pnml))
+            print(io, "\n")
+        end
+    end
+end
+function Base.summary(pnml::PnmlModel)
+    string(typeof(pnml), " model with ",  length(nets(pnml)), " nets" )
+end

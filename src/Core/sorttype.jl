@@ -20,7 +20,13 @@ SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSo
 
 text(t::SortType)  = t.text
 value(t::SortType) = t.sort[]
-type(t::SortType) = typeof(value(t)) # Look a layer deeper.
+
+"""
+    type(::SortType) -> AbstractSort
+
+Return type of sort object of a `Place`. 
+"""
+type(t::SortType) = typeof(value(t)) # Look a layer deeper at referenced sort object.
 
 
 """

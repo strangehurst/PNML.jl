@@ -23,6 +23,21 @@ infos(ti::ToolInfo) = ti.infos
 
 Base.eltype(::ToolInfo{T}) where {T} = T
 
+function Base.show(io::IO, toolvector::Vector{ToolInfo})
+    for (i, ti) in enumerate(toolvector)
+        print(io, "\n", indent(io), "$i: ")
+        show(io, ti)
+    end
+end
+
+function Base.show(io::IO, ti::ToolInfo)
+    pprint(io, ti)
+end
+
+PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
+                                         $(PrettyPrinting.quoteof(ti.version)),
+                                         $(PrettyPrinting.quoteof(ti.infos))))
+
 ###############################################################################
 
 """
@@ -38,6 +53,10 @@ end
 
 # Empty TokenGraphics is allowed in spec.
 TokenGraphics{T}() where {T <: DecFP.DecimalFloatingPoint} = TokenGraphics{T}(Coordinate{T}[])
+
+function Base.show(io::IO, tg::TokenGraphics)
+    print(io, "positions: ", tg.positions)
+end
 
 ###############################################################################
 """

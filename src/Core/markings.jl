@@ -43,6 +43,14 @@ Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 (mark::Marking)() = _evaluate(value(mark))
 
 
+function Base.show(io::IO, ptm::Marking)
+    pprint(io, ptm)
+end
+
+PrettyPrinting.quoteof(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
+        $(PrettyPrinting.quoteof(m.graphics)),
+        $(PrettyPrinting.quoteof(m.tools))))
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -74,6 +82,18 @@ HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, no
 
 value(m::HLMarking) = m.term
 
+function Base.summary(hlm::HLMarking)
+    string(typeof(hlm))
+end
+
+function Base.show(io::IO, hlm::HLMarking)
+    pprint(io, hlm)
+end
+
+quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
+                                    $(quoteof(graphics(m))), $(quoteof(tools(m)))))
+
+
 #! HLMarking is a multiset, not an expression.
 """
 $(TYPEDSIGNATURES)
@@ -89,3 +109,13 @@ marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking{Term}
 marking_value_type(::Type{<:PnmlType}) = Int
 marking_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
 marking_value_type(::Type{<:AbstractContinuousNet}) = Float64
+
+"""
+$(TYPEDSIGNATURES)
+Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+"""
+function default_marking end
+default_marking(x::Any) = (throw ∘ ArgumentError)("no default marking for $(typeof(x))")
+default_marking(::PnmlType)              = Marking(zero(Int))
+default_marking(::AbstractContinuousNet) = Marking(zero(Float64))
+default_marking(pntd::AbstractHLCore)    = HLMarking(default_zero_term(pntd))

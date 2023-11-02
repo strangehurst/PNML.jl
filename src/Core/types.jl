@@ -122,6 +122,9 @@ AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}) = AnyElement(p.first, p.second)
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements
 
+PrettyPrinting.quoteof(a::AnyElement) = :(AnyElement($(PrettyPrinting.quoteof(a.tag)),
+                                                     $(PrettyPrinting.quoteof(a.elements))))
+
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.
 # The part that needs to know Type details is defined elsewhere. :)

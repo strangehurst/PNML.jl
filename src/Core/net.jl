@@ -138,3 +138,30 @@ has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
 refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
+
+function Base.summary(net::PnmlNet)
+    string( typeof(net), " id ", pid(net),
+            " name '", has_name(net) ? name(net) : "", "', ",
+            " type ", nettype(net), ", ",
+            length(pagedict(net)), " pages ",
+            length(declarations(net)), " declarations",
+            length(tools(net)), " tools, ",
+            length(labels(net)), " labels"
+             )
+end
+
+# No indent here.
+function Base.show(io::IO, net::PnmlNet)
+    println(io, summary(net))
+    iio = inc_indent(io) # Indent any declarations.
+    for decl in declarations(net)
+        print(iio, indent(io))
+        show(iio, MIME"text/plain"(), decl)
+        println(iio, "\n")
+    end
+    show(io, pages(net))
+end
+
+function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
+    show(io, net)
+end
