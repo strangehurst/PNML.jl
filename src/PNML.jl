@@ -79,6 +79,17 @@ include("Core/types.jl") # Abstract Types
 include("Core/constterm.jl") #
 include("Core/sorts.jl") # Sorts are used in Variables, Operators
 include("Core/terms.jl") # Variables and Operators
+include("Core/Terms/arbitrarydeclarations.jl")
+include("Core/Terms/booleans.jl")
+include("Core/Terms/cyclicenumerations.jl")
+include("Core/Terms/dots.jl")
+include("Core/Terms/finiteenumerations.jl")
+include("Core/Terms/finiteintranges.jl")
+include("Core/Terms/integers.jl")
+include("Core/Terms/lists.jl")
+include("Core/Terms/multisets.jl")
+include("Core/Terms/partitions.jl")
+include("Core/Terms/strings.jl")
 
 include("Core/structure.jl")
 include("Core/graphics.jl")
