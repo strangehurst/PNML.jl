@@ -79,7 +79,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(reg, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = @inbounds node["name"]
+    name = node["name"]
 
     def = parse_sort(EzXML.firstelement(node), pntd, reg) #! register id?
     NamedSort(id, name, def)
@@ -123,7 +123,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDReg
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
-    name = @inbounds node["name"]
+    name = node["name"]
     # Assert only 1 element? operator or variable?
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
     VariableDeclaration(id, name, sort) #TODO register id?
@@ -137,7 +137,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = @inbounds node["name"]
+    name = node["name"]
 
     @info("unknown declaration: tag = $nn id = $id name = $name")
 

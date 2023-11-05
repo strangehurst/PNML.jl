@@ -98,7 +98,7 @@ function text_content end
 function text_content(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
     tc_index = findfirst(x -> tag(x) === :text, vx)
     isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
-    return @inbounds text_content(vx[tc_index])
+    return text_content(vx[tc_index])
 end
 
 function text_content(axn::AnyXmlNode)
@@ -110,7 +110,7 @@ end
 function _attribute(vx, tagid)
     _index = findfirst(x -> tag(x) === tagid, vx)
     isnothing(_index) && throw(ArgumentError("missing $tagid attribute"))
-    val = @inbounds value(vx[_index])
+    val = value(vx[_index])
     val isa AbstractString ||
         throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(val))"))
     return val
@@ -166,7 +166,7 @@ function parse_partition(vx::Vector{AnyXmlNode}) #TODO use nonallocating iterata
 
     sort_index = findfirst(x -> tag(x) === :usersort, vx)
     isnothing(sort_index) && throw(ArgumentError("<partition> missing <usersort> element"))
-    sortv = @inbounds value(vx[sort_index])::Vector
+    sortv = value(vx[sort_index])::Vector
     sortdecl = parse_usersort(sortv)::AbstractString
     sortval = UserSort(sortdecl)
 

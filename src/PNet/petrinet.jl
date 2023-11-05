@@ -130,7 +130,7 @@ function input_matrix(petrinet::AbstractPetriNet)
     for (t,transition_id) in enumerate(ransition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
             a = arc(pn, place_id, transition_id)
-            @inbounds I[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            I[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
     return I
@@ -143,7 +143,7 @@ function output_matrix(petrinet::AbstractPetriNet)
     for (t,transition_id) in enumerate(ransition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
             a = arc(net, transition_id, place_id)
-            @inbounds O[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            O[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
     return O
@@ -166,7 +166,7 @@ function incidence_matrix(petrinet::AbstractPetriNet)
             pt = arc(net, place_id, transition_id)
 
             c = (isnothing(tp) ? z : inscription(tp)) - (isnothing(pt) ? z : inscription(pt))
-            @inbounds C[t, p] = c
+            C[t, p] = c
         end
     end
     return C
