@@ -145,7 +145,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # Labels are everything-else here.
-            @warn "unexpected label child of <net>: $tag"
+            @warn "unexpected label of <net> id=$id: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
     end
@@ -332,7 +332,9 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # Labels (unclaimed) are everything-else. We expect at least one here!
-            tag != "rate" && @warn "unexpected label child of <transition>: $tag id=$id name=$name"
+            #! Create extension point here? Add more tag names to list?
+            tag != "rate" &&
+                @warn "unexpected label of <transition> id=$id: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
     end
@@ -522,6 +524,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "initialMarking")
+ #=
     value = nothing
     structure = nothing
     graphics::Maybe{Graphics} = nothing
@@ -553,7 +556,17 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
         #end; a > 0 && println("parse_initialMarking allocated ", a)
     end
-    Marking(something(value, zero(marking_value_type(pntd))), graphics, tools)
+=#
+    l = parse_label_content(node, parse_structure, pntd, idregistry)
+    value = if isnothing(l.text)
+        zero(marking_value_type(pntd))
+    else
+        number_value(marking_value_type(pntd), l.text) #! (string ∘ strip ∘EzXML.nodecontent)(child))
+    end
+    if !isnothing(l.term) # There was a <structure> tag.
+        @warn "$nn <structure> element not used YET" l.term
+    end
+    Marking(value, l.graphics, l.tools)
 end
 
 """

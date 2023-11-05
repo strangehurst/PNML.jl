@@ -28,7 +28,7 @@ end
 
 # Ensure not seeing very similar label while getting default.
 @testset "get defaulted rate label $pntd" for pntd in all_nettypes()
-    tr = @test_logs (:warn, "unexpected label child of <transition>: rateX id=birth name=nothing") PNML.parse_transition(
+    tr = @test_logs (:warn, "unexpected label of <transition> id=birth: rateX") PNML.parse_transition(
             xml"""<transition id ="birth"><rateX> <text>0.3</text> </rateX></transition>""",
             pntd, registry())
     @test PNML.rate(tr) ≈ 0.0

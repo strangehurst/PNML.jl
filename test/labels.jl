@@ -67,8 +67,9 @@ end
         </unknown>
     </initialMarking>
     """
-    # Parse
-    mark = @test_logs (:warn, "<initialMarking> ignoring unknown child 'unknown'") parse_initialMarking(node, pntd, registry())
+    # Parse ignoring unexpected child
+    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking(node, pntd, registry())
+    # mark = @test_logs (:warn, "<initialMarking> ignoring unknown child 'unknown'") parse_initialMarking(node, pntd, registry())
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
