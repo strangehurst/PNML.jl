@@ -4,12 +4,13 @@
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
+using LoggingExtras
+
 
 pnml_files(files) = filter(files) do f
     isfile(f) && success(run(Cmd(`grep -qF "<pnml" $f`, ignorestatus=true)))
 end
 
-outputlog = "runlog.txt"
 
 function testpn(dir::AbstractString = "examples";
                 topdir = "/home/jeff/Projects/Resources/PetriNet/PNML",
@@ -23,44 +24,60 @@ function testpn(dirs = ("examples",);
 
     outdir = joinpath(outdir, Dates.format(now(), dateformat"yyyymmddHHMM"))
     mkpath(outdir)
-    @show outdir
+
+    consolelogger = ConsoleLogger(stdout, Logging.Debug)
+    outputlog = joinpath(outdir, "testrun.log")
+    filelogger = FileLogger(outputlog)
+    demux_logger = TeeLogger(consolelogger, MinLevelLogger(filelogger, Logging.Debug))
+    global_logger(demux_logger)
+    
+    @info "outdir =  $outdir"
+    @info "outputlog = $outputlog"
 
     df = DataFrame()
-    for srcdir in dirs #! Loop over input directories
-
+    
+    @time for srcdir in dirs #! Loop over input directories
         in_dir  = joinpath(topdir, srcdir)
         cd(in_dir) do
-            @show pwd()
+            @info pwd()
             for (root, dirs, files) in walkdir(".")
                 flist = map(f -> joinpath(root, f), filter(endswith(r"pnml|xml"), files))
                 pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" $f`, ignorestatus=true))), flist)
                 for file in pnmls
                     per_file!(df, outdir, file)
-                    #TODO grep
                 end
             end
             println()
         end
     end
-
-    expfile = joinpath(outdir, "exceptions.txt")
+    
+    # Exception Summary Report
+    xfile = open(joinpath(outdir, "exceptions.txt"), "w")
     cd(outdir) do
-        x =  read(`find . -type f -exec grep -nHA3 'CAUGHT' \{\} \;`, String)
-        write(expfile, x)
-    end
+        for (root, dirs, files) in walkdir(".")
+            flist = map(f -> joinpath(root, f), files)
+            for f in filter(f -> success(run(Cmd(`grep -q "^CAUGHT EXCEPTION" $f`, ignorestatus=true))), flist)
+                x = read(`grep -nHP -A3 '^CAUGHT' $f`, String)
+                write(xfile, x, "\n")
+            end
+        end
+    end # cd
+    close(xfile)
+    
     sort!(df, [:time])
     write(joinpath(outdir, "DataFrame.txt"), repr(df))
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
 end
 
+#-----------------------------------
 function per_file!(df, outdir::AbstractString, filename::AbstractString)
-    outfile = joinpath(outdir, (first ∘ splitext)(filename))
+    outfile = joinpath(outdir, string(filename, ".txt")) #(first ∘ splitext)(filename))
     #@show filename
 
     isfile(outfile) && println("Warning overwriting $outfile")
     mkpath(dirname(outfile)) # Create output directory.
 
-    println(filename, " input size = ", filesize(filename)) # Display path to file and size.
+    @info "File $filename size = $(filesize(filename))" # Display path to file and size.
     Base.redirect_stdio(stdout=outfile, stderr=outfile) do
         try
             println(stat(filename))
@@ -89,10 +106,15 @@ function per_file!(df, outdir::AbstractString, filename::AbstractString)
             println("-----")
 
         catch e
-            println("\nCAUGHT EXCEPTION: ", sprint(showerror, e, Base.catch_backtrace()))
+            bt = Base.catch_backtrace()
+
+            println("\n\nCAUGHT EXCEPTION:", sprint(showerror, e, bt)) # full backtrace to file
+            @info "CAUGHT EXCEPTION: $(sprint(showerror,e))"
             if e isa InterruptException
                 rethrow()
             end
         end # try
     end   # redirect
+    # print exceptions
+    run(Cmd(`grep "^CAUGHT EXCEPTION" $outfile`, ignorestatus=true))
 end
