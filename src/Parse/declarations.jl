@@ -21,6 +21,7 @@ Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsor
 function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "declaration")
     decls::Maybe{Vector{AbstractDeclaration}} = nothing
+    text = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
 
@@ -30,6 +31,8 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         CONFIG.verbose && println("    $tag")
         if tag == "structure"
             decls = _parse_decl_structure(child, pntd, idregistry)
+        elseif tag == "text"
+            text = string(strip(EzXML.nodecontent(child)))
         elseif tag == "graphics"
             graphics => parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
@@ -39,7 +42,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         end
     end
 
-    Declaration(something(decls, AbstractDeclaration[]), graphics, tools)
+    Declaration(something(decls, AbstractDeclaration[]), text, graphics, tools)
 end
 
 "Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
@@ -142,6 +145,26 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     UnknownDeclaration(id, name, nn, content)
 end
 
+# Pass in parser function (or functor?)
+function parse_label_content(node::XMLNode, termparser, pntd::PnmlType, idregistry)
+    text::Maybe{AbstractString} = nothing # Union{String,SubString}
+    term::Maybe{Any} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools  = ToolInfo[]
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        @match tag begin
+            "text"         => (text = parse_text(child, pntd, idregistry))
+            "structure"    => (term = termparser(child, pntd, idregistry)) # Apply function/functor
+            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
+            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
+            _              => @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: $tag")
+        end
+    end
+    return (; text, term, graphics, tools)
+end
+
 #------------------------
 """
 $(TYPEDSIGNATURES)
@@ -155,23 +178,8 @@ See [`default_sort`](@ref)`
 """
 function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "type")
-    text::Maybe{AbstractString} = nothing
-    sortterm::Maybe{Any} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        @match tag begin
-            "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (sortterm = parse_sorttype_term(child, pntd, idregistry))
-            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
-            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              => @warn("ignoring unexpected child of <type>: $tag")
-        end
-    end
-
-    SortType(text, Ref{AbstractSort}(something(sortterm, default_sort(pntd)())), graphics, tools)
+    l = parse_label_content(node, parse_sorttype_term, pntd, idregistry)
+    SortType(l.text, Ref{AbstractSort}(something(l.term, default_sort(pntd)())), l.graphics, l.tools)
 end
 
 """
@@ -212,7 +220,7 @@ end
 function parse_decl(body::Vector{AnyXmlNode})
     @assert length(body) == 1
     d = first(body)
-    @assert tag(d) === :declaration
+    tag(d) !== :declaration && @error "expected ':declaration', found $(tag(d))" body
     return value(d)::AbstractString
 end
 parse_decl(str::AbstractString) = str
@@ -249,26 +257,28 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
 
     if sortid === :usersort
         decl = parse_decl(body)
+        @show decl
         srt = UserSort(decl)
 
     elseif sortid === :dot
-        @assert isEmptyContent(body) ":dot"
+        isEmptyContent(body) || @error "sort :dot not empty" body
+        #@assert isEmptyContent(body) ":dot"
         srt = DotSort()
 
     elseif sortid === :bool
-        @assert isEmptyContent(body) ":bool"
+        isEmptyContent(body) || @error "sort :bool not empty" body
         srt = BoolSort()
 
     elseif sortid === :integer
-        @assert isEmptyContent(body) ":integer"
+        isEmptyContent(body) || @error "sort :integer not empty" body
         srt = IntegerSort()
 
     elseif sortid === :natural
-        @assert isEmptyContent(body) ":natural"
+        isEmptyContent(body) || @error "sort :natural not empty" body
         srt = NaturalSort()
 
     elseif sortid === :positive
-        @assert isEmptyContent(body) ":positive"
+        isEmptyContent(body) || @error ":positive not empty" body
         srt = PositiveSort()
 
     elseif sortid === :cyclicenumeration
@@ -277,7 +287,8 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         srt = CyclicEnumerationSort(fec)
 
     elseif sortid === :finiteenumeration
-        @assert all(x -> tag(x) === :feconstant, body) ":finiteenumeration"
+        all(x -> tag(x) === :feconstant, body) ||
+            @error ":finiteenumeration must only contain :feconstants" body
         fec = parse_feconstants(body)
         srt = FiniteEnumerationSort(fec)
 
@@ -298,19 +309,22 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         # There will be 1 usersort
         @assert length(body) == 1 ":mulitsetsort requires one basis sort"
         usort = first(body)
-        @assert tag(usort) === :usersort ":multisetsort holds unexpected sort $(tag(usort))"
+        tag(usort) === :usersort  ||
+            @error ":multisetsort holds unexpected sort $(tag(usort))" usort
 
         decl = parse_decl(value(usort))
+        @show decl
         srt = MultisetSort(UserSort(decl))
 
     elseif sortid === :productsort
         # orderded collection of UserSorts
         usorts = UserSort[]
         for axn in body # of productsort
-            @assert tag(axn) === :usersort ":productsort holds unexpected sort $(tag(axn))"
+            tag(axn) === :usersort || @warn ":productsort holds unexpected sort $(tag(axn))" body
             value(axn) isa Vector{AnyXmlNode} ||
                 (throw ∘ ArgumentError)("expected Vector{AnyXmlNode}, got $(typeof(value(axn)))")
             decl = parse_decl(value(axn))
+            @show decl
             srt2 = UserSort(decl)
             push!(usorts, srt2)
         end

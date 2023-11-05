@@ -16,12 +16,12 @@ struct Declaration <: Annotation
 	#OperatorDeclarations           xml:"structure>declarations>namedoperator"
 	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
 	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
-
+    text::Maybe{String}
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Vector{ToolInfo}
 end
 
-Declaration() = Declaration(Any[], nothing, ToolInfo[])
+Declaration() = Declaration(Any[], nothing, nothing, ToolInfo[])
 
 declarations(d::Declaration) = d.declarations
 
