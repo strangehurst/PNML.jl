@@ -524,47 +524,17 @@ $(TYPEDSIGNATURES)
 """
 function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "initialMarking")
- #=
-    value = nothing
-    structure = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
-
-    if isempty(EzXML.nodecontent(node))
-        # Treat missing value as if the <initialMarking> element was absent.
-        @warn lazy"missing  <initialMarking> nodecontent, using default $(_evaluate(default_marking(pntd)))"
-        value = _evaluate(default_marking(pntd))
-    else
-        #a = @allocated begin
-        for child in EzXML.eachelement(node)
-            tag = EzXML.nodename(child)
-            # We extend to real numbers.
-            if tag == "text"
-                value = number_value(marking_value_type(pntd), (string ∘ strip ∘ EzXML.nodecontent)(child))
-            elseif tag == "structure"
-                # Allow <structure> for non-high-level labels.
-                structure = parse_structure(child, pntd, idregistry)
-                @warn "$nn <structure> element not used" structure
-            elseif tag == "graphics" # Specification does not forbid PTNet for using this.
-                graphics = parse_graphics(child, pntd, idregistry)
-            elseif tag == "toolspecific" # tokengraphics can live here for PTNet (in specification)
-                # Because it is in a `ToolInfo`, `<tokengraphics>`, could appear anywhere and be ignored.
-                add_toolinfo!(tools, child, pntd, idregistry)
-            else
-                @warn "<initialMarking> ignoring unknown child '$tag'"
-            end
-        end
-        #end; a > 0 && println("parse_initialMarking allocated ", a)
-    end
-=#
     l = parse_label_content(node, parse_structure, pntd, idregistry)
     value = if isnothing(l.text)
         zero(marking_value_type(pntd))
     else
-        number_value(marking_value_type(pntd), l.text) #! (string ∘ strip ∘EzXML.nodecontent)(child))
+        number_value(marking_value_type(pntd), l.text)
     end
+    value = isnothing(l.text) ?
+        zero(marking_value_type(pntd)) : number_value(marking_value_type(pntd), l.text)
+
     if !isnothing(l.term) # There was a <structure> tag.
-        @warn "$nn <structure> element not used YET" l.term
+        @warn "$nn <structure> element not used YET by non high-levl" l.term
     end
     Marking(value, l.graphics, l.tools)
 end
@@ -612,31 +582,10 @@ child. We extend the pnml standard by allowing node content to be numeric:
 parsed to `Int` and `Float64`.
 """
 function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
-    nn = check_nodename(node, "hlinitialMarking")
-    text::Maybe{AbstractString} = nothing
-    markterm::Maybe{AbstractTerm} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
-
-    #a = @allocated begin
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "text"
-            text = string(strip(EzXML.nodecontent(child)))
-        elseif tag == "structure"
-            markterm = parse_marking_term(child, pntd, idregistry)
-            #! TODO match sort of place
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd, idregistry)
-        elseif tag == "toolspecific"
-            add_toolinfo!(tools, child, pntd, idregistry)
-        else
-            @warn("ignoring unexpected child of <hlinitialMarking>: $tag")
-        end
-    end
-    #end; a > 0 && println("parse_hlinitialMarking allocated ", a)
-
-    HLMarking(text, something(markterm, default_zero_term(pntd)), graphics, tools)
+    check_nodename(node, "hlinitialMarking")
+    l = parse_label_content(node, parse_marking_term, pntd, idregistry)
+    #! TODO match sort of place
+    HLMarking(l.text, something(l.term, default_zero_term(pntd)), l.graphics, l.tools)
 end
 
 """
@@ -664,26 +613,8 @@ hlinscriptions are expressions.
 """
 function parse_hlinscription(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR)
     check_nodename(node, "hlinscription")
-
-    text::Maybe{AbstractString} = nothing
-    inscriptterm::Maybe{AbstractTerm} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools = ToolInfo[]
-
-    #a = @allocated begin
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        @match tag begin
-            "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (inscriptterm = parse_inscription_term(child, pntd, idregistry))
-            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
-            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              => @warn("ignoring unexpected child of <hlinscription>: $tag")
-        end
-    end
-    #end; println("parse_hlinscription allocated ", a)
-
-    HLInscription(text, something(inscriptterm, default_one_term(pntd)), graphics, tools)
+    l = parse_label_content(node, parse_inscription_term, pntd, idregistry)
+    HLInscription(l.text, something(l.term, default_one_term(pntd)), l.graphics, l.tools)
 end
 
 """
@@ -722,25 +653,8 @@ See [`AbstractTerm`](@ref).
 """
 function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     check_nodename(node, "condition")
-    text::Maybe{AbstractString} = nothing
-    condterm::Maybe{Any} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
-
-    #a = @allocated begin
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        @match tag begin
-            "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (condterm = parse_condition_term(child, pntd, idregistry))
-            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
-            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _              =>  @warn("ignoring unexpected child of <condition>: $tag")
-        end
-    end
-    #end; println("parse_condition allocated ", a)
-
-    Condition(text, something(condterm, default_bool_term(pntd)), graphics, tools)
+    l = parse_label_content(node, parse_condition_term, pntd, idregistry)
+    Condition(l.text, something(l.term, default_bool_term(pntd)), l.graphics, l.tools)
 end
 
 """
