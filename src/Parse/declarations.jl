@@ -145,7 +145,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     UnknownDeclaration(id, name, nn, content)
 end
 
-# Pass in parser function (or functor?)
+# Pass in parser function (or functor?) #todo default?
 function parse_label_content(node::XMLNode, termparser, pntd::PnmlType, idregistry)
     text::Maybe{AbstractString} = nothing # Union{String,SubString}
     term::Maybe{Any} = nothing

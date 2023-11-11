@@ -1,3 +1,11 @@
+"""
+"""
+struct TransitionRate{T} <: Annotation
+    value::T
+end
+
+Base.eltype(r::TransitionRate) = typeof(value(r))
+value(r::TransitionRate) = r.value
 
  """
 $(TYPEDSIGNATURES)
@@ -12,8 +20,11 @@ function rate(transition)
 
     if has_label(transition, :rate)
         r = get_label(transition, :rate)
-        str = text_content(elements(r))
+        str = text_content(elements(r)) #TODO place into an TransitionRate object.
         return number_value(R, str)
     end
     return zero(R)
+end
+function parse_rate()
+    str = text_content(elements(r))
 end

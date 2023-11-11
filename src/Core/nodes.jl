@@ -143,7 +143,7 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    labels::Vector{PnmlLabel} #! NamedTuple Symbol => Annotation? Dict{Symbol,Annotation}
 end
 
 function Base.show(io::IO, r::ReferenceNode)

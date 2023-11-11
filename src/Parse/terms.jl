@@ -43,7 +43,8 @@ $(TYPEDSIGNATURES)
 function parse_booleanconstant(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "booleanconstant")
     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
-
+    # <booleanconstant value="false"/>
+    # <booleanconstant value="false">zero or more subterms</booleanconstant> allowed by schema
     Term(unparsed_tag(node, pntd, reg))
 end
 

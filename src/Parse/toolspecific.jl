@@ -33,6 +33,7 @@ function parse_toolspecific(node, pntd, reg)
     for child in EzXML.eachelement(node)
         push!(content, anyelement(child, pntd, reg))
     end
-    isempty(content) && @warn "<toolspecific> $tool $version missing content"
+    # Empty is allowed. Do we
+    #TODO isempty(content) && @info "<toolspecific> $tool $version missing content"
     return ToolInfo(tool, version, content)
 end

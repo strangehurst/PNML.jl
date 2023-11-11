@@ -13,7 +13,7 @@ end
 
 
 function testpn(dir::AbstractString = "examples";
-                topdir = "/home/jeff/Projects/Resources/PetriNet/PNML",
+                topdir = "/home/jeff/PetriNet/PNML",
                 outdir = "/home/jeff/Jules/testpmnl")
     testpn(tuple(dir); topdir, outdir)
 end
@@ -31,18 +31,18 @@ function testpn(dirs = ("examples",);
     demux_logger = TeeLogger(consolelogger, MinLevelLogger(filelogger, Logging.Debug))
     global_logger(demux_logger)
     
-    @info "outdir =  $outdir"
-    @info "outputlog = $outputlog"
-
+    @show topdir dirs outdir outputlog
     df = DataFrame()
     
     @time for srcdir in dirs #! Loop over input directories
         in_dir  = joinpath(topdir, srcdir)
         cd(in_dir) do
-            @info pwd()
+            println("Input Directory ", pwd())
             for (root, dirs, files) in walkdir(".")
+                #map(println, Iterators.map(f -> joinpath(root, f), dirs))
                 flist = map(f -> joinpath(root, f), filter(endswith(r"pnml|xml"), files))
-                pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" $f`, ignorestatus=true))), flist)
+                map(println, flist)
+                pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" "$f"`, ignorestatus=true))), flist)
                 for file in pnmls
                     per_file!(df, outdir, file)
                 end
@@ -78,6 +78,7 @@ function per_file!(df, outdir::AbstractString, filename::AbstractString)
     mkpath(dirname(outfile)) # Create output directory.
 
     @info "File $filename size = $(filesize(filename))" # Display path to file and size.
+
     Base.redirect_stdio(stdout=outfile, stderr=outfile) do
         try
             println(stat(filename))

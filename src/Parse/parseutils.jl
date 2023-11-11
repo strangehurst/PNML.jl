@@ -6,6 +6,9 @@ function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
     nn = EzXML.nodename(node)
     CONFIG.verbose && println("add label $nn")
     label = PnmlLabel(unparsed_tag(node, pntd))
+    #! Extension point. user supplied parser of AnyXmlNode -> Annotation. Could do conversion after/on demand.
+    #! (tag,AnyXmlNode) -> merge into NamedTuple tag => Annotation concrete subtype object
+    #! 2 collections, one for PnmlLabels other for other Annotations?
     push!(v, label)
     return label
 end
