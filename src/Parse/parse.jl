@@ -525,13 +525,8 @@ $(TYPEDSIGNATURES)
 function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "initialMarking")
     l = parse_label_content(node, parse_structure, pntd, idregistry)
-    value = if isnothing(l.text)
-        zero(marking_value_type(pntd))
-    else
-        number_value(marking_value_type(pntd), l.text)
-    end
-    value = isnothing(l.text) ?
-        zero(marking_value_type(pntd)) : number_value(marking_value_type(pntd), l.text)
+    t = l.text
+    value = isnothing(t) ? zero(marking_value_type(pntd)) : number_value(marking_value_type(pntd), t)
 
     if !isnothing(l.term) # There was a <structure> tag.
         @warn "$nn <structure> element not used YET by non high-levl" l.term
