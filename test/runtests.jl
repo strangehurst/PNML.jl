@@ -31,13 +31,13 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
         @testset "Aqua" begin
             Aqua.test_all(PNML;
               ambiguities=(recursive=false),
-              unbound_args=true,
-              undefined_exports=true,
-              project_extras=true,
+              #unbound_args=true,
+              #undefined_exports=true,
+              #project_extras=true,
               #stale_deps=(ignore=[:SomePackage],),
               #deps_compat=(ignore=[:SomeOtherPackage],),
-              project_toml_formatting=true,
-              piracy=false,
+              #project_toml_formatting=true,
+              #piracy=false,
             )
           end
     end
