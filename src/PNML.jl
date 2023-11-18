@@ -49,6 +49,7 @@ using AutoHashEquals
 using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
 import EzXML
+import XMLDict
 using FunctionWrappers
 import FunctionWrappers: FunctionWrapper
 using LabelledArrays

@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
+using PNML, EzXML, XMLDict, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
 #using FunctionWrappers
 using PNML:
     Maybe, tag, XMLNode, AnyXmlNode, xmlroot, labels,
@@ -131,7 +131,7 @@ end
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
         node = xmlroot("<test$x> $i </test$x>")::XMLNode
-        @test_call  ignored_modules=(JET.AnyFrameModule(EzXML),) add_label!(lab, node, pntd, reg)
+        @test_call  ignored_modules=(JET.AnyFrameModule(EzXML), XMLDict) add_label!(lab, node, pntd, reg)
         @test add_label!(lab, node, pntd, reg) isa PnmlLabel
         @test length(lab) == i
     end
@@ -176,9 +176,12 @@ function test_unclaimed(pntd, xmlstring::String)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    u = unparsed_tag(node, pntd)
+    xdict = @time "xdict"  XMLDict.xml_dict(node)
+
+    u = @time "untag" unparsed_tag(node, pntd)
     l = PnmlLabel(u)
     a = anyelement(node, pntd, reg2)
+    @show xdict
     if noisy
         println("u = $(u.first) "); dump(u)
         println("l = $(l.tag) ");   dump(l)
