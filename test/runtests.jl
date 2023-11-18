@@ -1,6 +1,6 @@
 using PNML, Test, SafeTestsets
 using AbstractTrees
-using PrettyPrinting
+using PrettyPrinting, OrderedCollections
 using Documenter
 using JET, Aqua
 
@@ -37,7 +37,8 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
               #stale_deps=(ignore=[:SomePackage],),
               #deps_compat=(ignore=[:SomeOtherPackage],),
               #project_toml_formatting=true,
-              #piracy=false,
+
+              piracies=false #(treat_as_own=[PrettyPrinting.tile])
             )
           end
     end

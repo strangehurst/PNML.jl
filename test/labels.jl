@@ -176,12 +176,13 @@ function test_unclaimed(pntd, xmlstring::String)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    xdict = @time "xdict"  XMLDict.xml_dict(node)
-
     u = @time "untag" unparsed_tag(node, pntd)
     l = PnmlLabel(u)
     a = anyelement(node, pntd, reg2)
-    @show xdict
+
+    xdict = @time "xdict"  XMLDict.xml_dict(node)
+    println("xdict"); println(xdict)
+
     if noisy
         println("u = $(u.first) "); dump(u)
         println("l = $(l.tag) ");   dump(l)
@@ -277,6 +278,7 @@ end
     ]
 
     for (s, expected) in ctrl
+        @show s
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected)

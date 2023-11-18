@@ -35,3 +35,13 @@ indent(io::IO) = repeat(' ', get(io, :indent, 0)::Int)
 #using PNML: CONFIG
 "Increment the `:indent` value by `indent_width`."
 inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0)::Int + 4) #! HARDCODED
+
+
+
+# Pirate PrettyPrinting.tile for OrderedDict.
+# Unless a dependency is imposed on the universe, piracy is the best choice.
+const PP = PrettyPrinting
+PP.tile(d::OrderedDict) =
+    PP.list_layout(PP.Layout[PP.pair_layout(PP.tile(key),
+                                            PP.tile(val)) for (key, val) in d],
+                   prefix=:OrderedDict)
