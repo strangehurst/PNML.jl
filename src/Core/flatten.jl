@@ -26,8 +26,6 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
     netid = pid(net)
     #verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
-        #println("pagedict(net)"); dump(pagedict(net))
-        #println("pageids of $(pid(net))"); typeof(page_idset(net))
 
         pageids = keys(pagedict(net)) #! iterator
         key1, val1 = popfirst!(pagedict(net))

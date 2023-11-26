@@ -22,7 +22,6 @@ println()
     @test_call PNML.has_label(tr, :rate)
     @test_call PNML.get_label(tr, :rate)
     @test_call PNML.labels(tr)
-    #println("\ntr"); dump(tr)
     @test_call PNML.rate(tr)
 end
 

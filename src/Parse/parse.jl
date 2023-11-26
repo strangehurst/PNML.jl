@@ -128,9 +128,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     decl::Maybe{Declaration} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
-    #println("pagedict"); dump(pagedict)
-    #println("netsets"); dump(netsets)
-    #println("netdata"); dump(netdata)
+
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -297,7 +295,6 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     #end; println("parse_place $id allocated: ", a)
     mark = something(mark, default_marking(pntd))::marking_type(pntd)
     sorttype = something(sorttype, default_sorttype(pntd))::SortType
-    #println("parse_place $pntd "); dump(mark); dump(sorttype)
 
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
 end
@@ -412,7 +409,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         tag = EzXML.nodename(child)
         if tag == "name"
             name => parse_name(child, pntd, idregistry)
-        elseif tag === "graphics"
+        elseif tag == "graphics"
             graphics => parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)

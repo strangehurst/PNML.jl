@@ -42,8 +42,6 @@ testlogger = TestLogger()
     @test_call target_modules=target_modules parse_str(str1)
     #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
     model = @inferred parse_str(str1)
-    #@show model #println("simplenet model"); dump(model)
-    #println()
 
     @test_call PNML.find_nets(model, :continuous)
     @test_call PNML.find_nets(model, PNML.ContinuousNet())
@@ -128,7 +126,6 @@ testlogger = TestLogger()
     for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
-            #println("transition $(pid(t))"); dump(t)
             @test PNML.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
@@ -143,11 +140,6 @@ testlogger = TestLogger()
     for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules arcs(top)
         for a in arcs(top)
-            #@show "arc $(pid(a))"
-            #@show a
-            #@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
-            #@show has_arc(top, pid(a))
-            #@show typeof(has_arc(top, pid(a)))
             @test @inferred Maybe{Bool} has_arc(top, pid(a))
             a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id

@@ -110,12 +110,9 @@ end
     modelnets = PNML.nets(model)
     @test length(collect(modelnets)) == 5
 
-    #println()
     for net in modelnets
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
-
-        #println(); dump(net); println()
 
         @test PNML.name(net) == string(pid(net))
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
