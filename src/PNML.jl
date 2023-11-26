@@ -65,6 +65,8 @@ using DecFP
 import Graphs
 import MetaGraphsNext
 
+using DebuggingUtilities
+
 include("Core/PnmlTypeDefs.jl")
 @reexport using .PnmlTypeDefs
 include("Core/PnmlIDRegistrys.jl")
