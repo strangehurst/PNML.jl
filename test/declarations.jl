@@ -1,7 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML:
     Maybe, tag, labels, pid, parse_sort, parse_declaration,
-    registry, AnyElement, AnyXmlNode, name, value, isregistered
+    registry, AnyElement, name, value, isregistered,
+    DictType
 
 @testset "Declaration() $pntd" for pntd in all_nettypes()
     decl = PNML.Declaration()
@@ -45,6 +46,7 @@ end
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
                            </cyclicenumeration>""", PnmlCoreNet(), registry()) isa PNML.CyclicEnumerationSort
+
     @test parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
@@ -58,13 +60,32 @@ end
                            </productsort>""", pntd, registry()) isa PNML.ProductSort
 
     @test parse_sort(xml"""<partition id="P1" name="P1">
-                                <usersort declaration="pluck"/>
+                      <usersort declaration="pluck"/>
+                      <partitionelement id="bs1" name="bs1">
+                          <useroperator declaration="b1"/>
+                          <useroperator declaration="b2"/>
+                          <useroperator declaration="b3"/>
+                     </partitionelement>
+                 </partition>""", pntd, registry()) isa PNML.PartitionSort
+
+    @test parse_sort(xml"""<partition id="P2" name="P2">
+                                <usersort declaration="pluck2"/>
                                 <partitionelement id="bs1" name="bs1">
-                                    <useroperator declaration="b1"/>
-                                    <useroperator declaration="b2"/>
                                     <useroperator declaration="b3"/>
-                               </partitionelement>
-                           </partition>""", pntd, registry()) isa PNML.PartitionSort
+                                </partitionelement>
+                            </partition>""", pntd, registry()) isa PNML.PartitionSort
+
+    @test parse_sort(xml"""<partition id="P3" name="P3">
+                            <usersort declaration="pluck2"/>
+                            <partitionelement id="bs1" name="bs1">
+                                <useroperator declaration="b3"/>
+                            </partitionelement>
+                            <partitionelement id="bs2" name="bs2">
+                                <useroperator declaration="b4"/>
+                            </partitionelement>
+                        </partition>""", pntd, registry()) isa PNML.PartitionSort
+
+
 
     @test parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
@@ -134,7 +155,6 @@ end
     @test_call PNML.declarations(decl)
 
     # Examine each declaration in the vector: 3 named sorts
-    #println("dump(decl)"); dump(decl)
     for nsort in PNML.declarations(decl) # named sort -> cyclic enumeration -> fe constant
         @test typeof(nsort) <: PNML.AbstractDeclaration
         @test typeof(nsort) <: PNML.SortDeclaration
@@ -143,7 +163,6 @@ end
         @test isregistered(reg, pid(nsort))
         @test_call isregistered(reg, pid(nsort))
         @test Symbol(PNML.name(nsort)) === pid(nsort) # name and id are the same.
-        #println("declaration"); dump(nsort) #! debug
         @test PNML.sort(nsort) isa PNML.CyclicEnumerationSort
         @test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
 

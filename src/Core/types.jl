@@ -80,44 +80,43 @@ Tool specific objects can be attached to
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"""
-Node in a tree formed from XML. `tag`s are XML tags or attribute names.
-Leaf `val` are strings.
-NB: Assumes XML "content" nodes do not have child XML nodes.
-"""
-struct AnyXmlNode #! Needed by PnmlLabel, AnyElement
-    tag::Symbol
-    val::Union{Vector{AnyXmlNode}, String, SubString}
-end
+# """
+# Node in a tree formed from XML. `tag`s are XML tags or attribute names.
+# Leaf `val` are strings.
+# NB: Assumes XML "content" nodes do not have child XML nodes.
+# """
+# struct AnyXmlNode #! Needed by PnmlLabel, AnyElement, Replace by DictType
+#     tag::Symbol
+#     val::Union{Vector{AnyXmlNode}, String, SubString}
+# end
+# AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
+# tag(axn::AnyXmlNode) = axn.tag #! will be abandoned
+# value(axn::AnyXmlNode) = axn.val #! will be abandoned
 
-AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
-
-tag(axn::AnyXmlNode) = axn.tag
-
-"""
-    value(axn::AnyXmlNode) -> Union{Vector{AnyXmlNode}, String, Substring}
-
-Return vector of children or content of the node.
-"""
-value(axn::AnyXmlNode) = axn.val
-
-# AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}
+# AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}/DictType
 # vs.
 # AnyElement Symbol, Vector{AnyXmlNode}
 # also PnmlLabel, Term,
+
+"OrderedDict filled by XMLDict"
+const DictType = OrderedDict{Union{Symbol,String}, Any}
+tag(d::DictType)   = first(pairs(d)).first # Expect only one key here, String or Symbol
+value(d::DictType) = d[tag(d)]
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Hold well-formed XML in a Vector{[`AnyXmlNode`](@ref)}. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+Hold well-formed XML in a [`DictType`](@ref). See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::Vector{AnyXmlNode} #TODO remove vector container
+    elements::Union{DictType, String, SubString}
 end
-
-AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}) = AnyElement(p.first, p.second)
+AnyElement(x::DictType) = AnyElement(first(pairs(x)))
+#!AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString}}) = AnyElement(p.first, p.second)
+AnyElement(p::Pair) = AnyElement(p.first, p.second)
+AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements

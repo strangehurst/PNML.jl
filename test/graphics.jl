@@ -53,7 +53,7 @@ end
     @test n.fill.color == "fillcolor"
     @test isempty(n.fill.image) # === nothing
     @test n.fill.gradient_color == "none"
-    @test n.fill.gradient_rotation === "horizontal"
+    @test n.fill.gradient_rotation == "horizontal"
 
     @test n.font isa PNML.Font
     @test n.font.family == "Dialog"

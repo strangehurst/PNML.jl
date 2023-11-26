@@ -13,12 +13,14 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <initialMarking> <text>100</text> </initialMarking>
           </place>
         """
+        println()
         n  = parse_place(node, pntd, registry())
+        @show n
+        @test_call target_modules=target_modules parse_place(node, pntd, registry())
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show n PNML.default_marking(n) PNML.nettype(n)
         end
 
-        @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
         @test pid(n) === :place1
         @test typeof(n) <: Place
@@ -37,10 +39,11 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <hlinitialMarking> <text>100</text> </hlinitialMarking>
           </place>
         """
+        println()
         n  = parse_place(node, pntd, registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show n PNML.default_marking(n) PNML.nettype(n)
-        end
+        #end
 
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
@@ -72,7 +75,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show n PNML.default_condition(n) PNML.nettype(n)
     end
-    #println(pid(n)); dump(n)
     @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
@@ -138,9 +140,7 @@ end
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         @show a1 PNML.default_inscription(a1) PNML.nettype(a1)
     end
-    #println("arc a1 $pntd:"); dump(a1)
     a2 = Arc(a1, :newsrc, :newtarget)
-    #println("arc a2 with updated src, tgt:"); dump(a2)
     @testset "a1,a2" for a in [a1, a2]
         @test typeof(a) <: Arc
         @test pid(a) === :arc1

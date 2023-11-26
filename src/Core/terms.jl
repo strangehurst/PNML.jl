@@ -48,8 +48,6 @@ See [`HLAnnotation`](@ref) concrete subtypes.
 
 #TODO is it safe to assume that Bool, Int, Float64 are in the carrier set/basis set?
 
-#! HL term is currently implemented as a wrapper of Vector{AnyXmlNode}. A tree of symbols with leafs that are strings.
-
 # Functor
 
     (t::Term)([default_one_term(HLCoreNet())])
@@ -65,13 +63,18 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscri
 The type parameter is a sort. We enumerate some of the built-in sorts allowed.
 Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
-When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
+External information may be used to select the output type.
 """
 struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
+    elements::Union{Bool, Int, Float64, DictType, String, SubString} #! Union{Bool, Int, Float64, DictType}
 end
-Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
+Term(x::DictType) = begin
+    print("Term from: "); pprintln(x)
+    Term(first(pairs(x)))
+end
+Term(p::Pair) = Term(p.first, p.second)
+Term(s::AbstractString, e) = Term(Symbol(s), e)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
@@ -83,25 +86,20 @@ value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! emp
 
 quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
 
-(t::Term)() = begin
-    if typeof(elements(t)) <: Number
-        return elements(t)
-    else # is Vector{AnyXmlNode}
-        # Fake like we know how to evaluate a expression of the high-level terms.
-        # Find any `:value` tag in elements and assume is a boolean string.
-        i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
-        if !isnothing(i)
-            return value(t.elements[i]) == "true" # should be a booleanconstant
-        else
-            println("(t::Term) needs to handle term ast! returning nothing");
-            map(println, elements(t))
-            #todo Until then, return a random value in the   domain.
-            #
-            #! v = _evaluate(default)
-            return nothing
-        end
-    end
+(t::Term)() =  _term_eval(elements(t))
+
+_term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
+_term_eval(v::Number) = v
+_term_eval(v::AbstractString) = parse(Bool, v)
+_term_eval(v::DictType) = begin
+    # Fake like we know how to evaluate a expression of the high-level terms.
+    haskey(v, :value) && return _term_eval(v[:value])
+
+    println("(t::Term) needs to handle term ast! returning nothing");
+    @showln(v)
+    return nothing
 end
+
 #(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end
 #(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
 #(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end

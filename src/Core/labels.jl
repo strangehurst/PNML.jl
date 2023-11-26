@@ -117,7 +117,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `AnyXmlNode[]` holding a PNML Label. Use the XML tag as identifier.
+Wrap a `DictType` holding a PNML Label. Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
@@ -128,10 +128,11 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag`.
+    elements::Union{DictType, String, SubString}
 end
-
-PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
+PnmlLabel(x::DictType) = PnmlLabel(first(pairs(x)))
+PnmlLabel(p::Pair) = PnmlLabel(p.first, p.second)
+PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements

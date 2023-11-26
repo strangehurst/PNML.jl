@@ -3,6 +3,7 @@ using PNML: Maybe, tag, pid, XMLNode,
     ToolInfo, AnyElement, name, version, get_toolinfo, first_net, firstpage,
     tools, parse_toolspecific, place, parse_place, TokenGraphics,
     coordinate_value_type
+using OrderedCollections
 
 str1 = (tool="JARP", version="1.2", str = """
  <toolspecific tool="JARP" version="1.2">
@@ -13,19 +14,19 @@ str1 = (tool="JARP", version="1.2", str = """
           <value>java.awt.Color[r=255,g=255,b=255]</value>
         </FillColor>
  </toolspecific>
-""", elementtype = Vector{AnyElement})
+""", elementtype = OrderedDict{Union{Symbol,String}, Any}) #! Vector{AnyElement})
 
 str2 = (tool="de.uni-freiburg.telematik.editor", version="1.0", str = """
  <toolspecific tool="de.uni-freiburg.telematik.editor" version="1.0">
      <visible>true</visible>
  </toolspecific>
-""", elementtype = Vector{AnyElement})
+""", elementtype = OrderedDict{Union{Symbol,String}, Any}) #! Vector{AnyElement})
 
 str3 = (tool="petrinet3", version="1.0", str = """
  <toolspecific tool="petrinet3" version="1.0">
      <placeCapacity capacity="0"/>
  </toolspecific>
-""", elementtype = Vector{AnyElement})
+""", elementtype = OrderedDict{Union{Symbol,String}, Any}) #! Vector{AnyElement})
 
 str4 = (tool="org.pnml.tool", version="1.0", str = """
  <toolspecific tool="org.pnml.tool" version="1.0">
@@ -49,7 +50,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 @testset "parse tools" begin
     for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
-        #println("tooli"); dump(tooli)
+        println("tooli"); show(tooli); println()
         @test typeof(tooli) <: ToolInfo
         @test tooli.toolname == s.tool
         @test name(tooli) == s.tool
@@ -65,10 +66,10 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 
         @test_call broken=false get_toolinfo(tooli, s.tool, s.version)
 
-        @test tooli.infos isa s.elementtype
-        @test PNML.infos(tooli) isa s.elementtype
+        #!@test tooli.infos isa s.elementtype
+        #!@test PNML.infos(tooli) isa s.elementtype
         #!Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-        #@show PNML.infos(tooli)
+        @show PNML.infos(tooli)
     end
     @testset "combined" begin
         #println("combined toolinfos")

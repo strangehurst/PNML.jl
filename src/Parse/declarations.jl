@@ -138,15 +138,14 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
     name = node["name"]
-
-    @info("unknown declaration: tag = $nn id = $id name = $name")
-
+    println("\n\n\n\n"); @warn("unknown declaration: tag = $nn id = $id name = $name")
     content = [anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
+    @show content
     UnknownDeclaration(id, name, nn, content)
 end
 
 # Pass in parser function (or functor?) #todo default?
-function parse_label_content(node::XMLNode, termparser, pntd::PnmlType, idregistry)
+function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType, idregistry) where {F <: Function}
     text::Maybe{AbstractString} = nothing # Union{String,SubString}
     term::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -194,41 +193,37 @@ Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 function parse_sorttype_term(typenode, pntd, idregistry)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || (throw ∘ ArgumentError)("missing sort type element in <structure>")
-    term = EzXML.firstelement(typenode) # Expect only child element to be a sort.
+    term = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
     # No multiset sort for the sort of a Place. Who checks/cares?
     parse_sort(term, pntd, idregistry)
 end
 
-isEmptyContent(body::Vector{AnyXmlNode}) = (length(body) == 1 &&
-                                            tag(first(body)) === :content &&
-                                            isempty(value(first(body))))
+isEmptyContent(body::DictType) = tag(body) == "content" && isempty(value(body))
 
-function parse_feconstants(body::Vector{AnyXmlNode})
+function parse_feconstants(body::DictType)
+    println("parse_feconstants"); @showln(body)
+    @assert tag(body) == "feconstant"
     feconstants = FEConstant[]
-    for fec in body
-        @assert tag(fec) === :feconstant "only :feconstant allowed, found $(tag(fec))"
-        onefec = value(fec)::Vector{AnyXmlNode}
-        #println("fconstant"); dump(onefec)
-        @assert all(o -> isa(o, AnyXmlNode), onefec)
-        (id, name) = id_name(onefec)
-        push!(feconstants, FEConstant(id, name))
+    for onefec in value(body)
+        @show onefec
+        @assert isa(onefec, DictType)
+        push!(feconstants, FEConstant(Symbol(onefec[:id]), onefec[:name]))
     end
     return feconstants
 end
 
-"The body has only a :declaration, return its value as a string."
-function parse_decl(body::Vector{AnyXmlNode})
-    @assert length(body) == 1
-    d = first(body)
-    tag(d) !== :declaration && @error "expected ':declaration', found $(tag(d))" body
+"The d has only a declaration, return its value as a string."
+function parse_decl(d::DictType)
+    t = tag(d)::Union{Symbol,String,SubString}
+    t != :declaration && throw(ArgumentError("expected ':declaration', found $(tag(d))"))
     return value(d)::AbstractString
 end
-parse_decl(str::AbstractString) = str
+#! parse_decl(str::AbstractString) = str
 
-parse_usersort(body::Vector{AnyXmlNode}) = parse_decl(body)
+parse_usersort(body::DictType) = parse_decl(body)
 parse_usersort(str::AbstractString) = str
 
-parse_useroperator(body::Vector{AnyXmlNode}) = parse_decl(body)
+parse_useroperator(body::DictType) = parse_decl(body)
 parse_useroperator(str::AbstractString) = str
 
 "Tags used in sort XML elements."
@@ -242,89 +237,77 @@ $(TYPEDSIGNATURES)
 Sorts are found within a <structure> element.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    println(); println("parse_sort")
+    ucl = unparsed_tag(node, pntd, idregistry)::DictType
+    @show ucl
+    sortid = tag(ucl)
+    body = ucl[sortid]::DictType
+    @show sortid
+    sortid = Symbol(sortid)
+    ismissing(sortid) && error("sortid is missing")
+    ismissing(body)   && error("sort body is missing")
+    isnothing(sortid) && error("sortid is nothing")
+    isnothing(body)   && error("sort body is nothing")
 
-    # Use `unparsed_tag`.
-    ucl = unparsed_tag(node, pntd, idregistry)
-
-    sortid = ucl.first::Symbol # Tag identifies sort
-    body = ucl.second::Vector{AnyXmlNode} # value is array
-
-    sortid ∈ sort_ids || begin
-        @warn("invalid sort type '$sortid', allowed: $sort_ids")
-        dump(ucl)
-        false
-    end
-
+    #TODO Dispatch on Val{} types.
+    println();  @showln(ucl);
     if sortid === :usersort
         decl = parse_decl(body)
-        @show decl
         srt = UserSort(decl)
 
     elseif sortid === :dot
-        isEmptyContent(body) || @error "sort :dot not empty" body
-        #@assert isEmptyContent(body) ":dot"
+        isempty(body) || @error "sort :dot not empty" body
         srt = DotSort()
 
     elseif sortid === :bool
-        isEmptyContent(body) || @error "sort :bool not empty" body
+        isempty(body) || @error "sort :bool not empty" body
         srt = BoolSort()
 
     elseif sortid === :integer
-        isEmptyContent(body) || @error "sort :integer not empty" body
+        isempty(body) || @error "sort :integer not empty" body
         srt = IntegerSort()
 
     elseif sortid === :natural
-        isEmptyContent(body) || @error "sort :natural not empty" body
+        isempty(body) || @error "sort :natural not empty" body
         srt = NaturalSort()
 
     elseif sortid === :positive
-        isEmptyContent(body) || @error ":positive not empty" body
+        isempty(body) || @error ":positive not empty" body
         srt = PositiveSort()
 
     elseif sortid === :cyclicenumeration
-        #println("$sortid sort: "); dump(body)
-        fec = parse_feconstants(body)
-        srt = CyclicEnumerationSort(fec)
+        fecs = parse_feconstants(body)
+        srt  = CyclicEnumerationSort(fecs)
 
     elseif sortid === :finiteenumeration
-        all(x -> tag(x) === :feconstant, body) ||
-            @error ":finiteenumeration must only contain :feconstants" body
-        fec = parse_feconstants(body)
-        srt = FiniteEnumerationSort(fec)
+        fecs = parse_feconstants(body)
+        srt  = FiniteEnumerationSort(fecs)
 
     elseif sortid === :finiteintrange
         (start, stop) = start_stop(body)
         srt = FiniteIntRangeSort(start, stop)
 
     elseif sortid === :list
-        println("$sortid sort: "); dump(body)
         error("IMPLEMENT ME: sort = $sortid")
         srt = ListSort()
+
     elseif sortid === :string
-        println("$sortid sort: "); dump(body)
         error("IMPLEMENT ME: sort = $sortid")
         srt = StringSort()
 
     elseif sortid === :multisetsort
         # There will be 1 usersort
         @assert length(body) == 1 ":mulitsetsort requires one basis sort"
-        usort = first(body)
-        tag(usort) === :usersort  ||
-            @error ":multisetsort holds unexpected sort $(tag(usort))" usort
-
-        decl = parse_decl(value(usort))
-        @show decl
+        usort = body["usersort"]
+        decl = _attribute(usort, :declaration)
         srt = MultisetSort(UserSort(decl))
 
     elseif sortid === :productsort
+        @assert length(body) == 1
         # orderded collection of UserSorts
         usorts = UserSort[]
-        for axn in body # of productsort
-            tag(axn) === :usersort || @warn ":productsort holds unexpected sort $(tag(axn))" body
-            value(axn) isa Vector{AnyXmlNode} ||
-                (throw ∘ ArgumentError)("expected Vector{AnyXmlNode}, got $(typeof(value(axn)))")
-            decl = parse_decl(value(axn))
-            @show decl
+        for us in body["usersort"] # of productsort
+            decl = parse_decl(us)
             srt2 = UserSort(decl)
             push!(usorts, srt2)
         end
@@ -333,8 +316,9 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     elseif sortid === :partition
         part = parse_partition(body)
         srt = PartitionSort(part.id, part.name, part.sort, part.elements)
-        #! @show typeof(srt) srt #! wrong srt type
+
     else
+        @warn("invalid sort type '$sortid', allowed: $sort_ids", ucl)
         (throw ∘ ArgumentError)("parse_sort sort $sortid not implemented")
     end
 

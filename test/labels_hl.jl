@@ -1,6 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
-using PNML: Maybe, tag, pid, value, text, elements, AnyXmlNode,
-all_nettypes, ishighlevel
+using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, DictType
 
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
     str = """
@@ -20,6 +19,7 @@ all_nettypes, ishighlevel
     </unknown>
  </hlinitialMarking>
     """
+    println()
     mark = (@test_logs (:warn,"ignoring unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
 
     @test mark isa PNML.AbstractLabel
@@ -34,43 +34,40 @@ all_nettypes, ishighlevel
     end
     @test PNML.has_graphics(mark) == true
     @test PNML.has_labels(mark) == false
-
+    @show mark #! debug
     markterm = value(mark)
     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
+
     axn = elements(markterm)
     #TODO HL implementation not complete:
     #TODO  evaluate the HL expression, check place sorttype
+
+    #@show axn #! debug
+    pprintln(axn)
+#     axn = OrderedDict{Union{String, Symbol}, Any}("subterm" =>
+#         Any[OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N1"))),
+#             OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N2")))
+#             ])
+
     # Decend each element of the term.
-    sub1 = axn[1]
-    @test tag(sub1) === :subterm
-    @test value(sub1) isa Vector{AnyXmlNode}
+    @test tag(axn) == "subterm"
+    @test value(axn)isa Vector #!{DictType}
 
-    all1 = value(sub1)[1]
-    @test tag(all1) === :all
-    @test value(all1) isa Vector{AnyXmlNode}
+    all1 = value(axn)[1]
+    @test tag(all1) == "all"
+    @test value(all1) isa DictType
+    use1 = value(all1)["usersort"]
+    @test use1 isa DictType
+    @test use1[:declaration] == "N1"
+    @test PNML._attribute(use1, :declaration) == "N1"
 
-    use1 = value(all1)[1]
-    @test tag(use1) === :usersort
-    @test value(use1) isa Vector{AnyXmlNode}
-
-    @test tag(value(use1)[1]) === :declaration
-    @test value(value(use1)[1]) == "N1"
-
-    #println("\n## axn[2]"); dump(axn[2])
-    sub2 = axn[2]
-    @test tag(sub2) === :subterm
-    @test value(sub2) isa Vector{AnyXmlNode}
-
-    all2 = value(sub2)[1]
-    @test tag(all2) === :all
-    @test value(all2) isa Vector{AnyXmlNode}
-
-    use2 = value(all2)[1]
-    @test tag(use2) === :usersort
-    @test value(use2) isa Vector{AnyXmlNode}
-
-    @test tag(value(use2)[1]) === :declaration
-    @test value(value(use2)[1]) == "N2"
+    all2 = value(axn)[2]
+    @test tag(all2) == "all"
+    @test value(all2) isa DictType
+    use2 = value(all2)["usersort"]
+    @test use2 isa DictType
+    @test use2[:declaration] == "N2"
+    @test PNML._attribute(use2, :declaration) == "N2"
 end
 
 @testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
@@ -92,7 +89,7 @@ end
       </hlinscription>
     """
     insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
-
+    println("\ninsc"); pprintln(insc)
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
     @test text(insc) isa Union{Nothing,AbstractString}
@@ -108,32 +105,21 @@ end
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
+    println("\naxn"); pprintln(axn)
 
     #TODO HL implementation not complete:
 
-    sub1 = axn[1]
-    @test tag(sub1) === :subterm
-    @test value(sub1) isa Vector{AnyXmlNode}
+    sub1 = axn["subterm"][1]
+    pprintln(sub1)
+    @test tag(sub1) == "variable"
+    var1 = PNML._attribute(sub1["variable"], :refvariable)
+    @test var1 == "x"
 
-    var1 = value(sub1)[1]
-    @test tag(var1) === :variable
-    @test value(var1) isa Vector{AnyXmlNode}
-
-    ref1 = value(var1)[1]
-    @test tag(ref1) === :refvariable
-    @test value(ref1) == "x"
-
-    sub2 = axn[2]
-    @test tag(sub2) === :subterm
-    @test value(sub2) isa Vector{AnyXmlNode}
-
-    var2 = value(sub2)[1]
-    @test tag(var2) === :variable
-    @test value(var2) isa Vector{AnyXmlNode}
-
-    ref2 = value(var2)[1]
-    @test tag(ref2) === :refvariable
-    @test value(ref2) == "v"
+    sub2 = axn["subterm"][2]
+    pprintln(sub2)
+    @test tag(sub2) == "variable"
+    var2 = PNML._attribute(sub2["variable"], :refvariable)
+    @test var2 == "v"
 end
 
 @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
@@ -148,52 +134,28 @@ end
 
     stru = PNML.parse_structure(node, pntd, registry())
     @test stru isa PNML.Structure
-
-    #println("\n## stru = "); dump(stru)
-    @test tag(stru) === :structure
-    @test elements(stru) isa Vector{AnyXmlNode}
-    @test tag(stru) === :structure
+    @show stru
+    @test tag(stru) == :structure
+    @test elements(stru) isa DictType
     axn = elements(stru)
+    println("\naxn"); pprintln(axn)
 
     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
-    tup1 = axn[1]
-    @test tag(tup1) === :tuple
-    @test value(tup1) isa Vector{AnyXmlNode}
+    tup = axn["tuple"]
+    println("tup"); pprintln(tup)
+    sub = tup["subterm"]
+    println("sub"); pprintln(sub)
+    @test sub isa Vector
+    #--------
+    all1 = sub[1]["all"]
+    usr1 = all1["usersort"]
+    @test value(usr1) == "N1"
 
     #--------
-    sub1 = value(tup1)[1]
-    @test tag(sub1) === :subterm
-    @test value(sub1) isa Vector{AnyXmlNode}
-
-    all1 = value(sub1)[1]
-    @test tag(all1) === :all
-    @test value(all1) isa Vector{AnyXmlNode}
-
-    usr1 = value(all1)[1]
-    @test tag(usr1) === :usersort
-    @test value(usr1) isa Vector{AnyXmlNode}
-
-    dec1 = value(usr1)[1]
-    @test tag(dec1) === :declaration
-    @test value(dec1) == "N1"
-
-    #--------
-    sub2 = value(tup1)[2]
-    @test tag(sub2) === :subterm
-    @test value(sub2) isa Vector{AnyXmlNode}
-
-    all2 = value(sub2)[1]
-    @test tag(all2) === :all
-    @test value(all2) isa Vector{AnyXmlNode}
-
-    usr2 = value(all2)[1]
-    @test tag(usr2) === :usersort
-    @test value(usr2) isa Vector{AnyXmlNode}
-
-    dec2 = value(usr2)[1]
-    @test tag(dec2) === :declaration
-    @test value(dec2) == "N2"
+    all2 = sub[2]["all"]
+    usr2 = all2["usersort"]
+    @test value(usr2) == "N2"
 end
 
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
@@ -212,7 +174,6 @@ end
     @testset for node in [n1]
         typ =  @test_logs (:warn,"ignoring unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
-        #println("\n## SortType typ "); dump(typ)
         Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show typ
         end
@@ -240,14 +201,13 @@ end
     """
     @testset for node in [n1]
         cond =  @test_logs (:warn,"ignoring unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
-        #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show cond
-        end
+        #end
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
-        @test tag(value(cond)) === :or
+        @test tag(value(cond)) == :or
         @test PNML.has_graphics(cond) == true
         @test PNML.has_labels(cond) == false
     end

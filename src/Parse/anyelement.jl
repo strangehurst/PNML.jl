@@ -5,24 +5,24 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    AnyElement(unparsed_tag(node, pntd, reg))
+    AnyElement(first(pairs(unparsed_tag(node, pntd, reg))))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return `tag` => `AnyXmlNode` holding well formed XML tree/forest.
+Return `DictType` holding well formed XML tree.
 
-The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
-[`Term`](@ref) or other.
+The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref), et al.
 """
 function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
-    harvest! = HarvestAny(_harvest_any, pntd) # Create a functor.
-    #println("harvest!: "); dump(harvest!); println()
-    anyel = harvest!(node) # Apply functor.
-    #println("unclaimed: "); dump(anyel)
-    @assert length(anyel) >= 1 # Even empty elements have content.
-    return Symbol(EzXML.nodename(node)) => anyel
+    anyel = XMLDict.xml_dict(node, DictType; strip_text=true)
+    #!@show anyel #! debug
+    @assert anyel isa Union{DictType, String, SubString}
+    # empty dictionarys are a valid thing.
+    @assert !(anyel isa DictType) || all(x -> !isnothing(x.second), pairs(anyel))
+    #! Some things are tuples! as well as DistType, String, SubString
+    return DictType(EzXML.nodename(node) => anyel)
 end
 
 # Expected patterns. Note only first is standard-conforming, extensible, preferred.
@@ -30,63 +30,63 @@ end
 #   <tag>1.23<tag>
 # The unclaimed label mechanism adds a :content key for text XML elements.
 
-# Functor
-"""
-Wrap a function and two of its arguments.
-"""
-struct HarvestAny
-    fun::FunctionWrapper{Vector{AnyXmlNode}, Tuple{XMLNode, HarvestAny}}
-    pntd::PnmlType # Maybe want to specialize sometime.
-end
+# # Functor
+# """
+# Wrap a function and two of its arguments.
+# """
+# struct HarvestAny
+#     fun::FunctionWrapper{Vector{AnyXmlNode}, Tuple{XMLNode, HarvestAny}} #! will be abandoned
+#     pntd::PnmlType # Maybe want to specialize sometime.
+# end
 
-(harvest!::HarvestAny)(node::XMLNode) = harvest!.fun(node, harvest!)
+# (harvest!::HarvestAny)(node::XMLNode) = harvest!.fun(node, harvest!)
 
-"""
-$(TYPEDSIGNATURES)
+# """
+# $(TYPEDSIGNATURES)
 
-Return `AnyXmlNode` vector holding a well-formed XML `node`.
+# Return `AnyXmlNode` vector holding a well-formed XML `node`.  #! will be abandoned
 
-If element `node` has any attributes &/or children, use
-attribute name or child's name as tag.  (Empty is well-formed.)
+# If element `node` has any attributes &/or children, use
+# attribute name or child's name as tag.  (Empty is well-formed.)
 
-Descend the well-formed XML using parser function `harvest!` on child nodes.
+# Descend the well-formed XML using parser function `harvest!` on child nodes.
 
-Note the assumption that "children" and "content" are mutually exclusive.
-Content is always a leaf element. However XML attributes can be anywhere in
-the hierarchy. And neither children nor content nor attribute may be present.
+# Note the assumption that "children" and "content" are mutually exclusive.
+# Content is always a leaf element. However XML attributes can be anywhere in
+# the hierarchy. And neither children nor content nor attribute may be present.
 
-Leaf `AnyXmlNode`'s contain an String or SubString.
-"""
-function _harvest_any(node::XMLNode, harvest!::HarvestAny)
-    CONFIG.verbose && println("harvest ", EzXML.nodename(node))
+# Leaf `AnyXmlNode`'s contain an String or SubString.#! will be abandoned
+# """
+# function _harvest_any(node::XMLNode, harvest!::HarvestAny)
+#     CONFIG.verbose && println("harvest ", EzXML.nodename(node))
 
-    vec = AnyXmlNode[]
-    for a in EzXML.eachattribute(node) # Leaf
-        # Defer further :id attribute parsing/registering by treating as a string here.
-        push!(vec, AnyXmlNode(Symbol(a.name), a.content))
-    end
+#     vec = AnyXmlNode[] #! will be abandoned
+#     for a in EzXML.eachattribute(node) # Leaf
+#         # Defer further :id attribute parsing/registering by treating as a string here.
+#         push!(vec, AnyXmlNode(Symbol(a.name), a.content)) #! will be abandoned
+#     end
 
-    if EzXML.haselement(node) # Children exist, extract them.
-        for n in EzXML.eachelement(node)
-            push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse
-        end
-    else # No children, is there content?
-        # Note: children and content are mutually exclusive because
-        # `nodecontent` will include children's content.
-        content_string = strip(EzXML.nodecontent(node))
-        if !all(isspace, content_string) # Non-blank content after strip are leafs.
-            push!(vec, AnyXmlNode(:content, content_string))
-        elseif isempty(vec) # No need to make empty leaf.
-            # <tag/> and <tag></tag> will not have any nodecontent.
-            push!(vec, AnyXmlNode(:content, "")) #! :content might collide
-        end
-    end
+#     if EzXML.haselement(node) # Children exist, extract them.
+#         for n in EzXML.eachelement(node)
+#             push!(vec, AnyXmlNode(Symbol(EzXML.nodename(n)), harvest!(n))) #! Recurse #! will be abandoned
+#         end
+#     else # No children, is there content?
+#         # Note: children and content are mutually exclusive because
+#         # `nodecontent` will include children's content.
+#         content_string = strip(EzXML.nodecontent(node))
+#         if !all(isspace, content_string) # Non-blank content after strip are leafs.
+#             push!(vec, AnyXmlNode(:content, content_string))#! will be abandoned
+#         elseif isempty(vec) # No need to make empty leaf.
+#             # <tag/> and <tag></tag> will not have any nodecontent.
+#             push!(vec, AnyXmlNode(:content, "")) #! :content might collide#! will be abandoned
+#         end
+#     end
 
-    return vec
-end
+#     return vec
+# end
 
 #-----------------------------------------------------------------------------
-# AnyXmlNode access methods.
+# AnyXmlNode access methods. #! Replace with DictType
 #-----------------------------------------------------------------------------
 
 """
@@ -95,38 +95,29 @@ Find first :text in vx and return its :content as string.
 """
 function text_content end
 
-function text_content(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
-    tc_index = findfirst(x -> tag(x) === :text, vx)
-    isnothing(tc_index) && throw(ArgumentError("missing <text> element"))
-    return text_content(vx[tc_index])
+function text_content(vx::DictType)
+    haskey(vx, "text") && !isnothing(vx["text"]) && return vx["text"]
+    throw(ArgumentError("missing <text> element in $(vx)"))
+end
+function text_content(s::AbstractString)
+    return s
 end
 
-function text_content(axn::AnyXmlNode)
-    @assert tag(axn) === :text
-    vals = value(axn)::Vector{AnyXmlNode} #TODO use nonallocating iteratable collection
-    _attribute(vals, :content)
-end
-
-function _attribute(vx, tagid)
-    _index = findfirst(x -> tag(x) === tagid, vx)
-    isnothing(_index) && throw(ArgumentError("missing $tagid attribute"))
-    val = value(vx[_index])
-    val isa AbstractString ||
-        throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(val))"))
-    return val
+"""
+Find an XML attribute. XMLDict uses symbols as keys.
+"""
+function _attribute(vx::DictType, key::Symbol)
+    haskey(vx, key) || throw(ArgumentError("missing $key attribute"))
+    isnothing(vx[key]) && throw(ArgumentError("missing $key value"))
+    vx[key] isa AbstractString ||
+        throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(vx[key]))"))
+    return vx[key]
  end
 
 #=
 Finite Enumeration Constants are id, name pairs
-Array{PNML.AnyXmlNode}((2,))
-  1: PNML.AnyXmlNode
-    tag: Symbol id
-    val: String "FE0"
-  2: PNML.AnyXmlNode
-    tag: Symbol name
-    val: String "0"
 =#
-function id_name(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
+function id_name(vx::DictType)
     idval = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
     return (Symbol(idval), nameval)
@@ -134,15 +125,8 @@ end
 
 #=
 finiteintrange sort:
-Array{PNML.AnyXmlNode}((2,))
-  1: PNML.AnyXmlNode
-    tag: Symbol start
-    val: String "2"
-  2: PNML.AnyXmlNode
-    tag: Symbol end
-    val: String "3"
 =#
-function start_stop(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
+function start_stop(vx::DictType)
     startstr = _attribute(vx, :start)
     start = tryparse(Int, startstr)
     isnothing(start) &&
@@ -158,41 +142,72 @@ end
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
-function parse_partition(vx::Vector{AnyXmlNode}) #TODO use nonallocating iteratable collection
-    #println("parse_partition"); dump(vx)
+function parse_partition(vx::DictType)
+    #println("parse_partition"); @show(vx)
 
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 
-    sort_index = findfirst(x -> tag(x) === :usersort, vx)
-    isnothing(sort_index) && throw(ArgumentError("<partition> missing <usersort> element"))
-    sortv = value(vx[sort_index])::Vector
-    sortdecl = parse_usersort(sortv)::AbstractString
+    haskey(vx, "usersort") || throw(ArgumentError("<partition> missing <usersort> element"))
+    us = vx["usersort"]
+    @show us
+    isnothing(us) && throw(ArgumentError("<partition> <usersort> element is nothing"))
+    isempty(us)   && throw(ArgumentError("<partition> <usersort> element is empty"))
+    sortdecl = parse_usersort(us)::AbstractString
     sortval = UserSort(sortdecl)
+    @show sortval
 
+    # One or more partitionelements.
     elements = PartitionElement[]
-    for pe in Iterators.filter(x -> tag(x) === :partitionelement, vx)
-        e = parse_partitionelement(value(pe))
-        push!(elements, e)
-    end
+
+    haskey(vx, "partitionelement") || throw(ArgumentError("<partition> has no <partitionelement>"))
+    pevec = vx["partitionelement"]
+    @show pevec
+    isnothing(pevec) && throw(ArgumentError("<partition> does not have any <partitionelement>"))
+
+    parse_partitionelement!(elements, pevec)
     @assert !isempty(elements) """partitions are expected to have at least one partition element.
     id = idval, name = nameval, sort = sortval"""
     return (id = Symbol(idval), name = nameval, sort = sortval, elements = elements)
 end
 
+function parse_partitionelement!(elements::Vector{PartitionElement}, v::Vector{Any}) #!DictType})
+    for pe in v
+        parse_partitionelement!(elements, pe)
+    end
+    return nothing
+end
+
 # one partitionelement = id, name, term[]
-function parse_partitionelement(vx::Vector{AnyXmlNode})
-    #println("parse_partitionelement"); dump(vx)
+#  OrderedDict{Union{String, Symbol}, Any}(:id => "bs1",
+#                                           :name => "bs1",
+#                                           "useroperator" => Any[OrderedDict{Union{String, Symbol}, Any}(:declaration => "b1"),
+#                                                                 OrderedDict{Union{String, Symbol}, Any}(:declaration => "b2"),
+#                                                                 OrderedDict{Union{String, Symbol}, Any}(:declaration => "b3")])
+
+function parse_partitionelement!(elements::Vector{PartitionElement}, vx::DictType)
+    println("parse_partitionelement!"); @show(vx)
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
-    # ordered collection of terms
+
+    # ordered collection of terms, usually useroperators (as constants)
+    haskey(vx, "useroperator") || throw(ArgumentError("<partitionelement> has no <useroperator> elements"))
+    uovec = vx["useroperator"]
+    isnothing(uovec) && throw(ArgumentError("<partitionelement> is empty"))
+    @showln uovec
     terms = UserOperator[]
-    for t in Iterators.filter(x -> tag(x) === :useroperator, vx)
-        v = value(t)
-        v isa AbstractString || push!(terms, UserOperator(parse_decl(v)))
-    end
-    return PartitionElement(Symbol(idval), nameval, terms)
+    parse_useroperators!(terms, uovec)
+    @assert !isempty(terms)
+    push!(elements, PartitionElement(Symbol(idval), nameval, terms))
+    return nothing
 end
-function parse_partitionelement(str::AbstractString)
-    return PartitionElement()
+
+function parse_useroperators!(terms::Vector{UserOperator}, vx::Vector{Any})
+    for t in vx
+        parse_useroperators!(terms, t)
+    end
+end
+
+function parse_useroperators!(terms::Vector{UserOperator}, d::DictType)
+    push!(terms, UserOperator(parse_decl(d)))
 end
