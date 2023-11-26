@@ -80,24 +80,6 @@ Tool specific objects can be attached to
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-# """
-# Node in a tree formed from XML. `tag`s are XML tags or attribute names.
-# Leaf `val` are strings.
-# NB: Assumes XML "content" nodes do not have child XML nodes.
-# """
-# struct AnyXmlNode #! Needed by PnmlLabel, AnyElement, Replace by DictType
-#     tag::Symbol
-#     val::Union{Vector{AnyXmlNode}, String, SubString}
-# end
-# AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
-# tag(axn::AnyXmlNode) = axn.tag #! will be abandoned
-# value(axn::AnyXmlNode) = axn.val #! will be abandoned
-
-# AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}/DictType
-# vs.
-# AnyElement Symbol, Vector{AnyXmlNode}
-# also PnmlLabel, Term,
-
 "OrderedDict filled by XMLDict"
 const DictType = OrderedDict{Union{Symbol,String}, Any}
 tag(d::DictType)   = first(pairs(d)).first # Expect only one key here, String or Symbol

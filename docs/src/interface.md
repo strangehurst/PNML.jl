@@ -18,12 +18,7 @@ The intermediate representation is used to implement networks expressed in a pnm
 
 We start a description of the net IR here.
 
-## AnyXmlNode
-
-XML element tag names and attribute names are uses as key/tag of [`AnyXmlNode`](@ref)
-Leaf nodes have values that are strings. Intermediate nodes have AnyXmlNode as a value.
-
-Used to hold unparsed XML-as-strings. Use will reduce as more is implemented.
+## DictType
 
 Used by:
   * [`AnyElement`](@ref)
