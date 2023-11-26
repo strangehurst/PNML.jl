@@ -65,9 +65,10 @@ struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString}
     nodename::Union{String,SubString}
+    #!content::OrderedDict{Union{Symbol,String}, Any} #! Vector{Any} #! Vector{AnyElement}
     content::Vector{Any} #! Vector{AnyElement}
 end
-UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [])
+UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [OrderedDict()])
 
 """
 $(TYPEDEF)
