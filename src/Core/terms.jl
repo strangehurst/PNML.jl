@@ -96,7 +96,7 @@ _term_eval(v::DictType) = begin
     haskey(v, :value) && return _term_eval(v[:value])
 
     println("(t::Term) needs to handle term ast! returning nothing");
-    @showln(v)
+    #!@showln(v)
     return nothing
 end
 

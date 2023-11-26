@@ -26,9 +26,9 @@ end
 
 @testset "AbstractDeclarations $pntd" for pntd in all_nettypes()
     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show _subtypes(PNML.AbstractDeclaration)
+        #!@show _subtypes(PNML.AbstractDeclaration)
         for decl in _subtypes(PNML.AbstractDeclaration)
-            @show decl decl()
+            #!@show decl decl()
             #@printf "%-25s %s\n" decl "x"
         end
    end
