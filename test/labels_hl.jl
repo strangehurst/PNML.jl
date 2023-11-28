@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
+using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, DictType
 
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
@@ -43,7 +43,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, D
     #TODO  evaluate the HL expression, check place sorttype
 
     #@show axn #! debug
-    pprintln(axn)
+    pprint(axn); println()
 #     axn = OrderedDict{Union{String, Symbol}, Any}("subterm" =>
 #         Any[OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N1"))),
 #             OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N2")))
@@ -89,7 +89,7 @@ end
       </hlinscription>
     """
     insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
-    println("\ninsc"); pprintln(insc)
+    pprintln("insc", insc); #pprint(insc); println(); println(); println()
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
     @test text(insc) isa Union{Nothing,AbstractString}
@@ -105,18 +105,18 @@ end
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
-    println("\naxn"); pprintln(axn)
+    println("\naxn"); pprint(axn); println()
 
     #TODO HL implementation not complete:
 
     sub1 = axn["subterm"][1]
-    pprintln(sub1)
+    pprint(sub1); println()
     @test tag(sub1) == "variable"
     var1 = PNML._attribute(sub1["variable"], :refvariable)
     @test var1 == "x"
 
     sub2 = axn["subterm"][2]
-    pprintln(sub2)
+    pprint(sub2); println()
     @test tag(sub2) == "variable"
     var2 = PNML._attribute(sub2["variable"], :refvariable)
     @test var2 == "v"
@@ -138,14 +138,14 @@ end
     @test tag(stru) == :structure
     @test elements(stru) isa DictType
     axn = elements(stru)
-    println("\naxn"); pprintln(axn)
+    println("\naxn"); pprint(axn); println()
 
     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
     tup = axn["tuple"]
-    println("tup"); pprintln(tup)
+    println("tup"); pprint(tup); println()
     sub = tup["subterm"]
-    println("sub"); pprintln(sub)
+    println("sub"); pprint(sub); println()
     @test sub isa Vector
     #--------
     all1 = sub[1]["all"]

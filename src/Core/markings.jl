@@ -43,13 +43,13 @@ Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 (mark::Marking)() = _evaluate(value(mark))
 
 
-function Base.show(io::IO, ptm::Marking)
-    pprint(io, ptm)
-end
+# function Base.show(io::IO, ptm::Marking)
+#     print(io, ptm)
+# end
 
-PrettyPrinting.quoteof(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
-        $(PrettyPrinting.quoteof(m.graphics)),
-        $(PrettyPrinting.quoteof(m.tools))))
+# PrettyPrinting.(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
+#         $(PrettyPrinting.quoteof(m.graphics)),
+#         $(PrettyPrintiquoteofng.quoteof(m.tools))))
 
 """
 $(TYPEDEF)
@@ -86,12 +86,12 @@ function Base.summary(hlm::HLMarking)
     string(typeof(hlm))
 end
 
-function Base.show(io::IO, hlm::HLMarking)
-    pprint(io, hlm)
-end
+# function Base.show(io::IO, hlm::HLMarking)
+#     print(io, hlm)
+# end
 
-quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
-                                    $(quoteof(graphics(m))), $(quoteof(tools(m)))))
+# quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
+#                                     $(quoteof(graphics(m))), $(quoteof(tools(m)))))
 
 
 #! HLMarking is a multiset, not an expression.

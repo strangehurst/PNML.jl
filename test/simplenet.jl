@@ -10,7 +10,6 @@ using PNML: tag, pid, parse_str,
     nettype, firstpage, ispid
 using PNML: incidence_matrix, inscription_value_type
 
-using PrettyPrinting
 using Test, Logging
 testlogger = TestLogger()
 

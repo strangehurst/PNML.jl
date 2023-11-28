@@ -1,4 +1,4 @@
-using PNML, EzXML, XMLDict, ..TestUtils, JET, PrettyPrinting, NamedTupleTools, AbstractTrees
+using PNML, EzXML, XMLDict, ..TestUtils, JET, NamedTupleTools, AbstractTrees
 using DebuggingUtilities
 using PNML:
     Maybe, tag, XMLNode, xmlroot, labels,

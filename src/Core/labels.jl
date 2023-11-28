@@ -145,19 +145,19 @@ function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
-        pprint(io, label)
+        print(io, label)
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
 
 end
 
-function Base.show(io::IO, label::PnmlLabel)
-    pprint(io, label)
-end
+# function Base.show(io::IO, label::PnmlLabel)
+#     print(io, label)
+# end
 
-PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
-                                                   $(PrettyPrinting.quoteof(l.elements))))
+# PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
+#                                                    $(PrettyPrinting.quoteof(l.elements))))
 
 #--------------------------------------
 "Use with `Fix2` to filter anything with tag accessor."

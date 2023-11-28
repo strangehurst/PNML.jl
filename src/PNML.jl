@@ -57,8 +57,8 @@ using MLStyle: @match
 using NamedTupleTools
 import OrderedCollections: OrderedDict, OrderedSet, LittleDict
 using Preferences
-using PrettyPrinting
-import PrettyPrinting: quoteof
+#!using PrettyPrinting
+#!import PrettyPrinting: quoteof
 using Reexport
 using DecFP
 #using Infiltrator: @infiltrate

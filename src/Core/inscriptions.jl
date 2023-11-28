@@ -25,16 +25,17 @@ Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, ToolInfo[])
 value(i::Inscription) = i.value
 
 
-function Base.show(io::IO, inscription::Inscription)
-    pprint(io, inscription)
-end
-function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
-    show(io, inscription)
-end
-PrettyPrinting.quoteof(i::Inscription) = :(Inscription($(PrettyPrinting.quoteof(value(i))),
-                                                    $(PrettyPrinting.quoteof(i.graphics)),
-                                                    $(PrettyPrinting.quoteof(i.tools))
-                                            ))
+# function Base.show(io::IO, inscription::Inscription)
+#     print(io, inscription)
+# end
+# function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
+#     show(io, inscription)
+# end
+
+# PrettyPrinting.quoteof(i::Inscription) = :(Inscription($(PrettyPrinting.quoteof(value(i))),
+#                                                     $(PrettyPrinting.quoteof(i.graphics)),
+#                                                     $(PrettyPrinting.quoteof(i.tools))
+#                                             ))
 
 """
 $(TYPEDSIGNATURES)
@@ -95,16 +96,16 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-function Base.show(io::IO, inscription::HLInscription)
-    pprint(io, inscription)
-end
-function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
-    show(io, inscription)
-end
+# function Base.show(io::IO, inscription::HLInscription)
+#     print(io, inscription)
+# end
+# function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
+#     show(io, inscription)
+# end
 
-quoteof(i::HLInscription) =
-    :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))),
-                    $(quoteof(graphics(i))), $(quoteof(tools(i)))))
+# quoteof(i::HLInscription) =
+#     :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))),
+#                     $(quoteof(graphics(i))), $(quoteof(tools(i)))))
 
 
 

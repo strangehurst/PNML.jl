@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, AbstractTrees, PrettyPrinting
+using PNML, EzXML, ..TestUtils, JET, AbstractTrees
 using PNML:
     Maybe, tag, labels, firstpage, first_net, nettype,
     PnmlNet, Page, nets, pages, pid,

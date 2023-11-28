@@ -40,18 +40,19 @@ condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 
 (c::Condition)() = _evaluate(value(c))::eltype(c)
 
-function Base.show(io::IO, cond::Condition)
-    pprint(io, cond)
-end
+# function Base.show(io::IO, cond::Condition)
+#     print(io, cond)
+# end
 
-function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
-    show(io, cond)
-end
-PrettyPrinting.quoteof(c::Condition) = :(Condition($(PrettyPrinting.quoteof(c.text)),
-                                                   $(PrettyPrinting.quoteof(value(c))),
-                                                   $(PrettyPrinting.quoteof(c.graphics)),
-                                                   $(PrettyPrinting.quoteof(c.tools))
-                                                   ))
+# function Base.show(io::IO, ::MIME"text/plain", cond::Condition)
+#     show(io, cond)
+# end
+
+# PrettyPrinting.quoteof(c::Condition) = :(Condition($(PrettyPrinting.quoteof(c.text)),
+#                                                    $(PrettyPrinting.quoteof(value(c))),
+#                                                    $(PrettyPrinting.quoteof(c.graphics)),
+#                                                    $(PrettyPrinting.quoteof(c.tools))
+#                                                    ))
 
 """
 $(TYPEDSIGNATURES)

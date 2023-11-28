@@ -30,13 +30,13 @@ function Base.show(io::IO, toolvector::Vector{ToolInfo})
     end
 end
 
-function Base.show(io::IO, ti::ToolInfo)
-    pprint(io, ti)
-end
+# function Base.show(io::IO, ti::ToolInfo)
+#     print(io, ti)
+# end
 
-PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
-                                         $(PrettyPrinting.quoteof(ti.version)),
-                                         $(PrettyPrinting.quoteof(ti.infos))))
+# PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
+#                                          $(PrettyPrinting.quoteof(ti.version)),
+#                                          $(PrettyPrinting.quoteof(ti.infos))))
 
 ###############################################################################
 

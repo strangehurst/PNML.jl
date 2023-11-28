@@ -70,7 +70,7 @@ struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     elements::Union{Bool, Int, Float64, DictType, String, SubString} #! Union{Bool, Int, Float64, DictType}
 end
 Term(x::DictType) = begin
-    print("Term from: "); pprintln(x)
+    #!print("Term from: "); println(x)
     Term(first(pairs(x)))
 end
 Term(p::Pair) = Term(p.first, p.second)
@@ -84,7 +84,7 @@ Base.eltype(t::Term) = typeof(elements(t))
 #!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
+# quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
 
 (t::Term)() =  _term_eval(elements(t))
 

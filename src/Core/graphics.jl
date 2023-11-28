@@ -26,10 +26,10 @@ x(c::Coordinate) = c.x
 y(c::Coordinate) = c.y
 Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
-function Base.show(io::IO, c::Coordinate)
-    compact = get(io, :compact, false)::Bool
-    print(io, "(", c.x, ",", c.y, ")")
-end
+# function Base.show(io::IO, c::Coordinate)
+#     #compact = get(io, :compact, false)::Bool
+#     print(io, "(", c.x, ",", c.y, ")")
+# end
 
 #-------------------
 """
@@ -45,14 +45,14 @@ $(TYPEDFIELDS)
     gradient_rotation::String = ""
 end
 
-function Base.show(io::IO, fill::Fill)
-    pprint(io, fill)
-end
+# function Base.show(io::IO, fill::Fill)
+#     print(io, fill)
+# end
 
-PrettyPrinting.quoteof(f::Fill) = :(Fill($(PrettyPrinting.quoteof(f.color)),
-                                         $(PrettyPrinting.quoteof(f.image)),
-                                         $(PrettyPrinting.quoteof(f.gradient_color)),
-                                         $(PrettyPrinting.quoteof(f.gradient_rotation))))
+# PrettyPrinting.quoteof(f::Fill) = :(Fill($(PrettyPrinting.quoteof(f.color)),
+#                                          $(PrettyPrinting.quoteof(f.image)),
+#                                          $(PrettyPrinting.quoteof(f.gradient_color)),
+#                                          $(PrettyPrinting.quoteof(f.gradient_rotation))))
 
 #-------------------
 """
@@ -71,17 +71,17 @@ $(TYPEDFIELDS)
     decoration::String = ""
 end
 
-function Base.show(io::IO, font::Font)
-    pprint(io, font)
-end
+# function Base.show(io::IO, font::Font)
+#     print(io, font)
+# end
 
-PrettyPrinting.quoteof(f::Font) = :(Font($(PrettyPrinting.quoteof(f.family)),
-                                         $(PrettyPrinting.quoteof(f.style)),
-                                         $(PrettyPrinting.quoteof(f.weight)),
-                                         $(PrettyPrinting.quoteof(f.size)),
-                                         $(PrettyPrinting.quoteof(f.align)),
-                                         $(PrettyPrinting.quoteof(f.rotation)),
-                                         $(PrettyPrinting.quoteof(f.decoration))))
+# PrettyPrinting.quoteof(f::Font) = :(Font($(PrettyPrinting.quoteof(f.family)),
+#                                          $(PrettyPrinting.quoteof(f.style)),
+#                                          $(PrettyPrinting.quoteof(f.weight)),
+#                                          $(PrettyPrinting.quoteof(f.size)),
+#                                          $(PrettyPrinting.quoteof(f.align)),
+#                                          $(PrettyPrinting.quoteof(f.rotation)),
+#                                          $(PrettyPrinting.quoteof(f.decoration))))
 
 #-------------------
 """
@@ -97,14 +97,14 @@ $(TYPEDFIELDS)
     width::String = ""
 end
 
-function Base.show(io::IO, line::Line)
-    pprint(io, line)
-end
+# function Base.show(io::IO, line::Line)
+#     print(io, line)
+# end
 
-PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
-                                         $(PrettyPrinting.quoteof(l.style)),
-                                         $(PrettyPrinting.quoteof(l.shape)),
-                                         $(PrettyPrinting.quoteof(l.width))))
+# PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
+#                                          $(PrettyPrinting.quoteof(l.style)),
+#                                          $(PrettyPrinting.quoteof(l.shape)),
+#                                          $(PrettyPrinting.quoteof(l.width))))
 
 #-------------------
 """
