@@ -29,9 +29,8 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, D
     @test text(mark) == "<All,All>"
     @test value(mark) isa PNML.AbstractTerm
     @test value(mark) isa PNML.Term
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show mark PNML.summary(mark)
-    end
+    print("mark = "); pprintln(mark) # show
+
     @test PNML.has_graphics(mark) == true
     @test PNML.has_labels(mark) == false
     @show mark #! debug
@@ -43,7 +42,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, D
     #TODO  evaluate the HL expression, check place sorttype
 
     #@show axn #! debug
-    pprint(axn); println()
+    pprintln(axn)
 #     axn = OrderedDict{Union{String, Symbol}, Any}("subterm" =>
 #         Any[OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N1"))),
 #             OrderedDict{Union{String, Symbol}, Any}("all" => OrderedDict{Union{String, Symbol}, Any}("usersort" => OrderedDict{Union{String, Symbol}, Any}(:declaration => "N2")))
@@ -89,34 +88,30 @@ end
       </hlinscription>
     """
     insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
-    pprintln("insc", insc); #pprint(insc); println(); println(); println()
+    pprint("insc = "); pprintln(insc);
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
     @test value(insc) isa PNML.AbstractTerm
     @test value(insc) isa PNML.Term
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show insc
-    end
     @test PNML.has_graphics(insc) == true
     @test PNML.has_labels(insc) == false
 
     inscterm = value(insc)
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
-    println("\naxn"); pprint(axn); println()
 
     #TODO HL implementation not complete:
 
     sub1 = axn["subterm"][1]
-    pprint(sub1); println()
+    pprintln(sub1)
     @test tag(sub1) == "variable"
     var1 = PNML._attribute(sub1["variable"], :refvariable)
     @test var1 == "x"
 
     sub2 = axn["subterm"][2]
-    pprint(sub2); println()
+    pprintln(sub2)
     @test tag(sub2) == "variable"
     var2 = PNML._attribute(sub2["variable"], :refvariable)
     @test var2 == "v"
@@ -138,14 +133,11 @@ end
     @test tag(stru) == :structure
     @test elements(stru) isa DictType
     axn = elements(stru)
-    println("\naxn"); pprint(axn); println()
 
     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
     tup = axn["tuple"]
-    println("tup"); pprint(tup); println()
     sub = tup["subterm"]
-    println("sub"); pprint(sub); println()
     @test sub isa Vector
     #--------
     all1 = sub[1]["all"]
@@ -174,9 +166,9 @@ end
     @testset for node in [n1]
         typ =  @test_logs (:warn,"ignoring unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             @show typ
-        end
+        #end
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
         @test value(typ).declaration == :N2

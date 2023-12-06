@@ -42,7 +42,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         end
     end
 
-    Declaration(something(decls, AbstractDeclaration[]), text, graphics, tools)
+    Declaration(text, something(decls, AbstractDeclaration[]), graphics, tools)
 end
 
 "Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
@@ -146,7 +146,7 @@ end
 
 # Pass in parser function (or functor?) #todo default?
 function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType, idregistry) where {F <: Function}
-    text::Maybe{AbstractString} = nothing # Union{String,SubString}
+    text::Maybe{Union{String,SubString{String}}} = nothing #
     term::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]

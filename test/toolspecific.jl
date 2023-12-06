@@ -50,7 +50,8 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 @testset "parse tools" begin
     for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
-        println("tooli"); show(tooli); println()
+        #dump(tooli)
+        print("tooli = "); pprintln(tooli)
         @test typeof(tooli) <: ToolInfo
         @test tooli.toolname == s.tool
         @test name(tooli) == s.tool
@@ -69,7 +70,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         #!@test tooli.infos isa s.elementtype
         #!@test PNML.infos(tooli) isa s.elementtype
         #!Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-        @show PNML.infos(tooli)
     end
     @testset "combined" begin
         #println("combined toolinfos")

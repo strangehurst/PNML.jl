@@ -30,9 +30,6 @@ end
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
     @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        @show n eltype(n.offset)
-    end
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0

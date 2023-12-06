@@ -106,7 +106,8 @@ function parse_partition(vx::DictType)
     return (id = Symbol(idval), name = nameval, sort = sortval, elements = elements)
 end
 
-function parse_partitionelement!(elements::Vector{PartitionElement}, v::Vector{Any}) #!DictType})
+function parse_partitionelement!(elements::Vector{PartitionElement}, v)
+    #println("parse_partitionelement! Any")
     for pe in v
         parse_partitionelement!(elements, pe)
     end
@@ -114,7 +115,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, v::Vector{A
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, vx::DictType)
-    #!println("parse_partitionelement!"); @show(vx)
+    #println("parse_partitionelement! DictType")
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 

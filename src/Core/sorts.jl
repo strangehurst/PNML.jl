@@ -129,6 +129,12 @@ CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[])
 elements(s::CyclicEnumerationSort) = s.ae
 equalSorts(a::CyclicEnumerationSort, b::CyclicEnumerationSort) = a.ae == b.ae
 
+function Base.show(io::IO, ces::CyclicEnumerationSort)
+    print(io, "CyclicEnumerationSort(")
+    show(IOContext(io, :typeinfo => FEConstant), elements(ces))
+    print(io, ")")
+end
+
 """
 $(TYPEDEF)
 """
@@ -138,6 +144,12 @@ struct FiniteEnumerationSort <: AbstractSort
 end
 FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[])
 equalSorts(a::FiniteEnumerationSort, b::FiniteEnumerationSort) = a.ae == b.ae
+
+function Base.show(io::IO, fes::FiniteEnumerationSort)
+    print(io, "CyclicEnumerationSort(")
+    show(IOContext(io, :typeinfo => FEConstant), fes.ae)
+    print(io, ")")
+end
 
 """
 $(TYPEDEF)
@@ -149,6 +161,9 @@ end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
 equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
 
+function Base.show(io::IO, firs::FiniteIntRangeSort)
+    print(io, "FiniteIntRangeSort(", firs.start, ", ", firs.stop, ")")
+end
 
 """
 $(TYPEDEF)

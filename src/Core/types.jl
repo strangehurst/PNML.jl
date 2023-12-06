@@ -89,11 +89,15 @@ value(d::DictType) = d[tag(d)]
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Hold well-formed XML in a [`DictType`](@ref). See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+Hold well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+
+Creates a tree whose nodes are `Union{DictType, String, SubString{String}}`.
+#TODO when can there be leaf nodes of String, Substying{String?}
+See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::Union{DictType, String, SubString}
+    elements::Union{DictType, String, SubString{String}}
 end
 AnyElement(x::DictType) = AnyElement(first(pairs(x)))
 #!AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString}}) = AnyElement(p.first, p.second)
@@ -103,8 +107,32 @@ AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements
 
-# PrettyPrinting.quoteof(a::AnyElement) = :(AnyElement($(PrettyPrinting.quoteof(a.tag)),
-#                                                      $(PrettyPrinting.quoteof(a.elements))))
+function Base.show(io::IO, label::AnyElement)
+    print(io, "AnyElement(")
+    show(io, tag(label)); print(io, ", ")
+    _show(io, elements(label))
+    print(io, ")")
+end
+
+"""
+    _show(x::Union{DictType, String, SubString{String}})
+
+Internal helper for dispatch. Use for types that are like (should be changed to?)
+    Tuple{Symbol, Union{DictType, String, SubString{String}}},
+though there may be iteration before and/or after. See `AnyElement` and others.
+"""
+function _show end
+_show(io::IO, d::DictType) = begin
+    print(io, "DictType(")
+    if !isempty(d)
+        show(io, tag(d)); print(io, " => ")
+        _show(io, value(d))
+    end
+    print(io, ")")
+end
+#!_show(io::IO, s::Union{String, SubString{String}}) = show(io, s)
+_show(io::IO, x::Any) = show(io, x)
+
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

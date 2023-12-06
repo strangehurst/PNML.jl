@@ -1,5 +1,5 @@
 using PNML, EzXML, XMLDict, ..TestUtils, JET, NamedTupleTools, AbstractTrees
-using DebuggingUtilities
+
 using PNML:
     Maybe, tag, XMLNode, xmlroot, labels,
     unparsed_tag, anyelement, PnmlLabel, AnyElement,
@@ -152,7 +152,6 @@ end
 
     v = get_label(lab, :test2)
     @test v isa PnmlLabel
-    @showln(v);
     @test tag(v) === :test2
     @test elements(v) == "3"
 
@@ -177,16 +176,15 @@ function test_unclaimed(pntd, xmlstring::String)
     reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
-    xdict = @time "xdict"  XMLDict.xml_dict(node, PNML.DictType)
-    @show xdict
+    xdict = XMLDict.xml_dict(node, PNML.DictType)
+    #pprint("xdict = "); pprintln(xdict)
 
-    u = @time "untag" unparsed_tag(node, pntd) # tag is a string
+    u = unparsed_tag(node, pntd) # tag is a string
     l = PnmlLabel(u)
     a = anyelement(node, pntd, reg2)
 
-
     if noisy
-        println("u = $u "); @showln(u)
+        println("u = $u ");
         println("l = $(l.tag) ");   dump(l)
         println("a = $(a.tag) " );  dump(a)
     end
@@ -194,9 +192,6 @@ function test_unclaimed(pntd, xmlstring::String)
     @test u isa PNML.DictType
     @test l isa PnmlLabel
     @test a isa AnyElement
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show u l a [a]
-    end
 
     @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node, pntd, reg1)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(u)
@@ -282,7 +277,7 @@ end
     ]
     # expected is a pair to construct a PnmlLabel
     for (s, expected) in ctrl
-        @show s
+        #@show s
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected)

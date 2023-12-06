@@ -24,9 +24,18 @@ value(t::SortType) = t.sort[]
 """
     type(::SortType) -> AbstractSort
 
-Return type of sort object of a `Place`. 
+Return type of sort object of a `Place`.
 """
 type(t::SortType) = typeof(value(t)) # Look a layer deeper at referenced sort object.
+
+
+function Base.show(io::IO, st::SortType)
+    print(io, indent(io), "SortType(")
+    show(io, text(st)); print(io, ", ");
+    show(io, graphics(st)); print(io, ", ");
+    show(io, tools(st));
+    print(io, ")")
+end
 
 
 """

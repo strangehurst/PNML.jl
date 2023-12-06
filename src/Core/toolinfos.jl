@@ -8,10 +8,10 @@ It wraps a iteratable collection (currently vector) of well formed elements
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals struct ToolInfo{T}
+@auto_hash_equals struct ToolInfo
     toolname::String
     version::String
-    infos::T
+    infos::Vector{AnyElement}
 end
 
 "Name of tool to for this tool specific information element."
@@ -19,24 +19,30 @@ name(ti::ToolInfo) = ti.toolname
 "Version of tool for this tool specific information element."
 version(ti::ToolInfo) = ti.version
 "Content of a ToolInfo."
-infos(ti::ToolInfo) = ti.infos
+infos(ti::ToolInfo) = ti.infos::Vector{AnyElement}
 
-Base.eltype(::ToolInfo{T}) where {T} = T
+Base.eltype(ti::ToolInfo) = eltype(infos(ti))
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
-    for (i, ti) in enumerate(toolvector)
-        print(io, "\n", indent(io), "$i: ")
-        show(io, ti)
+    print(io, "ToolInfo[")
+    for ti in toolvector
+        show(io, ti); print(io, ", ")
     end
+    print(io, "]")
 end
 
-# function Base.show(io::IO, ti::ToolInfo)
-#     print(io, ti)
-# end
-
-# PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
-#                                          $(PrettyPrinting.quoteof(ti.version)),
-#                                          $(PrettyPrinting.quoteof(ti.infos))))
+function Base.show(io::IO, ti::ToolInfo)
+    print(io, indent(io), "ToolInfo(")
+    show(io, name(ti)); print(io, ", ");
+    show(io, version(ti)); print(io, ", [");
+    println(io);
+    io = inc_indent(io)
+    for i in infos(ti)
+        show(IOContext(io, :typeinfo=>AnyElement), i)
+        println(io, ",")
+    end
+    print(io, "])")
+end
 
 ###############################################################################
 
@@ -55,7 +61,7 @@ end
 TokenGraphics{T}() where {T <: DecFP.DecimalFloatingPoint} = TokenGraphics{T}(Coordinate{T}[])
 
 function Base.show(io::IO, tg::TokenGraphics)
-    print(io, "positions: ", tg.positions)
+    print(io, "TokenGraphics(", tg.positions, ")")
 end
 
 ###############################################################################

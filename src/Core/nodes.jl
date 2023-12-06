@@ -21,11 +21,12 @@ initial_marking(place::Place) = place.initialMarking
 default_marking(place::Place) = default_marking(place.pntd)
 
 function Base.show(io::IO, place::Place)
-    print(io, summary(place),
-          " id ", place.id,
-          ", name '", name(place), "'",
-          ", type ", place.sorttype,
-          ", initial marking ", initial_marking(place))
+    print(io, "Place(")
+    show(io, pid(place)); print(io, ", ")
+    show(io, name(place)); print(io, ", ")
+    show(io, place.sorttype); print(io, ", ")
+    show(io, initial_marking(place));
+    print(io, ")")
 end
 
 #-------------------
@@ -147,5 +148,5 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
 end
 
 function Base.show(io::IO, r::ReferenceNode)
-    print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r), ")")
+    print(io, "", " (id ", pid(r), ", ref ", refid(r), ")")
 end

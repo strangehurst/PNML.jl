@@ -8,7 +8,7 @@ Labels an Arc. See also [`HLInscription`](@ref).
 
 ```jldoctest; setup=:(using PNML: Inscription)
 julia> i = Inscription(3)
-Inscription(3, nothing, [])
+Inscription(3, nothing, ToolInfo[])
 
 julia> i()
 3
@@ -25,17 +25,13 @@ Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, ToolInfo[])
 value(i::Inscription) = i.value
 
 
-# function Base.show(io::IO, inscription::Inscription)
-#     print(io, inscription)
-# end
-# function Base.show(io::IO, ::MIME"text/plain", inscription::Inscription)
-#     show(io, inscription)
-# end
-
-# PrettyPrinting.quoteof(i::Inscription) = :(Inscription($(PrettyPrinting.quoteof(value(i))),
-#                                                     $(PrettyPrinting.quoteof(i.graphics)),
-#                                                     $(PrettyPrinting.quoteof(i.tools))
-#                                             ))
+function Base.show(io::IO, inscription::Inscription)
+    print(io, "Inscription(")
+    show(io, value(inscription)); print(io, ", "),
+    show(io, graphics(inscription)); print(io, ", "),
+    show(io, tools(inscription))
+    print(io, ")")
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -60,19 +56,19 @@ See also [`Inscription`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
 julia> i2 = HLInscription(Term(:value, 3))
-HLInscription(nothing, Term(:value, 3), nothing, [])
+HLInscription(nothing, Term(:value, 3), nothing, ToolInfo[])
 
 julia> i2()
 3
 
 julia> i3 = HLInscription("text", Term(:empty, 1))
-HLInscription("text", Term(:empty, 1), nothing, [])
+HLInscription("text", Term(:empty, 1), nothing, ToolInfo[])
 
 julia> i3()
 1
 
 julia> i4 = HLInscription("text", Term(:value, 3))
-HLInscription("text", Term(:value, 3), nothing, [])
+HLInscription("text", Term(:value, 3), nothing, ToolInfo[])
 
 julia> i4()
 3
@@ -96,17 +92,14 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 """
 (hli::HLInscription)() = _evaluate(value(hli))
 
-# function Base.show(io::IO, inscription::HLInscription)
-#     print(io, inscription)
-# end
-# function Base.show(io::IO, ::MIME"text/plain", inscription::HLInscription)
-#     show(io, inscription)
-# end
-
-# quoteof(i::HLInscription) =
-#     :(HLInscription($(quoteof(i.text)), $(quoteof(value(i))),
-#                     $(quoteof(graphics(i))), $(quoteof(tools(i)))))
-
+function Base.show(io::IO, inscription::HLInscription)
+    print(io, "HLInscription(")
+    show(io, text(inscription)); print(io, ", "),
+    show(io, value(inscription)); print(io, ", "),
+    show(io, graphics(inscription)); print(io, ", "),
+    show(io, tools(inscription))
+    print(io, ")")
+end
 
 
 inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}

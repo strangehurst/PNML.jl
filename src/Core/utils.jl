@@ -22,26 +22,16 @@ _evaluate(x::Number) = identity(x)
 _evaluate(x::Base.Callable) = (x)()
 
 """
-$(TYPEDSIGNATURES)
-Return function to be used like: any(ispid(sym), iterate_with_pid)
+    ispid(x::Symbol)
+
+Return function to be used like: any(ispid(:asym), iterable_with_pid)
 """
 ispid(x::Symbol) = Fix2(===, x)
-haspid(x, id::Symbol) = pid(x) === id
-haspid(s::Any) = throw(ArgumentError(lazy"haspid used on $(typeof(s)) $s, do you want `ispid`"))
+haspid(x, id::Symbol) = ispid(id)(x) #!pid(x) === id
+haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
-"Return string of current indent size in `io`."
+"Return blank string of current indent size in `io`."
 indent(io::IO) = repeat(' ', get(io, :indent, 0)::Int)
 
-#using PNML: CONFIG
-"Increment the `:indent` value by `indent_width`."
-inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0)::Int + 4) #! HARDCODED
-
-
-
-# Pirate PrettyPrinting.tile for OrderedDict.
-# Unless a dependency is imposed on the universe, piracy is the best choice.
-# const PP = PrettyPrinting
-# PP.tile(d::OrderedDict) =
-#     PP.list_layout(PP.Layout[PP.pair_layout(PP.tile(key),
-#                                             PP.tile(val)) for (key, val) in d],
-#                    prefix=:OrderedDict)
+"Increment the `:indent` value by `inc`."
+inc_indent(io::IO, inc::Int=CONFIG.indent_width) = IOContext(io, :indent => get(io, :indent, 0)::Int + inc)

@@ -57,8 +57,6 @@ using MLStyle: @match
 using NamedTupleTools
 import OrderedCollections: OrderedDict, OrderedSet, LittleDict
 using Preferences
-#!using PrettyPrinting
-#!import PrettyPrinting: quoteof
 using Reexport
 using DecFP
 #using Infiltrator: @infiltrate
@@ -74,6 +72,7 @@ include("Core/PnmlIDRegistrys.jl")
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
+include("Core/pprint.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
@@ -122,8 +121,6 @@ include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
 include("PNet/petrinet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
-
-include("Core/show.jl")
 
 # PARSE
 include("Core/xmlutils.jl")

@@ -54,15 +54,19 @@ Return first net contained by `doc`.
 first_net(model) = first(nets(model))
 
 # No indent done here.
-function Base.show(io::IO, pnml::PnmlModel)
-    println(io, summary(pnml))
-    println(io, "namespace = ", namespace(pnml))
-    for (i, net) in enumerate(nets(pnml))
-        show(io, MIME"text/plain"(), net)
-        if i < length(nets(pnml))
-            print(io, "\n")
+function Base.show(io::IO, model::PnmlModel)
+    print(io, "PnmlModel(")
+    show(io, namespace(model)); print(io, ", ",)
+    println(io, length(nets(model)), " nets:" )
+
+    for (i, net) in enumerate(nets(model))
+        show(io, net)
+        if i < length(nets(model))
+            println(io)
         end
     end
+    print(io, ")")
+    #PnmlIDRegistry
 end
 function Base.summary(pnml::PnmlModel)
     string(typeof(pnml), " model with ",  length(nets(pnml)), " nets" )

@@ -137,27 +137,23 @@ PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
+
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    show(io, MIME"text/plain"(), labelvector)
-end
-function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel})
-    print(io, indent(io), typeof(labelvector), "[")
+    print(io, indent(io), "PnmlLabel[")
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
-        print(io, label)
+        print(io, "(",);
+        show(io, tag(label)); print(io, ", "); _show(io, elements(label));
+        print(")")
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
-
 end
 
-# function Base.show(io::IO, label::PnmlLabel)
-#     print(io, label)
-# end
-
-# PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
-#                                                    $(PrettyPrinting.quoteof(l.elements))))
+function Base.show(io::IO, label::PnmlLabel)
+    print(io, indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
+end
 
 #--------------------------------------
 "Use with `Fix2` to filter anything with tag accessor."

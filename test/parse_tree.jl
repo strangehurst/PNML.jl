@@ -97,7 +97,7 @@ end
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
     pnml_ir = parse_pnml(pnmldoc, registry())
-    @test pnml_ir isa PnmlModel
+    @show @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
@@ -137,7 +137,7 @@ end
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
     pnml_dir = joinpath(@__DIR__, "data")
-    testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
+    @show testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
 
     model = parse_file(testfile)
     @test model isa PnmlModel
@@ -161,11 +161,14 @@ end
     # 2 ways to do the same thing
     @test !isempty(transitions(firstpage(net)))
     @test !isempty(transitions(first(pages(net))))
+    @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
+    #println(""" #! BROKE 2023-11-28
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
+    #""")
 
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    #@Base.redirect_stdio(stdout=testshow, stderr=testshow) do
         println("========================================================")
         println("========================================================")
         println("$testfile")
@@ -173,7 +176,7 @@ end
         println("========================================================")
         @show model
         println("========================================================\n")
-    end
+    #end
 end
 
 # Read a file
@@ -184,7 +187,7 @@ end
     model = parse_file(testfile)
     @test model isa PnmlModel
 
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
 
         println("========================================================")
         println("========================================================")
@@ -193,5 +196,5 @@ end
         println("========================================================")
         @show model
         println("========================================================\n")
-    end
+    #end
 end

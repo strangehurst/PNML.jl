@@ -62,9 +62,6 @@ str =
     #@test_logs broken=true (:warn,) #! 1.10.beta broken here?
     model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show model
-    end
 end
 # @test_logs((:warn,""), expr)
 
@@ -82,9 +79,6 @@ end
     parse_pnml(xmlroot(str), reg)
     @report_opt parse_pnml(xmlroot(str), reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show reg
-    end
     @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end
@@ -115,9 +109,6 @@ end
         ntup = PNML.find_nets(model, t)
 
         @test PNML.name(net) == string(pid(net))
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show  pid(net) PNML.nettype.(ntup) pid.(ntup)
-        end
         for n in ntup
             @test t === PNML.nettype(n)
         end
@@ -154,5 +145,4 @@ end
 
     model = parse_str(str)
     @test model isa PnmlModel
-
 end

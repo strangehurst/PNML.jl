@@ -9,6 +9,7 @@ Other PNTDs may introduce non-standard uses for declarations.
 We can use infrastructure implemented for HL nets to provide nonstandard extensions.
 """
 struct Declaration <: Annotation
+    text::Maybe{String}
     declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
     #SortDeclarations               xml:"structure>declarations>namedsort"`
 	#PartitionSortDeclarations      xml:"structure>declarations>partition"
@@ -16,12 +17,11 @@ struct Declaration <: Annotation
 	#OperatorDeclarations           xml:"structure>declarations>namedoperator"
 	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
 	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
-    text::Maybe{String}
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Vector{ToolInfo}
 end
 
-Declaration() = Declaration(Any[], nothing, nothing, ToolInfo[])
+Declaration() = Declaration(nothing, Any[], nothing, ToolInfo[])
 
 declarations(d::Declaration) = d.declarations
 
@@ -50,12 +50,13 @@ abstract type AbstractDeclaration end #<: AbstractLabel end
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
 
-# function Base.show(io::IO, declare::AbstractDeclaration)
-#     print(io, declare)
-# end
+function Base.show(io::IO, declare::AbstractDeclaration)
+    print(io, typeof(declare), "(")
+    show(io, pid(declare)); print(io, ", ")
+    show(io, name(declare)); print(io, ", ")
 
-# quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name))))
-
+    print(io, ")")
+end
 
 """
 $(TYPEDEF)
@@ -63,9 +64,8 @@ $(TYPEDFIELDS)
 """
 struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
-    name::Union{String,SubString}
-    nodename::Union{String,SubString}
-    #!content::OrderedDict{Union{Symbol,String}, Any} #! Vector{Any} #! Vector{AnyElement}
+    name::Union{String,SubString{String}}
+    nodename::Union{String,SubString{String}}
     content::Vector{Any} #! Vector{AnyElement}
 end
 UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [OrderedDict()])
@@ -88,7 +88,7 @@ $(TYPEDFIELDS)
 """
 struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
     sort::S
 end
 VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
@@ -99,17 +99,20 @@ $(TYPEDFIELDS)
 """
 struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
 sort(namedsort::NamedSort) = namedsort.def
 
-# function Base.show(io::IO, nsort::NamedSort)
-#     print(IOContext(io, :displaysize => (24, 180)), nsort)
-# end
-
-# quoteof(n::NamedSort) = :(NamedSort($(quoteof(n.id)), $(quoteof(n.name)), $(quoteof(n.def))))
+function Base.show(io::IO, nsort::NamedSort)
+    print(io, "NamedSort{")
+    show(io, pid(nsort)); print(io, ", ")
+    show(io, name(nsort)); print(io, ", ")
+    print(io, "\n", indent(inc_indent(io)))
+    show(io, sort(nsort))
+    print(io, ")")
+end
 
 """
 $(TYPEDEF)
@@ -119,7 +122,7 @@ Partition sort.
 """
 struct PartitionSort{S,PE} <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
     def::S # Refers to a NamedSort
     element::PE # 1 or more PartitionElements.
     #
@@ -136,7 +139,7 @@ Partition Element is part of a Partition Sort.
 """
 struct PartitionElement # <: SortDeclaration should be something for accessors
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
     terms::Vector{UserOperator} # 1 or more Terms (UserOperator?)
 end
 PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
@@ -151,7 +154,7 @@ reserved for/supported by `HLPNG` in the pnml specification.
 """
 struct ArbitrarySort <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
 end
 
 function ArbitrarySort()
@@ -166,7 +169,7 @@ See [`UserOperator`](@ref)
 """
 struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
-    name::Union{String,SubString}
+    name::Union{String,SubString{String}}
     parameter::Vector{V}
     def::T # operator or variable term (with associated sort)
 end

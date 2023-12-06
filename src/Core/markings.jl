@@ -11,13 +11,13 @@ Is a functor that returns the `value`.
 
 ```jldoctest; setup=:(using PNML: Marking)
 julia> m = Marking(1)
-Marking(1, nothing, [])
+Marking(1, nothing, ToolInfo[])
 
 julia> m()
 1
 
 julia> m = Marking(12.34)
-Marking(12.34, nothing, [])
+Marking(12.34, nothing, ToolInfo[])
 
 julia> m()
 12.34
@@ -42,14 +42,13 @@ Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 """
 (mark::Marking)() = _evaluate(value(mark))
 
-
-# function Base.show(io::IO, ptm::Marking)
-#     print(io, ptm)
-# end
-
-# PrettyPrinting.(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
-#         $(PrettyPrinting.quoteof(m.graphics)),
-#         $(PrettyPrintiquoteofng.quoteof(m.tools))))
+function Base.show(io::IO, ptm::Marking)
+    print(io, indent(io), "Marking(")
+    show(io, value(ptm)); print(io, ", ");
+    show(io, graphics(ptm)); print(io, ", ");
+    show(io, tools(ptm))
+    print(io, ")")
+end
 
 """
 $(TYPEDEF)
@@ -64,7 +63,7 @@ Is a functor that returns the evaluated `value`.
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text", Term(:value, 3), nothing, [])
+HLMarking("the text", Term(:value, 3), nothing, ToolInfo[], )
 
 julia> m()
 3
@@ -82,19 +81,15 @@ HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, no
 
 value(m::HLMarking) = m.term
 
-function Base.summary(hlm::HLMarking)
-    string(typeof(hlm))
+function Base.show(io::IO, hlm::HLMarking)
+    print(io, indent(io), "HLMarking(")
+    show(io, text(hlm)); print(io, ", ")
+    show(io, value(hlm)); print(io, ", ")
+    show(io, graphics(hlm)); print(io, ", ")
+    show(io, tools(hlm),); print(io, ", ")
+    print(io, ")")
 end
 
-# function Base.show(io::IO, hlm::HLMarking)
-#     print(io, hlm)
-# end
-
-# quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
-#                                     $(quoteof(graphics(m))), $(quoteof(tools(m)))))
-
-
-#! HLMarking is a multiset, not an expression.
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.

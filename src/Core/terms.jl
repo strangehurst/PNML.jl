@@ -70,7 +70,7 @@ struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     elements::Union{Bool, Int, Float64, DictType, String, SubString} #! Union{Bool, Int, Float64, DictType}
 end
 Term(x::DictType) = begin
-    #!print("Term from: "); println(x)
+    isempty(x) && error("cannot construct a `Term` from an empty dictionary")
     Term(first(pairs(x)))
 end
 Term(p::Pair) = Term(p.first, p.second)
@@ -79,12 +79,15 @@ Term(s::AbstractString, e) = Term(Symbol(s), e)
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 Base.eltype(t::Term) = typeof(elements(t))
-#Base.eltype(t::Term{T}) where {T} = T
 
 #!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-# quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
+function Base.show(io::IO, t::Term)
+    print(io, "Term(")
+    show(io, tag(t)); print(io, ", "); _show(io, elements(t))
+    print(io, ")")
+end
 
 (t::Term)() =  _term_eval(elements(t))
 

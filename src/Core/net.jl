@@ -141,27 +141,32 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
 
 function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", pid(net),
-            " name '", has_name(net) ? name(net) : "", "', ",
-            " type ", nettype(net), ", ",
-            length(pagedict(net)), " pages ",
-            length(declarations(net)), " declarations",
-            length(tools(net)), " tools, ",
-            length(labels(net)), " labels"
-             )
+    " name '", has_name(net) ? name(net) : "", ", ",
+    " type ", nettype(net), ", ",
+    length(pagedict(net)), " pages ",
+    length(declarations(net)), " declarations",
+    length(tools(net)), " tools, ",
+    length(labels(net)), " labels"
+     )
 end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    println(io, summary(net))
+    print(io, "PnmlNet(")
+    show(io, name(net)); print(io,", ")
+    show(io, nettype(net)); print(io,", ")
+    show(io, page_idset(net)); println(io,", ")
+
+    print(io, "Declarations[")
     iio = inc_indent(io) # Indent any declarations.
     for decl in declarations(net)
-        print(iio, indent(io))
-        show(iio, MIME"text/plain"(), decl)
-        println(iio, "\n")
+        print(iio, "\n", indent(iio))
+        show(iio, decl)
+        print(iio, ", ")
     end
-    show(io, pages(net))
+    print(io, "])"); println(io,", ")
+    show(io, tools(net)); println(io,", ")
+    show(io, labels(net)); println(io,"' ")
 end
-
-function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
-    show(io, net)
-end
+#pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
+#netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs

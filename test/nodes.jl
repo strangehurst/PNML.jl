@@ -13,14 +13,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <initialMarking> <text>100</text> </initialMarking>
           </place>
         """
-        println()
         n  = parse_place(node, pntd, registry())
         @show n
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n)
-        end
-
 
         @test pid(n) === :place1
         @test typeof(n) <: Place
@@ -39,12 +34,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <hlinitialMarking> <text>100</text> </hlinitialMarking>
           </place>
         """
-        println()
         n  = parse_place(node, pntd, registry())
-        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n)
-        #end
-
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
         @test pid(n) === :place1
@@ -72,9 +62,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.default_condition(n) PNML.nettype(n)
-    end
     @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
@@ -137,9 +124,6 @@ end
     #a1 = @test_logs match_mode=:any (:warn, "inscription term <structure> content value: 6") (:warn, "unexpected child of <arc>: unknown")
     a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
 
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show a1 PNML.default_inscription(a1) PNML.nettype(a1)
-    end
     a2 = Arc(a1, :newsrc, :newtarget)
     @testset "a1,a2" for a in [a1, a2]
         @test typeof(a) <: Arc
@@ -166,9 +150,6 @@ end
     </referenceTransition>
     """
     n = @test_logs (:warn, "unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n
-    end
     @test n isa RefTransition
     @test pid(n) === :rt1
     @test refid(n) === :t1
@@ -203,9 +184,6 @@ end
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
         n = @test_logs (:warn, "unexpected child of <referencePlace>: unknown") match_mode=:any parse_refPlace(s.node, ContinuousNet(), registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n
-        end
         @test typeof(n) <: RefPlace
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)
