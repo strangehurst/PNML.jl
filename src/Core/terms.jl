@@ -84,8 +84,8 @@ Base.eltype(t::Term) = typeof(elements(t))
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
 function Base.show(io::IO, t::Term)
-    print(io, "Term(")
-    show(io, tag(t)); print(io, ", "); _show(io, elements(t))
+    print(io, '\n', indent(io), "Term(")
+    show(io, tag(t)); print(io, ", "); dict_show(io, elements(t), 0)
     print(io, ")")
 end
 
@@ -97,10 +97,10 @@ _term_eval(v::AbstractString) = parse(Bool, v)
 _term_eval(v::DictType) = begin
     # Fake like we know how to evaluate a expression of the high-level terms.
     haskey(v, :value) && return _term_eval(v[:value])
-
-    println("(t::Term) needs to handle term ast! returning nothing");
-    #!@showln(v)
-    return nothing
+    @show v
+    @error("_term_eval needs to handle ast in `v`! returning `false`");
+    #Base.show_backtrace(stdout, backtrace())
+    return false #nothing
 end
 
 #(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end

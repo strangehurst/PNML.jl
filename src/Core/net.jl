@@ -152,21 +152,50 @@ end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    print(io, "PnmlNet(")
+    print(io, indent(io), nameof(typeof(net)), "(")
     show(io, name(net)); print(io,", ")
     show(io, nettype(net)); print(io,", ")
-    show(io, page_idset(net)); println(io,", ")
 
-    print(io, "Declarations[")
-    iio = inc_indent(io) # Indent any declarations.
-    for decl in declarations(net)
-        print(iio, "\n", indent(iio))
-        show(iio, decl)
-        print(iio, ", ")
+    iio = inc_indent(io)
+    println(io)
+    print(io, "Pages[")
+    show(io, page_idset(net)); println(io,", ") #show(io, keys(pagedict(net))); println(io,", ")
+    for (i,page) in enumerate(values(pagedict(net)))
+        print(iio, "\n", indent(iio)); show(iio, page)
+        i < length(values(pagedict(net))) && print(io,", ")
     end
-    print(io, "])"); println(io,", ")
-    show(io, tools(net)); println(io,", ")
-    show(io, labels(net)); println(io,"' ")
+    println(io, "], ")
+    print(io, "Declarations[")
+    for (i,decl) in enumerate(declarations(net))
+        print(iio, "\n", indent(iio)); show(iio, decl)
+        i < length(declarations(net)) && print(iio, ", ")
+    end
+    println(io, "], ")
+    show(io, tools(net)); println(io, ", ")
+    show(io, labels(net)); println(io, ", ")
+    show(io, netdata(net)); println(io, ")")
+
+    println(io, "Arcs:")
+    map(arcs(net)) do a
+        show(io, a); println(io)
+    end
+    println(io, "Places:")
+    map(places(net)) do p
+    show(io, p); println(io)
+    end
+    println(io, "Transitions:")
+    map(transitions(net)) do t
+        show(io, t); println(io)
+    end
+
+    println(io, "Reference Places:")
+    map(refplaces(net)) do rp
+        show(io, rp); println(io)
+    end
+
+    println(io, "Reference Transitions")
+    map(reftransitions(net)) do rt
+        show(io, rt); println(io)
+    end
+
 end
-#pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
-#netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs

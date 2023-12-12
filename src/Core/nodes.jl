@@ -21,7 +21,7 @@ initial_marking(place::Place) = place.initialMarking
 default_marking(place::Place) = default_marking(place.pntd)
 
 function Base.show(io::IO, place::Place)
-    print(io, "Place(")
+    print(io, nameof(typeof(place)), "(")
     show(io, pid(place)); print(io, ", ")
     show(io, name(place)); print(io, ", ")
     show(io, place.sorttype); print(io, ", ")
@@ -56,7 +56,7 @@ condition(transition::Transition) = _evaluate(transition.condition)::condition_v
 default_condition(transition::Transition) = default_condition(transition.pntd)
 
 function Base.show(io::IO, trans::Transition)
-    print(io, typeof(trans),
+    print(io, nameof(typeof(trans)),
           " id ", pid(trans), ", name '", name(trans), "'", ", condition ", condition(trans))
 end
 
@@ -106,7 +106,7 @@ Return identity symbol of target of `arc`.
 target(arc::Arc)::Symbol = arc.target
 
 function Base.show(io::IO, arc::Arc)
-    print(io, typeof(arc), " id ", arc.id,
+    print(io, nameof(typeof(arc)), " id ", arc.id,
           ", name '", has_name(arc) ? name(arc) : "", "'",
           ", source: ", source(arc),
           ", target: ", target(arc),
@@ -144,9 +144,9 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel} #! NamedTuple Symbol => Annotation? Dict{Symbol,Annotation}
+    labels::Vector{PnmlLabel}
 end
 
 function Base.show(io::IO, r::ReferenceNode)
-    print(io, "", " (id ", pid(r), ", ref ", refid(r), ")")
+    print(io, nameof(typeof(r)), "(", pid(r), ",  ", refid(r), ")")
 end

@@ -31,7 +31,8 @@ haspid(x, id::Symbol) = ispid(id)(x) #!pid(x) === id
 haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 "Return blank string of current indent size in `io`."
-indent(io::IO) = repeat(' ', get(io, :indent, 0)::Int)
+indent(io::IO) = indent(get(io, :indent, 0)::Int)
+indent(i::Int) = repeat(' ', i)
 
 "Increment the `:indent` value by `inc`."
 inc_indent(io::IO, inc::Int=CONFIG.indent_width) = IOContext(io, :indent => get(io, :indent, 0)::Int + inc)

@@ -8,13 +8,15 @@ Label of a Transition that determines when the transition fires.
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
 julia> c = Condition(false)
-Condition(nothing, Term(:bool, false), nothing, ToolInfo[])
+Condition(nothing,
+Term(:bool, false), nothing, ToolInfo[])
 
 julia> c()
 false
 
 julia> c = Condition("xx", false)
-Condition("xx", Term(:bool, false), nothing, ToolInfo[])
+Condition("xx",
+Term(:bool, false), nothing, ToolInfo[])
 
 julia> c()
 false
@@ -41,7 +43,7 @@ condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 (c::Condition)() = _evaluate(value(c))::eltype(c)
 
 function Base.show(io::IO, c::Condition)
-    print(io, "Condition(")
+    print(io, nameof(typeof(c)), "(")
     show(io, text(c)); print(io, ", ")
     show(io, value(c)); print(io, ", ")
     show(io, graphics(c)); print(io, ", ")

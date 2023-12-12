@@ -51,7 +51,7 @@ pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
 
 function Base.show(io::IO, declare::AbstractDeclaration)
-    print(io, typeof(declare), "(")
+    print(io, nameof(typeof(declare)), "(")
     show(io, pid(declare)); print(io, ", ")
     show(io, name(declare)); print(io, ", ")
 
@@ -106,11 +106,10 @@ NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
 sort(namedsort::NamedSort) = namedsort.def
 
 function Base.show(io::IO, nsort::NamedSort)
-    print(io, "NamedSort{")
+    print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
-    print(io, "\n", indent(inc_indent(io)))
-    show(io, sort(nsort))
+    show(inc_indent(io), sort(nsort))
     print(io, ")")
 end
 

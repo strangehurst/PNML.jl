@@ -62,7 +62,6 @@ using DecFP
 #using Infiltrator: @infiltrate
 import Graphs
 import MetaGraphsNext
-
 using DebuggingUtilities
 
 include("Core/PnmlTypeDefs.jl")

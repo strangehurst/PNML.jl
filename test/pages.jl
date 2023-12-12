@@ -248,7 +248,7 @@ end
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
 
-Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+#Base.redirect_stdio(stdout=testshow, stderr=testshow) do
     println("print net")
     map(println, arcs(net))
     map(println, places(net))
@@ -258,7 +258,7 @@ Base.redirect_stdio(stdout=testshow, stderr=testshow) do
     println("---------------")
     @show (collect ∘ values ∘ page_idset)(net)
     println("---------------")
-end
+#end
 
 @testset "flatten" begin
         flatten_pages!(net)

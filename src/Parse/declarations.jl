@@ -201,20 +201,17 @@ end
 isEmptyContent(body::DictType) = tag(body) == "content" && isempty(value(body))
 
 function parse_feconstants(body::DictType)
-    #!println("parse_feconstants"); @showln(body)
     @assert tag(body) == "feconstant"
     feconstants = FEConstant[]
-    for onefec in value(body)
-        #!@show onefec
-        @assert isa(onefec, DictType)
-        push!(feconstants, FEConstant(Symbol(onefec[:id]), onefec[:name]))
+    for fec in value(body)
+        push!(feconstants, (; :id => Symbol(fec[:id]), :name => fec[:name]))
     end
     return feconstants
 end
 
-"The d has only a declaration, return its value as a string."
+"Has a tag of :declaration, return value as a string."
 function parse_decl(d::DictType)
-    t = tag(d)::Union{Symbol,String,SubString}
+    t = tag(d)::Union{Symbol,String,SubString{String}}
     t != :declaration && throw(ArgumentError("expected ':declaration', found $(tag(d))"))
     return value(d)::AbstractString
 end

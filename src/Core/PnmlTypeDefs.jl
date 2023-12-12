@@ -192,11 +192,11 @@ $(TYPEDSIGNATURES)
 
 Add or replace mapping from `s` to [`PnmlType`](@ref) singleton `pntd`.
 """
-function add_nettype!(elements::AbstractDict, s::Symbol, pntd::PnmlType)
-    action = s ∈ elements ? "updating" : "adding"
-    @warn  "$action mapping from $s to $pntd in elements::$(typeof(elements))" elements
-    pntd ∉ values(elements) && @warn "$pntd already in elements"
-    elements[s] = pntd
+function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
+    action = s ∈ dict ? "updating" : "adding"
+    @warn  "$action mapping from $s to $pntd in dict::$(typeof(dict))" dict
+    pntd ∉ values(dict) && @warn "$pntd already in pnml nettype dictionary"
+    dict[s] = pntd
     @assert s ∈ elements
 end
 

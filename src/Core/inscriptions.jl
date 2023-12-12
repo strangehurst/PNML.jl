@@ -56,19 +56,22 @@ See also [`Inscription`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
 julia> i2 = HLInscription(Term(:value, 3))
-HLInscription(nothing, Term(:value, 3), nothing, ToolInfo[])
+HLInscription(nothing,
+Term(:value, 3), nothing, ToolInfo[])
 
 julia> i2()
 3
 
 julia> i3 = HLInscription("text", Term(:empty, 1))
-HLInscription("text", Term(:empty, 1), nothing, ToolInfo[])
+HLInscription("text",
+Term(:empty, 1), nothing, ToolInfo[])
 
 julia> i3()
 1
 
 julia> i4 = HLInscription("text", Term(:value, 3))
-HLInscription("text", Term(:value, 3), nothing, ToolInfo[])
+HLInscription("text",
+Term(:value, 3), nothing, ToolInfo[])
 
 julia> i4()
 3

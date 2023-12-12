@@ -91,25 +91,39 @@ function Base.summary( page::Page)
            )
 end
 
-function show_page_field(io::IO, label::AbstractString, x)
-    println(io, indent(io), label)
-    if !isnothing(x) && length(x) > 0
-        show(inc_indent(io), MIME"text/plain"(), x)
-        print(io, "\n")
+function show_page_field(io::IO, label::AbstractString, x, post::AbstractString=",\n")
+    print(io, indent(io), label, " "); show(io, x); print(io, post)
+end
+
+function Base.show(io::IO, pagevec::Vector{Page})
+    pntdtype = isempty(pagevec) ? PnmType : nettype(first(pagevec))
+    println(io, indent(io), "Page{",pntdtype,"}[" )
+    io = inc_indent(io)
+    for (i,page) in enumerate(pagevec)
+        print(io, indent(io)); show(io, page)
+        if i < length(pagevec)
+            println(io, ",")
+        end
     end
+    print(io, "]" )
 end
 
 function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
-    println(io, indent(io), summary(page))
-    # Start indent here. Will indent subpages.
-    inc_io = inc_indent(io)
+    print(io, "Page{", nettype(page),"}("),
+    show(io, pid(page)); print(io, ", ")
+    show(io, name(page)); print(io, ", ")
 
-    show_page_field(inc_io, "places:",         place_idset(page))
-    show_page_field(inc_io, "transitions:",    transition_idset(page))
-    show_page_field(inc_io, "arcs:",           arc_idset(page))
-    show_page_field(inc_io, "declaration:",    declarations(page))
-    show_page_field(inc_io, "refPlaces:",      refplace_idset(page))
-    show_page_field(inc_io, "refTransitions:", reftransition_idset(page))
-    show_page_field(inc_io, "subpages:",       page_idset(page))
+    println(io)
+    # Start indent here. Will indent subpages.
+    iio = inc_indent(io)
+
+    show_page_field(iio, "places:",         place_idset(page))
+    show_page_field(iio, "transitions:",    transition_idset(page))
+    show_page_field(iio, "arcs:",           arc_idset(page))
+    show_page_field(iio, "declaration:",    declarations(page))
+    show_page_field(iio, "refPlaces:",      refplace_idset(page))
+    show_page_field(iio, "refTransitions:", reftransition_idset(page))
+    show_page_field(iio, "subpages:",       page_idset(page), "")
+    print(io, ")")
 end

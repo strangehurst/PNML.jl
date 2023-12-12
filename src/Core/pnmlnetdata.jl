@@ -25,7 +25,7 @@ PnmlNetData(pntd) =
                 OrderedDict{Symbol, place_type(pntd)}(),
                 OrderedDict{Symbol, transition_type(pntd)}(),
                 OrderedDict{Symbol, arc_type(pntd)}(),
-                OrderedDict{Symbol, refplace_type(pntd)}(),
+                  OrderedDict{Symbol, refplace_type(pntd)}(),
                 OrderedDict{Symbol, reftransition_type(pntd)}())
 
 placedict(d::PnmlNetData) = d.place_dict
@@ -41,10 +41,25 @@ refplacedict(x) = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
 
 function Base.show(io::IO, pnd::PnmlNetData)
-    for (f,t) in [(placedict,"places"), (transitiondict,"transitions"), (arcdict,"arcs"),
-                (refplacedict,"refplaces"), (reftransitiondict,"refTransitions")]
-        println(io, length(f(pnd)), " ", t, ": ", (keys ∘ f)(pnd))
+    print(io, nameof(typeof(pnd)), "(",)
+    show(io, pnd.pntd); println(io, ", ")
+    io = inc_indent(io)
+    for (t, f) in (("places", placedict),
+                  ("transitions", transitiondict),
+                  ("arcs", arcdict),
+                  ("refplaces", refplacedict),
+                  ("refTransitions", reftransitiondict))
+        print(io, indent(io), length(f(pnd)), " ", t, ": ")
+        iio = inc_indent(io)
+        for (i,k) in enumerate((keys ∘ f)(pnd))
+            show(io, k); print(io, ", ")
+            if (i < length(f(pnd))) && (i % 25 == 0)
+                print(iio, '\n', indent(iio))
+            end
+        end
+        println(io)
     end
+    print(io, ")")
 end
 
 """
@@ -91,13 +106,24 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (func,tag) in [(page_idset,"pages"),
-                    (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"),
-                    (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
-        println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
+    for (tag, func) in (
+        ("pages", page_idset),
+        ("places", place_idset),
+        ("transitions", transition_idset),
+        ("arcs", arc_idset),
+        ("refplaces", refplace_idset),
+        ("refTransitions", reftransition_idset)
+    )
+        #println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
+        print(io, indent(io), length(func(pns)), " ", tag, ": ")
+        iio = inc_indent(io)
+        for (i,k) in enumerate((values ∘ func)(pns))
+            print(io, repr(k), ", ")
+            #i % 25 == 0 && print(iio, '\n', indent(iio))
+            if (i < length(func(pns))) && (i % 25 == 0)
+                print(iio, '\n', indent(iio))
+            end
+        end
+        println(io)
     end
-end
-
-function Base.show(io::IO, ::MIME"text/plain", pns::PnmlNetKeys)
-    show(io, pns)
 end

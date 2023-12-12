@@ -85,6 +85,13 @@ const DictType = OrderedDict{Union{Symbol,String}, Any}
 tag(d::DictType)   = first(pairs(d)).first # Expect only one key here, String or Symbol
 value(d::DictType) = d[tag(d)]
 
+function Base.show(io::IO, m::MIME"text/plain", d::DictType)
+    show(io, d)
+end
+function Base.show(io::IO, d::DictType)
+    dict_show(IOContext(io, :typeinfo => DictType), d)
+end
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -110,29 +117,43 @@ elements(a::AnyElement) = a.elements
 function Base.show(io::IO, label::AnyElement)
     print(io, "AnyElement(")
     show(io, tag(label)); print(io, ", ")
-    _show(io, elements(label))
+    dict_show(io, elements(label), 0)
     print(io, ")")
 end
 
 """
-    _show(x::Union{DictType, String, SubString{String}})
+    dict_show(io::IO, x, 0()
 
-Internal helper for dispatch. Use for types that are like (should be changed to?)
-    Tuple{Symbol, Union{DictType, String, SubString{String}}},
-though there may be iteration before and/or after. See `AnyElement` and others.
+Internal helper for things that contain `DictType`.
 """
-function _show end
-_show(io::IO, d::DictType) = begin
-    print(io, "DictType(")
-    if !isempty(d)
-        show(io, tag(d)); print(io, " => ")
-        _show(io, value(d))
+function dict_show end
+
+
+d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
+    print(io, before)
+    for (i,e) in enumerate(x)
+        dict_show(io, e, indent_by+8)
+        i < length(x) && print(io, ", ")
+    end
+    print(io, after)
+end
+
+dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
+    print(io,"(")
+    for (i,k) in enumerate(keys(d))
+        print(io, "d[$(repr(k))] = ") #! Differs from `d_show` here.
+        dict_show(io, d[k], indent_by+8) #! And here.
+        i < length(keys(d)) && print(io, ", ")
     end
     print(io, ")")
 end
-#!_show(io::IO, s::Union{String, SubString{String}}) = show(io, s)
-_show(io::IO, x::Any) = show(io, x)
-
+dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
+dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
+dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
+dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
+dict_show(io::IO, p::Pair, _::Int) = show(io, p)
+dict_show(io::IO, p::Number, _::Int) = show(io, p)
+dict_show(io::IO, x::Any, _::Int) = error("UNSUPPORTED dict_show(io, ::$(typeof(x)))")
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

@@ -144,7 +144,7 @@ function Base.show(io::IO, labelvector::Vector{PnmlLabel})
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
         print(io, "(",);
-        show(io, tag(label)); print(io, ", "); _show(io, elements(label));
+        show(io, tag(label)); print(io, ", "); dict_show(io, elements(label), 0);
         print(")")
         i < length(labelvector) && print(io, "\n")
     end

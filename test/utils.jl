@@ -128,3 +128,17 @@ end
     @test Iterators.only(Iterators.filter(==(true),
                          (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
 end
+
+using PNML: DictType
+@testset "show DictType" begin
+    println()
+    @show DictType() typeof(DictType())
+    @show DictType(:foo => "bar")
+    @show DictType(:foo => "bar", :baz => "boo")
+    @show DictType(:foo => "bar", :baz => "boo", :three => "three")
+    @show DictType(:foo => "bar", :baz => "boo", :three => "three", :four => "four")
+    @show d = DictType(:foo => "bar", :baz => [:a => "one", :b => "two"])
+    @show d = DictType(:foo => "bar", :baz => [DictType(:a => "one"), DictType(:b => "two")])
+    @show d = DictType(:foo => "bar", :baz => (DictType(:a => "one"), DictType(:b => "two")))
+    println()
+end
