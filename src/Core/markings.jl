@@ -63,8 +63,7 @@ Is a functor that returns the evaluated `value`.
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text",
-Term(:value, 3), nothing, ToolInfo[], )
+HLMarking("the text", Term(:value, 3), nothing, ToolInfo[])
 
 julia> m()
 3
@@ -77,7 +76,7 @@ struct HLMarking{T <: AbstractTerm} <: HLAnnotation
     tools::Vector{ToolInfo}
 end
 
-HLMarking(t::AbstractTerm)   = HLMarking(nothing, t)
+HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
 HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, nothing, ToolInfo[])
 
 value(m::HLMarking) = m.term
@@ -85,9 +84,9 @@ value(m::HLMarking) = m.term
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
     show(io, text(hlm)); print(io, ", ")
-    show(io, value(hlm)); print(io, ", ")
+    show(io, value(hlm)); print(io, ", ") # Term
     show(io, graphics(hlm)); print(io, ", ")
-    show(io, tools(hlm),); print(io, ", ")
+    show(io, tools(hlm))
     print(io, ")")
 end
 

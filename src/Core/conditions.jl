@@ -8,15 +8,13 @@ Label of a Transition that determines when the transition fires.
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
 julia> c = Condition(false)
-Condition(nothing,
-Term(:bool, false), nothing, ToolInfo[])
+Condition(nothing, Term(:bool, false), nothing, ToolInfo[])
 
 julia> c()
 false
 
 julia> c = Condition("xx", false)
-Condition("xx",
-Term(:bool, false), nothing, ToolInfo[])
+Condition("xx", Term(:bool, false), nothing, ToolInfo[])
 
 julia> c()
 false

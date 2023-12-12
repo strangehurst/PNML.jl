@@ -84,7 +84,7 @@ Base.eltype(t::Term) = typeof(elements(t))
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
 function Base.show(io::IO, t::Term)
-    print(io, '\n', indent(io), "Term(")
+    print(io, nameof(typeof(t)), "(")
     show(io, tag(t)); print(io, ", "); dict_show(io, elements(t), 0)
     print(io, ")")
 end
