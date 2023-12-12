@@ -177,7 +177,6 @@ function test_unclaimed(pntd, xmlstring::String)
     reg2 = registry() # Creating multiple things from the same string is not recommended.
 
     xdict = XMLDict.xml_dict(node, PNML.DictType)
-    #pprint("xdict = "); pprintln(xdict)
 
     u = unparsed_tag(node, pntd) # tag is a string
     l = PnmlLabel(u)

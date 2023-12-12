@@ -50,7 +50,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, D
 
     # Decend each element of the term.
     @test tag(axn) == "subterm"
-    @test value(axn)isa Vector #!{DictType}
+    @test value(axn) isa Vector #!{DictType}
 
     all1 = value(axn)[1]
     @test tag(all1) == "all"

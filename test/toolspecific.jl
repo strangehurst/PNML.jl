@@ -51,7 +51,7 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
     for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
         #dump(tooli)
-        print("tooli = "); pprintln(tooli)
+        @show tooli
         @test typeof(tooli) <: ToolInfo
         @test tooli.toolname == s.tool
         @test name(tooli) == s.tool

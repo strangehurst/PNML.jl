@@ -56,10 +56,7 @@ end
     print("pntd = "); println(pntd)
     if noisy
         @show pntd
-        pprintln(pntd)
-        pprintln(testshow, pntd)
         @show page_type(pntd)
-        pprintln(page_type(pntd))
         #TODO complete
         @show place_type(pntd) transition_type(pntd) arc_type(pntd)
         @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
@@ -113,8 +110,7 @@ end
 end
 
 @testset "key sets for $pntd" for pntd in all_nettypes()
-    pns = PnmlNetKeys()
-    print("PnmlNetKeys = "); pprintln(pns)
+    @show pns = PnmlNetKeys()
     @test isempty(PNML.page_idset(pns))
     @test isempty(PNML.place_idset(pns))
     @test isempty(PNML.transition_idset(pns))
