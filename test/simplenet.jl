@@ -51,7 +51,6 @@ testlogger = TestLogger()
 
     @test_call PNML.first_net(model)
     net0 = @inferred PnmlNet PNML.first_net(model)
-    #@show net0
     @test PNML.nettype(net0) <: PnmlType
     @test first(v) === net0
 
@@ -84,8 +83,6 @@ testlogger = TestLogger()
         end
     end
     @testset "inferred" begin
-        #println()
-        #@show "start inferred"
         # First @inferred failure throws exception ending testset.
         @test firstpage(snet.net) === first(pages(snet.net))
 
@@ -103,23 +100,19 @@ testlogger = TestLogger()
     end
 
     for top in [first(pages(snet.net)), snet.net, snet]
-        #println()
         #@show typeof(top)
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
 
         for placeid in place_idset(top)
-            #println("place ", placeid)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)
             p = @inferred Maybe{Place} place(top, placeid)
-            #@test pid(p) ===  p.id
             #! errors @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
             #@test typeof(initial_marking(placeid)) <: typeof(default_marking(p))
             #@test @inferred(initial_marking(p)) isa typeof(default_marking(p))
         end
-        #println()
     end
 
     for top in [snet, snet.net, first(pages(snet.net))]
@@ -260,8 +253,6 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    println()
-    @show pntd
     if pntd in hl_types
         marktag = "hlinitialMarking"
         insctag = "hlinscription"

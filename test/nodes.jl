@@ -14,17 +14,13 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        @show n
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
-
-        @test pid(n) === :place1
-        @test typeof(n) <: Place
+        @test isa(n, Place)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        #@show initial_marking(n)
         @test_call initial_marking(n)
-        @test initial_marking(n)() == 100
+        @test @inferred(initial_marking(n)()) == 100
     end
 
     @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
@@ -42,7 +38,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        #@show initial_marking(n)
         @test_call initial_marking(n)
         @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end
@@ -130,7 +125,6 @@ end
         @test pid(a) === :arc1
         @test has_name(a)
         @test name(a) == "Some arc"
-        #@show inscription(a)
         @test_call  inscription(a)
         @test inscription(a) == 6
     end

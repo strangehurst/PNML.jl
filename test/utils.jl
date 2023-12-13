@@ -53,7 +53,6 @@ end
 end
 
 @testset "types for $pntd" for pntd in all_nettypes()
-    print("pntd = "); println(pntd)
     if noisy
         @show pntd
         @show page_type(pntd)
@@ -92,10 +91,6 @@ end
 end
 
 @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
-    if noisy
-        @show pntd default_condition(pntd)  typeof(default_condition(pntd))
-        @show default_bool_term(pntd) typeof(default_bool_term(pntd))
-    end
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
 end
@@ -110,7 +105,7 @@ end
 end
 
 @testset "key sets for $pntd" for pntd in all_nettypes()
-    @show pns = PnmlNetKeys()
+    pns = PnmlNetKeys()
     @test isempty(PNML.page_idset(pns))
     @test isempty(PNML.place_idset(pns))
     @test isempty(PNML.transition_idset(pns))
@@ -120,21 +115,20 @@ end
 end
 
 @testset "predicates for $pntd" for pntd in all_nettypes()
-    #@show pntd isdiscrete(pntd) ishighlevel(pntd) iscontinuous(pntd)
     @test Iterators.only(Iterators.filter(==(true),
                          (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
 end
 
-using PNML: DictType
-@testset "show DictType" begin
-    println()
-    @show DictType() typeof(DictType())
-    @show DictType(:foo => "bar")
-    @show DictType(:foo => "bar", :baz => "boo")
-    @show DictType(:foo => "bar", :baz => "boo", :three => "three")
-    @show DictType(:foo => "bar", :baz => "boo", :three => "three", :four => "four")
-    @show d = DictType(:foo => "bar", :baz => [:a => "one", :b => "two"])
-    @show d = DictType(:foo => "bar", :baz => [DictType(:a => "one"), DictType(:b => "two")])
-    @show d = DictType(:foo => "bar", :baz => (DictType(:a => "one"), DictType(:b => "two")))
-    println()
-end
+# using PNML: DictType
+# @testset "show DictType" begin
+#     println()
+#     @show DictType() typeof(DictType())
+#     @show DictType(:foo => "bar")
+#     @show DictType(:foo => "bar", :baz => "boo")
+#     @show DictType(:foo => "bar", :baz => "boo", :three => "three")
+#     @show DictType(:foo => "bar", :baz => "boo", :three => "three", :four => "four")
+#     @show d = DictType(:foo => "bar", :baz => [:a => "one", :b => "two"])
+#     @show d = DictType(:foo => "bar", :baz => [DictType(:a => "one"), DictType(:b => "two")])
+#     @show d = DictType(:foo => "bar", :baz => (DictType(:a => "one"), DictType(:b => "two")))
+#     println()
+# end

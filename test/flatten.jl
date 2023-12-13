@@ -45,5 +45,4 @@ end
     net = PNML.first_net(model)
     @test length(PNML.allpages(net)) == 1
     @test typeof(net) <: PNML.PnmlNet
-    #@show net
 end

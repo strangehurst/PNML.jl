@@ -1,7 +1,6 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
 using PNML, EzXML, Preferences, Reexport
-using PNML: pprint, pprintln
 @reexport using DebuggingUtilities
 
 "Often JET has problems with beta julia versions:("
@@ -34,7 +33,6 @@ function pff(@nospecialize(ft))
 end
 
 export VERBOSE_PNML, pff, target_modules,
-        jet_broke, runopt, testshow, noisy,
-        pprint, pprintln
+        jet_broke, runopt, testshow, noisy
 
 end # module TestUtils

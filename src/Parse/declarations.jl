@@ -138,9 +138,10 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
     name = node["name"]
-    println("\n\n\n\n"); @warn("unknown declaration: tag = $nn id = $id name = $name")
+
+    @warn("unknown declaration: tag = $nn id = $id name = $name")
+
     content = [anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
-    #!@show content
     UnknownDeclaration(id, name, nn, content)
 end
 
@@ -234,12 +235,9 @@ $(TYPEDSIGNATURES)
 Sorts are found within a <structure> element.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    #!println(); println("parse_sort")
     ucl = unparsed_tag(node, pntd, idregistry)::DictType
-    #!@show ucl
     sortid = tag(ucl)
     body = ucl[sortid]::DictType
-    #!@show sortid
     sortid = Symbol(sortid)
     ismissing(sortid) && error("sortid is missing")
     ismissing(body)   && error("sort body is missing")
@@ -247,7 +245,6 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     isnothing(body)   && error("sort body is nothing")
 
     #TODO Dispatch on Val{} types.
-    #!println();  @showln(ucl);
     if sortid === :usersort
         decl = parse_decl(body)
         srt = UserSort(decl)
@@ -319,7 +316,6 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         (throw ∘ ArgumentError)("parse_sort sort $sortid not implemented")
     end
 
-    #! @show srt
     return srt
 end
 

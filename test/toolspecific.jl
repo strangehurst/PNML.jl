@@ -50,12 +50,8 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
 @testset "parse tools" begin
     for s in [str1, str2, str3, str4, str5]
         tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
-        #dump(tooli)
-        @show tooli
-        @test typeof(tooli) <: ToolInfo
-        @test tooli.toolname == s.tool
+        @test isa(tooli, ToolInfo)
         @test name(tooli) == s.tool
-        @test tooli.version == s.version
         @test version(tooli) == s.version
 
         @test get_toolinfo(tooli, s.tool, s.version) isa ToolInfo
@@ -72,7 +68,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         #!Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
     end
     @testset "combined" begin
-        #println("combined toolinfos")
         str = """<place id="place0">
         $(str1.str)
         $(str2.str)
@@ -88,8 +83,6 @@ str5 = (tool="org.pnml.tool", version="1.0", str = """
         @test_call tools(p0)
         @test t isa Vector{ToolInfo}
         @test length(t) == 5
-        #Base.redirect_stdio(stdout=testshow, stderr=testshow) do; end
-        #println("toolinfo test"); dump(t)
 
         for ti in t
             @test ti isa ToolInfo

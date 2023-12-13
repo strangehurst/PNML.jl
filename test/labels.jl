@@ -73,9 +73,6 @@ end
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show mark
-    end
 
     # Integer
     mark1 = PNML.Marking(23)
@@ -115,9 +112,6 @@ end
     inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show inscript
-    end
     @test inscript() == value(inscript) == 12
     @test graphics(inscript) !== nothing
     @test tools(inscript) === nothing || !isempty(tools(inscript))
@@ -276,16 +270,13 @@ end
     ]
     # expected is a pair to construct a PnmlLabel
     for (s, expected) in ctrl
-        #@show s
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected)
-        #@show lab expected_label
         @test tag(lab) == tag(expected_label)
         @test (length ∘ elements)(lab) == ( length ∘ elements)(expected_label)
         # TODO recursive compare
         expected_any = AnyElement(expected)
-        #@show anye  expected_any
         @test tag(anye) == tag(expected_any)
         @test (length ∘ elements)(anye) == (length ∘ elements)(expected_any)
         # TODO recursive compare

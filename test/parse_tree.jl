@@ -152,7 +152,6 @@ end
     @test net isa PnmlNet{<:AbstractHLCore}
     @test net isa PnmlNet{<:SymmetricNet}
 
-    #@show typeof(pages(net))
     @test pages(net) isa Base.Iterators.Filter
     @test length(allpages(net)) == 1
     @test firstpage(net) isa Page
@@ -163,20 +162,18 @@ end
     @test !isempty(transitions(first(pages(net))))
     @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
-    #println(""" #! BROKE 2023-11-28
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
-    #""")
 
-    #@Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        println("========================================================")
-        println("========================================================")
-        println("$testfile")
-        println("========================================================")
-        println("========================================================")
-        @show model
-        println("========================================================\n")
-    #end
+    # @Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    #     println("========================================================")
+    #     println("========================================================")
+    #     println("$testfile")
+    #     println("========================================================")
+    #     println("========================================================")
+    #     @show model
+    #     println("========================================================\n")
+    # end
 end
 
 # Read a file
@@ -187,14 +184,13 @@ end
     model = parse_file(testfile)
     @test model isa PnmlModel
 
-    #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-
-        println("========================================================")
-        println("========================================================")
-        println("$testfile")
-        println("========================================================")
-        println("========================================================")
-        @show model
-        println("========================================================\n")
-    #end
+    # #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    #     println("========================================================")
+    #     println("========================================================")
+    #     println("$testfile")
+    #     println("========================================================")
+    #     println("========================================================")
+    #     @show model
+    #     println("========================================================\n")
+    # #end
 end

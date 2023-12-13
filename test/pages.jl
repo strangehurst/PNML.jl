@@ -158,20 +158,6 @@ end
 
 verify_sets(net)
 
-# @show arc_idset(net)
-# @show place_idset(net)
-# @show transition_idset(net)
-# @show refplace_idset(net)
-# @show reftransition_idset(net)
-# println()
-# @show arc_idset(firstpage(net))
-# @show place_idset(firstpage(net))
-# @show transition_idset(firstpage(net))
-# @show refplace_idset(firstpage(net))
-# @show reftransition_idset(firstpage(net))
-# println()
-
-
 type_funs = (
             arc_type,
             place_type,
@@ -199,7 +185,6 @@ def_funs = (
 
 @testset "by pntd $pntd" for pntd in all_nettypes()
     for fun in type_funs
-        #println("$fun $pntd")
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
 
@@ -210,19 +195,12 @@ def_funs = (
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
         @test_call fun(net)
         @test fun(net) isa Type
-       end
+    end
 
     for fun in def_funs
-        #println("$fun($pntd) \t ", fun(pntd))
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
-        # these are not implemented
-        #pt = typeof(pntd)
-        #@show pt fun(pt)
-        #@test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
-        #@test_call fun(pt)
     end
-    #println()
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
@@ -248,7 +226,7 @@ end
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
 
-#Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+Base.redirect_stdio(stdout=testshow, stderr=testshow) do
     println("print net")
     map(println, arcs(net))
     map(println, places(net))
@@ -258,7 +236,7 @@ end
     println("---------------")
     @show (collect ∘ values ∘ page_idset)(net)
     println("---------------")
-#end
+end
 
 @testset "flatten" begin
         flatten_pages!(net)

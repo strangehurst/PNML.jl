@@ -17,7 +17,6 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref
 """
 function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
     anyel = XMLDict.xml_dict(node, DictType; strip_text=true)
-    #!@show anyel #! debug
     @assert anyel isa Union{DictType, String, SubString}
     # empty dictionarys are a valid thing.
     @assert !(anyel isa DictType) || all(x -> !isnothing(x.second), pairs(anyel))
@@ -81,8 +80,6 @@ end
 Partition # id, name, usersort, partitionelement[]
 =#
 function parse_partition(vx::DictType)
-    #println("parse_partition"); @show(vx)
-
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 

@@ -32,7 +32,7 @@ end
 registry(lock) = PnmlIDRegistry(Set{Symbol}(), lock)
 
 function Base.show(io::IO, idregistry::PnmlIDRegistry)
-    print(io, typeof(idregistry), " ", length(idregistry.ids), " ids: ", idregistry.ids)
+    print(io, nameof(typeof(idregistry)), " ", length(idregistry.ids), " ids: ", idregistry.ids)
     # , " duplicate action: ", nameof(idregistry.duplicate))
 end
 
@@ -50,10 +50,6 @@ Register `id` symbol and return the symbol.
 function register_id!(idregistry::PnmlIDRegistry, s::AbstractString)
     register_id!(idregistry, Symbol(s))
 end
-
-#function register_id!(idregistry::PnmlIDRegistry, id::Symbol)::Symbol
-#    _register_id!(idregistry, id)
-#end
 
 function register_id!(idregistry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
     @lock idregistry.lk begin

@@ -101,7 +101,6 @@ function Base.show(io::IO, inscription::HLInscription)
     print(io, ")")
 end
 
-
 inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
 inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
 

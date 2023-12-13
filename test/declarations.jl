@@ -24,16 +24,6 @@ function _subtypes!(out, type::Type)
     out
 end
 
-@testset "AbstractDeclarations $pntd" for pntd in all_nettypes()
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        #!@show _subtypes(PNML.AbstractDeclaration)
-        for decl in _subtypes(PNML.AbstractDeclaration)
-            #!@show decl decl()
-            #@printf "%-25s %s\n" decl "x"
-        end
-   end
-end
-
 @testset "parse_sort $pntd" for pntd in all_nettypes()
     @test parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry()) isa PNML.UserSort
     @test parse_sort(xml"<dot/>", pntd, registry()) isa PNML.DotSort
@@ -147,9 +137,6 @@ end
     """
     reg = PNML.registry()
     decl = parse_declaration(node, pntd, reg)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show decl
-    end
     @test typeof(decl) <: PNML.Declaration
     @test length(PNML.declarations(decl)) == 3
     @test_call PNML.declarations(decl)
