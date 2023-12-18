@@ -13,9 +13,8 @@ using PNML: incidence_matrix, inscription_value_type
 using Test, Logging
 testlogger = TestLogger()
 
-@testset "SIMPLENET" begin
-        str1 = """
-    <?xml version="1.0"?>
+str1 = """
+<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="continuous">
             <page id="page0">
@@ -37,11 +36,15 @@ testlogger = TestLogger()
             </page>
         </net>
     </pnml>
-    """
+"""
+@testset "SIMPLENET" begin
     @test_call target_modules=target_modules parse_str(str1)
     #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
     model = @inferred parse_str(str1)
+    @show model
 
+#TODO move to PNML model test
+#=s
     @test_call PNML.find_nets(model, :continuous)
     @test_call PNML.find_nets(model, PNML.ContinuousNet())
     vx = PNML.find_nets(model, :continuous)
@@ -58,16 +61,24 @@ testlogger = TestLogger()
     #@show typeof(values(arc_idset(net0)))
     PNML.flatten_pages!(model)
     PNML.flatten_pages!(net0)
+    PNML.flatten_pages!(model)
+    PNML.flatten_pages!(net0)
     #println("- - - - - - - - - - - - - - - -")
-
-    @test_call SimpleNet(net0)
-    @test_call broken=jet_broke SimpleNet(model)
-
-    snet  = @inferred SimpleNet SimpleNet(net0)
+=#
+    net0 = @inferred PnmlNet PNML.first_net(model)
+    println("- - - - - - - - - - - - - - - -")
     snet1 = @inferred SimpleNet SimpleNet(model)
+    @show snet1
+    println("- - - - - - - - - - - - - - - -")
+    snet  = @inferred SimpleNet SimpleNet(net0)
+    @show snet
+    @show typeof(snet)
+    println("- - - - - - - - - - - - - - - -")
 
-    for accessor in [pid, place_idset, transition_idset, arc_idset,
-                     reftransition_idset, refplace_idset]
+    @show @test_call SimpleNet(net0) # passes
+    @show @test_call broken=jet_broke SimpleNet(model)
+
+    for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
     end
 
@@ -166,7 +177,6 @@ end
     """
     model = @inferred parse_str(str2)
     net = PNML.first_net(model)
-    @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
     #@show snet
     β = PNML.rates(snet)

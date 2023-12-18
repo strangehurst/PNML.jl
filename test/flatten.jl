@@ -39,10 +39,10 @@ const str = """
     @test typeof(net) <: PNML.PnmlNet
 end
 
-@testset "deref2" begin
-    model = parse_str(str)
-    PNML.flatten_pages!(model)
-    net = PNML.first_net(model)
-    @test length(PNML.allpages(net)) == 1
-    @test typeof(net) <: PNML.PnmlNet
-end
+# @testset "deref2" begin
+#     model = parse_str(str)
+#     PNML.flatten_pages!(model)
+#     net = PNML.first_net(model)
+#     @test length(PNML.allpages(net)) == 1
+#     @test typeof(net) <: PNML.PnmlNet
+# end

@@ -3,7 +3,6 @@
 
 """
     flatten_pages!(net::PnmlNet[; options])
-    flatten_pages!(model::PnmlModel[; options])
 
 Merge page content into the 1st page of the net or all nets of a model.
 
@@ -13,18 +12,18 @@ Options
 """
 function flatten_pages! end
 
-function flatten_pages!(model::PnmlModel; kw...)
-    for net in nets(model)
-        flatten_pages!(net; kw...)
-        post_flat_verify(net; kw...)
-    end
-    return nothing
-end
+# function flatten_pages!(model::PnmlModel; kw...)
+#     for net in nets(model)
+#         flatten_pages!(net; kw...)
+#         post_flat_verify(net; kw...)
+#     end
+#     return nothing
+# end
 
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
     netid = pid(net)
-    #verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
+    verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
 
         pageids = keys(pagedict(net)) #! iterator
@@ -147,9 +146,13 @@ as part of [`flatten_pages!`](@ref),
   4) No cycles.
 """
 function deref!(net::PnmlNet, trim::Bool = true)
-    #CONFIG.verbose && println("deref! net ", pid(net))
-    #@show typeof(arc_idset(net))
-    for id in arc_idset(net) # tries to iterate over empty union
+    # idsets can be OrderedSet or KeySet (of OrderedDict)
+    # JET thinks we might iterate over Union{}
+    as = arc_idset(net)
+    isnothing(as) && return nothing
+    #@show typeof(net) typeof(arcdict(net)) typeof(keys(arcdict(net))) typeof(as)
+
+    for id in as # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
         while arc.source ∈ refplace_idset(net)
@@ -173,7 +176,7 @@ function deref!(net::PnmlNet, trim::Bool = true)
         empty!(refplacedict(net))
         empty!(reftransitiondict(net))
     end
-    return net
+    return nothing
 end
 
 """
