@@ -11,7 +11,7 @@ One Petri Net of a PNML model.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
     page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
     declaration::Declaration
-    name::Maybe{Name}
+    namelabel::Maybe{Name}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
 end
@@ -98,8 +98,8 @@ tools(net::PnmlNet)     = net.tools
 has_labels(net::PnmlNet) = true
 labels(net::PnmlNet)     = net.labels
 
-has_name(net::PnmlNet) = !isnothing(net.name)
-name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
+has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
+name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""
 
 places(net::PnmlNet)         = values(placedict(net))
 transitions(net::PnmlNet)    = values(transitiondict(net))
@@ -152,19 +152,14 @@ end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    print(io, indent(io), nameof(typeof(net)), "(")
-    show(io, name(net)); print(io,", ")
-    show(io, nettype(net)); print(io,", ")
-
+    print(io, indent(io), nameof(typeof(net)), "(",  repr(name(net)), ", ", repr(nettype(net)), ", ")
     iio = inc_indent(io)
     println(io)
-    print(io, "Pages[")
-    show(io, page_idset(net)); println(io,", ") #show(io, keys(pagedict(net))); println(io,", ")
-    for (i,page) in enumerate(values(pagedict(net)))
-        print(iio, "\n", indent(iio)); show(iio, page)
-        i < length(values(pagedict(net))) && print(io,", ")
+    print(io, "Pages = ", repr(page_idset(net)))
+    for page in values(pagedict(net))
+        print(iio, '\n', indent(iio)); show(iio, page)
     end
-    println(io, "], ")
+    println(io)
     print(io, "Declarations[")
     for (i,decl) in enumerate(declarations(net))
         print(iio, "\n", indent(iio)); show(iio, decl)

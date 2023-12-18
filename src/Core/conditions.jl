@@ -8,7 +8,7 @@ Label of a Transition that determines when the transition fires.
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition)
 julia> c = Condition(false)
-Condition(nothing, Term(:bool, false), nothing, ToolInfo[])
+Condition("", Term(:bool, false), nothing, ToolInfo[])
 
 julia> c()
 false

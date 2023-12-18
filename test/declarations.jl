@@ -2,7 +2,7 @@ using PNML, EzXML, ..TestUtils, JET
 using PNML:
     Maybe, tag, labels, pid, parse_sort, parse_declaration,
     registry, AnyElement, name, value, isregistered,
-    DictType
+    DictType, AbstractDeclaration
 
 @testset "Declaration() $pntd" for pntd in all_nettypes()
     decl = PNML.Declaration()
@@ -94,7 +94,7 @@ end
         """, pntd, registry())
 
     @test typeof(decl) <: PNML.Declaration
-    @test typeof(PNML.declarations(decl)) <: Vector{Any} #TODO {AbstractDeclaration}
+    @test typeof(PNML.declarations(decl)) <: Vector{AbstractDeclaration}
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
     @test PNML.graphics(decl) === nothing

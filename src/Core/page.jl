@@ -12,7 +12,7 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
-    name::Maybe{Name}
+    namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}

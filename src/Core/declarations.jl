@@ -1,5 +1,27 @@
 """
 $(TYPEDEF)
+Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
+The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
+
+- id
+- name
+"""
+abstract type AbstractDeclaration end
+
+pid(decl::AbstractDeclaration) = decl.id
+has_name(decl::AbstractDeclaration) = hasproperty(decl, :name)
+name(decl::AbstractDeclaration) = decl.name
+
+function Base.show(io::IO, declare::AbstractDeclaration)
+    print(io, nameof(typeof(declare)), "(")
+    show(io, pid(declare)); print(io, ", ")
+    show(io, name(declare)); print(io, ", ")
+
+    print(io, ")")
+end
+
+"""
+$(TYPEDEF)
 $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
@@ -10,7 +32,8 @@ We can use infrastructure implemented for HL nets to provide nonstandard extensi
 """
 struct Declaration <: Annotation
     text::Maybe{String}
-    declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
+    declarations::Vector{AbstractDeclaration} #TODO Type parameter? Seperate vector for each type?
+    #!declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
     #SortDeclarations               xml:"structure>declarations>namedsort"`
 	#PartitionSortDeclarations      xml:"structure>declarations>partition"
 	#VariableDeclarations           xml:"structure>declarations>variabledecl"
@@ -21,7 +44,7 @@ struct Declaration <: Annotation
     tools::Vector{ToolInfo}
 end
 
-Declaration() = Declaration(nothing, Any[], nothing, ToolInfo[])
+Declaration() = Declaration(nothing, AbstractDeclaration[], nothing, ToolInfo[])
 
 declarations(d::Declaration) = d.declarations
 
@@ -39,24 +62,6 @@ end
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-"""
-$(TYPEDEF)
-Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
-The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
-"""
-abstract type AbstractDeclaration end #<: AbstractLabel end
-
-pid(decl::AbstractDeclaration) = decl.id
-name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
-
-function Base.show(io::IO, declare::AbstractDeclaration)
-    print(io, nameof(typeof(declare)), "(")
-    show(io, pid(declare)); print(io, ", ")
-    show(io, name(declare)); print(io, ", ")
-
-    print(io, ")")
-end
 
 """
 $(TYPEDEF)

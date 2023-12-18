@@ -25,7 +25,7 @@ PnmlNetData(pntd) =
                 OrderedDict{Symbol, place_type(pntd)}(),
                 OrderedDict{Symbol, transition_type(pntd)}(),
                 OrderedDict{Symbol, arc_type(pntd)}(),
-                  OrderedDict{Symbol, refplace_type(pntd)}(),
+                OrderedDict{Symbol, refplace_type(pntd)}(),
                 OrderedDict{Symbol, reftransition_type(pntd)}())
 
 placedict(d::PnmlNetData) = d.place_dict
@@ -51,7 +51,7 @@ function Base.show(io::IO, pnd::PnmlNetData)
                   ("refTransitions", reftransitiondict))
         print(io, indent(io), length(f(pnd)), " ", t, ": ")
         iio = inc_indent(io)
-        for (i,k) in enumerate((keys ∘ f)(pnd))
+        for (i,k) in enumerate(keys(f(pnd)))
             show(io, k); print(io, ", ")
             if (i < length(f(pnd))) && (i % 25 == 0)
                 print(iio, '\n', indent(iio))

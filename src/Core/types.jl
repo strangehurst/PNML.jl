@@ -13,28 +13,30 @@ Objects of a Petri Net Graph are pages, arcs, nodes.
 """
 abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
-function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
-    prop_name === :id   && return getfield(o, :id)::Symbol
-    prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
-    prop_name === :name && return getfield(o, :name)::Maybe{Name}
+# function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
+#     prop_name === :id   && return getfield(o, :id)::Symbol
+#     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
+#     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
 
-    return getfield(o, prop_name)
-end
+#     return getfield(o, prop_name)
+# end
 
 pid(o::AbstractPnmlObject)        = o.id
 
-has_name(o::AbstractPnmlObject)   = o.name !== nothing
-name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
+has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(o.namelabel)
+name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
+name(::Nothing) = ""
 
-has_labels(o::AbstractPnmlObject) = true
+has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
 has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
 
+has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools)
 tools(o::AbstractPnmlObject)     = o.tools
 
-has_graphics(o::AbstractPnmlObject) = !isnothing(o.graphics)
+has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
 
 #TODO has_tool, get_tool no plural

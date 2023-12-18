@@ -61,10 +61,11 @@ function parse_pnml(node::XMLNode, idregistry::PIDR)
     nets = allchildren("net", node) #! allocate Vector{XMLNode}
     isempty(nets) && throw(MalformedException("<pnml> does not have any <net> elements"))
 
-    # Do not yet have a PNTD defined. Each net can be different Net speciaization.
+    # Do not YET have a PNTD defined. Each net can be different Net speciaization.
     net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation?
-    @assert length(net_tup) > 0
-    if CONFIG.verbose
+
+    length(net_tup) > 0 || error("length(net_tup) is zero")
+    if CONFIG.verbose #TODO Send this to a log file.
         @warn "CONFIG.verbose is true"
         println("PnmlModel $(length(net_tup)) nets")
         for n in net_tup
@@ -124,7 +125,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     netdata = PnmlNetData(pntd)
 
     id   = register_id!(idregistry, node["id"])
-    name = nothing
+    namelabel = nothing
     decl::Maybe{Declaration} = nothing
     tools  = ToolInfo[]
     labels = PnmlLabel[]
@@ -137,7 +138,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
         elseif tag == "declaration" # Make non-high-level also have declaration of some kind.
             decl = parse_declaration(child, pntd, idregistry)
         elseif tag == "name"
-            name = parse_name(child, pntd, idregistry)
+            namelabel = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
             @warn "<net> ignoring unexpected <graphics> element"
         elseif tag == "toolspecific"
@@ -156,7 +157,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     end
     return PnmlNet(; type = pntd, id, pagedict, netdata, page_set = page_idset(netsets),
                     declaration = something(decl, Declaration()),
-                    name, tools, labels)
+                    namelabel, tools, labels)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
@@ -523,11 +524,11 @@ function parse_initialMarking(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "initialMarking")
     l = parse_label_content(node, parse_structure, pntd, idregistry)
     t = l.text
+    if !isnothing(l.term) # There was a <structure> tag.
+        @warn "$nn <structure> element not used YET by non high-level: $(l.term)"
+    end
     value = isnothing(t) ? zero(marking_value_type(pntd)) : number_value(marking_value_type(pntd), t)
 
-    if !isnothing(l.term) # There was a <structure> tag.
-        @warn "$nn <structure> element not used YET by non high-levl" l.term
-    end
     Marking(value, l.graphics, l.tools)
 end
 

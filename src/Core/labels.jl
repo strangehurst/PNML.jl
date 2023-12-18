@@ -63,8 +63,9 @@ function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
 end
 
 # All Labels are expected to have a `text` field.
-"Return `text` field. All labels must have one that may be `nothing`."
-text(l::AbstractLabel) = l.text
+"Return `text` field. All labels are expected to have one that may be `nothing` or an empty string."
+text(l::AbstractLabel) = isnothing(l.text) ? "" : l.text
+text(::Nothing) = ""
 
 has_graphics(l::AbstractLabel) = !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics

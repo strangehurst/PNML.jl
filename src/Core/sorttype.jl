@@ -18,7 +18,7 @@ end
 SortType(t::AbstractSort) = SortType(nothing, t)
 SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, ToolInfo[])
 
-text(t::SortType)  = t.text
+text(t::SortType)  = isnothing(t.text) ? "" : t.text
 value(t::SortType) = t.sort[]
 
 """
