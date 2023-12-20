@@ -76,23 +76,12 @@ str1 = """
     println("- - - - - - - - - - - - - - - -")
 
     @show @test_call SimpleNet(net0) # passes
-    @show @test_call broken=jet_broke SimpleNet(model)
+     @show @test_call broken=jet_broke SimpleNet(model)
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
     end
 
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        println("print simple petri net")
-        for accessor in [places, transitions, arcs]
-            map(println, places(snet))
-            map(println, transitions(snet))
-            map(println, arcs(snet))
-            for (a,b) in zip(accessor(snet1), accessor(snet))
-                @test pid(a) == pid(b)
-            end
-        end
-    end
     @testset "inferred" begin
         # First @inferred failure throws exception ending testset.
         @test firstpage(snet.net) === first(pages(snet.net))
@@ -213,28 +202,21 @@ end
     T = @inferred collect(PNML.transition_idset(snet))
 
     # keys are transition ids
-    # values are input, output vectors of "tuples" place id -> inscription (integer?)
+    # values are input, output vectors of "tuples" place id -> inscription of arc
     Δ = PNML.transition_function(snet)#,T)
-    tfun = LVector(
+    @show S T Δ
+
+    # Expected result
+    expected_transition_function = LVector(
         birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
         predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
         death=(LVector(wolves=1.0), LVector()),
     )
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        @show S T Δ
-        #for t in PNML.transition_idset(snet)
-        #    @show t
-        #    @show collect(pairs(PNML.ins(snet, t)))
-        #    @show collect(pairs(PNML.outs(snet, t)))
-        #    @show collect(pairs(PNML.in_out(snet, t)))
-        #end
-        @show Δ.birth tfun.birth
-    end
 
-    @test typeof(Δ)   == typeof(tfun)
-    @test Δ.birth     == tfun.birth
-    @test Δ.predation == tfun.predation
-    @test Δ.death     == tfun.death
+    @test typeof(Δ)   == typeof(expected_transition_function)
+    @test Δ.birth     == expected_transition_function.birth
+    @test Δ.predation == expected_transition_function.predation
+    @test Δ.death     == expected_transition_function.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initial_markings(snet)
@@ -242,13 +224,7 @@ end
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        #!@show uX
-        #!@show u0
-        #!@show βx
-        @show β
-        @show typeof(β)
-    end
+    @show β
     @test β == βx
 end
 
@@ -305,22 +281,6 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     """
     anet = PNML.SimpleNet(str3)
     mg = PNML.metagraph(anet)
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        #show(anet)
-        println("inscriptions"); map(println, PNML.inscriptions(anet))
-        println("conditions"); map(println, PNML.conditions(anet))
-        #@show PNML.name(anet)
-
-        @show typeof(mg) mg
-        @show Graphs.is_directed(mg)
-        @show Graphs.is_connected(mg)
-        @show Graphs.is_bipartite(mg)
-        @show Graphs.ne(mg)
-        @show Graphs.nv(mg)
-        @show MetaGraphsNext.labels(mg) |> collect
-        @show MetaGraphsNext.edge_labels(mg) |> collect
-    end
 
     C  = incidence_matrix(anet)
     m₀ = initial_markings(anet)

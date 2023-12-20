@@ -1,10 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel,
-    PnmlNet
+using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel, PnmlNet
 
 @testset "Show" begin
-str =
-    """
+str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -43,10 +41,10 @@ str =
       <transition id="transition1">
         <name> <text>Some transition </text> </name>
       </transition>
-      <arc source="transition1" target="place1" id="arc1">
-        <inscription> <text>12 </text> </inscription>
+      <arc id="arc1" source="transition1" target="place1">
+        <inscription> <text> 12 </text> </inscription>
       </arc>
-      <arc source="place1" target="transition1" id="arc2">
+      <arc id="arc2" source="place1" target="transition1">
         <inscription> <text> 13 </text> </inscription>
       </arc>
     </page>

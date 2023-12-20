@@ -8,7 +8,7 @@ using PNML: Maybe,
     allchildren, firstchild, value, allpages
 
 const str = """
-<?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
+<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
@@ -164,33 +164,12 @@ end
 
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
-
-    # @Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-    #     println("========================================================")
-    #     println("========================================================")
-    #     println("$testfile")
-    #     println("========================================================")
-    #     println("========================================================")
-    #     @show model
-    #     println("========================================================\n")
-    # end
 end
 
 # Read a file
 @testset "test1.pnml file" begin
-    pnml_dir = joinpath(@__DIR__, "../snoopy")
-    testfile = joinpath(pnml_dir, "test1.pnml")
-
-    model = parse_file(testfile)
+    model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
     @test model isa PnmlModel
-
-    # #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-    #     println("========================================================")
-    #     println("========================================================")
-    #     println("$testfile")
-    #     println("========================================================")
-    #     println("========================================================")
-    #     @show model
-    #     println("========================================================\n")
-    # #end
+    #todo run a
+    @show model
 end

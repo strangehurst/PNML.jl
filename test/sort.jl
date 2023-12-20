@@ -26,12 +26,6 @@ using Printf
 # @testset "sorts for $pntd" for pntd in all_nettypes()
 #     #@show maximum((length  ∘ repr), InteractiveUtils.subtypes(AbstractSort))
 
-#     # Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-#     #     @show pntd default_sort(pntd)
-#     #     for sort in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-#     #         @printf "%-20s %-20s %-20s\n" sort eltype(sort) sort()
-#     #     end
-#     # end
 #     for sort in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
 #         st = @inferred SortType("test", sort()) # sort is not allowed to be abstract!!!!
 #         @test PNML.type(st) <: sort

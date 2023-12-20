@@ -21,15 +21,6 @@ end
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry()))
 
-    try
-        parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry())
-    catch e
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            showerror(e)
-            println()
-        end
-   end
-
     @test_throws("MalformedException: toolspecific missing tool attribute",
         parse_pnml(xml"""
   <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -72,15 +63,6 @@ end
 @testset "missing $pntd" for pntd in all_nettypes()
 
     @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>", registry())
-
-    try
-        parse_net(xml"<net type='test'></net>", registry())
-    catch e
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            showerror(e)
-            println()
-        end
-    end
 
     pagedict = OrderedDict{Symbol, page_type(pntd)}()
     netdata = PNML.PnmlNetData(pntd)

@@ -52,42 +52,6 @@ function verify_sets(net::PnmlNet)
     for pageid in PNML.page_idset(net)
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        # Test show()
-        @show arc_idset(net)
-        @show place_idset(net)
-        @show transition_idset(net)
-        @show refplace_idset(net)
-        @show reftransition_idset(net)
-        println()
-
-        @show arc_idset(firstpage(net))
-        @show place_idset(firstpage(net))
-        @show transition_idset(firstpage(net))
-        @show refplace_idset(firstpage(net))
-        @show reftransition_idset(firstpage(net))
-        println()
-        @show netdata(net)
-        @show netdata(firstpage(net))
-        println()
-        @show pid(firstpage(net))
-        @show netsets(firstpage(net))
-        println()
-
-        # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
-        # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
-        #@show typeof(arc_idset(net))
-        println()
-        for page in pages(net)
-            @show pid(page) (typeof ∘ values ∘ arc_idset)(page)
-            @show netsets(page)
-        end
-        println()
-        @show arc_idset(net)
-        @show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
-        println("+++++++++++++++++++++++++++++++++++++++++++++++++")
-    end
 end
 
 const str = """<?xml version="1.0"?>
@@ -146,15 +110,6 @@ net = first_net(model) # The nets of a model not inferrable.
 
 @test @inferred(firstpage(net)) isa Page # add parameters?
 @test length(PNML.allpages(net)) == 14
-
-Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-    @show model
-    println()
-    PNML.pagetree(net)
-    println()
-    AbstractTrees.print_tree(net)
-    println()
-end
 
 verify_sets(net)
 
@@ -225,18 +180,6 @@ end
 @test transitions(net) !== nothing
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
-
-Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-    println("print net")
-    map(println, arcs(net))
-    map(println, places(net))
-    map(println, transitions(net))
-    map(println, refplaces(net))
-    map(println, reftransitions(net))
-    println("---------------")
-    @show (collect ∘ values ∘ page_idset)(net)
-    println("---------------")
-end
 
 @testset "flatten" begin
         flatten_pages!(net)

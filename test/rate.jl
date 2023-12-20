@@ -6,9 +6,6 @@ using PNML: Maybe, tag, pid
         <rate> <text>0.3</text> </rate>
     </transition>""", pntd, registry())
     lab = PNML.labels(tr)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        @show tr lab PNML.rate(tr)
-    end
     @test PNML.tag(first(lab)) === :rate # assumes is only label
     @test PNML.has_labels(tr) === true
     @test PNML.has_label(tr, :rate) === true
