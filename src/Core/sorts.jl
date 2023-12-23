@@ -101,7 +101,7 @@ $(TYPEDEF)
 Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort <: AbstractSort
-    us::UserSort
+    us::UserSort #! any sort type? UserSort, ProductSort and BuiltinSorts
 end
 MultisetSort() = MultisetSort(UserSort())
 equalSorts(a::MultisetSort, b::MultisetSort) = a.us == b.us
@@ -112,7 +112,7 @@ $(TYPEDEF)
 An ordered collection of sorts.
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
-    ae::Vector{UserSort}
+    ae::Vector{UserSort} #! any sort type? UserSort and BuiltinSorts
 end
 ProductSort() = ProductSort(UserSort[])
 equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae

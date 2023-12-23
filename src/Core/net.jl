@@ -81,7 +81,11 @@ arc_idset(n::PnmlNet)           = keys(arcdict(n))
 reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
 refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
 
-""
+"""
+    allpages(net::PnmlNet|dict::OrderedDict) -> Iterator
+
+Return iterator over all pages in the net. Maintains insertion order.
+"""
 allpages(net::PnmlNet) = allpages(pagedict(net))
 allpages(pd::OrderedDict) = values(pd)
 
@@ -91,7 +95,7 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
 
-declarations(net::PnmlNet) = declarations(net.declaration) # Forward
+declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
 
 tools(net::PnmlNet)     = net.tools
 

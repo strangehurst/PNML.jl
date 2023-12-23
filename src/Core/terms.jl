@@ -21,13 +21,20 @@ _evaluate(x::AbstractTerm) = x() # functor
 $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 
-"...can be a built-in constant or a built-in operator, a multiset operator which among others
-can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
-sequence of sorts as its input sorts, and exactly one output sort, which defines its signature."
+> ...can be a built-in constant or a built-in operator, a multiset operator which among others
+> can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
+> sequence of sorts as its input sorts, and exactly one output sort, which defines its signature.
 
 See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 """
 abstract type AbstractOperator <: AbstractTerm end
+# Expect each instance to have fields:
+# - ordered sequence of zero or more input sorts #todo vector or tuple?
+# - one output sort
+# and support methods to:
+# - compare operator signatures for equality using sort eqality
+# - output sort type to test against place sort type (and others)
+#
 
 """
 $(TYPEDEF)
@@ -35,16 +42,18 @@ $(TYPEDFIELDS)
 
 Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm``.
 Here we use `Term` as a concrete wrapper around **unparsed** high-level many-sorted algebra terms
-**AND EXTEND** to also wrapping "single-sorted" values.
+**AND EXTEND** to also wrapping "single-sorted" values for other PNTDs.
 
 By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
 to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
 
 See also [`iscontinuous`](@ref)
 
-As part of the many-sorted algebra attached to nodes of a High-level Petri Net Graph,
-Term`s are contained within the <structure> element of an annotation label,
-See [`HLAnnotation`](@ref) concrete subtypes.
+As part of the many-sorted algebra AST attached to nodes of a High-level Petri Net Graph,
+Term`s are contained within the <structure> element of an annotation label.
+One XML child is expected below <structure> in the PNML schema.
+The child's XML tag is used as the AST node type symbol.
+Usually [`unparsed_tag`](@ref) is used to turn the child into a key, value pair.
 
 #TODO is it safe to assume that Bool, Int, Float64 are in the carrier set/basis set?
 
@@ -67,14 +76,14 @@ External information may be used to select the output type.
 """
 struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, DictType, String, SubString} #! Union{Bool, Int, Float64, DictType}
+    elements::Union{Bool, Int, Float64, DictType, String, SubString}
 end
 Term(x::DictType) = begin
-    isempty(x) && error("cannot construct a `Term` from an empty dictionary")
+    isempty(x) && throw(ArgumentError("cannot construct a `Term` from an empty dictionary"))
     Term(first(pairs(x)))
 end
 Term(p::Pair) = Term(p.first, p.second)
-Term(s::AbstractString, e) = Term(Symbol(s), e)
+Term(s::AbstractString, e) = Term(Symbol(s), e) #! turn string into symbol
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
@@ -98,9 +107,9 @@ _term_eval(v::DictType) = begin
     # Fake like we know how to evaluate a expression of the high-level terms.
     haskey(v, :value) && return _term_eval(v[:value])
     @show v
-    @error("_term_eval needs to handle ast in `v`! returning `false`");
+    @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
     #Base.show_backtrace(stdout, backtrace())
-    return false #nothing
+    return false #
 end
 
 #(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end

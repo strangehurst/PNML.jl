@@ -46,7 +46,8 @@ arcs(page::Page)        = Iterators.filter(v -> in(pid(v), arc_idset(page)), val
 refplaces(page::Page)   = Iterators.filter(v -> in(pid(v), refplace_idset(page)), values(refplacedict(page)))
 reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idset(page)), values(reftransitiondict(page)))
 
-declarations(page::Page) = declarations(page.declaration)
+
+declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
 
 page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
 

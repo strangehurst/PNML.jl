@@ -1,6 +1,6 @@
 "Return first true `f` of `v` or `nothing`."
-function getfirst(f, v) # getfirst(f::F, v) where {F}
-    i = findfirst(f, v) # Cannot use nothing as an index.
+function getfirst(f, v)
+    i = findfirst(f, v) # Cannot use nothing as an index/key.
     isnothing(i) ? nothing : v[i]
 end
 
@@ -27,7 +27,7 @@ _evaluate(x::Base.Callable) = (x)()
 Return function to be used like: any(ispid(:asym), iterable_with_pid).
 """
 ispid(x::Symbol) = Fix2(===, x)
-haspid(x, id::Symbol) = ispid(id)(x) #!pid(x) === id
+haspid(x, id::Symbol) = ispid(id)(x)
 haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 "Return blank string of current indent size in `io`."
