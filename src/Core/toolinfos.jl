@@ -65,8 +65,39 @@ function Base.show(io::IO, tg::TokenGraphics)
 end
 
 ###############################################################################
+
 """
-Return first toolinfo having a matching toolname and version.
+has_toolinfo(infos, toolname[, version]) -> Bool
+
+Does any toolinfo in iteratable `infos` have a matching `toolname`, and a matching `version` (if it is provided).
+`toolname` and `version` will be turned into `Regex`s to match against each `ToolInfo` in the `infos` collection.
+"""
+function has_toolinfo end
+
+function has_toolinfo(infos, toolname)
+    has_toolinfo(infos, Regex(toolname))
+end
+
+function has_toolinfo(infos, toolname, version)
+    has_toolinfo(infos, Regex(toolname), Regex(version))
+end
+
+function has_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
+    any(infos) do tool
+       !isnothing(match(namerex, name(tool))) &&
+        !isnothing(match(versionrex, version(tool)))
+    end
+end
+
+"""
+    get_toolinfo(infos, toolname[, version]) -> Maybe{ToolInfo}
+
+Return first toolinfo in iteratable collection `infos` having a matching toolname and version.
+See [`has_toolinfo`](@ref)
+
+    get_toolinfo(ti::ToolInfo, toolname[, version]) -> Maybe{ToolInfo}
+
+Return `ti` if `toolname` and `version` match, `nothing` otherwise.
 """
 function get_toolinfo end
 
@@ -77,11 +108,12 @@ get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
     get_toolinfo(ti, Regex(name),  versionrex)
 
 get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
-    _match(ti, namerex, versionrex) && ti #!get_toolinfo([ti], namerex, versionrex)
+    _match(ti, namerex, versionrex) ? ti : nothing
 
-
+# Collections
 get_toolinfo(infos, name::AbstractString, version::AbstractString) =
     get_toolinfo(infos, Regex(name), Regex(version))
+
 get_toolinfo(infos, name::AbstractString, versionrex::Regex) =
     get_toolinfo(infos, Regex(name), versionrex)
 
@@ -89,16 +121,21 @@ function get_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
     first(get_toolinfos(infos, namerex, versionrex))
 end
 
+"""
+    get_toolinfos(infos, toolname::Regex[, version::Regex]) -> Iterator
+
+Return iterator over toolinfos matching toolname and version regular expressions.
+"""
 function get_toolinfos(infos, namerex::Regex, versionrex::Regex=r"^.*$")
     Iterators.filter(ti -> _match(ti, namerex, versionrex), infos)
 end
 
 """
-    _match(ti::ToolInfo, name::AbstractString)
-    _match(ti::ToolInfo, name::String, version::String)
-    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex)
+    _match(ti::ToolInfo, name::AbstractString) -> Bool
+    _match(ti::ToolInfo, name::String, version::String) -> Bool
+    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex) -> Bool
 
-Match toolname and version. Default is any version.
+Return `true` if both toolname and version match. Default is any version.
 """
 function _match end
 _match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
