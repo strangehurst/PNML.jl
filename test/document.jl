@@ -112,22 +112,23 @@ end
         end
     end
 
-    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng]
-        @test_opt pnmltype(pt)
+    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :continuous]
+        @test_opt  pnmltype(pt)
         @test_call pnmltype(pt)
-        for net in PNML.find_nets(model, pt)
-            @test net.type === pnmltype(pt)
-        end
-        for net in PNML.find_nets(model, pnmltype(pt))
-            @test net.type === pnmltype(pt)
+        @test_opt  PNML.find_nets(model, pt)
+        @test_call PNML.find_nets(model, pt)
+
+        for (l,r) in zip(PNML.find_nets(model, pt), PNML.find_nets(model, pnmltype(pt)))
+            @test l === r
+            @test l.type === r.type === pnmltype(pt)
         end
     end
 
-    @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric]
-        for net in PNML.find_nets(model, t)
-            @test net.type === pnmltype(t)
-        end
-    end
+    # @test_call PNML.first_net(model)
+    # net0 = @inferred PnmlNet PNML.first_net(model)
+    # @test PNML.nettype(net0) <: PnmlType
+    # @test first(v) === net0
+
 end
 
 @testset "Empty" begin

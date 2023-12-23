@@ -43,28 +43,6 @@ str1 = """
     model = @inferred parse_str(str1)
     @show model
 
-#TODO move to PNML model test
-#=s
-    @test_call PNML.find_nets(model, :continuous)
-    @test_call PNML.find_nets(model, PNML.ContinuousNet())
-    vx = PNML.find_nets(model, :continuous)
-    v =  PNML.find_nets(model, PNML.ContinuousNet())
-    @test vx === v
-    @test !isempty(v)
-
-    @test_call PNML.first_net(model)
-    net0 = @inferred PnmlNet PNML.first_net(model)
-    @test PNML.nettype(net0) <: PnmlType
-    @test first(v) === net0
-
-    #println("- - - - - - - - - - - - - - - -")
-    #@show typeof(values(arc_idset(net0)))
-    PNML.flatten_pages!(model)
-    PNML.flatten_pages!(net0)
-    PNML.flatten_pages!(model)
-    PNML.flatten_pages!(net0)
-    #println("- - - - - - - - - - - - - - - -")
-=#
     net0 = @inferred PnmlNet PNML.first_net(model)
     println("- - - - - - - - - - - - - - - -")
     snet1 = @inferred SimpleNet SimpleNet(model)

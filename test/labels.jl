@@ -17,20 +17,6 @@ using PNML:
     @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
 end
 
-#=
-@testset "ObjectCommon $pntd" for pntd in all_nettypes()
-    oc = @inferred PNML.ObjectCommon()
-
-    @test isnothing(PNML.graphics(oc))
-    @test isempty(PNML.tools(oc))
-    @test isempty(PNML.labels(oc))
-
-    oc = @inferred PNML.ObjectCommon(nothing, PNML.ToolInfo[], PNML.PnmlLabel[])
-    @test isnothing(PNML.graphics(oc))
-    @test isempty(PNML.tools(oc))
-    @test isempty(PNML.labels(oc))
-end
-=#
 #------------------------------------------------
 @testset "name $pntd" for pntd in all_nettypes()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())

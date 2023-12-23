@@ -15,7 +15,7 @@ const noisy::Bool = false
 "Only report for our module."
 const target_modules = (PNML,)
 
-"Allow test of show methods without creating a file."
+"Allow test of print/show methods without creating a file."
 const testshow = devnull # nothing turns off redirection
 
 "Ignore some dynamically-designed functions."
@@ -32,7 +32,6 @@ function pff(@nospecialize(ft))
     return true
 end
 
-export VERBOSE_PNML, pff, target_modules,
-        jet_broke, runopt, testshow, noisy
+export VERBOSE_PNML, pff, target_modules, jet_broke, runopt, testshow, noisy
 
 end # module TestUtils

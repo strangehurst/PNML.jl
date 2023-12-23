@@ -60,7 +60,7 @@ end
 end
 
 
-@testset "missing $pntd" for pntd in all_nettypes()
+@testset "missing id $pntd" for pntd in all_nettypes()
 
     @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>", registry())
 

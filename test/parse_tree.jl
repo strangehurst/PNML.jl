@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, OrderedCollections
 using PNML: Maybe,
-    tag, pid, firstpage,
+    tag, pid, firstpage, length,
     parse_file, parse_name, parse_initialMarking, parse_inscription,
     parse_declaration, parse_transition,  parse_toolspecific,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
@@ -147,13 +147,11 @@ end
     @test length(netvec) == 1
 
     net = first(netvec)
-    @test net isa PnmlNet
-    @test net isa PnmlNet{<:PnmlType}
-    @test net isa PnmlNet{<:AbstractHLCore}
     @test net isa PnmlNet{<:SymmetricNet}
 
     @test pages(net) isa Base.Iterators.Filter
-    @test length(allpages(net)) == 1
+    @test only(allpages(net)) == only(pages(net))
+    #todo compare pages(net) == allpages(net)
     @test firstpage(net) isa Page
     @test !isempty(arcs(firstpage(net)))
     @test !isempty(places(firstpage(net)))

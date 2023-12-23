@@ -27,9 +27,6 @@ end
     </graphics>
     """
     n = @test_logs (:warn,"graphics ignoring <graphics> child '<unexpected/>'") parse_graphics(xmlroot(str), pntd, registry())
-    @test n.offset isa PNML.Coordinate
-    @test n.dimension isa PNML.Coordinate
-    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0
@@ -37,6 +34,9 @@ end
     @test n.offset == PNML.Coordinate(7, 8.0)
     @test n.offset == PNML.Coordinate(7, 8)
     @test n.dimension == PNML.Coordinate(5.0, 6.0)
+    @test n.offset isa PNML.Coordinate
+    @test n.dimension isa PNML.Coordinate
+    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
     @test length(n.positions) == 2
     @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
 
