@@ -8,7 +8,7 @@ Labels an Arc. See also [`HLInscription`](@ref).
 
 ```jldoctest; setup=:(using PNML: Inscription)
 julia> i = Inscription(3)
-Inscription(3, nothing, ToolInfo[])
+Inscription(3)
 
 julia> i()
 3
@@ -27,9 +27,15 @@ value(i::Inscription) = i.value
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
-    show(io, value(inscription)); print(io, ", "),
-    show(io, graphics(inscription)); print(io, ", "),
-    show(io, tools(inscription))
+    show(io, value(inscription))
+    if has_graphics(inscription)
+        print(io, ", ")
+        show(io, graphics(inscription))
+    end
+    if has_tools(inscription)
+        print(io, ", ")
+        show(io, tools(inscription))
+    end
     print(io, ")")
 end
 
@@ -56,19 +62,19 @@ See also [`Inscription`](@ref)
 
 ```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
 julia> i2 = HLInscription(Term(:value, 3))
-HLInscription("", Term(:value, 3), nothing, ToolInfo[])
+HLInscription("", Term(:value, 3))
 
 julia> i2()
 3
 
 julia> i3 = HLInscription("text", Term(:empty, 1))
-HLInscription("text", Term(:empty, 1), nothing, ToolInfo[])
+HLInscription("text", Term(:empty, 1))
 
 julia> i3()
 1
 
 julia> i4 = HLInscription("text", Term(:value, 3))
-HLInscription("text", Term(:value, 3), nothing, ToolInfo[])
+HLInscription("text", Term(:value, 3))
 
 julia> i4()
 3
@@ -95,9 +101,15 @@ Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")
     show(io, text(inscription)); print(io, ", "),
-    show(io, value(inscription)); print(io, ", "),
-    show(io, graphics(inscription)); print(io, ", "),
-    show(io, tools(inscription))
+    show(io, value(inscription))
+    if has_graphics(inscription)
+        print(io, ", ")
+        show(io, graphics(inscription))
+    end
+    if has_tools(inscription)
+        print(io, ", ")
+        show(io, tools(inscription));
+    end
     print(io, ")")
 end
 

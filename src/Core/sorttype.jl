@@ -31,9 +31,16 @@ type(t::SortType) = typeof(value(t)) # Look a layer deeper at referenced sort ob
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
-    show(io, text(st)); print(io, ", ");
-    show(io, graphics(st)); print(io, ", ");
-    show(io, tools(st));
+    show(io, text(st)); print(io, ", ")
+    show(io, value(st))
+    if has_graphics(st)
+        print(io, ", ")
+        show(io, graphics(st))
+    end
+    if has_tools(st)
+        print(io, ", ")
+        show(io, tools(st));
+    end
     print(io, ")")
 end
 

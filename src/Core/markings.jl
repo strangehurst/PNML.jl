@@ -11,13 +11,13 @@ Is a functor that returns the `value`.
 
 ```jldoctest; setup=:(using PNML: Marking)
 julia> m = Marking(1)
-Marking(1, nothing, ToolInfo[])
+Marking(1)
 
 julia> m()
 1
 
 julia> m = Marking(12.34)
-Marking(12.34, nothing, ToolInfo[])
+Marking(12.34)
 
 julia> m()
 12.34
@@ -44,9 +44,15 @@ Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 
 function Base.show(io::IO, ptm::Marking)
     print(io, indent(io), "Marking(")
-    show(io, value(ptm)); print(io, ", ");
-    show(io, graphics(ptm)); print(io, ", ");
-    show(io, tools(ptm))
+    show(io, value(ptm))
+    if has_graphics(ptm)
+        print(io, ", ")
+        show(io, graphics(ptm))
+    end
+    if has_tools(ptm)
+        print(io, ", ")
+        show(io, tools(ptm));
+    end
     print(io, ")")
 end
 
@@ -63,7 +69,7 @@ Is a functor that returns the evaluated `value`.
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text", Term(:value, 3), nothing, ToolInfo[])
+HLMarking("the text", Term(:value, 3))
 
 julia> m()
 3
@@ -84,9 +90,15 @@ value(m::HLMarking) = m.term
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
     show(io, text(hlm)); print(io, ", ")
-    show(io, value(hlm)); print(io, ", ") # Term
-    show(io, graphics(hlm)); print(io, ", ")
-    show(io, tools(hlm))
+    show(io, value(hlm)) # Term
+    if has_graphics(hlm)
+        print(io, ", ")
+        show(io, graphics(hlm))
+    end
+    if has_tools(hlm)
+        print(io, ", ")
+        show(io, tools(hlm));
+    end
     print(io, ")")
 end
 
