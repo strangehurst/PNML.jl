@@ -16,7 +16,9 @@ One Petri Net of a PNML model.
     labels::Vector{PnmlLabel}
 end
 
-nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+#nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+PnmlTypeDefs.pnmltype(net::PnmlNet) = net.type
+nettype(net::PnmlNet) = typeof(pnmltype(net))
 
 pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
                                                       place_type(T),

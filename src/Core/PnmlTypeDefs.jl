@@ -217,9 +217,9 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
 
 """
-    pnmltype(pntd::T, reg)
-    pnmltype(uri::AbstractString, reg)
-    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, reg)
+    pnmltype(pntd::T, reg) -> PnmlType
+    pnmltype(uri::AbstractString, reg) -> PnmlType
+    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, reg) -> PnmlType
 
 Map either a text string or a symbol to a dispatch type singlton.
 
