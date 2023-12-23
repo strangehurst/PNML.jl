@@ -23,7 +23,7 @@ abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
 pid(o::AbstractPnmlObject)        = o.id
 
-has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(o.namelabel)
+has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 name(::Nothing) = ""
 
@@ -33,13 +33,12 @@ labels(o::AbstractPnmlObject)     = o.labels
 has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
 
-has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools)
-tools(o::AbstractPnmlObject)     = o.tools
+#
+has_tools(o) = hasproperty(o, :tools) && !isempty(getfield(o, :tools))
+tools(o)     = o.tools
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
-
-#TODO has_tool, get_tool no plural
 
 
 #--------------------------------------------
