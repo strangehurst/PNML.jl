@@ -50,7 +50,7 @@ function testpn(dirs = ("examples",);
             println()
         end
     end
-    @show files_done = now()
+
     # Exception Summary Report
     xfile = open(joinpath(outdir, "exceptions.txt"), "w")
     cd(outdir) do
@@ -67,7 +67,7 @@ function testpn(dirs = ("examples",);
     sort!(df, [:time])
     write(joinpath(outdir, "DataFrame.txt"), repr(df))
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
-    println("finish_time = ", now(), ", elapsed time = ", (start_time - now()))
+    println("finish_time = ", now(), ", elapsed time = ", (now() - start_time))
 end
 
 #-----------------------------------
