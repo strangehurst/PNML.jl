@@ -27,7 +27,7 @@ has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(get
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 name(::Nothing) = ""
 
-has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels)
+has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
 has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
@@ -82,9 +82,20 @@ Tool specific objects can be attached to
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 "OrderedDict filled by XMLDict"
-const DictType = OrderedDict{Union{Symbol,String}, Any}
-tag(d::DictType)   = first(pairs(d)).first # Expect only one key here, String or Symbol
+const DictType = OrderedDict{Union{Symbol,String},
+                            #  Union{DictType, Vector{DictType},
+                            #         String, Vector{String},
+                            #         SubString{String}, Vector{SubString{String}}}}
+                            Any}
+
+const XDVT2 = Union{DictType,  String,  SubString{String}}
+const XDVT3 = Vector{XDVT2}
+"XMLDict values type union"
+const XDVT = Union{XDVT2, XDVT3}
+
+tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
 value(d::DictType) = d[tag(d)]
+value(s::Union{String, SubString{String}}) = s
 
 function Base.show(io::IO, m::MIME"text/plain", d::DictType)
     show(io, d)
@@ -105,11 +116,11 @@ See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::Union{DictType, String, SubString{String}}
+    elements::XDVT
 end
-AnyElement(x::DictType) = AnyElement(first(pairs(x)))
-#!AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString}}) = AnyElement(p.first, p.second)
-AnyElement(p::Pair) = AnyElement(p.first, p.second)
+#AnyElement(x::DictType) = AnyElement(first(pairs(x)))
+#AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString{String}}}) = AnyElement(p.first, p.second)
+#AnyElement(p::Pair) = AnyElement(p.first, p.second)
 AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag

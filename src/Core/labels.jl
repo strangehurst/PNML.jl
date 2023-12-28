@@ -56,7 +56,7 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
+    prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
 
     return getfield(o, prop_name)
@@ -72,8 +72,8 @@ graphics(l::AbstractLabel) =  l.graphics
 
 tools(l::AbstractLabel) = l.tools
 
-has_labels(l::AbstractLabel) = false
-labels(l::AbstractLabel) = (throw ∘ ArgumentError)("AbstractLabel $(typeof(l)) does not have labels attached")
+has_labels(l::AbstractLabel) = false #!hasproperty(l, :labels) && !isempty(l.labels)
+#!labels(l::AbstractLabel) = !has_labels(l) && throw(ArgumentError("$(typeof(l)) does not have labels attached"))
 
 # Labels include functors: markings, inscription, conditions #TODO test for Callable
 _evaluate(x::AbstractLabel) = x()
@@ -129,10 +129,8 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::Union{DictType, String, SubString}
+    elements::XDVT
 end
-PnmlLabel(x::DictType) = PnmlLabel(first(pairs(x)))
-PnmlLabel(p::Pair) = PnmlLabel(p.first, p.second)
 PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
 tag(label::PnmlLabel) = label.tag
@@ -160,6 +158,11 @@ end
 "Use with `Fix2` to filter anything with tag accessor."
 hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
+"""
+    get_labels(iteratable, s::Symbol) -> Iterator
+
+Filter iteratable collection for elements having `s` as the `tag`.
+"""
 function get_labels(v, tagvalue::Symbol)
     Iterators.filter(Fix2(hastag, tagvalue), v)
 end

@@ -19,10 +19,8 @@ Here we provide a fallback for *unclaimed tags*.
 """
 struct Structure
     tag::Symbol
-    el::Union{DictType, String, SubString}
+    el::XDVT
 end
-Structure(x::DictType) = Structure(first(pairs(x)))
-Structure(p::Pair) = Structure(p.first, p.second)
 Structure(s::AbstractString, e) = Structure(Symbol(s), e)
 
 tag(s::Structure) = s.tag

@@ -74,15 +74,10 @@ Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
 External information may be used to select the output type.
 """
-struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
+struct Term <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, DictType, String, SubString}
+    elements::Union{Bool, Int, Float64, XDVT}
 end
-Term(x::DictType) = begin
-    isempty(x) && throw(ArgumentError("cannot construct a `Term` from an empty dictionary"))
-    Term(first(pairs(x)))
-end
-Term(p::Pair) = Term(p.first, p.second)
 Term(s::AbstractString, e) = Term(Symbol(s), e) #! turn string into symbol
 
 tag(t::Term)::Symbol = t.tag
@@ -106,7 +101,7 @@ _term_eval(v::AbstractString) = parse(Bool, v)
 _term_eval(v::DictType) = begin
     # Fake like we know how to evaluate a expression of the high-level terms.
     haskey(v, :value) && return _term_eval(v[:value])
-    @show v
+    #@show v
     @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
     #Base.show_backtrace(stdout, backtrace())
     return false #
