@@ -41,20 +41,20 @@ str1 = """
     @test_call target_modules=target_modules parse_str(str1)
     #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
     model = @inferred parse_str(str1)
-    @show model
+    #@show model
 
     net0 = @inferred PnmlNet PNML.first_net(model)
-    println("- - - - - - - - - - - - - - - -")
+    #println("- - - - - - - - - - - - - - - -")
     snet1 = @inferred SimpleNet SimpleNet(model)
-    @show snet1
-    println("- - - - - - - - - - - - - - - -")
+    #@show snet1
+    #println("- - - - - - - - - - - - - - - -")
     snet  = @inferred SimpleNet SimpleNet(net0)
-    @show snet
-    @show typeof(snet)
-    println("- - - - - - - - - - - - - - - -")
+    #@show snet
+    #@show typeof(snet)
+    #println("- - - - - - - - - - - - - - - -")
 
     @show @test_call SimpleNet(net0) # passes
-     @show @test_call broken=jet_broke SimpleNet(model)
+    @show @test_call broken=jet_broke SimpleNet(model)
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)

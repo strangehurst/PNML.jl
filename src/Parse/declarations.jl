@@ -213,10 +213,13 @@ end
 "Has a tag of :declaration, return value as a string."
 function parse_decl(d::DictType)
     t = tag(d)::Union{Symbol,String,SubString{String}}
-    t != :declaration && throw(ArgumentError("expected ':declaration', found $(tag(d))"))
+    t != :declaration && throw(ArgumentError("expected ':declaration', found '$(tag(d))'"))
     return value(d)::AbstractString
 end
-#! parse_decl(str::AbstractString) = str
+function parse_decl(tag, d::XDVT)
+    tag != "declaration" && throw(ArgumentError("expected tag 'declaration', found '$tag'"))
+    return value(d)::AbstractString
+end
 
 parse_usersort(body::DictType) = parse_decl(body)
 parse_usersort(str::AbstractString) = str
@@ -235,15 +238,14 @@ $(TYPEDSIGNATURES)
 Sorts are found within a <structure> element.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    ucl = unparsed_tag(node, pntd, idregistry)::DictType
-    sortid = tag(ucl)
-    body = ucl[sortid]::DictType
-    sortid = Symbol(sortid)
+    (sortid, body) = unparsed_tag(node, pntd, idregistry)
     ismissing(sortid) && error("sortid is missing")
     ismissing(body)   && error("sort body is missing")
     isnothing(sortid) && error("sortid is nothing")
     isnothing(body)   && error("sort body is nothing")
-
+    sortid = Symbol(sortid)
+    body = body::DictType
+    #@show sortid body
     #TODO Dispatch on Val{} types.
     if sortid === :usersort
         decl = parse_decl(body)
@@ -282,28 +284,39 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         srt = FiniteIntRangeSort(start, stop)
 
     elseif sortid === :list
-        error("IMPLEMENT ME: sort = $sortid")
+        error("IMPLEMENT ME: sort = $sortid $body")
         srt = ListSort()
 
     elseif sortid === :string
-        error("IMPLEMENT ME: sort = $sortid")
+        error("IMPLEMENT ME: sort = $sortid $body")
         srt = StringSort()
 
     elseif sortid === :multisetsort
         # There will be 1 usersort
-        @assert length(body) == 1 ":mulitsetsort requires one basis sort"
-        usort = body["usersort"]
-        decl = _attribute(usort, :declaration)
-        srt = MultisetSort(UserSort(decl))
-
+        #@showln body
+        @assert length(body) == 1 ":mulitsetsort requires one basis sort, found $body"
+        (k,v) = only(pairs(body))
+        if k == "usersort"
+            srt = MultisetSort(UserSort(_attribute(v, :declaration)))
+        elseif k == "productsort"
+            # orderd collection of sorts
+            error("IMPLEMENT ME:  $sortid $body")
+        else #! expand to builtin types
+            error("IMPLEMENT ME: $sortid $body")
+        end
     elseif sortid === :productsort
-        @assert length(body) == 1
-        # orderded collection of UserSorts
-        usorts = UserSort[]
-        for us in body["usersort"] # of productsort
-            decl = parse_decl(us)
-            srt2 = UserSort(decl)
-            push!(usorts, srt2)
+        # orderded collection of zero or more Sorts #! not just UserSorts
+        #@showln body
+        usorts = AbstractSort[]
+        for (k,v) in pairs(body) #["usersort"] # of productsort
+            #@show typeof(v) v
+            if k == "usersort"
+                for us in v
+                    decl = parse_decl(us)
+                    srt2 = UserSort(decl)
+                    push!(usorts, srt2)
+                end
+            end
         end
         srt = ProductSort(usorts)
 
@@ -312,8 +325,8 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
         srt = PartitionSort(part.id, part.name, part.sort, part.elements)
 
     else
-        @warn("invalid sort type '$sortid', allowed: $sort_ids", ucl)
-        (throw ∘ ArgumentError)("parse_sort sort $sortid not implemented")
+        @warn("invalid sort type '$sortid', allowed: $sort_ids", body)
+        (throw ∘ ArgumentError)("parse_sort sort '$sortid' not implemented")
     end
 
     return srt

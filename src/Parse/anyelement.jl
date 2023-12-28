@@ -5,24 +5,26 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    AnyElement(first(pairs(unparsed_tag(node, pntd, reg))))
+    AnyElement(unparsed_tag(node, pntd, reg)...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return `DictType` holding well formed XML tree.
+Return tuple of (tag, `XDVT`) holding well formed XML tree. `XMLDict`
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref), et al.
 """
 function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
-    anyel = XMLDict.xml_dict(node, DictType; strip_text=true)
-    @assert anyel isa Union{DictType, String, SubString}
+    tag = EzXML.nodename(node)
+    xd::XDVT = XMLDict.xml_dict(node, OrderedDict{Union{Symbol, String}, Any}; strip_text=true)
+    return (tag, xd) #return DictType(Pair{Union{Symbol,String}, XDVT}(tag, xd))
     # empty dictionarys are a valid thing.
-    @assert !(anyel isa DictType) || all(x -> !isnothing(x.second), pairs(anyel))
-    #! Some things are tuples! as well as DistType, String, SubString
-    return DictType(EzXML.nodename(node) => anyel)
 end
+Base.convert(::Type{XDVT}, x::OrderedDict) = DictType(x)
+Base.convert(::Type{XDVT}, s::Union{String, SubString{String}}) = s
+Base.convert(::Type{XDVT}, x::Vector{OrderedDict}) = Vector{DictType}(x)
+Base.convert(::Type{XDVT}, s::Vector{Union{String, SubString{String}}}) = s
 
 #-----------------------------------------------------------------------------
 
@@ -32,13 +34,16 @@ Find first :text in vx and return its :content as string.
 """
 function text_content end
 
-function text_content(vx::DictType)
-    haskey(vx, "text") && !isnothing(vx["text"]) && return vx["text"]
-    throw(ArgumentError("missing <text> element in $(vx)"))
+function text_content(vx::Vector{XDVT2})
+    !isempty(vx) && text_content(first(vx))
+    throw(ArgumentError("empty `Vector{XDVT}` not expected"))
 end
-function text_content(s::AbstractString)
-    return s
+function text_content(d::DictType)
+    haskey(d, "text") && !isnothing(d["text"]) && return d["text"]
+    throw(ArgumentError("missing <text> element in $(d)"))
 end
+text_content(s::String) = s
+text_content(s::SubString{String}) = s
 
 """
 Find an XML attribute. XMLDict uses symbols as keys.

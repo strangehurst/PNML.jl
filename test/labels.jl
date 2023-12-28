@@ -74,6 +74,7 @@ end
 
     # Floating point
     mark2 = PNML.Marking(3.5)
+    @test_opt PNML.Marking(3.5)
     @test_call PNML.Marking(3.5)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() == value(mark2) ≈ 3.5
@@ -101,24 +102,43 @@ end
     @test inscript() == value(inscript) == 12
     @test graphics(inscript) !== nothing
     @test tools(inscript) === nothing || !isempty(tools(inscript))
-    @test_throws "does not have labels attached" labels(inscript) # === nothing || !isempty(labels(inscript))
+    @test_throws MethodError labels(inscript)
+end
+
+FF(@nospecialize f) = f !== EZXML.throw_xml_error;
+
+@testset "add_labels JET $pntd" for pntd in all_nettypes()
+    # lab = PnmlLabel[]
+    # reg = registry()
+    # @show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
+    # @test_opt add_label!(lab, node, pntd, reg)
+    # @test_opt(broken=false,
+    #             ignored_modules=(JET.AnyFrameModule(EzXML),
+    #                             JET.AnyFrameModule(XMLDict),
+    #                             JET.AnyFrameModule(Base.CoreLogging)),
+    #             function_filter=pff,
+    #             add_label!(lab, xml"""<test1> 1 </test1>""", pntd, reg))
+
+    # @test_call add_label!(lab, node, pntd, reg)
+    # @test_call(ignored_modules=(JET.AnyFrameModule(EzXML),
+    #                             JET.AnyFrameModule(XMLDict)),
+    #                             add_label!(lab, node, pntd, reg))
 end
 
 @testset "labels $pntd" for pntd in all_nettypes()
     lab = PnmlLabel[]
     reg = registry()
-
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
         node = xmlroot("<test$x> $i </test$x>")::XMLNode
-        @test_call  ignored_modules=(JET.AnyFrameModule(EzXML),
-                                      JET.AnyFrameModule(XMLDict)) add_label!(lab, node, pntd, reg)
+
         @test add_label!(lab, node, pntd, reg) isa PnmlLabel
         @test length(lab) == i
     end
     @test length(lab) == 4
 
     for l in lab
+        @test_opt tag(l)
         @test_call tag(l)
         @test tag(l) === :test1 || tag(l) === :test2
     end
@@ -158,8 +178,8 @@ function test_unclaimed(pntd, xmlstring::String)
 
     xdict = XMLDict.xml_dict(node, PNML.DictType)
 
-    u = unparsed_tag(node, pntd) # tag is a string
-    l = PnmlLabel(u)
+    (t,u) = unparsed_tag(node, pntd) # tag is a string
+    l = PnmlLabel(t, u)
     a = anyelement(node, pntd, reg2)
 
     if noisy
@@ -173,26 +193,26 @@ function test_unclaimed(pntd, xmlstring::String)
     @test a isa AnyElement
 
     @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node, pntd, reg1)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(u)
+    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) unparsed_tag(node, pntd, reg1)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) PnmlLabel(u)
+                                JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) anyelement(node, pntd, reg2)
 
     nn = Symbol(EzXML. nodename(node))
-    @test haskey(u, nodename(node))
+    @test t == nodename(node)
     @test tag(l) === nn
     @test tag(a) === nn
 
-    @test u[nodename(node)] isa DictType
+    @test u isa DictType
     @test l.elements isa DictType
     @test a.elements isa DictType
     #! unclaimed id is not registered
-    haskey(u[nodename(node)], :id) && @test !isregistered(reg1, u[nodename(node)][:id])
+    haskey(u, :id) && @test !isregistered(reg1, u[:id])
     return l, a
 end
 
@@ -258,11 +278,11 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(expected)
+        expected_label = PnmlLabel(expected...)
         @test tag(lab) == tag(expected_label)
         @test (length ∘ elements)(lab) == ( length ∘ elements)(expected_label)
         # TODO recursive compare
-        expected_any = AnyElement(expected)
+        expected_any = AnyElement(expected...)
         @test tag(anye) == tag(expected_any)
         @test (length ∘ elements)(anye) == (length ∘ elements)(expected_any)
         # TODO recursive compare

@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, InteractiveUtils
+using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
 import EzXML
 using PNML: Maybe, getfirst, firstchild, allchildren,
     ishighlevel, PnmlTypeDefs,
@@ -15,6 +15,9 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     SortType,
     PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel, isdiscrete, iscontinuous
 
+@testset "JET" begin
+    #@show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
+end
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -119,7 +122,43 @@ end
                          (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
 end
 
-# using PNML: DictType
+using PNML: DictType, XDVT, XDVT2, XDVT3
+using XMLDict, OrderedCollections
+const ODT = OrderedDict{Union{Symbol, String}, Any}
+@testset "XMLDict" begin
+    @show DictType XDVT
+    # @show xd = xml_dict(xml"""<t/>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t attr="avalue" />""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+
+    # @show xd = xml_dict(xml"""<t></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t> text </t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t>text</t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+
+    # @show xd = xml_dict(xml"""<t attr="avalue" ></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t attr="avalue" > text </t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t attr="avalue" >text</t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t attr="" ></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+
+    # @show xd = xml_dict(xml"""<t><u/></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+
+    # @show xd = xml_dict(xml"""<t><u>1</u><v>2</v></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
+    # #dump(xd)
+end
+
 # @testset "show DictType" begin
 #     println()
 #     @show DictType() typeof(DictType())

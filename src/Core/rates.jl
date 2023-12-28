@@ -20,6 +20,7 @@ function rate(transition)
 
     if has_label(transition, :rate)
         r = get_label(transition, :rate)
+        #@show r typeof(elements(r))
         str = text_content(elements(r)) #TODO place into an TransitionRate object.
         return number_value(R, str)
     end

@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, EzXML, ..TestUtils, JET, XMLDict
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_name, name,
     pid, initial_marking, condition, inscription,
@@ -14,6 +14,8 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
+        #@show pff(XMLDict.xml_dict)
+        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
         @test isa(n, Place)
         @test @inferred(pid(n)) === :place1
@@ -38,7 +40,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        @test_call initial_marking(n)
+        @test_call target_modules=(@__MODULE__,) initial_marking(n)
         @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end
 

@@ -4,8 +4,8 @@
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
     nn = EzXML.nodename(node)
-    CONFIG.verbose && println("add label $nn")
-    label = PnmlLabel(unparsed_tag(node, pntd))
+    CONFIG.verbose && @info("add label $nn")
+    label = PnmlLabel(unparsed_tag(node, pntd)...)
     #! Extension point. user supplied parser of DictType -> Annotation. Could do conversion after/on demand.
     #! 2 collections, one for PnmlLabels other for other Annotations?
     push!(v, label)

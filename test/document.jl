@@ -75,8 +75,11 @@ end
     @test :net ∉ reg.ids
 
     parse_pnml(xmlroot(str), reg)
-    @report_opt parse_pnml(xmlroot(str), reg)
+
+    @test_opt target_modules=(@__MODULE__,) parse_pnml(xmlroot(str), reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
+#    @test_opt function_filter=pff parse_pnml(xmlroot(str), reg)
+
     @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end

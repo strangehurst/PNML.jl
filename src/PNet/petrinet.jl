@@ -297,7 +297,7 @@ $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD**
 
-SimpleNet is a concrete `AbstractPetriNet` wrapping a `PnmlNet`.
+SimpleNet is a concrete `AbstractPetriNet` wrapping a single `PnmlNet`.
 
 Uses a flattened net to avoid the page level of the pnml hierarchy.
 
@@ -309,12 +309,14 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
-SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
-SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
+SimpleNet(s::AbstractString) = SimpleNet(parse_str(s))
+function SimpleNet(model::PnmlModel)
+    net0 = first_net(model)
+    SimpleNet(net0)
+end
 function SimpleNet(net::PnmlNet)
     flatten_pages!(net)
     SimpleNet(pid(net), net)
-
 end
 
 #-------------------------------------------------------------------------------

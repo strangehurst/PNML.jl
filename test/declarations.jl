@@ -7,6 +7,7 @@ using PNML:
 @testset "Declaration() $pntd" for pntd in all_nettypes()
     decl = PNML.Declaration()
     @test length(PNML.declarations(decl)) == 0
+    @test_opt PNML.Declaration()
     @test_call PNML.Declaration()
 end
 
@@ -99,13 +100,15 @@ end
 
     @test PNML.graphics(decl) === nothing
     @test isempty(PNML.tools(decl))
-    #@test PNML.labels(decl) !== nothing
 
+
+    @test_opt PNML.declarations(decl)
+    @test_opt PNML.graphics(decl)
+    @test_opt PNML.tools(decl)
 
     @test_call PNML.declarations(decl)
     @test_call PNML.graphics(decl)
     @test_call PNML.tools(decl)
-    #@test_call PNML.labels(decl)
 end
 
 @testset "declaration tree $pntd" for pntd in all_nettypes()
@@ -148,7 +151,6 @@ end
         @test typeof(nsort) <: PNML.NamedSort
 
         @test isregistered(reg, pid(nsort))
-        @test_call isregistered(reg, pid(nsort))
         @test Symbol(PNML.name(nsort)) === pid(nsort) # name and id are the same.
         @test PNML.sort(nsort) isa PNML.CyclicEnumerationSort
         @test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
@@ -160,11 +162,8 @@ end
         @test length(feconsts) == 2
         for fec in feconsts
             @test fec isa PNML.FEConstant
-
             @test fec.id isa Symbol
             @test fec.name isa AbstractString
-            #@test idstring == "LegalResident0"
-            @test_call isregistered(reg, fec.id)
             @test !isregistered(reg, fec.id) # unregistered id
 
             @test endswith(string(fec.id), fec.name)

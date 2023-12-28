@@ -84,13 +84,6 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     haskey(node, "id") || throw(MissingIDException(nn))
     haskey(node, "type") || throw(MalformedException("$nn missing type"))
     type = node["type"]
-    if CONFIG.verbose
-        println("""
-
-        =========
-        parse_net: $(node["id"]) $type $(pntd_override !== nothing && pntd_override)
-        """)
-    end
 
     isempty(allchildren("page", node)) &&
         throw(MalformedException("""<net> $(node["id"]) does not have any <page> child"""))
@@ -679,7 +672,7 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     #@warn "parse_structure is not a well defined thing, $pntd."
-    Structure(unparsed_tag(node, pntd, idregistry)) #TODO anyelement
+    Structure(unparsed_tag(node, pntd, idregistry)...) #TODO anyelement
 end
 
 

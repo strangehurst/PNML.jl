@@ -1,6 +1,6 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
-using PNML, EzXML, Preferences, Reexport
+using PNML, EzXML, Preferences, XMLDict, Reexport
 @reexport using DebuggingUtilities
 
 "Often JET has problems with beta julia versions:("
@@ -20,13 +20,19 @@ const testshow = devnull # nothing turns off redirection
 
 "Ignore some dynamically-designed functions."
 function pff(@nospecialize(ft))
-    if ft === typeof(PnmlIDRegistrys.register_id!) ||
-       ft === typeof(Preferences.load_preference) ||
-       ft === typeof(EzXML.nodename) ||
-       ft === typeof(Base.string) ||
-       ft === typeof(Base.println) ||
-       #ft === typeof(FunctionWrappers.convert_ret) ||
-       false
+    #if ft === typeof(PnmlIDRegistrys.register_id!) ||
+    if  ft === Preferences.load_preference ||
+        ft === EzXML.nodename ||
+        ft === EzXML.namespace ||
+        ft === Base.repr ||
+        ft === Base.sprint ||
+        ft === Base.string ||
+        ft === Base.print ||
+        ft === Base.println ||
+        ft === PNML.unparsed_tag ||
+        ft === PNML.add_label! ||
+        ft === XMLDict.xml_dict ||
+        false
         return false
     end
     return true

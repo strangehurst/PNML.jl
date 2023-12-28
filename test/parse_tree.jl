@@ -168,6 +168,7 @@ end
 @testset "test1.pnml file" begin
     model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
     @test model isa PnmlModel
-    #todo run a
-    @show model
+    x = repr(model)
+    @test startswith(x, "PnmlModel")
+    #println(x)
 end
