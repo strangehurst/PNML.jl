@@ -219,7 +219,7 @@ methods(PNML.has_arc) # hide
 ```@example methods
 methods(PNML.has_refplace)  # hide
 ```
-### has\_reftransition\
+### has\_reftransition
 [`PNML.has_reftransition`](@ref)
 ```@example methods
 methods(PNML.has_reftransition)  # hide
