@@ -118,8 +118,7 @@ end
         </unknown>
       </arc>
     """)
-    #a1 = @test_logs match_mode=:any (:warn, "inscription term <structure> content value: 6") (:warn, "unexpected child of <arc>: unknown")
-    a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
+    a1 = @test_logs match_mode=:any (:warn, "found unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
 
     a2 = Arc(a1, :newsrc, :newtarget)
     @testset "a1,a2" for a in [a1, a2]
@@ -145,7 +144,7 @@ end
         </unknown>
     </referenceTransition>
     """
-    n = @test_logs (:warn, "unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
+    n = @test_logs (:warn, "found unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
     @test n isa RefTransition
     @test pid(n) === :rt1
     @test refid(n) === :t1
@@ -179,7 +178,7 @@ end
     </referencePlace>""",
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
-        n = @test_logs (:warn, "unexpected child of <referencePlace>: unknown") match_mode=:any parse_refPlace(s.node, ContinuousNet(), registry())
+        n = @test_logs (:warn, "found unexpected child of <referencePlace>: unknown") match_mode=:any parse_refPlace(s.node, ContinuousNet(), registry())
         @test typeof(n) <: RefPlace
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)

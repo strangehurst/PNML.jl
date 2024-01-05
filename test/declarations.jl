@@ -46,41 +46,30 @@ end
     @test parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry()) isa PNML.FiniteIntRangeSort
 
     @test parse_sort(xml"""<productsort>
-                                <usersort declaration="speed"/>
-                                <usersort declaration="distance"/>
+                          </productsort>""", pntd, registry()) isa PNML.ProductSort
+
+    @test parse_sort(xml"""<productsort>
+                                <usersort declaration="a_user_sort"/>
                            </productsort>""", pntd, registry()) isa PNML.ProductSort
 
-    @test parse_sort(xml"""<partition id="P1" name="P1">
-                      <usersort declaration="pluck"/>
-                      <partitionelement id="bs1" name="bs1">
-                          <useroperator declaration="b1"/>
-                          <useroperator declaration="b2"/>
-                          <useroperator declaration="b3"/>
-                     </partitionelement>
-                 </partition>""", pntd, registry()) isa PNML.PartitionSort
+    @test parse_sort(xml"""<productsort>
+                           <usersort declaration="speed"/>
+                           <usersort declaration="distance"/>
+                         </productsort>""", pntd, registry()) isa PNML.ProductSort
 
-    @test parse_sort(xml"""<partition id="P2" name="P2">
-                                <usersort declaration="pluck2"/>
-                                <partitionelement id="bs1" name="bs1">
-                                    <useroperator declaration="b3"/>
-                                </partitionelement>
-                            </partition>""", pntd, registry()) isa PNML.PartitionSort
+    @test parse_sort(xml"""<productsort>
+                               <usersort declaration="id1"/>
+                               <natural/>
+                            </productsort>""", pntd, registry()) isa PNML.ProductSort
 
-    @test parse_sort(xml"""<partition id="P3" name="P3">
-                            <usersort declaration="pluck2"/>
-                            <partitionelement id="bs1" name="bs1">
-                                <useroperator declaration="b3"/>
-                            </partitionelement>
-                            <partitionelement id="bs2" name="bs2">
-                                <useroperator declaration="b4"/>
-                            </partitionelement>
-                        </partition>""", pntd, registry()) isa PNML.PartitionSort
-
-
-
+    #! partitions are declarations not sorts
     @test parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                           </multisetsort>""", pntd, registry()) isa PNML.MultisetSort
+                            </multisetsort>""", pntd, registry()) isa PNML.MultisetSort
+
+    @test parse_sort(xml"""<multisetsort>
+                                <natural/>
+                            </multisetsort>""", pntd, registry()) isa Maybe{PNML.MultisetSort}
 end
 
 @testset "empty declarations $pntd" for pntd in all_nettypes()
@@ -169,4 +158,44 @@ end
             @test endswith(string(fec.id), fec.name)
         end
     end
+end
+
+
+@testset "partition declaration $pntd" for pntd in all_nettypes()
+    node = xml"""
+    <declaration>
+        <structure>
+            <declarations>
+                <partition id="P1" name="P1">
+                    <usersort declaration="pluck"/>
+                    <partitionelement id="bs1" name="bs1">
+                        <useroperator declaration="b1"/>
+                        <useroperator declaration="b2"/>
+                        <useroperator declaration="b3"/>
+                    </partitionelement>
+                </partition>
+                <partition id="P2" name="P2">
+                    <usersort declaration="pluck2"/>
+                    <partitionelement id="bs2" name="bs1">
+                        <useroperator declaration="b3"/>
+                    </partitionelement>
+                </partition>
+                <partition id="P3" name="P3">
+                    <usersort declaration="pluck2"/>
+                    <partitionelement id="bs1" name="bs1">
+                        <useroperator declaration="b3"/>
+                    </partitionelement>
+                    <partitionelement id="bs2" name="bs2">
+                        <useroperator declaration="b4"/>
+                    </partitionelement>
+                </partition>
+            </declarations>
+        </structure>
+    </declaration>
+    """
+    reg = PNML.registry()
+    decl = parse_declaration(node, pntd, reg)
+    @test typeof(decl) <: PNML.Declaration
+    @test length(PNML.declarations(decl)) == 3
+    @test_call PNML.declarations(decl)
 end

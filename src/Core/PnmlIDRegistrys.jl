@@ -85,7 +85,7 @@ In normal use it should never be needed.
 """
 function reset!(idregistry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
     @lock idregistry.lk empty!(idregistry.ids)
-    end
+end
 function reset!(idregistry::PnmlIDRegistry{Nothing})
     empty!(idregistry.ids)
 end

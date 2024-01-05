@@ -26,7 +26,7 @@ end
     <unexpected/>
     </graphics>
     """
-    n = @test_logs (:warn,"graphics ignoring <graphics> child '<unexpected/>'") parse_graphics(xmlroot(str), pntd, registry())
+    n = @test_logs (:warn,"ignoring unexpected child of <graphics>: 'unexpected'") parse_graphics(xmlroot(str), pntd, registry())
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0
@@ -77,7 +77,7 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <unexpected/>
             </tokengraphics>"""
-    n = @test_logs((:warn,"<tokengraphics> ignoring unexpected element 'unexpected'"),
+    n = @test_logs((:warn,"ignoring unexpected child of <tokengraphics>: 'unexpected'"),
                 parse_tokengraphics(xmlroot(str1), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1

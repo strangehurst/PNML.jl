@@ -76,7 +76,6 @@ inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(pe
 
 inscriptions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
-    #!LVector{inscription_value_type(net)}(
     LVector((;[arc_id => inscription(a) for (arc_id,a) in pairs(arcdict(net))]...))
 end
 
@@ -190,7 +189,6 @@ LVector labelled with transition id and holding its condition's value.
 """
 conditions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
-    #!LVector{condition_value_type(net)}(
     LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
 end
 
@@ -201,7 +199,6 @@ Returns labelled vector of id=>boolean where `true` means transitionid is enable
 """
 function enabled(petrinet::AbstractPetriNet, marking)
     net = pnmlnet(petrinet)
-    #!LVector{Bool}(
     LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
 end
 

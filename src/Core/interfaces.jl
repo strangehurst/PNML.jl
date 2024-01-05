@@ -384,7 +384,8 @@ function coordinate_value_type end
 # Extend by allowing a transition to be labeled with a floating point rate.
 #---------------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-Return rate value type of argument.
+    rate_value_type(::PnmlType) -> Number
+
+Return rate value type based on net type.
 """
 function rate_value_type end

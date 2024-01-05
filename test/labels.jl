@@ -55,7 +55,6 @@ end
     """
     # Parse ignoring unexpected child
     mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking(node, pntd, registry())
-    # mark = @test_logs (:warn, "<initialMarking> ignoring unknown child 'unknown'") parse_initialMarking(node, pntd, registry())
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
@@ -96,7 +95,7 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: unknown") parse_inscription(n1, pntd, registry())
+    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: 'unknown'") parse_inscription(n1, pntd, registry())
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
     @test inscript() == value(inscript) == 12

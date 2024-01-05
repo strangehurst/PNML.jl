@@ -1,31 +1,33 @@
 """
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Wrap value of rate label of a `Transition`.
 """
-struct TransitionRate{T} <: Annotation
+struct TransitionRate{T<:Number} <: Annotation
     value::T
 end
 
 Base.eltype(r::TransitionRate) = typeof(value(r))
 value(r::TransitionRate) = r.value
 
- """
+"""
 $(TYPEDSIGNATURES)
 
-Return rate value of `transition`.  Missing rate labels are defaulted to zero, or no delay.
+Return rate label value of `transition`.  Missing rate labels are defaulted to zero, or no delay.
+
+Expected label XML: <rate> <text>0.3</text> </rate>
+
+See [`rate_value_type`](@ref).
 """
 function rate(transition)
-    # Expected XML: <rate> <text>0.3</text> </rate>
-
-    # Allow any net type to have a rate label.
-    R = rate_value_type(nettype(transition))
-
+    R = rate_value_type(nettype(transition)) # All net types have a rate value type.
     if has_label(transition, :rate)
         r = get_label(transition, :rate)
-        #@show r typeof(elements(r))
-        str = text_content(elements(r)) #TODO place into an TransitionRate object.
-        return number_value(R, str)
+        str = text_content(elements(r))
+        tro = TransitionRate(number_value(R, str))
+        @assert eltype(tro) === R
+        return value(tro)
     end
     return zero(R)
-end
-function parse_rate()
-    str = text_content(elements(r))
 end

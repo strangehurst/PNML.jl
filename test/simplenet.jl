@@ -39,7 +39,7 @@ str1 = """
 """
 @testset "SIMPLENET" begin
     @test_call target_modules=target_modules parse_str(str1)
-    #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
+    #model = @test_logs (:warn,"ignoring unexpected child of <place>: frog") (:warn,"ignoring unexpected child of <place>: structure") #!broke
     model = @inferred parse_str(str1)
     #@show model
 
@@ -191,7 +191,7 @@ end
         death=(LVector(wolves=1.0), LVector()),
     )
 
-    @test typeof(Δ)   == typeof(expected_transition_function)
+    @show @test typeof(Δ)   == typeof(expected_transition_function)
     @test Δ.birth     == expected_transition_function.birth
     @test Δ.predation == expected_transition_function.predation
     @test Δ.death     == expected_transition_function.death

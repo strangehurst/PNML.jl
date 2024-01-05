@@ -82,15 +82,11 @@ Tool specific objects can be attached to
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 "OrderedDict filled by XMLDict"
-const DictType = OrderedDict{Union{Symbol,String},
-                            #  Union{DictType, Vector{DictType},
-                            #         String, Vector{String},
-                            #         SubString{String}, Vector{SubString{String}}}}
-                            Any}
+const DictType = OrderedDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}
 const XDVT3 = Vector{XDVT2}
-"XMLDict values type union"
+"XMLDict values type union. Maybe too large for union-splitting."
 const XDVT = Union{XDVT2, XDVT3}
 
 tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol

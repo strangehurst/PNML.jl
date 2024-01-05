@@ -52,9 +52,9 @@ str = """
 </pnml>
     """
     #model = @test_logs match_mode=:any begin  #! 1.10.beta broken here?
-    #     (:warn,"unexpected child of <page>: text")
+    #     (:warn,"found unexpected child of <page>: text")
     #     (:warn,"namedoperator under development")
-    #     (:warn,r"^element 'unknown' invalid as child of <namedoperator>.*")
+    #     (:warn,r"^invalid child 'unknown' of <namedoperator>.*")
     #     (:warn,r"^unknown declaration: unknowendecl unk1 u")
     #end parse_pnml(xmlroot(str), registry())
     #@test_logs broken=true (:warn,) #! 1.10.beta broken here?

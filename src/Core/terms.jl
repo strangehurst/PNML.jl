@@ -40,7 +40,7 @@ abstract type AbstractOperator <: AbstractTerm end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm``.
+Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm`.
 Here we use `Term` as a concrete wrapper around **unparsed** high-level many-sorted algebra terms
 **AND EXTEND** to also wrapping "single-sorted" values for other PNTDs.
 
@@ -50,7 +50,7 @@ to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `def
 See also [`iscontinuous`](@ref)
 
 As part of the many-sorted algebra AST attached to nodes of a High-level Petri Net Graph,
-Term`s are contained within the <structure> element of an annotation label.
+`Term`s are contained within the <structure> element of an annotation label.
 One XML child is expected below <structure> in the PNML schema.
 The child's XML tag is used as the AST node type symbol.
 Usually [`unparsed_tag`](@ref) is used to turn the child into a key, value pair.

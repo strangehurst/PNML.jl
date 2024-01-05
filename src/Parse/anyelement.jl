@@ -88,19 +88,22 @@ function parse_partition(vx::DictType)
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 
-    haskey(vx, "usersort") || throw(ArgumentError("<partition> missing <usersort> element"))
+    haskey(vx, "usersort") ||
+        throw(ArgumentError("<partition id=$idval, name=$nameval> <usersort> element is missing"))
     us = vx["usersort"]
-    isnothing(us) && throw(ArgumentError("<partition> <usersort> element is nothing"))
-    isempty(us)   && throw(ArgumentError("<partition> <usersort> element is empty"))
+    isnothing(us) && throw(ArgumentError("<partition id=$idval, name=$nameval> <usersort> element is nothing"))
+    isempty(us)   && throw(ArgumentError("<partition id=$idval, name=$nameval> <usersort> element is empty"))
     sortdecl = parse_usersort(us)::AbstractString
     sortval = UserSort(sortdecl)
 
     # One or more partitionelements.
     elements = PartitionElement[]
 
-    haskey(vx, "partitionelement") || throw(ArgumentError("<partition> has no <partitionelement>"))
+    haskey(vx, "partitionelement") ||
+    throw(ArgumentError("<partition> has no <partitionelement>"))
     pevec = vx["partitionelement"]
-    isnothing(pevec) && throw(ArgumentError("<partition> does not have any <partitionelement>"))
+    isnothing(pevec) &&
+        throw(ArgumentError("<partition id=$idval, name=$nameval> does not have any <partitionelement>"))
 
     parse_partitionelement!(elements, pevec)
     @assert !isempty(elements) """partitions are expected to have at least one partition element.
@@ -109,8 +112,7 @@ function parse_partition(vx::DictType)
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, v)
-    #println("parse_partitionelement! Any")
-    for pe in v
+    for pe in v # any iteratable
         parse_partitionelement!(elements, pe)
     end
     return nothing
@@ -122,13 +124,14 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, vx::DictTyp
     nameval = _attribute(vx, :name)
 
     # ordered collection of terms, usually useroperators (as constants)
-    haskey(vx, "useroperator") || throw(ArgumentError("<partitionelement> has no <useroperator> elements"))
+    haskey(vx, "useroperator") ||
+        throw(ArgumentError("<partitionelement id=$idval, name=$nameval> has no <useroperator> elements"))
     uovec = vx["useroperator"]
-    isnothing(uovec) && throw(ArgumentError("<partitionelement> is empty"))
+    isnothing(uovec) && throw(ArgumentError("<partitionelement id=$idval, name=$nameval> is empty"))
     terms = UserOperator[]
     parse_useroperators!(terms, uovec)
-    @assert !isempty(terms)
-    push!(elements, PartitionElement(Symbol(idval), nameval, terms))
+    isempty(terms) && throw(ArgumentError("<partitionelement id=$idval, name=$nameval> has no terms"))
+    push!(elements, PartitionElement(Symbol(idval), nameval, terms)) #! register idval?
     return nothing
 end
 

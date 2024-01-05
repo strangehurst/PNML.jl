@@ -20,7 +20,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel, D
  </hlinitialMarking>
     """
 
-    mark = (@test_logs (:warn,"ignoring unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
+    mark = (@test_logs (:warn,"ignoring unexpected child of <hlinitialMarking>: 'unknown'") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
 
     @test mark isa PNML.AbstractLabel
     @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -81,7 +81,7 @@ end
         </unknown>
       </hlinscription>
     """
-    insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
+    insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'") PNML.parse_hlinscription(n1, pntd, registry())
 
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
@@ -154,7 +154,7 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
+        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
@@ -179,7 +179,7 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond =  @test_logs (:warn,"ignoring unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
+        cond =  @test_logs (:warn,"ignoring unexpected child of <condition>: 'unknown'") PNML.parse_condition(node, pntd, registry())
         @test cond isa PNML.condition_type(pntd)
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}

@@ -25,9 +25,8 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
-Other PNTDs may introduce non-standard uses for declarations.
 
-We can use infrastructure implemented for HL nets to provide nonstandard extensions.
+We can use infrastructure implemented for HL nets to provide nonstandard extensions for other PNTDs.
 """
 struct Declaration <: Annotation
     text::Maybe{String}
