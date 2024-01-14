@@ -40,6 +40,20 @@ arcdict(x) = arcdict(netdata(x))
 refplacedict(x) = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
 
+function tunesize!(d::PnmlNetData;
+                    nplace::Int = 32,
+                    ntransition::Int = 32,
+                    narc::Int = 32,
+                    npref::Int = 1, # References only matter when npage > 1.
+                    ntref::Int = 1)
+
+    sizehint!(d.placedict, nplace)
+    sizehint!(d.transitiondict, ntransition)
+    sizehint!(d.arcdict, narc)
+    sizehint!(d.reftransitiondict, ntref)
+    sizehint!(d.refplacedict, npref)
+end
+
 function Base.show(io::IO, pnd::PnmlNetData)
     print(io, nameof(typeof(pnd)), "(",)
     show(io, pnd.pntd); println(io, ", ")
@@ -85,13 +99,28 @@ arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
 
-# Usual use is for there to be a accessor in every user.
+#
 page_idset(x)          = page_idset(netsets(x))
 place_idset(x)         = place_idset(netsets(x))
 transition_idset(x)    = transition_idset(netsets(x))
 arc_idset(x)           = arc_idset(netsets(x))
 reftransition_idset(x) = reftransition_idset(netsets(x))
 refplace_idset(x)      = refplace_idset(netsets(x))
+
+function tunesize!(s::PnmlNetKeys;
+                   npage::Int = 1, # Usually just 1 page per net.
+                   nplace::Int = 32,
+                   ntransition::Int = 32,
+                   narc::Int = 32,
+                   npref::Int = 1, # References only matter when npage > 1.
+                   ntref::Int = 1)
+    sizehint!(s.page_set, npage)
+    sizehint!(s.place_set, nplace)
+    sizehint!(s.transition_set, ntransition)
+    sizehint!(s.arc_set, narc)
+    sizehint!(s.reftransition_set, ntref)
+    sizehint!(s.refplace_set, npref)
+end
 
 #-------------------
 Base.summary(io::IO, pns::PnmlNetKeys) = print(io, summary(pns))
