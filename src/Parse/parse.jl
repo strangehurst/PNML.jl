@@ -31,7 +31,7 @@ See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_str(str::AbstractString)
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    idregistry = registry()
+    idregistry = registry(CONFIG.lock_registry ? ReentrantLock() : nothing)
     # Good place for debugging.
     parse_pnml(xmlroot(str), idregistry)
 end
@@ -44,7 +44,7 @@ See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_file(fname::AbstractString)
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    idregistry = registry()
+    idregistry = registry(CONFIG.lock_registry ? ReentrantLock() : nothing)
     # Good place for debugging.
     parse_pnml(EzXML.root(EzXML.readxml(fname)), idregistry)
 end
@@ -62,7 +62,7 @@ function parse_pnml(node::XMLNode, idregistry::PIDR)
     isempty(nets) && throw(MalformedException("<pnml> does not have any <net> elements"))
 
     # Do not YET have a PNTD defined. Each net can be different Net speciaization.
-    net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation?
+    net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation? RUNTIME DISPATCH
 
     length(net_tup) > 0 || error("length(net_tup) is zero")
     if CONFIG.verbose #TODO Send this to a log file.
@@ -99,7 +99,7 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
     end
 
     # Now we know the PNTD and can parse.
-    net = parse_net_1(node, pntd, idregistry)
+    net = parse_net_1(node, pntd, idregistry) # RUNTIME DISPATCH
     return net
 end
 
@@ -115,6 +115,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netsets = PnmlNetKeys()
+    tunesize!(netsets)
     netdata = PnmlNetData(pntd)
 
     id   = register_id!(idregistry, node["id"])
@@ -297,6 +298,7 @@ end
 _parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType} = parse_initialMarking(node, pntd, idregistry)
 _parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore} = parse_hlinitialMarking(node, pntd, idregistry)
 
+const transition_xlabels = ["rate", "delay"]
 """
 $(TYPEDSIGNATURES)
 """
@@ -323,7 +325,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             add_toolinfo!(tools, child, pntd, idregistry)
         else # Labels (unclaimed) are everything-else. We expect at least one here!
             #! Create extension point here? Add more tag names to list?
-            tag != "rate" &&
+            any(==(tag), transition_xlabels) ||
                 @warn "unexpected label of <transition> id=$id: $tag"
             add_label!(labels, child, pntd, idregistry)
         end
@@ -490,8 +492,8 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     if isnothing(text)
         emsg = "<name> missing <text> element"
         if CONFIG.text_element_optional
-            @warn emsg # Remove when CONFIG default set to false.
             text = string(strip(EzXML.nodecontent(node)))
+            @warn string(emsg, " Using name content = '$text'") # Remove when CONFIG default set to false.
         else
             throw(ArgumentError(emsg))
         end
@@ -499,7 +501,6 @@ function parse_name(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     # Since names are for humans and do not need to be unique we will allow empty strings.
     # When the "lint" methods are implemented, they can complain.
-    CONFIG.verbose && println("parsed name '$text'") #! debug
     return Name(text, graphics, tools)
 end
 
@@ -535,7 +536,6 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     graphics::Maybe{Graphics} = nothing
     tools = ToolInfo[]
 
-    #a = @allocated begin
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
@@ -547,10 +547,8 @@ function parse_inscription(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
             add_toolinfo!(tools, child, pntd, idregistry)
         else #TODO <structure>?
             @warn("ignoring unexpected child of <inscription>: '$tag'")
-            #add_label!(labels, child, pntd, idregistry)
         end
     end
-    #end; a > 0 && println("parse_inscription allocated ", a)
 
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value) && CONFIG.warn_on_fixup

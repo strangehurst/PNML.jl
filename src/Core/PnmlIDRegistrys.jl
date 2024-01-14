@@ -22,14 +22,9 @@ end
 """
     registry([lock]) -> PnmlIDRegistry
 
-Construct a PNML ID registry using the supplied lock or a `ReentrantLock``.
+Construct a PNML ID registry using the supplied AbstractLock or nothing to not lock.
 """
-function registry end
-registry() = begin
-    _lock_it = @load_preference("lock_registry", false)
-    registry(_lock_it ? ReentrantLock() : nothing)
-end
-registry(lock) = PnmlIDRegistry(Set{Symbol}(), lock)
+registry(lock=nothing) = PnmlIDRegistry(Set{Symbol}(), lock)
 
 function Base.show(io::IO, idregistry::PnmlIDRegistry)
     print(io, nameof(typeof(idregistry)), " ", length(idregistry.ids), " ids: ", idregistry.ids)
@@ -53,17 +48,20 @@ end
 
 function register_id!(idregistry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
     @lock idregistry.lk begin
-        id ∈ idregistry.ids && duplicate_id_warn(id)
-        push!(idregistry.ids, id)
+        _reg(idregistry, id)
     end
     return id
 end
 
 function register_id!(idregistry::PnmlIDRegistry{Nothing}, id::Symbol)::Symbol
-    push!(idregistry.ids, id)
+    _reg(idregistry, id)
     return id
 end
 
+_reg(reg, id) = begin
+    id ∈ reg.ids ? duplicate_id_warn(id) : push!(reg.ids, id)
+    return nothing
+end
 """
 $(TYPEDSIGNATURES)
 
