@@ -69,7 +69,9 @@ end
 
 @testset "tokengraphics $pntd" for pntd in all_nettypes()
     str0 = """<tokengraphics></tokengraphics>"""
-    n = @test_logs (:warn,"tokengraphics does not have any <tokenposition> elements") parse_tokengraphics(xmlroot(str0), pntd, registry())
+    n = @test_logs(match_mode=:all,
+        (:warn,"tokengraphics does not have any <tokenposition> elements"),
+        parse_tokengraphics(xmlroot(str0), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
@@ -77,8 +79,9 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <unexpected/>
             </tokengraphics>"""
-    n = @test_logs((:warn,"ignoring unexpected child of <tokengraphics>: 'unexpected'"),
-                parse_tokengraphics(xmlroot(str1), pntd, registry()))
+    n = @test_logs(match_mode=:all,
+        (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
+        parse_tokengraphics(xmlroot(str1), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 

@@ -100,7 +100,7 @@ end
     @test_call PNML.tools(decl)
 end
 
-@testset "declaration tree $pntd" for pntd in all_nettypes()
+@testset "namedsort declaration $pntd" for pntd in all_nettypes()
     node = xml"""
     <declaration>
         <structure>
@@ -131,13 +131,11 @@ end
     decl = parse_declaration(node, pntd, reg)
     @test typeof(decl) <: PNML.Declaration
     @test length(PNML.declarations(decl)) == 3
-    @test_call PNML.declarations(decl)
 
     # Examine each declaration in the vector: 3 named sorts
-    for nsort in PNML.declarations(decl) # named sort -> cyclic enumeration -> fe constant
-        @test typeof(nsort) <: PNML.AbstractDeclaration
-        @test typeof(nsort) <: PNML.SortDeclaration
-        @test typeof(nsort) <: PNML.NamedSort
+    for nsort in PNML.declarations(decl)
+        # named sort -> cyclic enumeration -> fe constant
+        @test typeof(nsort) <: PNML.NamedSort # is a declaration
 
         @test isregistered(reg, pid(nsort))
         @test Symbol(PNML.name(nsort)) === pid(nsort) # name and id are the same.
@@ -176,17 +174,17 @@ end
                 </partition>
                 <partition id="P2" name="P2">
                     <usersort declaration="pluck2"/>
-                    <partitionelement id="bs2" name="bs1">
-                        <useroperator declaration="b3"/>
+                    <partitionelement id="bs2" name="bs2">
+                        <useroperator declaration="b4"/>
                     </partitionelement>
                 </partition>
                 <partition id="P3" name="P3">
                     <usersort declaration="pluck2"/>
-                    <partitionelement id="bs1" name="bs1">
-                        <useroperator declaration="b3"/>
+                    <partitionelement id="bs3" name="bs3">
+                        <useroperator declaration="b5"/>
                     </partitionelement>
-                    <partitionelement id="bs2" name="bs2">
-                        <useroperator declaration="b4"/>
+                    <partitionelement id="bs4" name="bs4">
+                        <useroperator declaration="b6"/>
                     </partitionelement>
                 </partition>
             </declarations>
@@ -197,5 +195,27 @@ end
     decl = parse_declaration(node, pntd, reg)
     @test typeof(decl) <: PNML.Declaration
     @test length(PNML.declarations(decl)) == 3
-    @test_call PNML.declarations(decl)
+
+    # Examine each declaration in the vector: 3 partition sorts
+    for psort in PNML.declarations(decl)
+        # named partition -> partition element -> fe constant
+        @test typeof(psort) <: PNML.PartitionSort # is a declaration
+
+        @test PNML.isregistered(reg, pid(psort))
+        @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
+        @test PNML.sort(psort) isa PNML.UserSort
+
+        partname = PNML.name(psort)
+        partsort = PNML.sort(psort)
+        part_elements = PNML.elements(psort) # should be iteratable ordered collection
+        @test part_elements isa Vector{PNML.PartitionElement}
+        for element in part_elements
+            # id, name
+            @test PNML.isregistered(reg, element.id)
+            for term in element.terms
+                @test term.declaration isa Symbol
+                #!@show term.declaration PNML.isregistered(reg, term.declaration)
+            end
+        end
+    end
 end

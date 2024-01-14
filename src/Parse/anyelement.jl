@@ -84,7 +84,7 @@ end
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
-function parse_partition(vx::DictType)
+function parse_partition(vx::DictType, idregistry::PnmlIDRegistry)
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 
@@ -96,7 +96,8 @@ function parse_partition(vx::DictType)
     sortdecl = parse_usersort(us)::AbstractString
     sortval = UserSort(sortdecl)
 
-    # One or more partitionelements.
+    # One or more partitionelements.    elements = PartitionElement[]
+
     elements = PartitionElement[]
 
     haskey(vx, "partitionelement") ||
@@ -105,42 +106,45 @@ function parse_partition(vx::DictType)
     isnothing(pevec) &&
         throw(ArgumentError("<partition id=$idval, name=$nameval> does not have any <partitionelement>"))
 
-    parse_partitionelement!(elements, pevec)
+    parse_partitionelement!(elements, pevec, idregistry)
     @assert !isempty(elements) """partitions are expected to have at least one partition element.
     id = idval, name = nameval, sort = sortval"""
-    return (id = Symbol(idval), name = nameval, sort = sortval, elements = elements)
+    return PartitionSort(register_id!(idregistry, idval), nameval, sortval, elements)
 end
 
-function parse_partitionelement!(elements::Vector{PartitionElement}, v)
+function parse_partitionelement!(elements::Vector{PartitionElement}, v, idregistry::PnmlIDRegistry)
     for pe in v # any iteratable
-        parse_partitionelement!(elements, pe)
+        parse_partitionelement!(elements, pe, idregistry)
     end
     return nothing
 end
 
-function parse_partitionelement!(elements::Vector{PartitionElement}, vx::DictType)
+function parse_partitionelement!(elements::Vector{PartitionElement},
+                                vx::DictType, idregistry::PnmlIDRegistry)
     #println("parse_partitionelement! DictType")
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
-
+    idsym = register_id!(idregistry, idval)
     # ordered collection of terms, usually useroperators (as constants)
     haskey(vx, "useroperator") ||
         throw(ArgumentError("<partitionelement id=$idval, name=$nameval> has no <useroperator> elements"))
     uovec = vx["useroperator"]
     isnothing(uovec) && throw(ArgumentError("<partitionelement id=$idval, name=$nameval> is empty"))
     terms = UserOperator[]
-    parse_useroperators!(terms, uovec)
+    parse_useroperators!(terms, uovec, idregistry)
     isempty(terms) && throw(ArgumentError("<partitionelement id=$idval, name=$nameval> has no terms"))
-    push!(elements, PartitionElement(Symbol(idval), nameval, terms)) #! register idval?
+
+    push!(elements, PartitionElement(idsym, nameval, terms))
     return nothing
 end
 
-function parse_useroperators!(terms::Vector{UserOperator}, vx::Vector{Any})
+function parse_useroperators!(terms::Vector{UserOperator}, vx::Vector{Any}, idregistry::PnmlIDRegistry)
     for t in vx
-        parse_useroperators!(terms, t)
+        parse_useroperators!(terms, t, idregistry)
     end
 end
 
-function parse_useroperators!(terms::Vector{UserOperator}, d::DictType)
+function parse_useroperators!(terms::Vector{UserOperator}, d::DictType, idregistry::PnmlIDRegistry)
+    #todo user operator waps the id symbol of a operator declaration
     push!(terms, UserOperator(parse_decl(d)))
 end

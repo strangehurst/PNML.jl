@@ -59,15 +59,14 @@ function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistr
     decs = AbstractDeclaration[]
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
-        CONFIG.verbose && println("    $tag")
         @match tag begin
             # These three cases have
             "namedsort"     => push!(decs, parse_namedsort(child, pntd, idregistry))
             "namedoperator" => push!(decs, parse_namedoperator(child, pntd, idregistry))
             "variabledecl"  => push!(decs, parse_variabledecl(child, pntd, idregistry))
             #todo "arbitrarysort"
-            #! "partition" is a sort declaration
-            _ =>  push!(decs, parse_unknowndecl(child, pntd, idregistry))
+            "partition"     => push!(decs, parse_partition_decl(child, pntd, idregistry))
+            _               => push!(decs, parse_unknowndecl(child, pntd, idregistry))
         end
     end
     return decs
@@ -100,8 +99,6 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
     id = register_id!(idregistry, node["id"])
     EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
     name = node["name"]
-
-    @warn "namedoperator under development"
 
     def::Maybe{Term} = nothing
     parameters = VariableDeclaration[]
@@ -153,8 +150,9 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     return ud
 end
 
-# Pass in parser function (or functor?) #todo default?
-function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType, idregistry) where {F <: Function}
+# Pass in parser function (or functor?)
+function parse_label_content(node::XMLNode, termparser::F,
+                             pntd::PnmlType, idregistry) where {F <: Function}
     text::Maybe{Union{String,SubString{String}}} = nothing #
     term::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -356,8 +354,19 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     #@show sortid srt
     return srt
 end
+function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    (tag, body) = unparsed_tag(node, pntd, idregistry)
+    (ismissing(tag) || isnothing(tag)) && error("sort id is $tag")
+    (ismissing(body) || isnothing(body)) && error("sort body is $body")
+    tag = Symbol(tag)
+    body = body::DictType
+    part = parse_partition(body, idregistry)
+    #@show part
+    return part
+end
 
-# """
+#        CONFIG.verbose && println("    $tag")
+ """
 # $(TYPEDSIGNATURES)
 # """
 # function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)

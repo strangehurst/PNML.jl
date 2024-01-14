@@ -88,8 +88,10 @@ Base.eltype(t::Term) = typeof(elements(t))
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
 function Base.show(io::IO, t::Term)
+    #@show typeof(elements(t))
     print(io, nameof(typeof(t)), "(")
-    show(io, tag(t)); print(io, ", "); dict_show(io, elements(t), 0)
+    show(io, tag(t)); print(io, ", ");
+    dict_show(io, elements(t), 0)
     print(io, ")")
 end
 
@@ -190,7 +192,7 @@ end
 #-----------------------------------------------------------------------------------
 
 #TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
-
+# Term is really Variable and Opeator
 term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
 term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
 

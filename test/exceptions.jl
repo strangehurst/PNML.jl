@@ -7,14 +7,11 @@ using PNML:
     parse_name
 
 @testset "missing namespace $pntd" for pntd in all_nettypes()
-    emsg = r"missing namespace"
-    @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
-         <pnml><net id="1" type="foo"><page id="pg1"/></net>
-         </pnml>
-         """, registry())
-    @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
-          <?xml version="1.0" encoding="UTF-8"?>
-          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
+    @test_logs(match_mode=:any, (:warn, r"missing namespace"),
+        parse_pnml(xml"""<pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry()))
+    @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
+        parse_pnml(xml"""<?xml version="1.0" encoding="UTF-8"?>
+                        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry()))
 end
 
 @testset "malformed $pntd" for pntd in all_nettypes()

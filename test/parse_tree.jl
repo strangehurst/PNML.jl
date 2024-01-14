@@ -96,8 +96,8 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = parse_pnml(pnmldoc, registry())
-    @show @test pnml_ir isa PnmlModel
+    pnml_ir = @test_logs(match_mode=:all, parse_pnml(pnmldoc, registry()))
+    @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
@@ -105,7 +105,7 @@ end
 
         for page in pages(net)
             @test page isa Page
-            @test pid(page) isa Symbol
+            @test @inferred(pid(page)) isa Symbol
             for p in places(page)
                 @test p isa Place
                 placeid = pid(p)
@@ -136,10 +136,9 @@ end
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
-    pnml_dir = joinpath(@__DIR__, "data")
-    @show testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
+    testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
 
-    model = parse_file(testfile)
+    model = @test_logs(match_mode=:all, parse_file(testfile))
     @test model isa PnmlModel
 
     netvec = nets(model)
@@ -153,11 +152,10 @@ end
     @test only(allpages(net)) == only(pages(net))
     #todo compare pages(net) == allpages(net)
     @test firstpage(net) isa Page
+    @test first(pages(net)) isa Page
     @test !isempty(arcs(firstpage(net)))
     @test !isempty(places(firstpage(net)))
-    # 2 ways to do the same thing
     @test !isempty(transitions(firstpage(net)))
-    @test !isempty(transitions(first(pages(net))))
     @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
     @test_call target_modules=target_modules parse_file(testfile)
@@ -166,9 +164,10 @@ end
 
 # Read a file
 @testset "test1.pnml file" begin
-    model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
+    model = @test_logs(match_mode=:all,
+        (:warn, "ignoring unexpected child of <condition>: 'name'"),
+        (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+        parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
     @test model isa PnmlModel
-    x = repr(model)
-    @test startswith(x, "PnmlModel")
-    #println(x)
+    @test startswith(repr(model), "PnmlModel")
 end

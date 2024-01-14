@@ -50,18 +50,18 @@ str = """
     </page>
   </net>
 </pnml>
-    """
-    #model = @test_logs match_mode=:any begin  #! 1.10.beta broken here?
-    #     (:warn,"found unexpected child of <page>: text")
-    #     (:warn,"namedoperator under development")
-    #     (:warn,r"^invalid child 'unknown' of <namedoperator>.*")
-    #     (:warn,r"^unknown declaration: unknowendecl unk1 u")
-    #end parse_pnml(xmlroot(str), registry())
-    #@test_logs broken=true (:warn,) #! 1.10.beta broken here?
+"""
+    #
+    model = @test_logs(match_mode=:all,
+         (:warn, "found unexpected label of <page>: text"),
+         #(:info, "parse_term kinds are Variable and Operator"),
+         (:warn, r"^ignoring child of <namedoperator name=\"g\", id=\"id6\">: 'unknown', allowed: 'def', 'parameter'"),
+         (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+        parse_pnml(xmlroot(str), registry()))
+    #
     model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
 end
-# @test_logs((:warn,""), expr)
 
 @testset "Document & ID Registry" begin
     str = """
@@ -74,11 +74,10 @@ end
     @test !isregistered(reg, :net)
     @test :net ∉ reg.ids
 
-    parse_pnml(xmlroot(str), reg)
+    @test_logs(match_mode=:all, parse_pnml(xmlroot(str), reg))
 
     @test_opt target_modules=(@__MODULE__,) parse_pnml(xmlroot(str), reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
-#    @test_opt function_filter=pff parse_pnml(xmlroot(str), reg)
 
     @test isregistered(reg, :net)
     @test :net ∈ reg.ids
@@ -98,7 +97,9 @@ end
       <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """
-    model = @inferred parse_str(str)
+
+    model = @test_logs(match_mode=:all, @inferred parse_str(str))
+
     @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
     @test PNML.idregistry(model) isa PnmlIDRegistry
 
@@ -134,7 +135,7 @@ end
 
 end
 
-@testset "Empty" begin
+@testset "empty page" begin
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">

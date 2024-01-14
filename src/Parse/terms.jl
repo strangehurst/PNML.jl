@@ -6,7 +6,7 @@ There will be no XML node 'term'. Instead it is the interpertation of the child 
 Terms kinds are Variable and Operator.
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-    #! Terms kinds are Variable and Operator
+    #@info "parse_term kinds are Variable and Operator"
     Term(unparsed_tag(node, pntd, reg)...)
 end
 

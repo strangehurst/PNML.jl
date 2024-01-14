@@ -97,7 +97,6 @@ We allow all PNML nets to be stochastic Petri nets. See [`rate`](@ref).
 """
 function rates(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    @assert rate_value_type(net) <: Real #! debug?
     LVector((;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
 end
 

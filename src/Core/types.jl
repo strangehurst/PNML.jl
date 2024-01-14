@@ -130,31 +130,66 @@ function Base.show(io::IO, label::AnyElement)
 end
 
 """
-    dict_show(io::IO, x, 0()
+    dict_show(io::IO, x, 0())
 
 Internal helper for things that contain `DictType`.
 """
 function dict_show end
 
+#=
+value(mark) = Term(:tuple, (d["subterm"] = [(d["all"] = (d["usersort"] = (d[:declaration] = "N1"))),
+        (d["all"] = (d["usersort"] = (d[:declaration] = "N2")))]))
 
+value(mark) = Term(:add, (d["subterm"] = [(d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
+                                (d["numberconstant"] = (d[:value] = "3",d["positive"] = ()))])),
+        (d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
+                                (d["numberconstant"] = (d[:value] = "2",d["positive"] = ()))]))]))
+=#
+
+const increment=4
 d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
     print(io, before)
     for (i,e) in enumerate(x)
-        dict_show(io, e, indent_by+8)
-        i < length(x) && print(io, ", ")
+        dict_show(io, e, indent_by+increment) #
+        i < length(x) && print(io, ",\n", indent(indent_by))
     end
     print(io, after)
 end
 
 dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
-    print(io,"(")
+    print(io, "(")
     for (i,k) in enumerate(keys(d))
         print(io, "d[$(repr(k))] = ") #! Differs from `d_show` here.
-        dict_show(io, d[k], indent_by+8) #! And here.
-        i < length(keys(d)) && print(io, ", ")
+        dict_show(io, #= And here. =# d[k], indent_by+increment) #!
+        i < length(keys(d)) && print(io, ",\n", indent(indent_by))
     end
     print(io, ")")
 end
+#=
+    Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
+    Note that Term also does Bool, Int, Float64, in addition to String.
+    And that Term is (meant to be) Variable and Operator.
+
+    This is the form of well-behaved XML: single rooted tree whose tag is the symbol.
+    DictType is a collection of pairs: tag, value, where value may be a string/number or DictType.
+
+    top-level tag symbol
+    |   key is symbol or string
+    |   |    value is dictionary, string, number
+    |   |    |
+    tag e1 = "string"!
+        e2 = ee1 = tag2 x1 = vx1
+                        x2 = vx2
+                        x2 = vx2
+                        x2 = vx2!
+        e3 = 666!
+        e4 = true!
+        e5 = 3.14 #no ! here
+
+    ! in newline
+=#
+
+
 dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
 dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
 dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)

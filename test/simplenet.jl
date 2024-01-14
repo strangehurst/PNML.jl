@@ -37,10 +37,13 @@ str1 = """
         </net>
     </pnml>
 """
+
 @testset "SIMPLENET" begin
     @test_call target_modules=target_modules parse_str(str1)
-    #model = @test_logs (:warn,"ignoring unexpected child of <place>: frog") (:warn,"ignoring unexpected child of <place>: structure") #!broke
-    model = @inferred parse_str(str1)
+    model = @test_logs(match_mode=:any,
+        (:warn,"found unexpected label of <place>: structure"),
+        (:warn,"found unexpected label of <place>: frog"),
+        @inferred parse_str(str1))
     #@show model
 
     net0 = @inferred PnmlNet PNML.first_net(model)
@@ -53,8 +56,8 @@ str1 = """
     #@show typeof(snet)
     #println("- - - - - - - - - - - - - - - -")
 
-    @show @test_call SimpleNet(net0) # passes
-    @show @test_call broken=jet_broke SimpleNet(model)
+    @test_call SimpleNet(net0) # passes
+    @test_call broken=jet_broke SimpleNet(model)
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
@@ -172,7 +175,7 @@ end
     </pnml>
     """
 
-    model = @inferred parse_str(str3);     #@show typeof(model);
+    model = @test_logs(@inferred( parse_str(str3)));
     net1 = PNML.first_net(model);          #@show typeof(net1)
     snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
 
@@ -191,7 +194,7 @@ end
         death=(LVector(wolves=1.0), LVector()),
     )
 
-    @show @test typeof(Δ)   == typeof(expected_transition_function)
+    @test typeof(Δ)   == typeof(expected_transition_function)
     @test Δ.birth     == expected_transition_function.birth
     @test Δ.predation == expected_transition_function.predation
     @test Δ.death     == expected_transition_function.death
@@ -217,20 +220,30 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
+    #@show pntd PNML.default_one_term(pnmltype(pntd))
     if pntd in hl_types
-        marktag = "hlinitialMarking"
+        marking = """
+        <hlinitialMarking>
+            <text>1</text>
+            <structure>$(PNML.default_one_term(pnmltype(pntd))())</structure>
+        </hlinitialMarking>
+        """
         insctag = "hlinscription"
     else
-        marktag = "initialMarking"
+        marking = """
+        <initialMarking>
+            <text>1</text>
+        </initialMarking>
+        """
         insctag = "inscription"
     end
-
+    #@show marking
     str3 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="$pntd">
         <name><text>test petri net</text></name>
         <page id="page0">
-            <place id="p1"> <$marktag> <text>1</text> <structure>1</structure></$marktag> </place>
+            <place id="p1"> $marking </place>
             <place id="p2"/>
             <place id="p3"/>
             <place id="p4"/>
