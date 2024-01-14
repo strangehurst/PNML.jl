@@ -45,6 +45,7 @@ function testpn(dirs = ("examples",);
                 pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" "$f"`, ignorestatus=true))), flist)
                 for file in pnmls
                     per_file!(df, outdir, file)
+                    GC.gc()
                 end
             end
             println()
