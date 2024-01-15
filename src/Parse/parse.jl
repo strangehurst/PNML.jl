@@ -117,6 +117,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
     netsets = PnmlNetKeys()
     tunesize!(netsets)
     netdata = PnmlNetData(pntd)
+    tunesize!(netdata)
 
     id   = register_id!(idregistry, node["id"])
     namelabel = nothing

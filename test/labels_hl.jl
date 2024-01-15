@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
-    DictType, XDVT, pprint
+    DictType, XDVT
 
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
 

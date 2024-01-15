@@ -74,6 +74,7 @@ include("Core/utils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
+#include("Core/pprint.jl")
 
 # Parts of Labels and Nodes.
 include("Core/constterm.jl") #
