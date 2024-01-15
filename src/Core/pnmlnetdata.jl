@@ -47,11 +47,11 @@ function tunesize!(d::PnmlNetData;
                     npref::Int = 1, # References only matter when npage > 1.
                     ntref::Int = 1)
 
-    sizehint!(d.placedict, nplace)
-    sizehint!(d.transitiondict, ntransition)
-    sizehint!(d.arcdict, narc)
-    sizehint!(d.reftransitiondict, ntref)
-    sizehint!(d.refplacedict, npref)
+    sizehint!(d.place_dict, nplace)
+    sizehint!(d.transition_dict, ntransition)
+    sizehint!(d.arc_dict, narc)
+    sizehint!(d.reftransition_dict, ntref)
+    sizehint!(d.refplace_dict, npref)
 end
 
 function Base.show(io::IO, pnd::PnmlNetData)
