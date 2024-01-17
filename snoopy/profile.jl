@@ -30,7 +30,7 @@ VSCodeServer.@profview tfx()
 
 
 #-----------------------------------------------------
-tusing EzXML, PNML
+using EzXML, PNML
 fx() = for i in 1:1000
     PNML.SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -51,6 +51,35 @@ fx() = for i in 1:1000
 </pnml>""")
 end
 VSCodeServer.@profview tfx()
+
+
+
+#-----------------------------------------------------
+using EzXML, PNML
+
+
+PNML.CONFIG.verbose = true;
+
+PNML.CONFIG.warn_on_unclaimed = true;     # Customize some defaults
+
+n = PNML.SimpleNet("""<?xml version="1.0"?>
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+    <name> <text>P/T Net with one place</text> </name>
+    <page id="page1">
+      <place id="place1">
+	    <initialMarking> <text>100</text> </initialMarking>
+      </place>
+      <transition id="transition1">
+        <name><text>Some transition</text></name>
+      </transition>
+      <arc source="transition1" target="place1" id="arc1">
+        <inscription><text>12</text></inscription>
+      </arc>
+    </page>
+  </net>
+</pnml>""");
+
 
 #-----------------------------------------------------
 julia> import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time includet("setup.jl");
