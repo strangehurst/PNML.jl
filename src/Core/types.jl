@@ -23,22 +23,26 @@ abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
 pid(o::AbstractPnmlObject)        = o.id
 
+#
+# When a thing may be nothing, any collection is expected to be non-empty.
+# Strings may be empty. Don't blame us when someone else objects.
+#
 has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 name(::Nothing) = ""
 
+# labels and tools are vectors: isnothing vs isempty
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
-get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
-
-#
 has_tools(o) = hasproperty(o, :tools) && !isempty(getfield(o, :tools))
 tools(o)     = o.tools
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
+
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
+get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
 
 
 #--------------------------------------------

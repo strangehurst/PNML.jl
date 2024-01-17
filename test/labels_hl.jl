@@ -119,6 +119,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
         #pprint(mark)
     end
 
+    # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" begin
         node = xml"""
         <hlinitialMarking>
@@ -147,6 +148,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
         #pprint(mark)
     end
 
+    # The constant eight.
     @testset "1`8" begin
         node = xml"""
         <hlinitialMarking>
@@ -165,6 +167,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
         #pprint(mark)
     end
 
+    # This is the same as when the element is omitted.
     @testset "x" begin
         node = xml"""
         <hlinitialMarking>

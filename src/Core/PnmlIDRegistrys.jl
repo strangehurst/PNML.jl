@@ -24,7 +24,10 @@ end
 
 Construct a PNML ID registry using the supplied AbstractLock or nothing to not lock.
 """
-registry(lock=nothing) = PnmlIDRegistry(Set{Symbol}(), lock)
+registry(lock=nothing) = begin
+    #isnothing(lock) || println("using lock $lock")
+    PnmlIDRegistry(Set{Symbol}(), lock)
+end
 
 function Base.show(io::IO, idregistry::PnmlIDRegistry)
     print(io, nameof(typeof(idregistry)), " ", length(idregistry.ids), " ids: ", idregistry.ids)
@@ -45,6 +48,7 @@ function register_id!(idregistry::PnmlIDRegistry, s::AbstractString)
 end
 
 function register_id!(idregistry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
+    #@show id
     @lock idregistry.lk begin
         _reg(idregistry, id)
     end
@@ -66,9 +70,11 @@ $(TYPEDSIGNATURES)
 Return `true` if `s` is registered in `reg`.
 """
 isregistered(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+
 function isregistered(idregistry::PnmlIDRegistry{L}, id::Symbol)::Bool where {L <: Base.AbstractLock}
     @lock idregistry.lk id ∈ idregistry.ids
 end
+
 function isregistered(idregistry::PnmlIDRegistry{Nothing}, id::Symbol)::Bool
     id ∈ idregistry.ids
 end
@@ -79,21 +85,20 @@ $(TYPEDSIGNATURES)
 Empty the set of id symbols. Use case is unit tests.
 In normal use it should never be needed.
 """
+function reset! end
+
 function reset!(idregistry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
     @lock idregistry.lk empty!(idregistry.ids)
 end
+
 function reset!(idregistry::PnmlIDRegistry{Nothing})
     empty!(idregistry.ids)
 end
 
-"""
-$(TYPEDSIGNATURES)
-
-Is the set of id symbols empty?
-"""
 function Base.isempty(idregistry::PnmlIDRegistry{L})::Bool where {L <: Base.AbstractLock}
     @lock idregistry.lk isempty(idregistry.ids)
 end
+
 function Base.isempty(idregistry::PnmlIDRegistry{Nothing})::Bool
     isempty(idregistry.ids)
 end

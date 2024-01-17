@@ -12,14 +12,6 @@ Options
 """
 function flatten_pages! end
 
-# function flatten_pages!(model::PnmlModel; kw...)
-#     for net in nets(model)
-#         flatten_pages!(net; kw...)
-#         post_flat_verify(net; kw...)
-#     end
-#     return nothing
-# end
-
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
     netid = pid(net)
@@ -42,7 +34,6 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
         push!(page_idset(net), key1)
 
         @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
-        #@assert netkey1 == only(pageids).pagedict[]
 
         deref!(net, trim)
     end
@@ -58,11 +49,6 @@ function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFI
     isempty(reftransitiondict(net)) || push!(errors, "reftransitiondict not empty")
     isempty(refplace_idset(net)) || push!(errors, "refplace_idset not empty")
     isempty(reftransition_idset(net)) || push!(errors, "reftransition_idset not empty")
-    # || push!(errors, " not empty")
-    # || push!(errors, "")
-    # || push!(errors, "")
-
-    #@show pid(net) errors
 
     isempty(errors) ||
         error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
@@ -150,7 +136,6 @@ function deref!(net::PnmlNet, trim::Bool = true)
     # JET thinks we might iterate over Union{}
     as = arc_idset(net)
     isnothing(as) && return nothing
-    #@show typeof(net) typeof(arcdict(net)) typeof(keys(arcdict(net))) typeof(as)
 
     for id in as # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.

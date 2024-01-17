@@ -135,8 +135,9 @@ str1 = """
     end
 end
 
-
+# Used in precompile.
 @testset "simple ptnet" begin
+    @show "precompile's SimpleNet"
     @test PNML.SimpleNet("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
