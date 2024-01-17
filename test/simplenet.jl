@@ -135,6 +135,27 @@ str1 = """
     end
 end
 
+
+@testset "simple ptnet" begin
+    @test PNML.SimpleNet("""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+            <name> <text>P/T Net with one place</text> </name>
+            <page id="page1">
+            <place id="place1">
+                <initialMarking> <text>100</text> </initialMarking>
+            </place>
+            <transition id="transition1">
+                <name><text>Some transition</text></name>
+            </transition>
+            <arc source="transition1" target="place1" id="arc1">
+                <inscription><text>12</text></inscription>
+            </arc>
+            </page>
+        </net>
+        </pnml>""") isa PNML.SimpleNet
+end
+
 @testset "rate" begin
     str2 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
