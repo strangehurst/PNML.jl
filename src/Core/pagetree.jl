@@ -21,6 +21,10 @@ AbstractTrees.nodetype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)
 AbstractTrees.nodetype(::Type{Page{T}}) where {T<:PnmlType} = page_type(T)
 
 #--------------
+
+
+
+#--------------
 function pagetree(n::Union{PnmlNet, Page}, inc = 0)
     inc += 1
     print("    "^inc, "pid ", pid(n), ":")

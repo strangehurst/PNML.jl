@@ -7,7 +7,6 @@ Place node of a Petri Net Markup Language graph.
 struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    #!marking::M
     initialMarking::M
     sorttype::S
     namelabel::Maybe{Name}

@@ -186,7 +186,6 @@ Return id of referenced place. If trim is `true` (default) the reference is remo
 """
 function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
-    #CONFIG.verbose && println("deref_place net $netid refP $id")
     has_refplace(net, id) || (throw ∘ ArgumentError)("expected refplace $id to be found in net $netid")
     rp = refplace(net, id)
     isnothing(rp) && # Something is really, really wrong.
@@ -208,7 +207,6 @@ Return id of referenced transition. If trim is `true` (default) the reference is
 """
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
-    #CONFIG.verbose && println("deref_transition net $netid refT $id")
     has_reftransition(net, id) || (throw ∘ ArgumentError)("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
     isnothing(rt) && # Something is really, really wrong.

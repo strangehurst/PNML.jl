@@ -3,8 +3,6 @@
 #--------------------------------------------------------------------
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
-    nn = EzXML.nodename(node)
-    CONFIG.verbose && @info("add label $nn")
     label = PnmlLabel(unparsed_tag(node, pntd)...)
     #! Extension point. user supplied parser of DictType -> Annotation. Could do conversion after/on demand.
     #! 2 collections, one for PnmlLabels other for other Annotations?
@@ -24,7 +22,6 @@ The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
 function add_toolinfo!(infos, node, pntd, reg)
-    CONFIG.verbose && println("add toolinfo")
     push!(infos, parse_toolspecific(node, pntd, reg))
     return nothing
 end

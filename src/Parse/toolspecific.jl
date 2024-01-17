@@ -13,7 +13,6 @@ function parse_toolspecific(node, pntd, reg)
 
     tool    = node["tool"]
     version = node["version"]
-    CONFIG.verbose && println("$nn $tool $version")
 
     # # Handle toolinfos that we recognize.
     # # Most will assume only one child element and ignore the rest.
@@ -33,7 +32,6 @@ function parse_toolspecific(node, pntd, reg)
     for child in EzXML.eachelement(node)
         push!(content, anyelement(child, pntd, reg))
     end
-    # Empty is allowed. Do we
-    #TODO isempty(content) && @info "<toolspecific> $tool $version missing content"
+    # Empty is allowed.
     return ToolInfo(tool, version, content)
 end

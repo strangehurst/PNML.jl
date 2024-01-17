@@ -35,8 +35,6 @@ duplicate_id_warn(id::Symbol)  = @warn("ID already registered: $id")
 #duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
 #duplicate_id_none(_::Symbol)  = nothing
 
-#Base.Enums.@enum DuplicateActions none warn error
-
 """
 $(TYPEDSIGNATURES)
 

@@ -25,7 +25,6 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     graphics::Maybe{Graphics} = nothing
     tools  = ToolInfo[]
 
-    CONFIG.verbose && println("parse_declaration")
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "structure"
@@ -365,7 +364,6 @@ function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDR
     return part
 end
 
-#        CONFIG.verbose && println("    $tag")
  """
 # $(TYPEDSIGNATURES)
 # """
