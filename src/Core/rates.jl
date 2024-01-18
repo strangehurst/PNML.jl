@@ -51,28 +51,37 @@ Supports
 """
 function delay(transition)
     if has_label(transition, :delay)
-        interval = first(elements(get_label(transition, :delay)))
+        (tag, interval) = first(elements(@inbounds(get_label(transition, :delay))))
+        tag == "interval"
         closure  = _attribute(interval, :closure)
 
         if haskey(interval, "cn") # Expect at least one cn.
             cn = @inbounds interval["cn"]
-            i(snothing(cn) || isempty(cn)) &&
+            (isnothing(cn) || isempty(cn)) &&
                     throw(ArgumentError("<delay><interval> <cn> element is $cn"))
-            n = Float64[number_value(Float64, x)::Float64 for x in cn]
+            if cn isa Vector
+                n = Float64[number_value(Float64, x)::Float64 for x in cn]
+            else
+                n = Float64[number_value(Float64, cn)::Float64]
+            end
         end
 
         if haskey(interval, "ci") # At most one ci named constant.
             ci = @inbounds interval["ci"]
             (isnothing(ci) || isempty(ci)) &&
-                    throw(ArgumentError("<interval> <cn> element is $ci"))
-            if contains(only(ci), r"infin|infty") #todo add others?
-                Inf
+                    throw(ArgumentError("<interval> <ci> element is $ci"))
+            if ci isa Vector
+                i = Float64[_ci(x) for x in ci]
             else
-                error("<delay><interval><ci> may only contain infin|infty, found: $ci")
+                i = Float64[_ci(ci)]
             end
         end
-
-        return (closure, n[1], length(n) == 1 ? ci : n[2])
+        return (closure, n[1], length(n) == 1 ? i[1] : n[2])
     end
     return ("closed", 0.0, 0.0)
+end
+_ci(i) = if i == "infin" || i == "infty"
+    Inf
+else
+    error("may only contain infin|infty, found: $ci")
 end

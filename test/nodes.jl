@@ -107,7 +107,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     </transition>"""
     t = parse_transition(node, pntd, registry())
     @test t isa Transition
-    #!map(println, PNML.labels(t))
+    @test PNML.delay(t) isa Tuple
 
     # unbounded interval [4,∞)
     node = xml"""<transition id ="t7">
@@ -115,12 +115,12 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
                 <cn>4</cn>
                 <ci>infty</ci>
-            </interval>add_label!\(
+            </interval>
         </delay>
     </transition>"""
     t = parse_transition(node, pntd, registry())
     @test t isa Transition
-    #!map(println, PNML.labels(t))
+    @test PNML.delay(t) isa Tuple
 
     # interval (3,5)
     node = xml"""<transition id ="t8">
@@ -133,7 +133,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     </transition>"""
     t = parse_transition(node, pntd, registry())
     @test t isa Transition
-    #!map(println, PNML.labels(t))
+    @test PNML.delay(t) isa Tuple
 end
 
 @testset "arc $pntd"  for pntd in all_nettypes()
