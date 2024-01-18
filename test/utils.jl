@@ -15,8 +15,8 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     SortType,
     PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel, isdiscrete, iscontinuous
 
-@testset "JET" begin
-    #@show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
+@testset "CONFIG" begin
+    @show PNML.CONFIG
 end
 
 @testset "getfirst iteratible" begin
