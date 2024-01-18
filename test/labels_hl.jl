@@ -280,9 +280,17 @@ end
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
+        @test PNML.type(typ) == PNML.UserSort
         @test value(typ).declaration == :N2
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
+        @test occursin("Graphics", sprint(show, typ))
+        @test occursin("ToolInfo", sprint(show, typ))
+
+        @test value(PNML.SortType(value(typ))) isa PNML.UserSort
+        @test text(PNML.SortType(value(typ))) == ""
+        @test value(PNML.SortType("goofy", value(typ))) isa PNML.UserSort
+        @test text(PNML.SortType("goofy", value(typ))) == "goofy"
     end
 end
 
