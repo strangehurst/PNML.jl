@@ -39,11 +39,11 @@ function read_config!(config::PnmlConfig)
 end
 
 function Base.show(io::IO, config::PnmlConfig)
-    println("indent_width          = ", config.indent_width)
-    println("lock_registry         = ", config.lock_registry)
-    println("text_element_optional = ", config.text_element_optional)
-    println("verbose               = ", config.verbose)
-    println("warn_on_namespace     = ", config.warn_on_namespace)
-    println("warn_on_fixup         = ", config.warn_on_fixup)
-    println("warn_on_unclaimed     = ", config.warn_on_unclaimed)
+    println(io, "indent_width          = ", config.indent_width)
+    println(io, "lock_registry         = ", config.lock_registry)
+    println(io, "text_element_optional = ", config.text_element_optional)
+    println(io, "verbose               = ", config.verbose)
+    println(io, "warn_on_namespace     = ", config.warn_on_namespace)
+    println(io, "warn_on_fixup         = ", config.warn_on_fixup)
+    println(io, "warn_on_unclaimed     = ", config.warn_on_unclaimed)
 end
