@@ -107,7 +107,7 @@ model = @inferred parse_str(str)
 net = first_net(model) # The nets of a model not inferrable.
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
-
+@test startswith(sprint(show, model), "PnmlModel")
 @test @inferred(firstpage(net)) isa Page # add parameters?
 @test length(PNML.allpages(net)) == 14
 
