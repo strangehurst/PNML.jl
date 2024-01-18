@@ -21,14 +21,18 @@ All net types may have a rate value type. Expected label XML: <rate> <text>0.3</
 See [`rate_value_type`](@ref).
 """
 function rate(transition)
-    R = rate_value_type(nettype(transition)) #
-    if has_label(transition, :rate)
-        str = text_content(elements(get_label(transition, :rate)))
-        tro = TransitionRate(number_value(R, str))
-        return value(tro)::R
-    end
-    return zero(R)
+    tr = transition_rate(transition)::Maybe{TransitionRate}
+    return !isnothing(tr) ? value(tr) : zero(rate_value_type(nettype(transition)))
 end
+
+transition_rate(transition) = begin
+    if has_label(transition, :rate)
+        str = text_content(elements(@inbounds(get_label(transition, :rate))))
+        return TransitionRate(number_value(rate_value_type(nettype(transition)), str))
+    end
+    return nothing
+end
+
 
 """
 $(TYPEDSIGNATURES)
