@@ -2,20 +2,15 @@
 try
     parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry())
 catch e
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        showerror(e)
-        println()
-    end
+    showerror(stderr, e)
+    println()
 end
-
 
 try
     parse_net(xml"<net type='test'></net>", registry())
 catch e
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        showerror(e)
-        println()
-    end
+    showerror(stderr,e)
+    println()
 end
 
 Base.redirect_stdio(stdout=testshow, stderr=testshow) do;

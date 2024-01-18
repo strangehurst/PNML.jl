@@ -6,6 +6,19 @@ using PNML:
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name
 
+@testset "showerr" begin
+    e1 = MissingIDException("test showerr")
+    e2 = MalformedException("test showerr")
+    @test e1 isa PnmlException
+    @test e2 isa PnmlException
+    @test sprint(showerror,e1) != sprint(showerror,e2)
+    Base.redirect_stdio(stdout=devnull, stderr=devnull) do
+        @test_logs showerror(stdout,e1)
+        @test_logs showerror(stdout,e2)
+        @test_logs showerror(stderr,e1)
+        @test_logs showerror(stderr,e2)
+    end
+end
 @testset "missing namespace $pntd" for pntd in all_nettypes()
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
         parse_pnml(xml"""<pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry()))
