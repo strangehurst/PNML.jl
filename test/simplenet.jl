@@ -170,7 +170,7 @@ end
     model = @inferred parse_str(str2)
     net = PNML.first_net(model)
     snet = @inferred PNML.SimpleNet(net)
-    #@show snet
+    @test contains(sprint(show, snet), "SimpleNet")
     β = PNML.rates(snet)
     #@show β
     @test β == LVector(birth=0.3)
