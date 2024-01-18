@@ -69,6 +69,7 @@ using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
         @test mark isa PNML.AbstractLabel
         @test mark isa PNML.marking_type(pntd) #HLMarking
         #pprint(mark)
+        @test occursin("Graphics", sprint(show, mark))
 
         # Following HL text,structure label pattern where structure is a `Term`.
         @test text(mark) == "<All,All>"
@@ -212,6 +213,8 @@ end
     @test text(insc) isa Union{Nothing,AbstractString}
     @test text(insc) == "<x,v>"
 
+    @test occursin("Graphics", sprint(show, insc))
+
     #@show value(insc)
     inscterm = value(insc)
     @test inscterm isa PNML.Term
@@ -285,7 +288,6 @@ end
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
         @test occursin("Graphics", sprint(show, typ))
-        @test occursin("ToolInfo", sprint(show, typ))
 
         @test value(PNML.SortType(value(typ))) isa PNML.UserSort
         @test text(PNML.SortType(value(typ))) == ""

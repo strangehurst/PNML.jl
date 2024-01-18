@@ -102,6 +102,8 @@ end
     @test graphics(inscript) !== nothing
     @test tools(inscript) === nothing || !isempty(tools(inscript))
     @test_throws MethodError labels(inscript)
+
+    @test occursin("Graphics", sprint(show, inscript))
 end
 
 FF(@nospecialize f) = f !== EZXML.throw_xml_error;
