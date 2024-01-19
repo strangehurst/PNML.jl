@@ -40,40 +40,11 @@ arcdict(x) = arcdict(netdata(x))
 refplacedict(x) = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
 
-function tunesize!(d::PnmlNetData;
-                    nplace::Int = 32,
-                    ntransition::Int = 32,
-                    narc::Int = 32,
-                    npref::Int = 1, # References only matter when npage > 1.
-                    ntref::Int = 1)
-
-    sizehint!(d.place_dict, nplace)
-    sizehint!(d.transition_dict, ntransition)
-    sizehint!(d.arc_dict, narc)
-    sizehint!(d.reftransition_dict, ntref)
-    sizehint!(d.refplace_dict, npref)
-end
-
 function Base.show(io::IO, pnd::PnmlNetData)
-    print(io, nameof(typeof(pnd)), "(",)
-    show(io, pnd.pntd); println(io, ", ")
-    io = inc_indent(io)
-    for (t, f) in (("places", placedict),
-                  ("transitions", transitiondict),
-                  ("arcs", arcdict),
-                  ("refplaces", refplacedict),
-                  ("refTransitions", reftransitiondict))
-        print(io, indent(io), length(f(pnd)), " ", t, ": ")
-        iio = inc_indent(io)
-        for (i,k) in enumerate(keys(f(pnd)))
-            show(io, k); print(io, ", ")
-            if (i < length(f(pnd))) && (i % 25 == 0)
-                print(iio, '\n', indent(iio))
-            end
-        end
-        println(io)
+    for (f,t) in [(placedict,"places"), (transitiondict,"transitions"), (arcdict,"arcs"),
+                (refplacedict,"refplaces"), (reftransitiondict,"refTransitions")]
+        println(io, length(f(pnd)), " ", t, ": ", (keys ∘ f)(pnd))
     end
-    print(io, ")")
 end
 
 """
@@ -99,28 +70,13 @@ arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
 
-#
+# Usual use is for there to be a accessor in every user.
 page_idset(x)          = page_idset(netsets(x))
 place_idset(x)         = place_idset(netsets(x))
 transition_idset(x)    = transition_idset(netsets(x))
 arc_idset(x)           = arc_idset(netsets(x))
 reftransition_idset(x) = reftransition_idset(netsets(x))
 refplace_idset(x)      = refplace_idset(netsets(x))
-
-function tunesize!(s::PnmlNetKeys;
-                   npage::Int = 1, # Usually just 1 page per net.
-                   nplace::Int = 32,
-                   ntransition::Int = 32,
-                   narc::Int = 32,
-                   npref::Int = 1, # References only matter when npage > 1.
-                   ntref::Int = 1)
-    sizehint!(s.page_set, npage)
-    sizehint!(s.place_set, nplace)
-    sizehint!(s.transition_set, ntransition)
-    sizehint!(s.arc_set, narc)
-    sizehint!(s.reftransition_set, ntref)
-    sizehint!(s.refplace_set, npref)
-end
 
 #-------------------
 Base.summary(io::IO, pns::PnmlNetKeys) = print(io, summary(pns))
@@ -135,24 +91,13 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (tag, func) in (
-        ("pages", page_idset),
-        ("places", place_idset),
-        ("transitions", transition_idset),
-        ("arcs", arc_idset),
-        ("refplaces", refplace_idset),
-        ("refTransitions", reftransition_idset)
-    )
-        #println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
-        print(io, indent(io), length(func(pns)), " ", tag, ": ")
-        iio = inc_indent(io)
-        for (i,k) in enumerate((values ∘ func)(pns))
-            print(io, repr(k), ", ")
-            #i % 25 == 0 && print(iio, '\n', indent(iio))
-            if (i < length(func(pns))) && (i % 25 == 0)
-                print(iio, '\n', indent(iio))
-            end
-        end
-        println(io)
+    for (func,tag) in [(page_idset,"pages"),
+                    (place_idset,"places"), (transition_idset,"transitions"), (arc_idset,"arcs"),
+                    (refplace_idset,"refplaces"), (reftransition_idset,"refTransitions")]
+        println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
     end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", pns::PnmlNetKeys)
+    show(io, pns)
 end

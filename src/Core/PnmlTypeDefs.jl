@@ -192,11 +192,11 @@ $(TYPEDSIGNATURES)
 
 Add or replace mapping from `s` to [`PnmlType`](@ref) singleton `pntd`.
 """
-function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
-    action = s ∈ dict ? "updating" : "adding"
-    @warn  "$action mapping from $s to $pntd in dict::$(typeof(dict))" dict
-    pntd ∉ values(dict) && @warn "$pntd already in pnml nettype dictionary"
-    dict[s] = pntd
+function add_nettype!(elements::AbstractDict, s::Symbol, pntd::PnmlType)
+    action = s ∈ elements ? "updating" : "adding"
+    @warn  "$action mapping from $s to $pntd in elements::$(typeof(elements))" elements
+    pntd ∉ values(elements) && @warn "$pntd already in elements"
+    elements[s] = pntd
     @assert s ∈ elements
 end
 
@@ -217,9 +217,9 @@ julia> PnmlTypeDefs.pntd_symbol("foo")
 pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
 
 """
-    pnmltype(pntd::T, reg) -> PnmlType
-    pnmltype(uri::AbstractString, reg) -> PnmlType
-    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, reg) -> PnmlType
+    pnmltype(pntd::T, reg)
+    pnmltype(uri::AbstractString, reg)
+    pnmltype(s::Symbol; pnmltype_map=pnmltype_map, reg)
 
 Map either a text string or a symbol to a dispatch type singlton.
 

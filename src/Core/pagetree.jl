@@ -3,6 +3,7 @@ import AbstractTrees
 # Pages resulting from using keys in set to access pagedict.
 AbstractTrees.children(n::PnmlNet) = pages(n)
 AbstractTrees.children(p::Page)    = pages(p)
+AbstractTrees.children(a::PNML.AnyXmlNode) = a.val isa Vector{PNML.AnyXmlNode} ? a.val : nothing
 
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
 AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page),
@@ -12,6 +13,8 @@ AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page),
      " reftransitions ", foreach(x->string(x, ", "), reftransition_idset(page)),
      " refplaces ", foreach(x->string(x, ", "), refplace_idset(page))
      )
+AbstractTrees.printnode(io::IO, a::PNML.AnyXmlNode) = print(io, a.tag, "", a.val isa AbstractString && a.val)
+
 # For type stability we need some/all of these.
 
 AbstractTrees.childtype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)
@@ -19,10 +22,6 @@ AbstractTrees.childtype(::Type{Page{T}}) where {T<:PnmlType} = page_type(T)
 
 AbstractTrees.nodetype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)
 AbstractTrees.nodetype(::Type{Page{T}}) where {T<:PnmlType} = page_type(T)
-
-#--------------
-
-
 
 #--------------
 function pagetree(n::Union{PnmlNet, Page}, inc = 0)

@@ -76,6 +76,7 @@ inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(pe
 
 inscriptions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
+    #!LVector{inscription_value_type(net)}(
     LVector((;[arc_id => inscription(a) for (arc_id,a) in pairs(arcdict(net))]...))
 end
 
@@ -97,6 +98,7 @@ We allow all PNML nets to be stochastic Petri nets. See [`rate`](@ref).
 """
 function rates(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
+    @assert rate_value_type(net) <: Real #! debug?
     LVector((;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
 end
 
@@ -125,9 +127,9 @@ postset(net, id) = Iterators.map(arc->target(arc), src_arcs(net, id))
 function input_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     I = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
-    for (t,transition_id) in enumerate(transition_idset(net))
+    for (t,transition_id) in enumerate(ransition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
-            a = arc(net, place_id, transition_id)
+            a = arc(pn, place_id, transition_id)
             I[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
@@ -138,7 +140,7 @@ end
 function output_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     O = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
-    for (t,transition_id) in enumerate(transition_idset(net))
+    for (t,transition_id) in enumerate(ransition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
             a = arc(net, transition_id, place_id)
             O[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
@@ -188,6 +190,7 @@ LVector labelled with transition id and holding its condition's value.
 """
 conditions(petrinet::AbstractPetriNet) = begin
     net = pnmlnet(petrinet)
+    #!LVector{condition_value_type(net)}(
     LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
 end
 
@@ -198,6 +201,7 @@ Returns labelled vector of id=>boolean where `true` means transitionid is enable
 """
 function enabled(petrinet::AbstractPetriNet, marking)
     net = pnmlnet(petrinet)
+    #!LVector{Bool}(
     LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
 end
 
@@ -293,7 +297,7 @@ $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD**
 
-SimpleNet is a concrete `AbstractPetriNet` wrapping a single `PnmlNet`.
+SimpleNet is a concrete `AbstractPetriNet` wrapping a `PnmlNet`.
 
 Uses a flattened net to avoid the page level of the pnml hierarchy.
 
@@ -305,14 +309,12 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
-SimpleNet(s::AbstractString) = SimpleNet(parse_str(s))
-function SimpleNet(model::PnmlModel)
-    net0 = first_net(model)
-    SimpleNet(net0)
-end
+SimpleNet(str::AbstractString) = SimpleNet(parse_str(str))
+SimpleNet(model::PnmlModel)    = SimpleNet(first_net(model))
 function SimpleNet(net::PnmlNet)
     flatten_pages!(net)
     SimpleNet(pid(net), net)
+
 end
 
 #-------------------------------------------------------------------------------

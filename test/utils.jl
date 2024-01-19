@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
+using PNML, ..TestUtils, JET, InteractiveUtils
 import EzXML
 using PNML: Maybe, getfirst, firstchild, allchildren,
     ishighlevel, PnmlTypeDefs,
@@ -15,14 +15,6 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     SortType,
     PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel, isdiscrete, iscontinuous
 
-@testset "CONFIG" begin
-    @show PNML.CONFIG
-end
-
-@testset "_evaluate" begin
-    f() = "testing"
-    @test PNML._evaluate(f) == "testing"
-end
 
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
@@ -64,7 +56,6 @@ end
     if noisy
         @show pntd
         @show page_type(pntd)
-        #TODO complete
         @show place_type(pntd) transition_type(pntd) arc_type(pntd)
         @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
 
@@ -99,6 +90,10 @@ end
 end
 
 @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
+    if noisy
+        @show pntd default_condition(pntd)  typeof(default_condition(pntd))
+        @show default_bool_term(pntd) typeof(default_bool_term(pntd))
+    end
     @test default_bool_term(pntd) isa Term
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
 end
@@ -123,56 +118,7 @@ end
 end
 
 @testset "predicates for $pntd" for pntd in all_nettypes()
+    #@show pntd isdiscrete(pntd) ishighlevel(pntd) iscontinuous(pntd)
     @test Iterators.only(Iterators.filter(==(true),
                          (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
 end
-
-using PNML: DictType, XDVT, XDVT2, XDVT3
-using XMLDict, OrderedCollections
-const ODT = OrderedDict{Union{Symbol, String}, Any}
-@testset "XMLDict" begin
-    @show DictType XDVT
-    # @show xd = xml_dict(xml"""<t/>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" />""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t> text </t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t>text</t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t attr="avalue" ></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" > text </t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" >text</t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="" ></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t><u/></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t><u>1</u><v>2</v></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-end
-
-# @testset "show DictType" begin
-#     println()
-#     @show DictType() typeof(DictType())
-#     @show DictType(:foo => "bar")
-#     @show DictType(:foo => "bar", :baz => "boo")
-#     @show DictType(:foo => "bar", :baz => "boo", :three => "three")
-#     @show DictType(:foo => "bar", :baz => "boo", :three => "three", :four => "four")
-#     @show d = DictType(:foo => "bar", :baz => [:a => "one", :b => "two"])
-#     @show d = DictType(:foo => "bar", :baz => [DictType(:a => "one"), DictType(:b => "two")])
-#     @show d = DictType(:foo => "bar", :baz => (DictType(:a => "one"), DictType(:b => "two")))
-#     println()
-# end

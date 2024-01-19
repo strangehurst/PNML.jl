@@ -12,7 +12,7 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject{PNTD}
     pntd::PNTD
     id::Symbol
     declaration::Declaration
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
@@ -46,8 +46,7 @@ arcs(page::Page)        = Iterators.filter(v -> in(pid(v), arc_idset(page)), val
 refplaces(page::Page)   = Iterators.filter(v -> in(pid(v), refplace_idset(page)), values(refplacedict(page)))
 reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idset(page)), values(reftransitiondict(page)))
 
-
-declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
+declarations(page::Page) = declarations(page.declaration)
 
 page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
 
@@ -66,65 +65,51 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-# # When flattening, the only `common` that needs emptying is a `Page`'s.
-# function Base.empty!(page::Page)
-#     empty!(page.declaration)
-#     t = tools(page)
-#     !isnothing(t) && empty!(t)
-#     l = labels(page)
-#     !isnothing(l) && empty!(l)
-# end
-
-
-# function Base.summary( page::Page)
-#     string(typeof(page)," id ", page.id, ", ",
-#            " name '", name(page), "', ",
-#            length(place_idset(page)), " places, ",
-#            length(transition_idset(page)), " transitions, ",
-#            length(arc_idset(page)), " arcs, ",
-#            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
-#            length(refplace_idset(page)), " refP, ",
-#            length(reftransition_idset(page)), " refT, ",
-#            length(page_idset(page)), " subpages, ",
-#            has_graphics(page) ? " has graphics " : " no graphics",
-#            length(tools(page)), " tools, ",
-#            length(labels(page)), " labels"
-#            )
-# end
-
-function show_page_field(io::IO, label::AbstractString, x, post::AbstractString=",\n")
-    print(io, indent(io), label, " "); show(io, x); print(io, post)
+# When flattening, the only `common` that needs emptying is a `Page`'s.
+function Base.empty!(page::Page)
+    empty!(page.declaration)
+    t = tools(page)
+    !isnothing(t) && empty!(t)
+    l = labels(page)
+    !isnothing(l) && empty!(l)
 end
 
-# function Base.show(io::IO, pagevec::Vector{Page})
-#     pntdtype = isempty(pagevec) ? PnmlType : nettype(first(pagevec))
-#     println(io, indent(io), "Page{",pntdtype,"}[" )
-#     io = inc_indent(io)
-#     for (i,page) in enumerate(pagevec)
-#         print(io, indent(io)); show(io, page)
-#         if i < length(pagevec)
-#             println(io, ",")
-#         end
-#     end
-#     print(io, "]" )
-# end
+
+function Base.summary( page::Page)
+    string(typeof(page)," id ", page.id, ", ",
+           " name '", name(page), "', ",
+           length(place_idset(page)), " places, ",
+           length(transition_idset(page)), " transitions, ",
+           length(arc_idset(page)), " arcs, ",
+           isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
+           length(refplace_idset(page)), " refP, ",
+           length(reftransition_idset(page)), " refT, ",
+           length(page_idset(page)), " subpages, ",
+           has_graphics(page) ? " has graphics " : " no graphics",
+           length(tools(page)), " tools, ",
+           length(labels(page)), " labels"
+           )
+end
+
+function show_page_field(io::IO, label::AbstractString, x)
+    println(io, indent(io), label)
+    if !isnothing(x) && length(x) > 0
+        show(inc_indent(io), MIME"text/plain"(), x)
+        print(io, "\n")
+    end
+end
 
 function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
-    print(io, "Page{", nettype(page),"}("),
-    show(io, pid(page)); print(io, ", ")
-    show(io, name(page)); print(io, ", ")
-
-    println(io)
+    println(io, indent(io), summary(page))
     # Start indent here. Will indent subpages.
-    iio = inc_indent(io)
+    inc_io = inc_indent(io)
 
-    show_page_field(iio, "places:",         place_idset(page))
-    show_page_field(iio, "transitions:",    transition_idset(page))
-    show_page_field(iio, "arcs:",           arc_idset(page))
-    show_page_field(iio, "declaration:",    declarations(page))
-    show_page_field(iio, "refPlaces:",      refplace_idset(page))
-    show_page_field(iio, "refTransitions:", reftransition_idset(page))
-    show_page_field(iio, "subpages:",       page_idset(page), "")
-    print(io, ")")
+    show_page_field(inc_io, "places:",         place_idset(page))
+    show_page_field(inc_io, "transitions:",    transition_idset(page))
+    show_page_field(inc_io, "arcs:",           arc_idset(page))
+    show_page_field(inc_io, "declaration:",    declarations(page))
+    show_page_field(inc_io, "refPlaces:",      refplace_idset(page))
+    show_page_field(inc_io, "refTransitions:", reftransition_idset(page))
+    show_page_field(inc_io, "subpages:",       page_idset(page))
 end

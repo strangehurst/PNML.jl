@@ -1,48 +1,27 @@
 """
 $(TYPEDEF)
-Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
-The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
-
-- id
-- name
-"""
-abstract type AbstractDeclaration end
-
-pid(decl::AbstractDeclaration) = decl.id
-has_name(decl::AbstractDeclaration) = hasproperty(decl, :name)
-name(decl::AbstractDeclaration) = decl.name
-
-function Base.show(io::IO, declare::AbstractDeclaration)
-    print(io, nameof(typeof(declare)), "(")
-    show(io, pid(declare)); print(io, ", ")
-    show(io, name(declare)); print(io, ", ")
-
-    print(io, ")")
-end
-
-"""
-$(TYPEDEF)
 $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
+Other PNTDs may introduce non-standard uses for declarations.
 
-We can use infrastructure implemented for HL nets to provide nonstandard extensions for other PNTDs.
+# Notes: `declarations` is implemented as a collection of `Any`.
+We can use infrastructure implemented for HL nets to provide nonstandard extensions.
 """
 struct Declaration <: Annotation
-    text::Maybe{String}
-    declarations::Vector{AbstractDeclaration} #TODO Type parameter? Seperate vector for each type?
-    #!declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
+    declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
     #SortDeclarations               xml:"structure>declarations>namedsort"`
 	#PartitionSortDeclarations      xml:"structure>declarations>partition"
 	#VariableDeclarations           xml:"structure>declarations>variabledecl"
 	#OperatorDeclarations           xml:"structure>declarations>namedoperator"
 	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
 	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
+    text::Maybe{String}
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Vector{ToolInfo}
 end
 
-Declaration() = Declaration(nothing, AbstractDeclaration[], nothing, ToolInfo[])
+Declaration() = Declaration(Any[], nothing, nothing, ToolInfo[])
 
 declarations(d::Declaration) = d.declarations
 
@@ -63,15 +42,32 @@ end
 
 """
 $(TYPEDEF)
+Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
+The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
+"""
+abstract type AbstractDeclaration end #<: AbstractLabel end
+
+pid(decl::AbstractDeclaration) = decl.id
+name(decl::AbstractDeclaration) = isnothing(name) ? "" : decl.name
+
+function Base.show(io::IO, declare::AbstractDeclaration)
+    pprint(io, declare)
+end
+
+quoteof(i::AbstractDeclaration) = :(AbstractDeclaration($(quoteof(i.id)), $(quoteof(i.name))))
+
+
+"""
+$(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
-    nodename::Union{String,SubString{String}}
+    name::Union{String,SubString}
+    nodename::Union{String,SubString}
     content::Vector{Any} #! Vector{AnyElement}
 end
-UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [OrderedDict()])
+UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [])
 
 """
 $(TYPEDEF)
@@ -91,7 +87,7 @@ $(TYPEDFIELDS)
 """
 struct VariableDeclaration{S}  <: AbstractDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
     sort::S
 end
 VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
@@ -102,19 +98,17 @@ $(TYPEDFIELDS)
 """
 struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
 sort(namedsort::NamedSort) = namedsort.def
 
 function Base.show(io::IO, nsort::NamedSort)
-    print(io, "NamedSort(")
-    show(io, pid(nsort)); print(io, ", ")
-    show(io, name(nsort)); print(io, ", ")
-    show(inc_indent(io), sort(nsort))
-    print(io, ")")
+    pprint(IOContext(io, :displaysize => (24, 180)), nsort)
 end
+
+quoteof(n::NamedSort) = :(NamedSort($(quoteof(n.id)), $(quoteof(n.name)), $(quoteof(n.def))))
 
 """
 $(TYPEDEF)
@@ -124,7 +118,7 @@ Partition sort.
 """
 struct PartitionSort{S,PE} <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
     def::S # Refers to a NamedSort
     element::PE # 1 or more PartitionElements.
     #
@@ -141,7 +135,7 @@ Partition Element is part of a Partition Sort.
 """
 struct PartitionElement # <: SortDeclaration should be something for accessors
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
     terms::Vector{UserOperator} # 1 or more Terms (UserOperator?)
 end
 PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
@@ -156,7 +150,7 @@ reserved for/supported by `HLPNG` in the pnml specification.
 """
 struct ArbitrarySort <: SortDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
 end
 
 function ArbitrarySort()
@@ -171,7 +165,7 @@ See [`UserOperator`](@ref)
 """
 struct NamedOperator{V,T} <: OperatorDeclaration
     id::Symbol
-    name::Union{String,SubString{String}}
+    name::Union{String,SubString}
     parameter::Vector{V}
     def::T # operator or variable term (with associated sort)
 end

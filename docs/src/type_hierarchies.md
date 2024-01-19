@@ -90,9 +90,8 @@ Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 
 ## AbstractLabel
 Labels are attached to `AbstractPnmlObject`s.
-Kinds of label include: marking, inscription, condition and declarations, sort, and ad-hoc.
-Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance is a label and add it to a collection of 'other labels'.
-
+Kinds of label include: marking, inscription, condition and
+declarations of sorts, operators, and variables.
 ```@example type
 type_tree(PNML.AbstractLabel) # hide
 ```
@@ -119,7 +118,7 @@ type_tree(PNML.PnmlException) # hide
 
 The PNML Specification builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
 
-Implemented loosely so that it is mostly part of the PnmlCore implementation. Both <text> and <structure> are optional. Presumption is that the consumer will have good tests and defenses. **TODO: Seems like a layer boundary in the design.**
+Implemented loosely so that it is mostly part of the PnmlCore implementation. Both <text> and <structure> are optional. Presumption is that the consumer will have good tests and defenses. **TODO: Seems like a layer boundary in the degign.**
 
 And we allow all net types to have probably-nonstandard julia declaration, sort-type objects.
 

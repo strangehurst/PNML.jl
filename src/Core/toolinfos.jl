@@ -8,10 +8,10 @@ It wraps a iteratable collection (currently vector) of well formed elements
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals struct ToolInfo
+@auto_hash_equals struct ToolInfo{T}
     toolname::String
     version::String
-    infos::Vector{AnyElement}
+    infos::T
 end
 
 "Name of tool to for this tool specific information element."
@@ -19,30 +19,24 @@ name(ti::ToolInfo) = ti.toolname
 "Version of tool for this tool specific information element."
 version(ti::ToolInfo) = ti.version
 "Content of a ToolInfo."
-infos(ti::ToolInfo) = ti.infos::Vector{AnyElement}
+infos(ti::ToolInfo) = ti.infos
 
-Base.eltype(ti::ToolInfo) = eltype(infos(ti))
+Base.eltype(::ToolInfo{T}) where {T} = T
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
-    print(io, "ToolInfo[")
-    for ti in toolvector
-        show(io, ti); print(io, ", ")
+    for (i, ti) in enumerate(toolvector)
+        print(io, "\n", indent(io), "$i: ")
+        show(io, ti)
     end
-    print(io, "]")
 end
 
 function Base.show(io::IO, ti::ToolInfo)
-    print(io, indent(io), "ToolInfo(")
-    show(io, name(ti)); print(io, ", ");
-    show(io, version(ti)); print(io, ", [");
-    println(io);
-    io = inc_indent(io)
-    for i in infos(ti)
-        show(IOContext(io, :typeinfo=>AnyElement), i)
-        println(io, ",")
-    end
-    print(io, "])")
+    pprint(io, ti)
 end
+
+PrettyPrinting.quoteof(ti::ToolInfo) = :(ToolInfo($(PrettyPrinting.quoteof(ti.toolname)),
+                                         $(PrettyPrinting.quoteof(ti.version)),
+                                         $(PrettyPrinting.quoteof(ti.infos))))
 
 ###############################################################################
 
@@ -61,43 +55,12 @@ end
 TokenGraphics{T}() where {T <: DecFP.DecimalFloatingPoint} = TokenGraphics{T}(Coordinate{T}[])
 
 function Base.show(io::IO, tg::TokenGraphics)
-    print(io, "TokenGraphics(", tg.positions, ")")
+    print(io, "positions: ", tg.positions)
 end
 
 ###############################################################################
-
 """
-has_toolinfo(infos, toolname[, version]) -> Bool
-
-Does any toolinfo in iteratable `infos` have a matching `toolname`, and a matching `version` (if it is provided).
-`toolname` and `version` will be turned into `Regex`s to match against each `ToolInfo` in the `infos` collection.
-"""
-function has_toolinfo end
-
-function has_toolinfo(infos, toolname)
-    has_toolinfo(infos, Regex(toolname))
-end
-
-function has_toolinfo(infos, toolname, version)
-    has_toolinfo(infos, Regex(toolname), Regex(version))
-end
-
-function has_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
-    any(infos) do tool
-       !isnothing(match(namerex, name(tool))) &&
-        !isnothing(match(versionrex, version(tool)))
-    end
-end
-
-"""
-    get_toolinfo(infos, toolname[, version]) -> Maybe{ToolInfo}
-
-Return first toolinfo in iteratable collection `infos` having a matching toolname and version.
-See [`has_toolinfo`](@ref)
-
-    get_toolinfo(ti::ToolInfo, toolname[, version]) -> Maybe{ToolInfo}
-
-Return `ti` if `toolname` and `version` match, `nothing` otherwise.
+Return first toolinfo having a matching toolname and version.
 """
 function get_toolinfo end
 
@@ -108,12 +71,11 @@ get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
     get_toolinfo(ti, Regex(name),  versionrex)
 
 get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
-    _match(ti, namerex, versionrex) ? ti : nothing
+    _match(ti, namerex, versionrex) && ti #!get_toolinfo([ti], namerex, versionrex)
 
-# Collections
+
 get_toolinfo(infos, name::AbstractString, version::AbstractString) =
     get_toolinfo(infos, Regex(name), Regex(version))
-
 get_toolinfo(infos, name::AbstractString, versionrex::Regex) =
     get_toolinfo(infos, Regex(name), versionrex)
 
@@ -121,21 +83,16 @@ function get_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
     first(get_toolinfos(infos, namerex, versionrex))
 end
 
-"""
-    get_toolinfos(infos, toolname::Regex[, version::Regex]) -> Iterator
-
-Return iterator over toolinfos matching toolname and version regular expressions.
-"""
 function get_toolinfos(infos, namerex::Regex, versionrex::Regex=r"^.*$")
     Iterators.filter(ti -> _match(ti, namerex, versionrex), infos)
 end
 
 """
-    _match(ti::ToolInfo, name::AbstractString) -> Bool
-    _match(ti::ToolInfo, name::String, version::String) -> Bool
-    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex) -> Bool
+    _match(ti::ToolInfo, name::AbstractString)
+    _match(ti::ToolInfo, name::String, version::String)
+    _match(ti::ToolInfo, namerex::Regex, versionrex::Regex)
 
-Return `true` if both toolname and version match. Default is any version.
+Match toolname and version. Default is any version.
 """
 function _match end
 _match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
