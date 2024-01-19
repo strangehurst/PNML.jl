@@ -100,6 +100,8 @@ str1 = """
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
             @test PNML.ispid(pid(t))(pid(t))
+            @show t pid(t) PNML.haspid(t, pid(t))
+            @test PNML.haspid(nothing, pid(t)) === false
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
             t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -203,6 +205,13 @@ end
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
+    @show PNML.input_matrix(snet)
+    @show PNML.output_matrix(snet)
+    @show PNML.conditions(snet)
+    @show PNML.inscriptions(snet)
+    map(println, PNML.all_arcs(snet, :wolf))
+    map(println, PNML.src_arcs(snet, :wolf))
+    map(println, PNML.tgt_arcs(snet, :wolf))
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription of arc
