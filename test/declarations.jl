@@ -26,50 +26,100 @@ function _subtypes!(out, type::Type)
 end
 
 @testset "parse_sort $pntd" for pntd in all_nettypes()
-    @test parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry()) isa PNML.UserSort
-    @test parse_sort(xml"<dot/>", pntd, registry()) isa PNML.DotSort
-    @test parse_sort(xml"<bool/>", pntd, registry()) isa PNML.BoolSort
-    @test parse_sort(xml"<integer/>", pntd, registry()) isa PNML.IntegerSort
-    @test parse_sort(xml"<natural/>", pntd, registry()) isa PNML.NaturalSort
-    @test parse_sort(xml"<positive/>", pntd, registry()) isa PNML.PositiveSort
+    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry())
+    @test sort isa PNML.UserSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<cyclicenumeration>
+    sort = parse_sort(xml"<dot/>", pntd, registry())
+    @test sort isa PNML.DotSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    sort =  parse_sort(xml"<bool/>", pntd, registry())
+    @test sort isa PNML.BoolSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    sort = parse_sort(xml"<integer/>", pntd, registry())
+    @test sort isa PNML.IntegerSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    sort = parse_sort(xml"<natural/>", pntd, registry())
+    @test sort isa PNML.NaturalSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    sort = parse_sort(xml"<positive/>", pntd, registry())
+    @test sort isa PNML.PositiveSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    sort = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </cyclicenumeration>""", PnmlCoreNet(), registry()) isa PNML.CyclicEnumerationSort
+                            </cyclicenumeration>""", PnmlCoreNet(), registry())
+    @test sort isa PNML.CyclicEnumerationSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<finiteenumeration>
+    sort = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </finiteenumeration>""", pntd, registry()) isa PNML.FiniteEnumerationSort
+                           </finiteenumeration>""", pntd, registry())
+    @test sort isa PNML.FiniteEnumerationSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry()) isa PNML.FiniteIntRangeSort
+    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry())
+    @test sort isa PNML.FiniteIntRangeSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<productsort>
-                          </productsort>""", pntd, registry()) isa PNML.ProductSort
+    sort = parse_sort(xml"""<productsort>
+                          </productsort>""", pntd, registry())
+    @test sort isa PNML.ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                                 <usersort declaration="a_user_sort"/>
-                           </productsort>""", pntd, registry()) isa PNML.ProductSort
+                           </productsort>""", pntd, registry())
+                           sprint(show, sort)
+    @test sort isa PNML.ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                            <usersort declaration="speed"/>
                            <usersort declaration="distance"/>
-                         </productsort>""", pntd, registry()) isa PNML.ProductSort
+                         </productsort>""", pntd, registry())
+    @test sort isa PNML.ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                                <usersort declaration="id1"/>
                                <natural/>
-                            </productsort>""", pntd, registry()) isa PNML.ProductSort
+                            </productsort>""", pntd, registry())
+    @test sort isa PNML.ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    #! partitions are declarations not sorts
-    @test parse_sort(xml"""<multisetsort>
+    sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd, registry()) isa PNML.MultisetSort
+                            </multisetsort>""", pntd, registry())
+    @test sort isa PNML.MultisetSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-    @test parse_sort(xml"""<multisetsort>
+    sort = parse_sort(xml"""<multisetsort>
                                 <natural/>
-                            </multisetsort>""", pntd, registry()) isa Maybe{PNML.MultisetSort}
+                            </multisetsort>""", pntd, registry())
+    @test sort isa Maybe{PNML.MultisetSort}
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 end
 
 @testset "empty declarations $pntd" for pntd in all_nettypes()
