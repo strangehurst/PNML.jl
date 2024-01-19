@@ -56,23 +56,24 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
-    prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString}
+    prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
     #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
 
     return getfield(o, prop_name)
 end
 
 # All Labels are expected to have a `text` field.
-"Return `text` field. All labels must have one that may be `nothing`."
-text(l::AbstractLabel) = l.text
+"Return `text` field. All labels are expected to have one that may be `nothing` or an empty string."
+text(l::AbstractLabel) = isnothing(l.text) ? "" : l.text
+text(::Nothing) = ""
 
 has_graphics(l::AbstractLabel) = !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics
 
 tools(l::AbstractLabel) = l.tools
 
-has_labels(l::AbstractLabel) = false
-labels(l::AbstractLabel) = (throw ∘ ArgumentError)("AbstractLabel $(typeof(l)) does not have labels attached")
+has_labels(l::AbstractLabel) = false #!hasproperty(l, :labels) && !isempty(l.labels)
+#!labels(l::AbstractLabel) = !has_labels(l) && throw(ArgumentError("$(typeof(l)) does not have labels attached"))
 
 # Labels include functors: markings, inscription, conditions #TODO test for Callable
 _evaluate(x::AbstractLabel) = x()
@@ -117,7 +118,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `AnyXmlNode[]` holding a PNML Label. Use the XML tag as identifier.
+Wrap a `DictType` holding a PNML Label. Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
@@ -128,40 +129,40 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::Vector{AnyXmlNode} # This is a label made of the attributes and children of `tag`.
+    elements::XDVT
 end
-
-PnmlLabel(p::Pair{Symbol, Vector{AnyXmlNode}}) = PnmlLabel(p.first, p.second)
+PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
+
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    show(io, MIME"text/plain"(), labelvector)
-end
-function Base.show(io::IO, mime::MIME"text/plain", labelvector::Vector{PnmlLabel})
-    print(io, indent(io), typeof(labelvector), "[")
+    print(io, indent(io), "PnmlLabel[")
     io = inc_indent(io)
     for (i,label) in enumerate(labelvector)
         i > 1 && print(io, indent(io))
-        pprint(io, label)
+        print(io, "(",);
+        show(io, tag(label)); print(io, ", "); dict_show(io, elements(label), 0);
+        print(")")
         i < length(labelvector) && print(io, "\n")
     end
     print(io, "]")
-
 end
 
 function Base.show(io::IO, label::PnmlLabel)
-    pprint(io, label)
+    print(io, indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
 end
-
-PrettyPrinting.quoteof(l::PnmlLabel) = :(PnmlLabel($(PrettyPrinting.quoteof(l.tag)),
-                                                   $(PrettyPrinting.quoteof(l.elements))))
 
 #--------------------------------------
 "Use with `Fix2` to filter anything with tag accessor."
 hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
+"""
+    get_labels(iteratable, s::Symbol) -> Iterator
+
+Filter iteratable collection for elements having `s` as the `tag`.
+"""
 function get_labels(v, tagvalue::Symbol)
     Iterators.filter(Fix2(hastag, tagvalue), v)
 end

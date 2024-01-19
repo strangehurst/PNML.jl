@@ -1,10 +1,8 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel,
-    PnmlNet
+using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel, PnmlNet
 
 @testset "Show" begin
-str =
-    """
+str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -43,30 +41,27 @@ str =
       <transition id="transition1">
         <name> <text>Some transition </text> </name>
       </transition>
-      <arc source="transition1" target="place1" id="arc1">
-        <inscription> <text>12 </text> </inscription>
+      <arc id="arc1" source="transition1" target="place1">
+        <inscription> <text> 12 </text> </inscription>
       </arc>
-      <arc source="place1" target="transition1" id="arc2">
+      <arc id="arc2" source="place1" target="transition1">
         <inscription> <text> 13 </text> </inscription>
       </arc>
     </page>
   </net>
 </pnml>
-    """
-    #model = @test_logs match_mode=:any begin  #! 1.10.beta broken here?
-    #     (:warn,"unexpected child of <page>: text")
-    #     (:warn,"namedoperator under development")
-    #     (:warn,r"^element 'unknown' invalid as child of <namedoperator>.*")
-    #     (:warn,r"^unknown declaration: unknowendecl unk1 u")
-    #end parse_pnml(xmlroot(str), registry())
-    #@test_logs broken=true (:warn,) #! 1.10.beta broken here?
+"""
+    #
+    model = @test_logs(match_mode=:all,
+         (:warn, "found unexpected label of <page>: text"),
+         #(:info, "parse_term kinds are Variable and Operator"),
+         (:warn, r"^ignoring child of <namedoperator name=\"g\", id=\"id6\">: 'unknown', allowed: 'def', 'parameter'"),
+         (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+        parse_pnml(xmlroot(str), registry()))
+    #
     model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show model
-    end
 end
-# @test_logs((:warn,""), expr)
 
 @testset "Document & ID Registry" begin
     str = """
@@ -79,12 +74,11 @@ end
     @test !isregistered(reg, :net)
     @test :net ∉ reg.ids
 
-    parse_pnml(xmlroot(str), reg)
-    @report_opt parse_pnml(xmlroot(str), reg)
+    @test_logs(match_mode=:all, parse_pnml(xmlroot(str), reg))
+
+    @test_opt target_modules=(@__MODULE__,) parse_pnml(xmlroot(str), reg)
     @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show reg
-    end
+
     @test isregistered(reg, :net)
     @test :net ∈ reg.ids
 end
@@ -103,48 +97,45 @@ end
       <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """
-    model = @inferred parse_str(str)
+
+    model = @test_logs(match_mode=:all, @inferred parse_str(str))
+
     @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
     @test PNML.idregistry(model) isa PnmlIDRegistry
 
     modelnets = PNML.nets(model)
     @test length(collect(modelnets)) == 5
 
-    #println()
     for net in modelnets
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
 
-        #println(); dump(net); println()
-
         @test PNML.name(net) == string(pid(net))
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show  pid(net) PNML.nettype.(ntup) pid.(ntup)
-        end
         for n in ntup
             @test t === PNML.nettype(n)
         end
     end
 
-    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng]
-        @test_opt pnmltype(pt)
+    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :continuous]
+        @test_opt  pnmltype(pt)
         @test_call pnmltype(pt)
-        for net in PNML.find_nets(model, pt)
-            @test net.type === pnmltype(pt)
-        end
-        for net in PNML.find_nets(model, pnmltype(pt))
-            @test net.type === pnmltype(pt)
+        @test_opt  PNML.find_nets(model, pt)
+        @test_call PNML.find_nets(model, pt)
+
+        for (l,r) in zip(PNML.find_nets(model, pt), PNML.find_nets(model, pnmltype(pt)))
+            @test l === r
+            @test l.type === r.type === pnmltype(pt)
         end
     end
 
-    @testset for t in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric]
-        for net in PNML.find_nets(model, t)
-            @test net.type === pnmltype(t)
-        end
-    end
+    # @test_call PNML.first_net(model)
+    # net0 = @inferred PnmlNet PNML.first_net(model)
+    # @test PNML.nettype(net0) <: PnmlType
+    # @test first(v) === net0
+
 end
 
-@testset "Empty" begin
+@testset "empty page" begin
     str = """
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -157,5 +148,4 @@ end
 
     model = parse_str(str)
     @test model isa PnmlModel
-
 end

@@ -88,7 +88,7 @@ Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
 [`NamedSort`](@ref) is used to construct a sort out of builtin types.
 Used in a `Place`s sort type property.
 """
-struct UserSort <: AbstractSort
+@auto_hash_equals struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
 end
 UserSort() = UserSort(:integer) #! use a better symbol? Is a built-in sort.
@@ -100,76 +100,118 @@ $(TYPEDEF)
 
 Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
 """
-struct MultisetSort <: AbstractSort
-    us::UserSort
+@auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
+    us::T #! Any sort type! Not recursive.
 end
 MultisetSort() = MultisetSort(UserSort())
-equalSorts(a::MultisetSort, b::MultisetSort) = a.us == b.us
+equalSorts(a::MultisetSort, b::MultisetSort) = equalSorts(a.us, b.us)
 
 """
 $(TYPEDEF)
 
 An ordered collection of sorts.
 """
-struct ProductSort <: AbstractSort
-    ae::Vector{UserSort}
+@auto_hash_equals struct ProductSort <: AbstractSort
+    ae::Vector{AbstractSort} #! any sort type? UserSort and BuiltinSorts
 end
 ProductSort() = ProductSort(UserSort[])
 equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
 
-
 """
 $(TYPEDEF)
 """
-struct CyclicEnumerationSort <: AbstractSort
-    # list of feconstant
-    ae::Vector{FEConstant} # FiniteEnumerationConstant
+abstract type EnumerationSort <: AbstractSort end
+
+function Base.getproperty(s::EnumerationSort, prop_name::Symbol)
+    prop_name === :elements && return getfield(s, :elements)::Vector{FEConstant}
+    return getfield(o, prop_name)
+end
+
+elements(s::EnumerationSort) = s.elements
+equalSorts(a::T, b::T) where {T <: EnumerationSort} = elements(a) == elements(b)
+
+"""
+$(TYPEDEF)
+
+The operations differ between the various `EnumerationSort`s. They may be TBD. #TODO
+"""
+@auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
+    elements::Vector{FEConstant}
 end
 CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[])
-elements(s::CyclicEnumerationSort) = s.ae
-equalSorts(a::CyclicEnumerationSort, b::CyclicEnumerationSort) = a.ae == b.ae
 
 """
 $(TYPEDEF)
 """
-struct FiniteEnumerationSort <: AbstractSort
-    # list of feconstant
-    ae::Vector{FEConstant}
+@auto_hash_equals struct FiniteEnumerationSort <: EnumerationSort
+    elements::Vector{FEConstant}
 end
 FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[])
-equalSorts(a::FiniteEnumerationSort, b::FiniteEnumerationSort) = a.ae == b.ae
+
+function Base.show(io::IO, es::EnumerationSort)
+    print(io, nameof(typeof(es)), "([")
+    io = inc_indent(io)
+    for  (i, c) in enumerate(elements(es))
+        print(io, '\n', indent(io)); show(io, values(c));
+        i < length(elements(es)) && print(io, ",")
+    end
+    print(io, "])")
+end
 
 """
 $(TYPEDEF)
 """
-struct FiniteIntRangeSort{T} <: AbstractSort
+@auto_hash_equals struct FiniteIntRangeSort{T} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
 end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
 equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
+Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
 
+function Base.show(io::IO, s::FiniteIntRangeSort)
+    print(io, "FiniteIntRangeSort(", s.start, ", ", s.stop, ")")
+end
 
 """
 $(TYPEDEF)
 """
-struct StringSort <: AbstractSort
+@auto_hash_equals struct StringSort <: AbstractSort
     #
     ae::Vector{AbstractSort}
 end
 StringSort() = StringSort(IntegerSort[])
 equalSorts(a::StringSort, b::StringSort) = a.ae == b.ae
 
+function Base.show(io::IO, s::StringSort)
+    print(io, "StringSort(")
+    io = inc_indent(io)
+    for  (i, c) in enumerate(s.ae)
+        print(io, '\n', indent(io)); show(io, c);
+        i < length(s.ae) && print(io, ",")
+    end
+    print(io, "])")
+end
+
 """
 $(TYPEDEF)
 """
-struct ListSort <: AbstractSort
+@auto_hash_equals struct ListSort <: AbstractSort
     #
     ae::Vector{AbstractSort}
 end
 ListSort() = ListSort(IntegerSort[])
 equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
 
+function Base.show(io::IO, s::ListSort)
+    print(io, "ListSort(")
+    io = inc_indent(io)
+    for  (i, c) in enumerate(s.ae)
+        print(io, '\n', indent(io)); show(io, c);
+        i < length(s.ae) && print(io, ",")
+    end
+    print(io, "])")
+end
 
 """
 $(TYPEDSIGNATURES)

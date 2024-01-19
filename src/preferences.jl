@@ -1,13 +1,9 @@
 # From Cthuhlu.jl
 
 """
-```julia
-save_config!(config::PnmlConfig=CONFIG)
-```
-Save a PNML.jl configuration `config` (by default, `PNML`) to your
-`LocalPreferences.toml` file using Preferences.jl.
+    save_config!(config::PnmlConfig=CONFIG)
 
-The saved preferences will be automatically loaded next time you `using PNML`
+Save a configuration to your `LocalPreferences.toml` file using Preferences.jl. The saved preferences will be automatically loaded next time you `using PNML`
 
 ## Examples
 ```julia
@@ -23,21 +19,31 @@ julia> PNML.save_config!(PNML.CONFIG); # Will be automatically read next time yo
 function save_config!(config::PnmlConfig = CONFIG)
     @set_preferences!(
         "indent_width" => config.indent_width,
-        "warn_on_namespace" => config.warn_on_namespace,
+        "lock_registry" => config.lock_registry,
         "text_element_optional" => config.text_element_optional,
+        "verbose" => config.verbose,
+        "warn_on_namespace" => config.warn_on_namespace,
         "warn_on_fixup" => config.warn_on_fixup,
         "warn_on_unclaimed" => config.warn_on_unclaimed,
-        "verbose" => config.verbose,
-        "lock_registry" => config.lock_registry,
         )
 end
 
 function read_config!(config::PnmlConfig)
     config.indent_width = @load_preference("indent_width", config.indent_width)
-    config.warn_on_namespace = @load_preference("", config.warn_on_namespace)
+    config.lock_registry = @load_preference("lock_registry", config.lock_registry)
     config.text_element_optional = @load_preference("text_element_optional", config.text_element_optional)
+    config.verbose = @load_preference("verbose", config.verbose)
+    config.warn_on_namespace = @load_preference("warn_on_namespace", config.warn_on_namespace)
     config.warn_on_fixup = @load_preference("warn_on_fixup", config.warn_on_fixup)
     config.warn_on_unclaimed = @load_preference("warn_on_fixup", config.warn_on_unclaimed)
-    config.verbose = @load_preference("verbose", config.verbose)
-    config.lock_registry = @load_preference("lock_registry", config.lock_registry)
+end
+
+function Base.show(io::IO, config::PnmlConfig)
+    println(io, "indent_width          = ", config.indent_width)
+    println(io, "lock_registry         = ", config.lock_registry)
+    println(io, "text_element_optional = ", config.text_element_optional)
+    println(io, "verbose               = ", config.verbose)
+    println(io, "warn_on_namespace     = ", config.warn_on_namespace)
+    println(io, "warn_on_fixup         = ", config.warn_on_fixup)
+    println(io, "warn_on_unclaimed     = ", config.warn_on_unclaimed)
 end

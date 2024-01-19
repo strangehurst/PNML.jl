@@ -14,21 +14,21 @@ module PNML
 Configuration with default values that can be overidden by a LocalPreferences.toml.
 # Options
   - `indent_width::Int`: Indention of nested lines.
-  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
+  - `lock_registry::Bool`: Lock registry with a `ReentrantLock`.
   - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
   - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning.
+  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
   - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label.
   - `verbose::Bool`: Print information as runs.
-  - `lock_registry::Bool`: Lock registry with a `ReentrantLock`.
 """
 Base.@kwdef mutable struct PnmlConfig
-    indent_width::Int = 4
-    warn_on_namespace::Bool = true
+    indent_width::Int           = 4
+    lock_registry::Bool         = true
     text_element_optional::Bool = true
-    warn_on_fixup::Bool = false
-    warn_on_unclaimed::Bool = false
-    verbose::Bool = false
-    lock_registry::Bool = true
+    verbose::Bool           = false
+    warn_on_fixup::Bool     = true
+    warn_on_namespace::Bool = true
+    warn_on_unclaimed::Bool = true
 end
 
 "See [`PnmlConfig`](@ref) for default values."
@@ -57,13 +57,12 @@ using MLStyle: @match
 using NamedTupleTools
 import OrderedCollections: OrderedDict, OrderedSet, LittleDict
 using Preferences
-using PrettyPrinting
-import PrettyPrinting: quoteof
 using Reexport
 using DecFP
 #using Infiltrator: @infiltrate
 import Graphs
 import MetaGraphsNext
+using DebuggingUtilities
 
 include("Core/PnmlTypeDefs.jl")
 @reexport using .PnmlTypeDefs
@@ -75,6 +74,7 @@ include("Core/utils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
+#include("Core/pprint.jl")
 
 # Parts of Labels and Nodes.
 include("Core/constterm.jl") #
@@ -120,8 +120,6 @@ include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
 include("PNet/petrinet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
-
-include("Core/show.jl")
 
 # PARSE
 include("Core/xmlutils.jl")

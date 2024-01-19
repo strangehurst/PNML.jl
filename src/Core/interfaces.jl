@@ -79,7 +79,11 @@ function nettype end
     pages(net::PnmlLabel|page::Page) -> iterator
 
 Return iterator of pages directly owned by that object.
+
 See [`allpages`](@ref) for an iterator over all pages in the PNML network model.
+When there is only one `page` in the `net`, or all pages are owned by the 'net' itself,
+'allpages' and 'pages` behave the same.
+
 Maintains order (insertion order).
 """
 function pages end
@@ -235,7 +239,6 @@ function refplaces end
 
 """
 $(TYPEDSIGNATURES)
-
 Return vector of all reference transitions.
 """
 function reftransitions end
@@ -381,7 +384,8 @@ function coordinate_value_type end
 # Extend by allowing a transition to be labeled with a floating point rate.
 #---------------------------------------------------------------------------
 """
-$(TYPEDSIGNATURES)
-Return rate value type of argument.
+    rate_value_type(::PnmlType) -> Number
+
+Return rate value type based on net type.
 """
 function rate_value_type end

@@ -3,7 +3,6 @@
 
 """
     flatten_pages!(net::PnmlNet[; options])
-    flatten_pages!(model::PnmlModel[; options])
 
 Merge page content into the 1st page of the net or all nets of a model.
 
@@ -13,21 +12,11 @@ Options
 """
 function flatten_pages! end
 
-function flatten_pages!(model::PnmlModel; kw...)
-    for net in nets(model)
-        flatten_pages!(net; kw...)
-        post_flat_verify(net; kw...)
-    end
-    return nothing
-end
-
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
     netid = pid(net)
-    #verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
+    verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
-        #println("pagedict(net)"); dump(pagedict(net))
-        #println("pageids of $(pid(net))"); typeof(page_idset(net))
 
         pageids = keys(pagedict(net)) #! iterator
         key1, val1 = popfirst!(pagedict(net))
@@ -45,7 +34,6 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
         push!(page_idset(net), key1)
 
         @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
-        #@assert netkey1 == only(pageids).pagedict[]
 
         deref!(net, trim)
     end
@@ -61,11 +49,6 @@ function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFI
     isempty(reftransitiondict(net)) || push!(errors, "reftransitiondict not empty")
     isempty(refplace_idset(net)) || push!(errors, "refplace_idset not empty")
     isempty(reftransition_idset(net)) || push!(errors, "reftransition_idset not empty")
-    # || push!(errors, " not empty")
-    # || push!(errors, "")
-    # || push!(errors, "")
-
-    #@show pid(net) errors
 
     isempty(errors) ||
         error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
@@ -149,9 +132,12 @@ as part of [`flatten_pages!`](@ref),
   4) No cycles.
 """
 function deref!(net::PnmlNet, trim::Bool = true)
-    #CONFIG.verbose && println("deref! net ", pid(net))
-    #@show typeof(arc_idset(net))
-    for id in arc_idset(net) # tries to iterate over empty union
+    # idsets can be OrderedSet or KeySet (of OrderedDict)
+    # JET thinks we might iterate over Union{}
+    as = arc_idset(net)
+    isnothing(as) && return nothing
+
+    for id in as # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
         while arc.source ∈ refplace_idset(net)
@@ -175,7 +161,7 @@ function deref!(net::PnmlNet, trim::Bool = true)
         empty!(refplacedict(net))
         empty!(reftransitiondict(net))
     end
-    return net
+    return nothing
 end
 
 """
@@ -185,7 +171,6 @@ Return id of referenced place. If trim is `true` (default) the reference is remo
 """
 function deref_place(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
-    #CONFIG.verbose && println("deref_place net $netid refP $id")
     has_refplace(net, id) || (throw ∘ ArgumentError)("expected refplace $id to be found in net $netid")
     rp = refplace(net, id)
     isnothing(rp) && # Something is really, really wrong.
@@ -207,7 +192,6 @@ Return id of referenced transition. If trim is `true` (default) the reference is
 """
 function deref_transition(net::PnmlNet, id::Symbol, trim::Bool = true)::Symbol
     netid = pid(net)
-    #CONFIG.verbose && println("deref_transition net $netid refT $id")
     has_reftransition(net, id) || (throw ∘ ArgumentError)("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
     isnothing(rt) && # Something is really, really wrong.

@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, EzXML, ..TestUtils, JET, XMLDict
 using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     has_name, name,
     pid, initial_marking, condition, inscription,
@@ -14,20 +14,15 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n)
-        end
-
+        #@show pff(XMLDict.xml_dict)
+        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
-
-        @test pid(n) === :place1
-        @test typeof(n) <: Place
+        @test isa(n, Place)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        #@show initial_marking(n)
         @test_call initial_marking(n)
-        @test initial_marking(n)() == 100
+        @test @inferred(initial_marking(n)()) == 100
     end
 
     @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
@@ -38,10 +33,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n PNML.default_marking(n) PNML.nettype(n)
-        end
-
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
         @test pid(n) === :place1
@@ -49,12 +40,10 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
-        #@show initial_marking(n)
-        @test_call initial_marking(n)
+        @test_call target_modules=(@__MODULE__,) initial_marking(n)
         @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end
 
-    # <condition> introduced as High-Level in specification. We use it everywhere.
 @testset "transition $pntd" for pntd in all_nettypes()
     node = xml"""
       <transition id="transition1">
@@ -69,47 +58,82 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     @test pid(n) === :transition1
     @test has_name(n)
     @test name(n) == "Some transition"
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n PNML.default_condition(n) PNML.nettype(n)
-    end
-    #println(pid(n)); dump(n)
     @test condition(n) isa Bool
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     #@test_throws ErrorException parse_transition(node, pntd, registry())
-    @test parse_transition(node, pntd, registry()) !== nothing
+    @test @test_logs(parse_transition(node, pntd, registry())) !== nothing
 
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test parse_transition(node, pntd, registry()) isa Transition
+    @test @test_logs(parse_transition(node, pntd, registry())) isa Transition
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
     @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd, registry())
 
     node = xml"""<transition id ="t4">
         <condition>
-        <text>test true</text>
-        <structure>
-        true
-        </structure>
+           <text>test true</text>
+            <structure> true  </structure>
         </condition>
     </transition>"""
-    t = parse_transition(node, pntd, registry())
-    @test t isa Transition
+    t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
+                     parse_transition(node, pntd, registry()))
+    @test_opt target_modules=(@__MODULE__,) condition(t)
     @test_call condition(t)
     @test condition(t) === true
 
-    node = xml"""<transition id ="t4">
+    node = xml"""<transition id ="t5">
         <condition>
-        <text>test true</text>
-        <structure>
-            <booleanconstant value="true"/>
-        </structure>
+            <text>test true</text>
+            <structure> <booleanconstant value="true"/> </structure>
         </condition>
     </transition>"""
     t = parse_transition(node, pntd, registry())
     @test t isa Transition
-    @test_call condition(t)
     @test condition(t) === true
+
+    # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
+    # This bit may be from the pre-standard era.
+    # <ci> is a variable(constant) like pi, infinity.
+    # <cn> is a number (real)
+    # interval [4,9]
+    node = xml"""<transition id ="t6">
+        <delay>
+            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
+                <cn>4</cn>
+                <cn>9</cn>
+            </interval>
+         </delay>
+    </transition>"""
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
+    @test PNML.delay(t) isa Tuple
+
+    # unbounded interval [4,∞)
+    node = xml"""<transition id ="t7">
+        <delay>
+            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
+                <cn>4</cn>
+                <ci>infty</ci>
+            </interval>
+        </delay>
+    </transition>"""
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
+    @test PNML.delay(t) isa Tuple
+
+    # interval (3,5)
+    node = xml"""<transition id ="t8">
+        <delay>
+            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="open">
+                <cn>3</cn>
+                <cn>5</cn>
+            </interval>
+        </delay>
+    </transition>"""
+    t = parse_transition(node, pntd, registry())
+    @test t isa Transition
+    @test PNML.delay(t) isa Tuple
 end
 
 @testset "arc $pntd"  for pntd in all_nettypes()
@@ -132,21 +156,22 @@ end
         </unknown>
       </arc>
     """)
-    #a1 = @test_logs match_mode=:any (:warn, "inscription term <structure> content value: 6") (:warn, "unexpected child of <arc>: unknown")
-    a1 = @test_logs match_mode=:any (:warn, "unexpected child of <arc>: unknown") parse_arc(node, pntd, registry())
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show a1 PNML.default_inscription(a1) PNML.nettype(a1)
+    a1 = if ishighlevel(pntd)
+        @test_logs(match_mode=:any,
+            (:warn, "replacing empty <structure> content value for inscription term with: 6"),
+            (:warn, "found unexpected child of <arc>: unknown"),
+            parse_arc(node, pntd, registry()))
+    else
+        @test_logs(match_mode=:any,
+            (:warn, "found unexpected child of <arc>: unknown") ,
+            parse_arc(node, pntd, registry()))
     end
-    #println("arc a1 $pntd:"); dump(a1)
     a2 = Arc(a1, :newsrc, :newtarget)
-    #println("arc a2 with updated src, tgt:"); dump(a2)
     @testset "a1,a2" for a in [a1, a2]
         @test typeof(a) <: Arc
         @test pid(a) === :arc1
         @test has_name(a)
         @test name(a) == "Some arc"
-        #@show inscription(a)
         @test_call  inscription(a)
         @test inscription(a) == 6
     end
@@ -165,10 +190,7 @@ end
         </unknown>
     </referenceTransition>
     """
-    n = @test_logs (:warn, "unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        @show n
-    end
+    n = @test_logs (:warn, "found unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
     @test n isa RefTransition
     @test pid(n) === :rt1
     @test refid(n) === :t1
@@ -202,10 +224,9 @@ end
     </referencePlace>""",
     id="rp1", ref="Sync1")
     @testset for s in [n1, n2]
-        n = @test_logs (:warn, "unexpected child of <referencePlace>: unknown") match_mode=:any parse_refPlace(s.node, ContinuousNet(), registry())
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-            @show n
-        end
+        n = @test_logs(match_mode=:any,
+            (:warn, "found unexpected child of <referencePlace>: unknown"),
+            parse_refPlace(s.node, ContinuousNet(), registry()))
         @test typeof(n) <: RefPlace
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)
