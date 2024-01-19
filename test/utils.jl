@@ -19,6 +19,11 @@ using PNML: Maybe, getfirst, firstchild, allchildren,
     @show PNML.CONFIG
 end
 
+@testset "_evaluate" begin
+    f() = "testing"
+    @test PNML._evaluate(f) == "testing"
+end
+
 @testset "getfirst iteratible" begin
     v = [string(i) for i in 1:9]
     @test_call getfirst(==("3"), v)
