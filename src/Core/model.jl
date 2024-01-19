@@ -66,6 +66,3 @@ function Base.show(io::IO, model::PnmlModel)
     print(io, ")")
     #PnmlIDRegistry
 end
-function Base.summary(pnml::PnmlModel)
-    string(typeof(pnml), " model with ",  length(nets(pnml)), " nets" )
-end
