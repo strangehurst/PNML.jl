@@ -21,10 +21,12 @@ struct MalformedException <: PnmlException
     msg::String
 end
 
+Base.showerror(exc::MissingIDException) = showerror(stderr, exc)
 function Base.showerror(io::IO, exc::MissingIDException)
     print(io, "MissingIDException: ", exc.msg)
 end
 
+Base.showerror(exc::MalformedException) = showerror(stderr, exc)
 function Base.showerror(io::IO, exc::MalformedException)
     print(io, "MalformedException: ", exc.msg)
 end

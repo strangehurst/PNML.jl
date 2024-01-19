@@ -11,7 +11,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
         if tag == "tokenposition"
             push!(tpos, parse_tokenposition(child, pntd, reg))
         else
-            @warn "ignoring unexpected child of <tokengraphics>: '$tag'"
+            @warn "<tokengraphics> ignoring unexpected element '$tag'"
         end
     end
     if isempty(tpos)
@@ -41,15 +41,14 @@ function parse_graphics(node, pntd, reg)
     args = Dict()
     _positions = Coordinate{coordinate_value_type(pntd)}[]
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        @match tag begin
+        @match EzXML.nodename(child) begin
             "dimension" => (args[:dimension] = parse_graphics_coordinate(child, pntd, reg))
             "fill"      => (args[:fill] = parse_graphics_fill(child, pntd, reg))
             "font"      => (args[:font] = parse_graphics_font(child, pntd, reg))
             "line"      => (args[:line] = parse_graphics_line(child, pntd, reg))
             "offset"    => (args[:offset] = parse_graphics_coordinate(child, pntd, reg))
             "position"  => push!(_positions, parse_graphics_coordinate(child, pntd, reg))
-            _ => @warn "ignoring unexpected child of <graphics>: '$tag'"
+            _ => @warn "$nn ignoring <graphics> child '$child'"
         end
     end
     args[:positions] = _positions

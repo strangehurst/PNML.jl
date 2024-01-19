@@ -7,9 +7,10 @@ Place node of a Petri Net Markup Language graph.
 struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
+    #!marking::M
     initialMarking::M
     sorttype::S
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
@@ -20,12 +21,11 @@ initial_marking(place::Place) = place.initialMarking
 default_marking(place::Place) = default_marking(place.pntd)
 
 function Base.show(io::IO, place::Place)
-    print(io, nameof(typeof(place)), "(")
-    show(io, pid(place)); print(io, ", ")
-    show(io, name(place)); print(io, ", ")
-    show(io, place.sorttype); print(io, ", ")
-    show(io, initial_marking(place));
-    print(io, ")")
+    print(io, summary(place),
+          " id ", place.id,
+          ", name '", name(place), "'",
+          ", type ", place.sorttype,
+          ", initial marking ", initial_marking(place))
 end
 
 #-------------------
@@ -39,7 +39,7 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     condition::C
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
@@ -55,9 +55,8 @@ condition(transition::Transition) = _evaluate(transition.condition)::condition_v
 default_condition(transition::Transition) = default_condition(transition.pntd)
 
 function Base.show(io::IO, trans::Transition)
-    print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
-    show(io, condition(trans))
-    print(io, ")")
+    print(io, typeof(trans),
+          " id ", pid(trans), ", name '", name(trans), "'", ", condition ", condition(trans))
 end
 
 #-------------------
@@ -73,7 +72,7 @@ mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
     source::Symbol
     target::Symbol
     inscription::I
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
@@ -85,7 +84,7 @@ mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
 end
 
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
-    Arc(a.pntd, a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
+    Arc(a.pntd, a.id, src, tgt, a.inscription, a.name, a.graphics, a.tools, a.labels)
 
 nettype(::Arc{T}) where {T <: PnmlType} = T
 inscription(arc::Arc) = _evaluate(arc.inscription)
@@ -106,13 +105,11 @@ Return identity symbol of target of `arc`.
 target(arc::Arc)::Symbol = arc.target
 
 function Base.show(io::IO, arc::Arc)
-    print(io, nameof(typeof(arc)), "(", repr(pid(arc)),
-          ", ", repr(name(arc)),
-          ", ", repr(source(arc)),
-          ", ", repr(target(arc)),
-          ", ")
-    show(io, inscription(arc))
-    print(io, ")")
+    print(io, typeof(arc), " id ", arc.id,
+          ", name '", has_name(arc) ? name(arc) : "", "'",
+          ", source: ", source(arc),
+          ", target: ", target(arc),
+          ", inscription: ", arc.inscription)
 end
 
 #-------------------
@@ -126,7 +123,7 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     pntd::PNTD
     id::Symbol
     ref::Symbol # Place or RefPlace
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
@@ -143,12 +140,12 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     pntd::PNTD
     id::Symbol
     ref::Symbol # Transition or RefTransition
-    namelabel::Maybe{Name}
+    name::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    labels::Vector{PnmlLabel} #! NamedTuple Symbol => Annotation? Dict{Symbol,Annotation}
 end
 
 function Base.show(io::IO, r::ReferenceNode)
-    print(io, nameof(typeof(r)), "(", repr(pid(r)), ",  ", repr(refid(r)), ")")
+    print(io, typeof(r), " (id ", pid(r), ", ref ", refid(r), ")")
 end

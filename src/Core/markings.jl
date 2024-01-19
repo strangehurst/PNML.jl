@@ -11,13 +11,13 @@ Is a functor that returns the `value`.
 
 ```jldoctest; setup=:(using PNML: Marking)
 julia> m = Marking(1)
-Marking(1)
+Marking(1, nothing, [])
 
 julia> m()
 1
 
 julia> m = Marking(12.34)
-Marking(12.34)
+Marking(12.34, nothing, [])
 
 julia> m()
 12.34
@@ -42,19 +42,14 @@ Evaluate [`Marking`](@ref) instance by returning its evaluated value.
 """
 (mark::Marking)() = _evaluate(value(mark))
 
+
 function Base.show(io::IO, ptm::Marking)
-    print(io, indent(io), "Marking(")
-    show(io, value(ptm))
-    if has_graphics(ptm)
-        print(io, ", ")
-        show(io, graphics(ptm))
-    end
-    if has_tools(ptm)
-        print(io, ", ")
-        show(io, tools(ptm));
-    end
-    print(io, ")")
+    pprint(io, ptm)
 end
+
+PrettyPrinting.quoteof(m::Marking) = :(Marking($(PrettyPrinting.quoteof(value(m))),
+        $(PrettyPrinting.quoteof(m.graphics)),
+        $(PrettyPrinting.quoteof(m.tools))))
 
 """
 $(TYPEDEF)
@@ -69,7 +64,7 @@ Is a functor that returns the evaluated `value`.
 
 ```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
 julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text", Term(:value, 3))
+HLMarking("the text", Term(:value, 3), nothing, [])
 
 julia> m()
 3
@@ -82,26 +77,24 @@ struct HLMarking{T <: AbstractTerm} <: HLAnnotation
     tools::Vector{ToolInfo}
 end
 
-HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
+HLMarking(t::AbstractTerm)   = HLMarking(nothing, t)
 HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, nothing, ToolInfo[])
 
 value(m::HLMarking) = m.term
 
-function Base.show(io::IO, hlm::HLMarking)
-    print(io, indent(io), "HLMarking(")
-    show(io, text(hlm)); print(io, ", ")
-    show(io, value(hlm)) # Term
-    if has_graphics(hlm)
-        print(io, ", ")
-        show(io, graphics(hlm))
-    end
-    if has_tools(hlm)
-        print(io, ", ")
-        show(io, tools(hlm));
-    end
-    print(io, ")")
+function Base.summary(hlm::HLMarking)
+    string(typeof(hlm))
 end
 
+function Base.show(io::IO, hlm::HLMarking)
+    pprint(io, hlm)
+end
+
+quoteof(m::HLMarking) = :(HLMarking($(quoteof(text(m))), $(quoteof(value(m))),
+                                    $(quoteof(graphics(m))), $(quoteof(tools(m)))))
+
+
+#! HLMarking is a multiset, not an expression.
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.

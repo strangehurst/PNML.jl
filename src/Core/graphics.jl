@@ -27,8 +27,8 @@ y(c::Coordinate) = c.y
 Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
 function Base.show(io::IO, c::Coordinate)
-    #compact = get(io, :compact, false)::Bool
-    print(io, "Coordinate(", c.x, ", ", c.y, ")")
+    compact = get(io, :compact, false)::Bool
+    print(io, "(", c.x, ",", c.y, ")")
 end
 
 #-------------------
@@ -46,14 +46,13 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, fill::Fill)
-    print(io, "Fill(")
-    show(io, fill.color); print(io, ", ")
-    show(io, fill.image); print(io, ", ")
-    show(io, fill.gradient_color); print(io, ", ")
-    show(io, fill.gradient_rotation);
-    print(io, ")")
+    pprint(io, fill)
 end
 
+PrettyPrinting.quoteof(f::Fill) = :(Fill($(PrettyPrinting.quoteof(f.color)),
+                                         $(PrettyPrinting.quoteof(f.image)),
+                                         $(PrettyPrinting.quoteof(f.gradient_color)),
+                                         $(PrettyPrinting.quoteof(f.gradient_rotation))))
 
 #-------------------
 """
@@ -73,15 +72,16 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, font::Font)
-    print(io, "Font(")
-    show(io, font.family); print(io, ", ")
-    show(io, font.style); print(io, ", ")
-    show(io, font.weight); print(io, ", ")
-    show(io, font.size); print(io, ", ")
-    show(io, font.rotation); print(io, ", ")
-    show(io, font.decoration);
-    print(io, ")")
+    pprint(io, font)
 end
+
+PrettyPrinting.quoteof(f::Font) = :(Font($(PrettyPrinting.quoteof(f.family)),
+                                         $(PrettyPrinting.quoteof(f.style)),
+                                         $(PrettyPrinting.quoteof(f.weight)),
+                                         $(PrettyPrinting.quoteof(f.size)),
+                                         $(PrettyPrinting.quoteof(f.align)),
+                                         $(PrettyPrinting.quoteof(f.rotation)),
+                                         $(PrettyPrinting.quoteof(f.decoration))))
 
 #-------------------
 """
@@ -98,13 +98,13 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, line::Line)
-    print(io, "Font(")
-    show(io, line.color); print(io, ", ")
-    show(io, line.shape); print(io, ", ")
-    show(io, line.style); print(io, ", ")
-    show(io, line.width);
-    print(io, ")")
+    pprint(io, line)
 end
+
+PrettyPrinting.quoteof(l::Line) = :(Line($(PrettyPrinting.quoteof(l.color)),
+                                         $(PrettyPrinting.quoteof(l.style)),
+                                         $(PrettyPrinting.quoteof(l.shape)),
+                                         $(PrettyPrinting.quoteof(l.width))))
 
 #-------------------
 """
@@ -124,14 +124,13 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, g::Graphics)
-    print(io, "Graphics(")
-    show(io, g.dimension); print(io, ", ")
-    show(io, g.fill); print(io, ", ")
-    show(io, g.font); print(io, ", ")
-    show(io, g.line); print(io, ", ")
-    show(io, g.offset); print(io, ", ")
-    show(io, g.positions);
-    print(io, ")")
+    print(io, "Graphics(",
+            g.dimension, ", ",
+            g.fill, ", ",
+            g.font, ", ",
+            g.line, ", ",
+            g.offset, ", ",
+            g.positions, ")")
 end
 
 

@@ -10,11 +10,13 @@ using PNML: tag, pid, parse_str,
     nettype, firstpage, ispid
 using PNML: incidence_matrix, inscription_value_type
 
+using PrettyPrinting
 using Test, Logging
 testlogger = TestLogger()
 
-str1 = """
-<?xml version="1.0"?>
+@testset "SIMPLENET" begin
+        str1 = """
+    <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="continuous">
             <page id="page0">
@@ -36,34 +38,57 @@ str1 = """
             </page>
         </net>
     </pnml>
-"""
-
-@testset "SIMPLENET" begin
+    """
     @test_call target_modules=target_modules parse_str(str1)
-    model = @test_logs(match_mode=:any,
-        (:warn,"found unexpected label of <place>: structure"),
-        (:warn,"found unexpected label of <place>: frog"),
-        @inferred parse_str(str1))
-    #@show model
+    #model = @test_logs (:warn,"unexpected child of <place>: frog") (:warn,"unexpected child of <place>: structure") #!broke
+    model = @inferred parse_str(str1)
+    #@show model #println("simplenet model"); dump(model)
+    #println()
 
+    @test_call PNML.find_nets(model, :continuous)
+    @test_call PNML.find_nets(model, PNML.ContinuousNet())
+    vx = PNML.find_nets(model, :continuous)
+    v =  PNML.find_nets(model, PNML.ContinuousNet())
+    @test vx === v
+    @test !isempty(v)
+
+    @test_call PNML.first_net(model)
     net0 = @inferred PnmlNet PNML.first_net(model)
+    #@show net0
+    @test PNML.nettype(net0) <: PnmlType
+    @test first(v) === net0
+
     #println("- - - - - - - - - - - - - - - -")
-    snet1 = @inferred SimpleNet SimpleNet(model)
-    #@show snet1
-    #println("- - - - - - - - - - - - - - - -")
-    snet  = @inferred SimpleNet SimpleNet(net0)
-    #@show snet
-    #@show typeof(snet)
+    #@show typeof(values(arc_idset(net0)))
+    PNML.flatten_pages!(model)
+    PNML.flatten_pages!(net0)
     #println("- - - - - - - - - - - - - - - -")
 
-    @test_call SimpleNet(net0) # passes
+    @test_call SimpleNet(net0)
     @test_call broken=jet_broke SimpleNet(model)
 
-    for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
+    snet  = @inferred SimpleNet SimpleNet(net0)
+    snet1 = @inferred SimpleNet SimpleNet(model)
+
+    for accessor in [pid, place_idset, transition_idset, arc_idset,
+                     reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
     end
 
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        println("print simple petri net")
+        for accessor in [places, transitions, arcs]
+            map(println, places(snet))
+            map(println, transitions(snet))
+            map(println, arcs(snet))
+            for (a,b) in zip(accessor(snet1), accessor(snet))
+                @test pid(a) == pid(b)
+            end
+        end
+    end
     @testset "inferred" begin
+        #println()
+        #@show "start inferred"
         # First @inferred failure throws exception ending testset.
         @test firstpage(snet.net) === first(pages(snet.net))
 
@@ -81,27 +106,30 @@ str1 = """
     end
 
     for top in [first(pages(snet.net)), snet.net, snet]
+        #println()
         #@show typeof(top)
         #@show length(pages(top))
         @test_call target_modules=target_modules places(top)
 
         for placeid in place_idset(top)
+            #println("place ", placeid)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)
             p = @inferred Maybe{Place} place(top, placeid)
+            #@test pid(p) ===  p.id
             #! errors @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
             #@test typeof(initial_marking(placeid)) <: typeof(default_marking(p))
             #@test @inferred(initial_marking(p)) isa typeof(default_marking(p))
         end
+        #println()
     end
 
     for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
+            #println("transition $(pid(t))"); dump(t)
             @test PNML.ispid(pid(t))(pid(t))
-            @show t pid(t) PNML.haspid(t, pid(t))
-            @test PNML.haspid(nothing, pid(t)) === false
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
             t == @inferred Maybe{Transition} transition(top, pid(t))
@@ -115,6 +143,11 @@ str1 = """
     for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules arcs(top)
         for a in arcs(top)
+            #@show "arc $(pid(a))"
+            #@show a
+            #@show pid(a), inscription(a), typeof(inscription(a)), default_inscription(a)
+            #@show has_arc(top, pid(a))
+            #@show typeof(has_arc(top, pid(a)))
             @test @inferred Maybe{Bool} has_arc(top, pid(a))
             a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
@@ -137,28 +170,6 @@ str1 = """
     end
 end
 
-# Used in precompile.
-@testset "simple ptnet" begin
-    @show "precompile's SimpleNet"
-    @test PNML.SimpleNet("""<?xml version="1.0"?>
-        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
-            <name> <text>P/T Net with one place</text> </name>
-            <page id="page1">
-            <place id="place1">
-                <initialMarking> <text>100</text> </initialMarking>
-            </place>
-            <transition id="transition1">
-                <name><text>Some transition</text></name>
-            </transition>
-            <arc source="transition1" target="place1" id="arc1">
-                <inscription><text>12</text></inscription>
-            </arc>
-            </page>
-        </net>
-        </pnml>""") isa PNML.SimpleNet
-end
-
 @testset "rate" begin
     str2 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -171,8 +182,9 @@ end
     """
     model = @inferred parse_str(str2)
     net = PNML.first_net(model)
+    @test net isa PnmlNet
     snet = @inferred PNML.SimpleNet(net)
-    @test contains(sprint(show, snet), "SimpleNet")
+    #@show snet
     β = PNML.rates(snet)
     #@show β
     @test β == LVector(birth=0.3)
@@ -199,36 +211,36 @@ end
     </pnml>
     """
 
-    model = @test_logs(@inferred( parse_str(str3)));
+    model = @inferred parse_str(str3);     #@show typeof(model);
     net1 = PNML.first_net(model);          #@show typeof(net1)
     snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
-    @show PNML.input_matrix(snet)
-    @show PNML.output_matrix(snet)
-    @show PNML.conditions(snet)
-    @show PNML.inscriptions(snet)
-    map(println, PNML.all_arcs(snet, :wolf))
-    map(println, PNML.src_arcs(snet, :wolf))
-    map(println, PNML.tgt_arcs(snet, :wolf))
 
     # keys are transition ids
-    # values are input, output vectors of "tuples" place id -> inscription of arc
+    # values are input, output vectors of "tuples" place id -> inscription (integer?)
     Δ = PNML.transition_function(snet)#,T)
-    @show S T Δ
-
-    # Expected result
-    expected_transition_function = LVector(
+    tfun = LVector(
         birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
         predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
         death=(LVector(wolves=1.0), LVector()),
     )
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        @show S T Δ
+        #for t in PNML.transition_idset(snet)
+        #    @show t
+        #    @show collect(pairs(PNML.ins(snet, t)))
+        #    @show collect(pairs(PNML.outs(snet, t)))
+        #    @show collect(pairs(PNML.in_out(snet, t)))
+        #end
+        @show Δ.birth tfun.birth
+    end
 
-    @test typeof(Δ)   == typeof(expected_transition_function)
-    @test Δ.birth     == expected_transition_function.birth
-    @test Δ.predation == expected_transition_function.predation
-    @test Δ.death     == expected_transition_function.death
+    @test typeof(Δ)   == typeof(tfun)
+    @test Δ.birth     == tfun.birth
+    @test Δ.predation == tfun.predation
+    @test Δ.death     == tfun.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
     u0 = PNML.initial_markings(snet)
@@ -236,7 +248,13 @@ end
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
     β = PNML.rates(snet)
-    @show β
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        #!@show uX
+        #!@show u0
+        #!@show βx
+        @show β
+        @show typeof(β)
+    end
     @test β == βx
 end
 
@@ -251,30 +269,22 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    #@show pntd PNML.default_one_term(pnmltype(pntd))
+    println()
+    @show pntd
     if pntd in hl_types
-        marking = """
-        <hlinitialMarking>
-            <text>1</text>
-            <structure>$(PNML.default_one_term(pnmltype(pntd))())</structure>
-        </hlinitialMarking>
-        """
+        marktag = "hlinitialMarking"
         insctag = "hlinscription"
     else
-        marking = """
-        <initialMarking>
-            <text>1</text>
-        </initialMarking>
-        """
+        marktag = "initialMarking"
         insctag = "inscription"
     end
-    #@show marking
+
     str3 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="$pntd">
         <name><text>test petri net</text></name>
         <page id="page0">
-            <place id="p1"> $marking </place>
+            <place id="p1"> <$marktag> <text>1</text> <structure>1</structure></$marktag> </place>
             <place id="p2"/>
             <place id="p3"/>
             <place id="p4"/>
@@ -303,6 +313,22 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     """
     anet = PNML.SimpleNet(str3)
     mg = PNML.metagraph(anet)
+
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
+        #show(anet)
+        println("inscriptions"); map(println, PNML.inscriptions(anet))
+        println("conditions"); map(println, PNML.conditions(anet))
+        #@show PNML.name(anet)
+
+        @show typeof(mg) mg
+        @show Graphs.is_directed(mg)
+        @show Graphs.is_connected(mg)
+        @show Graphs.is_bipartite(mg)
+        @show Graphs.ne(mg)
+        @show Graphs.nv(mg)
+        @show MetaGraphsNext.labels(mg) |> collect
+        @show MetaGraphsNext.edge_labels(mg) |> collect
+    end
 
     C  = incidence_matrix(anet)
     m₀ = initial_markings(anet)

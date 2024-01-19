@@ -1,6 +1,3 @@
-# This is a manual extraction from the schem and docs.
-# See also https://slebok.github.io/zoo/automata/petri/pnml/standard/symmetric/extracted/index.html
-# ---------------------------------------------------------------------------------------------
 text conventions.rng:28: nonnegativeintegerlabel.content
 text conventions.rng:44: positiveintegerlabel.content
 

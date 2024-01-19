@@ -19,9 +19,10 @@ Here we provide a fallback for *unclaimed tags*.
 """
 struct Structure
     tag::Symbol
-    el::XDVT
+    el::Vector{AnyXmlNode}
 end
-Structure(s::AbstractString, e) = Structure(Symbol(s), e)
+
+Structure(p::Pair{Symbol, Vector{AnyXmlNode}}) = Structure(p.first, p.second)
 
 tag(s::Structure) = s.tag
 elements(s::Structure) = s.el

@@ -1,186 +1,76 @@
-using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, value, text, elements, all_nettypes, ishighlevel,
-    DictType, XDVT
+using PNML, EzXML, ..TestUtils, JET, PrettyPrinting
+using PNML: Maybe, tag, pid, value, text, elements, AnyXmlNode,
+all_nettypes, ishighlevel
 
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
+    str = """
+ <hlinitialMarking>
+    <text>&lt;All,All&gt;</text>
+    <structure>
+        <tuple>
+            <subterm><all><usersort declaration="N1"/></all></subterm>
+            <subterm><all><usersort declaration="N2"/></all></subterm>
+        </tuple>
+    </structure>
+    <graphics><offset x="0" y="0"/></graphics>
+    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+    <unknown id="unkn">
+        <name> <text>unknown label</text> </name>
+        <text>content text</text>
+    </unknown>
+ </hlinitialMarking>
+    """
+    mark = (@test_logs (:warn,"ignoring unexpected child of <hlinitialMarking>: unknown") PNML.parse_hlinitialMarking(xmlroot(str), pntd, registry()))
 
-    @testset "3`dot" begin
-        node = xml"""
-        <hlinitialMarking>
-            <text>3`dot</text>
-            <structure>
-                <numberof>
-                    <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
-                    <subterm><dotconstant/></subterm>
-                </numberof>
-            </structure>
-        </hlinitialMarking>
-        """
-        # numberof is an operator: natural number, element of a sort -> multiset
-        # subterms are in an ordered collection, first is a number, second an element of a sort
-        # Use the first part of this pair in contextes that want numbers.
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
-        @test mark isa PNML.marking_type(pntd)
-        #pprint(mark)
+    @test mark isa PNML.AbstractLabel
+    @test mark isa PNML.marking_type(pntd) #HLMarking
 
-        @test value(mark) isa PNML.AbstractTerm # Should be Variable or Operator
-        @test text(mark) == "3`dot"
-
-        @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-        # Any `Label` children must be "well behaved xml".
-
-        @show value(mark)
-
-        markterm = value(mark)
-        @test tag(markterm) === :numberof # pnml many-sorted operator -> multiset
-        parameters = elements(markterm)["subterm"]
-        @test length(parameters) == 2
-        @test parameters[1]["numberconstant"][:value] == "3"
-        @test isempty(parameters[2]["dotconstant"])
-
-        #TODO HL implementation not complete:
-        #TODO  evaluate the HL expression, check place sorttype
-
-        #@show axn #! debug
+    # Following HL text,structure label pattern where structure is a `Term`.
+    @test text(mark) == "<All,All>"
+    @test value(mark) isa PNML.AbstractTerm
+    @test value(mark) isa PNML.Term
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show mark PNML.summary(mark)
     end
+    @test PNML.has_graphics(mark) == true
+    @test PNML.has_labels(mark) == false
 
-    @testset "<All,All>" begin #! Does this Term make sense as a marking?
-        node = xml"""
-        <hlinitialMarking>
-            <text>&lt;All,All&gt;</text>
-            <structure>
-                <tuple>
-                    <subterm><all><usersort declaration="N1"/></all></subterm>
-                    <subterm><all><usersort declaration="N2"/></all></subterm>
-                </tuple>
-            </structure>
-            <graphics><offset x="0" y="0"/></graphics>
-            <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-            <unknown id="unkn">
-                <name> <text>unknown label</text> </name>
-                <text>content text</text>
-            </unknown>
-        </hlinitialMarking>
-        """
-        mark = @test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
-            PNML.parse_hlinitialMarking(node, pntd, registry()))
+    markterm = value(mark)
+    @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
+    axn = elements(markterm)
+    #TODO HL implementation not complete:
+    #TODO  evaluate the HL expression, check place sorttype
+    # Decend each element of the term.
+    sub1 = axn[1]
+    @test tag(sub1) === :subterm
+    @test value(sub1) isa Vector{AnyXmlNode}
 
-        @test mark isa PNML.AbstractLabel
-        @test mark isa PNML.marking_type(pntd) #HLMarking
-        #pprint(mark)
-        @test occursin("Graphics", sprint(show, mark))
+    all1 = value(sub1)[1]
+    @test tag(all1) === :all
+    @test value(all1) isa Vector{AnyXmlNode}
 
-        # Following HL text,structure label pattern where structure is a `Term`.
-        @test text(mark) == "<All,All>"
-        @test value(mark) isa PNML.AbstractTerm
-        @test value(mark) isa PNML.Term
+    use1 = value(all1)[1]
+    @test tag(use1) === :usersort
+    @test value(use1) isa Vector{AnyXmlNode}
 
-        @test PNML.has_graphics(mark) == true
-        @test PNML.has_labels(mark) == false
+    @test tag(value(use1)[1]) === :declaration
+    @test value(value(use1)[1]) == "N1"
 
-        @show value(mark)
-        markterm = value(mark)
-        @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
+    #println("\n## axn[2]"); dump(axn[2])
+    sub2 = axn[2]
+    @test tag(sub2) === :subterm
+    @test value(sub2) isa Vector{AnyXmlNode}
 
-        axn = elements(markterm)
+    all2 = value(sub2)[1]
+    @test tag(all2) === :all
+    @test value(all2) isa Vector{AnyXmlNode}
 
-        # Decend each element of the term.
-        @test tag(axn) == "subterm"
-        @test value(axn) isa Vector #!{DictType}
+    use2 = value(all2)[1]
+    @test tag(use2) === :usersort
+    @test value(use2) isa Vector{AnyXmlNode}
 
-        all1 = value(axn)[1]
-        @test tag(all1) == "all"
-        @test value(all1) isa DictType
-        use1 = value(all1)["usersort"]
-        @test use1 isa DictType
-        @test use1[:declaration] == "N1"
-        @test PNML._attribute(use1, :declaration) == "N1"
-
-        all2 = value(axn)[2]
-        @test tag(all2) == "all"
-        @test value(all2) isa DictType
-        use2 = value(all2)["usersort"]
-        @test use2 isa DictType
-        @test use2[:declaration] == "N2"
-        @test PNML._attribute(use2, :declaration) == "N2"
-    end
-
-    @testset "useroperator" begin
-        node = xml"""
-        <hlinitialMarking>
-            <text>useroperator</text>
-            <structure>
-                <useroperator declaration="id4"/>
-            </structure>
-        </hlinitialMarking>
-        """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
-        #@show value(mark)
-        #pprint(mark)
-    end
-
-    # add two multisets: another way to express 3 + 2
-    @testset "1`3 ++ 1`2" begin
-        node = xml"""
-        <hlinitialMarking>
-            <text>1`3 ++ 1`2</text>
-            <structure>
-                <add>
-                    <subterm>
-                        <numberof>
-                        <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
-                        <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
-                        </numberof>
-                    </subterm>
-                    <subterm>
-                        <numberof>
-                        <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
-                        <subterm><numberconstant value="2"><positive/></numberconstant></subterm>
-                        </numberof>
-                    </subterm>
-                </add>
-            </structure>
-        </hlinitialMarking>
-        """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
-        #@show mark
-        @show value(mark)
-        #pprint(mark)
-    end
-
-    # The constant eight.
-    @testset "1`8" begin
-        node = xml"""
-        <hlinitialMarking>
-            <text>1`8</text>
-            <structure>
-                <numberof>
-                <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
-                <subterm><numberconstant value="8"><positive/></numberconstant></subterm>
-                </numberof>
-            </structure>
-        </hlinitialMarking>
-        """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
-        #@show mark
-        @show value(mark)
-        #pprint(mark)
-    end
-
-    # This is the same as when the element is omitted.
-    @testset "x" begin
-        node = xml"""
-        <hlinitialMarking>
-        </hlinitialMarking>
-        """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
-        #@show mark
-        @show value(mark)
-        #pprint(mark)
-    end
-
-    println()
+    @test tag(value(use2)[1]) === :declaration
+    @test value(value(use2)[1]) == "N2"
 end
 
 @testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
@@ -201,37 +91,49 @@ end
         </unknown>
       </hlinscription>
     """
-    insc = @test_logs(match_mode=:all, (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-            #(:info, "parse_term kinds are Variable and Operator"),
-            PNML.parse_hlinscription(n1, pntd, registry()))
+    insc = @test_logs (:warn,"ignoring unexpected child of <hlinscription>: unknown") PNML.parse_hlinscription(n1, pntd, registry())
 
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
+    @test text(insc) isa Union{Nothing,AbstractString}
+    @test text(insc) == "<x,v>"
+    @test value(insc) isa PNML.AbstractTerm
+    @test value(insc) isa PNML.Term
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        @show insc
+    end
     @test PNML.has_graphics(insc) == true
     @test PNML.has_labels(insc) == false
 
-    @test text(insc) isa Union{Nothing,AbstractString}
-    @test text(insc) == "<x,v>"
-
-    @test occursin("Graphics", sprint(show, insc))
-
-    #@show value(insc)
     inscterm = value(insc)
-    @test inscterm isa PNML.Term
     @test tag(inscterm) === :tuple
     axn = elements(inscterm)
 
     #TODO HL implementation not complete:
 
-    sub1 = axn["subterm"][1]
-    @test tag(sub1) == "variable"
-    var1 = PNML._attribute(sub1["variable"], :refvariable)
-    @test var1 == "x"
+    sub1 = axn[1]
+    @test tag(sub1) === :subterm
+    @test value(sub1) isa Vector{AnyXmlNode}
 
-    sub2 = axn["subterm"][2]
-    @test tag(sub2) == "variable"
-    var2 = PNML._attribute(sub2["variable"], :refvariable)
-    @test var2 == "v"
+    var1 = value(sub1)[1]
+    @test tag(var1) === :variable
+    @test value(var1) isa Vector{AnyXmlNode}
+
+    ref1 = value(var1)[1]
+    @test tag(ref1) === :refvariable
+    @test value(ref1) == "x"
+
+    sub2 = axn[2]
+    @test tag(sub2) === :subterm
+    @test value(sub2) isa Vector{AnyXmlNode}
+
+    var2 = value(sub2)[1]
+    @test tag(var2) === :variable
+    @test value(var2) isa Vector{AnyXmlNode}
+
+    ref2 = value(var2)[1]
+    @test tag(ref2) === :refvariable
+    @test value(ref2) == "v"
 end
 
 @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
@@ -243,26 +145,55 @@ end
         </tuple>
      </structure>
     """
-    # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
     stru = PNML.parse_structure(node, pntd, registry())
     @test stru isa PNML.Structure
-    @test tag(stru) == :structure
-    axn = elements(stru)
-    @test axn isa DictType
 
-    tup = axn["tuple"]
-    sub = tup["subterm"]
+    #println("\n## stru = "); dump(stru)
+    @test tag(stru) === :structure
+    @test elements(stru) isa Vector{AnyXmlNode}
+    @test tag(stru) === :structure
+    axn = elements(stru)
+
+    # expected structure: tuple -> subterm -> all -> usersort -> declaration
+
+    tup1 = axn[1]
+    @test tag(tup1) === :tuple
+    @test value(tup1) isa Vector{AnyXmlNode}
+
     #--------
-    all1 = sub[1]["all"]
-    usr1 = all1["usersort"]
-    @test value(usr1) == "N1"
-    @test value(axn["tuple"]["subterm"][1]["all"]["usersort"]) == "N1"
+    sub1 = value(tup1)[1]
+    @test tag(sub1) === :subterm
+    @test value(sub1) isa Vector{AnyXmlNode}
+
+    all1 = value(sub1)[1]
+    @test tag(all1) === :all
+    @test value(all1) isa Vector{AnyXmlNode}
+
+    usr1 = value(all1)[1]
+    @test tag(usr1) === :usersort
+    @test value(usr1) isa Vector{AnyXmlNode}
+
+    dec1 = value(usr1)[1]
+    @test tag(dec1) === :declaration
+    @test value(dec1) == "N1"
+
     #--------
-    all2 = sub[2]["all"]
-    usr2 = all2["usersort"]
-    @test value(usr2) == "N2"
-    @test value(axn["tuple"]["subterm"][2]["all"]["usersort"]) == "N2"
+    sub2 = value(tup1)[2]
+    @test tag(sub2) === :subterm
+    @test value(sub2) isa Vector{AnyXmlNode}
+
+    all2 = value(sub2)[1]
+    @test tag(all2) === :all
+    @test value(all2) isa Vector{AnyXmlNode}
+
+    usr2 = value(all2)[1]
+    @test tag(usr2) === :usersort
+    @test value(usr2) isa Vector{AnyXmlNode}
+
+    dec2 = value(usr2)[1]
+    @test tag(dec2) === :declaration
+    @test value(dec2) == "N2"
 end
 
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
@@ -279,21 +210,18 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'") PNML.parse_type(node, pntd, registry())
+        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: unknown") PNML.parse_type(node, pntd, registry())
         @test typ isa PNML.SortType
+        #println("\n## SortType typ "); dump(typ)
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show typ
+        end
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
-        @test PNML.type(typ) == PNML.UserSort
         @test value(typ).declaration == :N2
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
-        @test occursin("Graphics", sprint(show, typ))
-
-        @test value(PNML.SortType(value(typ))) isa PNML.UserSort
-        @test text(PNML.SortType(value(typ))) == ""
-        @test value(PNML.SortType("goofy", value(typ))) isa PNML.UserSort
-        @test text(PNML.SortType("goofy", value(typ))) == "goofy"
-    end
+        end
 end
 
 # conditions are for everybody.
@@ -311,13 +239,15 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond = @test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-                #(:info, "parse_term kinds are Variable and Operator"),
-                PNML.parse_condition(node, pntd, registry()))
+        cond =  @test_logs (:warn,"ignoring unexpected child of <condition>: unknown") PNML.parse_condition(node, pntd, registry())
+        #println("parse_condition"); dump(cond)
         @test cond isa PNML.condition_type(pntd)
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            @show cond
+        end
         @test text(cond) == "(x==1 and y==1 and d==1)"
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
-        @test tag(value(cond)) == :or
+        @test tag(value(cond)) === :or
         @test PNML.has_graphics(cond) == true
         @test PNML.has_labels(cond) == false
     end

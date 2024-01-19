@@ -21,41 +21,34 @@ _evaluate(x::AbstractTerm) = x() # functor
 $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 
-> ...can be a built-in constant or a built-in operator, a multiset operator which among others
-> can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
-> sequence of sorts as its input sorts, and exactly one output sort, which defines its signature.
+"...can be a built-in constant or a built-in operator, a multiset operator which among others
+can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
+sequence of sorts as its input sorts, and exactly one output sort, which defines its signature."
 
 See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 """
 abstract type AbstractOperator <: AbstractTerm end
-# Expect each instance to have fields:
-# - ordered sequence of zero or more input sorts #todo vector or tuple?
-# - one output sort
-# and support methods to:
-# - compare operator signatures for equality using sort eqality
-# - output sort type to test against place sort type (and others)
-#
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm`.
+Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm``.
 Here we use `Term` as a concrete wrapper around **unparsed** high-level many-sorted algebra terms
-**AND EXTEND** to also wrapping "single-sorted" values for other PNTDs.
+**AND EXTEND** to also wrapping "single-sorted" values.
 
 By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
 to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
 
 See also [`iscontinuous`](@ref)
 
-As part of the many-sorted algebra AST attached to nodes of a High-level Petri Net Graph,
-`Term`s are contained within the <structure> element of an annotation label.
-One XML child is expected below <structure> in the PNML schema.
-The child's XML tag is used as the AST node type symbol.
-Usually [`unparsed_tag`](@ref) is used to turn the child into a key, value pair.
+As part of the many-sorted algebra attached to nodes of a High-level Petri Net Graph,
+Term`s are contained within the <structure> element of an annotation label,
+See [`HLAnnotation`](@ref) concrete subtypes.
 
 #TODO is it safe to assume that Bool, Int, Float64 are in the carrier set/basis set?
+
+#! HL term is currently implemented as a wrapper of Vector{AnyXmlNode}. A tree of symbols with leafs that are strings.
 
 # Functor
 
@@ -72,43 +65,43 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscri
 The type parameter is a sort. We enumerate some of the built-in sorts allowed.
 Is expected that the term will evaluate to that type.
 Is that called a 'ground term'? 'basis set'?
-External information may be used to select the output type.
+When the elements' value is a Vector{AnyXmlNode} external information is used to select the output type.
 """
-struct Term <: AbstractTerm
+struct Term #= {T<:Union{Bool, Int, Float64}} =# <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, XDVT}
+    elements::Union{Bool, Int, Float64, Vector{AnyXmlNode}}
 end
-Term(s::AbstractString, e) = Term(Symbol(s), e) #! turn string into symbol
+Term(p::Pair{Symbol, Vector{AnyXmlNode}}) = Term(p.first, p.second)
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 Base.eltype(t::Term) = typeof(elements(t))
+#Base.eltype(t::Term{T}) where {T} = T
 
 #!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-function Base.show(io::IO, t::Term)
-    #@show typeof(elements(t))
-    print(io, nameof(typeof(t)), "(")
-    show(io, tag(t)); print(io, ", ");
-    dict_show(io, elements(t), 0)
-    print(io, ")")
+quoteof(t::Term) = :(Term($(quoteof(t.tag)), $(quoteof(t.elements))))
+
+(t::Term)() = begin
+    if typeof(elements(t)) <: Number
+        return elements(t)
+    else # is Vector{AnyXmlNode}
+        # Fake like we know how to evaluate a expression of the high-level terms.
+        # Find any `:value` tag in elements and assume is a boolean string.
+        i = findfirst(x -> !isa(x, Number) && (tag(x) === :value), t.elements)
+        if !isnothing(i)
+            return value(t.elements[i]) == "true" # should be a booleanconstant
+        else
+            println("(t::Term) needs to handle term ast! returning nothing");
+            map(println, elements(t))
+            #todo Until then, return a random value in the   domain.
+            #
+            #! v = _evaluate(default)
+            return nothing
+        end
+    end
 end
-
-(t::Term)() =  _term_eval(elements(t))
-
-_term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
-_term_eval(v::Number) = v
-_term_eval(v::AbstractString) = parse(Bool, v)
-_term_eval(v::DictType) = begin
-    # Fake like we know how to evaluate a expression of the high-level terms.
-    haskey(v, :value) && return _term_eval(v[:value])
-    #@show v
-    @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
-    #Base.show_backtrace(stdout, backtrace())
-    return false #
-end
-
 #(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end
 #(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
 #(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end
@@ -192,7 +185,7 @@ end
 #-----------------------------------------------------------------------------------
 
 #TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
-# Term is really Variable and Opeator
+
 term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
 term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
 

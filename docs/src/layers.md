@@ -45,8 +45,8 @@ What is permitted by the specification in a XML file will be a subset of the imp
 Concepts from High-Level Petri Nets will be used in the Core layer.
 
 Sorts as defined in the specification are based on natural numbers and booleans.
-High-level pntds use a `SortType` Term to define expressions as abstract syntax trees in XML.
-Intermediate implementation of Terms uses [`DictType`](@ref) to hold the AST.
+High-level pntds use a`SortType` Term to define expressions as abstract syntax trees in XML.
+Intermediate implementation of Terms uses [`AnyXmlNode`](@ref) to hold the AST as a tree of key, values where lhe leaf values are strings.
 
 `default_sort_type(pntd)` returns the type to which a non-boolean term expression evaluates.
 Is intended to be used by `Place`s whose markings are multisets of that sort.
@@ -60,8 +60,8 @@ Is intended to be used by `Place`s whose markings are multisets of that sort.
 Note that `eltype(DotSort())` should be `Int`.
 
 
-Use `Union{Bool, Int, Float64, DictType}` as the set of types that a `Term`'s can contain.
-Consider Bool, Int, Float64 as builtin-sorts, and `DictType` as "user defined" sorts.
+Use Union{Bool, Int, Float64, Vector{AnyXmlNode}} as the set of types that a `Term`'s can contain.
+Consider Bool, Int, Float64 as builtin-sorts, and Vector{AnyXmlNode} as "user defined" sorts.
 
 ```@setup types
 using  PNML, InteractiveUtils, Markdown

@@ -18,7 +18,12 @@ The intermediate representation is used to implement networks expressed in a pnm
 
 We start a description of the net IR here.
 
-## DictType
+## AnyXmlNode
+
+XML element tag names and attribute names are uses as key/tag of [`AnyXmlNode`](@ref)
+Leaf nodes have values that are strings. Intermediate nodes have AnyXmlNode as a value.
+
+Used to hold unparsed XML-as-strings. Use will reduce as more is implemented.
 
 Used by:
   * [`AnyElement`](@ref)
@@ -219,7 +224,7 @@ methods(PNML.has_arc) # hide
 ```@example methods
 methods(PNML.has_refplace)  # hide
 ```
-### has\_reftransition
+### has\_reftransition\
 [`PNML.has_reftransition`](@ref)
 ```@example methods
 methods(PNML.has_reftransition)  # hide

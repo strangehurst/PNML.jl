@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, AbstractTrees
+using PNML, EzXML, ..TestUtils, JET, AbstractTrees, PrettyPrinting
 using PNML:
     Maybe, tag, labels, firstpage, first_net, nettype,
     PnmlNet, Page, nets, pages, pid,
@@ -51,6 +51,42 @@ function verify_sets(net::PnmlNet)
 
     for pageid in PNML.page_idset(net)
         @test netdata(net) === netdata(pagedict(net)[pageid])
+    end
+
+    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        # Test show()
+        @show arc_idset(net)
+        @show place_idset(net)
+        @show transition_idset(net)
+        @show refplace_idset(net)
+        @show reftransition_idset(net)
+        println()
+
+        @show arc_idset(firstpage(net))
+        @show place_idset(firstpage(net))
+        @show transition_idset(firstpage(net))
+        @show refplace_idset(firstpage(net))
+        @show reftransition_idset(firstpage(net))
+        println()
+        @show netdata(net)
+        @show netdata(firstpage(net))
+        println()
+        @show pid(firstpage(net))
+        @show netsets(firstpage(net))
+        println()
+
+        # net-level from PnmlNetData (OrderdDict) -- KeySet iterator.
+        # page-level from PnmlNetKeys (OrderedSet) -- OrderedSet.
+        #@show typeof(arc_idset(net))
+        println()
+        for page in pages(net)
+            @show pid(page) (typeof ∘ values ∘ arc_idset)(page)
+            @show netsets(page)
+        end
+        println()
+        @show arc_idset(net)
+        @show setdiff(arc_idset(net), [arc_idset(p) for p in pages(net)]...)
+        println("+++++++++++++++++++++++++++++++++++++++++++++++++")
     end
 end
 
@@ -107,13 +143,34 @@ model = @inferred parse_str(str)
 net = first_net(model) # The nets of a model not inferrable.
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
-@test startswith(sprint(show, model), "PnmlModel")
+
 @test @inferred(firstpage(net)) isa Page # add parameters?
 @test length(PNML.allpages(net)) == 14
 
-@test_logs sprint(println, PNML.allpages(net))
+Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    @show model
+    println()
+    PNML.pagetree(net)
+    println()
+    AbstractTrees.print_tree(net)
+    println()
+end
 
 verify_sets(net)
+
+# @show arc_idset(net)
+# @show place_idset(net)
+# @show transition_idset(net)
+# @show refplace_idset(net)
+# @show reftransition_idset(net)
+# println()
+# @show arc_idset(firstpage(net))
+# @show place_idset(firstpage(net))
+# @show transition_idset(firstpage(net))
+# @show refplace_idset(firstpage(net))
+# @show reftransition_idset(firstpage(net))
+# println()
+
 
 type_funs = (
             arc_type,
@@ -142,6 +199,7 @@ def_funs = (
 
 @testset "by pntd $pntd" for pntd in all_nettypes()
     for fun in type_funs
+        #println("$fun $pntd")
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
 
@@ -152,12 +210,19 @@ def_funs = (
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
         @test_call fun(net)
         @test fun(net) isa Type
-    end
+       end
 
     for fun in def_funs
+        #println("$fun($pntd) \t ", fun(pntd))
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
+        # these are not implemented
+        #pt = typeof(pntd)
+        #@show pt fun(pt)
+        #@test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
+        #@test_call fun(pt)
     end
+    #println()
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
@@ -182,6 +247,18 @@ end
 @test transitions(net) !== nothing
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
+
+Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+    println("print net")
+    map(println, arcs(net))
+    map(println, places(net))
+    map(println, transitions(net))
+    map(println, refplaces(net))
+    map(println, reftransitions(net))
+    println("---------------")
+    @show (collect ∘ values ∘ page_idset)(net)
+    println("---------------")
+end
 
 @testset "flatten" begin
         flatten_pages!(net)

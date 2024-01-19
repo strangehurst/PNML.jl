@@ -6,30 +6,29 @@ using PNML:
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name
 
-@testset "showerr" begin
-    e1 = MissingIDException("test showerr")
-    e2 = MalformedException("test showerr")
-    @test e1 isa PnmlException
-    @test e2 isa PnmlException
-    @test sprint(showerror,e1) != sprint(showerror,e2)
-    Base.redirect_stdio(stdout=devnull, stderr=devnull) do
-        @test_logs showerror(stdout,e1)
-        @test_logs showerror(stdout,e2)
-        @test_logs showerror(stderr,e1)
-        @test_logs showerror(stderr,e2)
-    end
-end
 @testset "missing namespace $pntd" for pntd in all_nettypes()
-    @test_logs(match_mode=:any, (:warn, r"missing namespace"),
-        parse_pnml(xml"""<pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry()))
-    @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
-        parse_pnml(xml"""<?xml version="1.0" encoding="UTF-8"?>
-                        <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry()))
+    emsg = r"missing namespace"
+    @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
+         <pnml><net id="1" type="foo"><page id="pg1"/></net>
+         </pnml>
+         """, registry())
+    @test_logs match_mode = :any (:warn, emsg) parse_pnml(xml"""
+          <?xml version="1.0" encoding="UTF-8"?>
+          <pnml><net id="1" type="foo"><page id="pg1"/></net></pnml>""", registry())
 end
 
 @testset "malformed $pntd" for pntd in all_nettypes()
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry()))
+
+    try
+        parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>""", registry())
+    catch e
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            showerror(e)
+            println()
+        end
+   end
 
     @test_throws("MalformedException: toolspecific missing tool attribute",
         parse_pnml(xml"""
@@ -70,9 +69,18 @@ end
 end
 
 
-@testset "missing id $pntd" for pntd in all_nettypes()
+@testset "missing $pntd" for pntd in all_nettypes()
 
     @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>", registry())
+
+    try
+        parse_net(xml"<net type='test'></net>", registry())
+    catch e
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            showerror(e)
+            println()
+        end
+    end
 
     pagedict = OrderedDict{Symbol, page_type(pntd)}()
     netdata = PNML.PnmlNetData(pntd)

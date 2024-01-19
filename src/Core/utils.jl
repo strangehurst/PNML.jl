@@ -1,6 +1,6 @@
 "Return first true `f` of `v` or `nothing`."
-function getfirst(f, v)
-    i = findfirst(f, v) # Cannot use nothing as an index/key.
+function getfirst(f, v) # getfirst(f::F, v) where {F}
+    i = findfirst(f, v) # Cannot use nothing as an index.
     isnothing(i) ? nothing : v[i]
 end
 
@@ -14,7 +14,7 @@ Return the value of "x", defaults to identity.
 
 Since High-level PNML schemas are based on Natural numbers and booleans,
 it seems reasonable to assume `Number`, which includes `Bool`, for the non-callable type.
-A functor is expected as the callable type, allowing expressions in the many-sorted algebra
+A functor is expected as the callable type allowing expressions in the many-sorted algebra
 to be evaluated to a `Number`.
 """
 function _evaluate end
@@ -22,18 +22,26 @@ _evaluate(x::Number) = identity(x)
 _evaluate(x::Base.Callable) = (x)()
 
 """
-    ispid(x::Symbol)
-
-Return function to be used like: any(ispid(:asym), iterable_with_pid).
+$(TYPEDSIGNATURES)
+Return function to be used like: any(ispid(sym), iterate_with_pid)
 """
 ispid(x::Symbol) = Fix2(===, x)
-haspid(x, id::Symbol) = ispid(id)(x)
-haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
+haspid(x, id::Symbol) = pid(x) === id
+haspid(s::Any) = throw(ArgumentError(lazy"haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
-"Return blank string of current indent size in `io`."
-indent(io::IO) = indent(get(io, :indent, 0)::Int)
-indent(i::Int) = repeat(' ', i)
+"Return string of current indent size in `io`."
+indent(io::IO) = repeat(' ', get(io, :indent, 0)::Int)
 
-"Increment the `:indent` value by `inc`."
-inc_indent(io::IO, inc::Int=CONFIG.indent_width) =
-        IOContext(io, :indent => get(io, :indent, 0)::Int + inc)
+#using PNML: CONFIG
+"Increment the `:indent` value by `indent_width`."
+inc_indent(io::IO) = IOContext(io, :indent => get(io, :indent, 0)::Int + 4) #! HARDCODED
+
+
+
+# Pirate PrettyPrinting.tile for OrderedDict.
+# Unless a dependency is imposed on the universe, piracy is the best choice.
+const PP = PrettyPrinting
+PP.tile(d::OrderedDict) =
+    PP.list_layout(PP.Layout[PP.pair_layout(PP.tile(key),
+                                            PP.tile(val)) for (key, val) in d],
+                   prefix=:OrderedDict)
