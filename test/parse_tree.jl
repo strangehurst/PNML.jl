@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, OrderedCollections
 using PNML: Maybe,
-    tag, pid, firstpage,
+    tag, pid, firstpage, length,
     parse_file, parse_name, parse_initialMarking, parse_inscription,
     parse_declaration, parse_transition,  parse_toolspecific,
     PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
@@ -8,7 +8,7 @@ using PNML: Maybe,
     allchildren, firstchild, value, allpages
 
 const str = """
-<?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
+<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
@@ -96,7 +96,7 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = parse_pnml(pnmldoc, registry())
+    pnml_ir = @test_logs(match_mode=:all, parse_pnml(pnmldoc, registry()))
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
@@ -105,7 +105,7 @@ end
 
         for page in pages(net)
             @test page isa Page
-            @test pid(page) isa Symbol
+            @test @inferred(pid(page)) isa Symbol
             for p in places(page)
                 @test p isa Place
                 placeid = pid(p)
@@ -136,10 +136,9 @@ end
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
-    pnml_dir = joinpath(@__DIR__, "data")
-    testfile = joinpath(pnml_dir, "AirplaneLD-col-0010.pnml")
+    testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
 
-    model = parse_file(testfile)
+    model = @test_logs(match_mode=:all, parse_file(testfile))
     @test model isa PnmlModel
 
     netvec = nets(model)
@@ -147,51 +146,28 @@ end
     @test length(netvec) == 1
 
     net = first(netvec)
-    @test net isa PnmlNet
-    @test net isa PnmlNet{<:PnmlType}
-    @test net isa PnmlNet{<:AbstractHLCore}
     @test net isa PnmlNet{<:SymmetricNet}
 
-    #@show typeof(pages(net))
     @test pages(net) isa Base.Iterators.Filter
-    @test length(allpages(net)) == 1
+    @test only(allpages(net)) == only(pages(net))
+    #todo compare pages(net) == allpages(net)
     @test firstpage(net) isa Page
+    @test first(pages(net)) isa Page
     @test !isempty(arcs(firstpage(net)))
     @test !isempty(places(firstpage(net)))
-    # 2 ways to do the same thing
     @test !isempty(transitions(firstpage(net)))
-    @test !isempty(transitions(first(pages(net))))
+    @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-        println("========================================================")
-        println("========================================================")
-        println("$testfile")
-        println("========================================================")
-        println("========================================================")
-        @show model
-        println("========================================================\n")
-    end
 end
 
 # Read a file
 @testset "test1.pnml file" begin
-    pnml_dir = joinpath(@__DIR__, "../snoopy")
-    testfile = joinpath(pnml_dir, "test1.pnml")
-
-    model = parse_file(testfile)
+    model = @test_logs(match_mode=:all,
+        (:warn, "ignoring unexpected child of <condition>: 'name'"),
+        (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+        parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
     @test model isa PnmlModel
-
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-
-        println("========================================================")
-        println("========================================================")
-        println("$testfile")
-        println("========================================================")
-        println("========================================================")
-        @show model
-        println("========================================================\n")
-    end
+    @test startswith(repr(model), "PnmlModel")
 end

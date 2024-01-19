@@ -54,7 +54,6 @@ function showme(net) #TODO iterate on nets
         )
 
     PNTD = PNML.all_nettypes()
-    #@show PNTD
     println()
     println("#----------")
     println("# types: $type_funs")
@@ -74,7 +73,6 @@ function showme(net) #TODO iterate on nets
     for fun in type_funs
         for pntd in PNTD
             push!(r2, (nameof(fun), pntd, "$fun($pntd)", fun(pntd)))
-            #println("$fun($pntd) \t", fun(pntd))
             @printf "%-45s %s\n" "$fun($pntd)"  fun(pntd)
         end
         println()

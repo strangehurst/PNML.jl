@@ -3,11 +3,8 @@
 #--------------------------------------------------------------------
 
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
-    nn = EzXML.nodename(node)
-    CONFIG.verbose && println("add label $nn")
-    label = PnmlLabel(unparsed_tag(node, pntd))
-    #! Extension point. user supplied parser of AnyXmlNode -> Annotation. Could do conversion after/on demand.
-    #! (tag,AnyXmlNode) -> merge into NamedTuple tag => Annotation concrete subtype object
+    label = PnmlLabel(unparsed_tag(node, pntd)...)
+    #! Extension point. user supplied parser of DictType -> Annotation. Could do conversion after/on demand.
     #! 2 collections, one for PnmlLabels other for other Annotations?
     push!(v, label)
     return label
@@ -25,33 +22,10 @@ The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
 function add_toolinfo!(infos, node, pntd, reg)
-    CONFIG.verbose && println("add toolinfo")
     push!(infos, parse_toolspecific(node, pntd, reg))
     return nothing
 end
 
-"""
-    has_toolinfo(infos, toolname[, version]) -> Bool
-
-Does any toolinfo in iteratable `infos` have a matching `toolname`, and a matching `version` (if it is provided).
-`toolname` and `version` will be turned into `Regex`s to match against each `ToolInfo` in the `infos` collection.
-"""
-function has_toolinfo end
-
-function has_toolinfo(infos, toolname)
-    has_toolinfo(infos, Regex(toolname))
-end
-
-function has_toolinfo(infos, toolname, version)
-    has_toolinfo(infos, Regex(toolname), Regex(version))
-end
-
-function has_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
-    any(infos) do tool
-       !isnothing(match(namerex, name(tool))) &&
-        !isnothing(match(versionrex, version(tool)))
-    end
-end
 
 """
     number_value(::Type{T}, s) -> T

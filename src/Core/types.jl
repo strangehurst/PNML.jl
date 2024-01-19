@@ -13,31 +13,36 @@ Objects of a Petri Net Graph are pages, arcs, nodes.
 """
 abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
-function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
-    prop_name === :id   && return getfield(o, :id)::Symbol
-    prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
-    prop_name === :name && return getfield(o, :name)::Maybe{Name}
+# function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
+#     prop_name === :id   && return getfield(o, :id)::Symbol
+#     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
+#     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
 
-    return getfield(o, prop_name)
-end
+#     return getfield(o, prop_name)
+# end
 
 pid(o::AbstractPnmlObject)        = o.id
 
-has_name(o::AbstractPnmlObject)   = o.name !== nothing
-name(o::AbstractPnmlObject)       = has_name(o) ? o.name.text : ""
+#
+# When a thing may be nothing, any collection is expected to be non-empty.
+# Strings may be empty. Don't blame us when someone else objects.
+#
+has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
+name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
+name(::Nothing) = ""
 
-has_labels(o::AbstractPnmlObject) = true
+# labels and tools are vectors: isnothing vs isempty
+has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
+
+has_tools(o) = hasproperty(o, :tools) && !isempty(getfield(o, :tools))
+tools(o)     = o.tools
+
+has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
+graphics(o::AbstractPnmlObject)     = o.graphics
 
 has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
-
-tools(o::AbstractPnmlObject)     = o.tools
-
-has_graphics(o::AbstractPnmlObject) = !isnothing(o.graphics)
-graphics(o::AbstractPnmlObject)     = o.graphics
-
-#TODO has_tool, get_tool no plural
 
 
 #--------------------------------------------
@@ -80,50 +85,122 @@ Tool specific objects can be attached to
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"""
-Node in a tree formed from XML. `tag`s are XML tags or attribute names.
-Leaf `val` are strings.
-NB: Assumes XML "content" nodes do not have child XML nodes.
-"""
-struct AnyXmlNode #! Needed by PnmlLabel, AnyElement
-    tag::Symbol
-    val::Union{Vector{AnyXmlNode}, String, SubString}
+"OrderedDict filled by XMLDict"
+const DictType = OrderedDict{Union{Symbol,String}, Any}
+
+const XDVT2 = Union{DictType,  String,  SubString{String}}
+const XDVT3 = Vector{XDVT2}
+"XMLDict values type union. Maybe too large for union-splitting."
+const XDVT = Union{XDVT2, XDVT3}
+
+tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
+value(d::DictType) = d[tag(d)]
+value(s::Union{String, SubString{String}}) = s
+
+function Base.show(io::IO, m::MIME"text/plain", d::DictType)
+    show(io, d)
 end
-
-AnyXmlNode(x::Pair{Symbol, Vector{AnyXmlNode}}) = AnyXmlNode(x.first, x.second)
-
-tag(axn::AnyXmlNode) = axn.tag
-
-"""
-    value(axn::AnyXmlNode) -> Union{Vector{AnyXmlNode}, String, Substring}
-
-Return vector of children or content of the node.
-"""
-value(axn::AnyXmlNode) = axn.val
-
-# AnyXmlNode Symbol, Union{Vector{AnyXmlNode}, String, SubString}
-# vs.
-# AnyElement Symbol, Vector{AnyXmlNode}
-# also PnmlLabel, Term,
+function Base.show(io::IO, d::DictType)
+    dict_show(IOContext(io, :typeinfo => DictType), d)
+end
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Hold well-formed XML in a Vector{[`AnyXmlNode`](@ref)}. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+Hold well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+
+Creates a tree whose nodes are `Union{DictType, String, SubString{String}}`.
+#TODO when can there be leaf nodes of String, Substying{String?}
+See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::Vector{AnyXmlNode} #TODO remove vector container
+    elements::XDVT
 end
-
-AnyElement(p::Pair{Symbol, Vector{AnyXmlNode}}) = AnyElement(p.first, p.second)
+#AnyElement(x::DictType) = AnyElement(first(pairs(x)))
+#AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString{String}}}) = AnyElement(p.first, p.second)
+#AnyElement(p::Pair) = AnyElement(p.first, p.second)
+AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements
 
-PrettyPrinting.quoteof(a::AnyElement) = :(AnyElement($(PrettyPrinting.quoteof(a.tag)),
-                                                     $(PrettyPrinting.quoteof(a.elements))))
+function Base.show(io::IO, label::AnyElement)
+    print(io, "AnyElement(")
+    show(io, tag(label)); print(io, ", ")
+    dict_show(io, elements(label), 0)
+    print(io, ")")
+end
+
+"""
+    dict_show(io::IO, x, 0())
+
+Internal helper for things that contain `DictType`.
+"""
+function dict_show end
+
+#=
+value(mark) = Term(:tuple, (d["subterm"] = [(d["all"] = (d["usersort"] = (d[:declaration] = "N1"))),
+        (d["all"] = (d["usersort"] = (d[:declaration] = "N2")))]))
+
+value(mark) = Term(:add, (d["subterm"] = [(d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
+                                (d["numberconstant"] = (d[:value] = "3",d["positive"] = ()))])),
+        (d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
+                                (d["numberconstant"] = (d[:value] = "2",d["positive"] = ()))]))]))
+=#
+
+const increment=4
+d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
+    print(io, before)
+    for (i,e) in enumerate(x)
+        dict_show(io, e, indent_by+increment) #
+        i < length(x) && print(io, ",\n", indent(indent_by))
+    end
+    print(io, after)
+end
+
+dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
+    print(io, "(")
+    for (i,k) in enumerate(keys(d))
+        print(io, "d[$(repr(k))] = ") #! Differs from `d_show` here.
+        dict_show(io, #= And here. =# d[k], indent_by+increment) #!
+        i < length(keys(d)) && print(io, ",\n", indent(indent_by))
+    end
+    print(io, ")")
+end
+#=
+    Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
+    Note that Term also does Bool, Int, Float64, in addition to String.
+    And that Term is (meant to be) Variable and Operator.
+
+    This is the form of well-behaved XML: single rooted tree whose tag is the symbol.
+    DictType is a collection of pairs: tag, value, where value may be a string/number or DictType.
+
+    top-level tag symbol
+    |   key is symbol or string
+    |   |    value is dictionary, string, number
+    |   |    |
+    tag e1 = "string"!
+        e2 = ee1 = tag2 x1 = vx1
+                        x2 = vx2
+                        x2 = vx2
+                        x2 = vx2!
+        e3 = 666!
+        e4 = true!
+        e5 = 3.14 #no ! here
+
+    ! in newline
+=#
+
+
+dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
+dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
+dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
+dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
+dict_show(io::IO, p::Pair, _::Int) = show(io, p)
+dict_show(io::IO, p::Number, _::Int) = show(io, p)
+dict_show(io::IO, x::Any, _::Int) = error("UNSUPPORTED dict_show(io, ::$(typeof(x)))")
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

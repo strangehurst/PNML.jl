@@ -11,12 +11,14 @@ One Petri Net of a PNML model.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
     page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
     declaration::Declaration
-    name::Maybe{Name}
+    namelabel::Maybe{Name}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
 end
 
-nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+#nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+PnmlTypeDefs.pnmltype(net::PnmlNet) = net.type
+nettype(net::PnmlNet) = typeof(pnmltype(net))
 
 pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
                                                       place_type(T),
@@ -81,7 +83,11 @@ arc_idset(n::PnmlNet)           = keys(arcdict(n))
 reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
 refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
 
-""
+"""
+    allpages(net::PnmlNet|dict::OrderedDict) -> Iterator
+
+Return iterator over all pages in the net. Maintains insertion order.
+"""
 allpages(net::PnmlNet) = allpages(pagedict(net))
 allpages(pd::OrderedDict) = values(pd)
 
@@ -91,15 +97,15 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
 
-declarations(net::PnmlNet) = declarations(net.declaration) # Forward
+declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
 
 tools(net::PnmlNet)     = net.tools
 
 has_labels(net::PnmlNet) = true
 labels(net::PnmlNet)     = net.labels
 
-has_name(net::PnmlNet) = !isnothing(net.name)
-name(net::PnmlNet)     = has_name(net) ? net.name.text : ""
+has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
+name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""
 
 places(net::PnmlNet)         = values(placedict(net))
 transitions(net::PnmlNet)    = values(transitiondict(net))
@@ -141,27 +147,56 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
 
 function Base.summary(net::PnmlNet)
     string( typeof(net), " id ", pid(net),
-            " name '", has_name(net) ? name(net) : "", "', ",
-            " type ", nettype(net), ", ",
-            length(pagedict(net)), " pages ",
-            length(declarations(net)), " declarations",
-            length(tools(net)), " tools, ",
-            length(labels(net)), " labels"
-             )
+    " name '", has_name(net) ? name(net) : "", ", ",
+    " type ", nettype(net), ", ",
+    length(pagedict(net)), " pages ",
+    length(declarations(net)), " declarations",
+    length(tools(net)), " tools, ",
+    length(labels(net)), " labels"
+     )
 end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    println(io, summary(net))
-    iio = inc_indent(io) # Indent any declarations.
-    for decl in declarations(net)
-        print(iio, indent(io))
-        show(iio, MIME"text/plain"(), decl)
-        println(iio, "\n")
+    print(io, indent(io), nameof(typeof(net)), "(",  repr(name(net)), ", ", repr(nettype(net)), ", ")
+    iio = inc_indent(io)
+    println(io)
+    print(io, "Pages = ", repr(page_idset(net)))
+    for page in values(pagedict(net))
+        print(iio, '\n', indent(iio)); show(iio, page)
     end
-    show(io, pages(net))
-end
+    println(io)
+    print(io, "Declarations[")
+    for (i,decl) in enumerate(declarations(net))
+        print(iio, "\n", indent(iio)); show(iio, decl)
+        i < length(declarations(net)) && print(iio, ", ")
+    end
+    println(io, "], ")
+    show(io, tools(net)); println(io, ", ")
+    show(io, labels(net)); println(io, ", ")
+    show(io, netdata(net)); println(io, ")")
 
-function Base.show(io::IO, ::MIME"text/plain", net::PnmlNet)
-    show(io, net)
+    println(io, "Arcs:")
+    map(arcs(net)) do a
+        show(io, a); println(io)
+    end
+    println(io, "Places:")
+    map(places(net)) do p
+    show(io, p); println(io)
+    end
+    println(io, "Transitions:")
+    map(transitions(net)) do t
+        show(io, t); println(io)
+    end
+
+    println(io, "Reference Places:")
+    map(refplaces(net)) do rp
+        show(io, rp); println(io)
+    end
+
+    println(io, "Reference Transitions")
+    map(reftransitions(net)) do rt
+        show(io, rt); println(io)
+    end
+
 end

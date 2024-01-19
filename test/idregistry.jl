@@ -1,28 +1,33 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, EzXML, ..TestUtils, JET, Logging
 
-@testset "ID registry" begin
-    #@test_opt  registry()
-    reg = registry()
-    @test_opt target_modules=(@__MODULE__,) register_id!(reg, :p)
-    PnmlIDRegistrys.reset!(reg)
+@testset for locker in (nothing, ReentrantLock())
+    @testset "ID registry" begin
+        reg = registry(locker)
+        PnmlIDRegistrys.reset!(reg)
 
-    register_id!(reg, "p")
-    @test @inferred(isregistered(reg, "p")) == true
-    @test @inferred(isregistered(reg, :p)) == true
-    PnmlIDRegistrys.reset!(reg)
-    @test !isregistered(reg, "p")
-    @test !isregistered(reg, :p)
-    PNML.register_id!(reg, :p)
-    PNML.register_id!(reg, "q")
-end
+        register_id!(reg, "p1")
+        @test @inferred(isregistered(reg, "p1")) == true
+        @test @inferred(isregistered(reg, :p1)) == true
+        @test isregistered(reg, :p1)
+        PnmlIDRegistrys.reset!(reg)
+        @test !isregistered(reg, "p1")
+        @test !isregistered(reg, :p1)
+        PNML.register_id!(reg, "p1")
+        @test isregistered(reg, :p1)
+    end
 
-@testset "test_call"  begin
-    @test_call broken=false registry()
-    reg = registry()
-    @test_call register_id!(reg, :p)
-    @test_call register_id!(reg, "p")
-    @test_call PnmlIDRegistrys.reset!(reg)
-    #!@test_opt register_id!(reg, :p)
-    #!@test_opt register_id!(reg, "p")
-    #!@test_opt reset_registry!(reg)
+    @testset "test_call"  begin
+        reg = registry(locker)
+
+        @test_opt target_modules=(@__MODULE__,) registry(locker)
+        @test_opt target_modules=(@__MODULE__,) register_id!(reg, :p1)
+        @test_opt !isregistered(reg, :p1)
+        @test_opt PnmlIDRegistrys.reset!(reg)
+
+        @test_call broken=false registry(locker)
+        @test_call register_id!(reg, :p)
+        @test_call register_id!(reg, "p")
+        @test_call !isregistered(reg, :p1)
+        @test_call PnmlIDRegistrys.reset!(reg)
+    end
 end

@@ -6,8 +6,7 @@ CurrentModule = PNML
 
 ## Unclaimed Labels
 
-XML tags that are not 'claimed' are recursively parsed into a [`AnyXmlNode`](@ref)
-tree whose leaf nodes are strings by [`unparsed_tag`](@ref).
+XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`unparsed_tag`](@ref).
 
 See [`AnyElement`](@ref), [`anyelement`](@ref), [`PnmlLabel`](@ref), [`Term`](@ref).
 
@@ -21,7 +20,7 @@ __TODO__ Implement a `ToolInfo` for PNML.jl extensions.
 
 ## PnmlLabel
 
-Applies label semantics to a vector of `AnyXmlNode`s.
+Applies label semantics to a `DictType`.
 Used for not-yet-implemented labels. Many of the labels used for high-level many-sorted algebra have not been implemented.
 
 See [`rate`](@ref) for a use case.

@@ -12,10 +12,6 @@ end
 
 """
 $(TYPEDSIGNATURES)
-"""
-
-"""
-$(TYPEDSIGNATURES)
 
 Return all `nets` of `model`.
 """
@@ -24,6 +20,8 @@ namespace(model::PnmlModel) = model.namespace
 idregistry(model::PnmlModel) = model.reg
 netsets(m::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
 
+ispnmltype(pntd::PnmlType) = Fix1(===, pntd)
+
 """
 $(TYPEDSIGNATURES)
 Return nets matching pntd `type` given as symbol or pnmltype singleton.
@@ -31,9 +29,9 @@ Return nets matching pntd `type` given as symbol or pnmltype singleton.
 function find_nets end
 find_nets(model, str::AbstractString) = find_nets(model, pntd_symbol(str))
 find_nets(model, sym::Symbol)    = find_nets(model, pnmltype(sym))
-find_nets(model, pntd::PnmlType) = find_nets(model, typeof(pntd))
+find_nets(model, pntd::PnmlType) = Iterators.filter(n -> Fix1(===, pntd)(pnmltype(n)), nets(model))
 
-find_nets(model, ::Type{T}) where {T<:PnmlType} = Iterators.filter((Fix1(===, T) ∘ nettype), nets(model))
+find_nets(model, ::Type{T}) where {T<:PnmlType} = Iterators.filter(n -> Fix1(isa, T)(nettype(n)), nets(model))
 
 """
 $(TYPEDSIGNATURES)
@@ -54,16 +52,17 @@ Return first net contained by `doc`.
 first_net(model) = first(nets(model))
 
 # No indent done here.
-function Base.show(io::IO, pnml::PnmlModel)
-    println(io, summary(pnml))
-    println(io, "namespace = ", namespace(pnml))
-    for (i, net) in enumerate(nets(pnml))
-        show(io, MIME"text/plain"(), net)
-        if i < length(nets(pnml))
-            print(io, "\n")
+function Base.show(io::IO, model::PnmlModel)
+    print(io, "PnmlModel(")
+    show(io, namespace(model)); print(io, ", ",)
+    println(io, length(nets(model)), " nets:" )
+
+    for (i, net) in enumerate(nets(model))
+        show(io, net)
+        if i < length(nets(model))
+            println(io)
         end
     end
-end
-function Base.summary(pnml::PnmlModel)
-    string(typeof(pnml), " model with ",  length(nets(pnml)), " nets" )
+    print(io, ")")
+    #PnmlIDRegistry
 end

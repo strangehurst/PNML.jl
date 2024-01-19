@@ -26,13 +26,7 @@ end
     <unexpected/>
     </graphics>
     """
-    n = @test_logs (:warn,"graphics ignoring <graphics> child '<unexpected/>'") parse_graphics(xmlroot(str), pntd, registry())
-    @test n.offset isa PNML.Coordinate
-    @test n.dimension isa PNML.Coordinate
-    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
-    Base.redirect_stdio(stdout=testshow, stderr=testshow) do;
-        @show n eltype(n.offset)
-    end
+    n = @test_logs (:warn,"ignoring unexpected child of <graphics>: 'unexpected'") parse_graphics(xmlroot(str), pntd, registry())
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0
@@ -40,6 +34,9 @@ end
     @test n.offset == PNML.Coordinate(7, 8.0)
     @test n.offset == PNML.Coordinate(7, 8)
     @test n.dimension == PNML.Coordinate(5.0, 6.0)
+    @test n.offset isa PNML.Coordinate
+    @test n.dimension isa PNML.Coordinate
+    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
     @test length(n.positions) == 2
     @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
 
@@ -53,7 +50,7 @@ end
     @test n.fill.color == "fillcolor"
     @test isempty(n.fill.image) # === nothing
     @test n.fill.gradient_color == "none"
-    @test n.fill.gradient_rotation === "horizontal"
+    @test n.fill.gradient_rotation == "horizontal"
 
     @test n.font isa PNML.Font
     @test n.font.family == "Dialog"
@@ -72,7 +69,9 @@ end
 
 @testset "tokengraphics $pntd" for pntd in all_nettypes()
     str0 = """<tokengraphics></tokengraphics>"""
-    n = @test_logs (:warn,"tokengraphics does not have any <tokenposition> elements") parse_tokengraphics(xmlroot(str0), pntd, registry())
+    n = @test_logs(match_mode=:all,
+        (:warn,"tokengraphics does not have any <tokenposition> elements"),
+        parse_tokengraphics(xmlroot(str0), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
@@ -80,8 +79,9 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <unexpected/>
             </tokengraphics>"""
-    n = @test_logs((:warn,"<tokengraphics> ignoring unexpected element 'unexpected'"),
-                parse_tokengraphics(xmlroot(str1), pntd, registry()))
+    n = @test_logs(match_mode=:all,
+        (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
+        parse_tokengraphics(xmlroot(str1), pntd, registry()))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
