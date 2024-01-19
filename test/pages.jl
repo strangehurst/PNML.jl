@@ -111,6 +111,8 @@ net = first_net(model) # The nets of a model not inferrable.
 @test @inferred(firstpage(net)) isa Page # add parameters?
 @test length(PNML.allpages(net)) == 14
 
+@test_logs sprint(println, PNML.allpages(net))
+
 verify_sets(net)
 
 type_funs = (
