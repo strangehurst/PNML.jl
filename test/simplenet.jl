@@ -100,8 +100,6 @@ str1 = """
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
             @test PNML.ispid(pid(t))(pid(t))
-            @show t pid(t) PNML.haspid(t, pid(t))
-            @test PNML.haspid(nothing, pid(t)) === false
             @test_call has_transition(top, pid(t))
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
             t == @inferred Maybe{Transition} transition(top, pid(t))

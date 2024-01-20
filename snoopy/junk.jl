@@ -3,7 +3,7 @@ using PNML, AbstractTrees, Test, JET
 using PNML: Maybe,
     nets, first_net, nettype,
     pages, firstpage,
-    arc, place, inscription, haspid, getfirst,
+    arc, place, inscription, getfirst,
     arc_type, place_type,
     arc_idset, place_idset, transition_idset,
     arcs, places,

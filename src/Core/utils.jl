@@ -27,8 +27,6 @@ _evaluate(x::Base.Callable) = (x)()
 Return function to be used like: any(ispid(:asym), iterable_with_pid).
 """
 ispid(x::Symbol) = Fix2(===, x)
-haspid(x, id::Symbol) = ispid(id)(x)
-haspid(s::Any) = throw(ArgumentError("haspid used on $(typeof(s)) $s, do you want `ispid`"))
 
 "Return blank string of current indent size in `io`."
 indent(io::IO) = indent(get(io, :indent, 0)::Int)
