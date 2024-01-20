@@ -41,7 +41,10 @@ Return `PnmlNet` having `id` or `nothing``.
 function find_net end
 
 function find_net(model, id::Symbol)
-    getfirst(Fix2(haspid, id), nets(model))
+    for net in nets(model)
+        ispid(id)(pid(net)) && return net
+    end
+    return nothing
 end
 
 """
