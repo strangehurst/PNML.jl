@@ -104,6 +104,7 @@ end
     @test PNML.idregistry(model) isa PnmlIDRegistry
 
     modelnets = PNML.nets(model)
+    @test modelnets isa Tuple
     @test length(collect(modelnets)) == 5
 
     for net in modelnets
@@ -116,23 +117,34 @@ end
         end
     end
 
-    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng, :hlnet, :symmetric, :continuous]
+    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
+                                        :hlnet, :symmetric, :continuous]
         @test_opt  pnmltype(pt)
         @test_call pnmltype(pt)
         @test_opt  PNML.find_nets(model, pt)
         @test_call PNML.find_nets(model, pt)
 
-        for (l,r) in zip(PNML.find_nets(model, pt), PNML.find_nets(model, pnmltype(pt)))
-            @test l === r
-            @test l.type === r.type === pnmltype(pt)
+        for (l,m,r) in zip(PNML.find_nets(model, pt),
+                           PNML.find_nets(model, pnmltype(pt)),
+                           PNML.find_nets(model, string(pt)))
+            @test l === m === r
+            @test l.type === m.type ===  r.type === pnmltype(pt)
         end
     end
 
-    # @test_call PNML.first_net(model)
-    # net0 = @inferred PnmlNet PNML.first_net(model)
-    # @test PNML.nettype(net0) <: PnmlType
-    # @test first(v) === net0
+    @show [pid(x) for x in PNML.nets(model)]
 
+    # First use is here, so test mechanisim here.
+    @test PNML.ispid(:net1)(:net1)
+
+    @test PNML.find_net(model, :net1) isa PnmlNet
+    @test PNML.find_net(model, :net2) isa PnmlNet
+    @test PNML.find_net(model, :net3) isa PnmlNet
+    @test PNML.find_net(model, :net4) isa PnmlNet
+    @test PNML.find_net(model, :net5) isa PnmlNet
+
+    @test_call PNML.find_net(model, :net1)
+    @test_opt PNML.find_net(model, :net1)
 end
 
 @testset "empty page" begin
