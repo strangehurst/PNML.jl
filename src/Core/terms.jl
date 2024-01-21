@@ -103,8 +103,7 @@ _term_eval(v::AbstractString) = parse(Bool, v)
 _term_eval(v::DictType) = begin
     # Fake like we know how to evaluate a expression of the high-level terms.
     haskey(v, :value) && return _term_eval(v[:value])
-    #@show v
-    @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
+    #! @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
     #Base.show_backtrace(stdout, backtrace())
     return false #
 end
