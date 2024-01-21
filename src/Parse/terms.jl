@@ -10,7 +10,7 @@ function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     Term(unparsed_tag(node, pntd, reg)...)
 end
 
-
+#=
 
 
 """
@@ -108,3 +108,4 @@ function parse_unparsed(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     check_nodename(node, "unparsed")
     Term(unparsed_tag(node, pntd, reg)...)
 end
+ =#
