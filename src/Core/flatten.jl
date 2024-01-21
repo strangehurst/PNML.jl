@@ -52,7 +52,7 @@ function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFI
 
     isempty(errors) ||
         error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
-    return nothing
+    return true
 end
 
 """
