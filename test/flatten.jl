@@ -51,4 +51,6 @@ using PNML: tag, pid, PnmlNet, allpages, first_net, flatten_pages!, source, targ
     @test target(arc(net, :a12)) === :p2
     @test target(arc(net, :a22)) === :p3
     @test source(arc(net, :a23)) === :t3
+
+    @test PNML.post_flat_verify(net; verbose=true)
 end

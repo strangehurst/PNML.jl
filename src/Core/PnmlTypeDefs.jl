@@ -17,7 +17,7 @@ export PnmlCoreNet, PTNet,
        ContinuousNet
 
 # Functions
-export pnmltype, pntd_symbol, all_nettypes,
+export pnmltype, pntd_symbol, all_nettypes, add_nettype!, pnmltype_map, default_pntd_map,
     isdiscrete, iscontinuous, ishighlevel
 
 """
@@ -190,14 +190,14 @@ all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
 $(TYPEDSIGNATURES)
 
-Add or replace mapping from `s` to [`PnmlType`](@ref) singleton `pntd`.
+Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
 """
 function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
-    action = s ∈ dict ? "updating" : "adding"
-    @warn  "$action mapping from $s to $pntd in dict::$(typeof(dict))" dict
-    pntd ∉ values(dict) && @warn "$pntd already in pnml nettype dictionary"
+    action = s ∈ keys(dict) ? "updating" : "adding"
+    @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
+    #pntd in values(dict) && @warn "$pntd already in pnml nettype dictionary"
     dict[s] = pntd
-    @assert s ∈ elements
+    return nothing
 end
 
 """

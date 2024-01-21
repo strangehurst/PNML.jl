@@ -123,8 +123,27 @@ end
 end
 
 @testset "predicates for $pntd" for pntd in all_nettypes()
-    @test Iterators.only(Iterators.filter(==(true),
-                         (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
+    @test Iterators.only(Iterators.filter(==(true), (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
+    tp = typeof(pntd)
+    @test Iterators.only(Iterators.filter(==(true), (isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
+    #@show isdiscrete(tp), ishighlevel(tp), iscontinuous(tp)
+end
+
+using PNML: pnmltype_map, default_pntd_map
+@testset "add_nettype" begin
+    #default_pntd_map # string -> symbol
+    #pnmltype_map # symbol -> PnmlType
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :pnmlcore, PnmlCoreNet())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :hlcore, HLCoreNet())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :ptnet, PTNet())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :hlnet, HLPNG())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :pt_hlpng, PT_HLPNG())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :symmetric, SymmetricNet())
+    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :continuous, ContinuousNet())
+
+    @test_logs (:info, r"^adding mapping") PNML.add_nettype!(pnmltype_map, :newpntd, PnmlCoreNet())
+    @test :newpntd in keys(pnmltype_map)
+    @test pnmltype_map[:newpntd] === PnmlCoreNet()
 end
 
 using PNML: DictType, XDVT, XDVT2, XDVT3
