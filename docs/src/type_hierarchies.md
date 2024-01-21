@@ -86,12 +86,15 @@ Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 | id       | Symbol |
 | pntd     | <: PnmlType |
 | name     | Maybe{Name} |
-| com      | ObjectCommon |
+| labels   | PnmlLabel |
+| tools    | ToolInfo |
 
 ## AbstractLabel
-Labels are attached to `AbstractPnmlObject`s.
+[`AbstractLabel`](@ref)s are attached to `AbstractPnmlObject`s.
 Kinds of label include: marking, inscription, condition and declarations, sort, and ad-hoc.
-Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance is a label and add it to a collection of 'other labels'.
+Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance
+is a label and add it to a collection of 'other labels'.
+Some 'other labels' can be accessed using: [`rate`](@ref), [`delay`](@ref).
 
 ```@example type
 type_tree(PNML.AbstractLabel) # hide
@@ -103,7 +106,7 @@ type_tree(PNML.AbstractLabel) # hide
     - Labels are attached to Objects.
     - Some Labels (attributes) do not have `Graphics`.
     - Labels are extendable.
-    - Labels are named by the xml tag. Any "unknown" tag is presumed to be a label.
+    - Labels are named by the xml tag. Any "unknown" tag of an Object is presumed to be a label.
 
 ## AbstractPnmlTool
 See [`ToolInfo`](@ref).
@@ -119,16 +122,20 @@ type_tree(PNML.PnmlException) # hide
 
 The PNML Specification builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
 
-Implemented loosely so that it is mostly part of the PnmlCore implementation. Both <text> and <structure> are optional. Presumption is that the consumer will have good tests and defenses. **TODO: Seems like a layer boundary in the design.**
-
-And we allow all net types to have probably-nonstandard julia declaration, sort-type objects.
+Implemented so that it is mostly part of the PnmlCore implementation.
+At which level, both <text> and <structure> are optional.
 
 The <type> label is meant to be a _sort_ of a _many-sorted algebra_. We call it sorttype to reduce the confusion.
 
-For nets other than high-level nets we implemented the sorttype object to be `one(Int64)` or `one(Float64)`. Whereas for high-level nets the sorttype object is an [`HLAnnotation`](@ref).
+PNML.jl allows/requires all net types to have sort-type objects.
+Only high-level PNML input is expected to contain a <type> tag.
+This allows more common implementation in the core layer.
 
-The sorttype HLAnnotation label's <structure> will be parsed into a [`SortType`](@ref).
-Unsurprisingly, <text> is parsed to `String`.
+For high-level nets the sorttype object is an [`SortType`](@ref) `HLAnnotation`
+subtype containing an [`AbstractSort`](@ref).
+
+For nets other than high-level nets we interpret the `SortType` to be `IntegerSort`,
+or `RealSort` based on PNTD. And `Marking` values are multisets with airity of 1.
 
 ## AbstractDeclaration
 
@@ -137,12 +144,13 @@ Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 type_tree(PNML.AbstractDeclaration) # hide
 ```
 ## AbstractSort
-High-level net's `Place` has a sort.
+Each `Place` has a sorttype containing an `AbstractSort`.
 ```@example type
 type_tree(PNML.AbstractSort) # hide
 ```
 ## AbstractTerm
 Part of the *many-sorted algebra* of a High-level net.
+See [`AbstractOperator`](@ref). [`Variable`](@ref)
 ```@example type
 type_tree(PNML.AbstractTerm) # hide
 ```

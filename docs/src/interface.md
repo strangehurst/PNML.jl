@@ -371,7 +371,7 @@ methods(PNML.outs)  # hide
 
 ## Labels - `Annotation` and `HLAnnotation`
 
-Both have `ObjectCommon`. [`HLAnnotation`](@ref) adds optional <text>, <structure>.
+Both have `Graphics` and `ToolInfo`. [`HLAnnotation`](@ref) adds optional <text>, <structure>.
 
 ### text
 [`text`](@ref)
