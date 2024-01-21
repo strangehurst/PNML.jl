@@ -16,7 +16,6 @@ $(TYPEDFIELDS)
 struct PnmlIDRegistry{L}
     ids::Set{Symbol}
     lk::L
-    #!#duplicate::F # Which action for duplicated id.
 end
 
 """
@@ -25,18 +24,15 @@ end
 Construct a PNML ID registry using the supplied AbstractLock or nothing to not lock.
 """
 registry(lock=nothing) = begin
-    #isnothing(lock) || println("using lock $lock")
+    # isnothing(lock) || println("using lock $lock")
     PnmlIDRegistry(Set{Symbol}(), lock)
 end
 
 function Base.show(io::IO, idregistry::PnmlIDRegistry)
     print(io, nameof(typeof(idregistry)), " ", length(idregistry.ids), " ids: ", idregistry.ids)
-    # , " duplicate action: ", nameof(idregistry.duplicate))
 end
 
-duplicate_id_warn(id::Symbol)  = @warn("ID already registered: $id")
-#duplicate_id_error(id::Symbol) = throw(ArgumentError("ID already registered: $id"))
-#duplicate_id_none(_::Symbol)  = nothing
+duplicate_id_action(id::Symbol)  = @warn("ID already registered: $id")
 
 """
 $(TYPEDSIGNATURES)
@@ -48,10 +44,7 @@ function register_id!(idregistry::PnmlIDRegistry, s::AbstractString)
 end
 
 function register_id!(idregistry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
-    #@show id
-    @lock idregistry.lk begin
-        _reg(idregistry, id)
-    end
+    @lock idregistry.lk _reg(idregistry, id)
     return id
 end
 
@@ -61,7 +54,7 @@ function register_id!(idregistry::PnmlIDRegistry{Nothing}, id::Symbol)::Symbol
 end
 
 _reg(reg, id) = begin
-    id ∈ reg.ids ? duplicate_id_warn(id) : push!(reg.ids, id)
+    id ∈ reg.ids ? duplicate_id_action(id) : push!(reg.ids, id)
     return nothing
 end
 """
