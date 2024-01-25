@@ -2,7 +2,7 @@ using PrecompileTools
 
 PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin
-        #redirect_stdio(; stdout=devnull, stderr=devnull) do
+        redirect_stdio(; stdout=devnull, stderr=devnull) do
 
         let pntds = ["pnmlcore", "ptnet", "nonstandard", "open"]    
             for pntd in pntds
@@ -67,5 +67,9 @@ PrecompileTools.@setup_workload begin
             end
         end
 
+        let node = EzXML.root(EzXML.readxml(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
+            net = SimpleNet(node)
+        end 
     end
+end
 end
