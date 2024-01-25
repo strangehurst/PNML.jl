@@ -5,7 +5,7 @@ module PnmlIDRegistrys
 using Preferences
 using DocStringExtensions
 
-export PnmlIDRegistry, register_id!, isregistered, registry
+export PnmlIDRegistry, register_id!, isregistered, registry, reset!
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
