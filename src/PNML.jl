@@ -1,15 +1,30 @@
 """
-$(DocStringExtensions.README)
+[Petri Net Markup Language](https://www.pnml.org), is an XML-based format.
+PNML.jl reads a pnml model and emits an intermediate representation (IR).
 
-# Imports
-$(DocStringExtensions.IMPORTS)
+The intermediate representation (IR) represents the XML tree via julia data structures:
+dictionaries, NamedTuples, LabelledArrays, strings, numbers, objects, vectors.
+The exact mixture changes as the project continues.
 
-# Exports
-$(DocStringExtensions.EXPORTS)
+The tags of the XML are used as keys and names as much as possible.
+ 
+What is accepted as values is ~~often~~ usually a superset of what a given pntd schema specifies. 
+This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR. 
+
+The pnml specification has layers.
+
+The core layer is useful and extendable. The standard defines extensions of the core for
+place-transition petri nets (integers) and high-level petri net graphs (many-sorted algebra).
+This package family adds non-standard continuous net (float64) support. 
+Note that there is no RelaxNG schema file for these extensions 
+
+On top of the IR is (will be) implemented Petri Net adaptions and interpertations.
+This is the level that pntd conformance can be imposed.
+Adaption to julia packages for graphs, agents, and composing into the greater hive-mind. 
 """
 module PNML
 
-# CONFIG structure copies from Tim Holy's Cthulhu.jl.
+# CONFIG structure copied from Tim Holy's Cthulhu.jl.
 """
 Configuration with default values that can be overidden by a LocalPreferences.toml.
 # Options
@@ -71,6 +86,7 @@ include("Core/PnmlIDRegistrys.jl")
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
+include("Core/xmlutils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
@@ -122,7 +138,6 @@ include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
 
 # PARSE
-include("Core/xmlutils.jl")
 include("Parse/parseutils.jl")
 include("Parse/anyelement.jl")
 include("Parse/parse.jl")
@@ -140,34 +155,6 @@ export @xml_str,
     MissingIDException,
     MalformedException
 
-using PrecompileTools
-
-PrecompileTools.@setup_workload begin
-    PrecompileTools.@compile_workload begin
-
-        #TODO ============================================
-        #!        Do more precompile setup.
-        #TODO ============================================
-
-        metagraph(SimpleNet("""<?xml version="1.0"?>
-<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
-    <name> <text>P/T Net with one place</text> </name>
-    <page id="page1">
-      <place id="place1">
-	    <initialMarking> <text>100</text> </initialMarking>
-      </place>
-      <transition id="transition1">
-        <name><text>Some transition</text></name>
-      </transition>
-      <arc source="transition1" target="place1" id="arc1">
-        <inscription><text>12</text></inscription>
-      </arc>
-    </page>
-  </net>
-</pnml>"""))
-        #TODO High Level, Continuous
-    end
-end
+include("precompile.jl")
 
 end # module PNML
