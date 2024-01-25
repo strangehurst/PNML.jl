@@ -1,83 +1,87 @@
 <?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+
     <net id="net1" type="pnmlcore">
         <name>
             <text>pnmlcore with nested pages</text>
             <graphics><offset x="0" y="0"/></graphics>
-            <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+            <toolspecific tool="nametool" version="1.0"><atool x="0"/></toolspecific>
         </name>
-        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <toolspecific tool="nettool" version="1.0"><atool x="0"/></toolspecific>
         <page id="net1page1">
             <place id="p1">
-	            <name>
+                <name>
                     <text>place name</text>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <toolspecific tool="placenametool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
-	            <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="placetool" version="1.0"><atool x="0"/></toolspecific>
                 <initialMarking>
                     <text> 1 </text>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <toolspecific tool="markingtool" version="1.0"><atool x="0"/></toolspecific>
                 </initialMarking>
-	        </place>
+            </place>
             <transition id ="t1">
-	            <name>
+                <name>
                     <text>transition name</text>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <toolspecific tool="transitionnametool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
-	            <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="transitiontool" version="1.0"><atool x="0"/></toolspecific>
                 <condition>
-    	            <name>
+                    <name>
                         <text>condition name</text>
                         <graphics><offset x="0" y="0"/></graphics>
-                        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                        <toolspecific tool="conditionnametool" version="1.0"><atool x="0"/></toolspecific>
                     </name>
                     <text>some expression</text>
                     <structure> <or> </or> </structure>
-	                <graphics><position x="100" y="100"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <graphics><position x="100" y="100"/></graphics>
+                    <toolspecific tool="conditiontool" version="1.0"><atool x="0"/></toolspecific>
                 </condition>
             </transition>
             <arc id="a11" source="p1" target="t1">
                 <inscription> <text> 2 </text> </inscription>
-	            <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="arctool" version="1.0"><atool x="0"/></toolspecific>
             </arc>
             <arc id="a12" source="t1" target="rp1"> </arc>
             <arc id="a13" source="p1" target="rt1"> </arc>
             <referencePlace id="rp1" ref="p2">
- 	            <name>
+                <name>
                     <text>referencePlace name</text>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <toolspecific tool="refplacenametool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
-	            <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-           </referencePlace>
+                <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="refplacetool" version="1.0"><atool x="0"/></toolspecific>
+            </referencePlace>
             <referenceTransition id="rt1" ref="t11">
-	            <name>
+                <name>
                     <text>referenceTransition name</text>
                     <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                    <toolspecific tool="reftranstool" version="1.0"><atool x="0"/></toolspecific>
                 </name>
-	            <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+                <graphics><position x="100" y="100"/></graphics>
+                <toolspecific tool="reftranstool" version="1.0"><atool x="0"/></toolspecific>
             </referenceTransition>
+
             <page id="net1page11">
+                <place id="p11"></place>
                 <transition id ="t11"> </transition>
-		        <arc id="a111" source="p11" target="rp11"> </arc>
-		        <referencePlace id="rp11" ref="p111"/>
+                <arc id="a111" source="p11" target="rp11"> </arc>
+                <referencePlace id="rp11" ref="p111"/>
                 <page id="net1page111">
                     <place id="p111"> <initialMarking> <text> 111 </text> </initialMarking> </place>
-		            <arc id="a1111" source="p111" target="rt111"> </arc>
-		            <referenceTransition id="rt111" ref="rt2"/>
+                    <arc id="a1111" source="p111" target="rt111"> </arc>
+                    <referenceTransition id="rt111" ref="rt2"/>
                 </page>
             </page>
         </page>
+
         <page id="net1page2">
             <place id="p2"></place>
             <transition id ="t2"></transition>
@@ -87,6 +91,7 @@
             <referencePlace id="rp2" ref="p3"/>
             <referenceTransition id="rt2" ref="t3"/>
         </page>
+
         <page id="net1page3">
             <place id="p3"/>
             <transition id ="t3"/>
@@ -96,28 +101,54 @@
         </page>
     </net>
 
+
     <net id="net2" type="http://www.pnml.org/version-2009/grammar/ptnet">
-        <page id="net2page"/>
+        <page id="net2page">
+             <place id="n2p1"> <initialMarking><text> 1 </text></initialMarking> </place>
+             <place id="n2p2"></place>
+             <place id="n2p3"> <initialMarking><text> 1 </text></initialMarking> </place>
+             <place id="n2p4"></place>
+            <transition id ="n2t1"></transition>
+            <transition id ="n2t2"></transition>
+            <transition id ="n2t3"></transition>
+            <transition id ="n2t4"></transition>
+            <arc id="n2a1" source="np1" target="n2t1"></arc>
+            <arc id="n2a5" source="nt1" target="n2p2"></arc>
+            <arc id="n2a2" source="np2" target="n2t2"></arc>
+            <arc id="n2a6" source="nt2" target="n2p3"></arc>
+            <arc id="an23" source="np3" target="n2t3"> <inscription> <text> 2 </text> </inscription> </arc>
+            <arc id="n2a7" source="nt3" target="n2p4"></arc>
+            <arc id="n2a4" source="np4" target="n2t4"></arc>
+            <arc id="n2a8" source="nt4" target="n2p1"></arc>
+       </page>
     </net>
-    <net id="net3" type="ptnet"> <page id="net3page"/> </net>
-    <net id="net4" type="hlcore"> <page id="net4page"/> </net>
+
+    <net id="net3" type="ptnet">
+        <page id="net3page">
+        </page>
+    </net>
+
+    <net id="net4" type="hlcore">
+        <page id="net4page">
+        </page>
+    </net>
 
     <net id="net5" type="hlnet">
         <name><text>net5 name</text></name>
         <declaration>
-	        <text>net5 declaration label</text>
+            <text>net5 declaration label</text>
             <graphics><offset x="0" y="0"/></graphics>
             <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-	        <structure>
-	            <declarations>
-	                <!-- Sorts declaration -->
-	                <namedsort id="dot" name="Dot">
-	                    <dot/>
-	                </namedsort>
-	                <!-- Variables declaration -->
-	                <variabledecl id="varx" name="x">
-	                    <usersort declaration="pro"/>
-	                </variabledecl>
+            <structure>
+                <declarations>
+                    <!-- Sorts declaration -->
+                    <namedsort id="dot" name="Dot">
+                        <dot/>
+                    </namedsort>
+                    <!-- Variables declaration -->
+                    <variabledecl id="varx" name="x">
+                        <usersort declaration="pro"/>
+                    </variabledecl>
                     <!-- Operator declaration -->
                     <namedoperator id="id6" name="g">
                         <parameter>
@@ -134,148 +165,161 @@
                     <unknowendecl id="unk1" name="u">
                         <foo/>
                     </unknowendecl>
-	           </declarations>
-	        </structure>
+                 </declarations>
+             </structure>
         </declaration>
 
         <page id="net5page">
-	        <place id="pOwn">
-	            <graphics><position x="35" y="35"/></graphics>
-	            <name><text>OwnMemAcc</text></name>
-	            <type><structure><usersort declaration="pro"/></structure></type>
-	        </place>
-    	    <place id="pActive">
-	            <graphics><position x="35" y="70"/></graphics>
-	            <name><text>Active</text></name>
-	            <type><structure><usersort declaration="pro"/></structure></type>
-	            <hlinitialMarking>
-	                <structure>
-		                <add>
-		                    <subterm>
-			                    <numberof>
-			                        <subterm>
-			                            <numberconstant value="1"><natural/></numberconstant>
-			                        </subterm>
-			                        <subterm>
-			                            <finiteintrangeconstant value="1">
-				                            <finiteintrange start="1" end="10"/>
-			                            </finiteintrangeconstant>
-			                        </subterm>
-			                    </numberof>
-		                    </subterm>
-		                    <subterm>
-			                    <numberof>
-			                        <subterm>
-			                            <numberconstant value="1"><natural/></numberconstant>
-			                        </subterm>
-			                        <subterm>
-			                            <finiteintrangeconstant value="2">
-				                            <finiteintrange start="1" end="10"/>
-			                            </finiteintrangeconstant>
-			                        </subterm>
-			                    </numberof>
-		                    </subterm>
-						</add>
-					</structure>
-				</hlinitialMarking>
-			</place>
-			<transition id="tBO">
-				<graphics><position x="30" y="50"/></graphics>
-				<name><text>Begin_Own_Acc</text></name>
-			</transition>
-			<transition id="tEO">
-				<condition>
-					<structure>
-						<equality>
-							<subterm><variable refvariable="varm"/></subterm>
-							<subterm><variable refvariable="varx"/></subterm>
-						</equality>
-					</structure>
-				</condition>
-			</transition>
+            <place id="pOwn">
+                <graphics><position x="35" y="35"/></graphics>
+                <name><text>OwnMemAcc</text></name>
+                <type><structure><usersort declaration="pro"/></structure></type>
+            </place>
+            <place id="pActive">
+                <graphics><position x="35" y="70"/></graphics>
+                <name><text>Active</text></name>
+                <type><structure><usersort declaration="pro"/></structure></type>
+                <hlinitialMarking>
+                    <structure>
+                        <add>
+                            <subterm>
+                                <numberof>
+                                    <subterm>
+                                        <numberconstant value="1"><natural/></numberconstant>
+                                    </subterm>
+                                    <subterm>
+                                        <finiteintrangeconstant value="1">
+                                            <finiteintrange start="1" end="10"/>
+                                        </finiteintrangeconstant>
+                                    </subterm>
+                                </numberof>
+                            </subterm>
+                            <subterm>
+                                <numberof>
+                                    <subterm>
+                                        <numberconstant value="1"><natural/></numberconstant>
+                                    </subterm>
+                                    <subterm>
+                                        <finiteintrangeconstant value="2">
+                                            <finiteintrange start="1" end="10"/>
+                                        </finiteintrangeconstant>
+                                    </subterm>
+                                </numberof>
+                            </subterm>
+                        </add>
+                    </structure>
+                </hlinitialMarking>
+            </place>
+            <transition id="tBO">
+                <graphics><position x="30" y="50"/></graphics>
+                <name><text>Begin_Own_Acc</text></name>
+            </transition>
+            <transition id="tEO">
+                <condition>
+                    <structure>
+                        <equality>
+                            <subterm><variable refvariable="varm"/></subterm>
+                            <subterm><variable refvariable="varx"/></subterm>
+                        </equality>
+                    </structure>
+                </condition>
+            </transition>
         </page>
     </net>
 
-    <net id="net6" type="pt_hlpng"> <page id="net6page"/> </net>
+    <net id="net6" type="pt_hlpng">
+        <page id="net6page">
+        </page>
+    </net>
 
     <net id="net7" type="symmetric">
         <page id="net7page">
-			<place id="stp5">
-				<name><text>stp5</text></name>
-				<type>
-					<text>Dot</text>
-					<structure><usersort declaration="dot"/></structure>
-				</type>
-				<hlinitialMarking>
-					<text>1'(dot)</text>
-					<structure>
-						<numberof>
-							<subterm>
-								<numberconstant value="1">
-									<positive/>
-								</numberconstant>
-							</subterm>
-							<subterm>
-								<dotconstant/>
-							</subterm>
-						</numberof>
-					</structure>
-				</hlinitialMarking>
-			</place>
+            <place id="stp5">
+                <name><text>stp5</text></name>
+                <type>
+                    <text>Dot</text>
+                    <structure><usersort declaration="dot"/></structure>
+                </type>
+                <hlinitialMarking>
+                    <text>1'(dot)</text>
+                    <structure>
+                        <numberof>
+                            <subterm>
+                                <numberconstant value="1">
+                                    <positive/>
+                              </numberconstant>
+                          </subterm>
+                          <subterm>
+                              <dotconstant/>
+                          </subterm>
+                      </numberof>
+                  </structure>
+                </hlinitialMarking>
+            </place>
 
-			<transition id="t3_1">
-				<name><text>t3_1</text></name>
-				<condition>
-					<text>(A) lt (Altitude10) and (A) ineq (Altitude20)</text>
-					<structure>
-						<and>
-							<subterm>
-								<lessthan>
-									<subterm>
-										<variable refvariable="varA"/>
-									</subterm>
-									<subterm>
-										<useroperator declaration="Altitude10"/>
-									</subterm>
-								</lessthan>
-							</subterm>
-							<subterm>
-								<inequality>
-									<subterm>
-										<variable refvariable="varA"/>
-									</subterm>
-									<subterm>
-										<useroperator declaration="Altitude20"/>
-									</subterm>
-								</inequality>
-							</subterm>
-						</and>
-					</structure>
-				</condition>
-			</transition>
-			<arc id="arc41" source="stp3" target="getAlt">
-				<name><text>41</text></name>
-				<hlinscription>
-					<text>1'(dot)</text>
-					<structure>
-						<numberof>
-							<subterm>
-								<numberconstant value="1">
-									<positive/>
-								</numberconstant>
-							</subterm>
-							<subterm>
-								<dotconstant/>
-							</subterm>
-						</numberof>
-					</structure>
-				</hlinscription>
-			</arc>
+            <transition id="t3_1">
+                <name><text>t3_1</text></name>
+                <condition>
+                <text>(A) lt (Altitude10) and (A) ineq (Altitude20)</text>
+                <structure>
+                    <and>
+                        <subterm>
+                            <lessthan>
+                                <subterm>
+                                    <variable refvariable="varA"/>
+                                </subterm>
+                                <subterm>
+                                    <useroperator declaration="Altitude10"/>
+                                </subterm>
+                            </lessthan>
+                        </subterm>
+                        <subterm>
+                            <inequality>
+                                <subterm>
+                                    <variable refvariable="varA"/>
+                                </subterm>
+                                <subterm>
+                                    <useroperator declaration="Altitude20"/>
+                                </subterm>
+                            </inequality>
+                        </subterm>
+                    </and>
+                </structure>
+                </condition>
+            </transition>
+            <arc id="arc41" source="stp3" target="getAlt">
+                <name><text>41</text></name>
+                <hlinscription>
+                    <text>1'(dot)</text>
+                    <structure>
+                        <numberof>
+                            <subterm>
+                                <numberconstant value="1">
+                                    <positive/>
+                                </numberconstant>
+                            </subterm>
+                            <subterm>
+                                <dotconstant/>
+                            </subterm>
+                        </numberof>
+                    </structure>
+                </hlinscription>
+            </arc>
         </page>
     </net>
 
-    <net id="net8" type="timednet"> <page id="net8page"/> </net>
-    <net id="net9" type="continuous"> <page id="net9page"/> </net>
+    <net id="net8" type="timednet">
+        <page id="net8page">
+        </page>
+    </net>
+
+    <net id="net9" type="continuous">
+        <page id="net9page">
+        </page>
+    </net>
+
     <!-- unclaimed labels, rate -->
-    <net id="net10" type="bogus"> <page id="net10page"/> </net>
+    <net id="net10" type="bogus">
+        <page id="net10page"/>
+    </net>
 </pnml>
