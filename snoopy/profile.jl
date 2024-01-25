@@ -1,19 +1,12 @@
 using EzXML, PNML
-
-"Setup profiling by creating tuple (XMLNode, PnmlIDRegistry)"
-function prosetup(fname = "/home/jeff/Jules/PNML/snoopy/test1.pnml")
-    EzXML.root(EzXML.readxml(fname))
-end
-
+prosetup() = EzXML.root(EzXML.readxml("/home/jeff/Jules/PNML/snoopy/test1.pnml"))
 x = prosetup()
-using Profile #, ProfileView
+using Profile
 
 #-----------------------------------------------------
-# TODO Reach inside x to lowish levels.
 r = registry()
 VSCodeServer.@profview parse_pnml(x, r)
-# need to empty the registry
-r = registry()
+PNML.reset!(r) # need to empty the registry
 VSCodeServer.@profview parse_pnml(x, r) # ignore 1st run
 
 #-----------------------------------------------------
@@ -50,7 +43,17 @@ fx() = for i in 1:1000
   </net>
 </pnml>""")
 end
-VSCodeServer.@profview tfx()
+VSCodeServer.@profview fx()
+
+#-----------------------------------------------------
+using EzXML, PNML
+prosetup() = parse_file
+
+node = EzXML.root(EzXML.readxml("/home/jeff/Jules/PNML/snoopy/test1.pnml"))
+  fx() = for i in 1:1000
+    PNML.SimpleNet(node)
+  end
+VSCodeServer.@profview fx()
 
 
 
