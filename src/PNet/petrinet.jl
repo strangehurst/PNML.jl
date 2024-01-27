@@ -49,6 +49,13 @@ arcs(petrinet::AbstractPetriNet)           = arcs(pnmlnet(petrinet))
 refplaces(petrinet::AbstractPetriNet)      = refPlaces(pnmlnet(petrinet))
 reftransitions(petrinet::AbstractPetriNet) = refTransitions(pnmlnet(petrinet))
 
+npage(pn::AbstractPetriNet)          = npage(pnmlnet(pn))
+nplace(pn::AbstractPetriNet)         = nplace(pnmlnet(pn))
+ntransition(pn::AbstractPetriNet)    = ntransition(netdata(pn))
+narc(pn::AbstractPetriNet)           = narc(netdata(pn))
+nrefplace(pn::AbstractPetriNet)      = nrefplace(netdata(pn))
+nreftransition(pn::AbstractPetriNet) = nreftransition(netdata(pn))
+
 #------------------------------------------------------------------
 place_idset(petrinet::AbstractPetriNet)           = place_idset(pnmlnet(petrinet))
 has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(pnmlnet(petrinet), id)

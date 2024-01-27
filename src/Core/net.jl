@@ -83,6 +83,13 @@ arc_idset(n::PnmlNet)           = keys(arcdict(n))
 reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
 refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
 
+npage(n::PnmlNet)          = length(pagedict(n))
+nplace(n::PnmlNet)         = nplace(netdata(n))
+ntransition(n::PnmlNet)    = ntransition(netdata(n))
+narc(n::PnmlNet)           = narc(netdata(n))
+nrefplace(n::PnmlNet)      = nrefplace(netdata(n))
+nreftransition(n::PnmlNet) = nreftransition(netdata(n))
+
 """
     allpages(net::PnmlNet|dict::OrderedDict) -> Iterator
 
@@ -128,12 +135,15 @@ has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
 
 
 """
-Return `Arc` from 's' to 't' or `nothing``. Assumes there is at most one.
+Return `Arc` from 's' to 't' or `nothing``. Assumes there is at most one. 
+
+Useful for graphs where arcs are represented by a tuple(source,target).
 """
 arc(net, s::Symbol, t::Symbol) = begin
     x = Iterators.filter(a -> source(a) === s && target(a) === t, arcs(net))
     isempty(x) ? nothing : first(x)
 end
+
 all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(net))
 src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
@@ -145,15 +155,32 @@ refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
 
+# Some helpers for metagraph. Will be useful in validating.
+# pnml id symbol converted to/from vertex code.
+vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
+vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
+
+vertexdata(net::PnmlNet) = begin
+    vcode = vertex_codes(net)
+    vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
+    for p in places(net)
+        vdata[pid(p)] = (vcode[pid(p)], p)
+    end
+    for t in transitions(net)
+        vdata[pid(t)] = (vcode[pid(t)], t)
+    end
+    return vdata
+    # Dict(pid(x) => (vcode[pid(x)], x) for x in Iterators.flatten(places(n), transitions(n)))
+end
+
 function Base.summary(net::PnmlNet)
-    string( typeof(net), " id ", pid(net),
-    " name '", has_name(net) ? name(net) : "", ", ",
-    " type ", nettype(net), ", ",
-    length(pagedict(net)), " pages ",
-    length(declarations(net)), " declarations",
-    length(tools(net)), " tools, ",
-    length(labels(net)), " labels"
-     )
+    string(typeof(net), " id ", pid(net),
+            " name '", has_name(net) ? name(net) : "", ", ",
+            " type ", nettype(net), ", ",
+            length(pagedict(net)), " pages ",
+            length(declarations(net)), " declarations",
+            length(tools(net)), " tools, ",
+            length(labels(net)), " labels")
 end
 
 # No indent here.

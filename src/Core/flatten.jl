@@ -4,10 +4,10 @@
 """
     flatten_pages!(net::PnmlNet[; options])
 
-Merge page content into the 1st page of the net or all nets of a model.
+Merge page content into the 1st page of the net.
 
 Options
-    trim::Bool Remove refrence nodes (default `false`). See [`deref!`](@ref).
+    trim::Bool Remove refrence nodes (default `true`). See [`deref!`](@ref).
     verbose::Bool Print breadcrumbs (default `false`).
 """
 function flatten_pages! end
@@ -41,13 +41,19 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
-function post_flat_verify(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
+function post_flat_verify(net::PnmlNet; 
+                          trim::Bool = true, 
+                          verbose::Bool = CONFIG.verbose)
     verbose && println("postflatten verify")
     errors = String[]
-    length(pagedict(net)) == 1 || push!(errors, "pagedict length wrong")
-    isempty(refplacedict(net)) || push!(errors, "refplacedict not empty")
-    isempty(reftransitiondict(net)) || push!(errors, "reftransitiondict not empty")
+
+    npage(net) == 1 || push!(errors, "wrong pagedict length: expected 1 found $(npage(net)))")
+    length(page_idset(net)) == 1 || push!(errors, "wrong page_idset length: expected 1 found $(length(page_idset(net)))")
+
+    nrefplace(net) == 0 || push!(errors, "refplacedict not empty")
     isempty(refplace_idset(net)) || push!(errors, "refplace_idset not empty")
+
+    nreftransition(net) == 0 || push!(errors, "reftransitiondict not empty")
     isempty(reftransition_idset(net)) || push!(errors, "reftransition_idset not empty")
 
     isempty(errors) ||

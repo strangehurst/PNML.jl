@@ -28,17 +28,23 @@ PnmlNetData(pntd) =
                 OrderedDict{Symbol, refplace_type(pntd)}(),
                 OrderedDict{Symbol, reftransition_type(pntd)}())
 
-placedict(d::PnmlNetData) = d.place_dict
-transitiondict(d::PnmlNetData) = d.transition_dict
-arcdict(d::PnmlNetData) = d.arc_dict
-refplacedict(d::PnmlNetData) = d.refplace_dict
+placedict(d::PnmlNetData)         = d.place_dict
+transitiondict(d::PnmlNetData)    = d.transition_dict
+arcdict(d::PnmlNetData)           = d.arc_dict
+refplacedict(d::PnmlNetData)      = d.refplace_dict
 reftransitiondict(d::PnmlNetData) = d.reftransition_dict
 
-placedict(x) = placedict(netdata(x))
-transitiondict(x) = transitiondict(netdata(x))
-arcdict(x) = arcdict(netdata(x))
-refplacedict(x) = refplacedict(netdata(x))
+placedict(x)         = placedict(netdata(x))
+transitiondict(x)    = transitiondict(netdata(x))
+arcdict(x)           = arcdict(netdata(x))
+refplacedict(x)      = refplacedict(netdata(x))
 reftransitiondict(x) = reftransitiondict(netdata(x))
+
+nplace(d::PnmlNetData)         = length(placedict(d))
+ntransition(d::PnmlNetData)    = length(transitiondict(d))
+narc(d::PnmlNetData)           = length(arcdict(d))
+nrefplace(d::PnmlNetData)      = length(refplacedict(d))
+nreftransition(d::PnmlNetData) = length(reftransitiondict(d))
 
 function tunesize!(d::PnmlNetData;
                     nplace::Int = 32,
