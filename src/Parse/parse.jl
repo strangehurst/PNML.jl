@@ -29,9 +29,8 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a string containing XML.
 See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_str(str::AbstractString)
+function parse_str(str::AbstractString, idregistry::PIDR = registry())
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    idregistry = registry(CONFIG.lock_registry ? ReentrantLock() : nothing)
     # Good place for debugging.
     parse_pnml(xmlroot(str), idregistry)
 end
@@ -42,9 +41,8 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a file containing XML.
 See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_file(fname::AbstractString)
+function parse_file(fname::AbstractString, idregistry::PIDR = registry())
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    idregistry = registry(CONFIG.lock_registry ? ReentrantLock() : nothing)
     # Good place for debugging.
     parse_pnml(EzXML.root(EzXML.readxml(fname)), idregistry)
 end
@@ -55,7 +53,7 @@ end
 Start parse from the root `node` of a well formed pnml XML document.
 Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
 """
-function parse_pnml(node::XMLNode, idregistry::PIDR)
+function parse_pnml(node::XMLNode, idregistry::PIDR = registry())
     nn = check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
     nets = allchildren("net", node) #! allocate Vector{XMLNode}
@@ -107,7 +105,7 @@ end
 Parse net with a defined PnmlType. The PNTD is used to set
 the marking, inscription, condition and sort type parameters.
 """
-function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PNTD<:PnmlType}
+function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     PNTD = typeof(pntd)
     pgtype = page_type(PNTD)
 
@@ -146,7 +144,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)# where {PN
 
     return PnmlNet(; type = pntd, id, pagedict, netdata, page_set = page_idset(netsets),
                     declaration = something(decl, Declaration()),
-                    namelabel, tools, labels)
+                    namelabel, tools, labels, idregistry)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"

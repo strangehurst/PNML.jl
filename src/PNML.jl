@@ -146,14 +146,10 @@ include("Parse/declarations.jl")
 include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
 
-export @xml_str,
-    xmlroot,
-    parse_str,
-    parse_file,
-    parse_pnml,
-    PnmlException,
-    MissingIDException,
-    MalformedException
+export @xml_str, xmlroot
+export parse_str, parse_file, parse_pnml
+export PnmlException, MissingIDException, MalformedException
+export registry
 
 include("precompile.jl")
 

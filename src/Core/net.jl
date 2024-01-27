@@ -14,6 +14,7 @@ One Petri Net of a PNML model.
     namelabel::Maybe{Name}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
+    idregistry::PnmlIDRegistry # Shared by all nets in a pnml model.
 end
 
 #nettype(::PnmlNet{T}) where {T <: PnmlType} = T
@@ -69,6 +70,7 @@ marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
 
 #--------------------------------------
 pid(net::PnmlNet)  = net.id
+idregistry(net::PnmlNet) = net.idregistry
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(n::PnmlNet) = n.pagedict

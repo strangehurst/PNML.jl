@@ -5,7 +5,7 @@ module PnmlIDRegistrys
 using Preferences
 using DocStringExtensions
 
-export PnmlIDRegistry, register_id!, isregistered, registry, reset!
+export PnmlIDRegistry, register_id!, isregistered, reset!
 
 """
 Holds a set of pnml id symbols and a lock to allow safe reentrancy.
@@ -16,16 +16,6 @@ $(TYPEDFIELDS)
 struct PnmlIDRegistry{L}
     ids::Set{Symbol}
     lk::L
-end
-
-"""
-    registry([lock]) -> PnmlIDRegistry
-
-Construct a PNML ID registry using the supplied AbstractLock or nothing to not lock.
-"""
-registry(lock=nothing) = begin
-    # isnothing(lock) || println("using lock $lock")
-    PnmlIDRegistry(Set{Symbol}(), lock)
 end
 
 function Base.show(io::IO, idregistry::PnmlIDRegistry)

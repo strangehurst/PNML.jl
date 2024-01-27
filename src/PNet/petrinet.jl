@@ -313,7 +313,7 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
 end
 
 SimpleNet(s::AbstractString) = SimpleNet(parse_str(s))
-SimpleNet(node::XMLNode) = SimpleNet(parse_pnml(node, registry(CONFIG.lock_registry ? ReentrantLock() : nothing)))
+SimpleNet(node::XMLNode) = SimpleNet(parse_pnml(node))
 function SimpleNet(model::PnmlModel)
     net0 = first_net(model)
     SimpleNet(net0)
