@@ -178,10 +178,39 @@ end
 function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
     verbose && println("verify PnmlNet")
     errors = String[]
+    isreg = Base.Fix1(isregistered,idregistry(net))
 
-    !isregistered(idregistry(net), pid(net)) && 
-        push!(errors, string("net id ", repr(pid(net)), " not registered in \n", repr(idregistry(net))))
+    !isreg(pid(net)) &&
+        push!(errors, string("net id ", repr(pid(net)), " not registered"))
 
+    for pg in pages(net)
+        !isreg(pid(pg)) &&
+            push!(errors, string("page id ", repr(pid(pg)), " not registered"))
+    end
+    for pg in allpages(net)
+        !isreg(pid(pg)) &&
+            push!(errors, string("page id ", repr(pid(pg)), " not registered"))
+    end
+    for pl in places(net)
+        !isreg(pid(pl)) &&
+            push!(errors, string("place id ", repr(pid(pl)), " not registered"))
+    end
+    for tr in transitions(net)
+        !isreg(pid(tr)) &&
+            push!(errors, string("transition id ", repr(pid(tr)), " not registered"))
+    end
+    for ar in arcs(net)
+        !isreg(pid(ar)) &&
+            push!(errors, string("arc id ", repr(pid(ar)), " not registered"))
+    end
+    for rp in refplaces(net)
+        !isreg(pid(rp)) &&
+            push!(errors, string("refPlace id ", repr(pid(rp)), " not registered"))
+    end
+    for rt in reftransitions(net)
+        !isreg(pid(rt)) &&
+            push!(errors, string("refTranition id ", repr(pid(rt)), " not registered"))
+    end
 
     isempty(errors) ||
         error("verify(net) errors: ", join(errors, ",\n "))
@@ -201,7 +230,7 @@ end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    print(io, indent(io), nameof(typeof(net)), 
+    print(io, indent(io), nameof(typeof(net)),
             "(", repr(pid(net)), ", ",repr(name(net)), ", ", repr(nettype(net)), ", ")
     iio = inc_indent(io)
     println(io)
