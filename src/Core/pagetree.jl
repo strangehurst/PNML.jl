@@ -6,12 +6,12 @@ AbstractTrees.children(p::Page)    = pages(p)
 
 AbstractTrees.printnode(io::IO, n::PnmlNet) = print(io, pid(n), "::", typeof(n))
 AbstractTrees.printnode(io::IO, page::Page) = print(io, pid(page),
-     " arcs ", foreach(x->string(x, ", "), arc_idset(page)),
-     " places ", foreach(x->string(x, ", "), place_idset(page)),
-     " transitions ", foreach(x->string(x, ", "), transition_idset(page)),
-     " reftransitions ", foreach(x->string(x, ", "), reftransition_idset(page)),
-     " refplaces ", foreach(x->string(x, ", "), refplace_idset(page))
-     )
+     " arcs ",  arc_idset(page),
+     " places ", place_idset(page),
+     " transitions ", transition_idset(page),
+     " reftransitions ", reftransition_idset(page),
+     " refplaces ", refplace_idset(page))
+
 # For type stability we need some/all of these.
 
 AbstractTrees.childtype(::Type{PnmlNet{T}}) where {T<:PnmlType} = page_type(T)
