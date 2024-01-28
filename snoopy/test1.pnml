@@ -69,12 +69,12 @@
                 <toolspecific tool="reftranstool" version="1.0"><atool x="0"/></toolspecific>
             </referenceTransition>
 
-            <page id="net1page11">
+            <page id="net1page1sub1">
                 <place id="p11"></place>
                 <transition id ="t11"> </transition>
                 <arc id="a111" source="t11" target="rp11"> </arc>
                 <referencePlace id="rp11" ref="p111"/>
-                <page id="net1page111">
+                <page id="net1page1sub1sub1">
                     <place id="p111"> <initialMarking> <text> 111 </text> </initialMarking> </place>
                     <arc id="a1111" source="p111" target="rt111"> </arc>
                     <referenceTransition id="rt111" ref="rt2"/>
@@ -247,13 +247,13 @@
                             <subterm>
                                 <numberconstant value="1">
                                     <positive/>
-                              </numberconstant>
-                          </subterm>
-                          <subterm>
-                              <dotconstant/>
-                          </subterm>
-                      </numberof>
-                  </structure>
+                                </numberconstant>
+                            </subterm>
+                            <subterm>
+                                <dotconstant/>
+                            </subterm>
+                        </numberof>
+                    </structure>
                 </hlinitialMarking>
             </place>
 
