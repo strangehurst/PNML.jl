@@ -137,9 +137,7 @@ has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
 
 
 """
-Return `Arc` from 's' to 't' or `nothing``. Assumes there is at most one. 
-
-Useful for graphs where arcs are represented by a tuple(source,target).
+Return `Arc` from 's' to 't' or `nothing`. Useful for graphs where arcs are represented by a tuple(source,target).
 """
 arc(net, s::Symbol, t::Symbol) = begin
     x = Iterators.filter(a -> source(a) === s && target(a) === t, arcs(net))
@@ -175,6 +173,22 @@ vertexdata(net::PnmlNet) = begin
     # Dict(pid(x) => (vcode[pid(x)], x) for x in Iterators.flatten(places(n), transitions(n)))
 end
 
+"""
+"""
+function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
+    verbose && println("verify PnmlNet")
+    errors = String[]
+
+    !isregistered(idregistry(net), pid(net)) && 
+        push!(errors, string("net id ", repr(pid(net)), " not registered in \n", repr(idregistry(net))))
+
+
+    isempty(errors) ||
+        error("verify(net) errors: ", join(errors, ",\n "))
+    return true
+end
+
+
 function Base.summary(net::PnmlNet)
     string(typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", ", ",
@@ -187,7 +201,8 @@ end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    print(io, indent(io), nameof(typeof(net)), "(",  repr(name(net)), ", ", repr(nettype(net)), ", ")
+    print(io, indent(io), nameof(typeof(net)), 
+            "(", repr(pid(net)), ", ",repr(name(net)), ", ", repr(nettype(net)), ", ")
     iio = inc_indent(io)
     println(io)
     print(io, "Pages = ", repr(page_idset(net)))
