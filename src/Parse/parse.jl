@@ -118,6 +118,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     tunesize!(netdata)
 
     id   = register_id!(idregistry, node["id"])
+    @assert isregistered(idregistry, id)
     namelabel = nothing
     decl::Maybe{Declaration} = nothing
     tools  = ToolInfo[]
@@ -127,7 +128,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "page"
-            _parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
+            parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
         elseif tag == "declaration" # Make non-high-level also have declaration of some kind.
             decl = parse_declaration(child, pntd, idregistry)
         elseif tag == "name"
@@ -148,12 +149,16 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
-function _parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    pg = parse_page!(pagedict, netdata, node, pntd, idregistry)
-    # Add to dictonary and id set.
-    pageid = pid(pg)
+function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+    nn = check_nodename(node, "page")
+    haskey(node, "id") || throw(MissingIDException(nn))
+    pageid = register_id!(idregistry, node["id"])
+    #println("add $pageid to ", page_idset(netsets))
+    push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
+
+    pg = _parse_page!(pagedict, netdata, node, pntd, idregistry)
+    @assert pageid === pid(pg)
     pagedict[pageid] = pg
-    push!(page_idset(netsets), pageid)
     return nothing
 end
 
@@ -162,10 +167,9 @@ end
 
 Place `Page` in `pagedict` using id as the key.
 """
-function parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
-    nn = check_nodename(node, "page")
-    haskey(node, "id") || throw(MissingIDException(nn))
-    pageid = register_id!(idregistry, node["id"])
+function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
+    pageid = Symbol(node["id"])
+    @assert isregistered(idregistry, pageid)
     netsets = PnmlNetKeys() # per-page data
 
     decl::Maybe{Declaration} = nothing
@@ -188,7 +192,7 @@ function parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR
             "arc"                 => parse_arc!(arc_set, netdata.arc_dict, child, pntd, idregistry)
             "referencePlace"      => parse_refPlace!(rp_set, netdata.refplace_dict, child, pntd, idregistry)
             "referenceTransition" => parse_refTransition!(rt_set, netdata.reftransition_dict, child, pntd, idregistry)
-            "page"                => _parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
+            "page"                => parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
             "declaration"         => (decl = parse_declaration(child, pntd, idregistry))
             "name"                => (name = parse_name(child, pntd, idregistry))
             "graphics"            => (graphics = parse_graphics(child, pntd, idregistry))

@@ -17,9 +17,11 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
     netid = pid(net)
     verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
-
-        pageids = keys(pagedict(net)) #! iterator
-        key1, val1 = popfirst!(pagedict(net))
+        pageids = keys(pagedict(net))
+        # Choose the surviving page from those owned directly from net.
+        key1 = first(page_idset(net))
+        val1 = pagedict(net)[key1]
+        delete!(pagedict(net), key1)
         @assert key1 ∉ pageids # Note the coupling of pageids and net.pagedict.
 
         while !isempty(pagedict(net))
@@ -31,8 +33,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
         @assert isempty(pagedict(net))
 
         pagedict(net)[key1] = val1 # Put the one-true-page back in the dictionary.
-        push!(page_idset(net), key1)
-
+        @assert key1 ∈ page_idset(net) # We never removed the one-true key.
         @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
 
         deref!(net, trim)
@@ -41,8 +42,8 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
-function post_flat_verify(net::PnmlNet; 
-                          trim::Bool = true, 
+function post_flat_verify(net::PnmlNet;
+                          trim::Bool = true,
                           verbose::Bool = CONFIG.verbose)
     verbose && println("postflatten verify")
     errors = String[]
