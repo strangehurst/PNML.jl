@@ -53,4 +53,11 @@ using PNML: tag, pid, PnmlNet, allpages, first_net, flatten_pages!, source, targ
     @test source(arc(net, :a23)) === :t3
 
     @test PNML.post_flat_verify(net; verbose=true)
+    @show PNML.vertex_codes(net)
+    @show PNML.vertex_labels(net)
+
+    vd = PNML.vertexdata(net)
+    @show typeof(vd)
+    @show keys(vd)
+    map(println, values(vd))
 end

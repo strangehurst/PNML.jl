@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, OrderedCollections
+using PNML, EzXML, ..TestUtils, JET, OrderedCollections, AbstractTrees
 using PNML: Maybe,
     tag, pid, firstpage, length,
     parse_file, parse_name, parse_initialMarking, parse_inscription,
@@ -164,10 +164,43 @@ end
 
 # Read a file
 @testset "test1.pnml file" begin
+    println("\ntest1.pnml")
     model = @test_logs(match_mode=:all,
         (:warn, "ignoring unexpected child of <condition>: 'name'"),
         (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
         parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
     @test model isa PnmlModel
     @test startswith(repr(model), "PnmlModel")
+
+    #@show [pid(x) for x in PNML.nets(model)]
+    @show map(pid, PNML.nets(model)) # tuple
+    for n in PNML.nets(model)
+        println()
+        #n = PNML.first_net(model)
+        #@show pid(n) PNML.idregistry(n)
+        #@show pid(n) in PNML.idregistry(n).ids
+        #@show PNML.isregistered(PNML.idregistry(n), pid(n))
+        @test PNML.verify(n)
+        PNML.flatten_pages!(n)
+        @test PNML.verify(n)
+        #@show n
+        #println()
+        PNML.pagetree(n)
+        println()
+        AbstractTrees.print_tree(n)
+        println()
+        vc = PNML.vertex_codes(n)
+        vl = PNML.vertex_labels(n)
+        println()
+        vd = PNML.vertexdata(n)
+        println()
+        @show typeof(vd)
+        @show keys(vd)
+        map(println, values(vd))
+
+        for a in arcs(n)
+            println("Edge ", vc[PNML.source(a)], " => ",  vc[PNML.target(a)])
+        end
+        @show PNML.metagraph(n)
+    end
 end
