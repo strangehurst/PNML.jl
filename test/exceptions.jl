@@ -77,8 +77,6 @@ end
     pagedict = OrderedDict{Symbol, page_type(pntd)}()
     netdata = PNML.PnmlNetData(pntd)
     netsets = PNML.PnmlNetKeys()
-    # _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType}
-    #parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
 
     @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd, registry())
     @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd, registry())
