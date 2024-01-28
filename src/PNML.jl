@@ -7,20 +7,20 @@ dictionaries, NamedTuples, LabelledArrays, strings, numbers, objects, vectors.
 The exact mixture changes as the project continues.
 
 The tags of the XML are used as keys and names as much as possible.
- 
-What is accepted as values is ~~often~~ usually a superset of what a given pntd schema specifies. 
-This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR. 
+
+What is accepted as values is ~~often~~ usually a superset of what a given pntd schema specifies.
+This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
 
 The pnml specification has layers.
 
 The core layer is useful and extendable. The standard defines extensions of the core for
 place-transition petri nets (integers) and high-level petri net graphs (many-sorted algebra).
-This package family adds non-standard continuous net (float64) support. 
-Note that there is no RelaxNG schema file for these extensions 
+This package family adds non-standard continuous net (float64) support.
+Note that there is no RelaxNG schema file for these extensions
 
 On top of the IR is (will be) implemented Petri Net adaptions and interpertations.
 This is the level that pntd conformance can be imposed.
-Adaption to julia packages for graphs, agents, and composing into the greater hive-mind. 
+Adaption to julia packages for graphs, agents, and composing into the greater hive-mind.
 """
 module PNML
 

@@ -132,7 +132,6 @@ end
         end
     end
 
-    @show [pid(x) for x in PNML.nets(model)]
 
     # First use is here, so test mechanisim here.
     @test PNML.ispid(:net1)(:net1)

@@ -7,7 +7,7 @@ One or more Petri Nets and an ID Registry shared by all nets.
 struct PnmlModel
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
-    reg::PnmlIDRegistry # Shared by all nets.
+    reg::PnmlIDRegistry # Shared by all nets. #todo unshared mode: make tupl of same size as nets
 end
 
 """
@@ -17,7 +17,7 @@ Return all `nets` of `model`.
 """
 nets(model::PnmlModel) = model.nets
 namespace(model::PnmlModel) = model.namespace
-idregistry(model::PnmlModel) = model.reg
+idregistry(model::PnmlModel) = model.reg #todo when tuple?
 netsets(m::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
 
 ispnmltype(pntd::PnmlType) = Fix1(===, pntd)
