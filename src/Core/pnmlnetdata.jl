@@ -135,7 +135,7 @@ function Base.summary(pns::PnmlNetKeys)
             length(place_idset(pns)), " places, ",
             length(transition_idset(pns)), " transitions, ",
             length(arc_idset(pns)), " arcs, ",
-            length(refplac_ideset(pns)), " refPlaces, ",
+            length(refplace_idset(pns)), " refPlaces, ",
             length(reftransition_idset(pns)), " refTransitions, ",
         )
 end
