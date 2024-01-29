@@ -225,8 +225,9 @@ condition_value_type(pntd::PnmlType) = condition_value_type(typeof(pntd))
 inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
 inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
 
-term_type(x::Any) = (throw ∘ ArgumentError)("no term_type defined for $(typeof(x))")
-term_type(pntd::PnmlType)       = term_type(typeof(pntd))
+#! Term should be replaced by Variables and Operators. So not documented or tested.
+#term_type(x::Any) = (throw ∘ ArgumentError)("no term_type defined for $(typeof(x))")
+#term_type(pntd::PnmlType)       = term_type(typeof(pntd))
 term_value_type(pntd::PnmlType) = term_value_type(typeof(pntd))
 
 coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))
