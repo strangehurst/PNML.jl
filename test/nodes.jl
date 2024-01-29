@@ -180,7 +180,7 @@ end
 
 @testset "ref Trans $pntd" for pntd in all_nettypes() #a" begin
     node = xml"""
-        <referenceTransition id="rt1" ref="t1">
+    <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
         <graphics><offset x="0" y="0"/></graphics>
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
@@ -194,6 +194,7 @@ end
     @test n isa RefTransition
     @test pid(n) === :rt1
     @test refid(n) === :t1
+    @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
 end
 
 @testset "ref Place $pntd" for pntd in all_nettypes() #a" begin" begin

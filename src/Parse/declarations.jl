@@ -32,7 +32,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         elseif tag == "text"
             text = string(strip(EzXML.nodecontent(child)))
         elseif tag == "graphics"
-            graphics => parse_graphics(child, pntd, idregistry)
+            graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else

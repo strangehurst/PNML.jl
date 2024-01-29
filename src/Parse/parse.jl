@@ -351,7 +351,7 @@ function parse_arc(node, pntd, idregistry::PIDR)
         elseif tag == "name"
             name = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
-            graphics => parse_graphics(child, pntd, idregistry)
+            graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
@@ -389,7 +389,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         if tag == "name"
             name => parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
-            graphics => parse_graphics(child, pntd, idregistry)
+            graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
@@ -420,7 +420,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         if tag == "name"
             name = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
-            graphics => parse_graphics(child, pntd, idregistry)
+            graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
             add_toolinfo!(tools, child, pntd, idregistry)
         else # labels (unclaimed) are everything-else
