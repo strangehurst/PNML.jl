@@ -80,8 +80,11 @@ function delay(transition)
     end
     return ("closed", 0.0, 0.0)
 end
-_ci(i) = if i == "infin" || i == "infty"
-    Inf
-else
-    error("may only contain infin|infty, found: $ci")
+
+function _ci(i)
+    if i == "infin" || i == "infty"
+        return Inf
+    else
+        error("may only contain infin|infty, found: $ci")
+    end
 end
