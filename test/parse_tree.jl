@@ -153,13 +153,20 @@ end
     #todo compare pages(net) == allpages(net)
     @test firstpage(net) isa Page
     @test first(pages(net)) isa Page
+    @test PNML.npage(net) == 1
     @test !isempty(arcs(firstpage(net)))
+    @test PNML.narc(net) >= 0
     @test !isempty(places(firstpage(net)))
+    @test PNML.nplace(net) >= 0
     @test !isempty(transitions(firstpage(net)))
+    @test PNML.ntransition(net) >= 0
     @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
+    @test !isempty(repr(PNML.netdata(net)))
+    @test !isempty(repr(PNML.netsets(firstpage(net))))
+    @show summary(PNML.netsets(firstpage(net)))
 end
 
 # Read a file
@@ -175,32 +182,29 @@ end
     #@show [pid(x) for x in PNML.nets(model)]
     @show map(pid, PNML.nets(model)) # tuple
     for n in PNML.nets(model)
-        println()
-        #n = PNML.first_net(model)
-        #@show pid(n) PNML.idregistry(n)
-        #@show pid(n) in PNML.idregistry(n).ids
-        #@show PNML.isregistered(PNML.idregistry(n), pid(n))
         @test PNML.verify(n)
         PNML.flatten_pages!(n)
         @test PNML.verify(n)
-        #@show n
-        #println()
-        PNML.pagetree(n)
-        println()
-        AbstractTrees.print_tree(n)
-        println()
-        vc = PNML.vertex_codes(n)
-        vl = PNML.vertex_labels(n)
-        println()
-        vd = PNML.vertexdata(n)
-        println()
-        @show typeof(vd)
-        @show keys(vd)
-        map(println, values(vd))
 
-        for a in arcs(n)
-            println("Edge ", vc[PNML.source(a)], " => ",  vc[PNML.target(a)])
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            println()
+            PNML.pagetree(n)
+            println()
+            AbstractTrees.print_tree(n)
+            println()
+            vc = PNML.vertex_codes(n)
+            vl = PNML.vertex_labels(n)
+            println()
+            vd = PNML.vertexdata(n)
+            println()
+            @show typeof(vd)
+            @show keys(vd)
+            map(println, values(vd))
+
+            for a in arcs(n)
+                println("Edge ", vc[PNML.source(a)], " =- ",  vc[PNML.target(a)])
+            end
+            @show PNML.metagraph(n)
         end
-        @show PNML.metagraph(n)
     end
 end

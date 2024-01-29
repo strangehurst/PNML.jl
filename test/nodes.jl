@@ -23,6 +23,7 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(name(n)) == "with text"
         @test_call initial_marking(n)
         @test @inferred(initial_marking(n)()) == 100
+
     end
 
     @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
