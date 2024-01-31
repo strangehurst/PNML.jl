@@ -1,24 +1,47 @@
 #julia -e 'include("all_pnml.jl"); testpn()'
-#julia -e 'include("all_pnml.jl"); testpn(dir="MCC")'
+#julia -e 'include("all_pnml.jl"); testpn("MCC")'
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
 
-
 pnml_files(files) = filter(files) do f
     isfile(f) && success(run(Cmd(`grep -qF "<pnml" $f`, ignorestatus=true)))
 end
 
-function testpn(dir::AbstractString = "examples";
-                topdir = "/home/jeff/PetriNet/PNML",
-                outdir = "/home/jeff/Jules/testpmnl")
-    testpn(tuple(dir); topdir, outdir)
+function testfile(file::AbstractString = "test-files.list";
+                  topdir = "/home/jeff/PetriNet/PNML",
+                  outdir = "/home/jeff/Jules/testpmnl")
+    opened = open(file)
+    tests = filter(l -> !isempty(l) && !contains(l, r"^\s*#"), readlines(opened))
+    #tests = map(i->joinpath(topdir,i),
+    #            filter(l -> !isempty(l) && !contains(l, r"^\s*#"), readlines(opened)))
+    close(opened)
+    println("running ", length(tests), " tests in ", file)
+    _testpn(tests; topdir, outdir)
 end
 
-function testpn(dirs = ("examples",);
-                topdir = "/home/jeff/Projects/Resources/PetriNet/PNML",
+function testpn(dir = "";
+                topdir = "/home/jeff/PetriNet/PNML",
+                outdir = "/home/jeff/Jules/testpmnl")
+
+    srcdir = isempty(dir) ? topdir : joinpath(topdir, dir)
+    tests = String[] # Construct list of test files.
+    cd(srcdir) do
+        for (root, _, files) in walkdir(".")
+            flist = map(f -> joinpath(root, f), filter(endswith(r"pnml|xml"), files))
+            pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" "$f"`, ignorestatus=true))), flist)
+            append!(tests, map(l->chop(l; head=2, tail=0), pnmls)) # remove leading "./"
+        end
+    end
+    println("running ", length(tests), " tests from $srcdir")
+    _testpn(tests; topdir=srcdir, outdir)
+end
+
+
+function _testpn(tests::Vector{String} = String[];
+                topdir = "/home/jeff/PetriNet/PNML",
                 outdir = "/home/jeff/Jules/testpmnl")
 
     outdir = joinpath(outdir, Dates.format(now(), dateformat"yyyymmddHHMM"))
@@ -30,28 +53,18 @@ function testpn(dirs = ("examples",);
     demux_logger = TeeLogger(consolelogger, MinLevelLogger(filelogger, Logging.Debug))
     global_logger(demux_logger)
 
-    @show topdir dirs outdir outputlog
+    @show topdir outdir outputlog
+    #map(println, tests)
+
     df = DataFrame()
-    start_time = now()
-    @info "start time" start_time
-    @time for srcdir in dirs #! Loop over input directories
-        in_dir  = joinpath(topdir, srcdir)
-        cd(in_dir) do
-            println("Input Directory ", pwd())
-            for (root, dirs, files) in walkdir(".")
-                #map(println, Iterators.map(f -> joinpath(root, f), dirs))
-                flist = map(f -> joinpath(root, f), filter(endswith(r"pnml|xml"), files))
-                #map(println, flist)
-                pnmls = filter(f -> success(run( Cmd(`grep -qF "<pnml xmlns" "$f"`, ignorestatus=true))), flist)
-                for file in pnmls
-                    per_file!(df, outdir, file)
-                    GC.gc()
-                end
-            end
-            println()
+    @show start_time = now()
+    cd(topdir) do
+        @time for (i,test) in enumerate(tests)
+            print(i, " of ", length(tests), ": ")
+            per_file!(df, joinpath(outdir, string(test, ".txt")), test)
+            GC.gc()
         end
     end
-
     # Exception Summary Report
     xfile = open(joinpath(outdir, "exceptions.txt"), "w")
     cd(outdir) do
@@ -71,31 +84,52 @@ function testpn(dirs = ("examples",);
     println("finish_time = ", now(), ", elapsed time = ", (now() - start_time))
 end
 
-#-----------------------------------
+#-------------------------------------------------------------------------------------------
 # `filename` is relative to the cwd. `outdir` is absolute or relative
-function per_file!(df, outdir::AbstractString, filename::AbstractString)
-    outfile = joinpath(outdir, string(filename, ".txt")) #(first ∘ splitext)(filename))
-    #@show filename
+function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_net=exersize_netA)
+    #@show outfile testf pwd()
 
-    isfile(outfile) && println("Warning overwriting $outfile")
+    isfile(outfile) && error("Warning overwriting $outfile")
     mkpath(dirname(outfile)) # Create output directory.
+    #! testf = joinpath(srcdir, filename)
+
     file_start = now()
-    @info "File $filename at $(Time(file_start)) size = $(filesize(filename))" # Display path to file and size.
+    println("$testf at $(Time(file_start)) size = $(filesize(testf))") # Display path to file and size.
 
     Base.redirect_stdio(stdout=outfile, stderr=outfile) do
         try
-            println(stat(filename), " at ", Time(file_start))
+            println(stat(testf), " at ", Time(file_start))
             println()
-            stats = @timed parse_file(filename)
-            push!(df, (file=filename, fsize=filesize(filename),
+
+            stats = @timed parse_file(testf)
+
+            #todo Add fields of testf path components to allow sorting the table.
+            push!(df, (file=testf, fsize=filesize(testf),
                        time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
 
             # Display PnmlModel as a test of parsing, creation and show().
             println(stats.value)
             println("took ", stats.time, " memory bytes :", stats.bytes)
+            !isnothing(exersize_net) && exersize_net(stats.value)
 
+        catch e
+            bt = Base.catch_backtrace()
+
+            println("\n\nCAUGHT EXCEPTION:", sprint(showerror, e, bt)) # full backtrace to file
+            @info "CAUGHT EXCEPTION: $(sprint(showerror,e))"
+            #! Ignore first ^C, it serves to end processing of a single file.
+            #! The "second" (is there a window of opurtunity?) should end the loop processing files.
+            # e isa InterruptException && rethrow()
+            # end
+        end # try
+    end   # redirect
+    # print exceptions
+    run(Cmd(`grep "^CAUGHT EXCEPTION" $outfile`, ignorestatus=true))
+end
+
+function exersize_netA(model)
             # Petri Net & Graph
-            @showtime anet = PNML.SimpleNet(stats.value)
+            @showtime anet = PNML.SimpleNet(model)
             @showtime mg = PNML.metagraph(anet)
             @showtime Graphs.is_bipartite(mg)
             @showtime Graphs.ne(mg)
@@ -108,18 +142,4 @@ function per_file!(df, outdir::AbstractString, filename::AbstractString)
             @showtime m₀ = PNML.initial_markings(anet)
             #@showtime e  = PNML.enabled(anet, m₀)
             println("-----")
-
-        catch e
-            bt = Base.catch_backtrace()
-
-            println("\n\nCAUGHT EXCEPTION:", sprint(showerror, e, bt)) # full backtrace to file
-            @info "CAUGHT EXCEPTION: $(sprint(showerror,e))"
-            #! Ignore first ^C, it serves to end prossing of a single file.
-            #! The "second" (is there a window of opurtunity?) should end the loop processing files.
-            # e isa InterruptException && rethrow()
-            # end
-        end # try
-    end   # redirect
-    # print exceptions
-    run(Cmd(`grep "^CAUGHT EXCEPTION" $outfile`, ignorestatus=true))
 end
