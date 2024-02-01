@@ -186,19 +186,29 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        @match tag begin
-            "place"               => parse_place!(place_set, netdata.place_dict, child, pntd, idregistry)
-            "transition"          => parse_transition!(transition_set, netdata.transition_dict, child, pntd, idregistry)
-            "arc"                 => parse_arc!(arc_set, netdata.arc_dict, child, pntd, idregistry)
-            "referencePlace"      => parse_refPlace!(rp_set, netdata.refplace_dict, child, pntd, idregistry)
-            "referenceTransition" => parse_refTransition!(rt_set, netdata.reftransition_dict, child, pntd, idregistry)
-            "page"                => parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
-            "declaration"         => (decl = parse_declaration(child, pntd, idregistry))
-            "name"                => (name = parse_name(child, pntd, idregistry))
-            "graphics"            => (graphics = parse_graphics(child, pntd, idregistry))
-            "toolspecific"        => add_toolinfo!(tools, child, pntd, idregistry)
-            _ => (CONFIG.warn_on_unclaimed && @warn("found unexpected label of <page>: $tag"),
-                     add_label!(labels, child, pntd, idregistry))
+        if tag == "place"
+            parse_place!(place_set, netdata.place_dict, child, pntd, idregistry)
+        elseif tag == "transition"
+            parse_transition!(transition_set, netdata.transition_dict, child, pntd, idregistry)
+        elseif tag == "arc"
+            parse_arc!(arc_set, netdata.arc_dict, child, pntd, idregistry)
+        elseif tag == "referencePlace"
+            parse_refPlace!(rp_set, netdata.refplace_dict, child, pntd, idregistry)
+        elseif tag == "referenceTransition"
+            parse_refTransition!(rt_set, netdata.reftransition_dict, child, pntd, idregistry)
+        elseif tag == "page"
+            parse_page!(pagedict, netdata, netsets, child, pntd, idregistry)
+        elseif tag == "declaration"
+            decl = parse_declaration(child, pntd, idregistry)
+        elseif tag == "name"
+            name = parse_name(child, pntd, idregistry)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else
+            CONFIG.warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
+            add_label!(labels, child, pntd, idregistry)
         end
     end
 

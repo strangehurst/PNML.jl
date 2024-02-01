@@ -58,14 +58,19 @@ function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistr
     decs = AbstractDeclaration[]
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
-        @match tag begin
-            # These three cases have
-            "namedsort"     => push!(decs, parse_namedsort(child, pntd, idregistry))
-            "namedoperator" => push!(decs, parse_namedoperator(child, pntd, idregistry))
-            "variabledecl"  => push!(decs, parse_variabledecl(child, pntd, idregistry))
-            #todo "arbitrarysort"
-            "partition"     => push!(decs, parse_partition_decl(child, pntd, idregistry))
-            _               => push!(decs, parse_unknowndecl(child, pntd, idregistry))
+        # @match tag begin
+        # These three cases have
+        if tag == "namedsort"
+            push!(decs, parse_namedsort(child, pntd, idregistry))
+        elseif tag == "namedoperator"
+            push!(decs, parse_namedoperator(child, pntd, idregistry))
+        elseif tag == "variabledecl"
+            push!(decs, parse_variabledecl(child, pntd, idregistry))
+        elseif tag == "partition"
+            push!(decs, parse_partition_decl(child, pntd, idregistry))
+        #elseif tag == "arbitrarysort"
+        else
+            push!(decs, parse_unknowndecl(child, pntd, idregistry))
         end
     end
     return decs
@@ -159,12 +164,17 @@ function parse_label_content(node::XMLNode, termparser::F,
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        @match tag begin
-            "text"         => (text = parse_text(child, pntd, idregistry))
-            "structure"    => (term = termparser(child, pntd, idregistry)) # Apply function/functor
-            "graphics"     => (graphics = parse_graphics(child, pntd, idregistry))
-            "toolspecific" => add_toolinfo!(tools, child, pntd, idregistry)
-            _ => @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
+        #@match tag begin
+        if tag == "text"
+            text = parse_text(child, pntd, idregistry)
+        elseif tag == "structure"
+            term = termparser(child, pntd, idregistry) # Apply function/functor
+        elseif tag == "graphics"
+             graphics = parse_graphics(child, pntd, idregistry)
+        elseif tag == "toolspecific"
+            add_toolinfo!(tools, child, pntd, idregistry)
+        else
+            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
         end
     end
     return (; text, term, graphics, tools)

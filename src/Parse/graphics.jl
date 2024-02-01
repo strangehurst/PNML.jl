@@ -42,14 +42,20 @@ function parse_graphics(node, pntd, reg)
     _positions = Coordinate{coordinate_value_type(pntd)}[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        @match tag begin
-            "dimension" => (args[:dimension] = parse_graphics_coordinate(child, pntd, reg))
-            "fill"      => (args[:fill] = parse_graphics_fill(child, pntd, reg))
-            "font"      => (args[:font] = parse_graphics_font(child, pntd, reg))
-            "line"      => (args[:line] = parse_graphics_line(child, pntd, reg))
-            "offset"    => (args[:offset] = parse_graphics_coordinate(child, pntd, reg))
-            "position"  => push!(_positions, parse_graphics_coordinate(child, pntd, reg))
-            _ => @warn "ignoring unexpected child of <graphics>: '$tag'"
+        if tag ==   "dimension"
+            args[:dimension] = parse_graphics_coordinate(child, pntd, reg)
+        elseif tag == "fill"
+            args[:fill] = parse_graphics_fill(child, pntd, reg)
+        elseif tag ==    "font"
+            args[:font] = parse_graphics_font(child, pntd, reg)
+        elseif tag ==     "line"
+            args[:line] = parse_graphics_line(child, pntd, reg)
+        elseif tag ==     "offset"
+            args[:offset] = parse_graphics_coordinate(child, pntd, reg)
+        elseif tag ==     "position"
+            push!(_positions, parse_graphics_coordinate(child, pntd, reg))
+        else
+            @warn "ignoring unexpected child of <graphics>: '$tag'"
         end
     end
     args[:positions] = _positions
