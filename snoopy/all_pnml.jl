@@ -6,6 +6,11 @@ using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
 
+# Use default display width for printing.
+if !haskey(ENV, "COLUMNS")
+    ENV["COLUMNS"] = 180
+end
+
 pnml_files(files) = filter(files) do f
     isfile(f) && success(run(Cmd(`grep -qF "<pnml" $f`, ignorestatus=true)))
 end
@@ -79,7 +84,12 @@ function _testpn(tests::Vector{String} = String[];
     close(xfile)
 
     sort!(df, [:time])
-    write(joinpath(outdir, "DataFrame.txt"), repr(df))
+    dt = joinpath(outdir, "DataFrame.txt")
+    Base.redirect_stdio(; stdout=dt, stderr=dt) do
+        show(df; truncate=80)
+        println()
+    end
+
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
     println("finish_time = ", now(), ", elapsed time = ", (now() - start_time))
 end
@@ -89,9 +99,8 @@ end
 function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_net=exersize_netA)
     #@show outfile testf pwd()
 
-    isfile(outfile) && error("Warning overwriting $outfile")
+    isfile(outfile) && error("overwriting $outfile")
     mkpath(dirname(outfile)) # Create output directory.
-    #! testf = joinpath(srcdir, filename)
 
     file_start = now()
     println("$testf at $(Time(file_start)) size = $(filesize(testf))") # Display path to file and size.
@@ -108,9 +117,8 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
                        time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
 
             # Display PnmlModel as a test of parsing, creation and show().
-            println(stats.value)
-            println("took ", stats.time, " memory bytes :", stats.bytes)
             !isnothing(exersize_net) && exersize_net(stats.value)
+            println("took ", stats.time, " memory: ", stats.bytes, " bytes")
 
         catch e
             bt = Base.catch_backtrace()
@@ -128,18 +136,19 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
 end
 
 function exersize_netA(model)
-            # Petri Net & Graph
-            @showtime anet = PNML.SimpleNet(model)
-            @showtime mg = PNML.metagraph(anet)
-            @showtime Graphs.is_bipartite(mg)
-            @showtime Graphs.ne(mg)
-            @showtime Graphs.nv(mg)
-            @showtime MetaGraphsNext.labels(mg) #|> collect
-            @showtime MetaGraphsNext.edge_labels(mg) #|> collect
-            println("-----")
-            #C = PNML.incidence_matrix(anet)
-            #@showtime C  = PNML.incidence_matrix(anet)
-            @showtime m₀ = PNML.initial_markings(anet)
-            #@showtime e  = PNML.enabled(anet, m₀)
-            println("-----")
+    println(model)
+    # Petri Net & Graph
+    @showtime anet = PNML.SimpleNet(model)
+    @showtime mg = PNML.metagraph(anet)
+    @showtime Graphs.is_bipartite(mg)
+    @showtime Graphs.ne(mg)
+    @showtime Graphs.nv(mg)
+    @showtime MetaGraphsNext.labels(mg) #|> collect
+    @showtime MetaGraphsNext.edge_labels(mg) #|> collect
+    println("-----")
+    #C = PNML.incidence_matrix(anet)
+    #@showtime C  = PNML.incidence_matrix(anet)
+    @showtime m₀ = PNML.initial_markings(anet)
+    #@showtime e  = PNML.enabled(anet, m₀)
+    println("-----")
 end
