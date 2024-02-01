@@ -21,10 +21,6 @@ function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=no
     return (tag, xd) #return DictType(Pair{Union{Symbol,String}, XDVT}(tag, xd))
     # empty dictionarys are a valid thing.
 end
-Base.convert(::Type{XDVT}, x::OrderedDict) = DictType(x)
-Base.convert(::Type{XDVT}, s::Union{String, SubString{String}}) = s
-Base.convert(::Type{XDVT}, x::Vector{OrderedDict}) = Vector{DictType}(x)
-Base.convert(::Type{XDVT}, s::Vector{Union{String, SubString{String}}}) = s
 
 #-----------------------------------------------------------------------------
 
