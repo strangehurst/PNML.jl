@@ -63,8 +63,6 @@ end
 using AutoHashEquals
 using Base: Fix1, Fix2, @kwdef, RefValue
 using DocStringExtensions
-import EzXML
-import XMLDict
 using FunctionWrappers
 import FunctionWrappers: FunctionWrapper
 using LabelledArrays
@@ -77,7 +75,10 @@ using DecFP
 #using Infiltrator: @infiltrate
 import Graphs
 import MetaGraphsNext
-using DebuggingUtilities
+#using DebuggingUtilities
+
+import EzXML
+import XMLDict
 
 include("Core/PnmlTypeDefs.jl")
 @reexport using .PnmlTypeDefs
