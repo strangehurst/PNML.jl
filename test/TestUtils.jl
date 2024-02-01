@@ -1,7 +1,6 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
 using PNML, EzXML, Preferences, XMLDict, Reexport
-@reexport using DebuggingUtilities
 
 "Often JET has problems with beta julia versions:("
 const jet_broke = (VERSION < v"1.10-") ? false : true

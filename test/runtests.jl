@@ -2,7 +2,7 @@ using PNML, Test, SafeTestsets
 using AbstractTrees
 using OrderedCollections
 using Documenter
-using JET, Aqua, DebuggingUtilities
+using JET, Aqua
 
 println("ARGS = ", ARGS)
 

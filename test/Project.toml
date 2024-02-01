@@ -1,7 +1,6 @@
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-DebuggingUtilities = "5a34b05b-6094-51df-87c5-5e0368a91250"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
