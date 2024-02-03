@@ -298,7 +298,7 @@ end
 _parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:PnmlType} = parse_initialMarking(node, pntd, idregistry)
 _parse_marking(node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore} = parse_hlinitialMarking(node, pntd, idregistry)
 
-const transition_xlabels = ["rate", "delay"]
+const transition_xlabels = ("rate", "delay")
 """
 $(TYPEDSIGNATURES)
 """
