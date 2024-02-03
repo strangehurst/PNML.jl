@@ -71,7 +71,7 @@ struct UnknownDeclaration  <: AbstractDeclaration
     nodename::Union{String,SubString{String}}
     content::Vector{Any} #! Vector{AnyElement}
 end
-UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [OrderedDict()])
+#!UnknownDeclaration() = UnknownDeclaration(:unknowndeclaration, "Empty Unknown", "empty", [OrderedDict()])
 
 """
 $(TYPEDEF)
@@ -89,7 +89,7 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct VariableDeclaration{S}  <: AbstractDeclaration
+struct VariableDeclaration{S<:Union{AbstractSort,AnyElement}} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::S

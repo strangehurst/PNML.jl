@@ -149,7 +149,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
 
     @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
     # Defer parsing by returning AnyElement
-    content = [anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
+    content = AnyElement[anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
     ud = UnknownDeclaration(id, name, nn, content)
     return ud
 end
