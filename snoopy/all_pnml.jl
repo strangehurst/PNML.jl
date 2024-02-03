@@ -89,7 +89,9 @@ function _testpn(tests::Vector{String} = String[];
         show(df; truncate=80)
         println()
     end
-
+    println()
+    show(df; truncate=80)
+    println()
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
     println("finish_time = ", now(), ", elapsed time = ", (now() - start_time))
 end
