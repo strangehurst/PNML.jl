@@ -25,10 +25,11 @@ xmlroot(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
 """
 $(TYPEDSIGNATURES)
 
-Return up to 1 immediate child of `el` that is a `tag`.
+Return up to 1 immediate child of `el` that is a `tag`.  `ns` is the default namespace.
+Invent a prefix to create an iterator of namespace prefix and URI pairs
 """
 function firstchild(tag::AbstractString, node::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findfirst("./x:$tag | ./$tag", node, ["x" => ns])
+    EzXML.findfirst("./x:$tag | ./$tag", node, ("x" => ns,))
 end
 
 """
@@ -37,7 +38,7 @@ $(TYPEDSIGNATURES)
 Return vector of `el`'s immediate children with `tag`.
 """
 function allchildren(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findall("./x:$tag | ./$tag", el, ["x" => ns])
+    EzXML.findall("./x:$tag | ./$tag", el, ("x" => ns,))
 end
 
 function check_nodename(n::XMLNode, s::AbstractString)
