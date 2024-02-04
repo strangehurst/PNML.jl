@@ -67,8 +67,8 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
-    pntd::PNTD
+mutable struct Arc{I} <: AbstractPnmlObject
+    #!pntd::PNTD
     id::Symbol
     source::Symbol
     target::Symbol
@@ -78,16 +78,16 @@ mutable struct Arc{PNTD,I} <: AbstractPnmlObject{PNTD}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
 
-    function Arc(pntd, i, src, tgt, ins, n, g, t, l)
-        inscript = @something(ins, default_inscription(pntd))
-        new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, g, t, l)
-    end
+    # function Arc(pntd, i, src, tgt, ins, n, g, t, l)
+    #     inscript = @something(ins, default_inscription(pntd))
+    #     new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, g, t, l)
+    # end
 end
 
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
-    Arc(a.pntd, a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
+    Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
-nettype(::Arc{T}) where {T <: PnmlType} = T
+#! nettype(::Arc{T}) where {T <: PnmlType} = T
 inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 

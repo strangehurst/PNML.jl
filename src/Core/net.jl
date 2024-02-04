@@ -39,7 +39,7 @@ place_type(::Type{T}) where {T<:PnmlType} = Place{T,
                                                   marking_type(T),
                                                   SortType}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
-arc_type(::Type{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
+arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)} #! Arc{T, inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition{T}
 
@@ -54,7 +54,7 @@ place_type(::PnmlNet{T}) where {T<:PnmlType} = Place{T,
                                                      marking_type(T),
                                                      SortType}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
-arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{T, inscription_type(T)}
+arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace{T}
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition{T}
 

@@ -369,8 +369,8 @@ function parse_arc(node, pntd, idregistry::PIDR)
             add_label!(labels, child, pntd, idregistry)
         end
     end
-
-    Arc(pntd, nodeid, source, target, something(inscription, default_inscription(pntd)),
+#!    Arc(pntd, nodeid, source, target, something(inscription, default_inscription(pntd)),
+    Arc(nodeid, source, target, something(inscription, default_inscription(pntd)),
                 name, graphics, tools, labels)
 end
 

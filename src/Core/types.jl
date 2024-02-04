@@ -11,7 +11,8 @@ $(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 """
-abstract type AbstractPnmlObject{PNTD<:PnmlType} end
+abstract type AbstractPnmlObject end
+#! abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
 # function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 #     prop_name === :id   && return getfield(o, :id)::Symbol
@@ -51,7 +52,7 @@ $(TYPEDEF)
 Petri Net Graph nodes are [`Place`](@ref), [`Transition`](@ref).
 They are the source or target of an [`Arc`](@ref)
 """
-abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject{PNTD} end
+abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject end
 
 """
 $(TYPEDEF)
