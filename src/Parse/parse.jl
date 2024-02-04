@@ -79,8 +79,8 @@ Return a [`PnmlNet`](@ref)`.
 """
 function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
-    haskey(node, "id") || throw(MissingIDException(nn))
-    haskey(node, "type") || throw(MalformedException("$nn missing type"))
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
+    EzXML.haskey(node, "type") || throw(MalformedException("$nn missing type"))
     type = node["type"]
 
     isempty(allchildren("page", node)) &&
@@ -151,7 +151,7 @@ end
 "Call `parse_page!`, add page to dictionary and id set"
 function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "page")
-    haskey(node, "id") || throw(MissingIDException(nn))
+    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     pageid = register_id!(idregistry, node["id"])
     #println("add $pageid to ", page_idset(netsets))
     push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
@@ -343,8 +343,8 @@ function parse_arc(node, pntd, idregistry::PIDR)
     nn = check_nodename(node, "arc")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     nodeid = register_id!(idregistry, node["id"])
-    haskey(node, "source") || throw(ArgumentError("missing source for arc $nodeid"))
-    haskey(node, "target") || throw(ArgumentError("missing target for arc $nodeid"))
+    EzXML.haskey(node, "source") || throw(ArgumentError("missing source for arc $nodeid"))
+    EzXML.haskey(node, "target") || throw(ArgumentError("missing target for arc $nodeid"))
     source = Symbol(node["source"])
     target = Symbol(node["target"])
 

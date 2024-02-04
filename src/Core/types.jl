@@ -86,7 +86,8 @@ Tool specific objects can be attached to
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 "OrderedDict filled by XMLDict"
-const DictType = OrderedDict{Union{Symbol,String}, Any}
+const DictType = LittleDict{Union{Symbol,String}, Any}
+#!const DictType = OrderedDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}
 const XDVT3 = Vector{XDVT2}
@@ -162,9 +163,10 @@ end
 
 dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
     print(io, "(")
-    for (i,k) in enumerate(keys(d))
-        print(io, "d[$(repr(k))] = ") #! Differs from `d_show` here.
-        dict_show(io, #= And here. =# d[k], indent_by+increment) #!
+    #~    for (i,k) in enumerate(keys(d))
+    for (i,k) in enumerate(pairs(d))
+            print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
+        dict_show(io, #= And here. =# k.second, indent_by+increment) #!
         i < length(keys(d)) && print(io, ",\n", indent(indent_by))
     end
     print(io, ")")

@@ -102,8 +102,10 @@ _term_eval(v::Number) = v
 _term_eval(v::AbstractString) = parse(Bool, v)
 _term_eval(v::DictType) = begin
     # Fake like we know how to evaluate a expression of the high-level terms.
-    haskey(v, :value) && return _term_eval(v[:value])
-    #! @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
+    !isnothing(get(v, :value, nothing)) && return _term_eval(v[:value])
+    #haskey(v, :value) && return _term_eval(v[:value]) LittleDict don't work
+
+    @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
     #Base.show_backtrace(stdout, backtrace())
     return false #
 end

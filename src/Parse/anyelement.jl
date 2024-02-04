@@ -17,7 +17,8 @@ The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref
 """
 function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
     tag = EzXML.nodename(node)
-    xd::XDVT = XMLDict.xml_dict(node, OrderedDict{Union{Symbol, String}, Any}; strip_text=true)
+    xd::XDVT = XMLDict.xml_dict(node, LittleDict{Union{Symbol, String}, Any}; strip_text=true)
+    #!xd::XDVT = XMLDict.xml_dict(node, OrderedDict{Union{Symbol, String}, Any}; strip_text=true)
     return (tag, xd) #return DictType(Pair{Union{Symbol,String}, XDVT}(tag, xd))
     # empty dictionarys are a valid thing.
 end
@@ -35,8 +36,10 @@ function text_content(vx::Vector{XDVT2})
     throw(ArgumentError("empty `Vector{XDVT}` not expected"))
 end
 function text_content(d::DictType)
-    haskey(d, "text") && !isnothing(d["text"]) && return d["text"]
-    throw(ArgumentError("missing <text> element in $(d)"))
+    #!haskey(d, "text") && !isnothing(d["text"]) && return d["text"]
+    x = get(d, "text", nothing)
+    isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
+    return x
 end
 text_content(s::String) = s
 text_content(s::SubString{String}) = s
@@ -45,11 +48,12 @@ text_content(s::SubString{String}) = s
 Find an XML attribute. XMLDict uses symbols as keys.
 """
 function _attribute(vx::DictType, key::Symbol)
-    haskey(vx, key) || throw(ArgumentError("missing $key attribute"))
-    isnothing(vx[key]) && throw(ArgumentError("missing $key value"))
-    vx[key] isa AbstractString ||
+    #!haskey(vx, key) || throw(ArgumentError("missing $key attribute"))
+    x = get(vx, key, nothing)
+    isnothing(x) && throw(ArgumentError("missing $key value"))
+    x isa AbstractString ||
         throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(vx[key]))"))
-    return vx[key]
+    return x
  end
 
 #=
@@ -84,7 +88,8 @@ function parse_partition(vx::DictType, idregistry::PnmlIDRegistry)
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
 
-    haskey(vx, "usersort") ||
+    x = get(vx, "usersort", nothing)
+    isnothing(x) &&
         throw(ArgumentError("<partition id=$idval, name=$nameval> <usersort> element is missing"))
     us = vx["usersort"]
     isnothing(us) && throw(ArgumentError("<partition id=$idval, name=$nameval> <usersort> element is nothing"))
@@ -95,9 +100,9 @@ function parse_partition(vx::DictType, idregistry::PnmlIDRegistry)
     # One or more partitionelements.    elements = PartitionElement[]
 
     elements = PartitionElement[]
-
-    haskey(vx, "partitionelement") ||
-    throw(ArgumentError("<partition> has no <partitionelement>"))
+    x = get(vx, "partitionelement", nothing)
+    isnothing(x) &&
+        throw(ArgumentError("<partition> has no <partitionelement>"))
     pevec = vx["partitionelement"]
     isnothing(pevec) &&
         throw(ArgumentError("<partition id=$idval, name=$nameval> does not have any <partitionelement>"))
@@ -122,7 +127,8 @@ function parse_partitionelement!(elements::Vector{PartitionElement},
     nameval = _attribute(vx, :name)
     idsym = register_id!(idregistry, idval)
     # ordered collection of terms, usually useroperators (as constants)
-    haskey(vx, "useroperator") ||
+    x = get(vx, "useroperator", nothing)
+    isnothing(x) &&
         throw(ArgumentError("<partitionelement id=$idval, name=$nameval> has no <useroperator> elements"))
     uovec = vx["useroperator"]
     isnothing(uovec) && throw(ArgumentError("<partitionelement id=$idval, name=$nameval> is empty"))

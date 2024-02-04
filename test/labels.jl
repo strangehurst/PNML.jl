@@ -213,7 +213,8 @@ function test_unclaimed(pntd, xmlstring::String)
     @test l.elements isa DictType
     @test a.elements isa DictType
     #! unclaimed id is not registered
-    haskey(u, :id) && @test !isregistered(reg1, u[:id])
+    x = get(u, :id, nothing)
+    !isnothing(x) && @test !isregistered(reg1, x) #u[:id])
     return l, a
 end
 
