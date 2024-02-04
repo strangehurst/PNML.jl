@@ -41,9 +41,9 @@ Base.@kwdef mutable struct PnmlConfig
     lock_registry::Bool         = true
     text_element_optional::Bool = true
     verbose::Bool           = false
-    warn_on_fixup::Bool     = true
+    warn_on_fixup::Bool     = false
     warn_on_namespace::Bool = true
-    warn_on_unclaimed::Bool = true
+    warn_on_unclaimed::Bool = false
 end
 
 "See [`PnmlConfig`](@ref) for default values."
@@ -70,7 +70,7 @@ using DecFP
 import Graphs
 import MetaGraphsNext
 
-import OrderedCollections: OrderedDict, OrderedSet, LittleDict
+import OrderedCollections: OrderedDict, OrderedSet, LittleDict, freeze
 using LabelledArrays
 using NamedTupleTools
 

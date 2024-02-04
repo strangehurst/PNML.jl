@@ -14,7 +14,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
           </place>
         """
         n  = parse_place(node, pntd, registry())
-        #@show pff(XMLDict.xml_dict)
         @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
         @test_call target_modules=target_modules parse_place(node, pntd, registry())
         @test isa(n, Place)
@@ -23,7 +22,6 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         @test @inferred(name(n)) == "with text"
         @test_call initial_marking(n)
         @test @inferred(initial_marking(n)()) == 100
-
     end
 
     @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
@@ -157,6 +155,7 @@ end
         </unknown>
       </arc>
     """)
+    PNML.CONFIG.warn_on_unclaimed = true
     a1 = if ishighlevel(pntd)
         @test_logs(match_mode=:any,
             (:warn, "replacing empty <structure> content value for inscription term with: 6"),
