@@ -44,7 +44,7 @@ end
 function check_nodename(n::XMLNode, s::AbstractString)
     if EzXML.nodename(n) != s
         throw(ArgumentError(string("element name wrong, expected ", s,
-                                   ", got ", EzXML.nodename(n))))
+                                   ", got ", EzXML.nodename(n))::String))
     end
     return s
 end

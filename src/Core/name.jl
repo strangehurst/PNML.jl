@@ -8,5 +8,5 @@ struct Name <: Annotation
     text::String
     #pntd
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end

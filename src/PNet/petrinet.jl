@@ -231,7 +231,7 @@ function Base.summary(pn::AbstractPetriNet)
     string(typeof(pn), " id ", pid(pn), ", ",
         length(places(pn)), " places, ",
         length(transitions(pn)), " transitions, ",
-        length(arcs(pn)), " arcs")
+        length(arcs(pn)), " arcs")::String
 end
 
 function Base.show(io::IO, pn::AbstractPetriNet)

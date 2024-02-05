@@ -17,7 +17,7 @@ julia> i()
 struct Inscription{T<:Union{Int,Float64}}  <: Annotation
     value::T
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
 Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, ToolInfo[])
@@ -84,7 +84,7 @@ struct HLInscription{T<:Term} <: HLAnnotation
     text::Maybe{String}
     term::T # Content of <structure> content must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
 HLInscription(t::Term) = HLInscription(nothing, t)

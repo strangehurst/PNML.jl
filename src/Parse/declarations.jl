@@ -30,7 +30,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         if tag == "structure"
             decls = _parse_decl_structure(child, pntd, idregistry)
         elseif tag == "text"
-            text = string(strip(EzXML.nodecontent(child)))
+            text = string(strip(EzXML.nodecontent(child)))::String #! do we need string?
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
@@ -230,8 +230,8 @@ function parse_decl end
 
 parse_decl(p::Pair) = parse_decl(p...)
 function parse_decl(tag::Symbol, d::XDVT)
-    tag != :declaration && throw(ArgumentError("expected tag 'declaration', found '$tag'"))
-    return string(d)
+    tag != :declaration && throw(ArgumentError(string("expected tag 'declaration', found: ",tag)::String))
+    return string(d)::String
 end
 parse_decl(d::DictType) = parse_decl(tag(d), value(d))
 

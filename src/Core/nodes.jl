@@ -11,8 +11,8 @@ struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     sorttype::S
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
 end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
@@ -41,8 +41,8 @@ struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
     condition::C
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
 end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
@@ -67,7 +67,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{I} <: AbstractPnmlObject
+mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     #!pntd::PNTD
     id::Symbol
     source::Symbol
@@ -75,8 +75,8 @@ mutable struct Arc{I} <: AbstractPnmlObject
     inscription::I
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
 
     # function Arc(pntd, i, src, tgt, ins, n, g, t, l)
     #     inscript = @something(ins, default_inscription(pntd))
@@ -128,8 +128,8 @@ struct RefPlace{PNTD} <: ReferenceNode{PNTD}
     ref::Symbol # Place or RefPlace
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
 end
 
 #-------------------
@@ -145,8 +145,8 @@ struct RefTransition{PNTD} <: ReferenceNode{PNTD}
     ref::Symbol # Transition or RefTransition
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
 end
 
 function Base.show(io::IO, r::ReferenceNode)

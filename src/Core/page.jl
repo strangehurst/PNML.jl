@@ -89,7 +89,7 @@ has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 #            has_graphics(page) ? " has graphics " : " no graphics",
 #            length(tools(page)), " tools, ",
 #            length(labels(page)), " labels"
-#            )
+#            )::String
 # end
 
 function show_page_field(io::IO, label::AbstractString, x, post::AbstractString=",\n")

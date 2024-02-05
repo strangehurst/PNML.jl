@@ -181,35 +181,35 @@ function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
     isreg = Base.Fix1(isregistered,idregistry(net))
 
     !isreg(pid(net)) &&
-        push!(errors, string("net id ", repr(pid(net)), " not registered"))
+        push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
 
     for pg in pages(net)
         !isreg(pid(pg)) &&
-            push!(errors, string("page id ", repr(pid(pg)), " not registered"))
+            push!(errors, string("page id ", repr(pid(pg)), " not registered")::String)
     end
     for pg in allpages(net)
         !isreg(pid(pg)) &&
-            push!(errors, string("page id ", repr(pid(pg)), " not registered"))
+            push!(errors, string("page id ", repr(pid(pg)), " not registered")::String)
     end
     for pl in places(net)
         !isreg(pid(pl)) &&
-            push!(errors, string("place id ", repr(pid(pl)), " not registered"))
+            push!(errors, string("place id ", repr(pid(pl)), " not registered")::String)
     end
     for tr in transitions(net)
         !isreg(pid(tr)) &&
-            push!(errors, string("transition id ", repr(pid(tr)), " not registered"))
+            push!(errors, string("transition id ", repr(pid(tr)), " not registered")::String)
     end
     for ar in arcs(net)
         !isreg(pid(ar)) &&
-            push!(errors, string("arc id ", repr(pid(ar)), " not registered"))
+            push!(errors, string("arc id ", repr(pid(ar)), " not registered")::String)
     end
     for rp in refplaces(net)
         !isreg(pid(rp)) &&
-            push!(errors, string("refPlace id ", repr(pid(rp)), " not registered"))
+            push!(errors, string("refPlace id ", repr(pid(rp)), " not registered")::String)
     end
     for rt in reftransitions(net)
         !isreg(pid(rt)) &&
-            push!(errors, string("refTranition id ", repr(pid(rt)), " not registered"))
+            push!(errors, string("refTranition id ", repr(pid(rt)), " not registered")::String)
     end
 
     isempty(errors) ||
@@ -224,8 +224,8 @@ function Base.summary(net::PnmlNet)
             " type ", nettype(net), ", ",
             length(pagedict(net)), " pages ",
             length(declarations(net)), " declarations",
-            length(tools(net)), " tools, ",
-            length(labels(net)), " labels")
+            has_tools(net) ? length(tools(net)) : 0, " tools, ",
+            has_labels(net) ? length(labels(net)) : 0, " labels")::String
 end
 
 # No indent here.

@@ -42,8 +42,8 @@ tools(o)     = o.tools
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
 
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_label(labels(o), tagvalue)
-get_label(o::AbstractPnmlObject, tagvalue::Symbol) = get_label(labels(o), tagvalue)
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && has_label(labels(o), tagvalue)
+get_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && get_label(labels(o), tagvalue)
 
 
 #--------------------------------------------
@@ -86,13 +86,13 @@ Tool specific objects can be attached to
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"OrderedDict filled by XMLDict"
+"Dictionary filled by `XMLDict`"
 const DictType = LittleDict{Union{Symbol,String}, Any}
-#!const DictType = OrderedDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}
 const XDVT3 = Vector{XDVT2}
-"XMLDict values type union. Maybe too large for union-splitting."
+
+"XMLDict values type. Maybe too large for union-splitting."
 const XDVT = Union{XDVT2, XDVT3}
 
 tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol

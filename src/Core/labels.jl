@@ -172,5 +172,6 @@ function get_label(v, tagvalue::Symbol)
 end
 
 function has_label(v, tagvalue::Symbol)
+    #has_labels(v) || return false
     !isempty(get_labels(v, tagvalue))
 end
