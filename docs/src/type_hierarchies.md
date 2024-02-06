@@ -125,21 +125,19 @@ The PNML Specification builds the High-level Petri Net Graph as a layer using a 
 Implemented so that it is mostly part of the PnmlCore implementation.
 At which level, both <text> and <structure> are optional.
 
-The <type> label is meant to be a _sort_ of a _many-sorted algebra_. We call it sorttype to reduce the confusion.
+The <type> label of a [`Place`](@ref) is meant to be a _sort_ of a _many-sorted algebra_.
+We call it _sorttype_ to reduce the confusion.
 
-PNML.jl allows/requires all net types to have sort-type objects.
-Only high-level PNML input is expected to contain a <type> tag.
+PNML.jl allows/requires all net type's places to have _sorttype_ objects. Only high-level PNML input is expected to contain a <type> tag. For other nets we interpret the [`SortType`](@ref) to be [`IntegerSort`](@ref) or [`RealSort`](@ref) based on PNTD. And [`Marking`](@ref) values of non-high-level nets are interpreted as multisets with airity of 1.
 This allows more common implementation in the core layer.
 
 For high-level nets the sorttype object is an [`SortType`](@ref) `HLAnnotation`
 subtype containing an [`AbstractSort`](@ref).
 
-For nets other than high-level nets we interpret the `SortType` to be `IntegerSort`,
-or `RealSort` based on PNTD. And `Marking` values are multisets with airity of 1.
-
 ## AbstractDeclaration
 
 Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
+The [`Declaration`](@ref)s contained in a <declarations> apply to the whole net even when attached to a `Page`.
 ```@example type
 type_tree(PNML.AbstractDeclaration) # hide
 ```
