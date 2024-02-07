@@ -47,15 +47,66 @@ VSCodeServer.@profview fx()
 
 #-----------------------------------------------------
 using EzXML, PNML
-prosetup() = parse_file
 
 node = EzXML.root(EzXML.readxml("/home/jeff/Jules/PNML/snoopy/test1.pnml"))
-  fx() = for i in 1:1000
+node = EzXML.root(EzXML.readxml("/home/jeff/PetriNet/PNML/pnml-parser-tests/place.pnml"))
+node = EzXML.root(EzXML.readxml("/home/jeff/PetriNet/PNML/MCC2023/StigmergyCommit-PT-02a/model.pnml"))
+node = EzXML.root(EzXML.readxml("/home/jeff/PetriNet/PNML/MCC2023/StigmergyCommit-PT-11a/model.pnml"))
+
+fx() = for i in 1:1000
     PNML.SimpleNet(node)
-  end
+end
+
+m = PNML.parse_pnml(node);
+n1 = PNML.first_net(m);
+PNML.flatten_pages!(n1);
+PNML.SimpleNet(n1)
+
+@code_warntype PNML.first_net(m) # from type-unstable Tuple{Vararg{PnmlNet}}
+@code_warntype PNML.flatten_pages!(n1)
+@code_warntype PNML.SimpleNet(n1)
+@code_warntype
+
+fx() = for i in 1:100000
+    PNML.SimpleNet(n1)
+end
 VSCodeServer.@profview fx()
 
+VSCodeServer.@profview PNML.SimpleNet(n2)
 
+VSCodeServer.@profview PNML.SimpleNet(node)
+
+using EzXML, PNML
+GC.enable_logging(true)
+node = EzXML.root(EzXML.readxml("/home/jeff/Jules/PNML/snoopy/test1.pnml"))
+PNML.SimpleNet(node)
+
+using EzXML, PNML
+node = EzXML.root(EzXML.readxml("/home/jeff/PetriNet/PNML/MCC2023/StigmergyCommit-PT-09b/model.pnml"))
+PNML.SimpleNet(node)
+
+#-----------------------------------------------------
+using EzXML, PNML
+arcnode = xmlroot("""<arc source="transition1" target="place1" id="arc1">
+</arc>""")
+placenode = xml"""<place id="place1">
+</place>"""
+transitionnode = xml"""<transition id ="t5">
+</transition>"""
+
+PNML.registry()
+PNML.parse_arc(arcnode, PNML.PnmlCoreNet(), PNML.registry())
+
+fx() = for i in 1:1000
+    PNML.arc(arcnode, PNML.PnmlCoreNet(), PNML.registry())
+end
+
+#-----------------------------------------------------
+@code_warntype PNML.parse_arc(arcnode, PNML.PnmlCoreNet(), PNML.registry())
+@code_warntype PNML.parse_arc(placenode, PNML.PnmlCoreNet(), PNML.registry())
+@code_warntype PNML.parse_arc(transitionnode, PNML.PnmlCoreNet(), PNML.registry())
+
+#-----------------------------------------------------
 
 #-----------------------------------------------------
 using EzXML, PNML
