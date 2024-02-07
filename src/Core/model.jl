@@ -4,11 +4,13 @@ $(TYPEDFIELDS)
 
 One or more Petri Nets and an ID Registry shared by all nets.
 """
-struct PnmlModel
+struct PnmlModel{T<:PnmlNet}
+    first_net::T
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
-    reg::PnmlIDRegistry # Shared by all nets. #todo unshared mode: make tupl of same size as nets
+    reg::PnmlIDRegistry # Shared by all nets. #todo unshared mode: similar to nets
 end
+PnmlModel(n::Tuple{Vararg{PnmlNet}}, namespace, idreg) = PnmlModel(first(n), n, namespace, idreg)
 
 """
 $(TYPEDSIGNATURES)
@@ -50,9 +52,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return first net contained by `doc`.
+Return first net of the `model`.
 """
-first_net(model) = first(nets(model))
+first_net(model) = model.first_net
 
 # No indent done here.
 function Base.show(io::IO, model::PnmlModel)

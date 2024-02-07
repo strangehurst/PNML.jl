@@ -43,7 +43,7 @@ str1 = """
     model = @test_logs(match_mode=:any,
         (:warn,"found unexpected label of <place>: structure"),
         (:warn,"found unexpected label of <place>: frog"),
-        @inferred parse_str(str1))
+        parse_str(str1))
     #@show model
 
     net0 = @inferred PnmlNet PNML.first_net(model)
@@ -57,7 +57,7 @@ str1 = """
     #println("- - - - - - - - - - - - - - - -")
 
     @test_call SimpleNet(net0) # passes
-    @test_call broken=jet_broke SimpleNet(model)
+    @test_call SimpleNet(model) # whoo hooo, it passes
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
@@ -167,8 +167,8 @@ end
         </net>
     </pnml>
     """
-    model = @inferred parse_str(str2)
-    net = PNML.first_net(model)
+    model = @inferred PNML.PnmlModel parse_str(str2)
+    net = @inferred PNML.first_net(model)
     snet = @inferred PNML.SimpleNet(net)
     @test contains(sprint(show, snet), "SimpleNet")
     β = PNML.rates(snet)
@@ -197,7 +197,7 @@ end
     </pnml>
     """
 
-    model = @test_logs(@inferred( parse_str(str3)));
+    model = @test_logs(@inferred(PNML.PnmlModel, parse_str(str3)));
     net1 = PNML.first_net(model);          #@show typeof(net1)
     snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
 

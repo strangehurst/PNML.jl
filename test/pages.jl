@@ -103,7 +103,7 @@ const str = """<?xml version="1.0"?>
         </net>
     </pnml>
 """
-model = @inferred parse_str(str)
+model = @inferred PNML.PnmlModel parse_str(str)
 net = first_net(model) # The nets of a model not inferrable.
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))

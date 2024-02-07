@@ -98,7 +98,7 @@ end
     </pnml>
     """
 
-    model = @test_logs(match_mode=:all, @inferred parse_str(str))
+    model = @test_logs(match_mode=:all, parse_str(str))
 
     @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
     @test PNML.idregistry(model) isa PnmlIDRegistry
