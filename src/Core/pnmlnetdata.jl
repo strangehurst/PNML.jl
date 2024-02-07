@@ -86,7 +86,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and
+Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and other
 [`AbstractPnmlObject`](@ref).
 """
 @kwdef struct PnmlNetKeys
@@ -137,24 +137,20 @@ function Base.summary(pns::PnmlNetKeys)
             length(arc_idset(pns)), " arcs, ",
             length(refplace_idset(pns)), " refPlaces, ",
             length(reftransition_idset(pns)), " refTransitions, ",
-        )
+        )::String
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (tag, func) in (
-        ("pages", page_idset),
-        ("places", place_idset),
-        ("transitions", transition_idset),
-        ("arcs", arc_idset),
-        ("refplaces", refplace_idset),
-        ("refTransitions", reftransition_idset)
-    )
-        #println(io, length(func(pns)), " ", tag, ": ", values(func(pns))) # needs spaces?
+    for (tag, func) in (("pages", page_idset),
+                        ("places", place_idset),
+                        ("transitions", transition_idset),
+                        ("arcs", arc_idset),
+                        ("refplaces", refplace_idset),
+                        ("refTransitions", reftransition_idset))
         print(io, indent(io), length(func(pns)), " ", tag, ": ")
         iio = inc_indent(io)
         for (i,k) in enumerate((values ∘ func)(pns))
             print(io, repr(k), ", ")
-            #i % 25 == 0 && print(iio, '\n', indent(iio))
             if (i < length(func(pns))) && (i % 25 == 0)
                 print(iio, '\n', indent(iio))
             end
