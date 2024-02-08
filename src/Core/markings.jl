@@ -23,13 +23,15 @@ julia> m()
 12.34
 ```
 """
-struct Marking{N<:Union{Int,Float64}} <: Annotation
+struct Marking{N <: Number} <: Annotation
     value::N
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Vector{ToolInfo}
 end
 
 Marking(value::Union{Int,Float64}) = Marking(value, nothing, ToolInfo[])
+
+# TODO Make N <: Number; Add 3rd Marking type for tuples? Enumerations? (-1, 0 , 1) et al.
 
 """
     value(m::Marking) -> Union{Int,Float64}
