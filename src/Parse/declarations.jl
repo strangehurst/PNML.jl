@@ -290,31 +290,34 @@ function parse_sort(::Val{:cyclicenumeration}, body::DictType,  _::PnmlType, _::
     fecs = parse_feconstants(body)
     CyclicEnumerationSort(fecs)
 end
+
 function parse_sort(::Val{:finiteenumeration}, body::DictType,  _::PnmlType, _::PnmlIDRegistry)
     fecs = parse_feconstants(body)
     FiniteEnumerationSort(fecs)
 end
+
 function parse_sort(::Val{:finiteintrange}, body::DictType,  _::PnmlType, _::PnmlIDRegistry)
     (start, stop) = start_stop(body)
     FiniteIntRangeSort(start, stop)
 end
+
 function parse_sort(::Val{:list}, body::DictType,  _::PnmlType, _::PnmlIDRegistry)
     @error("IMPLEMENT ME: sort = $body")
     ListSort()
 end
+
 function parse_sort(::Val{:string}, body::DictType,  _::PnmlType, _::PnmlIDRegistry)
     @error("IMPLEMENT ME: sort = $body")
     StringSort()
 end
 
 function parse_sort(::Val{:multisetsort}, body::DictType,  pntd::PnmlType, idreg::PnmlIDRegistry)
-    #@show sortid body
-    @assert length(body) == 1 ":mulitsetsort requires one basis sort, found $body"
+    length(body) != 1 &&
+        throw(MalformedException(string(":mulitsetsort requires exactly one basis sort, found ", body)))
     (k,v) = only(pairs(body))
     srt = parse_sort(Val(Symbol(k)), v, pntd, idreg)
     MultisetSort(srt)
 end
-
 
 #   <namedsort id="id2" name="MESSAGE">
 #     <productsort>
