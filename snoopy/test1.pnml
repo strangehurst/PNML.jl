@@ -324,4 +324,11 @@
     <net id="net10" type="bogus">
         <page id="net10page"/>
     </net>
+
+   <net id="net11" type="ptnet">
+        <page id="net11page">
+            <place id="net11p1"/>
+            <transition id="net11t1"/>
+        </page>
+    </net>
 </pnml>
