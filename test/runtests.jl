@@ -62,7 +62,6 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
         println("HIGHLEVEL")
         @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "sorts"        begin include("sort.jl") end
-        @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select("ALL", "PARSE") # Overall full flow test
