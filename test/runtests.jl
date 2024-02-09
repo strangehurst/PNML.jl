@@ -53,24 +53,17 @@ UNDER_CI = (get(ENV, "CI", nothing) == "true")
         @safetestset "graphics"     begin include("graphics.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
+        @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
         @safetestset "flatten"      begin include("flatten.jl") end
-    end
-    if select("ALL", "HIGHLEVEL")
-        println("HIGHLEVEL")
-        @safetestset "declarations" begin include("declarations.jl") end
-        @safetestset "sorts"        begin include("sort.jl") end
-    end
+   end
 
-    if select("ALL", "PARSE") # Overall full flow test
-        println("PARSE")
-        @safetestset "document"     begin include("document.jl") end
-        @safetestset "parse_tree"   begin include("parse_tree.jl") end
-    end
     if select("ALL", "NET")
         println("NET")
+        @safetestset "document"     begin include("document.jl") end
+        @safetestset "parse_tree"   begin include("parse_tree.jl") end
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end

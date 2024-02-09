@@ -1,8 +1,18 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML:
-    Maybe, tag, labels, pid, parse_sort, parse_declaration,
-    registry, AnyElement, name, value, isregistered,
-    DictType, AbstractDeclaration
+using  InteractiveUtils
+using PNML: Maybe, tag, labels, pid, AnyElement, name, value,
+    parse_sort, parse_declaration,
+    registry, isregistered,
+    DictType, AbstractDeclaration,
+    getfirst, firstchild, allchildren,
+    ishighlevel, PnmlTypeDefs,
+    Condition, Term,
+    default_bool_term, default_zero_term, default_one_term,
+    default_condition, default_inscription, default_marking, default_sort, default_sorttype,
+    page_type, place_type, transition_type, arc_type, marking_type, inscription_type, condition_type,
+    condition_value_type, rate_value_type, term_value_type,
+    AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
+    MultisetSort, ProductSort, RealSort, UserSort, SortType
 
 @testset "Declaration() $pntd" for pntd in all_nettypes()
     decl = PNML.Declaration()
@@ -266,6 +276,31 @@ end
                 @test term.declaration isa Symbol
                 #!@show term.declaration PNML.isregistered(reg, term.declaration)
             end
+        end
+    end
+end
+
+@testset "exception for Any" begin
+    bogus = "this is not valid" # counts as `::Any`
+    @test_throws r"^ArgumentError" default_condition(bogus)
+    @test_throws "ArgumentError: no default inscription for String" default_inscription(bogus)
+    @test_throws "ArgumentError: no default marking for String" default_marking(bogus)
+    @test_throws "ArgumentError: no default sort for String" default_sort(bogus)
+    @test_throws "ArgumentError: no default sorttype for String" default_sorttype(bogus)
+    @test_throws "ArgumentError: expected a PnmlType, got: String" default_bool_term(bogus)
+end
+
+@testset "equal sorts" begin
+    a = PNML.BoolSort()
+    b = PNML.DotSort()
+    @test !PNML.equals(a, b)
+    @test PNML.equals(a, a)
+
+    for sort1 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
+        isabstracttype(sort1) && continue
+        for sort2 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
+            isabstracttype(sort2) && continue
+            @test PNML.equals(sort1(), sort2()) isa Bool # mix of true and false
         end
     end
 end
