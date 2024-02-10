@@ -59,7 +59,7 @@ $(TYPEDEF)
 For common behavior shared by [`RefPlace`](@ref), [`RefTransition`](@ref)
 used to connect [`Page`](@ref) together.
 """
-abstract type ReferenceNode{PNTD} <: AbstractPnmlNode{PNTD} end
+abstract type ReferenceNode <: AbstractPnmlObject end
 
 function Base.getproperty(rn::ReferenceNode, name::Symbol)
     name === :ref && return getfield(rn, :ref)::Symbol

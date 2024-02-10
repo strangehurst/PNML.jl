@@ -68,7 +68,6 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
-    #!pntd::PNTD
     id::Symbol
     source::Symbol
     target::Symbol
@@ -87,7 +86,6 @@ end
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
-#! nettype(::Arc{T}) where {T <: PnmlType} = T
 inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
@@ -122,8 +120,7 @@ Reference Place node of a Petri Net Markup Language graph. For connections betwe
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefPlace{PNTD} <: ReferenceNode{PNTD}
-    pntd::PNTD
+struct RefPlace <: ReferenceNode
     id::Symbol
     ref::Symbol # Place or RefPlace
     namelabel::Maybe{Name}
@@ -139,8 +136,7 @@ Refrence Transition node of a Petri Net Markup Language graph. For connections b
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefTransition{PNTD} <: ReferenceNode{PNTD}
-    pntd::PNTD
+struct RefTransition <: ReferenceNode
     id::Symbol
     ref::Symbol # Transition or RefTransition
     namelabel::Maybe{Name}

@@ -442,7 +442,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
     end
 
-    RefPlace(pntd, id, ref, name, graphics, tools, labels)
+    RefPlace(id, ref, name, graphics, tools, labels)
 end
 
 """
@@ -479,7 +479,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         end
     end
 
-    RefTransition(pntd, id, ref, name, graphics, tools, labels)
+    RefTransition(id, ref, name, graphics, tools, labels)
 end
 
 #----------------------------------------------------------
