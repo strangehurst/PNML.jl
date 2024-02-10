@@ -2,7 +2,7 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-One or more Petri Nets and an ID Registry shared by all nets.
+One or more Petri Nets and an ID Registries.
 """
 struct PnmlModel{T<:PnmlNet}
     first_net::T

@@ -14,14 +14,12 @@ end
 include("TestUtils.jl")
 using .TestUtils
 
-"Return true if one of `v` is found in `ARGS` or `ARGS` is empty."
-select(v...) = length(ARGS) == 0 || any(∈(ARGS), v)
+"Return true if `ARGS` is empty or one of `v` is found in `ARGS`."
+select(v...) = isempty(ARGS) || any(∈(ARGS), v)
 
 if select("none", "NONE")
-    return
+    return nothing # Have chosen to bail before any tests.
 end
-
-UNDER_CI = (get(ENV, "CI", nothing) == "true")
 
 #############################################################################
 @time "TESTS" begin
