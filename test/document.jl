@@ -57,30 +57,35 @@ str = """
          #(:info, "parse_term kinds are Variable and Operator"),
          (:warn, r"^ignoring child of <namedoperator name=\"g\", id=\"id6\">: 'unknown', allowed: 'def', 'parameter'"),
          (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_pnml(xmlroot(str), registry()))
+        parse_pnml(xmlroot(str)))
     #
-    model = parse_pnml(xmlroot(str), registry())
+    #model = parse_pnml(xmlroot(str), registry())
     @test model isa PnmlModel
 end
 
 @testset "Document & ID Registry" begin
-    str = """
-    <?xml version="1.0"?>
+    emptypage = xmlroot("""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
-    """
-    reg = registry()
-    @test !isregistered(reg, :net)
-    @test :net ∉ reg.ids
+    """)
+    #reg = registry() #TODO registry tuple
+    #@test !isregistered(reg, :net)
+    #@test :net ∉ reg.ids
 
-    @test_logs(match_mode=:all, parse_pnml(xmlroot(str), reg))
+    @test_logs(match_mode=:all, parse_pnml(emptypage) )
 
-    @test_opt target_modules=(@__MODULE__,) parse_pnml(xmlroot(str), reg)
-    @test_call target_modules=target_modules parse_pnml(xmlroot(str), reg)
+    @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
+    @test_call target_modules=target_modules parse_pnml(emptypage)
 
-    @test isregistered(reg, :net)
-    @test :net ∈ reg.ids
+    #@test isregistered(reg, :net)
+    #@test :net ∈ reg.ids
+
+    #TODO ===============================================
+    #=
+    Create a tuple of ID Registries of the same shape as the nets of the model.
+    =#
+    #TODO ===============================================
 end
 
 @testset "multiple net type" begin
@@ -101,13 +106,14 @@ end
     model = @test_logs(match_mode=:all, parse_str(str))
 
     @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
-    @test PNML.idregistry(model) isa PnmlIDRegistry
+    @test PNML.regs(model) isa Vector{PnmlIDRegistry}
 
     modelnets = PNML.nets(model)
     @test modelnets isa Tuple
     @test length(collect(modelnets)) == 5
 
     for net in modelnets
+        @test PNML.idregistry(net) isa PnmlIDRegistry
         t = PNML.nettype(net)
         ntup = PNML.find_nets(model, t)
 

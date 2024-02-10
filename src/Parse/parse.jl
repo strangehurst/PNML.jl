@@ -29,10 +29,9 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a string containing XML.
 See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_str(str::AbstractString, idregistry::PIDR = registry())
+function parse_str(str::AbstractString) #! We never provide a registry
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    # Good place for debugging.
-    parse_pnml(xmlroot(str), idregistry)
+    parse_pnml(xmlroot(str))
 end
 
 """
@@ -41,10 +40,9 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a file containing XML.
 See [`parse_str`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_file(fname::AbstractString, idregistry::PIDR = registry())
+function parse_file(fname::AbstractString) #! We never provide a registry
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    # Good place for debugging.
-    parse_pnml(EzXML.root(EzXML.readxml(fname)), idregistry)
+    parse_pnml(EzXML.root(EzXML.readxml(fname)))
 end
 
 """
@@ -52,25 +50,37 @@ end
 
 Start parse from the root `node` of a well formed pnml XML document.
 Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
+
+The optional idregistry argument leads to internal weeds and should only be used after reading the code closely.
+One effect is to have all `PnmlNet`
 """
-function parse_pnml(node::XMLNode, idregistry::PIDR = registry())
-    nn = check_nodename(node, "pnml")
+function parse_pnml(node::XMLNode, idregistry::Maybe{PIDR}=nothing)
+    check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
-    nets = allchildren("net", node) #! allocate Vector{XMLNode}
-    isempty(nets) && throw(MalformedException("<pnml> does not have any <net> elements"))
+
+    xmlnets = allchildren("net", node) #! allocate Vector{XMLNode}
+    isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
+    # Construct vector of PIDR samw length as xmlnets
+    if !isnothing(idregistry)
+        idregs = fill(idregistry, length(xmlnets)) # All nets share same PnmlIDRegistry.
+    else
+        idregs = PIDR[registry() for _ in xmlnets] # Each net has an independent PnmlIDRegistry.
+    end
+    @assert length(xmlnets) == length(idregs)
 
     # Do not YET have a PNTD defined. Each net can be different Net speciaization.
-    net_tup = tuple((parse_net(net, idregistry) for net in nets)...) #! Allocation? RUNTIME DISPATCH
+    net_tup = tuple((parse_net(net, reg) for (net, reg) in zip(xmlnets, idregs))...) #! Allocation? RUNTIME DISPATCH
+    #!net_tup = tuple((parse_net(net, idregistry) for net in xmlnets)...) #! Allocation? RUNTIME DISPATCH
 
     length(net_tup) > 0 || error("length(net_tup) is zero")
     if CONFIG.verbose #TODO Send this to a log file.
         @warn "CONFIG.verbose is true"
-        println("PnmlModel $(length(net_tup)) nets")
+        println("PnmlModel $(length(net_tup)) xmlnets")
         for n in net_tup
             println("  ", pid(n), " :: ", typeof(n))
         end
     end
-    PnmlModel(net_tup, namespace, idregistry)
+    PnmlModel(net_tup, namespace, idregs) #TODO registry tuple
 end
 
 """

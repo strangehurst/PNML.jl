@@ -96,7 +96,7 @@ end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = @test_logs(match_mode=:all, parse_pnml(pnmldoc, registry()))
+    pnml_ir = @test_logs(match_mode=:all, parse_pnml(pnmldoc))
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)

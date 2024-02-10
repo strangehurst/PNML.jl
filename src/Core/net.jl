@@ -14,7 +14,7 @@ One Petri Net of a PNML model.
     namelabel::Maybe{Name}
     tools::Vector{ToolInfo}
     labels::Vector{PnmlLabel}
-    idregistry::PnmlIDRegistry # Shared by all nets in a pnml model.
+    idregistry::PnmlIDRegistry # Possibly shared by all nets in a pnml model.
 end
 
 #nettype(::PnmlNet{T}) where {T <: PnmlType} = T

@@ -8,9 +8,10 @@ struct PnmlModel{T<:PnmlNet}
     first_net::T
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
-    reg::PnmlIDRegistry # Shared by all nets. #todo unshared mode: similar to nets
+    regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alais.
 end
-PnmlModel(n::Tuple{Vararg{PnmlNet}}, namespace, idreg) = PnmlModel(first(n), n, namespace, idreg)
+PnmlModel(nets::Tuple{Vararg{PnmlNet}}, namespace, idregs::Vector{PnmlIDRegistry}) =
+    PnmlModel(first(nets), nets, namespace, idregs)
 
 """
 $(TYPEDSIGNATURES)
@@ -18,9 +19,9 @@ $(TYPEDSIGNATURES)
 Return all `nets` of `model`.
 """
 nets(model::PnmlModel) = model.nets
+regs(model::PnmlModel) = model.regs
 namespace(model::PnmlModel) = model.namespace
-idregistry(model::PnmlModel) = model.reg #todo when tuple?
-netsets(m::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
+netsets(_::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
 
 ispnmltype(pntd::PnmlType) = Fix1(===, pntd)
 
