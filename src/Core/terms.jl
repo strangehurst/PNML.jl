@@ -101,12 +101,14 @@ _term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
 _term_eval(v::Number) = v
 _term_eval(v::AbstractString) = parse(Bool, v)
 _term_eval(v::DictType) = begin
-    # Fake like we know how to evaluate a expression of the high-level terms.
+    # Fake like we know how to evaluate a expression of the high-level terms
+    # by embedding a `value` in "our hacks". Like the ones that add sorts to non-high-level nets.
     !isnothing(get(v, :value, nothing)) && return _term_eval(v[:value])
     #haskey(v, :value) && return _term_eval(v[:value]) LittleDict don't work
 
-    @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
-    #Base.show_backtrace(stdout, backtrace())
+    CONFIG.warn_on_unimplemented &&
+        @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
+    #Base.show_backtrace(stdout, backtrace()) # Save for obscure bugs.
     return false #
 end
 

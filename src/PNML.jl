@@ -34,6 +34,7 @@ Configuration with default values that can be overidden by a LocalPreferences.to
   - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning.
   - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
   - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label.
+  - `warn_on_unimplemented::Bool`: Issue warning to highlight something unimplemented. Expect high volume of messages.
   - `verbose::Bool`: Print information as runs.
 """
 Base.@kwdef mutable struct PnmlConfig
@@ -44,6 +45,7 @@ Base.@kwdef mutable struct PnmlConfig
     warn_on_fixup::Bool     = false
     warn_on_namespace::Bool = true
     warn_on_unclaimed::Bool = false
+    warn_on_unimplemented::Bool = false
 end
 
 "See [`PnmlConfig`](@ref) for default values."

@@ -25,6 +25,7 @@ function save_config!(config::PnmlConfig = CONFIG)
         "warn_on_namespace" => config.warn_on_namespace,
         "warn_on_fixup" => config.warn_on_fixup,
         "warn_on_unclaimed" => config.warn_on_unclaimed,
+        "warn_on_unimplemented" => config.warn_on_unimplemented,
         )
 end
 
@@ -35,7 +36,8 @@ function read_config!(config::PnmlConfig)
     config.verbose = @load_preference("verbose", config.verbose)
     config.warn_on_namespace = @load_preference("warn_on_namespace", config.warn_on_namespace)
     config.warn_on_fixup = @load_preference("warn_on_fixup", config.warn_on_fixup)
-    config.warn_on_unclaimed = @load_preference("warn_on_fixup", config.warn_on_unclaimed)
+    config.warn_on_unclaimed = @load_preference("warn_on_unclaimed", config.warn_on_unclaimed)
+    config.warn_on_unimplemented = @load_preference("warn_on_unimplemented", config.warn_on_unimplemented)
 end
 
 function Base.show(io::IO, config::PnmlConfig)
@@ -46,4 +48,5 @@ function Base.show(io::IO, config::PnmlConfig)
     println(io, "warn_on_namespace     = ", config.warn_on_namespace)
     println(io, "warn_on_fixup         = ", config.warn_on_fixup)
     println(io, "warn_on_unclaimed     = ", config.warn_on_unclaimed)
+    println(io, "warn_on_unimplemented = ", config.warn_on_unimplemented)
 end
