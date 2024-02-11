@@ -66,48 +66,9 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-# # When flattening, the only `common` that needs emptying is a `Page`'s.
-# function Base.empty!(page::Page)
-#     empty!(page.declaration)
-#     t = tools(page)
-#     !isnothing(t) && empty!(t)
-#     l = labels(page)
-#     !isnothing(l) && empty!(l)
-# end
-
-
-# function Base.summary( page::Page)
-#     string(typeof(page)," id ", page.id, ", ",
-#            " name '", name(page), "', ",
-#            length(place_idset(page)), " places, ",
-#            length(transition_idset(page)), " transitions, ",
-#            length(arc_idset(page)), " arcs, ",
-#            isnothing(declarations(page)) ? 0 : length(declarations(page)), " declarations, ",
-#            length(refplace_idset(page)), " refP, ",
-#            length(reftransition_idset(page)), " refT, ",
-#            length(page_idset(page)), " subpages, ",
-#            has_graphics(page) ? " has graphics " : " no graphics",
-#            length(tools(page)), " tools, ",
-#            length(labels(page)), " labels"
-#            )::String
-# end
-
 function show_page_field(io::IO, label::AbstractString, x, post::AbstractString=",\n")
     print(io, indent(io), label, " "); show(io, x); print(io, post)
 end
-
-# function Base.show(io::IO, pagevec::Vector{Page})
-#     pntdtype = isempty(pagevec) ? PnmlType : nettype(first(pagevec))
-#     println(io, indent(io), "Page{",pntdtype,"}[" )
-#     io = inc_indent(io)
-#     for (i,page) in enumerate(pagevec)
-#         print(io, indent(io)); show(io, page)
-#         if i < length(pagevec)
-#             println(io, ",")
-#         end
-#     end
-#     print(io, "]" )
-# end
 
 function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
