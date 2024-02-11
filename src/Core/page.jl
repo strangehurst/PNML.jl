@@ -14,8 +14,8 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject #!{PNTD}
     declaration::Declaration
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
     # pagedict and netdata do not overlap
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by net and its pages.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by net and its pages.

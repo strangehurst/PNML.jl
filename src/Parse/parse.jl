@@ -131,8 +131,8 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     @assert isregistered(idregistry, id)
     namelabel = nothing
     decl::Maybe{Declaration} = nothing
-    tools  = ToolInfo[]
-    labels = PnmlLabel[]
+    tools  = nothing
+    labels::Maybe{Vector{PnmlLabel}}= nothing
 
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
@@ -146,9 +146,15 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
         elseif tag == "graphics"
             @warn "<ignoring unexpected child of <net>: 'graphics'"
         elseif tag == "toolspecific"
+            if isnothing(tools)
+                tools = ToolInfo[]
+            end
             add_toolinfo!(tools, child, pntd, idregistry)
         else # Labels are everything-else here.
             CONFIG.warn_on_unclaimed && @warn "found unexpected label of <net> id=$id: $tag"
+            if isnothing(labels)
+                labels = PnmlLabel[]
+            end
             add_label!(labels, child, pntd, idregistry)
         end
     end
@@ -185,8 +191,8 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
     decl::Maybe{Declaration} = nothing
     name = nothing
     graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
-    labels = PnmlLabel[]
+    tools::Maybe{Vector{ToolInfo}}  = nothing
+    labels::Maybe{Vector{PnmlLabel}}= nothing
 
     place_set      = place_idset(netsets)
     transition_set = transition_idset(netsets)
@@ -215,10 +221,16 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
+            if isnothing(tools)
+                tools = ToolInfo[]
+            end
             add_toolinfo!(tools, child, pntd, idregistry)
         else
             CONFIG.warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            add_label!(labels, child, pntd, idregistry)
+            if isnothing(labels)
+                labels = PnmlLabel[]
+            end
+           add_label!(labels, child, pntd, idregistry)
         end
     end
 
@@ -456,7 +468,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     ref = Symbol(node["ref"])
     name = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
-    labels ::Maybe{Vector{PnmlLabel}}= nothing
+    labels::Maybe{Vector{PnmlLabel}}= nothing
     graphics::Maybe{Graphics} = nothing
 
     for child in EzXML.eachelement(node)

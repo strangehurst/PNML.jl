@@ -24,13 +24,13 @@ false
     text::Maybe{String}
     value::Term #! expression evaluates to Bool
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
-Condition(value::Bool)                       = Condition(nothing, Term(:bool, value), nothing, ToolInfo[])
-Condition(value::Term)                       = Condition(nothing, value, nothing, ToolInfo[])
-Condition(text::AbstractString, value::Bool) = Condition(text, Term(:bool, value), nothing, ToolInfo[])
-Condition(text::AbstractString, value::Term) = Condition(text, value, nothing, ToolInfo[])
+Condition(value::Bool)                       = Condition(nothing, Term(:bool, value), nothing, nothing)
+Condition(value::Term)                       = Condition(nothing, value, nothing, nothing)
+Condition(text::AbstractString, value::Bool) = Condition(text, Term(:bool, value), nothing, nothing)
+Condition(text::AbstractString, value::Term) = Condition(text, value, nothing, nothing)
 condition_type(::Type{<:PnmlType}) = Condition
 
 value(c::Condition) = c.value

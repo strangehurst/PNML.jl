@@ -39,10 +39,10 @@ struct Declaration <: Annotation
 	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
 	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
-Declaration() = Declaration(nothing, AbstractDeclaration[], nothing, ToolInfo[])
+Declaration() = Declaration(nothing, AbstractDeclaration[], nothing, nothing)
 
 declarations(d::Declaration) = d.declarations
 

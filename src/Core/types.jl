@@ -36,8 +36,8 @@ name(::Nothing) = ""
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
-has_tools(o) = hasproperty(o, :tools) && !isempty(getfield(o, :tools))
-tools(o)     = o.tools
+has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools) && !isnothing(o.tools) #! && !isempty(getfield(o, :tools))
+tools(o::AbstractPnmlObject)     = hasproperty(o, :tools) ? o.tools : nothing
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics

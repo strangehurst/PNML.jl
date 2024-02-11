@@ -23,7 +23,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     decls::Maybe{Vector{AbstractDeclaration}} = nothing
     text = nothing
     graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
+    tools::Maybe{Vector{ToolInfo}}  = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -34,6 +34,9 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
+            if isnothing(tools)
+                tools = ToolInfo[]
+            end
             add_toolinfo!(tools, child, pntd, idregistry)
         else
             @warn "ignoring unexpected child of <declaration>: '$tag'"
@@ -160,7 +163,7 @@ function parse_label_content(node::XMLNode, termparser::F,
     text::Maybe{Union{String,SubString{String}}} = nothing #
     term::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
-    tools  = ToolInfo[]
+    tools::Maybe{Vector{ToolInfo}}  = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -172,7 +175,10 @@ function parse_label_content(node::XMLNode, termparser::F,
         elseif tag == "graphics"
              graphics = parse_graphics(child, pntd, idregistry)
         elseif tag == "toolspecific"
-            add_toolinfo!(tools, child, pntd, idregistry)
+            if isnothing(tools)
+                tools = ToolInfo[]
+            end
+           add_toolinfo!(tools, child, pntd, idregistry)
         else
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
         end

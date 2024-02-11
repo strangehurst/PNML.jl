@@ -64,16 +64,17 @@ end
 
 # All Labels are expected to have a `text` field.
 "Return `text` field. All labels are expected to have one that may be `nothing` or an empty string."
-text(l::AbstractLabel) = isnothing(l.text) ? "" : l.text
+text(l::AbstractLabel) = (hasproperty(l, :text) && !isnothing(l.text)) ? l.text : ""
 text(::Nothing) = ""
 
-has_graphics(l::AbstractLabel) = !isnothing(l.graphics)
+has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics
 
+has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
 tools(l::AbstractLabel) = l.tools
 
-has_labels(l::AbstractLabel) = false #!hasproperty(l, :labels) && !isempty(l.labels)
-#!labels(l::AbstractLabel) = !has_labels(l) && throw(ArgumentError("$(typeof(l)) does not have labels attached"))
+has_labels(l::AbstractLabel) = false
+
 
 # Labels include functors: markings, inscription, conditions #TODO test for Callable
 _evaluate(x::AbstractLabel) = x()
@@ -106,7 +107,7 @@ struct HLLabel{PNTD} <: Annotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
     #TODO validate in constructor: must have text or structure (depends on pntd?)
     #TODO make all labels have text &/or structure?
 end
@@ -172,6 +173,5 @@ function get_label(v, tagvalue::Symbol)
 end
 
 function has_label(v, tagvalue::Symbol)
-    #has_labels(v) || return false
     !isempty(get_labels(v, tagvalue))
 end

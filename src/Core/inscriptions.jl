@@ -20,10 +20,10 @@ struct Inscription{T<:Union{Int,Float64}}  <: Annotation
     tools::Maybe{Vector{ToolInfo}}
 end
 
-Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, ToolInfo[])
+Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, nothing)
 
 value(i::Inscription) = i.value
-
+sortof(i::Inscription) = isa(i.value, Integer) ? IntegerSort() : RealSort() #TODO cleanup
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
@@ -88,9 +88,11 @@ struct HLInscription{T<:Term} <: HLAnnotation
 end
 
 HLInscription(t::Term) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, ToolInfo[])
+HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
+
+sortof(i::HLInscription) = DotSort() #! IMPLEMENT ME!
 
 """
 $(TYPEDSIGNATURES)

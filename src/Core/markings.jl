@@ -26,10 +26,10 @@ julia> m()
 struct Marking{N <: Number} <: Annotation
     value::N
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
-Marking(value::Union{Int,Float64}) = Marking(value, nothing, ToolInfo[])
+Marking(value::Union{Int,Float64}) = Marking(value, nothing, nothing)
 
 # TODO Make N <: Number; Add 3rd Marking type for tuples? Enumerations? (-1, 0 , 1) et al.
 
@@ -37,6 +37,7 @@ Marking(value::Union{Int,Float64}) = Marking(value, nothing, ToolInfo[])
     value(m::Marking) -> Union{Int,Float64}
 """
 value(m::Marking) = m.value
+sortof(m::Marking) = isa(m.value. Integer) ? IntegerSort() : RealSort() #TODO cleanup
 
 """
 $(TYPEDSIGNATURES)
@@ -81,13 +82,14 @@ struct HLMarking{T <: AbstractTerm} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
     term::T # Content of <structure> must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
-    tools::Vector{ToolInfo}
+    tools::Maybe{Vector{ToolInfo}}
 end
 
 HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
-HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, nothing, ToolInfo[])
+HLMarking(s::Maybe{AbstractString}, t::Maybe{AbstractTerm}) = HLMarking(s, t, nothing, nothing)
 
 value(m::HLMarking) = m.term
+sortof(m::HLMarking) = sortof(m.term) #TODO sorts
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")

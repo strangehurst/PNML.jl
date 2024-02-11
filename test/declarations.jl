@@ -148,7 +148,7 @@ end
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
     @test PNML.graphics(decl) === nothing
-    @test isempty(PNML.tools(decl))
+    @test PNML.tools(decl) === nothing
 
 
     @test_opt PNML.declarations(decl)

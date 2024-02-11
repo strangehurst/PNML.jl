@@ -12,8 +12,8 @@ One Petri Net of a PNML model.
     page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
     declaration::Declaration
     namelabel::Maybe{Name}
-    tools::Vector{ToolInfo}
-    labels::Vector{PnmlLabel}
+    tools::Maybe{Vector{ToolInfo}}
+    labels::Maybe{Vector{PnmlLabel}}
     idregistry::PnmlIDRegistry # Possibly shared by all nets in a pnml model.
 end
 
@@ -108,9 +108,10 @@ firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
 
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
 
-tools(net::PnmlNet)     = net.tools
+has_tools(net::PnmlNet) = !isnothing(net.tools)
+tools(net::PnmlNet)     = net.tools # may be noting
 
-has_labels(net::PnmlNet) = true
+has_labels(net::PnmlNet) = !isnothing(net.labels)
 labels(net::PnmlNet)     = net.labels
 
 has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
@@ -255,7 +256,7 @@ function Base.show(io::IO, net::PnmlNet)
     end
     println(io, "Places:")
     map(places(net)) do p
-    show(io, p); println(io)
+        show(io, p); println(io)
     end
     println(io, "Transitions:")
     map(transitions(net)) do t
