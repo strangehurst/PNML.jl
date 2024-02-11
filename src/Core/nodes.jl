@@ -8,6 +8,12 @@ struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     initialMarking::M
+    # For each place, a sort defines the type of the marking tokens on this place (sorttype).
+    # The initial marking must have the respective sort.
+    # The inscription associated with an arc to or from a place defines which tokens are added or removed,
+    # when the corresponding transition fires. These terms must also be of the respective sort.
+    # sortof(initialMarking) equals sortof(place)
+    # sortof(arc_inscription) equals sortof(arc_source_place) equals sortof(arc_target_place)
     sorttype::S
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
@@ -18,6 +24,8 @@ end
 nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
 default_marking(place::Place) = default_marking(place.pntd)
+
+sortof(place::Place) = place.sorttype
 
 function Base.show(io::IO, place::Place)
     print(io, nameof(typeof(place)), "(")
@@ -76,11 +84,6 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
-
-    # function Arc(pntd, i, src, tgt, ins, n, g, t, l)
-    #     inscript = @something(ins, default_inscription(pntd))
-    #     new{typeof(pntd), typeof(inscript)}(pntd, i, src, tgt, inscript, n, g, t, l)
-    # end
 end
 
 Arc(a::Arc, src::Symbol, tgt::Symbol) =
@@ -88,6 +91,8 @@ Arc(a::Arc, src::Symbol, tgt::Symbol) =
 
 inscription(arc::Arc) = _evaluate(arc.inscription)
 default_inscription(arc::Arc) = default_inscription(arc.pntd)
+
+sortof(arc::Arc) = sortof(arc.inscription)
 
 """
     source(arc) -> Symbol
