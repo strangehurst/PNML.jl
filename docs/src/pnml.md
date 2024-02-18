@@ -48,17 +48,17 @@ There is GUI focus in the core pnml. Most of the Petri Net components, including
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Note that the 'primer' omits [`PartitionSort`](@ref). Use the Schema as definitive like the 'primer' counsels.
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the Schema as definitive like the 'primer' counsels. That is what any XML validation tool works from.
 
 
 ## Interoperability
 
-Petri Net Type Definition schema files (pntd) are defined using RELAX-NG XML Schema files.
+Petri Net Type Definition schema files (pntd) are defined using RELAX-NG XML Schema files (rng).
 Petri Net Markup Language files (pnml) are intended to be validated against a pntd schema.
 
 For interchange of pnml between tools it should be enough to support the same pntd schema.
 
-Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. Some bits are on the [Roadmap](@ref) based on freely viewable table of contents.
+Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. Some bits are on the [Roadmap](@ref) based on freely viewable table of contents. And some http://www.pnml.org extension grammer files mention some of these things.
 
 It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.

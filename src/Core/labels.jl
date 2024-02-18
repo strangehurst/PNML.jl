@@ -75,8 +75,8 @@ tools(l::AbstractLabel) = l.tools
 
 has_labels(l::AbstractLabel) = false
 
-
-# Labels include functors: markings, inscription, conditions #TODO test for Callable
+# Some Labels are functors: marking, inscription, condition.
+# Usually where it is possible to have a high-level term.
 _evaluate(x::AbstractLabel) = x()
 
 #--------------------------------------------

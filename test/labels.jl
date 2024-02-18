@@ -294,7 +294,7 @@ end
 @testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
 
     @testset "3`dot" begin
-        node = xml"""
+        @show node = xml"""
         <hlinitialMarking>
             <text>3`dot</text>
             <structure>
@@ -320,6 +320,7 @@ end
         # Any `Label` children must be "well behaved xml".
 
         @show value(mark)
+        @show mark()
 
         markterm = value(mark)
         @test tag(markterm) === :numberof # pnml many-sorted operator -> multiset
@@ -335,7 +336,7 @@ end
     end
 
     @testset "<All,All>" begin #! Does this Term make sense as a marking?
-        node = xml"""
+        @show node = xml"""
         <hlinitialMarking>
             <text>&lt;All,All&gt;</text>
             <structure>
@@ -411,7 +412,7 @@ end
 
     # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" begin
-        node = xml"""
+        @show node = xml"""
         <hlinitialMarking>
             <text>1`3 ++ 1`2</text>
             <structure>
@@ -440,7 +441,7 @@ end
 
     # The constant eight.
     @testset "1`8" begin
-        node = xml"""
+        @show node = xml"""
         <hlinitialMarking>
             <text>1`8</text>
             <structure>
@@ -465,7 +466,7 @@ end
         """
         mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
         #@show mark
-        @show value(mark)
+        #@show value(mark)
         #pprint(mark)
     end
 

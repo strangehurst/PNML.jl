@@ -58,7 +58,7 @@ function delay(transition)
         if haskey(interval, "cn") # Expect at least one cn.
             cn = @inbounds interval["cn"]
             (isnothing(cn) || isempty(cn)) &&
-                    throw(ArgumentError("<delay><interval> <cn> element is $cn"))
+                    throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
             if cn isa Vector
                 n = Float64[number_value(Float64, x)::Float64 for x in cn]
             else

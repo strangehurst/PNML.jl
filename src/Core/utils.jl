@@ -12,9 +12,10 @@ Return the value of "x", defaults to identity.
 
 # Examples
 
-Since High-level PNML schemas are based on Natural numbers and booleans,
+Since High-level PNML schemas are based on zero, Natural numbers and booleans,
 it seems reasonable to assume `Number`, which includes `Bool`, for the non-callable type.
-A functor is expected as the callable type, allowing expressions in the many-sorted algebra
+Especially as it allows negative numbers and reals.
+A zero-argument functor is expected as the callable type, allowing expressions in the many-sorted algebra
 to be evaluated to a `Number`.
 """
 function _evaluate end

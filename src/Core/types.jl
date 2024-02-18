@@ -203,7 +203,7 @@ dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
 dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
 dict_show(io::IO, p::Pair, _::Int) = show(io, p)
 dict_show(io::IO, p::Number, _::Int) = show(io, p)
-dict_show(io::IO, x::Any, _::Int) = error("UNSUPPORTED dict_show(io, ::$(typeof(x)))")
+dict_show(_::IO, x::Any, _::Int) = error("UNSUPPORTED dict_show(io, ::$(typeof(x)))")
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

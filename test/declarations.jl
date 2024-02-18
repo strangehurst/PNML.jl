@@ -1,58 +1,65 @@
 using PNML, EzXML, ..TestUtils, JET
-using  InteractiveUtils
+using InteractiveUtils
+using Printf
 using PNML: Maybe, tag, labels, pid, AnyElement, name, value,
     parse_sort, parse_declaration,
     registry, isregistered,
     DictType, AbstractDeclaration,
     getfirst, firstchild, allchildren,
     ishighlevel, PnmlTypeDefs,
-    Condition, Term,
+    Declaration, Condition, Term,
     default_bool_term, default_zero_term, default_one_term,
     default_condition, default_inscription, default_marking, default_sort, default_sorttype,
-    page_type, place_type, transition_type, arc_type, marking_type, inscription_type, condition_type,
-    condition_value_type, rate_value_type, term_value_type,
-    AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
-    MultisetSort, ProductSort, RealSort, UserSort, SortType
+    page_type, place_type, transition_type, arc_type, marking_type, inscription_type,
+    condition_type, condition_value_type, rate_value_type, term_value_type,
+    AbstractSort, BoolSort, DotSort,
+    CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
+    IntegerSort, ListSort, MultisetSort,
+    NaturalSort, PositiveSort, ProductSort, PartitionSort, RealSort, UserSort, StringSort,
+    SortType, PartitionElement
+
 
 @testset "Declaration() $pntd" for pntd in all_nettypes()
-    decl = PNML.Declaration()
+    decl = Declaration()
     @test length(PNML.declarations(decl)) == 0
-    @test_opt PNML.Declaration()
-    @test_call PNML.Declaration()
+    @test_opt Declaration()
+    @test_call Declaration()
 end
 
-using InteractiveUtils, Printf
 function _subtypes(type::Type)
     out = Any[]
     _subtypes!(out, type)
 end
+
 function _subtypes!(out, type::Type)
     if !isabstracttype(type)
         push!(out, type)
     else
         foreach(T->_subtypes!(out, T), subtypes(type))
     end
-    out
+    return out
 end
+
+sorts() = _subtypes(AbstractSort)
 
 @testset "parse_sort $pntd" for pntd in all_nettypes()
     sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry())
-    @test sort isa PNML.UserSort
+    @test sort isa UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     sort = parse_sort(xml"<dot/>", pntd, registry())
-    @test sort isa PNML.DotSort
+    @test sort isa DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     sort =  parse_sort(xml"<bool/>", pntd, registry())
-    @test sort isa PNML.BoolSort
+    @test sort isa BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     sort = parse_sort(xml"<integer/>", pntd, registry())
-    @test sort isa PNML.IntegerSort
+    @test sort isa IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -253,22 +260,22 @@ end
     """
     reg = PNML.registry()
     decl = parse_declaration(node, pntd, reg)
-    @test typeof(decl) <: PNML.Declaration
+    @test typeof(decl) <: Declaration
     @test length(PNML.declarations(decl)) == 3
 
     # Examine each declaration in the vector: 3 partition sorts
     for psort in PNML.declarations(decl)
         # named partition -> partition element -> fe constant
-        @test typeof(psort) <: PNML.PartitionSort # is a declaration
+        @test typeof(psort) <: PartitionSort # is a declaration
 
         @test PNML.isregistered(reg, pid(psort))
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        @test PNML.sort(psort) isa PNML.UserSort
+        @test PNML.sort(psort) isa UserSort
 
         partname = PNML.name(psort)
         partsort = PNML.sort(psort)
         part_elements = PNML.elements(psort) # should be iteratable ordered collection
-        @test part_elements isa Vector{PNML.PartitionElement}
+        @test part_elements isa Vector{PartitionElement}
         for element in part_elements
             # id, name
             @test PNML.isregistered(reg, element.id)
@@ -291,16 +298,34 @@ end
 end
 
 @testset "equal sorts" begin
-    a = PNML.BoolSort()
-    b = PNML.DotSort()
-    @test !PNML.equals(a, b)
-    @test PNML.equals(a, a)
+    println("============================")
+    println("  equal sorts")
+    println("============================")
+    #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
+    for s in sorts()
+        println(s)
+        a = s()
+        b = s()
+        @test PNML.equals(a, a)
+    end
 
-    for sort1 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-        isabstracttype(sort1) && continue
-        for sort2 in InteractiveUtils.subtypes(AbstractSort) # Only 1 layer of abstract!
-            isabstracttype(sort2) && continue
-            @test PNML.equals(sort1(), sort2()) isa Bool # mix of true and false
+    for sorta in sorts(), sortb in sorts()
+        a = sorta()
+        b = sortb()
+        #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
+        sorta != sortb && @test a != b && !PNML.equals(a, b)
+        sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
+    end
+
+    #TODO Add tests for enumerated sorts, et al., with content.
+    # MultisetSort
+    for sorta in [x for x in sorts() if x != PNML.MultisetSort]
+        for sortb in [x for x in sorts() if x != PNML.MultisetSort]
+            a = PNML.MultisetSort(sorta())
+            b = PNML.MultisetSort(sortb())
+            sorta != sortb && @test a != b && !PNML.equals(a, b)
+            sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
         end
     end
+    println("============================")
 end
