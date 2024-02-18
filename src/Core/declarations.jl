@@ -88,7 +88,7 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct VariableDeclaration{S<:Union{AbstractSort,AnyElement}} <: AbstractDeclaration
+struct VariableDeclaration{S <: AbstractSort} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::S
@@ -99,7 +99,7 @@ VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaratio
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct NamedSort{S<:Union{AbstractSort,AnyElement}} <: SortDeclaration
+struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
@@ -115,36 +115,37 @@ function Base.show(io::IO, nsort::NamedSort)
     print(io, ")")
 end
 
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Partition sort.
+Part of a [`PartitionSort`](@ref)'s emumeration. See also [`FiniteEnumerationSort`](@ref).
 """
-struct PartitionSort{S,PE} <: SortDeclaration
+struct PartitionElement
+    id::Symbol
+    name::Union{String,SubString{String}}
+    terms::Vector{UserOperator} # 1 or more Terms of PatrtitionSort's (UserOperator?) as constants
+end
+PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Partition is a finite enumeration that is partitioned into sub-ranges of enumerations.
+Is the sort at the partition or the element level (1 sort ot many sorts?)
+"""
+struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S # Refers to a NamedSort
-    element::PE # 1 or more PartitionElements.
+    element::Vector{PE} # 1 or more PartitionElements. Each is
     #
 end
 PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
 sort(partition::PartitionSort) = partition.def
 elements(partition::PartitionSort) = partition.element
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Partition Element is part of a Partition Sort.
-"""
-struct PartitionElement # <: SortDeclaration should be something for accessors
-    id::Symbol
-    name::Union{String,SubString{String}}
-    terms::Vector{UserOperator} # 1 or more Terms (UserOperator?)
-end
-PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
-
 
 """
 $(TYPEDEF)

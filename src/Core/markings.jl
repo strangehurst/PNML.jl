@@ -1,3 +1,6 @@
+# PNML (the ISO Specification) defines separate XML marking syntax variants for
+# Place/Transition Nets (plain) and High-level (many-sorted).
+# TODO Add variant for tuples? Enumerations? (-1, 0 , 1) et al. to avoid HL mechansim?
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -28,16 +31,28 @@ struct Marking{N <: Number} <: Annotation
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Maybe{Vector{ToolInfo}}
 end
-
+# Allow any Number subtype, expect a few concrete subtypes without comment.
 Marking(value::Union{Int,Float64}) = Marking(value, nothing, nothing)
+Marking(value::Number) = begin # Comment on unexpected type.
+    @warn lazy"marking value unexpected type $(typeof(value))"
+    Marking(value, nothing, nothing)
+end
 
-# TODO Make N <: Number; Add 3rd Marking type for tuples? Enumerations? (-1, 0 , 1) et al.
 
+# We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
+# Extending to allow non-integer makes this #! INTERESTING and HACKEY!
+# Note that Integer also extends the specification by allowing negative numbers.
+# A marking is a multiset of elements of the sort.
+# In the NHL we want (require) that:
 """
-    value(m::Marking) -> Union{Int,Float64}
+    value(m::Marking) -> Number
 """
-value(m::Marking) = m.value
-sortof(m::Marking) = isa(m.value. Integer) ? IntegerSort() : RealSort() #TODO cleanup
+value(marking::Marking) = marking.value
+# 1'value where value isa eltype(sortof(marking))
+# because we assume a multiplicity of 1, and the sort is simple
+#TODO add sort trait where simple means has concrete eltype
+# Assume eltype(sortof(marking)) == typeof(value(marking))
+sortof(m::Marking) = isa(m.value, Integer) ? IntegerSort() : RealSort() # ! TODO cleanup
 
 """
 $(TYPEDSIGNATURES)

@@ -15,7 +15,7 @@ end
 """
 Construct a Coordinate from mixed Int, Float64.
 """
-Coordinate(x::T1, y::T2) where {T1 <: Union{Int, Float64}, T2 <: Union{Int, Float64}} =
+Coordinate(x::T1, y::T2) where {T1 <: Number, T2 <: Number} =
             Coordinate(convert(coordinate_value_type(), x),
                        convert(coordinate_value_type(), y))
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}

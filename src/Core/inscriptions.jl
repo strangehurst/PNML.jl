@@ -92,13 +92,14 @@ HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, nothin
 
 value(i::HLInscription) = i.term
 
-sortof(i::HLInscription) = DotSort() #! IMPLEMENT ME!
+sortof(::HLInscription) = DotSort() #! IMPLEMENT ME! Deduce sort of inscription
 
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`HLInscription`](@ref). Returns a value of the same sort as _TBD_.
+Evaluate a [`HLInscription`](@ref). Returns a value of the `eltype` of sort of inscription.
 """
-(hli::HLInscription)() = _evaluate(value(hli))
+(hlinscription::HLInscription)() = _evaluate(value(hlinscription)) #! ::eltype(sortof(hlinscription))
+#TODO needs to be equalsSorts not same eltype
 
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")
@@ -116,14 +117,14 @@ function Base.show(io::IO, inscription::HLInscription)
 end
 
 inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
-inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())
+inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort()) #! sortof
 
 """
 $(TYPEDSIGNATURES)
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
 """
 function default_inscription end
-default_inscription(x::Any) = (throw ∘ ArgumentError)("no default inscription for $(typeof(x))")
+default_inscription(x::Any) = throw(ArgumentError(string("no default inscription for ", typeof(x))))
 default_inscription(::PnmlType)              = Inscription(one(Int))
-default_inscription(::AbstractContinuousNet) = Inscription(one(Float64))
-default_inscription(pntd::AbstractHLCore)    = HLInscription("default", default_one_term(pntd))
+default_inscription(::AbstractContinuousNet) = Inscription(one(Float64)) # Not ISO Standard.
+default_inscription(pntd::AbstractHLCore)    = HLInscription(nothing, default_one_term(pntd))

@@ -22,62 +22,60 @@ Notes:
 abstract type AbstractSort end
 Base.eltype(::Type{<:AbstractSort}) = Int
 
-#_evaluate(x::AbstractSort) = x() #! functor not for sort?
+"""
+$(TYPEDSIGNATURES)
+For sorts to be the same, first the must have the same type.
+Then any contents of the sorts are compared semantically.
+"""
+equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b)
+equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
+
+# Returns true if sorts are semantically the same sort, even in two different objects.
+# Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
+# Unless they have content just the types are sufficent.
+# Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
+# Called when both a and b are the same concrete type.
+equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
 """
 Built-in sort whose `eltype` is `Bool`
 
 Operators: and, or, not, imply
+
 Functions: equality, inequality
 """
-struct BoolSort <: AbstractSort end
+@auto_hash_equals struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-struct DotSort <: AbstractSort end
+@auto_hash_equals struct DotSort <: AbstractSort end
 Base.eltype(::Type{<:DotSort}) = Int
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-struct IntegerSort <: AbstractSort end
+@auto_hash_equals struct IntegerSort <: AbstractSort end
 Base.eltype(::Type{<:IntegerSort}) = Int
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-struct NaturalSort <: AbstractSort end
+@auto_hash_equals struct NaturalSort <: AbstractSort end
 Base.eltype(::Type{<:NaturalSort}) = Int # Uint ?
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-struct PositiveSort <: AbstractSort end
+@auto_hash_equals struct PositiveSort <: AbstractSort end
 Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
 
-
 """
-"Built-in sort whose `eltype` is `Float64`"
-
-Real numbers are not part of the PNML Specification.
-We stick them into the type hierarchy for convenience rather than mathematical correctness.
+Built-in sort whose `eltype` is `Float64`
 """
-struct RealSort <: AbstractSort end
+@auto_hash_equals struct RealSort <: AbstractSort end
 Base.eltype(::Type{<:RealSort}) = Float64
-
-"""
-$(TYPEDSIGNATURES)
-Are the sorts `eltype` the same? First the must have the same type. Then any contents of the sorts are compared.
-"""
-equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b)
-equals(a::AbstractSort, b::AbstractSort) = false
-
-# Returns true if sorts are semantically the same sort, even in two different objects.
-# Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
-# Unless they have content just the types are sufficent.
-equalSorts(a::AbstractSort, b::AbstractSort) = true
 
 #------------------------------------------------------------------------------
 """
@@ -91,9 +89,9 @@ Used in a `Place`s sort type property.
 @auto_hash_equals struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
 end
-UserSort() = UserSort(:integer) #! use a better symbol? Is a built-in sort.
+UserSort() = UserSort(:integersort) # Is a built-in sort.
 UserSort(s::AbstractString) = UserSort(Symbol(s))
-equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
+#! equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
 
 """
 $(TYPEDEF)
@@ -101,10 +99,10 @@ $(TYPEDEF)
 Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
-    us::T #! Any sort type! Not recursive.
+    us::T # But not another MultistSort
 end
 MultisetSort() = MultisetSort(UserSort())
-equalSorts(a::MultisetSort, b::MultisetSort) = equalSorts(a.us, b.us)
+#! equalSorts(a::MultisetSort, b::MultisetSort) = equalSorts(a.us, b.us)
 
 """
 $(TYPEDEF)
@@ -112,10 +110,10 @@ $(TYPEDEF)
 An ordered collection of sorts.
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
-    ae::Vector{AbstractSort} #! any sort type? UserSort and BuiltinSorts
+    ae::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
 end
 ProductSort() = ProductSort(UserSort[])
-equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
+#! equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
 
 """
 $(TYPEDEF)
@@ -128,12 +126,12 @@ function Base.getproperty(s::EnumerationSort, prop_name::Symbol)
 end
 
 elements(s::EnumerationSort) = s.elements
-equalSorts(a::T, b::T) where {T <: EnumerationSort} = elements(a) == elements(b)
+#! equalSorts(a::T, b::T) where {T <: EnumerationSort} = elements(a) == elements(b)
 
 """
 $(TYPEDEF)
 
-The operations differ between the various `EnumerationSort`s. They may be TBD. #TODO
+The operations differ between the various `EnumerationSort`s. They may be #TODO
 """
 @auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
     elements::Vector{FEConstant}
@@ -166,7 +164,7 @@ $(TYPEDEF)
     stop::T # XML Schema calls this 'end'.
 end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
-equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
+#! equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
 
 function Base.show(io::IO, s::FiniteIntRangeSort)
@@ -181,10 +179,10 @@ $(TYPEDEF)
     ae::Vector{AbstractSort}
 end
 StringSort() = StringSort(IntegerSort[])
-equalSorts(a::StringSort, b::StringSort) = a.ae == b.ae
+#! equalSorts(a::StringSort, b::StringSort) = a.ae == b.ae
 
 function Base.show(io::IO, s::StringSort)
-    print(io, "StringSort(")
+    print(io, "StringSort([")
     io = inc_indent(io)
     for  (i, c) in enumerate(s.ae)
         print(io, '\n', indent(io)); show(io, c);
@@ -201,10 +199,10 @@ $(TYPEDEF)
     ae::Vector{AbstractSort}
 end
 ListSort() = ListSort(IntegerSort[])
-equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
+#! equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
 
 function Base.show(io::IO, s::ListSort)
-    print(io, "ListSort(")
+    print(io, "ListSort([")
     io = inc_indent(io)
     for  (i, c) in enumerate(s.ae)
         print(io, '\n', indent(io)); show(io, c);
