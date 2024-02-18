@@ -140,7 +140,7 @@ julia> i = default_inscription(ContinuousNet())
 Inscription(1.0)
 
 julia> i = default_inscription(HLCoreNet())
-HLInscription("default", Term(:one, 1))
+HLInscription("", Term(:one, 1))
 
 julia> i()
 1
