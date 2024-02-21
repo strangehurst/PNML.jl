@@ -75,6 +75,7 @@ import MetaGraphsNext
 import OrderedCollections: OrderedDict, OrderedSet, LittleDict, freeze
 using LabelledArrays
 using NamedTupleTools
+using Multisets
 
 import EzXML
 import XMLDict
