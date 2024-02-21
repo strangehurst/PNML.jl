@@ -22,8 +22,9 @@ $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra.
 
 > ...can be a built-in constant or a built-in operator, a multiset operator which among others
-> can construct a multiset from an enumeration of its elements, or a tuple operator. Each operator has a
-> sequence of sorts as its input sorts, and exactly one output sort, which defines its signature.
+> can construct a multiset from an enumeration of its elements, or a tuple operator.
+> Each operator has a sequence of sorts as its input sorts, and exactly one output sort,
+> which defines its signature.
 
 See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 """
@@ -35,6 +36,12 @@ abstract type AbstractOperator <: AbstractTerm end
 # - compare operator signatures for equality using sort eqality
 # - output sort type to test against place sort type (and others)
 #
+# Note that a zero input operator is a constant.
+
+"return output sort of operator"
+sortof(op::AbstractOperator) = error("sortof not defined for type $(typeof(op))")
+"constants have arity of 0"
+arity(op::AbstractOperator) = 0
 
 """
 $(TYPEDEF)
@@ -76,15 +83,14 @@ External information may be used to select the output type.
 """
 struct Term <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, XDVT}
+    elements::Union{Bool, Int, Float64, XDVT} # concrete types
 end
-Term(s::AbstractString, e) = Term(Symbol(s), e) #! turn string into symbol
+Term(s::AbstractString, e) = Term(Symbol(s), e) #~ Turn string into symbol.
 
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 Base.eltype(t::Term) = typeof(elements(t))
 
-#!has_value(t::Term) = Iterators.any(x -> !isa(x, Number) && tag(x) === :value, t.elements)
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
 function Base.show(io::IO, t::Term)
@@ -132,6 +138,8 @@ struct Variable <: AbstractTerm
     variableDecl::Symbol
 end
 
+isvariable(tag::Symbol) = tag === :variable
+
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
 
@@ -151,14 +159,21 @@ integer_operators = (addition = "Addition",
                      leq = "LessThanOrEqual",)
 integer_constants = (one = one(Int), zero = zero(Int))
 
-
-
-
-
-
+multiset_operators = (addition = "Add",
+                      all = "All",
+                      numberof = "NumberOf",
+                      subtraction = "Subtract",
+                      scalarproduct = "ScalarProduct",
+                      empty = "Empty")
 
 struct MultiSetOperator <: AbstractOperator end
 struct PnmlTuple <: AbstractOperator end
+
+"Create a multiset: multi`x"
+struct numberof{T} <: AbstractOperator
+    ms::Multiset{T} #TODO allow real multiplicity
+end
+numberof(x) = numberof(Multiset{sortof(x)}(x))
 
 """
 $(TYPEDEF)
@@ -175,10 +190,7 @@ UserOperator(str::AbstractString) = UserOperator(Symbol(str))
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-"...arbitrary sorts and operators do not come with a definition of the sort or operation;
-they just introduce a new symbol without giving a definition for it. "
-
-    See [`UserOperator`](@ref)
+> ...arbitrary sorts and operators do not come with a definition of the sort or operation; they just introduce a new symbol without giving a definition for it.
 """
 struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
     declaration::Symbol
