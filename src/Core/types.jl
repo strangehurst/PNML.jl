@@ -90,10 +90,9 @@ abstract type AbstractPnmlTool end #TODO see ToolInfo
 const DictType = LittleDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}
-const XDVT3 = Vector{XDVT2}
 
 "XMLDict values type. Maybe too large for union-splitting."
-const XDVT = Union{XDVT2, XDVT3}
+const XDVT = Union{XDVT2, Vector{XDVT2}}
 
 tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
 value(d::DictType) = d[tag(d)]

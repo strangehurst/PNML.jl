@@ -146,7 +146,7 @@ using PNML: pnmltype_map, default_pntd_map
     @test pnmltype_map[:newpntd] === PnmlCoreNet()
 end
 
-using PNML: DictType, XDVT, XDVT2, XDVT3
+using PNML: DictType, XDVT, XDVT2
 using XMLDict, OrderedCollections
 const ODT = OrderedDict{Union{Symbol, String}, Any}
 @testset "XMLDict" begin
