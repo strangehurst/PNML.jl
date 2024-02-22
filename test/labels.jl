@@ -176,7 +176,7 @@ function test_unclaimed(pntd, xmlstring::String)
 
     xdict = XMLDict.xml_dict(node, PNML.DictType)
 
-    (t,u) = unparsed_tag(node, pntd) # tag is a string
+    (t,u) = unparsed_tag(node) # tag is a string
     l = PnmlLabel(t, u)
     a = anyelement(node, pntd, reg2)
 
@@ -190,12 +190,12 @@ function test_unclaimed(pntd, xmlstring::String)
     @test l isa PnmlLabel
     @test a isa AnyElement
 
-    @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node, pntd, reg1)
+    @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) unparsed_tag(node, pntd, reg1)
+                                JET.AnyFrameModule(XMLDict)) unparsed_tag(node)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
@@ -590,8 +590,23 @@ end
 @testset "condition $pntd" for pntd in all_nettypes()
     n1 = xml"""
  <condition>
-    <text>(x==1 and y==1 and d==1)</text>
-    <structure> <or> #TODO </or> </structure>
+    <text>pt==cts||pt==ack</text>
+    <structure>
+        <or>
+            <subterm>
+                <equality>
+                    <subterm><variable refvariable="pt"/></subterm>
+                    <subterm><useroperator declaration="cts"/></subterm>
+                </equality>
+            </subterm>
+            <subterm>
+                <equality>
+                    <subterm><variable refvariable="pt"/></subterm>
+                    <subterm><useroperator declaration="ack"/></subterm>
+                </equality>
+            </subterm>
+        </or>
+    </structure>
     <graphics><offset x="0" y="0"/></graphics>
     <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     <unknown id="unkn">
@@ -605,7 +620,7 @@ end
                 #(:info, "parse_term kinds are Variable and Operator"),
                 PNML.parse_condition(node, pntd, registry()))
         @test cond isa PNML.condition_type(pntd)
-        @test text(cond) == "(x==1 and y==1 and d==1)"
+        @test text(cond) == "pt==cts||pt==ack"
         @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) == :or
         @test PNML.has_graphics(cond) == true

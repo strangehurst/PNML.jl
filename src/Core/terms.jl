@@ -83,7 +83,8 @@ External information may be used to select the output type.
 """
 struct Term <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, XDVT} # concrete types
+    elements::Union{Bool, Int, Float64, XDVT} # concrete types #! too big for union splitting
+    #! This should be replaced by Varible and AbstractOperator, handle union splitting there.
 end
 Term(s::AbstractString, e) = Term(Symbol(s), e) #~ Turn string into symbol.
 
@@ -138,35 +139,69 @@ struct Variable <: AbstractTerm
     variableDecl::Symbol
 end
 
+# Only One
 isvariable(tag::Symbol) = tag === :variable
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
 
-#TODO Define something for these. They are not really traits.
-struct BuiltInOperator <: AbstractOperator end
-struct BuiltInConst <: AbstractOperator end
-
 #for sorts: integer, natural, positive
-integer_operators = (addition = "Addition",
-                     subtraction = "Subtraction",
-                     mult = "Multiplication",
-                     div = "Division",
-                     mod = "Modulo",
-                     gt = "GreaterThan",
-                     geq = "GreaterThanOrEqual",
-                     lt = "LessThan",
-                     leq = "LessThanOrEqual",)
-integer_constants = (one = one(Int), zero = zero(Int))
+integer_operators = (:addition, # "Addition",
+                     :subtraction, # "Subtraction",
+                     :mult, # "Multiplication",
+                     :div, # "Division",
+                     :mod, # "Modulo",
+                     :gt, # "GreaterThan",
+                     :geq, # "GreaterThanOrEqual",
+                     :lt, # "LessThan",
+                     :leq, # "LessThanOrEqual",)
+                    )
+isintegeroperator(tag::Symbol) = tag in integer_operators
+#integer_constants = (:one = one(Int), :zero = zero(Int))
 
-multiset_operators = (addition = "Add",
-                      all = "All",
-                      numberof = "NumberOf",
-                      subtraction = "Subtract",
-                      scalarproduct = "ScalarProduct",
-                      empty = "Empty")
+multiset_operators = (:add,
+                      :all,
+                      :numberof,
+                      :subtract,
+                      :scalarproduct,
+                      :empty,
+                      :cardnality,
+                      :cardnalitiyof,
+                      :contains,
+                      )
+ismultisetoperator(tag::Symbol) = tag in multiset_operators
 
-struct MultiSetOperator <: AbstractOperator end
+boolean_operators = (:or,
+                     :and,
+                     :imply,
+                     :not,
+                     :equality,
+                     :inequality,
+                    )
+isbooleanoperator(tag::Symbol) = tag in boolean_operators
+
+isbuiltinoperator(tag::Symbol) = tag in builtin_operators
+
+builtin_constants = (:numberconstant,
+                     :dotconstant,
+                     :booleanconstant,
+                     )
+
+boolean_constants = (:true,
+                     :false)
+
+isoperator(tag::Symbol) = isintegeroperator(tag) ||
+                          ismultisetoperator(tag) ||
+                          isbooleanoperator(tag) ||
+                          tag in builtin_constants ||
+                          tag === :tuple || tag === :useroperator
+``
+# struct Operator
+#     tag::Symbol
+#     out::Sort
+#     in::Vector(Sort)
+# end
+
 struct PnmlTuple <: AbstractOperator end
 
 "Create a multiset: multi`x"

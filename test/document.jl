@@ -55,11 +55,10 @@ str = """
     model = @test_logs(match_mode=:all,
          (:warn, "found unexpected label of <page>: text"),
          #(:info, "parse_term kinds are Variable and Operator"),
-         (:warn, r"^ignoring child of <namedoperator name=\"g\", id=\"id6\">: 'unknown', allowed: 'def', 'parameter'"),
+         (:warn, r"^ignoring child of <namedoperator name=g, id=id6> with tag unknown, allowed: 'def', 'parameter'"),
          (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
         parse_pnml(xmlroot(str)))
-    #
-    #model = parse_pnml(xmlroot(str), registry())
+
     @test model isa PnmlModel
 end
 

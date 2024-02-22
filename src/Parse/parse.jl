@@ -627,16 +627,18 @@ $(TYPEDSIGNATURES)
 function parse_marking_term(marknode, pntd, idregistry)
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        term = EzXML.firstelement(marknode)
+        term = EzXML.firstelement(marknode) #todo use only()
+
         return parse_term(term, pntd, idregistry)
     else
         content_string = strip(EzXML.nodecontent(marknode))
         if !isempty(content_string)
-            @warn("replacing empty <structure> content value for marking term with: $content_string")
+            @warn(string("replacing empty <structure> content value for marking term with: ", content_string))
+            # TODO :value is our special symbol to fake behavior
             return Term(:value, number_value(marking_value_type(pntd), content_string))
         end
     end
-    (throw ∘ ArgumentError)("missing marking term element in <structure>")
+    throw(ArgumentError("missing marking term in <structure>"))
 end
 
 """
@@ -719,7 +721,7 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     #@warn "parse_structure is not a well defined thing, $pntd."
-    Structure(unparsed_tag(node, pntd, idregistry)...) #TODO anyelement
+    Structure(unparsed_tag(node)...) #TODO anyelement
 end
 
 

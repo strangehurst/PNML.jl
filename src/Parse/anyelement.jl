@@ -5,7 +5,7 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
-    AnyElement(unparsed_tag(node, pntd, reg)...)
+    AnyElement(unparsed_tag(node)...)
 end
 
 """
@@ -15,11 +15,10 @@ Return tuple of (tag, `XDVT`) holding well formed XML tree. `XMLDict`
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref), et al.
 """
-function unparsed_tag(node::XMLNode, pntd::PnmlType, _::Maybe{PnmlIDRegistry}=nothing)
+function unparsed_tag(node::XMLNode)
     tag = EzXML.nodename(node)
     xd::XDVT = XMLDict.xml_dict(node, LittleDict{Union{Symbol, String}, Any}; strip_text=true)
-    #!xd::XDVT = XMLDict.xml_dict(node, OrderedDict{Union{Symbol, String}, Any}; strip_text=true)
-    return (tag, xd) #return DictType(Pair{Union{Symbol,String}, XDVT}(tag, xd))
+    return (tag, xd)
     # empty dictionarys are a valid thing.
 end
 
@@ -36,7 +35,6 @@ function text_content(vx::Vector{XDVT2})
     throw(ArgumentError("empty `Vector{XDVT}` not expected"))
 end
 function text_content(d::DictType)
-    #!haskey(d, "text") && !isnothing(d["text"]) && return d["text"]
     x = get(d, "text", nothing)
     isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
     return x
@@ -48,13 +46,14 @@ text_content(s::SubString{String}) = s
 Find an XML attribute. XMLDict uses symbols as keys.
 """
 function _attribute(vx::DictType, key::Symbol)
-    #!haskey(vx, key) || throw(ArgumentError("missing $key attribute"))
     x = get(vx, key, nothing)
     isnothing(x) && throw(ArgumentError("missing $key value"))
     x isa AbstractString ||
         throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(vx[key]))"))
     return x
  end
+_attribute(s::Union{String,SubString{String}}, _::Symbol) = error(string("_attribute does not support ", s))
+
 
 #=
 Finite Enumeration Constants are id, name pairs
@@ -108,8 +107,9 @@ function parse_partition(vx::DictType, idregistry::PnmlIDRegistry)
         throw(ArgumentError("<partition id=$idval, name=$nameval> does not have any <partitionelement>"))
 
     parse_partitionelement!(elements, pevec, idregistry)
-    @assert !isempty(elements) """partitions are expected to have at least one partition element.
-    id = idval, name = nameval, sort = sortval"""
+    isempty(elements) &&
+        throw(string("partitions must have at least one partition element, found none: ",
+                "id = ", repr(idval), ", name = ", repr(nameval), ", sort = ", repr(sortval)))
     return PartitionSort(register_id!(idregistry, idval), nameval, sortval, elements)
 end
 

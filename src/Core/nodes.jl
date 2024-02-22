@@ -9,10 +9,10 @@ struct Place{PNTD, M, S<:SortType}  <: AbstractPnmlNode{PNTD}
     id::Symbol
     initialMarking::M
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
-    # The initial marking must have the respective sort.
-    # The inscription associated with an arc to or from a place defines which tokens are added or removed,
-    # when the corresponding transition fires. These terms must also be of the respective sort.
-    # sortof(initialMarking) equals sortof(place)
+    # The initial marking must be of sorttype.
+    # The inscription of an arc to or from a place defines which tokens are added or removed
+    # when the corresponding transition fires. These tokens must also be of sorttype.
+    # sortof(place.initialMarking) equals sortof(place) equals place.sorttype
     # sortof(arc_inscription) equals sortof(arc_source_place) equals sortof(arc_target_place)
     sorttype::S
     namelabel::Maybe{Name}

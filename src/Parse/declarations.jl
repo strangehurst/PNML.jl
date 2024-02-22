@@ -69,7 +69,7 @@ function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistr
             push!(decs, parse_namedoperator(child, pntd, idregistry))
         elseif tag == "variabledecl"
             push!(decs, parse_variabledecl(child, pntd, idregistry))
-        elseif tag == "partition"
+        elseif tag == "partition" #! Where what is a partition
             push!(decs, parse_partition_decl(child, pntd, idregistry))
         #elseif tag == "arbitrarysort"
         else
@@ -98,7 +98,10 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Declaration that wraps
+Declaration that wraps an operator by giving a name to a definition term (expression in many-sorted algebra).
+
+An operator of arity 0 is a constant.
+When arity > 0, where is the parameter value stored? With operator or variable declaration
 """
 function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "namedoperator")
@@ -112,19 +115,26 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "def"
-            # NamedOperators have a def element that is a operator or variable term.
+            # NamedOperators have a def element that is a expression of existing
+            # operators &/or variables that define the operation.
+            # The sortof the operator is the output sort of def.
             def = parse_term(EzXML.firstelement(child), pntd, idregistry) #todo
 
         elseif tag == "parameter"
-            # Zero or more parameters for operator.
+            # Zero or more parameters for operator (arity). Map from id to sort object.
+            #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
+            #! Is def restricted to just parameters? Can others access parameters?
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
             end
         else
-            @warn """ignoring child of <namedoperator name="$name", id="$id">: '$tag', allowed: 'def', 'parameter'"""
+            @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
+                    "with tag ", tag, ", allowed: 'def', 'parameter'")
         end
     end
-    isnothing(def) && (throw ∘ ArgumentError)("""<namedoperator name="$name", id="$id"> does not have a <def> element""")
+    isnothing(def) &&
+        throw(ArgumentError(string("<namedoperator name=", name, ", id=", id,
+                                                 "> does not have a <def> element")))
     NamedOperator(id, name, parameters, def)
 end
 
@@ -133,11 +143,14 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDReg
     nn = check_nodename(node, "variabledecl")
     EzXML.haskey(node, "id") || throw(MissingIDException(nn))
     id = register_id!(idregistry, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
+    EzXML.haskey(node, "name") || throw(MalformedException("missing name attribute"))
     name = node["name"]
-    # Assert only 1 element? operator or variable?
+    # firstelement throws on nothing. Ignore more than 1.
+    #! There should be an actual way to store the value of the variable!
+    #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
+    #! All that work can be defered to a post-parse phase. Followed by the verification phase.
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry)
-    VariableDeclaration(id, name, sort) #TODO register id?
+    VariableDeclaration(id, name, sort)
 end,
 
 """
@@ -157,7 +170,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     return ud
 end
 
-# Pass in parser function (or functor?)
+# Pass in parser function (or functor)
 function parse_label_content(node::XMLNode, termparser::F,
                              pntd::PnmlType, idregistry) where {F <: Function}
     text::Maybe{Union{String,SubString{String}}} = nothing #
@@ -167,7 +180,6 @@ function parse_label_content(node::XMLNode, termparser::F,
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        #@match tag begin
         if tag == "text"
             text = parse_text(child, pntd, idregistry)
         elseif tag == "structure"
@@ -259,11 +271,15 @@ parse_useroperator(body::DictType) = parse_decl(body)
 parse_useroperator(str::AbstractString) = str
 
 "Tags used in sort XML elements."
-const sort_ids = (:usersort, :dot, :bool, :integer, :natural, :positive,
-                  :multisetsort, :productsort, :partition, :list, :string,
+const sort_ids = (:usersort,
+                  :dot, :bool, :integer, :natural, :positive,
+                  :multisetsort, :productsort,
+                  :partition,
+                  :list, :string,
                   :cyclicenumeration, :finiteenumeration, :finiteintrange)
+# :partition is over a :finiteenumeration
+# :partition is a kind of finite enumeration
 
-#
 function parse_sort(::Val{:dot}, body::DictType,  _::PnmlType, _::PnmlIDRegistry)
     isempty(body) || @error "sort :dot not empty" body
     DotSort()
@@ -357,7 +373,7 @@ Some nesting is used. Meaning that some sorts contain other sorts.
 `parse_sort` returns a top-level sort instance.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    (sortid, body) = unparsed_tag(node, pntd, idregistry)
+    (sortid, body) = unparsed_tag(node)
     (ismissing(sortid) || isnothing(sortid)) && error("sort id is $sortid")
     (ismissing(body) || isnothing(body)) && error("sort body is $body")
     sortid = Symbol(sortid)
@@ -373,7 +389,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     return srt
 end
 function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    (tag, body) = unparsed_tag(node, pntd, idregistry)
+    (tag, body) = unparsed_tag(node)
     (ismissing(tag) || isnothing(tag)) && error("sort id is $tag")
     (ismissing(body) || isnothing(body)) && error("sort body is $body")
     tag = Symbol(tag)
@@ -401,7 +417,7 @@ end
 # """
 # function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
 #     nn = check_nodename(node, "arbitraryoperator")
-#     Term(unparsed_tag(node, pntd, reg))
+#     Term(unparsed_tag(node))
 # end
 
 # """
@@ -409,7 +425,7 @@ end
 # """
 # function parse_arbitrarysort(node, pntd, reg)
 #     nn = check_nodename(node, "arbitrarysort")
-#     Term(unparsed_tag(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry))
+#     Term(unparsed_tag(node::XMLNode))
 # end
 
 # """
@@ -417,15 +433,15 @@ end
 # """
 # function parse_bool(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
 #     nn = check_nodename(node, "bool")
-#     Term(unparsed_tag(node, pntd, reg))
+#     Term(unparsed_tag(node))
 # end
 
 # """
 # $(TYPEDSIGNATURES)
 # """
 # function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-#     nn = check_nodename(node, "mulitsetsort")
-#     Term(unparsed_tag(node, pntd, reg))
+#     nn = check_nodename(node, "mulitsetsort")parse_partition_decl
+#     Term(unparsed_tag(node))
 # end
 
 # """
@@ -433,7 +449,7 @@ end
 # """
 # function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
 #     nn = check_nodename(node, "productsort")
-#     Term(unparsed_tag(node, pntd, reg))
+#     Term(unparsed_tag(node))
 # end
 
 # """
@@ -447,10 +463,12 @@ end
 
 """
 $(TYPEDSIGNATURES)
+A reference to a variable declaration.
 """
-function parse_variable(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_variable(node::XMLNode, _::PnmlType, _::PnmlIDRegistry)
     nn = check_nodename(node, "variable")
-    # The 'primer' UML2 uses variableDecl
-    EzXML.haskey(node, "refvariable") || throw(MalformedException("$nn missing refvariable attribute"))
+    # The 'primer' UML2 uses variableDecl instead of refvariable. References a VariableDeclaration.
+    EzXML.haskey(node, "refvariable") ||
+        throw(MalformedException("missing refvariable attribute"))
     Variable(Symbol(node["refvariable"]))
 end
