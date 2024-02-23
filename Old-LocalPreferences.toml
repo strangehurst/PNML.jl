@@ -1,7 +1,0 @@
-[PNML]
-indent_width = 4
-text_element_optional = true
-verbose = true
-warn_on_fixup = false
-warn_on_namespace = true
-warn_on_unclaimed = false
