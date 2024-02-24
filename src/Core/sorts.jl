@@ -7,6 +7,7 @@ The pnml specification sometimes uses overlapping language.
 
 From the 'primer': built-in sorts of Symmetric Nets are the following:
 booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
+And partitions.
 
 The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
 
@@ -47,34 +48,44 @@ Functions: equality, inequality
 @auto_hash_equals struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 
+struct BooleanConstant
+    value::Symbol
+end
+sortof(::BooleanConstant) = BoolSort
+
 """
 Built-in sort whose `eltype` is `Int`
 """
 @auto_hash_equals struct DotSort <: AbstractSort end
 Base.eltype(::Type{<:DotSort}) = Int
 
+struct DotConstant end
+sortof(::DotConstant) = DotSort
+
+abstract type NumberSort <: AbstractSort end
+
 """
 Built-in sort whose `eltype` is `Int`
 """
-@auto_hash_equals struct IntegerSort <: AbstractSort end
+@auto_hash_equals struct IntegerSort <: NumberSort end
 Base.eltype(::Type{<:IntegerSort}) = Int
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-@auto_hash_equals struct NaturalSort <: AbstractSort end
+@auto_hash_equals struct NaturalSort <: NumberSort end
 Base.eltype(::Type{<:NaturalSort}) = Int # Uint ?
 
 """
 Built-in sort whose `eltype` is `Int`
 """
-@auto_hash_equals struct PositiveSort <: AbstractSort end
+@auto_hash_equals struct PositiveSort <: NumberSort end
 Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
 
 """
 Built-in sort whose `eltype` is `Float64`
 """
-@auto_hash_equals struct RealSort <: AbstractSort end
+@auto_hash_equals struct RealSort <: NumberSort end
 Base.eltype(::Type{<:RealSort}) = Float64
 
 #------------------------------------------------------------------------------
@@ -91,7 +102,6 @@ Used in a `Place`s sort type property.
 end
 UserSort() = UserSort(:integersort) # Is a built-in sort.
 UserSort(s::AbstractString) = UserSort(Symbol(s))
-#! equalSorts(a::UserSort, b::UserSort) = a.declaration == b.declaration
 
 """
 $(TYPEDEF)
@@ -99,10 +109,12 @@ $(TYPEDEF)
 Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
-    us::T # But not another MultistSort
+    us::T
+    MultisetSort(s) = isa(s, MultisetSort) ?
+        throw(MalformedException("MultisetSort cannot be over MultisetSort")) :
+        MultisetSort(s)
 end
 MultisetSort() = MultisetSort(UserSort())
-#! equalSorts(a::MultisetSort, b::MultisetSort) = equalSorts(a.us, b.us)
 
 """
 $(TYPEDEF)
@@ -113,7 +125,6 @@ An ordered collection of sorts.
     ae::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
 end
 ProductSort() = ProductSort(UserSort[])
-#! equalSorts(a::ProductSort, b::ProductSort) = a.ae == b.ae
 
 """
 $(TYPEDEF)
@@ -126,7 +137,6 @@ function Base.getproperty(s::EnumerationSort, prop_name::Symbol)
 end
 
 elements(s::EnumerationSort) = s.elements
-#! equalSorts(a::T, b::T) where {T <: EnumerationSort} = elements(a) == elements(b)
 
 """
 $(TYPEDEF)
@@ -216,7 +226,7 @@ $(TYPEDSIGNATURES)
 Return instance of default sort based on `PNTD`.
 """
 function default_sort end
-default_sort(x::Any) = (throw ∘ ArgumentError)("no default sort for $(typeof(x))")
+default_sort(x::Any) = throw(ArgumentError(string("no default sort for ", typeof(x))))
 default_sort(pntd::PnmlType) = default_sort(typeof(pntd))
 default_sort(::Type{<:PnmlType}) = IntegerSort
 default_sort(::Type{<:AbstractContinuousNet}) = RealSort
