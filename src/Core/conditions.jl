@@ -22,7 +22,7 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation
     text::Maybe{String}
-    value::Term #! expression evaluates to Bool
+    value::Any #! Term #! expression evaluates to Bool
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end

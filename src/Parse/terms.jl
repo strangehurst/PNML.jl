@@ -6,17 +6,34 @@ There will be no XML node <term>. Instead it is the interpertation of the child 
 <structure>, <subterm> or <def> elements. The Relax NG Schema does contain "Term".
 Terms kinds are Variable and Operator.
 """
-function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry) #! type-unstable
     tag, xdvt = unparsed_tag(node)
     xdvt isa DictType ||
         throw(ArgumentError(string("expected DictType, found ", xdvt, "::", typeof(xdvt))))
     tag = Symbol(tag)
+    terms = Vector{PnmlExpr}[]
     if isvariable(tag)
         # Expect only an attribute.
         Variable(Symbol(_attribute(xdvt, :refvariable)))
     elseif isoperator(tag)
-
-        Term(tag, xdvt) #! This will be type-unstable
+        if tag === :booleanconstant # has value "true"|"false" and BoolSort
+            @show xdvt
+            BooleanConstant(_attribute(xdvt, :value))
+        elseif tag === :numberconstant # has a value and is a subsort of Number (a Sort).
+            # Child is the sort of value
+            @show xdvt
+            #sort =
+            #number_value(_attribute(Int, :value))
+            #NumberConstant(value, sort)
+            #   Schema says sort of integer, natural, positive.
+            #   We allow real as a sort, Will consider any text string that can be parsed as a Number (a Type).
+            Term(tag, xdvt)
+        elseif tag === :dotconstant # does not have a value and is DotSort
+            @show xdvt
+            DotConstant()
+        else
+            Term(tag, xdvt)
+        end
     else
         error(string("tag not isvariable or isoperator: ", repr(tag)))
     end

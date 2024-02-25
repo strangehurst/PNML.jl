@@ -30,6 +30,7 @@ See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 """
 abstract type AbstractOperator <: AbstractTerm end
 # Expect each instance to have fields:
+# - definition of expression (PNML Term) that evaluates to an instance of an output sort.
 # - ordered sequence of zero or more input sorts #todo vector or tuple?
 # - one output sort
 # and support methods to:
@@ -39,9 +40,40 @@ abstract type AbstractOperator <: AbstractTerm end
 # Note that a zero input operator is a constant.
 
 "return output sort of operator"
-sortof(op::AbstractOperator) = error("sortof not defined for type $(typeof(op))")
+sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
+
 "constants have arity of 0"
 arity(op::AbstractOperator) = 0
+
+"""
+PnmlExpression (a.k.a. Term) is a Union{Variable,Operator}.
+evaluating a Variable does a lookup to return value of an instance of a sort.
+evaluating an Operator also returns value of an instance of a sort.
+What is the value of a multiset? Multiplicity of 1 is trivial.
+Also note that symmetric nets are restricted, do not allow places to be multiset.
+The value will have eltype(sort) <: Number (if it is evaluatable).
+Where is the MSA (multi-sorted algebra) defined?
+"""
+expression(op::AbstractOperator) = error("expression not defined for $(typeof(op))")
+
+struct Operator <: AbstractOperator
+    tag::Symbol
+    out #!::Sort
+    in::Vector{Any} #!{Sort}
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+Bool, Int, Float64, XDVT
+Variable refers to a varaible declaration.
+Example input: <variable refvariable="varx"/>.
+
+#TODO examples of use, modifying and accessing
+"""
+struct Variable <: AbstractTerm
+    variableDecl::Symbol
+end
 
 """
 $(TYPEDEF)
@@ -76,14 +108,11 @@ evaluating `default_one_term(HLCoreNet())`.
 See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref), [`AnyElement`](@ref).
 
 **Warning:** Much of the high-level is WORK-IN-PROGRESS.
-The type parameter is a sort. We enumerate some of the built-in sorts allowed.
-Is expected that the term will evaluate to that type.
-Is that called a 'ground term'? 'basis set'?
-External information may be used to select the output type.
-"""
+xs"""
 struct Term <: AbstractTerm
     tag::Symbol
-    elements::Union{Bool, Int, Float64, XDVT} # concrete types #! too big for union splitting
+    elements::Any #! Vector{Any} #! {PnmlExpr} # includes Term
+    #elements::Union{Bool, Int, Float64, XDVT} # concrete types #! too big for union splitting
     #! This should be replaced by Varible and AbstractOperator, handle union splitting there.
 end
 Term(s::AbstractString, e) = Term(Symbol(s), e) #~ Turn string into symbol.
@@ -91,6 +120,7 @@ Term(s::AbstractString, e) = Term(Symbol(s), e) #~ Turn string into symbol.
 tag(t::Term)::Symbol = t.tag
 elements(t::Term) = t.elements
 Base.eltype(t::Term) = typeof(elements(t))
+sortof(::Term) = IntegerSort() #! XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
@@ -123,21 +153,18 @@ end
 #(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
 #(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end
 
+"""
+Schema 'Term' is better called 'PnmlExpr' since it is made of variables and operators.
+An abstract syntax tree is formed in XML using <subterm> elements.
+Leafs are variables and constants (operators of arity 0).
+Arity > 0 operator's input sorts are the sorts of respective <subterm>.
+
+"""
+const PnmlExpr = Union{Variable, Operator, Term}
+
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Variable refers to a varaible declaration.
-Example input: <variable refvariable="varx"/>.
-
-#TODO examples of use, modifying and accessing
-"""
-struct Variable <: AbstractTerm
-    variableDecl::Symbol
-end
 
 # Only One
 isvariable(tag::Symbol) = tag === :variable
@@ -182,30 +209,40 @@ isbooleanoperator(tag::Symbol) = tag in boolean_operators
 
 isbuiltinoperator(tag::Symbol) = tag in builtin_operators
 
+# these are operators
 builtin_constants = (:numberconstant,
                      :dotconstant,
                      :booleanconstant,
                      )
 
-boolean_constants = (:true,
-                     :false)
+# boolean_constants = (:true, :false)
+"""
+    isoperator(tag::Symbol) -> Bool
 
+Predicate to identify operators in the high-level pntd's many-sorted algebra abstract syntaxt tree.
+
+# Extra
+There is structure to operators:
+  - integer
+  - multiset
+  - boolean
+  - tuple
+  - builtin constant
+  - useroperator
+"""
 isoperator(tag::Symbol) = isintegeroperator(tag) ||
                           ismultisetoperator(tag) ||
                           isbooleanoperator(tag) ||
                           tag in builtin_constants ||
                           tag === :tuple || tag === :useroperator
-``
-# struct Operator
-#     tag::Symbol
-#     out::Sort
-#     in::Vector(Sort)
-# end
 
+"""
+Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
+"""
 struct PnmlTuple <: AbstractOperator end
 
 "Create a multiset: multi`x"
-struct numberof{T} <: AbstractOperator
+struct numberof{T} <: AbstractOperator #todo CamelCase
     ms::Multiset{T} #TODO allow real multiplicity
 end
 numberof(x) = numberof(Multiset{sortof(x)}(x))
@@ -214,7 +251,7 @@ numberof(x) = numberof(Multiset{sortof(x)}(x))
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-User defined operators only define an abbreviation. See [`NamedOperator`](@ref)
+User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
@@ -241,7 +278,17 @@ end
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
 
+"""
+Builtin operator NumberSorts
+"""
+struct NumberConstant{T<:Number, S<:NumberSort}
+    value::T
+    sort::S # value isa eltype(sort)
+    # Schema allows a Term[], Not used. Part of generic operator xml structure?
+end
+
 #TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
+
 # Term is really Variable and Opeator
 term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
 term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64

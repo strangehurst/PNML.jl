@@ -4,7 +4,7 @@ PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin
         redirect_stdio(; stdout=devnull, stderr=devnull) do
 
-        let pntds = ["pnmlcore", "ptnet", "nonstandard", "open"]    
+        let pntds = ["pnmlcore", "ptnet", "nonstandard", "open"]
             for pntd in pntds
                 parse_str("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -23,7 +23,7 @@ PrecompileTools.@setup_workload begin
             end
         end
 
-        let pntds = ["hlcore", "hlnet", "pt_hlpng", "symmetricnet"]    
+        let pntds = ["hlcore", "hlnet", "pt_hlpng", "symmetricnet"]
             for pntd in pntds
                 metagraph(SimpleNet("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -32,6 +32,7 @@ PrecompileTools.@setup_workload begin
                     <page id="page1">
                         <place id="place1">
                             <hlinitialMarking> <text>100</text> </hlinitialMarking>
+                            <type><usersort declaration="cli" /></type>
                         </place>
                         <transition id="transition1">
                             <name><text>Some transition</text></name>
@@ -67,9 +68,9 @@ PrecompileTools.@setup_workload begin
             end
         end
 
-        let node = EzXML.root(EzXML.readxml(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
-            net = SimpleNet(node)
-        end 
+        # let node = EzXML.root(EzXML.readxml(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
+        #     net = SimpleNet(node)
+        # end
     end
 end
 end
