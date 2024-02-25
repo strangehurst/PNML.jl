@@ -49,9 +49,14 @@ Functions: equality, inequality
 Base.eltype(::Type{<:BoolSort}) = Bool
 
 struct BooleanConstant
-    value::Symbol
+    value::Bool
+end
+function BooleanConstant(s::Union{AbstractString,SubString{String}})
+    s == "true" || s == "false" || throw(ArgumentError("BooleanConstant unexpected value $s"))
+    BooleanConstant(parse(eltype(BoolSort), s))
 end
 sortof(::BooleanConstant) = BoolSort
+_evaluate(bc::BooleanConstant) = bc.value
 
 """
 Built-in sort whose `eltype` is `Int`
@@ -106,15 +111,17 @@ UserSort(s::AbstractString) = UserSort(Symbol(s))
 """
 $(TYPEDEF)
 
-Wrap a [`UserSort`](@ref). Warning: do not cause recursive multiset Sorts.
+Wrap a Sort. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
     us::T
-    MultisetSort(s) = isa(s, MultisetSort) ?
-        throw(MalformedException("MultisetSort cannot be over MultisetSort")) :
-        MultisetSort(s)
+    MultisetSort(s) = if isa(s, MultisetSort)
+        throw(MalformedException("MultisetSort basis cannot be MultisetSort"))
+    else
+        new{typeof(s)}(s)
+    end
 end
-MultisetSort() = MultisetSort(UserSort())
+MultisetSort() = MultisetSort(IntegerSort())
 
 """
 $(TYPEDEF)
