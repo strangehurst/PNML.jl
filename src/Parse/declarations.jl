@@ -212,6 +212,7 @@ See [`default_sort`](@ref)`
 function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd, idregistry)
+    #SortType(l.text, something(l.term, default_sort(pntd)()), l.graphics, l.tools)
     SortType(l.text, Ref{AbstractSort}(something(l.term, default_sort(pntd)())), l.graphics, l.tools)
 end
 
@@ -337,7 +338,8 @@ function parse_sort(::Val{:multisetsort}, body::DictType,  pntd::PnmlType, idreg
     length(body) != 1 &&
         throw(MalformedException(string(":mulitsetsort requires exactly one basis sort, found ", body)))
     (k,v) = only(pairs(body))
-    srt = parse_sort(Val(Symbol(k)), v, pntd, idreg)
+    @assert k !== :multisetsort
+    srt = parse_sort(Val(Symbol(k)), v, pntd, idreg) #TODO de-duplicate sorts
     MultisetSort(srt)
 end
 

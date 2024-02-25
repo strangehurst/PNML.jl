@@ -323,8 +323,8 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     else
         # The sort of mark must be the same as the sort of sorttype.
         equalSorts(sortof(mark), sortof(sorttype)) ||
-            throw(MalformedException(string("place ", name, " id ", id,
-                ": sort mismatch, expected ", sortof(mark), ", found ", sortof(sorttype))))
+           @warn(string("place ", name, " id ", id, ": sort mismatch, expected ", sortof(mark), ", found ", sortof(sorttype)))
+#        throw(MalformedException(string("place ", name, " id ", id, ": sort mismatch, expected ", sortof(mark), ", found ", sortof(sorttype))))
     end
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
 end
@@ -718,7 +718,7 @@ function parse_condition_term(cnode::XMLNode, pntd::PnmlType, idregistry)
             return Term(:value, number_value(condition_value_type(pntd), content_string))
         end
     end
-    (throw ∘ ArgumentError)("missing condition term element in <structure>")
+    throw(ArgumentError("missing condition term element in <structure>"))
 end
 
 

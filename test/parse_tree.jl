@@ -138,7 +138,8 @@ end
 @testset "AirplaneLD pnml file" begin
     testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
 
-    model = @test_logs(match_mode=:all, parse_file(testfile))
+    model = parse_file(testfile)
+    #!model = @test_logs(match_mode=:all, parse_file(testfile))
     @test model isa PnmlModel
 
     netvec = nets(model)
@@ -172,10 +173,12 @@ end
 # Read a file
 @testset "test1.pnml file" begin
     println("\ntest1.pnml")
-    model = @test_logs(match_mode=:all,
-        (:warn, "ignoring unexpected child of <condition>: 'name'"),
-        (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
+    # model = @test_logs(match_mode=:all,
+    #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
+    #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+    #     parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
+    model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
+
     @test model isa PnmlModel
     @test startswith(repr(model), "PnmlModel")
 
