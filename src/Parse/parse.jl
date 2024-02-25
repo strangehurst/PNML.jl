@@ -316,8 +316,16 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     end
 
     mark = something(mark, default_marking(pntd))::marking_type(pntd)
-    sorttype = something(sorttype, default_sorttype(pntd))::SortType
-
+    if isnothing(sorttype)
+        #TODO de-duplicate sorts
+        sorttype =
+            SortType("default", Ref{AbstractSort}(sortof(mark)), nothing, nothing)
+    else
+        # The sort of mark must be the same as the sort of sorttype.
+        equalSorts(sortof(mark), sortof(sorttype)) ||
+            throw(MalformedException(string("place ", name, " id ", id,
+                ": sort mismatch, expected ", sortof(mark), ", found ", sortof(sorttype))))
+    end
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
 end
 
@@ -627,13 +635,15 @@ $(TYPEDSIGNATURES)
 function parse_marking_term(marknode, pntd, idregistry)
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        term = EzXML.firstelement(marknode) #todo use only()
+        term = EzXML.firstelement(marknode) #todo use only() or ignore more than 1
 
         return parse_term(term, pntd, idregistry)
     else
         content_string = strip(EzXML.nodecontent(marknode))
         if !isempty(content_string)
+
             @warn(string("replacing empty <structure> content value for marking term with: ", content_string))
+
             # TODO :value is our special symbol to fake behavior
             return Term(:value, number_value(marking_value_type(pntd), content_string))
         end
@@ -662,6 +672,7 @@ function parse_inscription_term(inode, pntd, idregistry)::Term
         return parse_term(term, pntd, idregistry)
     else
         content_string = strip(EzXML.nodecontent(inode))
+
         if !isempty(content_string)
             @warn("replacing empty <structure> content value for inscription term with: $content_string")
             return Term(:value, number_value(inscription_value_type(pntd), content_string))
