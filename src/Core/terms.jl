@@ -11,7 +11,34 @@ found within the <structure> element of a label.
 
 Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
 
+# References
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
+
+[Term_(logic)](https://en.wikipedia.org/wiki/Term_(logic)):
+> A first-order term is recursively constructed from constant symbols, variables and function symbols.
+
+> Besides in logic, terms play important roles in universal algebra, and rewriting systems.
+
+> more convenient to think of a term as a tree.
+
+> A term that doesn't contain any variables is called a ground term
+
+> When the domain of discourse contains elements of basically different kinds,
+> it is useful to split the set of all terms accordingly.
+> To this end, a sort (sometimes also called type) is assigned to each variable and each constant symbol,
+> and a declaration...of domain sorts and range sort to each function symbol....
+
+[Type_theory](https://en.wikipedia.org/wiki/Type_theory)
+> term in logic is recursively defined as a constant symbol, variable, or a function application, where a term is applied to another term
+
+> if t is a term of type σ → τ, and s is a term of type σ, then the application of t to s, often written (t s), has type τ.
+
+[Lambda terms](https://en.wikipedia.org/wiki/Lambda_calculus#Lambda_terms):
+> The term redex, short for reducible expression, refers to subterms that can be reduced by one of the reduction rules.
+
+See [Metatheory](https://github.com/JuliaSymbolics/Metatheory.jl)
+and [SymbolicUtils](https://github.com/JuliaSymbolics/SymbolicUtils.jl)
+
 """
 abstract type AbstractTerm end
 
