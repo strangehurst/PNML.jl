@@ -1,0 +1,7 @@
+name = "experiments"
+uuid = "9fc845e6-562d-4608-8fa7-d07eea680ea8"
+authors = ["Jeff <strangehurst@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+SBMLToolkit = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
