@@ -77,10 +77,10 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
+struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     id::Symbol
-    source::Symbol
-    target::Symbol
+    source::RefValue{Symbol}
+    target::RefValue{Symbol}
     inscription::I
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
@@ -88,7 +88,7 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     labels::Maybe{Vector{PnmlLabel}}
 end
 
-Arc(a::Arc, src::Symbol, tgt::Symbol) =
+Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 inscription(arc::Arc) = _evaluate(arc.inscription)
@@ -101,14 +101,14 @@ sortof(arc::Arc) = sortof(arc.inscription)
 
 Return identity symbol of source of `arc`.
 """
-source(arc::Arc)::Symbol = arc.source
+source(arc::Arc)::Symbol = arc.source[]
 
 """
     target(arc) -> Symbol
 
 Return identity symbol of target of `arc`.
 """
-target(arc::Arc)::Symbol = arc.target
+target(arc::Arc)::Symbol = arc.target[]
 
 function Base.show(io::IO, arc::Arc)
     print(io, nameof(typeof(arc)), "(", repr(pid(arc)),

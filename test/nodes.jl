@@ -166,7 +166,7 @@ end
             (:warn, "found unexpected child of <arc>: unknown") ,
             parse_arc(node, pntd, registry()))
     end
-    a2 = Arc(a1, :newsrc, :newtarget)
+    a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
     @testset "a1,a2" for a in [a1, a2]
         @test typeof(a) <: Arc
         @test pid(a) === :arc1

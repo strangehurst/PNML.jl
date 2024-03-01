@@ -147,17 +147,17 @@ function deref!(net::PnmlNet, trim::Bool = true)
     for id in as # tries to iterate over empty union
         #TODO Replace arcs in collection to allow immutable Arc.
         arc = PNML.arc(net, id)
-        while arc.source ∈ refplace_idset(net)
-            arc.source = deref_place(net, arc.source, trim)
+        while arc.source[] ∈ refplace_idset(net)
+            arc.source[] = deref_place(net, arc.source[], trim)
         end
-        while arc.target ∈ refplace_idset(net)
-            arc.target = deref_place(net, arc.target, trim)
+        while arc.target[] ∈ refplace_idset(net)
+            arc.target[] = deref_place(net, arc.target[], trim)
         end
-        while arc.source ∈ reftransition_idset(net)
-            arc.source = deref_transition(net, arc.source, trim)
+        while arc.source[] ∈ reftransition_idset(net)
+            arc.source[] = deref_transition(net, arc.source[], trim)
         end
-        while arc.target ∈ reftransition_idset(net)
-            arc.target = deref_transition(net, arc.target, trim)
+        while arc.target[] ∈ reftransition_idset(net)
+            arc.target[] = deref_transition(net, arc.target[], trim)
         end
     end
     if trim

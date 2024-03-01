@@ -417,9 +417,8 @@ function parse_arc(node, pntd, idregistry::PIDR)
             add_label!(labels, child, pntd, idregistry)
         end
     end
-#!    Arc(pntd, nodeid, source, target, something(inscription, default_inscription(pntd)),
     inscription = something(inscription, default_inscription(pntd))
-    Arc(nodeid, source, target, inscription, name, graphics, tools, labels)
+    Arc(nodeid, Ref(source), Ref(target), inscription, name, graphics, tools, labels)
 end
 
 # By specializing arc inscription label parsing we hope to return stable type.
