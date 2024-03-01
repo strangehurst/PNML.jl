@@ -1,4 +1,4 @@
-using PrecompileTools
+using PrecompileTools: PrecompileTools
 
 PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin

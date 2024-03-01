@@ -50,8 +50,6 @@ end
 
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = PnmlConfig()
-
-using Preferences
 include("preferences.jl")
 
 __init__() = read_config!(CONFIG)
@@ -62,28 +60,27 @@ if !haskey(ENV, "COLUMNS")
     ENV["COLUMNS"] = 180
 end
 
-using AutoHashEquals
+import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue
-using DocStringExtensions
-using FunctionWrappers
-using Preferences
-using Reexport
-using DecFP
+import FunctionWrappers
+import Reexport
+import DecFP
 import Graphs
 import MetaGraphsNext
-
 import OrderedCollections: OrderedDict, OrderedSet, LittleDict, freeze
-using LabelledArrays
-using NamedTupleTools
-using Multisets
-
 import EzXML
 import XMLDict
+import TermInterface
+import Multisets: Multiset
+
+using LabelledArrays #Todo beware namespace pollution
+using NamedTupleTools
+using DocStringExtensions
 
 include("Core/PnmlTypeDefs.jl")
-@reexport using .PnmlTypeDefs
+Reexport.@reexport using .PnmlTypeDefs
 include("Core/PnmlIDRegistrys.jl")
-@reexport using .PnmlIDRegistrys
+Reexport.@reexport using .PnmlIDRegistrys
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
