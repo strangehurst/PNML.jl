@@ -48,3 +48,22 @@ function check_nodename(n::XMLNode, s::AbstractString)
     end
     return s
 end
+
+"""
+$(TYPEDSIGNATURES)
+Return registered symbol from id attribute of node. See [`PnmlIDRegistry`](@ref).
+"""
+function register_idof!(idregistry::PnmlIDRegistry, node::XMLNode)
+    EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
+    return register_id!(idregistry, Symbol(@inbounds(node["id"])))
+end
+
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function attribute(node::XMLNode, key::AbstractString, msg::String="attribute $key missing")
+    @assert key != "id" "'id' attribute not handled here"
+    EzXML.haskey(node, key) || throw(MalformedException(msg))
+    return @inbounds node[key]
+end

@@ -5,14 +5,12 @@ using PNML, EzXML, ..TestUtils, JET, Logging
         reg = registry(locker)
         PnmlIDRegistrys.reset!(reg)
 
-        register_id!(reg, "p1")
-        @test @inferred(isregistered(reg, "p1")) == true
+        register_id!(reg, :p1)
         @test @inferred(isregistered(reg, :p1)) == true
         @test isregistered(reg, :p1)
         PnmlIDRegistrys.reset!(reg)
-        @test !isregistered(reg, "p1")
         @test !isregistered(reg, :p1)
-        PNML.register_id!(reg, "p1")
+        PNML.register_id!(reg, :p1)
         @test isregistered(reg, :p1)
     end
 
@@ -26,7 +24,6 @@ using PNML, EzXML, ..TestUtils, JET, Logging
 
         @test_call broken=false registry(locker)
         @test_call register_id!(reg, :p)
-        @test_call register_id!(reg, "p")
         @test_call !isregistered(reg, :p1)
         @test_call PnmlIDRegistrys.reset!(reg)
     end

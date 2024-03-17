@@ -2,92 +2,37 @@
 #
 ####################################################################################
 
-"""
-$(TYPEDEF)
-Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
-
-An abstract type in the pnml XML specification, concrete `Term`s are
-found within the <structure> element of a label.
-
-Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
-
-# References
-See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
-
-[Term_(logic)](https://en.wikipedia.org/wiki/Term_(logic)):
-> A first-order term is recursively constructed from constant symbols, variables and function symbols.
-
-> Besides in logic, terms play important roles in universal algebra, and rewriting systems.
-
-> more convenient to think of a term as a tree.
-
-> A term that doesn't contain any variables is called a ground term
-
-> When the domain of discourse contains elements of basically different kinds,
-> it is useful to split the set of all terms accordingly.
-> To this end, a sort (sometimes also called type) is assigned to each variable and each constant symbol,
-> and a declaration...of domain sorts and range sort to each function symbol....
-
-[Type_theory](https://en.wikipedia.org/wiki/Type_theory)
-> term in logic is recursively defined as a constant symbol, variable, or a function application, where a term is applied to another term
-
-> if t is a term of type σ → τ, and s is a term of type σ, then the application of t to s, often written (t s), has type τ.
-
-[Lambda terms](https://en.wikipedia.org/wiki/Lambda_calculus#Lambda_terms):
-> The term redex, short for reducible expression, refers to subterms that can be reduced by one of the reduction rules.
-
-See [Metatheory](https://github.com/JuliaSymbolics/Metatheory.jl)
-and [SymbolicUtils](https://github.com/JuliaSymbolics/SymbolicUtils.jl)
-
-"""
-abstract type AbstractTerm end
-
-_evaluate(x::AbstractTerm) = x() # functor
-
-"""
-$(TYPEDEF)
-Part of the high-level pnml many-sorted algebra.
-
-> ...can be a built-in constant or a built-in operator, a multiset operator which among others
-> can construct a multiset from an enumeration of its elements, or a tuple operator.
-> Each operator has a sequence of sorts as its input sorts, and exactly one output sort,
-> which defines its signature.
-
-See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
-"""
-abstract type AbstractOperator <: AbstractTerm end
-# Expect each instance to have fields:
-# - definition of expression (PNML Term) that evaluates to an instance of an output sort.
-# - ordered sequence of zero or more input sorts #todo vector or tuple?
-# - one output sort
-# and support methods to:
-# - compare operator signatures for equality using sort eqality
-# - output sort type to test against place sort type (and others)
-#
-# Note that a zero input operator is a constant.
+value(op::AbstractOperator) = error("value not defined for $(typeof(op))")
 
 "return output sort of operator"
 sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
+
+#==================================
+ TermInterface version 0.4
+    isexpr(x::T) # expression tree (S-expression) => head(x), children(x) required
+    iscall(x::T) # call expression => operation(x), arguments(x) required
+    head(x) # S-expression
+    children(x) # S-expression
+    operation(x) # if iscall(x)
+    arguments(x) # if iscall(x)
+    maketerm(T, head, children, type=nothing, metadata=nothing) # iff isexpr(x)
+ Optional
+    arity(x)
+    metadata(x)
+    symtype(expr)
+
+:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j])
+:(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])
+
+===================================#
 
 "constants have arity of 0"
 arity(op::AbstractOperator) = 0
 
 """
-PnmlExpression (a.k.a. Term) is a Union{Variable,Operator}.
-evaluating a Variable does a lookup to return value of an instance of a sort.
-evaluating an Operator also returns value of an instance of a sort.
-What is the value of a multiset? Multiplicity of 1 is trivial.
-Also note that symmetric nets are restricted, do not allow places to be multiset.
-The value will have eltype(sort) <: Number (if it is evaluatable).
-Where is the MSA (multi-sorted algebra) defined?
 """
 expression(op::AbstractOperator) = error("expression not defined for $(typeof(op))")
 
-struct Operator <: AbstractOperator
-    tag::Symbol
-    out #!::Sort
-    in::Vector{Any} #!{Sort}
-end
 
 """
 $(TYPEDEF)
@@ -101,57 +46,93 @@ Example input: <variable refvariable="varx"/>.
 struct Variable <: AbstractTerm
     variableDecl::Symbol
 end
+tag(v::Variable) = v.variableDecl
+value(v::Variable) = begin
+    println("value(::Variable) $(tag(v)) needs access to DeclDict")
+    return 0
+end
+_evaluate(v::Variable) = _evaluate(value(v))
+
+#! Sort of the variableDecl needs access to DeclDict.
+sortof(v::Variable) = begin
+    println("sortof(v.variableDecl) $(tag(v)) needs access to DeclDict")
+    NullSort()
+end
+
+"""
+Schema 'Term' is better called 'PnmlExpr' since it is made of variables and operators.
+An abstract syntax tree is formed in XML using <subterm> elements.
+Leafs are variables and constants (operators of arity 0).
+Arity > 0 operator's input sorts are the sorts of respective <subterm>.
+
+PnmlExpr (a.k.a. Term) is a Union{Variable,AbstractOperator}.
+evaluating a Variable does a lookup to return value of an instance of a sort.
+evaluating an Operator also returns value of an instance of a sort.
+What is the value of a multiset? Multiplicity of 1 is trivial.
+Also note that symmetric nets are restricted, do not allow places to be multiset.
+The value will have eltype(sort) <: Number (if it is evaluatable).
+Where is the MSA (multi-sorted algebra) defined?
+"""
+const PnmlExpr = Union{Variable, AbstractOperator}
+
+"""
+Operator as Functor
+
+tag maps to func
+
+"""
+struct Operator <: AbstractOperator
+    tag::Symbol
+    func::Function # Apply `func` to `in`: expressions evaluated with current variable values and constants.
+    in::Vector{PnmlExpr} # typeof(in[i]) == eltype(insorts[i])
+    insorts::Vector{AbstractSort} # Abstract inside vector is not terrible.
+    outsort::AbstractSort
+    #TODO have constructor validate typeof(in[i]) == eltype(insorts[i])
+end
+tag(op::Operator) = op.tag
+sortof(op::Operator) = op.outsort
+function (op::Operator)()
+    @show op
+    op.func(op.in) #TODO construct input vector of results of evaluating `in`
+    #TODO verify outsort
+end
+value(op::Operator) = _evaluate(op)
+_evaluate(op::Operator) = op() #TODO
+arity(op::Operator) = length(op.in)
+
+#! add TermInteface here
 
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm`.
-Here we use `Term` as a concrete wrapper around **unparsed** high-level many-sorted algebra terms
-**AND EXTEND** to also wrapping "single-sorted" values for other PNTDs.
-
-By adding `Bool`, `Int`, `Float64` it is possible for `PnmlCoreNet` and `ContinuousNet`
-to use `Term`s, and for implenting `default_bool_term`, `default_one_term`, `default_zero_term`.
-
-See also [`iscontinuous`](@ref)
 
 As part of the many-sorted algebra AST attached to nodes of a High-level Petri Net Graph,
-`Term`s are contained within the <structure> element of an annotation label.
+`Term`s are contained within the <structure> element of an annotation label or operator def.
 One XML child is expected below <structure> in the PNML schema.
 The child's XML tag is used as the AST node type symbol.
-Usually [`unparsed_tag`](@ref) is used to turn the child into a key, value pair.
-
-#TODO is it safe to assume that Bool, Int, Float64 are in the carrier set/basis set?
 
 # Functor
 
-    (t::Term)([default_one_term(HLCoreNet())])
-
 Term as functor requires a default value for missing values.
-
-As a preliminary implementation evaluate a HL term by returning `:value` in `elements` or
-evaluating `default_one_term(HLCoreNet())`.
 
 See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref), [`AnyElement`](@ref).
 
 **Warning:** Much of the high-level is WORK-IN-PROGRESS.
-xs"""
-struct Term <: AbstractTerm
+"""
+struct Term <: AbstractTerm #! replace Term by PnmlExpr
     tag::Symbol
-    elements::Any #! Vector{Any} #! {PnmlExpr} # includes Term
-    #elements::Union{Bool, Int, Float64, XDVT} # concrete types #! too big for union splitting
-    #! This should be replaced by Varible and AbstractOperator, handle union splitting there.
+    elements::Any
 end
-Term(s::AbstractString, e) = Term(Symbol(s), e) #~ Turn string into symbol.
 
-tag(t::Term)::Symbol = t.tag
-elements(t::Term) = t.elements
-Base.eltype(t::Term) = typeof(elements(t))
-sortof(::Term) = IntegerSort() #! XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
+tag(t::Term)::Symbol = t.tag #! replace Term by PnmlExpr
+elements(t::Term) = t.elements #! replace Term by PnmlExpr
+Base.eltype(t::Term) = typeof(elements(t)) #! replace Term by PnmlExpr
+sortof(::Term) = IntegerSort() #! XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-function Base.show(io::IO, t::Term)
+function Base.show(io::IO, t::Term) #! replace Term by PnmlExpr
     #@show typeof(elements(t))
     print(io, nameof(typeof(t)), "(")
     show(io, tag(t)); print(io, ", ");
@@ -159,7 +140,7 @@ function Base.show(io::IO, t::Term)
     print(io, ")")
 end
 
-(t::Term)() =  _term_eval(elements(t))
+(t::Term)() =  _term_eval(elements(t)) #! replace Term by PnmlExpr
 
 _term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
 _term_eval(v::Number) = v
@@ -175,20 +156,6 @@ _term_eval(v::DictType) = begin
     #Base.show_backtrace(stdout, backtrace()) # Save for obscure bugs.
     return false #
 end
-
-#(t::Term{Bool})(default = default_bool_term(HLCoreNet())) = begin end
-#(t::Term{Int64})(default = default_one_term(HLCoreNet())) = begin end
-#(t::Term{Float64})(default = default_one_term(HLCoreNet())) = begin end
-
-"""
-Schema 'Term' is better called 'PnmlExpr' since it is made of variables and operators.
-An abstract syntax tree is formed in XML using <subterm> elements.
-Leafs are variables and constants (operators of arity 0).
-Arity > 0 operator's input sorts are the sorts of respective <subterm>.
-
-"""
-const PnmlExpr = Union{Variable, Operator, Term}
-
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
@@ -225,6 +192,14 @@ multiset_operators = (:add,
                       )
 ismultisetoperator(tag::Symbol) = tag in multiset_operators
 
+finite_operators  = (:lessthan,
+                     :lessthanorequal,
+                     :greaterthan,
+                     :greaterthanorequal,
+                     :finiteintrangeconstant,
+                     )
+isfiniteoperator(tag::Symbol) = tag in finite_operators
+
 boolean_operators = (:or,
                      :and,
                      :imply,
@@ -260,19 +235,34 @@ There is structure to operators:
 isoperator(tag::Symbol) = isintegeroperator(tag) ||
                           ismultisetoperator(tag) ||
                           isbooleanoperator(tag) ||
+                          isfiniteoperator(tag) ||
                           tag in builtin_constants ||
-                          tag === :tuple || tag === :useroperator
+                          tag === :tuple ||
+                          tag === :useroperator
 
 """
 Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
 """
 struct PnmlTuple <: AbstractOperator end
+#=
+PNML.Operator(:numberof, PNML.var"#103#104"(),
+PnmlExpr[
+    PNML.NumberConstant{Int64, PNML.PositiveSort}(3, PNML.PositiveSort()),
+    PNML.DotConstant()], PNML.AbstractSort[PNML.PositiveSort(), PNML.DotSort()
+    ],
+    PNML.IntegerSort())
+=#
+"""
+Some [`Operators`](@ref)` and [`Variables`](@ref) creates/use a multiset.
+Wrap a Multisets.Multiset
 
-"Create a multiset: multi`x"
-struct numberof{T} <: AbstractOperator #todo CamelCase
+multi`x where x is an instance of a sort T.
+"""
+struct PnmlMultiset{T} <: AbstractOperator #todo CamelCase
     ms::Multiset{T} #TODO allow real multiplicity
 end
-numberof(x) = numberof(Multiset{sortof(x)}(x))
+#PnmlMultiset(x) = PnmlMultiset(Multiset{sortof(x)}(x))
+# TODO forward ops?
 
 """
 $(TYPEDEF)
@@ -284,6 +274,10 @@ struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
 end
 UserOperator(str::AbstractString) = UserOperator(Symbol(str))
+
+sortof(uo::UserOperator) = sortof(named_op(decldict, uo.declaration))
+#! decldict is per-PnmlNet "global" dictonary holder. One in UserOperators.
+sortof(decldict, uo::UserOperator) = sortof(named_op(decldict, uo.declaration))
 
 """
 $(TYPEDEF)
@@ -308,14 +302,44 @@ end
 """
 Builtin operator NumberSorts
 """
-struct NumberConstant{T<:Number, S<:NumberSort}
+struct NumberConstant{T<:Number, S<:NumberSort} <: AbstractOperator
     value::T
     sort::S # value isa eltype(sort)
     # Schema allows a Term[], Not used. Part of generic operator xml structure?
 end
+sortof(nc::NumberConstant) = nc.sort
+value(nc::NumberConstant) = _evaluate(nc)
+_evaluate(nc::NumberConstant) = nc.value
+(c::NumberConstant)() = value(c)
 
 #TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
 
+struct BooleanConstant <: AbstractOperator
+    value::Bool
+end
+
+function BooleanConstant(s::Union{AbstractString,SubString{String}})
+    s == "true" || s == "false" || throw(ArgumentError("BooleanConstant unexpected value $s"))
+    BooleanConstant(parse(eltype(BoolSort), s))
+end
+tag(::BooleanConstant) = :booleanconstant
+sortof(::BooleanConstant) = BoolSort
+value(bc::BooleanConstant) = _evaluate(bc)
+_evaluate(bc::BooleanConstant) = bc.value
+(c::BooleanConstant)() = value(c)
+
+struct FiniteIntRangeConstant <: AbstractOperator
+    value::String
+    sort::FiniteIntRangeSort
+end
+tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
+sortof(::FiniteIntRangeConstant) = FiniteIntRangeSort
+value(c::FiniteIntRangeConstant) = _evaluate(c)
+_evaluate(c::FiniteIntRangeConstant) = c.value # TODO string
+(c::FiniteIntRangeConstant)() = value(c)
+
+
+#-------------------------------------------------------------------------
 # Term is really Variable and Opeator
 term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
 term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
@@ -326,7 +350,7 @@ $(TYPEDSIGNATURES)
 One as integer, float, or empty term with a value of one.
 """
 function default_one_term end
-default_one_term(pntd::PnmlType) = Term(:one, one(term_value_type(pntd)))
+default_one_term(pntd::PnmlType) = NumberConstant(one(term_value_type(pntd)),IntegerSort())
 default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
@@ -335,7 +359,7 @@ $(TYPEDSIGNATURES)
 Zero as integer, float, or empty term with a value of zero.
 """
 function default_zero_term end
-default_zero_term(pntd::PnmlType) = Term(:zero, zero(term_value_type(pntd)))
+default_zero_term(pntd::PnmlType) = NumberConstant(zero(term_value_type(pntd)), IntegerSort())
 default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
 
 """
@@ -344,5 +368,5 @@ $(TYPEDSIGNATURES)
 True as boolean or term with a value of `true`.
 """
 function default_bool_term end
-default_bool_term(pntd::PnmlType) = Term(:bool, true)
+default_bool_term(::PnmlType) = BooleanConstant(true)
 default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))

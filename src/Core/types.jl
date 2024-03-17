@@ -105,6 +105,102 @@ function Base.show(io::IO, d::DictType)
     dict_show(IOContext(io, :typeinfo => DictType), d)
 end
 
+#--------------------------------------------
+# Terms & Sorts
+#--------------------------------------------
+"""
+$(TYPEDEF)
+Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
+
+An abstract type in the pnml XML specification, concrete `Term`s are
+found within the <structure> element of a label.
+
+Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
+
+# References
+See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
+
+[Term_(logic)](https://en.wikipedia.org/wiki/Term_(logic)):
+> A first-order term is recursively constructed from constant symbols, variables and function symbols.
+
+> Besides in logic, terms play important roles in universal algebra, and rewriting systems.
+
+> more convenient to think of a term as a tree.
+
+> A term that doesn't contain any variables is called a ground term
+
+> When the domain of discourse contains elements of basically different kinds,
+> it is useful to split the set of all terms accordingly.
+> To this end, a sort (sometimes also called type) is assigned to each variable and each constant symbol,
+> and a declaration...of domain sorts and range sort to each function symbol....
+
+[Type_theory](https://en.wikipedia.org/wiki/Type_theory)
+> term in logic is recursively defined as a constant symbol, variable, or a function application, where a term is applied to another term
+
+> if t is a term of type σ → τ, and s is a term of type σ, then the application of t to s, often written (t s), has type τ.
+
+[Lambda terms](https://en.wikipedia.org/wiki/Lambda_calculus#Lambda_terms):
+> The term redex, short for reducible expression, refers to subterms that can be reduced by one of the reduction rules.
+
+See [Metatheory](https://github.com/JuliaSymbolics/Metatheory.jl)
+and [SymbolicUtils](https://github.com/JuliaSymbolics/SymbolicUtils.jl)
+
+"""
+abstract type AbstractTerm end
+
+"""
+$(TYPEDEF)
+Part of the high-level pnml many-sorted algebra.
+
+> ...can be a built-in constant or a built-in operator, a multiset operator which among others
+> can construct a multiset from an enumeration of its elements, or a tuple operator.
+> Each operator has a sequence of sorts as its input sorts, and exactly one output sort,
+> which defines its signature.
+
+See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
+"""
+abstract type AbstractOperator <: AbstractTerm end
+
+# Expect each operator instance to have fields:
+# - definition of expression (PNML Term) that evaluates to an instance of an output sort.
+# - ordered sequence of zero or more input sorts #todo vector or tuple?
+# - one output sort
+# and support methods to:
+# - compare operator signatures for equality using sort eqality
+# - output sort type to test against place sort type (and others)
+#
+# Note that a zero input operator is a constant.
+
+
+
+"""
+$(TYPEDEF)
+Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
+
+NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
+The pnml specification sometimes uses overlapping language.
+
+From the 'primer': built-in sorts of Symmetric Nets are the following:
+booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
+And partitions.
+
+The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
+
+# Extras
+
+Notes:
+- `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
+- `UserSort` holds the id symbol of a `NamedSort`.
+- Here 'type' means a 'term' from the many-sorted algebra.
+- We use sorts even for non-high-level nets.
+- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
+"""
+abstract type AbstractSort end
+sortof(s::AbstractSort) = typeof(s)
+
+#--------------------------------------------
+# Any Element
+#--------------------------------------------
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -134,22 +230,15 @@ function Base.show(io::IO, label::AnyElement)
     print(io, ")")
 end
 
+#--------------------------------------------
+# Show Dict
+#--------------------------------------------
 """
     dict_show(io::IO, x, 0())
 
 Internal helper for things that contain `DictType`.
 """
 function dict_show end
-
-#=
-value(mark) = Term(:tuple, (d["subterm"] = [(d["all"] = (d["usersort"] = (d[:declaration] = "N1"))),
-        (d["all"] = (d["usersort"] = (d[:declaration] = "N2")))]))
-
-value(mark) = Term(:add, (d["subterm"] = [(d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
-                                (d["numberconstant"] = (d[:value] = "3",d["positive"] = ()))])),
-        (d["numberof"] = (d["subterm"] = [(d["numberconstant"] = (d[:value] = "1",d["positive"] = ())),
-                                (d["numberconstant"] = (d[:value] = "2",d["positive"] = ()))]))]))
-=#
 
 const increment=4
 d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
@@ -228,8 +317,6 @@ inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
 inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
 
 #! Term should be replaced by Variables and Operators. So not documented or tested.
-#term_type(x::Any) = (throw ∘ ArgumentError)("no term_type defined for $(typeof(x))")
-#term_type(pntd::PnmlType)       = term_type(typeof(pntd))
 term_value_type(pntd::PnmlType) = term_value_type(typeof(pntd))
 
 coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))

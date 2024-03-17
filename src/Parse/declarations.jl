@@ -20,7 +20,8 @@ Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsor
 """
 function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "declaration")
-    decls::Maybe{Vector{AbstractDeclaration}} = nothing
+    # if decldictionary is not defined
+    decldictionary = DeclDict()#! decls::Maybe{Vector{AbstractDeclaration}} = nothing
     text = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
@@ -28,7 +29,7 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "structure"
-            decls = _parse_decl_structure(child, pntd, idregistry)
+            _parse_decl_structure!(decldictionary, child, pntd, idregistry)
         elseif tag == "text"
             text = string(strip(EzXML.nodecontent(child)))::String #! do we need string?
         elseif tag == "graphics"
@@ -43,40 +44,46 @@ function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
         end
     end
 
-    Declaration(text, something(decls, AbstractDeclaration[]), graphics, tools)
+    Declaration(; text, ddict=decldictionary, graphics, tools)
 end
 
-"Assumes high-level semantics until someone specializes. See [`decl_structure`](@ref)."
-function _parse_decl_structure(node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
-    decl_structure(node, pntd, idregistry)
+#"Assumes high-level semantics until someone specializes."
+function _parse_decl_structure!(dd::DeclDict, node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
+    fill_decl_dict!(dd, node, pntd, idregistry)
 end
 
-# <declaration><structure><declarations><namedsort id="weight" name="Weight">...
-"Return vector of AbstractDeclaration subtypes."
-function decl_structure(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     EzXML.haselement(node) || throw(ArgumentError("missing <declaration> <structure> element"))
-    declarations = EzXML.firstelement(node) # <declaration> contains only <declarations>.
+    declarations = EzXML.firstelement(node)
     check_nodename(declarations, "declarations")
     decs = AbstractDeclaration[]
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
-        # @match tag begin
-        # These three cases have
         if tag == "namedsort"
-            push!(decs, parse_namedsort(child, pntd, idregistry))
+            ns = parse_namedsort(child, pntd, idregistry)
+            dd.namedsorts[pid(ns)] = ns
         elseif tag == "namedoperator"
-            push!(decs, parse_namedoperator(child, pntd, idregistry))
+            no = parse_namedoperator(child, pntd, idregistry)
+            dd.namedoperators[pid(no)] = no
         elseif tag == "variabledecl"
-            push!(decs, parse_variabledecl(child, pntd, idregistry))
-        elseif tag == "partition" #! Where what is a partition
-            push!(decs, parse_partition_decl(child, pntd, idregistry))
+            vardecl = parse_variabledecl(child, pntd, idregistry)
+            dd.variabledecls[pid(vardecl)] = vardecl
+
+        elseif tag == "partition"
+            part = parse_partition_decl(child, pntd, idregistry)
+            dd.partitionsorts[pid(part)] = part
+        #TODO Where do we find these things? Is this were they are de-duplicated?
+        #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+        #!    partop = parse_partition_op(child, pntd, idregistry)
+        #!     dd.partitionops[pid(partop)] = partop
+
         #elseif tag == "arbitrarysort"
         else
             push!(decs, parse_unknowndecl(child, pntd, idregistry))
         end
     end
-    return decs
+    return nothing
 end
 
 """
@@ -86,12 +93,9 @@ Declaration that wraps a Sort, adding an ID and name.
 """
 function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "namedsort")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    id = register_id!(reg, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = node["name"]
-
-    def = parse_sort(EzXML.firstelement(node), pntd, reg) #! register id?
+    id = register_idof!(reg, node)
+    name = attribute(node, "name", "$nn $id missing name attribute")
+    def = parse_sort(EzXML.firstelement(node), pntd, reg) #! register id? deduplicate sort
     NamedSort(id, name, def)
 end
 
@@ -105,12 +109,10 @@ When arity > 0, where is the parameter value stored? With operator or variable d
 """
 function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "namedoperator")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    id = register_id!(idregistry, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = node["name"]
+    id = register_idof!(idregistry, node)
+    name = attribute(node, "name", "$nn $id missing name attribute")
 
-    def::Maybe{Term} = nothing
+    def::Maybe{NumberConstant} = nothing
     parameters = VariableDeclaration[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -118,8 +120,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
             # NamedOperators have a def element that is a expression of existing
             # operators &/or variables that define the operation.
             # The sortof the operator is the output sort of def.
-            def = parse_term(EzXML.firstelement(child), pntd, idregistry) #todo
-
+            def, defsort = parse_term(EzXML.firstelement(child), pntd, idregistry) #todo
         elseif tag == "parameter"
             # Zero or more parameters for operator (arity). Map from id to sort object.
             #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
@@ -133,7 +134,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
         end
     end
     isnothing(def) &&
-        throw(ArgumentError(string("<namedoperator name=", name, ", id=", id,
+        throw(ArgumentError(string("<namedoperator name=", text(name), ", id=", id,
                                                  "> does not have a <def> element")))
     NamedOperator(id, name, parameters, def)
 end
@@ -141,10 +142,9 @@ end
 #! errors?! "$(TYPEDSIGNATURES)"
 function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "variabledecl")
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    id = register_id!(idregistry, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException("missing name attribute"))
-    name = node["name"]
+    id = register_idof!(idregistry, node)
+    #!EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
+    name = attribute(node, "name", "$nn missing name attribute")
     # firstelement throws on nothing. Ignore more than 1.
     #! There should be an actual way to store the value of the variable!
     #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
@@ -158,10 +158,8 @@ $(TYPEDSIGNATURES)
 """
 function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = EzXML.nodename(node)
-    EzXML.haskey(node, "id") || throw(MissingIDException(nn))
-    id = register_id!(idregistry, node["id"])
-    EzXML.haskey(node, "name") || throw(MalformedException("$nn $id missing name attribute"))
-    name = node["name"]
+    id = register_idof!(idregistry, node)
+    name = attribute(node, "name","$nn $id missing name attribute")
 
     @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
     # Defer parsing by returning AnyElement
@@ -170,68 +168,8 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegi
     return ud
 end
 
-# Pass in parser function (or functor)
-function parse_label_content(node::XMLNode, termparser::F,
-                             pntd::PnmlType, idregistry) where {F <: Function}
-    text::Maybe{Union{String,SubString{String}}} = nothing #
-    term::Maybe{Any} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "text"
-            text = parse_text(child, pntd, idregistry)
-        elseif tag == "structure"
-            term = termparser(child, pntd, idregistry) # Apply function/functor
-        elseif tag == "graphics"
-             graphics = parse_graphics(child, pntd, idregistry)
-        elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-           add_toolinfo!(tools, child, pntd, idregistry)
-        else
-            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
-        end
-    end
-    return (; text, term, graphics, tools)
-end
 
 #------------------------
-"""
-$(TYPEDSIGNATURES)
-
-Defines the "sort" of tokens held by the place and semantics of the marking.
-NB: The "type" of a place from _many-sorted algebra_ is different from
-the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
-
-Allow all pntd's places to have a <type> label.  Non high-level are expecting a numeric sort: eltype(sort) <: Number.
-See [`default_sort`](@ref)`
-"""
-function parse_type(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    check_nodename(node, "type")
-    l = parse_label_content(node, parse_sorttype_term, pntd, idregistry)
-    #SortType(l.text, something(l.term, default_sort(pntd)()), l.graphics, l.tools)
-    SortType(l.text, Ref{AbstractSort}(something(l.term, default_sort(pntd)())), l.graphics, l.tools)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-#TODO where does this belong? A concrete subtype of [`AbstractSort`](@ref).
-Built from many different elements that contain a Sort:
-type, namedsort, variabledecl, multisetsort, productsort, numberconstant, partition...
-
-Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
-"""
-function parse_sorttype_term(typenode, pntd, idregistry)
-    check_nodename(typenode, "structure")
-    EzXML.haselement(typenode) || (throw ∘ ArgumentError)("missing sort type element in <structure>")
-    term = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    # No multiset sort for the sort of a Place. Who checks/cares?
-    parse_sort(term, pntd, idregistry)
-end
 
 isEmptyContent(body::DictType) = tag(body) == "content" && isempty(value(body))
 
@@ -383,13 +321,14 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     srt::Maybe{AbstractSort} = nothing
 
     if sortid in sort_ids
-        srt = parse_sort(Val(sortid), body, pntd, idregistry)
+        srt = parse_sort(Val(sortid), body, pntd, idregistry)::AbstractSort
     else
         @error("parse_sort sort '$sortid' not implemented: allowed: $sort_ids", body)
     end
     #@show sortid srt
     return srt
 end
+
 function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     (tag, body) = unparsed_tag(node)
     (ismissing(tag) || isnothing(tag)) && error("sort id is $tag")
@@ -401,14 +340,13 @@ function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDR
     return part
 end
 
- """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
-#     nn = check_nodename(node, "usersort")
-#     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
-#     UserSort(anyelement(node, pntd, reg))
-# end
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+    nn = check_nodename(node, "usersort")
+    UserSort(Symbol(attribute(node, "declaration", "$nn missing declaration attribute")))
+end
 
 
 
@@ -470,7 +408,5 @@ A reference to a variable declaration.
 function parse_variable(node::XMLNode, _::PnmlType, _::PnmlIDRegistry)
     nn = check_nodename(node, "variable")
     # The 'primer' UML2 uses variableDecl instead of refvariable. References a VariableDeclaration.
-    EzXML.haskey(node, "refvariable") ||
-        throw(MalformedException("missing refvariable attribute"))
-    Variable(Symbol(node["refvariable"]))
+    Variable(Symbol(attribute(node, "refvariable", "$nn missing refvariable attribute")))
 end

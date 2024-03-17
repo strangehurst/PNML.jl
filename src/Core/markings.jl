@@ -79,23 +79,23 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Multiset of a sort labelling of a `Place` in a High-level Petri Net Graph.
-See [`AbstractHLCore`](@ref), [`Term`](@ref), [`Marking`](@ref).
+See [`AbstractHLCore`](@ref), [`PnmlExpr`](@ref), [`Marking`](@ref).
 
 Is a functor that returns the evaluated `value`.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: HLMarking, Term)
-julia> m = HLMarking("the text", Term(:value, 3))
-HLMarking("the text", Term(:value, 3))
+```jldoctest; setup=:(using PNML; using PNML: HLMarking, NaturalSort, NumberConstant)
+julia> m = HLMarking("the text", NumberConstant(3, NaturalSort()))
+HLMarking("the text", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
 
 julia> m()
 3
 ```
 """
-struct HLMarking{T <: AbstractTerm} <: HLAnnotation
+struct HLMarking <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    term::T # Content of <structure> must be a many-sorted algebra term.
+    term::PnmlExpr # Content of <structure> must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -130,7 +130,7 @@ Evaluate a [`HLMarking`](@ref) instance by returning its term.
 #TODO query sort
 
 marking_type(::Type{T}) where {T <: PnmlType} = Marking{marking_value_type(T)}
-marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking{Term}
+marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking
 
 marking_value_type(::Type{<:PnmlType}) = Int
 marking_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort())

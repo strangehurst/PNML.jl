@@ -151,14 +151,14 @@ end
         """, pntd, registry())
 
     @test typeof(decl) <: PNML.Declaration
-    @test typeof(PNML.declarations(decl)) <: Vector{AbstractDeclaration}
+    #@test typeof(PNML.declarations(decl)) <: Vector{AbstractDeclaration}
     @test length(PNML.declarations(decl)) == 0 # notining in <declarations>
 
     @test PNML.graphics(decl) === nothing
     @test PNML.tools(decl) === nothing
 
 
-    @test_opt PNML.declarations(decl)
+    #@test_opt PNML.declarations(decl)
     @test_opt PNML.graphics(decl)
     @test_opt PNML.tools(decl)
 

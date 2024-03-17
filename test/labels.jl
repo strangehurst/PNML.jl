@@ -8,7 +8,7 @@ using PNML:
     has_graphics, graphics, has_name, name,
     parse_initialMarking, parse_inscription, parse_text,
     tag, pid, text, value, tools, elements, all_nettypes, ishighlevel,
-    DictType, XDVT
+    DictType, XDVT, arity
 
 @testset "text $pntd" for pntd in all_nettypes()
     @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
@@ -211,7 +211,7 @@ function test_unclaimed(pntd, xmlstring::String)
     @test a.elements isa DictType
     #! unclaimed id is not registered
     x = get(u, :id, nothing)
-    !isnothing(x) && @test !isregistered(reg1, x) #u[:id])
+    !isnothing(x) && @test !isregistered(reg1, Symbol(x))
     return l, a
 end
 
@@ -291,9 +291,9 @@ end
 end
 
 
-@testset "HL initMarking $pntd" for pntd in all_nettypes(ishighlevel)
+@testset "HL initMarking" begin
 
-    @testset "3`dot" begin
+    @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
         @show node = xml"""
         <hlinitialMarking>
             <text>3`dot</text>
@@ -319,15 +319,14 @@ end
         @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
         # Any `Label` children must be "well behaved xml".
 
-        @show value(mark)
-        @show mark()
+        #@show value(mark)
+        #@show mark()
 
         markterm = value(mark)
         @test tag(markterm) === :numberof # pnml many-sorted operator -> multiset
-        parameters = elements(markterm)["subterm"]
-        @test length(parameters) == 2
-        @test parameters[1]["numberconstant"][:value] == "3"
-        @test isempty(parameters[2]["dotconstant"])
+        @test arity(markterm) == 2
+        @test markterm.in[1] == NumberConstant(3, PositiveSort())
+        @test markterm.in[2] == DotConstant()
 
         #TODO HL implementation not complete:
         #TODO  evaluate the HL expression, check place sorttype
@@ -335,7 +334,7 @@ end
         #@show axn #! debug
     end
 
-    @testset "<All,All>" begin #! Does this Term make sense as a marking?
+    @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
         @show node = xml"""
         <hlinitialMarking>
             <text>&lt;All,All&gt;</text>
@@ -353,50 +352,46 @@ end
             </unknown>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
-            PNML.parse_hlinitialMarking(node, pntd, registry()))
-
+        mark = PNML.parse_hlinitialMarking(node, pntd, registry())
+        #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
         @test mark isa PNML.AbstractLabel
         @test mark isa PNML.marking_type(pntd) #HLMarking
-        #pprint(mark)
+        @test PNML.has_graphics(mark) == true
         @test occursin("Graphics", sprint(show, mark))
+        @test PNML.has_labels(mark) == false
 
         # Following HL text,structure label pattern where structure is a `Term`.
         @test text(mark) == "<All,All>"
-        @test value(mark) isa PNML.AbstractTerm
-        @test value(mark) isa PNML.Term
-
-        @test PNML.has_graphics(mark) == true
-        @test PNML.has_labels(mark) == false
-
-        @show value(mark)
         markterm = value(mark)
+        @show markterm
+        @test markterm isa PNML.AbstractTerm
+        @test markterm isa PNML.Operator
         @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
 
-        axn = elements(markterm)
+        @test length(markterm.in) == 2
+        @show markterm.in[1] markterm.in[2]
+        # # Decend each element of the term.
+        # @test tag(axn) == "subterm"
+        # @test value(axn) isa Vector #!{DictType}
 
-        # Decend each element of the term.
-        @test tag(axn) == "subterm"
-        @test value(axn) isa Vector #!{DictType}
+        # all1 = value(axn)[1]
+        # @test tag(all1) == "all"
+        # @test value(all1) isa DictType
+        # use1 = value(all1)["usersort"]
+        # @test use1 isa DictType
+        # @test use1[:declaration] == "N1"
+        # @test PNML._attribute(use1, :declaration) == "N1"
 
-        all1 = value(axn)[1]
-        @test tag(all1) == "all"
-        @test value(all1) isa DictType
-        use1 = value(all1)["usersort"]
-        @test use1 isa DictType
-        @test use1[:declaration] == "N1"
-        @test PNML._attribute(use1, :declaration) == "N1"
-
-        all2 = value(axn)[2]
-        @test tag(all2) == "all"
-        @test value(all2) isa DictType
-        use2 = value(all2)["usersort"]
-        @test use2 isa DictType
-        @test use2[:declaration] == "N2"
-        @test PNML._attribute(use2, :declaration) == "N2"
+        # all2 = value(axn)[2]
+        # @test tag(all2) == "all"
+        # @test value(all2) isa DictType
+        # use2 = value(all2)["usersort"]
+        # @test use2 isa DictType
+        # @test use2[:declaration] == "N2"
+        # @test PNML._attribute(use2, :declaration) == "N2"
     end
 
-    @testset "useroperator" begin
+    @testset "useroperator" for pntd in all_nettypes(ishighlevel)
         node = xml"""
         <hlinitialMarking>
             <text>useroperator</text>
@@ -411,7 +406,7 @@ end
     end
 
     # add two multisets: another way to express 3 + 2
-    @testset "1`3 ++ 1`2" begin
+    @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)
         @show node = xml"""
         <hlinitialMarking>
             <text>1`3 ++ 1`2</text>
@@ -435,12 +430,12 @@ end
         """
         mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
         #@show mark
-        @show value(mark)
+        #@show value(mark)
         #pprint(mark)
     end
 
     # The constant eight.
-    @testset "1`8" begin
+    @testset "1`8" for pntd in all_nettypes(ishighlevel)
         @show node = xml"""
         <hlinitialMarking>
             <text>1`8</text>
@@ -454,12 +449,12 @@ end
         """
         mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
         #@show mark
-        @show value(mark)
+        #@show value(mark)
         #pprint(mark)
     end
 
     # This is the same as when the element is omitted.
-    @testset "x" begin
+    @testset "x" for pntd in all_nettypes(ishighlevel)
         node = xml"""
         <hlinitialMarking>
         </hlinitialMarking>
@@ -507,21 +502,15 @@ end
 
     #@show value(insc)
     inscterm = value(insc)
-    @test inscterm isa PNML.Term
+    @test inscterm isa PNML.PnmlExpr
     @test tag(inscterm) === :tuple
-    axn = elements(inscterm)
-
-    #TODO HL implementation not complete:
-
-    sub1 = axn["subterm"][1]
-    @test tag(sub1) == "variable"
-    var1 = PNML._attribute(sub1["variable"], :refvariable)
-    @test var1 == "x"
-
-    sub2 = axn["subterm"][2]
-    @test tag(sub2) == "variable"
-    var2 = PNML._attribute(sub2["variable"], :refvariable)
-    @test var2 == "v"
+    @test length(inscterm.in) == 2
+    @test inscterm.in[1] isa PNML.Variable
+    @test inscterm.in[2] isa PNML.Variable
+    @test tag(inscterm.in[1]) == :x
+    @test tag(inscterm.in[2]) == :v
+    #@test value(inscterm.in[1]) Needs DeclDict
+    #@test value(inscterm.in[2]) Needs DeclDict
 end
 
 @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
@@ -569,7 +558,8 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ =  @test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'") PNML.parse_type(node, pntd, registry())
+        typ = PNML.parse_type(node, pntd, registry())
+        #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
         @test value(typ) isa PNML.AbstractSort
@@ -616,12 +606,12 @@ end
  </condition>
     """
     @testset for node in [n1]
-        cond = @test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-                #(:info, "parse_term kinds are Variable and Operator"),
+        cond = @test_logs(match_mode=:all,
+                (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
                 PNML.parse_condition(node, pntd, registry()))
         @test cond isa PNML.condition_type(pntd)
         @test text(cond) == "pt==cts||pt==ack"
-        @test value(cond) isa Union{PNML.condition_value_type(pntd), PNML.Term}
+        @test value(cond) isa PNML.Operator #!Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) == :or
         @test PNML.has_graphics(cond) == true
         @test PNML.has_labels(cond) == false

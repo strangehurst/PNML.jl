@@ -6,42 +6,42 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace,
     all_nettypes, ishighlevel, refid
 
-    @testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
-        node = xml"""
-          <place id="place1">
-            <name> <text>with text</text> </name>
-            <initialMarking> <text>100</text> </initialMarking>
-          </place>
-        """
-        n  = parse_place(node, pntd, registry())
-        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
-        @test_call target_modules=target_modules parse_place(node, pntd, registry())
-        @test isa(n, Place)
-        @test @inferred(pid(n)) === :place1
-        @test has_name(n)
-        @test @inferred(name(n)) == "with text"
-        @test_call initial_marking(n)
-        @test @inferred(initial_marking(n)()) == 100
-    end
+@testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
+    node = xml"""
+        <place id="place1">
+        <name> <text>with text</text> </name>
+        <initialMarking> <text>100</text> </initialMarking>
+        </place>
+    """
+    n  = parse_place(node, pntd, registry())
+    @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
+    @test_call target_modules=target_modules parse_place(node, pntd, registry())
+    @test isa(n, Place)
+    @test @inferred(pid(n)) === :place1
+    @test has_name(n)
+    @test @inferred(name(n)) == "with text"
+    @test_call initial_marking(n)
+    @test @inferred(initial_marking(n)()) == 100
+end
 
-    @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
-        node = xml"""
-          <place id="place1">
-            <name> <text>with text</text> </name>
-            <hlinitialMarking> <text>100</text> </hlinitialMarking>
-          </place>
-        """
-        n  = parse_place(node, pntd, registry())
-        @test_call target_modules=target_modules parse_place(node, pntd, registry())
+@testset "place $pntd" for pntd in all_nettypes(ishighlevel)
+    node = xml"""
+        <place id="place1">
+        <name> <text>with text</text> </name>
+        <hlinitialMarking> <text>100</text> </hlinitialMarking>
+        </place>
+    """
+    n  = parse_place(node, pntd, registry())
+    @test_call target_modules=target_modules parse_place(node, pntd, registry())
 
-        @test pid(n) === :place1
-        @test typeof(n) <: Place
-        @test @inferred(pid(n)) === :place1
-        @test has_name(n)
-        @test @inferred(name(n)) == "with text"
-        @test_call target_modules=(@__MODULE__,) initial_marking(n)
-        @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
-    end
+    @test pid(n) === :place1
+    @test typeof(n) <: Place
+    @test @inferred(pid(n)) === :place1
+    @test has_name(n)
+    @test @inferred(name(n)) == "with text"
+    @test_call target_modules=(@__MODULE__,) initial_marking(n)
+    @test initial_marking(n)() ==  zero(PNML.marking_value_type(pntd)) # text has no meaning here
+end
 
 @testset "transition $pntd" for pntd in all_nettypes()
     node = xml"""
@@ -75,11 +75,12 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
             <structure> true  </structure>
         </condition>
     </transition>"""
-    t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
-                     parse_transition(node, pntd, registry()))
-    @test_opt target_modules=(@__MODULE__,) condition(t)
-    @test_call condition(t)
-    @test condition(t) === true
+    @test_throws "missing condition term element in <structure>" parse_transition(node, pntd, registry())
+    # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
+    # parse_transition(node, pntd, registry()))
+    # @test_opt target_modules=(@__MODULE__,) condition(t)
+    # @test_call condition(t)
+    # @test condition(t) === true
 
     node = xml"""<transition id ="t5">
         <condition>
@@ -156,29 +157,25 @@ end
       </arc>
     """)
     PNML.CONFIG.warn_on_unclaimed = true
-    a1 = if ishighlevel(pntd)
-        @test_logs(match_mode=:any,
-            (:warn, "replacing empty <structure> content value for inscription term with: 6"),
-            (:warn, "found unexpected child of <arc>: unknown"),
-            parse_arc(node, pntd, registry()))
+    if ishighlevel(pntd)
+        @test_throws "missing inscription term element in <structure>" parse_arc(node, pntd, registry())
     else
-        @test_logs(match_mode=:any,
-            (:warn, "found unexpected child of <arc>: unknown") ,
-            parse_arc(node, pntd, registry()))
+        a1 = @test_logs(match_mode=:any,
+                (:warn, "found unexpected child of <arc>: unknown"),
+                parse_arc(node, pntd, registry()))
+        a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
+        @testset "a1,a2" for a in [a1, a2]
+            @test typeof(a) <: Arc
+            @test pid(a) === :arc1
+            @test has_name(a)
+            @test name(a) == "Some arc"
+            @test_call  inscription(a)
+            @test inscription(a) == 6
+        end
     end
-    a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
-    @testset "a1,a2" for a in [a1, a2]
-        @test typeof(a) <: Arc
-        @test pid(a) === :arc1
-        @test has_name(a)
-        @test name(a) == "Some arc"
-        @test_call  inscription(a)
-        @test inscription(a) == 6
-    end
-
 end
 
-@testset "ref Trans $pntd" for pntd in all_nettypes() #a" begin
+@testset "ref Trans $pntd" for pntd in all_nettypes()
     node = xml"""
     <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
@@ -197,7 +194,7 @@ end
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
 end
 
-@testset "ref Place $pntd" for pntd in all_nettypes() #a" begin" begin
+@testset "ref Place $pntd" for pntd in all_nettypes()
     n1 = (node = xml"""
     <referencePlace id="rp2" ref="rp1">
         <name>
@@ -213,8 +210,8 @@ end
             <name> <text>unknown label</text> </name>
             <text>content text</text>
         </unknown>
-    </referencePlace>""",
-    id="rp2", ref="rp1" )
+    </referencePlace>""", id="rp2", ref="rp1" )
+
     n2 = (node = xml"""
     <referencePlace id="rp1" ref="Sync1">
         <graphics>
@@ -222,9 +219,9 @@ end
           <dimension x="40.0" y="40.0"/>
         </graphics>
         <unknown id="unkn"/>
-    </referencePlace>""",
-    id="rp1", ref="Sync1")
-    @testset for s in [n1, n2]
+    </referencePlace>""", id="rp1", ref="Sync1")
+
+    @testset "referencePlaces" for s in [n1, n2]
         n = @test_logs(match_mode=:any,
             (:warn, "found unexpected child of <referencePlace>: unknown"),
             parse_refPlace(s.node, ContinuousNet(), registry()))

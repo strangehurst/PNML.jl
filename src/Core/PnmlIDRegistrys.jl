@@ -29,21 +29,19 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-function register_id!(idregistry::PnmlIDRegistry, s::AbstractString)
-    register_id!(idregistry, Symbol(s))
-end
+function register_id! end
 
 function register_id!(idregistry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
-    @lock idregistry.lk _reg(idregistry, id)
+    @lock idregistry.lk _reg!(idregistry, id)
     return id
 end
 
 function register_id!(idregistry::PnmlIDRegistry{Nothing}, id::Symbol)::Symbol
-    _reg(idregistry, id)
+    _reg!(idregistry, id)
     return id
 end
 
-_reg(reg, id) = begin
+_reg!(reg, id) = begin
     id ∈ reg.ids ? duplicate_id_action(id) : push!(reg.ids, id)
     return nothing
 end
@@ -52,7 +50,7 @@ $(TYPEDSIGNATURES)
 
 Return `true` if `s` is registered in `reg`.
 """
-isregistered(reg::PnmlIDRegistry, s::AbstractString) = isregistered(reg, Symbol(s))
+function isregistered end
 
 function isregistered(idregistry::PnmlIDRegistry{L}, id::Symbol)::Bool where {L <: Base.AbstractLock}
     @lock idregistry.lk id ∈ idregistry.ids

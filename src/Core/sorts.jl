@@ -1,26 +1,4 @@
-"""
-$(TYPEDEF)
-Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
 
-NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
-The pnml specification sometimes uses overlapping language.
-
-From the 'primer': built-in sorts of Symmetric Nets are the following:
-booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
-And partitions.
-
-The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
-
-# Extras
-
-Notes:
-- `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
-- `UserSort` holds the id symbol of a `NamedSort`.
-- Here 'type' means a 'term' from the many-sorted algebra.
-- We use sorts even for non-high-level nets.
-- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
-"""
-abstract type AbstractSort end
 Base.eltype(::Type{<:AbstractSort}) = Int
 
 """
@@ -48,23 +26,13 @@ Functions: equality, inequality
 @auto_hash_equals struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 
-struct BooleanConstant
-    value::Bool
-end
-function BooleanConstant(s::Union{AbstractString,SubString{String}})
-    s == "true" || s == "false" || throw(ArgumentError("BooleanConstant unexpected value $s"))
-    BooleanConstant(parse(eltype(BoolSort), s))
-end
-sortof(::BooleanConstant) = BoolSort
-_evaluate(bc::BooleanConstant) = bc.value
-
 """
 Built-in sort whose `eltype` is `Int`
 """
 @auto_hash_equals struct DotSort <: AbstractSort end
 Base.eltype(::Type{<:DotSort}) = Int
 
-struct DotConstant end
+struct DotConstant <:AbstractOperator end
 sortof(::DotConstant) = DotSort
 
 abstract type NumberSort <: AbstractSort end
@@ -92,6 +60,12 @@ Built-in sort whose `eltype` is `Float64`
 """
 @auto_hash_equals struct RealSort <: NumberSort end
 Base.eltype(::Type{<:RealSort}) = Float64
+
+"""
+Built-in sort whose `eltype` is `nothing`
+"""
+@auto_hash_equals struct NullSort <: NumberSort end
+Base.eltype(::Type{<:NullSort}) = Nothing
 
 #------------------------------------------------------------------------------
 """

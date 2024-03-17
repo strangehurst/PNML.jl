@@ -93,6 +93,7 @@ include("Core/types.jl") # Abstract Types
 # Parts of Labels and Nodes.
 include("Core/constterm.jl") #
 include("Core/sorts.jl") # Sorts are used in Variables, Operators
+
 include("Core/terms.jl") # Variables and Operators
 include("Core/Terms/arbitrarydeclarations.jl")
 include("Core/Terms/booleans.jl")
@@ -148,6 +149,7 @@ export @xml_str, xmlroot
 export parse_str, parse_file, parse_pnml
 export PnmlException, MissingIDException, MalformedException
 export registry
+export PnmlExpr
 
 include("precompile.jl")
 

@@ -7,8 +7,8 @@
 Merge page content into the 1st page of the net.
 
 Options
-    trim::Bool Remove refrence nodes (default `true`). See [`deref!`](@ref).
-    verbose::Bool Print breadcrumbs (default `false`).
+  - trim::Bool Remove refrence nodes (default `true`). See [`deref!`](@ref).
+  - verbose::Bool Print breadcrumbs See [`CONFIG`](@ref).
 """
 function flatten_pages! end
 
@@ -36,7 +36,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
         @assert key1 ∈ page_idset(net) # We never removed the one-true key.
         @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
 
-        deref!(net, trim)
+        (nrefplace(net) > 0 || nreftransition(net) > 0) && deref!(net, trim)
     end
     return nothing
 end
@@ -134,19 +134,14 @@ as part of [`flatten_pages!`](@ref),
 
 # Axioms
   1) All ids in a network are unique in that they only have one instance in the XML.
-  2) A chain of reference Places or Transitions always ends at a Place or Transition.
+  2) A chain of reference Places (or Transitions) always ends at a Place (or Transition).
   3) All ids are valid.
   4) No cycles.
 """
 function deref!(net::PnmlNet, trim::Bool = true)
-    # idsets can be OrderedSet or KeySet (of OrderedDict)
-    # JET thinks we might iterate over Union{}
-    as = arc_idset(net)
-    isnothing(as) && return nothing
+    nrefplace(net) == 0 && nreftransition(net) == 0 && return nothing
 
-    for id in as # tries to iterate over empty union
-        #TODO Replace arcs in collection to allow immutable Arc.
-        arc = PNML.arc(net, id)
+    for arc in arcs(net)
         while arc.source[] ∈ refplace_idset(net)
             arc.source[] = deref_place(net, arc.source[], trim)
         end

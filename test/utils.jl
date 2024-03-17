@@ -75,31 +75,27 @@ end
         @show condition_value_type(pntd)
         @show rate_value_type(pntd)
     end
-    b = default_bool_term(pntd)
-    @test b isa Term
+    b = default_bool_term(pntd)::PNML.BooleanConstant
     @test value(b) isa eltype(BoolSort)
-    @test tag(b) === :bool
     @test value(b) == true
 
     @test value(default_zero_term(pntd)) == zero(eltype(term_value_type(pntd)))
-    z = default_zero_term(pntd)
-    @test z isa Term
+    z = default_zero_term(pntd)::PNML.NumberConstant
+    @test z isa PnmlExpr
     @test value(z) isa eltype(term_value_type(pntd))
-    @test tag(z) === :zero
     @test value(z) == zero(term_value_type(pntd))
 
     @test value(default_one_term(pntd)) == one(eltype(term_value_type(pntd)))
-    b = default_one_term(pntd)
-    @test b isa Term
+    b = default_one_term(pntd)::PNML.NumberConstant
+    @test b isa PnmlExpr
     @test value(b) isa eltype(term_value_type(pntd))
-    @test tag(b) === :one
     @test value(b) == one(term_value_type(pntd))
 
     @test rate_value_type(pntd) == eltype(RealSort)
 end
 
 @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
-    @test default_bool_term(pntd) isa Term
+    @test default_bool_term(pntd) isa PnmlExpr
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
 end
 

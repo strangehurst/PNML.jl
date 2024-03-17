@@ -17,7 +17,7 @@ One Petri Net of a PNML model.
     idregistry::PnmlIDRegistry # Possibly shared by all nets in a pnml model.
 end
 
-#nettype(::PnmlNet{T}) where {T <: PnmlType} = T
+#nettype(::PnmlNet{T}) where {T <: PnmlType} = Tfirstpage
 PnmlTypeDefs.pnmltype(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(pnmltype(net))
 
@@ -73,7 +73,7 @@ pagedict(n::PnmlNet) = n.pagedict
 page_idset(n::PnmlNet)  = n.page_set
 
 netdata(n::PnmlNet)  = n.netdata
-netsets(n::PnmlNet)  = (throw ∘ ArgumentError)("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?")
+netsets(n::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?"))
 
 place_idset(n::PnmlNet)         = keys(placedict(n))
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))
@@ -100,7 +100,7 @@ allpages(pd::OrderedDict) = values(pd)
 pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpages(net))
 
 "Usually the only interesting page."
-firstpage(net::PnmlNet)    = (first ∘ values ∘ pagedict)(net)
+firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
 

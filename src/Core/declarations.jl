@@ -20,44 +20,6 @@ function Base.show(io::IO, declare::AbstractDeclaration)
     print(io, ")")
 end
 
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-Label of a <net> or <page> that holds zero or more declarations. The declarations are used
-to define parts of the many-sorted algebra used by High-Level Petri Nets.
-
-We can use infrastructure implemented for HL nets to provide nonstandard extensions for other PNTDs.
-"""
-struct Declaration <: Annotation
-    text::Maybe{String}
-    declarations::Vector{AbstractDeclaration} #TODO Type parameter? Seperate vector for each type?
-    #!declarations::Vector{Any} #TODO Type parameter? Seperate vector for each type?
-    #SortDeclarations               xml:"structure>declarations>namedsort"`
-	#PartitionSortDeclarations      xml:"structure>declarations>partition"
-	#VariableDeclarations           xml:"structure>declarations>variabledecl"
-	#OperatorDeclarations           xml:"structure>declarations>namedoperator"
-	#PartitionOperatorsDeclarations xml:"structure>declarations>partitionelement"
-	#FEConstantDeclarations         xml:"structure>declarations>feconstant"
-    graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
-    tools::Maybe{Vector{ToolInfo}}
-end
-
-Declaration() = Declaration(nothing, AbstractDeclaration[], nothing, nothing)
-
-declarations(d::Declaration) = d.declarations
-
-#TODO Document/implement/test collection interface of Declaration.
-Base.length(d::Declaration) = (length ∘ declarations)(d)
-
-# Flattening pages combines declarations & toolinfos into the first page.
-function Base.append!(l::Declaration, r::Declaration)
-    append!(declarations(l), declarations(r))
-end
-
-function Base.empty!(d::Declaration)
-    empty!(declarations(d))
-end
-
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -178,3 +140,59 @@ end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", [], nothing)
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
+
+#----------------------------------------------------------------------------------
+@kwdef struct DeclDict
+    namedsorts::Dict{Symbol,NamedSort} = Dict{Symbol, NamedSort}()       # namedsort
+    partitionsorts::Dict{Symbol, PartitionSort} = Dict{Symbol, PartitionSort}() # partition
+    variabledecls::Dict{Symbol,VariableDeclaration} = Dict{Symbol, VariableDeclaration}() # variabledecl
+    namedoperators::Dict{Symbol,NamedOperator} = Dict{Symbol, NamedOperator}()          # namedoperator
+
+    #! partitionops::Dict{Symbol,PartitionOp} = Dict{Symbol,PartitionOp}() # partitionelement
+    feconstants::Dict{Symbol,FEConstant} = Dict{Symbol,FEConstant}()    # feconstant
+end
+named_op(dd::DeclDict, id::Symbol) = dd.namedoperators[id]
+named_sort(dd::DeclDict, id::Symbol) = dd.namedsorts[id]
+variable(dd::DeclDict, id::Symbol) = dd.variabledecls[id]
+partitionsort(dd::DeclDict, id::Symbol) = dd.partitionsorts[id]
+#partitionop(dd::DeclDict, id::Symbol) = dd.partitionops[id]
+feconstant(dd::DeclDict, id::Symbol) = dd.feconstants[id]
+
+function declarations(dd::DeclDict)
+    # AbstractDeclaration[d for d in Iterators.flatten([values(dd.namedsorts)...,
+    #         values(dd.partitionsorts)...,
+    #         values(dd.variables)...,
+    #         values(dd.operators)...])]
+    collect(Iterators.flatten([values(dd.namedsorts),
+                               values(dd.partitionsorts),
+                               values(dd.variabledecls),
+                               values(dd.namedoperators)]))
+end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+Label of a <net> or <page> that holds zero or more declarations. The declarations are used
+to define parts of the many-sorted algebra used by High-Level Petri Nets.
+
+We can use infrastructure implemented for HL nets to provide nonstandard extensions for other PNTDs.
+"""
+@kwdef struct Declaration <: Annotation
+    text::Maybe{String} = nothing
+    #!declarations::Vector{AbstractDeclaration} = AbstractDeclaration[]
+    ddict::DeclDict = DeclDict()
+    graphics::Maybe{Graphics} = nothing # PTNet uses TokenGraphics in tools rather than graphics.
+    tools::Maybe{Vector{ToolInfo}} = nothing
+end
+
+declarations(d::Declaration) = declarations(d.ddict)
+Base.length(d::Declaration) = length(declarations(d))
+
+# Flattening pages combines declarations & toolinfos into the first page.
+function Base.append!(l::Declaration, r::Declaration)
+    append!(declarations(l), declarations(r)) #! FIX ME XXX
+end
+
+function Base.empty!(d::Declaration)
+    empty!(declarations(d)) #! FIX ME XXX
+end

@@ -6,15 +6,15 @@ Label of a Transition that determines when the transition fires.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: Condition)
+```jldoctest; setup=:(using PNML; using PNML: Condition, BooleanConstant)
 julia> c = Condition(false)
-Condition("", Term(:bool, false))
+Condition("", BooleanConstant(false))
 
 julia> c()
 false
 
 julia> c = Condition("xx", false)
-Condition("xx", Term(:bool, false))
+Condition("xx", BooleanConstant(false))
 
 julia> c()
 false
@@ -22,23 +22,26 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation
     text::Maybe{String}
-    value::Any #! Term #! expression evaluates to Bool
+    value::PnmlExpr # evaluates to Boolean
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-Condition(value::Bool)                       = Condition(nothing, Term(:bool, value), nothing, nothing)
-Condition(value::Term)                       = Condition(nothing, value, nothing, nothing)
-Condition(text::AbstractString, value::Bool) = Condition(text, Term(:bool, value), nothing, nothing)
-Condition(text::AbstractString, value::Term) = Condition(text, value, nothing, nothing)
+Condition(value::Bool)                       = Condition(nothing, BooleanConstant(value), nothing, nothing)
+Condition(value::BooleanConstant)            = Condition(nothing, value, nothing, nothing)
+Condition(text::AbstractString, value::Bool) = Condition(text, BooleanConstant(value), nothing, nothing)
+Condition(text::AbstractString, value::BooleanConstant) = Condition(text, value, nothing, nothing)
 condition_type(::Type{<:PnmlType}) = Condition
 
 value(c::Condition) = c.value
 Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
-condition_value_type(::Type{<: PnmlType}) = Bool
-condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort) #todo test that this is also Bool
+condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
+condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 
-(c::Condition)() = _evaluate(value(c))::eltype(c)
+(c::Condition)() = begin
+    #@show value(c) # TODO
+    _evaluate(value(c))::eltype(c)
+end
 
 function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")

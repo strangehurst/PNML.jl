@@ -1,6 +1,24 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
-using PNML, EzXML, Preferences, XMLDict, Reexport
+using EzXML, Preferences, XMLDict, Reexport, Multisets
+@reexport using PNML: PNML, Maybe, tag, labels, pid, AnyElement, name, value,
+    nets, pages,
+    parse_sort, parse_declaration,
+    registry, isregistered,
+    DictType, AbstractDeclaration,
+    getfirst, firstchild, allchildren,
+    ishighlevel, PnmlTypeDefs,
+    Declaration, Condition, Term,
+    default_bool_term, default_zero_term, default_one_term,
+    default_condition, default_inscription, default_marking, default_sort, default_sorttype,
+    page_type, place_type, transition_type, arc_type, marking_type, inscription_type,
+    condition_type, condition_value_type, rate_value_type, term_value_type,
+    AbstractSort, BoolSort, DotSort,
+    CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
+    IntegerSort, ListSort, MultisetSort,
+    NaturalSort, PositiveSort, ProductSort, PartitionSort, RealSort, UserSort, StringSort,
+    SortType, PartitionElement,
+    NumberConstant, DotConstant
 
 "Often JET has problems with beta julia versions:("
 const jet_broke = (VERSION < v"1.10-") ? false : true

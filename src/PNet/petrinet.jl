@@ -23,6 +23,7 @@ by [`flatten_pages!`](@ref) without losing any Petri Net semantics.
 """
 abstract type AbstractPetriNet{PNTD<:PnmlType} end
 
+# Interface is having id::Symbol, net::PnmlNet.
 function Base.getproperty(pn::AbstractPetriNet, prop_name::Symbol)
     if prop_name === :id
         return getfield(pn, :id)::Symbol
@@ -34,15 +35,16 @@ end
 
 nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
 
+#TODO Is redundant copy of id in petri net and pnml net needed/wanted?
+pid(petrinet::AbstractPetriNet)     = petrinet.id # maybe petrinet.id === pid(pnmlnet(petrinet))
 pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 
 #------------------------------------------------------------------------------------------
-#
+# Forward MANY THINGS to the IR implementation pnmlnet.
+# TODO Adopt a forwarder?
+# TODO
 #------------------------------------------------------------------------------------------
-
-pid(petrinet::AbstractPetriNet)   = pid(pnmlnet(petrinet))
-name(petrinet::AbstractPetriNet)  = name(pnmlnet(petrinet))
-
+name(petrinet::AbstractPetriNet)           = name(pnmlnet(petrinet))
 places(petrinet::AbstractPetriNet)         = places(pnmlnet(petrinet))
 transitions(petrinet::AbstractPetriNet)    = transitions(pnmlnet(petrinet))
 arcs(petrinet::AbstractPetriNet)           = arcs(pnmlnet(petrinet))
@@ -51,10 +53,10 @@ reftransitions(petrinet::AbstractPetriNet) = refTransitions(pnmlnet(petrinet))
 
 npage(pn::AbstractPetriNet)          = npage(pnmlnet(pn))
 nplace(pn::AbstractPetriNet)         = nplace(pnmlnet(pn))
-ntransition(pn::AbstractPetriNet)    = ntransition(netdata(pn))
-narc(pn::AbstractPetriNet)           = narc(netdata(pn))
-nrefplace(pn::AbstractPetriNet)      = nrefplace(netdata(pn))
-nreftransition(pn::AbstractPetriNet) = nreftransition(netdata(pn))
+ntransition(pn::AbstractPetriNet)    = ntransition(pnmlnet(pn))
+narc(pn::AbstractPetriNet)           = narc(pnmlnet(pn))
+nrefplace(pn::AbstractPetriNet)      = nrefplace(pnmlnet(pn))
+nreftransition(pn::AbstractPetriNet) = nreftransition(pnmlnet(pn))
 
 #------------------------------------------------------------------
 place_idset(petrinet::AbstractPetriNet)           = place_idset(pnmlnet(petrinet))
@@ -81,9 +83,9 @@ tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(pnmlnet(petrinet), i
 
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(petrinet), arc_id)
 
-inscriptions(petrinet::AbstractPetriNet) = begin
+inscriptions(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
-    LVector((;[arc_id => inscription(a) for (arc_id,a) in pairs(arcdict(net))]...))
+    LVector((;[arc_id => inscription(a) for (arc_id, a) in pairs(arcdict(net))]...))
 end
 
 #------------------------------------------------------------------
@@ -102,7 +104,7 @@ Return a transition-id labelled vector of rate values.
 
 We allow all PNML nets to be stochastic Petri nets. See [`rate`](@ref).
 """
-function rates(petrinet::AbstractPetriNet)
+function rates(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     LVector((;[tid => rate(t) for (tid, t) in pairs(transitiondict(net))]...))
 end
@@ -182,7 +184,7 @@ end
 
 LVector labelled with place id and holding initial marking's value.
 """
-initial_markings(petrinet::AbstractPetriNet) = begin
+initial_markings(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
     return m1
@@ -193,7 +195,7 @@ end
 
 LVector labelled with transition id and holding its condition's value.
 """
-conditions(petrinet::AbstractPetriNet) = begin
+conditions(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
 end
@@ -203,7 +205,7 @@ end
 
 Returns labelled vector of id=>boolean where `true` means transitionid is enabled at marking.
 """
-function enabled(petrinet::AbstractPetriNet, marking)
+function enabled(petrinet::AbstractPetriNet, marking) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
 end
@@ -214,7 +216,7 @@ M1 = M0 + Cf.
 M0 is the initial marking vector, f is the firing vector, i.e. which transition is to fire
 and C is the incidence matrix.
 """
-function fire!(incidence, enabled, mₒ)
+function fire!(incidence, enabled, mₒ) #TODO move "lvector tools" section
     m₁ = muladd(incidence', enabled, mₒ)
     LVector(symbols(m₀), m₁)
 end
@@ -262,7 +264,7 @@ struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
 end
 "Construct from string of valid pnml XML, using the first network in model."
 HLPetriNet(str::AbstractString) = HLPetriNet(parse_str(str))
-HLPetriNet(model::PnmlModel)    = HLPetriNet(first_net(model))
+HLPetriNet(model::PnmlModel)    = HLPetriNet(first(nets(model)))
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -314,7 +316,7 @@ end
 
 SimpleNet(s::AbstractString) = SimpleNet(parse_str(s))
 SimpleNet(node::XMLNode)     = SimpleNet(parse_pnml(node))
-SimpleNet(model::PnmlModel)  = SimpleNet(first_net(model))
+SimpleNet(model::PnmlModel)  = SimpleNet(first(nets(model)))
 function SimpleNet(net::PnmlNet)
     flatten_pages!(net)
     SimpleNet(pid(net), net)

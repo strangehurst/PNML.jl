@@ -14,13 +14,13 @@ julia> i()
 3
 ```
 """
-struct Inscription{T<:Union{Int,Float64}}  <: Annotation
+struct Inscription{T<:Number}  <: Annotation
     value::T
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-Inscription(value::Union{Int,Float64}) = Inscription(value, nothing, nothing)
+Inscription(value::Number) = Inscription(value, nothing, nothing)
 
 value(i::Inscription) = i.value
 sortof(i::Inscription) = isa(i.value, Integer) ? IntegerSort() : RealSort() #TODO cleanup
@@ -47,8 +47,8 @@ Evaluate an [`Inscription`](@ref)'s `value`.
 
 inscription_type(::Type{T}) where {T <: PnmlType} = Inscription{inscription_value_type(T)}
 
-inscription_value_type(::Type{<: PnmlType}) = Int
-inscription_value_type(::Type{<:AbstractContinuousNet}) = Float64
+inscription_value_type(::Type{<: PnmlType}) = eltype(PositiveSort)
+inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
 
 """
 $(TYPEDEF)
@@ -60,35 +60,35 @@ See also [`Inscription`](@ref)
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: HLInscription, Term)
-julia> i2 = HLInscription(Term(:value, 3))
-HLInscription("", Term(:value, 3))
+```jldoctest; setup=:(using PNML; using PNML: HLInscription, NumberConstant, NaturalSort)
+julia> i2 = HLInscription(NumberConstant(3, NaturalSort()))
+HLInscription("", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
 
 julia> i2()
 3
 
-julia> i3 = HLInscription("text", Term(:empty, 1))
-HLInscription("text", Term(:empty, 1))
+julia> i3 = HLInscription("text", NumberConstant(1, NaturalSort()))
+HLInscription("text", NumberConstant{Int64, NaturalSort}(1, NaturalSort()))
 
 julia> i3()
 1
 
-julia> i4 = HLInscription("text", Term(:value, 3))
-HLInscription("text", Term(:value, 3))
+julia> i4 = HLInscription("text", NumberConstant(3, NaturalSort()))
+HLInscription("text", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
 
 julia> i4()
 3
 ```
 """
-struct HLInscription{T<:Term} <: HLAnnotation
+struct HLInscription <: HLAnnotation
     text::Maybe{String}
-    term::T # Content of <structure> content must be a many-sorted algebra term.
+    term::PnmlExpr # Content of <structure> content must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-HLInscription(t::Term) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t) = HLInscription(s, t, nothing, nothing)
+HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
+HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
 
@@ -116,8 +116,8 @@ function Base.show(io::IO, inscription::HLInscription)
     print(io, ")")
 end
 
-inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription{Term}
-inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort()) #! sortof
+inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription
+inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort) #! sortof
 
 """
 $(TYPEDSIGNATURES)

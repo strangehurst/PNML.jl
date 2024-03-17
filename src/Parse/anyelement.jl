@@ -54,26 +54,19 @@ function _attribute(vx::DictType, key::Symbol)
  end
 _attribute(s::Union{String,SubString{String}}, _::Symbol) = error(string("_attribute does not support ", s))
 
-
-#=
-Finite Enumeration Constants are id, name pairs
-=#
-function id_name(vx::DictType)
+function id_name(vx::DictType) # Finite Enumeration Constants are id, name pairs
     idval = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
     return (Symbol(idval), nameval)
 end
 
-#=
-finiteintrange sort:
-=#
-function start_stop(vx::DictType)
+function start_stop(vx::DictType) # attributes of finiteintrange sort
     startstr = _attribute(vx, :start)
     start = tryparse(Int, startstr)
     isnothing(start) &&
         throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
 
-    stopstr = _attribute(vx, :end) # XML Schema used 'end', we use 'stop'.
+    stopstr = _attribute(vx, :end) # XML Schema uses 'end', we use 'stop'.
     stop = tryparse(Int, stopstr)
     isnothing(stop) &&
         throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
@@ -110,7 +103,7 @@ function parse_partition(vx::DictType, idregistry::PnmlIDRegistry)
     isempty(elements) &&
         throw(string("partitions must have at least one partition element, found none: ",
                 "id = ", repr(idval), ", name = ", repr(nameval), ", sort = ", repr(sortval)))
-    return PartitionSort(register_id!(idregistry, idval), nameval, sortval, elements)
+    return PartitionSort(register_id!(idregistry, Symbol(idval)), nameval, sortval, elements)
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, v, idregistry::PnmlIDRegistry)
@@ -125,7 +118,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement},
     #println("parse_partitionelement! DictType")
     idval   = _attribute(vx, :id)
     nameval = _attribute(vx, :name)
-    idsym = register_id!(idregistry, idval)
+    idsym = register_id!(idregistry, Symbol(idval))
     # ordered collection of terms, usually useroperators (as constants)
     x = get(vx, "useroperator", nothing)
     isnothing(x) &&

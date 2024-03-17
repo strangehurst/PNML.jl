@@ -4,14 +4,17 @@ $(TYPEDFIELDS)
 
 One or more Petri Nets and an ID Registries.
 """
-struct PnmlModel{T<:PnmlNet}
-    first_net::T
+struct PnmlModel
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
     regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alais.
 end
-PnmlModel(nets::Tuple{Vararg{PnmlNet}}, namespace, idregs::Vector{PnmlIDRegistry}) =
-    PnmlModel(first(nets), nets, namespace, idregs)
+#TODO mutable PnmlModel, nets, regs as Vector{Any}, Global variable to access declarations
+#TODO Is there a need to access declarations (DeclDict) during parsing?
+#TODO Will declarations be parsed first? What needs this access?
+#TODO Use of IDs decouples (possibly).
+#foo::RefValue{Vector{Any}} = RefValue{Vector{Any}}()
+#foo[] = [1.123]
 
 """
 $(TYPEDSIGNATURES)
@@ -49,13 +52,6 @@ function find_net(model, id::Symbol)
     end
     return nothing
 end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return first net of the `model`.
-"""
-first_net(model) = model.first_net
 
 # No indent done here.
 function Base.show(io::IO, model::PnmlModel)

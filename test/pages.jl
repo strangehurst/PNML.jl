@@ -1,6 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, AbstractTrees
 using PNML:
-    Maybe, tag, labels, firstpage, first_net, nettype,
+    Maybe, tag, labels, firstpage, nettype,
     PnmlNet, Page, nets, pages, pid,
     arc, arcs, place, places, transition, transitions,
     refplace, refplaces, reftransition, reftransitions,
@@ -104,7 +104,7 @@ const str = """<?xml version="1.0"?>
     </pnml>
 """
 model = @inferred PNML.PnmlModel parse_str(str)
-net = first_net(model) # The nets of a model not inferrable.
+net = first(nets(model)) # The nets of a model not inferrable.
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
 @test startswith(sprint(show, model), "PnmlModel")

@@ -51,12 +51,14 @@ end
         @safetestset "graphics"     begin include("graphics.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
+    end
+    if select("ALL", "CORE2")
         @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
         @safetestset "flatten"      begin include("flatten.jl") end
-   end
+    end
 
     if select("ALL", "NET")
         println("NET")

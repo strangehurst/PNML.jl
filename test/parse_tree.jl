@@ -189,7 +189,7 @@ end
         PNML.flatten_pages!(n)
         @test PNML.verify(n)
 
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+     begin #   Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             println()
             PNML.pagetree(n)
             println()

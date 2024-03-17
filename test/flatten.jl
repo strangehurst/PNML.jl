@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, PnmlNet, allpages, first_net, flatten_pages!, source, target, arc
+using PNML: tag, pid, PnmlNet, allpages, flatten_pages!, source, target, arc
 
 @testset "flatten" begin
     model = parse_str("""<?xml version="1.0"?>
@@ -29,10 +29,11 @@ using PNML: tag, pid, PnmlNet, allpages, first_net, flatten_pages!, source, targ
             </net>
         </pnml>
     """)
-    net = @inferred PnmlNet first_net(model)
-    @test_call first_net(model)
+    net = @inferred PnmlNet first(nets(model))
+    @test_call first(nets(model))
     @test length(allpages(net)) == length(allpages(net)) == 3
     flatten_pages!(net)
+    @test_call flatten_pages!(net)
     @test length(allpages(net)) == length(allpages(net)) == 1
 
     @test PNML.has_arc(net, :a1)
