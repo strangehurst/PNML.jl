@@ -1,5 +1,4 @@
 # News
 
-!!! note PNML.jl is becoming a multiple-package repository (monorepo) beginnig 2022-09-19.
+First tagged version is 0.0.6. This is before much high-level function.
 
-Since packages are not registered, GitHub CI is failing...

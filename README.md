@@ -1,16 +1,16 @@
 # PNML
 
 [Petri Net Markup Language](https://www.pnml.org), is an XML-based format.
-PNML.jl reads a pnml model and emits an intermediate representation (IR).
+PNML.jl reads a pnml model and emits an intermediate representation (IR) in Julia.
 
 Features that have not been started:
   - Write pnml file
   - Update pnml model
   - Create pnml model
-  - Symbolics support for HLPNG (many-sorted algebra)
   
 Features that are not complete:
   - HLPNG - many-sorted algebras are complex. Will build other infrastructure...
+  - Symbolics support for HLPNG (many-sorted algebra)
   - pntd specialize
   - toolspecific usage example
 
