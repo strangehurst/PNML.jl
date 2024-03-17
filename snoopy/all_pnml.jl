@@ -2,6 +2,7 @@
 #julia -e 'include("all_pnml.jl"); testpn("MCC")'
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
+#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/testpmnl/test-files.list")'
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
