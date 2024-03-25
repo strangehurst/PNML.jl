@@ -40,6 +40,14 @@ Return vector of `el`'s immediate children with `tag`.
 function allchildren(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
     EzXML.findall("./x:$tag | ./$tag", el, ("x" => ns,))
 end
+"""
+$(TYPEDSIGNATURES)
+
+Return vector of `el`'s immediate children and decendents with `tag`.
+"""
+function alltags(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
+    EzXML.findall(".//x:$tag | .//$tag", el, ("x" => ns,))
+end
 
 function check_nodename(n::XMLNode, s::AbstractString)
     if EzXML.nodename(n) != s
