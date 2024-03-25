@@ -56,6 +56,7 @@ struct VariableDeclaration{S <: AbstractSort} <: AbstractDeclaration
     sort::S
 end
 VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
+sortof(vd::VariableDeclaration) = vd.sort
 
 """
 $(TYPEDEF)
@@ -67,7 +68,7 @@ struct NamedSort{S <: AbstractSort} <: SortDeclaration
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
 NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
-sort(namedsort::NamedSort) = namedsort.def
+sort(namedsort::NamedSort) = namedsort.def #! sortof?
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
@@ -77,53 +78,6 @@ function Base.show(io::IO, nsort::NamedSort)
     print(io, ")")
 end
 
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Part of a [`PartitionSort`](@ref)'s emumeration. See also [`FiniteEnumerationSort`](@ref).
-"""
-struct PartitionElement
-    id::Symbol
-    name::Union{String,SubString{String}}
-    terms::Vector{UserOperator} # 1 or more Terms of PatrtitionSort's (UserOperator?) as constants
-end
-PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Partition is a finite enumeration that is partitioned into sub-ranges of enumerations.
-Is the sort at the partition or the element level (1 sort ot many sorts?)
-"""
-struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclaration
-    id::Symbol
-    name::Union{String,SubString{String}}
-    def::S # Refers to a NamedSort
-    element::Vector{PE} # 1 or more PartitionElements. Each is
-    #
-end
-PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
-sort(partition::PartitionSort) = partition.def
-elements(partition::PartitionSort) = partition.element
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Arbitrary sorts that can be used for constructing terms are
-reserved for/supported by `HLPNG` in the pnml specification.
-"""
-struct ArbitrarySort <: SortDeclaration
-    id::Symbol
-    name::Union{String,SubString{String}}
-end
-
-function ArbitrarySort()
-    ArbitrarySort(:arbitrarysort, "ArbitrarySort")
-end
 
 """
 $(TYPEDEF)
@@ -149,14 +103,22 @@ parameters(no::NamedOperator) = no.parameter
     namedoperators::Dict{Symbol,NamedOperator} = Dict{Symbol, NamedOperator}()          # namedoperator
 
     #! partitionops::Dict{Symbol,PartitionOp} = Dict{Symbol,PartitionOp}() # partitionelement
-    feconstants::Dict{Symbol,FEConstant} = Dict{Symbol,FEConstant}()    # feconstant
+    feconstants::Dict{Symbol,FEConstant} = Dict{Symbol, FEConstant}()    # feconstant
 end
-named_op(dd::DeclDict, id::Symbol) = dd.namedoperators[id]
-named_sort(dd::DeclDict, id::Symbol) = dd.namedsorts[id]
-variable(dd::DeclDict, id::Symbol) = dd.variabledecls[id]
+
+named_op(dd::DeclDict, id::Symbol)      = dd.namedoperators[id]
+named_sort(dd::DeclDict, id::Symbol)    = dd.namedsorts[id]
+variable(dd::DeclDict, id::Symbol)      = dd.variabledecls[id]
 partitionsort(dd::DeclDict, id::Symbol) = dd.partitionsorts[id]
-#partitionop(dd::DeclDict, id::Symbol) = dd.partitionops[id]
-feconstant(dd::DeclDict, id::Symbol) = dd.feconstants[id]
+#partitionop(dd::DeclDict, id::Symbol)  = dd.partitionops[id]
+feconstant(dd::DeclDict, id::Symbol)    = dd.feconstants[id]
+
+has_named_op(dd::DeclDict, id::Symbol)      = haskey(dd.namedoperators, id)
+has_named_sort(dd::DeclDict, id::Symbol)    = haskey(dd.namedsorts, id)
+has_variable(dd::DeclDict, id::Symbol)      = haskey(dd.variabledecls, id)
+has_partitionsort(dd::DeclDict, id::Symbol) = haskey(dd.partitionsorts, id)
+#has_partitionop(dd::DeclDict, id::Symbol)  = haskey(dd.partitionops, id)
+has_feconstant(dd::DeclDict, id::Symbol)    = haskey(dd.feconstants, id)
 
 function declarations(dd::DeclDict)
     # AbstractDeclaration[d for d in Iterators.flatten([values(dd.namedsorts)...,
@@ -169,30 +131,42 @@ function declarations(dd::DeclDict)
                                values(dd.namedoperators)]))
 end
 
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-Label of a <net> or <page> that holds zero or more declarations. The declarations are used
-to define parts of the many-sorted algebra used by High-Level Petri Nets.
 
-We can use infrastructure implemented for HL nets to provide nonstandard extensions for other PNTDs.
-"""
-@kwdef struct Declaration <: Annotation
-    text::Maybe{String} = nothing
-    #!declarations::Vector{AbstractDeclaration} = AbstractDeclaration[]
-    ddict::DeclDict = DeclDict()
-    graphics::Maybe{Graphics} = nothing # PTNet uses TokenGraphics in tools rather than graphics.
-    tools::Maybe{Vector{ToolInfo}} = nothing
-end
+function Base.show(io::IO, dd::DeclDict)
+    println(io, nameof(typeof(dd)), "(")
 
-declarations(d::Declaration) = declarations(d.ddict)
-Base.length(d::Declaration) = length(declarations(d))
+    io = inc_indent(io)
+    iio = inc_indent(io)
+    print(io, "Namedsort[")
+    for (k,v) in pairs(dd.namedsorts)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
 
-# Flattening pages combines declarations & toolinfos into the first page.
-function Base.append!(l::Declaration, r::Declaration)
-    append!(declarations(l), declarations(r)) #! FIX ME XXX
-end
+    print(io, "PartitionSort[")
+    for (k,v) in pairs(dd.partitionsorts)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
 
-function Base.empty!(d::Declaration)
-    empty!(declarations(d)) #! FIX ME XXX
+    print(io, "VariableDeclaration[")
+    for (k,v) in pairs(dd.variabledecls)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
+
+    print(io, "NamedOperator[")
+    for (k,v) in pairs(dd.namedoperators)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
+
+    #! partitionops:
+    print(io, "FEConstant[")
+    for (k,v) in pairs(dd.feconstants)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
+
+    print(io, ")")
 end

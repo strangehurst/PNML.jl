@@ -10,6 +10,8 @@ known tags and dedicated parsers. `parse_pnml_object_common` puts unregistered c
 into the labels collection of a [`AbstractPnmlObject`].  It can include annotations and attributes.
 =#
 
+decldict(netid::Symbol) = haskey(TOPDECLDICTIONARY, netid) ? TOPDECLDICTIONARY[netid] : error("$netid not in TOPDECLDICTIONARY")
+
 """
 $(TYPEDSIGNATURES)
 
@@ -18,60 +20,65 @@ Assume behavior of a High-level Net label in that the meaning is in a <structure
 
 Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsort/> ...
 """
-function parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
-    check_nodename(node, "declaration")
-    # if decldictionary is not defined
-    decldictionary = DeclDict()#! decls::Maybe{Vector{AbstractDeclaration}} = nothing
+function parse_declaration end
+parse_declaration(ids, node::XMLNode, pntd::PnmlType, idregistry::PIDR) = parse_declaration(ids, [node], pntd, idregistry)
+
+function parse_declaration(ids, nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    #println("\nparse_declaration $(length(nodes)) node(s), ids = $ids")
+    dd = decldict(first(ids)) # Lookup DeclDict for PnmlNet.
+
     text = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "structure"
-            _parse_decl_structure!(decldictionary, child, pntd, idregistry)
-        elseif tag == "text"
-            text = string(strip(EzXML.nodecontent(child)))::String #! do we need string?
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd, idregistry)
-        elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
+    for node in nodes
+        check_nodename(node, "declaration")
+        for child in EzXML.eachelement(node)
+            tag = EzXML.nodename(child)
+            if tag == "structure" # accumulate declarations
+                _parse_decl_structure!(dd, ids, child, pntd, idregistry)
+            elseif tag == "text" # may overwrite
+                text = string(strip(EzXML.nodecontent(child)))::String
+            elseif tag == "graphics"# may overwrite
+                graphics = parse_graphics(child, pntd, idregistry)
+            elseif tag == "toolspecific" # accumulate tool specific
+                if isnothing(tools)
+                    tools = ToolInfo[]
+                end
+                add_toolinfo!(tools, child, pntd, idregistry)
+            else
+                @warn "ignoring unexpected child of <declaration>: '$tag'"
             end
-            add_toolinfo!(tools, child, pntd, idregistry)
-        else
-            @warn "ignoring unexpected child of <declaration>: '$tag'"
         end
     end
-
-    Declaration(; text, ddict=decldictionary, graphics, tools)
+    Declaration(; text, ddict=dd, graphics, tools)
 end
 
 #"Assumes high-level semantics until someone specializes."
-function _parse_decl_structure!(dd::DeclDict, node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
-    fill_decl_dict!(dd, node, pntd, idregistry)
+function _parse_decl_structure!(dd::DeclDict, ids, node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
+    fill_decl_dict!(dd, ids, node, pntd, idregistry)
 end
 
-function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function fill_decl_dict!(dd::DeclDict, ids, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     check_nodename(node, "structure")
     EzXML.haselement(node) || throw(ArgumentError("missing <declaration> <structure> element"))
     declarations = EzXML.firstelement(node)
     check_nodename(declarations, "declarations")
-    decs = AbstractDeclaration[]
+    unknown_decls = AbstractDeclaration[]
+
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
-            ns = parse_namedsort(child, pntd, idregistry)
+            ns = parse_namedsort(ids, child, pntd, idregistry)
             dd.namedsorts[pid(ns)] = ns
         elseif tag == "namedoperator"
-            no = parse_namedoperator(child, pntd, idregistry)
+            no = parse_namedoperator(ids, child, pntd, idregistry)
             dd.namedoperators[pid(no)] = no
         elseif tag == "variabledecl"
-            vardecl = parse_variabledecl(child, pntd, idregistry)
+            vardecl = parse_variabledecl(ids, child, pntd, idregistry)
             dd.variabledecls[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
-            part = parse_partition_decl(child, pntd, idregistry)
+            part = parse_partition_decl(ids, child, pntd, idregistry)
             dd.partitionsorts[pid(part)] = part
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -80,7 +87,8 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType, idregistry
 
         #elseif tag == "arbitrarysort"
         else
-            push!(decs, parse_unknowndecl(child, pntd, idregistry))
+            #TODO  add to DeclDict
+            push!(unknown_decls, parse_unknowndecl(ids, child, pntd, idregistry))
         end
     end
     return nothing
@@ -91,7 +99,7 @@ $(TYPEDSIGNATURES)
 
 Declaration that wraps a Sort, adding an ID and name.
 """
-function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
+function parse_namedsort(ids, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)
     nn = check_nodename(node, "namedsort")
     id = register_idof!(reg, node)
     name = attribute(node, "name", "$nn $id missing name attribute")
@@ -107,7 +115,7 @@ Declaration that wraps an operator by giving a name to a definition term (expres
 An operator of arity 0 is a constant.
 When arity > 0, where is the parameter value stored? With operator or variable declaration
 """
-function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function parse_namedoperator(ids, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "namedoperator")
     id = register_idof!(idregistry, node)
     name = attribute(node, "name", "$nn $id missing name attribute")
@@ -120,13 +128,13 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
             # NamedOperators have a def element that is a expression of existing
             # operators &/or variables that define the operation.
             # The sortof the operator is the output sort of def.
-            def, defsort = parse_term(EzXML.firstelement(child), pntd, idregistry) #todo
+            def, defsort = parse_term(EzXML.firstelement(child), pntd, idregistry; netid=first(ids)) #todo
         elseif tag == "parameter"
             # Zero or more parameters for operator (arity). Map from id to sort object.
             #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
             #! Is def restricted to just parameters? Can others access parameters?
             for vdecl in EzXML.eachelement(child)
-                push!(parameters, parse_variabledecl(vdecl, pntd, idregistry))
+                push!(parameters, parse_variabledecl(ids, vdecl, pntd, idregistry))
             end
         else
             @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
@@ -140,7 +148,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRe
 end
 
 #! errors?! "$(TYPEDSIGNATURES)"
-function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function parse_variabledecl(ids, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = check_nodename(node, "variabledecl")
     id = register_idof!(idregistry, node)
     #!EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
@@ -156,7 +164,7 @@ end,
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function parse_unknowndecl(ids, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     nn = EzXML.nodename(node)
     id = register_idof!(idregistry, node)
     name = attribute(node, "name","$nn $id missing name attribute")
@@ -293,8 +301,8 @@ function parse_sort(::Val{:productsort}, body::DictType, pntd::PnmlType, idreg::
     for (k,v) in pairs(body)
         if v isa DictType
             push!(sorts, parse_sort(Val(Symbol(k)), v, pntd, idreg))
-        else
-            foreach(v) do s # v may be a vector that has the same k
+        else # A vector of `DictType` where each has the same k due to XMLDict parsing.
+            foreach(v) do s
                 push!(sorts, parse_sort(Val(Symbol(k)), s, pntd, idreg))
             end
         end
@@ -313,6 +321,7 @@ Some nesting is used. Meaning that some sorts contain other sorts.
 `parse_sort` returns a top-level sort instance.
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+    #TODO Switch away from unparsed?
     (sortid, body) = unparsed_tag(node)
     (ismissing(sortid) || isnothing(sortid)) && error("sort id is $sortid")
     (ismissing(body) || isnothing(body)) && error("sort body is $body")
@@ -329,7 +338,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     return srt
 end
 
-function parse_partition_decl(node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
+function parse_partition_decl(ids, node::XMLNode, pntd::PnmlType, idregistry::PnmlIDRegistry)
     (tag, body) = unparsed_tag(node)
     (ismissing(tag) || isnothing(tag)) && error("sort id is $tag")
     (ismissing(body) || isnothing(body)) && error("sort body is $body")
@@ -405,8 +414,8 @@ end
 $(TYPEDSIGNATURES)
 A reference to a variable declaration.
 """
-function parse_variable(node::XMLNode, _::PnmlType, _::PnmlIDRegistry)
+function parse_variable(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; netid)
     nn = check_nodename(node, "variable")
     # The 'primer' UML2 uses variableDecl instead of refvariable. References a VariableDeclaration.
-    Variable(Symbol(attribute(node, "refvariable", "$nn missing refvariable attribute")))
+    Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute")), netid)
 end

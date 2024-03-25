@@ -93,15 +93,16 @@ include("Core/types.jl") # Abstract Types
 # Parts of Labels and Nodes.
 include("Core/constterm.jl") #
 include("Core/sorts.jl") # Sorts are used in Variables, Operators
-
+include("Core/declarations.jl") # Declarations are inside <declaration> Label.
 include("Core/terms.jl") # Variables and Operators
+
 include("Core/Terms/arbitrarydeclarations.jl")
 include("Core/Terms/booleans.jl")
-include("Core/Terms/cyclicenumerations.jl")
+include("Core/Terms/enumerations.jl")
 include("Core/Terms/dots.jl")
-include("Core/Terms/finiteenumerations.jl")
-include("Core/Terms/finiteintranges.jl")
-include("Core/Terms/integers.jl")
+#include("Core/Terms/finiteenumerations.jl")
+#include("Core/Terms/finiteintranges.jl")
+include("Core/Terms/numbers.jl")
 include("Core/Terms/lists.jl")
 include("Core/Terms/multisets.jl")
 include("Core/Terms/partitions.jl")
@@ -114,11 +115,10 @@ include("Core/toolinfos.jl")
 # Labels
 include("Core/labels.jl")
 include("Core/name.jl")
+include("Core/sorttype.jl")
 include("Core/inscriptions.jl")
 include("Core/markings.jl")
 include("Core/conditions.jl")
-include("Core/sorttype.jl")
-include("Core/declarations.jl") # Declarations Label.
 include("Core/rates.jl")
 
 # Nodes
@@ -144,6 +144,9 @@ include("Parse/graphics.jl")
 include("Parse/declarations.jl")
 include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
+
+# Per net declaration keyed by net id.
+const TOPDECLDICTIONARY::Dict{Symbol,DeclDict} = Dict{Symbol,DeclDict}()
 
 export @xml_str, xmlroot
 export parse_str, parse_file, parse_pnml

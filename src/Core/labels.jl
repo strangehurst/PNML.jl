@@ -175,3 +175,37 @@ end
 function has_label(v, tagvalue::Symbol)
     !isempty(get_labels(v, tagvalue))
 end
+
+
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Label of a <net> or <page> that holds zero or more declarations. The declarations are used
+to define parts of the many-sorted algebra used by High-Level Petri Nets.
+
+All the declarations in the <structure> are placed into a single per-net dictonary.
+The text, graphics, and tools fields are expected to be nothing,
+but are present becaue beinglabels, it is allowed.
+
+We use them to provide nonstandard extensions for other PNTDs.
+"""
+@kwdef struct Declaration <: Annotation
+    text::Maybe{String} = nothing
+    ddict::DeclDict = DeclDict()
+    graphics::Maybe{Graphics} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
+end
+
+declarations(d::Declaration) = declarations(d.ddict)
+Base.length(d::Declaration) = length(declarations(d))
+
+# Flattening pages combines declarations & toolinfos into the first page.
+function Base.append!(l::Declaration, r::Declaration)
+    append!(declarations(l), declarations(r)) #! FIX ME XXX
+end
+
+function Base.empty!(d::Declaration)
+    empty!(declarations(d)) #! FIX ME XXX
+end

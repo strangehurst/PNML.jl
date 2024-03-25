@@ -45,18 +45,28 @@ Example input: <variable refvariable="varx"/>.
 """
 struct Variable <: AbstractTerm
     variableDecl::Symbol
+    netid::Symbol # For DeclDict lookups.
 end
 tag(v::Variable) = v.variableDecl
+netid(v::Variable) = v.netid
+function (var::Variable)()
+    _evaluate(var)
+end
 value(v::Variable) = begin
-    println("value(::Variable) $(tag(v)) needs access to DeclDict")
+    println("value(::Variable) $(tag(v)) in $(netid(v)) needs access to DeclDict")
+    dd = decldict(netid(v))
+    @assert has_variable(dd, tag(v)) "$(tag(v)) not a variable declaration in $(netid(v))"
     return 0
 end
 _evaluate(v::Variable) = _evaluate(value(v))
 
-#! Sort of the variableDecl needs access to DeclDict.
 sortof(v::Variable) = begin
-    println("sortof(v.variableDecl) $(tag(v)) needs access to DeclDict")
-    NullSort()
+    #println("sortof(::Variable) $(tag(v)) in $(netid(v)) needs access to DeclDict")
+    #display(stacktrace())
+    dd = decldict(netid(v))
+    @assert has_variable(dd, tag(v)) "$(tag(v)) not a variable declaration in $(netid(v))"
+    vdecl = variable(dd, tag(v))
+    return sortof(vdecl)
 end
 
 """
@@ -79,26 +89,40 @@ const PnmlExpr = Union{Variable, AbstractOperator}
 Operator as Functor
 
 tag maps to func
-
 """
 struct Operator <: AbstractOperator
     tag::Symbol
     func::Function # Apply `func` to `in`: expressions evaluated with current variable values and constants.
-    in::Vector{PnmlExpr} # typeof(in[i]) == eltype(insorts[i])
+    inexprs::Vector{PnmlExpr} # typeof(inexprs[i]) == eltype(insorts[i])
     insorts::Vector{AbstractSort} # Abstract inside vector is not terrible.
     outsort::AbstractSort
-    #TODO have constructor validate typeof(in[i]) == eltype(insorts[i])
+    #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
+    #=
+    all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
+    =#
 end
-tag(op::Operator) = op.tag
+tag(op::Operator)    = op.tag
 sortof(op::Operator) = op.outsort
+inputs(op::Operator) = op.inexprs
 function (op::Operator)()
-    @show op
-    op.func(op.in) #TODO construct input vector of results of evaluating `in`
-    #TODO verify outsort
+    println("\n$(tag(op)) arity $(arity(op)) $(sortof(op))")
+    @show input = [x() for x in inputs(op)] # evaluate each PnmlExpr
+    @show typeof.(input) op.insorts eltype.(op.insorts)
+    #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
+    @show out = op.func(input)
+    @show isa(out, eltype(sortof(op)))
 end
-value(op::Operator) = _evaluate(op)
+value(op::Operator)     = _evaluate(op)
 _evaluate(op::Operator) = op() #TODO
-arity(op::Operator) = length(op.in)
+arity(op::Operator)     = length(inputs(op))
+
+function Base.show(io::IO, t::Operator)
+    print(io, nameof(typeof(t)), "(")
+    show(io, tag(t)); print(io, ", ");
+    show(io, sortof(t)); print(io, ", ");
+    show(io, inputs(t))
+    print(io, ")")
+end
 
 #! add TermInteface here
 
@@ -244,6 +268,7 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
 Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
 """
 struct PnmlTuple <: AbstractOperator end
+
 #=
 PNML.Operator(:numberof, PNML.var"#103#104"(),
 PnmlExpr[
@@ -272,24 +297,17 @@ User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
+    decldict::DeclDict # Shared with all of PnmlNet, is where the NamedOperator lives.
 end
-UserOperator(str::AbstractString) = UserOperator(Symbol(str))
+UserOperator(str::AbstractString, netid) = UserOperator(Symbol(str), netid)
+UserOperator(decl::Symbol, netid) = UserOperator(decl, decldict(netid))
 
+function(uo::UserOperator)(#= pass arguments to operator =#)
+    @warn "UserOperator $uo.declaration needs access to DeclDict"
+    no = named_op(uo.decldict, uo.declaration)
+    no(#= pass arguments to operator =#)
+end
 sortof(uo::UserOperator) = sortof(named_op(decldict, uo.declaration))
-#! decldict is per-PnmlNet "global" dictonary holder. One in UserOperators.
-sortof(decldict, uo::UserOperator) = sortof(named_op(decldict, uo.declaration))
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-> ...arbitrary sorts and operators do not come with a definition of the sort or operation; they just introduce a new symbol without giving a definition for it.
-"""
-struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
-    declaration::Symbol
-    input::Vector{AbstractSort} # Sorts
-    output::I # sort of operator
-end
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
@@ -298,46 +316,7 @@ end
 #
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
-
-"""
-Builtin operator NumberSorts
-"""
-struct NumberConstant{T<:Number, S<:NumberSort} <: AbstractOperator
-    value::T
-    sort::S # value isa eltype(sort)
-    # Schema allows a Term[], Not used. Part of generic operator xml structure?
-end
-sortof(nc::NumberConstant) = nc.sort
-value(nc::NumberConstant) = _evaluate(nc)
-_evaluate(nc::NumberConstant) = nc.value
-(c::NumberConstant)() = value(c)
-
 #TODO Should be booleanconstant/numberconstant: one_term, zero_term, bool_term?
-
-struct BooleanConstant <: AbstractOperator
-    value::Bool
-end
-
-function BooleanConstant(s::Union{AbstractString,SubString{String}})
-    s == "true" || s == "false" || throw(ArgumentError("BooleanConstant unexpected value $s"))
-    BooleanConstant(parse(eltype(BoolSort), s))
-end
-tag(::BooleanConstant) = :booleanconstant
-sortof(::BooleanConstant) = BoolSort
-value(bc::BooleanConstant) = _evaluate(bc)
-_evaluate(bc::BooleanConstant) = bc.value
-(c::BooleanConstant)() = value(c)
-
-struct FiniteIntRangeConstant <: AbstractOperator
-    value::String
-    sort::FiniteIntRangeSort
-end
-tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
-sortof(::FiniteIntRangeConstant) = FiniteIntRangeSort
-value(c::FiniteIntRangeConstant) = _evaluate(c)
-_evaluate(c::FiniteIntRangeConstant) = c.value # TODO string
-(c::FiniteIntRangeConstant)() = value(c)
-
 
 #-------------------------------------------------------------------------
 # Term is really Variable and Opeator
