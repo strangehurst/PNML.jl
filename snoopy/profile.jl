@@ -27,7 +27,7 @@ using EzXML, PNML
 fx() = for i in 1:1000
     PNML.SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+  <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
     <page id="page1">
       <place id="place1">
@@ -118,7 +118,7 @@ PNML.CONFIG.warn_on_unclaimed = true;     # Customize some defaults
 
 n = PNML.SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+  <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
     <page id="page1">
       <place id="place1">

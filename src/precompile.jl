@@ -8,7 +8,7 @@ PrecompileTools.@setup_workload begin
             for pntd in pntds
                 parse_str("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-                    <net id="net0" type="$pntd">
+                    <net id="net_$pntd" type="$pntd">
                     <page id="page0">
                         <place id="p1">
                             <initialMarking> <text>100</text> </initialMarking>
@@ -27,7 +27,7 @@ PrecompileTools.@setup_workload begin
             for pntd in pntds
                 metagraph(SimpleNet("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-                    <net id="small-net" type="$pntd">
+                    <net id="smallnet_$pntd" type="$pntd">
                     <name> <text>Some Net</text> </name>
                     <page id="page1">
                         <place id="place1">
@@ -50,7 +50,7 @@ PrecompileTools.@setup_workload begin
             for pntd in pntds
                 metagraph(SimpleNet("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-                    <net id="small-net" type="$pntd">
+                    <net id="smallnet_$pntd" type="$pntd">
                     <name> <text>Some Net</text> </name>
                     <page id="page1">
                         <place id="place1">
