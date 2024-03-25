@@ -148,9 +148,9 @@
                         <dot/>
                     </namedsort>
                     <!-- Variables declaration -->
-                    <variabledecl id="varx" name="x">
-                        <usersort declaration="pro"/>
-                    </variabledecl>
+                    <variabledecl id="varx" name="x"><usersort declaration="pro"/></variabledecl>
+                    <variabledecl id="varm" name="m"><usersort declaration="pro"/></variabledecl>
+                    <variabledecl id="varA" name="A"><usersort declaration="pro"/></variabledecl>
                     <!-- Operator declaration -->
                     <namedoperator id="id6" name="g">
                         <parameter>
@@ -235,7 +235,18 @@
     </net>
 
     <net id="net7" type="symmetric">
-        <page id="net7page">
+       <declaration>
+            <text>net5 declaration label</text>
+            <graphics><offset x="0" y="0"/></graphics>
+            <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+            <structure>
+                <declarations>
+                    <namedsort id="dot" name="Dot"><dot/></namedsort>
+                    <variabledecl id="varA" name="A"><usersort declaration="pro"/></variabledecl>
+                </declarations>
+            </structure>
+        </declaration>
+       <page id="net7page">
             <place id="stp5">
                 <name><text>stp5</text></name>
                 <type>
@@ -247,9 +258,7 @@
                     <structure>
                         <numberof>
                             <subterm>
-                                <numberconstant value="1">
-                                    <positive/>
-                                </numberconstant>
+                                <numberconstant value="1"><positive/></numberconstant>
                             </subterm>
                             <subterm>
                                 <dotconstant/>
