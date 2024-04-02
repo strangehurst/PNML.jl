@@ -81,13 +81,13 @@ end
 
     @test value(default_zero_term(pntd)) == zero(eltype(term_value_type(pntd)))
     z = default_zero_term(pntd)::PNML.NumberConstant
-    @test z isa PnmlExpr
+    @test z isa AbstractTerm
     @test value(z) isa eltype(term_value_type(pntd))
     @test value(z) == zero(term_value_type(pntd))
 
     @test value(default_one_term(pntd)) == one(eltype(term_value_type(pntd)))
     b = default_one_term(pntd)::PNML.NumberConstant
-    @test b isa PnmlExpr
+    @test b isa AbstractTerm
     @test value(b) isa eltype(term_value_type(pntd))
     @test value(b) == one(term_value_type(pntd))
 
@@ -95,7 +95,7 @@ end
 end
 
 @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
-    @test default_bool_term(pntd) isa PnmlExpr
+    @test default_bool_term(pntd) isa AbstractTerm
     @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
 end
 

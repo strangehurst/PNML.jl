@@ -22,7 +22,7 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation
     text::Maybe{String}
-    value::PnmlExpr # evaluates to Boolean
+    value::AbstractTerm # evaluates to Boolean
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -47,14 +47,14 @@ function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")
     show(io, text(c)); print(io, ", ")
     show(io, value(c))
-    if has_graphics(c)
-        print(io, ", ")
-        show(io, graphics(c))
-    end
-    if has_tools(c)
-        print(io, ", ")
-        show(io, tools(c));
-    end
+    # if has_graphics(c)
+    #     print(io, ", ")
+    #     show(io, graphics(c))
+    # end
+    # if has_tools(c)
+    #     print(io, ", ")
+    #     show(io, tools(c));
+    # end
     print(io, ")")
 end
 

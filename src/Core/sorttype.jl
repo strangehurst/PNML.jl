@@ -20,10 +20,9 @@ struct SortType <: Annotation # Not limited to high-level dialects.
 end
 
 SortType(sort::AbstractSort) = SortType(nothing, sort)
-#SortType(text::Maybe{AbstractString}, sort::AbstractSort) = SortType(text, sort, nothing, nothing)
 SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, nothing)
 
-text(t::SortType)  = isnothing(t.text) ? "" : t.text
+text(t::SortType)  = ifelse(isnothing(t.text), "", t.text)
 value(t::SortType) = sortof(t)
 sortof(t::SortType)= t.sort[]
 

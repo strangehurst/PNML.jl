@@ -15,7 +15,7 @@ julia> i()
 ```
 """
 struct Inscription{T<:Number}  <: Annotation
-    value::T
+    value::T #TODO Give each a sort or have a common pntd-level sort?
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -82,13 +82,13 @@ julia> i4()
 """
 struct HLInscription <: HLAnnotation
     text::Maybe{String}
-    term::PnmlExpr # Content of <structure> content must be a many-sorted algebra term.
+    term::AbstractTerm # Content of <structure> content must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing)
+HLInscription(t::AbstractTerm) = HLInscription(nothing, t)
+HLInscription(s::Maybe{AbstractString}, t::AbstractTerm) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
 

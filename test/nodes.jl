@@ -13,9 +13,9 @@ using PNML: Place, Transition, Arc, RefPlace, RefTransition,
         <initialMarking> <text>100</text> </initialMarking>
         </place>
     """
-    n  = parse_place(node, pntd, registry())
-    @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry())
-    @test_call target_modules=target_modules parse_place(node, pntd, registry())
+    n  = parse_place((:NN,), node, pntd, registry())
+    @test_opt target_modules=(@__MODULE__,) parse_place((:NN,), node, pntd, registry())
+    @test_call target_modules=target_modules parse_place((:NN,), node, pntd, registry())
     @test isa(n, Place)
     @test @inferred(pid(n)) === :place1
     @test has_name(n)
@@ -31,8 +31,8 @@ end
         <hlinitialMarking> <text>100</text> </hlinitialMarking>
         </place>
     """
-    n  = parse_place(node, pntd, registry())
-    @test_call target_modules=target_modules parse_place(node, pntd, registry())
+    n  = parse_place((:NN,), node, pntd, registry())
+    @test_call target_modules=target_modules parse_place((:NN,), node, pntd, registry())
 
     @test pid(n) === :place1
     @test typeof(n) <: Place
@@ -52,7 +52,7 @@ end
         </condition>
       </transition>
     """
-    n = @inferred Transition parse_transition(node, PnmlCoreNet(), registry())
+    n = @inferred Transition parse_transition((:NN,), node, PnmlCoreNet(), registry())
     @test typeof(n) <: Transition
     @test pid(n) === :transition1
     @test has_name(n)
@@ -61,13 +61,13 @@ end
 
     node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
     #@test_throws ErrorException parse_transition(node, pntd, registry())
-    @test @test_logs(parse_transition(node, pntd, registry())) !== nothing
+    @test @test_logs(parse_transition((:NN,), node, pntd, registry())) !== nothing
 
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test @test_logs(parse_transition(node, pntd, registry())) isa Transition
+    @test @test_logs(parse_transition((:NN,), node, pntd, registry())) isa Transition
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd, registry())
+    @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition((:NN,), node, pntd, registry())
 
     node = xml"""<transition id ="t4">
         <condition>
@@ -75,7 +75,7 @@ end
             <structure> true  </structure>
         </condition>
     </transition>"""
-    @test_throws "missing condition term element in <structure>" parse_transition(node, pntd, registry())
+    @test_throws "missing condition term element in <structure>" parse_transition((:NN,), node, pntd, registry())
     # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
     # parse_transition(node, pntd, registry()))
     # @test_opt target_modules=(@__MODULE__,) condition(t)
@@ -88,7 +88,7 @@ end
             <structure> <booleanconstant value="true"/> </structure>
         </condition>
     </transition>"""
-    t = parse_transition(node, pntd, registry())
+    t = parse_transition((:NN,), node, pntd, registry())
     @test t isa Transition
     @test condition(t) === true
 
@@ -105,7 +105,7 @@ end
             </interval>
          </delay>
     </transition>"""
-    t = parse_transition(node, pntd, registry())
+    t = parse_transition((:NN,), node, pntd, registry())
     @test t isa Transition
     @test PNML.delay(t) isa Tuple
 
@@ -118,7 +118,7 @@ end
             </interval>
         </delay>
     </transition>"""
-    t = parse_transition(node, pntd, registry())
+    t = parse_transition((:NN,), node, pntd, registry())
     @test t isa Transition
     @test PNML.delay(t) isa Tuple
 
@@ -131,7 +131,7 @@ end
             </interval>
         </delay>
     </transition>"""
-    t = parse_transition(node, pntd, registry())
+    t = parse_transition((:NN,), node, pntd, registry())
     @test t isa Transition
     @test PNML.delay(t) isa Tuple
 end
@@ -158,11 +158,11 @@ end
     """)
     PNML.CONFIG.warn_on_unclaimed = true
     if ishighlevel(pntd)
-        @test_throws "missing inscription term element in <structure>" parse_arc(node, pntd, registry())
+        @test_throws "missing inscription term element in <structure>" parse_arc((:NN,), node, pntd, registry())
     else
         a1 = @test_logs(match_mode=:any,
                 (:warn, "found unexpected child of <arc>: unknown"),
-                parse_arc(node, pntd, registry()))
+                parse_arc((:NN,), node, pntd, registry()))
         a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
         @testset "a1,a2" for a in [a1, a2]
             @test typeof(a) <: Arc
@@ -187,7 +187,7 @@ end
         </unknown>
     </referenceTransition>
     """
-    n = @test_logs (:warn, "found unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry())
+    n = @test_logs (:warn, "found unexpected child of <referenceTransition>: unknown") parse_refTransition((:NN,), node, pntd, registry())
     @test n isa RefTransition
     @test pid(n) === :rt1
     @test refid(n) === :t1
@@ -224,7 +224,7 @@ end
     @testset "referencePlaces" for s in [n1, n2]
         n = @test_logs(match_mode=:any,
             (:warn, "found unexpected child of <referencePlace>: unknown"),
-            parse_refPlace(s.node, ContinuousNet(), registry()))
+            parse_refPlace((:NN,), s.node, ContinuousNet(), registry()))
         @test typeof(n) <: RefPlace
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)

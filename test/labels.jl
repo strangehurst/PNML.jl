@@ -51,7 +51,7 @@ end
     </initialMarking>
     """
     # Parse ignoring unexpected child
-    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking(node, pntd, registry())
+    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking((:NN,), node, pntd, registry())
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
@@ -92,7 +92,7 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: 'unknown'") parse_inscription(n1, pntd, registry())
+    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: 'unknown'") parse_inscription((:NN,), n1, pntd, registry())
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
     @test inscript() == value(inscript) == 12
@@ -294,7 +294,8 @@ end
 @testset "HL initMarking" begin
 
     @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
-        @show node = xml"""
+        #~ @show
+        node = xml"""
         <hlinitialMarking>
             <text>3`dot</text>
             <structure>
@@ -308,7 +309,7 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # Use the first part of this pair in contextes that want numbers.
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
 
@@ -325,8 +326,8 @@ end
         markterm = value(mark)
         @test tag(markterm) === :numberof # pnml many-sorted operator -> multiset
         @test arity(markterm) == 2
-        @test markterm.in[1] == NumberConstant(3, PositiveSort())
-        @test markterm.in[2] == DotConstant()
+        @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
+        @test inputs(markterm)[2] == DotConstant()
 
         #TODO HL implementation not complete:
         #TODO  evaluate the HL expression, check place sorttype
@@ -335,7 +336,8 @@ end
     end
 
     @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
-        @show node = xml"""
+        #~ @show
+        node = xml"""
         <hlinitialMarking>
             <text>&lt;All,All&gt;</text>
             <structure>
@@ -352,7 +354,7 @@ end
             </unknown>
         </hlinitialMarking>
         """
-        mark = PNML.parse_hlinitialMarking(node, pntd, registry())
+        mark = PNML.parse_hlinitialMarking((:NN,), node, pntd, registry())
         #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
         @test mark isa PNML.AbstractLabel
         @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -363,13 +365,13 @@ end
         # Following HL text,structure label pattern where structure is a `Term`.
         @test text(mark) == "<All,All>"
         markterm = value(mark)
-        @show markterm
+        #~ @show markterm
         @test markterm isa PNML.AbstractTerm
         @test markterm isa PNML.Operator
         @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
 
-        @test length(markterm.in) == 2
-        @show markterm.in[1] markterm.in[2]
+        @test arity(markterm) == 2
+        #~ @show inputs(markterm)[1:1]
         # # Decend each element of the term.
         # @test tag(axn) == "subterm"
         # @test value(axn) isa Vector #!{DictType}
@@ -400,14 +402,16 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
+        PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
         #@show value(mark)
         #pprint(mark)
     end
 
     # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)
-        @show node = xml"""
+        #~ @show
+        node = xml"""
         <hlinitialMarking>
             <text>1`3 ++ 1`2</text>
             <structure>
@@ -428,7 +432,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
         #@show mark
         #@show value(mark)
         #pprint(mark)
@@ -436,7 +440,8 @@ end
 
     # The constant eight.
     @testset "1`8" for pntd in all_nettypes(ishighlevel)
-        @show node = xml"""
+        #~ @show
+        node = xml"""
         <hlinitialMarking>
             <text>1`8</text>
             <structure>
@@ -447,7 +452,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
         #@show mark
         #@show value(mark)
         #pprint(mark)
@@ -459,7 +464,7 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
         #@show mark
         #@show value(mark)
         #pprint(mark)
@@ -486,9 +491,14 @@ end
         </unknown>
       </hlinscription>
     """
-    insc = @test_logs(match_mode=:all, (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-            #(:info, "parse_term kinds are Variable and Operator"),
-            PNML.parse_hlinscription(n1, pntd, registry()))
+    dd = PNML.DeclDict()
+    dd.variabledecls[:x] = PNML.VariableDeclaration()
+    dd.variabledecls[:v] = PNML.VariableDeclaration()
+    PNML.TOPDECLDICTIONARY[:NN] = dd
+    #@show PNML.TOPDECLDICTIONARY
+    insc = @test_logs(match_mode=:all,
+            (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
+            PNML.parse_hlinscription((:NN,), n1, pntd, registry()))
 
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
@@ -502,15 +512,15 @@ end
 
     #@show value(insc)
     inscterm = value(insc)
-    @test inscterm isa PNML.PnmlExpr
+    @test inscterm isa PNML.AbstractTerm
     @test tag(inscterm) === :tuple
-    @test length(inscterm.in) == 2
-    @test inscterm.in[1] isa PNML.Variable
-    @test inscterm.in[2] isa PNML.Variable
-    @test tag(inscterm.in[1]) == :x
-    @test tag(inscterm.in[2]) == :v
-    #@test value(inscterm.in[1]) Needs DeclDict
-    #@test value(inscterm.in[2]) Needs DeclDict
+    @test arity(inscterm) == 2
+    @test inputs(inscterm)[1] isa PNML.Variable
+    @test inputs(inscterm)[2] isa PNML.Variable
+    @test tag(inputs(inscterm)[1]) == :x
+    @test tag(inputs(inscterm)[2]) == :v
+    #@test value(inputs(inscterm)[1]) Needs DeclDict
+    #@test value(inputs(inscterm)[2]) Needs DeclDict
 end
 
 @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
@@ -524,7 +534,7 @@ end
     """
     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
-    stru = PNML.parse_structure(node, pntd, registry())
+    stru = PNML.parse_structure((:NN,), node, pntd, registry())
     @test stru isa PNML.Structure
     @test tag(stru) == :structure
     axn = elements(stru)
@@ -558,7 +568,7 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ = PNML.parse_type(node, pntd, registry())
+        typ = PNML.parse_type((:NN,), node, pntd, registry())
         #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
@@ -606,10 +616,17 @@ end
  </condition>
     """
     @testset for node in [n1]
+        dd = PNML.DeclDict()
+        dd.variabledecls[:pt] = PNML.VariableDeclaration()
+        dd.namedoperators[:cts] = PNML.NamedOperator(:cts, "", [], nothing)
+        dd.namedoperators[:ack] = PNML.NamedOperator(:ack, "", [], nothing)
+        PNML.TOPDECLDICTIONARY[:NN] = dd
+
         cond = @test_logs(match_mode=:all,
                 (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-                PNML.parse_condition(node, pntd, registry()))
+                PNML.parse_condition((:NN,), node, pntd, registry()))
         @test cond isa PNML.condition_type(pntd)
+        @show cond
         @test text(cond) == "pt==cts||pt==ack"
         @test value(cond) isa PNML.Operator #!Union{PNML.condition_value_type(pntd), PNML.Term}
         @test tag(value(cond)) == :or

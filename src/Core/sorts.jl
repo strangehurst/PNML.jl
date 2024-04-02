@@ -27,12 +27,6 @@ Functions: equality, inequality
 Base.eltype(::Type{<:BoolSort}) = Bool
 
 
-"""
-Built-in sort whose `eltype` is `nothing`
-"""
-@auto_hash_equals struct NullSort <: NumberSort end
-Base.eltype(::Type{<:NullSort}) = Nothing
-
 #------------------------------------------------------------------------------
 """
 $(TYPEDEF)

@@ -24,7 +24,7 @@ Return all `nets` of `model`.
 nets(model::PnmlModel) = model.nets
 regs(model::PnmlModel) = model.regs
 namespace(model::PnmlModel) = model.namespace
-netsets(_::PnmlModel)  = (throw ∘ ArgumentError)("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?")
+netsets(_::PnmlModel)  = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
 
 ispnmltype(pntd::PnmlType) = Fix1(===, pntd)
 

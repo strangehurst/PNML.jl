@@ -79,7 +79,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Multiset of a sort labelling of a `Place` in a High-level Petri Net Graph.
-See [`AbstractHLCore`](@ref), [`PnmlExpr`](@ref), [`Marking`](@ref).
+See [`AbstractHLCore`](@ref), [`AbstractTerm`](@ref), [`Marking`](@ref).
 
 Is a functor that returns the evaluated `value`.
 
@@ -95,7 +95,7 @@ julia> m()
 """
 struct HLMarking <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    term::PnmlExpr # Content of <structure> must be a many-sorted algebra term.
+    term::AbstractTerm # Content of <structure> must be a many-sorted algebra term.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end

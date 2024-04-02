@@ -1,6 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: tag, pid, PnmlNet, allpages, flatten_pages!, source, target, arc
 
+println("FLATTEN")
 @testset "flatten" begin
     model = parse_str("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -53,7 +54,7 @@ using PNML: tag, pid, PnmlNet, allpages, flatten_pages!, source, target, arc
     @test target(arc(net, :a22)) === :p3
     @test source(arc(net, :a23)) === :t3
 
-    @test PNML.post_flat_verify(net; verbose=true)
+    @test PNML.post_flatten_verify(net; verbose=true)
     #@show PNML.vertex_codes(net)
     #@show PNML.vertex_labels(net)
 

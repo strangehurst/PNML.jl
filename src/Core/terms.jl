@@ -1,74 +1,3 @@
-####################################################################################
-#
-####################################################################################
-
-value(op::AbstractOperator) = error("value not defined for $(typeof(op))")
-
-"return output sort of operator"
-sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
-
-#==================================
- TermInterface version 0.4
-    isexpr(x::T) # expression tree (S-expression) => head(x), children(x) required
-    iscall(x::T) # call expression => operation(x), arguments(x) required
-    head(x) # S-expression
-    children(x) # S-expression
-    operation(x) # if iscall(x)
-    arguments(x) # if iscall(x)
-    maketerm(T, head, children, type=nothing, metadata=nothing) # iff isexpr(x)
- Optional
-    arity(x)
-    metadata(x)
-    symtype(expr)
-
-:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j])
-:(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])
-
-===================================#
-
-"constants have arity of 0"
-arity(op::AbstractOperator) = 0
-
-"""
-"""
-expression(op::AbstractOperator) = error("expression not defined for $(typeof(op))")
-
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-Bool, Int, Float64, XDVT
-Variable refers to a varaible declaration.
-Example input: <variable refvariable="varx"/>.
-
-#TODO examples of use, modifying and accessing
-"""
-struct Variable <: AbstractTerm
-    variableDecl::Symbol
-    netid::Symbol # For DeclDict lookups.
-end
-tag(v::Variable) = v.variableDecl
-netid(v::Variable) = v.netid
-function (var::Variable)()
-    _evaluate(var)
-end
-value(v::Variable) = begin
-    println("value(::Variable) $(tag(v)) in $(netid(v)) needs access to DeclDict")
-    dd = decldict(netid(v))
-    @assert has_variable(dd, tag(v)) "$(tag(v)) not a variable declaration in $(netid(v))"
-    return 0
-end
-_evaluate(v::Variable) = _evaluate(value(v))
-
-sortof(v::Variable) = begin
-    #println("sortof(::Variable) $(tag(v)) in $(netid(v)) needs access to DeclDict")
-    #display(stacktrace())
-    dd = decldict(netid(v))
-    @assert has_variable(dd, tag(v)) "$(tag(v)) not a variable declaration in $(netid(v))"
-    vdecl = variable(dd, tag(v))
-    return sortof(vdecl)
-end
-
 """
 Schema 'Term' is better called 'PnmlExpr' since it is made of variables and operators.
 An abstract syntax tree is formed in XML using <subterm> elements.
@@ -84,47 +13,6 @@ The value will have eltype(sort) <: Number (if it is evaluatable).
 Where is the MSA (multi-sorted algebra) defined?
 """
 const PnmlExpr = Union{Variable, AbstractOperator}
-
-"""
-Operator as Functor
-
-tag maps to func
-"""
-struct Operator <: AbstractOperator
-    tag::Symbol
-    func::Function # Apply `func` to `in`: expressions evaluated with current variable values and constants.
-    inexprs::Vector{PnmlExpr} # typeof(inexprs[i]) == eltype(insorts[i])
-    insorts::Vector{AbstractSort} # Abstract inside vector is not terrible.
-    outsort::AbstractSort
-    #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
-    #=
-    all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
-    =#
-end
-tag(op::Operator)    = op.tag
-sortof(op::Operator) = op.outsort
-inputs(op::Operator) = op.inexprs
-function (op::Operator)()
-    println("\n$(tag(op)) arity $(arity(op)) $(sortof(op))")
-    @show input = [x() for x in inputs(op)] # evaluate each PnmlExpr
-    @show typeof.(input) op.insorts eltype.(op.insorts)
-    #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
-    @show out = op.func(input)
-    @show isa(out, eltype(sortof(op)))
-end
-value(op::Operator)     = _evaluate(op)
-_evaluate(op::Operator) = op() #TODO
-arity(op::Operator)     = length(inputs(op))
-
-function Base.show(io::IO, t::Operator)
-    print(io, nameof(typeof(t)), "(")
-    show(io, tag(t)); print(io, ", ");
-    show(io, sortof(t)); print(io, ", ");
-    show(io, inputs(t))
-    print(io, ")")
-end
-
-#! add TermInteface here
 
 """
 $(TYPEDEF)
@@ -145,18 +33,18 @@ See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscri
 
 **Warning:** Much of the high-level is WORK-IN-PROGRESS.
 """
-struct Term <: AbstractTerm #! replace Term by PnmlExpr
+struct Term <: AbstractTerm #! replace Term by AbstractTerm
     tag::Symbol
     elements::Any
 end
 
-tag(t::Term)::Symbol = t.tag #! replace Term by PnmlExpr
-elements(t::Term) = t.elements #! replace Term by PnmlExpr
-Base.eltype(t::Term) = typeof(elements(t)) #! replace Term by PnmlExpr
+tag(t::Term)::Symbol = t.tag #! replace Term by AbstractTerm
+elements(t::Term) = t.elements #! replace Term by AbstractTerm
+Base.eltype(t::Term) = typeof(elements(t)) #! replace Term by AbstractTerm
 sortof(::Term) = IntegerSort() #! XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
 
-function Base.show(io::IO, t::Term) #! replace Term by PnmlExpr
+function Base.show(io::IO, t::Term) #! replace Term by AbstractTerm
     #@show typeof(elements(t))
     print(io, nameof(typeof(t)), "(")
     show(io, tag(t)); print(io, ", ");
@@ -164,7 +52,7 @@ function Base.show(io::IO, t::Term) #! replace Term by PnmlExpr
     print(io, ")")
 end
 
-(t::Term)() =  _term_eval(elements(t)) #! replace Term by PnmlExpr
+(t::Term)() =  _term_eval(elements(t)) #! replace Term by AbstractTerm
 
 _term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
 _term_eval(v::Number) = v
@@ -263,51 +151,6 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
                           tag in builtin_constants ||
                           tag === :tuple ||
                           tag === :useroperator
-
-"""
-Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
-"""
-struct PnmlTuple <: AbstractOperator end
-
-#=
-PNML.Operator(:numberof, PNML.var"#103#104"(),
-PnmlExpr[
-    PNML.NumberConstant{Int64, PNML.PositiveSort}(3, PNML.PositiveSort()),
-    PNML.DotConstant()], PNML.AbstractSort[PNML.PositiveSort(), PNML.DotSort()
-    ],
-    PNML.IntegerSort())
-=#
-"""
-Some [`Operators`](@ref)` and [`Variables`](@ref) creates/use a multiset.
-Wrap a Multisets.Multiset
-
-multi`x where x is an instance of a sort T.
-"""
-struct PnmlMultiset{T} <: AbstractOperator #todo CamelCase
-    ms::Multiset{T} #TODO allow real multiplicity
-end
-#PnmlMultiset(x) = PnmlMultiset(Multiset{sortof(x)}(x))
-# TODO forward ops?
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-User operators refers to a [`NamedOperator`](@ref) declaration.
-"""
-struct UserOperator <: AbstractOperator
-    declaration::Symbol # of a NamedOperator
-    decldict::DeclDict # Shared with all of PnmlNet, is where the NamedOperator lives.
-end
-UserOperator(str::AbstractString, netid) = UserOperator(Symbol(str), netid)
-UserOperator(decl::Symbol, netid) = UserOperator(decl, decldict(netid))
-
-function(uo::UserOperator)(#= pass arguments to operator =#)
-    @warn "UserOperator $uo.declaration needs access to DeclDict"
-    no = named_op(uo.decldict, uo.declaration)
-    no(#= pass arguments to operator =#)
-end
-sortof(uo::UserOperator) = sortof(named_op(decldict, uo.declaration))
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------

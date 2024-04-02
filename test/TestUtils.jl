@@ -18,7 +18,8 @@ using EzXML, Preferences, XMLDict, Reexport, Multisets
     IntegerSort, ListSort, MultisetSort,
     NaturalSort, PositiveSort, ProductSort, PartitionSort, RealSort, UserSort, StringSort,
     SortType, PartitionElement,
-    NumberConstant, DotConstant
+    NumberConstant, DotConstant,
+    inputs
 
 "Often JET has problems with beta julia versions:("
 const jet_broke = (VERSION < v"1.10-") ? false : true

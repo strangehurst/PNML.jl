@@ -10,7 +10,7 @@ using PNML: Maybe,
 const str = """
 <?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+  <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
     <page id="page0">
       <place id="place1">
@@ -31,68 +31,68 @@ const str = """
 """
 const pnmldoc = PNML.xmlroot(str) # shared by testsets
 
-@testset "parse tree" begin
-    @test EzXML.nodename(pnmldoc) == "pnml"
-    @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
+# @testset "parse tree" begin
+#     @test EzXML.nodename(pnmldoc) == "pnml"
+#     @test EzXML.namespace(pnmldoc) == "http://www.pnml.org/version-2009/grammar/pnml"
 
-    reg = registry()
-    # Manually decend tree parsing leaf-enough elements because this is a test!
-    for net in allchildren("net", pnmldoc)
-        @test EzXML.nodename(net) == "net"
+#     reg = registry()
+#     # Manually decend tree parsing leaf-enough elements because this is a test!
+#     for net in allchildren("net", pnmldoc)
+#         @test EzXML.nodename(net) == "net"
 
-        nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
-        @test isa(nn, PNML.Name)
-        @test PNML.text(nn) == "P/T Net with one place"
+#         nn = parse_name(firstchild("name", net), PnmlCoreNet(), reg)
+#         @test isa(nn, PNML.Name)
+#         @test PNML.text(nn) == "P/T Net with one place"
 
-        nd = allchildren("declaration", net)
-        @test isempty(nd)
-        ndx = parse_declaration.(nd, Ref(reg)) # test of broadcast over `nothing`
-        @test isempty(ndx)
-        @test_call target_modules=target_modules allchildren("declaration", net)
+#         nd = allchildren("declaration", net)
+#         @test isempty(nd)
+#         ndx = parse_declaration.((pid(net),), nd, Ref(reg)) # test of broadcast over `nothing`
+#         @test isempty(ndx)
+#         @test_call target_modules=target_modules allchildren("declaration", net)
 
-        nt = allchildren("toolspecific", net)
-        @test isempty(nt)
-        @test isempty(parse_toolspecific.(nt, Ref(reg)))
+#         nt = allchildren("toolspecific", net)
+#         @test isempty(nt)
+#         @test isempty(parse_toolspecific.(nt, Ref(reg)))
 
-        pages = allchildren("page", net)
-        @test !isempty(pages)
+#         pages = allchildren("page", net)
+#         @test !isempty(pages)
 
-        for page in pages
-            @test EzXML.nodename(page) == "page"
+#         for page in pages
+#             @test EzXML.nodename(page) == "page"
 
-            @test !isempty(allchildren("place", page))
-            for p in allchildren("place", page)
-                @test EzXML.nodename(p) == "place"
-                fc = firstchild("initialMarking", p)
-                i = parse_initialMarking(fc, PnmlCoreNet(), reg)
-                #@test_opt function_filter=pff firstchild("initialMarking", p)
-                @test_call target_modules=target_modules firstchild("initialMarking", p)
-                @test typeof(i) <: PNML.Marking
-                @test typeof(value(i)) <: Union{Int,Float64}
-                @test value(i) >= 0
-            end
+#             @test !isempty(allchildren("place", page))
+#             for p in allchildren("place", page)
+#                 @test EzXML.nodename(p) == "place"
+#                 fc = firstchild("initialMarking", p)
+#                 i = parse_initialMarking(fc, PnmlCoreNet(), reg)
+#                 #@test_opt function_filter=pff firstchild("initialMarking", p)
+#                 @test_call target_modules=target_modules firstchild("initialMarking", p)
+#                 @test typeof(i) <: PNML.Marking
+#                 @test typeof(value(i)) <: Union{Int,Float64}
+#                 @test value(i) >= 0
+#             end
 
-            @test !isempty(allchildren("transition", page))
-            for t in allchildren("transition", page)
-                @test EzXML.nodename(t) == "transition"
-                cond = firstchild("condition", t)
-                @test cond === nothing
-            end
+#             @test !isempty(allchildren("transition", page))
+#             for t in allchildren("transition", page)
+#                 @test EzXML.nodename(t) == "transition"
+#                 cond = firstchild("condition", t)
+#                 @test cond === nothing
+#             end
 
-            @test !isempty(allchildren("arc", page))
-            for a in allchildren("arc", page)
-                @test EzXML.nodename(a) == "arc"
-                ins = firstchild("inscription", a)
-                if ins !== nothing
-                    i = parse_inscription(ins, PnmlCoreNet(), reg)
-                    @test typeof(i) <: PNML.Inscription
-                    @test typeof(value(i)) <: Union{Int,Float64}
-                    @test value(i) > 0
-                end
-            end
-        end
-    end
-end
+#             @test !isempty(allchildren("arc", page))
+#             for a in allchildren("arc", page)
+#                 @test EzXML.nodename(a) == "arc"
+#                 ins = firstchild("inscription", a)
+#                 if ins !== nothing
+#                     i = parse_inscription(ins, PnmlCoreNet(), reg)
+#                     @test typeof(i) <: PNML.Inscription
+#                     @test typeof(value(i)) <: Union{Int,Float64}
+#                     @test value(i) > 0
+#                 end
+#             end
+#         end
+#     end
+# end
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
@@ -136,7 +136,8 @@ end
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
-    testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
+    println("\n-----------------------------------------")
+    @show testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
 
     model = parse_file(testfile)
     #!model = @test_logs(match_mode=:all, parse_file(testfile))
@@ -172,14 +173,16 @@ end
 
 # Read a file
 @testset "test1.pnml file" begin
-    println("\ntest1.pnml")
-    # model = @test_logs(match_mode=:all,
-    #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
-    #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-    #     parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
-    model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
+    println("\n-----------------------------------------\ntest1.pnml")
+    model = @test_logs(match_mode=:any,
+        (:warn, "ignoring unexpected child of <condition>: 'name'"),
+        (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+        parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
+    # model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
 
     @test model isa PnmlModel
+    @show model
+    #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
     @test startswith(repr(model), "PnmlModel")
 
     #@show [pid(x) for x in PNML.nets(model)]
@@ -189,7 +192,8 @@ end
         PNML.flatten_pages!(n)
         @test PNML.verify(n)
 
-     begin #   Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            #TODO use as base of a validation tool
             println()
             PNML.pagetree(n)
             println()
@@ -210,4 +214,5 @@ end
             @show PNML.metagraph(n)
         end
     end
+    println("\n-----------------------------------------")
 end

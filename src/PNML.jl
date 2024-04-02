@@ -61,7 +61,7 @@ if !haskey(ENV, "COLUMNS")
 end
 
 import AutoHashEquals: @auto_hash_equals
-using Base: Fix1, Fix2, @kwdef, RefValue
+using Base: Fix1, Fix2, @kwdef, RefValue, isempty
 import FunctionWrappers
 import Reexport
 import DecFP
@@ -94,7 +94,6 @@ include("Core/types.jl") # Abstract Types
 include("Core/constterm.jl") #
 include("Core/sorts.jl") # Sorts are used in Variables, Operators
 include("Core/declarations.jl") # Declarations are inside <declaration> Label.
-include("Core/terms.jl") # Variables and Operators
 
 include("Core/Terms/arbitrarydeclarations.jl")
 include("Core/Terms/booleans.jl")
@@ -105,9 +104,12 @@ include("Core/Terms/dots.jl")
 include("Core/Terms/numbers.jl")
 include("Core/Terms/lists.jl")
 include("Core/Terms/multisets.jl")
-include("Core/Terms/partitions.jl")
 include("Core/Terms/strings.jl")
-
+include("Core/Terms/variables.jl")
+include("Core/terms.jl") # Variables and AbstractOperators preceed
+include("Core/Terms/operators.jl")
+include("Core/Terms/partitions.jl")
+include("Core/decldict.jl")
 include("Core/structure.jl")
 include("Core/graphics.jl")
 include("Core/toolinfos.jl")
@@ -152,7 +154,7 @@ export @xml_str, xmlroot
 export parse_str, parse_file, parse_pnml
 export PnmlException, MissingIDException, MalformedException
 export registry
-export PnmlExpr
+export PnmlExpr, AbstractTerm
 
 include("precompile.jl")
 

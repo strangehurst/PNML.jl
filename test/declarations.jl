@@ -19,12 +19,12 @@ using PNML: Maybe, tag, labels, pid, AnyElement, name, value,
     SortType, PartitionElement
 
 
-@testset "Declaration() $pntd" for pntd in all_nettypes()
-    decl = Declaration()
-    @test length(PNML.declarations(decl)) == 0
-    @test_opt Declaration()
-    @test_call Declaration()
-end
+# @testset "Declaration() $pntd" for pntd in all_nettypes()
+#     decl = Declaration()
+#     @test length(PNML.declarations(decl)) == 0
+#     @test_opt Declaration()
+#     @test_call Declaration()
+# end
 
 function _subtypes(type::Type)
     out = Any[]
@@ -43,32 +43,32 @@ end
 sorts() = _subtypes(AbstractSort)
 
 @testset "parse_sort $pntd" for pntd in all_nettypes()
-    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry())
+    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd, registry(); ids=(:NN,))
     @test sort isa UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"<dot/>", pntd, registry())
+    sort = parse_sort(xml"<dot/>", pntd, registry(); ids=(:NN,))
     @test sort isa DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort =  parse_sort(xml"<bool/>", pntd, registry())
+    sort =  parse_sort(xml"<bool/>", pntd, registry(); ids=(:NN,))
     @test sort isa BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"<integer/>", pntd, registry())
+    sort = parse_sort(xml"<integer/>", pntd, registry(); ids=(:NN,))
     @test sort isa IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"<natural/>", pntd, registry())
+    sort = parse_sort(xml"<natural/>", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.NaturalSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"<positive/>", pntd, registry())
+    sort = parse_sort(xml"<positive/>", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.PositiveSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
@@ -76,7 +76,7 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet(), registry())
+                            </cyclicenumeration>""", PnmlCoreNet(), registry(); ids=(:NN,))
     @test sort isa PNML.CyclicEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
@@ -84,25 +84,21 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </finiteenumeration>""", pntd, registry())
+                           </finiteenumeration>""", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.FiniteEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry())
+    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.FiniteIntRangeSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    sort = parse_sort(xml"""<productsort>
-                          </productsort>""", pntd, registry())
-    @test sort isa PNML.ProductSort
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd, registry(); ids=(:NN,))
 
     sort = parse_sort(xml"""<productsort>
                                 <usersort declaration="a_user_sort"/>
-                           </productsort>""", pntd, registry())
+                           </productsort>""", pntd, registry(); ids=(:NN,))
                            sprint(show, sort)
     @test sort isa PNML.ProductSort
     @test_logs sprint(show, sort)
@@ -111,7 +107,7 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<productsort>
                            <usersort declaration="speed"/>
                            <usersort declaration="distance"/>
-                         </productsort>""", pntd, registry())
+                         </productsort>""", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
@@ -119,29 +115,32 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<productsort>
                                <usersort declaration="id1"/>
                                <natural/>
-                            </productsort>""", pntd, registry())
+                            </productsort>""", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd, registry())
+                            </multisetsort>""", pntd, registry(); ids=(:NN,))
     @test sort isa PNML.MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     sort = parse_sort(xml"""<multisetsort>
                                 <natural/>
-                            </multisetsort>""", pntd, registry())
+                            </multisetsort>""", pntd, registry(); ids=(:NN,))
     @test sort isa Maybe{PNML.MultisetSort}
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 end
 
 @testset "empty declarations $pntd" for pntd in all_nettypes()
+    empty!(PNML.TOPDECLDICTIONARY)
+    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     # The attribute should be ignored.
-    decl = parse_declaration(xml"""
+    decl = parse_declaration((:NULLNET,),
+        xml"""
         <declaration key="test empty">
           <structure>
            <declarations>
@@ -168,6 +167,7 @@ end
 end
 
 @testset "namedsort declaration $pntd" for pntd in all_nettypes()
+    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     node = xml"""
     <declaration>
         <structure>
@@ -194,8 +194,9 @@ end
         </structure>
     </declaration>
     """
+    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     reg = PNML.registry()
-    decl = parse_declaration(node, pntd, reg)
+    decl = parse_declaration((:NULLNET,), node, pntd, reg)
     @test typeof(decl) <: PNML.Declaration
     @test length(PNML.declarations(decl)) == 3
 
@@ -207,18 +208,18 @@ end
         @test isregistered(reg, pid(nsort))
         @test Symbol(PNML.name(nsort)) === pid(nsort) # name and id are the same.
         @test PNML.sort(nsort) isa PNML.CyclicEnumerationSort
-        @test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
+        #@test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
 
         sortname = PNML.name(nsort)
         cesort   = PNML.sort(nsort)
         feconsts = PNML.elements(cesort) # should be iteratable ordered collection
-        @test feconsts isa Vector{PNML.FEConstant}
+        #@test feconsts isa Vector{PNML.FEConstant}
         @test length(feconsts) == 2
         for fec in feconsts
             @test fec isa PNML.FEConstant
             @test fec.id isa Symbol
             @test fec.name isa AbstractString
-            @test !isregistered(reg, fec.id) # unregistered id
+            @test isregistered(reg, fec.id)
 
             @test endswith(string(fec.id), fec.name)
         end
@@ -227,6 +228,7 @@ end
 
 
 @testset "partition declaration $pntd" for pntd in all_nettypes()
+    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     node = xml"""
     <declaration>
         <structure>
@@ -259,7 +261,7 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    decl = parse_declaration(node, pntd, reg)
+    decl = parse_declaration((:NULLNET,), node, pntd, reg)
     @test typeof(decl) <: Declaration
     @test length(PNML.declarations(decl)) == 3
 

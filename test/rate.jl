@@ -1,6 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET
 using PNML: Maybe, tag, pid
 
+println("RATE")
 @testset "get rate label $pntd" for pntd in all_nettypes()
     trans = PNML.parse_transition(xml"""<transition id ="birth">
         <rate> <text>0.3</text> </rate>

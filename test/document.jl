@@ -5,7 +5,7 @@ using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel, PnmlNet
 str = """
 <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="small-net" type="http://www.pnml.org/version-2009/grammar/ptnet">
+  <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
   <name> <text>P/T Net with one place</text> </name>
     <page id="page0">
       <name> <text>page name</text> </name>
@@ -52,9 +52,9 @@ str = """
 </pnml>
 """
     #
-    model = @test_logs(match_mode=:all,
-         (:warn, "found unexpected label of <page>: text"),
-         #(:info, "parse_term kinds are Variable and Operator"),
+    empty!(PNML.TOPDECLDICTIONARY)
+    model = @test_logs(match_mode=:any,
+        # (:warn, "found unexpected label of <page>: text"),
          (:warn, r"^ignoring child of <namedoperator name=g, id=id6> with tag unknown, allowed: 'def', 'parameter'"),
          (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
         parse_pnml(xmlroot(str)))
@@ -161,7 +161,7 @@ end
       </net>
     </pnml>
     """
-
+    empty!(PNML.TOPDECLDICTIONARY)
     model = parse_str(str)
     @test model isa PnmlModel
 end

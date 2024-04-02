@@ -12,7 +12,7 @@ using PNML: incidence_matrix, inscription_value_type
 
 using Test, Logging
 testlogger = TestLogger()
-
+println("SIMPLENET")
 str1 = """
 <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">

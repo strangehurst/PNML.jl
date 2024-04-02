@@ -42,10 +42,10 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
-function post_flat_verify(net::PnmlNet;
+function post_flatten_verify(net::PnmlNet;
                           trim::Bool = true,
                           verbose::Bool = CONFIG.verbose)
-    verbose && println("postflatten verify")
+    verbose && @info "post_flatten_verify"
     errors = String[]
 
     npage(net) == 1 || push!(errors, "wrong pagedict length: expected 1 found $(npage(net)))")
@@ -70,10 +70,10 @@ pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not
 netsets hold pnml IDs "owned"
 """
 function append_page!(l::Page, r::Page;
-                      keys = (:declaration,:tools, :labels), # non-idset and non-dict fileds of page
-                      idsets = (place_idset, transition_idset, arc_idset,
-                                refplace_idset, reftransition_idset,)
-                    )
+            # Moved declarations to per-net DeclDict 2024-03-22.
+            keys = (:tools, :labels), # non-idset and non-dict fields of page to merge
+            idsets = (place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,)
+            )
 
     if CONFIG.verbose
         println("append_page! ", pid(l), " ", pid(r))

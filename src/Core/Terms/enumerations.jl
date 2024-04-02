@@ -6,11 +6,19 @@ $(TYPEDEF)
 abstract type EnumerationSort <: AbstractSort end
 
 function Base.getproperty(s::EnumerationSort, prop_name::Symbol)
-    prop_name === :elements && return getfield(s, :elements)::Vector{FEConstant}
+    prop_name === :fec_refs && return getfield(s, :fec_refs)::Vector{Symbol}
+    prop_name === :netid && return getfield(s, :netid)::Symbol
     return getfield(o, prop_name)
 end
+netid(s::EnumerationSort) = s.netid
 
-elements(s::EnumerationSort) = s.elements
+"Return iterator into feconstant(decldict(netid)). Maintains order of this sort."
+elements(s::EnumerationSort) = begin
+    dd = decldict(netid(s))
+    @show s.fec_refs typeof(dd.feconstants)
+    # return an iterator that maintains the order of fec_refs.
+    Iterators.map(ref->dd.feconstants[ref], s.fec_refs)
+end
 
 """
 $(TYPEDEF)
@@ -18,24 +26,27 @@ $(TYPEDEF)
 The operations differ between the various `EnumerationSort`s. They may be #TODO
 """
 @auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
-    elements::Vector{FEConstant}
+    fec_refs::Vector{Symbol} # keys into feconstant(decldict)
+    netid::Symbol
 end
-CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[])
+CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[], :empty)
 
 """
 $(TYPEDEF)
 """
 @auto_hash_equals struct FiniteEnumerationSort <: EnumerationSort
-    elements::Vector{FEConstant}
+    fec_refs::Vector{Symbol} # keys into feconstant(ddict)
+    netid::Symbol
 end
-FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[])
+FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[], :empty)
 
 function Base.show(io::IO, es::EnumerationSort)
     print(io, nameof(typeof(es)), "([")
     io = inc_indent(io)
-    for  (i, c) in enumerate(elements(es))
-        print(io, '\n', indent(io)); show(io, values(c));
-        i < length(elements(es)) && print(io, ",")
+    e = elements(es)
+    for  (i, c) in enumerate(e)
+        print(io, '\n', indent(io)); show(io, c);
+        i < length(e) && print(io, ",")
     end
     print(io, "])")
 end
