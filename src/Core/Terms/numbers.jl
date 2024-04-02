@@ -25,6 +25,11 @@ Built-in sort whose `eltype` is `Float64`
 @auto_hash_equals struct RealSort <: NumberSort end
 Base.eltype(::Type{<:RealSort}) = Float64
 
+"""
+Built-in sort whose `eltype` is `nothing`
+"""
+@auto_hash_equals struct NullSort <: NumberSort end
+Base.eltype(::Type{<:NullSort}) = Nothing
 
 """
 Builtin operator that has arity=0 means the same result every time, a constant.
