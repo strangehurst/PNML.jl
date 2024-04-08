@@ -91,10 +91,9 @@ include("Core/types.jl") # Abstract Types
 #include("Core/pprint.jl")
 
 # Parts of Labels and Nodes.
-include("Core/constterm.jl") #
 include("Core/sorts.jl") # Sorts are used in Variables, Operators
 include("Core/declarations.jl") # Declarations are inside <declaration> Label.
-
+include("Core/constterm.jl") #
 include("Core/Terms/arbitrarydeclarations.jl")
 include("Core/Terms/booleans.jl")
 include("Core/Terms/enumerations.jl")
@@ -147,7 +146,9 @@ include("Parse/declarations.jl")
 include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
 
-# Per net declaration keyed by net id.
+"""
+Per-net dictionary of declaration dictionary collections keyed by net id. See [`DeclDict`](@ref)).
+"""
 const TOPDECLDICTIONARY::Dict{Symbol,DeclDict} = Dict{Symbol,DeclDict}()
 
 export @xml_str, xmlroot
