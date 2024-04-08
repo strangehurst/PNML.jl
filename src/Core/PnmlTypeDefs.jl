@@ -17,7 +17,7 @@ export PnmlCoreNet, PTNet,
        ContinuousNet
 
 # Functions
-export pnmltype, pntd_symbol, all_nettypes, add_nettype!, pnmltype_map, default_pntd_map,
+export pnmltype, pntd_symbol, all_nettypes, core_nettypes, add_nettype!, pnmltype_map, default_pntd_map,
     isdiscrete, iscontinuous, ishighlevel
 
 """
@@ -183,8 +183,10 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
 
 "Return iterator over [`PnmlType`](@ref) singletons."
 all_nettypes() = values(pnmltype_map)
-"Return iterator over [`PnmlType`](@ref) singletons."
+"Return iterator over [`PnmlType`](@ref) singletons filtered by the prediciate `p`."
 all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
+
+core_nettypes() = (PnmlCoreNet(), HLCoreNet(), ContinuousNet())
 
 """
 
@@ -195,7 +197,7 @@ Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
 function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
     action = s ∈ keys(dict) ? "updating" : "adding"
     @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
-    #pntd in values(dict) && @warn "$pntd already in pnml nettype dictionary"
+    #@assert pntd ∉ values(dict) "$pntd already in pnml nettype dictionary"
     dict[s] = pntd
     return nothing
 end
@@ -263,19 +265,21 @@ function iscontinuous end
 function ishighlevel end
 
 isdiscrete(pntd::PnmlType) = false
-iscontinuous(pntd::PnmlType) = false
-ishighlevel(pntd::PnmlType) = false
+isdiscrete(::Type{<:PnmlType}) = false
 
 isdiscrete(pntd::AbstractPnmlCore) = true
-iscontinuous(pntd::AbstractContinuousNet) = true
-ishighlevel(pntd::AbstractHLCore) = true
+isdiscrete(::Type{<:AbstractPnmlCore}) = true
 
-isdiscrete(::Type{<:PnmlType}) = false
+iscontinuous(pntd::PnmlType) = false
 iscontinuous(::Type{<:PnmlType}) = false
+
+iscontinuous(pntd::AbstractContinuousNet) = true
+iscontinuous(::Type{<:AbstractContinuousNet}) = true
+
+ishighlevel(pntd::PnmlType) = false
 ishighlevel(::Type{<:PnmlType}) = false
 
-isdiscrete(::Type{<:AbstractPnmlCore}) = true
-iscontinuous(::Type{<:AbstractContinuousNet}) = true
+ishighlevel(pntd::AbstractHLCore) = true
 ishighlevel(::Type{<:AbstractHLCore}) = true
 
 end # module PnmlTypeDefs
