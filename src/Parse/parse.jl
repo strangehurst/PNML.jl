@@ -88,15 +88,11 @@ Return a [`PnmlNet`](@ref)`.
 """
 function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
-    #EzXML.haskey(node, "id") || throw(MissingIDException(nn)) #! Is registered later.
     netid = register_idof!(idregistry, node)
-    type = attribute(node, "type", "$nn missing type")
 
-    isempty(allchildren("page", node)) &&
-        throw(MalformedException("""<net> $netid does not have any <page> child"""))
-
-    # We allow override of the Petri Net Type Definition (PNTD) value for fun & games.
-    pn_typedef = pnmltype(type) # First parse the required input.
+    # Parse the required-by-specification petri net type input.
+    pn_typedef = PnmlTypeDefs.pnmltype(attribute(node, "type", "$nn missing type"))
+    # Override of the Petri Net Type Definition (PNTD) value for fun & games.
     if isnothing(pntd_override)
         pntd = pn_typedef
     else
@@ -104,8 +100,10 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
         @info lazy"net $id pntd set to $pntd, overrides $pn_typedef"
     end
     # Now we know the PNTD and can parse.
-    net = parse_net_1((netid,), node, pntd, idregistry) # RUNTIME DISPATCH
-    return net
+    isempty(allchildren("page", node)) &&
+        throw(MalformedException("""<net> $netid does not have any <page> child"""))
+
+    return parse_net_1((netid,), node, pntd, idregistry) # RUNTIME DISPATCH
 end
 
 """
@@ -150,7 +148,10 @@ function parse_net_1(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR
     # Which, because it is a label, must also support text, graphics and tools.
     # We also collect all the toolinfos.  Only the first <declaration> text and graphics will be preserved.
     # Though what use graphics could add escapes me.
-    isempty(decldict(netid)) || @show(netid, decldict(netid))
+    if !isempty(decldict(netid))
+        @show(netid, decldict(netid)) #! debug
+        validate_declarations(decldict(netid))
+    end
 
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
@@ -158,7 +159,7 @@ function parse_net_1(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR
         if tag == "page"
             parse_page!(pagedict, netdata, netsets, ids, child, pntd, idregistry)
         elseif tag == "declaration"
-            println("already done decls")
+            # NOOP println("already done decls")
         elseif tag == "name"
             namelabel = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
@@ -228,7 +229,7 @@ function _parse_page!(pagedict, netdata, ids::Tuple, node::XMLNode, pntd::T, idr
         elseif tag == "page" # Subpage
             parse_page!(pagedict, netdata, netsets, ids, child, pntd, idregistry)
         elseif tag == "declaration"
-            println("already done decls")
+            # NOOP println("already done decls")
         elseif tag == "name"
             name = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
@@ -722,8 +723,17 @@ treated as a functor.
 A Condition should evaluate to a boolean.
 See [`AbstractTerm`](@ref).
 """
+function parse_condition end
+
+function parse_condition(ids::Tuple, node::XMLNode, pntd::T, idregistry::PIDR) where {T<:AbstractHLCore}
+    check_nodename(node, "condition")
+    l = parse_label_content(ids, node, parse_condition_term, pntd, idregistry)
+    Condition(l.text, something(l.term, default_bool_term(pntd)), l.graphics, l.tools)
+end
+
 function parse_condition(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     check_nodename(node, "condition")
+    println("condition for $pntd")
     l = parse_label_content(ids, node, parse_condition_term, pntd, idregistry)
     Condition(l.text, something(l.term, default_bool_term(pntd)), l.graphics, l.tools)
 end
