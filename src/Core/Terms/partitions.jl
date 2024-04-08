@@ -14,7 +14,7 @@ Want: PartitionElementOf(feconstant) -> id of the equivalence class
 
 #TODO Somehow PartitionElementOf will need to make the connection.
 """
-struct PartitionElement # AbstractOperator
+struct PartitionElement <: OperatorDeclaration # AbstractOperator
     id::Symbol
     name::Union{String,SubString{String}}
     # Note the Schema just lists one or more Terms.
@@ -38,6 +38,7 @@ struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclarati
     def::S # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
     element::Vector{PE} # 1 or more PartitionElements that index into `def`
     #
+    #ids or netid or parent
 end
 PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
 sort(partition::PartitionSort) = partition.def
@@ -47,3 +48,26 @@ elements(partition::PartitionSort) = partition.element
 # list PartitionElement ids & names
 # list PartitionElement terms
 # access by partition id, element id
+
+"Iterator over partition element PNML IDs"
+function element_ids(ps::PartitionSort, netid::Symbol)
+    Iterators.map(pid, elements(ps))
+end
+"Iterator over partition element names"
+function element_names(ps::PartitionSort, netid::Symbol)
+    Iterators.map(name, elements(ps))
+end
+
+function Base.show(io::IO, ps::PartitionSort)
+
+        println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ",", )
+        io = inc_indent(io)
+        println(io, indent(io), sort(ps), ",");
+        print(io, "FE[")
+        e = elements(ps)
+        for  (i, c) in enumerate(e)
+            print(io, '\n', indent(io)); show(io, c);
+            i < length(e) && print(io, ",")
+        end
+        print(io, "])")
+    end

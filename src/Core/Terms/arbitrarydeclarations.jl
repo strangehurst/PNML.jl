@@ -22,7 +22,7 @@ $(TYPEDFIELDS)
 
 > ...arbitrary sorts and operators do not come with a definition of the sort or operation; they just introduce a new symbol without giving a definition for it.
 """
-struct ArbitraryOperator{I<:AbstractSort} <: AbstractOperator
+struct ArbitraryOperator{I<:AbstractSort} <: OperatorDeclaration #AbstractOperator
     declaration::Symbol
     input::Vector{AbstractSort} # Sorts
     output::I # sort of operator
