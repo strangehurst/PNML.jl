@@ -85,13 +85,14 @@ $(TYPEDFIELDS)
 
 See [`UserOperator`](@ref)
 """
-struct NamedOperator{V,T} <: OperatorDeclaration
+struct NamedOperator{T <: AbstractTerm} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    parameter::Vector{V}
-    def::T # operator or variable term (with associated sort)
+    parameter::Vector{VariableDeclaration} # variables with inferred sorts
+    def::T # operator or variable term (with inferred sort)
 end
-NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", [], nothing)
+NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", VariableDeclaration[], nothing)
+NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], nothing)
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
 
