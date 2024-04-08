@@ -43,3 +43,20 @@ function metagraph(net::PnmlNet)
     MetaGraph(graph, vertex_labels(net), vertexdata, edgedata, PNML.name(net),
                 edge_data -> 1.0, 1.0) # weights
 end
+
+# Some helpers for metagraph. Will be useful in validating.
+# pnml id symbol converted to/from vertex code.
+vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
+vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
+
+vertexdata(net::PnmlNet) = begin
+    vcode = vertex_codes(net)
+    vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
+    for p in places(net)
+        vdata[pid(p)] = (vcode[pid(p)], p)
+    end
+    for t in transitions(net)
+        vdata[pid(t)] = (vcode[pid(t)], t)
+    end
+    return vdata
+end

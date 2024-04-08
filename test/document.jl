@@ -113,10 +113,9 @@ end
 
     for net in modelnets
         @test PNML.idregistry(net) isa PnmlIDRegistry
+        ntup = PNML.find_nets(model, net)
         t = PNML.nettype(net)
-        ntup = PNML.find_nets(model, t)
-
-        @test PNML.name(net) == string(pid(net))
+        @test PNML.name(net) == string(pid(net)) # true by special construction
         for n in ntup
             @test t === PNML.nettype(n)
         end
@@ -124,8 +123,6 @@ end
 
     @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
                                         :hlnet, :symmetric, :continuous]
-        @test_opt  pnmltype(pt)
-        @test_call pnmltype(pt)
         @test_opt  PNML.find_nets(model, pt)
         @test_call PNML.find_nets(model, pt)
 

@@ -17,9 +17,8 @@ One Petri Net of a PNML model.
     idregistry::PnmlIDRegistry # Possibly shared by all nets in a pnml model.
 end
 
-#nettype(::PnmlNet{T}) where {T <: PnmlType} = Tfirstpage
-PnmlTypeDefs.pnmltype(net::PnmlNet) = net.type
-nettype(net::PnmlNet) = typeof(pnmltype(net))
+pntd(net::PnmlNet) = net.type
+nettype(net::PnmlNet) = typeof(net.type)
 
 pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
                                                       place_type(T),
@@ -152,24 +151,6 @@ refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
 
-# Some helpers for metagraph. Will be useful in validating.
-# pnml id symbol converted to/from vertex code.
-vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
-vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
-
-vertexdata(net::PnmlNet) = begin
-    vcode = vertex_codes(net)
-    vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
-    for p in places(net)
-        vdata[pid(p)] = (vcode[pid(p)], p)
-    end
-    for t in transitions(net)
-        vdata[pid(t)] = (vcode[pid(t)], t)
-    end
-    return vdata
-    # Dict(pid(x) => (vcode[pid(x)], x) for x in Iterators.flatten(places(n), transitions(n)))
-end
-
 """
 """
 function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
@@ -237,9 +218,9 @@ function Base.show(io::IO, net::PnmlNet)
     end
     println(io)
     print(io, "Declarations[")
-    for (i,decl) in enumerate(declarations(net))
+    for (i,decl) in enumerate(declarations(decldict(pid(net))))
         print(iio, "\n", indent(iio)); show(iio, decl)
-        i < length(declarations(net)) && print(iio, ", ")
+        i < length(decldict(pid(net))) && print(iio, ", ")
     end
     println(io, "], ")
     show(io, tools(net)); println(io, ", ")
