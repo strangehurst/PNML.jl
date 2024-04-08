@@ -254,6 +254,12 @@
 							<feconstant id="Altitude20" name="20"/>
 						</cyclicenumeration>
 					</namedsort>
+		            <namedsort id="cats" name="Cats">
+						<cyclicenumeration>
+							<feconstant id="tabby" name="tabby"/>
+							<feconstant id="calico" name="calico"/>
+						</cyclicenumeration>
+					</namedsort>
                 </declarations>
             </structure>
         </declaration>
@@ -282,31 +288,31 @@
             <transition id="t3_1">
                 <name><text>t3_1</text></name>
                 <condition>
-                <text>(A) lt (Altitude10) and (A) ineq (Altitude20)</text>
-                <structure>
-                    <and>
-                        <subterm>
-                            <lessthan>
-                                <subterm>
-                                    <variable refvariable="varA"/>
-                                </subterm>
-                                <subterm>
-                                    <useroperator declaration="Altitude10"/>
-                                </subterm>
-                            </lessthan>
-                        </subterm>
-                        <subterm>
-                            <inequality>
-                                <subterm>
-                                    <variable refvariable="varA"/>
-                                </subterm>
-                                <subterm>
-                                    <useroperator declaration="Altitude20"/>
-                                </subterm>
-                            </inequality>
-                        </subterm>
-                    </and>
-                </structure>
+                    <text>(A) lt (Altitude10) and (A) ineq (Altitude20)</text>
+                    <structure>
+                        <and>
+                            <subterm>
+                                <lessthan>
+                                    <subterm>
+                                        <variable refvariable="varA"/>
+                                    </subterm>
+                                    <subterm>
+                                        <useroperator declaration="Altitude10"/>
+                                    </subterm>
+                                </lessthan>
+                            </subterm>
+                            <subterm>
+                                <inequality>
+                                    <subterm>
+                                        <variable refvariable="varA"/>
+                                    </subterm>
+                                    <subterm>
+                                        <useroperator declaration="Altitude20"/>
+                                    </subterm>
+                                </inequality>
+                            </subterm>
+                        </and>
+                    </structure>
                 </condition>
             </transition>
             <arc id="arc41" source="stp5" target="t3_1">

@@ -119,7 +119,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap a `DictType` holding a PNML Label. Use the XML tag as identifier.
+Wrap an `AbstractDict` holding a PNML Label as parsed by `XMLDict`. Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
@@ -164,19 +164,21 @@ hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
 Filter iteratable collection for elements having `s` as the `tag`.
 """
+function get_labels end
+
 function get_labels(v, tagvalue::Symbol)
     Iterators.filter(Fix2(hastag, tagvalue), v)
 end
 
+"Return label matching `tagvalue`` or `nothing``."
 function get_label(v, tagvalue::Symbol)
     first(get_labels(v, tagvalue))
 end
 
+"Return `true` if collection `v` contains label with `tagvalue`."
 function has_label(v, tagvalue::Symbol)
     !isempty(get_labels(v, tagvalue))
 end
-
-
 
 """
 $(TYPEDEF)
@@ -186,10 +188,8 @@ Label of a <net> or <page> that holds zero or more declarations. The declaration
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
 
 All the declarations in the <structure> are placed into a single per-net dictonary.
-The text, graphics, and tools fields are expected to be nothing,
-but are present becaue beinglabels, it is allowed.
-
-We use them to provide nonstandard extensions for other PNTDs.
+The text, graphics, and tools fields are expected to be nothing, but are present because,
+being labels, it is allowed.
 """
 @kwdef struct Declaration <: Annotation
     text::Maybe{String} = nothing
@@ -199,13 +199,5 @@ We use them to provide nonstandard extensions for other PNTDs.
 end
 
 declarations(d::Declaration) = declarations(d.ddict)
-Base.length(d::Declaration) = length(declarations(d))
-
-# Flattening pages combines declarations & toolinfos into the first page.
-function Base.append!(l::Declaration, r::Declaration)
-    append!(declarations(l), declarations(r)) #! FIX ME XXX
-end
-
-function Base.empty!(d::Declaration)
-    empty!(declarations(d)) #! FIX ME XXX
-end
+Base.length(d::Declaration) = length(d.ddict)
+Base.isempty(d::Declaration) = isempty(d.ddict)

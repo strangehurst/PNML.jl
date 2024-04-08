@@ -53,7 +53,7 @@ tag(op::Operator)    = op.tag
 sortof(op::Operator) = op.outsort
 inputs(op::Operator) = op.inexprs
 function (op::Operator)()
-    println("\n$(tag(op)) arity $(arity(op)) $(sortof(op))")
+    println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
     @show input = [x() for x in inputs(op)] # evaluate each AbstractTerm
     @show typeof.(input) op.insorts eltype.(op.insorts)
     #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
@@ -101,9 +101,11 @@ end
 UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 netid(uo::UserOperator) = first(uo.ids)
 
-function(uo::UserOperator)(#= pass arguments to operator =#)
+function (uo::UserOperator)(#= pass arguments to operator =#)
+    println("UserOperator functor $(netid(uo)) $(uo.declaration)")
     @show uo decldict(netid(uo))
-    # There can also be ArbitraryOperator.
+    #! FEConstants are 0-ary operators. But not namedoperators.
+    @assert !isempty(decldict(netid(uo)).namedoperators) "useroperator found no named operators for $uo"
     @show has_named_op(decldict(netid(uo)), uo.declaration)
     no = named_op(decldict(netid(uo)), uo.declaration)
     no(#= pass arguments to operator =#)
