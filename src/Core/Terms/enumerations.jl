@@ -14,9 +14,9 @@ netid(s::EnumerationSort) = s.netid
 
 "Return iterator into feconstant(decldict(netid)). Maintains order of this sort."
 elements(s::EnumerationSort) = begin
+    #@show s.fec_refs
     dd = decldict(netid(s))
-    @show s.fec_refs typeof(dd.feconstants)
-    # return an iterator that maintains the order of fec_refs.
+    # Return an iterator into dd that maintains order.
     Iterators.map(ref->dd.feconstants[ref], s.fec_refs)
 end
 
@@ -29,7 +29,7 @@ The operations differ between the various `EnumerationSort`s. They may be #TODO
     fec_refs::Vector{Symbol} # keys into feconstant(decldict)
     netid::Symbol
 end
-CyclicEnumerationSort() = CyclicEnumerationSort(FEConstant[], :empty)
+CyclicEnumerationSort(netid::Symbol = :emptynet) = CyclicEnumerationSort(Symbol[], netid)
 
 """
 $(TYPEDEF)
@@ -38,14 +38,14 @@ $(TYPEDEF)
     fec_refs::Vector{Symbol} # keys into feconstant(ddict)
     netid::Symbol
 end
-FiniteEnumerationSort() = FiniteEnumerationSort(FEConstant[], :empty)
+FiniteEnumerationSort(netid::Symbol = :emptynet) = FiniteEnumerationSort(Symbol[], netid)
 
 function Base.show(io::IO, es::EnumerationSort)
     print(io, nameof(typeof(es)), "([")
     io = inc_indent(io)
     e = elements(es)
     for  (i, c) in enumerate(e)
-        print(io, '\n', indent(io)); show(io, c);
+        print(io, '\n', indent(io), c); #! show(io, c);
         i < length(e) && print(io, ",")
     end
     print(io, "])")
@@ -57,9 +57,9 @@ $(TYPEDEF)
 @auto_hash_equals struct FiniteIntRangeSort{T} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
+    netid::Symbol
 end
-FiniteIntRangeSort() = FiniteIntRangeSort(0, 0)
-#! equalSorts(a::FiniteIntRangeSort, b::FiniteIntRangeSort) = (a.start == b.start && a.stop == b.stop)
+FiniteIntRangeSort(netid::Symbol = :emptynet) = FiniteIntRangeSort(0, 0, netid)
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
 
 function Base.show(io::IO, s::FiniteIntRangeSort)

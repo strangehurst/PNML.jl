@@ -149,10 +149,12 @@ function parse_namedoperator(ids::Tuple, node::XMLNode, pntd::PnmlType, idregist
 end
 
 #! errors?! "$(TYPEDSIGNATURES)"
+"""
+$(TYPEDSIGNATURES)
+"""
 function parse_variabledecl(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
     nn = check_nodename(node, "variabledecl")
     id = register_idof!(idregistry, node)
-    #!EzXML.haskey(node, "name") || throw(MalformedException("$nn missing name attribute"))
     name = attribute(node, "name", "$nn missing name attribute. trail = $ids")
     # firstelement throws on nothing. Ignore more than 1.
     #! There should be an actual way to store the value of the variable!
@@ -160,7 +162,7 @@ function parse_variabledecl(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistr
     #! All that work can be defered to a post-parse phase. Followed by the verification phase.
     sort = parse_sort(EzXML.firstelement(node), pntd, idregistry; ids)
     VariableDeclaration(id, name, sort)
-end,
+end
 
 
 """
@@ -202,8 +204,7 @@ function parse_feconstants(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry
         else
             id = register_idof!(idregistry, child)
             name = attribute(child, "name", "$sorttag <feconstant id=$id> missing name attribute. trail = $ids")
-            fec = (id, name, netid, partid = :unknown) #! XXX partition id XXXX
-            dd.feconstants[id] = fec
+            dd.feconstants[id] = FEConstant(id, name, netid) #! XXX partition id XXXX
             push!(fec_refs, id)
         end
     end
@@ -287,7 +288,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg
     stop = tryparse(Int, stopstr)
     isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
-    FiniteIntRangeSort(start, stop)
+    FiniteIntRangeSort(start, stop, first(ids))
 end
 
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
@@ -301,7 +302,7 @@ function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, idreg::PIDR; 
 end
 
 function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    nn = check_nodename(node, "multisetsort")
+    check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort. trail = $ids"))
     basis = EzXML.firstelement(node)
     srt = parse_sort(Val(Symbol(EzXML.nodename(basis))), basis, pntd, idreg; ids) #~ deduplicate sorts
