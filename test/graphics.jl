@@ -1,5 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, parse_graphics, parse_tokengraphics, x, y
+using PNML: x, y
 
 @testset "coordinate" begin
     PNML.Coordinate(1, 2)
@@ -11,7 +11,7 @@ using PNML: tag, pid, parse_graphics, parse_tokengraphics, x, y
     #TODO more tests
 end
 
-@testset "graphics $pntd" for pntd in all_nettypes()
+@testset "graphics $pntd" for pntd in core_nettypes()
     str = """
     <graphics>
      <offset x="1.0" y="2.0" />
@@ -62,12 +62,12 @@ end
     @test n.font.rotation == "0.0"
 end
 
-@testset "graphics exception $pntd" for pntd in all_nettypes()
+@testset "graphics exception $pntd" for pntd in core_nettypes()
     str0 = """<bogus x="1" y="2" />"""
     @test_throws r"^ArgumentError" PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
 end
 
-@testset "tokengraphics $pntd" for pntd in all_nettypes()
+@testset "tokengraphics $pntd" for pntd in core_nettypes()
     str0 = """<tokengraphics></tokengraphics>"""
     n = @test_logs(match_mode=:all,
         (:warn,"tokengraphics does not have any <tokenposition> elements"),

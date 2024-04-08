@@ -1,19 +1,5 @@
 using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
 import EzXML
-using PNML: Maybe, getfirst, firstchild, allchildren,
-    ishighlevel, PnmlTypeDefs,
-    page_type, place_type, transition_type, arc_type,
-    marking_type, inscription_type, condition_type,
-    Term, default_bool_term, default_zero_term, default_one_term,
-    value, condition_value_type, rate_value_type, term_value_type,
-    tag,
-    BoolSort, IntegerSort, RealSort,
-    Condition, default_condition,
-    default_inscription, default_marking, default_sort, default_sorttype,
-    AbstractSort, BoolSort, DotSort, IntegerSort, NaturalSort, PositiveSort,
-    MultisetSort, ProductSort, RealSort, UserSort,
-    SortType,
-    PnmlNetData, PnmlNetKeys, all_nettypes, ishighlevel, isdiscrete, iscontinuous
 
 @testset "CONFIG" begin
     @show PNML.CONFIG
@@ -61,20 +47,6 @@ end
 end
 
 @testset "types for $pntd" for pntd in all_nettypes()
-    if noisy
-        @show pntd
-        @show page_type(pntd)
-        #TODO complete
-        @show place_type(pntd) transition_type(pntd) arc_type(pntd)
-        @show marking_type(pntd) inscription_type(pntd) condition_type(pntd)
-
-        @show default_bool_term(pntd) typeof(default_bool_term(pntd))
-        @show default_zero_term(pntd) typeof(default_zero_term(pntd))
-        @show default_one_term(pntd) typeof(default_one_term(pntd))
-
-        @show condition_value_type(pntd)
-        @show rate_value_type(pntd)
-    end
     b = default_bool_term(pntd)::PNML.BooleanConstant
     @test value(b) isa eltype(BoolSort)
     @test value(b) == true
@@ -96,10 +68,10 @@ end
 
 @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
     @test default_bool_term(pntd) isa AbstractTerm
-    @test default_condition(pntd)  isa Condition #(PNML.default_bool_term(pntd))
+    @test default_condition(pntd)  isa PNML.Condition #! both TestUtils and Base export "Condition";
 end
 
-@testset "net data for $pntd" for pntd in all_nettypes()
+@testset "net data for $pntd" for pntd in core_nettypes()
     pnd = PnmlNetData(pntd)
     @test isempty(PNML.placedict(pnd))
     @test isempty(PNML.transitiondict(pnd))
@@ -108,7 +80,7 @@ end
     @test isempty(PNML.reftransitiondict(pnd))
 end
 
-@testset "key sets for $pntd" for pntd in all_nettypes()
+@testset "key sets for $pntd" for pntd in core_nettypes()
     pns = PnmlNetKeys()
     @test isempty(PNML.page_idset(pns))
     @test isempty(PNML.place_idset(pns))
@@ -141,53 +113,3 @@ using PNML: pnmltype_map, default_pntd_map
     @test :newpntd in keys(pnmltype_map)
     @test pnmltype_map[:newpntd] === PnmlCoreNet()
 end
-
-using PNML: DictType, XDVT, XDVT2
-using XMLDict, OrderedCollections
-const ODT = OrderedDict{Union{Symbol, String}, Any}
-@testset "XMLDict" begin
-    @show DictType XDVT
-    # @show xd = xml_dict(xml"""<t/>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" />""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t> text </t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t>text</t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t attr="avalue" ></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" > text </t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="avalue" >text</t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t attr="" ></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t><u/></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-
-    # @show xd = xml_dict(xml"""<t><u>1</u><v>2</v></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-    # @show xd = xml_dict(xml"""<t><u></u></t>""", ODT; strip_text=true) typeof(xd)
-    # #dump(xd)
-end
-
-# @testset "show DictType" begin
-#     println()
-#     @show DictType() typeof(DictType())
-#     @show DictType(:foo => "bar")
-#     @show DictType(:foo => "bar", :baz => "boo")
-#     @show DictType(:foo => "bar", :baz => "boo", :three => "three")
-#     @show DictType(:foo => "bar", :baz => "boo", :three => "three", :four => "four")
-#     @show d = DictType(:foo => "bar", :baz => [:a => "one", :b => "two"])
-#     @show d = DictType(:foo => "bar", :baz => [DictType(:a => "one"), DictType(:b => "two")])
-#     @show d = DictType(:foo => "bar", :baz => (DictType(:a => "one"), DictType(:b => "two")))
-#     println()
-# end

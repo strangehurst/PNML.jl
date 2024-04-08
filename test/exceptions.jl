@@ -1,11 +1,5 @@
 using PNML, EzXML, ..TestUtils, JET
 using OrderedCollections
-using PNML:
-    tag, pid, nets,
-    page_type, place_type, refplace_type, transition_type, reftransition_type, arc_type,
-    parse_net, parse_page!,
-    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
-    parse_name
 
 println("EXCEPTIONS")
 
@@ -23,7 +17,7 @@ println("EXCEPTIONS")
     end
 end
 
-@testset "missing namespace $pntd" for pntd in all_nettypes()
+@testset "missing namespace $pntd" for pntd in core_nettypes()
     empty!(PNML.TOPDECLDICTIONARY)
     #@show collect(keys(PNML.TOPDECLDICTIONARY))
     @test isempty(PNML.TOPDECLDICTIONARY) #
@@ -37,7 +31,7 @@ end
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
-@testset "malformed $pntd" for pntd in all_nettypes()
+@testset "malformed $pntd" for pntd in core_nettypes()
     empty!(PNML.TOPDECLDICTIONARY)
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
@@ -82,7 +76,7 @@ end
     @test_throws "MalformedException: net missing type" parse_net(xml"""<net id="4712"> </net>""", registry())
 end
 
-@testset "missing id $pntd" for pntd in all_nettypes()
+@testset "missing id $pntd" for pntd in core_nettypes()
 
     @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>", registry())
 

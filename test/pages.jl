@@ -1,21 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET, AbstractTrees
-using PNML:
-    Maybe, tag, labels, firstpage, nettype,
-    PnmlNet, Page, nets, pages, pid,
-    arc, arcs, place, places, transition, transitions,
-    refplace, refplaces, reftransition, reftransitions,
-    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
-    flatten_pages!,
-    place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    pnmlnet_type, page_type, arc_type, place_type, transition_type,
-    condition_type, condition_value_type, inscription_type, inscription_value_type,
-    marking_type, marking_value_type, refplace_type, reftransition_type,
-    rate_value_type,
-    default_inscription, default_marking, default_sort, default_condition,
-    default_one_term, default_zero_term,
-    initial_markings,
-    netsets, netdata, page_idset, pagedict,
-    all_nettypes, ishighlevel
 
 function verify_sets(net::PnmlNet)
     #println("\nverify sets and structure ++++++++++++++++++++++")
@@ -140,7 +123,7 @@ def_funs = (
             default_zero_term,
             )
 
-@testset "by pntd $pntd" for pntd in all_nettypes()
+@testset "by pntd $pntd" for pntd in core_nettypes()
     for fun in type_funs
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)

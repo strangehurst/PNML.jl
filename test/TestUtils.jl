@@ -1,25 +1,44 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
-@reexport using PNML: PNML, Maybe, tag, labels, pid, AnyElement, name, value,
-    nets, pages,
-    parse_sort, parse_declaration,
+
+@reexport using PNML: PNML, Maybe,
+    XMLNode, xmlroot, XDVT, arity, tag, labels, pid, value, text, tools, elements,
+    name, has_name,
+    AnyElement, anyelement, unparsed_tag,
     registry, isregistered,
+    PnmlTypeDefs, core_nettypes, all_nettypes, ishighlevel, isdiscrete, iscontinuous,
+    PnmlNetData, PnmlNetKeys,
+    PnmlNet, nets, nettype,
+    Page, pages, firstpage,
+    Place, place, places, initial_marking, initial_markings,
+    Transition, transition, transitions,
+    RefPlace, refplace, refplaces,
+    RefTransition, reftransition, reftransitions,
+    Arc, arc, arcs,
+    has_graphics, graphics,
+    PnmlLabel, has_label, get_label, get_labels, add_label!, labels,
+    parse_net, parse_page!,
+    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition, parse_text,
+    parse_initialMarking, parse_inscription, parse_name, parse_sort, parse_declaration, parse_graphics, parse_tokengraphics, #x, y,
     DictType, AbstractDeclaration,
     getfirst, firstchild, allchildren,
-    ishighlevel, PnmlTypeDefs,
-    Declaration, Condition, Term,
-    default_bool_term, default_zero_term, default_one_term,
+    Declaration, decldict,
+    Condition, condition, inscription, refid,
+    Term, default_bool_term, default_zero_term, default_one_term,
     default_condition, default_inscription, default_marking, default_sort, default_sorttype,
     page_type, place_type, transition_type, arc_type, marking_type, inscription_type,
-    condition_type, condition_value_type, rate_value_type, term_value_type,
-    AbstractSort, BoolSort, DotSort,
-    CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
-    IntegerSort, ListSort, MultisetSort,
-    NaturalSort, PositiveSort, ProductSort, PartitionSort, RealSort, UserSort, StringSort,
+    marking_type, inscription_type, condition_type, refplace_type, reftransition_type,
+    marking_value_type, inscription_value_type, condition_value_type, rate_value_type, term_value_type,
+    AbstractSort, BoolSort, DotSort,CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
+    IntegerSort, NaturalSort, PositiveSort, RealSort, ListSort, MultisetSort, ProductSort, PartitionSort, UserSort, StringSort,
     SortType, PartitionElement,
     NumberConstant, DotConstant,
-    inputs
+    inputs,
+    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
+    flatten_pages!,
+    netsets, netdata, page_idset, pagedict
+#
 
 "Often JET has problems with beta julia versions:("
 const jet_broke = (VERSION < v"1.10-") ? false : true
