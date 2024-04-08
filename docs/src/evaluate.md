@@ -39,7 +39,7 @@ true
 ```@example evaluates
 using PNML # hide
 using PNML: _evaluate, Term, parse_hlinitialMarking, registry, value, @xml_str  # hide
-m = value(parse_hlinitialMarking(xml"""
+m = value(parse_hlinitialMarking((:NoNet,), xml"""
 <hlinitialMarking>
     <text>3`dot</text>
     <structure>

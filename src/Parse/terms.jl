@@ -196,7 +196,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
         isnothing(stop) &&
             throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
-        sort = FiniteIntRangeSort(start, stop)
+        sort = FiniteIntRangeSort(start, stop, first(ids))
         return (FiniteIntRangeConstant(value, sort), sort)
     end
     throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
