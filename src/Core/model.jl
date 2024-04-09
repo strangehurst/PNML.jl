@@ -43,7 +43,6 @@ $(TYPEDSIGNATURES)
 Return `PnmlNet` having `id` or `nothing``.
 """
 function find_net end
-
 function find_net(model, id::Symbol)
     for net in nets(model)
         ispid(id)(pid(net)) && return net
@@ -63,8 +62,10 @@ function Base.show(io::IO, model::PnmlModel)
             println(io)
         end
     end
-    for reg in regs(model)
-        show(io, reg) # Show PnmlIDRegistry
+    println(io, length(regs(model)), " registry:" )
+    println(io)
+        for reg in regs(model)
+        show(io, reg)
         println(io)
     end
     print(io, ")")
