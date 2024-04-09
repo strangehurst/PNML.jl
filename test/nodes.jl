@@ -1,10 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET, XMLDict
-# using PNML: Place, Transition, Arc, RefPlace, RefTransition,
-#     has_name, name,
-#     pid, initial_marking, condition, inscription,
-#     has_graphics, graphics, has_name, name, has_label,
-#     parse_place, parse_transition, parse_arc, parse_refTransition, parse_refPlace,
-#     all_nettypes, ishighlevel, refid
 
 @testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
     node = xml"""

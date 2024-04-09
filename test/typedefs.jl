@@ -1,5 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET
-#using PNML: XMLNode, pnmltype
 
 @testset "pntd_symbol" begin
     @test_opt pntd_symbol("foo")

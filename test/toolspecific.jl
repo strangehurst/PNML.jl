@@ -1,6 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: Maybe, tag, pid, XMLNode, place, parse_place,
-    ToolInfo, tools, parse_toolspecific, get_toolinfo, name, version, TokenGraphics
 
 using OrderedCollections
 
@@ -52,7 +50,7 @@ str5 = (tool="org.pnml.tool", version="1.0",
 
         @test isa(tooli, ToolInfo)
         @test name(tooli) == s.tool
-        @test version(tooli) == s.version
+        @test PNML.version(tooli) == s.version
 
         @test get_toolinfo(tooli, s.tool, s.version) == tooli # Is identity on scalar
         @test get_toolinfo(tooli, s.tool) == tooli

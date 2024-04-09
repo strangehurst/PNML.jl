@@ -1,16 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, LabelledArrays, AbstractTrees
-using PNML: tag, pid, parse_str,
-    Maybe, SimpleNet, PnmlNet, Place, Transition, Arc,
-    nets, pages, place, places, transition, transitions, arc, arcs,
-    has_place, has_transition, has_arc,
-    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
-    initial_marking, default_marking,  initial_markings,
-    condition, default_condition,
-    inscription, default_inscription,
-    nettype, firstpage, ispid
-using PNML: incidence_matrix, inscription_value_type
-
 using Test, Logging
+
 testlogger = TestLogger()
 println("SIMPLENET")
 str1 = """

@@ -1,5 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel, PnmlNet
 
 @testset "Show" begin
     empty!(PNML.TOPDECLDICTIONARY)
@@ -7,8 +6,8 @@ using PNML: tag, pid, xmlroot, parse_pnml, PnmlModel, PnmlNet
         # (:warn, "found unexpected label of <page>: text"),
          (:warn, r"^ignoring child of <namedoperator name=g, id=id6> with tag unknown, allowed: 'def', 'parameter'"),
          (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_pnml(xmlroot("""
-        <?xml version="1.0"?><!-- https://github.com/daemontus/pnml-parser -->
+        parse_pnml(xmlroot("""<?xml version="1.0"?>
+        <!-- https://github.com/daemontus/pnml-parser -->
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
           <name> <text>P/T Net with one place</text> </name>
@@ -131,7 +130,7 @@ end
         end
     end
 
-    # First use is here, so test mechanisim here.
+    # First use is here, so test mechanism here.
     @test PNML.ispid(:net1)(:net1)
 
     @test PNML.find_net(model, :net1) isa PnmlNet
@@ -141,7 +140,7 @@ end
     @test PNML.find_net(model, :net5) isa PnmlNet
 
     @test_call PNML.find_net(model, :net1)
-    @test_opt PNML.find_net(model, :net1)
+    @test_opt  PNML.find_net(model, :net1)
 end
 
 @testset "empty page" begin

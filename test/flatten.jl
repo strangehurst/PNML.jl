@@ -1,5 +1,4 @@
 using PNML, EzXML, ..TestUtils, JET
-using PNML: tag, pid, PnmlNet, allpages, flatten_pages!, source, target, arc
 
 println("FLATTEN")
 @testset "flatten" begin

@@ -1,14 +1,6 @@
 using PNML, EzXML, ..TestUtils, JET, OrderedCollections, AbstractTrees
-using PNML: Maybe,
-    tag, pid, firstpage, length,
-    parse_file, parse_name, parse_initialMarking, parse_inscription,
-    parse_declaration, parse_transition,  parse_toolspecific,
-    PnmlModel, PnmlNet, Page, Place, Transition, Arc, Declaration,
-    nets, pages, arcs, place, places, transitions, has_place,
-    allchildren, firstchild, value, allpages
 
-const str = """
-<?xml version="1.0"?>
+const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
@@ -28,8 +20,7 @@ const str = """
     </page>
   </net>
 </pnml>
-"""
-const pnmldoc = PNML.xmlroot(str) # shared by testsets
+""") # shared by testsets
 
 # @testset "parse tree" begin
 #     @test EzXML.nodename(pnmldoc) == "pnml"
