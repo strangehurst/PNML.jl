@@ -1,5 +1,3 @@
-const PIDR = PnmlIDRegistry
-
 function parse_excluded(node::XMLNode, _, _)
     @warn "Attempt to parse excluded tag: $(EzXML.nodename(node))"
     return nothing
@@ -51,8 +49,9 @@ end
 Start parse from the root `node` of a well formed pnml XML document.
 Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
 
-The optional idregistry argument leads to internal weeds and should only be used after reading the code closely.
-One effect is to have all `PnmlNet`
+The optional idregistry argument will be shared by all nets.
+This leads to internal weeds and should only be used after reading the code closely.
+The default is for each net to have an independent ID Registry.
 """
 function parse_pnml(node::XMLNode, idregistry::Maybe{PIDR}=nothing)
     check_nodename(node, "pnml")
@@ -60,7 +59,7 @@ function parse_pnml(node::XMLNode, idregistry::Maybe{PIDR}=nothing)
 
     xmlnets = allchildren("net", node) #! allocate Vector{XMLNode}
     isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
-    # Construct vector of PIDR samw length as xmlnets
+    # Construct vector of PIDR same length as xmlnets.
     if !isnothing(idregistry)
         idregs = fill(idregistry, length(xmlnets)) # All nets share same PnmlIDRegistry.
     else
@@ -68,7 +67,7 @@ function parse_pnml(node::XMLNode, idregistry::Maybe{PIDR}=nothing)
     end
     @assert length(xmlnets) == length(idregs)
 
-    # Do not YET have a PNTD defined. Each net can be different Net speciaization.
+    # Do not YET have a PNTD defined. Each net can be different net type.
     net_tup = tuple((parse_net(net, reg) for (net, reg) in zip(xmlnets, idregs))...) #! Allocation? RUNTIME DISPATCH
 
     length(net_tup) > 0 || error("length(net_tup) is zero")
@@ -97,9 +96,10 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
         pntd = pn_typedef
     else
         pntd = pntd_override
-        @info lazy"net $id pntd set to $pntd, overrides $pn_typedef"
+        @info "net $id pntd set to $pntd, overrides $pn_typedef"
     end
-    # Now we know the PNTD and can parse.
+    # Now we know the PNTD and can parse a net.
+
     isempty(allchildren("page", node)) &&
         throw(MalformedException("""<net> $netid does not have any <page> child"""))
 
@@ -107,9 +107,8 @@ function parse_net(node::XMLNode, idregistry::PIDR, pntd_override::Maybe{PnmlTyp
 end
 
 """
-Parse PNML <net> with a defined PnmlType used to set the expected behavior
-of labels attached to the nodes of a petri net graph, including:
-marking, inscription, condition and sorttype.
+Parse PNML <net> with a defined PnmlType used to set the expected behavior of labels
+attached to the nodes of a petri net graph, including: marking, inscription, condition and sorttype.
 
 The `ids` tuple contains PNML ID `Symbol`s. The first is for this PnmlNet.
 It is used to allocate a [`DeclDict`](@ref), a per-net collection of all <declarations> content.
@@ -136,13 +135,13 @@ function parse_net_1(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR
     @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY keys: $(collect(keys(TOPDECLDICTIONARY)))"
     TOPDECLDICTIONARY[netid] = DeclDict() # Allocate empty per-net global dictionary.
 
-    namelabel = nothing
+    namelabel::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     decl::Maybe{Declaration} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
 
     # Parse *ALL* Declarations first, this includes any Declarations attached to Pages.
-    decls = alltags("declaration", node) #todo reverse parameter order
+    decls = alltags(node, "declaration")
     decl = parse_declaration(ids, decls, pntd, idregistry)
     # All declarations in the decldict(netid) which is also attached to the `Declaration` label.
     # Which, because it is a label, must also support text, graphics and tools.
@@ -203,7 +202,7 @@ function _parse_page!(pagedict, netdata, ids::Tuple, node::XMLNode, pntd::T, idr
     netsets = PnmlNetKeys() # Allocate per-page data.
 
     decl::Maybe{Declaration} = nothing
-    name = nothing
+    name::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing
@@ -484,7 +483,7 @@ function parse_refTransition(ids::Tuple, node::XMLNode, pntd::PnmlType, idregist
     id = register_idof!(idregistry, node)
     ids = tuple(ids..., id)
     ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute. trail = $ids"))
-    name = nothing
+    name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing
     graphics::Maybe{Graphics} = nothing

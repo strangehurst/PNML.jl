@@ -81,6 +81,7 @@ include("Core/PnmlTypeDefs.jl")
 Reexport.@reexport using .PnmlTypeDefs
 include("Core/PnmlIDRegistrys.jl")
 Reexport.@reexport using .PnmlIDRegistrys
+const PIDR = PnmlIDRegistry
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
@@ -88,13 +89,12 @@ include("Core/xmlutils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
-#include("Core/pprint.jl")
 
 # Parts of Labels and Nodes.
-include("Core/sorts.jl") # Sorts are used in Variables, Operators
-include("Core/declarations.jl") # Declarations are inside <declaration> Label.
-include("Core/constterm.jl") #
+include("Core/sorts.jl") # Sorts are used in Variables, Operators, Places
+include("Core/declarations.jl") # Declarations are inside a <declaration> Label.
 include("Core/Terms/arbitrarydeclarations.jl")
+include("Core/constterm.jl") #
 include("Core/Terms/booleans.jl")
 include("Core/Terms/enumerations.jl")
 include("Core/Terms/dots.jl")
@@ -105,7 +105,7 @@ include("Core/Terms/lists.jl")
 include("Core/Terms/multisets.jl")
 include("Core/Terms/strings.jl")
 include("Core/Terms/variables.jl")
-include("Core/terms.jl") # Variables and AbstractOperators preceed
+include("Core/terms.jl") # Variables and AbstractOperators preceed this.
 include("Core/Terms/operators.jl")
 include("Core/Terms/partitions.jl")
 include("Core/decldict.jl")
