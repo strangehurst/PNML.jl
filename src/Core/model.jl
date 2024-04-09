@@ -10,14 +10,20 @@ struct PnmlModel #TODO mutable PnmlModel?
     regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alias.
 end
 
-
 """
 $(TYPEDSIGNATURES)
 
 Return all `nets` of `model`.
 """
 nets(model::PnmlModel) = model.nets
+
+"""
+$(TYPEDSIGNATURES)
+
+Return all `PnmlIDRegistrys` of `model`.
+"""
 regs(model::PnmlModel) = model.regs
+
 namespace(model::PnmlModel) = model.namespace
 netsets(::PnmlModel)  = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
 
@@ -30,8 +36,6 @@ find_nets(model, str::AbstractString) = find_nets(model, pntd_symbol(str))
 find_nets(model, sym::Symbol)    = find_nets(model, PnmlTypeDefs.pnmltype(sym))
 find_nets(model, net::PnmlNet)   = find_nets(model, pntd(net))
 find_nets(model, pntd::PnmlType) = Iterators.filter(n -> Fix1(===, pntd)(nettype(n)), nets(model))
-
-#find_nets(model, ::Type{T}) where {T<:PnmlType} = Iterators.filter(n -> Fix2(isa, T)(nettype(n)), nets(model))
 
 """
 $(TYPEDSIGNATURES)
@@ -59,6 +63,9 @@ function Base.show(io::IO, model::PnmlModel)
             println(io)
         end
     end
+    for reg in regs(model)
+        show(io, reg) # Show PnmlIDRegistry
+        println(io)
+    end
     print(io, ")")
-    #PnmlIDRegistry
-end
+    end
