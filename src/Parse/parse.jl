@@ -132,7 +132,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     tunesize!(netdata)
 
     @assert isregistered(idregistry, netid)
-    @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY keys: $(collect(keys(TOPDECLDICTIONARY)))"
+    @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY, keys: $(collect(keys(TOPDECLDICTIONARY)))"
     TOPDECLDICTIONARY[netid] = DeclDict() # Allocate empty per-net global dictionary.
 
     namelabel::Maybe{Name} = nothing
@@ -297,11 +297,11 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     check_nodename(node, "place")
     id       = register_idof!(idregistry, node)
     ids      = tuple(ids..., id)
-    mark     = nothing
-    sorttype = nothing
-    name     = nothing
-    graphics = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
+    mark = nothing
+    sorttype::Maybe{SortType} = nothing
+    name::Maybe{Name}         = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools::Maybe{Vector{ToolInfo}}   = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
@@ -780,8 +780,8 @@ The PNML "type" of a `Place` is a "sort" of the high-level many-sorted algebra.
 function parse_sorttype_term(typenode, pntd, idregistry; ids::Tuple)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure> trail = $ids"))
-    termnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(termnode, pntd, idregistry; ids)::AbstractSort
+    sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
+    sorttype = parse_sort(sortnode, pntd, idregistry; ids)::AbstractSort
     isa(sorttype, MultisetSort) && error("multiset sort not allowed for Place type. trail = $ids")
     return (sorttype, sortof(sorttype))
 end
