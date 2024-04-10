@@ -26,7 +26,9 @@ end
     <unexpected/>
     </graphics>
     """
-    n = @test_logs (:warn,"ignoring unexpected child of <graphics>: 'unexpected'") parse_graphics(xmlroot(str), pntd, registry())
+    n = @test_logs(
+            (:warn, r"^ignoring unexpected child of <graphics>: 'unexpected'"),
+             parse_graphics(xmlroot(str), pntd, registry()))
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0
