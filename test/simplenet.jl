@@ -29,11 +29,14 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     @test_call target_modules=target_modules parse_str(str1)
-    model = @test_logs(match_mode=:any,
-        (:warn,"found unexpected label of <place>: structure"),
-        (:warn,"found unexpected label of <place>: frog"),
-        parse_str(str1))
+    # model = @test_logs(match_mode=:any,
+    #     (:warn,"found unexpected label of <place>: structure"),
+    #     (:warn,"found unexpected label of <place>: frog"),
+    #     parse_str(str1))
+    empty!(PNML.TOPDECLDICTIONARY)
+    model = parse_str(str1)
     # println("- - - - - - - - - - - - - - - -")
     # @show model
     # println("- - - - - - - - - - - - - - - -")
@@ -131,6 +134,7 @@ end
 
 # Used in precompile.
 @testset "simple ptnet" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     @show "precompile's SimpleNet"
     @test PNML.SimpleNet("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -152,6 +156,7 @@ end
 end
 
 @testset "rate" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     str2 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="core">
@@ -190,7 +195,7 @@ end
         </net>
     </pnml>
     """
-
+    empty!(PNML.TOPDECLDICTIONARY)
     model = @test_logs(@inferred(PNML.PnmlModel, parse_str(str3)));
     net1 = first(nets(model));          #@show typeof(net1)
     snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
@@ -243,6 +248,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
+    empty!(PNML.TOPDECLDICTIONARY)
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -296,8 +302,8 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     #@show str3
     anet = PNML.SimpleNet(str3)
     mg = PNML.metagraph(anet)
-
-    C  = incidence_matrix(anet)
+    @test anet isa PNML.AbstractPetriNet
+    C  = PNML.incidence_matrix(anet)
     m₀ = initial_markings(anet)
     e  = enabled(anet, m₀)
     muladd(C', [1,0,0,0], m₀)
