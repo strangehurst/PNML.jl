@@ -39,7 +39,7 @@ true
 ```@example evaluates
 using PNML # hide
 using PNML: _evaluate, Term, parse_hlinitialMarking, registry, value, @xml_str  # hide
-m = value(parse_hlinitialMarking((:NoNet,), xml"""
+m = value(parse_hlinitialMarking(xml"""
 <hlinitialMarking>
     <text>3`dot</text>
     <structure>
@@ -48,7 +48,7 @@ m = value(parse_hlinitialMarking((:NoNet,), xml"""
             <subterm><dotconstant/></subterm>
         </numberof>
     </structure>
-</hlinitialMarking>""", HLCoreNet(), registry()))
+</hlinitialMarking>""", HLCoreNet(), registry(); ids=(:NoNet,)))
 nothing # hide
 ```
 
