@@ -20,9 +20,9 @@ Assume behavior of a High-level Net label in that the meaning is in a <structure
 Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsort/> ...
 """
 function parse_declaration end
-parse_declaration(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR) = parse_declaration(ids, [node], pntd, idregistry)
+parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple) = parse_declaration([node], pntd, idregistry; ids)
 
-function parse_declaration(ids::Tuple, nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::PIDR)
+function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     #println("\nparse_declaration $ids")
     dd = decldict(first(ids)) # Lookup DeclDict for PnmlNet. #TODO better error if missing
 
@@ -34,7 +34,7 @@ function parse_declaration(ids::Tuple, nodes::Vector{XMLNode}, pntd::PnmlType, i
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
             if tag == "structure" # accumulate declarations
-                _parse_decl_structure!(dd, ids, child, pntd, idregistry)
+                _parse_decl_structure!(dd, child, pntd, idregistry; ids)
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
                 @info "declaration $ids $text" # Do not expect text here, so it must be important.
@@ -55,11 +55,11 @@ function parse_declaration(ids::Tuple, nodes::Vector{XMLNode}, pntd::PnmlType, i
 end
 
 #"Assumes high-level semantics until someone specializes."
-function _parse_decl_structure!(dd::DeclDict, ids::Tuple, node::XMLNode, pntd::T, idregistry) where {T <: PnmlType}
-    fill_decl_dict!(dd, ids, node, pntd, idregistry)
+function _parse_decl_structure!(dd::DeclDict, node::XMLNode, pntd::T, idregistry; ids::Tuple) where {T <: PnmlType}
+    fill_decl_dict!(dd, node, pntd, idregistry; ids)
 end
 
-function fill_decl_dict!(dd::DeclDict, ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     check_nodename(node, "structure")
     EzXML.haselement(node) || throw(ArgumentError("missing <declaration> <structure> element"))
     declarations = EzXML.firstelement(node)
@@ -69,13 +69,13 @@ function fill_decl_dict!(dd::DeclDict, ids::Tuple, node::XMLNode, pntd::PnmlType
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
-            ns = parse_namedsort(ids, child, pntd, idregistry)
+            ns = parse_namedsort(child, pntd, idregistry; ids)
             dd.namedsorts[pid(ns)] = ns
         elseif tag == "namedoperator"
-            no = parse_namedoperator(ids, child, pntd, idregistry)
+            no = parse_namedoperator(child, pntd, idregistry; ids)
             dd.namedoperators[pid(no)] = no
         elseif tag == "variabledecl"
-            vardecl = parse_variabledecl(ids, child, pntd, idregistry)
+            vardecl = parse_variabledecl(child, pntd, idregistry; ids)
             dd.variabledecls[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
@@ -89,7 +89,7 @@ function fill_decl_dict!(dd::DeclDict, ids::Tuple, node::XMLNode, pntd::PnmlType
         #elseif tag == "arbitrarysort"
         else
             #TODO  add to DeclDict
-            push!(unknown_decls, parse_unknowndecl(ids, child, pntd, idregistry))
+            push!(unknown_decls, parse_unknowndecl(child, pntd, idregistry; ids))
         end
     end
     return nothing
@@ -100,7 +100,7 @@ $(TYPEDSIGNATURES)
 
 Declaration that wraps a Sort, adding an ID and name.
 """
-function parse_namedsort(ids::Tuple, node::XMLNode, pntd::PnmlType, reg::PIDR)
+function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     nn = check_nodename(node, "namedsort")
     id = register_idof!(reg, node)
     name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
@@ -116,7 +116,7 @@ Declaration that wraps an operator by giving a name to a definition term (expres
 An operator of arity 0 is a constant.
 When arity > 0, where is the parameter value stored? With operator or variable declaration
 """
-function parse_namedoperator(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     nn = check_nodename(node, "namedoperator")
     id = register_idof!(idregistry, node)
     name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
@@ -135,7 +135,7 @@ function parse_namedoperator(ids::Tuple, node::XMLNode, pntd::PnmlType, idregist
             #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
             #! Is def restricted to just parameters? Can others access parameters?
             for vdecl in EzXML.eachelement(child)
-                push!(parameters, parse_variabledecl(ids, vdecl, pntd, idregistry))
+                push!(parameters, parse_variabledecl(vdecl, pntd, idregistry; ids))
             end
         else
             @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
@@ -148,14 +148,13 @@ function parse_namedoperator(ids::Tuple, node::XMLNode, pntd::PnmlType, idregist
     NamedOperator(id, name, parameters, def)
 end
 
-#! errors?! "$(TYPEDSIGNATURES)"
 """
 $(TYPEDSIGNATURES)
 """
-function parse_variabledecl(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
-    nn = check_nodename(node, "variabledecl")
+function parse_variabledecl(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
+    check_nodename(node, "variabledecl")
     id = register_idof!(idregistry, node)
-    name = attribute(node, "name", "$nn missing name attribute. trail = $ids")
+    name = attribute(node, "name", "<variabledecl> missing name attribute. trail = $ids")
     # firstelement throws on nothing. Ignore more than 1.
     #! There should be an actual way to store the value of the variable!
     #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
@@ -164,32 +163,23 @@ function parse_variabledecl(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistr
     VariableDeclaration(id, name, sort)
 end
 
-
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     nn = EzXML.nodename(node)
     id = register_idof!(idregistry, node)
     name = attribute(node, "name","$nn $id missing name attribute. trail = $ids")
-
     @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
-    # Defer parsing by returning AnyElement
     content = AnyElement[anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
-    ud = UnknownDeclaration(id, name, nn, content)
-    return ud
+    return UnknownDeclaration(id, name, nn, content)
 end
-
-
-#------------------------
-
-isEmptyContent(body::DictType) = tag(body) == "content" && isempty(value(body))
 
 """
 Return ordered vector of finite enumeration constant IDs.
 Place the constants into feconstants(decldict(netid)).
 """
-function parse_feconstants(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry::PIDR)
+function parse_feconstants(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     sorttag = EzXML.nodename(node)
     @assert sorttag in ("finiteenumeration", "cyclicenumeration")
     EzXML.haselement(node) || error("$sorttag has no child element")
@@ -210,33 +200,6 @@ function parse_feconstants(ids::Tuple, node::XMLNode, pntd::PnmlType, idregistry
     end
     return fec_refs #
 end
-
-# "Has a tag of :declaration, return value as a string."
-# function parse_decl end
-
-# parse_decl(p::Pair) = parse_decl(p...)
-# function parse_decl(tag::Symbol, d::XDVT)
-#     tag != :declaration && throw(ArgumentError(string("expected tag 'declaration', found: ",tag)::String))
-#     return string(d)::String
-# end
-# parse_decl(d::DictType) = parse_decl(tag(d), value(d))
-
-# function parse_decl!(vec::Vector{T}, vd::Vector{Any}) where {T <: AbstractSort}
-#     for us in vd
-#         parse_decl!(vec, us) # expand pair
-#     end
-# end
-# function parse_decl!(vec::Vector{T}, d::DictType) where {T <: AbstractSort}
-#     decl = parse_decl(d) # expand pair
-#     srt2 = UserSort(decl)
-#     push!(vec, srt2)
-# end
-
-# parse_usersort(body::DictType) = parse_decl(body)
-# parse_usersort(str::AbstractString) = str
-
-# parse_useroperator(body::DictType) = parse_decl(body)
-# parse_useroperator(str::AbstractString) = str
 
 "Tags used in sort XML elements."
 const sort_ids = (:usersort,
@@ -270,15 +233,15 @@ function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, idreg::PIDR
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    CyclicEnumerationSort(parse_feconstants(ids, node, pntd, idreg), first(ids))
+    CyclicEnumerationSort(parse_feconstants(node, pntd, idreg; ids), first(ids))
 end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    FiniteEnumerationSort(parse_feconstants(ids, node, pntd, idreg), first(ids))
+    FiniteEnumerationSort(parse_feconstants(node, pntd, idreg; ids), first(ids))
 end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    nn = check_nodename(node, "finiteintrange")
+    check_nodename(node, "finiteintrange")
 
     startstr = attribute(node, "start", "finiteintrange missing start. trail = $ids")
     start = tryparse(Int, startstr)
@@ -363,61 +326,12 @@ function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")))
 end
 
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_arbitraryoperator(node::XMLNode, pntd::PnmlType, reg::PIDR)
-#     nn = check_nodename(node, "arbitraryoperator")
-#     Term(unparsed_tag(node))
-# end
-
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_arbitrarysort(node, pntd, reg)
-#     nn = check_nodename(node, "arbitrarysort")
-#     Term(unparsed_tag(node::XMLNode))
-# end
-
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_bool(node::XMLNode, pntd::PnmlType, reg::PIDR)
-#     nn = check_nodename(node, "bool")
-#     Term(unparsed_tag(node))
-# end
-
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_mulitsetsort(node::XMLNode, pntd::PnmlType, reg::PIDR)
-#     nn = check_nodename(node, "mulitsetsort")
-#     Term(unparsed_tag(node))
-# end
-
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_productsort(node::XMLNode, pntd::PnmlType, reg::PIDR)
-#     nn = check_nodename(node, "productsort")
-#     Term(unparsed_tag(node))
-# end
-
-# """
-# $(TYPEDSIGNATURES)
-# """
-# function parse_useroperator(node::XMLNode, pntd::PnmlType, reg::PIDR)
-#     check_nodename(node, "useroperator")
-#     EzXML.haskey(node, "declaration") || throw(MalformedException("$nn missing declaration attribute"))
-#     UserOperator(Symbol(node["declaration"]))
-# end
-
 """
 $(TYPEDSIGNATURES)
 A reference to a variable declaration.
 """
 function parse_variable(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
-    nn = check_nodename(node, "variable")
+    check_nodename(node, "variable")
     # The 'primer' UML2 uses variableDecl instead of refvariable. References a VariableDeclaration.
     Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute. trail = $ids")), first(ids))
 end

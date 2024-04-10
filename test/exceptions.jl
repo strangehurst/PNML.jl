@@ -86,12 +86,12 @@ end
     netsets = PNML.PnmlNetKeys()
     PNML.TOPDECLDICTIONARY[:N] = PNML.DeclDict()
 
-    @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, (:N,), xml"<page></page>", pntd, registry())
-    @test_throws r"^MissingIDException: place" PNML.parse_place((:NN,), xml"<place></place>", pntd, registry())
-    @test_throws r"^MissingIDException: transition" PNML.parse_transition((:NN,), xml"<transition></transition>", pntd, registry())
-    @test_throws r"^MissingIDException: arc" PNML.parse_arc((:NN,), xml"<arc></arc>", pntd, registry())
-    @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace((:NN,), xml"<referencePlace></referencePlace>", pntd, registry())
-    @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition((:NN,), xml"<referenceTransition></referenceTransition>", pntd, registry())
+    @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: transition" PNML.parse_transition(xml"<transition></transition>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry(); ids=(:NN,))
 end
 
 @testset "check_nodename" begin

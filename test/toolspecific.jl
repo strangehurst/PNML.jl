@@ -70,7 +70,7 @@ end
         $(str5.str)
         </place>
         """)
-    combinedplace = parse_place((:NN,), n, PnmlCoreNet(), registry())
+    combinedplace = parse_place(n, PnmlCoreNet(), registry(); ids=(:NN,))
 
     @test_call tools(combinedplace)
     placetools = tools(combinedplace)

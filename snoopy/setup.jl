@@ -66,8 +66,8 @@ julia> import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time includet("setup
 =#
 function top_net(x::XMLNode)
     netxml = first(allchildren("net", x))
-    @report_opt target_modules=(PNML,) function_filter=pnml_ff PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry())
-end
+    @report_opt target_modules=(PNML,) function_filter=pnml_ff PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry(); ids=(:foo,))
+endparse_net_1
 
 function timed_parse(node::XMLNode)
     #! DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER

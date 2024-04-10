@@ -10,7 +10,7 @@ end
 @testset "name $pntd" for pntd in core_nettypes()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
     @test n isa PNML.AbstractLabel
-    @test PNML.text(n) == ""
+    @test PNML.text(n) == ""; ids=(:NN,)
 
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
     @test PNML.text(n) == "stuff"
@@ -43,7 +43,7 @@ end
     </initialMarking>
     """
     # Parse ignoring unexpected child
-    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking((:NN,), node, pntd, registry())
+    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking(node, pntd, registry(); ids=(:NN,))
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
@@ -84,7 +84,7 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
-    inscript = @test_logs (:warn, "ignoring unexpected child of <inscription>: 'unknown'") parse_inscription((:NN,), n1, pntd, registry())
+    inscript = @test_logs (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'") parse_inscription(n1, pntd, registry(); ids=(:NN,))
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
     @test inscript() == value(inscript) == 12
@@ -301,7 +301,7 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # Use the first part of this pair in contextes that want numbers.
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
 
@@ -346,7 +346,7 @@ end
             </unknown>
         </hlinitialMarking>
         """
-        mark = PNML.parse_hlinitialMarking((:NN,), node, pntd, registry())
+        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
         #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
         @test mark isa PNML.AbstractLabel
         @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -395,7 +395,7 @@ end
         </hlinitialMarking>
         """
         PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
         #@show value(mark)
         #pprint(mark)
     end
@@ -424,7 +424,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
         #@show mark
         #@show value(mark)
         #pprint(mark)
@@ -444,10 +444,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
-        #@show mark
-        #@show value(mark)
-        #pprint(mark)
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
     end
 
     # This is the same as when the element is omitted.
@@ -456,7 +453,7 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking((:NN,), node, pntd, registry()))
+        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
         #@show mark
         #@show value(mark)
         #pprint(mark)
@@ -490,7 +487,7 @@ end
     #@show PNML.TOPDECLDICTIONARY
     insc = @test_logs(match_mode=:all,
             (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-            PNML.parse_hlinscription((:NN,), n1, pntd, registry()))
+            PNML.parse_hlinscription(n1, pntd, registry(); ids=(:NN,)))
 
     @test typeof(insc) <: PNML.AbstractLabel
     @test typeof(insc) <: PNML.inscription_type(pntd)
@@ -526,7 +523,7 @@ end
     """
     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
-    stru = PNML.parse_structure((:NN,), node, pntd, registry())
+    stru = PNML.parse_structure(node, pntd, registry(); ids=(:NN,))
     @test stru isa PNML.Structure
     @test tag(stru) == :structure
     axn = elements(stru)
@@ -560,7 +557,7 @@ end
 </type>
     """
     @testset for node in [n1]
-        typ = PNML.parse_type((:NN,), node, pntd, registry())
+        typ = PNML.parse_type(node, pntd, registry(); ids=(:NN,))
         #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test typ isa PNML.SortType
         @test text(typ) == "N2"
@@ -617,7 +614,7 @@ end
 
 #         cond = @test_logs(match_mode=:all,
 #                 (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-#                 PNML.parse_condition((:NN,), node, pntd, registry()))
+#                 PNML.parse_condition(node, pntd, registry(); ids=(:NN,)))
 #         @test cond isa PNML.condition_type(pntd)
 #         @show cond
 #         @test text(cond) == "pt==cts||pt==ack"

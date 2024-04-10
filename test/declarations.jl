@@ -115,15 +115,9 @@ end
     empty!(PNML.TOPDECLDICTIONARY)
     PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     # The attribute should be ignored.
-    decl = @inferred parse_declaration((:NULLNET,),
-        xml"""
-        <declaration key="test empty">
-          <structure>
-           <declarations>
-           </declarations>
-          </structure>
-        </declaration>
-        """, pntd, registry())
+    decl = @inferred parse_declaration(xml"""<declaration key="test empty">
+            <structure><declarations></declarations></structure>
+        </declaration>""", pntd, registry(); ids=(:NULLNET,))
 
     @test typeof(decl) <: PNML.Declaration
     @test length(decl) == 0 # nothing in <declarations>
@@ -171,7 +165,7 @@ end
     """
     PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     reg = PNML.registry()
-    decl = parse_declaration((:NULLNET,), node, pntd, reg)
+    decl = parse_declaration(node, pntd, reg; ids=(:NULLNET,))
     @test typeof(decl) <: PNML.Declaration
     @show PNML.declarations(decl)
 
@@ -236,7 +230,7 @@ end
     </declaration>
     """
     reg = PNML.registry()
-    decl = parse_declaration((:NULLNET,), node, pntd, reg)
+    decl = parse_declaration(node, pntd, reg; ids=(:NULLNET,))
     @test typeof(decl) <: Declaration
 
     # Examine each declaration in the vector: 3 partition sorts
