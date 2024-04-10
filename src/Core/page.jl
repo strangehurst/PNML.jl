@@ -8,7 +8,7 @@ There must be at least 1 Page for a valid pnml model.
 `PNTD` binds the other type parameters together to express a specific PNG.
 See [`PnmlNet`](@ref)
 """
-struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject #!{PNTD}
+struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     pntd::PNTD
     id::Symbol
     declaration::Declaration
@@ -24,7 +24,7 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject #!{PNTD}
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
-    Page{typeof(pntd),
+    Page{typeof(pntd), #! ? typeof ?
          place_type(pntd),
          transition_type(pntd),
          arc_type(pntd),

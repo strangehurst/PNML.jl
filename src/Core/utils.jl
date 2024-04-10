@@ -38,11 +38,11 @@ inc_indent(io::IO, inc::Int=CONFIG.indent_width) =
         IOContext(io, :indent => get(io, :indent, 0)::Int + inc)
 
 """
-registry([lock]) -> PnmlIDRegistry
+    registry(lock::Maybe{AbstractLock}) -> PnmlIDRegistry
 
-Construct a PNML ID registry using the supplied AbstractLock or nothing to not lock.
+Construct a PNML ID registry using the supplied concrete Lock or nothing.
+Using nothing disables locking.
 """
 function registry(lock = CONFIG.lock_registry ? ReentrantLock() : nothing)
-    # isnothing(lock) || println("using lock $lock")
     PnmlIDRegistry(Set{Symbol}(), lock)
 end

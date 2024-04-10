@@ -43,10 +43,10 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return vector of `el`'s immediate children and decendents with `tag`.
+Return vector of node's immediate children and decendents with `tag`.
 """
-function alltags(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findall(".//x:$tag | .//$tag", el, ("x" => ns,))
+function alltags(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
+    EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))
 end
 
 function check_nodename(n::XMLNode, s::AbstractString)
@@ -65,7 +65,6 @@ function register_idof!(idregistry::PnmlIDRegistry, node::XMLNode)
     EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
     return register_id!(idregistry, Symbol(@inbounds(node["id"])))
 end
-
 
 """
 $(TYPEDSIGNATURES)

@@ -104,10 +104,11 @@ netid(uo::UserOperator) = first(uo.ids)
 function (uo::UserOperator)(#= pass arguments to operator =#)
     println("UserOperator functor $(netid(uo)) $(uo.declaration)")
     @show uo decldict(netid(uo))
-    #! FEConstants are 0-ary operators. But not namedoperators.
+    #! FEConstants are 0-ary operators. namedoperators?
     @assert !isempty(decldict(netid(uo)).namedoperators) "useroperator found no named operators for $uo"
     @show has_named_op(decldict(netid(uo)), uo.declaration)
     no = named_op(decldict(netid(uo)), uo.declaration)
     no(#= pass arguments to operator =#)
 end
+
 sortof(uo::UserOperator) = sortof(named_op(decldict(netid(uo)), uo.declaration))

@@ -40,9 +40,6 @@ using EzXML, Preferences, XMLDict, Reexport, Multisets
     NumberConstant, DotConstant,
     inputs, incidence_matrix
 
-"Often JET has problems with beta julia versions:("
-const jet_broke = (VERSION < v"1.10-") ? false : true
-
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false
 
@@ -75,6 +72,6 @@ function pff(@nospecialize(ft))
     return true
 end
 
-export VERBOSE_PNML, pff, target_modules, jet_broke, runopt, testshow, noisy
+export VERBOSE_PNML, pff, target_modules, runopt, testshow, noisy
 
 end # module TestUtils
