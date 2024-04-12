@@ -7,7 +7,7 @@ $(TYPEDFIELDS)
 
 Cartesian Coordinate are actually positive decimals. Ranges from 0 to 999.9.
 """
-struct Coordinate{T <: DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 in Schema
+struct Coordinate{T <: Float32} #DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 in Schema
     x::T
     y::T
 end
@@ -19,8 +19,8 @@ Coordinate(x::T1, y::T2) where {T1 <: Number, T2 <: Number} =
             Coordinate(convert(coordinate_value_type(), x),
                        convert(coordinate_value_type(), y))
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
-coordinate_value_type() = DecFP.Dec32
-coordinate_value_type(::Type) = DecFP.Dec32
+coordinate_value_type() = Float32 #DecFP.Dec32
+coordinate_value_type(::Type) = Float32 #DecFP.Dec32
 Base.eltype(::Coordinate{T}) where {T} = T
 x(c::Coordinate) = c.x
 y(c::Coordinate) = c.y
@@ -28,7 +28,7 @@ Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
 function Base.show(io::IO, c::Coordinate)
     #compact = get(io, :compact, false)::Bool
-    print(io, "Coordinate(", c.x, ", ", c.y, ")")
+    print(io, "Coordinate(", x(c), ", ", y(c), ")")
 end
 
 #-------------------
