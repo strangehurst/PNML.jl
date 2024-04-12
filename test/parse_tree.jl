@@ -83,14 +83,23 @@ end
     #todo compare pages(net) == allpages(net)
     @test firstpage(net) isa Page
     @test first(pages(net)) isa Page
-    @test PNML.npage(net) == 1
+    @test PNML.npages(net) == 1
+
     @test !isempty(arcs(firstpage(net)))
-    @test PNML.narc(net) >= 0
+    @test PNML.narcs(net) >= 0
+
     @test !isempty(places(firstpage(net)))
-    @test PNML.nplace(net) >= 0
+    @test PNML.nplaces(net) >= 0
+
     @test !isempty(transitions(firstpage(net)))
-    @test PNML.ntransition(net) >= 0
+    @test PNML.ntransitions(net) >= 0
     @test transitions(firstpage(net)) == transitions(first(pages(net)))
+
+    @test PNML.nreftransitions(net) == 0
+    @test isempty(PNML.reftransitions(net))
+
+    @test PNML.nrefplaces(net) == 0
+    @test isempty(PNML.refplaces(net))
 
     @test_call target_modules=target_modules parse_file(testfile)
     @test_call nets(model)
@@ -101,42 +110,52 @@ end
 
 # Read a file
 @testset "test1.pnml file" begin
-    println("\n-----------------------------------------\ntest1.pnml")
+    println("\n-----------------------------------------")
+    println("test1.pnml")
+    println("-----------------------------------------\n")
     model = @test_logs(match_mode=:any,
         (:warn, "ignoring unexpected child of <condition>: 'name'"),
         (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
         parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
     # model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
+    println("-----------------------------------------")
 
     @test model isa PnmlModel
     @show model
+    println("-----------------------------------------")
+    println("-----------------------------------------")
     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
     @test startswith(repr(model), "PnmlModel")
 
     #@show [pid(x) for x in PNML.nets(model)]
     @show map(pid, PNML.nets(model)) # tuple
+    println()
     for n in PNML.nets(model)
+        println("-----------------------------------------"^3)
         @test PNML.verify(n)
-        PNML.flatten_pages!(n)
+        PNML.flatten_pages!(n; verbose=true)
         @test PNML.verify(n)
-
-     Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        println("-----------------------------------------"^3)
+        @show n
+        println("-----------------------------------------"^3)
+        begin #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             #TODO use as base of a validation tool
-            println()
+            println("pagetree")
             PNML.pagetree(n)
-            println()
+            println("print_tree")
             AbstractTrees.print_tree(n)
-            println()
+            println("vertex_codes")
             vc = PNML.vertex_codes(n)
             vl = PNML.vertex_labels(n)
-            println()
+            println("vertexdata")
             vd = PNML.vertexdata(n)
             println()
             @show typeof(vd)
             @show keys(vd)
             map(println, values(vd))
-
+            println("-----------------------------------------")
             for a in arcs(n)
+                @show a
                 println("Edge ", vc[PNML.source(a)], " =- ",  vc[PNML.target(a)])
             end
             @show PNML.metagraph(n)

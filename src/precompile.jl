@@ -67,10 +67,6 @@ PrecompileTools.@setup_workload begin
                     </pnml>"""))
             end
         end
-
-        # let node = EzXML.root(EzXML.readxml(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
-        #     net = SimpleNet(node)
-        # end
     end
 end
 end

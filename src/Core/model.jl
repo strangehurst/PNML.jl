@@ -69,4 +69,4 @@ function Base.show(io::IO, model::PnmlModel)
         println(io)
     end
     print(io, ")")
-    end
+end

@@ -34,17 +34,11 @@ arcdict(d::PnmlNetData)           = d.arc_dict
 refplacedict(d::PnmlNetData)      = d.refplace_dict
 reftransitiondict(d::PnmlNetData) = d.reftransition_dict
 
-placedict(x)         = placedict(netdata(x))
-transitiondict(x)    = transitiondict(netdata(x))
-arcdict(x)           = arcdict(netdata(x))
-refplacedict(x)      = refplacedict(netdata(x))
-reftransitiondict(x) = reftransitiondict(netdata(x))
-
-nplace(d::PnmlNetData)         = length(placedict(d))
-ntransition(d::PnmlNetData)    = length(transitiondict(d))
-narc(d::PnmlNetData)           = length(arcdict(d))
-nrefplace(d::PnmlNetData)      = length(refplacedict(d))
-nreftransition(d::PnmlNetData) = length(reftransitiondict(d))
+nplaces(d::PnmlNetData)         = length(placedict(d))
+ntransitions(d::PnmlNetData)    = length(transitiondict(d))
+narcs(d::PnmlNetData)           = length(arcdict(d))
+nrefplaces(d::PnmlNetData)      = length(refplacedict(d))
+nreftransitions(d::PnmlNetData) = length(reftransitiondict(d))
 
 function tunesize!(d::PnmlNetData;
                     nplace::Int = 32,
@@ -60,6 +54,18 @@ function tunesize!(d::PnmlNetData;
     sizehint!(d.refplace_dict, npref)
 end
 
+function print_decl_keys(io::IO, name::AbstractString, dict)
+    print(io, indent(io), length(dict), " ", name, ": ")
+    iio = inc_indent(io)
+    for (i,k) in enumerate(keys(dict))
+        show(io, k); print(io, ", ")
+        if (i < length(dict)) && (i % 25 == 0)
+            print(iio, '\n', indent(iio))
+        end
+    end
+    println(io)
+end
+
 function Base.show(io::IO, pnd::PnmlNetData)
     print(io, nameof(typeof(pnd)), "(",)
     show(io, pnd.pntd); println(io, ", ")
@@ -69,15 +75,8 @@ function Base.show(io::IO, pnd::PnmlNetData)
                   ("arcs", arcdict),
                   ("refplaces", refplacedict),
                   ("refTransitions", reftransitiondict))
-        print(io, indent(io), length(f(pnd)), " ", t, ": ")
-        iio = inc_indent(io)
-        for (i,k) in enumerate(keys(f(pnd)))
-            show(io, k); print(io, ", ")
-            if (i < length(f(pnd))) && (i % 25 == 0)
-                print(iio, '\n', indent(iio))
-            end
-        end
-        println(io)
+
+        print_decl_keys(io, t, f(pnd))
     end
     print(io, ")")
 end
@@ -104,14 +103,6 @@ transition_idset(s::PnmlNetKeys) = s.transition_set
 arc_idset(s::PnmlNetKeys) = s.arc_set
 reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
 refplace_idset(s::PnmlNetKeys) = s.refplace_set
-
-#
-page_idset(x)          = page_idset(netsets(x))
-place_idset(x)         = place_idset(netsets(x))
-transition_idset(x)    = transition_idset(netsets(x))
-arc_idset(x)           = arc_idset(netsets(x))
-reftransition_idset(x) = reftransition_idset(netsets(x))
-refplace_idset(x)      = refplace_idset(netsets(x))
 
 function tunesize!(s::PnmlNetKeys;
                    npage::Int = 1, # Usually just 1 page per net.

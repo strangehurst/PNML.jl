@@ -20,50 +20,6 @@ end
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
 
-pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
-                                                      place_type(T),
-                                                      transition_type(T),
-                                                      arc_type(T),
-                                                      refplace_type(T),
-                                                      reftransition_type(T)}
-
-page_type(::Type{T}) where {T<:PnmlType} = Page{T,
-                                                place_type(T),
-                                                transition_type(T),
-                                                arc_type(T),
-                                                refplace_type(T),
-                                                reftransition_type(T)}
-
-place_type(::Type{T}) where {T<:PnmlType} = Place{T, marking_type(T)}
-transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
-arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
-refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
-reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
-
-page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
-                                                   place_type(T),
-                                                   transition_type(T),
-                                                   arc_type(T),
-                                                   refplace_type(T),
-                                                   reftransition_type(T)}
-
-place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
-transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
-arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
-refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
-reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition
-
-condition_type(net::PnmlNet)       = condition_type(nettype(net))
-condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
-
-inscription_type(net::PnmlNet)       = inscription_type(nettype(net))
-inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
-rate_value_type(net::PnmlNet)        = rate_value_type(nettype(net))
-
-marking_type(net::PnmlNet)       = marking_type(nettype(net))
-marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
-
-#--------------------------------------
 pid(net::PnmlNet)  = net.id
 idregistry(net::PnmlNet) = net.idregistry
 
@@ -72,20 +28,27 @@ pagedict(n::PnmlNet) = n.pagedict
 page_idset(n::PnmlNet)  = n.page_set
 
 netdata(n::PnmlNet)  = n.netdata
+
+placedict(n::PnmlNet)         = placedict(netdata(n))
+transitiondict(n::PnmlNet)    = transitiondict(netdata(n))
+arcdict(n::PnmlNet)           = arcdict(netdata(n))
+refplacedict(n::PnmlNet)      = refplacedict(netdata(n))
+reftransitiondict(n::PnmlNet) = reftransitiondict(netdata(n))
+
 netsets(n::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?"))
 
 place_idset(n::PnmlNet)         = keys(placedict(n))
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))
 arc_idset(n::PnmlNet)           = keys(arcdict(n))
-reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
 refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
+reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
 
-npage(n::PnmlNet)          = length(pagedict(n))
-nplace(n::PnmlNet)         = nplace(netdata(n))
-ntransition(n::PnmlNet)    = ntransition(netdata(n))
-narc(n::PnmlNet)           = narc(netdata(n))
-nrefplace(n::PnmlNet)      = nrefplace(netdata(n))
-nreftransition(n::PnmlNet) = nreftransition(netdata(n))
+npages(n::PnmlNet)          = length(pagedict(n))
+nplaces(n::PnmlNet)         = length(placedict(n))
+ntransitions(n::PnmlNet)    = length(transitiondict(n))
+narcs(n::PnmlNet)           = length(arcdict(n))
+nrefplaces(n::PnmlNet)      = length(refplacedict(n))
+nreftransitions(n::PnmlNet) = length(reftransitiondict(n))
 
 """
     allpages(net::PnmlNet|dict::OrderedDict) -> Iterator
@@ -112,24 +75,24 @@ labels(net::PnmlNet)     = net.labels
 has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
 name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""
 
-places(net::PnmlNet)         = values(placedict(net))
-transitions(net::PnmlNet)    = values(transitiondict(net))
-arcs(net::PnmlNet)           = values(arcdict(net))
-refplaces(net::PnmlNet)      = values(refplacedict(net))
-reftransitions(net::PnmlNet) = values(reftransitiondict(net))
+places(net::PnmlNet)         = values(placedict((net)))
+transitions(net::PnmlNet)    = values(transitiondict((net)))
+arcs(net::PnmlNet)           = values(arcdict((net)))
+refplaces(net::PnmlNet)      = values(refplacedict((net)))
+reftransitions(net::PnmlNet) = values(reftransitiondict((net)))
 
-place(net::PnmlNet, id::Symbol)        = placedict(net)[id]
-has_place(net::PnmlNet, id::Symbol)    = haskey(placedict(net), id)
+place(net::PnmlNet, id::Symbol)        = placedict((net))[id]
+has_place(net::PnmlNet, id::Symbol)    = haskey(placedict((net)), id)
 
 initial_marking(net::PnmlNet, placeid::Symbol) = initial_marking(place(net, placeid))
 
-transition(net::PnmlNet, id::Symbol)      = transitiondict(net)[id]
-has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict(net), id)
+transition(net::PnmlNet, id::Symbol)      = transitiondict((net))[id]
+has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict((net)), id)
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 
-arc(net::PnmlNet, id::Symbol)      = arcdict(net)[id]
-has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
+arc(net::PnmlNet, id::Symbol)      = arcdict((net))[id]
+has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict((net)), id)
 
 
 """
@@ -144,12 +107,12 @@ all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || t
 src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
 
-inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict(net)[arc_id])
+inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
 
-has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
-refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
-has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
-reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
+has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
+refplace(net::PnmlNet, id::Symbol)          = refplacedict((net))[id]
+has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict((net)), id)
+reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 
 """
 """
@@ -195,7 +158,6 @@ function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
     return true
 end
 
-
 function Base.summary(net::PnmlNet)
     string(typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", ", ",
@@ -208,8 +170,10 @@ end
 
 # No indent here.
 function Base.show(io::IO, net::PnmlNet)
-    print(io, indent(io), nameof(typeof(net)),
-            "(", repr(pid(net)), ", ",repr(name(net)), ", ", repr(nettype(net)), ", ")
+    print(io, indent(io), nameof(typeof(net)), "(", )
+    print(repr(pid(net)), ", ")
+    print(repr(name(net)), ", ")
+    print(repr(nettype(net)), ", ")
     iio = inc_indent(io)
     println(io)
     print(io, "Pages = ", repr(page_idset(net)))
@@ -225,7 +189,7 @@ function Base.show(io::IO, net::PnmlNet)
     println(io, "], ")
     show(io, tools(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
-    show(io, netdata(net)); println(io, ")")
+    show(io, nettype(net)); println(io, ")")
 
     println(io, "Arcs:")
     map(arcs(net)) do a
@@ -251,3 +215,46 @@ function Base.show(io::IO, net::PnmlNet)
     end
 
 end
+
+pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
+                                                      place_type(T),
+                                                      transition_type(T),
+                                                      arc_type(T),
+                                                      refplace_type(T),
+                                                      reftransition_type(T)}
+
+page_type(::Type{T}) where {T<:PnmlType} = Page{T,
+                                                place_type(T),
+                                                transition_type(T),
+                                                arc_type(T),
+                                                refplace_type(T),
+                                                reftransition_type(T)}
+
+place_type(::Type{T}) where {T<:PnmlType} = Place{T, marking_type(T)}
+transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
+arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
+refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
+reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
+
+page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
+                                                   place_type(T),
+                                                   transition_type(T),
+                                                   arc_type(T),
+                                                   refplace_type(T),
+                                                   reftransition_type(T)}
+
+place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
+transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
+arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
+refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
+reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition
+
+condition_type(net::PnmlNet)       = condition_type(nettype(net))
+condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
+
+inscription_type(net::PnmlNet)       = inscription_type(nettype(net))
+inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
+rate_value_type(net::PnmlNet)        = rate_value_type(nettype(net))
+
+marking_type(net::PnmlNet)       = marking_type(nettype(net))
+marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))

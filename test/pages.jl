@@ -1,7 +1,7 @@
 using PNML, EzXML, ..TestUtils, JET, AbstractTrees
 
 function verify_sets(net::PnmlNet)
-    #println("\nverify sets and structure ++++++++++++++++++++++")
+    println("\nverify sets and structure ++++++++++++++++++++++")
     @test page_idset(net) isa AbstractSet
     @test page_idset(firstpage(net)) isa AbstractSet
     @test !isempty(setdiff(page_idset(net), page_idset(firstpage(net))))
@@ -37,7 +37,7 @@ function verify_sets(net::PnmlNet)
     end
 end
 
-const str = """<?xml version="1.0"?>
+model = @inferred PNML.PnmlModel parse_str("""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="pnmlcore">
             <page id="page1">
@@ -85,8 +85,7 @@ const str = """<?xml version="1.0"?>
             </page>
         </net>
     </pnml>
-"""
-model = @inferred PNML.PnmlModel parse_str(str)
+""")
 net = first(nets(model)) # The nets of a model not inferrable.
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
@@ -166,76 +165,80 @@ end
 @test refplaces(net) !== nothing
 @test reftransitions(net) !== nothing
 
+@test narcs(net) != 0
+@test nplaces(net) != 0
+@test ntransitions(net) != 0
+@test nrefplaces(net) != 0
+@test nreftransitions(net) != 0
+
 @testset "flatten" begin
-        flatten_pages!(net)
-        #println("---------------")
-        #@show netsets(firstpage(net))
-        #@show netdata(net)
-        #println("---------------")
+    println("---------------"^4)
+    flatten_pages!(net; verbose=true)
+    println("---------------"^4)
 
-        expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
-        expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
-        expected_t = [:t1, :t2, :t3, :t31]
-        expected_rt = [] # removed by flatten
-        expected_rp = [] # removed by flatten
+    expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]
+    expected_p = [:p1, :p11, :p111, :p2, :p3, :p31, :p311, :p3111]
+    expected_t = [:t1, :t2, :t3, :t31]
+    expected_rt = [] # removed by flatten
+    expected_rp = [] # removed by flatten
 
 
-        noisy && println()
-        #@show (collect ∘ values ∘ page_idset)(net)
-        noisy && AbstractTrees.print_tree(net)
-        noisy && println()
-        noisy && PNML.pagetree(net)
-        noisy && println()
+    noisy && println()
+    #@show (collect ∘ values ∘ page_idset)(net)
+    noisy && AbstractTrees.print_tree(net)
+    noisy && println()
+    noisy && PNML.pagetree(net)
+    noisy && println()
 
-        @test isempty(setdiff(arc_idset(net), expected_a))
-        @test isempty(setdiff(arc_idset(firstpage(net)), expected_a))
-        @test isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
-        @test_call target_modules=target_modules arc_idset(net)
-        @test_call arc_idset(firstpage(net))
-        for a ∈ expected_a
-            @test a ∈ arc_idset(net)
-            @test a ∈ arc_idset(firstpage(net))
-        end
+    @test isempty(setdiff(arc_idset(net), expected_a))
+    @test isempty(setdiff(arc_idset(firstpage(net)), expected_a))
+    @test isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
+    @test_call target_modules=target_modules arc_idset(net)
+    @test_call arc_idset(firstpage(net))
+    for a ∈ expected_a
+        @test a ∈ arc_idset(net)
+        @test a ∈ arc_idset(firstpage(net))
+    end
 
-        @test isempty(setdiff(place_idset(net), expected_p))
-        @test isempty(setdiff(place_idset(firstpage(net)), expected_p))
-        @test isempty(setdiff(place_idset(net), place_idset(firstpage(net))))
-        @test_call target_modules=target_modules place_idset(net)
-        @test_call place_idset(firstpage(net))
-        for p ∈ expected_p
-            @test p ∈ place_idset(net)
-        end
+    @test isempty(setdiff(place_idset(net), expected_p))
+    @test isempty(setdiff(place_idset(firstpage(net)), expected_p))
+    @test isempty(setdiff(place_idset(net), place_idset(firstpage(net))))
+    @test_call target_modules=target_modules place_idset(net)
+    @test_call place_idset(firstpage(net))
+    for p ∈ expected_p
+        @test p ∈ place_idset(net)
+    end
 
-        @test (sort ∘ collect)(transition_idset(net)) == expected_t
-        @test (sort ∘ collect)(transition_idset(firstpage(net))) == expected_t
-        @test (sort ∘ collect)(transition_idset(net)) == (sort ∘ collect)(transition_idset(firstpage(net)))
-        @test_call target_modules=target_modules transition_idset(net)
-        @test_call transition_idset(firstpage(net))
-        for t ∈ expected_t
-            @test t ∈ transition_idset(net)
-        end
+    @test (sort ∘ collect)(transition_idset(net)) == expected_t
+    @test (sort ∘ collect)(transition_idset(firstpage(net))) == expected_t
+    @test (sort ∘ collect)(transition_idset(net)) == (sort ∘ collect)(transition_idset(firstpage(net)))
+    @test_call target_modules=target_modules transition_idset(net)
+    @test_call transition_idset(firstpage(net))
+    for t ∈ expected_t
+        @test t ∈ transition_idset(net)
+    end
 
-        @test isempty(reftransition_idset(net))
-        @test isempty(reftransition_idset(firstpage(net)))
-        @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
-        @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
-        @test (sort ∘ collect)(reftransition_idset(net)) == (sort ∘ collect)(reftransition_idset(firstpage(net)))
-        @test_call target_modules=target_modules reftransition_idset(net)
-        @test_call reftransition_idset(firstpage(net))
-        for rt ∈ expected_rt
-            @test rt ∈ reftransition_idset(net)
-        end
+    @test isempty(reftransition_idset(net))
+    @test isempty(reftransition_idset(firstpage(net)))
+    @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
+    @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
+    @test (sort ∘ collect)(reftransition_idset(net)) == (sort ∘ collect)(reftransition_idset(firstpage(net)))
+    @test_call target_modules=target_modules reftransition_idset(net)
+    @test_call reftransition_idset(firstpage(net))
+    for rt ∈ expected_rt
+        @test rt ∈ reftransition_idset(net)
+    end
 
-        @test isempty(refplace_idset(net))
-        @test isempty(refplace_idset(firstpage(net)))
-        @test (sort ∘ collect)(refplace_idset(net)) == expected_rp
-        @test (sort ∘ collect)(refplace_idset(firstpage(net))) == expected_rp
-        @test (sort ∘ collect)(refplace_idset(net)) == (sort ∘ collect)(refplace_idset(firstpage(net)))
-        @test_call target_modules=target_modules refplace_idset(net)
-        @test_call refplace_idset(firstpage(net))
-        for rp ∈ expected_rp
-            @test rp ∈ refplace_idset(net)
-        end
+    @test isempty(refplace_idset(net))
+    @test isempty(refplace_idset(firstpage(net)))
+    @test (sort ∘ collect)(refplace_idset(net)) == expected_rp
+    @test (sort ∘ collect)(refplace_idset(firstpage(net))) == expected_rp
+    @test (sort ∘ collect)(refplace_idset(net)) == (sort ∘ collect)(refplace_idset(firstpage(net)))
+    @test_call target_modules=target_modules refplace_idset(net)
+    @test_call refplace_idset(firstpage(net))
+    for rp ∈ expected_rp
+        @test rp ∈ refplace_idset(net)
+    end
 end
 
 @testset "lookup types $pntd" for pntd in all_nettypes()

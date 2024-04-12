@@ -6,10 +6,10 @@ println("SIMPLENET")
 str1 = """
 <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="continuous">
+        <net id="net0" type="what">
             <page id="page0">
-            <place id="p1"> <initialMarking> <text>1.0</text> </initialMarking> </place>
-            <place id="p2"> <initialMarking> <text>2.0</text> </initialMarking> </place>
+            <place id="p1"> <initialMarking> <text>1</text> </initialMarking> </place>
+            <place id="p2"> <initialMarking> <text>2</text> </initialMarking> </place>
             <place id="p3">
                 <structure att1="doo"/>
                 <frog name="hoppy" />
@@ -37,24 +37,23 @@ str1 = """
     #     parse_str(str1))
     empty!(PNML.TOPDECLDICTIONARY)
     model = parse_str(str1)
-    # println("- - - - - - - - - - - - - - - -")
-    # @show model
-    # println("- - - - - - - - - - - - - - - -")
-
     net0 = @inferred PnmlNet first(nets(model))
     #println("- - - - - - - - - - - - - - - -")
     snet1 = @inferred SimpleNet SimpleNet(model)
-    #@show snet1
+    @show snet1
     #println("- - - - - - - - - - - - - - - -")
     snet  = @inferred SimpleNet SimpleNet(net0)
     #@show snet
     #@show typeof(snet)
     #println("- - - - - - - - - - - - - - - -")
 
-    @test_call SimpleNet(net0) # passes
-    #println("- - - - - - - - - - - - - - - -")
-    @test_call broken=true SimpleNet(model) # whoo hooo, it passes
-    #println("- - - - - - - - - - - - - - - -")
+    println("- - - - - - - - - - - - - - - -")
+    @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
+    @test_call broken=true SimpleNet(net0)
+    println("- - - - - - - - - - - - - - - -")
+    @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
+    @test_call broken=true SimpleNet(model)
+    println("- - - - - - - - - - - - - - - -")
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)

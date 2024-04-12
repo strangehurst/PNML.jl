@@ -51,12 +51,12 @@ arcs(petrinet::AbstractPetriNet)           = arcs(pnmlnet(petrinet))
 refplaces(petrinet::AbstractPetriNet)      = refPlaces(pnmlnet(petrinet))
 reftransitions(petrinet::AbstractPetriNet) = refTransitions(pnmlnet(petrinet))
 
-npage(pn::AbstractPetriNet)          = npage(pnmlnet(pn))
-nplace(pn::AbstractPetriNet)         = nplace(pnmlnet(pn))
-ntransition(pn::AbstractPetriNet)    = ntransition(pnmlnet(pn))
-narc(pn::AbstractPetriNet)           = narc(pnmlnet(pn))
-nrefplace(pn::AbstractPetriNet)      = nrefplace(pnmlnet(pn))
-nreftransition(pn::AbstractPetriNet) = nreftransition(pnmlnet(pn))
+npages(pn::AbstractPetriNet)          = npages(pnmlnet(pn))
+nplaces(pn::AbstractPetriNet)         = nplaces(pnmlnet(pn))
+ntransitions(pn::AbstractPetriNet)    = ntransitions(pnmlnet(pn))
+narcs(pn::AbstractPetriNet)           = narcs(pnmlnet(pn))
+nrefplaces(pn::AbstractPetriNet)      = nrefplaces(pnmlnet(pn))
+nreftransitions(pn::AbstractPetriNet) = nreftransitions(pnmlnet(pn))
 
 #------------------------------------------------------------------
 place_idset(petrinet::AbstractPetriNet)           = place_idset(pnmlnet(petrinet))
@@ -146,14 +146,14 @@ end
 "Output Matrix"
 function output_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    O = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    OM = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     for (t,transition_id) in enumerate(transition_idset(net))
-        for (p,place_id) in enumerate(place_idset(net))
+        for (p, place_id) in enumerate(place_idset(net))
             a = arc(net, transition_id, place_id)
-            O[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            OM[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
-    return O
+    return OM
 end
 
 """
@@ -165,7 +165,7 @@ function incidence_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     #TODO  Make Labelled Matrix? ComponentArray?
     #!println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
-    C = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     z = zero(inscription_value_type(net))
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
@@ -316,9 +316,13 @@ end
 
 SimpleNet(s::AbstractString) = SimpleNet(parse_str(s))
 SimpleNet(node::XMLNode)     = SimpleNet(parse_pnml(node))
-SimpleNet(model::PnmlModel)  = SimpleNet(first(nets(model)))
+function SimpleNet(model::PnmlModel)
+    ns = nets(model)
+    fn = first(ns)
+    SimpleNet(fn)
+end
 function SimpleNet(net::PnmlNet)
-    flatten_pages!(net)
+    flatten_pages!(net; verbose=true)
     SimpleNet(pid(net), net)
 end
 

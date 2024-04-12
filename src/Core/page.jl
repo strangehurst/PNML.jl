@@ -37,6 +37,13 @@ pagedict(p::Page) = p.pagedict
 netdata(p::Page)  = p.netdata
 netsets(p::Page)  = p.netsets
 
+placedict(p::Page)         = placedict(netdata(p))
+transitiondict(p::Page)    = transitiondict(netdata(p))
+arcdict(p::Page)           = arcdict(netdata(p))
+refplacedict(p::Page)      = refplacedict(netdata(p))
+reftransitiondict(p::Page) = reftransitiondict(netdata(p))
+
+
 #! Do not expect the page api to see much use, so it is not very efficient.
 #! Also does not decend pagetree.
 pages(page::Page)       = Iterators.filter(v -> in(pid(v), page_idset(page)), values(pagedict(page)))
@@ -46,10 +53,14 @@ arcs(page::Page)        = Iterators.filter(v -> in(pid(v), arc_idset(page)), val
 refplaces(page::Page)   = Iterators.filter(v -> in(pid(v), refplace_idset(page)), values(refplacedict(page)))
 reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idset(page)), values(reftransitiondict(page)))
 
-
 declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
 
-page_idset(page::Page) = page_idset(netsets(page)) # subpages of this page
+page_idset(page::Page)          = page_idset(netsets(page)) # subpages of this page
+place_idset(page::Page)         = place_idset(netsets(page))
+transition_idset(page::Page)    = transition_idset(netsets(page))
+arc_idset(page::Page)           = arc_idset(netsets(page))
+reftransition_idset(page::Page) = reftransition_idset(netsets(page))
+refplace_idset(page::Page)      = refplace_idset(netsets(page))
 
 place(page::Page, id::Symbol) = placedict(page)[id]
 has_place(page::Page, id::Symbol) = in(id, place_idset(page))
@@ -66,26 +77,20 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-function show_page_field(io::IO, label::AbstractString, x, post::AbstractString=",\n")
-    print(io, indent(io), label, " "); show(io, x); print(io, post)
-end
-
 function Base.show(io::IO, page::Page)
     #TODO Add support for :trim and :compact
     print(io, "Page{", nettype(page),"}("),
     show(io, pid(page)); print(io, ", ")
     show(io, name(page)); print(io, ", ")
-
     println(io)
-    # Start indent here. Will indent subpages.
-    iio = inc_indent(io)
-
-    show_page_field(iio, "places:",         place_idset(page))
-    show_page_field(iio, "transitions:",    transition_idset(page))
-    show_page_field(iio, "arcs:",           arc_idset(page))
-    show_page_field(iio, "declarations:",   declarations(page))
-    show_page_field(iio, "refPlaces:",      refplace_idset(page))
-    show_page_field(iio, "refTransitions:", reftransition_idset(page))
-    show_page_field(iio, "subpages:",       page_idset(page), "")
+    iio = inc_indent(io)    # Will indent subpages.
+    print(iio, indent(iio), "places: ",       repr(place_idset(page)), ",\n");
+    print(iio, indent(iio), "transitions: ",  repr(transition_idset(page)), ",\n");
+    print(iio, indent(iio), "arcs: ",         repr(arc_idset(page)), ",\n");
+    print(iio, indent(iio), "refPlaces:",     repr(refplace_idset(page)), ",\n");
+    print(iio, indent(iio), "refTransitions: ", repr(reftransition_idset(page)), ",\n");
+    print(iio, indent(iio), "subpages: ",     repr(page_idset(page)), ",\n");
+    #!print(iio, indent(iio), "declarations: ", repr(declarations(page)), ",\n");
+    print(iio, indent(iio), "declarations: ", "repr(declarations(page))", ",\n");
     print(io, ")")
 end
