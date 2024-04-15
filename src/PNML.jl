@@ -61,13 +61,13 @@ if !haskey(ENV, "COLUMNS")
 end
 
 import AutoHashEquals: @auto_hash_equals
-using Base: Fix1, Fix2, @kwdef, RefValue, isempty
+using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import FunctionWrappers
 import Reexport
 import DecFP
 import Graphs
 import MetaGraphsNext
-import OrderedCollections: OrderedDict, OrderedSet, LittleDict, freeze
+import OrderedCollections: OrderedDict, LittleDict, freeze
 import EzXML
 import XMLDict
 import TermInterface

@@ -27,7 +27,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.
         delete!(pagedict(net), key1)
         @assert key1 ∉ pageids # Note the coupling of pageids and net.pagedict.
 
-        verbose && println("pageids now = $(keys(pagedict(net)))")
+        #verbose && println("pageids now = $(keys(pagedict(net)))")
 
         while !isempty(pagedict(net))
             cutid, cutpage = popfirst!(pagedict(net))
@@ -65,7 +65,7 @@ function post_flatten_verify(net::PnmlNet;
     errors = String[]
 
     npages(net) == 1 || push!(errors, "wrong pagedict length: expected 1 found $(npages(net)))")
-    length(page_idset(net)) == 1 || push!(errors, "wrong page_idset length: expected 1 found $(length(page_idset(net)))")
+    @assert npages(net) == length(page_idset(net))
 
     nrefplaces(net) == 0 || push!(errors, "refplacedict not empty")
     isempty(refplace_idset(net)) || push!(errors, "refplace_idset not empty")
@@ -94,7 +94,6 @@ function append_page!(lpage::Page, rpage::Page;
     if verbose
         println("append_page! ", pid(lpage), " ", pid(rpage))
         @show netsets(lpage) netsets(rpage)
-        #@show lpage rpage
     end
 
     for k in keys
@@ -104,13 +103,10 @@ function append_page!(lpage::Page, rpage::Page;
     for s in idsets # except for page_idset
         union!(s(lpage), s(rpage)) #TODO type assert
     end
-    verbose && println("delete!(page_idset(lpage), $(pid(rpage)))")
+    #verbose && println("delete!(page_idset(lpage), $(pid(rpage)))")
     delete!(page_idset(lpage), pid(rpage))
     @assert pid(rpage) ∉ page_idset(lpage)
-    if verbose
-        println("after append_page!")
-        @show netsets(lpage) #~ ensure empty page garbage collected?
-    end
+    #~ ensure empty page garbage collected?
     #! TODO Verify netsets
     return lpage
 end
@@ -160,6 +156,7 @@ as part of [`flatten_pages!`](@ref),
 """
 function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
     if verbose
+        println()
         println("deref!")
         @show nrefplaces(net) nreftransitions(net) narcs(net)
         @show refplaces(net) reftransitions(net) arcs(net)
@@ -173,7 +170,7 @@ function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG.verbose)
     isempty(arcdict(net)) && error("no arcs")
 
     for arc in arcs(net)
-        verbose && @show(arc)
+        #verbose && @show(arc)
         while arc.source[] ∈ refplace_idset(net)
             arc.source[] = deref_place(net, arc.source[]; trim, verbose)
         end

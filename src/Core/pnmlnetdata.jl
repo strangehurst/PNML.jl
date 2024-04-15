@@ -70,13 +70,13 @@ function Base.show(io::IO, pnd::PnmlNetData)
     print(io, nameof(typeof(pnd)), "(",)
     show(io, pnd.pntd); println(io, ", ")
     io = inc_indent(io)
-    for (t, f) in (("places", placedict),
+    for (tag, dict) in (("places", placedict),
                   ("transitions", transitiondict),
                   ("arcs", arcdict),
                   ("refplaces", refplacedict),
                   ("refTransitions", reftransitiondict))
 
-        print_decl_keys(io, t, f(pnd))
+        print_decl_keys(io, tag, dict(pnd))
     end
     print(io, ")")
 end
@@ -85,19 +85,20 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and other
+Per-page structure of `Set`s of pnml IDs for each "owned" `Page` and other
 [`AbstractPnmlObject`](@ref).
 """
 @kwdef struct PnmlNetKeys
-    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}() # Subpages of page
-    place_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
-    transition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
-    arc_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
-    reftransition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
-    refplace_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    page_set::Set{Symbol} = Set{Symbol}() # Subpages of page
+    place_set::Set{Symbol} = Set{Symbol}()
+    transition_set::Set{Symbol} = Set{Symbol}()
+    arc_set::Set{Symbol} = Set{Symbol}()
+    reftransition_set::Set{Symbol} = Set{Symbol}()
+    refplace_set::Set{Symbol} = Set{Symbol}()
 end
 
 page_idset(s::PnmlNetKeys) = s.page_set
+"Return an `Set{Symbol}, should it be an iterator?"
 place_idset(s::PnmlNetKeys) = s.place_set
 transition_idset(s::PnmlNetKeys) = s.transition_set
 arc_idset(s::PnmlNetKeys) = s.arc_set
@@ -132,17 +133,17 @@ function Base.summary(pns::PnmlNetKeys)
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (tag, func) in (("pages", page_idset),
+    for (tag, idset) in (("pages", page_idset),
                         ("places", place_idset),
                         ("transitions", transition_idset),
                         ("arcs", arc_idset),
                         ("refplaces", refplace_idset),
                         ("refTransitions", reftransition_idset))
-        print(io, indent(io), length(func(pns)), " ", tag, ": ")
+        print(io, indent(io), length(idset(pns)), " ", tag, ": ")
         iio = inc_indent(io)
-        for (i,k) in enumerate((values ∘ func)(pns))
+        for (i,k) in enumerate(values(idset(pns)))
             print(io, repr(k), ", ")
-            if (i < length(func(pns))) && (i % 25 == 0)
+            if (i < length(idset(pns))) && (i % 25 == 0)
                 print(iio, '\n', indent(iio))
             end
         end

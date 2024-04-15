@@ -258,6 +258,27 @@ methods(PNML.reftransition)  # hide
 Better to iterate than allocate. Using a set abstraction that iterates consistently, perhaps in insertion order.
 
 ### place\_idset
+| Object           | Synopsis                     | Comment                              |
+|------------------|------------------------------|--------------------------------------|
+| AbstractPetriNet | `place_idset(pnmlnet))`      | forward to pnml net                  |
+| PnmlNet          | `keys(placedict(net)) `      | of [`PnmlNetData`](@ref) OrderedDict |
+| Page             | `place_idset(netsets(page))` | of [`PnmlNetKeys`](@ref) Set         |
+| PnmlNetKeys      | `s.place_set`                |                                      |
+
+The contents of PnmlKeySet are indices into PnmlNetData.
+When there is only one page, the keys of the `placedict` and `place_set` will be (must be) the same.
+The order of the two may differ.
+
+Do they have the same type?
+`place_dict::OrderedCollections.OrderedDict{Symbol, P}`
+`place_set::Set{Symbol}`
+
+
+For the foreseeable future, there will be little use of multi-page APIs.
+It is expected that flattened PNML nets will be the fully supported, 
+tested, thought-through API.
+
+
 [`PNML.place_idset`](@ref)
 ```@example methods
 methods(PNML.place_idset)  # hide

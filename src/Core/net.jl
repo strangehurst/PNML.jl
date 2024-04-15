@@ -9,7 +9,7 @@ One Petri Net of a PNML model.
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
     netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
-    page_set::OrderedSet{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys.
+    page_set::Set{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys in Pages.
     declaration::Declaration
     namelabel::Maybe{Name}
     tools::Maybe{Vector{ToolInfo}}
@@ -36,7 +36,7 @@ refplacedict(n::PnmlNet)      = refplacedict(netdata(n))
 reftransitiondict(n::PnmlNet) = reftransitiondict(netdata(n))
 
 netsets(n::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?"))
-
+"Return iterator over keys of a dictionary"
 place_idset(n::PnmlNet)         = keys(placedict(n))
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))
 arc_idset(n::PnmlNet)           = keys(arcdict(n))
@@ -115,22 +115,33 @@ has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict((net)), i
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 
 """
+Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
 function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
-    verbose && println("verify PnmlNet")
+    verbose && println("verify PnmlNet $(pid(net))")
     errors = String[]
+
+    verify!(errors, net; verbose)
+
+    isempty(errors) ||
+        error("verify(net) error(s): ", join(errors, ",\n "))
+    return true
+end
+
+function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG.verbose)
     isreg = Base.Fix1(isregistered,idregistry(net))
 
+    # Are the things with PNML IDs in the PnmlIDRegistry?
     !isreg(pid(net)) &&
         push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
 
     for pg in pages(net)
         !isreg(pid(pg)) &&
-            push!(errors, string("page id ", repr(pid(pg)), " not registered")::String)
+        push!(errors, string("pages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pg in allpages(net)
         !isreg(pid(pg)) &&
-            push!(errors, string("page id ", repr(pid(pg)), " not registered")::String)
+            push!(errors, string("allpages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pl in places(net)
         !isreg(pid(pl)) &&
@@ -153,17 +164,23 @@ function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
             push!(errors, string("refTranition id ", repr(pid(rt)), " not registered")::String)
     end
 
-    isempty(errors) ||
-        error("verify(net) errors: ", join(errors, ",\n "))
-    return true
+    # Call net object's verify method.
+    for pg in allpages(net)
+        verify!(errors, pg; verbose) #TODO collect diagnostics, or die?
+    end
+    # places(net), transitions(net), arcs(net)
+    # declarations(net)
+    # tools(net)
+    # labels(net)
+    return nothing
 end
 
 function Base.summary(net::PnmlNet)
     string(typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", ", ",
             " type ", nettype(net), ", ",
-            length(pagedict(net)), " pages ",
-            length(declarations(net)), " declarations",
+            npages(net), " pages ",
+            ndeclarations(net), " declarations",
             has_tools(net) ? length(tools(net)) : 0, " tools, ",
             has_labels(net) ? length(labels(net)) : 0, " labels")::String
 end
@@ -230,7 +247,7 @@ page_type(::Type{T}) where {T<:PnmlType} = Page{T,
                                                 refplace_type(T),
                                                 reftransition_type(T)}
 
-place_type(::Type{T}) where {T<:PnmlType} = Place{T, marking_type(T)}
+place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace

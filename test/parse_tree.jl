@@ -77,6 +77,7 @@ end
 
     net = first(netvec)
     @test net isa PnmlNet{<:SymmetricNet}
+    @test PNML.verify(net; verbose=true)
 
     @test pages(net) isa Base.Iterators.Filter
     @test only(allpages(net)) == only(pages(net))
@@ -132,9 +133,9 @@ end
     println()
     for n in PNML.nets(model)
         println("-----------------------------------------"^3)
-        @test PNML.verify(n)
+        @test PNML.verify(n); verbose=true
         PNML.flatten_pages!(n; verbose=true)
-        @test PNML.verify(n)
+        @test PNML.verify(n; verbose=true)
         println("-----------------------------------------"^3)
         @show n
         println("-----------------------------------------"^3)

@@ -49,7 +49,7 @@ str1 = """
 
     println("- - - - - - - - - - - - - - - -")
     @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
-    @test_call broken=true SimpleNet(net0)
+    @test_call broken=false SimpleNet(net0)
     println("- - - - - - - - - - - - - - - -")
     @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
     @test_call broken=true SimpleNet(model)

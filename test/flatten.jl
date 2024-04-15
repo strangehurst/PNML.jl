@@ -33,7 +33,7 @@ println("FLATTEN")
     @test_call first(nets(model))
     @test length(allpages(net)) == length(allpages(net)) == 3
     flatten_pages!(net)
-    @test_call broken=true flatten_pages!(net)
+    @test_call broken=false flatten_pages!(net)
     @test length(allpages(net)) == length(allpages(net)) == 1
 
     @test PNML.has_arc(net, :a1)

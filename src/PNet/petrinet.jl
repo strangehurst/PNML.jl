@@ -59,6 +59,7 @@ nrefplaces(pn::AbstractPetriNet)      = nrefplaces(pnmlnet(pn))
 nreftransitions(pn::AbstractPetriNet) = nreftransitions(pnmlnet(pn))
 
 #------------------------------------------------------------------
+"Return pnmlnet's place_idset"
 place_idset(petrinet::AbstractPetriNet)           = place_idset(pnmlnet(petrinet))
 has_place(petrinet::AbstractPetriNet, id::Symbol) = has_place(pnmlnet(petrinet), id)
 place(petrinet::AbstractPetriNet, id::Symbol)     = place(pnmlnet(petrinet), id)
@@ -322,7 +323,7 @@ function SimpleNet(model::PnmlModel)
     SimpleNet(fn)
 end
 function SimpleNet(net::PnmlNet)
-    flatten_pages!(net; verbose=true)
+    flatten_pages!(net)
     SimpleNet(pid(net), net)
 end
 
