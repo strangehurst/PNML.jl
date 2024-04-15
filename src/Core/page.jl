@@ -16,11 +16,11 @@ struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
-    # pagedict and netdata do not overlap
-    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by net and its pages.
-    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # Shared by net and its pages.
-    netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.
-    # Note: `PnmlNet` only has `page_set` because all net objects are attached to a `Page`.
+    # Note: pagedict and netdata do not overlap.
+    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # All pages. Shared by net and its pages.
+    netdata::PnmlNetData{PNTD, P, T, A, RP, RT} # All Places, Arcs, etc. Shared by net and its pages.
+    netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
+    # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
@@ -43,9 +43,8 @@ arcdict(p::Page)           = arcdict(netdata(p))
 refplacedict(p::Page)      = refplacedict(netdata(p))
 reftransitiondict(p::Page) = reftransitiondict(netdata(p))
 
-
-#! Do not expect the page api to see much use, so it is not very efficient.
-#! Also does not decend pagetree.
+#! Do not expect the page api to see much use, so it is likely not very efficient.
+#! Also does not decend pagetree. And otherwise limited functionality.
 pages(page::Page)       = Iterators.filter(v -> in(pid(v), page_idset(page)), values(pagedict(page)))
 places(page::Page)      = Iterators.filter(v -> in(pid(v), place_idset(page)), values(placedict(page)))
 transitions(page::Page) = Iterators.filter(v -> in(pid(v), transition_idset(page)), values(transitiondict(page)))
@@ -56,6 +55,7 @@ reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idse
 declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
 
 page_idset(page::Page)          = page_idset(netsets(page)) # subpages of this page
+"Return netsets place_idset"
 place_idset(page::Page)         = place_idset(netsets(page))
 transition_idset(page::Page)    = transition_idset(netsets(page))
 arc_idset(page::Page)           = arc_idset(netsets(page))
@@ -90,7 +90,19 @@ function Base.show(io::IO, page::Page)
     print(iio, indent(iio), "refPlaces:",     repr(refplace_idset(page)), ",\n");
     print(iio, indent(iio), "refTransitions: ", repr(reftransition_idset(page)), ",\n");
     print(iio, indent(iio), "subpages: ",     repr(page_idset(page)), ",\n");
-    #!print(iio, indent(iio), "declarations: ", repr(declarations(page)), ",\n");
-    print(iio, indent(iio), "declarations: ", "repr(declarations(page))", ",\n");
+    print(iio, indent(iio), "declarations: ", "repr(declarations(page)) suppressed", ",\n");
     print(io, ")")
+end
+
+function verify(page::Page; verbose::Bool = CONFIG.verbose)
+    verbose && println("verify Page $(pid(page))")
+    errors = String[]
+    verify!(errors, page; verbose)
+    isempty(errors) ||
+      error("verify(page) error(s): ", join(errors, ",\n "))
+    return true
+end
+function verify!(errors, page::Page; verbose::Bool = CONFIG.verbose)
+    #isreg = Base.Fix1(isregistered,idregistry(net))
+     return nothing
 end
