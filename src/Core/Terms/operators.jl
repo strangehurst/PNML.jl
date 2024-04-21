@@ -11,8 +11,8 @@ sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
  TermInterface version 0.4
     isexpr(x::T) # expression tree (S-expression) => head(x), children(x) required
     iscall(x::T) # call expression => operation(x), arguments(x) required
-    head(x) # S-expression
-    children(x) # S-expression
+    head(x) # of S-expression
+    children(x) # of S-expression
     operation(x) # if iscall(x)
     arguments(x) # if iscall(x)
     maketerm(T, head, children, type=nothing, metadata=nothing) # iff isexpr(x)
@@ -21,22 +21,31 @@ sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
     metadata(x)
     symtype(expr)
 
-:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j])
-:(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])
+:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible? what does arr[] mean here?
+:(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])  #~ operator
+
+:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is possibly a constant when 0-ary Callable (which the compiler may optimizie)
 
 ===================================#
 
-"constants have arity of 0"
-arity(op::AbstractOperator) = 0 #~ TermInterface
+# Two levels of predicate. Is it an expression, then is it *also* callable.
+TermInterface.isexpr(op::AbstractOperator)  = false
+TermInterface.iscall(op::AbstractOperator)  = false # users promise that this is only called if isexpr is true.
 
-"""
-"""
-expression(op::AbstractOperator) = error("expression not defined for $(typeof(op))") #~ TermInterface
+TermInterface.head(op::AbstractOperator)      = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.children(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.operation(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
+
+"Constants have arity of 0. Implicit value is size(arguments)"
+TermInterface.arity(op::AbstractOperator) = 0
+TermInterface.metadata(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.symtype(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 
 """
 Operator as Functor
 
-tag maps to func
+tag maps to func, a functor/function Callable. Its arity is sane as length of inexprs and insorts
 """
 struct Operator <: AbstractOperator
     tag::Symbol
@@ -52,6 +61,7 @@ end
 tag(op::Operator)    = op.tag
 sortof(op::Operator) = op.outsort
 inputs(op::Operator) = op.inexprs
+
 function (op::Operator)()
     println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
     @show input = [x() for x in inputs(op)] # evaluate each AbstractTerm
