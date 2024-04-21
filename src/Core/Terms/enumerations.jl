@@ -5,20 +5,22 @@ $(TYPEDEF)
 """
 abstract type EnumerationSort <: AbstractSort end
 
-function Base.getproperty(s::EnumerationSort, prop_name::Symbol)
-    prop_name === :fec_refs && return getfield(s, :fec_refs)::Vector{Symbol}
-    prop_name === :netid && return getfield(s, :netid)::Symbol
-    return getfield(o, prop_name)
+function Base.getproperty(sort::EnumerationSort, prop_name::Symbol)
+    prop_name === :fec_refs && return getfield(sort, :fec_refs)::Vector{Symbol}
+    prop_name === :netid && return getfield(sort, :netid)::Symbol
+    return getfield(sort, prop_name)
 end
-netid(s::EnumerationSort) = s.netid
 
-"Return iterator into feconstant(decldict(netid)). Maintains order of this sort."
-elements(s::EnumerationSort) = begin
-    #@show s.fec_refs
-    dd = decldict(netid(s))
-    # Return an iterator into dd that maintains order.
-    Iterators.map(ref->dd.feconstants[ref], s.fec_refs)
+netid(sort::EnumerationSort) = sort.netid
+
+"Return iterator into feconstant(decldict(netid)) for this sort's `FEConstants`. Maintains order of this sort."
+elements(sort::EnumerationSort) = begin
+    dd = decldict(netid(sort))
+    Iterators.map(ref->dd.feconstants[ref], sort.fec_refs)
 end
+
+"Return number of `FEConstants` contained by this sort."
+Base.length(sort::EnumerationSort) = length(sort.fec_refs)
 
 """
 $(TYPEDEF)
@@ -40,13 +42,12 @@ $(TYPEDEF)
 end
 FiniteEnumerationSort(netid::Symbol = :emptynet) = FiniteEnumerationSort(Symbol[], netid)
 
-function Base.show(io::IO, es::EnumerationSort)
-    print(io, nameof(typeof(es)), "([")
+function Base.show(io::IO, esort::EnumerationSort)
+    print(io, nameof(typeof(esort)), "([")
     io = inc_indent(io)
-    e = elements(es)
-    for  (i, c) in enumerate(e)
-        print(io, '\n', indent(io), c); #! show(io, c);
-        i < length(e) && print(io, ",")
+    for  (i, fec) in enumerate(elements(esort))
+        print(io, '\n', indent(io), fec);
+        i < length(esort) && print(io, ",")
     end
     print(io, "])")
 end
