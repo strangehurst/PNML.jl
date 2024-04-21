@@ -332,6 +332,7 @@ A reference to a variable declaration.
 """
 function parse_variable(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     check_nodename(node, "variable")
-    # The 'primer' UML2 uses variableDecl instead of refvariable. References a VariableDeclaration.
+    # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
+    # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
     Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute. trail = $ids")), first(ids))
 end

@@ -8,10 +8,10 @@ Example input: <variable refvariable="varx"/>.
 #TODO examples of use, modifying and accessing
 """
 struct Variable <: AbstractTerm
-    variableDecl::Symbol
+    refvariable::Symbol
     ids::Tuple # For DeclDict lookups.
 end
-tag(v::Variable) = v.variableDecl
+tag(v::Variable) = v.refvariable
 netid(v::Variable) = first(v.ids)
 function (var::Variable)()
     _evaluate(var)
