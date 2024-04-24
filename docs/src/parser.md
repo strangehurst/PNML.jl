@@ -8,7 +8,7 @@ CurrentModule = PNML
 
 XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`unparsed_tag`](@ref).
 
-See [`AnyElement`](@ref), [`anyelement`](@ref), [`PnmlLabel`](@ref), [`Term`](@ref).
+See [`AnyElement`](@ref), [`anyelement`](@ref), [`PnmlLabel`](@ref)
 
 ## AnyElement
 

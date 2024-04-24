@@ -21,7 +21,7 @@ methods(PNML._evaluate) # hide
 
 ## Examples
 
-```jldoctest; setup=(using PNML: _evaluate, Term)
+```jldoctest; setup=(using PNML: _evaluate)
 julia> _evaluate(1)
 1
 
@@ -38,7 +38,7 @@ true
 
 ```@example evaluates
 using PNML # hide
-using PNML: _evaluate, Term, parse_hlinitialMarking, registry, value, @xml_str  # hide
+using PNML: _evaluate, parse_hlinitialMarking, registry, value, @xml_str  # hide
 m = value(parse_hlinitialMarking(xml"""
 <hlinitialMarking>
     <text>3`dot</text>
@@ -52,10 +52,6 @@ m = value(parse_hlinitialMarking(xml"""
 nothing # hide
 ```
 
-```julia
-Term(:numberof,	(d["subterm"] = [(d["numberconstant"] = (d[:value] = "3", d["positive"] = ())),
-                                 (d["dotconstant"] = ())]))
-```
 ```@example evaluates
 dump(m)
 ```
@@ -69,11 +65,7 @@ The output sort of numberof is the sort of the element in 2nd subterm.
 
 ### Tuple
 
-```julia
-value(mark) = Term(:tuple,
-    (d["subterm"] = [(d["all"] = (d["usersort"] = (d[:declaration] = "N1"))),
-                     (d["all"] = (d["usersort"] = (d[:declaration] = "N2")))]))
-```
+
 # Add multisets
 
 ```xml
@@ -98,7 +90,7 @@ value(mark) = Term(:tuple,
 </hlinitialMarking>
 ```
 
-```julia
+```
 value(mark) = Term(:add,
     (d["subterm"] = [(d["numberof"] = (d["subterm"] =
                             [(d["numberconstant"] = (d[:value] = "1", d["positive"] = ())),

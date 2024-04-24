@@ -24,7 +24,6 @@ Used by:
   * [`AnyElement`](@ref)
   * [`PnmlLabel`](@ref)
   * [`SortType`](@ref)
-  * [`Term`](@ref)
 
 ## Top Level: Model, Net, Page
 
@@ -275,7 +274,7 @@ Do they have the same type?
 
 
 For the foreseeable future, there will be little use of multi-page APIs.
-It is expected that flattened PNML nets will be the fully supported, 
+It is expected that flattened PNML nets will be the fully supported,
 tested, thought-through API.
 
 

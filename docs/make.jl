@@ -1,55 +1,10 @@
 using Pkg, Documenter, PNML
 
-using PNML:
-    PnmlType,
-    SymmetricNet,
-    PnmlCoreNet,
-    ContinuousNet,
-    HLCoreNet,
-    HLPNG # High-Level Petri Net Graph
-
-
-# Makie.jl is a source of many of these good ideas. (Bad ones are mine?)
-
-################################################################################
-#                              Utility functions                               #
-################################################################################
-
-
-################################################################################
-#                                    Setup                                     #
-################################################################################
-
-#pathroot   = normpath(@__DIR__, "..")
-#docspath   = joinpath(pathroot, "docs")
-#srcpath    = joinpath(docspath, "src")
-#buildpath  = joinpath(docspath, "build")
-#genpath    = joinpath(srcpath,  "generated")
-#srcgenpath = joinpath(docspath, "src_generation")
-#! Eventually we plan on generating pictures, et al in genpath.
-#mkpath(genpath) #TODO where should initialization happen?
-
-################################################################################
-#                          Syntax highlighting theme                           #
-################################################################################
-
-#TODO
-
-
-################################################################################
-#                      Automatic Markdown page generation                      #
-################################################################################
-
-#TODO
-
-
 ################################################################################
 #                 Building HTML documentation with Documenter                  #
 ################################################################################
 
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
-
-@info("Running `makedocs` from make.jl.")
 
 makedocs(;
          clean = true,
@@ -75,8 +30,8 @@ makedocs(;
             "Petri Net Markup Language" => "pnml.md",
             "Status" => "status.md",
             "Layers of Abstraction" => "layers.md",
-            "Subpackages" => "subpackages.md",
-            "Intermediate Representation" => "IR.md",
+            #"Subpackages" => "subpackages.md",
+            #"Intermediate Representation" => "IR.md",
             "Type Hierarchies" => "type_hierarchies.md",
             "Interfaces" => "interface.md",
             "Default Values"   => "defaults.md",
