@@ -656,10 +656,9 @@ end
 
 """
 $(TYPEDSIGNATURES)
-
-High-level initial marking labels are expected to have a [`Term`](@ref) in the <structure>
-child. We extend the pnml standard by allowing node content to be numeric:
-parsed to `Int` and `Float64`.
+value
+High-level initial marking labels are expected to have a <structure> child.
+We extend the pnml standard by allowing node content to be numeric: parsed to `Int` and `Float64`.
 """
 function parse_hlinitialMarking(node::XMLNode, pntd::AbstractHLCore, idregistry::PIDR; ids::Tuple)
     check_nodename(node, "hlinitialMarking")

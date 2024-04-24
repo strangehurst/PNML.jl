@@ -105,7 +105,7 @@ include("Core/Terms/lists.jl")
 include("Core/Terms/multisets.jl")
 include("Core/Terms/strings.jl")
 include("Core/Terms/variables.jl")
-include("Core/terms.jl") # Variables and AbstractOperators preceed this.
+include("Core/Terms/terms.jl") # Variables and AbstractOperators preceed this.
 include("Core/Terms/operators.jl")
 include("Core/Terms/partitions.jl")
 include("Core/decldict.jl")
@@ -147,15 +147,13 @@ include("Parse/terms.jl")
 include("Parse/toolspecific.jl")
 
 """
-Per-net dictionary of declaration dictionary collections keyed by net id. See [`DeclDict`](@ref)).
+Per-net dictionary of declaration dictionaries, [`DeclDict`](@ref), keyed by net id.
 """
 const TOPDECLDICTIONARY::Dict{Symbol,DeclDict} = Dict{Symbol,DeclDict}()
 
 export @xml_str, xmlroot
 export parse_str, parse_file, parse_pnml
 export PnmlException, MissingIDException, MalformedException
-export registry
-export PnmlExpr, AbstractTerm
 
 include("precompile.jl")
 

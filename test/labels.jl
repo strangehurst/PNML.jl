@@ -481,8 +481,8 @@ end
       </hlinscription>
     """
     dd = PNML.DeclDict()
-    dd.variabledecls[:x] = PNML.VariableDeclaration()
-    dd.variabledecls[:v] = PNML.VariableDeclaration()
+    dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
+    dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
     PNML.TOPDECLDICTIONARY[:NN] = dd
     #@show PNML.TOPDECLDICTIONARY
     insc = @test_logs(match_mode=:all,
@@ -607,7 +607,7 @@ end
 #     """
 #     @testset for node in [n1]
 #         dd = PNML.DeclDict()
-#         # dd.variabledecls[:pt] = PNML.VariableDeclaration()
+#         # dd.variabledecls[:pt] = PNML.VariableDeclaration(:pt, "", DotSort())
 #         # dd.namedoperators[:cts] = PNML.NamedOperator(:cts, "", [], nothing)
 #         # dd.namedoperators[:ack] = PNML.NamedOperator(:ack, "", [], nothing)
 #         # PNML.TOPDECLDICTIONARY[:NN] = dd

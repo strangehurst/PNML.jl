@@ -176,11 +176,11 @@ end
 
         @test isregistered(reg, pid(nsort))
         #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
-        #!@test PNML.sort(nsort) isa PNML.CyclicEnumerationSort
-        #@test PNML.elements(PNML.sort(nsort)) isa Vector{PNML.FEConstant}
+        #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
+        #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
 
         sortname = PNML.name(nsort)
-        #!cesort   = PNML.sort(nsort)
+        #!cesort   = PNML.sortof(nsort)
         #!feconsts = PNML.elements(cesort) # should be iteratable ordered collection
         #@test feconsts isa Vector{PNML.FEConstant}
         #!@test length(feconsts) == 2
@@ -240,10 +240,10 @@ end
 
         @test PNML.isregistered(reg, pid(psort))
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        @test PNML.sort(psort) isa UserSort
+        @test PNML.sortof(psort) isa UserSort
 
         partname = PNML.name(psort)
-        partsort = PNML.sort(psort)
+        partsort = PNML.sortof(psort)
         part_elements = PNML.elements(psort) # should be iteratable ordered collection
         @test part_elements isa Vector{PartitionElement}
         for element in part_elements

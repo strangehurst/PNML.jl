@@ -184,7 +184,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids:
     @assert sorttag in ("finiteenumeration", "cyclicenumeration")
     EzXML.haselement(node) || error("$sorttag has no child element")
     netid = first(ids)
-    dd = decldict(netid) # Declarations are at net/page level.
+    dd = decldict(netid) # Declarations are at net level.
 
     fec_refs = Symbol[]
     for child in EzXML.eachelement(node)
@@ -194,7 +194,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids:
         else
             id = register_idof!(idregistry, child)
             name = attribute(child, "name", "$sorttag <feconstant id=$id> missing name attribute. trail = $ids")
-            dd.feconstants[id] = FEConstant(id, name, netid) #! XXX partition id XXXX
+            dd.feconstants[id] = FEConstant(id, name, ids) #! XXX partition id XXXX
             push!(fec_refs, id)
         end
     end

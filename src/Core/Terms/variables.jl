@@ -1,15 +1,15 @@
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
-Bool, Int, Float64, XDVT
-Variable refers to a varaible declaration.
+
+Variable refers to a [`VariableDeclaration`](@ref).
 Example input: <variable refvariable="varx"/>.
 
 #TODO examples of use, modifying and accessing
 """
-struct Variable <: AbstractTerm
+struct Variable <: AbstractVariable
     refvariable::Symbol
-    ids::Tuple # For DeclDict lookups.
+    ids::Tuple # Trail of ids. First is net, used for DeclDict lookups.
 end
 tag(v::Variable) = v.refvariable
 netid(v::Variable) = first(v.ids)
@@ -33,3 +33,9 @@ sortof(v::Variable) = begin
     vdecl = variable(dd, tag(v))
     return sortof(vdecl)
 end
+
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+
+# Only One
+isvariable(tag::Symbol) = tag === :variable

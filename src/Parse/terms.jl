@@ -46,11 +46,14 @@ There will be no XML node <term>. Instead it is the interpertation of the child 
 <structure>, <subterm> or <def> elements. The Relax NG Schema does contain "Term".
 Terms kinds are Variable and Operator.
 
+There _IS_ the `TermInterface` from Symbolics.jl, et al.
+Yes, we will be using it as soon as we figure things out.
+
 All terms have a sort, #TODO
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     tag = Symbol(EzXML.nodename(node))
-
+    # See `TermInterface.jl`, `Metatheory.jl`
     if tag in  [:variable, # 0 arity? Or trivial to reduce to such? # TODO more?
                 :booleanconstant,
                 :numberconstant,
@@ -61,7 +64,7 @@ function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tup
                 # :unparsed,
                 :useroperator,
                 :finiteintrangeconstant]
-        # These must follow the Operator interface.
+        # These must follow the Operator interface. See operators.jl.
         return parse_term(Val(tag), node, pntd, reg; ids) # (AbstractOperator, Sort)
 
     else # arity > 0, build & return an Operator Functor
@@ -73,10 +76,11 @@ end
     Build an Operator Functor
 =#
 function parse_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    println("arity > 0 term: $tag")
+    println("arity unknown term: $tag")
+    @assert isoperator(tag)
     interms = Union{Variable, AbstractOperator}[] # todo tuple?
     insorts = AbstractSort[]
-    func = pnml_hl_operators(tag) #TODO
+    @show func = pnml_hl_operators(tag) #TODO
 
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")

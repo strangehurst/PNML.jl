@@ -26,6 +26,8 @@ sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
 
 :(f()) == maketerm(Expr, :call, [:f])  #~ Operator is possibly a constant when 0-ary Callable (which the compiler may optimizie)
 
+variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr, :ref, [:variables, :pid])
+
 ===================================#
 
 # Two levels of predicate. Is it an expression, then is it *also* callable.
@@ -81,6 +83,89 @@ function Base.show(io::IO, t::Operator)
     show(io, inputs(t))
     print(io, ")")
 end
+
+
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+
+#for sorts: integer, natural, positive
+integer_operators = (:addition, # "Addition",
+                     :subtraction, # "Subtraction",
+                     :mult, # "Multiplication",
+                     :div, # "Division",
+                     :mod, # "Modulo",
+                     :gt, # "GreaterThan",
+                     :geq, # "GreaterThanOrEqual",
+                     :lt, # "LessThan",
+                     :leq, # "LessThanOrEqual",)
+                    )
+isintegeroperator(tag::Symbol) = tag in integer_operators
+#integer_constants = (:one = one(Int), :zero = zero(Int))
+
+multiset_operators = (:add,
+                      :all,
+                      :numberof,
+                      :subtract,
+                      :scalarproduct,
+                      :empty,
+                      :cardnality,
+                      :cardnalitiyof,
+                      :contains,
+                      )
+ismultisetoperator(tag::Symbol) = tag in multiset_operators
+
+finite_operators  = (:lessthan,
+                     :lessthanorequal,
+                     :greaterthan,
+                     :greaterthanorequal,
+                     :finiteintrangeconstant,
+                     )
+isfiniteoperator(tag::Symbol) = tag in finite_operators
+
+boolean_operators = (:or,
+                     :and,
+                     :imply,
+                     :not,
+                     :equality,
+                     :inequality,
+                    )
+isbooleanoperator(tag::Symbol) = tag in boolean_operators
+
+isbuiltinoperator(tag::Symbol) = tag in builtin_operators
+
+# these are operators
+builtin_constants = (:numberconstant,
+                     :dotconstant,
+                     :booleanconstant,
+                     )
+
+# boolean_constants = (:true, :false)
+"""
+    isoperator(tag::Symbol) -> Bool
+
+Predicate to identify operators in the high-level pntd's many-sorted algebra abstract syntaxt tree.
+
+Note: It is not the same as Meta.isoperator. Both work on Symbols. Not expecting any conflict.
+
+  - integer
+  - multiset
+  - boolean
+  - tuple
+  - builtin constant
+  - useroperator
+"""
+isoperator(tag::Symbol) = isintegeroperator(tag) ||
+                          ismultisetoperator(tag) ||
+                          isbooleanoperator(tag) ||
+                          isfiniteoperator(tag) ||
+                          tag in builtin_constants ||
+                          tag === :tuple ||
+                          tag === :useroperator
+
+
+#===============================================================#
+
+
 """
 Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
 """
@@ -112,17 +197,29 @@ UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 netid(uo::UserOperator) = first(uo.ids)
 
 function (uo::UserOperator)(#= pass arguments to operator =#)
+    println()
+    println()
     println("UserOperator functor $(netid(uo)) $(uo.declaration)")
-    @show uo decldict(netid(uo))
+    @show uo
+    @show dd = decldict(netid(uo))
+    @show _op_dictionaries()
+    for op in _op_dictionaries()
+        @show op getfield(dd, op)
+    end
+    println()
+    @show _ops(dd)
+    println()
+    @show operators(dd)
+    println()
     #! FEConstants are 0-ary operators. namedoperators?
-    if isempty(decldict(netid(uo)).namedoperators)
-        @warn "useroperator found no named operators for $uo. returning false"
+
+    if !has_operator(decldict(netid(uo)), uo.declaration)
+        @warn "found no operator $(uo.declaration), returning `false`"
         return false
     else
-        @show has_named_op(decldict(netid(uo)), uo.declaration)
-        no = named_op(decldict(netid(uo)), uo.declaration)
-        no(#= pass arguments to operator =#)
+        @show op = operator(decldict(netid(uo)), uo.declaration)
+        op(#= pass arguments to functor/operator =#)
     end
 end
 
-sortof(uo::UserOperator) = sortof(named_op(decldict(netid(uo)), uo.declaration))
+sortof(uo::UserOperator) = sortof(operator(decldict(netid(uo)), uo.declaration))

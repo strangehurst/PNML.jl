@@ -41,7 +41,7 @@ struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclarati
     #ids or netid or parent
 end
 PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
-sort(partition::PartitionSort) = partition.def
+sortof(partition::PartitionSort) = partition.def
 elements(partition::PartitionSort) = partition.element
 
 # TODO Add Partition/PartitionElement methods here
@@ -62,7 +62,7 @@ function Base.show(io::IO, ps::PartitionSort)
 
         println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ",", )
         io = inc_indent(io)
-        println(io, indent(io), sort(ps), ",");
+        println(io, indent(io), sortof(ps), ",");
         print(io, "FE[")
         e = elements(ps)
         for  (i, c) in enumerate(e)

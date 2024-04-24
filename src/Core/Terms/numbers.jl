@@ -38,7 +38,7 @@ Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 struct NumberConstant{T<:Number, S<:NumberSort} <: AbstractOperator
     value::T
     sort::S # value isa eltype(sort)
-    # Schema allows a Term[], Not used. Part of pnml generic operator xml structure?
+    # Schema allows a SubTerm[], Not used here. Part of pnml generic operator xml structure?
 end
 sortof(nc::NumberConstant) = nc.sort
 value(nc::NumberConstant) = _evaluate(nc)

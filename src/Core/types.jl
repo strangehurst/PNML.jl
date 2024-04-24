@@ -112,10 +112,10 @@ end
 $(TYPEDEF)
 Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
 
-An abstract type in the pnml XML specification, concrete `Term`s are
+An abstract type in the pnml XML specification, concrete `Term`s are variables and operators
 found within the <structure> element of a label.
 
-Notably, a [`Term`](@ref) is not a PnmlLabel (or a PNML Label).
+Notably, a `Term` is not a PnmlLabel (or a PNML Label).
 
 # References
 See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
@@ -150,7 +150,13 @@ abstract type AbstractTerm end
 
 """
 $(TYPEDEF)
-Part of the high-level pnml many-sorted algebra.
+Variables are part of the high-level pnml many-sorted algebra.
+"""
+abstract type AbstractVariable <: AbstractTerm end
+
+"""
+$(TYPEDEF)
+Operators are part of the high-level pnml many-sorted algebra.
 
 > ...can be a built-in constant or a built-in operator, a multiset operator which among others
 > can construct a multiset from an enumeration of its elements, or a tuple operator.
@@ -215,9 +221,6 @@ See [`DictType`](@ref).
     tag::Symbol # XML tag
     elements::XDVT
 end
-#AnyElement(x::DictType) = AnyElement(first(pairs(x)))
-#AnyElement(p::Pair{Union{String,Symbol}, Union{DictType, String, SubString{String}}}) = AnyElement(p.first, p.second)
-#AnyElement(p::Pair) = AnyElement(p.first, p.second)
 AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag

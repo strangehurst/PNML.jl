@@ -49,13 +49,14 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+[`DeclDict`](@ref) variabledecls[id] = tuple(VariableDeclaration(id, "human name", sort), instance_of_sort)
 """
 struct VariableDeclaration{S <: AbstractSort} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::S
 end
-VariableDeclaration() = VariableDeclaration(:unknown, "Empty Variable Declaration", DotSort())
 sortof(vd::VariableDeclaration) = vd.sort
 
 """
@@ -67,14 +68,13 @@ struct NamedSort{S <: AbstractSort} <: SortDeclaration
     name::Union{String,SubString{String}}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
 end
-NamedSort() = NamedSort(:namedsort, "Empty NamedSort", DotSort())
-sort(namedsort::NamedSort) = namedsort.def #! sortof?
+sortof(namedsort::NamedSort) = namedsort.def #! sortof?
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
-    show(inc_indent(io), sort(nsort))
+    show(inc_indent(io), sortof(nsort))
     print(io, ")")
 end
 
