@@ -144,7 +144,7 @@
             <structure>
                 <declarations>
                     <!-- Sorts declaration -->
-                    <namedsort id="dot" name="Dot">
+                    <namedsort id="pro" name="Pro">
                         <dot/>
                     </namedsort>
                     <!-- Variables declaration -->
@@ -357,4 +357,6 @@
             <transition id="net11t1"/>
         </page>
     </net>
+
+
 </pnml>

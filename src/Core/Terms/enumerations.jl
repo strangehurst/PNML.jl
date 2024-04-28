@@ -53,28 +53,34 @@ function Base.show(io::IO, esort::EnumerationSort)
 end
 
 """
-$(TYPEDEF)
+    FiniteIntRangeSort(start::T, stop::T; ids::Tuple) where {T<:Integer} -> Range
+
+
 """
-@auto_hash_equals struct FiniteIntRangeSort{T} <: AbstractSort
+@auto_hash_equals struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    netid::Symbol
+    ids::Tuple # trail of IDs, first is netid.
 end
-FiniteIntRangeSort(netid::Symbol = :emptynet) = FiniteIntRangeSort(0, 0, netid)
+FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
+FiniteIntRangeSort(start, stop; ids::Tuple) = FiniteIntRangeSort(start, stop, ids)
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
+start(fir::FiniteIntRangeSort) = fir.start
+stop(fir::FiniteIntRangeSort) = fir.stop
 
-function Base.show(io::IO, s::FiniteIntRangeSort)
-    print(io, "FiniteIntRangeSort(", s.start, ", ", s.stop, ")")
+function Base.show(io::IO, fir::FiniteIntRangeSort)
+    print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")
 end
 
-
-
-struct FiniteIntRangeConstant <: AbstractOperator
-    value::String
-    sort::FiniteIntRangeSort
+"""
+Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
+"""
+struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
+    value::T
+    sort::FiniteIntRangeSort #! de-duplicate?
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
-sortof(::FiniteIntRangeConstant) = FiniteIntRangeSort
-value(c::FiniteIntRangeConstant) = _evaluate(c)
-_evaluate(c::FiniteIntRangeConstant) = c.value # TODO string
+sortof(c::FiniteIntRangeConstant) = c.sort
+value(c::FiniteIntRangeConstant) = c.value
+_evaluate(c::FiniteIntRangeConstant) = value(c)
 (c::FiniteIntRangeConstant)() = value(c)

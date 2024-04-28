@@ -1,11 +1,17 @@
 ####################################################################################
 ##! add *MORE* TermInteface here
 ####################################################################################
+function Base.getproperty(op::AbstractOperator)
+    prop_name === :ids && return getfield(op, :ids)::Tuple
+    return getfield(sort, prop_name)
+end
 
 value(op::AbstractOperator) = error("value not defined for $(typeof(op))")
 
-"return output sort of operator"
+"Return output sort of operator."
 sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
+"Return network id of operator."
+netid(op::AbstractOperator) = hasproperty(op, :ids) ? first(op.ids) : error("$(typeof(op)) missing id stuple")
 
 #==================================
  TermInterface version 0.4
@@ -70,7 +76,8 @@ function (op::Operator)()
     @show typeof.(input) op.insorts eltype.(op.insorts)
     #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
     @show out = op.func(input)
-    @show isa(out, eltype(sortof(op)))
+    @show isa(out, eltype(sortof(op))) #! should be assert
+    return out
 end
 value(op::Operator)     = _evaluate(op)
 _evaluate(op::Operator) = op() #TODO
@@ -122,6 +129,10 @@ finite_operators  = (:lessthan,
                      )
 isfiniteoperator(tag::Symbol) = tag in finite_operators
 
+partition_operators = (:ltp, :gtp, :partitionelementof)
+
+ispartitionoperator(tag::Symbol) = tag in partition_operators
+
 boolean_operators = (:or,
                      :and,
                      :imply,
@@ -158,6 +169,7 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
                           ismultisetoperator(tag) ||
                           isbooleanoperator(tag) ||
                           isfiniteoperator(tag) ||
+                          ispartitionoperator(tag) ||
                           tag in builtin_constants ||
                           tag === :tuple ||
                           tag === :useroperator
@@ -177,10 +189,17 @@ Wrap a Multisets.Multiset
 
 multi`x where x is an instance of a sort T.
 """
-struct PnmlMultiset{T} <: AbstractOperator #todo CamelCase
-    ms::Multiset{T} #TODO allow real multiplicity
+struct PnmlMultiset{T<:AbstractSort} <: AbstractOperator
+    x::T # Instance of basis sort. Sorts are NOT all singletons.
+    ms::Multiset{T} #
 end
-#PnmlMultiset(x) = PnmlMultiset(Multiset{sortof(x)}(x))
+PnmlMultiset(multi::Integer, x::AbstractSort) = begin
+    @show M = Multiset{typeof(x)}()
+    @show multi x typeof(x) sortof(x) typeof(sortof(x)) typeof(M)
+    M[x] = multi
+    PnmlMultiset(x, M)
+end
+sortof(ms::PnmlMultiset) = sortof(ms.x)
 # TODO forward ops?
 
 """
@@ -194,23 +213,22 @@ struct UserOperator <: AbstractOperator
     ids::Tuple # decldict(first(ids)) is where the NamedOperator lives.
 end
 UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
-netid(uo::UserOperator) = first(uo.ids)
 
 function (uo::UserOperator)(#= pass arguments to operator =#)
-    println()
-    println()
-    println("UserOperator functor $(netid(uo)) $(uo.declaration)")
-    @show uo
-    @show dd = decldict(netid(uo))
-    @show _op_dictionaries()
-    for op in _op_dictionaries()
-        @show op getfield(dd, op)
-    end
-    println()
-    @show _ops(dd)
-    println()
-    @show operators(dd)
-    println()
+    # println()
+    # println()
+    println("UserOperator functor $uo")
+    # @show uo
+    # dd = decldict(netid(uo))
+    # @show _op_dictionaries()
+    # for op in _op_dictionaries()
+    #     @show op getfield(dd, op)
+    # end
+    # println()
+    # _ops(dd)
+    # println()
+    # operators(dd)
+    # println()
     #! FEConstants are 0-ary operators. namedoperators?
 
     if !has_operator(decldict(netid(uo)), uo.declaration)
@@ -218,7 +236,8 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
         return false
     else
         @show op = operator(decldict(netid(uo)), uo.declaration)
-        op(#= pass arguments to functor/operator =#)
+        @show r =  op(#= pass arguments to functor/operator =#)
+        return r
     end
 end
 

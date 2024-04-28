@@ -11,7 +11,7 @@ function BooleanConstant(s::Union{AbstractString,SubString{String}})
     BooleanConstant(parse(eltype(BoolSort), s))
 end
 tag(::BooleanConstant) = :booleanconstant
-sortof(::BooleanConstant) = BoolSort
+sortof(::BooleanConstant) = BoolSort()
 value(bc::BooleanConstant) = _evaluate(bc)
 _evaluate(bc::BooleanConstant) = bc.value
 (c::BooleanConstant)() = value(c)

@@ -62,6 +62,7 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
     end
 end
 
+
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
     println("\n-----------------------------------------")
@@ -107,6 +108,19 @@ end
     @test !isempty(repr(PNML.netdata(net)))
     @test !isempty(repr(PNML.netsets(firstpage(net))))
     @show summary(PNML.netsets(firstpage(net)))
+
+    #TODO apply metagraph tools
+end
+
+# Read a SymmetricNet with partitions from pnmlframework test files
+@testset "sampleSNPrio pnml file" begin
+    println("\n-----------------------------------------")
+    @show testfile = joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
+
+    model = parse_file(testfile)::PnmlModel
+    @show net = first(nets(model)) # Multi-net models not common.
+    @test PNML.verify(net; verbose=true)
+    #TODO apply metagraph tools
 end
 
 # Read a file
@@ -133,13 +147,13 @@ end
     println()
     for n in PNML.nets(model)
         println("-----------------------------------------"^3)
-        @test PNML.verify(n); verbose=true
-        PNML.flatten_pages!(n; verbose=true)
+        @test PNML.verify(n); verbose=false
+        PNML.flatten_pages!(n; verbose=false)
         @test PNML.verify(n; verbose=true)
         println("-----------------------------------------"^3)
         @show n
         println("-----------------------------------------"^3)
-        begin #Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             #TODO use as base of a validation tool
             println("pagetree")
             PNML.pagetree(n)
@@ -157,7 +171,7 @@ end
             println("-----------------------------------------")
             for a in arcs(n)
                 @show a
-                println("Edge ", vc[PNML.source(a)], " =- ",  vc[PNML.target(a)])
+                println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
             end
             @show PNML.metagraph(n)
         end

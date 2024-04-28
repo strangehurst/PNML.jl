@@ -167,7 +167,7 @@ end
     reg = PNML.registry()
     decl = parse_declaration(node, pntd, reg; ids=(:NULLNET,))
     @test typeof(decl) <: PNML.Declaration
-    @show PNML.declarations(decl)
+    PNML.declarations(decl)
 
     # Examine each declaration in the vector: 3 named sorts
     for nsort in PNML.declarations(decl)
@@ -291,8 +291,8 @@ end
     # MultisetSort
     for sorta in [x for x in sorts() if x != PNML.MultisetSort]
         for sortb in [x for x in sorts() if x != PNML.MultisetSort]
-            a = PNML.MultisetSort(sorta())
-            b = PNML.MultisetSort(sortb())
+            a = PNML.MultisetSort(1, sorta())
+            b = PNML.MultisetSort(1, sortb())
             sorta != sortb && @test a != b && !PNML.equals(a, b)
             sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
         end

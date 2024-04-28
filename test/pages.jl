@@ -173,7 +173,7 @@ end
 
 @testset "flatten" begin
     println("---------------"^4)
-    flatten_pages!(net; verbose=true)
+    flatten_pages!(net; verbose=false)
     println("---------------"^4)
 
     expected_a = [:a11, :a12, :a21, :a22, :a31, :a311]

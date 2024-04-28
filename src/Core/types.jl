@@ -202,7 +202,6 @@ Notes:
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
 abstract type AbstractSort end
-sortof(s::AbstractSort) = typeof(s)
 
 #--------------------------------------------
 # Any Element

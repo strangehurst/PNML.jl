@@ -328,7 +328,6 @@ end
     end
 
     @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
-        #~ @show
         node = xml"""
         <hlinitialMarking>
             <text>&lt;All,All&gt;</text>
@@ -346,7 +345,11 @@ end
             </unknown>
         </hlinitialMarking>
         """
+        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        dd.namedsorts[:N1] = PNML.NamedSort(:N1, "N1", DotSort(); ids=(:NN,))
+        dd.namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
         mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
+
         #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
         @test mark isa PNML.AbstractLabel
         @test mark isa PNML.marking_type(pntd) #HLMarking
@@ -544,6 +547,9 @@ end
 end
 
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
+    # Add usersort
+    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+    dd.namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
     n1 = xml"""
 <type>
     <text>N2</text>

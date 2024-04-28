@@ -1,8 +1,48 @@
+s = """
+<declaration>
+<text>
+    Without the following structure this Symmetric net
+    example will not be a structurally conformant High-level Petri Net.
+</text>
+<structure>
+    <declarations>
+        <!-- Sorts declaration -->
+        <namedsort id="usersnamed" name="USERS">
+            <finiteenumeration>
+                <feconstant id="apacheId" name="apache" />
+                <feconstant id="iisId" name="iis" />
+                <feconstant id="chrisId" name="chris" />
+                <feconstant id="deniseId" name="denise" />
+                <feconstant id="rootId" name="root" />
+            </finiteenumeration>
+        </namedsort>
+
+        <partition id="accessrightId" name="AccessRight">
+            <usersort declaration="usersnamed" />
+            <partitionelement id="wwwId" name="www">
+                <useroperator declaration="apacheId" />
+                <useroperator declaration="iisId" />
+            </partitionelement>
+            <partitionelement id="workId" name="work">
+                <useroperator declaration="chrisId" />
+                <useroperator declaration="deniseId" />
+            </partitionelement>
+            <partitionelement id="adminId" name="admin">
+                <useroperator declaration="rootId" />
+            </partitionelement>
+        </partition>
+
+
+    </declarations>
+</structure>
+
+"""
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Establishes an equivalence class over a [`PartitionSort`](@ref)'s emumeration. See also [`FiniteEnumerationSort`](@ref).
+Establishes an equivalence class over a [`PartitionSort`](@ref)'s emumeration.
+See also [`FiniteEnumerationSort`](@ref).
 Gives a name to an element of a partition. The element is an equivalence class.
 PartitionElement is different from FiniteEnumeration, CyclicEnumeration, FiniteIntRangeSort
 in that it holds UserOperators, not FEConstants.
@@ -18,11 +58,14 @@ struct PartitionElement <: OperatorDeclaration # AbstractOperator
     id::Symbol
     name::Union{String,SubString{String}}
     # Note the Schema just lists one or more Terms.
-    terms::Vector{UserOperator} # 1 or more constants: feconstant(decldict(netid), tag(namedop))
-    partid::Symbol # the PartitionSort so we can access it via decldict. #~ Or do a binding.
-    #ids::
+
+    terms::Vector{UserOperator} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
+    #todo verify in parent partitions's referenced sort
+    ids::Tuple
 end
-PartitionElement() = PartitionElement(:partitionelement, "Empty Partition Element", UserOperator[])
+PartitionElement() = PartitionElement(:empty, "EMPTY", UserOperator[], (:NN,))
+PartitionElement(id::Symbol, name::AbstractString, terms::Vector; ids::Tuple) =
+    PartitionElement(id, name, terms, ids)
 
 """
 $(TYPEDEF)
@@ -37,10 +80,13 @@ struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclarati
     name::Union{String,SubString{String}}
     def::S # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
     element::Vector{PE} # 1 or more PartitionElements that index into `def`
-    #
-    #ids or netid or parent
+    ids::Tuple
 end
-PartitionSort() = PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[])
+PartitionSort() =
+    PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[], (:NN,))
+PartitionSort(id::Symbol, name::AbstractString, sort::AbstractSort, els::Vector; ids::Tuple) =
+    PartitionSort(id, name, sort,  els, ids)
+
 sortof(partition::PartitionSort) = partition.def
 elements(partition::PartitionSort) = partition.element
 

@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
 	<net id="n1"
 		type="http://www.pnml.org/version-2009/grammar/symmetricnet">

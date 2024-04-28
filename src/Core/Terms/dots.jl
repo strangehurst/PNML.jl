@@ -7,5 +7,5 @@ Built-in sort whose `eltype` is `Int`
 Base.eltype(::Type{<:DotSort}) = Int
 
 struct DotConstant <:AbstractOperator end
-sortof(::DotConstant) = DotSort
+sortof(::DotConstant) = DotSort()
 (d::DotConstant)() = 1 #TODO what kind of one?

@@ -1,6 +1,10 @@
 
 Base.eltype(::Type{<:AbstractSort}) = Int
 
+"Return network id of sort."
+netid(s::AbstractSort) = hasproperty(s, ids) ? first(getproperty(s, ids)) : error("$(typeof(s)) missing id tuple")
+sortof(s::AbstractSort) = hasproperty(s, sort) ? first(getproperty(s, sort)) : error("$(typeof(s)) missing sort declaration")
+
 """
 $(TYPEDSIGNATURES)
 For sorts to be the same, first the must have the same type.
@@ -38,9 +42,12 @@ Used in a `Place`s sort type property.
 """
 @auto_hash_equals struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
+    ids::Tuple
 end
-UserSort() = UserSort(:integersort) # Is a built-in sort.
-UserSort(s::AbstractString) = UserSort(Symbol(s))
+UserSort(s::Symbol; ids::Tuple) = UserSort(s, ids)
+UserSort() = UserSort(:nothing, (:NN,))
+# Return sort of the referenced named sort.
+sortof(us::UserSort) = sortof(named_sort(decldict(first(us.ids)), us.declaration))
 
 """
 $(TYPEDEF)
@@ -48,14 +55,15 @@ $(TYPEDEF)
 Wrap a Sort. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
+    multi::Int
     us::T
-    MultisetSort(s) = if isa(s, MultisetSort)
+    MultisetSort(n,s) = if isa(s, MultisetSort)
         throw(MalformedException("MultisetSort basis cannot be MultisetSort"))
     else
-        new{typeof(s)}(s)
+        new{typeof(s)}(n,s)
     end
 end
-MultisetSort() = MultisetSort(IntegerSort())
+MultisetSort() = MultisetSort(1,IntegerSort())
 
 """
 $(TYPEDEF)

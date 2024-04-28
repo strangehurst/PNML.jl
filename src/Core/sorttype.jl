@@ -22,9 +22,9 @@ end
 SortType(sort::AbstractSort) = SortType(nothing, sort)
 SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, nothing)
 
-text(t::SortType)  = ifelse(isnothing(t.text), "", t.text)
-value(t::SortType) = sortof(t)
-sortof(t::SortType)= t.sort[]
+text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
+value(t::SortType)  = sortof(t)
+sortof(t::SortType) = t.sort[]
 
 """
     type(::SortType) -> AbstractSort

@@ -67,8 +67,10 @@ struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
+    ids::Tuple
 end
-sortof(namedsort::NamedSort) = namedsort.def #! sortof?
+NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort; ids::Tuple) = NamedSort(id, name, sort, ids)
+sortof(namedsort::NamedSort) = namedsort.def # An instance of the sort type.
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")

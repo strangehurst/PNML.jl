@@ -76,11 +76,11 @@ end
     Build an Operator Functor
 =#
 function parse_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    println("arity unknown term: $tag")
+    println("parse_term: $tag")
     @assert isoperator(tag)
-    interms = Union{Variable, AbstractOperator}[] # todo tuple?
+    interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
     insorts = AbstractSort[]
-    @show func = pnml_hl_operators(tag) #TODO
+    func = pnml_hl_operators(tag) #TODO
 
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")
@@ -89,10 +89,9 @@ function parse_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegis
         push!(interms, t)
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
-    #!@assert arity(tag) == length(interms) #todo IMPLEMENT
     @assert length(interms) == length(insorts)
 
-    outsort = IntegerSort() #!error("XXX IMPLEMENT ME XXX")
+    outsort = IntegerSort() #!error("XXX IMPLEMENT ME XXX") should be sortof(func)
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 #----------------------------------------------------------------------------------------
@@ -143,11 +142,11 @@ end
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("$tag missing content element. trail = $ids"))
-    us = parse_usersort(child, pntd, reg; ids)::UserSort # Can there be anything else?
-    ms = Multiset(us)
-    @assert length(ms) == 1
+    @show basis = parse_usersort(child, pntd, reg; ids)::UserSort # Can there be anything else?
+    ms = Multiset()
+    @assert isempty(ms)
     #~ @show ms
-    return (PnmlMultiset(ms), UserSort()) #TODO proper sort?
+    return (PnmlMultiset(1,basis), sortof(basis)) #todo what is sort of a usersort
  end
 
 # Return multiset containing multiplicity of elements of its basis sort.
@@ -185,22 +184,28 @@ function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType, reg::Pn
 end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    value = attribute(node, "value", "<finiteintrangeconstant> missing value. trail = $ids")::String
+    valuestr = attribute(node, "value", "<finiteintrangeconstant> missing value. trail = $ids")::String
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("<finiteintrangeconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     if sorttag == :finiteintrange
         startstr = attribute(child, "start", "<finiteintrange> missing start")
-        start = tryparse(Int, startstr)
-        isnothing(start) &&
+        startval = tryparse(Int, startstr)
+        isnothing(startval) &&
             throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
 
         stopstr = attribute(child, "end", "<finiteintrange> missing end") # XML Schema uses 'end', we use 'stop'.
-        stop = tryparse(Int, stopstr)
-        isnothing(stop) &&
+        stopval = tryparse(Int, stopstr)
+        isnothing(stopval) &&
             throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
-        sort = FiniteIntRangeSort(start, stop, first(ids))
+        sort = FiniteIntRangeSort(startval, stopval; ids) #! de-duplicate
+
+        value = tryparse(Int, valuestr)
+        isnothing(value) &&
+            throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
+
+        value in start(sort):stop(sort) || throw(ArgumentError("$value not in range $(start(sort)):$(stop(sort))"))
         return (FiniteIntRangeConstant(value, sort), sort)
     end
     throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
@@ -229,12 +234,14 @@ function parse_term(::Val{:partition}, node::XMLNode, pntd::PnmlType, reg::PIDR;
     nameval = attribute(node, "name","<partition id=$id missing name attribute. trail = $ids")
     sort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into sort that form a equivalance class.
-
+    PartitionSort
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # This is the sort that partitionelements reference.
             sort = parse_usersort(child, pntd, reg; ids)::UserSort #~ ArbitrarySort?
         elseif tag === "partitionelement"
+            # Need to go up the tree so a element can access its parent partition.
+            # last(ids) == pid(PartitionWeAreCreating)
             parse_partitionelement!(elements, child, reg; ids)
         else
             throw(MalformedException("partition child element unknown: $tag. trail = $ids"))
@@ -249,27 +256,27 @@ function parse_term(::Val{:partition}, node::XMLNode, pntd::PnmlType, reg::PIDR;
 
     #TODO verify_partition(sort, elements; ids)
 
-    return PartitionSort(id, nameval, sort, elements)
+    return PartitionSort(id, nameval, sort, elements; ids)
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode, reg::PIDR; ids::Tuple)
     check_nodename(node, "partitionelement")
     id = register_idof!(reg, node)
-    partid = last(ids)
-    ids = tuple(ids..., id)
+    partid = last(ids) # The Parent of a element is the partition.
+    ids = tuple(ids..., id) # The element is now the last id in the trail.
     nameval = attribute(node, "name", "partitionelement $id missing name attribute. trail = $ids")
     terms = AbstractTerm[] # ordered collection, usually useroperators (as constants)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag === "useroperator"
             decl = attribute(child, "declaration", "<useroperator id=$id name=name> missing declaration. trail = $ids")::String
-            push!(terms, UserOperator(decl, ids)) # decl is a refernce into enclosing partition sort
+            push!(terms, UserOperator(decl, ids)) # decl is a reference into enclosing partition's sort
         else
             throw(MalformedException("partitionelement child element unknown: $tag. trail = $ids"))
         end
     end
     isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms. trail = $ids"))
 
-    push!(elements, PartitionElement(id, nameval, terms, partid))
+    push!(elements, PartitionElement(id, nameval, terms; ids))
     return nothing
 end

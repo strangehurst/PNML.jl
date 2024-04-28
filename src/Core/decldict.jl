@@ -42,23 +42,32 @@ Base.isempty(dd::DeclDict) =
 Base.length(dd::DeclDict) =
     sum(f->length(getproperty(dd, f)), (:namedsorts, :namedoperators, :variabledecls, :partitionsorts, :partitionops, :feconstants))
 
-named_op(dd::DeclDict, id::Symbol)      = dd.namedoperators[id]
-arbitrary_op(dd::DeclDict, id::Symbol)  = dd.arbitraryoperators[id]
-named_sort(dd::DeclDict, id::Symbol)    = dd.namedsorts[id]
-arbitrary_sort(dd::DeclDict, id::Symbol) = dd.arbitarysorts[id]
-variable(dd::DeclDict, id::Symbol)      = dd.variabledecls[id]
-partitionsort(dd::DeclDict, id::Symbol) = dd.partitionsorts[id]
-partitionop(dd::DeclDict, id::Symbol)   = dd.partitionops[id]
-feconstant(dd::DeclDict, id::Symbol)    = dd.feconstants[id]
+namedoperators(dd::DeclDict) = dd.namedoperators
+arbitrary_op(dd::DeclDict)   = dd.arbitraryoperators
+namedsorts(dd::DeclDict)     = dd.namedsorts
+arbitrarysorts(dd::DeclDict) = dd.arbitarysorts
+variabledecls(dd::DeclDict)  = dd.variabledecls
+partitionsorts(dd::DeclDict) = dd.partitionsorts
+partitionops(dd::DeclDict)   = dd.partitionops
+feconstants(dd::DeclDict)    = dd.feconstants
 
-has_named_op(dd::DeclDict, id::Symbol)      = haskey(dd.namedoperators, id)
-has_named_sort(dd::DeclDict, id::Symbol)    = haskey(dd.namedsorts, id)
-has_arbitrary_op(dd::DeclDict, id::Symbol)   = haskey(dd.arbitraryoperators, id)
-has_arbitrary_sort(dd::DeclDict, id::Symbol) = haskey(dd.arbitrarysorts, id)
-has_variable(dd::DeclDict, id::Symbol)      = haskey(dd.variabledecls, id)
-has_partitionsort(dd::DeclDict, id::Symbol) = haskey(dd.partitionsorts, id)
-has_partitionop(dd::DeclDict, id::Symbol)   = haskey(dd.partitionops, id)
-has_feconstant(dd::DeclDict, id::Symbol)    = haskey(dd.feconstants, id)
+has_named_op(dd::DeclDict, id::Symbol)       = haskey(namedoperators(dd), id)
+has_named_sort(dd::DeclDict, id::Symbol)     = haskey(namedsorts(dd), id)
+has_arbitrary_op(dd::DeclDict, id::Symbol)   = haskey(arbitraryoperators(dd), id)
+has_arbitrary_sort(dd::DeclDict, id::Symbol) = haskey(arbitrarysorts(dd), id)
+has_variable(dd::DeclDict, id::Symbol)       = haskey(variabledecls(dd), id)
+has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
+has_partitionop(dd::DeclDict, id::Symbol)    = haskey(partitionops(dd), id)
+has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
+
+named_op(dd::DeclDict, id::Symbol)       = dd.namedoperators[id]
+arbitrary_op(dd::DeclDict, id::Symbol)   = dd.arbitraryoperators[id]
+named_sort(dd::DeclDict, id::Symbol)     = dd.namedsorts[id]
+arbitrary_sort(dd::DeclDict, id::Symbol) = dd.arbitarysorts[id]
+variable(dd::DeclDict, id::Symbol)       = dd.variabledecls[id]
+partitionsort(dd::DeclDict, id::Symbol)  = dd.partitionsorts[id]
+partitionop(dd::DeclDict, id::Symbol)    = dd.partitionops[id]
+feconstant(dd::DeclDict, id::Symbol)     = dd.feconstants[id]
 
 function declarations(dd::DeclDict)
     Iterators.flatten([
@@ -90,9 +99,8 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
 
 "Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `PartitionElement`."
 function operator(dd::DeclDict, id::Symbol)
-    @show dict = _get_op_dict(dd, id)
-    #@show dict = first(Iterators.filter(Fix2(haskey, id), _ops(dd)))
-    @show op = dict[id]
+    dict = _get_op_dict(dd, id)
+    op = dict[id]
     return op
 end
 

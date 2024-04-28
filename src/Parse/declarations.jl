@@ -103,9 +103,10 @@ Declaration that wraps a Sort, adding an ID and name.
 function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     nn = check_nodename(node, "namedsort")
     id = register_idof!(reg, node)
+    ids = tuple(ids..., id)
     name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
     def = parse_sort(EzXML.firstelement(node), pntd, reg; ids) #! deduplicate sort
-    NamedSort(id, name, def)
+    NamedSort(id, name, def; ids)
 end
 
 """
@@ -229,7 +230,7 @@ function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, idreg::PIDR
 end
 
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    UserSort(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids"))
+       UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")); ids)
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
@@ -251,7 +252,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg
     stop = tryparse(Int, stopstr)
     isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
-    FiniteIntRangeSort(start, stop, first(ids))
+    FiniteIntRangeSort(start, stop; ids)
 end
 
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
@@ -268,8 +269,10 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, idreg::
     check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort. trail = $ids"))
     basis = EzXML.firstelement(node)
-    srt = parse_sort(Val(Symbol(EzXML.nodename(basis))), basis, pntd, idreg; ids) #~ deduplicate sorts
-    MultisetSort(srt)
+    # Expect this to be a <usersort>, maybe someday <abstractsort>,
+    # but not <partition> or <partitionelement>.
+    @show srt = parse_sort(Val(Symbol(EzXML.nodename(basis))), basis, pntd, idreg; ids) #~ deduplicate sorts
+    MultisetSort(1, srt)
 end
 
 #   <namedsort id="id2" name="MESSAGE">
@@ -323,7 +326,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")))
+    UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")); ids)
 end
 
 """
