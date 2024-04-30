@@ -300,7 +300,7 @@ end
         """
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
-        # Use the first part of this pair in contextes that want numbers.
+        # Use the first part of this pair in contexts that want numbers.
         mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
