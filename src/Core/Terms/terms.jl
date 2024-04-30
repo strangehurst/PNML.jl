@@ -9,10 +9,6 @@ What is the value of a multiset? Tuple multiplicity, instance of sort.
 Also note that symmetric nets donot allow places to be multiset.
 =#
 
-# """
-# $(TYPEDEF)
-# $(TYPEDFIELDS)
-
 # Note that Term is an abstract element in the pnml specification with no XML tag, we call that `AbstractTerm`.
 
 # As part of the many-sorted algebra AST attached to nodes of a High-level Petri Net Graph,
@@ -20,34 +16,7 @@ Also note that symmetric nets donot allow places to be multiset.
 # One XML child is expected below <structure> in the PNML schema.
 # The child's XML tag is used as the AST node type symbol.
 
-# # Functor
-
-# Term as functor requires a default value for missing values.
-
 # See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscription_term`](@ref),  [`parse_type`](@ref), [`parse_sorttype_term`](@ref), [`AnyElement`](@ref).
-
-# **Warning:** Much of the high-level is WORK-IN-PROGRESS.
-# """
-# struct Term <: AbstractTerm #! replace Term by AbstractTerm
-#     tag::Symbol
-#     elements::Any
-# end
-
-# tag(t::Term)::Symbol = t.tag #! replace Term by AbstractTerm
-# elements(t::Term) = t.elements #! replace Term by AbstractTerm
-# Base.eltype(t::Term) = typeof(elements(t)) #! replace Term by AbstractTerm
-# sortof(::Term) = IntegerSort() #! XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# value(t::Term) = _evaluate(t()) # Value of a Term is the functor's value. #! empty vector?
-
-# function Base.show(io::IO, t::Term) #! replace Term by AbstractTerm
-#     #@show typeof(elements(t))
-#     print(io, nameof(typeof(t)), "(")
-#     show(io, tag(t)); print(io, ", ");
-#     dict_show(io, elements(t), 0)
-#     print(io, ")")
-# end
-
-# (t::Term)() =  _term_eval(elements(t)) #! replace Term by AbstractTerm
 
 # _term_eval(v::Any) = error("Term elements of type $(typeof(v)) not supported")
 # _term_eval(v::Number) = v
