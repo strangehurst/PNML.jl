@@ -79,7 +79,7 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType, idregistry
             dd.variabledecls[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
-            part = parse_term(Val(:partition), child, pntd, idregistry; ids)
+            part = parse_sort(Val(:partition), child, pntd, idregistry; ids)
             dd.partitionsorts[pid(part)] = part
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -310,10 +310,10 @@ See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_varia
 """
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
-    #println("\nparse_sort $ids")
     sortid = Symbol(EzXML.nodename(node))
-    if sortid in sort_ids
-        sort = parse_sort(Val(sortid), node, pntd, idregistry; ids)::AbstractSort
+    println("\nparse_sort $sortid $ids")
+    sort = if sortid in sort_ids
+        parse_sort(Val(sortid), node, pntd, idregistry; ids)::AbstractSort
     else
         @error("parse_sort $sortid not implemented: allowed: $sort_ids. trail = $ids")
     end
