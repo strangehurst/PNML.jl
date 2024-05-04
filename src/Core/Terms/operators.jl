@@ -189,17 +189,18 @@ Wrap a Multisets.Multiset
 
 multi`x where x is an instance of a sort T.
 """
-struct PnmlMultiset{T<:AbstractSort} <: AbstractOperator
+struct PnmlMultiset{T} <: AbstractOperator
     x::T # Instance of basis sort. Sorts are NOT all singletons.
     ms::Multiset{T} #
 end
-PnmlMultiset(multi::Integer, x::AbstractSort) = begin
-    @show M = Multiset{typeof(x)}()
-    @show multi x typeof(x) sortof(x) typeof(sortof(x)) typeof(M)
+PnmlMultiset(multi::Integer, x) = begin
+    M = Multiset{typeof(x)}()
+    #@show multi x typeof(x) sortof(x) typeof(sortof(x)) typeof(M)
     M[x] = multi
     PnmlMultiset(x, M)
 end
 sortof(ms::PnmlMultiset) = sortof(ms.x)
+tag(ms::PnmlMultiset) =
 # TODO forward ops?
 
 """
