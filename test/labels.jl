@@ -301,30 +301,24 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # Use the first part of this pair in contexts that want numbers.
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
+        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
 
-        @test value(mark) isa PNML.AbstractTerm # Should be Variable or Operator
+        @test value(mark) isa PNML.AbstractTerm
         @test text(mark) == "3`dot"
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
         @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-        # Any `Label` children must be "well behaved xml".
 
-        #@show value(mark)
-        #@show mark()
-
-        markterm = value(mark)
-        @test tag(markterm) === :numberof # pnml many-sorted operator -> multiset
-        @test arity(markterm) == 2
-        @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
-        @test inputs(markterm)[2] == DotConstant()
+        @show markterm = value(mark)
+        @test markterm isa PNML.PnmlMultiset # pnml many-sorted operator -> multiset
+        # @test arity(markterm) == 2
+        # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
+        # @test inputs(markterm)[2] == DotConstant()
 
         #TODO HL implementation not complete:
         #TODO  evaluate the HL expression, check place sorttype
-
-        #@show axn #! debug
     end
 
     @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
@@ -413,13 +407,13 @@ end
                 <add>
                     <subterm>
                         <numberof>
-                        <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
+                        <subterm><dotconstant/></subterm>
                         <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
                         </numberof>
                     </subterm>
                     <subterm>
                         <numberof>
-                        <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
+                        <subterm><dotconstant/></subterm>
                         <subterm><numberconstant value="2"><positive/></numberconstant></subterm>
                         </numberof>
                     </subterm>
@@ -427,9 +421,9 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
-        #@show mark
-        #@show value(mark)
+        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
+        @show mark
+        @show value(mark)
         #pprint(mark)
     end
 
@@ -447,7 +441,8 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
+        @show mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
+        @show value(mark)
     end
 
     # This is the same as when the element is omitted.

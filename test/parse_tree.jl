@@ -65,7 +65,7 @@ end
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
-    println("\n-----------------------------------------")
+    println("\n","------------------------"^6)
     @show testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
 
     model = parse_file(testfile)
