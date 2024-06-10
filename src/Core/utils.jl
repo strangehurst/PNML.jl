@@ -29,6 +29,9 @@ Return function to be used like: any(ispid(:asym), iterable_with_pid).
 """
 ispid(x::Symbol) = Fix2(===, x)
 
+"Extract pnml network ID from trail of symbols"
+netid(x::Tuple) = first(x)
+
 "Return blank string of current indent size in `io`."
 indent(io::IO) = indent(get(io, :indent, 0)::Int)
 indent(i::Int) = repeat(' ', i)

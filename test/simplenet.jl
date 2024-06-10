@@ -86,9 +86,6 @@ str1 = """
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)
             p = @inferred Maybe{Place} place(top, placeid)
-            #! errors @test @inferred(Maybe{Place}, place(top, :bogus)) === nothing
-            #@test typeof(initial_marking(placeid)) <: typeof(default_marking(p))
-            #@test @inferred(initial_marking(p)) isa typeof(default_marking(p))
         end
     end
 
@@ -100,7 +97,7 @@ str1 = """
             @test @inferred Maybe{Bool} has_transition(top, pid(t))
             t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
-            #! errors @test transition(top, :bogus) === nothing
+
             @test @inferred(condition(t)) !== nothing
         end
     end
@@ -112,8 +109,7 @@ str1 = """
             @test @inferred Maybe{Bool} has_arc(top, pid(a))
             a == @inferred Maybe{Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
-            #! errors @test arc(net, :bogus) === nothing
-            @test @inferred(PNML.source(a)) !== nothing
+                        @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
             @test @inferred(inscription(a)) !== nothing
         end

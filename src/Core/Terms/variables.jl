@@ -12,7 +12,7 @@ struct Variable <: AbstractVariable
     ids::Tuple # Trail of ids. First is net, used for DeclDict lookups.
 end
 tag(v::Variable) = v.refvariable
-netid(v::Variable) = first(v.ids)
+netid(v::Variable) = netid(v.ids)
 function (var::Variable)()
     _evaluate(var)
 end

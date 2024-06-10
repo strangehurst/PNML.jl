@@ -1,6 +1,7 @@
 "Utilities shared by SafeTestSets"
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
+Multisets.set_key_value_show()
 
 @reexport using PNML: PNML
 
@@ -39,12 +40,12 @@ using EzXML, Preferences, XMLDict, Reexport, Multisets
 @reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
 
 @reexport using PNML: AbstractDeclaration, Declaration, decldict, refid,
-    Condition, condition,
+    initial_marking, initial_markings,
     inscription,
-    initial_marking, initial_markings
+    Condition, condition
 
 @reexport using PNML: default_bool_term, default_zero_term, default_one_term,
-    default_condition, default_inscription, default_marking, default_sort, default_sorttype
+    default_marking, default_inscription, default_condition, default_typeusersort
 
 @reexport using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,
     marking_type, inscription_type, condition_type,
@@ -54,9 +55,13 @@ using EzXML, Preferences, XMLDict, Reexport, Multisets
 @reexport using PNML: AbstractSort, SortType, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
-    MultisetSort, ProductSort, PartitionSort, UserSort,
-    ListSort, StringSort
+    MultisetSort, ProductSort, PartitionSort,
+    UserSort, NamedSort,
+    ListSort, StringSort, TupleSort,
+    sortof
+
 @reexport using PNML: NumberConstant, DotConstant
+
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator,
     inputs, incidence_matrix
 

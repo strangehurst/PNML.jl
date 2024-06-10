@@ -92,13 +92,13 @@ HLInscription(s::Maybe{AbstractString}, t::AbstractTerm) = HLInscription(s, t, n
 
 value(i::HLInscription) = i.term
 
-sortof(::HLInscription) = DotSort() #! IMPLEMENT ME! Deduce sort of inscription
+sortof(hli::HLInscription) = sortof(value(hli)) # DotSort() #! IMPLEMENT ME! Deduce sort of inscription
 
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLInscription`](@ref). Returns a value of the `eltype` of sort of inscription.
 """
-(hlinscription::HLInscription)() = _evaluate(value(hlinscription)) #! ::eltype(sortof(hlinscription))
+(hlinscription::HLInscription)() = _evaluate(value(hlinscription))
 #TODO needs to be equalsSorts not same eltype
 
 function Base.show(io::IO, inscription::HLInscription)
@@ -124,7 +124,6 @@ $(TYPEDSIGNATURES)
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
 """
 function default_inscription end
-default_inscription(x::Any) = throw(ArgumentError(string("no default inscription for ", typeof(x))))
 default_inscription(::PnmlType)              = Inscription(one(Int))
 default_inscription(::AbstractContinuousNet) = Inscription(one(Float64)) # Not ISO Standard.
 default_inscription(pntd::AbstractHLCore)    = HLInscription(nothing, default_one_term(pntd))

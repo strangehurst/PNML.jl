@@ -61,6 +61,11 @@ str5 = (tool="org.pnml.tool", version="1.0",
         @test_call broken=false get_toolinfo(tooli, s.tool, s.version)
 end
 @testset "combined tools" begin
+    empty!(PNML.TOPDECLDICTIONARY)
+    dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
+    PNML.fill_nonhl!(dd; ids=(:nothing,))
+    @show dd
+
     n::XMLNode = xmlroot(
         """<place id="place0">
         $(str1.str)
@@ -70,7 +75,7 @@ end
         $(str5.str)
         </place>
         """)
-    combinedplace = parse_place(n, PnmlCoreNet(), registry(); ids=(:NN,))
+    combinedplace = parse_place(n, PnmlCoreNet(), registry(); ids=(:nothing,))
 
     @test_call tools(combinedplace)
     placetools = tools(combinedplace)

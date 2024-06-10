@@ -8,19 +8,21 @@ The exact mixture changes as the project continues.
 
 The tags of the XML are used as keys and names as much as possible.
 
-What is accepted as values is ~~often~~ usually a superset of what a given pntd schema specifies.
+What is accepted as values is ~~often~~ a superset of what a given pntd schema specifies.
 This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
 
-The pnml specification has layers.
+The pnml specification has layers. This package has layers: `PnmlNet`, `AbstractPetriNet`
 
-The core layer is useful and extendable. The standard defines extensions of the core for
-place-transition petri nets (integers) and high-level petri net graphs (many-sorted algebra).
+The core layer is useful and extendable. The standard defines extensions of the core,
+called meta-models, for
+  - place-transition petri nets (integers) and
+  - high-level petri net graphs (many-sorted algebra).
 This package family adds non-standard continuous net (float64) support.
-Note that there is no RelaxNG schema file for these extensions
+Note that there is not yet any RelaxNG schema for our extensions.
 
-On top of the IR is (will be) implemented Petri Net adaptions and interpertations.
-This is the level that pntd conformance can be imposed.
-Adaption to julia packages for graphs, agents, and composing into the greater hive-mind.
+On top of the concrete `PnmlNet` of the IR are net adaptions and interpertations.
+This is the level that Petri Net conformance can be imposed.
+It is also where other Net constructs can be defined over `PnmlNet`s. Perhaps as new meta-models.
 """
 module PNML
 
@@ -71,7 +73,9 @@ import OrderedCollections: OrderedDict, LittleDict, freeze
 import EzXML
 import XMLDict
 import TermInterface
-import Multisets: Multiset
+import Multisets: Multisets, Multiset
+#~import StyledStrings
+Multisets.set_key_value_show()
 
 using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
@@ -91,13 +95,13 @@ include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 
 # Parts of Labels and Nodes.
+include("Core/Terms/dots.jl")
 include("Core/sorts.jl") # Sorts are used in Variables, Operators, Places
 include("Core/declarations.jl") # Declarations are inside a <declaration> Label.
 include("Core/Terms/arbitrarydeclarations.jl")
 include("Core/constterm.jl") #
 include("Core/Terms/booleans.jl")
 include("Core/Terms/enumerations.jl")
-include("Core/Terms/dots.jl")
 #include("Core/Terms/finiteenumerations.jl")
 #include("Core/Terms/finiteintranges.jl")
 include("Core/Terms/numbers.jl")
@@ -105,9 +109,10 @@ include("Core/Terms/lists.jl")
 include("Core/Terms/multisets.jl")
 include("Core/Terms/strings.jl")
 include("Core/Terms/variables.jl")
-include("Core/Terms/terms.jl") # Variables and AbstractOperators preceed this.
-include("Core/Terms/operators.jl")
 include("Core/Terms/partitions.jl")
+include("Core/Terms/operators.jl")
+include("Core/Terms/terms.jl") # Variables and AbstractOperators preceed this.
+include("Core/Terms/tuples.jl")
 include("Core/decldict.jl")
 include("Core/structure.jl")
 include("Core/graphics.jl")

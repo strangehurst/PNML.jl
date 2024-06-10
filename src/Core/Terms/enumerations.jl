@@ -2,25 +2,32 @@
 
 """
 $(TYPEDEF)
+See [`FiniteEnumerationSort`](@ref), [`CyclicEnumerationSort`](@ref).
+Both hold an ordered collection of [`FEConstant`](@ref) accessable through
+the `elements` iterator.
 """
 abstract type EnumerationSort <: AbstractSort end
 
 function Base.getproperty(sort::EnumerationSort, prop_name::Symbol)
     prop_name === :fec_refs && return getfield(sort, :fec_refs)::Vector{Symbol}
-    prop_name === :netid && return getfield(sort, :netid)::Symbol
+    prop_name === :ids && return getfield(sort, :ids)::Tuple
     return getfield(sort, prop_name)
 end
 
-netid(sort::EnumerationSort) = sort.netid
+netid(sort::EnumerationSort) = netid(sort.ids)
+refs(sort::EnumerationSort) = sort.fec_refs
 
-"Return iterator into feconstant(decldict(netid)) for this sort's `FEConstants`. Maintains order of this sort."
-elements(sort::EnumerationSort) = begin
-    dd = decldict(netid(sort))
-    Iterators.map(ref->dd.feconstants[ref], sort.fec_refs)
-end
+"""
+    elements(sort::EnumerationSort) -> Iterator
+
+Return iterator into feconstant(decldict(netid)) for this sort's `FEConstants`.
+Maintains order of this sort.
+"""
+elements(sort::EnumerationSort) = Iterators.map(Fix1(feconstant, decldict(netid(sort))), refs(sort))
+
 
 "Return number of `FEConstants` contained by this sort."
-Base.length(sort::EnumerationSort) = length(sort.fec_refs)
+Base.length(sort::EnumerationSort) = length(refs(sort))
 
 """
 $(TYPEDEF)
@@ -29,18 +36,20 @@ The operations differ between the various `EnumerationSort`s. They may be #TODO
 """
 @auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
     fec_refs::Vector{Symbol} # keys into feconstant(decldict)
-    netid::Symbol
+    ids::Tuple
 end
-CyclicEnumerationSort(netid::Symbol = :emptynet) = CyclicEnumerationSort(Symbol[], netid)
+CyclicEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(Symbol[]; ids)
+CyclicEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(fe_refs, ids)
 
 """
 $(TYPEDEF)
 """
 @auto_hash_equals struct FiniteEnumerationSort <: EnumerationSort
     fec_refs::Vector{Symbol} # keys into feconstant(ddict)
-    netid::Symbol
+    ids::Tuple
 end
-FiniteEnumerationSort(netid::Symbol = :emptynet) = FiniteEnumerationSort(Symbol[], netid)
+FiniteEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(Symbol[]; ids)
+FiniteEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(fe_refs, ids)
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
@@ -64,9 +73,13 @@ end
 end
 FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
 FiniteIntRangeSort(start, stop; ids::Tuple) = FiniteIntRangeSort(start, stop, ids)
+
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
+
+"Return iterator from range start to range stop, inclusive"
+elements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(fir))
 
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")

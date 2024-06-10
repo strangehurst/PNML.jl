@@ -35,7 +35,6 @@ Also note that symmetric nets donot allow places to be multiset.
 
 
 
-
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
 #
@@ -49,24 +48,42 @@ Also note that symmetric nets donot allow places to be multiset.
 # Term is really Variable and Opeator
 term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
 term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
+term_value_type(::Type{<:AbstractHLCore}) = eltype(IntegerSort)  #! basis of multiset
+
+# default_zero_term(pntd) should return an empty multiset with basis sort same as its place's sorttype.
+# default_one_term(pntd) should return an !empty multiset with basis sort same as its place's sorttype.
+# the singleton multiset's value could be dotconstant,
 
 """
 $(TYPEDSIGNATURES)
 
-One as integer, float, or empty term with a value of one.
+Singleton multiset.
+Basis sort depends on pntd, see [`term_value_type`](@ref), or empty term with a value of one.
 """
 function default_one_term end
-default_one_term(pntd::PnmlType) = NumberConstant(one(term_value_type(pntd)),IntegerSort())
-default_one_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
+function default_one_term(pntd::PnmlType, sort=IntegerSort())
+    #@show sort eltype(sort) one(eltype(sort))
+    NumberConstant(one(eltype(sort)), sort) #=term_value_type(pntd)=#
+end
+# instance of multiset over basis term_value_type(pntd)
 
 """
 $(TYPEDSIGNATURES)
 
 Zero as integer, float, or empty term with a value of zero.
+
+return an empty multiset with given basis sort (same as its place's sorttype.
 """
-function default_zero_term end
-default_zero_term(pntd::PnmlType) = NumberConstant(zero(term_value_type(pntd)), IntegerSort())
-default_zero_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
+function default_zero_term(pntd::PnmlType, sort=IntegerSort())
+    #@show sort eltype(sort) zero(eltype(sort))
+    NumberConstant(zero(eltype(sort)), sort)#=term_value_type(pntd)=#
+end
+# instance of multiset over basis term_value_type(pntd)
+
+# default_zero_term(pntd) should
+# default_one_term(pntd) should return an singleton multiset with basis sort same as its place's sorttype.
+# the singleton multiset's value could be dotconstant,
+# Must be suitable as a marking, ie. a ground term without variables.
 
 """
 $(TYPEDSIGNATURES)
@@ -74,5 +91,8 @@ $(TYPEDSIGNATURES)
 True as boolean or term with a value of `true`.
 """
 function default_bool_term end
-default_bool_term(::PnmlType) = BooleanConstant(true)
-default_bool_term(x::Any) = throw(ArgumentError("expected a PnmlType, got: $(typeof(x))"))
+function default_bool_term(::PnmlType, sort=BoolSort())
+    @assert sort isa BoolSort
+    BooleanConstant(true)
+end
+# instance of multiset over basis term_value_type(pntd)

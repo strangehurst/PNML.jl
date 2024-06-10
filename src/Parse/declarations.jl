@@ -23,8 +23,9 @@ function parse_declaration end
 parse_declaration(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple) = parse_declaration([node], pntd, idregistry; ids)
 
 function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
-    #println("\nparse_declaration $ids")
-    dd = decldict(first(ids)) # Lookup DeclDict for PnmlNet. #TODO better error if missing
+    #println("\nparse_declaration, trail = $ids")
+    isempty(ids) && throw(ArgumentError("`ids` trail tuple cannot be empty"))
+    dd = decldict(netid(ids)) # Lookup DeclDict for PnmlNet. #TODO better error if missing
 
     text = nothing
     graphics::Maybe{Graphics} = nothing
@@ -37,7 +38,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::P
                 _parse_decl_structure!(dd, child, pntd, idregistry; ids)
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
-                @info "declaration $ids $text" # Do not expect text here, so it must be important.
+                @info "declaration text $text" ids # Do not expect text here, so it must be important.
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd, idregistry)
             elseif tag == "toolspecific" # accumulate tool specific
@@ -128,7 +129,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PIDR; id
         tag = EzXML.nodename(child)
         if tag == "def"
             # NamedOperators have a def element that is a expression of existing
-            # operators &/or variables that define the operation.
+            # operators &/or variable parameters that define the operation.
             # The sortof the operator is the output sort of def.
             def, defsort = parse_term(EzXML.firstelement(child), pntd, idregistry; ids) #todo
         elseif tag == "parameter"
@@ -140,13 +141,13 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType, idregistry::PIDR; id
             end
         else
             @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
-                    "with tag ", tag, ", allowed: 'def', 'parameter'")
+                    "with tag ", tag, ", allowed: 'def', 'parameter'. trail = $ids")
         end
     end
     isnothing(def) &&
         throw(ArgumentError(string("<namedoperator name=", text(name), ", id=", id,
-                                                 "> does not have a <def> element")))
-    NamedOperator(id, name, parameters, def)
+                                    "> does not have a <def> element. trail = $ids")))
+    NamedOperator(id, name, parameters, def, ids)
 end
 
 """
@@ -170,7 +171,7 @@ $(TYPEDSIGNATURES)
 function parse_unknowndecl(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     nn = EzXML.nodename(node)
     id = register_idof!(idregistry, node)
-    name = attribute(node, "name","$nn $id missing name attribute. trail = $ids")
+    name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
     @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
     content = AnyElement[anyelement(x, pntd, idregistry) for x in EzXML.eachelement(node) if x !== nothing]
     return UnknownDeclaration(id, name, nn, content)
@@ -183,9 +184,8 @@ Place the constants into feconstants(decldict(netid)).
 function parse_feconstants(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     sorttag = EzXML.nodename(node)
     @assert sorttag in ("finiteenumeration", "cyclicenumeration")
-    EzXML.haselement(node) || error("$sorttag has no child element")
-    netid = first(ids)
-    dd = decldict(netid) # Declarations are at net level.
+    EzXML.haselement(node) || error("$sorttag has no child element. trail = $ids")
+    dd = decldict(netid(ids)) # Declarations are at net level.
 
     fec_refs = Symbol[]
     for child in EzXML.eachelement(node)
@@ -230,49 +230,52 @@ function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, idreg::PIDR
 end
 
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-       UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")); ids)
+       UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute. trail = $ids")); ids)
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    CyclicEnumerationSort(parse_feconstants(node, pntd, idreg; ids), first(ids))
+    CyclicEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
 end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    FiniteEnumerationSort(parse_feconstants(node, pntd, idreg; ids), first(ids))
+    FiniteEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
 end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
     check_nodename(node, "finiteintrange")
 
-    startstr = attribute(node, "start", "finiteintrange missing start. trail = $ids")
+    startstr = attribute(node, "start", "<finiteintrange> missing start. trail = $ids")
     start = tryparse(Int, startstr)
-    isnothing(start) && throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
+    isnothing(start) && throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`, trail = $ids"))
 
-    stopstr = attribute(node, "end", "finiteintrange missing end. trail = $ids") # XML Schema uses 'end', we use 'stop'.
+    stopstr = attribute(node, "end", "<finiteintrange> missing end. trail = $ids") # XML Schema uses 'end', we use 'stop'.
     stop = tryparse(Int, stopstr)
-    isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
+    isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`. trail = $ids"))
 
     FiniteIntRangeSort(start, stop; ids)
 end
 
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    @error("IMPLEMENT ME: :list")
+    @error("IMPLEMENT ME: :list", ids)
     ListSort()
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    @error("IMPLEMENT ME: :string")
+    @error("IMPLEMENT ME: :string", ids)
     StringSort()
 end
 
 function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
     check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort. trail = $ids"))
-    basis = EzXML.firstelement(node)
-    # Expect this to be a <usersort>, maybe someday <abstractsort>,
-    # but not <partition> or <partitionelement>.
-    @show srt = parse_sort(Val(Symbol(EzXML.nodename(basis))), basis, pntd, idreg; ids) #~ deduplicate sorts
-    MultisetSort(1, srt)
+    basisnode = EzXML.firstelement(node) # Assume basis sort will be first and only child.
+    # Expect this to be a <usersort>, or built-in sort, maybe someday <abstractsort>,
+    # but not <partition> or <partitionelement>. Definitely not another multiset.
+    tag = Symbol(EzXML.nodename(basisnode))
+    part_tags = (:partition , :partitionelement)
+    tag in part_tags && throw(ArgumentError("multisetsort basis $tag not allowed: $part_tags"))
+    @show basissort = parse_sort(Val(tag), basisnode, pntd, idreg; ids) #~ deduplicate sorts
+    MultisetSort(basissort)
 end
 
 #   <namedsort id="id2" name="MESSAGE">
@@ -311,11 +314,11 @@ See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_varia
 function parse_sort(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
     sortid = Symbol(EzXML.nodename(node))
-    println("\nparse_sort $sortid $ids")
+    println("parse_sort $(repr(sortid)) $ids")
     sort = if sortid in sort_ids
         parse_sort(Val(sortid), node, pntd, idregistry; ids)::AbstractSort
     else
-        @error("parse_sort $sortid not implemented: allowed: $sort_ids. trail = $ids")
+        @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids. trail = $ids")
     end
     #@show sortid sort
     return sort
@@ -326,7 +329,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration", "usersort missing declaration attribute. trail = $ids")); ids)
+    UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute. trail = $ids")); ids)
 end
 
 """
@@ -337,5 +340,5 @@ function parse_variable(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     check_nodename(node, "variable")
     # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
     # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
-    Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute. trail = $ids")), first(ids))
+    Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute. trail = $ids")), netid(ids))
 end

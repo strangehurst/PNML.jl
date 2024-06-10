@@ -115,8 +115,8 @@ type_funs = (
 
 def_funs = (
             default_inscription,
-            default_marking,
-            default_sort,
+            #!default_marking, #! needs ids
+            #default_sort,
             default_condition,
             default_one_term,
             default_zero_term,
@@ -250,7 +250,7 @@ end
     @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     @test inscription_value_type(pntd) <: Number
     @test marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
-    @test marking_value_type(pntd) <: Number
+    @test marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset}
     @test page_type(pntd) <: PNML.Page
     @test refplace_type(pntd) <: PNML.RefPlace
     @test reftransition_type(pntd) <: PNML.RefTransition

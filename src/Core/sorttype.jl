@@ -1,38 +1,80 @@
+#=
+    Place Sort Type
+
+
+
+find . -name '*.pnml' -type f -print | xargs grep -nHPA5 '<type>' |  grep -PA1 '<structure>' | grep -vE '</?structure>' | grep -v -- '--' | grep -v '<usersort'
+shows that ePNK examples uses built-in sorts.
+The rest of the examples, especially MCC, only contain usersorts.
+
+#TODO Find more pnml example files.
+
+Some built-in sorts are atoms, examples: </dot>, <natural>.
+These are represented by an empty xml element, but not necessarily of the form </dot>.
+Lists are not atoms and are not supported by symmetric nets in the specification.
+#~That kind of restriction to HLPNGs makes Symmetric Nets more tractable.
+Note that <productsorts> are not atoms and are required by symmetric nets.
+
+And note that PTNets are HLPNGs restricted even further: place type must be </dot>.
+
+One place in specification says:
+> built-in sorts of Symmetric Nets are...: Bool, range of integers, finite enumerations, cyclic enumerations and dots.
+by which they mean in addition to PNML core and HL core layers (a.k.a. meta-models) definitions.
+That pulls in </integer>, et al.
+
+The implementation needs to assume that it will support full HLPNGs including:
+arbitrary sorts, arbitrary operators, strings, lists.
+It is acceptable for test files (but not precompilation) to produce errors/output
+when unsupported(yet) feature are encountered in an input XML file.
+
+Precompile input files need a management scheme.
+  - pnmlcore, hlcore, ptnet, symmetric, hlpng, experimental?
+Should allow for user tuning by setting a preference.
+
+
+=#
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-A places's <type> label's <structure> element wraps a concrete subtype of [`AbstractSort`](@ref).
-Defines the sort of a place, hence use of `sorttype`.
+A places's <type> label wraps a concrete subtype of [`AbstractSort`](@ref) that
+defines the sort of a place, hence use of `sorttype`.
+It is the type concept of the many-sorted algebra.
 
 For high-level nets there will be a rich language of sorts using [`UserSort`](@ref)
-& [`NamedSort`](@ref).
+& [`NamedSort`](@ref) defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
+
+> defines the type by referring to some sort; by the fixed interpretation of built-in sorts,
+this sort defines the type of the place.
+
+> By the fixed interpretation of sorts, this implicitly refers to a set, which is the type of that place.
+
+"refers to set" excludes multiset (as stated elsewhere in specification)
+
+this is a sort, not a term, so no variables or operators.
+
+> The initial marking function M0 is defined by the label HLMarking of the places.
+> ... this is a ground term of the corresponding multiset sort.
 """
 struct SortType <: Annotation # Not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    #sort::T # Content of <structure>.
-    # Wrap in a Ref because we do not know the type
-    sort::Base.RefValue{AbstractSort} # Content of <structure>.
+    sort_::Union{TupleSort,UserSort} #! also built-in sorts
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-SortType(sort::AbstractSort) = SortType(nothing, sort)
-SortType(s::Maybe{AbstractString}, t::AbstractSort) = SortType(s, Ref{AbstractSort}(t), nothing, nothing)
+# >The label Type of a place defines the type by referring to some sort;
+# >by the fixed interpretation of built-in sorts, this sort defines the type of the place.
+# I interpret this as: use a UserSort to reference a BuiltInSort, NamedSort, and someday an AbstractSort.
+
+SortType(sort::AbstractSort) = SortType(nothing, sort, nothing, nothing)
+SortType(s::AbstractString, sort::AbstractSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
-value(t::SortType)  = sortof(t)
-sortof(t::SortType) = t.sort[]
-
-"""
-    type(::SortType) -> AbstractSort
-
-Return type of sort object of a `Place`.
-"""
-type(t::SortType) = typeof(value(t))
-
+value(t::SortType)  = t.sort_
+sortof(t::SortType) = sortof(value(t)) # sortof usersort
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
@@ -49,14 +91,17 @@ function Base.show(io::IO, st::SortType)
     print(io, ")")
 end
 
-
 """
 $(TYPEDSIGNATURES)
-Return instance of default SortType label based on `PNTD`.
-Useful for non-high-level nets that otherwise assume and hardcode `Int`.
+
+Return instance of default SortType UserSort based on `PNTD`.
+Useful for non-high-level nets and PTNet.
+See [`fill_nonhl!`](@ref)
+The ids parameter has  property: netid = first(ids)
 """
-function default_sorttype end
-default_sorttype(x::Any) = throw(ArgumentError("no default sorttype for $(typeof(x))"))
-default_sorttype(pntd::PnmlType) =
-    SortType("default", Ref{AbstractSort}(default_sort(typeof(T))()), nothing, nothing)
-#SortType("default", default_sort(typeof(pntd))(), nothing, nothing)
+function default_typeusersort end
+default_typeusersort(pntd::PnmlType; ids) = default_typeusersort(typeof(pntd); ids)
+default_typeusersort(::Type{<:PnmlType}; ids) = UserSort(:integer; ids)
+default_typeusersort(::Type{<:AbstractContinuousNet}; ids) = UserSort(:real; ids)
+default_typeusersort(::Type{<:AbstractHLCore}; ids) = UserSort(:dot; ids)
+# todo value types

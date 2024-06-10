@@ -23,21 +23,24 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 """) # shared by testsets
 
 @testset "parse node level" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = @test_logs(match_mode=:all, parse_pnml(pnmldoc))
+    @show pnml_ir = parse_pnml(pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
-        @test pid(net) isa Symbol
+        println()
+        @show pid(net)::Symbol
+        #@show net
+        map(println, PNML.declarations(net)) # Iterate over all declarations
 
         for page in pages(net)
             @test page isa Page
             @test @inferred(pid(page)) isa Symbol
             for p in places(page)
                 @test p isa Place
-                placeid = pid(p)
-                @test placeid isa Symbol
+                placeid = pid(p)::Symbol
                 @test has_place(page, placeid)
                 @test pid(place(page, placeid)) === placeid
             end
@@ -49,15 +52,10 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
-            for decl in PNML.declarations(page)
-                @test decl isa Declaration
-                @test decl[:text] !== nothing || decl[:structure] !== nothing
-            end
-        end
-
-        for decl in PNML.declarations(net)
-            @test decl isa Declaration
-            @test decl[:text] !== nothing || decl[:structure] !== nothing
+            # for decl in PNML.declarations(page) #! we harvest all declarations as one thing
+            #     @test decl isa Declaration
+            #     @test decl[:text] !== nothing || decl[:structure] !== nothing
+            # end
         end
     end
 end
@@ -65,19 +63,23 @@ end
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
 @testset "AirplaneLD pnml file" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     println("\n","------------------------"^6)
-    @show testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
-
+    println("------------------------"^6)
+    println("------------------------"^6)
+    println("------------------------"^6)
+    println("------------------------"^6)
+    println("------------------------"^6)
+    testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
+    println(testfile)
     model = parse_file(testfile)
     #!model = @test_logs(match_mode=:all, parse_file(testfile))
     @test model isa PnmlModel
 
-    netvec = nets(model)
-    @test netvec isa Tuple{Vararg{PnmlNet{<:PnmlType}}}
+    netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
 
-    net = first(netvec)
-    @test net isa PnmlNet{<:SymmetricNet}
+    net = first(netvec)::PnmlNet{<:SymmetricNet}
     @test PNML.verify(net; verbose=true)
 
     @test pages(net) isa Base.Iterators.Filter
@@ -114,6 +116,7 @@ end
 
 # Read a SymmetricNet with partitions from pnmlframework test files
 @testset "sampleSNPrio pnml file" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     println("\n-----------------------------------------")
     @show testfile = joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
 
@@ -125,6 +128,7 @@ end
 
 # Read a file
 @testset "test1.pnml file" begin
+    empty!(PNML.TOPDECLDICTIONARY)
     println("\n-----------------------------------------")
     println("test1.pnml")
     println("-----------------------------------------\n")

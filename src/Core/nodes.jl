@@ -25,7 +25,7 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
-default_marking(place::Place) = default_marking(place.pntd)
+#!default_marking(place::Place; ids::Tuple) = default_marking(place.pntd; ids)
 
 sortof(place::Place) = sortof(place.sorttype)
 

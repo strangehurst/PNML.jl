@@ -1,42 +1,3 @@
-"""
-    pnml_hl_operators(tag::Symbol) -> Callable(::Vector{AbstractTerm})
-
-Map an operator tag to a method with one argument.
-"""
-function pnml_hl_operators(tag::Symbol)
-    #haskey(hl_operators, tag) || throw(ArgumentError("term $tag is not a known operator"))
-    #error("pnml_hl_operators not implemented")
-    # Return anonymous function with a single argument.
-    if tag === :or
-        return v -> boolean_or(v)
-    elseif tag === :and
-        return v -> boolean_and(v)
-    elseif tag === :equality
-        return v -> boolean_equality(v)
-    else
-        return v -> null_function(v)
-        #return v::Vector{AbstractTerm} -> null_function(v)
-    end
-end
-
-"Dummy function"
-function null_function(inputs)#::Vector{AbstractTerm})
-    println("NULL_FUNCTION: ", inputs)
-end
-
-function boolean_or(inputs)#::Vector{AbstractTerm})
-    println("boolean_or: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function boolean_and(inputs)#::Vector{AbstractTerm})
-    println("boolean_and: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-function boolean_equality(inputs)#::Vector{AbstractTerm})
-    println("boolean_equality: ", inputs)
-    return false #! Lie until we know how! XXX
-end
 
 
 """
@@ -53,7 +14,6 @@ All terms have a sort, #TODO
 """
 function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     tag = Symbol(EzXML.nodename(node))
-    println("parse_term node: $tag")
     # See `TermInterface.jl`, `Metatheory.jl`
     if tag in  [:variable, # 0 arity? Or trivial to reduce to such? # TODO more?
                 :booleanconstant,
@@ -67,29 +27,32 @@ function parse_term(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tup
                 :finiteintrangeconstant]
         # These must follow the Operator interface. See operators.jl.
         #
-        return parse_term(Val(tag), node, pntd, reg; ids) # (AbstractOperator, Sort)
+        printstyled("parse_term"; color=:green);  println(": $(repr(tag)), trail = $ids")
+        (term,sort) = parse_term(Val(tag), node, pntd, reg; ids) # (AbstractTerm, Sort)
+        return (term, sort)
 
     else # arity > 0, build & return an Operator Functor that has a vector of inputs.
-        return parse_operator_term(tag, node, pntd, reg; ids) # (AbstractOperator, Sort)
+        (term,sort) = parse_operator_term(tag, node, pntd, reg; ids) # (AbstractOperator, Sort)
+        return (term, sort)
     end
 end
 
-#=
-=#
-function parse_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    println("parse_term symbol: $tag")
-end
-
 """
-Build an Operator Functor
+$(TYPEDSIGNATURES)
+
+Build an Operator Functor.
+
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    println("parse_operator_term: $tag")
-    isoperator(tag) || @warn "tag $tag is not an operator"
+    printstyled("parse_operator_term"; color=:green); println(": $(repr(tag)), trail $ids")
+    isoperator(tag) || @error "tag $tag is not an operator, trail $ids"
+
+    @show func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
+
     interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
     insorts = AbstractSort[]
-    func = pnml_hl_operators(tag) #TODO
 
+    # Extract the input term and sort from each <subterm>
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")
         subterm = EzXML.firstelement(child)
@@ -99,7 +62,9 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::Pn
     end
     @assert length(interms) == length(insorts)
 
-    outsort = IntegerSort() #!error("XXX IMPLEMENT ME XXX") should be sortof(func)
+    @show outsort = pnml_hl_outsort(tag; insorts) #! some sorts need content
+
+    println("parse_operator_term returning Operator $tag $func $interms, $insorts, $outsort")
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 
@@ -121,15 +86,9 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType, reg::
     value = attribute(node, "value", "term $tag missing value")::String
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element. trail = $ids"))
-    sorttag = EzXML.nodename(child)
-    if sorttag == "integer"
-        sort = IntegerSort()
-    elseif sorttag == "natural"
-        sort = NaturalSort()
-    elseif sorttag == "positive"
-        sort = PositiveSort()
-    elseif sorttag == "real" # Schema says integer, natural, positive. We allow real.
-        sort = RealSort()
+    sorttag = Symbol(EzXML.nodename(child))
+    if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
+        sort = parse_sort(Val(sorttag), child, pntd, reg; ids)
     else
         throw(MalformedException("$tag sort unknown: $sorttag"))
     end
@@ -141,7 +100,7 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType, reg::
         nv > 0 || throw(ArgumentError("not a Positive Number: $nv"))
     end
     # IntegerSort, RealSort do not need bounds checks.
-    @show nc = NumberConstant(nv, sort)
+    nc = NumberConstant(nv, sort)
     return (nc, sort)
 end
 
@@ -150,8 +109,7 @@ function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType, reg::Pnm
     return (DotConstant(), DotSort())
 end
 
-# Return multiset that contains exactly one element of its basis sort.
-# This is often called the broadcast function.
+# All returns multiset that contains exactly one of each element of its basis set/sort.
 # <structure>
 #     <tuple>
 #         <subterm><all><usersort declaration="N1"/></all></subterm>
@@ -161,12 +119,38 @@ end
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("$tag missing content element. trail = $ids"))
-    @show basis = parse_usersort(child, pntd, reg; ids)::UserSort # Can there be anything else?
-    #ms = Multiset()
-    #@assert isempty(ms)
-    #~ @show ms
-    return (PnmlMultiset(1,basis), sortof(basis)) #todo what is sort of a usersort
- end
+
+    us = parse_usersort(child, pntd, reg; ids)::UserSort # Can there be anything else?
+    b = sortof(us) # IDREF -> sort instance
+    e = elements(b) # iterator over an instance of every element of the set/sort
+
+    #@show us b e typeof(e)
+    # dot: dotconstant
+    # bool: true, false #todo tuple of BooleanConstants
+    # finite int range: start:1:stop
+    # enumeration: sequence of objects
+
+    M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
+    all = PnmlMultiset(b, M)
+    @warn repr(M) # prints decldict
+    @warn typeof(M)
+    @warn repr(all) # M is a set, example {(DotConstant(),)}
+    println()
+
+    # A multiset created from one object, a multiplicity, and the sort of the object.
+    # Eventually the Metatheory rewrite engine, SymbolicUtils will expand the this.
+    #~ What lie do we tell now?
+    #
+    # Here, <all> operator produces a multiset with multiplicity = 1 of all the elements of
+    # a multiset identified by a usersort's IDREF to a sort declaration.
+    #
+    # NamedSort declaration gives a name (and ID) to built-in sorts (and multisets,
+    # product sorts, partition sorts). Someday, ArbitrarySorts will also be supported.
+    #
+    # Think of _sort_ as a finite* set (example finite range of integers, enumeration) *SymmetricNet restriction
+    # and/or datatype (as in `DataType`, the mechanism implementing the concept).
+    return (all, b)
+end
 
 # Return multiset containing multiplicity of elements of its basis sort.
 # <text>3`dot</text>
@@ -187,38 +171,41 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegis
 # d KindOf (instance of this sort)
 
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    @info "parse_term(::Val{:numberof}"
     multiplicity::Maybe{NumberConstant} = nothing
-    instance::Maybe{AbstractOperator} = nothing
+    instance::Maybe{AbstractTerm} = nothing
     for (i,subterm) in enumerate(EzXML.eachelement(node))
         check_nodename(subterm, "subterm")
         stnode = first(EzXML.elements(subterm))
         tag = Symbol(EzXML.nodename(stnode))
-        println("subterm $i $tag")
         if tag == :numberconstant && isnothing(multiplicity)
             (multiplicity, ncsort) = parse_term(Val(tag), stnode,  pntd, reg; ids)
-            # RealSort  as first numberconstant might confuse `Multiset.jl`.
+            # RealSort as first numberconstant might confuse `Multiset.jl`.
         else
-            # 2 numberconstants, first is `multiplicity`, this is `instance`.
+            # If 2 numberconstants, first is `multiplicity`, this is `instance`.
             # A constant/0-arity operator returning a constant of sort, that, with `multiplicity`, forms a multiset.
-            (instance, isort) = parse_term(Val(tag), stnode, pntd, reg; ids)
-            #@show typeof(instance) instance isort
+            # Can be a n-ary operator, like tuple, or a variable.
+            (instance, isort) = parse_term(stnode, pntd, reg; ids)
+            #@show typeof(instance) instance sortof(instance) isort
             isa(instance, MultisetSort) && throw(ArgumentError("numberof's output sort cannot be MultisetSort"))
         end
     end
     isnothing(multiplicity) && throw(ArgumentError("Missing numberof numberconstant subterm"))
     isnothing(instance) && throw(ArgumentError("Missing numberof sort instance subterm. Expected `dotconstant` or similar."))
     #!equalSorts(sortof(multiplicity), instance) || throw(ArgumentError("sorts not equal: $multiplicity, $instance"))
-
-    return (PnmlMultiset(multiplicity(), instance), sortof(instance))
+    #@show multiplicity multiplicity() instance sortof(instance)
+    return (pnmlmultiset(instance, sortof(instance), multiplicity()), sortof(instance))
 end
 
 function parse_term(::Val{:feconstant}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    @info "parse_term(::Val{:feconstant}"
+    @error "parse_term(::Val{:feconstant} not implemented, trail $ids"
 end
 
 function parse_term(::Val{:unparsed}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    @info "parse_term(::Val{:unparsed}"
+    @error "parse_term(::Val{:unparsed} not implemented, trail $ids"
+end
+
+function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
+    @error "parse_term(::Val{:tuple} not implemented, trail $ids"
 end
 
 # <structure>
@@ -226,53 +213,43 @@ end
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     uo = UserOperator(attribute(node, "declaration", "<useroperator> missing declaration"), ids)
-    # Sort of UserOperator is the sort of the NamedOperator referenced. #! XXX FIX ME XXX
-    dd = decldict(first(ids)) # Declarations are at net/page level.
-    # Assume to have been parsed before any reference by Variable, UserOperatore, UserSort?
-    return (uo, NullSort()) #! XXX FIX ME
+    #@warn "returning $uo trail = $ids"
+    return (uo, sortof(uo))
 end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
     valuestr = attribute(node, "value", "<finiteintrangeconstant> missing value. trail = $ids")::String
     child = EzXML.firstelement(node) # Child is the sort of value
-    isnothing(child) && throw(MalformedException("<finiteintrangeconstant> missing sort element"))
+    isnothing(child) && throw(MalformedException("<finiteintrangeconstant> missing sort element, trail $ids"))
     sorttag = Symbol(EzXML.nodename(child))
     if sorttag == :finiteintrange
-        startstr = attribute(child, "start", "<finiteintrange> missing start")
+        startstr = attribute(child, "start", "<finiteintrange> missing start, trail $ids")
         startval = tryparse(Int, startstr)
         isnothing(startval) &&
-            throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
+            throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`, trail $ids"))
 
-        stopstr = attribute(child, "end", "<finiteintrange> missing end") # XML Schema uses 'end', we use 'stop'.
+        stopstr = attribute(child, "end", "<finiteintrange> missing end, trail $ids") # XML Schema uses 'end', we use 'stop'.
         stopval = tryparse(Int, stopstr)
         isnothing(stopval) &&
-            throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
+            throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`, trail $ids"))
 
         sort = FiniteIntRangeSort(startval, stopval; ids) #! de-duplicate
 
         value = tryparse(Int, valuestr)
         isnothing(value) &&
-            throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
+            throw(ArgumentError("value '$valuestr' failed to parse as `Int`, trail $ids"))
 
-        value in start(sort):stop(sort) || throw(ArgumentError("$value not in range $(start(sort)):$(stop(sort))"))
+        value in start(sort):stop(sort) || throw(ArgumentError("$value not in range $(start(sort)):$(stop(sort)), trail $ids"))
         return (FiniteIntRangeConstant(value, sort), sort)
     end
-    throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
+    throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag, trail $ids"))
 end
 
 # function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
 # end
 
-# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-# end
 
-# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-# end
-
-# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-# end
-
-
+#====================================================================================#
 #! partition is a sort!
 #=
 Partition # id, name, usersort, partitionelement[]
@@ -280,30 +257,34 @@ Partition # id, name, usersort, partitionelement[]
 function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     id = register_idof!(reg, node)
     ids = tuple(ids..., id)
-    nameval = attribute(node, "name","<partition id=$id missing name attribute. trail = $ids")
+    nameval = attribute(node, "name", "<partition id=$id missing name attribute. trail = $ids")
+    @warn "partition $(repr(id)) $nameval" ids
     sort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into sort that form a equivalance class.
-    PartitionSort
+    # First harvest the sort,
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # This is the sort that partitionelements reference.
             sort = parse_usersort(child, pntd, reg; ids)::UserSort #~ ArbitrarySort?
+            @show sort
         elseif tag === "partitionelement"
             # Need to go up the tree so a element can access its parent partition.
             # last(ids) == pid(PartitionWeAreCreating)
             parse_partitionelement!(elements, child, reg; ids)
         else
-            throw(MalformedException("partition child element unknown: $tag. trail = $ids"))
+            throw(MalformedException(string("partition child element unknown: $tag, ",
+                                "allowed are usersort, partitionelement. trail = $ids")))
         end
     end
-    isnothing(sort) && throw(ArgumentError("<partition id=$id, name=$nameval> <usersort> element is missing. trail = $ids"))
+    isnothing(sort) &&
+        throw(ArgumentError("<partition id=$id, name=$nameval> <usersort> element is missing. trail = $ids"))
 
     # One or more partitionelements.
     isempty(elements) &&
-        throw(string("partitions must have at least one partition element, found none: ",
-                "id = ", repr(id), ", name = ", repr(nameval), ", sort = ", repr(sort)), " trail = $ids")
+        error("partitions must have at least one partition element, found none: ", "id = ", repr(id),
+                ", name = ", repr(nameval), ", sort = ", repr(sort), " trail = ", ids)
 
-    #TODO verify_partition(sort, elements; ids)
+    #~verify_partition(sort, elements; ids)
 
     return PartitionSort(id, nameval, sort, elements; ids)
 end

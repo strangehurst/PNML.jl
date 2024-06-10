@@ -223,7 +223,7 @@ end
 AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag
-elements(a::AnyElement) = a.elements
+elements(a::AnyElement) = a.elements # label elements
 
 function Base.show(io::IO, label::AnyElement)
     print(io, "AnyElement(")

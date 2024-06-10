@@ -66,17 +66,19 @@ $(TYPEDFIELDS)
 struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S # ArbitrarySort, MultisetSort, ProductSort, UserSort
+    def::S # # An instance of: ArbitrarySort, MultisetSort, ProductSort, UserSort
     ids::Tuple
 end
 NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort; ids::Tuple) = NamedSort(id, name, sort, ids)
-sortof(namedsort::NamedSort) = namedsort.def # An instance of the sort type.
+sortof(namedsort::NamedSort) = definition(namedsort)
+definition(namedsort::NamedSort) = namedsort.def
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
-    show(inc_indent(io), sortof(nsort))
+    io = inc_indent(io)
+    show(io, definition(nsort));
     print(io, ")")
 end
 
@@ -86,16 +88,20 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 See [`UserOperator`](@ref)
+
+Vector of `VariableDeclaration` for parameters (ordered), and `AbstractTerm` for its body definition.
 """
 struct NamedOperator{T <: AbstractTerm} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration} # variables with inferred sorts
     def::T # operator or variable term (with inferred sort)
+    ids::Tuple
 end
-NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator", VariableDeclaration[], nothing)
-NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], nothing)
+NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator"; ids=(:NONET,))
+NamedOperator(id::Symbol, str; ids::Tuple) = NamedOperator(id, str, VariableDeclaration[], dotconstant, ids)
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
+sortof(no::NamedOperator) = sortof(operator(no))
 
 #----------------------------------------------------------------------------------

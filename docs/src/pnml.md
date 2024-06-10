@@ -136,6 +136,7 @@ both _attribute_ and _annotation_ will share the same implementation.
 A standard-conforming pnml model would not have any `Graphics` element
 so that field would be `nothing`.
 
+
 ## High-level Petri Net Concepts
 
 Based on a draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - Part 1:
@@ -190,6 +191,18 @@ Operators have a sequence of input sorts and a single output sort.
 ### Variables
 
 __TBD__
+
+## Notes on Petri Nets
+
+### _Petri Nets as Multiset Rewriting Systems in a Linear Framework_, Iliano Cervesato
+
+This addresses Place Transition Nets. High-level Petri nets explictily use multisets.
+
+> factor out the multiplicity of the elements of the underlying set. This is achieved by first defining the notion of singleton multisets and then by writing arbitrary multisets as linear combination of singleton multisets.
+
+> a rewrite rule can be viewed as a singleton multiset
+
+> Petri nets are meant to represent evolving systems. To represent this dynamic flavor, we will rely on the notion of multiset rewriting systems.
 
 ## Continuous, Open and Other Petri Nets
 

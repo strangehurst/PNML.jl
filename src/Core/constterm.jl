@@ -4,27 +4,37 @@
     FEConstant
 Finite enumeration constant.
 In some cases the partition element cannot be derived from the subterms of PartitionElementOf operator.
-#~ Ways to locate the partition element: (netid, partition_id), or add parent references.
 """
 struct FEConstant <: OperatorDeclaration
     id::Symbol # Id is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
     ids::Tuple
-    #partid::Symbol #~ is this knowable? part -> sort -> element -> fec VS. sort -> fec
+end
+netid(fec::FEConstant) = first(fec.ids)
+partid(fec::FEConstant) = last(fec.ids) # Parent can be enumeration sort
+sortof(fec::FEConstant) = begin
+    sort = sortof(namedsorts(decldict(netid(fec)))[partid(fec)])
+    println()
+    @error "sortof(::FEConstant) = $(repr(pid(fec))), $(fec()) = $sort, trail = $(fec.ids)"
+    return sort #! sort of partition or partition element
+end
+(fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
+
+function Base.show(io::IO, fec::FEConstant)
+    print(io, nameof(typeof(fec)), "(", repr(pid(fec)), ", ", repr(fec.name), ")")
 end
 
-(fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
 
 #TODO Which to do: functor or expression?
 #~ functor is an atom
 TermInterface.isexpr(op::FEConstant)    = false
 TermInterface.iscall(op::FEConstant)    = false # users promise that this is only called if isexpr is true.
-TermInterface.head(op::FEConstant)      = :ref # error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.children(op::FEConstant)  = (decldict(first(ids)).feconstants, id) #error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.head(op::FEConstant)      = :ref
+TermInterface.children(op::FEConstant)  = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.operation(op::FEConstant) = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.arguments(op::FEConstant) = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.arity(op::FEConstant)     = 0
 TermInterface.metadata(op::FEConstant)  = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.symtype(op::FEConstant)   = error("NOT IMPLEMENTED: $(typeof(op))")
+#!TermInterface.symtype(op::FEConstant)   = error("NOT IMPLEMENTED: $(typeof(op))")
 
 #:(variabledecls[id]) == maketerm(Expr, :ref, [variabledecls, id])

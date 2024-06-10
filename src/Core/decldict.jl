@@ -18,67 +18,133 @@ Collection of Declaration dictionaries.
     # OperatorDecls include: namedoperator, feconstant, partition element, et al.
     # namedoperators are used to access built-in operators
     namedoperators::Dict{Symbol, NamedOperator} = Dict{Symbol, NamedOperator}()
+    arbitraryoperators::Dict{Symbol, ArbitraryOperator} = Dict{Symbol, ArbitraryOperator}()
     # PartitionElement is an operator, there are other built-in operators
     partitionops::Dict{Symbol,PartitionElement} = Dict{Symbol,PartitionElement}()
     # FEConstants are 0-ary OperatorDeclarations.
     # The only explicit attributes are id symbol and name string.
     # We record an optional partition id
     feconstants::Dict{Symbol, FEConstant} = Dict{Symbol, FEConstant}()
-    arbitraryoperators::Dict{Symbol, ArbitraryOperator} = Dict{Symbol, ArbitraryOperator}()
+
+    # Allows using an IDREF symbol as a network-level "global".
+    # Useful for non-high-level networks that mimic HLNets to share implementation.
+    # Long way of saying generic? (in what sense generic?)
+    usersorts::Dict{Symbol, UserSort} = Dict{Symbol, UserSort}()
 end
+
+#! TODO Create decldicts for non-High-level pnml.
+#TODO pnmlcore as first use, then continuous
+#~ how much of the default structure can be moved into decldict?
+
 
 """
     decldict(netid::Symbol) -> DeclDict
 
-Access global `DeclDict` for the `PnmlNet` with `netid` or `error()`.
+Access global `DeclDict` for the `PnmlNet` with `netid`.
 """
 function decldict(netid::Symbol)
-    haskey(TOPDECLDICTIONARY, netid) ? TOPDECLDICTIONARY[netid] : error("$netid not in TOPDECLDICTIONARY")
+    haskey(TOPDECLDICTIONARY, netid) ? TOPDECLDICTIONARY[netid] :
+        error(lazy"$(repr(netid)) not in TOPDECLDICTIONARY: $(collect(keys(TOPDECLDICTIONARY)))")
 end
+_decldict_fields = (:namedsorts, :arbitrarysorts,
+                    :namedoperators, :arbitraryoperators,
+                    :variabledecls,
+                    :partitionsorts, :partitionops, :feconstants,
+                    :usersorts)
 
 # Explicit propeties allows ignoring metadata.
-Base.isempty(dd::DeclDict) =
-    all(f->isempty(getproperty(dd, f)), (:namedsorts, :namedoperators, :variabledecls, :partitionsorts, :partitionops, :feconstants))
-Base.length(dd::DeclDict) =
-    sum(f->length(getproperty(dd, f)), (:namedsorts, :namedoperators, :variabledecls, :partitionsorts, :partitionops, :feconstants))
+Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
+Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
-namedoperators(dd::DeclDict) = dd.namedoperators
-arbitrary_op(dd::DeclDict)   = dd.arbitraryoperators
-namedsorts(dd::DeclDict)     = dd.namedsorts
-arbitrarysorts(dd::DeclDict) = dd.arbitarysorts
 variabledecls(dd::DeclDict)  = dd.variabledecls
+namedsorts(dd::DeclDict)     = dd.namedsorts
+arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
 partitionsorts(dd::DeclDict) = dd.partitionsorts
+namedoperators(dd::DeclDict) = dd.namedoperators
+arbitrary_ops(dd::DeclDict)  = dd.arbitraryoperators
 partitionops(dd::DeclDict)   = dd.partitionops
 feconstants(dd::DeclDict)    = dd.feconstants
 
-has_named_op(dd::DeclDict, id::Symbol)       = haskey(namedoperators(dd), id)
-has_named_sort(dd::DeclDict, id::Symbol)     = haskey(namedsorts(dd), id)
-has_arbitrary_op(dd::DeclDict, id::Symbol)   = haskey(arbitraryoperators(dd), id)
-has_arbitrary_sort(dd::DeclDict, id::Symbol) = haskey(arbitrarysorts(dd), id)
+usersorts(dd::DeclDict)      = dd.usersorts
+
+"""
+    declarations(dd::DeclDict) -> Iterator
+Return an iterator over all the declaration dictionaries' values.
+Flattens iterators: variabledecls, namedsorts, arbitrarysorts, partitionsorts, partitionops,
+namedoperators, arbitrary_ops, feconstants, usersorts.
+"""
+function declarations(dd::DeclDict)
+    Iterators.flatten([
+        values(variabledecls(dd)),
+        values(namedsorts(dd)),
+        values(arbitrarysorts(dd)),
+        values(partitionsorts(dd)),
+        values(partitionops(dd)),
+        values(namedoperators(dd)),
+        values(arbitrary_ops(dd)),
+        values(feconstants(dd)),
+        values(usersorts(dd)),                               ])
+end
+
 has_variable(dd::DeclDict, id::Symbol)       = haskey(variabledecls(dd), id)
+has_named_sort(dd::DeclDict, id::Symbol)     = haskey(namedsorts(dd), id)
+has_arbitrary_sort(dd::DeclDict, id::Symbol) = haskey(arbitrarysorts(dd), id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
+has_named_op(dd::DeclDict, id::Symbol)       = haskey(namedoperators(dd), id)
+has_arbitrary_op(dd::DeclDict, id::Symbol)   = haskey(arbitraryoperators(dd), id)
 has_partitionop(dd::DeclDict, id::Symbol)    = haskey(partitionops(dd), id)
 has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
 
+has_usersort(dd::DeclDict, id::Symbol)       = haskey(usersorts(dd), id)
+
+variable(dd::DeclDict, id::Symbol)       = dd.variabledecls[id]
+named_sort(dd::DeclDict, id::Symbol)     = dd.namedsorts[id]
+arbitrary_sort(dd::DeclDict, id::Symbol) = dd.arbitrarysorts[id]
+partitionsort(dd::DeclDict, id::Symbol)  = dd.partitionsorts[id]
 named_op(dd::DeclDict, id::Symbol)       = dd.namedoperators[id]
 arbitrary_op(dd::DeclDict, id::Symbol)   = dd.arbitraryoperators[id]
-named_sort(dd::DeclDict, id::Symbol)     = dd.namedsorts[id]
-arbitrary_sort(dd::DeclDict, id::Symbol) = dd.arbitarysorts[id]
-variable(dd::DeclDict, id::Symbol)       = dd.variabledecls[id]
-partitionsort(dd::DeclDict, id::Symbol)  = dd.partitionsorts[id]
 partitionop(dd::DeclDict, id::Symbol)    = dd.partitionops[id]
 feconstant(dd::DeclDict, id::Symbol)     = dd.feconstants[id]
 
-function declarations(dd::DeclDict)
-    Iterators.flatten([
-        values(dd.namedsorts),
-        values(dd.namedoperators),
-        values(dd.partitionsorts),
-        values(dd.partitionops),
-        values(dd.feconstants),
-        values(dd.variabledecls),
-                               ])
+usersort(dd::DeclDict, id::Symbol)       = dd.usersorts[id]
+
+
+"""
+    fill_nonhl!(dd::DeclDict; ids::Tuple) -> nothing
+
+Fill a DeclDict with values needed by non-high-level networks.
+
+    NamedSort(:integer, "Integer", IntegerSort(); ids)
+    NamedSort(:natural, "Natural", NaturalSort(); ids)
+    NamedSort(:positive, "Positive", PositiveSort(); ids)
+    NamedSort(:real, "Real", RealSort(); ids)
+    NamedSort(:dot, "Dot", DotSort(); ids)
+
+    UserSort(:integer; ids)
+    UserSort(:natural; ids)
+    UserSort(:positive; ids)
+    UserSort(:real; ids)
+    UserSort(:dot; ids)
+"""
+function fill_nonhl!(dd::DeclDict; ids::Tuple)
+    #println("fill_nonhl, trail = ", ids)
+
+    for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
+                              (:natural, "Natural", NaturalSort()),
+                              (:positve, "Positive", PositiveSort()),
+                              (:real, "Real", RealSort()),
+                              (:dot, "Dot", DotSort()),
+                              )
+
+        if !haskey(dd.namedsorts, tag)
+            dd.namedsorts[tag] = NamedSort(tag, name, sort; ids)
+        end
+        if !haskey(dd.usersorts, tag)
+            dd.usersorts[tag] = UserSort(tag; ids)
+        end
+    end
 end
+
 
 #TODO
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
@@ -94,12 +160,17 @@ operators(dd::DeclDict) = Iterators.flatten(Iterators.map(values, _ops(dd)))
 has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(dd))
 
 #! Change first to only when de-duplication implementd? as test?
-"Return operator dictionary containing `id`."
+"Return operator dictionary containing key `id`."
 _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id), _ops(dd)))
 
-"Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `PartitionElement`."
+"""
+Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `PartitionElement`.
+"""
 function operator(dd::DeclDict, id::Symbol)
+    #@show dd _ops(dd)
+    #@show Iterators.filter(Fix2(haskey, id), _ops(dd))
     dict = _get_op_dict(dd, id)
+    #@show dict
     op = dict[id]
     return op
 end
@@ -155,6 +226,11 @@ function Base.show(io::IO, dd::DeclDict)
     end
     println(io, "]")
 
+    print(io, "UserSort[")
+    for (k,v) in pairs(dd.usersorts)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    end
+    println(io, "]")
 
     print(io, ")")
 end

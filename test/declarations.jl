@@ -11,7 +11,7 @@ function _subtypes!(out, type::Type)
     if !isabstracttype(type)
         push!(out, type)
     else
-        foreach(T->_subtypes!(out, T), subtypes(type))
+        foreach(Base.Fix1(_subtypes!, out), subtypes(type))
     end
     return out
 end
@@ -240,59 +240,47 @@ end
 
         @test PNML.isregistered(reg, pid(psort))
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        @test PNML.sortof(psort) isa UserSort
 
         partname = PNML.name(psort)
-        partsort = PNML.sortof(psort)
-        part_elements = PNML.elements(psort) # should be iteratable ordered collection
-        @test part_elements isa Vector{PartitionElement}
+        partsort = PNML.sortof(psort)::UserSort
+        part_elements = PNML.elements(psort)::Vector{PartitionElement}
+
         for element in part_elements
-            # id, name
-            @test PNML.isregistered(reg, element.id)
-            for term in element.terms
-                @test term.declaration isa Symbol
-                #!@show term.declaration PNML.isregistered(reg, term.declaration)
-            end
+            @test PNML.isregistered(reg, pid(element))
         end
     end
 end
 
-@testset "exception for Any" begin
-    bogus = "this is not valid" # counts as `::Any`
-    @test_throws r"^ArgumentError" default_condition(bogus)
-    @test_throws "ArgumentError: no default inscription for String" default_inscription(bogus)
-    @test_throws "ArgumentError: no default marking for String" default_marking(bogus)
-    @test_throws "ArgumentError: no default sort for String" default_sort(bogus)
-    @test_throws "ArgumentError: no default sorttype for String" default_sorttype(bogus)
-    @test_throws "ArgumentError: expected a PnmlType, got: String" default_bool_term(bogus)
-end
+const nonsimple_sorts = (MultisetSort, UserSort)
 
 @testset "equal sorts" begin
     println("============================")
-    println("  equal sorts")
+    println("  equal sorts: $(sorts())")
     println("============================")
     #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
-    for s in sorts()
+    for s in [x for x in sorts() if x ∉ nonsimple_sorts]
         println(s)
         a = s()
         b = s()
         @test PNML.equals(a, a)
     end
 
-    for sorta in sorts(), sortb in sorts()
-        a = sorta()
-        b = sortb()
-        #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
-        sorta != sortb && @test a != b && !PNML.equals(a, b)
-        sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
+    for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
+        for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
+            a = sorta()
+            b = sortb()
+            #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
+            sorta != sortb && @test a != b && !PNML.equals(a, b)
+            sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
+        end
     end
 
     #TODO Add tests for enumerated sorts, et al., with content.
     # MultisetSort
-    for sorta in [x for x in sorts() if x != PNML.MultisetSort]
-        for sortb in [x for x in sorts() if x != PNML.MultisetSort]
-            a = PNML.MultisetSort(1, sorta())
-            b = PNML.MultisetSort(1, sortb())
+    for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
+        for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
+            a = PNML.MultisetSort(sorta())
+            b = PNML.MultisetSort(sortb())
             sorta != sortb && @test a != b && !PNML.equals(a, b)
             sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
         end

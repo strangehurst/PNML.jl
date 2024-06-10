@@ -122,14 +122,14 @@ Iterate ids of input (arc source)) for output transition or place `id`.
 
 See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
 """
-preset(net, id) = Iterators.map(arc->source(arc), tgt_arcs(net, id))
+preset(net, id) = Iterators.map(source, tgt_arcs(net, id))
 
 """
 Iterate ids of output (arc target)) for source transition or place `id`.
 
 See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
 """
-postset(net, id) = Iterators.map(arc->target(arc), src_arcs(net, id))
+postset(net, id) = Iterators.map(target, src_arcs(net, id))
 
 "Input matrix"
 function input_matrix(petrinet::AbstractPetriNet)

@@ -11,7 +11,7 @@ value(op::AbstractOperator) = error("value not defined for $(typeof(op))")
 "Return output sort of operator."
 sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
 "Return network id of operator."
-netid(op::AbstractOperator) = hasproperty(op, :ids) ? first(op.ids) : error("$(typeof(op)) missing id stuple")
+netid(op::AbstractOperator) = hasproperty(op, :ids) ? netid(op.ids) : error("$(typeof(op)) missing id stuple")
 
 #==================================
  TermInterface version 0.4
@@ -25,7 +25,7 @@ netid(op::AbstractOperator) = hasproperty(op, :ids) ? first(op.ids) : error("$(t
  Optional
     arity(x)
     metadata(x)
-    symtype(expr)
+#!    symtype(expr)
 
 :(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible? what does arr[] mean here?
 :(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])  #~ operator
@@ -48,7 +48,7 @@ TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof
 "Constants have arity of 0. Implicit value is size(arguments)"
 TermInterface.arity(op::AbstractOperator) = 0
 TermInterface.metadata(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.symtype(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+#!TermInterface.symtype(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 
 """
 Operator as Functor
@@ -66,9 +66,11 @@ struct Operator <: AbstractOperator
     all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
     =#
 end
+
 tag(op::Operator)    = op.tag
-sortof(op::Operator) = op.outsort
+sortof(op::Operator) = op.outsort #!
 inputs(op::Operator) = op.inexprs
+basis(op::Operator)  = basis(sortof(op))
 
 function (op::Operator)()
     println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
@@ -79,6 +81,7 @@ function (op::Operator)()
     @show isa(out, eltype(sortof(op))) #! should be assert
     return out
 end
+
 value(op::Operator)     = _evaluate(op)
 _evaluate(op::Operator) = op() #TODO
 arity(op::Operator)     = length(inputs(op))
@@ -94,6 +97,15 @@ end
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
+boolean_operators = (:or,
+                     :and,
+                     :not,
+                     :imply,
+                     :equality,
+                     :inequality,
+                    )
+isbooleanoperator(tag::Symbol) = tag in boolean_operators
+# boolean constants true, false
 
 #for sorts: integer, natural, positive
 integer_operators = (:addition, # "Addition",
@@ -133,22 +145,14 @@ partition_operators = (:ltp, :gtp, :partitionelementof)
 
 ispartitionoperator(tag::Symbol) = tag in partition_operators
 
-boolean_operators = (:or,
-                     :and,
-                     :imply,
-                     :not,
-                     :equality,
-                     :inequality,
-                    )
-isbooleanoperator(tag::Symbol) = tag in boolean_operators
-
-isbuiltinoperator(tag::Symbol) = tag in builtin_operators
 
 # these are operators
 builtin_constants = (:numberconstant,
                      :dotconstant,
                      :booleanconstant,
                      )
+
+isbuiltinoperator(tag::Symbol) = tag in builtin_operators
 
 # boolean_constants = (:true, :false)
 """
@@ -176,32 +180,380 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
 
 
 #===============================================================#
+#===============================================================#
 
 
-"""
-Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
-"""
-struct PnmlTuple <: AbstractOperator end
-
-"""
-Some [`Operators`](@ref)` and [`Variables`](@ref) creates/use a multiset.
-Wrap a Multisets.Multiset
-
-multi`x where x is an instance of a sort T.
-"""
-struct PnmlMultiset{T} <: AbstractOperator
-    x::T # Instance of basis sort. Sorts are NOT all singletons.
-    ms::Multiset{T} #
+"Dummy function"
+function null_function(inputs)#::Vector{AbstractTerm})
+    println("NULL_FUNCTION: ", inputs)
 end
-PnmlMultiset(multi::Integer, x) = begin
+
+# Boolean Built-in Operators
+#-----------------------------
+function builtin_or(inputs)#::Vector{AbstractTerm})
+    println("builtin_or: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_and(inputs)#::Vector{AbstractTerm})
+    println("builtin_and: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_not(inputs)#::Vector{AbstractTerm})
+    println("builtin_not: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+function builtin_imply(inputs)#::Vector{AbstractTerm})
+    println("builtin_imply: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_equality(inputs)#::Vector{AbstractTerm})
+    println("builtin_equality: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_inequality(inputs)#::Vector{AbstractTerm})
+    println("builtin_inequality: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+# Integer Built-in Operators
+#-----------------------------:
+function builtin_addition(inputs) # "Addition",
+    println("builtin_addition: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_subtraction(inputs) # "Subtraction",
+    println("builtin_subtraction: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_mult(inputs) # "Multiplication",
+    println("builtin_mult: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_div(inputs) # "Division",
+    println("builtin_div: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_mod(inputs) # "Modulo",
+    println("builtin_mod: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_gt(inputs) # "GreaterThan",
+    println("builtin_gt: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_geq(inputs) # "GreaterThanOrEqual",
+    println("builtin_geq: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_lt(inputs) # "LessThan",
+    println("builtin_lt: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_leq(inputs) # "LessThanOrEqual",)
+    println("builtin_leq: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+# Multiset Built-in Operators
+#-----------------------------
+function builtin_add(inputs)
+    println("builtin_all: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_all(inputs)
+    println("builtin_all: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_numberof(inputs)
+    println("builtin_numberof: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_subtract(inputs)
+    println("builtin_subtract: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_scalarproduct(inputs)
+    println("builtin_scalarproduct: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_empty(inputs)
+    println("builtin_empty: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_cardnality(inputs)
+    println("builtin_cardnality: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_cardnalitiyof(inputs)
+    println("builtin_cardnalitiyof: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_contains(inputs)
+    println("builtin_contains: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+# Finite Enumeration Built-in Operators
+#-----------------------------
+function builtin_lessthan(inputs)
+    println("builtin_lessthan: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_lessthanorequal(inputs)
+    println("builtin_lessthanorequal: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_greaterthan(inputs)
+    println("builtin_greaterthan: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_greaterthanorequal(inputs)
+    println("builtin_greaterthanorequal: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_finiteintrangeconstant(inputs)
+    println("builtin_finiteintrangeconstant: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+# Partition Built-in Operators
+#-----------------------------
+function builtin_ltp(inputs)
+    println("builtin_ltp: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_gtp(inputs)
+    println("builtin_gtp: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_partitionelementof(inputs)
+    println("builtin_partitionelementof: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+#  Constant Built-in Operators
+#-----------------------------
+function builtin_numberconstant(inputs)
+    println("builtin_numberconstant: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_dotconstant(inputs)
+    println("builtin_:dotconstant ", inputs)
+    return false #! Lie until we know how! XXX
+end
+function builtin_booleanconstant(inputs)
+    println("builtin_booleanconstant: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+#-----------------------------
+function builtin_tuple(inputs)
+    println("builtin_tuple: ", inputs)
+    return false #! Lie until we know how! XXX
+end
+
+
+#---------------------------------------------------------------------
+"""
+    hl_operators[Symbol] -> Function, Sort
+
+Map PNML operation ID to a tuple of function that accepts a single vector of arguments
+and the sort of the result. See [`pnml_hl_operator`](@ref)
+"""
+const hl_operators = Dict(
+    :or => builtin_or,
+    :and => builtin_and,
+    :not => builtin_not,
+    :imply => builtin_imply,
+    :equality => builtin_equality,
+    :inequality => builtin_inequality,
+
+    :addition => builtin_addition,
+    :subtraction => builtin_subtraction,
+    :mult => builtin_mult,
+    :div => builtin_div,
+    :mod => builtin_mod,
+    :gt => builtin_gt,
+    :geq => builtin_geq,
+    :lt => builtin_lt,
+    :leq => builtin_leq,
+
+    :add => builtin_add,
+    :all => builtin_all,
+    :numberof => builtin_numberof,
+    :subtract => builtin_subtract,
+    :scalarproduct => builtin_scalarproduct,
+    :empty => builtin_empty, #! return empty multiset with given basis sort
+    :cardnality => builtin_cardnality,
+    :cardnalitiyof => builtin_cardnalitiyof,
+    :contains => builtin_contains,
+
+    :lessthan => builtin_lessthan,
+    :lessthanorequal => builtin_lessthanorequal,
+    :greaterthan => builtin_greaterthan,
+    :greaterthanorequal => builtin_greaterthanorequal,
+    :finiteintrangeconstant => builtin_finiteintrangeconstant,
+
+    :ltp => builtin_ltp,
+    :gtp => builtin_gtp,
+    :partitionelementof => builtin_partitionelementof,
+
+    :tuple => builtin_tuple,
+    #:numberconstant => builtin_,
+    #:dotconstant => builtin_,
+    #:booleanconstant => builtin_,
+)
+
+"""
+    pnml_hl_operator(tag::Symbol) -> Callable(::Vector{AbstractTerm})
+
+Return callable with a single argument, a vector of inputs.
+"""
+function pnml_hl_operator(tag::Symbol)
+    if haskey(hl_operators, tag)
+        return hl_operators[tag]
+    else
+        @error "$tag is not a known hl_operator, return null_function"
+        return null_function #, NullSort()
+    end
+end
+
+"""
+    pnml_hl_outsort(tag::Symbol; ) -> Sort
+
+Return sort that builtin operator returns.allable with a single argument, a vector of inputs.
+"""
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
+    if isbooleanoperator(tag)
+        BoolSort()
+    elseif isintegeroperator(tag)
+        IntegerSort()
+    elseif ismultisetoperator(tag)
+        if tag in (:add, :all, :numberof, :subtract, :scalarproduct)
+            @assert length(insorts) == 2
+            multisetsort(basis(last(insorts))) # is it always last?
+        elseif tag === :empty # a constant
+            @assert length(insorts) == 1
+            multisetsort(basis(first(insorts)))
+        elseif tag === :cardnality
+            NaturalSort()
+        elseif tag === :cardnalitiyof
+            NaturalSort()
+        elseif tag === :contains
+            BoolSort()
+        else
+            error("$tag not a known multiset operator")
+        end
+    elseif isfiniteoperator(tag)
+        #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
+        FiniteEnumerationSort() #! Will need content, ids
+    elseif ispartitionoperator(tag)
+        #:ltp, :gtp, :partitionelementof
+        PartitionSort() #! Will need content
+    elseif tag === :tuple
+        TupleSort()  #! Will need content?
+        #:numberconstant => NumberSort(),
+        #:dotconstant => DotSort(),
+        #:booleanconstant => BoolSort(),
+    else
+         @error "$tag is not a known hl_outsort, return NullSort()"
+        return NullSort()
+    end
+end
+
+#===============================================================#
+#===============================================================#
+# """
+# Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
+# """
+# struct PnmlTuple <: AbstractOperator end
+#===============================================================#
+
+"""
+    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1; ids::Tuple) -> PnmlMultiset{T}
+
+Construct as a multiset with one element, `x`, with default multiplicity of 1.
+
+PnmlMultiset wraps a Multisets.Multiset{T} and basis sort.
+
+Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
+Thre are constants defined that must be multisets since HL markings are multisets.
+
+multi`x
+"""
+struct PnmlMultiset{T, S<:AbstractSort} <: AbstractOperator
+    basis::S #UserSort # References id of sort declaration
+    mset::Multiset{T} #,
+end
+
+function Base.show(io::IO, t::PnmlMultiset)
+    print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
+    print(io, ", mset=", nameof(typeof(t.mset)), "(",)
+    io = inc_indent(io)
+    for (k,v) in pairs(t.mset)
+        println(io, repr(k), " => ", repr(v), ",")
+    end
+    print(io, ")")
+end
+
+
+"""
+    pnmlmultiset(x, basis::AbstractSort, multi::Integer=1)
+
+Constructs a [`PnmlMultiset`](@ref)` containing multiset "1'x" and a sort.
+
+Any `x` that supports `sortof(x)`
+"""
+pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
+    # has_sort(x) ||
+    #     throw(ArgumentError("x::$(typeof(x)) does not have a sort"))
+    sortof(x) isa MultisetSort &&
+        throw(ArgumentError("sortof(x) cannot be a MultisetSort: found $(sortof(x))"))
+    multi >= 0 ||
+        throw(ArgumentError("multiplicity cannot be negative: found $multi"))
+    #^ Where/how is absence of sort loop checked?
+
+    println("pnmlmultiset(")
+    @show x basis multi
+    # @show typeof(x)
+    # @show sortof(x)
+    # @show typeof(sortof(x))
+    # @show typeof(basis)
+    # @show sortof(basis)
     M = Multiset{typeof(x)}()
-    #@show multi x typeof(x) sortof(x) typeof(sortof(x)) typeof(M)
-    M[x] = multi
-    PnmlMultiset(x, M)
+    #@show typeof(M) eltype(M)
+    M[x] = multi #
+    @warn typeof(M) #repr(M)
+    #@warn typeof(basis) repr(basis)
+    #@warn collect(elements(basis))
+    PnmlMultiset(basis, M)
 end
-sortof(ms::PnmlMultiset) = sortof(ms.x)
-tag(ms::PnmlMultiset) =
-# TODO forward ops?
+
+sortof(ms::PnmlMultiset) = sortof(basis(ms)) # Dereferences the UserSort
+
+multiplicity(ms::PnmlMultiset, x) = ms.mset[x]
+issingletonmultiset(ms::PnmlMultiset) = length[ms.M] == 1
+
+# TODO forward what ops to Multiset?
+# TODO alter Multiset: union, add element, erase element, change multiplicity?
+
+"""
+    basis(ms::PnmlMultiset) -> UserSort
+Multiset basis sort is a UserSort that references the declaration of a NamedSort.
+Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
+MultisetSorts not allowed. Nor loops in sort references.
+"""
+basis(ms::PnmlMultiset) = ms.basis
+
+elements(ms::PnmlMultiset) = elements(basis(ms))
+
+_evaluate(ms::PnmlMultiset) = identity(ms)
+
+zero_term(pntd, basis) = PnmlMultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 0)
+one_term(pntd, basis)  = PnmlMultiset(default_one_term(pntd), sortof(default_one_term(pntd)), 1)
+bool_term(pntd, basis) = PnmlMultiset(default_boolean_term(pntd), sortof(default_boolean_term(pntd)), 1)
+
 
 """
 $(TYPEDEF)
@@ -211,7 +563,7 @@ User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
-    ids::Tuple # decldict(first(ids)) is where the NamedOperator lives.
+    ids::Tuple # decldict(netid(ids)) is where the NamedOperator lives.
 end
 UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 
@@ -243,3 +595,4 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
 end
 
 sortof(uo::UserOperator) = sortof(operator(decldict(netid(uo)), uo.declaration))
+basis(uo::UserOperator) = sortof(uo)

@@ -2,10 +2,11 @@ using PrecompileTools: PrecompileTools
 
 PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin
-        redirect_stdio(; stdout=devnull, stderr=devnull) do
+        if false #! begin #! redirect_stdio(; stdout=devnull, stderr=devnull) do
 
         let pntds = ["pnmlcore", "ptnet", "nonstandard", "open"]
             for pntd in pntds
+                @show pntd
                 parse_str("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="net_$pntd" type="$pntd">
@@ -25,6 +26,7 @@ PrecompileTools.@setup_workload begin
 
         let pntds = ["hlcore", "hlnet", "pt_hlpng", "symmetricnet"]
             for pntd in pntds
+                @show pntd
                 metagraph(SimpleNet("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="smallnet_$pntd" type="$pntd">
@@ -48,6 +50,7 @@ PrecompileTools.@setup_workload begin
 
         let pntds = ["continuous"]
             for pntd in pntds
+                @show pntd
                 metagraph(SimpleNet("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="smallnet_$pntd" type="$pntd">

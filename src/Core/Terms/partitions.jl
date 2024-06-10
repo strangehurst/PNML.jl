@@ -35,8 +35,8 @@ s = """
 
     </declarations>
 </structure>
-
 """
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -54,16 +54,16 @@ Want: PartitionElementOf(feconstant) -> id of the equivalence class
 
 #TODO Somehow PartitionElementOf will need to make the connection.
 """
-struct PartitionElement <: OperatorDeclaration # AbstractOperator
+struct PartitionElement{T<:AbstractTerm} <: OperatorDeclaration # AbstractOperator
     id::Symbol
     name::Union{String,SubString{String}}
     # Note the Schema just lists one or more Terms.
 
-    terms::Vector{UserOperator} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
+    terms::Vector{T} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
     #todo verify in parent partitions's referenced sort
     ids::Tuple
 end
-PartitionElement() = PartitionElement(:empty, "EMPTY", UserOperator[], (:NN,))
+#PartitionElement() = PartitionElement(:empty, "EMPTY", UserOperator[], (:NN,))
 PartitionElement(id::Symbol, name::AbstractString, terms::Vector; ids::Tuple) =
     PartitionElement(id, name, terms, ids)
 
@@ -77,7 +77,7 @@ Is the sort at the partition or the element level (1 sort ot many sorts?)
 """
 struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclaration
     id::Symbol # Schema OpDecl is id, name
-    name::Union{String,SubString{String}}
+    name::Union{String, SubString{String}}
     def::S # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
     element::Vector{PE} # 1 or more PartitionElements that index into `def`
     ids::Tuple

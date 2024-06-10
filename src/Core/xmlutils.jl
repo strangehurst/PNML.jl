@@ -22,14 +22,17 @@ Parse string `s` into EzXML node.
 """
 xmlroot(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
 
+#~ How expensive are these XPath queries?
+
+
 """
 $(TYPEDSIGNATURES)
 
 Return up to 1 immediate child of `el` that is a `tag`.  `ns` is the default namespace.
 Invent a prefix to create an iterator of namespace prefix and URI pairs
 """
-function firstchild(tag::AbstractString, node::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findfirst("./x:$tag | ./$tag", node, ("x" => ns,))
+function firstchild(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
+    EzXML.findfirst("./x:$tag | ./$tag", node, ("x" => namespace,))
 end
 
 """
@@ -37,16 +40,17 @@ $(TYPEDSIGNATURES)
 
 Return vector of `el`'s immediate children with `tag`.
 """
-function allchildren(tag::AbstractString, el::XMLNode, ns::AbstractString = pnml_ns)
-    EzXML.findall("./x:$tag | ./$tag", el, ("x" => ns,))
+function allchildren(node::XMLNode, tag::AbstractString; namespace::AbstractString = pnml_ns)
+    EzXML.findall("./x:$tag | ./$tag", node, ("x" => namespace,))
 end
+
 """
 $(TYPEDSIGNATURES)
 
 Return vector of node's immediate children and decendents with `tag`.
 """
-function alltags(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
-    EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))
+function alltags(node::XMLNode, tag::AbstractString; namespace::AbstractString = pnml_ns)
+    EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 
 function check_nodename(n::XMLNode, s::AbstractString)

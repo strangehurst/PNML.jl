@@ -1,6 +1,7 @@
 using PNML, ..TestUtils, JET, NamedTupleTools, AbstractTrees
 using EzXML: EzXML
 using XMLDict: XMLDict
+const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
 @testset "text $pntd" for pntd in core_nettypes()
     @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
@@ -29,7 +30,7 @@ end
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
-@testset "PT initMarking $pntd" for pntd in core_nettypes()
+@testset "PT initMarking $pntd" for pntd in NON_HL_NETS
     node = xml"""
     <initialMarking>
         <text>123</text>
@@ -42,8 +43,19 @@ end
         </unknown>
     </initialMarking>
     """
+    empty!(PNML.TOPDECLDICTIONARY)
+    dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
+    #dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids)
+
+    PNML.fill_nonhl!(dd; ids=(:nothing,))
+    #@show pntd marking_value_type(pntd) dd
+    #~ pntd -> user sort by markng_value_type
+    @show placetype = SortType("test",
+        UserSort(PNML.sorttag(marking_value_type(pntd)); ids=(:nothing,)))
+
     # Parse ignoring unexpected child
-    mark = @test_logs (:warn, r"^ignoring unexpected child") parse_initialMarking(node, pntd, registry(); ids=(:NN,))
+    mark = @test_logs((:warn, r"^ignoring unexpected child"),
+                parse_initialMarking(node, placetype, pntd, registry(); ids=(:nothing,)))
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
@@ -72,7 +84,7 @@ end
     @test tools(mark2) === nothing || isempty(tools(mark2))
 end
 
-@testset "PT inscription $pntd" for pntd in core_nettypes()
+@testset "PT inscription $pntd" for pntd in NON_HL_NETS
     n1 = xml"""<inscription>
             <text> 12 </text>
             <graphics><offset x="0" y="0"/></graphics>
@@ -84,6 +96,10 @@ end
                 <text>unknown content text</text>
             </unknown>
         </inscription>"""
+    empty!(PNML.TOPDECLDICTIONARY)
+    dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
+    #dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids)
+
     inscript = @test_logs (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'") parse_inscription(n1, pntd, registry(); ids=(:NN,))
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
@@ -282,11 +298,47 @@ end
     noisy && println()
 end
 
+@testset "type $pntd" for pntd in all_nettypes(ishighlevel)
+    # Add usersort
+    empty!(PNML.TOPDECLDICTIONARY)
+    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+    dd.namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
+    dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+    n1 = xml"""
+<type>
+    <text>N2</text>
+    <structure> <usersort declaration="N2"/> </structure>
+    <graphics><offset x="0" y="0"/></graphics>
+    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+    <unknown id="unkn">
+        <name> <text>unknown label</text> </name>
+        <text>content text</text>
+    </unknown>
+</type>
+    """
+    #println()
+    @show typ = PNML.parse_type(n1, pntd, registry(); ids=(:NN,))::SortType
+    #@show text(typ) value(typ) sortof(typ) typeof(value(typ))
+    #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
+    @test text(typ) == "N2"
+    @test value(typ) isa UserSort # wrapping DotSort
+    @test sortof(typ) == sortof(value(typ)) == DotSort() #! does the name of a sort affect equalSorts?
+    #!@test declaration(value(typ)) == :N2
+    @test PNML.has_graphics(typ) == true
+    @test PNML.has_labels(typ) == false
+    @test occursin("Graphics", sprint(show, typ))
+
+    @show PNML.SortType(value(typ)) #! does not propagate name?
+    #@test value(PNML.SortType(value(typ))) isa PNML.UserSort
+    #@test text(PNML.SortType(value(typ))) == ""
+    #@test value(PNML.SortType("goofy", value(typ))) isa PNML.UserSort
+    #@test text(PNML.SortType("goofy", value(typ))) == "goofy"
+end
 
 @testset "HL initMarking" begin
 
     @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
-        #~ @show
+        println("\n3`dot $pntd")
         node = xml"""
         <hlinitialMarking>
             <text>3`dot</text>
@@ -301,7 +353,15 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # Use the first part of this pair in contexts that want numbers.
-        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
+
+        empty!(PNML.TOPDECLDICTIONARY)
+        dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
+        dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:nothing,))
+        @show dd
+        # Marking is a multiset in high-level nets, use its basis
+        @show placetype = SortType("test", UserSort(:dot; ids=(:nothing,)))
+
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:nothing,))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
 
@@ -311,7 +371,7 @@ end
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
         @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
 
-        @show markterm = value(mark)
+        markterm = value(mark)
         @test markterm isa PNML.PnmlMultiset # pnml many-sorted operator -> multiset
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
@@ -321,84 +381,33 @@ end
         #TODO  evaluate the HL expression, check place sorttype
     end
 
-    @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
-        node = xml"""
-        <hlinitialMarking>
-            <text>&lt;All,All&gt;</text>
-            <structure>
-                <tuple>
-                    <subterm><all><usersort declaration="N1"/></all></subterm>
-                    <subterm><all><usersort declaration="N2"/></all></subterm>
-                </tuple>
-            </structure>
-            <graphics><offset x="0" y="0"/></graphics>
-            <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-            <unknown id="unkn">
-                <name> <text>unknown label</text> </name>
-                <text>content text</text>
-            </unknown>
-        </hlinitialMarking>
-        """
-        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-        dd.namedsorts[:N1] = PNML.NamedSort(:N1, "N1", DotSort(); ids=(:NN,))
-        dd.namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
-        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
-
-        #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
-        @test mark isa PNML.AbstractLabel
-        @test mark isa PNML.marking_type(pntd) #HLMarking
-        @test PNML.has_graphics(mark) == true
-        @test occursin("Graphics", sprint(show, mark))
-        @test PNML.has_labels(mark) == false
-
-        # Following HL text,structure label pattern where structure is a `Term`.
-        @test text(mark) == "<All,All>"
-        markterm = value(mark)
-        #~ @show markterm
-        @test markterm isa PNML.AbstractTerm
-        @test markterm isa PNML.Operator
-        @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
-
-        @test arity(markterm) == 2
-        #~ @show inputs(markterm)[1:1]
-        # # Decend each element of the term.
-        # @test tag(axn) == "subterm"
-        # @test value(axn) isa Vector #!{DictType}
-
-        # all1 = value(axn)[1]
-        # @test tag(all1) == "all"
-        # @test value(all1) isa DictType
-        # use1 = value(all1)["usersort"]
-        # @test use1 isa DictType
-        # @test use1[:declaration] == "N1"
-        # @test PNML._attribute(use1, :declaration) == "N1"
-
-        # all2 = value(axn)[2]
-        # @test tag(all2) == "all"
-        # @test value(all2) isa DictType
-        # use2 = value(all2)["usersort"]
-        # @test use2 isa DictType
-        # @test use2[:declaration] == "N2"
-        # @test PNML._attribute(use2, :declaration) == "N2"
-    end
 
     @testset "useroperator" for pntd in all_nettypes(ishighlevel)
+        println("\nuseroperator $pntd")
         node = xml"""
         <hlinitialMarking>
             <text>useroperator</text>
             <structure>
-                <useroperator declaration="id4"/>
+                <useroperator declaration="uop"/>
             </structure>
         </hlinitialMarking>
         """
-        PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
+        empty!(PNML.TOPDECLDICTIONARY)
+        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+        dd.namedoperators[:uop] = PNML.NamedOperator(:uop, "uop"; ids=(:NN,))
+        dd.usersorts[:uop] = UserSort(:dot; ids=(:NN,))
+
+        @show placetype = SortType("test", dd.usersorts[:uop]) #UserSort(:dot; ids=(:NN,)))
+
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
         #@show value(mark)
         #pprint(mark)
     end
 
     # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)
+        println("\n1`3 ++ 1`2 $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
@@ -421,14 +430,21 @@ end
             </structure>
         </hlinitialMarking>
         """
-        mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
+        empty!(PNML.TOPDECLDICTIONARY)
+        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+        dd.usersorts[:uop] = UserSort(:dot; ids=(:NN,))
+
+        @show placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
+
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
         @show mark
-        @show value(mark)
         #pprint(mark)
     end
 
     # The constant eight.
     @testset "1`8" for pntd in all_nettypes(ishighlevel)
+        println("\n1`8 $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
@@ -441,140 +457,208 @@ end
             </structure>
         </hlinitialMarking>
         """
-        @show mark = PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,))
-        @show value(mark)
-    end
+        empty!(PNML.TOPDECLDICTIONARY)
+        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+        dd.namedsorts[:pos] = NamedSort(:pos, "Positive", PositiveSort(); ids=(:NN,))
+
+        @show placetype = SortType("test", UserSort(:pos; ids=(:NN,)))
+
+        @show mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        @show val = value(mark)::PNML.PnmlMultiset
+        @test PNML.basis(val) isa PositiveSort
+        #@show val.mset
+        #@show PNML.basis(val)
+        #@show PNML.multiplicity(val, NumberConstant{Int64, PositiveSort}(8, PositiveSort()))
+
+        @test PNML.multiplicity(val, NumberConstant{Int64, PositiveSort}(8, PositiveSort())) == 1
+        @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
+        @test NumberConstant{Int64, PositiveSort}(8, PositiveSort()) in val.mset
+     end
 
     # This is the same as when the element is omitted.
     @testset "x" for pntd in all_nettypes(ishighlevel)
+        println("\nomitted $pntd")
         node = xml"""
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        mark = @test_logs(match_mode=:all, PNML.parse_hlinitialMarking(node, pntd, registry(); ids=(:NN,)))
-        #@show mark
-        #@show value(mark)
-        #pprint(mark)
+        empty!(PNML.TOPDECLDICTIONARY)
+        dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+        dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+
+        @show placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
+
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        @show mark
+        @show value(mark)
     end
 
     println()
 end
 
-@testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
-    n1 = xml"""
-    <hlinscription>
-        <text>&lt;x,v&gt;</text>
-        <structure>
-            <tuple>
-              <subterm><variable refvariable="x"/></subterm>
-              <subterm><variable refvariable="v"/></subterm>
-            </tuple>
-        </structure>
-        <graphics><offset x="0" y="0"/></graphics>
-        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-        <unknown id="unkn">
-            <name> <text>unknown label</text> </name>
-            <text>content text</text>
-        </unknown>
-      </hlinscription>
-    """
-    dd = PNML.DeclDict()
-    dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
-    dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
-    PNML.TOPDECLDICTIONARY[:NN] = dd
-    #@show PNML.TOPDECLDICTIONARY
-    insc = @test_logs(match_mode=:all,
-            (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-            PNML.parse_hlinscription(n1, pntd, registry(); ids=(:NN,)))
 
-    @test typeof(insc) <: PNML.AbstractLabel
-    @test typeof(insc) <: PNML.inscription_type(pntd)
-    @test PNML.has_graphics(insc) == true
-    @test PNML.has_labels(insc) == false # Labels do not have sub-labels.
 
-    @test text(insc) isa Union{Nothing,AbstractString}
-    @test text(insc) == "<x,v>"
 
-    @test occursin("Graphics", sprint(show, insc))
 
-    #@show value(insc)
-    inscterm = value(insc)
-    @test inscterm isa PNML.AbstractTerm
-    @test tag(inscterm) === :tuple
-    @test arity(inscterm) == 2
-    @test inputs(inscterm)[1] isa PNML.Variable
-    @test inputs(inscterm)[2] isa PNML.Variable
-    @test tag(inputs(inscterm)[1]) == :x
-    @test tag(inputs(inscterm)[2]) == :v
-    #@test value(inputs(inscterm)[1]) Needs DeclDict
-    #@test value(inputs(inscterm)[2]) Needs DeclDict
-end
+# @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
+#     println("\n<All,All> $pntd")
+#     # <All,All> example from Sudoku-COL-A-N01.pnml
+#     #~ YES, markings can be tuples, an operator, cries for TermInterface,Metatheory
+#     #
+#     node = xml"""
+#     <hlinitialMarking>
+#         <text>&lt;All,All&gt;</text>
+#         <structure>
+#             <tuple>
+#                 <subterm><all><usersort declaration="N1"/></all></subterm>
+#                 <subterm><all><usersort declaration="N2"/></all></subterm>
+#             </tuple>
+#         </structure>
+#         <graphics><offset x="0" y="0"/></graphics>
+#         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+#         <unknown id="unkn">
+#             <name> <text>unknown label</text> </name>
+#             <text>content text</text>
+#         </unknown>
+#     </hlinitialMarking>
+#  """
 
-@testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
-    node = xml"""
-     <structure>
-        <tuple>
-            <subterm><all><usersort declaration="N1"/></all></subterm>
-            <subterm><all><usersort declaration="N2"/></all></subterm>
-        </tuple>
-     </structure>
-    """
-    # expected structure: tuple -> subterm -> all -> usersort -> declaration
+#     empty!(PNML.TOPDECLDICTIONARY)
+#     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+#     dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids=(:NN,))
+#     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort(); ids=(:NN,))
+#     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
 
-    stru = PNML.parse_structure(node, pntd, registry(); ids=(:NN,))
-    @test stru isa PNML.Structure
-    @test tag(stru) == :structure
-    axn = elements(stru)
-    @test axn isa DictType
+#     @show placetype = SortType("test", TupleSort(UserSort[UserSort(:dot; ids=(:NN,)),
+#                                                           UserSort(:dot; ids=(:NN,))]))
 
-    tup = axn["tuple"]
-    sub = tup["subterm"]
-    #--------
-    all1 = sub[1]["all"]
-    usr1 = all1["usersort"]
-    @test value(usr1) == "N1"
-    @test value(axn["tuple"]["subterm"][1]["all"]["usersort"]) == "N1"
-    #--------
-    all2 = sub[2]["all"]
-    usr2 = all2["usersort"]
-    @test value(usr2) == "N2"
-    @test value(axn["tuple"]["subterm"][2]["all"]["usersort"]) == "N2"
-end
+#     mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
 
-@testset "type $pntd" for pntd in all_nettypes(ishighlevel)
-    # Add usersort
-    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-    dd.namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort(); ids=(:NN,))
-    n1 = xml"""
-<type>
-    <text>N2</text>
-    <structure> <usersort declaration="N2"/> </structure>
-    <graphics><offset x="0" y="0"/></graphics>
-    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-    <unknown id="unkn">
-        <name> <text>unknown label</text> </name>
-        <text>content text</text>
-    </unknown>
-</type>
-    """
-    @testset for node in [n1]
-        typ = PNML.parse_type(node, pntd, registry(); ids=(:NN,))
-        #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
-        @test typ isa PNML.SortType
-        @test text(typ) == "N2"
-        @test value(typ) isa PNML.AbstractSort
-        @test PNML.type(typ) == PNML.UserSort
-        @test value(typ).declaration == :N2
-        @test PNML.has_graphics(typ) == true
-        @test PNML.has_labels(typ) == false
-        @test occursin("Graphics", sprint(show, typ))
+#     #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
+#     @test mark isa PNML.AbstractLabel
+#     @test mark isa PNML.marking_type(pntd) #HLMarking
+#     @test PNML.has_graphics(mark) == true
+#     @test occursin("Graphics", sprint(show, mark))
+#     @test PNML.has_labels(mark) == false
 
-        @test value(PNML.SortType(value(typ))) isa PNML.UserSort
-        @test text(PNML.SortType(value(typ))) == ""
-        @test value(PNML.SortType("goofy", value(typ))) isa PNML.UserSort
-        @test text(PNML.SortType("goofy", value(typ))) == "goofy"
-    end
-end
+#     # Following HL text,structure label pattern where structure is a `Term`.
+#     @test text(mark) == "<All,All>"
+#     markterm = value(mark)
+#     #~ @show markterm
+#     @test markterm isa PNML.AbstractTerm
+#     @test markterm isa PNML.Operator
+#     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
+
+#     @test arity(markterm) == 2
+#     #~ @show inputs(markterm)[1:1]
+#     # # Decend each element of the term.
+#     # @test tag(axn) == "subterm"
+#     # @test value(axn) isa Vector #!{DictType}
+
+#     # all1 = value(axn)[1]
+#     # @test tag(all1) == "all"
+#     # @test value(all1) isa DictType
+#     # use1 = value(all1)["usersort"]
+#     # @test use1 isa DictType
+#     # @test use1[:declaration] == "N1"
+#     # @test PNML._attribute(use1, :declaration) == "N1"
+
+#     # all2 = value(axn)[2]
+#     # @test tag(all2) == "all"
+#     # @test value(all2) isa DictType
+#     # use2 = value(all2)["usersort"]
+#     # @test use2 isa DictType
+#     # @test use2[:declaration] == "N2"
+#     # @test PNML._attribute(use2, :declaration) == "N2"
+# end
+
+# @testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
+#     println("\nhlinscription $pntd")
+#     n1 = xml"""
+#     <hlinscription>
+#         <text>&lt;x,v&gt;</text>
+#         <structure>
+#             <tuple>
+#               <subterm><variable refvariable="x"/></subterm>
+#               <subterm><variable refvariable="v"/></subterm>
+#             </tuple>
+#         </structure>
+#         <graphics><offset x="0" y="0"/></graphics>
+#         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+#         <unknown id="unkn">
+#             <name> <text>unknown label</text> </name>
+#             <text>content text</text>
+#         </unknown>
+#       </hlinscription>
+#     """
+#     empty!(PNML.TOPDECLDICTIONARY)
+#     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+#     dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
+#     dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
+#     @show placetype = SortType("test", UserSort(:dot; ids=(:nothing,)))
+
+
+#     #@show PNML.TOPDECLDICTIONARY
+#     insc = @test_logs(match_mode=:all,
+#             (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
+#             PNML.parse_hlinscription(n1, pntd, registry(); ids=(:NN,)))
+
+#     @test typeof(insc) <: PNML.AbstractLabel
+#     @test typeof(insc) <: PNML.inscription_type(pntd)
+#     @test PNML.has_graphics(insc) == true
+#     @test PNML.has_labels(insc) == false # Labels do not have sub-labels.
+
+#     @test text(insc) isa Union{Nothing,AbstractString}
+#     @test text(insc) == "<x,v>"
+
+#     @test occursin("Graphics", sprint(show, insc))
+
+#     #@show value(insc)
+#     inscterm = value(insc)
+#     @test inscterm isa PNML.AbstractTerm
+#     @test tag(inscterm) === :tuple
+#     @test arity(inscterm) == 2
+#     @test inputs(inscterm)[1] isa PNML.Variable
+#     @test inputs(inscterm)[2] isa PNML.Variable
+#     @test tag(inputs(inscterm)[1]) == :x
+#     @test tag(inputs(inscterm)[2]) == :v
+#     #@test value(inputs(inscterm)[1]) Needs DeclDict
+#     #@test value(inputs(inscterm)[2]) Needs DeclDict
+# end
+
+# @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
+#     node = xml"""
+#      <structure>
+#         <tuple>
+#             <subterm><all><usersort declaration="N1"/></all></subterm>
+#             <subterm><all><usersort declaration="N2"/></all></subterm>
+#         </tuple>
+#      </structure>
+#     """
+#     # expected structure: tuple -> subterm -> all -> usersort -> declaration
+
+#     stru = PNML.parse_structure(node, pntd, registry(); ids=(:NN,))
+#     @test stru isa PNML.Structure
+#     @test tag(stru) == :structure
+#     axn = elements(stru)
+#     @test axn isa DictType
+
+#     tup = axn["tuple"]
+#     sub = tup["subterm"]
+#     #--------
+#     all1 = sub[1]["all"]
+#     usr1 = all1["usersort"]
+#     @test value(usr1) == "N1"
+#     @test value(axn["tuple"]["subterm"][1]["all"]["usersort"]) == "N1"
+#     #--------
+#     all2 = sub[2]["all"]
+#     usr2 = all2["usersort"]
+#     @test value(usr2) == "N2"
+#     @test value(axn["tuple"]["subterm"][2]["all"]["usersort"]) == "N2"
+# end
+
+
 
 #! Setting up TOPDECLDICTIONARY is not worth the hassel
 # # Conditions are for everybody, but we cannot (feasibily) test high-level
