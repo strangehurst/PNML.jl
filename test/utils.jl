@@ -15,7 +15,7 @@ end
     @test_throws "empty XML string" xmlroot("")
 end
 
- @testset "getfirst XMLNode" begin
+@testset "getfirst XMLNode" begin
     node = xml"""<test>
         <a name="a1"/>
         <a name="a2"/>
@@ -35,13 +35,7 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-@testset "default_bool_term($pntd)" for pntd in all_nettypes()
-    b = default_bool_term(pntd)::PNML.BooleanConstant
-    println("default_bool_term($pntd) = ", b)
-    @test b isa PNML.AbstractTerm
-    @test value(b) isa eltype(BoolSort)
-    @test value(b) == true
-end
+
 
 @testset "default_zero_term($pntd)" for pntd in all_nettypes()
     z = default_zero_term(pntd)#::PNML.NumberConstant
@@ -49,8 +43,9 @@ end
     @test z isa AbstractTerm
     @test value(z) isa term_value_type(pntd)
     @test value(z) == zero(term_value_type(pntd))
-end
 
+    @show ms = PNML.pnmlmultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 1)
+end
 @testset "default_one_term($pntd)" for pntd in all_nettypes()
     o = default_one_term(pntd)::PNML.NumberConstant
     println("default_one_term($pntd) = ", o)
@@ -59,16 +54,12 @@ end
     @test value(o) == one(term_value_type(pntd))
 end
 
-@testset "pnmlmultiset($pntd)" for pntd in all_nettypes()
-    @show ms = PNML.pnmlmultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 1)
-end
 
 @testset "default_condition($pntd)" for pntd in all_nettypes(ishighlevel)
     c = default_condition(pntd)::PNML.Condition #! TestUtils, Base export Condition
     println("default_condition($pntd) = ", c)
     cv = value(c)::PNML.BooleanConstant
     @test sortof(cv) isa BoolSort
-    #eltype(BoolSort)
     @test value(cv) == true
 end
 
@@ -78,7 +69,7 @@ end
 end
 
 @testset "default_inscription($pntd)" for pntd in all_nettypes()
-     i = default_inscription(pntd)
+    i = default_inscription(pntd)
     println("default_inscription($pntd) = ", i)
 end
 

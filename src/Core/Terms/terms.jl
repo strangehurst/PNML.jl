@@ -84,15 +84,3 @@ end
 # default_one_term(pntd) should return an singleton multiset with basis sort same as its place's sorttype.
 # the singleton multiset's value could be dotconstant,
 # Must be suitable as a marking, ie. a ground term without variables.
-
-"""
-$(TYPEDSIGNATURES)
-
-True as boolean or term with a value of `true`.
-"""
-function default_bool_term end
-function default_bool_term(::PnmlType, sort=BoolSort())
-    @assert sort isa BoolSort
-    BooleanConstant(true)
-end
-# instance of multiset over basis term_value_type(pntd)

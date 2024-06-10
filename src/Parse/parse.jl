@@ -858,15 +858,14 @@ function parse_condition end
 function parse_condition(node::XMLNode, pntd::T, idregistry::PIDR; ids::Tuple) where {T<:AbstractHLCore}
     check_nodename(node, "condition")
     l = parse_label_content(node, parse_condition_term, pntd, idregistry; ids)
-    Condition(l.text, something(l.term, default_bool_term(pntd)), l.graphics, l.tools)
+    Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
 
 function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple) # Non-HL
     check_nodename(node, "condition")
-    #println("condition for $pntd")
     l = parse_label_content(node, parse_condition_term, pntd, idregistry; ids)
-    @warn("condition for $pntd = $(repr(l))")
-    Condition(l.text, something(l.term, default_bool_term(pntd)), l.graphics, l.tools)
+    @warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
+    Condition(l.text, something(l.term, true), l.graphics, l.tools)
 end
 
 """

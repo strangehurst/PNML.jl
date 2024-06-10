@@ -552,7 +552,6 @@ _evaluate(ms::PnmlMultiset) = identity(ms)
 
 zero_term(pntd, basis) = PnmlMultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 0)
 one_term(pntd, basis)  = PnmlMultiset(default_one_term(pntd), sortof(default_one_term(pntd)), 1)
-bool_term(pntd, basis) = PnmlMultiset(default_boolean_term(pntd), sortof(default_boolean_term(pntd)), 1)
 
 
 """
