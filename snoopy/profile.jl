@@ -137,5 +137,5 @@ n = PNML.SimpleNet("""<?xml version="1.0"?>
 
 #-----------------------------------------------------
 julia> import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time includet("setup.jl");
-const netxml = first(PNML.allchildren("net", x));
+const netxml = first(PNML.allchildren(x, "net"));
 @report_opt target_modules = (PNML,) PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry())

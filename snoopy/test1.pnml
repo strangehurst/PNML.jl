@@ -247,6 +247,16 @@
             <structure>
                 <declarations>
                     <namedsort id="dot" name="Dot"><dot/></namedsort>
+                    <namedsort id="intger" name="Integer"><integer/></namedsort>
+                    <namedsort id="positive" name="Positive"><positive/></namedsort>
+                    <namedsort id="natural" name="Natural"><natural/></namedsort>
+                    <namedsort id="real" name="Real"><real/></namedsort>
+                    <namedsort id="bool" name="Bool">
+                        <cyclicenumeration>
+                            <feconstant id="false" name="F"/>
+                            <feconstant id="true" name="T"/>
+                        </cyclicenumeration>
+                    </namedsort>
                     <variabledecl id="varA" name="A"><usersort declaration="pro"/></variabledecl>
 		            <namedsort id="Altitude" name="Altitude">
 						<cyclicenumeration>

@@ -17,7 +17,6 @@ using PNML:
     rate_value_type,
     default_inscription,
     default_marking,
-    default_sort,
     default_condition,
     default_one_term,
     default_zero_term
@@ -47,7 +46,6 @@ function showme(net) #TODO iterate on nets
     def_funs = (
         default_inscription,
         default_marking,
-        default_sort,
         default_condition,
         default_one_term,
         default_zero_term,

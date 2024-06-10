@@ -19,7 +19,7 @@ using PNML:
     all_arcs, allchildren, append_page!, arc, arc_idset, arcs,
     check_nodename, common, condition, conditions, initial_markings,
     condition_type, condition_value_type,
-    declarations, default_condition, default_inscription, default_marking, default_sort,
+    declarations, default_condition, default_inscription, default_marking,
     deref!, deref_place, deref_transition, elements,
     find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
     get_label, get_labels, getfirst, graphics,
@@ -65,7 +65,7 @@ end
 julia> import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time includet("setup.jl"); const netxml = first(allchildren("net", x)); @report_opt target_modules = (PNML,) PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry())
 =#
 function top_net(x::XMLNode)
-    netxml = first(allchildren("net", x))
+    netxml = first(allchildren(x, "net"))
     @report_opt target_modules=(PNML,) function_filter=pnml_ff PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry(); ids=(:foo,))
 endparse_net_1
 
