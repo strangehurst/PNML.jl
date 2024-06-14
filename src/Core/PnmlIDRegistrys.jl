@@ -21,7 +21,7 @@ function Base.show(io::IO, idregistry::PnmlIDRegistry)
     print(io, nameof(typeof(idregistry)), " ", length(idregistry.ids), " ids: ", idregistry.ids)
 end
 
-duplicate_id_action(id::Symbol)  = @warn("ID already registered: $id")
+duplicate_id_action(id::Symbol)  = error("ID already registered: $id")
 
 """
 $(TYPEDSIGNATURES)
