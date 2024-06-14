@@ -44,7 +44,7 @@ Multisets.set_key_value_show()
     inscription,
     Condition, condition
 
-@reexport using PNML: default_bool_term, default_zero_term, default_one_term,
+@reexport using PNML:
     default_marking, default_inscription, default_condition, default_typeusersort
 
 @reexport using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,

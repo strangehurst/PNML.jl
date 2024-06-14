@@ -18,8 +18,6 @@ using PNML:
     default_inscription,
     default_marking,
     default_condition,
-    default_one_term,
-    default_zero_term
 =#
 using Printf
 
@@ -47,8 +45,6 @@ function showme(net) #TODO iterate on nets
         default_inscription,
         default_marking,
         default_condition,
-        default_one_term,
-        default_zero_term,
         )
 
     PNTD = PNML.all_nettypes()
