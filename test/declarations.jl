@@ -251,7 +251,8 @@ end
     end
 end
 
-const nonsimple_sorts = (MultisetSort, UserSort)
+const nonsimple_sorts = (MultisetSort, UserSort,
+    CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
 
 @testset "equal sorts" begin
     println("============================")
