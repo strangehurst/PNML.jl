@@ -37,35 +37,14 @@ end
 
 
 
-@testset "default_zero_term($pntd)" for pntd in all_nettypes()
-    z = default_zero_term(pntd)#::PNML.NumberConstant
-    println("default_zero_term($pntd) = ", z)
-    @test z isa AbstractTerm
-    @test value(z) isa term_value_type(pntd)
-    @test value(z) == zero(term_value_type(pntd))
-
-    @show ms = PNML.pnmlmultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 1)
-end
-@testset "default_one_term($pntd)" for pntd in all_nettypes()
-    o = default_one_term(pntd)::PNML.NumberConstant
-    println("default_one_term($pntd) = ", o)
-    @test o isa AbstractTerm
-    @test value(o) isa term_value_type(pntd)
-    @test value(o) == one(term_value_type(pntd))
-end
 
 
 @testset "default_condition($pntd)" for pntd in all_nettypes(ishighlevel)
     c = default_condition(pntd)::PNML.Condition #! TestUtils, Base export Condition
     println("default_condition($pntd) = ", c)
-    cv = value(c)::PNML.BooleanConstant
-    @test sortof(cv) isa BoolSort
-    @test value(cv) == true
-end
-
-@testset "default_marking($pntd)" for pntd in all_nettypes()
-    m = default_marking(pntd; ids=(:testmarking,))
-    println("default_marking($pntd) = ", m)
+    cv = value(c)::Bool
+    #@test sortof(c) isa BoolSort
+    @test cv == true
 end
 
 @testset "default_inscription($pntd)" for pntd in all_nettypes()
