@@ -2,11 +2,9 @@
 $(TYPEDEF)
 """
 @auto_hash_equals struct StringSort <: AbstractSort
-    #
     ae::Vector{AbstractSort}
 end
 StringSort() = StringSort(IntegerSort[])
-#! equalSorts(a::StringSort, b::StringSort) = a.ae == b.ae
 
 function Base.show(io::IO, s::StringSort)
     print(io, "StringSort([")

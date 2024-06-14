@@ -34,21 +34,21 @@ $(TYPEDEF)
 
 The operations differ between the various `EnumerationSort`s. They may be #TODO
 """
-@auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
+@auto_hash_equals fields=fec_refs struct CyclicEnumerationSort <: EnumerationSort
     fec_refs::Vector{Symbol} # keys into feconstant(decldict)
     ids::Tuple
 end
-CyclicEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(Symbol[]; ids)
+#CyclicEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(Symbol[]; ids)
 CyclicEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(fe_refs, ids)
 
 """
 $(TYPEDEF)
 """
-@auto_hash_equals struct FiniteEnumerationSort <: EnumerationSort
+@auto_hash_equals fields=fec_refs struct FiniteEnumerationSort <: EnumerationSort
     fec_refs::Vector{Symbol} # keys into feconstant(ddict)
     ids::Tuple
 end
-FiniteEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(Symbol[]; ids)
+#FiniteEnumerationSort(; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(Symbol[]; ids)
 FiniteEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(fe_refs, ids)
 
 function Base.show(io::IO, esort::EnumerationSort)
@@ -63,15 +63,13 @@ end
 
 """
     FiniteIntRangeSort(start::T, stop::T; ids::Tuple) where {T<:Integer} -> Range
-
-
 """
-@auto_hash_equals struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
+@auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
     ids::Tuple # trail of IDs, first is netid.
 end
-FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
+#FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
 FiniteIntRangeSort(start, stop; ids::Tuple) = FiniteIntRangeSort(start, stop, ids)
 
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T

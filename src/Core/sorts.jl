@@ -45,7 +45,7 @@ Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
 [`NamedSort`](@ref) is used to construct a sort out of builtin types.
 Used in a `Place`s sort type property.
 """
-@auto_hash_equals struct UserSort <: AbstractSort
+@auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
     ids::Tuple
 end
@@ -99,4 +99,8 @@ Will not achieve the same transparancy and efficency as NamedTuples.
     tup::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
 end
 TupleSort() = TupleSort(UserSort[])
-sortof(ts::TupleSort) = sortof(first(ts.tup)) #TODO set of sorts, iterator
+sortof(ts::TupleSort) = begin
+    println("sortof(::TupleSort: ", ts)
+    @assert !isempty(ts.tup)
+    sortof(first(ts.tup)) #TODO set of sorts, iterator
+end
