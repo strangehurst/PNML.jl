@@ -75,6 +75,7 @@ SortType(s::AbstractString, sort::AbstractSort) = SortType(s, sort, nothing, not
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
 value(t::SortType)  = t.sort_
 sortof(t::SortType) = sortof(value(t)) # sortof usersort
+elements(t::SortType) = elements(sortof(t))
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
