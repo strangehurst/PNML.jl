@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-@kwdef struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
+@kwdef mutable struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.

@@ -4,7 +4,7 @@ $(TYPEDFIELDS)
 
 One or more Petri Nets and an ID Registries.
 """
-struct PnmlModel #TODO mutable PnmlModel?
+mutable struct PnmlModel
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
     regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alias.
