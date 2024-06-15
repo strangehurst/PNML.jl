@@ -20,20 +20,21 @@ julia> c()
 false
 ```
 """
-@auto_hash_equals struct Condition <: Annotation
+@auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
     value::AbstractTerm # evaluates to Boolean
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
-
+# more reasons for the split: Number vs Term
 Condition(value::Bool)                       = Condition(nothing, BooleanConstant(value), nothing, nothing)
 Condition(value::BooleanConstant)            = Condition(nothing, value, nothing, nothing)
 Condition(text::AbstractString, value::Bool) = Condition(text, BooleanConstant(value), nothing, nothing)
 Condition(text::AbstractString, value::BooleanConstant) = Condition(text, value, nothing, nothing)
+
 condition_type(::Type{<:PnmlType}) = Condition
 
-value(c::Condition) = c.value
+value(c::Condition) = (c.value)() # Evaluate term
 Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
