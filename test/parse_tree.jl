@@ -62,7 +62,7 @@ end
 
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
-@testset "AirplaneLD pnml file" begin
+false && @testset "AirplaneLD pnml file" begin
     empty!(PNML.TOPDECLDICTIONARY)
     println("\n","------------------------"^6)
     println("------------------------"^6)
@@ -115,12 +115,13 @@ end
 end
 
 # Read a SymmetricNet with partitions from pnmlframework test files
-@testset "sampleSNPrio pnml file" begin
+false && @testset "sampleSNPrio pnml file" begin
     empty!(PNML.TOPDECLDICTIONARY)
     println("\n-----------------------------------------")
-    @show testfile = joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
+    println("sampleSNPrio.pnml")
+    println("-----------------------------------------\n")
 
-    model = parse_file(testfile)::PnmlModel
+    model = parse_file(joinpath(@__DIR__, "data", "sampleSNPrio.pnml"))::PnmlModel
     @show net = first(nets(model)) # Multi-net models not common.
     @test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools

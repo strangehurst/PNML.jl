@@ -120,10 +120,10 @@ as  a global wherever the netid is known.
 """
 function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple)
     netid = first(ids)
-    PNTD = typeof(pntd)
-    pgtype = page_type(PNTD)
+    pgtype = page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
+    # The type information is used by PnmlNet.
     #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netsets = PnmlNetKeys()
@@ -135,15 +135,17 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY, keys: $(collect(keys(TOPDECLDICTIONARY)))"
     TOPDECLDICTIONARY[netid] = DeclDict() # Allocate empty per-net global dictionary.
 
-    # Parse *ALL* Declarations first, this includes any Declarations attached to Pages.
-    decls = alltags(node, "declaration") # There may be none.
-    decl = parse_declaration(decls, pntd, idregistry; ids)::Declaration
-    # All declarations in the decldict(netid) which is also attached to the `Declaration` label.
-    # Which, because it is a label, must also support text, graphics and tools.
-    # We also collect all the toolinfos.  Only the first <declaration> text and graphics will be preserved.
-    # Though what use graphics could add escapes me.
+    # Parse *ALL* Declarations first (assuming this the tree root),
+    # this includes any Declarations attached to Pages.
+    # Place any/all declarations in decldict(netid).
+    # It is like we are flattening only the declarations.
+    # We collect all the toolinfos.
+    # Only the first <declaration> text and graphics will be preserved.
+    # Though what use graphics could add escapes me (and the specification).
+    decls = alldecendents(node, "declaration") # There may be none.
+    declaration = parse_declaration(decls, pntd, idregistry; ids)::Declaration
 
-     fill_nonhl!(decldict(netid); ids)
+    fill_nonhl!(decldict(netid); ids) # All net types have these. Decl def takes precenence.
 
     if !isempty(decldict(netid))
         #@show(netid, decldict(netid)) #! debug
@@ -151,36 +153,67 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     end
 
     namelabel::Maybe{Name} = nothing
+    nameelement = firstchild(node, "name")
+    if !isnothing(nameelement)
+        namelabel = parse_name(nameelement, pntd, idregistry)
+    end
+
     tools::Maybe{Vector{ToolInfo}} = nothing
+    nettoolinfo = allchildren(node, "toolspecific")
+    if !isempty(nettoolinfo)
+        if isnothing(tools)
+            tools = ToolInfo[]
+        end
+        for ti in nettoolinfo
+            add_toolinfo!(tools, ti, pntd, idregistry)
+        end
+    end
+
     labels::Maybe{Vector{PnmlLabel}} = nothing
+
+
+    #^ REFACTOR Create net then fill, maybe move netdata, pagedict
+    net = PnmlNet(; type=pntd, id=netid, pagedict, netdata, page_set=page_idset(netsets),
+                   declaration,
+                   namelabel, tools, labels, #TODO
+                   idregistry)
+
 
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        if tag == "page"
+        if tag in ["declaration", "name", "toolspecific"]
+            #println("net already parsed ", tag) #! debug
+        elseif tag == "page"
+            # All graph node content resides in pages.
+            # Threre is always at least one page. A forest of multiple pages is allowd.
+            # Note that one can always flatten a multi-page PnmlNet to a single page
+            # and have the same graph with all the non-graphics labels preserved.
+            # Un-flattened is not well tested!
             parse_page!(pagedict, netdata, netsets, child, pntd, idregistry; ids)
-        elseif tag == "declaration"
-            # NOOP println("already done decls")
-        elseif tag == "name"
-            namelabel = parse_name(child, pntd, idregistry)
+
+        # elseif tag == "name" #todo
+        #     namelabel = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
-        elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd, idregistry)
+        # elseif tag == "toolspecific" #todo
+        #     if isnothing(tools)
+        #         tools = ToolInfo[]
+        #     end
+        #     add_toolinfo!(tools, child, pntd, idregistry)
         else # Labels are everything-else here.
             CONFIG.warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
+            if isnothing(net.labels)
+                net.labels = PnmlLabel[]
             end
-            add_label!(labels, child, pntd, idregistry)
+            add_label!(net.labels, child, pntd, idregistry)
         end
     end
-
-    return PnmlNet(; type=pntd, id=netid, pagedict, netdata, page_set=page_idset(netsets),
-                        declaration=decl, namelabel, tools, labels, idregistry)
+    # net = PnmlNet(; type=pntd, id=netid,
+    #                 pagedict, netdata, page_set=page_idset(netsets),
+    #                 declaration,
+    #                 namelabel, tools, labels, idregistry)
+    return net
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
@@ -203,10 +236,9 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
     pageid = last(ids) # Just appended,
     netsets = PnmlNetKeys() # Allocate per-page data.
 
-    decl::Maybe{Declaration} = nothing
+    #^decl::Maybe{Declaration} = nothing
     name::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing
 
     place_set      = place_idset(netsets)
@@ -215,31 +247,51 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
     rp_set         = refplace_idset(netsets)
     rt_set         = reftransition_idset(netsets)
 
+    tools::Maybe{Vector{ToolInfo}} = nothing
+    nettoolinfo = allchildren(node, "toolspecific")
+    if !isempty(nettoolinfo)
+        if isnothing(tools)
+            tools = ToolInfo[]
+        end
+        for ti in nettoolinfo
+            add_toolinfo!(tools, ti, pntd, idregistry)
+        end
+    end
+
+    #^ REFACTOR do places, refPlaces, transitions, refTransitions, then arcs
+    refactor = true
+    for p in allchildren(node, "place")
+        refactor && parse_place!(place_set, netdata.place_dict, p, pntd, idregistry; ids)
+    end
+    for rp in allchildren(node, "referencePlace")
+        refactor && parse_refPlace!(rp_set, netdata.refplace_dict, rp, pntd, idregistry; ids)
+    end
+    for t in allchildren(node, "transition")
+        refactor && parse_transition!(transition_set, netdata.transition_dict, t, pntd, idregistry; ids)
+    end
+    for rt in allchildren(node, "referenceTransition")
+        refactor && parse_refTransition!(rt_set, netdata.reftransition_dict, rt, pntd, idregistry; ids)
+    end
+    for a in allchildren(node, "arc")
+        refactor && parse_arc!(arc_set, netdata.arc_dict, a, pntd, idregistry; ids)
+    end
+
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        if tag == "place"
-            parse_place!(place_set, netdata.place_dict, child, pntd, idregistry; ids)
-        elseif tag == "transition"
-            parse_transition!(transition_set, netdata.transition_dict, child, pntd, idregistry; ids)
-        elseif tag == "arc"
-            parse_arc!(arc_set, netdata.arc_dict, child, pntd, idregistry; ids)
-        elseif tag == "referencePlace"
-            parse_refPlace!(rp_set, netdata.refplace_dict, child, pntd, idregistry; ids)
-        elseif tag == "referenceTransition"
-            parse_refTransition!(rt_set, netdata.reftransition_dict, child, pntd, idregistry; ids)
+        if tag in ["declaration", "place", "transition", "arc",
+                    "referencePlace", "referenceTransition", "toolspecific"]
+            # NOOP println("page already parsed ", tag)
         elseif tag == "page" # Subpage
             parse_page!(pagedict, netdata, netsets, child, pntd, idregistry; ids)
-        elseif tag == "declaration"
-            # NOOP println("already done decls")
         elseif tag == "name"
             name = parse_name(child, pntd, idregistry)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd, idregistry)
-        elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd, idregistry)
+        # elseif tag == "toolspecific" #^ parse first
+        #     if isnothing(tools)
+        #         tools = ToolInfo[]
+        #     end
+        #     add_toolinfo!(tools, child, pntd, idregistry)
         else
             CONFIG.warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
             if isnothing(labels)
@@ -249,7 +301,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, idregistry::PID
         end
     end
 
-    return Page(pntd, pageid, something(decl, Declaration()), name, graphics, tools, labels,
+    return Page(pntd, pageid, Declaration(), name, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
                 netsets,  # Set of ids "owned" by this page.
@@ -315,10 +367,10 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     if !isnothing(typenode)
         sorttype = parse_type(typenode, pntd, idregistry; ids)
     else
-        @warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd; ids))
+        #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd; ids))
         sorttype = SortType("default", default_typeusersort(pntd; ids), nothing, nothing) #! FIXME
     end
-    @warn "parse_place $id" sorttype
+    #@warn "parse_place $id" sorttype
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -346,29 +398,25 @@ function parse_place(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple
     end
 
     if isnothing(mark)
-        mark = default_marking(pntd; ids)::marking_type(pntd)
-        println("set default marking for place $(repr(id)) to ", repr(mark))
+        println("set default marking for place $(repr(id)), sorttype ", sorttype)
+        mark = default_marking(pntd, sorttype; ids)::marking_type(pntd)
+        @show mark
     end
 
     if isnothing(sorttype) # Infer sortype of place from mark?
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
-        @error("infer sorttype",
-                value(mark),
-                sortof(mark),
-                basis(mark), #! ensure back ported
-                sortof(basis(mark)) # look into the usersort
-        )
+        @error("infer sorttype", value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing)
     end
-
+    #@show basis(mark) sortof(mark) sortof(sorttype)
+    #@show mark sorttype ids
 
     # The basis sort of mark label must be the same as the sort of sorttype label.
-    if !equalSorts(sortof(mark), sortof(sorttype))
-        @error(string("place id $(repr(id)) of $pntd: sort mismatch,",
-                        "\nsortof(mark) = ", sortof(mark),
-                        "\nsortof(sorttype) = ", sortof(sorttype), ", trail $ids"))
-        @show mark sorttype ids #! Should error here!
+    if !equalSorts(sortof(basis(mark)), sortof(sorttype))
         # throw(MalformedException(string(
+        error(string("place id $(repr(id)) of $pntd: sort mismatch,",
+                        "\n\n sortof(basis(mark)) = ", sortof(basis(mark)),
+                        "\n\t sortof(sorttype) = ", sortof(sorttype), ", trail $ids"))
     end
 
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
@@ -721,9 +769,23 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
                                 idregistry::PIDR; ids::Tuple)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(value(placetype)), pntd, idregistry; ids)::NamedTuple
-    @warn pntd l.text l.term default_zero_term(pntd#=, value(placetype)=#) ids
-    # Default to an empty multiset whose basis is placetype
-    HLMarking(l.text, something(l.term, default_zero_term(pntd#=, value(placetype)=#)), l.graphics, l.tools; ids)
+    #@warn pntd l.text l.term ids
+
+    mark = if isnothing(l.term) # Default to an empty multiset whose basis is placetype
+        els = elements(placetype) # Finite sets return non-empty iteratable.
+        @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
+        el = first(els) # Default to first of finite sort's elements (how often is this best?)
+        pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
+                     sortof(placetype), # basis sort
+                     0) # empty multiset, multiplicity of every element = zero.
+    else
+        l.term
+    end
+    equalSorts(sortof(basis(mark)), sortof(placetype)) ||
+        error(string("HL marking sort mismatch,",
+            "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
+            "\n\t sortof(placetype) = ", sortof(placetype), ", trail $ids"))
+    HLMarking(l.text, mark, l.graphics, l.tools; ids)
 end
 
 """
@@ -745,9 +807,12 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType, idregistry::
     if EzXML.haselement(marknode)
         term = EzXML.firstelement(marknode) # ignore any others
         mark, sort = parse_term(term, pntd, idregistry; ids)
-        @assert sort == sortof(mark) # sortof multiset is the basis sort
 
-        @show mark sort #typeof(mark) sortof(mark) basis(mark)
+        @show mark sort typeof(mark) sortof(mark) basis(mark) sortof(basis(mark))
+        @assert sort == sortof(mark) # sortof multiset is the basis sort
+        #@assert sortof(mark) != basis(mark)
+        @assert basis(mark) == sortof(basis(mark))
+
         isa(mark, AbstractTerm) ||
             error("mark is a $(nameof(typeof(mark))), expected AbstractTerm")
         isa(sortof(mark), AbstractSort) ||
@@ -757,12 +822,10 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType, idregistry::
         isa(placetype(pmt), AbstractSort) ||
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected AbstractSort")
 
-        #println() #~
-        equalSorts(basis(mark), sortof(placetype(pmt))) ||
-            throw(ArgumentError(string("sort mismatch:",
-                "\n\tmarking term sort ", repr(basis(mark)),
-                "\n\tplace sorttype ", repr(sortof(placetype(pmt)))
-            )))
+        equalSorts(sortof(basis(mark)), sortof(placetype(pmt))) ||
+            throw(ArgumentError(string("parse marking term sort mismatch:",
+                "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
+                "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
         return (mark, sort)
     end
     throw(ArgumentError("missing marking term in <structure>"))
@@ -777,13 +840,29 @@ function parse_hlinscription(node::XMLNode, target::Symbol, pntd::AbstractHLCore
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(target), pntd, idregistry; ids)
     # Default to singleton multiset whose basis is the placetype of the arc's target place
-    HLInscription(l.text, something(l.term, default_one_term(pntd), todo(placetype(target))), l.graphics, l.tools)
+
+    insc = if isnothing(l.term) # Default to an  multiset whose basis is placetype
+        els = elements(placetype) # Finite sets return non-empty iteratable.
+        @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
+        el = first(els) # Default to first of finite sort's elements (how often is this best?)
+        pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
+                     sortof(placetype), # basis sort
+                     1) # empty multiset, multiplicity of every element = zero.
+    else
+        l.term
+    end
+    equalSorts(sortof(basis(insc)), sortof(placetype)) ||
+        @error(string("HL inscription sort mismatch,",
+            "\n\t sortof(basis(insc)) = ", sortof(basis(insc)),
+            "\n\t sortof(placetype) = ", sortof(placetype), ", trail $ids"))
+
+    HLInscription(l.text, insc, l.graphics, l.tools)
 end
 
 """
     ParseInscriptionTerm(placetype) -> Functor
 
-Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType, ::PIDR; ids::Tuple)
+Holds parameters for parsing when markcalled as (f::T)(::XMLNode, ::PnmlType, ::PIDR; ids::Tuple)
 """
 struct ParseInscriptionTerm
     target::Symbol
@@ -810,15 +889,20 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType, idregist
 
         println()
         #! May not have parsed the target yet! defer sort harvesting
-        if !has_place(decldict(first(ids)), target(pit))
+        # Neeed access to net/places
+        @show netid(ids)
+        @show decldict(netid(ids))
+        if !has_place(decldict(netid(ids)), target(pit))
             error("inscription target place not found, may not been parsed yet!")
         end
-        @show targetsort = sortof(placetype(place(decldict(first(ids)), target(pit))))
-        equalSorts(basis(inscript), targetsort) ||
+
+
+        targetsort = sortof(placetype(place(decldict(first(ids)), target(pit))))
+        @show targetsort
+        equalSorts(sortof(basis(inscript)), targetsort) ||
             throw(ArgumentError(string("sort mismatch:",
-                "\n\tinscriuption term sort ", repr(basis(mark)),
-                "\n\ttarget place sorttype ", repr(targetsort)
-            )))
+                "\n\t sortof(basis(inscriuption)) ", sortof(basis(inscript)),
+                "\n\t targetsort ", targetsort)))
         return (mark, sort)
     end
     throw(ArgumentError("missing inscription term in <structure>"))
@@ -864,8 +948,8 @@ end
 function parse_condition(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids::Tuple) # Non-HL
     check_nodename(node, "condition")
     l = parse_label_content(node, parse_condition_term, pntd, idregistry; ids)
-    @warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
-    Condition(l.text, something(l.term, true), l.graphics, l.tools)
+    #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
+    Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
 
 """

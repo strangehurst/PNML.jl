@@ -117,13 +117,13 @@ julia> m()
 """
 struct HLMarking <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    term::AbstractTerm # of multiset sort whose basis sort is the same as place's sorttype
+    term::AbstractTerm # multiset sort whose basis sort is the same as place's sorttype
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     ids::Tuple
-    # TODO place reference or ids (where first is net and last is place)?
+
     # function HLMarking(str, t, graph, tool)
-    #     sortof(t) isa MultisetSort
+    #     sortof(t) isa MultisetSort || error
     #     #  PnmlMultiset
     #     HLMarking(str, t, graph, tool)
     # end
@@ -132,12 +132,9 @@ HLMarking(t::AbstractTerm; ids=(:nothing,)) = HLMarking(nothing, t; ids)
 HLMarking(s::Maybe{AbstractString}, t::AbstractTerm; ids) = HLMarking(s, t, nothing, nothing, ids)
 HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to; ids) = HLMarking(s, t, g, to, ids)
 
-#HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
-#HLMarking(s::Maybe{AbstractString}, t::AbstractTerm) = HLMarking(s, t, nothing, nothing)
-
 value(m::HLMarking) = m.term
 basis(m::HLMarking) = basis(value(m))
-sortof(m::HLMarking) = sortof(value(m)) #::MultisetSort #TODO sorts
+sortof(m::HLMarking) = sortof(value(m))
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
@@ -172,7 +169,7 @@ marking_value_type(::Type{<:AbstractContinuousNet}) = Float64
 
 # These are networks were the tokens have individual identities.
 marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset
-#marking_value_type(::Type{<:Symmetric}) # Restricted to: DotSort,
+#marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 # basis sort can be, and are, restricted by/on PnmlType.
 # Symmetric Nets:
@@ -189,16 +186,22 @@ marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset
 
 """
 $(TYPEDSIGNATURES)
-Return default marking value based on `PNTD`. Has meaning of empty, as in `zero`.
+Return default marking value based on `PnmlType`. Has meaning of empty, as in `zero`.
+For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
+Others have a marking that is a `Number`.
 """
 function default_marking end
-function default_marking(::T, placetype=nothing; ids::Tuple=()) where {T <: PnmlType}
+function default_marking(pntd::T, placetype=nothing; ids::Tuple=()) where {T<:PnmlType}
     Marking(zero(marking_value_type(T)); ids)
 end
-function default_marking(pntd::AbstractHLCore; placetype::SortType, ids::Tuple)
-    HLMarking(pnmlmultiset(default_zero_term(pntd, placetype), # empty multiset
-                           sortof(default_zero_term(pntd)),
-                           1); ids)
+
+function default_marking(::AbstractHLCore, placetype::SortType; ids::Tuple)
+    els = elements(placetype) # Finite sets return non-empty iteratable.
+    @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
+    el = first(els) # Default to first of finite sort's elements (how often is this best?)
+    HLMarking(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
+                           sortof(placetype), # basis sort
+                           0); ids) # empty multiset, multiplicity of every element = zero.
 end
 
 # At some point we will be feeding things to Metatheory/SymbolicsUtils,

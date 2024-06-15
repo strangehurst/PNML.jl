@@ -38,7 +38,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType, idregistry::P
                 _parse_decl_structure!(dd, child, pntd, idregistry; ids)
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
-                @info "declaration text $text" ids # Do not expect text here, so it must be important.
+                @info "declaration text: $text" # Do not expect text here, so it must be important.
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd, idregistry)
             elseif tag == "toolspecific" # accumulate tool specific
@@ -106,7 +106,10 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType, reg::PIDR; ids::Tuple)
     id = register_idof!(reg, node)
     ids = tuple(ids..., id)
     name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
+    child = EzXML.firstelement(node)
+    isnothing(child) && error("no sort definition element for namedsort $(repr(id)) $name")
     def = parse_sort(EzXML.firstelement(node), pntd, reg; ids) #! deduplicate sort
+    isnothing(def) && error("failed to parse sort definition for namedsort $(repr(id)) $name")
     NamedSort(id, name, def; ids)
 end
 
@@ -204,7 +207,7 @@ end
 
 "Tags used in sort XML elements."
 const sort_ids = (:usersort,
-                  :dot, :bool, :integer, :natural, :positive,
+                  :dot, :bool, :integer, :natural, :positive, :real,
                   :multisetsort, :productsort,
                   :partition, # :partition is over a :finiteenumeration
                   :list, :string,
@@ -229,16 +232,26 @@ function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, idreg::PIDR
     PositiveSort()
 end
 
+function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
+    RealSort()
+end
+
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
        UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute. trail = $ids")); ids)
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    CyclicEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
+    check_nodename(node, "cyclicenumeration")
+
+    @show fecs = parse_feconstants(node, pntd, idreg; ids)
+    CyclicEnumerationSort(fecs; ids)
 end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-    FiniteEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
+    check_nodename(node, "finiteenumeration")
+
+    @show fecs = parse_feconstants(node, pntd, idreg; ids)
+    FiniteEnumerationSort(fecs; ids)
 end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)

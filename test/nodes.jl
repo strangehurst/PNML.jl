@@ -40,7 +40,7 @@ end
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test_call target_modules=(@__MODULE__,) initial_marking(n)
-    @warn im = initial_marking(n)
+    im = initial_marking(n)
     #!@show zero(PNML.marking_value_type(pntd))
     #!@test initial_marking(n)() == zero(PNML.marking_value_type(pntd)) # text has no meaning here
 end
@@ -189,8 +189,8 @@ end
         </unknown>
     </referenceTransition>
     """
-    @show n = @test_logs (:warn, "found unexpected child of <referenceTransition>: unknown") parse_refTransition(node, pntd, registry(); ids=(:NN,))
-    @test n isa RefTransition
+    n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
+                    parse_refTransition(node, pntd, registry(); ids=(:NN,))::RefTransition)
     @test pid(n) === :rt1
     @test refid(n) === :t1
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
@@ -226,8 +226,7 @@ end
     @testset "referencePlaces" for s in [n1, n2]
         n = @test_logs(match_mode=:any,
             (:warn, "found unexpected child of <referencePlace>: unknown"),
-            parse_refPlace(s.node, ContinuousNet(), registry(); ids=(:NN,)))
-        @test typeof(n) <: RefPlace
+            parse_refPlace(s.node, ContinuousNet(), registry(); ids=(:NN,))::RefPlace)
         @test pid(n) === Symbol(s.id)
         @test refid(n) === Symbol(s.ref)
     end

@@ -318,9 +318,6 @@ condition_value_type(pntd::PnmlType) = condition_value_type(typeof(pntd))
 inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
 inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
 
-#! Term should be replaced by Variables and Operators. So not documented or tested.
-term_value_type(pntd::PnmlType) = term_value_type(typeof(pntd))
-
 coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))
 coordinate_value_type(pntd::PnmlType) = coordinate_value_type(typeof(pntd))
 

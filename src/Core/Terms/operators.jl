@@ -420,21 +420,27 @@ function pnml_hl_operator(tag::Symbol)
 end
 
 """
-    pnml_hl_outsort(tag::Symbol; ) -> Sort
+    pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple) -> Sort
 
-Return sort that builtin operator returns.allable with a single argument, a vector of inputs.
+Return sort that builtin operator returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple)
     if isbooleanoperator(tag)
         BoolSort()
     elseif isintegeroperator(tag)
         IntegerSort()
     elseif ismultisetoperator(tag)
-        if tag in (:add, :all, :numberof, :subtract, :scalarproduct)
-            @assert length(insorts) == 2
+        if tag in (:add,)
+            length(insorts) >= 2 ||
+                @error "pnml_hl_outsort length(insorts) < 2" tag insorts
+            multisetsort(basis(last(insorts))) # is it always last?
+        elseif tag in(:all, :numberof, :subtract, :scalarproduct)
+            length(insorts) == 2 ||
+                @error "pnml_hl_outsort length(insorts) != 2" tag insorts
             multisetsort(basis(last(insorts))) # is it always last?
         elseif tag === :empty # a constant
-            @assert length(insorts) == 1
+            length(insorts) == 1 ||
+                @error "pnml_hl_outsort length(insorts) != 1" tag insorts
             multisetsort(basis(first(insorts)))
         elseif tag === :cardnality
             NaturalSort()
@@ -447,7 +453,8 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
         end
     elseif isfiniteoperator(tag)
         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
-        FiniteEnumerationSort() #! Will need content, ids
+        @error("enumeration sort needs content, ids")
+        FiniteEnumerationSort(Symbol[]; ids) #! Will need content, ids
     elseif ispartitionoperator(tag)
         #:ltp, :gtp, :partitionelementof
         PartitionSort() #! Will need content
@@ -508,8 +515,9 @@ Any `x` that supports `sortof(x)`
 pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
     # has_sort(x) ||
     #     throw(ArgumentError("x::$(typeof(x)) does not have a sort"))
-    sortof(x) isa MultisetSort &&
+    if !isa(x, Number) && isa(sortof(x), MultisetSort)
         throw(ArgumentError("sortof(x) cannot be a MultisetSort: found $(sortof(x))"))
+    end
     multi >= 0 ||
         throw(ArgumentError("multiplicity cannot be negative: found $multi"))
     #^ Where/how is absence of sort loop checked?
@@ -524,7 +532,7 @@ pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
     M = Multiset{typeof(x)}()
     #@show typeof(M) eltype(M)
     M[x] = multi #
-    @warn typeof(M) #repr(M)
+    #@warn typeof(M) #repr(M)
     #@warn typeof(basis) repr(basis)
     #@warn collect(elements(basis))
     PnmlMultiset(basis, M)
@@ -549,10 +557,6 @@ basis(ms::PnmlMultiset) = ms.basis
 elements(ms::PnmlMultiset) = elements(basis(ms))
 
 _evaluate(ms::PnmlMultiset) = identity(ms)
-
-zero_term(pntd, basis) = PnmlMultiset(default_zero_term(pntd), sortof(default_zero_term(pntd)), 0)
-one_term(pntd, basis)  = PnmlMultiset(default_one_term(pntd), sortof(default_one_term(pntd)), 1)
-
 
 """
 $(TYPEDEF)

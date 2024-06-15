@@ -44,7 +44,8 @@ Build an Operator Functor.
 
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry; ids::Tuple)
-    printstyled("parse_operator_term"; color=:green); println(": $(repr(tag)), trail $ids")
+    printstyled("parse_operator_term"; color=:green);
+    println(": $(repr(tag)), trail $ids")
     isoperator(tag) || @error "tag $tag is not an operator, trail $ids"
 
     @show func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
@@ -61,10 +62,11 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::Pn
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
     @assert length(interms) == length(insorts)
+    @show interms insorts
+    outsort = pnml_hl_outsort(tag; insorts, ids) #! some sorts need content
 
-    @show outsort = pnml_hl_outsort(tag; insorts) #! some sorts need content
-
-    println("parse_operator_term returning Operator $tag $func $interms, $insorts, $outsort")
+    println("parse_operator_term returning\n $(repr(tag)) $func $interms, $insorts, $outsort")
+    println()
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 
@@ -132,10 +134,10 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType, reg::PnmlIDRegis
 
     M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
     all = PnmlMultiset(b, M)
-    @warn repr(M) # prints decldict
-    @warn typeof(M)
-    @warn repr(all) # M is a set, example {(DotConstant(),)}
-    println()
+    #@warn repr(M) # prints decldict
+    #@warn typeof(M)
+    #@warn repr(all) # M is a set, example {(DotConstant(),)}
+    #println()
 
     # A multiset created from one object, a multiplicity, and the sort of the object.
     # Eventually the Metatheory rewrite engine, SymbolicUtils will expand the this.
@@ -191,7 +193,6 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType, reg::PnmlID
     end
     isnothing(multiplicity) && throw(ArgumentError("Missing numberof numberconstant subterm"))
     isnothing(instance) && throw(ArgumentError("Missing numberof sort instance subterm. Expected `dotconstant` or similar."))
-    #!equalSorts(sortof(multiplicity), instance) || throw(ArgumentError("sorts not equal: $multiplicity, $instance"))
     #@show multiplicity multiplicity() instance sortof(instance)
     return (pnmlmultiset(instance, sortof(instance), multiplicity()), sortof(instance))
 end
