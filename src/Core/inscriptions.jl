@@ -116,14 +116,24 @@ function Base.show(io::IO, inscription::HLInscription)
     print(io, ")")
 end
 
-inscription_type(::Type{T}) where{T<:AbstractHLCore} = HLInscription
+inscription_type(::AbstractHLCore) = HLInscription
 inscription_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort) #! sortof
 
 """
 $(TYPEDSIGNATURES)
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
+For hifg-level nets
+
 """
 function default_inscription end
 default_inscription(::PnmlType)              = Inscription(one(Int))
 default_inscription(::AbstractContinuousNet) = Inscription(one(Float64)) # Not ISO Standard.
-default_inscription(pntd::AbstractHLCore)    = HLInscription(nothing, default_one_term(pntd))
+#
+function default_inscription(::AbstractHLCore, placetype::SortType; ids::Tuple)
+    els = elements(placetype) # Finite sets return non-empty iteratable.
+    @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
+    el = first(els) # Default to first of finite sort's elements (how often is this best?)
+    HLInscription(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
+                           sortof(placetype), # basis sort
+                           1); ids) # empty multiset, multiplicity of every element = zero.
+end
