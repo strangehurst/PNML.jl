@@ -330,7 +330,8 @@ end
 
 function parse_arc!(arc_set, netdata, child, pntd, idregistry; ids)
     a = parse_arc(child, pntd, idregistry; ids, netdata)
-    println("parse_arc!"); @show a valtype(arcdict(netdata))
+    println("parse_arc!");
+    # @show a valtype(arcdict(netdata))
     a isa valtype(arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a)) ids")
     push!(arc_set, pid(a))
