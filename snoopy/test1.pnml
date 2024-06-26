@@ -231,6 +231,7 @@
                     </structure>
                 </condition>
             </transition>
+            <!-- No arcs -->
         </page>
     </net>
 
