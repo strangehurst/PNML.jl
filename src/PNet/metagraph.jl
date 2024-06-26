@@ -25,7 +25,8 @@ function metagraph(net::PnmlNet)
     println("\nmetagraph $(pntd(net)) $(pid(net))")
     if !(narcs(net) > 0 && nplaces(net) > 0 && ntransitions(net) > 0)
         @warn "$(pntd(net)) id = $(pid(net)) is not complete: " *
-            "narcs = $(narcs(net)) nplaces = $(nplaces(net)) ntransitions = $(ntransitions(net))" net
+            "narcs = $(narcs(net)) nplaces = $(nplaces(net)) ntransitions = $(ntransitions(net))"
+            # net
         return nothing
     end
 
