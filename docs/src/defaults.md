@@ -3,11 +3,10 @@ CurrentModule = PNML
 ```
 
 # Default Values
-
-  - markings: return zero(`Int`), zero(`Float64`), or `default_zero_term(pntd)`
-  - inscription: return one(`Int`), one(`Float64`), or `default_one_term(pntd)`
-  - condition: return `true`, or `default_condition(pntd)`
-  - Term: return boolean sort's true value `default_bool_term(pntd)`
+Varies by PNTD. Possibilitie include:
+  - markings: return zero(`Int`), zero(`Float64`), or empty multiset of same sort as adjacent place's sorttype.
+  - inscription: return one(`Int`), one(`Float64`), or singleton multiset of same sort as adjacent place's sorttype with value of first(elements(sort)).
+  - condition: return `true`, or `BooleanConstant(true)`
 
 The _ISO/IEC 15909-2_ specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to also allow continuous values to support nonstandard continuous and hybrid valued Petri Nets. Makes generating default values more interesting.
 
@@ -16,7 +15,7 @@ Determine type of `Number` to parse with [`number_value`](@ref) by using `pntd` 
   - [`inscription_value_type`](@ref)
   - [`marking_value_type`](@ref)
   - [`coordinate_value_type`](@ref)
-  - [`term_value_type`](@ref)
+  - removed term_value_type
   - [`rate_value_type`](@ref)
 
 
@@ -43,6 +42,17 @@ A consequence is that the default value's type ripples through the type system.
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
+using PNML: default_condition
+using PNML: default_inscription, default_hlinscription
+using PNML: default_marking, default_hlmarking
+using PNML: SortType, UserSort, IntegerSort, DotSort,
+            PnmlCoreNet, ContinuousNet, HLCoreNet,
+            NumberConstant, DotConstant
+
+empty!(PNML.TOPDECLDICTIONARY)
+dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+PNML.fill_nonhl!(dd; ids=(:nothing,))
+
 list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
@@ -53,17 +63,11 @@ end
 [`PNML.default_marking`](@ref)
 
 ```@example methods
-list_type(PNML.default_marking)
-```
-```@example methods
 methods(PNML.default_marking) # hide
 ```
 
 [`PNML.default_inscription`](@ref)
 
-```@example methods
-list_type(PNML.default_inscription) # hide
-```
 ```@example methods
 methods(PNML.default_inscription) # hide
 ```
@@ -71,83 +75,58 @@ methods(PNML.default_inscription) # hide
 [`PNML.default_condition`](@ref)
 
 ```@example methods
-list_type(PNML.default_condition) # hide
-```
-```@example methods
 methods(PNML.default_condition) # hide
 ```
 
-[`PNML.default_sort`](@ref)
-
-```@example methods
-list_type(PNML.default_sort) # hide
-```
-```@example methods
-methods(PNML.default_sort) # hide
-```
-
-[`PNML.default_one_term`](@ref)
-
-```@example methods
-list_type(PNML.default_one_term) # hide
-```
-```@example methods
-methods(PNML.default_one_term) # hide
-```
-
-[`PNML.default_zero_term`](@ref)
-
-```@example methods
-list_type(PNML.default_zero_term) # hide
-```
-```@example methods
-methods(PNML.default_zero_term) # hide
-```
-
-[`PNML.default_bool_term`](@ref)
-
-```@example methods
-list_type(PNML.default_bool_term) # hide
-```
-```@example methods
-methods(PNML.default_bool_term) # hide
-```
-
 ## Examples
+```@meta
+DocTestSetup = quote
+    using PNML
+    using PNML: default_condition
+    using PNML: default_inscription, default_hlinscription
+    using PNML: default_marking, default_hlmarking
+    using PNML: SortType, UserSort, IntegerSort, DotSort,
+                PnmlCoreNet, ContinuousNet, HLCoreNet,
+                NumberConstant, DotConstant
 
-[`PNML.default_one_term`](@ref), [`PNML.default_zero_term`](@ref)
+    empty!(PNML.TOPDECLDICTIONARY)
+    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
+    PNML.fill_nonhl!(dd; ids=(:nothing,))
+end
+```
 
-```jldoctest; setup=:(using PNML; using PNML: default_condition)
+```jldoctest
 julia> c = default_condition(PnmlCoreNet())
-Condition("", PNML.BooleanConstant(true))
+Condition("", true)
 
 julia> c()
 true
 
 julia> c = default_condition(ContinuousNet())
-Condition("", PNML.BooleanConstant(true))
+Condition("", true)
 
 julia> c = default_condition(HLCoreNet())
-Condition("", PNML.BooleanConstant(true))
+Condition("", true)
 ```
 
 
-```jldoctest; setup=:(using PNML; using PNML: default_inscription)
+```jldoctest
 julia> i = default_inscription(PnmlCoreNet())
 Inscription(1)
 
 julia> i = default_inscription(ContinuousNet())
 Inscription(1.0)
 
-julia> i = default_inscription(HLCoreNet())
-HLInscription("", PNML.NumberConstant{Int64, PNML.IntegerSort}(1, PNML.IntegerSort()))
+julia> i = default_hlinscription(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+HLInscription("", PnmlMultiset(basis=DotSort(), mset=Multiset(DotConstant() => 1,
+)))
 
 julia> i()
 1
 ```
 
 
-```jldoctest; setup=:(using PNML; using PNML: default_marking, Marking, HLMarking, pnmltype)
+```jldoctest
 julia> m = default_marking(PnmlCoreNet())
 Marking(0)
 
@@ -160,9 +139,12 @@ Marking(0.0)
 julia> m()
 0.0
 
-julia> m = default_marking(HLCoreNet())
-HLMarking("", PNML.NumberConstant{Int64, PNML.IntegerSort}(0, PNML.IntegerSort()))
+julia> m = default_hlmarking(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+HLMarking("", PnmlMultiset(basis=DotSort(), mset=Multiset()))
 
 julia> m()
 0
+```
+```@meta
+DocTestSetup = nothing
 ```

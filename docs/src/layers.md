@@ -97,21 +97,11 @@ What is permitted by the specification in a XML file will be a subset of the imp
 
 Concepts from High-Level Petri Nets will be used in the Core layer.
 
-Sorts as defined in the specification are based on natural numbers and booleans.
-High-level pntds use a `SortType` Term to define expressions as abstract syntax trees in XML.
-Intermediate implementation of Terms uses [`DictType`](@ref) to hold the AST.
-
-`default_sort_type(pntd)` returns the type to which a non-boolean term expression evaluates.
-Is intended to be used by `Place`s whose markings are multisets of that sort.
-
 | PNTD                  | Sort value        |   |
 |-----------------------|-------------------|---|
 | PnmlType              | Int               |   |
 | AbstractContinuousNet | Float64           |   |
-| AbstractHLCore        | eltype(DotSort()) |   |
-
-Note that `eltype(DotSort())` should be `Int`.
-
+| AbstractHLCore        | DotConstant())    |   |
 
 Use `Union{Bool, Int, Float64, DictType}` as the set of types that a `Term`'s can contain.
 Consider Bool, Int, Float64 as builtin-sorts, and `DictType` as "user defined" sorts.
@@ -193,31 +183,4 @@ list_type(PNML.reftransition_type) # hide
 
 ### Value Types
 
-#### default\_sort
-```@example types
-list_type(PNML.default_sort) # hide
-```
-#### condition\_value\_type
-```@example types
-list_type(PNML.condition_value_type) # hide
-```
-#### inscription\_value\_type
-```@example types
-list_type(PNML.inscription_value_type) # hide
-```
-#### marking\_value\_type
-```@example types
-list_type(PNML.marking_value_type) # hide
-```
-#### coordinate\_value\_type
-```@example types
-list_type(PNML.coordinate_value_type) # hide
-```
-#### term\_value\_type
-```@example types
-list_type(PNML.term_value_type) # hide
-```
-#### rate\_value\_type
-```@example types
-list_type(PNML.rate_value_type) # hide
-```
+TBD

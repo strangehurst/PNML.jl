@@ -36,27 +36,6 @@ true
 
 ### Operator that constructs a multiset of sort dot.
 
-```@example evaluates
-using PNML # hide
-using PNML: _evaluate, parse_hlinitialMarking, registry, value, @xml_str  # hide
-m = value(parse_hlinitialMarking(xml"""
-<hlinitialMarking>
-    <text>3`dot</text>
-    <structure>
-        <numberof>
-            <subterm><numberconstant value=\"3\"><positive/></numberconstant></subterm>
-            <subterm><dotconstant/></subterm>
-        </numberof>
-    </structure>
-</hlinitialMarking>""", HLCoreNet(), registry(); ids=(:NoNet,)))
-nothing # hide
-```
-
-```@example evaluates
-dump(m)
-```
-The :numberof tag symbol represents the single root of the structure content's well-formed XML. An operator with a vector of parameters: [natural number, element of a sort] that returns a multiset. Note that DotSort is a singleton type as is PositiveSort.
-
 A marking is a multiset of a place's sorttype. The output sort of the operator must be of this sort (equatSorts is true and sortof(place) == sortof(marking)).
 
 The output sort of numberof is the sort of the element in 2nd subterm.
