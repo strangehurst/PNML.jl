@@ -73,6 +73,7 @@ end
         $(str3.str)
         $(str4.str)
         $(str5.str)
+        <initialMarking> <text>5</text> </initialMarking>
         </place>
         """)
     combinedplace = parse_place(n, PnmlCoreNet(), registry(); ids=(:nothing,))

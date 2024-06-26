@@ -46,6 +46,7 @@ struct NumberConstant{T<:Number, S<:NumberSort} <: AbstractOperator
     # Schema allows a SubTerm[], Not used here. Part of pnml generic operator xml structure?
 end
 sortof(nc::NumberConstant) = nc.sort
+basis(nc::NumberConstant) = typeof(nc.value)
 value(nc::NumberConstant) = _evaluate(nc)
 _evaluate(nc::NumberConstant) = nc.value
 (c::NumberConstant)() = value(c)

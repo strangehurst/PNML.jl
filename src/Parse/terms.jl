@@ -63,6 +63,8 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType, reg::Pn
     end
     @assert length(interms) == length(insorts)
     @show interms insorts
+    #^ What can we assume from ids?
+    #^ Is last(ids) different for partition, partition element, FEC, EnumSort
     outsort = pnml_hl_outsort(tag; insorts, ids) #! some sorts need content
 
     println("parse_operator_term returning\n $(repr(tag)) $func $interms, $insorts, $outsort")

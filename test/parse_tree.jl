@@ -156,19 +156,20 @@ end
         PNML.flatten_pages!(n; verbose=false)
         @test PNML.verify(n; verbose=true)
         println("-----------------------------------------"^3)
+        println("FLATTENED NET")
         @show n
         println("-----------------------------------------"^3)
-        Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+        begin # Base.redirect_stdio(stdout=testshow, stderr=testshow) do
             #TODO use as base of a validation tool
             println("pagetree")
             PNML.pagetree(n)
             println("print_tree")
             AbstractTrees.print_tree(n)
             println("vertex_codes")
-            vc = PNML.vertex_codes(n)
-            vl = PNML.vertex_labels(n)
+            @show vc = PNML.vertex_codes(n)
+            @show vl = PNML.vertex_labels(n)
             println("vertexdata")
-            vd = PNML.vertexdata(n)
+            @show vd = PNML.vertexdata(n)
             println()
             @show typeof(vd)
             @show keys(vd)
@@ -178,6 +179,7 @@ end
                 @show a
                 println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
             end
+            println("-----------------------------------------")
             @show PNML.metagraph(n)
         end
     end

@@ -83,7 +83,7 @@ struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclarati
     ids::Tuple
 end
 PartitionSort() =
-    PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[], (:NN,))
+    PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[], (:emptypartition,))
 PartitionSort(id::Symbol, name::AbstractString, sort::AbstractSort, els::Vector; ids::Tuple) =
     PartitionSort(id, name, sort,  els, ids)
 

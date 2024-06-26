@@ -45,8 +45,8 @@ Also note that symmetric nets donot allow places to be multiset.
 
 #-------------------------------------------------------------------------
 # Term is really Variable and Opeator
-term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
-term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
-term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort)  #! basis of multiset
+# term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int
+# term_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)  #Float64
+# term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort)  #! basis of multiset
 
 # Must be suitable as a marking, ie. a ground term without variables.

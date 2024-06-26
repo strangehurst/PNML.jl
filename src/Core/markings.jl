@@ -53,13 +53,17 @@ value(marking::Marking) = marking.value
 #TODO add sort trait where simple means has concrete eltype
 # Assume eltype(sortof(marking)) == typeof(value(marking))
 
-basis(marking::Marking) = sortof(value(marking), decldict(netid(marking.ids)))
-# For non-high-level the decldict will be populated (somehow, somewhere)
-sortof(marking::Marking) = sortof(basis(marking)) # Mimic MultisetSort UserSort
+# Non-high-level
+basis(marking::Marking) = sortof(marking)
+sortof(marking::Marking) = sortof(value(marking))
 
-sortof(i::Number, dd) = sortof(typeof(i), dd)
-sortof(::Type{<:Integer}, dd) = has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
-sortof(::Type{<:Real}, dd)    = has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
+#sortof(i::Number, dd) = sortof(typeof(i), dd)
+sortof(::Type{<:Int64}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
+sortof(::Type{<:Integer}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
+sortof(::Type{<:Real})    = RealSort() #has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
+sortof(::Int64) = IntegerSort() # has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
+sortof(::Integer) =  IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
+sortof(::Real)    = RealSort() # has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
 
 "Translate Number type to a tag symbol."
 sorttag(i::Number) = sorttag(typeof(i))
@@ -96,7 +100,7 @@ See [`AbstractHLCore`](@ref), [`AbstractTerm`](@ref), [`Marking`](@ref).
 Is a functor that returns the evaluated `value`.
 
 > ... is a term with some multiset sort denoting a collection of tokens on the corresponding place, which defines its initial marking.
-NB: the place's sorttype is not a multiset
+NB: The place's sorttype is not a multiset
 
 > a ground term of the corresponding multiset sort. (does not contain variables)
 
@@ -117,7 +121,8 @@ julia> m()
 """
 struct HLMarking <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    term::AbstractTerm # multiset sort whose basis sort is the same as place's sorttype
+    term::AbstractTerm # results in multiset sort whose basis sort is the same as place's sorttype
+    #term::PnmlMultiset{<:Any, <:AbstractSort}  # With sort matching placesort.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     ids::Tuple
@@ -129,8 +134,8 @@ struct HLMarking <: HLAnnotation
     # end
 end
 HLMarking(t::AbstractTerm; ids=(:nothing,)) = HLMarking(nothing, t; ids)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm; ids) = HLMarking(s, t, nothing, nothing, ids)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to; ids) = HLMarking(s, t, g, to, ids)
+HLMarking(s::Maybe{AbstractString}, t::AbstractTerm; ids=(:nothing,)) = HLMarking(s, t, nothing, nothing, ids)
+HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to; ids=(:nothing,)) = HLMarking(s, t, g, to, ids)
 
 value(m::HLMarking) = m.term
 basis(m::HLMarking) = basis(value(m))
@@ -168,7 +173,7 @@ marking_value_type(::Type{<:PnmlType}) = Int
 marking_value_type(::Type{<:AbstractContinuousNet}) = Float64
 
 # These are networks were the tokens have individual identities.
-marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset
+marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:AbstractSort}
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 # basis sort can be, and are, restricted by/on PnmlType.
@@ -191,11 +196,13 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default_marking end
-function default_marking(pntd::T, placetype=nothing; ids::Tuple=()) where {T<:PnmlType}
+function default_marking(::T; ids::Tuple=()) where {T<:PnmlType}
     Marking(zero(marking_value_type(T)); ids)
 end
+default_marking(::T; ids::Tuple=()) where {T<:AbstractHLCore} =
+    error("No default_marking method for $T, did you mean default_hlmarking?")
 
-function default_marking(::AbstractHLCore, placetype::SortType; ids::Tuple)
+function default_hlmarking(::T, placetype::SortType; ids::Tuple=()) where {T<:AbstractHLCore}
     els = elements(placetype) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
     el = first(els) # Default to first of finite sort's elements (how often is this best?)

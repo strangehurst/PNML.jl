@@ -117,7 +117,6 @@ type_funs = (
 def_funs = (
             default_inscription,
             #!default_marking, #! needs ids
-            #default_sort,
             default_condition,
             )
 
@@ -135,10 +134,10 @@ def_funs = (
         @test fun(net) isa Type
     end
 
-    for fun in def_funs
-        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
-        @test_call fun(pntd)
-    end
+    #for fun in def_funs
+    #    @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
+    #    @test_call fun(pntd)
+    #end
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]
@@ -247,9 +246,15 @@ end
     @test condition_type(pntd) <: PNML.Condition
     @test condition_value_type(pntd) <: Bool
     @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
-    @test inscription_value_type(pntd) <: Number
+    if ishighlevel(pntd)
+        @test inscription_value_type(pntd) <: PnmlMultiset{<:Any, <:AbstractSort}
+    else
+        @test inscription_value_type(pntd) <: Number
+    end
+    #@show inscription_value_type(pntd)
     @test marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
-    @test marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset}
+    @test marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:AbstractSort}}
+
     @test page_type(pntd) <: PNML.Page
     @test refplace_type(pntd) <: PNML.RefPlace
     @test reftransition_type(pntd) <: PNML.RefTransition

@@ -8,13 +8,13 @@ Label of a Transition that determines when the transition fires.
 
 ```jldoctest; setup=:(using PNML; using PNML: Condition, BooleanConstant)
 julia> c = Condition(false)
-Condition("", BooleanConstant(false))
+Condition("", false)
 
 julia> c()
 false
 
 julia> c = Condition("xx", false)
-Condition("xx", BooleanConstant(false))
+Condition("xx", false)
 
 julia> c()
 false
@@ -22,7 +22,7 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
-    value::AbstractTerm # evaluates to Boolean
+    value::AbstractTerm # term is expression that evaluates to Boolean.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -40,7 +40,6 @@ condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 
 (c::Condition)() = begin
-    #@show value(c) # TODO
     _evaluate(value(c))::eltype(c)
 end
 

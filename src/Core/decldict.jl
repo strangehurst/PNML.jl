@@ -4,9 +4,9 @@
 Collection of Declaration dictionaries.
 """
 @kwdef struct DeclDict
-    #TODO tuple(vd::VariableDeclaration, x::typeof(sortof(vd)))
-    #todo Each VariableDeclaration is a single data item, tuple(decl, instance_of_sort)
-    #todo the sort is the part that is shared and should be de-duplicated.
+    # TODO tuple(vd::VariableDeclaration, x::typeof(sortof(vd)))
+    # TODO Each VariableDeclaration is a single data item, tuple(decl, instance_of_sort)
+    # TODO the sort is the part that is shared and should be de-duplicated.
     variabledecls::Dict{Symbol, VariableDeclaration} = Dict{Symbol, VariableDeclaration}()
 
     namedsorts::Dict{Symbol, NamedSort} = Dict{Symbol, NamedSort}()
@@ -31,11 +31,6 @@ Collection of Declaration dictionaries.
     # Long way of saying generic? (in what sense generic?)
     usersorts::Dict{Symbol, UserSort} = Dict{Symbol, UserSort}()
 end
-
-#! TODO Create decldicts for non-High-level pnml.
-#TODO pnmlcore as first use, then continuous
-#~ how much of the default structure can be moved into decldict?
-
 
 """
     decldict(netid::Symbol) -> DeclDict
@@ -167,8 +162,6 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
 Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `PartitionElement`.
 """
 function operator(dd::DeclDict, id::Symbol)
-    #@show dd _ops(dd)
-    #@show Iterators.filter(Fix2(haskey, id), _ops(dd))
     dict = _get_op_dict(dd, id)
     #@show dict
     op = dict[id]

@@ -1,5 +1,3 @@
-# Bits that are used to build sorts and terms.
-
 """
     FEConstant
 Finite enumeration constant.
@@ -13,10 +11,8 @@ end
 netid(fec::FEConstant) = first(fec.ids)
 partid(fec::FEConstant) = last(fec.ids) # Parent can be enumeration sort
 sortof(fec::FEConstant) = begin
-    sort = sortof(namedsorts(decldict(netid(fec)))[partid(fec)])
-    println()
-    #@error "sortof(::FEConstant) = $(repr(pid(fec))), $(fec()) = $sort, trail = $(fec.ids)"
-    return sort #! sort of partition or partition element
+    sort = sortof(namedsorts(decldict(netid(fec)))[partid(fec)]) #! sort of partition or partition element
+    return sort
 end
 (fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
 

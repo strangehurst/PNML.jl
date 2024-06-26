@@ -166,14 +166,31 @@ function incidence_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     #TODO  Make Labelled Matrix? ComponentArray?
     #!println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
-    C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
-    z = zero(inscription_value_type(net))
+    C = Matrix{Int}(undef, ntransitions(net), nplaces(net))
+    z = zero(Int) # continuous would use float64
+    @assert z isa Number
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
             tp = arc(net, transition_id, place_id)
-            pt = arc(net, place_id, transition_id)
+            l = if isnothing(tp)
+                z
+            else
+                inscription(tp)::Number
+            end
 
-            c = (isnothing(tp) ? z : inscription(tp)) - (isnothing(pt) ? z : inscription(pt))
+            pt = arc(net, place_id, transition_id)
+            r = if isnothing(pt)
+                z
+            else
+                inscription(pt)::Number
+            end
+
+            #c = (isnothing(tp) ? z : inscription(tp)) - (isnothing(pt) ? z : inscription(pt))
+
+            #! inscription(arc) can return HLInscription or Inscription
+            #! which have values of PnmlMultiset or Number.
+
+            c = l - r
             C[t, p] = c
         end
     end

@@ -89,7 +89,7 @@ end
     @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd, registry(); ids=(:NN,))
     @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd, registry(); ids=(:NN,))
     @test_throws r"^MissingIDException: transition" PNML.parse_transition(xml"<transition></transition>", pntd, registry(); ids=(:NN,))
-    @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, registry(); ids=(:NN,))
+    @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, registry(); ids=(:NN,), netdata=PNML.PnmlNetData(pntd))
     @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry(); ids=(:NN,))
     @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry(); ids=(:NN,))
 end

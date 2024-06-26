@@ -77,8 +77,8 @@ $(TYPEDFIELDS)
 """
 struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     id::Symbol
-    source::RefValue{Symbol}
-    target::RefValue{Symbol}
+    source::RefValue{Symbol} # IDREF
+    target::RefValue{Symbol} # IDREF
     inscription::I
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
@@ -89,8 +89,14 @@ end
 Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
+"""
+    inscription(arc::Arc) -> Integer
+
+Every inscription is treated as a functor by calling _evaluate on arc.inscription.
+Numbers' _evaluate is identity.
+Multisets' _evaluate is cardinality (natural)
+"""
 inscription(arc::Arc) = _evaluate(arc.inscription)
-default_inscription(arc::Arc) = default_inscription(arc.pntd)
 
 sortof(arc::Arc) = sortof(arc.inscription)
 
@@ -127,7 +133,7 @@ $(TYPEDFIELDS)
 """
 struct RefPlace <: ReferenceNode
     id::Symbol
-    ref::Symbol # Place or RefPlace
+    ref::Symbol # Place or RefPlace IDREF
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -143,7 +149,7 @@ $(TYPEDFIELDS)
 """
 struct RefTransition <: ReferenceNode
     id::Symbol
-    ref::Symbol # Transition or RefTransition
+    ref::Symbol # Transition or RefTransition IDREF
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}

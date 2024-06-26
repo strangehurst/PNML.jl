@@ -6,11 +6,12 @@ Multisets.set_key_value_show()
 @reexport using PNML: PNML
 
 @reexport using PNML: PnmlIDRegistrys, registry, isregistered
-@reexport using PNML: PnmlTypeDefs, core_nettypes, all_nettypes, ishighlevel, isdiscrete, iscontinuous
+@reexport using PNML: PnmlTypeDefs, core_nettypes, all_nettypes,
+    ishighlevel, isdiscrete, iscontinuous
 
-@reexport using PNML:   Maybe,
+@reexport using PNML: Maybe,
     XMLNode, xmlroot, getfirst, firstchild, allchildren,
-    XDVT,
+    XDVT, PnmlMultiset,
     pid, ispid,
     name, has_name,
     length, arity, tag, value, text, elements,
@@ -45,12 +46,16 @@ Multisets.set_key_value_show()
     Condition, condition
 
 @reexport using PNML:
-    default_marking, default_inscription, default_condition, default_typeusersort
+default_marking, default_hlmarking,
+    default_inscription, default_hlinscription,
+    default_condition,
+    default_typeusersort
 
-@reexport using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,
+@reexport using PNML: page_type,
+    place_type, transition_type, arc_type, refplace_type, reftransition_type,
     marking_type, inscription_type, condition_type,
     marking_value_type, inscription_value_type, condition_value_type,
-    rate_value_type, term_value_type
+    rate_value_type
 
 @reexport using PNML: AbstractSort, SortType, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,

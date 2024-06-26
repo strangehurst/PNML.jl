@@ -22,11 +22,19 @@ function metagraph end
 metagraph(pn::AbstractPetriNet) = metagraph(pnmlnet(pn))
 
 function metagraph(net::PnmlNet)
+    println("\nmetagraph $(pntd(net)) $(pid(net))")
+    if !(narcs(net) > 0 && nplaces(net) > 0 && ntransitions(net) > 0)
+        @warn "$(pntd(net)) id = $(pid(net)) is not complete: " *
+            "narcs = $(narcs(net)) nplaces = $(nplaces(net)) ntransitions = $(ntransitions(net))" net
+        return nothing
+    end
+
     # map pnml id symbol to vertex code.
-    vc = vertex_codes(net) # inverse is vertex_labels(net)
+    @show vc = vertex_codes(net) # inverse is vertex_labels(net)
 
     # Create a directed graph from every arc in the petri net graph.
-    graph = SimpleDiGraphFromIterator(Edge(vc[source(a)] => vc[target(a)]) for a in arcs(net))
+    @show graph = SimpleDiGraphFromIterator(Edge(vc[source(a)] => vc[target(a)]) for a in arcs(net))
+    @show Graphs.nv(graph) Graphs.ne(graph)
 
     # Map id to (vertex code, label).
     vertexdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
@@ -36,11 +44,18 @@ function metagraph(net::PnmlNet)
     for t in transitions(net)
         vertexdata[pid(t)] = (vc[pid(t)], t)
     end
-
+    @show vertexdata
+    @assert length(vertexdata) == Graphs.nv(graph)
     # Map from (src,dst) to arc. Uses pid, not vertex codes of graph.
     edgedata = Dict((source(a), target(a)) => a for a in arcs(net))
+    @show edgedata
+    @assert length(edgedata) == Graphs.ne(graph) #
 
-    MetaGraph(graph, vertex_labels(net), vertexdata, edgedata, PNML.name(net),
+    vl = vertex_labels(net)
+    @show vl
+    @assert length(vl) == Graphs.nv(graph) == length(vc)
+
+    MetaGraph(graph, vl, vertexdata, edgedata, PNML.name(net),
                 edge_data -> 1.0, 1.0) # weights
 end
 

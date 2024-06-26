@@ -235,20 +235,31 @@ end
 using Graphs, MetaGraphsNext
 using PNML: AbstractPetriNet, enabled
 
-
+println()
+println("=========="^12)
+println("=========="^12)
+println()
 const core_types = ("pnmlcore","ptnet")
 const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric")
 const ex_types = ("continuous",)
 nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
-#@show nettype_strings()
+@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
+    println()
+    println(pntd)
+    println()
     empty!(PNML.TOPDECLDICTIONARY)
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
             <text>1</text>
-            <structure><numberconstant value="1"><positive/></numberconstant></structure>
+            <structure>
+                <numberof>
+                    <subterm><numberconstant value="1"><positive/></numberconstant></subterm>
+                    <subterm><dotconstant/></subterm>
+                </numberof>
+            </structure>
         </hlinitialMarking>
         """
         insctag = "hlinscription"
@@ -294,8 +305,8 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         </net>
     </pnml>
     """
-    #@show str3
     anet = PNML.SimpleNet(str3)
+    @show anet
     mg = PNML.metagraph(anet)
     @test anet isa PNML.AbstractPetriNet
     C  = PNML.incidence_matrix(anet)

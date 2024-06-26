@@ -202,7 +202,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, idregistry::PIDR; ids:
             push!(fec_refs, id)
         end
     end
-    return fec_refs #
+    return tuple(fec_refs...)
 end
 
 "Tags used in sort XML elements."
@@ -237,21 +237,18 @@ function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType, idreg::PIDR; id
 end
 
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
-       UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute. trail = $ids")); ids)
+    check_nodename(node, "usersort")
+    UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute. trail = $ids")); ids)
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
     check_nodename(node, "cyclicenumeration")
-
-    @show fecs = parse_feconstants(node, pntd, idreg; ids)
-    CyclicEnumerationSort(fecs; ids)
+    CyclicEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
 end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)
     check_nodename(node, "finiteenumeration")
-
-    @show fecs = parse_feconstants(node, pntd, idreg; ids)
-    FiniteEnumerationSort(fecs; ids)
+    FiniteEnumerationSort(parse_feconstants(node, pntd, idreg; ids); ids)
 end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, idreg::PIDR; ids::Tuple)

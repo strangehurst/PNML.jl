@@ -347,7 +347,7 @@ function condition_value_type end
 function inscription_type end
 
 """
-$(TYPEDSIGNATURES)
+    inscription_value_type(pntd) -> Union{Int64, Float64, PnmlMultiset{<:Any, <:AbstractSort}}
 Return value type.
 """
 function inscription_value_type end
@@ -363,11 +363,11 @@ Return value type.
 """
 function marking_value_type end
 
-"""
-$(TYPEDSIGNATURES)
-Return value type.
-"""
-function term_value_type end
+# """
+# $(TYPEDSIGNATURES)
+# Return value type.
+# """
+# function term_value_type end
 
 """
 $(TYPEDSIGNATURES)

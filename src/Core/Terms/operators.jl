@@ -37,29 +37,25 @@ variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr,
 ===================================#
 
 # Two levels of predicate. Is it an expression, then is it *also* callable.
-TermInterface.isexpr(op::AbstractOperator)  = false
-TermInterface.iscall(op::AbstractOperator)  = false # users promise that this is only called if isexpr is true.
-
+TermInterface.isexpr(op::AbstractOperator)    = false
+TermInterface.iscall(op::AbstractOperator)    = false # users promise that this is only called if isexpr is true.
 TermInterface.head(op::AbstractOperator)      = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.children(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.operation(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-
-"Constants have arity of 0. Implicit value is size(arguments)"
-TermInterface.arity(op::AbstractOperator) = 0
-TermInterface.metadata(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-#!TermInterface.symtype(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.arity(op::AbstractOperator)     = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.metadata(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 
 """
 Operator as Functor
 
-tag maps to func, a functor/function Callable. Its arity is sane as length of inexprs and insorts
+tag maps to func, a functor/function Callable. Its arity is same as length of inexprs and insorts
 """
 struct Operator <: AbstractOperator
     tag::Symbol
-    func::Function # Apply `func` to `in`: expressions evaluated with current variable values and constants.
+    func::Function # Apply `func` to `inexprs`: evaluated with current variable values and constants.
     inexprs::Vector{AbstractTerm} # typeof(inexprs[i]) == eltype(insorts[i])
-    insorts::Vector{AbstractSort} # Abstract inside vector is not terrible.
+    insorts::Vector{AbstractSort} #
     outsort::AbstractSort
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
     #=
@@ -68,23 +64,32 @@ struct Operator <: AbstractOperator
 end
 
 tag(op::Operator)    = op.tag
-sortof(op::Operator) = op.outsort #!
+sortof(op::Operator) = op.outsort
 inputs(op::Operator) = op.inexprs
 basis(op::Operator)  = basis(sortof(op))
 
 function (op::Operator)()
     println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
-    @show input = [x() for x in inputs(op)] # evaluate each AbstractTerm
-    @show typeof.(input) op.insorts eltype.(op.insorts)
+    input = [x() for x in inputs(op)] # evaluate each AbstractTerm
+    #@show typeof.(input) op.insorts eltype.(op.insorts)
     #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
-    @show out = op.func(input)
-    @show isa(out, eltype(sortof(op))) #! should be assert
+    out = op.func(input)
+    #@show isa(out, eltype(sortof(op))) #! should be assert
     return out
 end
 
 value(op::Operator)     = _evaluate(op)
 _evaluate(op::Operator) = op() #TODO
 arity(op::Operator)     = length(inputs(op))
+
+TermInterface.isexpr(op::Operator)    = false
+TermInterface.iscall(op::Operator)    = false # users promise that this is only called if isexpr is true.
+TermInterface.head(op::Operator)      = etag(op)
+TermInterface.children(op::Operator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.operation(op::Operator) = op.func
+TermInterface.arguments(op::Operator) = inputs(op)
+TermInterface.arity(op::Operator)     = arity(op)
+TermInterface.metadata(op::Operator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 
 function Base.show(io::IO, t::Operator)
     print(io, nameof(typeof(t)), "(")
@@ -146,7 +151,7 @@ partition_operators = (:ltp, :gtp, :partitionelementof)
 ispartitionoperator(tag::Symbol) = tag in partition_operators
 
 
-# these are operators
+# these constants are operators
 builtin_constants = (:numberconstant,
                      :dotconstant,
                      :booleanconstant,
@@ -454,17 +459,19 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple)
     elseif isfiniteoperator(tag)
         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
         @error("enumeration sort needs content, ids")
-        FiniteEnumerationSort(Symbol[]; ids) #! Will need content, ids
+        FiniteEnumerationSort((); ids) #! pnml_hl_outsort will need FEC reference tuple, ids
+        #
     elseif ispartitionoperator(tag)
         #:ltp, :gtp, :partitionelementof
-        PartitionSort() #! Will need content
+        PartitionSort() #! pnml_hl_outsort will need content
     elseif tag === :tuple
-        TupleSort()  #! Will need content?
+        @warn "pnml_hl_outsort does not handle tuple yet"
+        TupleSort()  #! pnml_hl_outsort will need content?
         #:numberconstant => NumberSort(),
         #:dotconstant => DotSort(),
         #:booleanconstant => BoolSort(),
     else
-         @error "$tag is not a known hl_outsort, return NullSort()"
+         @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
         return NullSort()
     end
 end
@@ -478,11 +485,11 @@ end
 #===============================================================#
 
 """
-    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1; ids::Tuple) -> PnmlMultiset{T}
+    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1; ids::Tuple) -> PnmlMultiset{T,S}
 
 Construct as a multiset with one element, `x`, with default multiplicity of 1.
 
-PnmlMultiset wraps a Multisets.Multiset{T} and basis sort.
+PnmlMultiset wraps a Multisets.Multiset{T} and basis sort S.
 
 Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
 Thre are constants defined that must be multisets since HL markings are multisets.
@@ -490,18 +497,22 @@ Thre are constants defined that must be multisets since HL markings are multiset
 multi`x
 """
 struct PnmlMultiset{T, S<:AbstractSort} <: AbstractOperator
-    basis::S #UserSort # References id of sort declaration
+    basis::S # UserSort that References id of sort declaration.
     mset::Multiset{T} #,
 end
 
-function Base.show(io::IO, t::PnmlMultiset)
+Base.zero(::Type{PnmlMultiset{T, S}}) where{T, S<:AbstractSort} = zero(Int)
+Base.one(::Type{PnmlMultiset{T, S}}) where{T, S<:AbstractSort} = one(Int)
+
+
+function Base.show(io::IO, t::PnmlMultiset{<:Any, <:AbstractSort})
     print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
     print(io, ", mset=", nameof(typeof(t.mset)), "(",)
     io = inc_indent(io)
     for (k,v) in pairs(t.mset)
         println(io, repr(k), " => ", repr(v), ",")
     end
-    print(io, ")")
+    print(io, "))") # Close BOTH parens.
 end
 
 
@@ -512,7 +523,7 @@ Constructs a [`PnmlMultiset`](@ref)` containing multiset "1'x" and a sort.
 
 Any `x` that supports `sortof(x)`
 """
-pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
+function pnmlmultiset(x, basis::AbstractSort, multi::Integer=1)
     # has_sort(x) ||
     #     throw(ArgumentError("x::$(typeof(x)) does not have a sort"))
     if !isa(x, Number) && isa(sortof(x), MultisetSort)
@@ -522,8 +533,8 @@ pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
         throw(ArgumentError("multiplicity cannot be negative: found $multi"))
     #^ Where/how is absence of sort loop checked?
 
-    println("pnmlmultiset(")
-    @show x basis multi
+    #~println("pnmlmultiset(")
+    #~@show x basis multi
     # @show typeof(x)
     # @show sortof(x)
     # @show typeof(sortof(x))
@@ -538,10 +549,11 @@ pnmlmultiset(x, basis::AbstractSort, multi::Integer=1) = begin
     PnmlMultiset(basis, M)
 end
 
-sortof(ms::PnmlMultiset) = sortof(basis(ms)) # Dereferences the UserSort
+sortof(ms::PnmlMultiset{<:Any, <:AbstractSort}) = sortof(basis(ms)) # Dereferences the UserSort
 
-multiplicity(ms::PnmlMultiset, x) = ms.mset[x]
-issingletonmultiset(ms::PnmlMultiset) = length[ms.M] == 1
+multiplicity(ms::PnmlMultiset{<:Any, <:AbstractSort}, x) = ms.mset[x]
+issingletonmultiset(ms::PnmlMultiset{<:Any, <:AbstractSort}) = length(ms.mset) == 1
+cardinality(ms::PnmlMultiset{<:Any, <:AbstractSort}) = length(ms.mset)
 
 # TODO forward what ops to Multiset?
 # TODO alter Multiset: union, add element, erase element, change multiplicity?
@@ -552,11 +564,11 @@ Multiset basis sort is a UserSort that references the declaration of a NamedSort
 Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
 MultisetSorts not allowed. Nor loops in sort references.
 """
-basis(ms::PnmlMultiset) = ms.basis
+basis(ms::PnmlMultiset{<:Any, <:AbstractSort}) = ms.basis
 
-elements(ms::PnmlMultiset) = elements(basis(ms))
+elements(ms::PnmlMultiset{<:Any, <:AbstractSort}) = elements(basis(ms))
 
-_evaluate(ms::PnmlMultiset) = identity(ms)
+_evaluate(ms::PnmlMultiset{<:Any, <:AbstractSort}) = cardinality(ms)
 
 """
 $(TYPEDEF)
@@ -592,7 +604,7 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
         return false
     else
         @show op = operator(decldict(netid(uo)), uo.declaration)
-        @show r =  op(#= pass arguments to functor/operator =#)
+        @show r  = op(#= pass arguments to functor/operator =#)
         return r
     end
 end
