@@ -21,7 +21,7 @@ using Pkg, Documenter, PNML
 
 makedocs(;
          clean = true,
-         doctest=true,
+         doctest=false,
          modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
