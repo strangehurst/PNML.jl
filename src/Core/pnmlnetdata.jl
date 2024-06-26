@@ -12,21 +12,21 @@ is parsed.
 
 See [`PnmlNetKeys`](@ref) for page-level pnml ID of "owners" net data.
 """
-struct PnmlNetData{PNTD <: PnmlType, P, T, A, RP, RT}
+struct PnmlNetData{PNTD <: PnmlType} # !, P, T, A, RP, RT}
     pntd::PNTD #
-    place_dict::OrderedDict{Symbol, P}
-    transition_dict::OrderedDict{Symbol, T}
-    arc_dict::OrderedDict{Symbol, A}
-    refplace_dict::OrderedDict{Symbol, RP}
-    reftransition_dict::OrderedDict{Symbol, RT}
+    place_dict::OrderedDict{Symbol, Any} # ! , P}
+    transition_dict::OrderedDict{Symbol, Any} # ! , T}
+    arc_dict::OrderedDict{Symbol, Any} # ! , A}
+    refplace_dict::OrderedDict{Symbol, Any} # ! , RP}
+    reftransition_dict::OrderedDict{Symbol, Any} # ! , RT}
 end
-PnmlNetData(pntd) =
+PnmlNetData(pntd::PnmlType) =
     PnmlNetData(pntd,
-                OrderedDict{Symbol, place_type(pntd)}(),
-                OrderedDict{Symbol, transition_type(pntd)}(),
-                OrderedDict{Symbol, arc_type(pntd)}(),
-                OrderedDict{Symbol, refplace_type(pntd)}(),
-                OrderedDict{Symbol, reftransition_type(pntd)}())
+                OrderedDict{Symbol, Any}(), # ! , place_type(pntd)}(),
+                OrderedDict{Symbol, Any}(), # ! , transition_type(pntd)}(),
+                OrderedDict{Symbol, Any}(), # ! , arc_type(pntd)}(),
+                OrderedDict{Symbol, Any}(), # ! , q refplace_type(pntd)}(),
+                OrderedDict{Symbol, Any}()) # ! , reftransition_type(pntd)}())
 
 placedict(d::PnmlNetData)         = d.place_dict
 transitiondict(d::PnmlNetData)    = d.transition_dict
@@ -39,6 +39,8 @@ ntransitions(d::PnmlNetData)    = length(transitiondict(d))
 narcs(d::PnmlNetData)           = length(arcdict(d))
 nrefplaces(d::PnmlNetData)      = length(refplacedict(d))
 nreftransitions(d::PnmlNetData) = length(reftransitiondict(d))
+
+valtype(d::OrderedDict{Symbol,T}) where T = T
 
 function tunesize!(d::PnmlNetData;
                     nplace::Int = 32,
