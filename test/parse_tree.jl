@@ -62,7 +62,7 @@ end
 
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
-false && @testset "AirplaneLD pnml file" begin
+@testset "AirplaneLD pnml file" begin
     empty!(PNML.TOPDECLDICTIONARY)
     println("\n","------------------------"^6)
     println("------------------------"^6)
