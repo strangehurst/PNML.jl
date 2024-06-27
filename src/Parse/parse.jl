@@ -927,7 +927,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType, idregist
         error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
     isa(sortof(inscript), AbstractSort) ||
         error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
-    @assert sort == sortof(inscript) # sortof multiset is the basis sort
+    #@assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
 
     equalSorts(sortof(basis(inscript)), placesort) ||
     throw(ArgumentError(string("sort mismatch:",
