@@ -37,7 +37,7 @@ function test1(proot, n=10)
 end
 
 #test1(pnmlroot)
-#PnmlIDRegistrys.reset!(reg)
+#PnmlIDRegistrys.reset_reg!(reg)
 #ProfileView.
 #@profview test1(pnmlroot)
 #@profview registry()

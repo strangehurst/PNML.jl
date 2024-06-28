@@ -22,10 +22,10 @@ using PNML:
     declarations, default_condition, default_inscription, default_marking,
     deref!, deref_place, deref_transition, elements,
     find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
-    get_label, get_labels, getfirst, graphics,
+    get_label, get_labels, graphics,
     has_arc, has_graphics, has_label, has_labels, has_name, has_place,
     has_refplace, has_reftransition, has_transition,
-    hastag, ispid, idregistry, inc_indent, indent, infos,
+    hastag, ispid, inc_indent, indent, infos,
     initialMarking, initial_marking, marking_type, marking_value_type,
     inscription, inscription_type, inscription_value_type,
     isregistered, labels,
@@ -81,7 +81,7 @@ function timed_parse(node::XMLNode)
     # Call parse_net directly.
     net_vec = parse_net.(nets, Ref(reg))
     net_tup = tuple(net_vec...)
-    PnmlModel(net_tup, pnml_ns, reg) #! pnml_ns
+    PnmlModel(net_tup, pnml_ns) #! pnml_ns
 end
 
 

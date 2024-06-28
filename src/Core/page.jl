@@ -95,7 +95,7 @@ function Base.show(io::IO, page::Page)
     print(io, ")")
 end
 
-function verify(page::Page; verbose::Bool = CONFIG.verbose)
+function verify(page::Page; verbose::Bool = CONFIG[].verbose)
     verbose && println("verify Page $(pid(page))")
     errors = String[]
     verify!(errors, page; verbose)
@@ -103,7 +103,7 @@ function verify(page::Page; verbose::Bool = CONFIG.verbose)
       error("verify(page) error(s): ", join(errors, ",\n "))
     return true
 end
-function verify!(errors, page::Page; verbose::Bool = CONFIG.verbose)
-    #isreg = Base.Fix1(isregistered,idregistry(net))
+function verify!(errors, page::Page; verbose::Bool = CONFIG[].verbose)
+    # TODO
      return nothing
 end

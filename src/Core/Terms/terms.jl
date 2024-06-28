@@ -27,7 +27,7 @@ Also note that symmetric nets donot allow places to be multiset.
 #     !isnothing(get(v, :value, nothing)) && return _term_eval(v[:value])
 #     #haskey(v, :value) && return _term_eval(v[:value]) LittleDict don't work
 
-#     CONFIG.warn_on_unimplemented &&
+#     CONFIG[].warn_on_unimplemented &&
 #         @error("_term_eval needs to handle pnml ast in `v`! returning `false`");
 #     #Base.show_backtrace(stdout, backtrace()) # Save for obscure bugs.
 #     return false #

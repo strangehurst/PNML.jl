@@ -4,7 +4,7 @@ $(TYPEDSIGNATURES)
 Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
-function anyelement(node::XMLNode, pntd::PnmlType, reg::PnmlIDRegistry)::AnyElement
+function anyelement(node::XMLNode, pntd::PnmlType)::AnyElement
     AnyElement(unparsed_tag(node)...)
 end
 

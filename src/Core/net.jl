@@ -14,14 +14,12 @@ One Petri Net of a PNML model.
     namelabel::Maybe{Name}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
-    idregistry::PnmlIDRegistry # Possibly shared by all nets in a pnml model.
 end
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
 
 pid(net::PnmlNet)  = net.id
-idregistry(net::PnmlNet) = net.idregistry
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(n::PnmlNet) = n.pagedict
@@ -117,7 +115,7 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
-function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
+function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     verbose && println("verify PnmlNet $(pid(net))")
     errors = String[]
 
@@ -128,39 +126,37 @@ function verify(net::PnmlNet; verbose::Bool = CONFIG.verbose)
     return true
 end
 
-function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG.verbose)
-    isreg = Base.Fix1(isregistered,idregistry(net))
-
+function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     # Are the things with PNML IDs in the PnmlIDRegistry?
-    !isreg(pid(net)) &&
+    !isregistered(idregistry[], pid(net)) &&
         push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
 
     for pg in pages(net)
-        !isreg(pid(pg)) &&
+        !isregistered(idregistry[], pid(pg)) &&
         push!(errors, string("pages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pg in allpages(net)
-        !isreg(pid(pg)) &&
+        !isregistered(idregistry[], pid(pg)) &&
             push!(errors, string("allpages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pl in places(net)
-        !isreg(pid(pl)) &&
+        !isregistered(idregistry[], pid(pl)) &&
             push!(errors, string("place id ", repr(pid(pl)), " not registered")::String)
     end
     for tr in transitions(net)
-        !isreg(pid(tr)) &&
+        !isregistered(idregistry[], pid(tr)) &&
             push!(errors, string("transition id ", repr(pid(tr)), " not registered")::String)
     end
     for ar in arcs(net)
-        !isreg(pid(ar)) &&
+        !isregistered(idregistry[], pid(ar)) &&
             push!(errors, string("arc id ", repr(pid(ar)), " not registered")::String)
     end
     for rp in refplaces(net)
-        !isreg(pid(rp)) &&
+        !isregistered(idregistry[], pid(rp)) &&
             push!(errors, string("refPlace id ", repr(pid(rp)), " not registered")::String)
     end
     for rt in reftransitions(net)
-        !isreg(pid(rt)) &&
+        !isregistered(idregistry[], pid(rt)) &&
             push!(errors, string("refTranition id ", repr(pid(rt)), " not registered")::String)
     end
 

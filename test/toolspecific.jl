@@ -2,6 +2,8 @@ using PNML, EzXML, ..TestUtils, JET
 
 using OrderedCollections
 
+#const idregistry = ScopedValue{PnmlIDRegistry}()
+
 str1 = (tool="JARP", version="1.2",
         str = """
  <toolspecific tool="JARP" version="1.2">
@@ -46,7 +48,7 @@ str5 = (tool="org.pnml.tool", version="1.0",
 """)
 
 @testset "parse tool $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5]
-        tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(), registry())
+        tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet())
 
         @test isa(tooli, ToolInfo)
         @test name(tooli) == s.tool
@@ -60,6 +62,7 @@ str5 = (tool="org.pnml.tool", version="1.0",
 
         @test_call broken=false get_toolinfo(tooli, s.tool, s.version)
 end
+
 @testset "combined tools" begin
     empty!(PNML.TOPDECLDICTIONARY)
     dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
@@ -76,7 +79,8 @@ end
         <initialMarking> <text>5</text> </initialMarking>
         </place>
         """)
-    combinedplace = parse_place(n, PnmlCoreNet(), registry(); ids=(:nothing,))
+
+    combinedplace = @with PNML.idregistry=>registry() parse_place(n, PnmlCoreNet(); ids=(:nothing,))
 
     @test_call tools(combinedplace)
     placetools = tools(combinedplace)

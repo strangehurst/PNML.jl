@@ -28,7 +28,7 @@ end
     """
     n = @test_logs(
             (:warn, r"^ignoring unexpected child of <graphics>: 'unexpected'"),
-             parse_graphics(xmlroot(str), pntd, registry()))
+             parse_graphics(xmlroot(str), pntd))
 
     # There can only be one offset, last tag parsed wins.
     @test x(n.offset) == 7.0 && y(n.offset) == 8.0
@@ -66,14 +66,14 @@ end
 
 @testset "graphics exception $pntd" for pntd in core_nettypes()
     str0 = """<bogus x="1" y="2" />"""
-    @test_throws r"^ArgumentError" PNML.parse_graphics_coordinate(xmlroot(str0), pntd, registry())
+    @test_throws r"^ArgumentError" PNML.parse_graphics_coordinate(xmlroot(str0), pntd)
 end
 
 @testset "tokengraphics $pntd" for pntd in core_nettypes()
     str0 = """<tokengraphics></tokengraphics>"""
     n = @test_logs(match_mode=:all,
         (:warn,"tokengraphics does not have any <tokenposition> elements"),
-        parse_tokengraphics(xmlroot(str0), pntd, registry()))
+        parse_tokengraphics(xmlroot(str0), pntd))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 0
 
@@ -83,7 +83,7 @@ end
             </tokengraphics>"""
     n = @test_logs(match_mode=:all,
         (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
-        parse_tokengraphics(xmlroot(str1), pntd, registry()))
+        parse_tokengraphics(xmlroot(str1), pntd))
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 1
 
@@ -91,7 +91,7 @@ end
                 <tokenposition x="-9" y="-2"/>
                 <tokenposition x="2"  y="3"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str2), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str2), pntd)
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 2
 
@@ -100,7 +100,7 @@ end
                     <tokenposition x="2.0"  y="3"/>
                     <tokenposition x="-2" y="2"/>
             </tokengraphics>"""
-    n = parse_tokengraphics(xmlroot(str3), pntd, registry())
+    n = parse_tokengraphics(xmlroot(str3), pntd)
     @test n isa PNML.TokenGraphics
     @test length(n.positions) == 3
     #TODO test ordering

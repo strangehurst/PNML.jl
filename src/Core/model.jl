@@ -24,6 +24,13 @@ Return all `PnmlIDRegistrys` of `model`.
 """
 regs(model::PnmlModel) = model.regs
 
+"Return PnmlIDRegistry of a PnmlNet in a model."
+registry_of(model::PnmlModel, netid::Symbol) = begin
+    indexof = findfirst(ispid(netid), map(pid, nets(model)))
+    isnothing(indexof) && error("registry_of could not find net $netid")
+    regs(model)[indexof]::PnmlIDRegistry
+end
+
 namespace(model::PnmlModel) = model.namespace
 netsets(::PnmlModel)  = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
 
@@ -64,7 +71,7 @@ function Base.show(io::IO, model::PnmlModel)
     end
     println(io, length(regs(model)), " registry:" )
     println(io)
-        for reg in regs(model)
+    for reg in regs(model)
         show(io, reg)
         println(io)
     end

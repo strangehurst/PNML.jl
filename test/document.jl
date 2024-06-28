@@ -66,17 +66,10 @@ end
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """)
-    #reg = registry() #TODO registry tuple
-    #@test !isregistered(reg, :net)
-    #@test :net ∉ reg.ids
-
     @test_logs(match_mode=:all, parse_pnml(emptypage) )
 
     @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
     @test_call target_modules=target_modules parse_pnml(emptypage)
-
-    #@test isregistered(reg, :net)
-    #@test :net ∈ reg.ids
 
     #TODO ===============================================
     #=
@@ -108,7 +101,6 @@ end
     @test length(collect(modelnets)) == 5
 
     for net in modelnets
-        @test PNML.idregistry(net) isa PnmlIDRegistry
         ntup = PNML.find_nets(model, net)
         t = PNML.nettype(net)
         @test PNML.name(net) == string(pid(net)) # true by special construction

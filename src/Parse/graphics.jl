@@ -3,13 +3,13 @@ $(TYPEDSIGNATURES)
 
 Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics. See [`TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
 """
-function parse_tokengraphics(node::XMLNode, pntd::PnmlType, reg)
+function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "tokengraphics")
     tpos = coordinate_type(pntd)[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "tokenposition"
-            push!(tpos, parse_tokenposition(child, pntd, reg))
+            push!(tpos, parse_tokenposition(child, pntd))
         else
             @warn "ignoring unexpected child of <tokengraphics>: '$tag'"
         end
@@ -25,9 +25,9 @@ $(TYPEDSIGNATURES)
 
 Return Cartesian [`Coordinate`](@ref) relative to containing element.
 """
-function parse_tokenposition(node, pntd, reg)
+function parse_tokenposition(node, pntd)
     check_nodename(node, "tokenposition")
-    parse_graphics_coordinate(node, pntd, reg)
+    parse_graphics_coordinate(node, pntd)
 end
 
 """
@@ -36,24 +36,24 @@ $(TYPEDSIGNATURES)
 Arcs, Annotations and Nodes have different graphics semantics.
 Return a [`Graphics`](@ref) holding the union of possibilities.
 """
-function parse_graphics(node, pntd, reg)
+function parse_graphics(node, pntd)
     nn = check_nodename(node, "graphics")
     args = Dict()
     _positions = Coordinate{coordinate_value_type(pntd)}[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag ==   "dimension"
-            args[:dimension] = parse_graphics_coordinate(child, pntd, reg)
+            args[:dimension] = parse_graphics_coordinate(child, pntd)
         elseif tag == "fill"
-            args[:fill] = parse_graphics_fill(child, pntd, reg)
+            args[:fill] = parse_graphics_fill(child, pntd)
         elseif tag ==    "font"
-            args[:font] = parse_graphics_font(child, pntd, reg)
+            args[:font] = parse_graphics_font(child, pntd)
         elseif tag ==     "line"
-            args[:line] = parse_graphics_line(child, pntd, reg)
+            args[:line] = parse_graphics_line(child, pntd)
         elseif tag ==     "offset"
-            args[:offset] = parse_graphics_coordinate(child, pntd, reg)
+            args[:offset] = parse_graphics_coordinate(child, pntd)
         elseif tag ==     "position"
-            push!(_positions, parse_graphics_coordinate(child, pntd, reg))
+            push!(_positions, parse_graphics_coordinate(child, pntd))
         else
             @warn "ignoring unexpected child of <graphics>: '$tag'"
         end
@@ -67,7 +67,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Line`](@ref).
 """
-function parse_graphics_line(node, pntd, reg)
+function parse_graphics_line(node, pntd)
     check_nodename(node, "line")
     args = Dict()
     EzXML.haskey(node, "color") && (args[:color] = node["color"])
@@ -83,7 +83,7 @@ $(TYPEDSIGNATURES)
 Return [`Coordinate`](@ref).
 Specification seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node, pntd, reg)
+function parse_graphics_coordinate(node, pntd)
     nn = EzXML.nodename(node)
     if !(nn=="position" || nn=="dimension" || nn=="offset" || nn=="tokenposition")
         throw(ArgumentError("element name wrong: $nn"))
@@ -101,7 +101,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Fill`](@ref)
 """
-function parse_graphics_fill(node, pntd, reg)
+function parse_graphics_fill(node, pntd)
     check_nodename(node, "fill")
     args = Dict()
     EzXML.haskey(node, "color") && (args[:color] = node["color"])
@@ -116,7 +116,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Font`](@ref).
 """
-function parse_graphics_font(node, pntd, reg)
+function parse_graphics_font(node, pntd)
     check_nodename(node, "font")
     args = Dict()
     EzXML.haskey(node, "weight")     && (args[:weight] = node["weight"])

@@ -10,18 +10,19 @@ using PNML, EzXML, ..TestUtils, JET, XMLDict
     empty!(PNML.TOPDECLDICTIONARY)
     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
     PNML.fill_nonhl!(dd; ids=(:NN,))
+    @with PNML.idregistry => registry() begin
+        placetype = SortType("test", UserSort(:integer; ids=(:nothing,)))
 
-    placetype = SortType("test", UserSort(:integer; ids=(:nothing,)))
-
-    n  = parse_place(node, pntd, registry(); ids=(:NN,))
-    @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd, registry(); ids=(:NN,))
-    @test_call target_modules=target_modules parse_place(node, pntd, registry(); ids=(:NN,))
-    @test isa(n, Place)
-    @test @inferred(pid(n)) === :place1
-    @test has_name(n)
-    @test @inferred(name(n)) == "with text"
-    @test_call initial_marking(n)
-    @test @inferred(initial_marking(n)()) == 100
+        n  = parse_place(node, pntd; ids=(:NN,))
+        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; ids=(:NN,))
+        @test_call target_modules=target_modules parse_place(node, pntd; ids=(:NN,))
+        @test isa(n, Place)
+        @test @inferred(pid(n)) === :place1
+        @test has_name(n)
+        @test @inferred(name(n)) == "with text"
+        @test_call initial_marking(n)
+        @test @inferred(initial_marking(n)()) == 100
+    end
 end
 
 @testset "place $pntd" for pntd in all_nettypes(ishighlevel)
@@ -31,18 +32,19 @@ end
         <hlinitialMarking> <text>100</text> </hlinitialMarking>
         </place>
     """
-    n  = parse_place(node, pntd, registry(); ids=(:NN,))
-    @test_call target_modules=target_modules parse_place(node, pntd, registry(); ids=(:NN,))
+    @with PNML.idregistry => registry() begin
+        n  = parse_place(node, pntd; ids=(:NN,))::Place
+        @test_call target_modules=target_modules parse_place(node, pntd; ids=(:NN,))
 
-    @test pid(n) === :place1
-    @test typeof(n) <: Place
-    @test @inferred(pid(n)) === :place1
-    @test has_name(n)
-    @test @inferred(name(n)) == "with text"
-    @test_call target_modules=(@__MODULE__,) initial_marking(n)
-    im = initial_marking(n)
-    #!@show zero(PNML.marking_value_type(pntd))
-    #!@test initial_marking(n)() == zero(PNML.marking_value_type(pntd)) # text has no meaning here
+        @test pid(n) === :place1
+        @test @inferred(pid(n)) === :place1
+        @test has_name(n)
+        @test @inferred(name(n)) == "with text"
+        @test_call target_modules=(@__MODULE__,) initial_marking(n)
+        im = initial_marking(n)
+        #!@show zero(PNML.marking_value_type(pntd))
+        #!@test initial_marking(n)() == zero(PNML.marking_value_type(pntd)) # text has no meaning here
+    end
 end
 
 @testset "transition $pntd" for pntd in all_nettypes()
@@ -54,88 +56,90 @@ end
         </condition>
       </transition>
     """
-    n = @inferred Transition parse_transition(node, PnmlCoreNet(), registry(); ids=(:NN,))
-    @test typeof(n) <: Transition
-    @test pid(n) === :transition1
-    @test has_name(n)
-    @test name(n) == "Some transition"
-    @test condition(n) isa Bool
+    @with PNML.idregistry => registry() begin
+        n = @inferred Transition parse_transition(node, PnmlCoreNet(); ids=(:NN,))
+        @test typeof(n) <: Transition
+        @test pid(n) === :transition1
+        @test has_name(n)
+        @test name(n) == "Some transition"
+        @test condition(n) isa Bool
 
-    node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-    #@test_throws ErrorException parse_transition(node, pntd, registry())
-    @test parse_transition(node, pntd, registry(); ids=(:NN,)) !== nothing
+        node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
+        #@test_throws ErrorException parse_transition(node, pntd)
+        @test parse_transition(node, pntd; ids=(:NN,)) !== nothing
 
-    node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test parse_transition(node, pntd, registry(); ids=(:NN,)) isa Transition
+        node = xml"""<transition id ="t2"> <condition/> </transition>"""
+        @test parse_transition(node, pntd; ids=(:NN,)) isa Transition
 
-    node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd, registry(); ids=(:NN,))
+        node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
+        @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd; ids=(:NN,))
 
-    node = xml"""<transition id ="t4">
-        <condition>
-           <text>test true</text>
-            <structure> true  </structure>
-        </condition>
-    </transition>"""
-    @test_throws "missing condition term element in <structure>" parse_transition(node, pntd, registry(); ids=(:NN,))
-    # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
-    # parse_transition(node, pntd, registry()))
-    # @test_opt target_modules=(@__MODULE__,) condition(t)
-    # @test_call condition(t)
-    # @test condition(t) === true
-
-    node = xml"""<transition id ="t5">
-        <condition>
+        node = xml"""<transition id ="t4">
+            <condition>
             <text>test true</text>
-            <structure> <booleanconstant value="true"/> </structure>
-        </condition>
-    </transition>"""
-    t = parse_transition(node, pntd, registry(); ids=(:NN,))
-    @test t isa Transition
-    @test condition(t) === true
+                <structure> true  </structure>
+            </condition>
+        </transition>"""
+        @test_throws "missing condition term element in <structure>" parse_transition(node, pntd; ids=(:NN,))
+        # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
+        # parse_transition(node, pntd))
+        # @test_opt target_modules=(@__MODULE__,) condition(t)
+        # @test_call condition(t)
+        # @test condition(t) === true
 
-    # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
-    # This bit may be from the pre-standard era.
-    # <ci> is a variable(constant) like pi, infinity.
-    # <cn> is a number (real)
-    # interval [4,9]
-    node = xml"""<transition id ="t6">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
-                <cn>4</cn>
-                <cn>9</cn>
-            </interval>
-         </delay>
-    </transition>"""
-    t = parse_transition(node, pntd, registry(); ids=(:NN,))
-    @test t isa Transition
-    @test PNML.delay(t) isa Tuple
+        node = xml"""<transition id ="t5">
+            <condition>
+                <text>test true</text>
+                <structure> <booleanconstant value="true"/> </structure>
+            </condition>
+        </transition>"""
+        t = parse_transition(node, pntd; ids=(:NN,))
+        @test t isa Transition
+        @test condition(t) === true
 
-    # unbounded interval [4,∞)
-    node = xml"""<transition id ="t7">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
-                <cn>4</cn>
-                <ci>infty</ci>
-            </interval>
-        </delay>
-    </transition>"""
-    t = parse_transition(node, pntd, registry(); ids=(:NN,))
-    @test t isa Transition
-    @test PNML.delay(t) isa Tuple
+        # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
+        # This bit may be from the pre-standard era.
+        # <ci> is a variable(constant) like pi, infinity.
+        # <cn> is a number (real)
+        # interval [4,9]
+        node = xml"""<transition id ="t6">
+            <delay>
+                <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
+                    <cn>4</cn>
+                    <cn>9</cn>
+                </interval>
+            </delay>
+        </transition>"""
+        t = parse_transition(node, pntd; ids=(:NN,))
+        @test t isa Transition
+        @test PNML.delay(t) isa Tuple
 
-    # interval (3,5)
-    node = xml"""<transition id ="t8">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="open">
-                <cn>3</cn>
-                <cn>5</cn>
-            </interval>
-        </delay>
-    </transition>"""
-    t = parse_transition(node, pntd, registry(); ids=(:NN,))
-    @test t isa Transition
-    @test PNML.delay(t) isa Tuple
+        # unbounded interval [4,∞)
+        node = xml"""<transition id ="t7">
+            <delay>
+                <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
+                    <cn>4</cn>
+                    <ci>infty</ci>
+                </interval>
+            </delay>
+        </transition>"""
+        t = parse_transition(node, pntd; ids=(:NN,))
+        @test t isa Transition
+        @test PNML.delay(t) isa Tuple
+
+        # interval (3,5)
+        node = xml"""<transition id ="t8">
+            <delay>
+                <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="open">
+                    <cn>3</cn>
+                    <cn>5</cn>
+                </interval>
+            </delay>
+        </transition>"""
+        t = parse_transition(node, pntd; ids=(:NN,))
+        @test t isa Transition
+        @test PNML.delay(t) isa Tuple
+    end
 end
 
 #! Needs scaffolding
@@ -159,14 +163,14 @@ end
 #         </unknown>
 #       </arc>
 #     """)
-#     PNML.CONFIG.warn_on_unclaimed = true
+#     PNML.CONFIG[].warn_on_unclaimed = true
 #     if ishighlevel(pntd)
 #         @test_throws("ArgumentError: missing inscription term in <structure>",
-#                     parse_arc(node, pntd, registry(); ids=(:NN,), netdata=PNML.PnmlNetData(pntd)))
+#                     parse_arc(node, pntd; ids=(:NN,), netdata=PNML.PnmlNetData(pntd)))
 #     else
 #         a1 = @test_logs(match_mode=:any,
 #                 (:warn, "found unexpected child of <arc>: unknown"),
-#                 parse_arc(node, pntd, registry(); ids=(:NN,), netdata=PNML.PnmlNetData(pntd)))
+#                 parse_arc(node, pntd; ids=(:NN,), netdata=PNML.PnmlNetData(pntd)))
 #         a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
 #         @testset "a1,a2" for a in [a1, a2]
 #             @test typeof(a) <: Arc
@@ -191,11 +195,13 @@ end
         </unknown>
     </referenceTransition>
     """
-    #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
-    n = parse_refTransition(node, pntd, registry(); ids=(:NN,))::RefTransition
-    @test pid(n) === :rt1
-    @test refid(n) === :t1
-    @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
+    @with PNML.idregistry => registry() begin
+        #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
+        n = parse_refTransition(node, pntd; ids=(:NN,))::RefTransition
+        @test pid(n) === :rt1
+        @test refid(n) === :t1
+        @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
+    end
 end
 
 @testset "ref Place $pntd" for pntd in all_nettypes()
@@ -226,10 +232,12 @@ end
     </referencePlace>""", id="rp1", ref="Sync1")
 
     @testset "referencePlaces" for s in [n1, n2]
-        #n = @test_logs(match_mode=:any,
-        #    (:warn, "found unexpected child of <referencePlace>: unknown"),
-        n = parse_refPlace(s.node, ContinuousNet(), registry(); ids=(:NN,))::RefPlace
-        @test pid(n) === Symbol(s.id)
-        @test refid(n) === Symbol(s.ref)
+        @with PNML.idregistry => registry() begin
+            #n = @test_logs(match_mode=:any,
+            #    (:warn, "found unexpected child of <referencePlace>: unknown"),
+            n = parse_refPlace(s.node, ContinuousNet(); ids=(:NN,))::RefPlace
+            @test pid(n) === Symbol(s.id)
+            @test refid(n) === Symbol(s.ref)
+        end
     end
 end

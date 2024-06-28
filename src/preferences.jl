@@ -10,14 +10,14 @@ Save a configuration to your `LocalPreferences.toml` file using Preferences.jl. 
 ```julia
 julia> using PNML
 
-julia> PNML.CONFIG.verbose = true;
+julia> PNML.CONFIG[].verbose = true;
 
-julia> PNML.CONFIG.warn_on_unclaimed = true;     # Customize some defaults
+julia> PNML.CONFIG[].warn_on_unclaimed = true;     # Customize some defaults
 
-julia> PNML.save_config!(PNML.CONFIG); # Will be automatically read next time you `using PNML`
+julia> PNML.save_config!(PNML.CONFIG[]); # Will be automatically read next time you `using PNML`
 ```
 """
-function save_config!(config::PnmlConfig = CONFIG)
+function save_config!(config::PnmlConfig = CONFIG[])
     @set_preferences!(
         "indent_width" => config.indent_width,
         "lock_registry" => config.lock_registry,

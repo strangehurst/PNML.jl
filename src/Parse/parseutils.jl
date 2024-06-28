@@ -2,7 +2,7 @@
 # LABELS
 #--------------------------------------------------------------------
 
-function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, reg)
+function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd)
     label = PnmlLabel(unparsed_tag(node)...)
     #! Extension point. user supplied parser of DictType -> Annotation. Could do conversion after/on demand.
     #! 2 collections, one for PnmlLabels other for other Annotations?
@@ -21,8 +21,8 @@ Add [`ToolInfo`](@ref) to `infos`, return nothing.
 The UML from the _pnml primer_ (and schemas) use <toolspecific>
 as the tag name for instances of the type ToolInfo.
 """
-function add_toolinfo!(infos, node, pntd, reg)
-    push!(infos, parse_toolspecific(node, pntd, reg))
+function add_toolinfo!(infos, node, pntd)
+    push!(infos, parse_toolspecific(node, pntd))
     return nothing
 end
 

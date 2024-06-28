@@ -50,11 +50,12 @@ Base.@kwdef mutable struct PnmlConfig
     warn_on_unimplemented::Bool = false
 end
 
+using ScopedValues
 "See [`PnmlConfig`](@ref) for default values."
-const CONFIG = PnmlConfig()
+const CONFIG = ScopedValue(PnmlConfig()) # = PnmlConfig()
 include("preferences.jl")
 
-__init__() = read_config!(CONFIG)
+__init__() = read_config!(CONFIG[])
 
 
 # Width for printing.
@@ -85,7 +86,13 @@ include("Core/PnmlTypeDefs.jl")
 Reexport.@reexport using .PnmlTypeDefs
 include("Core/PnmlIDRegistrys.jl")
 Reexport.@reexport using .PnmlIDRegistrys
-const PIDR = PnmlIDRegistry
+
+# The registries are to remain available after the model has been returned. #& is this assertion true?
+
+"Vector of ID registries of the same length as the number of nets. The registries may alias."
+const IDRegistryVec::Vector{PnmlIDRegistry} = PnmlIDRegistry[]
+"ID registry of the current scope. Nets are the usual scope = a net-level-global."
+const idregistry = ScopedValue{PnmlIDRegistry}() # undefined
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")

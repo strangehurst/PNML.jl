@@ -19,11 +19,11 @@ end
 
 @testset "missing namespace $pntd" for pntd in core_nettypes()
     empty!(PNML.TOPDECLDICTIONARY)
-    #@show collect(keys(PNML.TOPDECLDICTIONARY))
     @test isempty(PNML.TOPDECLDICTIONARY) #
-
-    @test_logs(match_mode=:any, (:warn, r"missing namespace"),
-        parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
+    begin # with(PNML.idregistry[] => registry()) do
+        @test_logs(match_mode=:any, (:warn, r"missing namespace"),
+            parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
+    end
 
     empty!(PNML.TOPDECLDICTIONARY)
     @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
@@ -73,25 +73,30 @@ end
 </pnml>
 """))
 
-    @test_throws "MalformedException: net missing type" parse_net(xml"""<net id="4712"> </net>""", registry())
+    with(PNML.idregistry => registry()) do
+        @test_throws("MalformedException: net missing type",
+             parse_net(xml"""<net id="4712"> </net>"""))
+    end
 end
 
 @testset "missing id $pntd" for pntd in core_nettypes()
+    with(PNML.idregistry => registry()) do
 
-    @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>", registry())
+        @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")
 
-    empty!(PNML.TOPDECLDICTIONARY)
-    pagedict = OrderedDict{Symbol, page_type(pntd)}()
-    netdata = PNML.PnmlNetData(pntd)
-    netsets = PNML.PnmlNetKeys()
-    PNML.TOPDECLDICTIONARY[:N] = PNML.DeclDict()
+        empty!(PNML.TOPDECLDICTIONARY)
+        pagedict = OrderedDict{Symbol, page_type(pntd)}()
+        netdata = PNML.PnmlNetData(pntd)
+        netsets = PNML.PnmlNetKeys()
+        PNML.TOPDECLDICTIONARY[:N] = PNML.DeclDict()
 
-    @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd, registry(); ids=(:NN,))
-    @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd, registry(); ids=(:NN,))
-    @test_throws r"^MissingIDException: transition" PNML.parse_transition(xml"<transition></transition>", pntd, registry(); ids=(:NN,))
-    @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, registry(); ids=(:NN,), netdata=PNML.PnmlNetData(pntd))
-    @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd, registry(); ids=(:NN,))
-    @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd, registry(); ids=(:NN,))
+        @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd; ids=(:NN,))
+        @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd; ids=(:NN,))
+        @test_throws r"^MissingIDException: transition" PNML.parse_transition(xml"<transition></transition>", pntd; ids=(:NN,))
+        @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd; ids=(:NN,), netdata=PNML.PnmlNetData(pntd))
+        @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd; ids=(:NN,))
+        @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd; ids=(:NN,))
+    end
 end
 
 @testset "check_nodename" begin

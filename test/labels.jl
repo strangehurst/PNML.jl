@@ -4,22 +4,22 @@ using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
 @testset "text $pntd" for pntd in core_nettypes()
-    @test parse_text(xml"<text>ready</text>", pntd, registry()) == "ready"
+    @with PNML.idregistry=>registry() @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
 @testset "name $pntd" for pntd in core_nettypes()
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd, registry())
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd)
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == ""; ids=(:NN,)
 
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd, registry())
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd)
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
     @test n.tools === nothing || isempty(n.tools)
 
-    n = PNML.parse_name(xml"<name><text>some name</text></name>", pntd, registry())
+    n = PNML.parse_name(xml"<name><text>some name</text></name>", pntd)
     @test n isa PNML.Name
     @test PNML.text(n) == "some name"
     #TODO add parse_graphics
@@ -53,7 +53,7 @@ end
 
     # Parse ignoring unexpected child
     mark = @test_logs((:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd, registry(); ids=(:nothing,)))
+                parse_initialMarking(node, placetype, pntd; ids=(:nothing,)))
     @test mark isa PNML.Marking
     @test typeof(value(mark)) <: Union{Int,Float64}
     @test value(mark) == mark() == 123
@@ -99,7 +99,7 @@ end
     #dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort(); ids)
 
     inscript = @test_logs((:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                            parse_inscription(n1, :nothing, :nothing, pntd, registry(); ids=(:NN,)))
+                            parse_inscription(n1, :nothing, :nothing, pntd; ids=(:NN,)))
     @test inscript isa PNML.Inscription
     @test typeof(value(inscript)) <: Union{Int,Float64}
     @test inscript() == value(inscript) == 12
@@ -116,18 +116,18 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     # lab = PnmlLabel[]
     # reg = registry()
     # @show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
-    # @test_opt add_label!(lab, node, pntd, reg)
+    # @test_opt add_label!(lab, node, pntd)
     # @test_opt(broken=false,
     #             ignored_modules=(JET.AnyFrameModule(EzXML),
     #                             JET.AnyFrameModule(XMLDict),
     #                             JET.AnyFrameModule(Base.CoreLogging)),
     #             function_filter=pff,
-    #             add_label!(lab, xml"""<test1> 1 </test1>""", pntd, reg))
+    #             add_label!(lab, xml"""<test1> 1 </test1>""", pntd))
 
-    # @test_call add_label!(lab, node, pntd, reg)
+    # @test_call add_label!(lab, node, pntd)
     # @test_call(ignored_modules=(JET.AnyFrameModule(EzXML),
     #                             JET.AnyFrameModule(XMLDict)),
-    #                             add_label!(lab, node, pntd, reg))
+    #                             add_label!(lab, node, pntd))
 #end
 
 @testset "labels $pntd" for pntd in core_nettypes()
@@ -137,7 +137,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
         x = i < 3 ? 1 : 2 # make 2 different tagnames
         node = xmlroot("<test$x> $i </test$x>")::XMLNode
 
-        @test add_label!(lab, node, pntd, reg) isa PnmlLabel
+        @test add_label!(lab, node, pntd) isa PnmlLabel
         @test length(lab) == i
     end
     @test length(lab) == 4
@@ -172,58 +172,46 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 end
 
 function test_unclaimed(pntd, xmlstring::String)
-    if noisy
-        println("+++++++++++++++++++")
-        println("XML: ", xmlstring)
-        println("-------------------")
-    end
     node::XMLNode = xmlroot(xmlstring)
-    reg1 = registry() # Need 2 test registries to ensure any ids do not collide.
-    reg2 = registry() # Creating multiple things from the same string is not recommended.
+    reg1 = registry()# 2 registries to ensure any ids do not collide.
+    reg2 = registry()
+    @with PNML.idregistry => reg2 begin
+        (t,u) = unparsed_tag(node) # tag is a string
+        l = PnmlLabel(t, u)
+        a = anyelement(node, pntd)
 
-    xdict = XMLDict.xml_dict(node, PNML.DictType)
+        @test u isa PNML.DictType
+        @test l isa PnmlLabel
+        @test a isa AnyElement
 
-    (t,u) = unparsed_tag(node) # tag is a string
-    l = PnmlLabel(t, u)
-    a = anyelement(node, pntd, reg2)
+        @test_opt target_modules=(@__MODULE__,) unparsed_tag(node)
+        @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
+        @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd)
 
-    if noisy
-        println("u = $u ");
-        println("l = $(l.tag) ");   dump(l)
-        println("a = $(a.tag) " );  dump(a)
-    end
-
-    @test u isa PNML.DictType
-    @test l isa PnmlLabel
-    @test a isa AnyElement
-
-    @test_opt target_modules=(@__MODULE__,)  unparsed_tag(node)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd, reg2)
-
-    @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
+        @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) unparsed_tag(node)
-    @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
+        @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u)
-    @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) anyelement(node, pntd, reg2)
+        @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
+                                JET.AnyFrameModule(XMLDict)) anyelement(node, pntd)
 
-    nn = Symbol(EzXML. EzXML.nodename(node))
-    @test t == EzXML.nodename(node)
-    @test tag(l) === nn
-    @test tag(a) === nn
+        nn = Symbol(EzXML. EzXML.nodename(node))
+        @test t == EzXML.nodename(node)
+        @test tag(l) === nn
+        @test tag(a) === nn
 
-    @test u isa DictType
-    @test l.elements isa DictType
-    @test a.elements isa DictType
-    #! unclaimed id is not registered
-    x = get(u, :id, nothing)
-    !isnothing(x) && @test !isregistered(reg1, Symbol(x))
-    return l, a
+        @test u isa DictType
+        @test l.elements isa DictType
+        @test a.elements isa DictType
+        #! unclaimed id is not registered
+        x = get(u, :id, nothing)
+        !isnothing(x) &&
+            @with PNML.idregistry => reg1 @test !isregistered(PNML.idregistry[], Symbol(x))
+        return l, a
+        end
 end
 
 @testset "unclaimed $pntd" for pntd in core_nettypes()
-    noisy && println("## test unclaimed, PnmlLabel, anyelement")
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
     ctrl = [ # Vector of tuples of XML string, expected result `Pair`.
@@ -292,9 +280,7 @@ end
         @test tag(anye) == tag(expected_any)
         @test length(elements(anye)) == length(elements(expected_any))
         # TODO recursive compare
-        noisy && println("-------------------")
     end
-    noisy && println()
 end
 
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
@@ -316,7 +302,7 @@ end
 </type>
     """
     #println()
-    typ = PNML.parse_type(n1, pntd, registry(); ids=(:NN,))::SortType
+    typ = PNML.parse_type(n1, pntd; ids=(:NN,))::SortType
     #@show text(typ) value(typ) sortof(typ) typeof(value(typ))
     #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
     @test text(typ) == "N2"
@@ -360,7 +346,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("test", UserSort(:dot; ids=(:nothing,)))
 
-        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:nothing,))
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:nothing,))
         @test mark isa PNML.marking_type(pntd)
         #pprint(mark)
 
@@ -399,7 +385,7 @@ end
 
         placetype = SortType("test", dd.usersorts[:uop])
 
-        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
         #@show value(mark)
         #pprint(mark)
     end
@@ -436,7 +422,7 @@ end
 
         placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
 
-        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
         @show mark
         #pprint(mark)
     end
@@ -463,7 +449,7 @@ end
 
         placetype = SortType("test", UserSort(:pos; ids=(:NN,)))
 
-        @show mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        @show mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
         @show val = value(mark)::PNML.PnmlMultiset{<:Any, <:AbstractSort}
         @test PNML.basis(val) isa PositiveSort
         #@show val.mset
@@ -488,7 +474,7 @@ end
 
         placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
 
-        mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
         @show mark
         @show value(mark)
     end
@@ -532,7 +518,7 @@ end
 #     @show placetype = SortType("test", TupleSort(UserSort[UserSort(:dot; ids=(:NN,)),
 #                                                           UserSort(:dot; ids=(:NN,))]))
 
-#     mark = PNML.parse_hlinitialMarking(node, placetype, pntd, registry(); ids=(:NN,))
+#     mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
 
 #     #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
 #     @test mark isa PNML.AbstractLabel
@@ -601,7 +587,7 @@ end
 #     #@show PNML.TOPDECLDICTIONARY
 #     insc = @test_logs(match_mode=:all,
 #             (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-#             PNML.parse_hlinscription(n1, pntd, registry(); ids=(:NN,)))
+#             PNML.parse_hlinscription(n1, pntd; ids=(:NN,)))
 
 #     @test typeof(insc) <: PNML.AbstractLabel
 #     @test typeof(insc) <: PNML.inscription_type(pntd)
@@ -637,7 +623,7 @@ end
 #     """
 #     # expected structure: tuple -> subterm -> all -> usersort -> declaration
 
-#     stru = PNML.parse_structure(node, pntd, registry(); ids=(:NN,))
+#     stru = PNML.parse_structure(node, pntd; ids=(:NN,))
 #     @test stru isa PNML.Structure
 #     @test tag(stru) == :structure
 #     axn = elements(stru)
@@ -698,7 +684,7 @@ end
 
 #         cond = @test_logs(match_mode=:all,
 #                 (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-#                 PNML.parse_condition(node, pntd, registry(); ids=(:NN,)))
+#                 PNML.parse_condition(node, pntd; ids=(:NN,)))
 #         @test cond isa PNML.condition_type(pntd)
 #         @show cond
 #         @test text(cond) == "pt==cts||pt==ack"

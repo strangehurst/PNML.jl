@@ -64,9 +64,13 @@ end
         println("NET")
         @safetestset "document"     begin include("document.jl") end
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
+    end
+
+     if select("ALL", "NET2")
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end
+
     if select("ALL", "DOC")
         println("DOC")
         @testset "doctest" begin doctest(PNML, manual = true) end

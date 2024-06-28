@@ -2,6 +2,7 @@
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
 Multisets.set_key_value_show()
+@reexport using ScopedValues
 
 @reexport using PNML: PNML
 
@@ -10,7 +11,7 @@ Multisets.set_key_value_show()
     ishighlevel, isdiscrete, iscontinuous
 
 @reexport using PNML: Maybe,
-    XMLNode, xmlroot, getfirst, firstchild, allchildren,
+    XMLNode, xmlroot,  firstchild, allchildren,
     XDVT, PnmlMultiset,
     pid, ispid,
     name, has_name,

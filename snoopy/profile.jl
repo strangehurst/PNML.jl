@@ -6,7 +6,7 @@ using Profile
 #-----------------------------------------------------
 r = registry()
 VSCodeServer.@profview parse_pnml(x, r)
-PNML.reset!(r) # need to empty the registry
+PNML.reset_reg!(r) # need to empty the registry
 VSCodeServer.@profview parse_pnml(x, r) # ignore 1st run
 
 #-----------------------------------------------------
@@ -112,9 +112,9 @@ end
 using EzXML, PNML
 
 
-PNML.CONFIG.verbose = true;
+PNML.CONFIG[].verbose = true;
 
-PNML.CONFIG.warn_on_unclaimed = true;     # Customize some defaults
+PNML.CONFIG[].warn_on_unclaimed = true;     # Customize some defaults
 
 n = PNML.SimpleNet("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">

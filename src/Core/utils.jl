@@ -1,8 +1,8 @@
-"Return first true `f` of `v` or `nothing`."
-function getfirst(f, v)
-    i = findfirst(f, v) # Cannot use nothing as an index/key.
-    isnothing(i) ? nothing : v[i]
-end
+# "Return first true `f` of `v` or `nothing`."
+# function getfirst(f, v)
+#     i = findfirst(f, v) # Cannot use nothing as an index/key.
+#     isnothing(i) ? nothing : v[i]
+# end
 
 """
     _evaluate(x::Number) -> identity(x)
@@ -37,7 +37,7 @@ indent(io::IO) = indent(get(io, :indent, 0)::Int)
 indent(i::Int) = repeat(' ', i)
 
 "Increment the `:indent` value by `inc`."
-inc_indent(io::IO, inc::Int=CONFIG.indent_width) =
+inc_indent(io::IO, inc::Int=CONFIG[].indent_width) =
         IOContext(io, :indent => get(io, :indent, 0)::Int + inc)
 
 """
@@ -46,6 +46,6 @@ inc_indent(io::IO, inc::Int=CONFIG.indent_width) =
 Construct a PNML ID registry using the supplied concrete Lock or nothing.
 Using nothing disables locking.
 """
-function registry(lock = CONFIG.lock_registry ? ReentrantLock() : nothing)
+function registry(lock = CONFIG[].lock_registry ? ReentrantLock() : nothing)
     PnmlIDRegistry(Set{Symbol}(), lock)
 end

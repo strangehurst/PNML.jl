@@ -2,7 +2,7 @@ using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
 import EzXML
 
 @testset "CONFIG" begin
-    @show PNML.CONFIG
+    @show PNML.CONFIG[]
 end
 
 @testset "_evaluate" begin
