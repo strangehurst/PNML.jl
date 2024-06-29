@@ -124,9 +124,10 @@ println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
     model = @test_throws ArgumentError parse_file(fname)::PnmlModel
-    @show model #!net = first(nets(model)) # Multi-net models not common in the wild.
+    println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
+    println()
 end
 
 empty!(PNML.TOPDECLDICTIONARY)
