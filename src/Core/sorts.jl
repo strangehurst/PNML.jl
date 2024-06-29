@@ -100,6 +100,10 @@ end
 TupleSort() = TupleSort(UserSort[])
 sortof(ts::TupleSort) = begin
     println("sortof(::TupleSort: ", ts)
-    @assert !isempty(ts.tup)
-    sortof(first(ts.tup)) #TODO set of sorts, iterator
+    if isempty(ts.tup)
+        @error "TupleSort is empty, require as many sorts as the tuple has elements, return NullSort"
+        NullSort()
+    else
+        sortof(first(ts.tup)) #TODO set of sorts, iterator
+    end
 end
