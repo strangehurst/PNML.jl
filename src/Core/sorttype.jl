@@ -1,8 +1,6 @@
 #=
     Place Sort Type
 
-
-
 find . -name '*.pnml' -type f -print | xargs grep -nHPA5 '<type>' |  grep -PA1 '<structure>' | grep -vE '</?structure>' | grep -v -- '--' | grep -v '<usersort'
 shows that ePNK examples uses built-in sorts.
 The rest of the examples, especially MCC, only contain usersorts.

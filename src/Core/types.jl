@@ -12,7 +12,6 @@ $(TYPEDEF)
 Objects of a Petri Net Graph are pages, arcs, nodes.
 """
 abstract type AbstractPnmlObject end
-#! abstract type AbstractPnmlObject{PNTD<:PnmlType} end
 
 # function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 #     prop_name === :id   && return getfield(o, :id)::Symbol
@@ -36,7 +35,7 @@ name(::Nothing) = ""
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
-has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools) && !isnothing(o.tools) #! && !isempty(getfield(o, :tools))
+has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools) && !isnothing(o.tools)
 tools(o::AbstractPnmlObject)     = hasproperty(o, :tools) ? o.tools : nothing
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)

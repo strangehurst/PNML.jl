@@ -4,7 +4,7 @@ Finite enumeration constant.
 In some cases the partition element cannot be derived from the subterms of PartitionElementOf operator.
 """
 struct FEConstant <: OperatorDeclaration
-    id::Symbol # Id is unique within net.
+    id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
     ids::Tuple
 end
@@ -31,6 +31,5 @@ TermInterface.operation(op::FEConstant) = error("NOT IMPLEMENTED: $(typeof(op))"
 TermInterface.arguments(op::FEConstant) = error("NOT IMPLEMENTED: $(typeof(op))")
 TermInterface.arity(op::FEConstant)     = 0
 TermInterface.metadata(op::FEConstant)  = error("NOT IMPLEMENTED: $(typeof(op))")
-#!TermInterface.symtype(op::FEConstant)   = error("NOT IMPLEMENTED: $(typeof(op))")
 
 #:(variabledecls[id]) == maketerm(Expr, :ref, [variabledecls, id])

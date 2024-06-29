@@ -63,7 +63,6 @@ $(TYPEDEF)
 Wrap a Sort. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
-    #!multi::Int
     basis::T
     MultisetSort(s) = if isa(s, MultisetSort)
         throw(MalformedException("MultisetSort basis cannot be MultisetSort"))

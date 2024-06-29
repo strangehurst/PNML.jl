@@ -179,12 +179,10 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
 
     labels::Maybe{Vector{PnmlLabel}} = nothing
 
-
-    #^ REFACTOR Create net then fill, maybe move netdata, pagedict
+    # Create net then fill
     net = PnmlNet(; type=pntd, id=netid, pagedict, netdata, page_set=page_idset(netsets),
                    declaration,
                    namelabel, tools, labels)
-
 
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
@@ -198,16 +196,8 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
             parse_page!(pagedict, netdata, netsets, child, pntd; ids)
-
-        # elseif tag == "name" #todo
-        #     namelabel = parse_name(child, pntd)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
-        # elseif tag == "toolspecific" #todo
-        #     if isnothing(tools)
-        #         tools = ToolInfo[]
-        #     end
-        #     add_toolinfo!(tools, child, pntd)
         else # Labels are everything-else here.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
             if isnothing(net.labels)
@@ -239,7 +229,6 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
     pageid = last(ids) # Just appended,
     netsets = PnmlNetKeys() # Allocate per-page data.
 
-    #^decl::Maybe{Declaration} = nothing
     name::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing
@@ -281,18 +270,13 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
         tag = EzXML.nodename(child)
         if tag in ["declaration", "place", "transition", "arc",
                     "referencePlace", "referenceTransition", "toolspecific"]
-            # NOOP println("page already parsed ", tag)
+            # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage
             parse_page!(pagedict, netdata, netsets, child, pntd; ids)
         elseif tag == "name"
             name = parse_name(child, pntd)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
-        # elseif tag == "toolspecific" #^ parse first
-        #     if isnothing(tools)
-        #         tools = ToolInfo[]
-        #     end
-        #     add_toolinfo!(tools, child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
             if isnothing(labels)
@@ -311,6 +295,7 @@ end
 
 # Reminder: set is per-Page, dict is per-Net
 
+"Fill place_set, place_dict."
 function parse_place!(place_set, netdata, child, pntd; ids)
     pl = parse_place(child, pntd; ids)::valtype(netdata.place_dict)
     #@show "parse_place!" pl valtype(placedict(netdata))
@@ -319,6 +304,7 @@ function parse_place!(place_set, netdata, child, pntd; ids)
     return nothing
 end
 
+"Fill transition_set, transition_dict."
 function parse_transition!(transition_set, netdata, child, pntd; ids)
     tr = parse_transition(child, pntd; ids)::valtype(netdata.transition_dict)
     #@show "parse_transition!" tr valtype(transitiondict(netdata))
@@ -327,6 +313,7 @@ function parse_transition!(transition_set, netdata, child, pntd; ids)
     return nothing
 end
 
+"Fill arc_set, arc_dict."
 function parse_arc!(arc_set, netdata, child, pntd; ids)
     a = parse_arc(child, pntd; ids, netdata)
     println("parse_arc!");
@@ -338,6 +325,7 @@ function parse_arc!(arc_set, netdata, child, pntd; ids)
     return nothing
 end
 
+"Fill refplace_set, refplace_dict."
 function parse_refPlace!(refplace_set, netdata, child, pntd; ids)
     rp = parse_refPlace(child, pntd; ids)::valtype(netdata.refplace_dict)
     push!(refplace_set, pid(rp))
@@ -345,6 +333,7 @@ function parse_refPlace!(refplace_set, netdata, child, pntd; ids)
     return nothing
 end
 
+"Fill reftransition_set, reftransition_dict."
 function parse_refTransition!(reftransition_set, netdata, child, pntd; ids)
     rt = parse_refTransition(child, pntd; ids)::valtype(netdata.reftransition_dict)
     push!(reftransition_set, pid(rt))
@@ -509,7 +498,6 @@ function parse_arc(node, pntd; ids::Tuple, netdata)
             # They which must have been parsed and can be found in netdata.
             inscription = _parse_inscription(child, source, target, pntd; ids, netdata)
         elseif tag == "name"
-
             name = parse_name(child, pntd)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
@@ -649,7 +637,7 @@ function parse_name(node::XMLNode, pntd::PnmlType)
                 tools = ToolInfo[]
             end
             add_toolinfo!(tools, child, pntd)
-        else # No labels here
+        else
             @warn "ignoring unexpected child of <name>: '$tag'"
         end
     end
@@ -704,8 +692,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     end
 
     #@show placetype value eltype(sortof(placetype))
-    value isa mvt ||
-        throw(ArgumentError(string("eltype of marking placetype, $mvt",
+    value isa mvt || throw(ArgumentError(string("eltype of marking placetype, $mvt",
             ", does not match type of `value`, $(typeof(value))",
             ", for a $pntd. trail = $ids")))
 

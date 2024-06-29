@@ -137,7 +137,6 @@ PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
-
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
     print(io, indent(io), "PnmlLabel[")
     io = inc_indent(io)

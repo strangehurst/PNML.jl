@@ -17,12 +17,14 @@ export PnmlCoreNet, PTNet,
        ContinuousNet
 
 # Functions
-export pnmltype, pntd_symbol, all_nettypes, core_nettypes, add_nettype!, pnmltype_map, default_pntd_map,
-    isdiscrete, iscontinuous, ishighlevel
+export pnmltype, pnmltype_map, default_pntd_map,
+        pntd_symbol,
+        all_nettypes, core_nettypes, add_nettype!,
+        isdiscrete, iscontinuous, ishighlevel
 
 """
 $(TYPEDEF)
-Abstract root of a dispatch type based on Petri Net Type Definition (pntd).
+Abstract root of a dispatch type based on Petri Net Type Definitions (pntd).
 
 Each Petri Net Markup Language (PNML) network element will have a single pntd URI
 as a required 'type' XML attribute. That URI should refer to a RelaxNG schema defining
@@ -150,7 +152,6 @@ const default_pntd_map =
             "symmetric" => :symmetric,
             "symmetricnet" => :symmetric,
 
-            # TODO Implement these.
             "https://www.pnml.org/version-2009/extensions/resetptnet" => :ptnet,
             "https://www.pnml.org/version-2009/extensions/inhibitorptnet" => :ptnet,
             "https://www.pnml.org/version-2009/extensions/resetinhibitorptnet" => :ptnet,
@@ -170,7 +171,7 @@ const default_pntd_map =
 """
 $(TYPEDEF)
 
-The key Symbols are the supported kinds of Petri Nets.
+The key Symbols are the supported kinds of Petri Nets. Maps to singletons.
 """
 const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
                                             :hlcore => HLCoreNet(),
@@ -183,6 +184,7 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
 
 "Return iterator over [`PnmlType`](@ref) singletons."
 all_nettypes() = values(pnmltype_map)
+
 "Return iterator over [`PnmlType`](@ref) singletons filtered by the prediciate `p`."
 all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
@@ -259,8 +261,10 @@ end
 
 "Values are integers."
 function isdiscrete end
+
 "Values are floating point."
 function iscontinuous end
+
 "Values are many-sorted."
 function ishighlevel end
 

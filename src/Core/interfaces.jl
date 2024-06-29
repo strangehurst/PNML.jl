@@ -363,12 +363,6 @@ Return value type.
 """
 function marking_value_type end
 
-# """
-# $(TYPEDSIGNATURES)
-# Return value type.
-# """
-# function term_value_type end
-
 """
 $(TYPEDSIGNATURES)
 Return `Coordinate{coordinate_value_type(T)}`

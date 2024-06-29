@@ -122,8 +122,6 @@ Fill a DeclDict with values needed by non-high-level networks.
     UserSort(:dot; ids)
 """
 function fill_nonhl!(dd::DeclDict; ids::Tuple)
-    #println("fill_nonhl, trail = ", ids)
-
     for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
                               (:natural, "Natural", NaturalSort()),
                               (:positve, "Positive", PositiveSort()),
@@ -139,7 +137,6 @@ function fill_nonhl!(dd::DeclDict; ids::Tuple)
         end
     end
 end
-
 
 #TODO
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
@@ -163,11 +160,9 @@ Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `Pa
 """
 function operator(dd::DeclDict, id::Symbol)
     dict = _get_op_dict(dd, id)
-    #@show dict
     op = dict[id]
     return op
 end
-
 
 """
     validate_declarations(dd::DeclDict) -> Bool

@@ -15,19 +15,14 @@ function flatten_pages! end
 # Most content is already in the PnmlNetData database so mostly involves shuffling keys
 function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[].verbose)
     netid = pid(net)
-    verbose && println("flatten_pages! net $netid with $(length(pagedict(net))) pages")
     if length(pagedict(net)) > 1 # Place content of other pages into 1st page.
         pageids = keys(pagedict(net))
-        verbose && @show(pageids)
 
         # Choose the surviving page from those owned directly by net.
         key1 = first(page_idset(net))
         val1 = pagedict(net)[key1]
-        verbose && println("delete!(pagedict(net), $key1)")
         delete!(pagedict(net), key1)
         @assert key1 ∉ pageids # Note the coupling of pageids and net.pagedict.
-
-        #verbose && println("pageids now = $(keys(pagedict(net)))")
 
         while !isempty(pagedict(net))
             cutid, cutpage = popfirst!(pagedict(net))
@@ -48,11 +43,6 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[
         end
 
         deref!(net; trim, verbose)
-
-        if verbose
-            println("\nafter deref!")
-            @show(pagedict(net))
-        end
     end
     return nothing
 end
@@ -91,11 +81,6 @@ function append_page!(lpage::Page, rpage::Page;
             idsets = (place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,),
             verbose::Bool = CONFIG[].verbose            )
 
-    if verbose
-        println("append_page! ", pid(lpage), " ", pid(rpage))
-        @show netsets(lpage) netsets(rpage)
-    end
-
     for k in keys
         _update_maybe!(getproperty(lpage, k), getproperty(rpage, k))
     end
@@ -103,7 +88,7 @@ function append_page!(lpage::Page, rpage::Page;
     for s in idsets # except for page_idset
         union!(s(lpage), s(rpage)) #TODO type assert
     end
-    #verbose && println("delete!(page_idset(lpage), $(pid(rpage)))")
+
     delete!(page_idset(lpage), pid(rpage))
     @assert pid(rpage) ∉ page_idset(lpage)
     #~ ensure empty page garbage collected?
@@ -155,14 +140,6 @@ as part of [`flatten_pages!`](@ref),
   4) No cycles.
 """
 function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[].verbose)
-    if verbose
-        println()
-        println("deref!")
-        @show nrefplaces(net) nreftransitions(net) narcs(net)
-        @show refplaces(net) reftransitions(net) arcs(net)
-        @show isempty(refplaces(net)) isempty(reftransitions(net)) isempty(arcs(net))
-        println()
-    end
     if isempty(refplaces(net)) && isempty(nreftransitions(net))
         verbose && println("no references")
         return nothing
@@ -170,7 +147,6 @@ function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[].verbos
     isempty(arcdict(net)) && error("no arcs")
 
     for arc in arcs(net)
-        #verbose && @show(arc)
         while arc.source[] ∈ refplace_idset(net)
             arc.source[] = deref_place(net, arc.source[]; trim, verbose)
         end
@@ -216,7 +192,6 @@ function deref_place(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::Bool 
         has_refplace(net, id) &&
             error("did not expect refplace $id in net $netid after delete")
     end
-    verbose && println("net $netid dereference $id to $rp: $(refid(rp))")
     return refid(rp)
 end
 
@@ -230,14 +205,13 @@ function deref_transition(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::
     has_reftransition(net, id) || (throw ∘ ArgumentError)("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
     isnothing(rt) && # Something is really, really wrong.
-        (throw ∘ ArgumentError)("failed to lookup reference transition id $id in net $netid")
+        throw(ArgumentError("failed to lookup reference transition id $id in net $netid"))
     has_transition(net, refid(rt)) || has_reftransition(net, refid(rt)) ||
-        (throw ∘ ArgumentError)("$(refid(rt)) is not a transition or reference transition in net $netid")
+        throw(ArgumentError("$(refid(rt)) is not a transition or reference transition in net $netid"))
     if trim
         delete!(reftransitiondict(net), id)
         has_reftransition(net, id) &&
             error("did not expect reftransition $id in net $netid after delete")
     end
-    verbose && println("net $netid dereference $id to $rt: $(refid(rt))")
     return refid(rt)
 end

@@ -139,8 +139,6 @@ inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Abstrac
 """
 $(TYPEDSIGNATURES)
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
-For hifg-level nets
-
 """
 function default_inscription end
 default_inscription(::T) where {T<:PnmlType}              = Inscription(one(Int))

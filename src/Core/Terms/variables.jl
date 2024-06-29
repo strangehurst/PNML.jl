@@ -27,7 +27,6 @@ _evaluate(v::Variable) = _evaluate(value(v))
 
 sortof(v::Variable) = begin
     #println("sortof(::Variable) $(tag(v)) in $(netid(v)) needs access to DeclDict")
-    #display(stacktrace())
     dd = decldict(netid(v))
     @assert has_variable(dd, tag(v)) "$(tag(v)) not a variable declaration in $(netid(v))"
     vdecl = variable(dd, tag(v))

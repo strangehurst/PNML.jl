@@ -19,8 +19,8 @@ Coordinate(x::T1, y::T2) where {T1 <: Number, T2 <: Number} =
             Coordinate(convert(coordinate_value_type(), x),
                        convert(coordinate_value_type(), y))
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_type(T)}
-coordinate_value_type() = Float32 #DecFP.Dec32
-coordinate_value_type(::Type) = Float32 #DecFP.Dec32
+coordinate_value_type() = Float32
+coordinate_value_type(::Type) = Float32
 Base.eltype(::Coordinate{T}) where {T} = T
 x(c::Coordinate) = c.x
 y(c::Coordinate) = c.y
@@ -39,7 +39,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Fill
-    color::String = "black" # Required
+    color::String = "black"
     image::String = ""
     gradient_color::String = ""
     gradient_rotation::String = ""
@@ -65,7 +65,7 @@ $(TYPEDFIELDS)
 @kwdef struct Font
     family    ::String = ""
     style     ::String = ""
-    weight    ::String = "black" # Required
+    weight    ::String = "black"
     size      ::String = ""
     align     ::String = ""
     rotation  ::String = ""
@@ -91,7 +91,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Line
-    color::String = "black" # Required
+    color::String = "black"
     shape::String = ""
     style::String = ""
     width::String = ""
@@ -114,7 +114,6 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 @kwdef struct Graphics{T <: coordinate_value_type()}
-    #{COORD,FILL,FONT,LINE}
     dimension::Coordinate{T} = Coordinate{T}(one(T), one(T))
     fill::Fill = Fill(; color = "black")
     font::Font = Font(; weight = "black")

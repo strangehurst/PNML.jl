@@ -21,7 +21,6 @@ mutable struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     netdata::PnmlNetData{PNTD} # !, P, T, A, RP, RT} # All Places, Arcs, etc. Shared by net and its pages.
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
     # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.
-    #PnmlNet{PnmlType, P, T, A, RP, RT}
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =

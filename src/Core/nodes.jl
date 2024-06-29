@@ -9,7 +9,7 @@ Each place has an initial marking that determines the sorttype
 struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    initialMarking::M #! make marking and sorttype use same sort
+    initialMarking::M
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The initial marking must be of sorttype.
     # The inscription of an arc to or from a place defines which tokens are added or removed

@@ -32,7 +32,7 @@ registry_of(model::PnmlModel, netid::Symbol) = begin
 end
 
 namespace(model::PnmlModel) = model.namespace
-netsets(::PnmlModel)  = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
+netsets(::PnmlModel) = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
 
 """
 $(TYPEDSIGNATURES)

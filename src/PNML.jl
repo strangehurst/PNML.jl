@@ -84,6 +84,7 @@ using DocStringExtensions
 
 include("Core/PnmlTypeDefs.jl")
 Reexport.@reexport using .PnmlTypeDefs
+
 include("Core/PnmlIDRegistrys.jl")
 Reexport.@reexport using .PnmlIDRegistrys
 

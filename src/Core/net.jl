@@ -65,7 +65,7 @@ firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
 
 has_tools(net::PnmlNet) = !isnothing(net.tools)
-tools(net::PnmlNet)     = net.tools # may be noting
+tools(net::PnmlNet)     = net.tools
 
 has_labels(net::PnmlNet) = !isnothing(net.labels)
 labels(net::PnmlNet)     = net.labels

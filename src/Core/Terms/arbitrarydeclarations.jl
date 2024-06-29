@@ -15,7 +15,6 @@ function ArbitrarySort()
     ArbitrarySort(:arbitrarysort, "ArbitrarySort")
 end
 
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)

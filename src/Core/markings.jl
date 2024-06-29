@@ -57,7 +57,6 @@ value(marking::Marking) = marking.value
 basis(marking::Marking) = sortof(marking)
 sortof(marking::Marking) = sortof(value(marking))
 
-#sortof(i::Number, dd) = sortof(typeof(i), dd)
 sortof(::Type{<:Int64}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
 sortof(::Type{<:Integer}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
 sortof(::Type{<:Real})    = RealSort() #has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
@@ -126,12 +125,6 @@ struct HLMarking <: HLAnnotation
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     ids::Tuple
-
-    # function HLMarking(str, t, graph, tool)
-    #     sortof(t) isa MultisetSort || error
-    #     #  PnmlMultiset
-    #     HLMarking(str, t, graph, tool)
-    # end
 end
 HLMarking(t::AbstractTerm; ids=(:nothing,)) = HLMarking(nothing, t; ids)
 HLMarking(s::Maybe{AbstractString}, t::AbstractTerm; ids=(:nothing,)) = HLMarking(s, t, nothing, nothing, ids)
