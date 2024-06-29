@@ -1,7 +1,7 @@
 name = "PNML"
 uuid = "1f34f301-fe8c-4464-8328-ff2334f05424"
 authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
-version = "0.0.9"
+version = "0.0.10"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
