@@ -62,15 +62,18 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; ids::Tu
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
     @assert length(interms) == length(insorts)
-    for (t,s) in zip(interms,insorts)
-        @show t s
-        println()
-    end
+    # for (t,s) in zip(interms,insorts) # Lots of output. Leave this here for debug, bring-up
+    #     @show t s
+    #     println()
+    # end
     #^ What can we assume from ids?
     #^ Is last(ids) different for partition, partition element, FEC, EnumSort
     outsort = pnml_hl_outsort(tag; insorts, ids) #! some sorts need content
 
-    println("parse_operator_term returning\n $(repr(tag)) $func $interms, $insorts, $outsort")
+    println("parse_operator_term returning $(repr(tag)) $(func)")
+    println("   interms ", interms)
+    println("   insorts ", insorts)
+    println("   outsort ", outsort)
     println()
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end

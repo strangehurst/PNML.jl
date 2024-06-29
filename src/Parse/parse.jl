@@ -752,7 +752,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; ids::
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, sort = termparser(child, pntd; ids) # Apply function/functor
-            @show term sort
+            #! @show term sort
             @assert sort == sortof(term)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
