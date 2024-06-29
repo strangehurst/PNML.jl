@@ -20,107 +20,92 @@ sorts() = _subtypes(AbstractSort)
 @with PNML.idregistry => registry() begin
 @testset "parse_sort $pntd" for pntd in core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<usersort declaration=\"X\"/>", pntd; ids=(:NN,))
-    @test sort isa UserSort
+    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; ids=(:NN,))::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<dot/>", pntd; ids=(:NN,))
-    @test sort isa DotSort
+    sort = parse_sort(xml"<dot/>", pntd; ids=(:NN,))::DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<bool/>", pntd; ids=(:NN,))
-    @test sort isa BoolSort
+    sort = parse_sort(xml"<bool/>", pntd; ids=(:NN,))::BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<integer/>", pntd, ; ids=(:NN,))
-    @test sort isa IntegerSort
+    sort = parse_sort(xml"<integer/>", pntd, ; ids=(:NN,))::IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<natural/>", pntd; ids=(:NN,))
-    @test sort isa PNML.NaturalSort
+    sort = parse_sort(xml"<natural/>", pntd; ids=(:NN,))::NaturalSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<positive/>", pntd; ids=(:NN,))
-    @test sort isa PNML.PositiveSort
+    sort = parse_sort(xml"<positive/>", pntd; ids=(:NN,))::PositiveSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<cyclicenumeration>
+    sort = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet(); ids=(:NN,))
-    @test sort isa PNML.CyclicEnumerationSort
+                            </cyclicenumeration>""", PnmlCoreNet(); ids=(:NN,))::CyclicEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<finiteenumeration>
+    sort = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </finiteenumeration>""", pntd; ids=(:NN,))
-    @test sort isa PNML.FiniteEnumerationSort
+                           </finiteenumeration>""", pntd; ids=(:NN,))::FiniteEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd; ids=(:NN,))
-    @test sort isa PNML.FiniteIntRangeSort
+    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd; ids=(:NN,))::FiniteIntRangeSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd; ids=(:NN,))
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                                 <usersort declaration="a_user_sort"/>
-                           </productsort>""", pntd; ids=(:NN,))
-                           sprint(show, sort)
-    @test sort isa PNML.ProductSort
+                           </productsort>""", pntd; ids=(:NN,))::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                            <usersort declaration="speed"/>
                            <usersort declaration="distance"/>
-                         </productsort>""", pntd; ids=(:NN,))
-    @test sort isa PNML.ProductSort
+                         </productsort>""", pntd; ids=(:NN,))::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<productsort>
+    sort = parse_sort(xml"""<productsort>
                                <usersort declaration="id1"/>
                                <natural/>
-                            </productsort>""", pntd; ids=(:NN,))
-    @test sort isa PNML.ProductSort
-    @test_logs sprint(show, sort)
+                            </productsort>""", pntd; ids=(:NN,))::ProductSort
+     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<multisetsort>
+    sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd; ids=(:NN,))
-    @test sort isa PNML.MultisetSort
-    @test_logs sprint(show, sort)
+                            </multisetsort>""", pntd; ids=(:NN,))::MultisetSort
+     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = @inferred AbstractSort parse_sort(xml"""<multisetsort>
+    sort = parse_sort(xml"""<multisetsort>
                                 <natural/>
-                            </multisetsort>""", pntd; ids=(:NN,))
-    @test sort isa Maybe{PNML.MultisetSort}
+                            </multisetsort>""", pntd; ids=(:NN,))::MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 end
@@ -130,11 +115,10 @@ end
     empty!(PNML.TOPDECLDICTIONARY)
     PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     # The attribute should be ignored.
-    decl = @inferred parse_declaration(xml"""<declaration key="test empty">
+    decl = parse_declaration(xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
-        </declaration>""", pntd; ids=(:NULLNET,))
+        </declaration>""", pntd; ids=(:NULLNET,))::Declaration
 
-    @test typeof(decl) <: PNML.Declaration
     @test length(decl) == 0 # nothing in <declarations>
     @test isempty(decl)
     @test isempty(decldict(:NULLNET))

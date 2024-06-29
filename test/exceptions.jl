@@ -4,10 +4,8 @@ using OrderedCollections
 println("EXCEPTIONS")
 
 @testset "showerr" begin
-    e1 = MissingIDException("test showerr")
-    e2 = MalformedException("test showerr")
-    @test e1 isa PnmlException
-    @test e2 isa PnmlException
+    e1 = MissingIDException("test showerr")::PnmlException
+    e2 = MalformedException("test showerr")::PnmlException
     @test sprint(showerror,e1) != sprint(showerror,e2)
     Base.redirect_stdio(stdout=devnull, stderr=devnull) do
         @test_logs showerror(stdout,e1)
@@ -20,10 +18,8 @@ end
 @testset "missing namespace $pntd" for pntd in core_nettypes()
     empty!(PNML.TOPDECLDICTIONARY)
     @test isempty(PNML.TOPDECLDICTIONARY) #
-    begin # with(PNML.idregistry[] => registry()) do
-        @test_logs(match_mode=:any, (:warn, r"missing namespace"),
-            parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
-    end
+    @test_logs(match_mode=:any, (:warn, r"missing namespace"),
+        parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 
     empty!(PNML.TOPDECLDICTIONARY)
     @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
@@ -39,8 +35,8 @@ end
     empty!(PNML.TOPDECLDICTIONARY)
     @test_throws("MalformedException: toolspecific missing tool attribute",
         parse_pnml(xml"""
-  <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+    <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
     <page id="pg1">
       <place id="p1"/>
       <transition id="t1"/>
@@ -53,9 +49,9 @@ end
         <toolspecific/>
       </place>
     </page>
-  </net>
-  </pnml>
-  """))
+    </net>
+    </pnml>
+    """))
     empty!(PNML.TOPDECLDICTIONARY)
 
     @test_throws("MalformedException: net missing type",

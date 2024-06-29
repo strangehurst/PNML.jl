@@ -95,10 +95,10 @@ end
 
     @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
     @test PNML.regs(model) isa Vector{PnmlIDRegistry}
+    @test length(PNML.regs(model)) == length(PNML.nets(model))
 
-    modelnets = PNML.nets(model)
-    @test modelnets isa Tuple
-    @test length(collect(modelnets)) == 5
+    modelnets = PNML.nets(model)::Tuple
+    @test length(modelnets) == 5
 
     for net in modelnets
         ntup = PNML.find_nets(model, net)
@@ -137,14 +137,9 @@ end
 
 @testset "empty page" begin
     empty!(PNML.TOPDECLDICTIONARY)
-    model = parse_str("""
-    <?xml version="1.0"?>
-    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-      <net id="net" type="pnmlcore">
-        <page id="page">
-        </page>
-      </net>
-    </pnml>
-    """)
-    @test model isa PnmlModel
+    @test parse_str("""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+          <net id="net" type="pnmlcore"><page id="emptypage"> </page></net>
+        </pnml>
+        """) isa PnmlModel
 end
