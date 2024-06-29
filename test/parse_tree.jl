@@ -62,19 +62,14 @@ end
 
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
-@testset "AirplaneLD pnml file" begin
-    empty!(PNML.TOPDECLDICTIONARY)
-    println("\n","------------------------"^6)
-    println("------------------------"^6)
-    println("------------------------"^6)
-    println("------------------------"^6)
-    println("------------------------"^6)
-    println("------------------------"^6)
-    testfile = joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
+empty!(PNML.TOPDECLDICTIONARY)
+println("\n-----------------------------------------")
+println("AirplaneLD-col-0010.pnml")
+println("-----------------------------------------\n")
+@testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
     println(testfile)
-    model = parse_file(testfile)
+    model = parse_file(testfile)::PnmlModel
     #!model = @test_logs(match_mode=:all, parse_file(testfile))
-    @test model isa PnmlModel
 
     netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
@@ -87,8 +82,7 @@ end
         @test pages(net) isa Base.Iterators.Filter
         @test only(allpages(net)) == only(pages(net))
         #todo compare pages(net) == allpages(net)
-        @test firstpage(net) isa Page
-        @test first(pages(net)) isa Page
+        @test firstpage(net)::Page == first(pages(net))::Page
         @test PNML.npages(net) == 1
 
         @test !isempty(arcs(firstpage(net)))
@@ -107,72 +101,73 @@ end
         @test PNML.nrefplaces(net) == 0
         @test isempty(PNML.refplaces(net))
 
+        empty!(PNML.TOPDECLDICTIONARY)
+        reset_reg!(PNML.idregistry[])
+
         @test_call target_modules=target_modules parse_file(testfile)
         @test_call nets(model)
+
         @test !isempty(repr(PNML.netdata(net)))
         @test !isempty(repr(PNML.netsets(firstpage(net))))
+
         @show summary(PNML.netsets(firstpage(net)))
 
         #TODO apply metagraph tools
     end
 end
 
-# Read a SymmetricNet with partitions from pnmlframework test files
-false &&
-@testset "sampleSNPrio pnml file" begin
-    empty!(PNML.TOPDECLDICTIONARY)
-    println("\n-----------------------------------------")
-    println("sampleSNPrio.pnml")
-    println("-----------------------------------------\n")
-
-    model = parse_file(joinpath(@__DIR__, "data", "sampleSNPrio.pnml"))::PnmlModel
-    @show net = first(nets(model)) # Multi-net models not common.
-    @test PNML.verify(net; verbose=true)
+# Read a SymmetricNet with partitions, tuples from pnmlframework test file.
+empty!(PNML.TOPDECLDICTIONARY)
+println("\n-----------------------------------------")
+println("sampleSNPrio.pnml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
+    #false &&
+    model = @test_throws ArgumentError parse_file(fname)::PnmlModel
+    @show model #!net = first(nets(model)) # Multi-net models not common in the wild.
+    #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
 end
 
-# Read a file
-@testset "test1.pnml file" begin
-    empty!(PNML.TOPDECLDICTIONARY)
-    println("\n-----------------------------------------")
-    println("test1.pnml")
-    println("-----------------------------------------\n")
+empty!(PNML.TOPDECLDICTIONARY)
+println("\n-----------------------------------------")
+println("test1.pnml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, "../snoopy", "test1.pnml")
     model = @test_logs(match_mode=:any,
         (:warn, "ignoring unexpected child of <condition>: 'name'"),
         (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml")))
-    # model = parse_file(joinpath(@__DIR__, "../snoopy", "test1.pnml"))
-    println("-----------------------------------------")
+        parse_file(fname)::PnmlModel)
+    # model = parse_file(fname)::PnmlModel
+    # println("----"^10); @show model; println("----"^10)
 
-    @test model isa PnmlModel
-    @show model
-    println("-----------------------------------------")
-    println("-----------------------------------------")
     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
     @test startswith(repr(model), "PnmlModel")
 
-    #@show [pid(x) for x in PNML.nets(model)]
-    @show map(pid, PNML.nets(model)) # tuple
-    println()
+    @show map(pid, PNML.nets(model)); println()
+
     for n in PNML.nets(model)
-        with(PNML.idregistry => PNML.registry_of(model, pid(n))) do
-            println("-----------------------------------------"^3)
-            @test PNML.verify(n); verbose=false
+        @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
+            println("-----------------------------------------")
+            @test PNML.verify(n; verbose=false)
             PNML.flatten_pages!(n; verbose=false)
             @test PNML.verify(n; verbose=true)
-            println("-----------------------------------------"^3)
+            println("-----------------------------------------")
             println("FLATTENED NET")
             @show n
-            println("-----------------------------------------"^3)
+            println("-----------------------------------------")
+
             Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-                #TODO use as base of a validation tool
+                #TODO use MetaGraph as base of a validation tool
                 println("pagetree")
                 PNML.pagetree(n)
                 println("print_tree")
                 AbstractTrees.print_tree(n)
+
                 println("vertex_codes")
                 @show vc = PNML.vertex_codes(n)
                 @show vl = PNML.vertex_labels(n)
+
                 println("vertexdata")
                 @show vd = PNML.vertexdata(n)
                 println()
@@ -180,6 +175,7 @@ end
                 @show keys(vd)
                 map(println, values(vd))
                 println("-----------------------------------------")
+
                 for a in arcs(n)
                     @show a
                     println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
