@@ -56,7 +56,7 @@ struct Operator <: AbstractOperator
     func::Function # Apply `func` to `inexprs`: evaluated with current variable values and constants.
     inexprs::Vector{AbstractTerm} # typeof(inexprs[i]) == eltype(insorts[i])
     insorts::Vector{AbstractSort} #
-    outsort::AbstractSort
+    outsort::Any #! AbstractSort
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
     #=
     all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
