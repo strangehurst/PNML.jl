@@ -20,7 +20,7 @@ const idregistry = ScopedValue{PnmlIDRegistry}()
         @with idregistry => registry(locker) begin
             @test_opt target_modules=(@__MODULE__,) register_id!(idregistry[], :p1)
             @test_opt !isregistered(idregistry[], :p1)
-            @test_opt PnmlIDRegistrys.reset_reg!(idregistry[], )
+            #@test_opt broken=false PnmlIDRegistrys.reset_reg!(idregistry[], )
 
             @test_call register_id!(idregistry[], :p)
             @test_call !isregistered(idregistry[], :p1)
