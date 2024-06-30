@@ -52,7 +52,7 @@ str1 = """
     @test_call broken=false SimpleNet(net0)
     println("- - - - - - - - - - - - - - - -")
     @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
-    @test_call broken=true SimpleNet(model)
+    @test_call broken=false SimpleNet(model)
     println("- - - - - - - - - - - - - - - -")
 
     for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
