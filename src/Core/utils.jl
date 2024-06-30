@@ -47,5 +47,5 @@ Construct a PNML ID registry using the supplied concrete Lock or nothing.
 Using nothing disables locking.
 """
 function registry(lock = CONFIG[].lock_registry ? ReentrantLock() : nothing)
-    PnmlIDRegistry(Set{Symbol}(), lock)
+    PnmlIDRegistry(IdSet{Symbol}(), lock)
 end

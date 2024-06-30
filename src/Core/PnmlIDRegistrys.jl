@@ -12,13 +12,14 @@ Holds a set of PNML ID symbols and , optionally, a lock to allow safe reentrancy
 
 $(TYPEDEF)
 """
-struct PnmlIDRegistry{L <: Union{Nothing, Base.AbstractLock}}
-    ids::Set{Symbol}
+@kwdef struct PnmlIDRegistry{L <: Union{Nothing, Base.AbstractLock}}
+    idset::IdSet{Symbol} = IdSet{Symbol}
     lk::L
+    #lk2::Base.Lockable(idset::IdSet{Symbol}())
 end
 
 function Base.show(io::IO, registry::PnmlIDRegistry)
-    print(io, nameof(typeof(registry)), " ", length(registry.ids), " ids: ", registry.ids)
+    print(io, nameof(typeof(registry)), " ", length(registry.idset), " idset: ", registry.idset)
 end
 
 duplicate_id_action(id::Symbol)  = error("ID already registered: $id")
@@ -39,7 +40,7 @@ function register_id!(registry::PnmlIDRegistry{Nothing}, id::Symbol)::Symbol
 end
 
 _reg!(registry, id) = begin
-    id ∈ registry.ids ? duplicate_id_action(id) : push!(registry.ids, id)
+    id ∈ registry.idset ? duplicate_id_action(id) : push!(registry.idset, id)
     return nothing
 end
 """
@@ -50,10 +51,10 @@ Return `true` if `s` is registered in `reg`.
 function isregistered end
 
 function isregistered(registry::PnmlIDRegistry{L}, id::Symbol)::Bool where {L <: Base.AbstractLock}
-    @lock registry.lk id ∈ registry.ids
+    @lock registry.lk id ∈ registry.idset
 end
 function isregistered(registry::PnmlIDRegistry{Nothing}, id::Symbol)::Bool
-    id ∈ registry.ids
+    id ∈ registry.idset
 end
 
 """
@@ -64,20 +65,20 @@ In normal use it should never be needed.
 """
 function reset_reg! end
 function reset_reg!(registry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
-    @lock registry.lk empty!(registry.ids)
+    @lock registry.lk empty!(registry.idset)
     return nothing
 end
 function reset_reg!(registry::PnmlIDRegistry{Nothing})
-    empty!(registry.ids)
+    empty!(registry.idset)
     return nothing
 end
 
 function Base.isempty(registry::PnmlIDRegistry{L})::Bool where {L <: Base.AbstractLock}
-    @lock registry.lk isempty(registry.ids)
+    @lock registry.lk isempty(registry.idset)
 end
 
 function Base.isempty(registry::PnmlIDRegistry{Nothing})::Bool
-    isempty(registry.ids)
+    isempty(registry.idset)
 end
 
 end # module PnmlIDRegistrys
