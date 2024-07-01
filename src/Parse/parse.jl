@@ -169,11 +169,8 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     tools::Maybe{Vector{ToolInfo}} = nothing
     nettoolinfo = allchildren(node, "toolspecific")
     if !isempty(nettoolinfo)
-        if isnothing(tools)
-            tools = ToolInfo[]
-        end
         for ti in nettoolinfo
-            add_toolinfo!(tools, ti, pntd)
+            tools = add_toolinfo(tools, ti, pntd)
         end
     end
 
@@ -200,10 +197,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
             @warn "ignoring unexpected child of <net>: 'graphics'"
         else # Labels are everything-else here.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            if isnothing(net.labels)
-                net.labels = PnmlLabel[]
-            end
-            add_label!(net.labels, child, pntd)
+            net.labels = add_label(net.labels, child, pntd)
         end
     end
     return net
@@ -242,11 +236,8 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
     tools::Maybe{Vector{ToolInfo}} = nothing
     nettoolinfo = allchildren(node, "toolspecific")
     if !isempty(nettoolinfo)
-        if isnothing(tools)
-            tools = ToolInfo[]
-        end
         for ti in nettoolinfo
-            add_toolinfo!(tools, ti, pntd)
+            tools = add_toolinfo(tools, ti, pntd)
         end
     end
 
@@ -279,10 +270,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
             graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-           add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
 
@@ -316,7 +304,7 @@ end
 "Fill arc_set, arc_dict."
 function parse_arc!(arc_set, netdata, child, pntd; ids)
     a = parse_arc(child, pntd; ids, netdata)
-    println("parse_arc!");
+    # println("parse_arc!");
     # @show a valtype(arcdict(netdata))
     a isa valtype(arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a)) ids")
@@ -380,16 +368,10 @@ function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else # labels (unclaimed) are everything-else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <place>: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-            add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
 
@@ -452,18 +434,12 @@ function parse_transition(node::XMLNode, pntd::PnmlType; ids::Tuple)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else # Labels (unclaimed) are everything-else. We expect at least one here!
             #! Create extension point here? Add more tag names to list?
             any(==(tag), transition_xlabels) ||
                 @warn "unexpected label of <transition> id=$id: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-            add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
 
@@ -502,16 +478,10 @@ function parse_arc(node, pntd; ids::Tuple, netdata)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else # labels (unclaimed) are everything-else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-            add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
     if isnothing(inscription)
@@ -520,7 +490,7 @@ function parse_arc(node, pntd; ids::Tuple, netdata)
         else
             default_inscription(pntd)
         end
-        @info("missing inscription for arc $(repr(arcid)), replace with $(repr(inscription))")
+        #@info("missing inscription for arc $(repr(arcid)), replace with $(repr(inscription))")
     end
     Arc(arcid, Ref(source), Ref(target), inscription, name, graphics, tools, labels)
 end
@@ -552,16 +522,10 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; ids::Tuple)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else # labels (unclaimed) are everything-else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-            add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
 
@@ -588,16 +552,10 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; ids::Tuple)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-             add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else # labels (unclaimed) are everything-else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
-            if isnothing(labels)
-                labels = PnmlLabel[]
-            end
-           add_label!(labels, child, pntd)
+            labels = add_label(labels, child, pntd)
         end
     end
 
@@ -606,7 +564,7 @@ end
 
 #----------------------------------------------------------
 
-"""
+    """
 $(TYPEDSIGNATURES)
 
 Return the stripped string of node's content.
@@ -633,10 +591,7 @@ function parse_name(node::XMLNode, pntd::PnmlType)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else
             @warn "ignoring unexpected child of <name>: '$tag'"
         end
@@ -718,10 +673,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else
             @warn("ignoring unexpected child of <inscription>: '$tag'. trail = $ids")
         end
@@ -757,10 +709,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; ids::
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            if isnothing(tools)
-                tools = ToolInfo[]
-            end
-            add_toolinfo!(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd)
         else
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", ids)
         end

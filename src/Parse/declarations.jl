@@ -42,10 +42,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType; ids::Tuple)
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd)
             elseif tag == "toolspecific" # accumulate tool specific
-                if isnothing(tools)
-                    tools = ToolInfo[]
-                end
-                add_toolinfo!(tools, child, pntd)
+                tools = add_toolinfo(tools, child, pntd)
             else
                 @warn "ignoring unexpected child of <declaration>: '$tag'"
             end

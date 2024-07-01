@@ -137,7 +137,8 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
         x = i < 3 ? 1 : 2 # make 2 different tagnames
         node = xmlroot("<test$x> $i </test$x>")::XMLNode
 
-        @test add_label!(lab, node, pntd) isa PnmlLabel
+        lab = add_label!(lab, node, pntd)
+        @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end
     @test length(lab) == 4
