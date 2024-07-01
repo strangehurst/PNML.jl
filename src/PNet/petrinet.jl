@@ -84,11 +84,6 @@ tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(pnmlnet(petrinet), i
 
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(petrinet), arc_id)
 
-inscriptions(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
-    net = pnmlnet(petrinet)
-    LVector((;[arc_id => inscription(a) for (arc_id, a) in pairs(arcdict(net))]...))
-end
-
 #------------------------------------------------------------------
 refplace_idset(petrinet::AbstractPetriNet)            = refplace_idset(pnmlnet(petrinet))
 has_refplace(petrinet::AbstractPetriNet, id::Symbol)  = has_refplace(pnmlnet(petrinet), id)
@@ -98,8 +93,21 @@ reftransition_idset(petrinet::AbstractPetriNet)       = reftransition_idset(pnml
 has_reftransition(petrinet::AbstractPetriNet, id::Symbol) = has_reftransition(pnmlnet(petrinet), id)
 reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(pnmlnet(petrinet), id)
 
+
+#####################################################################################
+# Labelled Vectors
+#####################################################################################
+
 """
-    rates(petrinet::AbstractPetriNet) -> LVector
+    inscriptions(petrinet::AbstractPetriNet) -> LVector[id(arc) => inscription(arc)]
+"""
+function inscriptions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
+    net = pnmlnet(petrinet)
+    LVector((;[arc_id => inscription(a) for (arc_id, a) in pairs(arcdict(net))]...))
+end
+
+"""
+    rates(petrinet::AbstractPetriNet) -> LVector[id(transition) => rate(transition]
 
 Return a transition-id labelled vector of rate values.
 
@@ -111,6 +119,31 @@ function rates(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
 end
 
 
+"""
+    initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
+
+LVector labelled with place id and holding initial marking's value.
+"""
+function initial_markings(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
+    net = pnmlnet(petrinet)
+    m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
+    return m1
+end
+
+"""
+    conditions(petrinet) -> LVector{condition_value_type(pntd)}
+
+LVector labelled with transition id and holding its condition's value.
+"""
+function conditions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
+    net = pnmlnet(petrinet)
+    LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
+end
+
+#####################################################################################
+#
+#####################################################################################
+
 #-----------------------------------------------------------------
 #=
 Given x ∈ S ∪ T
@@ -118,43 +151,63 @@ Given x ∈ S ∪ T
   - the set x• = {y | (x, y) ∈ F } is the postset of x.
 =#
 """
-Iterate ids of input (arc source)) for output transition or place `id`.
+Iterate ids of input (arc source) for output transition or place `id`.
 
 See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
 """
 preset(net, id) = Iterators.map(source, tgt_arcs(net, id))
 
 """
-Iterate ids of output (arc target)) for source transition or place `id`.
+    postset(net, id) -> Iterator
+
+Iterate ids of output (arc target) for source transition or place `id`.
 
 See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
 """
 postset(net, id) = Iterators.map(target, src_arcs(net, id))
 
-"Input matrix"
+"""
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
+
+Create and return a matrix ntransitions x nplaces
+"""
 function input_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    I = Matrix{inscription_value_type(net)}(undef, length(transition_idset(net)), length(place_idset(net)))
+    imatrix = Matrix{inscription_value_type(net)}(undef,
+                                                  ntransitions(net),
+                                                  nplaces(net))
+    return input_matrix!(imatrix, net) # fill the matrix & return it
+end
+
+function input_matrix!(imatrix, net)
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p,place_id) in enumerate(place_idset(net))
             a = arc(net, place_id, transition_id)
-            I[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            imatrix[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
-    return I
-end
+    return imatrix
+ end
 
-"Output Matrix"
+"""
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
+"""
 function output_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    OM = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
+    omatrix = Matrix{inscription_value_type(net)}(undef,
+                                                  ntransitions(net),
+                                                  nplaces(net))
+    return output_matrix!(omatrix, net) # fill the matrix & return it
+end
+
+function output_matrix!(omatrix, net)
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
             a = arc(net, transition_id, place_id)
-            OM[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            omatrix[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
     end
-    return OM
+    return omatrix
 end
 
 """
@@ -196,28 +249,6 @@ function incidence_matrix(petrinet::AbstractPetriNet)
     end
     return C
 end
-
-"""
-    initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
-
-LVector labelled with place id and holding initial marking's value.
-"""
-initial_markings(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
-    net = pnmlnet(petrinet)
-    m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
-    return m1
-end
-
-"""
-    conditions(petrinet) -> LVector{condition_value_type(pntd)}
-
-LVector labelled with transition id and holding its condition's value.
-"""
-conditions(petrinet::AbstractPetriNet) = begin #TODO move "lvector tools" section
-    net = pnmlnet(petrinet)
-    LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
-end
-
 """
     enabled(::AbstractPetriNet, ::LVector) -> LVector
 
