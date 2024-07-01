@@ -19,7 +19,7 @@ $(TYPEDEF)
 end
 
 function Base.show(io::IO, registry::PnmlIDRegistry)
-    print(io, nameof(typeof(registry)), " ", length(registry.idset), " idset: ", registry.idset)
+    print(io, nameof(typeof(registry)), " ", length(registry.idset), " ids: ", values(registry.idset))
 end
 
 duplicate_id_action(id::Symbol)  = error("ID already registered: $id")
@@ -61,7 +61,6 @@ end
 $(TYPEDSIGNATURES)
 
 Empty the set of id symbols. Use case is unit tests.
-In normal use it should never be needed.
 """
 function reset_reg! end
 function reset_reg!(registry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
