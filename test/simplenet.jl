@@ -38,24 +38,19 @@ str1 = """
     empty!(PNML.TOPDECLDICTIONARY)
     model = parse_str(str1)
     net0 = @inferred PnmlNet first(nets(model))
-    #println("- - - - - - - - - - - - - - - -")
     snet1 = @inferred SimpleNet SimpleNet(model)
-    @show snet1
-    #println("- - - - - - - - - - - - - - - -")
     snet  = @inferred SimpleNet SimpleNet(net0)
-    #@show snet
-    #@show typeof(snet)
-    #println("- - - - - - - - - - - - - - - -")
+    @show snet1
 
-    println("- - - - - - - - - - - - - - - -")
     @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
     @test_call broken=false SimpleNet(net0)
-    println("- - - - - - - - - - - - - - - -")
+
     @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
     @test_call broken=false SimpleNet(model)
-    println("- - - - - - - - - - - - - - - -")
 
-    for accessor in [pid, place_idset, transition_idset, arc_idset, reftransition_idset, refplace_idset]
+    for accessor in [pid,
+                     place_idset, transition_idset, arc_idset,
+                     reftransition_idset, refplace_idset]
         @test accessor(snet1) == accessor(snet)
     end
 
@@ -76,20 +71,22 @@ str1 = """
         @inferred Base.ValueIterator arcs(snet)
     end
 
-    for top in [first(pages(snet.net)), snet.net, snet]
-        #@show typeof(top)
-        #@show length(pages(top))
-        @test_call target_modules=target_modules places(top)
+    # page, pnmlnet, petrinet, the 3 top=levels
+    @show typeof(first(pages(snet.net))) typeof(snet.net) typeof(snet)
+    @test first(pages(snet.net)) isa Page
+    @test snet.net isa PnmlNet
+    @test snet isa PNML.AbstractPetriNet
 
+    for top in [first(pages(snet.net)), snet.net, snet]
+
+        @test_call target_modules=target_modules places(top)
         for placeid in place_idset(top)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)
             p = @inferred Maybe{Place} place(top, placeid)
         end
-    end
 
-    for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules transitions(top)
         for t in transitions(top)
             @test PNML.ispid(pid(t))(pid(t))
@@ -100,10 +97,7 @@ str1 = """
 
             @test @inferred(condition(t)) !== nothing
         end
-    end
 
-    #
-    for top in [snet, snet.net, first(pages(snet.net))]
         @test_call target_modules=target_modules arcs(top)
         for a in arcs(top)
             @test @inferred Maybe{Bool} has_arc(top, pid(a))
@@ -114,8 +108,9 @@ str1 = """
             @test @inferred(inscription(a)) !== nothing
         end
     end
+
+    # PetriNet-only methods.
     @testset "initialMarking" begin
-        #@show typeof(snet)
         u1 = @inferred LArray initial_markings(snet)
         #!u2 = @inferred LArray initial_markings(snet.net)
         #!u3 = @inferred LArray initial_markings(first(pages(snet.net)))
@@ -319,7 +314,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @test enabled(anet, m₀) == Bool[1,0,0,0]
 
     m₁ =  muladd(C', [1,0,0,0], m₀)
-    #! no longer a LVector
+
     #@test values(enabled(anet, m₁)) == [false,true,false,false]
 #=
     @show m₂ =  muladd(C', [0,1,0,0], m₁) typeof(m₂)
