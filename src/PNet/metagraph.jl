@@ -31,43 +31,38 @@ function metagraph(net::PnmlNet)
     end
 
     # map pnml id symbol to vertex code.
-    @show vc = vertex_codes(net) # inverse is vertex_labels(net)
+    vcode  = vertex_codes(net) # inverse is vertex_labels(net)
+    vlabel = vertex_labels(net)
+    #@show vcode vlabel
+    @assert length(vlabel) == length(vcode)
 
     # Create a directed graph from every arc in the petri net graph.
-    @show graph = SimpleDiGraphFromIterator(Edge(vc[source(a)] => vc[target(a)]) for a in arcs(net))
-    @show Graphs.nv(graph) Graphs.ne(graph)
+    graph = SimpleDiGraphFromIterator(Edge(vcode[source(a)] => vcode[target(a)]) for a in arcs(net))
+    @assert length(vcode) == Graphs.nv(graph)
 
-    # Map id to (vertex code, label).
-    vertexdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
-    for p in places(net)
-        vertexdata[pid(p)] = (vc[pid(p)], p)
-    end
-    for t in transitions(net)
-        vertexdata[pid(t)] = (vc[pid(t)], t)
-    end
-    @show vertexdata
-    @assert length(vertexdata) == Graphs.nv(graph)
+    # Map place/pransition pid to (vertex code, label).
+    vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
+    vertex_data!(vdata, net, vcode)
+    @show vdata
+    @assert length(vdata) == Graphs.nv(graph)
+
     # Map from (src,dst) to arc. Uses pid, not vertex codes of graph.
     edgedata = Dict((source(a), target(a)) => a for a in arcs(net))
     @show edgedata
-    @assert length(edgedata) == Graphs.ne(graph) #
+    @assert length(edgedata) == Graphs.ne(graph)
 
-    vl = vertex_labels(net)
-    @show vl
-    @assert length(vl) == Graphs.nv(graph) == length(vc)
-
-    MetaGraph(graph, vl, vertexdata, edgedata, PNML.name(net),
-                edge_data -> 1.0, 1.0) # weights
+    MetaGraph(graph, vlabel, vdata, edgedata, PNML.name(net), edge_data -> 1.0, 1.0)
 end
 
-# Some helpers for metagraph. Will be useful in validating.
-# pnml id symbol converted to/from vertex code.
+"pnml id symbol mapped to graph vertex code."
 vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
+"graph vertex code mapped to pnml id symbol."
 vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
 
-vertexdata(net::PnmlNet) = begin
-    vcode = vertex_codes(net)
-    vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
+"Fill dictionary where keys are pnml ids, values are tuples of vertex code, place or transition."
+function vertex_data!(vdata::Dict{Symbol, Tuple{Int, Union{Place, Transition}}},
+                     net::PnmlNet,
+                     vcode)
     for p in places(net)
         vdata[pid(p)] = (vcode[pid(p)], p)
     end

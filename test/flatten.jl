@@ -56,9 +56,4 @@ println("FLATTEN")
     @test PNML.post_flatten_verify(net; verbose=true)
     #@show PNML.vertex_codes(net)
     #@show PNML.vertex_labels(net)
-
-    #vd = PNML.vertexdata(net)
-    #@show typeof(vd)
-    #@show keys(vd)
-    #map(println, values(vd))
 end

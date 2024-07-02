@@ -168,13 +168,6 @@ println("-----------------------------------------\n")
                 println("vertex_codes")
                 @show vc = PNML.vertex_codes(n)
                 @show vl = PNML.vertex_labels(n)
-
-                println("vertexdata")
-                @show vd = PNML.vertexdata(n)
-                println()
-                @show typeof(vd)
-                @show keys(vd)
-                map(println, values(vd))
                 println("-----------------------------------------")
 
                 for a in arcs(n)
