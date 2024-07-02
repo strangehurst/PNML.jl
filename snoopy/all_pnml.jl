@@ -2,7 +2,7 @@
 #julia -e 'include("all_pnml.jl"); testpn("MCC")'
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
-#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
+#julia -t1 --project=.snoopy  -e 'include("snoopy/all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
@@ -115,14 +115,14 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             println(stat(testf), " at ", Time(file_start))
             println()
 
-            stats = @timed parse_file(testf)
+            stats = @timed parse_file(testf) #^ PARSE PNML MODEL
 
             #todo Add fields of testf path components to allow sorting the table.
             push!(df, (file=testf, fsize=filesize(testf),
                        time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
 
             # Display PnmlModel as a test of parsing, creation and show().
-            !isnothing(exersize_net) && exersize_net(stats.value)
+            !isnothing(exersize_net) && exersize_net(stats.value) #^ EXERSIZE PNML MODEL
             println("took ", stats.time, " memory: ", stats.bytes, " bytes")
 
         catch e
@@ -149,15 +149,16 @@ function exersize_netA(model)
         return
     end
     @showtime mg = PNML.metagraph(anet)
-    @showtime Graphs.is_bipartite(mg)
-    @showtime Graphs.ne(mg)
-    @showtime Graphs.nv(mg)
-    @showtime MetaGraphsNext.labels(mg) #|> collect
-    @showtime MetaGraphsNext.edge_labels(mg) #|> collect
+    @show mg
+    @show Graphs.is_bipartite(mg)
+    @show ne = Graphs.ne(mg)
+    @show nv = Graphs.nv(mg)
+    @show labels =  collect(MetaGraphsNext.labels(mg))
+    @show elabels = collect(MetaGraphsNext.edge_labels(mg))
     println("-----")
     #C = PNML.incidence_matrix(anet)
     #@showtime C  = PNML.incidence_matrix(anet)
-    @showtime m₀ = PNML.initial_markings(anet)
+    @show m₀ = PNML.initial_markings(anet)
     #@showtime e  = PNML.enabled(anet, m₀)
     println("-----")
 end
