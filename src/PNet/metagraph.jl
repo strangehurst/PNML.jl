@@ -22,7 +22,7 @@ function metagraph end
 metagraph(pn::AbstractPetriNet) = metagraph(pnmlnet(pn))
 
 function metagraph(net::PnmlNet)
-    println("\nmetagraph $(pntd(net)) $(pid(net))")
+    #! println("\nmetagraph $(pntd(net)) $(pid(net))")
     if !(narcs(net) > 0 && nplaces(net) > 0 && ntransitions(net) > 0)
         msg = string("Attempted to create a `MetaGraph` from an incomplete $(pntd(net)) graph: ",
                   " net id = ", pid(net),
@@ -46,12 +46,12 @@ function metagraph(net::PnmlNet)
     # Map place/pransition pid to (vertex code, label).
     vdata = Dict{Symbol, Tuple{Int, Union{Place, Transition}}}()
     vertex_data!(vdata, net, vcode)
-    @show vdata
+    #! @show vdata
     @assert length(vdata) == Graphs.nv(graph)
 
     # Map from (src,dst) to arc. Uses pid, not vertex codes of graph.
     edgedata = Dict((source(a), target(a)) => a for a in arcs(net))
-    @show edgedata
+    #! @show edgedata
     @assert length(edgedata) == Graphs.ne(graph)
 
     MetaGraph(graph, vlabel, vdata, edgedata, PNML.name(net), edge_data -> 1.0, 1.0)

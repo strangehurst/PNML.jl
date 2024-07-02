@@ -37,10 +37,6 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[
 
         @assert key1 ∈ page_idset(net) # We never removed the one-true key.
         @assert key1 ∈ pageids # Note the coupling of pageids and net.pagedict.
-        if verbose
-            println("after flatten to one page")
-            @show(pagedict(net))
-        end
 
         deref!(net; trim, verbose)
     end

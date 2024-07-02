@@ -603,8 +603,8 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
         @warn "found no operator $(uo.declaration), returning `false`"
         return false
     else
-        @show op = operator(decldict(netid(uo)), uo.declaration)
-        @show r  = op(#= pass arguments to functor/operator =#)
+        op = operator(decldict(netid(uo)), uo.declaration)
+        r  = op(#= pass arguments to functor/operator =#)
         return r
     end
 end

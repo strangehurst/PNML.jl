@@ -66,7 +66,7 @@ function parse_pnml(node::XMLNode)
     end
     length(xmlnets) == length(IDRegistryVec) ||
         error("length(xmlnets) $(length(xmlnets)) != length(IDRegistryVec) $(length(IDRegistryVec))")
-    @show IDRegistryVec
+    #! @show IDRegistryVec
 
     #---------------------------------------------------------------------
     # Clear out TOPDECLDICT. This prevents more than one PnmlModel existing.
@@ -79,16 +79,9 @@ function parse_pnml(node::XMLNode)
     for (net, reg) in zip(xmlnets, IDRegistryVec)
         net_tup = (net_tup..., @with(idregistry => reg, parse_net(net)))
         #! Allocation? RUNTIME DISPATCH? This is a parser. What did you expect?
-   end
+    end
     length(net_tup) > 0 || error("length(net_tup) is zero")
 
-    if CONFIG[].verbose #TODO Send this to a log file.
-        @warn "CONFIG[].verbose is true"
-        println("PnmlModel $(length(net_tup)) xmlnets")
-        for n in net_tup
-            println("  ", pid(n), " :: ", typeof(n))
-        end
-    end
     PnmlModel(net_tup, namespace, IDRegistryVec)
 end
 
@@ -142,9 +135,9 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     tunesize!(netdata)
     tunesize!(netsets)
 
-    println("\nparse_net_1 $pntd $(repr(netid))")
-    @show pgtype typeof(netdata)
-    println()
+    #! println("\nparse_net_1 $pntd $(repr(netid))")
+    #! @show pgtype typeof(netdata)
+    #! println()
 
     @assert isregistered(idregistry[], netid)
     @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY, keys: $(collect(keys(TOPDECLDICTIONARY)))"

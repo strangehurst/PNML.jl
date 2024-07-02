@@ -70,10 +70,11 @@ function Base.show(io::IO, model::PnmlModel)
         end
     end
     println(io, length(regs(model)), " registry:" )
-    println(io)
     for reg in regs(model)
-        show(io, reg)
-        println(io)
+        #@show typeof(reg) reg
+        #PnmlIDRegistrys.show(io, reg)
+        println(io, repr(reg))
     end
+    #!map(println, regs(model))
     print(io, ")")
 end

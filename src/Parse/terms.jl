@@ -48,7 +48,7 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; ids::Tu
     println(": $(repr(tag)), trail $ids")
     isoperator(tag) || @error "tag $tag is not an operator, trail $ids"
 
-    @show func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
+    func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
 
     interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
     insorts = AbstractSort[]
@@ -271,7 +271,7 @@ function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType; ids::Tuple
         tag = EzXML.nodename(child)
         if tag == "usersort" # This is the sort that partitionelements reference.
             sort = parse_usersort(child, pntd; ids)::UserSort #~ ArbitrarySort?
-            @show sort
+            #! @show sort
         elseif tag === "partitionelement"
             # Need to go up the tree so a element can access its parent partition.
             # last(ids) == pid(PartitionWeAreCreating)
