@@ -24,9 +24,12 @@ metagraph(pn::AbstractPetriNet) = metagraph(pnmlnet(pn))
 function metagraph(net::PnmlNet)
     println("\nmetagraph $(pntd(net)) $(pid(net))")
     if !(narcs(net) > 0 && nplaces(net) > 0 && ntransitions(net) > 0)
-        @warn "$(pntd(net)) id = $(pid(net)) is not complete: " *
-            "narcs = $(narcs(net)) nplaces = $(nplaces(net)) ntransitions = $(ntransitions(net))"
-            # net
+        msg = string("Attempted to create a `MetaGraph` from an incomplete $(pntd(net)) graph: ",
+                  " net id = ", pid(net),
+                  " narcs = ", narcs(net),
+                  " nplaces = ", nplaces(net),
+                  " ntransitions = ", ntransitions(net))
+        throw(ArgumentError(msg))
         return nothing
     end
 

@@ -2,7 +2,7 @@
 #julia -e 'include("all_pnml.jl"); testpn("MCC")'
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
-#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/testpmnl/test-files.list")'
+#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
@@ -104,12 +104,14 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
 
     isfile(outfile) && error("overwriting $outfile")
     mkpath(dirname(outfile)) # Create output directory.
-
+    yield()
     file_start = now()
     println("$testf at $(Time(file_start)) size = $(filesize(testf))") # Display path to file and size.
 
     Base.redirect_stdio(stdout=outfile, stderr=outfile) do
         try
+            #PNML.reset_reg!(PNML.idregistry[])
+            # parse_file() will do empty!(PNML.IDRegistryVec)
             println(stat(testf), " at ", Time(file_start))
             println()
 
@@ -142,6 +144,10 @@ function exersize_netA(model)
     println(model)
     # Petri Net & Graph
     @showtime anet = PNML.SimpleNet(model)
+    if !(PNML.narcs(anet) > 0 && PNML.nplaces(anet) > 0 && PNML.ntransitions(anet) > 0)
+        println("incomplete graph $(PNML.pid(anet)) not compatible with `exersize_netA`")
+        return
+    end
     @showtime mg = PNML.metagraph(anet)
     @showtime Graphs.is_bipartite(mg)
     @showtime Graphs.ne(mg)

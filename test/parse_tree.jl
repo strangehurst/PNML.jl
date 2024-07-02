@@ -175,7 +175,11 @@ println("-----------------------------------------\n")
                     println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
                 end
                 println("-----------------------------------------")
-                @show PNML.metagraph(n)
+                if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
+                    @test_throws ArgumentError PNML.metagraph(n)
+                else
+                    @show PNML.metagraph(n)
+                end
             end
         end
     end

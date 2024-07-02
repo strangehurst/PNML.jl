@@ -57,22 +57,29 @@ function parse_pnml(node::XMLNode)
     xmlnets = allchildren(node ,"net") #! allocate Vector{XMLNode}
     isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
 
-    # Populate global Vector{PnmlIDRegistry}. Also a field of `Model`.
-    empty!(IDRegistryVec) # Tests may leave a polluted global.
-    for i in xmlnets
+    #---------------------------------------------------------------------
+    # Initialize/populate global Vector{PnmlIDRegistry}. Also a field of `Model`.
+    #---------------------------------------------------------------------
+    empty!(IDRegistryVec) # Tests, use in scripts may leave a polluted global.
+    for _ in xmlnets
         push!(IDRegistryVec, registry())
     end
     length(xmlnets) == length(IDRegistryVec) ||
         error("length(xmlnets) $(length(xmlnets)) != length(IDRegistryVec) $(length(IDRegistryVec))")
     @show IDRegistryVec
+
+    #---------------------------------------------------------------------
+    # Clear out TOPDECLDICT. This prevents more than one PnmlModel existing.
+    #---------------------------------------------------------------------
+    empty!(TOPDECLDICTIONARY)
+
     # Do not YET have a PNTD defined. Each net can be different net type.
-    #! Allocation? RUNTIME DISPATCH? This is a parser. What did you expect?
-    #! net_tup = tuple((parse_net(net, reg) for (net, reg) in zip(xmlnets, idregs))...)
     # Each net should think it has its own ID registry.
     net_tup = ()
     for (net, reg) in zip(xmlnets, IDRegistryVec)
         net_tup = (net_tup..., @with(idregistry => reg, parse_net(net)))
-    end
+        #! Allocation? RUNTIME DISPATCH? This is a parser. What did you expect?
+   end
     length(net_tup) > 0 || error("length(net_tup) is zero")
 
     if CONFIG[].verbose #TODO Send this to a log file.
@@ -884,7 +891,7 @@ def_insc(netdata, source, target) = begin
         error("inscription place not found, source = $source, target = $target")
     end
     placesort = sortof(place)
-    @show place placesort
+    #@show place placesort
 
     # Default to an  multiset whose basis is placetype
     els = elements(placesort) # Finite sets return non-empty iteratable.
@@ -893,7 +900,7 @@ def_insc(netdata, source, target) = begin
     inscr = pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
                 placesort, # basis sort
                 1)
-    @show inscr
+    #@show inscr
     return inscr
 end
 
