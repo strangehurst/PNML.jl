@@ -12,14 +12,14 @@ Holds a set of PNML ID symbols and , optionally, a lock to allow safe reentrancy
 
 $(TYPEDEF)
 """
-@kwdef struct PnmlIDRegistry{L <: Union{Nothing, Base.AbstractLock}}
-    idset::IdSet{Symbol} = IdSet{Symbol}
-    lk::L
+@kwdef struct PnmlIDRegistry
+    idset::IdSet{Symbol} = IdSet{Symbol}()
+    lk::ReentrantLock = ReentrantLock()
     #lk2::Base.Lockable(idset::IdSet{Symbol}())
 end
 
-function Base.show(io::IO, registry::PnmlIDRegistry)
-    print(io, nameof(typeof(registry)), " ", length(registry.idset), " ids: ", values(registry.idset))
+function Base.show(io::IO, reg::PnmlIDRegistry)
+    print(io, nameof(typeof(reg)), "(", collect(values(reg)), ")")
 end
 
 duplicate_id_action(id::Symbol)  = error("ID already registered: $id")
@@ -29,13 +29,8 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-function register_id! end
-function register_id!(registry::PnmlIDRegistry{L}, id::Symbol)::Symbol where {L <: Base.AbstractLock}
+function register_id!(registry::PnmlIDRegistry, id::Symbol)
     @lock registry.lk _reg!(registry, id)
-    return id
-end
-function register_id!(registry::PnmlIDRegistry{Nothing}, id::Symbol)::Symbol
-    _reg!(registry, id)
     return id
 end
 
@@ -43,18 +38,14 @@ _reg!(registry, id) = begin
     id ∈ registry.idset ? duplicate_id_action(id) : push!(registry.idset, id)
     return nothing
 end
+
 """
 $(TYPEDSIGNATURES)
 
-Return `true` if `s` is registered in `reg`.
+Return `true` if `id` is registered in `registry`.
 """
-function isregistered end
-
-function isregistered(registry::PnmlIDRegistry{L}, id::Symbol)::Bool where {L <: Base.AbstractLock}
+function isregistered(registry::PnmlIDRegistry, id::Symbol)
     @lock registry.lk id ∈ registry.idset
-end
-function isregistered(registry::PnmlIDRegistry{Nothing}, id::Symbol)::Bool
-    id ∈ registry.idset
 end
 
 """
@@ -62,22 +53,21 @@ $(TYPEDSIGNATURES)
 
 Empty the set of id symbols. Use case is unit tests.
 """
-function reset_reg! end
-function reset_reg!(registry::PnmlIDRegistry{L}) where {L <: Base.AbstractLock}
+function reset_reg!(registry::PnmlIDRegistry)
     @lock registry.lk empty!(registry.idset)
     return nothing
 end
-function reset_reg!(registry::PnmlIDRegistry{Nothing})
-    empty!(registry.idset)
-    return nothing
+
+function Base.isempty(registry::PnmlIDRegistry)
+    @lock registry.lk isempty(registry.idset)::Bool
 end
 
-function Base.isempty(registry::PnmlIDRegistry{L})::Bool where {L <: Base.AbstractLock}
-    @lock registry.lk isempty(registry.idset)
+function Base.length(registry::PnmlIDRegistry)
+    @lock registry.lk length(registry.idset)
 end
 
-function Base.isempty(registry::PnmlIDRegistry{Nothing})::Bool
-    isempty(registry.idset)
+function Base.values(registry::PnmlIDRegistry)
+    @lock registry.lk values(registry.idset)
 end
 
 end # module PnmlIDRegistrys
