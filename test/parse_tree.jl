@@ -153,10 +153,10 @@ println("-----------------------------------------\n")
             @test PNML.verify(n; verbose=false)
             PNML.flatten_pages!(n; verbose=false)
             @test PNML.verify(n; verbose=true)
-            println("-----------------------------------------")
+            #println("-----------------------------------------")
             println("FLATTENED NET")
-            @show n
-            println("-----------------------------------------")
+            #@show n
+            #println("-----------------------------------------")
 
             Base.redirect_stdio(stdout=testshow, stderr=testshow) do
                 #TODO use MetaGraph as base of a validation tool

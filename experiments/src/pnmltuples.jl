@@ -9,7 +9,7 @@ struct PnmlTuple{sorts, T} where {sorts, T <: Tuple}
     #
     tup::T
 end
-
+# Similiarity includes borrowing ideas and probably code templates.
 @eval function (PT::Type{PnmlTuple{sorts,T}})(args::Tuple) where {sorts, T <: Tuple}
     if length(args) != length(sorts::Tuple)
         throw(ArgumentError("Wrong number of arguments to pnml tuple constructor."))
