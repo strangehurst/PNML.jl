@@ -314,7 +314,7 @@ end
     @test PNML.has_labels(typ) == false
     @test occursin("Graphics", sprint(show, typ))
 
-    @show PNML.SortType(value(typ)) #! does not propagate name?
+    #@show PNML.SortType(value(typ)) #! does not propagate name?
     #@test value(PNML.SortType(value(typ))) isa PNML.UserSort
     #@test text(PNML.SortType(value(typ))) == ""
     #@test value(PNML.SortType("goofy", value(typ))) isa PNML.UserSort
@@ -424,7 +424,7 @@ end
         placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
 
         mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
-        @show mark
+        #@show mark
         #pprint(mark)
     end
 
@@ -450,8 +450,8 @@ end
 
         placetype = SortType("test", UserSort(:pos; ids=(:NN,)))
 
-        @show mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
-        @show val = value(mark)::PNML.PnmlMultiset{<:Any, <:AbstractSort}
+        mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
+        val = value(mark)::PNML.PnmlMultiset{<:Any, <:AbstractSort}
         @test PNML.basis(val) isa PositiveSort
         #@show val.mset
         #@show PNML.basis(val)
@@ -464,7 +464,7 @@ end
 
     # This is the same as when the element is omitted.
     @testset "x" for pntd in all_nettypes(ishighlevel)
-        println("\nomitted $pntd")
+        #println("\nomitted $pntd")
         node = xml"""
         <hlinitialMarking>
         </hlinitialMarking>
@@ -476,8 +476,8 @@ end
         placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
 
         mark = PNML.parse_hlinitialMarking(node, placetype, pntd; ids=(:NN,))
-        @show mark
-        @show value(mark)
+        #@show mark
+        #@show value(mark)
     end
 
     println()

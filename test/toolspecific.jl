@@ -67,7 +67,7 @@ end
     empty!(PNML.TOPDECLDICTIONARY)
     dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
     PNML.fill_nonhl!(dd; ids=(:nothing,))
-    @show dd
+    #@show dd
 
     n::XMLNode = xmlroot(
         """<place id="place0">

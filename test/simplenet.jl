@@ -196,9 +196,9 @@ end
     @show PNML.output_matrix(snet)
     @show PNML.conditions(snet)
     @show PNML.inscriptions(snet)
-    map(println, PNML.all_arcs(snet, :wolf))
-    map(println, PNML.src_arcs(snet, :wolf))
-    map(println, PNML.tgt_arcs(snet, :wolf))
+    println("all arcs = ", collect(PNML.all_arcs(snet, :wolves)))
+    println("src arcs = ", collect(PNML.src_arcs(snet, :wolves)))
+    println("tgt arcs = ", collect(PNML.tgt_arcs(snet, :wolves)))
 
     # keys are transition ids
     # values are input, output vectors of "tuples" place id -> inscription of arc
@@ -230,20 +230,18 @@ end
 using Graphs, MetaGraphsNext
 using PNML: AbstractPetriNet, enabled
 
-println()
-println("=========="^12)
-println("=========="^12)
-println()
+#println()
+#println("=========="^12)
+#println("=========="^12)
+#println()
 const core_types = ("pnmlcore","ptnet")
 const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric")
 const ex_types = ("continuous",)
 nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
-@show nettype_strings()
+#@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    println()
-    println(pntd)
-    println()
+    #println(); println(pntd);println()
     empty!(PNML.TOPDECLDICTIONARY)
     if pntd in hl_types
         marking = """
@@ -275,7 +273,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         <page id="page0">
             <place id="p1"> $marking </place>
             <place id="p2"/>
-            <place id="p3"/>
+            <place id="p3"/>map
             <place id="p4"/>
             <place id="p0"/>
             <transition id="t1">
@@ -301,7 +299,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     </pnml>
     """
     anet = PNML.SimpleNet(str3)
-    @show anet
+    # @show anet
     mg = PNML.metagraph(anet)
     @test anet isa PNML.AbstractPetriNet
     C  = PNML.incidence_matrix(anet)

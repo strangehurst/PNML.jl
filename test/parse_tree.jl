@@ -25,13 +25,13 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 @testset "parse node level" begin
     empty!(PNML.TOPDECLDICTIONARY)
     # Do a full parse and maybe print the generated data structure.
-    @show pnml_ir = parse_pnml(pnmldoc)
+    pnml_ir = parse_pnml(pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
         println()
-        @show pid(net)::Symbol
+        #@show pid(net)::Symbol
         #@show net
         map(println, PNML.declarations(net)) # Iterate over all declarations
 
@@ -124,10 +124,10 @@ println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
     model = @test_throws ArgumentError parse_file(fname)::PnmlModel
-    println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
+    show #println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
-    println()
+    #println()
 end
 
 empty!(PNML.TOPDECLDICTIONARY)
@@ -145,16 +145,16 @@ println("-----------------------------------------\n")
     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
     @test startswith(repr(model), "PnmlModel")
 
-    @show map(pid, PNML.nets(model)); println()
+    #@show map(pid, PNML.nets(model)); println()
 
     for n in PNML.nets(model)
         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
-            println("-----------------------------------------")
+            #println("-----------------------------------------")
             @test PNML.verify(n; verbose=false)
             PNML.flatten_pages!(n; verbose=false)
             @test PNML.verify(n; verbose=true)
             #println("-----------------------------------------")
-            println("FLATTENED NET")
+            #println("FLATTENED NET")
             #@show n
             #println("-----------------------------------------")
 
@@ -183,5 +183,5 @@ println("-----------------------------------------\n")
             end
         end
     end
-    println("\n-----------------------------------------")
+    #println("\n-----------------------------------------")
 end

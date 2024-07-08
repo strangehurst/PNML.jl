@@ -41,12 +41,12 @@ end
 
 @testset "default_condition($pntd)" for pntd in all_nettypes()#ishighlevel)
     c = default_condition(pntd)::PNML.Condition #! TestUtils & Base export Condition
-    println("default_condition($pntd) = ", c)
+    #println("default_condition($pntd) = ", c)
     cv = value(c)::Bool
     #@test sortof(c) isa BoolSort
     @test cv == true
 end
-println()
+#println()
 @testset "default_inscription($pntd)" for pntd in all_nettypes()
     empty!(PNML.TOPDECLDICTIONARY)
     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
@@ -59,20 +59,20 @@ println()
     else
         default_inscription(pntd)
     end
-    println("default_inscription($pntd) = ", i)
+    #println("default_inscription($pntd) = ", i)
 end
 println()
 @testset "default_typeusersort($pntd)" for pntd in all_nettypes()
     t = default_typeusersort(pntd; ids=(:typeusersort,))::UserSort
-    println("default_typeusersort($pntd) = ", t)
+    #println("default_typeusersort($pntd) = ", t)
 end
-println()
+#println()
 @testset "rate_value_type($pntd)" for pntd in all_nettypes()
     r = rate_value_type(pntd)
-    println("rate_value_type($pntd) = ", r)
+    #println("rate_value_type($pntd) = ", r)
     @test r == eltype(RealSort)
 end
-println()
+#println()
 @testset "PnmlNetData($pntd)" for pntd in core_nettypes() # to limit number of tests
     pnd = PnmlNetData(pntd)
     @test isempty(PNML.placedict(pnd))
@@ -81,7 +81,7 @@ println()
     @test isempty(PNML.refplacedict(pnd))
     @test isempty(PNML.reftransitiondict(pnd))
 end
-println()
+#println()
 @testset "PnmlNetKeys() for $pntd" for pntd in core_nettypes() # to limit number of tests
     pns = PnmlNetKeys()
     @test isempty(PNML.page_idset(pns))
@@ -91,7 +91,7 @@ println()
     @test isempty(PNML.reftransition_idset(pns))
     @test isempty(PNML.refplace_idset(pns))
 end
-println()
+#println()
 @testset "predicates for $pntd" for pntd in all_nettypes()
     @test Iterators.only(Iterators.filter(==(true), (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
     tp = typeof(pntd) # translate from singleton to type

@@ -8,7 +8,7 @@ function verify_sets(net::PnmlNet)
 
     @test arc_idset(net) isa AbstractSet
     @test arc_idset(firstpage(net)) isa AbstractSet
-    @show arc_idset(net) arc_idset(firstpage(net))
+    #@show arc_idset(net) arc_idset(firstpage(net))
     @test !isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
 
     @test place_idset(net) isa AbstractSet
@@ -95,7 +95,7 @@ net = first(nets(model)) # The nets of a model not inferrable.
 @test length(PNML.allpages(net)) == 14
 
 @test_logs sprint(println, PNML.allpages(net))
-@show net
+#@show net
 verify_sets(net)
 
 type_funs = (

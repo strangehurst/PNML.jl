@@ -27,7 +27,7 @@ function parse_term(node::XMLNode, pntd::PnmlType; ids::Tuple)
                 :finiteintrangeconstant]
         # These must follow the Operator interface. See operators.jl.
         #
-        printstyled("parse_term"; color=:green);  println(": $(repr(tag)), trail = $ids")
+        #~ printstyled("parse_term"; color=:green);  println(": $(repr(tag)), trail = $ids")
         (term,sort) = parse_term(Val(tag), node, pntd; ids) # (AbstractTerm, Sort)
         return (term, sort)
 
@@ -44,8 +44,8 @@ Build an Operator Functor.
 
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; ids::Tuple)
-    printstyled("parse_operator_term"; color=:green);
-    println(": $(repr(tag)), trail $ids")
+    #~ printstyled("parse_operator_term"; color=:green);
+    #~ println(": $(repr(tag)), trail $ids")
     isoperator(tag) || @error "tag $tag is not an operator, trail $ids"
 
     func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
@@ -70,11 +70,11 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; ids::Tu
     #^ Is last(ids) different for partition, partition element, FEC, EnumSort
     outsort = pnml_hl_outsort(tag; insorts, ids) #! some sorts need content
 
-    println("parse_operator_term returning $(repr(tag)) $(func)")
-    println("   interms ", interms)
-    println("   insorts ", insorts)
-    println("   outsort ", outsort)
-    println()
+    #~ println("parse_operator_term returning $(repr(tag)) $(func)")
+    #~ println("   interms ", interms)
+    #~ println("   insorts ", insorts)
+    #~ println("   outsort ", outsort)
+    #~ println()
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 

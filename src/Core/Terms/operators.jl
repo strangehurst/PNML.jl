@@ -69,7 +69,7 @@ inputs(op::Operator) = op.inexprs
 basis(op::Operator)  = basis(sortof(op))
 
 function (op::Operator)()
-    println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
+    #~ println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
     input = [x() for x in inputs(op)] # evaluate each AbstractTerm
     #@show typeof.(input) op.insorts eltype.(op.insorts)
     #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
@@ -585,7 +585,7 @@ UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 function (uo::UserOperator)(#= pass arguments to operator =#)
     # println()
     # println()
-    println("UserOperator functor $uo")
+    #~ println("UserOperator functor $uo")
     # @show uo
     # dd = decldict(netid(uo))
     # @show _op_dictionaries()

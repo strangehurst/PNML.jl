@@ -760,7 +760,7 @@ placetype(pmt::ParseMarkingTerm) = pmt.placetype
 
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; ids::Tuple)
     check_nodename(marknode, "structure")
-    println("\n(pmt::ParseMarkingTerm) ")
+    #println("\n(pmt::ParseMarkingTerm) ")
     # @show placetype(pmt)
     #@show sortof(placetype(pmt))
     if EzXML.haselement(marknode)
@@ -824,7 +824,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; ids::Tuple)
     check_nodename(inscnode, "structure")
-    println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
+    #println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
 
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
@@ -869,12 +869,9 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; ids::Tup
     return (inscript, sortof(inscript))
 end
 
-# default inscription with sort of adjacent place
-def_insc(netdata, source, target) = begin
-    # Core PNML specification allows arcs from place to place & transition to transition.
-    # Here we support symmetric nets that restrict arcs and
-    # assume exactly one is a place (and the other a transition).
-    place = if haskey(placedict(netdata), source)
+"adjacent place of an arc is either the `source` or `target`"
+function adjacent_place(netdata, source, target)
+    if haskey(placedict(netdata), source)
         @assert haskey(transitiondict(netdata), target)
         placedict(netdata)[source]
     elseif haskey(placedict(netdata),target)
@@ -883,6 +880,14 @@ def_insc(netdata, source, target) = begin
     else
         error("inscription place not found, source = $source, target = $target")
     end
+end
+
+# default inscription with sort of adjacent place
+function def_insc(netdata, source, target)
+    # Core PNML specification allows arcs from place to place & transition to transition.
+    # Here we support symmetric nets that restrict arcs and
+    # assume exactly one is a place (and the other a transition).
+    place = adjacent_place(netdata, source, target)
     placesort = sortof(place)
     #@show place placesort
 
