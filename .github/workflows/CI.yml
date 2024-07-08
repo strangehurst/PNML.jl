@@ -10,14 +10,14 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.11-rc1'
+          - 'pre'
         os:
           - ubuntu-latest
         arch:
           - x64
     steps:
       - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1.10'
       - uses: julia-actions/julia-buildpkg@v1
