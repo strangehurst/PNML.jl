@@ -48,8 +48,7 @@ There is GUI focus in the core pnml. Most of the Petri Net components, including
 
 The high-level marking, inscription, condition and declaration are where the hard work waits.
 
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the Schema as definitive like the 'primer' counsels. That is what any XML validation tool works from.
-
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the RelaxNG Schema as definitive like the 'primer' counsels. That is what any XML validation tool works from.
 
 ## Interoperability
 
@@ -194,7 +193,9 @@ __TBD__
 
 ## Notes on Petri Nets
 
-### _Petri Nets as Multiset Rewriting Systems in a Linear Framework_, Iliano Cervesato
+### Multiset Rewriting Systems
+
+I. Cervesato: [Petri Nets as Multiset Rewriting Systems in a Linear Framework](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=d5e629e53d831d63d04ac1520e7f7774273488b8)
 
 This addresses Place Transition Nets. High-level Petri nets explictily use multisets.
 
@@ -221,7 +222,10 @@ inscription/marking.
 
 [www.pnml.org](https://www.pnml.org/)
 
+L.M. Hillah and E. Kindler and F. Kordon and L. Petrucci and N. Trèves:
 [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)
+Petri Net Newsletter 76:9--28, October 2009 (originally presented at the 10th International workshop on Practical Use of Colored Petri Nets and the CPN Tools -- CPN'09).
+
 
 ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-1:2019 — Part 1: Concepts, definitions and graphical notation*](https://www.iso.org/en/contents/data/standard/06/72/67235.html)
@@ -229,10 +233,15 @@ ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
-[github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework)
-"hosts the source code of PNML Framework,
-the companion tool of the International Standard ISO/IEC 15909-2"
-As an Eclipse/Java construction using Eclipse Public License 1.0,
+[PNML Framework](https://pnml.lip6.fr/)
+"... a free and open-source prototype implementation of ISO/IEC-15909, International Standard on Petri Nets".
+The framework is an Eclipse/Java construction using Eclipse Public License 1.0.
+Uses Model-Driven Engineering to provide generated APIs.
+
+[github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework) hosts the source code of PNML Framework.
+See [apidocs](https://pnml.lip6.fr/pnmlframework/apidocs/index.html) and
+[XMLTestFilesRepository](https://github.com/lip6/pnmlframework/tree/master/pnmlFw-Tests/XMLTestFilesRepository).
+
 
 [github.com/loig/pinimili](https://github.com/loig/pinimili)
 Go language.
@@ -245,3 +254,13 @@ Rust language.
 
  [Browsable PNML Grammar from Grammar Zoo](https://slebok.github.io/zoo/automata/petri/pnml/standard/symmetric/extracted/index.html)
  For Symmetric Nets.
+
+nLab [multisorted\_algebraic\_theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
+
+[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) is another Eclipse/Java EMF thing.
+[github](https://github.com/ekkart/ePNK) has the source, documentation, examples.
+
+"The [Model Checking Contest](https://mcc.lip6.fr/) has two different parts:
+the Call for Models, which gathers Petri net models proposed by the scientific community,
+and the Call for Tools, which benchmarks verification tools developed within the scientific community."
+Each year new models are added to the contest.
