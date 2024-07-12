@@ -1,10 +1,10 @@
 # Start with a copy of Petri.jl examples/lotka-volterra.jl.
 #
-using PNML
-using Petri
+using PNML: PNML, SimpleNet, place_idset, transition_function, initial_markings, rates
+using Petri: Petri, Model, Graph, ODEProblem
 using LabelledArrays
-using Plots
-using OrdinaryDiffEq
+using Plots: Plots
+using OrdinaryDiffEq: OrdinaryDiffEq, Tsit5
 
 
 """
@@ -12,7 +12,7 @@ PNML model for the original example below. Note that the type is "nonstandard"!
 """
  str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="nonstandard">
+        <net id="net0" type="continuous">
         <page id="page0">
             <place id="rabbits"> <initialMarking> <text>100.0</text> </initialMarking> </place>
             <place id="wolves">  <initialMarking> <text>10.0</text> </initialMarking> </place>
@@ -47,9 +47,14 @@ S = PNML.place_idset(net) # [:rabbits, :wolves]
 #       predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
 #       death=(LVector(wolves=1), LVector()),
 #     )
+
+# AlgebraicJulia wants LabelledPetriNet constructed with
+# with Varargs pairs of transition_name=>((input_states)=>(output_states))
+# example LabelledPetriNet([:S, :I, :R], :inf=>((:S,:I)=>(:I,:I)), :rec=>(:I=>:R))
+
 lotka = Petri.Model(S, Δ)
 
-display(Graph(lotka))
+display(Petri.Graph(lotka))
 
 
 # **Step 2:** Define the parameters and transition rates
@@ -65,7 +70,8 @@ tspan = (0.0,100.0)
 #
 # Finally we can generate a solver and solve the simulation
 
-prob = ODEProblem(lotka, u0, tspan, β) # transform PetriNet problem using vectorfield(m)
-sol = OrdinaryDiffEq.solve(prob,Tsit5(),reltol=1e-8,abstol=1e-8)
+# AlgebraicPetri.ODEProblem uses a AlgebraicPetri.AbstractetriNet a C-Set
+prob = Petri.ODEProblem(lotka, u0, tspan, β) # transform using Petri.vectorfield(m)
+sol = OrdinaryDiffEq.solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8)
 
-plot(sol)
+display(Plots.plot(sol))

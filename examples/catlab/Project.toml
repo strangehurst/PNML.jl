@@ -1,7 +1,6 @@
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
-AlgebraicRewriting = "725a01d3-f174-5bbd-84e1-b9417bad95d9"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
@@ -26,7 +25,6 @@ PrettyPrint = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
 PrettyPrinting = "54e16d92-306c-5ea0-a30b-337be88ac337"
 ProfileView = "c46f51b8-102a-5cf2-8d2c-8597cb0e0da7"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-SnoopCompile = "aa65fe97-06da-5843-b5b1-d5d13cad87d2"
 SnoopCompileCore = "e2b509da-e806-4183-be48-004708413034"
 
 [extras]
