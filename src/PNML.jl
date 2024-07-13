@@ -81,6 +81,7 @@ Multisets.set_key_value_show()
 using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
 using DocStringExtensions
+using Compat: @compat
 
 include("Core/PnmlTypeDefs.jl")
 Reexport.@reexport using .PnmlTypeDefs
@@ -167,6 +168,7 @@ const TOPDECLDICTIONARY::Dict{Symbol,DeclDict} = Dict{Symbol,DeclDict}()
 export @xml_str, xmlroot
 export parse_str, parse_file, parse_pnml
 export PnmlException, MissingIDException, MalformedException
+@compat public place_idset, transition_function, initial_markings, rates
 
 include("precompile.jl")
 
