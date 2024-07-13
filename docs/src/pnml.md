@@ -233,6 +233,10 @@ ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
+[Well-formed Petri nets](https://en.wikipedia.org/wiki/Well-formed_Petri_net)
+"...only a limited set of operators are available (identify, broadcast, successor and predecessor functions are allowed on circular finite types)".
+Restrictions that differentiates `SymmetricNet` and `HLPNG`.
+
 [PNML Framework](https://pnml.lip6.fr/)
 "... a free and open-source prototype implementation of ISO/IEC-15909, International Standard on Petri Nets".
 The framework is an Eclipse/Java construction using Eclipse Public License 1.0.
