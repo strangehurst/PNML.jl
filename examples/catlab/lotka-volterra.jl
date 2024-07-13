@@ -8,7 +8,7 @@ using OrdinaryDiffEq: OrdinaryDiffEq, Tsit5
 
 
 """
-PNML model for the original example below. Note that the type is "nonstandard"!
+PNML model for the original example below. Note that the type is "continuous"!
 """
  str = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
