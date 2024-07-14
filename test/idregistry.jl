@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, Logging
+using PNML, ..TestUtils, JET, Logging
 const idregistry = ScopedValue{PnmlIDRegistry}()
 
 @testset "ID registry" begin

@@ -31,7 +31,6 @@ module PNML
 Configuration with default values that can be overidden by a LocalPreferences.toml.
 # Options
   - `indent_width::Int`: Indention of nested lines.
-  - `lock_registry::Bool`: Lock registry with a `ReentrantLock`.
   - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
   - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning.
   - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
@@ -41,7 +40,6 @@ Configuration with default values that can be overidden by a LocalPreferences.to
 """
 Base.@kwdef mutable struct PnmlConfig
     indent_width::Int           = 4
-    lock_registry::Bool         = true
     text_element_optional::Bool = true
     verbose::Bool           = false
     warn_on_fixup::Bool     = false
@@ -98,10 +96,10 @@ const idregistry = ScopedValue{PnmlIDRegistry}() # undefined
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
-include("Core/xmlutils.jl")
 
 include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
+include("Core/anyelement.jl") # AnyElement, DictType
 
 # Parts of Labels and Nodes.
 include("Core/Terms/dots.jl")
@@ -128,6 +126,7 @@ include("Core/graphics.jl")
 include("Core/toolinfos.jl")
 
 # Labels
+#include("Core/anyelement.jl")
 include("Core/labels.jl")
 include("Core/name.jl")
 include("Core/sorttype.jl")
@@ -146,19 +145,22 @@ include("Core/model.jl") # Holds multiple PnmlNets.
 
 include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
 
-# Petri Nets
+# PARSE
+# include("Parse/xmlutils.jl")
+# include("Parse/parseutils.jl")
+# include("Parse/anyelement.jl")
+# include("Parse/parse.jl")
+# include("Parse/graphics.jl")
+# include("Parse/declarations.jl")
+# include("Parse/terms.jl")
+# include("Parse/toolspecific.jl")
+include("parser/Parser.jl")
+Reexport.@reexport using .Parser
+
+# API: Petri Nets, metagraph
 include("PNet/petrinet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
-
-# PARSE
-include("Parse/parseutils.jl")
-include("Parse/anyelement.jl")
-include("Parse/parse.jl")
-include("Parse/graphics.jl")
-include("Parse/declarations.jl")
-include("Parse/terms.jl")
-include("Parse/toolspecific.jl")
 
 """
 Per-net dictionary of declaration dictionaries, [`DeclDict`](@ref), keyed by net id.

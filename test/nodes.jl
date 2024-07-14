@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, XMLDict
+using PNML, ..TestUtils, JET, XMLDict
 
 @testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
     node = xml"""

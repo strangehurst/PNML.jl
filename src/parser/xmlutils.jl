@@ -41,7 +41,6 @@ $(TYPEDSIGNATURES)
 Return vector of `el`'s immediate children with `tag`.
 """
 function allchildren(node::XMLNode, tag::AbstractString; namespace::AbstractString = pnml_ns)
-    #EzXML.findall("./child::x:$tag | ./child::$tag", node, ("x" => namespace,))
     EzXML.findall("./x:$tag | ./$tag", node, ("x" => namespace,))
 end
 
@@ -51,7 +50,6 @@ $(TYPEDSIGNATURES)
 Return vector of node's immediate children and decendents with `tag`.
 """
 function alldecendents(node::XMLNode, tag::AbstractString; namespace::AbstractString = pnml_ns)
-    #EzXML.findall("./decendent::x:$tag | ./decendent::$tag", node, ("x" => namespace,))::Vector{XMLNode}
     EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 

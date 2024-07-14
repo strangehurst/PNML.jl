@@ -20,7 +20,6 @@ julia> PNML.save_config!(PNML.CONFIG[]); # Will be automatically read next time 
 function save_config!(config::PnmlConfig = CONFIG[])
     @set_preferences!(
         "indent_width" => config.indent_width,
-        "lock_registry" => config.lock_registry,
         "text_element_optional" => config.text_element_optional,
         "verbose" => config.verbose,
         "warn_on_namespace" => config.warn_on_namespace,
@@ -32,7 +31,6 @@ end
 
 function read_config!(config::PnmlConfig)
     config.indent_width = @load_preference("indent_width", config.indent_width)
-    config.lock_registry = @load_preference("lock_registry", config.lock_registry)
     config.text_element_optional = @load_preference("text_element_optional", config.text_element_optional)
     config.verbose = @load_preference("verbose", config.verbose)
     config.warn_on_namespace = @load_preference("warn_on_namespace", config.warn_on_namespace)
@@ -43,7 +41,6 @@ end
 
 function Base.show(io::IO, config::PnmlConfig)
     println(io, "indent_width          = ", config.indent_width)
-    println(io, "lock_registry         = ", config.lock_registry)
     println(io, "text_element_optional = ", config.text_element_optional)
     println(io, "verbose               = ", config.verbose)
     println(io, "warn_on_namespace     = ", config.warn_on_namespace)

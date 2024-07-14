@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, ..TestUtils, JET
 
 @testset "pntd_symbol" begin
     @test_opt pntd_symbol("foo")

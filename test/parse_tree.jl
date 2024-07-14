@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, OrderedCollections, AbstractTrees
+using PNML, ..TestUtils, JET, OrderedCollections, AbstractTrees
 
 const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">

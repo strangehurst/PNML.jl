@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, LabelledArrays, AbstractTrees
+using PNML, ..TestUtils, JET, LabelledArrays, AbstractTrees
 using Test, Logging
 
 testlogger = TestLogger()

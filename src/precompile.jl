@@ -4,7 +4,7 @@ PrecompileTools.@setup_workload begin
     PrecompileTools.@compile_workload begin
         if false #! begin #! redirect_stdio(; stdout=devnull, stderr=devnull) do
 
-        let pntds = ["pnmlcore", "ptnet", "nonstandard", "open"]
+        let pntds = ["pnmlcore", "ptnet", "continuous"]
             for pntd in pntds
                 #@show pntd
                 parse_str("""<?xml version="1.0"?>

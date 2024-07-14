@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, ..TestUtils, JET
 
 @testset "Show" begin
     empty!(PNML.TOPDECLDICTIONARY)

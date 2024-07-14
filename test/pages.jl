@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET, AbstractTrees
+using PNML, ..TestUtils, JET, AbstractTrees
 
 function verify_sets(net::PnmlNet)
     println("\nverify sets and structure ++++++++++++++++++++++")

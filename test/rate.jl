@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, ..TestUtils, JET
 
 println("RATE")
 @testset "get rate label $pntd" for pntd in all_nettypes()

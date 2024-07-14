@@ -1,4 +1,4 @@
-using PNML, EzXML, ..TestUtils, JET
+using PNML, ..TestUtils, JET
 using OrderedCollections
 
 println("EXCEPTIONS")
