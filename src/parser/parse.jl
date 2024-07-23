@@ -57,32 +57,38 @@ function parse_pnml(node::XMLNode)
     xmlnets = allchildren(node ,"net") #! allocate Vector{XMLNode}
     isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
 
+    # Vector of ID registries of the same length as the number of nets. May alias.
+    IDRegistryVec = PnmlIDRegistry[]
+    # Per-net vector of declaration dictionaries.
+    TOPDECLVEC = DeclDict[]
+
     #---------------------------------------------------------------------
     # Initialize/populate global Vector{PnmlIDRegistry}. Also a field of `Model`.
+    # And the declaration dictionary structure,
     #---------------------------------------------------------------------
-    empty!(IDRegistryVec) # Tests, use in scripts may leave a polluted global.
+    empty!(TOPDECLVEC) #  This prevents more than one PnmlModel existing.
+    # Need a netid to populate
     for _ in xmlnets
-        push!(IDRegistryVec, registry())
+        push!(IDRegistryVec, PnmlIDRegistry())
+        push!(TOPDECLVEC, DeclDict())
     end
     length(xmlnets) == length(IDRegistryVec) ||
         error("length(xmlnets) $(length(xmlnets)) != length(IDRegistryVec) $(length(IDRegistryVec))")
-    #! @show IDRegistryVec
+    length(xmlnets) == length(TOPDECLVEC) ||
+        error("length(xmlnets) $(length(xmlnets)) != length(TOPDECLVEC) $(length(TOPDECLVEC))")
 
-    #---------------------------------------------------------------------
-    # Clear out TOPDECLDICT. This prevents more than one PnmlModel existing.
-    #---------------------------------------------------------------------
-    empty!(TOPDECLDICTIONARY)
 
     # Do not YET have a PNTD defined. Each net can be different net type.
-    # Each net should think it has its own ID registry.
+    # Each net should think it has its own ID registry and declaration dictionary.
     net_tup = ()
-    for (net, reg) in zip(xmlnets, IDRegistryVec)
-        net_tup = (net_tup..., @with(idregistry => reg, parse_net(net)))
+    for (net, reg, ddict) in zip(xmlnets, IDRegistryVec, TOPDECLVEC)
+        net_tup = (net_tup..., @with(PNML.idregistry => reg, PNML.DECLDICT => ddict, parse_net(net)))
+
         #! Allocation? RUNTIME DISPATCH? This is a parser. What did you expect?
     end
     length(net_tup) > 0 || error("length(net_tup) is zero")
 
-    PnmlModel(net_tup, namespace, IDRegistryVec)
+    PnmlModel(net_tup, namespace, IDRegistryVec) #TODO Also keep TOPDECLVEC
 end
 
 """
@@ -91,7 +97,7 @@ Return a [`PnmlNet`](@ref)`.
 """
 function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     nn = check_nodename(node, "net")
-    netid = register_idof!(idregistry[], node)
+    netid = register_idof!(PNML.idregistry[], node)
 
     # Parse the required-by-specification petri net type input.
     pn_typedef = PnmlTypeDefs.pnmltype(attribute(node, "type", "$nn missing type"))
@@ -114,13 +120,9 @@ end
 Parse PNML <net> with a defined PnmlType used to set the expected behavior of labels
 attached to the nodes of a petri net graph, including: marking, inscription, condition and sorttype.
 
-The `ids` tuple contains PNML ID `Symbol`s. The first is for this PnmlNet.
-It is used to allocate a [`DeclDict`](@ref), a per-net collection of all <declarations> content.
-[`TOPDECLDICTIONARY`](@ref) is a dictionary keyed by the PnmlNet's ID that holds a `DeclDict`.
 Page IDs are appended as the XML tree is descended, followed by node IDs.
 
-Note the use of `decldict(netid(ids))` to access the per-net data structure
-as  a global wherever the netid is known.
+Note the use of scoped value `DECLDICT[]` to access the per-net data structure as a scoped global.
 """
 function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     netid = first(ids)
@@ -135,17 +137,11 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     tunesize!(netdata)
     tunesize!(netsets)
 
-    #! println("\nparse_net_1 $pntd $(repr(netid))")
-    #! @show pgtype typeof(netdata)
-    #! println()
-
-    @assert isregistered(idregistry[], netid)
-    @assert !haskey(TOPDECLDICTIONARY, netid) "net $netid already in TOPDECLDICTIONARY, keys: $(collect(keys(TOPDECLDICTIONARY)))"
-    TOPDECLDICTIONARY[netid] = DeclDict() # Allocate empty per-net global dictionary.
+    @assert isregistered(PNML.idregistry[], netid)
 
     # Parse *ALL* Declarations first (assuming this the tree root),
     # this includes any Declarations attached to Pages.
-    # Place any/all declarations in decldict(netid).
+    # Place any/all declarations in DECLDICT[].
     # It is like we are flattening only the declarations.
     # We collect all the toolinfos.
     # Only the first <declaration> text and graphics will be preserved.
@@ -153,11 +149,10 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     decls = alldecendents(node, "declaration") # There may be none.
     declaration = parse_declaration(decls, pntd; ids)::Declaration
 
-    fill_nonhl!(decldict(netid); ids) # All net types have these. Decl def takes precenence.
+    fill_nonhl!(DECLDICT[]; ids) # All net types have these. Decl def takes precenence.
 
-    if !isempty(decldict(netid))
-        #@show(netid, decldict(netid)) #! debug
-        validate_declarations(decldict(netid))
+    if !isempty(DECLDICT[])
+        validate_declarations(DECLDICT[])
     end
 
     namelabel::Maybe{Name} = nothing
@@ -177,9 +172,12 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     labels::Maybe{Vector{PnmlLabel}} = nothing
 
     # Create net then fill
-    net = PnmlNet(; type=pntd, id=netid, pagedict, netdata, page_set=page_idset(netsets),
-                   declaration,
-                   namelabel, tools, labels)
+    net = PnmlNet(; type=pntd, id=netid,
+                    pagedict, netdata, page_set=page_idset(netsets),
+                    declaration, # Wraps a DeclDict.
+                    namelabel, tools, labels,
+                    idregistry=PNML.idregistry[]
+                    )
 
     # Fill the pagedict, netsets, netdata by depth first traversal.
     for child in EzXML.eachelement(node)
@@ -273,7 +271,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
             labels = add_label(labels, child, pntd)
         end
     end
-
+    #! Attach empty DeclDict to page, all declarations are attached to PnmlNet!
     return Page(pntd, pageid, Declaration(), name, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
@@ -286,7 +284,6 @@ end
 "Fill place_set, place_dict."
 function parse_place!(place_set, netdata, child, pntd; ids)
     pl = parse_place(child, pntd; ids)::valtype(netdata.place_dict)
-    #@show "parse_place!" pl valtype(placedict(netdata))
     push!(place_set, pid(pl))
     netdata.place_dict[pid(pl)] = pl
     return nothing
@@ -295,7 +292,6 @@ end
 "Fill transition_set, transition_dict."
 function parse_transition!(transition_set, netdata, child, pntd; ids)
     tr = parse_transition(child, pntd; ids)::valtype(netdata.transition_dict)
-    #@show "parse_transition!" tr valtype(transitiondict(netdata))
     push!(transition_set, pid(tr))
     netdata.transition_dict[pid(tr)] = tr
     return nothing
@@ -304,8 +300,6 @@ end
 "Fill arc_set, arc_dict."
 function parse_arc!(arc_set, netdata, child, pntd; ids)
     a = parse_arc(child, pntd; ids, netdata)
-    # println("parse_arc!");
-    # @show a valtype(arcdict(netdata))
     a isa valtype(arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a)) ids")
     push!(arc_set, pid(a))
@@ -336,7 +330,7 @@ see [`fill_nonhl!`](@ref)
 """
 function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
     check_nodename(node, "place")
-    id   = register_idof!(idregistry[], node)
+    id   = register_idof!(PNML.idregistry[], node)
     ids  = tuple(ids..., id)
     mark = nothing
     sorttype::Maybe{SortType} = nothing
@@ -420,7 +414,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType; ids::Tuple)
     id   = register_idof!(idregistry[], node)
     ids  = tuple(ids..., id)
     name::Maybe{Name} = nothing
-    cond::Maybe{Condition} = nothing
+    cond::Maybe{PNML.Labels.Condition} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
@@ -454,7 +448,7 @@ Construct an `Arc` with labels specialized for the PnmlType.
 """
 function parse_arc(node, pntd; ids::Tuple, netdata)
     check_nodename(node, "arc")
-    arcid = register_idof!(idregistry[], node)
+    arcid = register_idof!(PNML.idregistry[], node)
     ids = tuple(ids..., arcid)
     source = Symbol(attribute(node, "source", "missing source for arc $arcid"))
     target = Symbol(attribute(node, "target", "missing target for arc $arcid"))
@@ -507,7 +501,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_refPlace(node::XMLNode, pntd::PnmlType; ids::Tuple)
     nn = check_nodename(node, "referencePlace")
-    id = register_idof!(idregistry[], node)
+    id = register_idof!(PNML.idregistry[], node)
     ids = tuple(ids..., id)
     ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute. trail = $ids"))
     name::Maybe{Name} = nothing
@@ -537,7 +531,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_refTransition(node::XMLNode, pntd::PnmlType; ids::Tuple)
     nn = check_nodename(node, "referenceTransition")
-    id = register_idof!(idregistry[], node)
+    id = register_idof!(PNML.idregistry[], node)
     ids = tuple(ids..., id)
     ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute. trail = $ids"))
     name::Maybe{Name} = nothing
@@ -731,7 +725,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     #@warn pntd l.text l.term ids
 
     mark = if isnothing(l.term) # Default to an empty multiset whose basis is placetype
-        els = elements(placetype) # Finite sets return non-empty iteratable.
+        els = sortelements(placetype) # Finite sets return non-empty iteratable.
         @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
         el = first(els) # Default to first of finite sort's elements (how often is this best?)
         pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
@@ -892,7 +886,7 @@ function def_insc(netdata, source, target)
     #@show place placesort
 
     # Default to an  multiset whose basis is placetype
-    els = elements(placesort) # Finite sets return non-empty iteratable.
+    els = sortelements(placesort) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # Symmetric Net requires finite sets. #^ HLPNG?
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
     inscr = pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
@@ -936,14 +930,14 @@ function parse_condition end
 function parse_condition(node::XMLNode, pntd::T; ids::Tuple) where {T<:AbstractHLCore}
     check_nodename(node, "condition")
     l = parse_label_content(node, parse_condition_term, pntd; ids)
-    Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
+    PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
 
 function parse_condition(node::XMLNode, pntd::PnmlType; ids::Tuple) # Non-HL
     check_nodename(node, "condition")
     l = parse_label_content(node, parse_condition_term, pntd; ids)
     #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
-    Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
+    PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
 
 """
@@ -999,7 +993,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Structure`](@ref) holding an XML <structure>.
+Return [`PNML.Labels.Structure`](@ref) holding an XML <structure>.
 Should be inside of an PNML label.
 A "claimed" label usually elids the <structure> level (does not call this method).
 """

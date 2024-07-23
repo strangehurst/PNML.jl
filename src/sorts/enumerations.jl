@@ -2,8 +2,8 @@
 
 """
 $(TYPEDEF)
-See [`FiniteEnumerationSort`](@ref), [`CyclicEnumerationSort`](@ref).
-Both hold an ordered collection of [`FEConstant`](@ref) accessable through
+See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
+Both hold an ordered collection of [`PNML.Declarations.FEConstant`](@ref) accessable through
 the `elements` iterator.
 """
 abstract type EnumerationSort <: AbstractSort end
@@ -18,12 +18,12 @@ netid(sort::EnumerationSort) = netid(sort.ids)
 refs(sort::EnumerationSort) = sort.fec_refs
 
 """
-    elements(sort::EnumerationSort) -> Iterator
+    sortelements(sort::EnumerationSort) -> Iterator
 
-Return iterator into feconstant(decldict(netid)) for this sort's `FEConstants`.
+Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-elements(sort::EnumerationSort) = Iterators.map(Fix1(feconstant, decldict(netid(sort))), refs(sort))
+sortelements(sort::EnumerationSort) = Iterators.map(Fix1(feconstant, PNML.DECLDICT[]), refs(sort))
 
 
 "Return number of `FEConstants` contained by this sort."
@@ -39,14 +39,14 @@ metadata, allowing attachment of Partition/PartitionElement and id trail
 """
 @auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{T<:NTuple{<:Any, <:Symbol}, M} <: EnumerationSort
     fec_refs::T
-    ids::M  #
+    ids::M  #! Trail?
 end
 CyclicEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(fe_refs, ids)
 
-struct X{T<:NTuple{<:Any, <:Symbol}, M<:Any}
-    fec_refs::T
-    ids::M #^ metadata
-end
+# struct X{T<:NTuple{<:Any, <:Symbol}, M<:Any}
+#     fec_refs::T
+#     ids::M #^ metadata #! Trail
+# end
 
 """
 $(TYPEDEF)
@@ -54,7 +54,7 @@ Wraps tuple of IDREFs into feconstant(decldict).
 """
 @auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{T<:NTuple{<:Any, <:Symbol}, M} <: EnumerationSort
     fec_refs::T
-    ids::M #^ metadata
+    ids::M #^ metadata #! Trail
 end
 FiniteEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(fe_refs, ids)
 
@@ -63,7 +63,7 @@ FiniteEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerat
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
     io = inc_indent(io)
-    for  (i, fec) in enumerate(elements(esort))
+    for  (i, fec) in enumerate(sortelements(esort))
         print(io, '\n', indent(io), fec);
         i < length(esort) && print(io, ",")
     end
@@ -76,7 +76,7 @@ end
 @auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    ids::Tuple # trail of IDs, first is netid.
+    ids::Tuple #! Trail of IDs, first is netid.
 end
 #FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
 FiniteIntRangeSort(start, stop; ids::Tuple) = FiniteIntRangeSort(start, stop, ids)
@@ -86,7 +86,7 @@ start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
 
 "Return iterator from range start to range stop, inclusive"
-elements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(fir))
+sortelements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(fir))
 
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")
@@ -95,7 +95,7 @@ end
 """
 Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
 """
-struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
+struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
     value::T
     sort::FiniteIntRangeSort #! de-duplicate?
 end

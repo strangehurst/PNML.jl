@@ -60,8 +60,6 @@ Return value of condition.
 """
 condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
 
-default_condition(transition::Transition) = default_condition(transition.pntd)
-
 function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
     show(io, condition(trans))

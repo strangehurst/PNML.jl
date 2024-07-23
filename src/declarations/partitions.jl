@@ -41,7 +41,7 @@ s = """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Establishes an equivalence class over a [`PartitionSort`](@ref)'s emumeration.
+Establishes an equivalence class over a [`PNML.Declarations.PartitionSort`](@ref)'s emumeration.
 See also [`FiniteEnumerationSort`](@ref).
 Gives a name to an element of a partition. The element is an equivalence class.
 PartitionElement is different from FiniteEnumeration, CyclicEnumeration, FiniteIntRangeSort
@@ -73,7 +73,6 @@ $(TYPEDFIELDS)
 
 Partition sort declaration is a finite enumeration that is partitioned into sub-ranges of enumerations.
 Is the sort at the partition or the element level (1 sort ot many sorts?)
-
 """
 struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclaration
     id::Symbol # Schema OpDecl is id, name
@@ -88,7 +87,7 @@ PartitionSort(id::Symbol, name::AbstractString, sort::AbstractSort, els::Vector;
     PartitionSort(id, name, sort,  els, ids)
 
 sortof(partition::PartitionSort) = partition.def
-elements(partition::PartitionSort) = partition.element
+sortelements(partition::PartitionSort) = partition.element
 
 # TODO Add Partition/PartitionElement methods here
 # list PartitionElement ids & names
@@ -97,11 +96,11 @@ elements(partition::PartitionSort) = partition.element
 
 "Iterator over partition element PNML IDs"
 function element_ids(ps::PartitionSort, netid::Symbol)
-    Iterators.map(pid, elements(ps))
+    Iterators.map(pid, sortelements(ps))
 end
 "Iterator over partition element names"
 function element_names(ps::PartitionSort, netid::Symbol)
-    Iterators.map(name, elements(ps))
+    Iterators.map(name, sortelements(ps))
 end
 
 function Base.show(io::IO, ps::PartitionSort)
@@ -110,7 +109,7 @@ function Base.show(io::IO, ps::PartitionSort)
         io = inc_indent(io)
         println(io, indent(io), sortof(ps), ",");
         print(io, "FE[")
-        e = elements(ps)
+        e = sortelements(ps)
         for  (i, c) in enumerate(e)
             print(io, '\n', indent(io)); show(io, c);
             i < length(e) && print(io, ",")

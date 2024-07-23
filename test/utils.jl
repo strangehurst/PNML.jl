@@ -4,6 +4,9 @@ import EzXML
 @testset "CONFIG" begin
     @show PNML.CONFIG[]
 end
+# @testset "DECLDICT" begin
+#     @show typeof(PNML.DECLDICT[])
+# end
 
 @testset "_evaluate" begin
     f() = "testing"
@@ -40,17 +43,16 @@ end
 
 
 @testset "default_condition($pntd)" for pntd in all_nettypes()#ishighlevel)
-    c = default_condition(pntd)::PNML.Condition #! TestUtils & Base export Condition
+    c = default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
     #println("default_condition($pntd) = ", c)
-    cv = value(c)::Bool
+    cv = Labels.value(c)::Bool
     #@test sortof(c) isa BoolSort
     @test cv == true
 end
 #println()
+@with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "default_inscription($pntd)" for pntd in all_nettypes()
-    empty!(PNML.TOPDECLDICTIONARY)
-    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-    PNML.fill_nonhl!(dd; ids=(:NN,))
+    PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
 
     i = if ishighlevel(pntd)
         # placetype = SortType("test", UserSort(:integer; ids=(:nothing,)))
@@ -60,6 +62,7 @@ end
         default_inscription(pntd)
     end
     #println("default_inscription($pntd) = ", i)
+end
 end
 println()
 @testset "default_typeusersort($pntd)" for pntd in all_nettypes()

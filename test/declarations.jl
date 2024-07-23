@@ -17,7 +17,7 @@ function _subtypes!(out, type::Type)
 end
 
 sorts() = _subtypes(AbstractSort)
-@with PNML.idregistry => registry() begin
+@with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "parse_sort $pntd" for pntd in core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; ids=(:NN,))::UserSort
@@ -111,17 +111,16 @@ sorts() = _subtypes(AbstractSort)
 end
 end
 
+@with PNML.DECLDICT => PNML.DeclDict() begin
 @testset "empty declarations $pntd" for pntd in core_nettypes()
-    empty!(PNML.TOPDECLDICTIONARY)
-    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
+    #PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
     # The attribute should be ignored.
     decl = parse_declaration(xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
         </declaration>""", pntd; ids=(:NULLNET,))::Declaration
-
+    @show decl
     @test length(decl) == 0 # nothing in <declarations>
     @test isempty(decl)
-    @test isempty(decldict(:NULLNET))
     @test PNML.graphics(decl) === nothing
     @test PNML.tools(decl) === nothing
 
@@ -132,6 +131,7 @@ end
     @test_call PNML.declarations(decl)
     @test_call PNML.graphics(decl)
     @test_call PNML.tools(decl)
+end
 end
 
 @testset "namedsort declaration $pntd" for pntd in core_nettypes()
@@ -161,26 +161,29 @@ end
         </structure>
     </declaration>
     """
-    empty!(PNML.TOPDECLDICTIONARY)
-    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
-    @with PNML.idregistry => PNML.registry() begin
+
+    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         decl = parse_declaration(node, pntd; ids=(:NULLNET,))
         @test typeof(decl) <: PNML.Declaration
-        PNML.declarations(decl)
 
-        # Examine each declaration in the vector: 3 named sorts
-        for nsort in PNML.declarations(decl)
+        @show decl PNML.idregistry[]
+        # Examine dictionary of 3 named sorts
+        @test length(PNML.namedsorts(decldict(decl))) >= 3
+        for nsort in values(PNML.namedsorts(decldict(decl)))
+            # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
+            # by wraping an ID of a declared sort.
             # named sort -> cyclic enumeration -> fe constant
             #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
-
+            @show nsort pid(nsort)
             @test isregistered(PNML.idregistry[], pid(nsort))
             #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
             #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
             #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
 
-            sortname = PNML.name(nsort)
-            #!cesort   = PNML.sortof(nsort)
-            #!feconsts = PNML.elements(cesort) # should be iteratable ordered collection
+            @show sortname = PNML.name(nsort)
+            @show cesort   = PNML.sortof(nsort)
+            @show feconsts = PNML.sortelements(cesort) # should be iteratable ordered collection
             #@test feconsts isa Vector{PNML.FEConstant}
             #!@test length(feconsts) == 2
             # for fec in feconsts
@@ -197,7 +200,6 @@ end
 
 
 @testset "partition declaration $pntd" for pntd in core_nettypes()
-    PNML.TOPDECLDICTIONARY[:NULLNET] = PNML.DeclDict()
     node = xml"""
     <declaration>
         <structure>
@@ -230,12 +232,13 @@ end
     </declaration>
     """
 
-    @with PNML.idregistry => PNML.registry() begin
+    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         decl = parse_declaration(node, pntd; ids=(:NULLNET,))
         @test typeof(decl) <: Declaration
 
-        # Examine each declaration in the vector: 3 partition sorts
-        for psort in PNML.declarations(decl)
+        # Examine 3 partition sorts
+        for psort in values(PNML.partitionsorts(decldict(decl)))
             # named partition -> partition element -> fe constant
             @test typeof(psort) <: PartitionSort # is a declaration
 
@@ -244,7 +247,7 @@ end
 
             partname = PNML.name(psort)
             partsort = PNML.sortof(psort)::UserSort
-            part_elements = PNML.elements(psort)::Vector{PartitionElement}
+            part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
             for element in part_elements
                 @test PNML.isregistered(PNML.idregistry[], pid(element))

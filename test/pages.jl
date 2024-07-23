@@ -243,7 +243,7 @@ end
     @test arc_type(pntd) <: PNML.Arc
     @test place_type(pntd) <: PNML.Place
     @test transition_type(pntd) <: PNML.Transition
-    @test condition_type(pntd) <: PNML.Condition
+    @test condition_type(pntd) <: PNML.Labels.Condition
     @test condition_value_type(pntd) <: Bool
     @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     if ishighlevel(pntd)

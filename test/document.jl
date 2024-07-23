@@ -1,7 +1,6 @@
 using PNML, ..TestUtils, JET
 
 @testset "Show" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     model = @test_logs(match_mode=:any,
         # (:warn, "found unexpected label of <page>: text"),
          (:warn, r"^ignoring child of <namedoperator name=g, id=id6> with tag unknown, allowed: 'def', 'parameter'"),
@@ -60,7 +59,6 @@ using PNML, ..TestUtils, JET
 end
 
 @testset "Document & ID Registry" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     emptypage = xmlroot("""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net" type="pnmlcore"> <page id="page"/> </net>
@@ -136,7 +134,6 @@ end
 end
 
 @testset "empty page" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     @test parse_str("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="net" type="pnmlcore"><page id="emptypage"> </page></net>

@@ -14,6 +14,7 @@ One Petri Net of a PNML model.
     namelabel::Maybe{Name}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    idregistry::PnmlIDRegistry
 end
 
 pntd(net::PnmlNet) = net.type
@@ -194,12 +195,7 @@ function Base.show(io::IO, net::PnmlNet)
         print(iio, '\n', indent(iio)); show(iio, page)
     end
     println(io)
-    print(io, "Declarations[")
-    for (i,decl) in enumerate(declarations(decldict(pid(net))))
-        print(iio, "\n", indent(iio)); show(iio, decl)
-        i < length(decldict(pid(net))) && print(iio, ", ")
-    end
-    println(io, "], ")
+    print(io, "Declarations = ", repr(declarations(net)))
     show(io, tools(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
     show(io, nettype(net)); println(io, ")")

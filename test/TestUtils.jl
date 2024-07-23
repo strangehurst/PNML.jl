@@ -5,19 +5,25 @@ Multisets.set_key_value_show()
 @reexport using ScopedValues
 
 @reexport using PNML: PNML
-
+@reexport using PNML.Sorts
+@reexport using PNML.Labels
+@reexport using PNML.Parser
+@reexport using PNML.Declarations
+@reexport using PNML.PnmlIDRegistrys
+@reexport using PNML.PnmlTypeDefs
+@reexport using PNML.PnmlGraphics
 @reexport using PNML: PnmlIDRegistrys, registry, isregistered
 @reexport using PNML: PnmlTypeDefs, core_nettypes, all_nettypes,
     ishighlevel, isdiscrete, iscontinuous
 
-@reexport using PNML: Maybe,
-    XMLNode, xmlroot,  firstchild, allchildren,
+@reexport using PNML: Maybe, DeclDict,
+    XMLNode, xmlroot,  Parser.firstchild, Parser.allchildren,
     XDVT, PnmlMultiset,
     pid, ispid,
     name, has_name,
-    length, arity, tag, value, text, elements,
+    length, arity, tag, value, Labels.text, elements,
     graphics, has_graphics,
-    DictType, AnyElement, anyelement, unparsed_tag
+    DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag
 
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict,
     page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
@@ -31,23 +37,24 @@ Multisets.set_key_value_show()
     RefTransition, reftransition, reftransitions, nreftransitions,
     Arc, arc, arcs, narcs, source, target, has_arc
 
-@reexport using PNML: SimpleNet
-@reexport using PNML: parse_file, parse_str, parse_pnml,
+@reexport using PNML: SimpleNet, labels
+@reexport using PNML.Parser: parse_file, parse_str, parse_pnml,
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,
     parse_initialMarking, parse_inscription, parse_sort, parse_declaration
 
-@reexport using PNML: PnmlLabel, has_label, get_label, get_labels, add_label!, labels
+@reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels,
+    Condition
+@reexport using PNML.Parser: add_label!
 @reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
 
-@reexport using PNML: AbstractDeclaration, Declaration, decldict, refid,
+@reexport using PNML: AbstractDeclaration, Declaration, refid,
     initial_marking, initial_markings,
     inscription,
-    Condition, condition
+    condition
 
-@reexport using PNML:
-default_marking, default_hlmarking,
+@reexport using PNML.Labels: default_marking, default_hlmarking,
     default_inscription, default_hlinscription,
     default_condition,
     default_typeusersort
@@ -63,8 +70,8 @@ default_marking, default_hlmarking,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort,
     UserSort, NamedSort,
-    ListSort, StringSort, TupleSort,
-    sortof
+    ListSort, StringSort, TupleSort, NullSort,
+    sortof, TransitionRate
 
 @reexport using PNML: NumberConstant, DotConstant
 
@@ -95,7 +102,7 @@ function pff(@nospecialize(ft))
         ft === Base.print ||
         ft === Base.println ||
         ft === PNML.unparsed_tag ||
-        ft === PNML.add_label! ||
+        ft === PNML.Parser.add_label! ||
         ft === XMLDict.xml_dict ||
         false
         return false

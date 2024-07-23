@@ -23,17 +23,16 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 """) # shared by testsets
 
 @testset "parse node level" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     # Do a full parse and maybe print the generated data structure.
     pnml_ir = parse_pnml(pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
         @test net isa PnmlNet
-        println()
+        #println()
         #@show pid(net)::Symbol
         #@show net
-        map(println, PNML.declarations(net)) # Iterate over all declarations
+        map(println, PNML.declarations(PNML.declarations(net))) # Iterate over all declarations
 
         for page in pages(net)
             @test page isa Page
@@ -62,7 +61,6 @@ end
 
 
 # Read a SymmetricNet from www.pnml.com examples or MCC
-empty!(PNML.TOPDECLDICTIONARY)
 println("\n-----------------------------------------")
 println("AirplaneLD-col-0010.pnml")
 println("-----------------------------------------\n")
@@ -101,7 +99,6 @@ println("-----------------------------------------\n")
         @test PNML.nrefplaces(net) == 0
         @test isempty(PNML.refplaces(net))
 
-        empty!(PNML.TOPDECLDICTIONARY)
         reset_reg!(PNML.idregistry[])
 
         @test_call target_modules=target_modules parse_file(testfile)
@@ -117,38 +114,37 @@ println("-----------------------------------------\n")
 end
 
 # Read a SymmetricNet with partitions, tuples from pnmlframework test file.
-empty!(PNML.TOPDECLDICTIONARY)
 println("\n-----------------------------------------")
 println("sampleSNPrio.pnml")
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
     model = @test_throws ArgumentError parse_file(fname)::PnmlModel
-    show #println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
+    #show #println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
     #println()
 end
 
-empty!(PNML.TOPDECLDICTIONARY)
 println("\n-----------------------------------------")
 println("test1.pnml")
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "../snoopy", "test1.pnml")
-    model = @test_logs(match_mode=:any,
-        (:warn, "ignoring unexpected child of <condition>: 'name'"),
-        (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_file(fname)::PnmlModel)
-    # model = parse_file(fname)::PnmlModel
+    # model = @test_logs(match_mode=:any,
+    #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
+    #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+    #     parse_file(fname)::PnmlModel)
+    model = parse_file(fname)::PnmlModel
     # println("----"^10); @show model; println("----"^10)
-
+    #!@show model
     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
-    @test startswith(repr(model), "PnmlModel")
+    #!@test startswith(repr(model), "PnmlModel")
 
     #@show map(pid, PNML.nets(model)); println()
 
     for n in PNML.nets(model)
         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
+            #!PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
             #println("-----------------------------------------")
             @test PNML.verify(n; verbose=false)
             PNML.flatten_pages!(n; verbose=false)

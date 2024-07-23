@@ -7,10 +7,8 @@ using PNML, ..TestUtils, JET, XMLDict
         <initialMarking> <text>100</text> </initialMarking>
         </place>
     """
-    empty!(PNML.TOPDECLDICTIONARY)
-    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-    PNML.fill_nonhl!(dd; ids=(:NN,))
-    @with PNML.idregistry => registry() begin
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         placetype = SortType("test", UserSort(:integer; ids=(:nothing,)))
 
         n  = parse_place(node, pntd; ids=(:NN,))
@@ -32,7 +30,8 @@ end
         <hlinitialMarking> <text>100</text> </hlinitialMarking>
         </place>
     """
-    @with PNML.idregistry => registry() begin
+    @with PNML.idregistry => registry() PNML.DECLDICT => DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         n  = parse_place(node, pntd; ids=(:NN,))::Place
         @test_call target_modules=target_modules parse_place(node, pntd; ids=(:NN,))
 
@@ -56,7 +55,8 @@ end
         </condition>
       </transition>
     """
-    @with PNML.idregistry => registry() begin
+    @with PNML.idregistry => registry() PNML.DECLDICT => DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         n = @inferred Transition parse_transition(node, PnmlCoreNet(); ids=(:NN,))
         @test typeof(n) <: Transition
         @test pid(n) === :transition1
@@ -110,8 +110,10 @@ end
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd; ids=(:NN,))
-        @test t isa Transition
+        t = parse_transition(node, pntd; ids=(:NN,))::Transition
+        @test has_label(labels(t), :delay)
+        @show PNML.get_label(labels(t), :delay)
+
         @test PNML.delay(t) isa Tuple
 
         # unbounded interval [4,∞)
@@ -123,8 +125,7 @@ end
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd; ids=(:NN,))
-        @test t isa Transition
+        t = parse_transition(node, pntd; ids=(:NN,))::Transition
         @test PNML.delay(t) isa Tuple
 
         # interval (3,5)
@@ -136,8 +137,7 @@ end
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd; ids=(:NN,))
-        @test t isa Transition
+        t = parse_transition(node, pntd; ids=(:NN,))::Transition
         @test PNML.delay(t) isa Tuple
     end
 end
@@ -195,7 +195,8 @@ end
         </unknown>
     </referenceTransition>
     """
-    @with PNML.idregistry => registry() begin
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
         n = parse_refTransition(node, pntd; ids=(:NN,))::RefTransition
         @test pid(n) === :rt1
@@ -232,7 +233,8 @@ end
     </referencePlace>""", id="rp1", ref="Sync1")
 
     @testset "referencePlaces" for s in [n1, n2]
-        @with PNML.idregistry => registry() begin
+        @with PNML.idregistry => registry()  PNML.DECLDICT => PNML.DeclDict() begin
+            PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
             #n = @test_logs(match_mode=:any,
             #    (:warn, "found unexpected child of <referencePlace>: unknown"),
             n = parse_refPlace(s.node, ContinuousNet(); ids=(:NN,))::RefPlace

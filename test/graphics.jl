@@ -1,5 +1,5 @@
 using PNML, ..TestUtils, JET
-using PNML: x, y
+#using PNML: x, y
 
 @testset "coordinate" begin
     PNML.Coordinate(1, 2)
@@ -31,7 +31,7 @@ end
              parse_graphics(xmlroot(str), pntd))
 
     # There can only be one offset, last tag parsed wins.
-    @test x(n.offset) == 7.0 && y(n.offset) == 8.0
+    @test PnmlGraphics.x(n.offset) == 7.0 && PnmlGraphics.y(n.offset) == 8.0
     @test n.offset == PNML.Coordinate(7.0, 8.0)
     @test n.offset == PNML.Coordinate(7, 8.0)
     @test n.offset == PNML.Coordinate(7, 8)

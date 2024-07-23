@@ -196,7 +196,7 @@ default_marking(::T; ids::Tuple=()) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
 function default_hlmarking(::T, placetype::SortType; ids::Tuple=()) where {T<:AbstractHLCore}
-    els = elements(placetype) # Finite sets return non-empty iteratable.
+    els = sortelements(placetype) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
     HLMarking(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset

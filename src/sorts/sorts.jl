@@ -1,4 +1,3 @@
-
 Base.eltype(::Type{<:AbstractSort}) = Int
 
 #!"Return network id of sort."
@@ -22,7 +21,7 @@ equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
 basis(a::AbstractSort) = sortof(a)
 sortof(a::AbstractSort) = identity(a)
-elements(::AbstractSort) = ()
+sortelements(::AbstractSort) = ()
 
 """
 Built-in sort whose `eltype` is `Bool`
@@ -34,28 +33,32 @@ Functions: equality, inequality
 @auto_hash_equals struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 "Elements of boolean sort"
-elements(::BoolSort) = tuple(true, false)
+sortelements(::BoolSort) = tuple(true, false)
 
 #------------------------------------------------------------------------------
 """
 $(TYPEDEF)
 
-Holds a reference id to a concrete subtype of [`SortDeclaration`](@ref).
+Holds a reference id (REFID) to a subtype of Declaratons.SortDeclaration.
 
-[`NamedSort`](@ref) is used to construct a sort out of builtin types.
-Used in a `Place`s sort type property.
+[`PNML.Declarations.NamedSort`](@ref) is used to construct a sort out of builtin sorts.
+Used in a Place's sort type property.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
-    ids::Tuple
+    ids::Tuple #! Trail
 end
 UserSort(s::Symbol; ids::Tuple) = UserSort(s, ids)
+#[`PNML.Declarations.ProductSort`](@ref), [`Pnml.Declarations.PartitionSort`](@ref) fit in where?
 
-_access_decl(us::UserSort) = named_sort(decldict(netid(us.ids)), us.declaration)
+"Access the referenced named sort declaration."
+_access_decl(us::UserSort) = named_sort(DECLDICT[], us.declaration)
 
-# Return sort of the referenced named sort.
-sortof(us::UserSort) = sortof(named_sort(decldict(netid(us.ids)), us.declaration))
-elements(us::UserSort) = elements(named_sort(decldict(netid(us.ids)), us.declaration))
+# Forward operations to the UserSort having a pid matching the declaration REFID.
+sortof(us::UserSort) = sortof(_access_decl(us))
+sortelements(us::UserSort) = sortelements(_access_decl(us))
+pid(us::UserSort) = pid(_access_decl(us)) # Do we have to do this here? (it could be an assertion)
+name(us::UserSort) = name(_access_decl(us)) # This we DO have to do here.
 
 """
 $(TYPEDEF)
@@ -98,8 +101,9 @@ Will not achieve the same transparancy and efficency as NamedTuples.
     tup::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
 end
 TupleSort() = TupleSort(UserSort[])
-sortof(ts::TupleSort) = begin
-    println("sortof(::TupleSort: ", ts)
+
+function sortof(ts::TupleSort)
+    println("sortof(::TupleSort: ", ts) #! bringup debug
     if isempty(ts.tup)
         @error "TupleSort is empty, require as many sorts as the tuple has elements, return NullSort"
         NullSort()

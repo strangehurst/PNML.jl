@@ -31,14 +31,3 @@ add_toolinfo(infos::Maybe{Vector{ToolInfo}}, node::XMLNode, pntd) = begin
     i = isnothing(infos) ? ToolInfo[] : infos
     return add_toolinfo!(i, node, pntd)
 end
-
-"""
-    number_value(::Type{T}, s) -> T
-
-Parse string as a type T <: Number.
-"""
-function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
-    x = tryparse(T, s)
-    isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
-    return x
-end

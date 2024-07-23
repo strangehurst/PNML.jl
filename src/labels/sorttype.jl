@@ -40,7 +40,7 @@ defines the sort of a place, hence use of `sorttype`.
 It is the type concept of the many-sorted algebra.
 
 For high-level nets there will be a rich language of sorts using [`UserSort`](@ref)
-& [`NamedSort`](@ref) defined in the xml input.
+& [`PNML.Declarations.NamedSort`](@ref) defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
 
@@ -73,7 +73,7 @@ SortType(s::AbstractString, sort::AbstractSort) = SortType(s, sort, nothing, not
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
 value(t::SortType)  = t.sort_
 sortof(t::SortType) = sortof(value(t)) # sortof usersort
-elements(t::SortType) = elements(sortof(t))
+sortelements(t::SortType) = sortelements(sortof(t))
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
@@ -95,7 +95,7 @@ $(TYPEDSIGNATURES)
 
 Return instance of default SortType UserSort based on `PNTD`.
 Useful for non-high-level nets and PTNet.
-See [`fill_nonhl!`](@ref)
+See [`PNML.fill_nonhl!`](@ref)
 The ids parameter has  property: netid = first(ids)
 """
 function default_typeusersort end

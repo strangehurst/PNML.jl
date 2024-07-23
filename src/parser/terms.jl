@@ -132,7 +132,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; ids::Tuple)
 
     us = parse_usersort(child, pntd; ids)::UserSort # Can there be anything else?
     b = sortof(us) # IDREF -> sort instance
-    e = elements(b) # iterator over an instance of every element of the set/sort
+    e = sortelements(b) # iterator over an instance of every element of the set/sort
 
     #@show us b e typeof(e)
     # dot: dotconstant
@@ -181,8 +181,10 @@ end
 # d KindOf (instance of this sort)
 
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; ids::Tuple)
-    multiplicity::Maybe{NumberConstant} = nothing
-    instance::Maybe{AbstractTerm} = nothing
+    multiplicity = nothing
+    instance = nothing
+    #!multiplicity::Maybe{NumberConstant} = nothing
+    #!instance::Maybe{AbstractTerm} = nothing
     for (i,subterm) in enumerate(EzXML.eachelement(node))
         check_nodename(subterm, "subterm")
         stnode = first(EzXML.elements(subterm))

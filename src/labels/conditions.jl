@@ -6,14 +6,14 @@ Label of a Transition that determines when the transition fires.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: Condition, BooleanConstant)
-julia> c = Condition(false)
+```jldoctest; setup=:(using PNML; using PNML: BooleanConstant)
+julia> c = PNML.Labels.Condition(false)
 Condition("", false)
 
 julia> c()
 false
 
-julia> c = Condition("xx", false)
+julia> c = PNML.Labels.Condition("xx", false)
 Condition("xx", false)
 
 julia> c()

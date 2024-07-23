@@ -2,8 +2,6 @@ using PNML, ..TestUtils, JET
 
 using OrderedCollections
 
-#const idregistry = ScopedValue{PnmlIDRegistry}()
-
 str1 = (tool="JARP", version="1.2",
         str = """
  <toolspecific tool="JARP" version="1.2">
@@ -64,42 +62,40 @@ str5 = (tool="org.pnml.tool", version="1.0",
 end
 
 @testset "combined tools" begin
-    empty!(PNML.TOPDECLDICTIONARY)
-    dd = PNML.TOPDECLDICTIONARY[:nothing] = PNML.DeclDict()
-    PNML.fill_nonhl!(dd; ids=(:nothing,))
-    #@show dd
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
+        n::XMLNode = xmlroot(
+            """<place id="place0">
+            $(str1.str)
+            $(str2.str)
+            $(str3.str)
+            $(str4.str)
+            $(str5.str)
+            <initialMarking> <text>5</text> </initialMarking>
+            </place>
+            """)
 
-    n::XMLNode = xmlroot(
-        """<place id="place0">
-        $(str1.str)
-        $(str2.str)
-        $(str3.str)
-        $(str4.str)
-        $(str5.str)
-        <initialMarking> <text>5</text> </initialMarking>
-        </place>
-        """)
+        combinedplace = parse_place(n, PnmlCoreNet(); ids=(:nothing,))
 
-    combinedplace = @with PNML.idregistry=>registry() parse_place(n, PnmlCoreNet(); ids=(:nothing,))
+        @test_call tools(combinedplace)
+        placetools = tools(combinedplace)
+        @test length(placetools) == 5
+        @test all(t -> isa(t, ToolInfo), placetools)
 
-    @test_call tools(combinedplace)
-    placetools = tools(combinedplace)
-    @test length(placetools) == 5
-    @test all(t -> isa(t, ToolInfo), placetools)
-
-    @test PNML.has_toolinfo(placetools, r"petrinet3", r"1\.*")
-    @test PNML.has_toolinfo(placetools, "petrinet3", "1.0")
-    @test PNML.has_toolinfo(placetools, "petrinet3")
-    @test !PNML.has_toolinfo(placetools, "XXX")
-    @test !PNML.has_toolinfo(placetools, "petrinet3", "2.0")
-    # Assumes ordered collection.
-    for (i,s) in enumerate([str1, str2, str3, str4, str5])
-        ti = get_toolinfo(placetools, s.tool, s.version)
-        @test ti isa ToolInfo
-        @test PNML.name(placetools[i])    == PNML.name(ti) == s.tool
-        @test PNML.version(placetools[i]) == PNML.version(ti) == s.version
-        @test_call PNML.name(placetools[i])
-        @test_call PNML.version(placetools[i])
-        @test typeof(placetools[i].infos) == typeof(ti.infos)
+        @test PNML.has_toolinfo(placetools, r"petrinet3", r"1\.*")
+        @test PNML.has_toolinfo(placetools, "petrinet3", "1.0")
+        @test PNML.has_toolinfo(placetools, "petrinet3")
+        @test !PNML.has_toolinfo(placetools, "XXX")
+        @test !PNML.has_toolinfo(placetools, "petrinet3", "2.0")
+        # Assumes ordered collection.
+        for (i,s) in enumerate([str1, str2, str3, str4, str5])
+            ti = get_toolinfo(placetools, s.tool, s.version)
+            @test ti isa ToolInfo
+            @test PNML.name(placetools[i])    == PNML.name(ti) == s.tool
+            @test PNML.version(placetools[i]) == PNML.version(ti) == s.version
+            @test_call PNML.name(placetools[i])
+            @test_call PNML.version(placetools[i])
+            @test typeof(placetools[i].infos) == typeof(ti.infos)
+        end
     end
 end

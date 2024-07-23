@@ -54,6 +54,11 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 =#
 
+"""
+$(TYPEDEF)
+Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
+"""
+abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
@@ -77,7 +82,7 @@ has_labels(l::AbstractLabel) = false
 
 # Some Labels are functors: marking, inscription, condition.
 # Usually where it is possible to have a high-level term.
-_evaluate(x::AbstractLabel) = x()
+_evaluate(label::AbstractLabel) = label()
 
 #--------------------------------------------
 """
@@ -155,7 +160,14 @@ function Base.show(io::IO, label::PnmlLabel)
 end
 
 #--------------------------------------
-"Use with `Fix2` to filter anything with tag accessor."
+#TODO this is more general, make a utiity (and use somewhere else)?
+"""
+    hastag(x, tagvalue::Symbol) -> Function
+Return method with one argument. Duck-typed to test anything with tag accessor.
+
+# EXAMPLES
+    Iterators.filter(Fix2(hastag, tagvalue), iteratable)
+"""
 hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
 """
@@ -163,20 +175,19 @@ hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
 Filter iteratable collection for elements having `s` as the `tag`.
 """
-function get_labels end
-
-function get_labels(v, tagvalue::Symbol)
-    Iterators.filter(Fix2(hastag, tagvalue), v)
+function get_labels(iteratable, tagvalue::Symbol)
+    Iterators.filter(Fix2(hastag, tagvalue), iteratable)
 end
 
 "Return label matching `tagvalue`` or `nothing``."
-function get_label(v, tagvalue::Symbol)
-    first(get_labels(v, tagvalue))
+function get_label(iteratable, tagvalue::Symbol)
+    first(get_labels(iteratable, tagvalue))
 end
 
 "Return `true` if collection `v` contains label with `tagvalue`."
-function has_label(v, tagvalue::Symbol)
-    !isempty(get_labels(v, tagvalue))
+function has_label(iteratable, tagvalue::Symbol)
+    @show typeof(iteratable)
+    !isempty(get_labels(iteratable, tagvalue))
 end
 
 """
@@ -197,6 +208,7 @@ being labels, it is allowed.
     tools::Maybe{Vector{ToolInfo}} = nothing
 end
 
-declarations(d::Declaration) = declarations(d.ddict)
-Base.length(d::Declaration) = length(d.ddict)
-Base.isempty(d::Declaration) = isempty(d.ddict)
+decldict(d::Declaration) = d.ddict
+declarations(d::Declaration) = decldict(d)
+Base.length(d::Declaration) = length(declarations(d))
+Base.isempty(d::Declaration) = isempty(declarations(d))

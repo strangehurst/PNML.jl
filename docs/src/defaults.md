@@ -49,10 +49,6 @@ using PNML: SortType, UserSort, IntegerSort, DotSort,
             PnmlCoreNet, ContinuousNet, HLCoreNet,
             NumberConstant, DotConstant
 
-empty!(PNML.TOPDECLDICTIONARY)
-dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-PNML.fill_nonhl!(dd; ids=(:nothing,))
-
 list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
@@ -81,6 +77,7 @@ methods(PNML.default_condition) # hide
 ## Examples
 ```@meta
 DocTestSetup = quote
+    using ScopedValues
     using PNML
     using PNML: default_condition
     using PNML: default_inscription, default_hlinscription
@@ -88,38 +85,38 @@ DocTestSetup = quote
     using PNML: SortType, UserSort, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
-
-    empty!(PNML.TOPDECLDICTIONARY)
-    dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-    PNML.fill_nonhl!(dd; ids=(:nothing,))
-end
+ end
 ```
 
 ```jldoctest
-julia> c = default_condition(PnmlCoreNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(PnmlCoreNet())
 Condition("", true)
 
 julia> c()
 true
 
-julia> c = default_condition(ContinuousNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(ContinuousNet())
 Condition("", true)
 
-julia> c = default_condition(HLCoreNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(HLCoreNet())
 Condition("", true)
 ```
 
 
 ```jldoctest
-julia> i = default_inscription(PnmlCoreNet())
+julia> i = @with PNML.DECLDICT => PNML.DeclDict() default_inscription(PnmlCoreNet())
 Inscription(1)
 
-julia> i = default_inscription(ContinuousNet())
+julia> i = @with PNML.DECLDICT => PNML.DeclDict() default_inscription(ContinuousNet())
 Inscription(1.0)
+```
 
-julia> i = default_hlinscription(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
-HLInscription("", PnmlMultiset(basis=DotSort(), mset=Multiset(DotConstant() => 1,
-)))
+```
+julia> i = @with PNML.DECLDICT => PNML.DeclDict() begin
+    PNML.fill_nonhl!(PNML.DECLDICT[])
+    default_hlinscription(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+end
+HLInscription("", PnmlMultiset(basis=DotSort(), mset=Multiset(DotConstant() => 1,)))
 
 julia> i()
 1
@@ -127,19 +124,21 @@ julia> i()
 
 
 ```jldoctest
-julia> m = default_marking(PnmlCoreNet())
+julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_marking(PnmlCoreNet())
 Marking(0)
 
 julia> m()
 0
 
-julia> m = default_marking(ContinuousNet())
+julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_marking(ContinuousNet())
 Marking(0.0)
 
 julia> m()
 0.0
+```
 
-julia> m = default_hlmarking(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+```
+julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_hlmarking(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
 HLMarking("", PnmlMultiset(basis=DotSort(), mset=Multiset()))
 
 julia> m()

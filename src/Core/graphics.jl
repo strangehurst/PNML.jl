@@ -1,6 +1,22 @@
 ###############################################################################
 # GRAPHICS
 ###############################################################################
+module PnmlGraphics
+
+using Base.ScopedValues
+import AutoHashEquals: @auto_hash_equals
+import EzXML
+#using Reexport
+using DocStringExtensions
+
+using PNML
+using PNML: Maybe
+using ..PnmlTypeDefs
+import PNML: coordinate_type, coordinate_value_type
+
+export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics,
+    Coordinate, Line, Fill, Font
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -8,8 +24,8 @@ $(TYPEDFIELDS)
 Cartesian Coordinate are actually positive decimals. Ranges from 0 to 999.9.
 """
 struct Coordinate{T <: Float32} #DecFP.DecimalFloatingPoint} #! is decimal 0 to 999.9 in Schema
-    x::T
-    y::T
+    x_::T
+    y_::T
 end
 
 """
@@ -22,8 +38,8 @@ coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate{coordinate_value_t
 coordinate_value_type() = Float32
 coordinate_value_type(::Type) = Float32
 Base.eltype(::Coordinate{T}) where {T} = T
-x(c::Coordinate) = c.x
-y(c::Coordinate) = c.y
+x(c::Coordinate) = c.x_
+y(c::Coordinate) = c.y_
 Base.:(==)(l::Coordinate, r::Coordinate) = x(l) == x(r) && y(l) == y(r)
 
 function Base.show(io::IO, c::Coordinate)
@@ -152,3 +168,4 @@ end
     line::Line = Line(; color = "black")
     font::Font = Font(; weight = "black")
 end
+end # module PnmlGraphics

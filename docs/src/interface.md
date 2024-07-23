@@ -22,8 +22,8 @@ We start a description of the net IR here.
 
 Used by:
   * [`AnyElement`](@ref)
-  * [`PnmlLabel`](@ref)
-  * [`SortType`](@ref)
+  * [`Labels.PnmlLabel`](@ref)
+  * [`Labels.SortType`](@ref)
 
 ## Top Level: Model, Net, Page
 
@@ -144,7 +144,7 @@ methods(PNML.pid) # hide
 ### name - get name
 
 `AbstractPnmlObject`s and `PnmlNet`s have a name label.
-[`Declaration`](@ref)s have a name attribute.
+[`PNML.Labels.Declaration`](@ref)s have a name attribute.
 [`ToolInfo`](@ref)s have a toolname attribute.
 
 [`PNML.name`](@ref)
@@ -391,7 +391,8 @@ methods(PNML.outs)  # hide
 
 ## Labels - `Annotation` and `HLAnnotation`
 
-Both have `Graphics` and `ToolInfo`. [`HLAnnotation`](@ref) adds optional <text>, <structure>.
+Both have `Graphics` and `ToolInfo`.
+[`Labels.HLAnnotation`](@ref) adds optional <text>, <structure>.
 
 ### text
 [`text`](@ref)
@@ -438,7 +439,7 @@ methods(PNML.get_toolinfo) # hide
 
 ## PnmlType traits
 
-See [`PnmlTypeDefs`](@ref) for details of the singleton types used.
+See PnmlTypeDefs for details of the singleton types used.
 
   - [`pnmlnet_type`](@ref)
 ```@example methods
@@ -482,5 +483,5 @@ methods(PNML.reftransition_type) # hide
 ```
 
 !!! info "parse_type is different"
-    [`parse_type`](@ref) is used to parse an XML <type> element.
+    [`Parser.parse_type`](@ref) is used to parse an XML <type> element.
     It is not one of these look-up a type trait methods.

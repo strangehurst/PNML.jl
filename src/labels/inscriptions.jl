@@ -149,8 +149,8 @@ default_inscription(::T) where {T<:AbstractHLCore} =
 # High-level default inscription sort must match the sort of the adjacent place.
 #
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
-    els = elements(placetype) # Finite sets return non-empty iteratable.
-    @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
+    els = sortelements(placetype) # Finite sets return non-empty iteratable.
+    @assert !isnothing(els) # High-level (HLPNG) allows infinite sets (Natural numbers).
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
     HLInscription(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
                            sortof(placetype), # basis sort

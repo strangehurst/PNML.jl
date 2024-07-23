@@ -29,13 +29,12 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     @test_call target_modules=target_modules parse_str(str1)
     # model = @test_logs(match_mode=:any,
     #     (:warn,"found unexpected label of <place>: structure"),
     #     (:warn,"found unexpected label of <place>: frog"),
     #     parse_str(str1))
-    empty!(PNML.TOPDECLDICTIONARY)
+
     model = parse_str(str1)
     net0 = @inferred PnmlNet first(nets(model))
     snet1 = @inferred SimpleNet SimpleNet(model)
@@ -124,7 +123,6 @@ end
 
 # Used in precompile.
 @testset "simple ptnet" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     @show "precompile's SimpleNet"
     @test PNML.SimpleNet("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -146,7 +144,6 @@ end
 end
 
 @testset "rate" begin
-    empty!(PNML.TOPDECLDICTIONARY)
     str2 = """<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="core">
@@ -185,7 +182,6 @@ end
         </net>
     </pnml>
     """
-    empty!(PNML.TOPDECLDICTIONARY)
     model = @test_logs(@inferred(PNML.PnmlModel, parse_str(str3)));
     net1 = first(nets(model));          #@show typeof(net1)
     snet = @inferred PNML.SimpleNet(net1); #@show typeof(snet)
@@ -242,7 +238,6 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
     #println(); println(pntd);println()
-    empty!(PNML.TOPDECLDICTIONARY)
     if pntd in hl_types
         marking = """
         <hlinitialMarking>

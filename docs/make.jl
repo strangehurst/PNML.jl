@@ -4,21 +4,6 @@ using Pkg, Documenter, PNML
 #                 Building HTML documentation with Documenter                  #
 ################################################################################
 
-# DocMeta.setdocmeta!(PNML, :DocTestSetup, quote
-#     using PNML
-#     using PNML: default_condition
-#     using PNML: default_inscription, default_hlinscription
-#     using PNML: default_marking, default_hlmarking
-#     using PNML: SortType, UserSort, IntegerSort,
-#                 PnmlCoreNet, ContinuousNet, HLCoreNet,
-#                 NumberConstant
-
-#     empty!(PNML.TOPDECLDICTIONARY)
-#     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
-#     PNML.fill_nonhl!(dd; ids=(:nothing,))
-#     end
-# end); recursive=true)
-
 makedocs(;
          clean = true,
          doctest=false,

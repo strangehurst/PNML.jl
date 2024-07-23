@@ -20,6 +20,8 @@ function tag end
     has_name(x) -> Bool
 
 Return true if there is a name.
+Some declarations (inside a label) have a name.
+Nodes (nets, pages, places, transitions, arcs) may optionally have a name (as a label).
 """
 function has_name end
 
@@ -31,7 +33,7 @@ Return name String. Default to empty string.
 function name end
 
 #-------------------------------------------------------
-# LABELS
+# LABELS #TODO move to module
 #-------------------------------------------------------
 
 """
@@ -383,3 +385,23 @@ function coordinate_value_type end
 Return rate value type based on net type.
 """
 function rate_value_type end
+
+"""
+    hassort(x) -> Bool
+
+Predicate testing applicability of `sortof`.
+"""
+hassort(::Any) = false
+
+
+"""
+    sortof(x) -> AbstractSort
+
+Return the sort of an object or type. Any type that supports the PNML sort interface
+is expected to define [`hassort`](@ref) to be true and a `sortof` method that returns
+an AbstractSort instance.
+"""
+function sortof end
+
+function sortelements end
+function basis end

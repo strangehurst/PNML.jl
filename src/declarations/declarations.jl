@@ -37,7 +37,7 @@ end
 """
 $(TYPEDEF)
 
-See [`NamedSort`](@ref) and [`ArbitrarySort`] as concrete subtypes.
+See [`PNML.Declarations.NamedSort`](@ref) and [`PNML.Declarations.ArbitrarySort`] as concrete subtypes.
 """
 abstract type SortDeclaration <: AbstractDeclaration end
 
@@ -50,7 +50,7 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-[`DeclDict`](@ref) variabledecls[id] = tuple(VariableDeclaration(id, "human name", sort), instance_of_sort)
+[`PNML.DeclDict`](@ref) variabledecls[id] = tuple(VariableDeclaration(id, "human name", sort), instance_of_sort)
 """
 struct VariableDeclaration{S <: AbstractSort} <: AbstractDeclaration
     id::Symbol
@@ -62,12 +62,15 @@ sortof(vd::VariableDeclaration) = vd.sort
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
+
+Declaration of a `NamedSort`. Wraps an instance of an `AbstractSort`.
+See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 """
 struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S # # An instance of: ArbitrarySort, MultisetSort, ProductSort, UserSort
-    ids::Tuple
+    def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, UserSort
+    ids::Tuple #! Trail
 end
 NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort; ids::Tuple) = NamedSort(id, name, sort, ids)
 sortof(namedsort::NamedSort) = definition(namedsort)
@@ -89,9 +92,10 @@ $(TYPEDFIELDS)
 
 See [`UserOperator`](@ref)
 
-Vector of `VariableDeclaration` for parameters (ordered), and `AbstractTerm` for its body definition.
+Vector of `VariableDeclaration` for parameters (ordered),
+and duck-typed `AbstractTerm` for its body definition.
 """
-struct NamedOperator{T <: AbstractTerm} <: OperatorDeclaration
+struct NamedOperator{T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration} # variables with inferred sorts
@@ -99,7 +103,7 @@ struct NamedOperator{T <: AbstractTerm} <: OperatorDeclaration
     ids::Tuple
 end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator"; ids=(:NONET,))
-NamedOperator(id::Symbol, str; ids::Tuple) = NamedOperator(id, str, VariableDeclaration[], dotconstant, ids)
+NamedOperator(id::Symbol, str; ids::Tuple) = NamedOperator(id, str, VariableDeclaration[], DotConstant(), ids)
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
 sortof(no::NamedOperator) = sortof(operator(no))

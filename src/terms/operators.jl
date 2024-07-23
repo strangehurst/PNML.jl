@@ -1,17 +1,14 @@
 ####################################################################################
 ##! add *MORE* TermInteface here
 ####################################################################################
-function Base.getproperty(op::AbstractOperator)
-    prop_name === :ids && return getfield(op, :ids)::Tuple
-    return getfield(sort, prop_name)
-end
+# function Base.getproperty(op::AbstractOperator)
+#     prop_name === :ids && return getfield(op, :ids)::Tuple
+#     return getfield(sort, prop_name)
+# end
 
-value(op::AbstractOperator) = error("value not defined for $(typeof(op))")
 
-"Return output sort of operator."
-sortof(op::AbstractOperator) = error("sortof not defined for $(typeof(op))")
-"Return network id of operator."
-netid(op::AbstractOperator) = hasproperty(op, :ids) ? netid(op.ids) : error("$(typeof(op)) missing id stuple")
+# "Return network id of operator."
+# netid(op::AbstractOperator) = hasproperty(op, :ids) ? netid(op.ids) : error("$(typeof(op)) missing id stuple")
 
 #==================================
  TermInterface version 0.4
@@ -37,14 +34,14 @@ variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr,
 ===================================#
 
 # Two levels of predicate. Is it an expression, then is it *also* callable.
-TermInterface.isexpr(op::AbstractOperator)    = false
-TermInterface.iscall(op::AbstractOperator)    = false # users promise that this is only called if isexpr is true.
-TermInterface.head(op::AbstractOperator)      = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.children(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.operation(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.arity(op::AbstractOperator)     = error("NOT IMPLEMENTED: $(typeof(op))")
-TermInterface.metadata(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.isexpr(op::AbstractOperator)    = false
+# TermInterface.iscall(op::AbstractOperator)    = false # users promise that this is only called if isexpr is true.
+# TermInterface.head(op::AbstractOperator)      = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.children(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.operation(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.arity(op::AbstractOperator)     = error("NOT IMPLEMENTED: $(typeof(op))")
+# TermInterface.metadata(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
 
 """
 Operator as Functor
@@ -70,7 +67,7 @@ basis(op::Operator)  = basis(sortof(op))
 
 function (op::Operator)()
     #~ println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
-    input = [x() for x in inputs(op)] # evaluate each AbstractTerm
+    input = [term() for term in inputs(op)] # evaluate each AbstractTerm
     #@show typeof.(input) op.insorts eltype.(op.insorts)
     #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
     out = op.func(input)
@@ -478,10 +475,6 @@ end
 
 #===============================================================#
 #===============================================================#
-# """
-# Tuple in many-sorted algebra AST.Bool, Int, Float64, XDVT
-# """
-# struct PnmlTuple <: AbstractOperator end
 #===============================================================#
 
 """
@@ -566,7 +559,7 @@ MultisetSorts not allowed. Nor loops in sort references.
 """
 basis(ms::PnmlMultiset{<:Any, <:AbstractSort}) = ms.basis
 
-elements(ms::PnmlMultiset{<:Any, <:AbstractSort}) = elements(basis(ms))
+sortelements(ms::PnmlMultiset{<:Any, <:AbstractSort}) = sortelements(basis(ms))
 
 _evaluate(ms::PnmlMultiset{<:Any, <:AbstractSort}) = cardinality(ms)
 
@@ -578,7 +571,7 @@ User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
-    ids::Tuple # decldict(netid(ids)) is where the NamedOperator lives.
+    ids::Tuple #! Trail
 end
 UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 
@@ -587,7 +580,7 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     # println()
     #~ println("UserOperator functor $uo")
     # @show uo
-    # dd = decldict(netid(uo))
+    # dd = DECLDICT[]
     # @show _op_dictionaries()
     # for op in _op_dictionaries()
     #     @show op getfield(dd, op)
@@ -599,15 +592,15 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     # println()
     #! FEConstants are 0-ary operators. namedoperators?
 
-    if !has_operator(decldict(netid(uo)), uo.declaration)
+    if !has_operator(DECLDICT[], uo.declaration)
         @warn "found no operator $(uo.declaration), returning `false`"
         return false
     else
-        op = operator(decldict(netid(uo)), uo.declaration)
+        op = operator(DECLDICT[], uo.declaration)
         r  = op(#= pass arguments to functor/operator =#)
         return r
     end
 end
 
-sortof(uo::UserOperator) = sortof(operator(decldict(netid(uo)), uo.declaration))
+sortof(uo::UserOperator) = sortof(operator(DECLDICT[], uo.declaration))
 basis(uo::UserOperator) = sortof(uo)

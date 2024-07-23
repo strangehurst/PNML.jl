@@ -31,6 +31,9 @@ ispid(x::Symbol) = Fix2(===, x)
 
 "Extract pnml network ID from trail of symbols"
 netid(x::Tuple) = first(x)
+netid(x::Any) = hasproperty(x, :ids) ? first(x.ids) : error("$(typeof(x)) missing ids tuple")
+
+
 
 "Return blank string of current indent size in `io`."
 indent(io::IO) = indent(get(io, :indent, 0)::Int)
@@ -41,10 +44,12 @@ inc_indent(io::IO, inc::Int=CONFIG[].indent_width) =
         IOContext(io, :indent => get(io, :indent, 0)::Int + inc)
 
 """
-    registry() -> PnmlIDRegistry
+    number_value(::Type{T}, s) -> T
 
-Construct an empty PNML ID registry using a ReentrantLock.
+Parse string as a type T <: Number.
 """
-function registry()
-    PnmlIDRegistry()
+function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
+    x = tryparse(T, s)
+    isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
+    return x
 end

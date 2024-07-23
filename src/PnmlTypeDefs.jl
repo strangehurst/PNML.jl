@@ -68,7 +68,7 @@ $(TYPEDEF)
 Base of High Level Petri Net pntds which add large extensions to PNML core.
 hlinitialMarking, hlinscription, and defined label structures.
 
-See [`HLCoreNet`](@ref), [`SymmetricNet`](@ref), [`PT_HLPNG`](@ref) and others.
+See [`PnmlTypeDefs.HLCoreNet`](@ref), [`PnmlTypeDefs.SymmetricNet`](@ref), [`PnmlTypeDefs.PT_HLPNG`](@ref) and others.
 """
 abstract type AbstractHLCore <: PnmlType end
 
@@ -214,7 +214,7 @@ Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmlty
 # Examples
 
 ```jldoctest; setup=:(using PNML)
-julia> PnmlTypeDefs.pntd_symbol("foo")
+julia> PNML.PnmlTypeDefs.pntd_symbol("foo")
 :pnmlcore
 ```
 """
@@ -236,7 +236,8 @@ Unknown `symbol` throws a `DomainError` exception.
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: pnmltype, pntd_symbol)
+```
+jldoctest; setup=:(using PNML; using PNML: pnmltype, pntd_symbol)
 julia> pnmltype(PnmlCoreNet())
 PnmlCoreNet()
 

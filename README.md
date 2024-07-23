@@ -7,16 +7,17 @@ Features that have not been started:
   - Write pnml file
   - Update pnml model
   - Create pnml model
-  
+
 Features that are not complete:
-  - HLPNG - many-sorted algebras are complex. Will build other infrastructure...
+  - HLPNG - many-sorted algebras are complex. Work in process.
   - Symbolics support for HLPNG (many-sorted algebra)
   - pntd specialize
-  - toolspecific usage example
+  - toolspecific usage
+  - API definition
 
-Features that work (perhaps in need of attention as changes are made):
+Features that work:
   - stochastic petri nets (examples/lotka-volterra.jl) via rate labels for transitions.
-  - pnml core: can read & print Model Checking Contest (MCC) models, abet with some warnings due to incomplete implementation.
+  - pnml core: can read & print Model Checking Contest (MCC) models, abet with some warnings & exceptions due to incomplete implementation.
   - MetaGraphNext.SimpleDiGraphFromIterator used to create a graph with labels.
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://strangehurst.github.io/PNML.jl/stable)

@@ -8,7 +8,7 @@ The exact mixture changes as the project continues.
 
 The tags of the XML are used as keys and names as much as possible.
 
-What is accepted as values is ~~often~~ a superset of what a given pntd schema specifies.
+What is accepted as values is ~~often~~ a supartitionsperset of what a given pntd schema specifies.
 This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
 
 The pnml specification has layers. This package has layers: `PnmlNet`, `AbstractPetriNet`
@@ -49,6 +49,7 @@ Base.@kwdef mutable struct PnmlConfig
 end
 
 using ScopedValues
+
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = ScopedValue(PnmlConfig()) # = PnmlConfig()
 include("preferences.jl")
@@ -64,7 +65,7 @@ end
 import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import FunctionWrappers
-import Reexport
+import Reexport: @reexport
 import DecFP
 import Graphs
 import MetaGraphsNext
@@ -81,18 +82,36 @@ using NamedTupleTools
 using DocStringExtensions
 using Compat: @compat
 
-include("Core/PnmlTypeDefs.jl")
-Reexport.@reexport using .PnmlTypeDefs
 
-include("Core/PnmlIDRegistrys.jl")
-Reexport.@reexport using .PnmlIDRegistrys
 
-# The registries are to remain available after the model has been returned. #& is this assertion true?
+#export @xml_str, xmlroot
+#export parse_str, parse_file, parse_pnml
+export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
+export feconstant, declarations, pid
+@compat public DeclDict, UserOperator
+export PnmlException, MissingIDException, MalformedException
 
-"Vector of ID registries of the same length as the number of nets. The registries may alias."
-const IDRegistryVec::Vector{PnmlIDRegistry} = PnmlIDRegistry[]
+export Variable
+
+@compat public place_idset, transition_function, initial_markings, rates
+
+export placedict, transitiondict, arcdict, refplacedict, reftransitiondict
+export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
+
+export page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
+export variabledecls,
+    usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
+    namedoperators, arbitrary_ops, feconstants
+
+
+include("PnmlTypeDefs.jl")
+using .PnmlTypeDefs
+
+include("PnmlIDRegistrys.jl")
+using .PnmlIDRegistrys
+
 "ID registry of the current scope. Nets are the usual scope = a net-level-global."
-const idregistry = ScopedValue{PnmlIDRegistry}() # undefined
+const idregistry = ScopedValue{PnmlIDRegistry}() # undefined until PnmlModel created
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
@@ -101,76 +120,69 @@ include("Core/interfaces.jl") # Function docstrings
 include("Core/types.jl") # Abstract Types
 include("Core/anyelement.jl") # AnyElement, DictType
 
+include("Core/decldictcore.jl") # define things used by Sorts, Declarations
+
+
+
+# Single per-net DeclDict
+const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
+
 # Parts of Labels and Nodes.
-include("Core/Terms/dots.jl")
-include("Core/sorts.jl") # Sorts are used in Variables, Operators, Places
-include("Core/declarations.jl") # Declarations are inside a <declaration> Label.
-include("Core/Terms/arbitrarydeclarations.jl")
-include("Core/constterm.jl") #
-include("Core/Terms/booleans.jl")
-include("Core/Terms/enumerations.jl")
-#include("Core/Terms/finiteenumerations.jl")
-#include("Core/Terms/finiteintranges.jl")
-include("Core/Terms/numbers.jl")
-include("Core/Terms/lists.jl")
-include("Core/Terms/multisets.jl")
-include("Core/Terms/strings.jl")
-include("Core/Terms/variables.jl")
-include("Core/Terms/partitions.jl")
-include("Core/Terms/operators.jl")
-include("Core/Terms/terms.jl") # Variables and AbstractOperators preceed this.
-include("Core/Terms/tuples.jl")
+
+include("sorts/Sorts.jl") # used in Variables, Operators, Places
+using .Sorts
+
+include("terms/constterm.jl") #
+include("terms/booleans.jl")
+
+include("terms/variables.jl")
+#include("terms/partitions.jl") # declaration
+include("terms/operators.jl")
+include("terms/terms.jl") # Variables and AbstractOperators preceed this.
+include("terms/tuples.jl")
+
+# 2024-07-22 moved forward, holds Any rather than node types.
+include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
+
+include("declarations/Declarations.jl") # Declarations are inside a <declaration> Label. NamedSort declaration wraps an AbstractSort.
+using .Declarations
+
+#^ Above here are things that appear in  DeclDict contents.
+#^ 2024-07-17 Changed DeclDict to be Any based,
+#^ with the hope that the accessors defined here provide type inferrability.
 include("Core/decldict.jl")
-include("Core/structure.jl")
-include("Core/graphics.jl")
-include("Core/toolinfos.jl")
+
+
+include("Core/graphics.jl") # labels and nodes can both have graphics
+using .PnmlGraphics
+include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
+
 
 # Labels
-#include("Core/anyelement.jl")
-include("Core/labels.jl")
-include("Core/name.jl")
-include("Core/sorttype.jl")
-include("Core/inscriptions.jl")
-include("Core/markings.jl")
-include("Core/conditions.jl")
-include("Core/rates.jl")
+include("labels/Labels.jl")
+using .Labels
 
 # Nodes
-include("Core/nodes.jl") # Concrete place, transition, arc.
-include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
-include("Core/page.jl")
-include("Core/net.jl")
-include("Core/pagetree.jl") # AbstractTree used to print a PnmlNet.
-include("Core/model.jl") # Holds multiple PnmlNets.
+include("nodes/nodes.jl") # Concrete place, transition, arc.
+
+#!include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
+include("nodes/page.jl")
+include("nodes/net.jl")
+include("nodes/pagetree.jl") # AbstractTree used to print a PnmlNet.
+include("nodes/model.jl") # Holds multiple PnmlNets.
+
+
 
 include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
 
 # PARSE
-# include("Parse/xmlutils.jl")
-# include("Parse/parseutils.jl")
-# include("Parse/anyelement.jl")
-# include("Parse/parse.jl")
-# include("Parse/graphics.jl")
-# include("Parse/declarations.jl")
-# include("Parse/terms.jl")
-# include("Parse/toolspecific.jl")
 include("parser/Parser.jl")
-Reexport.@reexport using .Parser
+using .Parser
 
 # API: Petri Nets, metagraph
 include("PNet/petrinet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")
-
-"""
-Per-net dictionary of declaration dictionaries, [`DeclDict`](@ref), keyed by net id.
-"""
-const TOPDECLDICTIONARY::Dict{Symbol,DeclDict} = Dict{Symbol,DeclDict}()
-
-export @xml_str, xmlroot
-export parse_str, parse_file, parse_pnml
-export PnmlException, MissingIDException, MalformedException
-@compat public place_idset, transition_function, initial_markings, rates
 
 include("precompile.jl")
 

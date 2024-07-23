@@ -16,23 +16,18 @@ println("EXCEPTIONS")
 end
 
 @testset "missing namespace $pntd" for pntd in core_nettypes()
-    empty!(PNML.TOPDECLDICTIONARY)
-    @test isempty(PNML.TOPDECLDICTIONARY) #
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
         parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 
-    empty!(PNML.TOPDECLDICTIONARY)
     @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
         parse_pnml(xml"""<?xml version="1.0" encoding="UTF-8"?>
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
 @testset "malformed $pntd" for pntd in core_nettypes()
-    empty!(PNML.TOPDECLDICTIONARY)
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
 
-    empty!(PNML.TOPDECLDICTIONARY)
     @test_throws("MalformedException: toolspecific missing tool attribute",
         parse_pnml(xml"""
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -52,7 +47,6 @@ end
     </net>
     </pnml>
     """))
-    empty!(PNML.TOPDECLDICTIONARY)
 
     @test_throws("MalformedException: net missing type",
         parse_pnml(xml"""
@@ -69,22 +63,22 @@ end
 </pnml>
 """))
 
-    with(PNML.idregistry => registry()) do
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         @test_throws("MalformedException: net missing type",
              parse_net(xml"""<net id="4712"> </net>"""))
     end
 end
 
 @testset "missing id $pntd" for pntd in core_nettypes()
-    with(PNML.idregistry => registry()) do
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 
+        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
         @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")
 
-        empty!(PNML.TOPDECLDICTIONARY)
         pagedict = OrderedDict{Symbol, page_type(pntd)}()
         netdata = PNML.PnmlNetData(pntd)
         netsets = PNML.PnmlNetKeys()
-        PNML.TOPDECLDICTIONARY[:N] = PNML.DeclDict()
 
         @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd; ids=(:NN,))
         @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd; ids=(:NN,))
@@ -96,5 +90,5 @@ end
 end
 
 @testset "check_nodename" begin
-    @test_throws "ArgumentError: element name wrong, expected bar, got foo" PNML.check_nodename(xml"<foo></foo>", "bar")
+    @test_throws "ArgumentError: element name wrong, expected bar, got foo" PNML.Parser.check_nodename(xml"<foo></foo>", "bar")
 end

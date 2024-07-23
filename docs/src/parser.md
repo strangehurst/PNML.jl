@@ -8,7 +8,7 @@ CurrentModule = PNML
 
 XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`unparsed_tag`](@ref).
 
-See [`AnyElement`](@ref), [`anyelement`](@ref), [`PnmlLabel`](@ref)
+See [`AnyElement`](@ref), [`PNML.Parser.anyelement`](@ref), [`PnmlLabel`](@ref)
 
 ## AnyElement
 
@@ -29,11 +29,11 @@ See [`rate`](@ref) for a use case.
 ## Sorts
 
 Figure 11 of the _primer_ lists built-in sorts and functions for _Symmetric Nets_, a
-restricted _High-Level Petri Net Graph_. See [`SymmetricNet`](@ref), [`HLPNG`](@ref)
+restricted _High-Level Petri Net Graph_. See [`PnmlTypeDefs`](@ref), [`PnmlTypeDefs.HLPNG`](@ref)
 and [`AbstractHLCore`](@ref)
 
 Some of the restrictions:
-- [`ArbitrarySort`](@ref) and 'Unparsed' not allowed.
+- [`Declarations.ArbitrarySort`](@ref) and 'Unparsed' not allowed.
 - carrier sets of all basic (is this built-in?) sorts are finite
 - sorttype of a place must not be a multiset sort (but multiset is in the UML diagram)
 
@@ -41,8 +41,8 @@ What `HLPNG` adds:
 - declarations for sorts and functions
 - ArbitraryDeclarations: ArbitrarySort, ArbitraryOperator, Unparsed
 - Integers
-_ Strings
-_ Lists
+- Strings
+- Lists
 
 initialMarking
 not

@@ -2,22 +2,8 @@
 CurrentModule = PNML
 ```
 
-```@contents
-Pages = ["library.md"]
-Depth = 2
-```
 
 ## PNML Reference
 ```@autodocs
-Modules = [PNML]
-```
-
-## PnmlTypeDefs Reference
-```@autodocs
-Modules = [PnmlTypeDefs]
-```
-
-## PnmlIDRegistrys Reference
-```@autodocs
-Modules = [PnmlIDRegistrys]
+Modules = [PNML, PNML.PnmlTypeDefs, PNML.PnmlIDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser]
 ```

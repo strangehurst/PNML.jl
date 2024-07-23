@@ -50,7 +50,7 @@ in_out(net::PnmlNet, transition_id::Symbol) = (ins(net, transition_id), outs(net
 """
     ins(net, transition_id) -> LVector
 
-    Return vector of inscription values labeled with source place id for arcs with `transition_id` as the target id.
+Return vector of inscription values labeled with source place id for arcs with `transition_id` as the target id.
 """
 ins(net, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transition_id))...))
 
@@ -59,7 +59,8 @@ ins(net, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transi
 
 Return vector of inscription values labeled with target place id for arcs with `transition_id` as the source id.
 """
-outs(net, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
+outs(net, transition_id::Symbol) =
+    LVector((; collect(out_inscriptions(net, transition_id))...))
 
 # See input flow
 "Iterate over preset of transition, returning source place id => inscription value pairs."
@@ -69,8 +70,9 @@ function in_inscriptions(net, transitionid)
         source(a) => inscription(a)
     end
 end
+
 # See output flow
-"Iterate over postset of transition, returning target  place id => inscription value pairs."
+"Iterate over postset of transition, returning target place id => inscription value pairs."
 function out_inscriptions(net, transitionid)
     Iterators.map(postset(net, transitionid)) do placeid
         a = arc(net, transitionid, placeid)

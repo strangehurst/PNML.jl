@@ -25,7 +25,7 @@ parse_declaration(node::XMLNode, pntd::PnmlType; ids::Tuple) = parse_declaration
 function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType; ids::Tuple)
     #println("\nparse_declaration, trail = $ids")
     isempty(ids) && throw(ArgumentError("`ids` trail tuple cannot be empty"))
-    dd = decldict(netid(ids)) # Lookup DeclDict for PnmlNet. #TODO better error if missing
+    dd = PNML.DECLDICT[] #! ScopedValue
 
     text = nothing
     graphics::Maybe{Graphics} = nothing
@@ -100,7 +100,7 @@ Declaration that wraps a Sort, adding an ID and name.
 """
 function parse_namedsort(node::XMLNode, pntd::PnmlType; ids::Tuple)
     nn = check_nodename(node, "namedsort")
-    id = register_idof!(idregistry[], node) # use ScopedValue
+    id = register_idof!(PNML.idregistry[], node) # use ScopedValue
     ids = tuple(ids..., id)
     name = attribute(node, "name", "$nn $id missing name attribute. trail = $ids")
     child = EzXML.firstelement(node)
@@ -179,13 +179,13 @@ end
 
 """
 Return ordered vector of finite enumeration constant IDs.
-Place the constants into feconstants(decldict(netid)).
+Place the constants into feconstants(DECLDICT[]).
 """
 function parse_feconstants(node::XMLNode, pntd::PnmlType; ids::Tuple)
     sorttag = EzXML.nodename(node)
     @assert sorttag in ("finiteenumeration", "cyclicenumeration")
     EzXML.haselement(node) || error("$sorttag has no child element. trail = $ids")
-    dd = decldict(netid(ids)) # Declarations are at net level.
+    dd = PNML.DECLDICT[] # Declarations are at net level.
 
     fec_refs = Symbol[]
     for child in EzXML.eachelement(node)

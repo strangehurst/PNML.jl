@@ -68,24 +68,15 @@ end
 "Return the `id` of the referenced node."
 refid(r::ReferenceNode) = r.ref
 
-#------------------------------------------------------------------------------
-# Abstract Label
-#------------------------------------------------------------------------------
-"""
-$(TYPEDEF)
-Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
-"""
-abstract type AbstractLabel end
-
 #--------------------------------------------
 """
 $(TYPEDEF)
-Tool specific objects can be attached to
+Tool specific information objects can be attached to nodes and labels,
 [`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"Dictionary filled by `XMLDict`"
+"Dictionary filled by `XMLDict` in [`unparsed_tag`](@ref)"
 const DictType = LittleDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}
@@ -110,7 +101,7 @@ found within the <structure> element of a label.
 Notably, a `Term` is not a PnmlLabel (or a PNML Label).
 
 # References
-See also [`Declaration`](@ref), [`SortType`](@ref), [`AbstractDeclaration`](@ref).
+See also [`Declaration`](@ref), [`Labels.SortType`](@ref), [`AbstractDeclaration`](@ref).
 
 [Term_(logic)](https://en.wikipedia.org/wiki/Term_(logic)):
 > A first-order term is recursively constructed from constant symbols, variables and function symbols.
@@ -168,32 +159,6 @@ abstract type AbstractOperator <: AbstractTerm end
 # - output sort type to test against place sort type (and others)
 #
 # Note that a zero input operator is a constant.
-
-
-
-"""
-$(TYPEDEF)
-Part of the high-level pnml many-sorted algebra. See  [`SortType`](@ref).
-
-NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
-The pnml specification sometimes uses overlapping language.
-
-From the 'primer': built-in sorts of Symmetric Nets are the following:
-booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
-And partitions.
-
-The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
-
-# Extras
-
-Notes:
-- `NamedSort` is a [`SortDeclaration`](@ref). [`HLPNG`](@ref) adds [`ArbitrarySort`](@ref).
-- `UserSort` holds the id symbol of a `NamedSort`.
-- Here 'type' means a 'term' from the many-sorted algebra.
-- We use sorts even for non-high-level nets.
-- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
-"""
-abstract type AbstractSort end
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.

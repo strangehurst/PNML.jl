@@ -24,4 +24,4 @@ end
 Structure(s::AbstractString, e) = Structure(Symbol(s), e)
 
 tag(s::Structure) = s.tag
-elements(s::Structure) = s.el # label elements
+sortelements(s::Structure) = s.el # label elements

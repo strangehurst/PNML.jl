@@ -101,12 +101,12 @@ Of some note it that PNML.jl extends PNML. These, non-standard pntd do not
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort(collect(pairs(PnmlTypeDefs.default_pntd_map)))) #hide
+using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypeDefs.default_pntd_map)))) #hide
 ```
 
 PnmlType map (pntd symbol to singleton):
 ```@example
-using PNML; foreach(println, pairs(PnmlTypeDefs.pnmltype_map)) #hide
+using PNML; foreach(println, pairs(PNML.PnmlTypeDefs.pnmltype_map)) #hide
 ```
 
 ## Handling Labels
