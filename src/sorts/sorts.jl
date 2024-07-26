@@ -46,10 +46,7 @@ Used in a Place's sort type property.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::Symbol #TODO validate as a NamedSort
-    ids::Tuple #! Trail
 end
-UserSort(s::Symbol; ids::Tuple) = UserSort(s, ids)
-#[`PNML.Declarations.ProductSort`](@ref), [`Pnml.Declarations.PartitionSort`](@ref) fit in where?
 
 "Access the referenced named sort declaration."
 _access_decl(us::UserSort) = named_sort(DECLDICT[], us.declaration)

@@ -30,12 +30,10 @@ struct Marking{N <: Number} <: Annotation
     value::N
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Maybe{Vector{ToolInfo}}
-    ids::Tuple
 end
 # Allow any Number subtype, only a few concrete subtypes are expected.
-# Note that `ids` are used in the parsing but maybe not in docstrings.
-Marking(value::Number; ids=(:nothing,)) = Marking(value, nothing, nothing; ids)
-Marking(value::Number, graph, tool; ids) = Marking(value, graph, tool, ids)
+Marking(value::Number) = Marking(value, nothing, nothing)
+Marking(value::Number, graph, tool) = Marking(value, graph, tool)
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
 
@@ -124,11 +122,10 @@ struct HLMarking <: HLAnnotation
     #term::PnmlMultiset{<:Any, <:AbstractSort}  # With sort matching placesort.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
-    ids::Tuple
 end
-HLMarking(t::AbstractTerm; ids=(:nothing,)) = HLMarking(nothing, t; ids)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm; ids=(:nothing,)) = HLMarking(s, t, nothing, nothing, ids)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to; ids=(:nothing,)) = HLMarking(s, t, g, to, ids)
+HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
+HLMarking(s::Maybe{AbstractString}, t::AbstractTerm) = HLMarking(s, t, nothing, nothing)
+HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to) = HLMarking(s, t, g, to)
 
 value(m::HLMarking) = m.term
 basis(m::HLMarking) = basis(value(m))
@@ -189,19 +186,19 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default_marking end
-function default_marking(::T; ids::Tuple=()) where {T<:PnmlType}
-    Marking(zero(marking_value_type(T)); ids)
+function default_marking(::T) where {T<:PnmlType}
+    Marking(zero(marking_value_type(T)))
 end
-default_marking(::T; ids::Tuple=()) where {T<:AbstractHLCore} =
+default_marking(::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
-function default_hlmarking(::T, placetype::SortType; ids::Tuple=()) where {T<:AbstractHLCore}
+function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
     els = sortelements(placetype) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
     HLMarking(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
                            sortof(placetype), # basis sort
-                           0); ids) # empty multiset, multiplicity of every element = zero.
+                           0)) # empty multiset, multiplicity of every element = zero.
 end
 
 # At some point we will be feeding things to Metatheory/SymbolicsUtils,

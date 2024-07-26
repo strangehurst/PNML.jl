@@ -144,7 +144,7 @@ println("-----------------------------------------\n")
 
     for n in PNML.nets(model)
         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
-            #!PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
+            #!PNML.fill_nonhl!(PNML.DECLDICT[])
             #println("-----------------------------------------")
             @test PNML.verify(n; verbose=false)
             PNML.flatten_pages!(n; verbose=false)

@@ -52,11 +52,11 @@ end
 #println()
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "default_inscription($pntd)" for pntd in all_nettypes()
-    PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
+    PNML.fill_nonhl!(PNML.DECLDICT[])
 
     i = if ishighlevel(pntd)
-        # placetype = SortType("test", UserSort(:integer; ids=(:nothing,)))
-        placetype = SortType("test", UserSort(:dot; ids=(:NN,)))
+        # placetype = SortType("test", UserSort(:integer))
+        placetype = SortType("test", UserSort(:dot))
         default_hlinscription(pntd, placetype)
     else
         default_inscription(pntd)
@@ -66,7 +66,7 @@ end
 end
 println()
 @testset "default_typeusersort($pntd)" for pntd in all_nettypes()
-    t = default_typeusersort(pntd; ids=(:typeusersort,))::UserSort
+    t = default_typeusersort(pntd)::UserSort
     #println("default_typeusersort($pntd) = ", t)
 end
 #println()

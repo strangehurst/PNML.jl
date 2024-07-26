@@ -96,11 +96,10 @@ $(TYPEDSIGNATURES)
 Return instance of default SortType UserSort based on `PNTD`.
 Useful for non-high-level nets and PTNet.
 See [`PNML.fill_nonhl!`](@ref)
-The ids parameter has  property: netid = first(ids)
 """
 function default_typeusersort end
-default_typeusersort(pntd::PnmlType; ids) = default_typeusersort(typeof(pntd); ids)
-default_typeusersort(::Type{<:PnmlType}; ids) = UserSort(:integer; ids)
-default_typeusersort(::Type{<:AbstractContinuousNet}; ids) = UserSort(:real; ids)
-default_typeusersort(::Type{<:AbstractHLCore}; ids) = UserSort(:dot; ids)
+default_typeusersort(pntd::PnmlType) = default_typeusersort(typeof(pntd))
+default_typeusersort(::Type{<:PnmlType}) = UserSort(:integer)
+default_typeusersort(::Type{<:AbstractContinuousNet}) = UserSort(:real)
+default_typeusersort(::Type{<:AbstractHLCore}) = UserSort(:dot)
 # todo value types

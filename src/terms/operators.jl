@@ -1,14 +1,6 @@
 ####################################################################################
 ##! add *MORE* TermInteface here
 ####################################################################################
-# function Base.getproperty(op::AbstractOperator)
-#     prop_name === :ids && return getfield(op, :ids)::Tuple
-#     return getfield(sort, prop_name)
-# end
-
-
-# "Return network id of operator."
-# netid(op::AbstractOperator) = hasproperty(op, :ids) ? netid(op.ids) : error("$(typeof(op)) missing id stuple")
 
 #==================================
  TermInterface version 0.4
@@ -422,11 +414,11 @@ function pnml_hl_operator(tag::Symbol)
 end
 
 """
-    pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple) -> Sort
+    pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}) -> Sort
 
 Return sort that builtin operator returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple)
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
     if isbooleanoperator(tag)
         BoolSort()
     elseif isintegeroperator(tag)
@@ -455,8 +447,8 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}, ids::Tuple)
         end
     elseif isfiniteoperator(tag)
         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
-        @error("enumeration sort needs content, ids")
-        FiniteEnumerationSort((); ids) #! pnml_hl_outsort will need FEC reference tuple, ids
+        @error("enumeration sort needs content")
+        FiniteEnumerationSort(()) #! pnml_hl_outsort will need FEC reference tuple
         #
     elseif ispartitionoperator(tag)
         #:ltp, :gtp, :partitionelementof
@@ -478,7 +470,7 @@ end
 #===============================================================#
 
 """
-    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1; ids::Tuple) -> PnmlMultiset{T,S}
+    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1) -> PnmlMultiset{T,S}
 
 Construct as a multiset with one element, `x`, with default multiplicity of 1.
 
@@ -571,9 +563,7 @@ User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
     declaration::Symbol # of a NamedOperator
-    ids::Tuple #! Trail
 end
-UserOperator(str::AbstractString, ids::Tuple) = UserOperator(Symbol(str), ids)
 
 function (uo::UserOperator)(#= pass arguments to operator =#)
     # println()

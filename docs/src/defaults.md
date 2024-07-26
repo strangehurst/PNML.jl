@@ -114,7 +114,7 @@ Inscription(1.0)
 ```
 julia> i = @with PNML.DECLDICT => PNML.DeclDict() begin
     PNML.fill_nonhl!(PNML.DECLDICT[])
-    default_hlinscription(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+    default_hlinscription(HLCoreNet(), SortType(UserSort(:dot)))
 end
 HLInscription("", PnmlMultiset(basis=DotSort(), mset=Multiset(DotConstant() => 1,)))
 
@@ -138,7 +138,7 @@ julia> m()
 ```
 
 ```
-julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_hlmarking(HLCoreNet(), SortType(UserSort(:dot, ids=(:NN,))))
+julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_hlmarking(HLCoreNet(), SortType(UserSort(:dot)))
 HLMarking("", PnmlMultiset(basis=DotSort(), mset=Multiset()))
 
 julia> m()

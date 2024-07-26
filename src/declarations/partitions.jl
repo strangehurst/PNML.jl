@@ -1,6 +1,6 @@
-s = """
+#= Example from sampleSNPrio.pnml
 <declaration>
-<text>
+<text>F
     Without the following structure this Symmetric net
     example will not be a structurally conformant High-level Petri Net.
 </text>
@@ -32,10 +32,9 @@ s = """
             </partitionelement>
         </partition>
 
-
     </declarations>
 </structure>
-"""
+=#
 
 """
 $(TYPEDEF)
@@ -44,28 +43,33 @@ $(TYPEDFIELDS)
 Establishes an equivalence class over a [`PNML.Declarations.PartitionSort`](@ref)'s emumeration.
 See also [`FiniteEnumerationSort`](@ref).
 Gives a name to an element of a partition. The element is an equivalence class.
+
 PartitionElement is different from FiniteEnumeration, CyclicEnumeration, FiniteIntRangeSort
 in that it holds UserOperators, not FEConstants.
 The UserOperator refers to the FEConstants of the sort over which the partition is defined.
-NB: The PartitionElementOf operator maps each element of the type (aka sort) associated
-with the partition to the partition element to which it belongs.
+NB: FEConstants are 0-arity operators.
 
-Want: PartitionElementOf(feconstant) -> id of the equivalence class
+NB: The "PartitionElementOf" operator maps each element of the FiniteEnumeration
+(referenced by the partition) to the PartitionElement (of the partition) to which it belongs.
 
-#TODO Somehow PartitionElementOf will need to make the connection.
+PartitionElementOf(partition, feconstant) -> PartitionElement
+partitionelementof(partition, feconstant) -> PartitionElement
+
+PartitionElementOf is passed a REFID of the partition whose
+PartitionElement membership is being queried.
+
+Each PartitionElement contains a collection of REFIDs to UserOperators which refer to
+a finite sort's (FiniteEnumeration, CyclicEnumeration, FiniteIntRangeSort) FEConstant by REFID.
+
+Test for membership by iterating over each partition element, and over each term.
 """
-struct PartitionElement{T<:AbstractTerm} <: OperatorDeclaration # AbstractOperator
+struct PartitionElement <: OperatorDeclaration # AbstractOperator
     id::Symbol
     name::Union{String,SubString{String}}
-    # Note the Schema just lists one or more Terms.
-
-    terms::Vector{T} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
-    #todo verify in parent partitions's referenced sort
-    ids::Tuple
+    terms::Vector{Symbol} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
+    #todo verify terms are in parent partitions's referenced sort
 end
-#PartitionElement() = PartitionElement(:empty, "EMPTY", UserOperator[], (:NN,))
-PartitionElement(id::Symbol, name::AbstractString, terms::Vector; ids::Tuple) =
-    PartitionElement(id, name, terms, ids)
+
 
 """
 $(TYPEDEF)
@@ -74,17 +78,14 @@ $(TYPEDFIELDS)
 Partition sort declaration is a finite enumeration that is partitioned into sub-ranges of enumerations.
 Is the sort at the partition or the element level (1 sort ot many sorts?)
 """
-struct PartitionSort{S <: AbstractSort, PE <: PartitionElement} <: SortDeclaration
-    id::Symbol # Schema OpDecl is id, name
+struct PartitionSort <: SortDeclaration
+    id::Symbol
     name::Union{String, SubString{String}}
-    def::S # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
-    element::Vector{PE} # 1 or more PartitionElements that index into `def`
-    ids::Tuple
+    def::Symbol # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
+    element::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
 end
-PartitionSort() =
-    PartitionSort(:partitionsort, "Empty PartitionSort", DotSort(),  PartitionElement[], (:emptypartition,))
-PartitionSort(id::Symbol, name::AbstractString, sort::AbstractSort, els::Vector; ids::Tuple) =
-    PartitionSort(id, name, sort,  els, ids)
+PartitionSort() = PartitionSort(:partition, "Empty Partition", :dot,  PartitionElement[])
+#! :dot is a stand-in, it will not work well, but it is a "finite sort".
 
 sortof(partition::PartitionSort) = partition.def
 sortelements(partition::PartitionSort) = partition.element
@@ -98,21 +99,21 @@ sortelements(partition::PartitionSort) = partition.element
 function element_ids(ps::PartitionSort, netid::Symbol)
     Iterators.map(pid, sortelements(ps))
 end
+
 "Iterator over partition element names"
 function element_names(ps::PartitionSort, netid::Symbol)
     Iterators.map(name, sortelements(ps))
 end
 
 function Base.show(io::IO, ps::PartitionSort)
-
-        println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ",", )
-        io = inc_indent(io)
-        println(io, indent(io), sortof(ps), ",");
-        print(io, "FE[")
-        e = sortelements(ps)
-        for  (i, c) in enumerate(e)
-            print(io, '\n', indent(io)); show(io, c);
-            i < length(e) && print(io, ",")
-        end
-        print(io, "])")
+    println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ",", )
+    io = inc_indent(io)
+    println(io, indent(io), sortof(ps), ",");
+    print(io, "FE[")
+    e = sortelements(ps)
+    for  (i, c) in enumerate(e)
+        print(io, '\n', indent(io)); show(io, c);
+        i < length(e) && print(io, ",")
     end
+    print(io, "])")
+end

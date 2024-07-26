@@ -20,32 +20,32 @@ sorts() = _subtypes(AbstractSort)
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "parse_sort $pntd" for pntd in core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; ids=(:NN,))::UserSort
+    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<dot/>", pntd; ids=(:NN,))::DotSort
+    sort = parse_sort(xml"<dot/>", pntd)::DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<bool/>", pntd; ids=(:NN,))::BoolSort
+    sort = parse_sort(xml"<bool/>", pntd)::BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<integer/>", pntd, ; ids=(:NN,))::IntegerSort
+    sort = parse_sort(xml"<integer/>", pntd)::IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<natural/>", pntd; ids=(:NN,))::NaturalSort
+    sort = parse_sort(xml"<natural/>", pntd)::NaturalSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<positive/>", pntd; ids=(:NN,))::PositiveSort
+    sort = parse_sort(xml"<positive/>", pntd)::PositiveSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -53,7 +53,7 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet(); ids=(:NN,))::CyclicEnumerationSort
+                            </cyclicenumeration>""", PnmlCoreNet())::CyclicEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -61,21 +61,21 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </finiteenumeration>""", pntd; ids=(:NN,))::FiniteEnumerationSort
+                           </finiteenumeration>""", pntd)::FiniteEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd; ids=(:NN,))::FiniteIntRangeSort
+    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd)::FiniteIntRangeSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd; ids=(:NN,))
+    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"""<productsort>
                                 <usersort declaration="a_user_sort"/>
-                           </productsort>""", pntd; ids=(:NN,))::ProductSort
+                           </productsort>""", pntd)::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -83,7 +83,7 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<productsort>
                            <usersort declaration="speed"/>
                            <usersort declaration="distance"/>
-                         </productsort>""", pntd; ids=(:NN,))::ProductSort
+                         </productsort>""", pntd)::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -91,21 +91,21 @@ sorts() = _subtypes(AbstractSort)
     sort = parse_sort(xml"""<productsort>
                                <usersort declaration="id1"/>
                                <natural/>
-                            </productsort>""", pntd; ids=(:NN,))::ProductSort
+                            </productsort>""", pntd)::ProductSort
      @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd; ids=(:NN,))::MultisetSort
+                            </multisetsort>""", pntd)::MultisetSort
      @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"""<multisetsort>
                                 <natural/>
-                            </multisetsort>""", pntd; ids=(:NN,))::MultisetSort
+                            </multisetsort>""", pntd)::MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 end
@@ -113,11 +113,11 @@ end
 
 @with PNML.DECLDICT => PNML.DeclDict() begin
 @testset "empty declarations $pntd" for pntd in core_nettypes()
-    #PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
+    #PNML.fill_nonhl!(PNML.DECLDICT[])
     # The attribute should be ignored.
     decl = parse_declaration(xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
-        </declaration>""", pntd; ids=(:NULLNET,))::Declaration
+        </declaration>""", pntd)::Declaration
     @show decl
     @test length(decl) == 0 # nothing in <declarations>
     @test isempty(decl)
@@ -163,8 +163,8 @@ end
     """
 
     @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
-        decl = parse_declaration(node, pntd; ids=(:NULLNET,))
+        PNML.fill_nonhl!(PNML.DECLDICT[])
+        decl = parse_declaration(node, pntd)
         @test typeof(decl) <: PNML.Declaration
 
         @show decl PNML.idregistry[]
@@ -204,6 +204,20 @@ end
     <declaration>
         <structure>
             <declarations>
+                <namedsort id="pluck" name="PLUCK">
+                    <finiteenumeration>
+                        <feconstant id="b1" name="b1" />
+                        <feconstant id="b2" name="b2" />
+                        <feconstant id="b3" name="b3" />
+                   </finiteenumeration>
+                </namedsort>
+                <namedsort id="pluck2" name="PLUCK2">
+                    <finiteenumeration>
+                        <feconstant id="b4" name="b4" />
+                        <feconstant id="b5" name="b5" />
+                        <feconstant id="b6" name="b6" />
+                   </finiteenumeration>
+                </namedsort>
                 <partition id="P1" name="P1">
                     <usersort declaration="pluck"/>
                     <partitionelement id="bs1" name="bs1">
@@ -233,8 +247,8 @@ end
     """
 
     @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
-        decl = parse_declaration(node, pntd; ids=(:NULLNET,))
+        PNML.fill_nonhl!(PNML.DECLDICT[])
+        decl = parse_declaration(node, pntd)
         @test typeof(decl) <: Declaration
 
         # Examine 3 partition sorts

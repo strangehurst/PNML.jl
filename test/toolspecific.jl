@@ -63,7 +63,7 @@ end
 
 @testset "combined tools" begin
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[]; ids=(:NN,))
+        PNML.fill_nonhl!(PNML.DECLDICT[])
         n::XMLNode = xmlroot(
             """<place id="place0">
             $(str1.str)
@@ -75,7 +75,7 @@ end
             </place>
             """)
 
-        combinedplace = parse_place(n, PnmlCoreNet(); ids=(:nothing,))
+        combinedplace = parse_place(n, PnmlCoreNet())
 
         @test_call tools(combinedplace)
         placetools = tools(combinedplace)

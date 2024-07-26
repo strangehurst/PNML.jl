@@ -8,14 +8,12 @@ In some cases the partition element cannot be derived from the subterms of Parti
 struct FEConstant <: OperatorDeclaration
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
-    ids::Tuple
 end
-netid(fec::FEConstant) = first(fec.ids)
-partid(fec::FEConstant) = last(fec.ids) # Parent can be enumeration sort
-sortof(fec::FEConstant) = begin
-    sort = sortof(namedsorts(PNML.DECLDICT[])[partid(fec)]) #! sort of partition or partition element
-    return sort
-end
+
+# sortof(fec::FEConstant) = begin
+#     sort = sortof(namedsorts(PNML.DECLDICT[])[partid(fec)]) #! sort of partition or partition element
+#     return sort
+# end
 (fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
 
 function Base.show(io::IO, fec::FEConstant)

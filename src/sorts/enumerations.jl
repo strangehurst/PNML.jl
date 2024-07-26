@@ -10,11 +10,9 @@ abstract type EnumerationSort <: AbstractSort end
 
 function Base.getproperty(sort::EnumerationSort, prop_name::Symbol)
     prop_name === :fec_refs && return getfield(sort, :fec_refs)::NTuple{<:Any, <:Symbol}
-    #prop_name === :ids && return getfield(sort, :ids)::Tuple
     return getfield(sort, prop_name)
 end
 
-netid(sort::EnumerationSort) = netid(sort.ids)
 refs(sort::EnumerationSort) = sort.fec_refs
 
 """
@@ -37,26 +35,25 @@ Operations differ between `EnumerationSort`s. All wrap a tuple of symbols.
 metadata, allowing attachment of Partition/PartitionElement and id trail
 
 """
-@auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{T<:NTuple{<:Any, <:Symbol}, M} <: EnumerationSort
+@auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{T<:Tuple, M} <: EnumerationSort
     fec_refs::T
-    ids::M  #! Trail?
+    metadata::M
 end
-CyclicEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = CyclicEnumerationSort(fe_refs, ids)
-
-# struct X{T<:NTuple{<:Any, <:Symbol}, M<:Any}
-#     fec_refs::T
-#     ids::M #^ metadata #! Trail
-# end
+function CyclicEnumerationSort(fecs)
+    CyclicEnumerationSort(fecs, nothing)
+end
 
 """
 $(TYPEDEF)
 Wraps tuple of IDREFs into feconstant(decldict).
 """
-@auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{T<:NTuple{<:Any, <:Symbol}, M} <: EnumerationSort
+@auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{T<:Tuple, M} <: EnumerationSort
     fec_refs::T
-    ids::M #^ metadata #! Trail
+    metadata::M
 end
-FiniteEnumerationSort(fe_refs; ids::Tuple=(:emptyenumeration,)) = FiniteEnumerationSort(fe_refs, ids)
+function FiniteEnumerationSort(fe_refs)
+    FiniteEnumerationSort(fe_refs, nothing)
+end
 
 # MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant>
 
@@ -71,15 +68,14 @@ function Base.show(io::IO, esort::EnumerationSort)
 end
 
 """
-    FiniteIntRangeSort(start::T, stop::T; ids::Tuple) where {T<:Integer} -> Range
+    FiniteIntRangeSort(start::T, stop::T; meta) where {T<:Integer} -> Range
 """
-@auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
+@auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    ids::Tuple #! Trail of IDs, first is netid.
+    meta::M #! metadata
 end
-#FiniteIntRangeSort() = FiniteIntRangeSort(0, 0, (:NOTHING,))
-FiniteIntRangeSort(start, stop; ids::Tuple) = FiniteIntRangeSort(start, stop, ids)
+FiniteIntRangeSort(start, stop; meta=nothing) = FiniteIntRangeSort(start, stop, meta)
 
 Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
 start(fir::FiniteIntRangeSort) = fir.start

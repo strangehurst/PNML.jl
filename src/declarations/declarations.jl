@@ -70,9 +70,8 @@ struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, UserSort
-    ids::Tuple #! Trail
 end
-NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort; ids::Tuple) = NamedSort(id, name, sort, ids)
+NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort) = NamedSort(id, name, sort)
 sortof(namedsort::NamedSort) = definition(namedsort)
 definition(namedsort::NamedSort) = namedsort.def
 
@@ -100,10 +99,9 @@ struct NamedOperator{T} <: OperatorDeclaration
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration} # variables with inferred sorts
     def::T # operator or variable term (with inferred sort)
-    ids::Tuple
 end
-NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator"; ids=(:NONET,))
-NamedOperator(id::Symbol, str; ids::Tuple) = NamedOperator(id, str, VariableDeclaration[], DotConstant(), ids)
+NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator")
+NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], DotConstant())
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
 sortof(no::NamedOperator) = sortof(operator(no))

@@ -113,7 +113,7 @@ function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     isempty(allchildren(node ,"page")) &&
         throw(MalformedException("""<net> $netid does not have any <page> child"""))
 
-    return parse_net_1(node, pntd; ids=(netid,)) # RUNTIME DISPATCH
+    return parse_net_1(node, pntd) # RUNTIME DISPATCH
 end
 
 """
@@ -124,7 +124,7 @@ Page IDs are appended as the XML tree is descended, followed by node IDs.
 
 Note the use of scoped value `DECLDICT[]` to access the per-net data structure as a scoped global.
 """
-function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_net_1(node::XMLNode, pntd::PnmlType)
     netid = first(ids)
     pgtype = page_type(typeof(pntd))
 
@@ -147,9 +147,9 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
     # Only the first <declaration> text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the specification).
     decls = alldecendents(node, "declaration") # There may be none.
-    declaration = parse_declaration(decls, pntd; ids)::Declaration
+    declaration = parse_declaration(decls, pntd)::Declaration
 
-    fill_nonhl!(DECLDICT[]; ids) # All net types have these. Decl def takes precenence.
+    fill_nonhl!(DECLDICT[])
 
     if !isempty(DECLDICT[])
         validate_declarations(DECLDICT[])
@@ -190,7 +190,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
             # Note that one can always flatten a multi-page PnmlNet to a single page
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
-            parse_page!(pagedict, netdata, netsets, child, pntd; ids)
+            parse_page!(pagedict, netdata, netsets, child, pntd)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
         else # Labels are everything-else here.
@@ -202,22 +202,22 @@ function parse_net_1(node::XMLNode, pntd::PnmlType; ids::Tuple)
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
-function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(idregistry[], node)
     push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
-    pg = _parse_page!(pagedict, netdata, node, pntd; ids=tuple(ids..., pageid))
+    pg = _parse_page!(pagedict, netdata, node, pntd)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
     return nothing
 end
 
 """
-    parse_page!(pagedict, netdata, node, pntd; ids) -> Page
+    parse_page!(pagedict, netdata, node, pntd) -> Page
 
 Place `Page` in `pagedict` using id as the key.
 """
-function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) where {T<:PnmlType}
+function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T) where {T<:PnmlType}
     pageid = last(ids) # Just appended,
     netsets = PnmlNetKeys() # Allocate per-page data.
 
@@ -240,19 +240,19 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
     end
 
     for p in allchildren(node, "place")
-        parse_place!(place_set, netdata, p, pntd; ids)
+        parse_place!(place_set, netdata, p, pntd)
     end
     for rp in allchildren(node, "referencePlace")
-        parse_refPlace!(rp_set, netdata, rp, pntd; ids)
+        parse_refPlace!(rp_set, netdata, rp, pntd)
     end
     for t in allchildren(node, "transition")
-        parse_transition!(transition_set, netdata, t, pntd; ids)
+        parse_transition!(transition_set, netdata, t, pntd)
     end
     for rt in allchildren(node, "referenceTransition")
-        parse_refTransition!(rt_set, netdata, rt, pntd; ids)
+        parse_refTransition!(rt_set, netdata, rt, pntd)
     end
     for a in allchildren(node, "arc")
-        parse_arc!(arc_set, netdata, a, pntd; ids)
+        parse_arc!(arc_set, netdata, a, pntd)
     end
 
     for child in EzXML.eachelement(node)
@@ -261,7 +261,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T; ids::Tuple) whe
                     "referencePlace", "referenceTransition", "toolspecific"]
             # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage
-            parse_page!(pagedict, netdata, netsets, child, pntd; ids)
+            parse_page!(pagedict, netdata, netsets, child, pntd)
         elseif tag == "name"
             name = parse_name(child, pntd)
         elseif tag == "graphics"
@@ -282,42 +282,42 @@ end
 # Reminder: set is per-Page, dict is per-Net
 
 "Fill place_set, place_dict."
-function parse_place!(place_set, netdata, child, pntd; ids)
-    pl = parse_place(child, pntd; ids)::valtype(netdata.place_dict)
+function parse_place!(place_set, netdata, child, pntd)
+    pl = parse_place(child, pntd)::valtype(netdata.place_dict)
     push!(place_set, pid(pl))
     netdata.place_dict[pid(pl)] = pl
     return nothing
 end
 
 "Fill transition_set, transition_dict."
-function parse_transition!(transition_set, netdata, child, pntd; ids)
-    tr = parse_transition(child, pntd; ids)::valtype(netdata.transition_dict)
+function parse_transition!(transition_set, netdata, child, pntd)
+    tr = parse_transition(child, pntd)::valtype(netdata.transition_dict)
     push!(transition_set, pid(tr))
     netdata.transition_dict[pid(tr)] = tr
     return nothing
 end
 
 "Fill arc_set, arc_dict."
-function parse_arc!(arc_set, netdata, child, pntd; ids)
-    a = parse_arc(child, pntd; ids, netdata)
+function parse_arc!(arc_set, netdata, child, pntd)
+    a = parse_arc(child, pntd, netdata)
     a isa valtype(arcdict(netdata)) ||
-        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a)) ids")
+        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_set, pid(a))
     netdata.arc_dict[pid(a)] = a
     return nothing
 end
 
 "Fill refplace_set, refplace_dict."
-function parse_refPlace!(refplace_set, netdata, child, pntd; ids)
-    rp = parse_refPlace(child, pntd; ids)::valtype(netdata.refplace_dict)
+function parse_refPlace!(refplace_set, netdata, child, pntd)
+    rp = parse_refPlace(child, pntd)::valtype(netdata.refplace_dict)
     push!(refplace_set, pid(rp))
     netdata.refplace_dict[pid(rp)] = rp
     return nothing
 end
 
 "Fill reftransition_set, reftransition_dict."
-function parse_refTransition!(reftransition_set, netdata, child, pntd; ids)
-    rt = parse_refTransition(child, pntd; ids)::valtype(netdata.reftransition_dict)
+function parse_refTransition!(reftransition_set, netdata, child, pntd)
+    rt = parse_refTransition(child, pntd)::valtype(netdata.reftransition_dict)
     push!(reftransition_set, pid(rt))
     netdata.reftransition_dict[pid(rt)] = rt
     return nothing
@@ -328,10 +328,9 @@ $(TYPEDSIGNATURES)
 
 see [`fill_nonhl!`](@ref)
 """
-function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_place(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "place")
     id   = register_idof!(PNML.idregistry[], node)
-    ids  = tuple(ids..., id)
     mark = nothing
     sorttype::Maybe{SortType} = nothing
     name::Maybe{Name}         = nothing
@@ -343,10 +342,10 @@ function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
     # First get sorttype.
     typenode = firstchild(node, "type")
     if !isnothing(typenode)
-        sorttype = parse_type(typenode, pntd; ids)
+        sorttype = parse_type(typenode, pntd)
     else
-        #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd; ids))
-        sorttype = SortType("default", default_typeusersort(pntd; ids), nothing, nothing)
+        #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd))
+        sorttype = SortType("default", default_typeusersort(pntd), nothing, nothing)
     end
     #@warn "parse_place $id" sorttype
 
@@ -354,7 +353,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
         tag = EzXML.nodename(child)
         if tag == "initialMarking" || tag == "hlinitialMarking"
             #! Maybe sorttype is infered from marking?
-            mark = _parse_marking(child, sorttype, pntd; ids)
+            mark = _parse_marking(child, sorttype, pntd)
         elseif tag == "type"
             # we already handled this
         elseif tag == "name"
@@ -371,9 +370,9 @@ function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
 
     if isnothing(mark)
         if ishighlevel(pntd)
-            mark = default_hlmarking(pntd, sorttype; ids) # additive identity of multiset
+            mark = default_hlmarking(pntd, sorttype) # additive identity of multiset
         else
-            mark = default_marking(pntd; ids) # additive identity of number
+            mark = default_marking(pntd) # additive identity of number
         end
     end
 
@@ -383,14 +382,14 @@ function parse_place(node::XMLNode, pntd::PnmlType; ids::Tuple)
         sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing)
     end
     #@show basis(mark) sortof(mark) sortof(sorttype)
-    #@show mark sorttype ids
+    #@show mark sorttype
 
     # The basis sort of mark label must be the same as the sort of sorttype label.
     if !equalSorts(sortof(basis(mark)), sortof(sorttype))
         # throw(MalformedException(string(
         error(string("place id $(repr(id)) of $pntd: sort mismatch,",
                         "\n\n sortof(basis(mark)) = ", sortof(basis(mark)),
-                        "\n\t sortof(sorttype) = ", sortof(sorttype), ", trail $ids"))
+                        "\n\t sortof(sorttype) = ", sortof(sorttype)))
     end
 
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
@@ -398,22 +397,22 @@ end
 
 
 # Calls marking parser specialized on the pntd.
-_parse_marking(node::XMLNode, placetype, pntd::T; ids::Tuple) where {T<:PnmlType} =
-    parse_initialMarking(node, placetype, pntd; ids)
+_parse_marking(node::XMLNode, placetype, pntd::T) where {T<:PnmlType} =
+    parse_initialMarking(node, placetype, pntd)
 
-_parse_marking(node::XMLNode, placetype, pntd::T; ids::Tuple) where {T<:AbstractHLCore} =
-    parse_hlinitialMarking(node, placetype, pntd; ids)
+_parse_marking(node::XMLNode, placetype, pntd::T) where {T<:AbstractHLCore} =
+    parse_hlinitialMarking(node, placetype, pntd)
 
+"Transition enrichment labels."
 const transition_xlabels = ("rate", "delay") #TODO
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_transition(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_transition(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "transition")
     id   = register_idof!(idregistry[], node)
-    ids  = tuple(ids..., id)
-    name::Maybe{Name} = nothing
+        name::Maybe{Name} = nothing
     cond::Maybe{PNML.Labels.Condition} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
@@ -422,7 +421,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType; ids::Tuple)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "condition"
-            cond = parse_condition(child, pntd; ids)
+            cond = parse_condition(child, pntd)
         elseif tag == "name"
             name = parse_name(child, pntd)
         elseif tag == "graphics"
@@ -446,10 +445,9 @@ end
 
 Construct an `Arc` with labels specialized for the PnmlType.
 """
-function parse_arc(node, pntd; ids::Tuple, netdata)
+function parse_arc(node, pntd; netdata)
     check_nodename(node, "arc")
     arcid = register_idof!(PNML.idregistry[], node)
-    ids = tuple(ids..., arcid)
     source = Symbol(attribute(node, "source", "missing source for arc $arcid"))
     target = Symbol(attribute(node, "target", "missing target for arc $arcid"))
 
@@ -466,7 +464,7 @@ function parse_arc(node, pntd; ids::Tuple, netdata)
             # Output arc inscription and target's marking/placesort must have equalSorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
-            inscription = _parse_inscription(child, source, target, pntd; ids, netdata)
+            inscription = _parse_inscription(child, source, target, pntd; netdata)
         elseif tag == "name"
             name = parse_name(child, pntd)
         elseif tag == "graphics"
@@ -480,7 +478,7 @@ function parse_arc(node, pntd; ids::Tuple, netdata)
     end
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
-            default_hlinscription(pntd, SortType("default_condition", UserSort(:dot; ids)))
+            default_hlinscription(pntd, SortType("default_condition", UserSort(:dot)))
         else
             default_inscription(pntd)
         end
@@ -491,19 +489,18 @@ end
 
 # By specializing arc inscription label parsing we hope to return stable type.
 _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
-            ids::Tuple, netdata) = parse_inscription(node, source, target, pntd; ids)
+            netdata) = parse_inscription(node, source, target, pntd)
 _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
-                     ids::Tuple, netdata) where {T<:AbstractHLCore} =
-    parse_hlinscription(node, source, target, pntd; ids, netdata)
+                     netdata) where {T<:AbstractHLCore} =
+    parse_hlinscription(node, source, target, netdata)
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refPlace(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_refPlace(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "referencePlace")
     id = register_idof!(PNML.idregistry[], node)
-    ids = tuple(ids..., id)
-    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute. trail = $ids"))
+    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
@@ -529,11 +526,10 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refTransition(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_refTransition(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "referenceTransition")
     id = register_idof!(PNML.idregistry[], node)
-    ids = tuple(ids..., id)
-    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute. trail = $ids"))
+    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing
@@ -620,11 +616,11 @@ $(TYPEDSIGNATURES)
 
 Non-high-level `PnmlType` initial marking parser. Most things are assumed to be Numbers.
 """
-function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType; ids::Tuple)
+function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType)
     nn = check_nodename(node, "initialMarking")
     # See if there is a <structure> attached to the label. This is non-standard.
     # But allows use of same mechanism used for high-level nets.
-    l = parse_label_content(node, parse_structure, pntd; ids)::NamedTuple
+    l = parse_label_content(node, parse_structure, pntd)::NamedTuple
     if !isnothing(l.term) # There was a <structure> tag. Used in the high-level meta-models.
         @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.term)"
     end
@@ -643,16 +639,16 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     #@show placetype value eltype(sortof(placetype))
     value isa mvt || throw(ArgumentError(string("eltype of marking placetype, $mvt",
             ", does not match type of `value`, $(typeof(value))",
-            ", for a $pntd. trail = $ids")))
+            ", for a $pntd")))
 
-    Marking(value, l.graphics, l.tools; ids)
+    Marking(value, l.graphics, l.tools)
 end
 
 """
 $(TYPEDSIGNATURES)
 Ignore the source & target IDREF symbols.
 """
-function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType; ids::Tuple)
+function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType)
     check_nodename(node, "inscription")
     txt = nothing
     value = nothing
@@ -669,7 +665,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         elseif tag == "toolspecific"
             tools = add_toolinfo(tools, child, pntd)
         else
-            @warn("ignoring unexpected child of <inscription>: '$tag'. trail = $ids")
+            @warn("ignoring unexpected child of <inscription>: '$tag'")
         end
     end
 
@@ -686,7 +682,7 @@ end
 $(TYPEDSIGNATURES)
 Parse label using a `termparser` callable applied to any <structure>.
 """
-function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; ids::Tuple) where {F}
+function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where {F}
     text::Maybe{Union{String,SubString{String}}} = nothing
     term::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -697,7 +693,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; ids::
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
-            term, sort = termparser(child, pntd; ids) # Apply function/functor
+            term, sort = termparser(child, pntd) # Apply function/functor
             #! @show term sort
             @assert sort == sortof(term)
         elseif tag == "graphics"
@@ -705,7 +701,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; ids::
         elseif tag == "toolspecific"
             tools = add_toolinfo(tools, child, pntd)
         else
-            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", ids)
+            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
         end
     end
     return (; text, term, sort, graphics, tools)
@@ -719,10 +715,10 @@ Sort of marking term must be the same as `placetype`, a `UserSort` that holds th
 
 NB: Used by PTNets that assume placetype is DotSort().
 """
-function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore; ids::Tuple)
+function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
-    l = parse_label_content(node, ParseMarkingTerm(value(placetype)), pntd; ids)::NamedTuple
-    #@warn pntd l.text l.term ids
+    l = parse_label_content(node, ParseMarkingTerm(value(placetype)), pntd)::NamedTuple
+    #@warn pntd l.text l.term
 
     mark = if isnothing(l.term) # Default to an empty multiset whose basis is placetype
         els = sortelements(placetype) # Finite sets return non-empty iteratable.
@@ -737,14 +733,14 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     equalSorts(sortof(basis(mark)), sortof(placetype)) ||
         error(string("HL marking sort mismatch,",
             "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
-            "\n\t sortof(placetype) = ", sortof(placetype), ", trail $ids"))
-    HLMarking(l.text, mark, l.graphics, l.tools; ids)
+            "\n\t sortof(placetype) = ", sortof(placetype)))
+    HLMarking(l.text, mark, l.graphics, l.tools)
 end
 
 """
     ParseMarkingTerm(placetype) -> Functor
 
-Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType; ids::Tuple)
+Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType)
 """
 struct ParseMarkingTerm
     placetype::Union{TupleSort,UserSort}
@@ -752,14 +748,14 @@ end
 
 placetype(pmt::ParseMarkingTerm) = pmt.placetype
 
-function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; ids::Tuple)
+function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
     check_nodename(marknode, "structure")
     #println("\n(pmt::ParseMarkingTerm) ")
     # @show placetype(pmt)
     #@show sortof(placetype(pmt))
     if EzXML.haselement(marknode)
         term = EzXML.firstelement(marknode) # ignore any others
-        mark, sort = parse_term(term, pntd; ids)
+        mark, sort = parse_term(term, pntd)
 
         # @show mark sort
         # @show typeof(mark) sortof(mark) basis(mark)
@@ -792,9 +788,9 @@ $(TYPEDSIGNATURES)
 hlinscriptions are expressions.
 """
 function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
-                             pntd::AbstractHLCore; ids::Tuple, netdata::PnmlNetData)
+                             pntd::AbstractHLCore; netdata::PnmlNetData)
     check_nodename(node, "hlinscription")
-    l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; ids)
+    l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd)
     HLInscription(l.text, l.term, l.graphics, l.tools)
 end
 
@@ -804,7 +800,7 @@ end
 Holds parameters for parsing inscription.
 The sort of the inscription must match the place sorttype.
 Input arcs (source is a transition) and output arcs (source is a place)
-called as (pit::ParseInscriptionTerm)(::XMLNode, ::PnmlType; ids::Tuple)
+called as (pit::ParseInscriptionTerm)(::XMLNode, ::PnmlType)
 """
 struct ParseInscriptionTerm
     source::Symbol
@@ -816,7 +812,7 @@ source(pit::ParseInscriptionTerm) = pit.source
 target(pit::ParseInscriptionTerm) = pit.target
 netdata(pit::ParseInscriptionTerm) = pit.netdata
 
-function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; ids::Tuple)
+function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     check_nodename(inscnode, "structure")
     #println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
 
@@ -843,7 +839,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; ids::Tup
 
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
-        inscript, sort = parse_term(term, pntd; ids)
+        inscript, sort = parse_term(term, pntd)
     else
         # Default to an  multiset whose basis is placetype
         inscript = def_insc(netdata(pit), source(pit), target(pit))
@@ -857,9 +853,9 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; ids::Tup
     #@assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
 
     equalSorts(sortof(basis(inscript)), placesort) ||
-    throw(ArgumentError(string("sort mismatch:",
-        "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
-        "\n\t placesort ", placesort)))
+        throw(ArgumentError(string("sort mismatch:",
+            "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
+            "\n\t placesort ", placesort)))
     return (inscript, sortof(inscript))
 end
 
@@ -899,11 +895,11 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_inscription_term(inode, pntd; ids::Tuple)
+function parse_inscription_term(inode, pntd)
     check_nodename(inode, "structure")
     if EzXML.haselement(inode)
         term = EzXML.firstelement(inode)
-        insc, sort = parse_term(term, pntd; ids)
+        insc, sort = parse_term(term, pntd)
         return (insc, sort)
     end
     throw(ArgumentError("missing inscription term element in <structure>"))
@@ -927,15 +923,15 @@ See [`AbstractTerm`](@ref).
 """
 function parse_condition end
 
-function parse_condition(node::XMLNode, pntd::T; ids::Tuple) where {T<:AbstractHLCore}
+function parse_condition(node::XMLNode, pntd::T) where {T<:AbstractHLCore}
     check_nodename(node, "condition")
-    l = parse_label_content(node, parse_condition_term, pntd; ids)
+    l = parse_label_content(node, parse_condition_term, pntd)
     PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
 
-function parse_condition(node::XMLNode, pntd::PnmlType; ids::Tuple) # Non-HL
+function parse_condition(node::XMLNode, pntd::PnmlType) # Non-HL
     check_nodename(node, "condition")
-    l = parse_label_content(node, parse_condition_term, pntd; ids)
+    l = parse_label_content(node, parse_condition_term, pntd)
     #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
     PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
 end
@@ -943,11 +939,11 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_condition_term(cnode::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_condition_term(cnode::XMLNode, pntd::PnmlType)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
         term = EzXML.firstelement(cnode)
-        cond, sort = parse_term(term, pntd; ids)
+        cond, sort = parse_term(term, pntd)
         return (cond, sort)
     end
     throw(ArgumentError("missing condition term element in <structure>"))
@@ -962,9 +958,9 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 
 Allow all pntd's places to have a <type> label.  Non high-level are expecting a numeric sort: eltype(sort) <: Number.
 """
-function parse_type(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_type(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "type")
-    l = parse_label_content(node, parse_sorttype_term, pntd; ids)
+    l = parse_label_content(node, parse_sorttype_term, pntd)
     # High-level nets are expected to have a sorttype term defined.
     # Others will use a default
 
@@ -981,12 +977,12 @@ Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
 $(TYPEDSIGNATURES)
 The PNML "type" of a `Place` is a "sort" of the high-level many-sorted algebra.
 """
-function parse_sorttype_term(typenode, pntd; ids::Tuple)
+function parse_sorttype_term(typenode, pntd)
     check_nodename(typenode, "structure")
-    EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure> trail = $ids"))
+    EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd; ids)::AbstractSort
-    isa(sorttype, MultisetSort) && error("multiset sort not allowed for Place type. trail = $ids")
+    sorttype = parse_sort(sortnode, pntd)::AbstractSort
+    isa(sorttype, MultisetSort) && error("multiset sort not allowed for Place type")
     return (sorttype, sortof(sorttype))
 end
 
@@ -997,9 +993,9 @@ Return [`PNML.Labels.Structure`](@ref) holding an XML <structure>.
 Should be inside of an PNML label.
 A "claimed" label usually elids the <structure> level (does not call this method).
 """
-function parse_structure(node::XMLNode, pntd::PnmlType; ids::Tuple)
+function parse_structure(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "structure")
-    @warn "parse_structure is not a well defined thing, $pntd. trail = $ids"
+    @warn "parse_structure is not a well defined thing, $pntd"
     Structure(unparsed_tag(node)...) #TODO anyelement
 end
 
