@@ -101,7 +101,7 @@ export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
 export page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 export variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    namedoperators, arbitrary_ops, feconstants
+    useroperators, namedoperators, arbitrary_ops, feconstants
 
 
 include("PnmlTypeDefs.jl")
@@ -122,8 +122,6 @@ include("Core/anyelement.jl") # AnyElement, DictType
 
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
-
-
 # Single per-net DeclDict
 const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 
@@ -134,15 +132,13 @@ using .Sorts
 
 include("terms/constterm.jl") #
 include("terms/booleans.jl")
-
-include("terms/variables.jl")
-#include("terms/partitions.jl") # declaration
+include("terms/variables.jl") #~ Work inprogress
 include("terms/operators.jl")
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
-include("terms/tuples.jl")
+include("terms/tuples.jl") #~ Work inprogress
 
 # 2024-07-22 moved forward, holds Any rather than node types.
-include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
+include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
 
 include("declarations/Declarations.jl") # Declarations are inside a <declaration> Label. NamedSort declaration wraps an AbstractSort.
 using .Declarations
@@ -152,34 +148,28 @@ using .Declarations
 #^ with the hope that the accessors defined here provide type inferrability.
 include("Core/decldict.jl")
 
-
 include("Core/graphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
 include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
-
 
 # Labels
 include("labels/Labels.jl")
 using .Labels
 
-# Nodes
+# Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
-
-#!include("Core/pnmlnetdata.jl") # Used by page, net, holds places, transitions, arcs.
-include("nodes/page.jl")
-include("nodes/net.jl")
+include("nodes/page.jl") # Contains nodes.
+include("nodes/net.jl") # The level of IDREGISTRY, DECLDICT. API for Petri nets, graphs work.
 include("nodes/pagetree.jl") # AbstractTree used to print a PnmlNet.
 include("nodes/model.jl") # Holds multiple PnmlNets.
 
-
-
-include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet
+include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 
 # PARSE
 include("parser/Parser.jl")
 using .Parser
 
-# API: Petri Nets, metagraph
+# API: Petri nets, metagraph
 include("PNet/petrinet.jl")
 include("PNet/transition_function.jl")
 include("PNet/metagraph.jl")

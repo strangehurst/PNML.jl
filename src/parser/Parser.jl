@@ -26,7 +26,7 @@ using PNML: page_idset, place_idset, transition_idset, arc_idset,
     refplace_idset, reftransition_idset
 using PNML: variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    namedoperators, arbitrary_ops, feconstants
+    useroperators, namedoperators, arbitrary_ops, feconstants
 using PNML:
     page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,
     marking_type, inscription_type, condition_type,
