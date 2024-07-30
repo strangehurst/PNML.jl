@@ -29,9 +29,9 @@ Return function to be used like: any(ispid(:asym), iterable_with_pid).
 """
 ispid(x::Symbol) = Fix2(===, x)
 
-"Extract pnml network ID from trail of symbols"
-netid(x::Tuple) = first(x)
-netid(x::Any) = hasproperty(x, :ids) ? first(x.ids) : error("$(typeof(x)) missing ids tuple")
+# "Extract pnml network ID from trail of symbols"
+# netid(x::Tuple) = first(x)
+# netid(x::Any) = hasproperty(x, :ids) ? first(x.ids) : error("$(typeof(x)) missing ids")
 
 
 

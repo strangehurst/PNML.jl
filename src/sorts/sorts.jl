@@ -1,9 +1,5 @@
 Base.eltype(::Type{<:AbstractSort}) = Int
 
-#!"Return network id of sort."
-#! netid(s::AbstractSort) = hasproperty(s, :ids) ? first(getproperty(s, :ids)) : error("$(typeof(s)) missing id tuple")
-#! sortof(s::AbstractSort) = hasproperty(s, :sort) ? first(getproperty(s, :sort)) : identity(s)
-
 """
 $(TYPEDSIGNATURES)
 For sorts to be the same, first they must have the same type.
