@@ -27,7 +27,7 @@ Used to define the multisorted algebra of a high-level petri net graph.
     # Useful for non-high-level networks that mimic HLNets to share implementation.
     # Long way of saying generic? (in what sense generic?)
     usersorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
-    usersoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
 end
 
 _decldict_fields = (:namedsorts, :arbitrarysorts,
@@ -40,17 +40,29 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
+usersorts(dd::DeclDict)      = dd.usersorts
+useroperators(dd::DeclDict)  = dd.useroperators
 variabledecls(dd::DeclDict)  = dd.variabledecls
 namedsorts(dd::DeclDict)     = dd.namedsorts
 arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
 partitionsorts(dd::DeclDict) = dd.partitionsorts
 namedoperators(dd::DeclDict) = dd.namedoperators
-arbitrary_ops(dd::DeclDict)  = dd.arbitraryoperators
+arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
 partitionops(dd::DeclDict)   = dd.partitionops
 feconstants(dd::DeclDict)    = dd.feconstants
 
-usersorts(dd::DeclDict)      = dd.usersorts
-useroperators(dd::DeclDict)  = dd.useroperators
+# Default to ScopedValue
+usersorts()      = usersorts(PNML.DECLDICT[])
+useroperators()  = useroperators(PNML.DECLDICT[])
+variabledecls()  = variabledecls(PNML.DECLDICT[])
+namedsorts()     = namedsorts(PNML.DECLDICT[])
+arbitrarysorts() = arbitrarysorts(PNML.DECLDICT[])
+partitionsorts() = partitionsorts(PNML.DECLDICT[])
+namedoperators() = namedoperators(PNML.DECLDICT[])
+arbitraryops()   = arbitraryops(PNML.DECLDICT[])
+partitionops()   = partitionops(PNML.DECLDICT[])
+feconstants()    = feconstants(PNML.DECLDICT[])
+
 
 """
     declarations(dd::DeclDict) -> Iterator
@@ -66,7 +78,7 @@ function declarations(dd::DeclDict)
         values(partitionsorts(dd)),
         values(partitionops(dd)),
         values(namedoperators(dd)),
-        values(arbitrary_ops(dd)),
+        values(arbitraryops(dd)),
         values(feconstants(dd)),
         values(usersorts(dd)),
         values(useroperators(dd)),
@@ -75,25 +87,34 @@ end
 
 has_variable(dd::DeclDict, id::Symbol)       = haskey(variabledecls(dd), id)
 has_namedsort(dd::DeclDict, id::Symbol)      = haskey(namedsorts(dd), id)
-has_arbitrary_sort(dd::DeclDict, id::Symbol) = haskey(arbitrarysorts(dd), id)
+has_arbitrarysort(dd::DeclDict, id::Symbol)  = haskey(arbitrarysorts(dd), id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
 has_namedop(dd::DeclDict, id::Symbol)        = haskey(namedoperators(dd), id)
-has_arbitrary_op(dd::DeclDict, id::Symbol)   = haskey(arbitraryoperators(dd), id)
+has_arbitraryop(dd::DeclDict, id::Symbol)    = haskey(arbitraryops(dd), id)
 has_partitionop(dd::DeclDict, id::Symbol)    = haskey(partitionops(dd), id)
 has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
-
 has_usersort(dd::DeclDict, id::Symbol)       = haskey(usersorts(dd), id)
 has_useroperator(dd::DeclDict, id::Symbol)   = haskey(usersorts(dd), id)
 
+has_variable(id::Symbol) = (PNML.DECLDICT[], id)
+has_namedsort(id::Symbol) = has_namedsort(PNML.DECLDICT[], id)
+has_arbitrarysort(id::Symbol) = has_arbitrarysort(PNML.DECLDICT[], id)
+has_partitionsort(id::Symbol) = has_partitionsort(PNML.DECLDICT[], id)
+has_namedop(id::Symbol) = has_namedop(PNML.DECLDICT[], id)
+has_arbitraryop(id::Symbol) = has_arbitraryop(PNML.DECLDICT[], id)
+has_partitionop(id::Symbol) = has_partitionop(PNML.DECLDICT[], id)
+has_feconstant(id::Symbol) = has_feconstant(PNML.DECLDICT[], id)
+has_usersort(id::Symbol) = has_usersort(PNML.DECLDICT[], id)
+has_useroperator(id::Symbol) = has_useroperator(PNML.DECLDICT[], id)
+
 variable(dd::DeclDict, id::Symbol)       = variabledecls(dd)[id]
-named_sort(dd::DeclDict, id::Symbol)     = namedsorts(dd)[id]
-arbitrary_sort(dd::DeclDict, id::Symbol) = arbitrarysorts(dd)[id]
+namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
+arbitrarysort(dd::DeclDict, id::Symbol)  = arbitrarysorts(dd)[id]
 partitionsort(dd::DeclDict, id::Symbol)  = partitionsorts(dd)[id]
-named_op(dd::DeclDict, id::Symbol)       = namedoperators(dd)[id]
+namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
 arbitrary_op(dd::DeclDict, id::Symbol)   = arbitraryoperators(dd)[id]
 partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
 feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
-
 usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
@@ -133,35 +154,45 @@ function validate_declarations(dd::DeclDict)
 end
 
 """
+    fill_nonhl!() -> nothing
     fill_nonhl!(dd::DeclDict) -> nothing
 
 Fill a DeclDict with values needed by non-high-level networks.
+Defaults to filling the scoped value PNML.DECLDICT[].
 
     NamedSort(:integer, "Integer", IntegerSort())
     NamedSort(:natural, "Natural", NaturalSort())
     NamedSort(:positive, "Positive", PositiveSort())
     NamedSort(:real, "Real", RealSort())
     NamedSort(:dot, "Dot", DotSort())
+    NamedSort(:bool, "Bool", BoolSort())
 
     UserSort(:integer)
     UserSort(:natural)
     UserSort(:positive)
     UserSort(:real)
     UserSort(:dot)
+    UserSort(:bool)
 """
+function fill_nonhl! end
+
+fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
+
 function fill_nonhl!(dd::DeclDict)
     for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
                               (:natural, "Natural", NaturalSort()),
                               (:positve, "Positive", PositiveSort()),
                               (:real, "Real", RealSort()),
                               (:dot, "Dot", DotSort()),
+                              (:bool, "Bool", BoolSort()),
+                              (:null, "Null", NullSort()),
                               )
 
-        if !has_namedsort(dd, tag)
+        if !has_namedsort(dd, tag) # Do not overwrite existing content.
             namedsorts(dd)[tag] = NamedSort(tag, name, sort)
             !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
         end
-        if !has_usersort(dd, tag)
+        if !has_usersort(dd, tag) # Do not overwrite existing content.
             usersorts(dd)[tag] = UserSort(tag)
             !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
         end

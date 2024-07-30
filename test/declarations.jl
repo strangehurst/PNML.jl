@@ -163,14 +163,13 @@ end
     """
 
     @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        decl = parse_declaration(node, pntd)
-        @test typeof(decl) <: PNML.Declaration
+        PNML.fill_nonhl!()
+        base_decl_length = length(PNML.namedsorts())
+        decl = parse_declaration(node, pntd)::PNML.Declaration # Add 3 declarations.
 
         @show decl PNML.idregistry[]
-        # Examine dictionary of 3 named sorts
-        @test length(PNML.namedsorts(decldict(decl))) >= 3
-        for nsort in values(PNML.namedsorts(decldict(decl)))
+        @test length(PNML.namedsorts(PNML.DECLDICT[])) == base_decl_length + 3
+        for nsort in values(PNML.namedsorts(PNML.DECLDICT[]))
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
             # by wraping an ID of a declared sort.
             # named sort -> cyclic enumeration -> fe constant
@@ -218,6 +217,7 @@ end
                         <feconstant id="b6" name="b6" />
                    </finiteenumeration>
                 </namedsort>
+
                 <partition id="P1" name="P1">
                     <usersort declaration="pluck"/>
                     <partitionelement id="bs1" name="bs1">
@@ -258,10 +258,10 @@ end
 
             @test PNML.isregistered(PNML.idregistry[], pid(psort))
             @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-
-            partname = PNML.name(psort)
-            partsort = PNML.sortof(psort)::UserSort
-            part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+            @show psort
+            @show partname = PNML.name(psort)
+            @show partsort = PNML.sortof(psort) #::UserSort
+            @show part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
             for element in part_elements
                 @test PNML.isregistered(PNML.idregistry[], pid(element))

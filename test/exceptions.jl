@@ -28,7 +28,7 @@ end
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
 
-    @test_throws("MalformedException: toolspecific missing tool attribute",
+    @test_throws("MalformedException: attribute tool missing",
         parse_pnml(xml"""
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
     <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
@@ -48,7 +48,7 @@ end
     </pnml>
     """))
 
-    @test_throws("MalformedException: net missing type",
+    @test_throws("MalformedException: attribute type missing",
         parse_pnml(xml"""
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="4712">
@@ -65,7 +65,7 @@ end
 
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
-        @test_throws("MalformedException: net missing type",
+        @test_throws("MalformedException: attribute type missing",
              parse_net(xml"""<net id="4712"> </net>"""))
     end
 end

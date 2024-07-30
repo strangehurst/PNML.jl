@@ -55,14 +55,14 @@ value(marking::Marking) = marking.value
 basis(marking::Marking) = sortof(marking)
 sortof(marking::Marking) = sortof(value(marking))
 
-sortof(::Type{<:Int64}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
-sortof(::Type{<:Integer}) = IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
-sortof(::Type{<:Real})    = RealSort() #has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
-sortof(::Int64) = IntegerSort() # has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
-sortof(::Integer) =  IntegerSort() #has_usersort(dd, :integer) ? usersort(dd, :integer) : error("no usersort :integer")
-sortof(::Real)    = RealSort() # has_usersort(dd, :real)    ? usersort(dd, :real) : error("no usersort :real")
+sortof(::Type{<:Int64})   = usersort(:integer)
+sortof(::Type{<:Integer}) = usersort(:integer)
+sortof(::Type{<:Real})    = usersort(:real)
+sortof(::Int64)   = usersort(:integer)
+sortof(::Integer) = usersort(:integer)
+sortof(::Real)    = usersort(:real)
 
-"Translate Number type to a tag symbol."
+"Translate Number type to a sort tag symbol."
 sorttag(i::Number) = sorttag(typeof(i))
 sorttag(::Type{<:Integer}) = :integer
 sorttag(::Type{<:Real})    = :real

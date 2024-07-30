@@ -67,17 +67,17 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
             ns = parse_namedsort(child, pntd)
-            dd.namedsorts[pid(ns)] = ns
+            namedsorts(dd)[pid(ns)] = ns
         elseif tag == "namedoperator"
             no = parse_namedoperator(child, pntd)
-            dd.namedoperators[pid(no)] = no
+            namedoperators(dd)[pid(no)] = no
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd)
-            dd.variabledecls[pid(vardecl)] = vardecl
+            variabledecls(dd)[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
             part = parse_sort(Val(:partition), child, pntd)
-            dd.partitionsorts[pid(part)] = part
+            partitionsorts(dd)[pid(part)] = part
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
         #!    partop = parse_partition_op(child, pntd)
@@ -100,7 +100,7 @@ Declaration that wraps a Sort, adding an ID and name.
 function parse_namedsort(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "namedsort")
     id = register_idof!(PNML.idregistry[], node) # use ScopedValue
-    name = attribute(node, "name", "namedsort $id missing name attribute")
+    name = attribute(node, "name")
     child = EzXML.firstelement(node)
     isnothing(child) && error("no sort definition element for namedsort $(repr(id)) $name")
     def = parse_sort(EzXML.firstelement(node), pntd) #! deduplicate sort
@@ -119,7 +119,7 @@ When arity > 0, where is the parameter value stored? With operator or variable d
 function parse_namedoperator(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "namedoperator")
     id = register_idof!(idregistry[], node)
-    name = attribute(node, "name", "namedoperator $id missing name attribute.")
+    name = attribute(node, "name")
 
     def::Maybe{NumberConstant} = nothing
     parameters = VariableDeclaration[]
@@ -154,7 +154,7 @@ $(TYPEDSIGNATURES)
 function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "variabledecl")
     id = register_idof!(idregistry[], node)
-    name = attribute(node, "name", "<variabledecl> missing name attribute")
+    name = attribute(node, "name")
     # firstelement throws on nothing. Ignore more than 1.
     #! There should be an actual way to store the value of the variable!
     #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
@@ -169,7 +169,7 @@ $(TYPEDSIGNATURES)
 function parse_unknowndecl(node::XMLNode, pntd::PnmlType)
     nn = EzXML.nodename(node)
     id = register_idof!(idregistry[], node)
-    name = attribute(node, "name", "$nn $id missing name attribute")
+    name = attribute(node, "name")
     @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
     content = AnyElement[anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing]
     return UnknownDeclaration(id, name, nn, content)
@@ -179,7 +179,7 @@ end
     parse_feconstants(node::XMLNode, pntd::PnmlType) -> Tuple{Symbols}
 
 Return ordered collection of finite enumeration constant IDs.
-Place the constants into feconstants(DECLDICT[]).
+Place the constants into feconstants().
 """
 function parse_feconstants(node::XMLNode, pntd::PnmlType)
     sorttag = EzXML.nodename(node)
@@ -193,8 +193,8 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType)
             throw(MalformedException("$sorttag has unexpected child element $tag"))
         else
             id = register_idof!(idregistry[], child)
-            name = attribute(child, "name", "$sorttag <feconstant id=$id> missing name attribute")
-            feconstants(PNML.DECLDICT[])[id] = FEConstant(id, name) #! XXX partition id XXXX
+            name = attribute(child, "name")
+            feconstants()[id] = FEConstant(id, name) #TODO partition id?
             push!(fec_refs, id)
         end
     end
@@ -234,7 +234,7 @@ end
 
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute")))
+    UserSort(Symbol(attribute(node, "declaration")))
 end
 
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType)
@@ -250,11 +250,11 @@ end
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "finiteintrange")
 
-    startstr = attribute(node, "start", "<finiteintrange> missing start")
+    startstr = attribute(node, "start")
     start = tryparse(Int, startstr)
     isnothing(start) && throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
 
-    stopstr = attribute(node, "end", "<finiteintrange> missing end") # XML Schema uses 'end', we use 'stop'.
+    stopstr = attribute(node, "end") # XML Schema uses 'end', we use 'stop'.
     stop = tryparse(Int, stopstr)
     isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
@@ -335,7 +335,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration", "<usersort> missing declaration attribute.")))
+    UserSort(Symbol(attribute(node, "declaration")))
 end
 
 """
@@ -346,5 +346,5 @@ function parse_variable(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "variable")
     # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
     # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
-    Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable attribute")))
+    Variable(Symbol(attribute(node, "refvariable")))
 end
