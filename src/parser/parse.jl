@@ -100,7 +100,7 @@ function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     netid = register_idof!(PNML.idregistry[], node)
 
     # Parse the required-by-specification petri net type input.
-    pn_typedef = PnmlTypeDefs.pnmltype(attribute(node, "type", "$nn missing type"))
+    pn_typedef = PnmlTypeDefs.pnmltype(attribute(node, "type"))
     # Override of the Petri Net Type Definition (PNTD) value for fun & games.
     if isnothing(pntd_override)
         pntd = pn_typedef
@@ -113,7 +113,7 @@ function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     isempty(allchildren(node ,"page")) &&
         throw(MalformedException("""<net> $netid does not have any <page> child"""))
 
-    return parse_net_1(node, pntd) # RUNTIME DISPATCH
+    return parse_net_1(node, pntd, netid) # RUNTIME DISPATCH
 end
 
 """
@@ -123,9 +123,9 @@ attached to the nodes of a petri net graph, including: marking, inscription, con
 Page IDs are appended as the XML tree is descended, followed by node IDs.
 
 Note the use of scoped value `DECLDICT[]` to access the per-net data structure as a scoped global.
+Some uses of this scoped value are embedded in accessor methods like `variabledecls()`.
 """
-function parse_net_1(node::XMLNode, pntd::PnmlType)
-    netid = first(ids)
+function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     pgtype = page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
@@ -139,28 +139,29 @@ function parse_net_1(node::XMLNode, pntd::PnmlType)
 
     @assert isregistered(PNML.idregistry[], netid)
 
-    # Parse *ALL* Declarations first (assuming this the tree root),
-    # this includes any Declarations attached to Pages.
-    # Place any/all declarations in DECLDICT[].
-    # It is like we are flattening only the declarations.
-    # We collect all the toolinfos.
-    # Only the first <declaration> text and graphics will be preserved.
-    # Though what use graphics could add escapes me (and the specification).
-    decls = alldecendents(node, "declaration") # There may be none.
-    declaration = parse_declaration(decls, pntd)::Declaration
-
-    fill_nonhl!(DECLDICT[])
-
-    if !isempty(DECLDICT[])
-        validate_declarations(DECLDICT[])
-    end
-
+    # Having the name is useful for error/log messages.
     namelabel::Maybe{Name} = nothing
     nameelement = firstchild(node, "name")
     if !isnothing(nameelement)
         namelabel = parse_name(nameelement, pntd)
     end
 
+    # Parse *ALL* Declarations here (assuming this the tree root),
+    # this includes any Declarations attached to Pages.
+    # Place any/all declarations in scoped value PNML.DECLDICT[].
+    # It is like we are flattening only the declarations.
+    # Only the first <declaration> text and graphics will be preserved.
+    # Though what use graphics could add escapes me (and the specification).
+    decls = alldecendents(node, "declaration") # There may be none.
+    declaration = parse_declaration(decls, pntd)::Declaration
+
+    # We use the declarations toolkit for non-high-level nets,
+    # and assume a minimum function for high-level nets.
+    fill_nonhl!(DECLDICT[])
+    validate_declarations(DECLDICT[])
+
+    # We collect all the toolinfos at this level.
+    # This enables use in later parsing.
     tools::Maybe{Vector{ToolInfo}} = nothing
     nettoolinfo = allchildren(node, "toolspecific")
     if !isempty(nettoolinfo)
@@ -169,33 +170,38 @@ function parse_net_1(node::XMLNode, pntd::PnmlType)
         end
     end
 
-    labels::Maybe{Vector{PnmlLabel}} = nothing
-
-    # Create net then fill
+    # Create empty net.
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata, page_set=page_idset(netsets),
-                    declaration, # Wraps a DeclDict.
-                    namelabel, tools, labels,
+                    declaration, # Wraps a DeclDict, the current scoped value of PNML.DECLDICT[].
+                    namelabel, tools, labels=nothing,
                     idregistry=PNML.idregistry[]
                     )
 
-    # Fill the pagedict, netsets, netdata by depth first traversal.
+    # Fill the pagedict, netsets, netdata by depth first traversal of pages.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag in ["declaration", "name", "toolspecific"]
             #println("net already parsed ", tag) #! debug
         elseif tag == "page"
-            # All graph node content resides in pages.
-            # Threre is always at least one page. A forest of multiple pages is allowd.
+            # All graph node content resides in page node trees.
+            # Threre is always at least one page. A forest of multiple page trees is allowd.
             # Note that one can always flatten a multi-page PnmlNet to a single page
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
             parse_page!(pagedict, netdata, netsets, child, pntd)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
-        else # Labels are everything-else here.
+        else # PnmlLabels are assumed to be every other child.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            net.labels = add_label(net.labels, child, pntd)
+            net.labels = add_label(net.labels, child, pntd) # No accessor because it has no user.
+            # The specification allows meta-models defined upon the core to define
+            # additional labels that conform to the Schema.
+            # We use XMLDict as the parser for unclaimed labels (and anynet).
+            #TODO mechanism for allowing new meta-models to provide specialized parsers
+            #TODO When method `parse_unclaimed_label(Val(tag), child, pntd)` is defined,
+            #TODO still need to be able to find the label to use it.
+
         end
     end
     return net
@@ -206,7 +212,7 @@ function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(idregistry[], node)
     push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
-    pg = _parse_page!(pagedict, netdata, node, pntd)
+    pg = _parse_page!(pagedict, netdata, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
     return nothing
@@ -217,8 +223,7 @@ end
 
 Place `Page` in `pagedict` using id as the key.
 """
-function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T) where {T<:PnmlType}
-    pageid = last(ids) # Just appended,
+function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol) where {T<:PnmlType}
     netsets = PnmlNetKeys() # Allocate per-page data.
 
     name::Maybe{Name} = nothing
@@ -299,7 +304,7 @@ end
 
 "Fill arc_set, arc_dict."
 function parse_arc!(arc_set, netdata, child, pntd)
-    a = parse_arc(child, pntd, netdata)
+    a = parse_arc(child, pntd; netdata)
     a isa valtype(arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_set, pid(a))
@@ -448,8 +453,8 @@ Construct an `Arc` with labels specialized for the PnmlType.
 function parse_arc(node, pntd; netdata)
     check_nodename(node, "arc")
     arcid = register_idof!(PNML.idregistry[], node)
-    source = Symbol(attribute(node, "source", "missing source for arc $arcid"))
-    target = Symbol(attribute(node, "target", "missing target for arc $arcid"))
+    source = Symbol(attribute(node, "source"))
+    target = Symbol(attribute(node, "target"))
 
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
@@ -500,7 +505,7 @@ $(TYPEDSIGNATURES)
 function parse_refPlace(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "referencePlace")
     id = register_idof!(PNML.idregistry[], node)
-    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute"))
+    ref = Symbol(attribute(node, "ref"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
@@ -529,7 +534,7 @@ $(TYPEDSIGNATURES)
 function parse_refTransition(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "referenceTransition")
     id = register_idof!(PNML.idregistry[], node)
-    ref = Symbol(attribute(node, "ref", "$nn $id missing ref attribute"))
+    ref = Symbol(attribute(node, "ref"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}}= nothing

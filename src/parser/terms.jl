@@ -51,12 +51,12 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
 
     interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
-    insorts = AbstractSort[]
+    insorts = Symbol[] # REFID of sort
 
     # Extract the input term and sort from each <subterm>
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")
-        subterm = EzXML.firstelement(child)
+        subterm = EzXML.firstelement(child) # this is the unwrapped subterm
         (t, s) = parse_term(subterm, pntd) # extract & accumulate input
         push!(interms, t)
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
@@ -66,7 +66,6 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     #     @show t s
     #     println()
     # end
-    #^ Is last(ids) different for partition, partition element, FEC, EnumSort
     outsort = pnml_hl_outsort(tag; insorts) #! some sorts need content
 
     #~ println("parse_operator_term returning $(repr(tag)) $(func)")
@@ -80,19 +79,19 @@ end
 #----------------------------------------------------------------------------------------
 # Expect only an attribute referencing the declaration.
 function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
-    var = Variable(Symbol(attribute(node, "refvariable", "<variable> missing refvariable")))
+    var = Variable(Symbol(attribute(node, "refvariable")))
     return (var, sortof(var)) #! does DeclDict lookup
 end
 
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType)
-    bc = BooleanConstant(attribute(node, "value", "<booleanconstant> missing value"))
+    bc = BooleanConstant(attribute(node, "value"))
     return (bc, sortof(bc))
 end
 
 # Has a value and is a subsort of NumberSort.
 function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
-    value = attribute(node, "value", "term $tag missing value")::String
+    value = attribute(node, "value")::String
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
@@ -228,17 +227,17 @@ function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType)
 end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType)
-    valuestr = attribute(node, "value", "<finiteintrangeconstant> missing value")::String
+    valuestr = attribute(node, "value")::String
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("<finiteintrangeconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     if sorttag == :finiteintrange
-        startstr = attribute(child, "start", "<finiteintrange> missing start")
+        startstr = attribute(child, "start")
         startval = tryparse(Int, startstr)
         isnothing(startval) &&
             throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
 
-        stopstr = attribute(child, "end", "<finiteintrange> missing end") # XML Schema uses 'end', we use 'stop'.
+        stopstr = attribute(child, "end") # XML Schema uses 'end', we use 'stop'.
         stopval = tryparse(Int, stopstr)
         isnothing(stopval) &&
             throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
@@ -262,7 +261,7 @@ Partition # id, name, usersort, partitionelement[]
 =#
 function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
     id = register_idof!(idregistry[], node)
-    nameval = attribute(node, "name", "<partition id=$id missing name attribute")
+    nameval = attribute(node, "name")
     @warn "partition $(repr(id)) $nameval"
     sort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into sort that form a equivalance class.
@@ -272,9 +271,8 @@ function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
         if tag == "usersort" # This is the sort that partitionelements reference.
             sort = parse_usersort(child, pntd)::UserSort #~ ArbitrarySort?
             #! @show sort
+            #todo verify is proper sort
         elseif tag === "partitionelement"
-            # Need to go up the tree so a element can access its parent partition.
-            # last(ids) == pid(PartitionWeAreCreating)
             parse_partitionelement!(elements, child)
         else
             throw(MalformedException(string("partition child element unknown: $tag, ",
@@ -291,23 +289,25 @@ function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
 
     #~verify_partition(sort, elements)
 
-    return PartitionSort(id, nameval, sort, elements)
+    return PartitionSort(id, nameval, sort.declaration, elements)
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
     check_nodename(node, "partitionelement")
     id = register_idof!(idregistry[], node)
-    nameval = attribute(node, "name", "partitionelement $id missing name attribute")
-    terms = AbstractTerm[] # ordered collection, usually useroperators (as constants)
+    nameval = attribute(node, "name")
+    terms = Symbol[] # ordered collection of IDREF, usually useroperators (as constants)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag === "useroperator"
-            # decl is a reference into enclosing partition's sort
-            decl = attribute(child, "declaration", "<useroperator id=$id name=name> missing declaration")::String
+            # PartitionElements refer to the FEConstants of the referenced finite sort.
+            # Useroperator holds an IDREF to a FEConstant operator.
+            decl = attribute(child, "declaration")
             refid = Symbol(decl)
-            PNML.has_useroperator(PNML.DECLDICT[], refid) ||
-                error("refid $refid not found in useroperators")
-            push!(terms, UserOperator(refid))
+            PNML.has_feconstant(PNML.DECLDICT[], refid) ||
+                error("re
+                fid $refid not found in feconstants") #! move to verify?
+            push!(terms, refid)
         else
             throw(MalformedException("partitionelement child element unknown: $tag"))
         end

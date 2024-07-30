@@ -8,8 +8,8 @@ Each are wrapped in a [`PnmlLabel`](@ref).
 """
 function parse_toolspecific(node, pntd)
     nn = check_nodename(node, "toolspecific")
-    tool    = attribute(node, "tool", "$nn missing tool attribute")
-    version = attribute(node, "version", "$nn missing version attribute")
+    tool    = attribute(node, "tool")
+    version = attribute(node, "version")
 
     # # Handle toolinfos that we recognize.
     # # Most will assume only one child element and ignore the rest.

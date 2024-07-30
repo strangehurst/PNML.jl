@@ -72,9 +72,10 @@ end
 
 """
 $(TYPEDSIGNATURES)
+Return XML attribute value.
 """
 function attribute(node::XMLNode, key::AbstractString, msg::String="attribute $key missing")
-    @assert key != "id" "'id' attribute not handled here"
+    key == "id" && error("'id' attribute not handled here")
     EzXML.haskey(node, key) || throw(MalformedException(msg))
     return @inbounds node[key]
 end
