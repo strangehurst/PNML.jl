@@ -16,14 +16,14 @@ function (var::Variable)()
     _evaluate(var)
 end
 value(v::Variable) = begin
-    @assert has_variable(PNML.DECLDICT[], tag(v)) "$(tag(v)) not a variable declaration"
+    @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"
     return 0 #! XXX FIXME XXX
 end
 _evaluate(v::Variable) = _evaluate(value(v))
 
 sortof(v::Variable) = begin
-    @assert has_variable(PNML.DECLDICT[], tag(v)) "$(tag(v)) not a variable declaration"
-    vdecl = variable(PNML.DECLDICT[], tag(v))
+    @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"
+    vdecl = variable(tag(v))
     return sortof(vdecl)
 end
 

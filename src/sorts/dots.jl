@@ -12,5 +12,5 @@ sortelements(::DotSort) = tuple(DotConstant())
 Duck-typed as AbstractOperator.
 """
 struct DotConstant end
-sortof(::DotConstant) = DotSort()
+sortof(::DotConstant) = sortof(namedsort(:dot))
 (d::DotConstant)() = 1 #TODO what kind of one?

@@ -52,12 +52,12 @@ $(TYPEDFIELDS)
 
 [`PNML.DeclDict`](@ref) variabledecls[id] = tuple(VariableDeclaration(id, "human name", sort), instance_of_sort)
 """
-struct VariableDeclaration{S <: AbstractSort} <: AbstractDeclaration
+struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::S
+    sort::UserSort
 end
-sortof(vd::VariableDeclaration) = vd.sort
+sortof(vd::VariableDeclaration) = sortof(vd.sort)::AbstractSort # user -> named -> sort object
 
 """
 $(TYPEDEF)
@@ -69,11 +69,17 @@ See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, UserSort
+    def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, BUILT-IN sorts!
 end
 NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort) = NamedSort(id, name, sort)
-sortof(namedsort::NamedSort) = definition(namedsort)
 definition(namedsort::NamedSort) = namedsort.def
+
+Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
+
+#! Everywhere else sortof returns a UserSort that refers to a NamedSort holding some sort.
+#! NamedSort is like Julia's symbol=>value concept. With NamedSort being a Symbolic reference.
+sortof(namedsort::NamedSort) = definition(namedsort) # NamedSort cannot contain a UserSort (for Symmetric and lower only?)
+
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
@@ -97,13 +103,14 @@ and duck-typed `AbstractTerm` for its body definition.
 struct NamedOperator{T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    parameter::Vector{VariableDeclaration} # variables with inferred sorts
-    def::T # operator or variable term (with inferred sort)
+    parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO ===
+    def::T # operator or variable term (with inferred sort) #TODO how to infer ===
 end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator")
 NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], DotConstant())
+
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
-sortof(no::NamedOperator) = sortof(operator(no))
+sortof(no::NamedOperator) = sortof(operator(no)) # sort of the wrapped operator definition
 
 #----------------------------------------------------------------------------------

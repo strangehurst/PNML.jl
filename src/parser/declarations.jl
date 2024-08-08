@@ -121,7 +121,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
     id = register_idof!(idregistry[], node)
     name = attribute(node, "name")
 
-    def::Maybe{NumberConstant} = nothing
+    def = nothing
     parameters = VariableDeclaration[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -143,8 +143,11 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
         end
     end
     isnothing(def) &&
-        throw(ArgumentError(string("<namedoperator name=", text(name), ", id=", id,
+        throw(ArgumentError(string("<namedoperator",
+                                    " name=", repr(text(name)),
+                                    " id=", repr(id),
                                     "> does not have a <def> element")))
+    @warn "<namedoperator name=$(repr(text(name))) id=$(repr(id))>"
     NamedOperator(id, name, parameters, def)
 end
 
@@ -178,8 +181,7 @@ end
 """
     parse_feconstants(node::XMLNode, pntd::PnmlType) -> Tuple{Symbols}
 
-Return ordered collection of finite enumeration constant IDs.
-Place the constants into feconstants().
+Place the constants into feconstants(). Return tuple of finite enumeration constant REFIDs.
 """
 function parse_feconstants(node::XMLNode, pntd::PnmlType)
     sorttag = EzXML.nodename(node)
@@ -194,7 +196,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType)
         else
             id = register_idof!(idregistry[], child)
             name = attribute(child, "name")
-            feconstants()[id] = FEConstant(id, name) #TODO partition id?
+            feconstants()[id] = FEConstant(id, name) #TODO partition/enumeration id?
             push!(fec_refs, id)
         end
     end
@@ -237,6 +239,7 @@ function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType)
     UserSort(Symbol(attribute(node, "declaration")))
 end
 
+# is a finiteenumeration with additional operators: successor, predecessor
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "cyclicenumeration")
     CyclicEnumerationSort(parse_feconstants(node, pntd))
@@ -249,15 +252,8 @@ end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "finiteintrange")
-
-    startstr = attribute(node, "start")
-    start = tryparse(Int, startstr)
-    isnothing(start) && throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
-
-    stopstr = attribute(node, "end") # XML Schema uses 'end', we use 'stop'.
-    stop = tryparse(Int, stopstr)
-    isnothing(stop) && throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
-
+    start = parse(Int, attribute(node, "start"))
+    stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
     FiniteIntRangeSort(start, stop)
 end
 
@@ -320,13 +316,11 @@ See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_varia
 function parse_sort(node::XMLNode, pntd::PnmlType)
     # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
     sortid = Symbol(EzXML.nodename(node))
-    #! println("parse_sort $(repr(sortid))")
     sort = if sortid in sort_ids
         parse_sort(Val(sortid), node, pntd)::AbstractSort
     else
         @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids.")
     end
-    #@show sortid sort
     return sort
 end
 

@@ -93,7 +93,7 @@ Must refer to a value between the start and end of the respective `FiniteIntRang
 """
 struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
     value::T
-    sort::FiniteIntRangeSort #! de-duplicate?
+    sort::FiniteIntRangeSort #! de-duplicate? UserSort?
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 sortof(c::FiniteIntRangeConstant) = c.sort

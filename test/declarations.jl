@@ -260,7 +260,7 @@ end
             @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
             @show psort
             @show partname = PNML.name(psort)
-            @show partsort = PNML.sortof(psort) #::UserSort
+            @show partsort = PNML.sortof(psort)
             @show part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
             for element in part_elements

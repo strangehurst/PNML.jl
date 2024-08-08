@@ -1,23 +1,25 @@
-
 """
     FEConstant
 
 Finite enumeration constant.
-In some cases the partition element cannot be derived from the subterms of PartitionElementOf operator.
+
+# Usage
+    fec = FEConstant(:anID, asort, "somevalue")
+    fec() == "somevalue"
 """
 struct FEConstant <: OperatorDeclaration
     id::Symbol # ID is unique within net.
+    #TODO add reference to the owning sort?
+    #!sortid::Symbol # REFID of named sort that contains this constant (0-arity operator)
     name::Union{String, SubString{String}} # Must name be unique within a sort?
 end
 
-# sortof(fec::FEConstant) = begin
-#     sort = sortof(namedsorts(PNML.DECLDICT[])[partid(fec)]) #! sort of partition or partition element
-#     return sort
-# end
+sortof(fec::FEConstant) = sortof(namedsort(fec.sortid)) # we omit the usersort.
+
 (fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
 
 function Base.show(io::IO, fec::FEConstant)
-    print(io, nameof(typeof(fec)), "(", repr(pid(fec)), ", ", repr(fec.name), ")")
+    print(io, nameof(typeof(fec)), "(", repr(pid(fec)), ", ", #=repr(fec.sortid), ", ",=# repr(fec()), ")")
 end
 
 

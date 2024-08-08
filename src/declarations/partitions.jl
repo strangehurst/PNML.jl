@@ -82,13 +82,13 @@ struct PartitionSort <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
     def::Symbol # Refers to a NamedSort, will be CyclicEnumeration, FiniteEnumeration, FininteIntRange
-    element::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
+    elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
 end
 PartitionSort() = PartitionSort(:partition, "Empty Partition", :dot,  PartitionElement[])
 #! :dot is a stand-in, it will not work well, but it is a "finite sort".
 
-sortof(partition::PartitionSort) = partition.def
-sortelements(partition::PartitionSort) = partition.element
+sortof(partition::PartitionSort) = sortof(namedsort(partition.def)) # omit namedsort.
+sortelements(partition::PartitionSort) = partition.elements
 
 # TODO Add Partition/PartitionElement methods here
 # list PartitionElement ids & names

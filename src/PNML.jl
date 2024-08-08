@@ -82,17 +82,15 @@ using NamedTupleTools
 using DocStringExtensions
 using Compat: @compat
 
-
-
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export feconstant, declarations, pid
-@compat public DeclDict, UserOperator
+@compat public DeclDict, UserOperator, NamedSort, NamedOperator
 export PnmlException, MissingIDException, MalformedException
 
 export Variable
-
+-
 @compat public place_idset, transition_function, initial_markings, rates
 
 export placedict, transitiondict, arcdict, refplacedict, reftransitiondict
@@ -101,7 +99,8 @@ export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
 export page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 export variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    useroperators, namedoperators, arbitrary_ops, feconstants
+    useroperators, namedoperators, arbitraryops, feconstants,
+    usersort, namedsort, feconstant
 
 
 include("PnmlTypeDefs.jl")
@@ -116,8 +115,8 @@ const idregistry = ScopedValue{PnmlIDRegistry}() # undefined until PnmlModel cre
 include("Core/exceptions.jl")
 include("Core/utils.jl")
 
-include("Core/interfaces.jl") # Function docstrings
-include("Core/types.jl") # Abstract Types
+include("Core/interfaces.jl") # Function docstrings mostly.
+include("Core/types.jl") # Abstract Types with docstrings.
 include("Core/anyelement.jl") # AnyElement, DictType
 
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
@@ -132,24 +131,31 @@ using .Sorts
 
 include("terms/constterm.jl") #
 include("terms/booleans.jl")
-include("terms/variables.jl") #~ Work inprogress
+include("terms/variables.jl") #~ Work in progress
 include("terms/operators.jl")
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
-include("terms/tuples.jl") #~ Work inprogress
+include("terms/tuples.jl") #~ Work in progress
 
 # 2024-07-22 moved forward, holds Any rather than node types.
 include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
 
-include("declarations/Declarations.jl") # Declarations are inside a <declaration> Label. NamedSort declaration wraps an AbstractSort.
+include("declarations/Declarations.jl")
 using .Declarations
+import .Declarations: NamedSort
+# Declarations are inside a <declaration> Label.
+# NamedSort declaration wraps (ID, name, <:AbstractSort).
+# UserSort declaration refers to NamedSort by REFID.
+
+include("terms/multisets.jl") # uses NamedSort declaration
 
 #^ Above here are things that appear in  DeclDict contents.
 #^ 2024-07-17 Changed DeclDict to be Any based,
 #^ with the hope that the accessors defined here provide type inferrability.
-include("Core/decldict.jl")
+include("Core/decldict.jl") # Just show()
 
 include("Core/graphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
+
 include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
 
 # Labels

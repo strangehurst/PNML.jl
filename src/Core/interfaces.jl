@@ -349,7 +349,7 @@ function condition_value_type end
 function inscription_type end
 
 """
-    inscription_value_type(pntd) -> Union{Int64, Float64, PnmlMultiset{<:Any, <:AbstractSort}}
+    inscription_value_type(pntd) -> Union{Int64, Float64, <:PnmlMultiset}
 Return value type.
 """
 function inscription_value_type end
@@ -395,11 +395,11 @@ hassort(::Any) = false
 
 
 """
-    sortof(x) -> AbstractSort
+    sortof(x) -> NamedSort
 
 Return the sort of an object or type. Any type that supports the PNML sort interface
 is expected to define [`hassort`](@ref) to be true and a `sortof` method that returns
-an AbstractSort instance.
+a NamedSort instance.
 """
 function sortof end
 

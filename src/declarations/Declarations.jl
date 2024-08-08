@@ -13,7 +13,7 @@ using PNML: page_idset, place_idset, transition_idset, arc_idset,
     refplace_idset, reftransition_idset
 using PNML: variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    namedoperators, arbitrary_ops, feconstants
+    namedoperators, arbitraryops, feconstants
 
 using ..Sorts
 using ..PnmlIDRegistrys

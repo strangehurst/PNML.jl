@@ -23,7 +23,7 @@ end
 Inscription(value::Number) = Inscription(value, nothing, nothing)
 
 value(i::Inscription) = i.value
-sortof(i::Inscription) = isa(i.value, Integer) ? IntegerSort() : RealSort() #TODO cleanup
+sortof(inscription::Inscription) = sortof(value(inscription))
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
@@ -75,15 +75,15 @@ See also [`Inscription`](@ref)
 # 3
 # ```
 """
-struct HLInscription{T<:PnmlMultiset{<:Any,<:AbstractSort}} <: HLAnnotation
+struct HLInscription{T<:PnmlMultiset} <: HLAnnotation
     text::Maybe{String}
-    term::T  # multiset sort whose basis sort is the same as adjacent place's sorttype
+    term::T # Multiset whose basis sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-HLInscription(t::AbstractTerm) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::AbstractTerm) = HLInscription(s, t, nothing, nothing)
+HLInscription(t::PnmlMultiset) = HLInscription(nothing, t)
+HLInscription(s::Maybe{AbstractString}, t::PnmlMultiset) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
 sortof(hli::HLInscription) = sortof(value(hli)) #! IMPLEMENT ME! Deduce sort of inscription
@@ -134,7 +134,7 @@ inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort)
 inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
 #
 #~ does this need to be a UnionAll
-inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:AbstractSort}
+inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
 
 """
 $(TYPEDSIGNATURES)
@@ -152,7 +152,5 @@ function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCor
     els = sortelements(placetype) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # High-level (HLPNG) allows infinite sets (Natural numbers).
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
-    HLInscription(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
-                           sortof(placetype), # basis sort
-                           1)) # empty multiset, multiplicity of every element = zero.
+    HLInscription(pnmlmultiset(el, value(placetype), 1)) # not empty multiset
 end

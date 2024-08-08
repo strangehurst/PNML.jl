@@ -391,9 +391,8 @@ function parse_place(node::XMLNode, pntd::PnmlType)
 
     # The basis sort of mark label must be the same as the sort of sorttype label.
     if !equalSorts(sortof(basis(mark)), sortof(sorttype))
-        # throw(MalformedException(string(
-        error(string("place id $(repr(id)) of $pntd: sort mismatch,",
-                        "\n\n sortof(basis(mark)) = ", sortof(basis(mark)),
+        error(string("place $(repr(id)) of $pntd: sort mismatch,",
+                        "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
                         "\n\t sortof(sorttype) = ", sortof(sorttype)))
     end
 
@@ -630,10 +629,40 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
         @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.term)"
     end
 
+    @show which(eltype, (typeof(sortof(placetype)),))
+    # If there is no appropriate eltype method defined expect eltype(x) @ Base abstractarray.jl:241
+    # to return Int64.
+    # Base.eltype is for collections: what would an iterator return.
+
+    # Sorts are sets in Part 1 of the ISO specification that defines the semantics.
+    # Very much mathy, so thinking of sorts as collections is natural.
+    # Some of the sets are finite: boolean, enumerations, ranges.
+    # Others include integers, natural, and positive numbers (we extend with floats/reals).
+    # Some High-levl Petri nets, in particular Symmetric nets, are restricted to finite sets.
+    # We support the possibility of full-fat High-level nets with
+    # arbitrary sort and arbitrary operation definitions.
+
+    # Part2 of the ISO specification that defines the syntax of the xml markup language
+    # maps these sets to sorts (similar to Type). And adds things.
+    # A MathML replacement for HL nets. (They abandoned MathML.)
+    # Partitions, Lists,
+
+    # Part 3 of the ISO specification is a math and semantics extension covering
+    # modules, extensions, more net types. Not reflected in Part 2 as on August 2024.
+    # The 2nd edition of Part 1 is contemperoranous with Part 3.
+    # Part 2 add some of these features through the www.pnml.org Schema repository.
+
+    # sortelements is needed to support the <all> operator that forms a multiset out of
+    # one of each of the finite sorts elements. This leads to iteration. Thus eltype.
+
+
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
     mvt = eltype(sortof(placetype))
+
+    @show placetype sortof(placetype) mvt
+
     mvt == marking_value_type(pntd) ||
-        throw(ArgumentError("marking value type must be $(marking_value_type(pntd)), found: $mvt"))
+        throw(ArgumentError("initial marking value type of $pntd must be $(marking_value_type(pntd)), found: $mvt"))
 
     value = if isnothing(l.text)
         zero(mvt)
@@ -684,8 +713,10 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
 end
 
 """
-$(TYPEDSIGNATURES)
-Parse label using a `termparser` callable applied to any <structure>.
+    parse_label_content(node::XMLNode, termparser, pntd) -> NamedTuple
+
+Parse label using a `termparser` callable applied to any structure element.
+Also parses text, toolinfo, graphics, term and sort of term.
 """
 function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where {F}
     text::Maybe{Union{String,SubString{String}}} = nothing
@@ -699,8 +730,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, sort = termparser(child, pntd) # Apply function/functor
-            #! @show term sort
-            @assert sort == sortof(term)
+            @show term sort
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -723,16 +753,22 @@ NB: Used by PTNets that assume placetype is DotSort().
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(value(placetype)), pntd)::NamedTuple
-    #@warn pntd l.text l.term
+    @warn pntd l.text l.term l.sort
 
-    mark = if isnothing(l.term) # Default to an empty multiset whose basis is placetype
-        els = sortelements(placetype) # Finite sets return non-empty iteratable.
-        @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
-        el = first(els) # Default to first of finite sort's elements (how often is this best?)
-        pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
-                     sortof(placetype), # basis sort
-                     0) # empty multiset, multiplicity of every element = zero.
+    mark = if isnothing(l.term)
+        # Default is an empty multiset whose basis matches placetype.
+        els = sortelements(placetype)
+        # Finite sets/sorts return non-empty iteratable.
+        # NumberSorts return infinite iterator starting at zero (integer, natural, real)
+        # or one (positive).
+        el = first(els) # Default to first of sort's elements.
+        pnmlmultiset(el, sortof(placetype), 0) # empty, el used for its type.
     else
+        #!
+        #! Evaluate the expression. Expect a PnmlMultiset result (from an operator).
+        #!
+        # Can only be an operator since ground terms have no variables.
+        @show l.term typeof(l.term)
         l.term
     end
     equalSorts(sortof(basis(mark)), sortof(placetype)) ||
@@ -742,41 +778,50 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     HLMarking(l.text, mark, l.graphics, l.tools)
 end
 
+""
+function eval_initialmarking_term()
+end
 """
     ParseMarkingTerm(placetype) -> Functor
 
 Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType)
 """
 struct ParseMarkingTerm
-    placetype::Union{TupleSort,UserSort}
+    placetype::UserSort
 end
 
 placetype(pmt::ParseMarkingTerm) = pmt.placetype
 
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
     check_nodename(marknode, "structure")
-    #println("\n(pmt::ParseMarkingTerm) ")
-    # @show placetype(pmt)
-    #@show sortof(placetype(pmt))
     if EzXML.haselement(marknode)
+        println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
         term = EzXML.firstelement(marknode) # ignore any others
         mark, sort = parse_term(term, pntd)
 
-        # @show mark sort
-        # @show typeof(mark) sortof(mark) basis(mark)
+        @show mark sort sortof(mark) basis(mark) typeof(placetype(pmt))
         # @show sortof(basis(mark))
-        @assert sort == sortof(mark) # sortof multiset is the basis sort
+        #@assert sort == sortof(mark) # sortof multiset is the basis sort
         #@assert sortof(mark) != basis(mark)
         #@assert basis(mark) == sortof(basis(mark))
 
-        isa(mark, AbstractTerm) ||
-            error("mark is a $(nameof(typeof(mark))), expected AbstractTerm")
-        isa(sortof(mark), AbstractSort) ||
-            error("sortof(mark) is a $(sortof(mark)), expected AbstractSort")
-        #isa(mark, Union{PnmlMultiset,Operator}) ||
-        #    error("mark is a $(nameof(typeof(mark))), expected PnmlMultiset or Operator")
-        isa(placetype(pmt), AbstractSort) ||
-            error("placetype is a $(nameof(typeof(placetype(pmt)))), expected AbstractSort")
+        # PnmlMultiset (datastructure) vs UserOperator/NamedOperator (term/expression)
+        # Here we are parsing a term from XML to a ground term, which must be an operator.
+        # Like with sorts, we have useroperator -> namedoperator -> operator.
+        # NamedOperators will be joined by ArbitraryOperators for HLPNGs.
+        # Operators include built-in operators, multiset operators, tuples
+        # Multiset operators must be evaluated to become PnmlMultiset objects.
+        # Markings are multisets (a.k.a. bags).
+        #!isa(mark, PnmlMultiset) ||
+        ismultisetoperator(tag(mark)) || error("mark is not a multiset operator: $mark))")
+
+        # isa(sortof(mark), UserSort) ||
+        #     error("sortof(mark) is a $(sortof(mark)), expected UserSort")
+        # isa(mark, Union{PnmlMultiset,Operator}) ||
+        #     error("mark is a $(nameof(typeof(mark))), expected PnmlMultiset or Operator")
+
+        isa(placetype(pmt), UserSort) ||
+            error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
         equalSorts(sortof(basis(mark)), sortof(placetype(pmt))) ||
             throw(ArgumentError(string("parse marking term sort mismatch:",
@@ -890,9 +935,7 @@ function def_insc(netdata, source, target)
     els = sortelements(placesort) # Finite sets return non-empty iteratable.
     @assert !isnothing(els) # Symmetric Net requires finite sets. #^ HLPNG?
     el = first(els) # Default to first of finite sort's elements (how often is this best?)
-    inscr = pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
-                placesort, # basis sort
-                1)
+    inscr = pnmlmultiset(el, placesort, 1)
     #@show inscr
     return inscr
 end

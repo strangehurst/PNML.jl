@@ -44,8 +44,8 @@ struct Operator <: AbstractOperator
     tag::Symbol
     func::Function # Apply `func` to `inexprs`: evaluated with current variable values and constants.
     inexprs::Vector{AbstractTerm} # typeof(inexprs[i]) == eltype(insorts[i])
-    insorts::Vector{AbstractSort} #
-    outsort::Any #! AbstractSort
+    insorts::Vector{UserSort}
+    outsort::UserSort # wraps IDREF Symbol
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
     #=
     all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
@@ -53,7 +53,7 @@ struct Operator <: AbstractOperator
 end
 
 tag(op::Operator)    = op.tag
-sortof(op::Operator) = op.outsort
+sortof(op::Operator) = sortof(op.outsort)
 inputs(op::Operator) = op.inexprs
 basis(op::Operator)  = basis(sortof(op))
 
@@ -391,7 +391,7 @@ const hl_operators = Dict(
 
     :ltp => builtin_ltp,
     :gtp => builtin_gtp,
-    :partitionelementof => builtin_partitionelementof,
+    :partitionelementof => builtin_partitionelementof, #! partition IDREF as input
 
     :tuple => builtin_tuple,
     #:numberconstant => builtin_,
@@ -414,146 +414,120 @@ function pnml_hl_operator(tag::Symbol)
 end
 
 """
-    pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort}) -> Sort
+    pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}) -> UserSort
 
-Return sort that builtin operator returns.
+Return sort that operator `tag` returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
-    if isbooleanoperator(tag)
-        BoolSort()
-    elseif isintegeroperator(tag)
-        IntegerSort()
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
+    #=
+    Question? can these ever be built-in sorts? If so, when, why?
+    UserSorts are the expected form. This allows mapping id to AbstractSort via NamedSorts.
+    NamedSorts are used to wrap built-in sorts (as well as give them an name).
+    =#
+
+    if isbooleanoperator(tag) # 0-arity function is a constant
+        usersort(:bool) # BoolSort()
+    elseif isintegeroperator(tag) # 0-arity function is a constant
+        usersort(:integer) # IntegerSort()
     elseif ismultisetoperator(tag)
         if tag in (:add,)
             length(insorts) >= 2 ||
                 @error "pnml_hl_outsort length(insorts) < 2" tag insorts
-            multisetsort(basis(last(insorts))) # is it always last?
+            last(insorts) # is it always last?
+            #todo assert is multiset
         elseif tag in(:all, :numberof, :subtract, :scalarproduct)
-            length(insorts) == 2 ||
-                @error "pnml_hl_outsort length(insorts) != 2" tag insorts
-            multisetsort(basis(last(insorts))) # is it always last?
-        elseif tag === :empty # a constant
-            length(insorts) == 1 ||
-                @error "pnml_hl_outsort length(insorts) != 1" tag insorts
-            multisetsort(basis(first(insorts)))
+            length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
+            last(insorts) # is it always last?
+        elseif tag === :empty # a "constant" that needs a basis sort
+            length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
+            first(insorts)
         elseif tag === :cardnality
-            NaturalSort()
+            usersort()[:natural] # NaturalSort()
         elseif tag === :cardnalitiyof
-            NaturalSort()
+            usersort()[:natural] # NaturalSort()
         elseif tag === :contains
-            BoolSort()
+            usersort()[:bool] # BoolSort()
         else
             error("$tag not a known multiset operator")
         end
     elseif isfiniteoperator(tag)
         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
+        length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         @error("enumeration sort needs content")
-        FiniteEnumerationSort(()) #! pnml_hl_outsort will need FEC reference tuple
+        first(insorts)
+        #todo assert is finite enumeration
         #
     elseif ispartitionoperator(tag)
         #:ltp, :gtp, :partitionelementof
-        PartitionSort() #! pnml_hl_outsort will need content
+        length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
+        first(insorts)
+        #todo assert is PartitionSort() #! pnml_hl_outsort will need content
     elseif tag === :tuple
         @warn "pnml_hl_outsort does not handle tuple yet"
-        TupleSort()  #! pnml_hl_outsort will need content?
-        #:numberconstant => NumberSort(),
-        #:dotconstant => DotSort(),
-        #:booleanconstant => BoolSort(),
+        length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
+        first(insorts)
+        #todo assert   TupleSort()  #! pnml_hl_outsort will need content?
+    elseif tag === :numberconstant
+        usersort(:integer) #! should be NumberSort()
+    elseif tag === :dotconstant
+        usersort(:dot)
+    elseif tag === :booleanconstant
+        usersort(:bool)
     else
          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
-        return NullSort()
+         usersort(:null)
     end
 end
+
+
+# function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
+#     if isbooleanoperator(tag)
+#         BoolSort()
+#     elseif isintegeroperator(tag)
+#         IntegerSort()
+#     elseif ismultisetoperator(tag)
+#         if tag in (:add,)
+#             length(insorts) >= 2 ||
+#                 @error "pnml_hl_outsort length(insorts) < 2" tag insorts
+#             multisetsort(basis(last(insorts))) # is it always last?
+#         elseif tag in(:all, :numberof, :subtract, :scalarproduct)
+#             length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
+#             multisetsort(basis(last(insorts))) # is it always last?
+#         elseif tag === :empty # a constant
+#             length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
+#             multisetsort(basis(first(insorts)))
+#         elseif tag === :cardnality
+#             NaturalSort()
+#         elseif tag === :cardnalitiyof
+#             NaturalSort()
+#         elseif tag === :contains
+#             BoolSort()
+#         else
+#             error("$tag not a known multiset operator")
+#         end
+#     elseif isfiniteoperator(tag)
+#         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
+#         @error("enumeration sort needs content")
+#         FiniteEnumerationSort(()) #! pnml_hl_outsort will need FEC reference tuple
+#         #
+#     elseif ispartitionoperator(tag)
+#         #:ltp, :gtp, :partitionelementof
+#         PartitionSort() #! pnml_hl_outsort will need content
+#     elseif tag === :tuple
+#         @warn "pnml_hl_outsort does not handle tuple yet"
+#         TupleSort()  #! pnml_hl_outsort will need content?
+#         #:numberconstant => NumberSort(),
+#         #:dotconstant => DotSort(),
+#         #:booleanconstant => BoolSort(),
+#     else
+#          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
+#         return NullSort()
+#     end
+# end
 
 #===============================================================#
 #===============================================================#
 #===============================================================#
-
-"""
-    pnmlmultiset(x::T, basis::AbstractSort, multi::Integer=1) -> PnmlMultiset{T,S}
-
-Construct as a multiset with one element, `x`, with default multiplicity of 1.
-
-PnmlMultiset wraps a Multisets.Multiset{T} and basis sort S.
-
-Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
-Thre are constants defined that must be multisets since HL markings are multisets.
-
-multi`x
-"""
-struct PnmlMultiset{T, S<:AbstractSort} <: AbstractOperator
-    basis::S # UserSort that References id of sort declaration.
-    mset::Multiset{T} #,
-end
-
-Base.zero(::Type{PnmlMultiset{T, S}}) where{T, S<:AbstractSort} = zero(Int)
-Base.one(::Type{PnmlMultiset{T, S}}) where{T, S<:AbstractSort} = one(Int)
-
-
-function Base.show(io::IO, t::PnmlMultiset{<:Any, <:AbstractSort})
-    print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
-    print(io, ", mset=", nameof(typeof(t.mset)), "(",)
-    io = inc_indent(io)
-    for (k,v) in pairs(t.mset)
-        println(io, repr(k), " => ", repr(v), ",")
-    end
-    print(io, "))") # Close BOTH parens.
-end
-
-
-"""
-    pnmlmultiset(x, basis::AbstractSort, multi::Integer=1)
-
-Constructs a [`PnmlMultiset`](@ref)` containing multiset "1'x" and a sort.
-
-Any `x` that supports `sortof(x)`
-"""
-function pnmlmultiset(x, basis::AbstractSort, multi::Integer=1)
-    # has_sort(x) ||
-    #     throw(ArgumentError("x::$(typeof(x)) does not have a sort"))
-    if !isa(x, Number) && isa(sortof(x), MultisetSort)
-        throw(ArgumentError("sortof(x) cannot be a MultisetSort: found $(sortof(x))"))
-    end
-    multi >= 0 ||
-        throw(ArgumentError("multiplicity cannot be negative: found $multi"))
-    #^ Where/how is absence of sort loop checked?
-
-    #~println("pnmlmultiset(")
-    #~@show x basis multi
-    # @show typeof(x)
-    # @show sortof(x)
-    # @show typeof(sortof(x))
-    # @show typeof(basis)
-    # @show sortof(basis)
-    M = Multiset{typeof(x)}()
-    #@show typeof(M) eltype(M)
-    M[x] = multi #
-    #@warn typeof(M) #repr(M)
-    #@warn typeof(basis) repr(basis)
-    #@warn collect(elements(basis))
-    PnmlMultiset(basis, M)
-end
-
-sortof(ms::PnmlMultiset{<:Any, <:AbstractSort}) = sortof(basis(ms)) # Dereferences the UserSort
-
-multiplicity(ms::PnmlMultiset{<:Any, <:AbstractSort}, x) = ms.mset[x]
-issingletonmultiset(ms::PnmlMultiset{<:Any, <:AbstractSort}) = length(ms.mset) == 1
-cardinality(ms::PnmlMultiset{<:Any, <:AbstractSort}) = length(ms.mset)
-
-# TODO forward what ops to Multiset?
-# TODO alter Multiset: union, add element, erase element, change multiplicity?
-
-"""
-    basis(ms::PnmlMultiset) -> UserSort
-Multiset basis sort is a UserSort that references the declaration of a NamedSort.
-Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
-MultisetSorts not allowed. Nor loops in sort references.
-"""
-basis(ms::PnmlMultiset{<:Any, <:AbstractSort}) = ms.basis
-
-sortelements(ms::PnmlMultiset{<:Any, <:AbstractSort}) = sortelements(basis(ms))
-
-_evaluate(ms::PnmlMultiset{<:Any, <:AbstractSort}) = cardinality(ms)
 
 """
 $(TYPEDEF)
@@ -582,15 +556,16 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     # println()
     #! FEConstants are 0-ary operators. namedoperators?
 
-    if !has_operator(DECLDICT[], uo.declaration)
-        @warn "found no operator $(uo.declaration), returning `false`"
+    if !has_operator(uo.declaration)
+        @warn "found NO operator $(uo.declaration), returning `false`"
         return false
     else
-        op = operator(DECLDICT[], uo.declaration)
+        op = operator(uo.declaration) # get operator from decldict
+        @warn "found operator $(uo.declaration)`"
         r  = op(#= pass arguments to functor/operator =#)
         return r
     end
 end
 
-sortof(uo::UserOperator) = sortof(operator(DECLDICT[], uo.declaration))
+sortof(uo::UserOperator) = sortof(operator(uo.declaration)) # return sortof NamedOperator
 basis(uo::UserOperator) = sortof(uo)

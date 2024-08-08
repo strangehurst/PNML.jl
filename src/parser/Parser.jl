@@ -21,12 +21,15 @@ using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement, number_value,
     PnmlMultiset, pnmlmultiset,
     BooleanConstant, NumberConstant,
     AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator,
-    isoperator, pnml_hl_operator, pnml_hl_outsort
+    isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator,
+    isfiniteoperator, ispartitionoperator, isbuiltinoperator,
+    isvariable,
+    pnml_hl_operator, pnml_hl_outsort
 using PNML: page_idset, place_idset, transition_idset, arc_idset,
     refplace_idset, reftransition_idset
-using PNML: variabledecls,
+using PNML: variabledecls, usersort,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    useroperators, namedoperators, arbitrary_ops, feconstants
+    useroperators, namedoperators, arbitraryops, feconstants
 using PNML:
     page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,
     marking_type, inscription_type, condition_type,

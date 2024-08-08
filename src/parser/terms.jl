@@ -32,7 +32,7 @@ function parse_term(node::XMLNode, pntd::PnmlType)
         return (term, sort)
 
     else # arity > 0, build & return an Operator Functor that has a vector of inputs.
-        (term,sort) = parse_operator_term(tag, node, pntd) # (AbstractOperator, Sort)
+        (term, sort) = parse_operator_term(tag, node, pntd) # (AbstractOperator, Sort)
         return (term, sort)
     end
 end
@@ -51,13 +51,13 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
 
     interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
-    insorts = Symbol[] # REFID of sort
+    insorts = UserSort[] # REFID of sort
 
     # Extract the input term and sort from each <subterm>
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")
         subterm = EzXML.firstelement(child) # this is the unwrapped subterm
-        (t, s) = parse_term(subterm, pntd) # extract & accumulate input
+        @show (t, s) = parse_term(subterm, pntd) # extract & accumulate input
         push!(interms, t)
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
@@ -68,11 +68,11 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     # end
     outsort = pnml_hl_outsort(tag; insorts) #! some sorts need content
 
-    #~ println("parse_operator_term returning $(repr(tag)) $(func)")
-    #~ println("   interms ", interms)
-    #~ println("   insorts ", insorts)
-    #~ println("   outsort ", outsort)
-    #~ println()
+    println("parse_operator_term returning $(repr(tag)) $(func)")
+    println("   interms ", interms)
+    println("   insorts ", insorts)
+    println("   outsort ", outsort)
+    println()
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 
@@ -92,15 +92,15 @@ end
 # Has a value and is a subsort of NumberSort.
 function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
     value = attribute(node, "value")::String
-    child = EzXML.firstelement(node) # Child is the sort of value
+    child = EzXML.firstelement(node) # Child is the sort of value attribute.
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
-    if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
-        sort = parse_sort(Val(sorttag), child, pntd)
+    sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
+        parse_sort(Val(sorttag), child, pntd)::NumberSort
     else
         throw(MalformedException("$tag sort unknown: $sorttag"))
     end
-    @assert sort isa NumberSort
+
     nv = number_value(eltype(sort), value)
     if sort isa NaturalSort
         nv >= 0 || throw(ArgumentError("not a Natural Number: $nv"))
@@ -114,10 +114,11 @@ end
 
 # Does not have a value and is DotSort.
 function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType)
-    return (DotConstant(), DotSort())
+    return (DotConstant(), usersort(:dot))
 end
 
-# All returns multiset that contains exactly one of each element of its basis set/sort.
+# All creates multiset that contains exactly one of each element of its basis finite set/sort.
+# Is a constant and used for intialMarking.
 # <structure>
 #     <tuple>
 #         <subterm><all><usersort declaration="N1"/></all></subterm>
@@ -129,8 +130,12 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     isnothing(child) && throw(MalformedException("$tag missing content element"))
 
     us = parse_usersort(child, pntd)::UserSort # Can there be anything else?
-    b = sortof(us) # IDREF -> sort instance
+    b = sortof(us) # IDREF -> sort instance (UserSort->NamedSort->AbstractSort)
     e = sortelements(b) # iterator over an instance of every element of the set/sort
+    #^ Only expect finite sorts here.
+    M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
+
+    all = PnmlMultiset(b, M) #? evaluate <all> to PnmlMultiset
 
     #@show us b e typeof(e)
     # dot: dotconstant
@@ -138,8 +143,6 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     # finite int range: start:1:stop
     # enumeration: sequence of objects
 
-    M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
-    all = PnmlMultiset(b, M)
     #@warn repr(M) # prints decldict
     #@warn typeof(M)
     #@warn repr(all) # M is a set, example {(DotConstant(),)}
@@ -181,6 +184,7 @@ end
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     multiplicity = nothing
     instance = nothing
+    isort = nothing
     #!multiplicity::Maybe{NumberConstant} = nothing
     #!instance::Maybe{AbstractTerm} = nothing
     for (i,subterm) in enumerate(EzXML.eachelement(node))
@@ -195,14 +199,15 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
             # A constant/0-arity operator returning a constant of sort, that, with `multiplicity`, forms a multiset.
             # Can be a n-ary operator, like tuple, or a variable.
             (instance, isort) = parse_term(stnode, pntd)
-            #@show typeof(instance) instance sortof(instance) isort
+            @show instance isort
             isa(instance, MultisetSort) && throw(ArgumentError("numberof's output sort cannot be MultisetSort"))
         end
     end
     isnothing(multiplicity) && throw(ArgumentError("Missing numberof numberconstant subterm"))
-    isnothing(instance) && throw(ArgumentError("Missing numberof sort instance subterm. Expected `dotconstant` or similar."))
-    #@show multiplicity multiplicity() instance sortof(instance)
-    return (pnmlmultiset(instance, sortof(instance), multiplicity()), sortof(instance))
+    isnothing(instance) && throw(ArgumentError("Missing numberof sort instance. Expected `dotconstant` or similar."))
+
+    @show multiplicity multiplicity() instance sortof(instance)
+    return (pnmlmultiset(instance, isort, multiplicity()), isort)
 end
 
 function parse_term(::Val{:feconstant}, node::XMLNode, pntd::PnmlType)

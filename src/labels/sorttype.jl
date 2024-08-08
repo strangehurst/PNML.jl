@@ -35,12 +35,11 @@ Should allow for user tuning by setting a preference.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-A places's <type> label wraps a concrete subtype of [`AbstractSort`](@ref) that
-defines the sort of a place, hence use of `sorttype`.
-It is the type concept of the many-sorted algebra.
+A places's <type> label wraps a [`UserSort`](@ref) that holds a REFID to the sort of a place,
+hence use of `sorttype`. It is the type (or set) concept of the many-sorted algebra.
 
-For high-level nets there will be a rich language of sorts using [`UserSort`](@ref)
-& [`PNML.Declarations.NamedSort`](@ref) defined in the xml input.
+For high-level nets there will be a declaration section with a rich language of sorts
+using [`UserSort`](@ref) & [`PNML.Declarations.NamedSort`](@ref) defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
 
@@ -55,10 +54,12 @@ this is a sort, not a term, so no variables or operators.
 
 > The initial marking function M0 is defined by the label HLMarking of the places.
 > ... this is a ground term of the corresponding multiset sort.
+
+Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
 struct SortType <: Annotation # Not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::Union{TupleSort,UserSort} #! also built-in sorts
+    sort_::UserSort # indirection NamedSort or ArbitrarySort
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -67,12 +68,12 @@ end
 # >by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 # I interpret this as: use a UserSort to reference a BuiltInSort, NamedSort, and someday an AbstractSort.
 
-SortType(sort::AbstractSort) = SortType(nothing, sort, nothing, nothing)
-SortType(s::AbstractString, sort::AbstractSort) = SortType(s, sort, nothing, nothing)
+SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
+SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
 value(t::SortType)  = t.sort_
-sortof(t::SortType) = sortof(value(t)) # sortof usersort
+sortof(t::SortType) = sortof(value(t)) # usersort -> namedsort -> sort
 sortelements(t::SortType) = sortelements(sortof(t))
 
 function Base.show(io::IO, st::SortType)

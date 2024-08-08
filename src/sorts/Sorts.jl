@@ -4,8 +4,8 @@ import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 import Multisets: Multisets, Multiset
 using PNML
-import PNML: sortof, sortelements, basis, value, _evaluate, tag, pid
-using PNML: DeclDict, named_sort, DECLDICT, indent, inc_indent
+import PNML: sortof, sortelements, basis, value, _evaluate, tag, pid, namedsort
+using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent
 
 """
 $(TYPEDEF)
@@ -39,12 +39,13 @@ include("lists.jl")
 include("numbers.jl")
 include("strings.jl")
 
-export AbstractSort, BoolSort, UserSort, ProductSort, MultisetSort,
-        DotSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort,
+export AbstractSort, UserSort, MultisetSort, ProductSort, TupleSort,
+        DotSort,  BoolSort,
+        NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort,
         CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
         ListSort, StringSort,
         DotConstant, FiniteIntRangeConstant,
-        TupleSort, NullSort
+        NullSort
 export equalSorts, multisetsort,
     integersort, naturalsort, positivesort, realsort, nullsort,
     equals, start, stop

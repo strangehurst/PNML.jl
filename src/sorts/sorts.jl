@@ -41,17 +41,26 @@ Holds a reference id (REFID) to a subtype of Declaratons.SortDeclaration.
 Used in a Place's sort type property.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
-    declaration::Symbol #TODO validate as a NamedSort
+    declaration::Symbol #TODO validate as a NamedSort REFID
 end
 
-"Access the referenced named sort declaration."
-_access_decl(us::UserSort) = named_sort(DECLDICT[], us.declaration)
+#Base.eltype(::Type{UserSort})
 
-# Forward operations to the UserSort having a pid matching the declaration REFID.
-sortof(us::UserSort) = sortof(_access_decl(us))
-sortelements(us::UserSort) = sortelements(_access_decl(us))
-pid(us::UserSort) = pid(_access_decl(us)) # Do we have to do this here? (it could be an assertion)
-name(us::UserSort) = name(_access_decl(us)) # This we DO have to do here.
+"Get NamedSort from UserSort REFID"
+namedsort(us::UserSort) = namedsort(us.declaration)
+
+sortof(us::UserSort) = sortof(namedsort(us))
+
+"Access the referenced named sort's sort definition."
+function _access_ns_def(us::UserSort)
+    PNML.Declarations.definition(namedsort(us.declaration))::AbstractSort
+end
+
+# Forward operations to the NamedSort matching the declaration REFID.
+#! not sortof(us::UserSort) = sortof(_access_decl(us))
+sortelements(us::UserSort) = sortelements(_access_ns_def(us))
+pid(us::UserSort) = pid(namedsort(us.declaration))
+name(us::UserSort) = name(namedsort(us.declaration))
 
 """
 $(TYPEDEF)

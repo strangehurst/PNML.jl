@@ -45,33 +45,46 @@ Marking(value::Number, graph, tool) = Marking(value, graph, tool)
 """
     value(m::Marking) -> Number
 """
-value(marking::Marking) = marking.value
-# 1'value where value isa eltype(sortof(marking))
+value(marking::Marking) = marking.value::Number
+# 1'value where value isa eltype(sortof(marking)) (<:Number)
 # because we assume a multiplicity of 1, and the sort is simple
 #TODO add sort trait where simple means has concrete eltype
 # Assume eltype(sortof(marking)) == typeof(value(marking))
+
+"""
+$(TYPEDSIGNATURES)
+Evaluate [`Marking`](@ref) instance by returning its value.
+
+The `Marking` vs. `HLMarking` values differ by handling of token identity.
+Place/Transition Nets (PNet, ContinuousNet) use collective token idenitiy (map to ::Number).
+High-level Nets (SymmetricNet, HLPNG) use individual token identity (colored petri nets).
+Cite John Baez for this distinction.
+
+There is a multi-sorted algebra definition mechanism defined for HL Nets.
+HLMarking values are a ground terms of this multi-sorted algebra.
+There are abstract syntax trees defined by PNML.
+
+HL Nets need to evaluate expressions as part of transition firing rules.
+While being ground terms that contain no variables, HLMarking values are expressed
+as ASTs. And thus need to be "evaluated".
+"""
+(mark::Marking)() = _evaluate(value(mark)) # Will be identity for ::Number
 
 # Non-high-level
 basis(marking::Marking) = sortof(marking)
 sortof(marking::Marking) = sortof(value(marking))
 
-sortof(::Type{<:Int64})   = usersort(:integer)
-sortof(::Type{<:Integer}) = usersort(:integer)
-sortof(::Type{<:Real})    = usersort(:real)
-sortof(::Int64)   = usersort(:integer)
-sortof(::Integer) = usersort(:integer)
-sortof(::Real)    = usersort(:real)
+sortof(::Type{<:Int64})   = sortof(usersort(:integer))
+sortof(::Type{<:Integer}) = sortof(usersort(:integer))
+sortof(::Type{<:Float64}) = sortof(usersort(:real))
+sortof(::Int64)   = sortof(usersort(:integer))
+sortof(::Integer) = sortof(usersort(:integer))
+sortof(::Float64) = sortof(usersort(:real))
 
 "Translate Number type to a sort tag symbol."
 sorttag(i::Number) = sorttag(typeof(i))
 sorttag(::Type{<:Integer}) = :integer
-sorttag(::Type{<:Real})    = :real
-
-"""
-$(TYPEDSIGNATURES)
-Evaluate [`Marking`](@ref) instance by returning its evaluated value.
-"""
-(mark::Marking)() = _evaluate(value(mark))
+sorttag(::Type{<:Float64}) = :real
 
 function Base.show(io::IO, ptm::Marking)
     print(io, indent(io), "Marking(")
@@ -116,20 +129,30 @@ julia> m()
 3
 ```
 """
-struct HLMarking <: HLAnnotation
+struct HLMarking{T} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
-    term::AbstractTerm # results in multiset sort whose basis sort is the same as place's sorttype
-    #term::PnmlMultiset{<:Any, <:AbstractSort}  # With sort matching placesort.
+    #term::AbstractTerm # results in #! PnmlMultiset? multiset sort whose basis sort is the same as place's sorttype
+    term::PnmlMultiset{T}  # With sort matching placesort.
+    # PnmlMultiset is the result of evaluating the expression AST rooted at term.
+    # Markings are ground terms, so no variables. But arc inscription expressions do use variables.
+    # Initial markings are evaluated at construction to set the initial value of the PnmlMultiset.
+
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
-HLMarking(t::AbstractTerm) = HLMarking(nothing, t)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm) = HLMarking(s, t, nothing, nothing)
-HLMarking(s::Maybe{AbstractString}, t::AbstractTerm, g, to) = HLMarking(s, t, g, to)
+HLMarking(t::PnmlMultiset) = HLMarking(nothing, t)
+HLMarking(s::Maybe{AbstractString}, t::PnmlMultiset) = HLMarking(s, t, nothing, nothing)
+HLMarking(s::Maybe{AbstractString}, t::PnmlMultiset, g, to) = HLMarking(s, t, g, to)
 
-value(m::HLMarking) = m.term
-basis(m::HLMarking) = basis(value(m))
-sortof(m::HLMarking) = sortof(value(m))
+value(marking::HLMarking) = marking.term
+basis(marking::HLMarking) = basis(value(marking))
+sortof(marking::HLMarking) = sortof(value(marking))
+
+"""
+$(TYPEDSIGNATURES)
+Evaluate a [`HLMarking`](@ref) instance by returning its term.
+"""
+(hlm::HLMarking)() = _evaluate(value(hlm))
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
@@ -146,14 +169,6 @@ function Base.show(io::IO, hlm::HLMarking)
     print(io, ")")
 end
 
-"""
-$(TYPEDSIGNATURES)
-Evaluate a [`HLMarking`](@ref) instance by returning its term.
-"""
-(hlm::HLMarking)() = _evaluate(value(hlm))
-#TODO convert to sort
-#TODO query sort
-
 marking_type(::Type{T}) where {T <: PnmlType} = Marking{marking_value_type(T)}
 marking_type(::Type{T}) where {T<:AbstractHLCore} = HLMarking
 
@@ -163,7 +178,7 @@ marking_value_type(::Type{<:PnmlType}) = Int
 marking_value_type(::Type{<:AbstractContinuousNet}) = Float64
 
 # These are networks were the tokens have individual identities.
-marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:AbstractSort}
+marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 # basis sort can be, and are, restricted by/on PnmlType.
@@ -194,12 +209,17 @@ default_marking(::T) where {T<:AbstractHLCore} =
 
 function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
     els = sortelements(placetype) # Finite sets return non-empty iteratable.
-    @assert !isnothing(els) # High-level requires finite sets. #^ HLPNG?
-    el = first(els) # Default to first of finite sort's elements (how often is this best?)
-    HLMarking(pnmlmultiset(el, # used to deduce the type for Multiset.Multiset
-                           sortof(placetype), # basis sort
-                           0)) # empty multiset, multiplicity of every element = zero.
+    @assert !isnothing(els) # High-level requires non-empty finite sets.
+    #? HLPNG may relax this assertion. In keeping with arbitrary sorts & operators.
+    #? Defer until we encounter a need for empty finite sets. Or arbitrary sorts/ops.
+    el = first(els) # Default to using type of first of sort's element iterator.
+    HLMarking(pnmlmultiset(el, value(placetype), 0)) # empty, el used for its type
 end
 
 # At some point we will be feeding things to Metatheory/SymbolicsUtils,
 # NumberConstant is a 0-ary functor
+# (nc::NumberConstant{T})()
+
+# 2024-08-07 encountered the need to handle a <numberof> as an expression (NamedOpertor)
+# Is a multiset operator. May hold variables in general.
+# Markings restricted to ground terms without variables.

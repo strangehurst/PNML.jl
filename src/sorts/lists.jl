@@ -3,7 +3,7 @@ $(TYPEDEF)
 """
 @auto_hash_equals struct ListSort <: AbstractSort
     #
-    ae::Vector{AbstractSort}
+    ae::Vector{AbstractSort} #~ ABSTRACT
 end
 ListSort() = ListSort(IntegerSort[])
 #! equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae

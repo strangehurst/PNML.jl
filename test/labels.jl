@@ -31,9 +31,10 @@ end
 #------------------------------------------------
 #------------------------------------------------
 @testset "PT initMarking $pntd" for pntd in NON_HL_NETS
-    node = xml"""
+    text_value = iscontinuous(pntd) ? "123.0" : "123"
+    str = """
     <initialMarking>
-        <text>123</text>
+        <text> $text_value </text>
         <toolspecific tool="org.pnml.tool" version="1.0">
             <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
         </toolspecific>
@@ -43,15 +44,16 @@ end
         </unknown>
     </initialMarking>
     """
+    println(str)
+    node = xmlroot(str)
 
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        placetype = SortType("test", UserSort(PNML.sorttag(marking_value_type(pntd))))
+        PNML.fill_nonhl!()
+        @show placetype = SortType("test", UserSort(PNML.sorttag(marking_value_type(pntd))))
 
         # Parse ignoring unexpected child
         mark = @test_logs((:warn, r"^ignoring unexpected child"),
-                    parse_initialMarking(node, placetype, pntd))
-        @test mark isa PNML.Marking
+                    parse_initialMarking(node, placetype, pntd)::PNML.Marking)
         @test typeof(value(mark)) <: Union{Int,Float64}
         @test value(mark) == mark() == 123
 
@@ -285,9 +287,9 @@ end
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
     # Add usersort
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        PNML.DECLDICT[].namedsorts[:N2] = PNML.NamedSort(:N2, "N2", DotSort())
-        PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
+        PNML.fill_nonhl!()
+        PNML.namedsorts()[:N2] = PNML.NamedSort(:N2, "N2", DotSort())
+        PNML.usersorts()[:N2]  = PNML.UserSort(:N2)
         n1 = xml"""
 <type>
     <text>N2</text>
@@ -305,7 +307,7 @@ end
         #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test text(typ) == "N2"
         @test value(typ) isa UserSort # wrapping DotSort
-        @test sortof(typ) == sortof(value(typ)) == DotSort() #! does the name of a sort affect equalSorts?
+        @test sortof(value(typ)) == DotSort() #! does the name of a sort affect equalSorts?
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
         @test occursin("Graphics", sprint(show, typ))
@@ -332,22 +334,22 @@ end
         # Use the first part of this pair in contexts that want numbers.
 
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
+            PNML.fill_nonhl!()
 
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-            placetype = SortType("test", UserSort(:dot))
+            placetype = SortType("test", PNML.usersort(:dot))
 
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             @test mark isa PNML.marking_type(pntd)
 
-            @test value(mark) isa PNML.AbstractTerm
+            @test value(mark) isa PNML.PnmlMultiset
             @test text(mark) == "3`dot"
 
             @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
             @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
 
             markterm = value(mark)
-            @test markterm isa PNML.PnmlMultiset{<:Any, <:AbstractSort} # pnml many-sorted operator -> multiset
+            @test markterm isa PNML.PnmlMultiset{<:Any} # pnml many-sorted operator -> multiset
             # @test arity(markterm) == 2
             # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
             # @test inputs(markterm)[2] == DotConstant()
@@ -357,7 +359,7 @@ end
         end
     end
 
-
+    # 0-arity operators are constants
     @testset "useroperator" for pntd in all_nettypes(ishighlevel)
         println("\nuseroperator $pntd")
         node = xml"""
@@ -369,19 +371,18 @@ end
         </hlinitialMarking>
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
-        PNML.DECLDICT[].namedoperators[:uop] = PNML.NamedOperator(:uop, "uop")
-        PNML.DECLDICT[].usersorts[:uop] = UserSort(:dot)
+            PNML.fill_nonhl!()
+            PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
+            @show PNML.usersorts()[:uop] = UserSort(:dot)
 
-            placetype = SortType("test", PNML.DECLDICT[].usersorts[:uop])
-
+            placetype = SortType("test", PNML.usersort(:uop))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
         end
     end
 
     # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)
-        println("\n1`3 ++ 1`2 $pntd")
+        println("\n\"1`3 ++ 1`2\" $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
@@ -405,9 +406,8 @@ end
         </hlinitialMarking>
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
-            PNML.DECLDICT[].usersorts[:uop] = UserSort(:dot)
-            placetype = SortType("test", UserSort(:dot))
+            PNML.fill_nonhl!()
+            placetype = SortType("test", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
         end
     end
@@ -427,13 +427,10 @@ end
         </hlinitialMarking>
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
-            PNML.DECLDICT[].namedsorts[:pos] = NamedSort(:pos, "Positive", PositiveSort())
-
-            placetype = SortType("test", UserSort(:pos))
-
+            PNML.fill_nonhl!()
+            placetype = SortType("test", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
-            val = Labels.value(mark)::PNML.PnmlMultiset{<:Any, <:AbstractSort}
+            val = Labels.value(mark)::PNML.PnmlMultiset{<:Any}
             @test PNML.basis(val) isa PositiveSort
             @test PNML.multiplicity(val, NumberConstant{Int64, PositiveSort}(8, PositiveSort())) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
@@ -448,8 +445,8 @@ end
         </hlinitialMarking>
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.DECLDICT[].namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
-            placetype = SortType("test", UserSort(:dot))
+            PNML.fill_nonhl!()
+            placetype = SortType("test", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
         end
     end

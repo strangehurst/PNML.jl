@@ -33,15 +33,13 @@ Condition(text::AbstractString, value::Bool) = Condition(text, BooleanConstant(v
 Condition(text::AbstractString, value::BooleanConstant) = Condition(text, value, nothing, nothing)
 
 condition_type(::Type{<:PnmlType}) = Condition
+Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
 
 value(c::Condition) = (c.value)() # Evaluate term
-Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
+(c::Condition)() = _evaluate(value(c))::eltype(c) # Bool isa Number
+
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
-
-(c::Condition)() = begin
-    _evaluate(value(c))::eltype(c)
-end
 
 function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")

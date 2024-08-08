@@ -1,6 +1,7 @@
 # boolean sort operators
 
 """
+    BooleanConstant("true"|"false")
 """
 struct BooleanConstant <: AbstractOperator
     value::Bool
@@ -11,7 +12,8 @@ function BooleanConstant(s::Union{AbstractString,SubString{String}})
     BooleanConstant(parse(eltype(BoolSort), s))
 end
 tag(::BooleanConstant) = :booleanconstant
-sortof(::BooleanConstant) = BoolSort()
+sortof(::BooleanConstant) = sortof(usersort(:bool))
+
+(c::BooleanConstant)() = value(c)
 value(bc::BooleanConstant) = _evaluate(bc)
 _evaluate(bc::BooleanConstant) = bc.value
-(c::BooleanConstant)() = value(c)
