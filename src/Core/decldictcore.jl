@@ -68,7 +68,7 @@ feconstants()    = feconstants(PNML.DECLDICT[])
     declarations(dd::DeclDict) -> Iterator
 Return an iterator over all the declaration dictionaries' values.
 Flattens iterators: variabledecls, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-namedoperators, arbitrary_ops, feconstants, usersorts, useroperators.
+namedoperators, arbitraryops, feconstants, usersorts, useroperators.
 """
 function declarations(dd::DeclDict)
     Iterators.flatten([
@@ -118,6 +118,16 @@ feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
 usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
+variable(id::Symbol)       = variabledecls(PNML.DECLDICT[])[id]
+namedsort(id::Symbol)      = namedsorts(PNML.DECLDICT[])[id]
+arbitrarysort(id::Symbol)  = arbitrarysorts(PNML.DECLDICT[])[id]
+partitionsort(id::Symbol)  = partitionsorts(PNML.DECLDICT[])[id]
+namedop(id::Symbol)        = namedoperators(PNML.DECLDICT[])[id]
+arbitrary_op(id::Symbol)   = arbitraryoperators(PNML.DECLDICT[])[id]
+partitionop(id::Symbol)    = partitionops(PNML.DECLDICT[])[id]
+feconstant(id::Symbol)     = feconstants(PNML.DECLDICT[])[id]
+usersort(id::Symbol)       = usersorts(PNML.DECLDICT[])[id]
+useroperator(id::Symbol)   = useroperators(PNML.DECLDICT[])[id]
 
 #TODO :useroperators
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
@@ -128,9 +138,11 @@ _ops(dd) = Iterators.map(op -> getfield(dd, op), _op_dictionaries())
 Iterate over each operator in the operator subset of declaration dictionaries .
 """
 operators(dd::DeclDict) = Iterators.flatten(Iterators.map(values, _ops(dd)))
+operators() = operators(dd::DeclDict)
 
 "Does any operator dictionary contain `id`?"
 has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(dd))
+has_operator(id::Symbol) = has_operator(PNML.DECLDICT[], id)
 
 #! Change first to only when de-duplication implementd? as test?
 "Return operator dictionary containing key `id`."
@@ -144,6 +156,7 @@ function operator(dd::DeclDict, id::Symbol)
     op = dict[id]
     return op
 end
+operator(id::Symbol) = operator(PNML.DECLDICT[], id)
 
 """
     validate_declarations(dd::DeclDict) -> Bool
