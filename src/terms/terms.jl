@@ -23,3 +23,16 @@ Both scalar and multiset are possible.
 # term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort)  #! basis of multiset
 
 # Must be suitable as a marking, ie. a ground term without variables.
+
+using Metatheory
+using Metatheory.TermInterface
+
+pnmlrules = @theory p q begin
+    (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
+    (p::Bool || q::Bool) => (p || q)
+    (p::Bool ⟹ q::Bool)  => ((p || q) == q)
+    (p::Bool && q::Bool) => (p && q)
+    !(p::Bool)           => (!p)
+  end
+
+  pnml_theory = or_alg ∪ and_alg ∪ comb ∪ negt ∪ impl ∪ fold

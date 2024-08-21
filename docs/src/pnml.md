@@ -259,12 +259,14 @@ Rust language.
  [Browsable PNML Grammar from Grammar Zoo](https://slebok.github.io/zoo/automata/petri/pnml/standard/symmetric/extracted/index.html)
  For Symmetric Nets.
 
-nLab [multisorted\_algebraic\_theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
+nLab [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
 
-[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) is another Eclipse/Java EMF thing.
+[Automated Code Optimization with E-Graphs](https://arxiv.org/abs/2112.14714): Alessandro Cheli's Thesis on Metatheory.jl.
+
+[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) a platform for developing Petri net tools based on the PNML transfer format is another Eclipse/Java EMF thing. Implements more complicated PNML than used in MCC. By authors of PNML.
 [github](https://github.com/ekkart/ePNK) has the source, documentation, examples.
 
-"The [Model Checking Contest](https://mcc.lip6.fr/) has two different parts:
+"The [Model Checking Contest (MCC)](https://mcc.lip6.fr/) has two different parts:
 the Call for Models, which gathers Petri net models proposed by the scientific community,
 and the Call for Tools, which benchmarks verification tools developed within the scientific community."
 Each year new models are added to the contest.

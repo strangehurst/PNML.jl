@@ -3,23 +3,19 @@
 ####################################################################################
 
 #==================================
- TermInterface version 0.4
-    isexpr(x::T) # expression tree (S-expression) => head(x), children(x) required
-    iscall(x::T) # call expression => operation(x), arguments(x) required
-    head(x) # of S-expression
-    children(x) # of S-expression
-    operation(x) # if iscall(x)
-    arguments(x) # if iscall(x)
-    maketerm(T, head, children, type=nothing, metadata=nothing) # iff isexpr(x)
- Optional
-    arity(x)
-    metadata(x)
-#!    symtype(expr)
-
-:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible? what does arr[] mean here?
+ TermInterface
+:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible?
 :(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])  #~ operator
 
-:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is possibly a constant when 0-ary Callable (which the compiler may optimizie)
+:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is a constant when 0-airy Callable
+
+variables are used in token firing rules.
+Of all enabled firing modes for a transition one is chosen (randomly?).
+Marking expressions are made of ground terms (without variables).
+Arc inscriptiins and transition condition expessions may include variable terms.
+Selecting a firing mode associates tokens with variables.
+Transition firing removes tokens from input places and adds tokens into output places.
+Variables in input inscription, output inscription and conditions are associated with same token sort.
 
 variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr, :ref, [:variables, :pid])
 
@@ -42,43 +38,47 @@ tag maps to func, a functor/function Callable. Its arity is same as length of in
 """
 struct Operator <: AbstractOperator
     tag::Symbol
-    func::Function # Apply `func` to `inexprs`: evaluated with current variable values and constants.
-    inexprs::Vector{AbstractTerm} # typeof(inexprs[i]) == eltype(insorts[i])
-    insorts::Vector{UserSort}
+    func::Union{Function, Type} # `func` to `inexprs`: evaluated with current variable values and constants.
+    inexprs::Vector{AbstractTerm}
+    insorts::Vector{UserSort} # typeof(inexprs[i]) == eltype(insorts[i])
     outsort::UserSort # wraps IDREF Symbol
+    metadata::Any
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
-    #=
-    all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
-    =#
+    #todo all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
 end
 
-tag(op::Operator)    = op.tag
-sortof(op::Operator) = sortof(op.outsort)
-inputs(op::Operator) = op.inexprs
-basis(op::Operator)  = basis(sortof(op))
+Operator(t, f, inex, ins, outs; metadata=nothing) = Operator(t, f, inex, ins, outs, metadata)
+tag(op::Operator)       = op.tag
+sortof(op::Operator)    = sortof(op.outsort)
+inputs(op::Operator)    = op.inexprs
+basis(op::Operator)     = basis(sortof(op))
+value(op::Operator)     = _evaluate(op)
+arity(op::Operator)     = length(inputs(op))
+_evaluate(op::Operator) = op() #TODO
 
 function (op::Operator)()
     #~ println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
-    input = [term() for term in inputs(op)] # evaluate each AbstractTerm
+    input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
     #@show typeof.(input) op.insorts eltype.(op.insorts)
-    #@assert sortof.(input) == op.insorts #"expect two vectors that are pairwise equalSorts"
-    out = op.func(input)
-    #@show isa(out, eltype(sortof(op))) #! should be assert
+    @assert all((in,so) -> typeof(in) == eltype(so), zip(input, insorts(op)))
+    out = op.func(input) #^ apply func to evaluated +/-inputs
+    @assert isa(out, eltype(sortof(op)))
     return out
 end
 
-value(op::Operator)     = _evaluate(op)
-_evaluate(op::Operator) = op() #TODO
-arity(op::Operator)     = length(inputs(op))
 
-TermInterface.isexpr(op::Operator)    = false
-TermInterface.iscall(op::Operator)    = false # users promise that this is only called if isexpr is true.
-TermInterface.head(op::Operator)      = etag(op)
-TermInterface.children(op::Operator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.isexpr(op::Operator)    = true
+TermInterface.iscall(op::Operator)    = true # users promise that this is only called if isexpr is true.
+TermInterface.head(op::Operator)      = tag(op)
+TermInterface.children(op::Operator)  = inputs(op)
 TermInterface.operation(op::Operator) = op.func
 TermInterface.arguments(op::Operator) = inputs(op)
 TermInterface.arity(op::Operator)     = arity(op)
-TermInterface.metadata(op::Operator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+TermInterface.metadata(op::Operator)  = nothing
+
+function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
+    Operator(iscall, operation, arguments...; metadata)
+end
 
 function Base.show(io::IO, t::Operator)
     print(io, nameof(typeof(t)), "(")

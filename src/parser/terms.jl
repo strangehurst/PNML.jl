@@ -1,5 +1,5 @@
 
-
+# See `TermInterface.jl`, `Metatheory.jl`
 """
 $(TYPEDSIGNATURES)
 
@@ -7,29 +7,39 @@ There will be no XML node <term>. Instead it is the interpertation of the child 
 <structure>, <subterm> or <def> elements. The Relax NG Schema does contain "Term".
 Terms kinds are Variable and Operator.
 
-There _IS_ the `TermInterface` from Symbolics.jl, et al.
-Yes, we will be using it as soon as we figure things out.
-
 All terms have a sort, #TODO
+Will be using `TermInterface.jl` to build an expression tree (AST) that can contain:
+operators, constants (as 0-airity operators), and variables.
+
+AST are evaluated for place initialMarking (ground terms only) and transition firing
+where conditions and inscription expressions may contain non-ground terms (using variables).
+
+# TIDBITS
+
+Is this a useful pattern for handling ASTs:
+    p isa MP.SomeType && MP.isconstant(p) && return convert(Number, p)
+
 """
 function parse_term(node::XMLNode, pntd::PnmlType)
     tag = Symbol(EzXML.nodename(node))
-    # See `TermInterface.jl`, `Metatheory.jl`
-    if tag in  [:variable, # 0 arity? Or trivial to reduce to such? # TODO more?
+    if tag in  [:variable, # TODO more?
                 :booleanconstant,
                 :numberconstant,
                 :dotconstant,
-                :all,
-                :numberof,
+                :all, # multiset operator, a ground term
+                :numberof, # multiset operator, may hold variables
                 # :feconstant,
                 # :unparsed,
                 :useroperator,
+                #:usersort,
                 :finiteintrangeconstant]
+        # 0-arity terms (Or trivial to reduce to such) are leaf nodes of ast.
+        # AST nodes that have no children (what 0-arity implies)
         # These must follow the Operator interface. See operators.jl.
         #
         #~ printstyled("parse_term"; color=:green);  println(": $(repr(tag))")
         (term,sort) = parse_term(Val(tag), node, pntd) # (AbstractTerm, Sort)
-        return (term, sort)
+        return (term, sort) # abstract term may be operator or variable
 
     else # arity > 0, build & return an Operator Functor that has a vector of inputs.
         (term, sort) = parse_operator_term(tag, node, pntd) # (AbstractOperator, Sort)
@@ -58,6 +68,7 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
         check_nodename(child, "subterm")
         subterm = EzXML.firstelement(child) # this is the unwrapped subterm
         @show (t, s) = parse_term(subterm, pntd) # extract & accumulate input
+        # returns an AST
         push!(interms, t)
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
@@ -73,6 +84,8 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     println("   insorts ", insorts)
     println("   outsort ", outsort)
     println()
+    # maketerm(Expr, :call, [], nothing)
+    # :(func())
     return (Operator(tag, func, interms, insorts, outsort), outsort)
 end
 
@@ -87,6 +100,8 @@ end
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType)
     bc = BooleanConstant(attribute(node, "value"))
     return (bc, sortof(bc))
+    #! maketerm(Expr, :call, [], nothing)
+    #return (Operator(tag, func, interms, insorts, outsort, nothing), outsort)
 end
 
 # Has a value and is a subsort of NumberSort.
@@ -181,6 +196,10 @@ end
 # c TypeOF sort of multiplicity
 # d KindOf (instance of this sort)
 
+# This should return an expression. Whenever we want to materialize a PnmlMultiset,
+# we will evaluate this expression.
+# operator: numberof
+# inputs: multiplicity,
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     multiplicity = nothing
     instance = nothing

@@ -4,6 +4,8 @@
 PnmlTuples have a similarity to NamedTuples with Sorts taking the place of names.
 Will not achieve the same transparancy and efficency as NamedTuples.
 NB: NamedTuples uses Symbols where PnmlTuple uses Sorts (must be made bitstype
+
+#! Use REFID symbols as the names of a named tuple.
 """
 struct PnmlTuple{sorts, T} where {sorts, T <: Tuple}
     #
