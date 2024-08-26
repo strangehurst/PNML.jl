@@ -8,7 +8,7 @@ import XMLDict
 #using Reexport
 using DocStringExtensions
 import Multisets: Multisets, Multiset
-
+using TermInterface
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, tag, pid
 

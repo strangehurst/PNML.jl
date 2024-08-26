@@ -72,7 +72,8 @@ import MetaGraphsNext
 import OrderedCollections: OrderedDict, LittleDict, freeze
 import EzXML
 import XMLDict
-import TermInterface
+using TermInterface
+using Metatheory
 import Multisets: Multisets, Multiset
 #~import StyledStrings
 Multisets.set_key_value_show()

@@ -24,15 +24,39 @@ Both scalar and multiset are possible.
 
 # Must be suitable as a marking, ie. a ground term without variables.
 
-using Metatheory
-using Metatheory.TermInterface
+#=
+TermInterface.isexpr(op::Operator)    = true
+TermInterface.iscall(op::Operator)    = true # users promise that this is only called if isexpr is true.
+TermInterface.head(op::Operator)      = tag(op)
+TermInterface.children(op::Operator)  = inputs(op)
+TermInterface.operation(op::Operator) = op.func
+TermInterface.arguments(op::Operator) = inputs(op)
+TermInterface.arity(op::Operator)     = length(inputs(op))
+TermInterface.metadata(op::Operator)  = nothing
 
-pnmlrules = @theory p q begin
+function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
+    Operator(iscall, operation, arguments...; metadata)
+end
+=#
+
+#using Metatheory
+#using Metatheory.TermInterface
+
+multiset_alg = @theory p q begin
+    (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
+end
+
+bool_alg = @theory p q begin
     (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
     (p::Bool || q::Bool) => (p || q)
-    (p::Bool ⟹ q::Bool)  => ((p || q) == q)
+    (p::Bool ⟹ q::Bool) => ((p || q) == q)
     (p::Bool && q::Bool) => (p && q)
     !(p::Bool)           => (!p)
-  end
+    (p::BooleanConstant) => p()
+end
 
-  pnml_theory = or_alg ∪ and_alg ∪ comb ∪ negt ∪ impl ∪ fold
+dot = @theory d begin
+    (d::DotConstant) => d()
+end
+
+pnml_theory = multiset_alg ∪ bool_alg ∪ dot #∪ negt ∪ impl ∪ fold
