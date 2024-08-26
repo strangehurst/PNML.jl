@@ -132,14 +132,18 @@ function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType)
     return (DotConstant(), usersort(:dot))
 end
 
-# All creates multiset that contains exactly one of each element of its basis finite set/sort.
-# Is a constant and used for intialMarking.
 # <structure>
 #     <tuple>
 #         <subterm><all><usersort declaration="N1"/></all></subterm>
 #         <subterm><all><usersort declaration="N2"/></all></subterm>
 #     </tuple>
 # </structure>
+"""
+    parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType) -> PnmlMultiset
+
+ All creates multiset that contains exactly one of each element of its basis finite set/sort.
+ Is a constant and used for intialMarking.
+"""
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("$tag missing content element"))
@@ -147,10 +151,10 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     us = parse_usersort(child, pntd)::UserSort # Can there be anything else?
     b = sortof(us) # IDREF -> sort instance (UserSort->NamedSort->AbstractSort)
     e = sortelements(b) # iterator over an instance of every element of the set/sort
-    #^ Only expect finite sorts here.
+    #^ Only expect finite sorts here. #TODO assert isfinitesort
     M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
 
-    all = PnmlMultiset(b, M) #? evaluate <all> to PnmlMultiset
+    all = PnmlMultiset(b, M) #? TermInterface
 
     #@show us b e typeof(e)
     # dot: dotconstant
@@ -196,10 +200,12 @@ end
 # c TypeOF sort of multiplicity
 # d KindOf (instance of this sort)
 
-# This should return an expression. Whenever we want to materialize a PnmlMultiset,
-# we will evaluate this expression.
+#! This MUST return an expression.
+#! ALL `parse_term` will be expressions fed to term rewriteer.
 # operator: numberof
-# inputs: multiplicity,
+# output: Expression for term rewrite into `pnmlmultiset`. #! TermInterface.maketerm
+# 2 inputs: multiplicity, term evaluating to an element of basis sort
+# Use rewrite rule to dynamically evaluate output to materialize a PnmlMultiset.
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     multiplicity = nothing
     instance = nothing
@@ -226,7 +232,9 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     isnothing(instance) && throw(ArgumentError("Missing numberof sort instance. Expected `dotconstant` or similar."))
 
     @show multiplicity multiplicity() instance sortof(instance)
-    return (pnmlmultiset(instance, isort, multiplicity()), isort)
+    term = maketerm(Expr, :call, [:pnmlmultiset, instance, isort, multiplicity], nothing)
+    return (term, isort)
+    #return (pnmlmultiset(instance, isort, multiplicity()), isort)
 end
 
 function parse_term(::Val{:feconstant}, node::XMLNode, pntd::PnmlType)

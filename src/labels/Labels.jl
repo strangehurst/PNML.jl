@@ -13,6 +13,7 @@ using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value,
     BooleanConstant, NumberConstant,
     AbstractTerm
 using PNML: namedsort
+import PNML: usersort
 
 import PNML: sortof, sortelements, basis, value, _evaluate, graphics, tools, tag, elements,
     has_graphics, get_label, has_label, has_labels, labels, declarations

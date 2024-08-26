@@ -306,8 +306,8 @@ end
         typ = PNML.Parser.parse_type(n1, pntd)::SortType
         #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test text(typ) == "N2"
-        @test value(typ) isa UserSort # wrapping DotSort
-        @test sortof(value(typ)) == DotSort() #! does the name of a sort affect equalSorts?
+        @test usersort(typ) isa UserSort # wrapping DotSort
+        @test sortof(typ) == DotSort() #! does the name of a sort affect equalSorts?
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
         @test occursin("Graphics", sprint(show, typ))

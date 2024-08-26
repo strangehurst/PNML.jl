@@ -16,5 +16,5 @@ basis(nc::NumberConstant) = typeof(nc.value) # multisets need type of the value
 # The operator inteface assumes this trio:
 #  functor -> value() -> _evaluate that is identity (until it isn't).
 (c::NumberConstant)() = value(c)
-value(nc::NumberConstant) = _evaluate(nc)
-_evaluate(nc::NumberConstant) = nc.value
+value(nc::NumberConstant) = _evaluate(nc) #! TODO term rewrite
+_evaluate(nc::NumberConstant) = nc.value  #! TODO term rewrite

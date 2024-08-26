@@ -32,11 +32,12 @@ end
               #unbound_args=true,
               #undefined_exports=true,
               #project_extras=true,
-              #stale_deps=(ignore=[:SomePackage],),
-              #deps_compat=(ignore=[:SomeOtherPackage],),
+              stale_deps=(ignore=[:Metatheory],),
+              deps_compat=(ignore=[:Metatheory],),
               #project_toml_formatting=true,
 
-              piracies=false
+              piracies=false,
+              persistent_tasks=false, # Metatheory ale/3.0 is not in registry
             )
           end
     end
@@ -45,6 +46,10 @@ end
         @safetestset "typedefs"  begin include("typedefs.jl") end
         @safetestset "registry"  begin include("idregistry.jl") end
         @safetestset "utils"     begin include("utils.jl") end
+    end
+    if select("ALL", "REWRITE")
+        println("REWRITE")
+        @safetestset "rewrite"     begin include("rewrite.jl") end
     end
     if select("ALL", "CORE")
         println("CORE")

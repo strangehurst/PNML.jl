@@ -15,5 +15,5 @@ tag(::BooleanConstant) = :booleanconstant
 sortof(::BooleanConstant) = sortof(usersort(:bool))
 
 (c::BooleanConstant)() = value(c)
-value(bc::BooleanConstant) = _evaluate(bc)
-_evaluate(bc::BooleanConstant) = bc.value
+value(bc::BooleanConstant) = _evaluate(bc) #! TODO term rewrite
+_evaluate(bc::BooleanConstant) = bc.value  #! TODO term rewrite

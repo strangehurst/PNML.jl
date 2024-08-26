@@ -52,8 +52,8 @@ tag(op::Operator)       = op.tag
 sortof(op::Operator)    = sortof(op.outsort)
 inputs(op::Operator)    = op.inexprs
 basis(op::Operator)     = basis(sortof(op))
-value(op::Operator)     = _evaluate(op)
-arity(op::Operator)     = length(inputs(op))
+
+value(op::Operator)     = _evaluate(op)       #
 _evaluate(op::Operator) = op() #TODO
 
 function (op::Operator)()
@@ -73,7 +73,7 @@ TermInterface.head(op::Operator)      = tag(op)
 TermInterface.children(op::Operator)  = inputs(op)
 TermInterface.operation(op::Operator) = op.func
 TermInterface.arguments(op::Operator) = inputs(op)
-TermInterface.arity(op::Operator)     = arity(op)
+TermInterface.arity(op::Operator)     = length(inputs(op))
 TermInterface.metadata(op::Operator)  = nothing
 
 function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
@@ -180,6 +180,7 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
 "Dummy function"
 function null_function(inputs)#::Vector{AbstractTerm})
     println("NULL_FUNCTION: ", inputs)
+    return nothing
 end
 
 # Boolean Built-in Operators

@@ -15,11 +15,11 @@ tag(v::Variable) = v.refvariable
 function (var::Variable)()
     _evaluate(var)
 end
-value(v::Variable) = begin
+value(v::Variable) = begin #! XXX FIXME XXX
     @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"
-    return 0 #! XXX FIXME XXX
+    return 0
 end
-_evaluate(v::Variable) = _evaluate(value(v))
+_evaluate(v::Variable) = _evaluate(value(v)) #! dynamic expression, term rewrite, firing rule
 
 sortof(v::Variable) = begin
     @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"

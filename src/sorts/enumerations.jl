@@ -97,6 +97,6 @@ struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 sortof(c::FiniteIntRangeConstant) = c.sort
-value(c::FiniteIntRangeConstant) = c.value
-_evaluate(c::FiniteIntRangeConstant) = value(c)
+value(c::FiniteIntRangeConstant) = c.value      #! TODO term rewrite
+_evaluate(c::FiniteIntRangeConstant) = value(c) #! TODO term rewrite
 (c::FiniteIntRangeConstant)() = value(c)
