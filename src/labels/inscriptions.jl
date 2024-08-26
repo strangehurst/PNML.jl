@@ -15,14 +15,16 @@ julia> i()
 ```
 """
 struct Inscription{T<:Number}  <: Annotation
-    value::T #TODO Give each a sort or have a common pntd-level sort?
+    value::T #TODO make Inscription use TermInterface
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
 Inscription(value::Number) = Inscription(value, nothing, nothing)
 
-value(i::Inscription) = i.value
+value(i::Inscription) = i.value #! returns <:Number
+(inscription::Inscription)() = _evaluate(value(inscription)) #! TODO term rewrite rule
+
 sortof(inscription::Inscription) = sortof(value(inscription))
 
 function Base.show(io::IO, inscription::Inscription)
@@ -40,21 +42,26 @@ function Base.show(io::IO, inscription::Inscription)
 end
 
 """
-$(TYPEDSIGNATURES)
-Evaluate an [`Inscription`](@ref)'s `value`.
-"""
-(inscription::Inscription)() = _evaluate(value(inscription))
-
-"""
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Labels an Arc. The <structure> element is a term in a many-sorted algebra.
-The `term` field TBD.
-See also [`Inscription`](@ref)
+Labels an Arc with a term in a many-sorted algebra.
+See also [`Inscription`](@ref) for non-high-level net inscriptions.
+
+`HLInscription(t::PnmlMultiset)()` is a functor returning a value of the `eltype` of sort of inscription.
 
 # Examples
-#! CHANGE TO PnmlMultiset
+    ins() isa eltype(sortof(ins))
+
+"""
+struct HLInscription{T<:PnmlMultiset} <: HLAnnotation
+    text::Maybe{String}
+    term::T # Multiset whose basis sort is the same as adjacent place's sorttype.
+    graphics::Maybe{Graphics}
+    tools::Maybe{Vector{ToolInfo}}
+end
+#! XXX Make HLInscription use TermInterface
+#! TODO CHANGE TO PnmlMultiset
 # ```jldoctest; setup=:(using PNML; using PNML: HLInscription, NumberConstant, NaturalSort)
 # julia> i2 = HLInscription(NumberConstant(3, NaturalSort()))
 # HLInscription("", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
@@ -74,25 +81,13 @@ See also [`Inscription`](@ref)
 # julia> i4()
 # 3
 # ```
-"""
-struct HLInscription{T<:PnmlMultiset} <: HLAnnotation
-    text::Maybe{String}
-    term::T # Multiset whose basis sort is the same as adjacent place's sorttype.
-    graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
-end
-
 HLInscription(t::PnmlMultiset) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::PnmlMultiset) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
 sortof(hli::HLInscription) = sortof(value(hli)) #! IMPLEMENT ME! Deduce sort of inscription
 
-"""
-$(TYPEDSIGNATURES)
-Evaluate a [`HLInscription`](@ref). Returns a value of the `eltype` of sort of inscription.
-"""
-(hlinscription::HLInscription)() = _evaluate(value(hlinscription))
+(hlinscription::HLInscription)() = _evaluate(value(hlinscription)) #! TODO term rewrite rule
 
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")
@@ -146,11 +141,14 @@ default_inscription(::T) where {T<:AbstractContinuousNet} = Inscription(one(Floa
 default_inscription(::T) where {T<:AbstractHLCore} =
     error("no default_inscription method for $T, did you mean default_hlinscription")
 
-# High-level default inscription sort must match the sort of the adjacent place.
-#
+"""
+$(TYPEDSIGNATURES)
+
+Return default `HLInscription` value based on `PNTD`.
+Has meaning of unity, as in `one` of the adjacent place's sorttype.
+#TODO Add element of sort selector
+"""
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
-    els = sortelements(placetype) # Finite sets return non-empty iteratable.
-    @assert !isnothing(els) # High-level (HLPNG) allows infinite sets (Natural numbers).
-    el = first(els) # Default to first of finite sort's elements (how often is this best?)
-    HLInscription(pnmlmultiset(el, value(placetype), 1)) # not empty multiset
+    el = def_sort_element(placetype)
+    HLInscription(pnmlmultiset(el, usersort(placetype), 1)) # not empty multiset. singleton multiset
 end

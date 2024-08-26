@@ -72,14 +72,31 @@ SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
-value(t::SortType)  = t.sort_
-sortof(t::SortType) = sortof(value(t)) # usersort -> namedsort -> sort
+usersort(t::SortType)  = t.sort_ # UserSort
+sortof(t::SortType) = sortof(usersort(t)) # usersort -> namedsort -> sort
 sortelements(t::SortType) = sortelements(sortof(t))
+
+"""
+    def_sort_element(pt)
+
+Return an arbitrary element of the sort.
+All sorts are expected to be iteratable, so we return `first`.
+Uses include default inscription value and default initial marking value sort.
+
+`pt` can be anything with a `sortelements` method that returns an iterator that
+has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
+"""
+function def_sort_element(pt)
+    els = sortelements(pt)
+    @assert Base.IteratorSize(els) == Base.HasLength() # High-level (HLPNG) allows infinite sets (Natural numbers).
+    first(els) # Default to first of sort's elements (how often is this best?, make this a generic choice?)
+end
+
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
     show(io, text(st)); print(io, ", ")
-    show(io, value(st))
+    show(io, usersort(st))
     if has_graphics(st)
         print(io, ", ")
         show(io, graphics(st))

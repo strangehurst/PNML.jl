@@ -752,16 +752,14 @@ NB: Used by PTNets that assume placetype is DotSort().
 """
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
-    l = parse_label_content(node, ParseMarkingTerm(value(placetype)), pntd)::NamedTuple
+    l = parse_label_content(node, ParseMarkingTerm(usersort(placetype)), pntd)::NamedTuple
     @warn pntd l.text l.term l.sort
 
     mark = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
-        els = sortelements(placetype)
-        # Finite sets/sorts return non-empty iteratable.
-        # NumberSorts return infinite iterator starting at zero (integer, natural, real)
-        # or one (positive).
-        el = first(els) # Default to first of sort's elements.
+        el = def_sort_element(placetype)
+
+        HLMarking(pnmlmultiset(el, usersort(placetype), 0)) # empty, el used for its type
         pnmlmultiset(el, sortof(placetype), 0) # empty, el used for its type.
     else
         #!
@@ -928,14 +926,9 @@ function def_insc(netdata, source, target)
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
     place = adjacent_place(netdata, source, target)
-    placesort = sortof(place)
-    #@show place placesort
-
-    # Default to an  multiset whose basis is placetype
-    els = sortelements(placesort) # Finite sets return non-empty iteratable.
-    @assert !isnothing(els) # Symmetric Net requires finite sets. #^ HLPNG?
-    el = first(els) # Default to first of finite sort's elements (how often is this best?)
-    inscr = pnmlmultiset(el, placesort, 1)
+    placetype = place.sorttype
+    el = def_sort_element(placetype)
+    inscr = pnmlmultiset(el, usersort(placetype), 1)
     #@show inscr
     return inscr
 end

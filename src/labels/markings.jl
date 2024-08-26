@@ -26,7 +26,7 @@ julia> m()
 12.34
 ```
 """
-struct Marking{N <: Number} <: Annotation
+struct Marking{N <: Number} <: Annotation # TODO TermInterface
     value::N
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Maybe{Vector{ToolInfo}}
@@ -68,12 +68,12 @@ HL Nets need to evaluate expressions as part of transition firing rules.
 While being ground terms that contain no variables, HLMarking values are expressed
 as ASTs. And thus need to be "evaluated".
 """
-(mark::Marking)() = _evaluate(value(mark)) # Will be identity for ::Number
+(mark::Marking)() = _evaluate(value(mark)) # Will be identity for ::Number #TODO rewite rule
 
 # Non-high-level
 basis(marking::Marking) = sortof(marking)
-sortof(marking::Marking) = sortof(value(marking))
-
+sortof(marking::Marking) = sortof(value(marking)) # Returns sort of a Number
+# These are some <:Numbers that have sorts.
 sortof(::Type{<:Int64})   = sortof(usersort(:integer))
 sortof(::Type{<:Integer}) = sortof(usersort(:integer))
 sortof(::Type{<:Float64}) = sortof(usersort(:real))
@@ -129,13 +129,12 @@ julia> m()
 3
 ```
 """
-struct HLMarking{T} <: HLAnnotation
+struct HLMarking{T} <: HLAnnotation #! TODO TermInterface
     text::Maybe{String} # Supposed to be for human consumption.
-    #term::AbstractTerm # results in #! PnmlMultiset? multiset sort whose basis sort is the same as place's sorttype
+    #! PnmlMultiset? multiset sort whose basis sort is the same as place's sorttype
     term::PnmlMultiset{T}  # With sort matching placesort.
     # PnmlMultiset is the result of evaluating the expression AST rooted at term.
-    # Markings are ground terms, so no variables. But arc inscription expressions do use variables.
-    # Initial markings are evaluated at construction to set the initial value of the PnmlMultiset.
+    # Markings are ground terms, so no variables.
 
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -152,7 +151,7 @@ sortof(marking::HLMarking) = sortof(value(marking))
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.
 """
-(hlm::HLMarking)() = _evaluate(value(hlm))
+(hlm::HLMarking)() = _evaluate(value(hlm)) #! TODO rewrite rule
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
@@ -208,12 +207,8 @@ default_marking(::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
 function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
-    els = sortelements(placetype) # Finite sets return non-empty iteratable.
-    @assert !isnothing(els) # High-level requires non-empty finite sets.
-    #? HLPNG may relax this assertion. In keeping with arbitrary sorts & operators.
-    #? Defer until we encounter a need for empty finite sets. Or arbitrary sorts/ops.
-    el = first(els) # Default to using type of first of sort's element iterator.
-    HLMarking(pnmlmultiset(el, value(placetype), 0)) # empty, el used for its type
+    el = def_sort_element(placetype)
+    HLMarking(pnmlmultiset(el, usersort(placetype), 0)) # empty, el used for its type
 end
 
 # At some point we will be feeding things to Metatheory/SymbolicsUtils,
