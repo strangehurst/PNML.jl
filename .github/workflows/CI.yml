@@ -82,7 +82,7 @@ jobs:
         run: |
           using Pkg
           Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl", rev="ale/3.0"))
-          Pkg.add(PackageSpec(url="https://github.com/strangehurst/PNML.jl"))
+          Pkg.develop(PackageSpec(path="..")
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - uses: julia-actions/julia-buildpkg@v1
