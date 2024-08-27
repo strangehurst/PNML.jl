@@ -50,7 +50,7 @@ jobs:
         run: |
           using Pkg
 	  Pkg.add([
-	    PackageSpec(name="Metatheory", rev="ale/3.0")
+	    PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0")
 	  ])
         shell: julia --project=@. --color=yes {0}  
       - uses: julia-actions/julia-runtest@latest
@@ -93,7 +93,7 @@ jobs:
         run: |
           using Pkg
 	  Pkg.add([
-	    PackageSpec(name="Metatheory", rev="ale/3.0")
+	    PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0")
 	  ])
         shell: julia --project=@. --color=yes {0}  
       - uses: julia-actions/julia-docdeploy@v1
