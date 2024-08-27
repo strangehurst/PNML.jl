@@ -46,7 +46,7 @@ jobs:
             ${{ runner.os }}-
 
       - uses: julia-actions/julia-buildpkg@latest
-      - name: Install Metatheory#ale/3.0
+      - name: Install Metatheory alpha
         run: julia --project=@. --color=yes {0} -e 'using Pkg;
 	     Pkg.PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0")'
       - uses: julia-actions/julia-runtest@latest
@@ -85,7 +85,7 @@ jobs:
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Install Metatheory#ale/3.0
+      - name: Install Metatheory alpha
         run: julia --project=@. --color=yes {0} -e 'using Pkg;
 	     Pkg.PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0")'
       - uses: julia-actions/julia-docdeploy@v1
