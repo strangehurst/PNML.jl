@@ -81,8 +81,8 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
+          Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl", rev="ale/3.0"))
           Pkg.develop(PackageSpec(path=pwd()))
-          Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))
           Pkg.instantiate()
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
