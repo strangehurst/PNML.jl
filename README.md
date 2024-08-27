@@ -1,4 +1,5 @@
 # PNML
+Still alpha. Every changes is probably breaking. Things change radically all the time.
 
 [Petri Net Markup Language](https://www.pnml.org), is an XML-based format.
 PNML.jl reads a pnml model and emits an intermediate representation (IR) in Julia.
@@ -10,7 +11,7 @@ Features that have not been started:
 
 Features that are not complete:
   - HLPNG - many-sorted algebras are complex. Work in process.
-  - Symbolics support for HLPNG (many-sorted algebra)
+  - Symbolic handlingof  HLPNG (many-sorted algebra)
   - pntd specialize
   - toolspecific usage
   - API definition
