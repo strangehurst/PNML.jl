@@ -46,8 +46,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Dependencies
-        run: julia --project=@. --color=yes -e 'using Pkg;
-        Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
+        run: julia --project=@. --color=yes -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
