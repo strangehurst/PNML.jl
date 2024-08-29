@@ -46,7 +46,11 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Dependencies
-        run: julia --project=@. --color=yes -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
+        shell: julia --project=docs --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.Registry.add(Pkg.RegistrySpec(; url = "git@github.com:strangehurst/PNML.jl.git"))
+          Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
       - uses: julia-actions/julia-buildpkg@latest
         with:
           localregistry: |
@@ -85,6 +89,7 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
+          Pkg.Registry.add(Pkg.RegistrySpec(; url = "git@github.com:strangehurst/PNML.jl.git"))
           Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl", rev="ale/3.0"))
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
