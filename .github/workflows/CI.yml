@@ -49,14 +49,14 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
-          Pkg.Registry.add(Pkg.RegistrySpec(; url = "git@github.com:strangehurst/SHLocalRegistry.git"))
+          Pkg.Registry.add(Pkg.RegistrySpec(; url = "https://github.com/strangehurst/SHLocalRegistry.git"))
           Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: julia-actions/julia-buildpkg@latest
         with:
           localregistry: |
-            git@github.com:strangehurst/SHLocalRegistry.git
+            https://github.com/strangehurst/SHLocalRegistry.git
           git_cli: true # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
@@ -100,7 +100,7 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         with:
           localregistry: |
-            git@github.com:strangehurst/SHLocalRegistry.git
+            https://github.com/strangehurst/SHLocalRegistry.git
           git_cli: true # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
       - uses: julia-actions/julia-docdeploy@v1
         env:
