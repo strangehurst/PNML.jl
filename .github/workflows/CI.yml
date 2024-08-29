@@ -52,7 +52,7 @@ jobs:
           localregistry: |
             https://github.com/strangehurst/SHLocalRegistry.git
             # git@github.com:git@github.com:strangehurst/SHLocalRegistry.git
-          git_cli: false # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
+          git_cli: true # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v4
@@ -94,7 +94,7 @@ jobs:
         with:
           localregistry: |
             git@github.com:git@github.com:strangehurst/SHLocalRegistry.git
-          git_cli: false # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
+          git_cli: true # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
       - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
