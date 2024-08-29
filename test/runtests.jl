@@ -65,13 +65,13 @@ end
         @safetestset "flatten"      begin include("flatten.jl") end
     end
 
-    if select("ALL", "NET")
+    if select("ALL2", "NET")
         println("NET")
         @safetestset "document"     begin include("document.jl") end
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
 
-     if select("ALL", "NET2")
+     if select("ALL2", "NET2")
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end
