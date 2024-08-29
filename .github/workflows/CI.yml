@@ -53,6 +53,7 @@ jobs:
           Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JULIA_PKG_USE_CLI_GIT: true
       - uses: julia-actions/julia-buildpkg@latest
         with:
           localregistry: |
@@ -97,6 +98,7 @@ jobs:
           Pkg.instantiate()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JULIA_PKG_USE_CLI_GIT: true
       - uses: julia-actions/julia-buildpkg@v1
         with:
           localregistry: |
