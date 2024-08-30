@@ -44,19 +44,23 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-
-      - name: Install Dependencies
-        shell: julia --project=docs --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.Registry.add("General")
-          Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
-          Pkg.add(Pkg.PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
-          Pkg.instantiate()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JULIA_PKG_USE_CLI_GIT: true
+      # - name: Install Dependencies
+      #   shell: julia --project=docs --color=yes {0}
+      #   run: |
+      #     using Pkg
+      #     Pkg.Registry.add("General")
+      #     Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
+      #     Pkg.add(Pkg.PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
+      #     Pkg.instantiate()
+      #     Pkg.Registry.status()
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     JULIA_PKG_USE_CLI_GIT: true
       - uses: julia-actions/julia-buildpkg@latest
+        with:
+          localregistry: |
+            https://github.com/stangehurst/SHLocalRegistry.git
+          git_cli: true # = JULIA_PKG_USE_CLI_GIT. Options: true | false (default)
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v4
@@ -64,6 +68,9 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+  #
+  # =======================
+  #
   docs:
     name: Documentation
     runs-on: ubuntu-latest
@@ -90,9 +97,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
-          Pkg.Registry.add("General")
-          Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
-          Pkg.add(PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl", rev="ale/3.0"))
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
         env:
