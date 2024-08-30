@@ -85,6 +85,8 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Pkg
+          Pkg.Registry.add("General")
+          Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
         env:
