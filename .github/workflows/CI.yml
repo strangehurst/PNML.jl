@@ -44,18 +44,6 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      # - name: Install Dependencies
-      #   shell: julia --project=docs --color=yes {0}
-      #   run: |
-      #     using Pkg
-      #     Pkg.Registry.add("General")
-      #     Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
-      #     Pkg.add(Pkg.PackageSpec(url="https://github.com/JuliaSymbolics/Metatheory.jl.git", rev="ale/3.0"))'
-      #     Pkg.instantiate()
-      #     Pkg.Registry.status()
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     JULIA_PKG_USE_CLI_GIT: true
       - uses: julia-actions/julia-buildpkg@latest
         with:
           localregistry: |
