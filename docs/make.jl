@@ -10,10 +10,10 @@ makedocs(;
          doctest=false,
          modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
-         #repo="https://github.com/strangehurst/PNML.jl/blob/{commit}{path}#{line}",
          #repo="/home/jeff/PNML/{path}",
-         #remotes=Dict()
-         checkdocs=:all,
+         repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
+
+         checkdocs = :all,
 
          format=Documenter.HTML(;#repolink=
                                 # CI means publish documentation on GitHub.
@@ -50,9 +50,10 @@ makedocs(;
 
 if !isempty(get(ENV, "DOCUMENTER_KEY", ""))
     deploydocs(;
-               repo="github.com/strangehurst/PNML.jl",
+                repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
+                #repo = "github.com/strangehurst/PNML.jl",
                #devbranch = "monorepo",
                devbranch = "main",
-               push_preview = true,
+               push_preview = false,
                )
 end
