@@ -102,9 +102,6 @@ jobs:
       - name: Run doctests
         shell: julia --project=docs --color=yes {0}
         run: |
-          using Pkg
-          Pkg.Registry.add("General")
-          Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
           using Documenter: DocMeta, doctest
           using PNML
           DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
