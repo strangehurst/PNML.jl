@@ -48,7 +48,7 @@ Base.@kwdef mutable struct PnmlConfig
     warn_on_unimplemented::Bool = false
 end
 
-using ScopedValues
+using Base.ScopedValues
 
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = ScopedValue(PnmlConfig()) # = PnmlConfig()

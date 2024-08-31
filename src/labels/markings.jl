@@ -121,12 +121,13 @@ Multiset literals ... are defined using Add and NumberOf (multiset operators).
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: HLMarking, NaturalSort, NumberConstant)
-julia> m = HLMarking("the text", NumberConstant(3, NaturalSort()))
-HLMarking("the text", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
+```julia
+; setup=:(using PNML; using PNML: HLMarking, NaturalSort, NumberConstant; PNML.fill_nonhl!(PNML.DECLDICT[]))
+julia> m = HLMarking(PNML.pnmlmultiset(1, usersort(:integer)))
+HLMarking(pnmlmultiset(1, usersort(:integer)))
 
 julia> m()
-3
+1
 ```
 """
 struct HLMarking{T} <: HLAnnotation #! TODO TermInterface

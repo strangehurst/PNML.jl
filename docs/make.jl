@@ -7,7 +7,7 @@ using Pkg, Documenter, PNML
 
 makedocs(;
          clean = true,
-         doctest=false,
+         doctest=true,
          modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
          #repo="/home/jeff/PNML/{path}",
@@ -17,7 +17,7 @@ makedocs(;
 
          format=Documenter.HTML(;#repolink=
                                 # CI means publish documentation on GitHub.
-                                prettyurls=get(ENV, "CI", nothing) == "true",
+                                prettyurls=true,
                                 canonical="https://strangehurst.github.io/PNML.jl",
                                 size_threshold_ignore=["library.md"],
                                 #assets=String[],

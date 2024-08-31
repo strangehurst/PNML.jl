@@ -77,7 +77,7 @@ methods(PNML.default_condition) # hide
 ## Examples
 ```@meta
 DocTestSetup = quote
-    using ScopedValues
+    using Base.ScopedValues
     using PNML
     using PNML: default_condition
     using PNML: default_inscription, default_hlinscription
