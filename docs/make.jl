@@ -50,8 +50,8 @@ makedocs(;
 
 if !isempty(get(ENV, "DOCUMENTER_KEY", ""))
     deploydocs(;
-                repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
-                #repo = "github.com/strangehurst/PNML.jl",
+               # repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
+            repo = "github.com/strangehurst/PNML.jl",
                #devbranch = "monorepo",
                devbranch = "main",
                push_preview = false,
