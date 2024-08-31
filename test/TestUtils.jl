@@ -2,7 +2,7 @@
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
 Multisets.set_key_value_show()
-@reexport using ScopedValues
+@reexport using Base.ScopedValues
 
 @reexport using PNML: PNML
 @reexport using PNML.Sorts
