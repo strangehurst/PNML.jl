@@ -83,6 +83,7 @@ jobs:
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
+          run(`git config init.defaultBranch main`)
           using Pkg
           Pkg.Registry.add("General")
           Pkg.Registry.add(Pkg.RegistrySpec(; url="https://github.com/strangehurst/SHLocalRegistry.git"))
