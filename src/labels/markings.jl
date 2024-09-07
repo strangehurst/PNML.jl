@@ -130,11 +130,11 @@ julia> m()
 1
 ```
 """
-struct HLMarking{T} <: HLAnnotation #! TODO TermInterface
+mutable struct HLMarking{T} <: HLAnnotation #! TODO TermInterface
     text::Maybe{String} # Supposed to be for human consumption.
     #! PnmlMultiset? multiset sort whose basis sort is the same as place's sorttype
     term::PnmlMultiset{T}  # With sort matching placesort.
-    # PnmlMultiset is the result of evaluating the expression AST rooted at term.
+    # `term` is the result of evaluating the expression AST rooted at `term``.
     # Markings are ground terms, so no variables.
 
     graphics::Maybe{Graphics}
