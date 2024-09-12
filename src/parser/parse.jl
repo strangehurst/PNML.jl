@@ -146,6 +146,11 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
         namelabel = parse_name(nameelement, pntd)
     end
 
+    # We use the declarations toolkit for non-high-level nets,
+    # and assume a minimum function for high-level nets.
+    # Declarations present in the input file will overwrite these.
+    fill_nonhl!(DECLDICT[])
+
     # Parse *ALL* Declarations here (assuming this the tree root),
     # this includes any Declarations attached to Pages.
     # Place any/all declarations in scoped value PNML.DECLDICT[].
@@ -155,9 +160,6 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     decls = alldecendents(node, "declaration") # There may be none.
     declaration = parse_declaration(decls, pntd)::Declaration
 
-    # We use the declarations toolkit for non-high-level nets,
-    # and assume a minimum function for high-level nets.
-    fill_nonhl!(DECLDICT[])
     validate_declarations(DECLDICT[])
 
     # We collect all the toolinfos at this level.
@@ -614,6 +616,36 @@ end
 # PNML annotation-label XML element parsers.
 #
 #----------------------------------------------------------
+"""
+    parse_label_content(node::XMLNode, termparser, pntd) -> NamedTuple
+
+Parse label using a `termparser` callable applied to any structure element.
+Also parses text, toolinfo, graphics, term and sort of term.
+"""
+function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where {F}
+    text::Maybe{Union{String,SubString{String}}} = nothing
+    term::Maybe{Any} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools::Maybe{Vector{ToolInfo}}  = nothing
+    tsort ::Maybe{AbstractSort}= nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            text = parse_text(child, pntd)
+        elseif tag == "structure"
+            term, tsort = termparser(child, pntd) # Apply function/functor
+            @show term tsort
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            tools = add_toolinfo(tools, child, pntd)
+        else
+            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
+        end
+    end
+    return (; text, term, sort=tsort, graphics, tools)
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -628,11 +660,6 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     if !isnothing(l.term) # There was a <structure> tag. Used in the high-level meta-models.
         @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.term)"
     end
-
-    @show which(eltype, (typeof(sortof(placetype)),))
-    # If there is no appropriate eltype method defined expect eltype(x) @ Base abstractarray.jl:241
-    # to return Int64.
-    # Base.eltype is for collections: what would an iterator return.
 
     # Sorts are sets in Part 1 of the ISO specification that defines the semantics.
     # Very much mathy, so thinking of sorts as collections is natural.
@@ -655,11 +682,14 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # sortelements is needed to support the <all> operator that forms a multiset out of
     # one of each of the finite sorts elements. This leads to iteration. Thus eltype.
 
+    # If there is no appropriate eltype method defined expect eltype(x) @ Base abstractarray.jl:241
+    # to return Int64.
+    # Base.eltype is for collections: what would an iterator return.
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
+    @show placetype sortof(placetype) typeof(sortof(placetype))
     mvt = eltype(sortof(placetype))
-
-    @show placetype sortof(placetype) mvt
+    @show mvt
 
     mvt == marking_value_type(pntd) ||
         throw(ArgumentError("initial marking value type of $pntd must be $(marking_value_type(pntd)), found: $mvt"))
@@ -713,36 +743,6 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
 end
 
 """
-    parse_label_content(node::XMLNode, termparser, pntd) -> NamedTuple
-
-Parse label using a `termparser` callable applied to any structure element.
-Also parses text, toolinfo, graphics, term and sort of term.
-"""
-function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where {F}
-    text::Maybe{Union{String,SubString{String}}} = nothing
-    term::Maybe{Any} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "text"
-            text = parse_text(child, pntd)
-        elseif tag == "structure"
-            term, sort = termparser(child, pntd) # Apply function/functor
-            @show term sort
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
-        else
-            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
-        end
-    end
-    return (; text, term, sort, graphics, tools)
-end
-
-"""
 $(TYPEDSIGNATURES)
 
 High-level initial marking labels are expected to have a <structure> child containing a ground term.
@@ -760,7 +760,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         el = def_sort_element(placetype)
 
         HLMarking(pnmlmultiset(el, usersort(placetype), 0)) # empty, el used for its type
-        pnmlmultiset(el, sortof(placetype), 0) # empty, el used for its type.
+        pnmlmultiset(el, usersort(placetype), 0) # empty, el used for its type.
     else
         #!
         #! Evaluate the expression. Expect a PnmlMultiset result (from an operator).
@@ -797,8 +797,15 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         term = EzXML.firstelement(marknode) # ignore any others
         mark, sort = parse_term(term, pntd)
 
-        @show mark sort sortof(mark) basis(mark) typeof(placetype(pmt))
-        # @show sortof(basis(mark))
+        @show mark typeof(mark)
+        mark = eval(mark)
+        @show mark typeof(mark)
+        @show sort typeof(sort)
+        @show typeof(placetype(pmt))
+
+        #! MARK will be a TERM, a symbolic expression using TermInterface
+        #! that, when evaluated, produces a PnmlMultiset object.
+
         #@assert sort == sortof(mark) # sortof multiset is the basis sort
         #@assert sortof(mark) != basis(mark)
         #@assert basis(mark) == sortof(basis(mark))

@@ -6,6 +6,7 @@ Used to define the multisorted algebra of a high-level petri net graph.
 @kwdef struct DeclDict
     variabledecls::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
+    #TODO use namedsorts to wrap built-in and arbitrary sorts'
     namedsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
@@ -170,7 +171,7 @@ end
     fill_nonhl!() -> nothing
     fill_nonhl!(dd::DeclDict) -> nothing
 
-Fill a DeclDict with values needed by non-high-level networks.
+Fill a DeclDict with defaults and values needed by non-high-level networks.
 Defaults to filling the scoped value PNML.DECLDICT[].
 
     NamedSort(:integer, "Integer", IntegerSort())
@@ -189,8 +190,6 @@ Defaults to filling the scoped value PNML.DECLDICT[].
 """
 function fill_nonhl! end
 
-fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
-
 function fill_nonhl!(dd::DeclDict)
     for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
                               (:natural, "Natural", NaturalSort()),
@@ -200,14 +199,23 @@ function fill_nonhl!(dd::DeclDict)
                               (:bool, "Bool", BoolSort()),
                               (:null, "Null", NullSort()),
                               )
-
-        if !has_namedsort(dd, tag) # Do not overwrite existing content.
-            namedsorts(dd)[tag] = NamedSort(tag, name, sort)
-            !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
-        end
-        if !has_usersort(dd, tag) # Do not overwrite existing content.
-            usersorts(dd)[tag] = UserSort(tag)
-            !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
-        end
+        #TODO list, strings, arbitrarysorts
+        fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
     end
 end
+
+fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
+
+function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
+    if !has_namedsort(dd, tag) # Do not overwrite existing content.
+        # println("fill sort ", repr(tag), " ", repr(name))
+        !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
+        namedsorts(dd)[tag] = NamedSort(tag, name, sort)
+    end
+    if !has_usersort(dd, tag) # Do not overwrite existing content.
+        !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
+        usersorts(dd)[tag] = UserSort(tag)
+    end
+end
+
+fill_sort_tag!(tag::Symbol, name, sort) = fill_sort_tag!(PNML.:DECLDICT[], tag::Symbol, name, sort)
