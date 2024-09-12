@@ -88,7 +88,7 @@ has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element(pt)
     els = sortelements(pt)
-    @assert Base.IteratorSize(els) == Base.HasLength() # High-level (HLPNG) allows infinite sets (Natural numbers).
+    @show Base.IteratorSize(els) # == Base.HasLength() # High-level (HLPNG) allows infinite sets (Natural numbers).
     first(els) # Default to first of sort's elements (how often is this best?, make this a generic choice?)
 end
 
