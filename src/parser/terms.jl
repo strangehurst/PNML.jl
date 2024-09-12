@@ -111,11 +111,12 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
-        parse_sort(Val(sorttag), child, pntd)::NumberSort
+        parse_sort(Val(sorttag), child, pntd)::UserSort
     else
         throw(MalformedException("$tag sort unknown: $sorttag"))
     end
 
+    sort = definition(namedsort(sort))
     nv = number_value(eltype(sort), value)
     if sort isa NaturalSort
         nv >= 0 || throw(ArgumentError("not a Natural Number: $nv"))
@@ -287,7 +288,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 end
 
 #====================================================================================#
-#! partition is a sort!
+#! partition is a sort declaration!
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
@@ -295,15 +296,14 @@ function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
     @warn "partition $(repr(id)) $nameval"
-    sort::Maybe{UserSort} = nothing
+    psort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into sort that form a equivalance class.
     # First harvest the sort,
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # This is the sort that partitionelements reference.
-            sort = parse_usersort(child, pntd)::UserSort #~ ArbitrarySort?
-            #! @show sort
-            #todo verify is proper sort
+            psort = parse_usersort(child, pntd)::UserSort
+            # This wraps a REFID, actual declaration may be later?
         elseif tag === "partitionelement"
             parse_partitionelement!(elements, child)
         else
@@ -317,11 +317,11 @@ function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
     # One or more partitionelements.
     isempty(elements) &&
         error("partitions must have at least one partition element, found none: ",
-                "id = ", repr(id), ", name = ", repr(nameval), ", sort = ", repr(sort))
+                "id = ", repr(id), ", name = ", repr(nameval), ", sort = ", repr(psort))
 
     #~verify_partition(sort, elements)
 
-    return PartitionSort(id, nameval, sort.declaration, elements)
+    return PartitionSort(id, nameval, psort.declaration, elements)
 end
 
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)

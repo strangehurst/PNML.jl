@@ -76,7 +76,7 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
             variabledecls(dd)[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
-            part = parse_sort(Val(:partition), child, pntd)
+            part = parse_sort(Val(:partition), child, pntd)::SortDeclaration
             partitionsorts(dd)[pid(part)] = part
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -103,7 +103,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType)
     name = attribute(node, "name")
     child = EzXML.firstelement(node)
     isnothing(child) && error("no sort definition element for namedsort $(repr(id)) $name")
-    def = parse_sort(EzXML.firstelement(node), pntd) #! deduplicate sort
+    def = parse_sort(EzXML.firstelement(node), pntd)::AbstractSort #! deduplicate sort
     isnothing(def) && error("failed to parse sort definition for namedsort $(repr(id)) $name")
     NamedSort(id, name, def)
 end
@@ -144,10 +144,10 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
     end
     isnothing(def) &&
         throw(ArgumentError(string("<namedoperator",
-                                    " name=", repr(text(name)),
+                                    " name=", repr(name),
                                     " id=", repr(id),
                                     "> does not have a <def> element")))
-    @warn "<namedoperator name=$(repr(text(name))) id=$(repr(id))>"
+    @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>"
     NamedOperator(id, name, parameters, def)
 end
 
@@ -162,8 +162,17 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     #! There should be an actual way to store the value of the variable!
     #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
     #! All that work can be defered to a post-parse phase. Followed by the verification phase.
-    sort = parse_sort(EzXML.firstelement(node), pntd)
-    VariableDeclaration(id, name, sort)
+
+    vsort = parse_sort(EzXML.firstelement(node), pntd)
+    isnothing(vsort) &&
+        error("failed to parse sort definition for variabledecl $(repr(id)) $name")
+    @show id name vsort
+
+    # Wrap sort in a NamedSort
+    # is sort in declcdict? use it, else add it first.
+    #NamedSort(id, name, vsort)
+
+    VariableDeclaration(id, name, vsort)
 end
 
 """
@@ -208,45 +217,58 @@ const sort_ids = (:usersort,
                   :dot, :bool, :integer, :natural, :positive, :real,
                   :multisetsort, :productsort,
                   :partition, # :partition is over a :finiteenumeration
-                  :list, :string,
+                  :list, :strings,
                   :cyclicenumeration, :finiteenumeration, :finiteintrange)
 
+function make_usersort(tag::Symbol, name::String, sort)
+    fill_sort_tag!(tag, name, sort)
+    return usersort(tag) #
+end
+
+# Singleton sorts map to unique named sorts.
 function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType)
-    DotSort()
+    make_usersort(:dot, "Dot", DotSort())
 end
 function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType)
-    BoolSort()
+    make_usersort(:bool, "Bool", BoolSort())
 end
 
 function parse_sort(::Val{:integer}, node::XMLNode, pntd::PnmlType)
-    IntegerSort()
+    make_usersort(:integer, "Integer", IntegerSort())
 end
 
 function parse_sort(::Val{:natural}, node::XMLNode, pntd::PnmlType)
-    NaturalSort()
+    make_usersort(:natural, "Natural", NaturalSort())
 end
 
 function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType)
-    PositiveSort()
+    make_usersort(:positive, "Positive", PositiveSort())
 end
 
 function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType)
-    RealSort()
+    make_usersort(:real, "Real", RealSort())
 end
 
+############################################################
+# User Sort wraps a REFID to a NamedSort or a Builtin Singleton sort.
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "usersort")
     UserSort(Symbol(attribute(node, "declaration")))
 end
 
+############################################################
+# Sorts that are not singletons. Must be wrapped in a NamedSort
+
 # is a finiteenumeration with additional operators: successor, predecessor
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "cyclicenumeration")
+    #make_usersort(:cyclicenumeration, "CyclicEnumeration",
     CyclicEnumerationSort(parse_feconstants(node, pntd))
 end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "finiteenumeration")
+    #make_usersort(:finiteenumeration, "FiniteEnumeration",
     FiniteEnumerationSort(parse_feconstants(node, pntd))
 end
 
@@ -254,16 +276,19 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "finiteintrange")
     start = parse(Int, attribute(node, "start"))
     stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
+    #make_usersort(:finiteintrange, "FiniteIntRange",
     FiniteIntRangeSort(start, stop)
 end
 
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType)
     @error("IMPLEMENT ME: :list")
+    #make_usersort(:list, "List",
     ListSort()
 end
 
-function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:strings}, node::XMLNode, pntd::PnmlType)
     @error("IMPLEMENT ME: :string")
+    #make_usersort(:strings, "",
     StringSort()
 end
 
@@ -275,8 +300,10 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType)
     # but not <partition> or <partitionelement>. Definitely not another multiset.
     tag = Symbol(EzXML.nodename(basisnode))
     part_tags = (:partition , :partitionelement)
-    tag in part_tags && throw(ArgumentError("multisetsort basis $tag not allowed: $part_tags"))
-    basissort = parse_sort(Val(tag), basisnode, pntd) #~ deduplicate sorts
+    tag in part_tags &&
+        throw(ArgumentError("multisetsort basis $tag not allowed: $part_tags"))
+    basissort = parse_sort(Val(tag), basisnode, pntd)::UserSort
+    #make_usersort(:multisetsort, "MultisetSort",
     MultisetSort(basissort)
 end
 
@@ -289,7 +316,7 @@ end
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "productsort")
 
-    sorts = AbstractSort[] # Orderded collection of zero or more Sorts, not just UserSorts & ArbitrarySorts.
+    sorts = Union{NamedSort,UserSort}[] # Orderded collection of zero or more Sorts
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
         if tag in sort_ids
@@ -299,10 +326,11 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType)
         end
     end
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
-    #@show sorts
+    #make_usersort(:productsort, "ProductSort",
     ProductSort(sorts)
 end
 
+############################################################
 """
 $(TYPEDSIGNATURES)
 
@@ -317,7 +345,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType)
     # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
     sortid = Symbol(EzXML.nodename(node))
     sort = if sortid in sort_ids
-        parse_sort(Val(sortid), node, pntd)::AbstractSort
+        parse_sort(Val(sortid), node, pntd)::AbstractSort #Union{NamedSort, UserSort}
     else
         @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids.")
     end

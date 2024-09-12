@@ -443,11 +443,11 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
             length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
             first(insorts)
         elseif tag === :cardnality
-            usersort()[:natural] # NaturalSort()
+            usersorts()[:natural] # NaturalSort()
         elseif tag === :cardnalitiyof
-            usersort()[:natural] # NaturalSort()
+            usersorts()[:natural] # NaturalSort()
         elseif tag === :contains
-            usersort()[:bool] # BoolSort()
+            usersorts()[:bool] # BoolSort()
         else
             error("$tag not a known multiset operator")
         end
@@ -479,52 +479,6 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
          usersort(:null)
     end
 end
-
-
-# function pnml_hl_outsort(tag::Symbol; insorts::Vector{AbstractSort})
-#     if isbooleanoperator(tag)
-#         BoolSort()
-#     elseif isintegeroperator(tag)
-#         IntegerSort()
-#     elseif ismultisetoperator(tag)
-#         if tag in (:add,)
-#             length(insorts) >= 2 ||
-#                 @error "pnml_hl_outsort length(insorts) < 2" tag insorts
-#             multisetsort(basis(last(insorts))) # is it always last?
-#         elseif tag in(:all, :numberof, :subtract, :scalarproduct)
-#             length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
-#             multisetsort(basis(last(insorts))) # is it always last?
-#         elseif tag === :empty # a constant
-#             length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
-#             multisetsort(basis(first(insorts)))
-#         elseif tag === :cardnality
-#             NaturalSort()
-#         elseif tag === :cardnalitiyof
-#             NaturalSort()
-#         elseif tag === :contains
-#             BoolSort()
-#         else
-#             error("$tag not a known multiset operator")
-#         end
-#     elseif isfiniteoperator(tag)
-#         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
-#         @error("enumeration sort needs content")
-#         FiniteEnumerationSort(()) #! pnml_hl_outsort will need FEC reference tuple
-#         #
-#     elseif ispartitionoperator(tag)
-#         #:ltp, :gtp, :partitionelementof
-#         PartitionSort() #! pnml_hl_outsort will need content
-#     elseif tag === :tuple
-#         @warn "pnml_hl_outsort does not handle tuple yet"
-#         TupleSort()  #! pnml_hl_outsort will need content?
-#         #:numberconstant => NumberSort(),
-#         #:dotconstant => DotSort(),
-#         #:booleanconstant => BoolSort(),
-#     else
-#          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
-#         return NullSort()
-#     end
-# end
 
 #===============================================================#
 #===============================================================#

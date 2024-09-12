@@ -25,27 +25,27 @@ sorts() = _subtypes(AbstractSort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<dot/>", pntd)::DotSort
+    sort = parse_sort(xml"<dot/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<bool/>", pntd)::BoolSort
+    sort = parse_sort(xml"<bool/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<integer/>", pntd)::IntegerSort
+    sort = parse_sort(xml"<integer/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<natural/>", pntd)::NaturalSort
+    sort = parse_sort(xml"<natural/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<positive/>", pntd)::PositiveSort
+    sort = parse_sort(xml"<positive/>", pntd)::UserSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -164,12 +164,17 @@ end
 
     @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
-        base_decl_length = length(PNML.namedsorts())
+
+
+        @show PNML.idregistry[]
+        @show base_decl_length = length(PNML.namedsorts())
+
         decl = parse_declaration(node, pntd)::PNML.Declaration # Add 3 declarations.
 
-        @show decl PNML.idregistry[]
-        @test length(PNML.namedsorts(PNML.DECLDICT[])) == base_decl_length + 3
-        for nsort in values(PNML.namedsorts(PNML.DECLDICT[]))
+        @show PNML.idregistry[] decl
+        @test length(PNML.namedsorts()) == base_decl_length + 3
+println()
+        for nsort in values(PNML.namedsorts())
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
             # by wraping an ID of a declared sort.
             # named sort -> cyclic enumeration -> fe constant

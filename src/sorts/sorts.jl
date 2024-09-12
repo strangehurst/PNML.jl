@@ -44,8 +44,6 @@ Used in a Place's sort type property.
     declaration::Symbol #TODO validate as a NamedSort REFID
 end
 
-#Base.eltype(::Type{UserSort})
-
 "Get NamedSort from UserSort REFID"
 namedsort(us::UserSort) = namedsort(us.declaration)
 
@@ -57,7 +55,6 @@ function _access_ns_def(us::UserSort)
 end
 
 # Forward operations to the NamedSort matching the declaration REFID.
-#! not sortof(us::UserSort) = sortof(_access_decl(us))
 sortelements(us::UserSort) = sortelements(_access_ns_def(us))
 pid(us::UserSort) = pid(namedsort(us.declaration))
 name(us::UserSort) = name(namedsort(us.declaration))
@@ -78,15 +75,13 @@ end
 sortof(ms::MultisetSort) = ms.basis
 basis(ms::MultisetSort) = ms.basis
 
-multisetsort(basis::AbstractSort) = MultisetSort(basis)
-
 """
 $(TYPEDEF)
 
 An ordered collection of sorts.
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
-    ae::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
+    ae::Vector{Any} #! BuiltinSorts are wrapped in NamedSorts.
 end
 ProductSort() = ProductSort(UserSort[])
 # sortof(ps::ProductSort) is a vector/tuple of sorts
