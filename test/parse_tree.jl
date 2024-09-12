@@ -60,6 +60,62 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
 end
 
 
+println("\n-----------------------------------------")
+println("test1.pnml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, "../snoopy", "test1.pnml")
+    # model = @test_logs(match_mode=:any,
+    #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
+    #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
+    #     parse_file(fname)::PnmlModel)
+    model = parse_file(fname)::PnmlModel
+    # println("----"^10); @show model; println("----"^10)
+    #!@show model
+    #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
+    #!@test startswith(repr(model), "PnmlModel")
+
+    #@show map(pid, PNML.nets(model)); println()
+
+    for n in PNML.nets(model)
+        @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
+            #!PNML.fill_nonhl!(PNML.DECLDICT[])
+            #println("-----------------------------------------")
+            @test PNML.verify(n; verbose=false)
+            PNML.flatten_pages!(n; verbose=false)
+            @test PNML.verify(n; verbose=true)
+            #println("-----------------------------------------")
+            #println("FLATTENED NET")
+            #@show n
+            #println("-----------------------------------------")
+
+            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+                #TODO use MetaGraph as base of a validation tool
+                println("pagetree")
+                PNML.pagetree(n)
+                println("print_tree")
+                AbstractTrees.print_tree(n)
+
+                println("vertex_codes")
+                @show vc = PNML.vertex_codes(n)
+                @show vl = PNML.vertex_labels(n)
+                println("-----------------------------------------")
+
+                for a in arcs(n)
+                    @show a
+                    println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
+                end
+                println("-----------------------------------------")
+                if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
+                    @test_throws ArgumentError PNML.metagraph(n)
+                else
+                    @show PNML.metagraph(n)
+                end
+            end
+        end
+    end
+    #println("\n-----------------------------------------")
+end
+
 # Read a SymmetricNet from www.pnml.com examples or MCC
 println("\n-----------------------------------------")
 println("AirplaneLD-col-0010.pnml")
@@ -124,60 +180,4 @@ println("-----------------------------------------\n")
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
     #println()
-end
-
-println("\n-----------------------------------------")
-println("test1.pnml")
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, "../snoopy", "test1.pnml")
-    # model = @test_logs(match_mode=:any,
-    #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
-    #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-    #     parse_file(fname)::PnmlModel)
-    model = parse_file(fname)::PnmlModel
-    # println("----"^10); @show model; println("----"^10)
-    #!@show model
-    #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
-    #!@test startswith(repr(model), "PnmlModel")
-
-    #@show map(pid, PNML.nets(model)); println()
-
-    for n in PNML.nets(model)
-        @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
-            #!PNML.fill_nonhl!(PNML.DECLDICT[])
-            #println("-----------------------------------------")
-            @test PNML.verify(n; verbose=false)
-            PNML.flatten_pages!(n; verbose=false)
-            @test PNML.verify(n; verbose=true)
-            #println("-----------------------------------------")
-            #println("FLATTENED NET")
-            #@show n
-            #println("-----------------------------------------")
-
-            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
-                #TODO use MetaGraph as base of a validation tool
-                println("pagetree")
-                PNML.pagetree(n)
-                println("print_tree")
-                AbstractTrees.print_tree(n)
-
-                println("vertex_codes")
-                @show vc = PNML.vertex_codes(n)
-                @show vl = PNML.vertex_labels(n)
-                println("-----------------------------------------")
-
-                for a in arcs(n)
-                    @show a
-                    println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
-                end
-                println("-----------------------------------------")
-                if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
-                    @test_throws ArgumentError PNML.metagraph(n)
-                else
-                    @show PNML.metagraph(n)
-                end
-            end
-        end
-    end
-    #println("\n-----------------------------------------")
 end
