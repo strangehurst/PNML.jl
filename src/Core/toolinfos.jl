@@ -21,7 +21,7 @@ version(ti::ToolInfo) = ti.version
 "Content of a ToolInfo."
 infos(ti::ToolInfo) = ti.infos::Vector{AnyElement}
 
-Base.eltype(ti::ToolInfo) = eltype(infos(ti))
+##Base.eltype(ti::ToolInfo) = eltype(infos(ti))
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")

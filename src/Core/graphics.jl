@@ -4,6 +4,8 @@
 module PnmlGraphics
 
 using Base.ScopedValues
+import Base: eltype
+
 import AutoHashEquals: @auto_hash_equals
 import EzXML
 #using Reexport

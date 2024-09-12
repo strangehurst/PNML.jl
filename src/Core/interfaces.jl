@@ -406,3 +406,5 @@ function sortof end
 
 function sortelements end
 function basis end
+
+function def_sort_element end

@@ -7,6 +7,8 @@ using DocStringExtensions
 
 export PnmlIDRegistry, register_id!, isregistered, reset_reg!
 using Base: Base.IdSet
+import Base: eltype
+
 """
 Holds a set of PNML ID symbols and , optionally, a lock to allow safe reentrancy.
 

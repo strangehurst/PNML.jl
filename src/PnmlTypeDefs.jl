@@ -3,6 +3,7 @@ Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 """
 module PnmlTypeDefs
 
+import Base: eltype
 using DocStringExtensions
 
 # Abstract Types

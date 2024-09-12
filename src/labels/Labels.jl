@@ -1,6 +1,7 @@
 module Labels
 using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
+import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 import Multisets
@@ -14,6 +15,7 @@ using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value,
     AbstractTerm
 using PNML: namedsort
 import PNML: usersort
+import PNML: def_sort_element
 
 import PNML: sortof, sortelements, basis, value, _evaluate, graphics, tools, tag, elements,
     has_graphics, get_label, has_label, has_labels, labels, declarations
