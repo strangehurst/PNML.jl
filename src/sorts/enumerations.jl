@@ -98,5 +98,5 @@ end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 sortof(c::FiniteIntRangeConstant) = c.sort
 value(c::FiniteIntRangeConstant) = c.value      #! TODO term rewrite
-_evaluate(c::FiniteIntRangeConstant) = value(c) #! TODO term rewrite
+_evaluate(c::FiniteIntRangeConstant) = begin println("_evaluate: FiniteIntRangeConstant"); value(c); end #! TODO term rewrite
 (c::FiniteIntRangeConstant)() = value(c)

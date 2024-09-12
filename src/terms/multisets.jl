@@ -29,7 +29,7 @@ Base.one(::Type{PnmlMultiset{<:Any}})  = one(Int) #! what meaning/use?
 sortof(ms::PnmlMultiset{<:Any}) = sortof(basis(ms)) # Dereferences the UserSort
 
 #
-_evaluate(ms::PnmlMultiset{<:Any}) = cardinality(ms) #TODO rewrite rule
+_evaluate(ms::PnmlMultiset{<:Any}) = begin println("_evaluate: PnmlMultiset "); cardinality(ms); end #! TODO rewrite rule
 
 # TODO forward what ops to Multiset?
 # TODO alter Multiset: union, add element, erase element, change multiplicity?
@@ -75,10 +75,8 @@ function pnmlmultiset(x, basis::UserSort, multi::Integer=1)
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
     #^ Where/how is absence of sort loop checked?
 
-    println("pnmlmultiset: "); @show x basis multi
+    println("pnmlmultiset: x = ", repr(x), ", basis = ", repr(basis), ", multi = ", repr(multi))
     M = Multiset{typeof(x)}()
-    #@show typeof(M) eltype(M)
-    @show M[x] = multi #
-    #@warn collect(elements(basis))
+    M[x] = multi
     PnmlMultiset(basis, M)
 end

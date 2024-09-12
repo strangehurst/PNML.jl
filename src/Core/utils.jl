@@ -19,8 +19,8 @@ A zero-argument functor is expected as the callable type, allowing expressions i
 to be evaluated to a `Number`.
 """
 function _evaluate end
-_evaluate(x::Number) = identity(x)
-_evaluate(x::Base.Callable) = (x)()
+_evaluate(x::Number) = begin println("_evaluate Number"); identity(x); end #! dynamic term rewrite
+_evaluate(x::Base.Callable) = begin println("_evaluate call"); (x)(); end #! dynamic term rewrite
 
 """
     ispid(x::Symbol)

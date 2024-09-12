@@ -19,7 +19,7 @@ value(v::Variable) = begin #! XXX FIXME XXX
     @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"
     return 0
 end
-_evaluate(v::Variable) = _evaluate(value(v)) #! dynamic expression, term rewrite, firing rule
+_evaluate(v::Variable) = begin println("_evaluate: variable"); _evaluate(value(v)); end #! dynamic expression, term rewrite, firing rule
 
 sortof(v::Variable) = begin
     @assert has_variable(tag(v)) "$(tag(v)) not a variable declaration"
