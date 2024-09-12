@@ -64,6 +64,7 @@ end
 
 import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
+import Base: eltype
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
@@ -86,13 +87,21 @@ using Compat: @compat
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export feconstant, declarations, pid
-@compat public DeclDict, UserOperator, NamedSort, NamedOperator
+export declarations, pid
+
+export has_variable, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
+    has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
+    usersorts, useroperators, variabledecls, namedsorts,
+    arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants,
+    variable, namedsort, arbitrarysort, partitionsort,
+    namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
+
+export DeclDict, UserOperator, NamedOperator, UserSort, NamedSort
 export PnmlException, MissingIDException, MalformedException
 
 export Variable
--
-@compat public place_idset, transition_function, initial_markings, rates
+
+export place_idset, transition_function, initial_markings, rates
 
 export placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
@@ -136,6 +145,7 @@ include("terms/variables.jl") #~ Work in progress
 include("terms/operators.jl")
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
 include("terms/tuples.jl") #~ Work in progress
+include("Core/rewrite.jl")
 
 # 2024-07-22 moved forward, holds Any rather than node types.
 include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
