@@ -1,6 +1,7 @@
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
+AlgebraicPetri = "4f99eebe-17bf-4e98-b6a1-2c4f205a959b"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
