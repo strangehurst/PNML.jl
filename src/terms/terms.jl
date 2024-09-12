@@ -38,25 +38,3 @@ function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata
     Operator(iscall, operation, arguments...; metadata)
 end
 =#
-
-#using Metatheory
-#using Metatheory.TermInterface
-
-multiset_alg = @theory p q begin
-    (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
-end
-
-bool_alg = @theory p q begin
-    (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
-    (p::Bool || q::Bool) => (p || q)
-    (p::Bool ⟹ q::Bool) => ((p || q) == q)
-    (p::Bool && q::Bool) => (p && q)
-    !(p::Bool)           => (!p)
-    (p::BooleanConstant) => p()
-end
-
-dot = @theory d begin
-    (d::DotConstant) => d()
-end
-
-pnml_theory = multiset_alg ∪ bool_alg ∪ dot #∪ negt ∪ impl ∪ fold
