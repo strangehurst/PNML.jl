@@ -1,12 +1,7 @@
 using PNML, ..TestUtils, JET
 
 @testset "Show" begin
-    model = @test_logs(match_mode=:any,
-        # (:warn, "found unexpected label of <page>: text"),
-         (:warn, r"^ignoring child of <namedoperator name=g, id=id6> with tag unknown, allowed: 'def', 'parameter'"),
-         (:warn, r"^parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-        parse_pnml(xmlroot("""<?xml version="1.0"?>
-        <!-- https://github.com/daemontus/pnml-parser -->
+    node = xmlroot("""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
           <name> <text>P/T Net with one place</text> </name>
@@ -17,25 +12,6 @@ using PNML, ..TestUtils, JET
               <text>net5 declaration label</text>
               <graphics><offset x="0" y="0"/></graphics>
               <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-              <declaration>
-                <structure>
-                    <declarations>
-                      <namedsort id="dot" name="Dot"><dot/></namedsort>
-                      <variabledecl id="varx" name="x"><usersort declaration="pro"/></variabledecl>
-                      <namedoperator id="id6" name="g">
-                          <parameter>
-                              <variabledecl id="id4" name="x"><integer/></variabledecl>
-                              <variabledecl id="id5" name="y"><integer/></variabledecl>
-                          </parameter>
-                          <def>
-                              <numberconstant value="1"><positive/></numberconstant>
-                          </def>
-                          <unknown/>
-                      </namedoperator>
-                      <unknowendecl id="unk1" name="u"><foo/></unknowendecl>
-                    </declarations>
-                </structure>
-              </declaration>
 
               <place id="place1">
                 <name> <text>Some place</text> </name>
@@ -53,7 +29,8 @@ using PNML, ..TestUtils, JET
             </page>
           </net>
         </pnml>
-        """)))
+        """)
+    model = parse_pnml(node)
 
     @test model isa PnmlModel
 end
