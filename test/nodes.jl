@@ -11,10 +11,9 @@ using PNML, ..TestUtils, JET, XMLDict
         PNML.fill_nonhl!(PNML.DECLDICT[])
         placetype = SortType("test", UserSort(:integer))
 
-        n  = parse_place(node, pntd)
+        n  = parse_place(node, pntd)::Place
         @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd)
         @test_call target_modules=target_modules parse_place(node, pntd)
-        @test isa(n, Place)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
