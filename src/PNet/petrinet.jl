@@ -180,8 +180,8 @@ function input_matrix(petrinet::AbstractPetriNet)
 end
 
 function input_matrix!(imatrix, net)
-    for (t,transition_id) in enumerate(transition_idset(net))
-        for (p,place_id) in enumerate(place_idset(net))
+    for (p, place_id) in enumerate(place_idset(net))
+        for (t, transition_id) in enumerate(transition_idset(net))
             a = arc(net, place_id, transition_id)
             imatrix[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
         end
@@ -218,12 +218,11 @@ C[transition,place] = inscription(transition,place) - inscription(place,transiti
 function incidence_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
     #TODO  Make Labelled Matrix? ComponentArray?
-    #!println("incidence_matrix ", length(transition_idset(net)), " x ", length(place_idset(net)))
-    C = Matrix{Int}(undef, ntransitions(net), nplaces(net))
+    C = Matrix{Int}(undef, ntransitions(net), nplaces(net)) #Preallocate storage
     z = zero(Int) # continuous would use float64
     @assert z isa Number
-    for (t,transition_id) in enumerate(transition_idset(net))
-        for (p,place_id) in enumerate(place_idset(net))
+    for (t, transition_id) in enumerate(transition_idset(net))
+        for (p, place_id) in enumerate(place_idset(net))
             tp = arc(net, transition_id, place_id)
             l = if isnothing(tp)
                 z
@@ -249,6 +248,7 @@ function incidence_matrix(petrinet::AbstractPetriNet)
     end
     return C
 end
+
 """
     enabled(::AbstractPetriNet, ::LVector) -> LVector
 
@@ -260,17 +260,19 @@ function enabled(petrinet::AbstractPetriNet, marking) #TODO move "lvector tools"
 end
 
 """
-Return the marking after firing transition.
-M1 = M0 + Cf.
-M0 is the initial marking vector, f is the firing vector, i.e. which transition is to fire
-and C is the incidence matrix.
+    fire!(incidence, enabled, marking) -> LVector
+
+Return the marking after firing transition:   marking + incidence * enabled
+
+`marking` LVector values added to product of `incidence'` matrix and firing vector `enabled`.
 """
-function fire!(incidence, enabled, mₒ) #TODO move "lvector tools" section
-    m₁ = muladd(incidence', enabled, mₒ)
-    LVector(symbols(m₀), m₁)
+function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
+    m₁ = muladd(incidence', enabled, m₀)
+    LVector(namedtuple(symbols(m₀), m₁))
 end
 
 ""
+
 function reachability_graph(net)
 end
 

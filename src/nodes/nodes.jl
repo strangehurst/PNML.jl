@@ -43,7 +43,7 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct Transition{PNTD,C}  <: AbstractPnmlNode{PNTD}
+struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
     condition::C
