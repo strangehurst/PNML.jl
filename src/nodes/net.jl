@@ -218,7 +218,7 @@ function Base.show(io::IO, net::PnmlNet)
         show(io, rp); println(io)
     end
 
-    println(io, "Reference Transitions")
+    println(io, "Reference Transitions:")
     map(reftransitions(net)) do rt
         show(io, rt); println(io)
     end
