@@ -14,17 +14,18 @@ end
 include("TestUtils.jl")
 using .TestUtils
 
-"Return true if `ARGS` is empty or one of `v` is found in `ARGS`."
-select(v...) = isempty(ARGS) || any(∈(ARGS), v)
+"Return true if `ARGS` is empty or one of `y`  and none of `n` is found in `ARGS`."
+select(y, n::Tuple=()) = isempty(ARGS) ? true : (any(∈(ARGS), y) && !any(∈(ARGS), n))
+select(y, n) = select(y, tuple(n))
 
 #############################################################################
 @time "TESTS" begin
 
 @testset verbose=true failfast=false showtiming=true "PNML.jl" begin
-    if select("none", "NONE")
+    if !isempty(ARGS) && select("NONE")
         return nothing # Have chosen to bail before any tests.
     end
-    if select("ALL", "AQUA")
+    if select(("ALL", "AQUA"))
         @testset "Aqua" begin
             Aqua.test_all(PNML;
                 ambiguities=(recursive=false),
@@ -40,26 +41,26 @@ select(v...) = isempty(ARGS) || any(∈(ARGS), v)
             )
         end
     end
-    if select("ALL", "BASE") && !select("!BASE")
+    if select(("ALL", "BASE"), "!BASE")
         println("BASE")
         @safetestset "typedefs"  begin include("typedefs.jl") end
         @safetestset "registry"  begin include("idregistry.jl") end
         @safetestset "utils"     begin include("utils.jl") end
     end
-    if select("ALL", "REWRITE") && !select("!REWRITE")
+    if select(("ALL", "REWRITE"), "!REWRITE")
         println("REWRITE")
         @safetestset "rewrite"     begin include("rewrite.jl") end
     end
-    if select("ALL", "CORE") && !select("!CORE")
+    if select(("ALL", "CORE"), "!CORE")
         println("CORE")
         @safetestset "graphics"     begin include("graphics.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
     end
-    if select("ALL", "HL") && !select("!HL")
+    if select(("ALL", "HL"), ("!HL",))
         @safetestset "labels_hl"       begin include("labels_hl.jl") end
     end
-    if select("ALL", "CORE2") && !select("!CORE2")
+    if select(("ALL", "CORE2"), ("!CORE2",))
         @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
@@ -67,18 +68,18 @@ select(v...) = isempty(ARGS) || any(∈(ARGS), v)
         @safetestset "flatten"      begin include("flatten.jl") end
     end
 
-    if select("ALL1", "NET") && !select("!NET")
+    if select(("ALL", "NET"), ("!NET",))
         println("NET")
         @safetestset "document"     begin include("document.jl") end
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
 
-     if select("ALL2", "NET2") && !select("!NET2")
+     if select(("ALL", "NET2"), ("!NET2",))
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end
 
-    if select("ALL", "DOC") && !select("!DOC")
+    if select(("ALL", "DOC"), ("!DOC",))
         println("DOC")
         @testset "doctest" begin doctest(PNML, manual = true) end
     end
