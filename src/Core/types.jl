@@ -5,6 +5,11 @@ Alias for Union{`T`, `Nothing`}.
 """
 const Maybe{T} = Union{T, Nothing}
 
+"""
+Alias for Symbol that refers to something with an ID Symbol.
+"""
+const REFID = Symbol
+
 #--------------------------------------------------------------------------------------
 """
 $(TYPEDEF)

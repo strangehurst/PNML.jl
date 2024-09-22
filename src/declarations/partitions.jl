@@ -37,7 +37,8 @@
 =#
 
 """
-$(TYPEDEF)
+    PartitionElement(id::Symbol, name, Vector{IDREF})
+
 $(TYPEDFIELDS)
 
 Establishes an equivalence class over a [`PNML.Declarations.PartitionSort`](@ref)'s emumeration.
@@ -48,6 +49,7 @@ PartitionElement is different from FiniteEnumeration, CyclicEnumeration, FiniteI
 in that it holds UserOperators, not FEConstants.
 The UserOperator refers to the FEConstants of the sort over which the partition is defined.
 NB: FEConstants are 0-arity operators.
+UserOperator is how operation declarations are accessed.
 
 NB: The "PartitionElementOf" operator maps each element of the FiniteEnumeration
 (referenced by the partition) to the PartitionElement (of the partition) to which it belongs.
@@ -66,7 +68,7 @@ Test for membership by iterating over each partition element, and over each term
 struct PartitionElement <: OperatorDeclaration # AbstractOperator
     id::Symbol
     name::Union{String,SubString{String}}
-    terms::Vector{Symbol} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
+    terms::Vector{REFID} # 1 or more, IDREF to feconstant in parent partitions's referenced sort
     #todo verify terms are in parent partitions's referenced sort
 end
 

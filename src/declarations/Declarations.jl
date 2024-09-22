@@ -14,7 +14,7 @@ using DocStringExtensions
 using TermInterface
 
 using PNML
-import PNML: sortof, sortelements, basis, tag, pid, name
+import PNML: sortof, sortelements, basis, tag, pid, name, REFID
 using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 
 using PNML: page_idset, place_idset, transition_idset, arc_idset,
