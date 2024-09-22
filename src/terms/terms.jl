@@ -13,9 +13,6 @@ Both scalar and multiset are possible.
 # One XML child is expected below <structure> in the PNML schema.
 # The child's XML tag is used as the AST node type symbol.
 
-# See [`parse_marking_term`](@ref), [`parse_condition_term`](@ref), [`parse_inscription_term`](@ref),
-#  [`parse_type`](@ref), [`parse_sorttype_term`](@ref), [`AnyElement`](@ref).
-
 #-------------------------------------------------------------------------
 # Term is really Variable and Opeator
 # term_value_type(::Type{<:PnmlType}) = eltype(IntegerSort) #Int

@@ -32,16 +32,17 @@ end
 # Show Dict
 #--------------------------------------------
 """
-    dict_show(io::IO, x, 0())
+    dict_show(io::IO, x, 0)
 
 Internal helper for things that contain `DictType`.
 """
 function dict_show end
 
-const increment=4
+const increment::Int = 4
+
 d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
     print(io, before)
-    for (i,e) in enumerate(x)
+    for (i, e) in enumerate(x)
         dict_show(io, e, indent_by+increment) #
         i < length(x) && print(io, ",\n", indent(indent_by))
     end
@@ -50,14 +51,20 @@ end
 
 dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
     print(io, "(")
-    #~    for (i,k) in enumerate(keys(d))
-    for (i,k) in enumerate(pairs(d))
-            print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
-        dict_show(io, #= And here. =# k.second, indent_by+increment) #!
+    for (i, k) in enumerate(pairs(d))
+        print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
+        dict_show(io, k.second, indent_by+increment) #! And here.
         i < length(keys(d)) && print(io, ",\n", indent(indent_by))
     end
     print(io, ")")
 end
+dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
+dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
+dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
+dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
+dict_show(io::IO, p::Pair, _::Int) = show(io, p)
+dict_show(io::IO, p::Number, _::Int) = show(io, p)
+
 #=
     Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
     Note that Term also does Bool, Int, Float64, in addition to String.
@@ -81,15 +88,6 @@ end
 
     ! in newline
 =#
-
-
-dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
-dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
-dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
-dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
-dict_show(io::IO, p::Pair, _::Int) = show(io, p)
-dict_show(io::IO, p::Number, _::Int) = show(io, p)
-dict_show(_::IO, x::Any, _::Int) = error("UNSUPPORTED dict_show(io, ::$(typeof(x)))")
 
 function Base.show(io::IO, m::MIME"text/plain", d::DictType)
     show(io, d)
