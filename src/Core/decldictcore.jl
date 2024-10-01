@@ -193,7 +193,7 @@ function fill_nonhl! end
 function fill_nonhl!(dd::DeclDict)
     for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
                               (:natural, "Natural", NaturalSort()),
-                              (:positve, "Positive", PositiveSort()),
+                              (:positive, "Positive", PositiveSort()),
                               (:real, "Real", RealSort()),
                               (:dot, "Dot", DotSort()),
                               (:bool, "Bool", BoolSort()),
@@ -206,9 +206,15 @@ end
 
 fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
 
+"""
+    fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
+
+If not already in the declarations dictionary, create and add a namedsort, usersort for `tag`.
+"""
+function fill_sort_tag! end
+
 function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
     if !has_namedsort(dd, tag) # Do not overwrite existing content.
-        # println("fill sort ", repr(tag), " ", repr(name))
         !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
         namedsorts(dd)[tag] = NamedSort(tag, name, sort)
     end
