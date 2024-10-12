@@ -44,24 +44,24 @@ end
         </unknown>
     </initialMarking>
     """
-    println(str)
+    #println(str)
     node = xmlroot(str)
 
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
-        @show placetype = SortType("test", UserSort(PNML.sorttag(marking_value_type(pntd))))
+        placetype = SortType("test", UserSort(PNML.sorttag(marking_value_type(pntd))))
 
         # Parse ignoring unexpected child
         mark = @test_logs((:warn, r"^ignoring unexpected child"),
                     parse_initialMarking(node, placetype, pntd)::PNML.Marking)
         @test typeof(value(mark)) <: Union{Int,Float64}
-        @test value(mark) == mark() == 123
+        @test value(mark) == mark() == 123 #! term rewrite, _evaluate
 
         # Integer
         mark1 = PNML.Marking(23)
         @test_opt PNML.Marking(23)
         @test_call PNML.Marking(23)
-        @test typeof(mark1()) == typeof(23)
+        @test typeof(mark1()) == typeof(23) #! term rewrite, _evaluate
         @test mark1() == value(mark1) == 23
         @test_opt broken=true mark1()
         @test_call mark1()
@@ -73,7 +73,7 @@ end
         mark2 = PNML.Marking(3.5)
         @test_opt PNML.Marking(3.5)
         @test_call PNML.Marking(3.5)
-        @test typeof(mark2()) == typeof(3.5)
+        @test typeof(mark2()) == typeof(3.5) #! term rewrite, _evaluate
         @test mark2() == value(mark2) ≈ 3.5
         @test_call mark2()
 
@@ -100,7 +100,7 @@ end
                             parse_inscription(n1, :nothing, :nothing, pntd))
         @test inscript isa PNML.Inscription
         @test typeof(value(inscript)) <: Union{Int,Float64}
-        @test inscript() == value(inscript) == 12
+        @test inscript() == value(inscript) == 12 #! term rewrite, _evaluate
         @test graphics(inscript) !== nothing
         @test tools(inscript) === nothing || !isempty(tools(inscript))
         @test_throws MethodError labels(inscript)

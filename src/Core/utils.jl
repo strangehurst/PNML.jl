@@ -20,7 +20,7 @@ to be evaluated to a `Number`.
 """
 function _evaluate end
 _evaluate(x::Number) = begin println("_evaluate Number $(nameof(typeof(x)))"); identity(x); end #! dynamic term rewrite
-_evaluate(x::Base.Callable) = begin println("_evaluate call $(nameof(typeof(x)))"); (x)(); end #! dynamic term rewrite
+#! _evaluate(x::Base.Callable) = begin println("_evaluate call $(nameof(typeof(x)))"); (x)(); end #! dynamic term rewrite
 
 """
     ispid(x::Symbol)

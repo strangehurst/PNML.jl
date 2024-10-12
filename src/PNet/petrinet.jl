@@ -258,6 +258,13 @@ function enabled(petrinet::AbstractPetriNet, marking) #TODO move "lvector tools"
     net = pnmlnet(petrinet)
     LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
 end
+# LVector((;[
+#     t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)
+#     ]...))
+
+# AlgebraicJulia wants LabelledPetriNet constructed with
+# with Varargs pairs of transition_name=>((input_states)=>(output_states))
+# example LabelledPetriNet([:S, :I, :R], :inf=>((:S,:I)=>(:I,:I)), :rec=>(:I=>:R))
 
 """
     fire!(incidence, enabled, marking) -> LVector
@@ -268,11 +275,11 @@ Return the marking after firing transition:   marking + incidence * enabled
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
     m₁ = muladd(incidence', enabled, m₀)
-    LVector(namedtuple(symbols(m₀), m₁))
+    LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end
 
-""
 
+"reachability_graph"
 function reachability_graph(net)
 end
 

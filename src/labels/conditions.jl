@@ -22,7 +22,11 @@ false
 """
 @auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
-    value::AbstractTerm # term is expression that evaluates to Boolean.
+    value::AbstractTerm # term is expression that evaluates to Boolean. #! BoolExpr
+    # A function that returns Boolean will boolan-and:
+    #  - evaluate value, an expression in the High-level algebra (color function)
+    #  - priority function
+    #  - filtering function: timed petri net, inhibitor arc, capacity place
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -35,7 +39,7 @@ Condition(text::AbstractString, value::BooleanConstant) = Condition(text, value,
 condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
 
-value(c::Condition) = (c.value)() # Evaluate term
+value(c::Condition) = (c.value)() #! term rewrite _evaluate
 (c::Condition)() = _evaluate(value(c))::eltype(c) # Bool isa Number
 
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
@@ -45,14 +49,6 @@ function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")
     show(io, text(c)); print(io, ", ")
     show(io, value(c))
-    # if has_graphics(c)
-    #     print(io, ", ")
-    #     show(io, graphics(c))
-    # end
-    # if has_tools(c)
-    #     print(io, ", ")
-    #     show(io, tools(c));
-    # end
     print(io, ")")
 end
 

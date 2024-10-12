@@ -5,8 +5,8 @@
 function Base.show(io::IO, dd::DeclDict)
     println(io, nameof(typeof(dd)), "(")
 
-    io = inc_indent(io)
-    iio = inc_indent(io)
+    io = inc_indent(io)  # one indent
+    iio = inc_indent(io) # two indents
     print(io, "NamedSort[")
     for (k,v) in pairs(namedsorts(dd))
         print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
@@ -21,7 +21,7 @@ function Base.show(io::IO, dd::DeclDict)
 
     print(io, "VariableDeclaration[")
     for (k,v) in pairs(variabledecls(dd))
-        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => "); show(io, v)
     end
     println(io, "]")
 
@@ -40,7 +40,7 @@ function Base.show(io::IO, dd::DeclDict)
 
     print(io, "FEConstant[")
     for (k,v) in pairs(feconstants(dd))
-        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+        print(iio, '\n', indent(iio)); show(io, k); print(io, " => "); show(io, v)
     end
     println(io, "]")
 

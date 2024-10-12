@@ -1,5 +1,5 @@
 """
-    pnmlmultiset(x::T, basis::UserSort, multi::Integer=1) -> PnmlMultiset{T}
+    pnmlmultiset(basis::UserSort, x::T, multi::Int=1) -> PnmlMultiset{T}
 
 Construct as a multiset with one element, `x`, with default multiplicity of 1.
 
@@ -10,8 +10,8 @@ Thre are constants defined that must be multisets since HL markings are multiset
 
 multi`x is text representation of the numberof operator that produces a multiset.
 """
-struct PnmlMultiset{T} #! XXX is data type not operator XXX
-    basis::UserSort # indirection to NamedSort or ArbitrarySort
+struct PnmlMultiset{T} #! XXX is data type not operator XXX, see Bag, pnmlmultiset()
+    basis::UserSort # REFID indirection to NamedSort or ArbitrarySort
     mset::Multiset{T}
 end
 
@@ -26,13 +26,14 @@ Base.eltype(::Type{PnmlMultiset{T}}) where {T} = T
 Base.zero(::Type{PnmlMultiset{<:Any}}) = zero(Int) #! what meaning/use?
 Base.one(::Type{PnmlMultiset{<:Any}})  = one(Int) #! what meaning/use?
 
-sortof(ms::PnmlMultiset{<:Any}) = sortof(basis(ms)) # Dereferences the UserSort
+sortref(ms::PnmlMultiset{<:Any}) = basis(ms) # definition of basis sort
+sortof(ms::PnmlMultiset{<:Any}) = sortof(basis(ms)) # definition of basis sort
 
-#
-_evaluate(ms::PnmlMultiset{<:Any}) = begin println("_evaluate: PnmlMultiset "); cardinality(ms); end #! TODO rewrite rule
+_evaluate(ms::PnmlMultiset{<:Any}) = begin println("_evaluate: PnmlMultiset see Bag for operator, this is a data structure "); cardinality(ms); end #! TODO rewrite rule
+
+#! toexpr(ms::PnmlMultiset{<:Any}) see Bag for operator, this is a data structure
 
 # TODO forward what ops to Multiset?
-# TODO alter Multiset: union, add element, erase element, change multiplicity?
 
 """
     basis(ms::PnmlMultiset) -> UserSort
@@ -62,21 +63,82 @@ end
 
 
 """
-    pnmlmultiset(x, basis::UserSort, multi::Integer=1)
+    pnmlmultiset(basis::UserSort, x, multi::Int=1 metadata=nothing)
+    pnmlmultiset(basis::UserSort; metadata=nothing)
 
-Constructs a [`PnmlMultiset`](@ref)` containing multiset "1'x" and a sort.
+Constructs a [`PnmlMultiset`](@ref) containing a multiset and a sort from either
+  - a usersort, one element and a multiplicity, default = 1, denoted "1'x",
+  - or just a sort (not usersort or multisetsort), uses all sortelements(sort), each with multiplicity = 1.
 
-Any `x` that supports `sortof(x)`
+Are mapping to Multisets.jl implementation:
+Create empty Multiset{T}() then fill.
+  If we have an element we can use `typeof(x)` to deduce T.
+  If we have a basis sort definition we use `eltype(basis)` to deduce T.
+
+Usages
+  - ⟨all⟩ wants all sortelements
+  - default marking, inscription want one element or zero elements (elements can be PnmlTuples)
+we always find a sort to use, And use dummy elements for their `typeof`.
 """
-function pnmlmultiset(x, basis::UserSort, multi::Integer=1)
-    if isa(sortof(x), MultisetSort)
-        throw(ArgumentError("sortof(x) cannot be a MultisetSort: found $(sortof(x))"))
+function pnmlmultiset end
+
+# For singletons of any multiplicity.
+function pnmlmultiset(basis::UserSort, x, multi::Int=1; metadata=nothing)
+    println("pnmlmultiset: ", " basis = ", repr(basis), ", x = ", repr(x), ", multi = ", repr(multi),
+            (isnothing(metadata) ? "" : ", metadata = "*repr(metadata)))
+    if isa(sortof(x), MultisetSort) # not usersort or namedsort, but definition
+        throw(ArgumentError("Cannot be a MultisetSort: found $(sortof(x)) for $(repr(x))"))
     end
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
     #^ Where/how is absence of sort loop checked?
-
-    println("pnmlmultiset: x = ", repr(x), ", basis = ", repr(basis), ", multi = ", repr(multi))
+    #& Assert equalSorts(basis, sortof(x), eltype(basis) == typeof(x)
     M = Multiset{typeof(x)}()
     M[x] = multi
-    PnmlMultiset(basis, M)
+    PnmlMultiset(basis, M) #! TODO TermInterface expression LIKE Bag
 end
+#~ maketerm(::Type{Bag}, basis, x, multi, metadata)
+# Will construct a Bag(basis, x, multi, metadata)
+# basis is a literal usersort wrapping a REFID
+# x and multi are expressions (will have toexpr methods). See <numberof> multiset operator.
+# metadata is nothing or a TBD
+
+# For <all> only the basis is needed.
+function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing; metadata=nothing) #! 2024-10-05 add for <all>
+    println("pnmlmultiset: basis = ", repr(basis),
+            (isnothing(metadata) ? "" : ", metadata = "*repr(metadata)))
+    if isa(basis, MultisetSort) # use EqualSorts?
+        throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
+    end
+    #^ Where/how is absence of sort loop checked?
+    M = Multiset{eltype(basis)}()
+    # Only expect finite sorts here. #! assert isfinitesort(b)
+    for e in sortelements(basis) # iterator over one instance of each element of the set/sort
+        push!(M, e)
+    end
+    PnmlMultiset(basis, M)  # return object when toexpr is eval'ed (a :call) #! TermInterface
+end
+#~ maketerm(::Type{Bag}, basis, nothing, nothing, metadata)
+# basis is a literal usersort wrapping a REFID
+# x and multi are nothing
+# metadata is nothing or a TBD
+
+"""
+    Bag
+
+TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
+a [`PnmlMultiset`](@ref).
+
+See [`Operator`](@ref) for another TermInterface operator.
+"""
+struct Bag
+    basis::UserSort # Wraps a sort REFID.
+    x::Any # An element of the basis sort. #! must have toexpr() method unless nothing
+    multi::Any # multiplicity of x #! must have toexpr() method unless nothing
+    metadata
+end
+
+# TermInterface operators are s-expressions: first is function, rest are arguments
+TermInterface.maketerm(::Type{Bag}, b, x, m, metadata) = Bag(b, toexpr(x), toexpr(m), metadata)
+toexpr(b::Bag) = Expr(:call, :pnmlmultiset, [ b.basis, toexpr(b.x), toexpr(b.multi), b.metadata])
+
+# from SymUtils.toexpr: Expr(:call, toexpr(op, st), map(x->toexpr(x, st), args)...)

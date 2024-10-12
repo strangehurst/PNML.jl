@@ -11,10 +11,10 @@ using DocStringExtensions
 import Multisets: Multisets, Multiset
 using TermInterface
 using PNML
-import PNML: elements, sortelements, sortof, basis, value, tag, pid
+import PNML: elements, sortelements, sortof, basis, value, tag, pid, refid
 #import InteractiveUtils
 
-using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement, number_value,
+using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value,
     Graphics, Coordinate, TokenGraphics,
     ToolInfo, DictType,
     XDVT, XDVT2, indent, inc_indent,
@@ -25,7 +25,6 @@ using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement, number_value,
     AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator,
     isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator,
     isfiniteoperator, ispartitionoperator, isbuiltinoperator,
-    isvariable,
     pnml_hl_operator, pnml_hl_outsort
 using PNML: page_idset, place_idset, transition_idset, arc_idset,
     refplace_idset, reftransition_idset

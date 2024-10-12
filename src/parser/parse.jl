@@ -687,9 +687,9 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Base.eltype is for collections: what would an iterator return.
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
-    @show placetype sortof(placetype) typeof(sortof(placetype))
+    #@show placetype sortof(placetype) typeof(sortof(placetype))
     mvt = eltype(sortof(placetype))
-    @show mvt
+    #@show mvt
 
     mvt == marking_value_type(pntd) ||
         throw(ArgumentError("initial marking value type of $pntd must be $(marking_value_type(pntd)), found: $mvt"))
@@ -752,20 +752,19 @@ NB: Used by PTNets that assume placetype is DotSort().
 """
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
-    l = parse_label_content(node, ParseMarkingTerm(usersort(placetype)), pntd)::NamedTuple
+    l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
     @warn pntd l.text l.term l.sort
+    # Marking label content is expected to be a TermInterface expression.
+    # All declarations are expected to have been processed before the
+    # first place is encountered.
 
     mark = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
-        el = def_sort_element(placetype)
-
-        HLMarking(pnmlmultiset(el, usersort(placetype), 0)) # empty, el used for its type
-        pnmlmultiset(el, usersort(placetype), 0) # empty, el used for its type.
+        pnmlmultiset(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface expression
     else
         #!
-        #! Evaluate the expression. Expect a PnmlMultiset result (from an operator).
+        #! Evaluate the expression. Expect a pnmlmultiset expression result (from an operator).
         #!
-        # Can only be an operator since ground terms have no variables.
         @show l.term typeof(l.term)
         l.term
     end
@@ -795,11 +794,12 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
     if EzXML.haselement(marknode)
         println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
         term = EzXML.firstelement(marknode) # ignore any others
+
         mark, sort = parse_term(term, pntd)
 
         @show mark typeof(mark)
-        mark = eval(mark)
-        @show mark typeof(mark)
+        mark = eval(mark) #! requires recursive `toexpr` of all terms.
+        @show mark typeof(mark) sortof(mark)
         @show sort typeof(sort)
         @show typeof(placetype(pmt))
 
@@ -818,7 +818,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         # Multiset operators must be evaluated to become PnmlMultiset objects.
         # Markings are multisets (a.k.a. bags).
         #!isa(mark, PnmlMultiset) ||
-        ismultisetoperator(tag(mark)) || error("mark is not a multiset operator: $mark))")
+        #!ismultisetoperator(tag(mark)) || error("mark is not a multiset operator: $mark))")
 
         # isa(sortof(mark), UserSort) ||
         #     error("sortof(mark) is a $(sortof(mark)), expected UserSort")
@@ -889,23 +889,23 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
         error("inscription place not found, source = $(source(pit)), target = $(target(pit))")
     end
 
-    placesort = sortof(place)
-    # @show placesort
-
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
-        inscript, sort = parse_term(term, pntd)
+        inscript, _ = parse_term(term, pntd)
     else
         # Default to an  multiset whose basis is placetype
         inscript = def_insc(netdata(pit), source(pit), target(pit))
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
-    #@show inscript sort typeof(inscript) sortof(inscript) basis(inscript)
+    # @show inscript sort typeof(inscript) sortof(inscript) basis(inscript)
     isa(inscript, AbstractTerm) ||
         error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
     isa(sortof(inscript), AbstractSort) ||
         error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
-    #@assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
+    # @assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
+
+    placesort = sortof(place)
+    # @show placesort
 
     equalSorts(sortof(basis(inscript)), placesort) ||
         throw(ArgumentError(string("sort mismatch:",
@@ -935,22 +935,9 @@ function def_insc(netdata, source, target)
     place = adjacent_place(netdata, source, target)
     placetype = place.sorttype
     el = def_sort_element(placetype)
-    inscr = pnmlmultiset(el, usersort(placetype), 1)
+    inscr = pnmlmultiset(sortref(placetype), el, 1)
     #@show inscr
     return inscr
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_inscription_term(inode, pntd)
-    check_nodename(inode, "structure")
-    if EzXML.haselement(inode)
-        term = EzXML.firstelement(inode)
-        insc, sort = parse_term(term, pntd)
-        return (insc, sort)
-    end
-    throw(ArgumentError("missing inscription term element in <structure>"))
 end
 
 """
@@ -986,13 +973,14 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+`Condition` label of a `Transition` will have a structure element containing a term.
+PTNets are extended to have conditions and use a `BooleanConstant` to set the initial value.
 """
 function parse_condition_term(cnode::XMLNode, pntd::PnmlType)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
-        term = EzXML.firstelement(cnode)
-        cond, sort = parse_term(term, pntd)
-        return (cond, sort)
+        return parse_term(EzXML.firstelement(cnode), pntd)
     end
     throw(ArgumentError("missing condition term element in <structure>"))
 end
@@ -1029,7 +1017,7 @@ function parse_sorttype_term(typenode, pntd)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd)::AbstractSort
+    sorttype = parse_sort(sortnode, pntd)::UserSort
     isa(sorttype, MultisetSort) && error("multiset sort not allowed for Place type")
     return (sorttype, sortof(sorttype))
 end

@@ -41,38 +41,36 @@ Holds a reference id (REFID) to a subtype of Declaratons.SortDeclaration.
 Used in a Place's sort type property.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
-    declaration::Symbol #TODO validate as a NamedSort REFID
+    declaration::REFID #TODO validate as a NamedSort REFID
 end
+refid(us::UserSort) = us.declaration
 
 "Get NamedSort from UserSort REFID"
-namedsort(us::UserSort) = namedsort(us.declaration)
-
-sortof(us::UserSort) = sortof(namedsort(us))
-
-"Access the referenced named sort's sort definition."
-function _access_ns_def(us::UserSort)
-    PNML.Declarations.definition(namedsort(us.declaration))::AbstractSort
-end
+namedsort(us::UserSort) = namedsort(refid(us)) # usersort -> namedsort
+sortref(us::UserSort) = us
+sortof(us::UserSort) = sortdefinition(namedsort(us))
 
 # Forward operations to the NamedSort matching the declaration REFID.
-sortelements(us::UserSort) = sortelements(_access_ns_def(us))
-pid(us::UserSort) = pid(namedsort(us.declaration))
-name(us::UserSort) = name(namedsort(us.declaration))
+sortelements(us::UserSort) = sortelements(sortdefinition(namedsort(us)))
+name(us::UserSort) = name(namedsort(us))
 
 """
 $(TYPEDEF)
 
-Wrap a Sort. Warning: do not cause recursive multiset Sorts.
+Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 """
-@auto_hash_equals struct MultisetSort{T <: AbstractSort} <: AbstractSort
-    basis::T
-    MultisetSort(s) = if isa(s, MultisetSort)
-        throw(MalformedException("MultisetSort basis cannot be MultisetSort"))
-    else
-        new{typeof(s)}(s)
+@auto_hash_equals struct MultisetSort <: AbstractSort
+    basis::UserSort
+    function MultisetSort(b::UserSort)
+        if isa(sortdefinition(namedsort(b)), MultisetSort)
+            throw(MalformedException("MultisetSort basis cannot be MultisetSort"))
+        else
+            new(b)
+        end
     end
 end
-sortof(ms::MultisetSort) = ms.basis
+sortref(ms::MultisetSort) = ms.basis # 2024-10-09 make be a usersort
+sortof(ms::MultisetSort) = sortdefinition(namedsort(basis(ms))) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
 
 """
@@ -81,9 +79,9 @@ $(TYPEDEF)
 An ordered collection of sorts.
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
-    ae::Vector{Any} #! BuiltinSorts are wrapped in NamedSorts.
+    ae::Vector{REFID} #! NamedSorts and UserSorts are linked by REFIDs
 end
-ProductSort() = ProductSort(UserSort[])
+ProductSort() = ProductSort(REFID[])
 # sortof(ps::ProductSort) is a vector/tuple of sorts
 
 #------------------------------------------------------------------------------
@@ -95,9 +93,9 @@ Will not achieve the same transparancy and efficency as NamedTuples.
 
 """
 @auto_hash_equals struct TupleSort <: AbstractSort
-    tup::Vector{AbstractSort} #! any sort types? UserSort and BuiltinSorts
+    tup::Vector{REFID} #! UserSort REFIDs
 end
-TupleSort() = TupleSort(UserSort[])
+TupleSort() = TupleSort(REFID[])
 
 function sortof(ts::TupleSort)
     println("sortof(::TupleSort: ", ts) #! bringup debug

@@ -82,7 +82,8 @@ has_labels(l::AbstractLabel) = false
 
 # Some Labels are functors: marking, inscription, condition.
 # Usually where it is possible to have a high-level term.
-_evaluate(label::AbstractLabel) = begin println("_evaluate: AbstractLabel"); label(); end
+_evaluate(label::AbstractLabel) = begin println("_evaluate: AbstractLabel $(nameof(typeof(label)))"); label(); end
+#error("_evaluate abstract label $(nameof(typeof(label)))")
 
 #--------------------------------------------
 """

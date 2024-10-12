@@ -4,8 +4,7 @@ export AbstractDeclaration, UnknownDeclaration,
         SortDeclaration, OperatorDeclaration, VariableDeclaration,
         NamedSort, NamedOperator,
         ArbitrarySort, ArbitraryOperator,
-        FEConstant, PartitionElement, PartitionSort,
-        definition
+        FEConstant, PartitionElement, PartitionSort
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
@@ -14,7 +13,7 @@ using DocStringExtensions
 using TermInterface
 
 using PNML
-import PNML: sortof, sortelements, basis, tag, pid, name, REFID
+import PNML: sortof, sortref, sortdefinition, sortelements, basis, tag, pid, refid, name, REFID
 using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 
 using PNML: page_idset, place_idset, transition_idset, arc_idset,

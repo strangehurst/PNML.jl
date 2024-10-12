@@ -153,13 +153,11 @@
                     <variabledecl id="varA" name="A"><usersort declaration="pro"/></variabledecl>
                     <namedoperator id="id6" name="g">
                         <parameter>
-                            <variabledecl id="id4" name="x"><integer/></variabledecl>
-                            <variabledecl id="id5" name="y"><integer/></variabledecl>
+                            <variabledecl id="id4" name="x"><usersort declaration="integer"/></variabledecl>
+                            <variabledecl id="id5" name="y"><usersort declaration="integer"/></variabledecl>
                         </parameter>
                         <def>
-                            <numberconstant value="1">
-                                <positive/>
-                            </numberconstant>
+                            <numberconstant value="1"><positive/></numberconstant>
                         </def>
                     </namedoperator>
 		            <namedsort id="Altitude" name="Altitude">

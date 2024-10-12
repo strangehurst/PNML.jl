@@ -296,17 +296,19 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     anet = PNML.SimpleNet(str3)
     # @show anet
     mg = PNML.metagraph(anet)
+
     @test anet isa PNML.AbstractPetriNet
-    C  = PNML.incidence_matrix(anet)
-    m₀ = initial_markings(anet)
-    e  = enabled(anet, m₀)
-    muladd(C', [1,0,0,0], m₀)
+    @show C  = PNML.incidence_matrix(anet)
+    @show m₀ = initial_markings(anet) #::LVector
+    @show e  = PNML.enabled(anet, m₀) #::LVector
+    @show muladd(C', [1,0,0,0], m₀)
 
-    @test values(enabled(anet, m₀)) == [true,false,false,false]
-    @test enabled(anet, m₀) == [true,false,false,false]
-    @test enabled(anet, m₀) == Bool[1,0,0,0]
+    @test values(e) == [true,false,false,false]
+    @test e == [true,false,false,false]
+    @test e == Bool[1,0,0,0]
+    @test e == [1,0,0,0]
 
-    m₁ =  muladd(C', [1,0,0,0], m₀)
+    m₁ = PNML.fire!(C, e, m₀)
 
     #@test values(enabled(anet, m₁)) == [false,true,false,false]
 #=

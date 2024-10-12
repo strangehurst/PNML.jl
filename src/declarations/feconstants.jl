@@ -9,14 +9,11 @@ Finite enumeration constant.
 """
 struct FEConstant <: OperatorDeclaration
     id::Symbol # ID is unique within net.
-    #TODO add reference to the owning sort?
-    #!sortid::Symbol # REFID of named sort that contains this constant (0-arity operator)
+    #todo! sortid::REFID # of sort that contains this constant (0-arity operator)
     name::Union{String, SubString{String}} # Must name be unique within a sort?
 end
 
-sortof(fec::FEConstant) = sortof(namedsort(fec.sortid)) # we omit the usersort.
-
-(fec::FEConstant)() = fec.name # The value of a FEConstant is its name/identity. Not a `<:Number`.
+(fec::FEConstant)() = fec.name #! rewrite term _evaluate The value of a FEConstant is its name/identity. Not a `<:Number`.
 
 function Base.show(io::IO, fec::FEConstant)
     print(io, nameof(typeof(fec)), "(", repr(pid(fec)), ", ", #=repr(fec.sortid), ", ",=# repr(fec()), ")")

@@ -7,17 +7,16 @@ using DocStringExtensions
 import Multisets
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value,
+using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value, REFID,
     XDVT, XDVT2, indent, inc_indent,
     DeclDict, DictType,
     PnmlMultiset, pnmlmultiset,
     BooleanConstant, NumberConstant,
     AbstractTerm
 using PNML: namedsort
-import PNML: usersort
-import PNML: def_sort_element
+import PNML: usersort, sortdefinition, def_sort_element
 
-import PNML: sortof, sortelements, basis, value, _evaluate, graphics, tools, tag, elements,
+import PNML: sortof, sortref, sortelements, basis, value, _evaluate, graphics, tools, refid, tag, elements,
     has_graphics, get_label, has_label, has_labels, labels, declarations
 import PNML:
     place_type, transition_type, arc_type, refplace_type, reftransition_type,

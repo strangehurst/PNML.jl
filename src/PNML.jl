@@ -87,7 +87,7 @@ using Compat: @compat
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export declarations, pid
+export declarations, pid, refid, sortof, sortref
 
 export has_variable, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
     has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
@@ -96,7 +96,7 @@ export has_variable, has_namedsort, has_arbitrarysort, has_partitionsort, has_na
     variable, namedsort, arbitrarysort, partitionsort,
     namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
 
-export DeclDict, UserOperator, NamedOperator, UserSort, NamedSort
+export DeclDict, UserOperator, NamedOperator, UserSort, NamedSort, sortdefinition
 export PnmlException, MissingIDException, MalformedException
 
 export Variable
@@ -142,7 +142,9 @@ using .Sorts
 include("terms/constterm.jl") #
 include("terms/booleans.jl")
 include("terms/variables.jl") #~ Work in progress
+
 include("terms/operators.jl")
+
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
 include("terms/tuples.jl") #~ Work in progress
 include("Core/rewrite.jl")
@@ -153,6 +155,8 @@ include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, a
 include("declarations/Declarations.jl")
 using .Declarations
 import .Declarations: NamedSort
+using .Declarations: sortdefinition
+
 # Declarations are inside a <declaration> Label.
 # NamedSort declaration wraps (ID, name, <:AbstractSort).
 # UserSort declaration refers to NamedSort by REFID.

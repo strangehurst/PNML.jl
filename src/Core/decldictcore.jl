@@ -1,6 +1,9 @@
 """
     struct DeclDict
-Collection of dictionaries holdind various kinds of PNML declarations.
+
+$(DocStringExtensions.TYPEDFIELDS)
+
+Collection of dictionaries holding various kinds of PNML declarations.
 Used to define the multisorted algebra of a high-level petri net graph.
 """
 @kwdef struct DeclDict
@@ -67,6 +70,7 @@ feconstants()    = feconstants(PNML.DECLDICT[])
 
 """
     declarations(dd::DeclDict) -> Iterator
+
 Return an iterator over all the declaration dictionaries' values.
 Flattens iterators: variabledecls, namedsorts, arbitrarysorts, partitionsorts, partitionops,
 namedoperators, arbitraryops, feconstants, usersorts, useroperators.
@@ -190,6 +194,7 @@ Defaults to filling the scoped value PNML.DECLDICT[].
 """
 function fill_nonhl! end
 
+fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
 function fill_nonhl!(dd::DeclDict)
     for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
                               (:natural, "Natural", NaturalSort()),
@@ -199,12 +204,10 @@ function fill_nonhl!(dd::DeclDict)
                               (:bool, "Bool", BoolSort()),
                               (:null, "Null", NullSort()),
                               )
-        #TODO list, strings, arbitrarysorts
-        fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
+        #TODO list, strings, arbitrarysorts other built-ins
+        fill_sort_tag!(dd, tag, name, sort)
     end
 end
-
-fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
 
 """
     fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)

@@ -22,6 +22,7 @@ Is this a useful pattern for handling ASTs:
 """
 function parse_term(node::XMLNode, pntd::PnmlType)
     tag = Symbol(EzXML.nodename(node))
+    printstyled("parse_term tag = $tag \n"; color=:bold)
     if tag in  [:variable, # TODO more?
                 :booleanconstant,
                 :numberconstant,
@@ -34,42 +35,43 @@ function parse_term(node::XMLNode, pntd::PnmlType)
                 #:usersort,
                 :finiteintrangeconstant]
         # 0-arity terms (Or trivial to reduce to such) are leaf nodes of ast.
-        # AST nodes that have no children (what 0-arity implies)
-        # These must follow the Operator interface. See operators.jl.
-        #
-        #~ printstyled("parse_term"; color=:green);  println(": $(repr(tag))")
-        (term,sort) = parse_term(Val(tag), node, pntd) # (AbstractTerm, Sort)
-        return (term, sort) # abstract term may be operator or variable
-
+        # Use term rewriting to turn them into literals.
+        #! These must follow the Operator interface. See operators.jl.
+        #^ MUST return same type as parse_operator_term.
+        # Which also are TermInterface.jl.
+        return parse_term(Val(tag), node, pntd) #! XXX REMOVE SORT (AbstractTerm, Sort)
+        #! return (Operator(tag, func, [], [], outsort), outsort) #!
     else # arity > 0, build & return an Operator Functor that has a vector of inputs.
-        (term, sort) = parse_operator_term(tag, node, pntd) # (AbstractOperator, Sort)
-        return (term, sort)
+        return parse_operator_term(tag, node, pntd) #! XXX REMOVE SORT (Operator, Sort)
     end
+    #! XXX do parse_term, parse_operator_term have same type XXX
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Build an Operator Functor.
+Build an [`Operator`](@ref) Functor from the XML tree at `node`.
 
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
-    #~ printstyled("parse_operator_term"; color=:green);
-    #~ println(": $(repr(tag)))
+    printstyled("parse_operator_term: $(repr(tag))\n"; color=:green);
+
     isoperator(tag) || @error "tag $tag is not an operator"
 
-    func = pnml_hl_operator(tag) #TODO  built-in operators, other operators
+    func = pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
 
-    interms = Union{AbstractVariable, AbstractOperator}[] # todo tuple?
-    insorts = UserSort[] # REFID of sort
+    interms = Any[] #Union{AbstractVariable, AbstractOperator}[] #TODO tuple?
+    insorts = UserSort[] # REFID of sort declaration
 
     # Extract the input term and sort from each <subterm>
     for child in EzXML.eachelement(node)
         check_nodename(child, "subterm")
         subterm = EzXML.firstelement(child) # this is the unwrapped subterm
-        @show (t, s) = parse_term(subterm, pntd) # extract & accumulate input
+
+        (t, s) = parse_term(subterm, pntd) # term and its user sort
+
         # returns an AST
-        push!(interms, t)
+        push!(interms, t) #! should be TermInterface to be to_expr'ed
         push!(insorts, s) #~ sort may be inferred from place, variable, operator output
     end
     @assert length(interms) == length(insorts)
@@ -93,30 +95,29 @@ end
 # Expect only an attribute referencing the declaration.
 function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
     var = Variable(Symbol(attribute(node, "refvariable")))
-    return (var, sortof(var)) #! does DeclDict lookup
+    return (var, sortof(var)) #! does DeclDict lookup #TODO XXX toexpr(::Variable)
 end
 
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType)
     bc = BooleanConstant(attribute(node, "value"))
-    return (bc, sortof(bc))
+    return (bc, sortof(bc)) #TODO XXX toexpr(::BooleanConstant)
     #! maketerm(Expr, :call, [], nothing)
     #return (Operator(tag, func, interms, insorts, outsort, nothing), outsort)
 end
 
-# Has a value and is a subsort of NumberSort.
+# Has a value that is a subsort of NumberSort (<:Number).
 function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
     value = attribute(node, "value")::String
     child = EzXML.firstelement(node) # Child is the sort of value attribute.
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
-        parse_sort(Val(sorttag), child, pntd)::UserSort
+        usersort(sorttag) #! parse_sort(Val(sorttag), child, pntd) # Built-in, expect to exist!
     else
-        throw(MalformedException("$tag sort unknown: $sorttag"))
+        throw(MalformedException("$tag sort not supported for :numberconstant: $sorttag"))
     end
 
-    sort = definition(namedsort(sort))
     nv = number_value(eltype(sort), value)
     if sort isa NaturalSort
         nv >= 0 || throw(ArgumentError("not a Natural Number: $nv"))
@@ -124,13 +125,16 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
         nv > 0 || throw(ArgumentError("not a Positive Number: $nv"))
     end
     # IntegerSort, RealSort do not need bounds checks.
-    nc = NumberConstant(nv, sort)
-    return (nc, sort)
+    nc = NumberConstant(nv, sort) #! TermInterface rewrite
+    return (nc, sortof(nc)) # return object with a toexpr() method
 end
+#! parse_term() not type stable
+#! `sortof` returns the sort object itself, `usersort` wraps a REFID.
+#!
 
-# Does not have a value and is DotSort.
+# Dot is the high-level concept of an integer, use 1 as the value.
 function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType)
-    return (DotConstant(), usersort(:dot))
+    return (DotConstant(), usersort(:dot)) #TODO XXX toexpr(::DotConstant)
 end
 
 # <structure>
@@ -142,20 +146,21 @@ end
 """
     parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType) -> PnmlMultiset
 
- All creates multiset that contains exactly one of each element of its basis finite set/sort.
- Is a constant and used for intialMarking.
+ `All` operator creates a multiset that contains exactly one of each element of its basis finite set/sort.
+ Is a literal/ground term and used for intialMarking expressions.
 """
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) && throw(MalformedException("$tag missing content element"))
 
     us = parse_usersort(child, pntd)::UserSort # Can there be anything else?
-    b = sortof(us) # IDREF -> sort instance (UserSort->NamedSort->AbstractSort)
-    e = sortelements(b) # iterator over an instance of every element of the set/sort
-    #^ Only expect finite sorts here. #TODO assert isfinitesort
-    M = Multiset(e) # also Multiset(Set(us)) to copy Multiset with multiplicity changed to 1
+    #^ Only expect finite sorts here. #! assert isfinitesort(b)
+    b = sortof(us)
+    #!all = pnmlmultiset(b) #! TermInterface expression LIKE Bag, PnmlMultiset is a data structure
+    #!return (all, b)
+    return maketerm(Type{Bag}, b, nothing, nothing, nothing), b #! toexpr(::Bag) calls pnmlmultiset(b)
+end
 
-    all = PnmlMultiset(b, M) #? TermInterface
 
     #@show us b e typeof(e)
     # dot: dotconstant
@@ -163,25 +168,18 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     # finite int range: start:1:stop
     # enumeration: sequence of objects
 
-    #@warn repr(M) # prints decldict
-    #@warn typeof(M)
-    #@warn repr(all) # M is a set, example {(DotConstant(),)}
-    #println()
-
-    # A multiset created from one object, a multiplicity, and the sort of the object.
     # Eventually the Metatheory rewrite engine, SymbolicUtils will expand the this.
     #~ What lie do we tell now?
     #
-    # Here, <all> operator produces a multiset with multiplicity = 1 of all the elements of
-    # a multiset identified by a usersort's IDREF to a sort declaration.
-    #
     # NamedSort declaration gives a name (and ID) to built-in sorts (and multisets,
-    # product sorts, partition sorts). Someday, ArbitrarySorts will also be supported.
+    # product sorts). Someday, ArbitrarySort declarations will also be supported.
+    # Note PartitionSort is a declaration like NamedSort and ArbitrarySort and IS SUPPORTED.
     #
-    # Think of _sort_ as a finite* set (example finite range of integers, enumeration) *SymmetricNet restriction
-    # and/or datatype (as in `DataType`, the mechanism implementing the concept).
-    return (all, b)
-end
+    # Think of _sort_ as a finite set (example finite range of integers, enumeration)
+    # and/or datatype (as in `DataType`, the mechanism implementing the concept of type).
+    # Finite set is a SymmetricNet restriction (for mathematical reasons).
+    # Unrestricted HLPNGs allow at least integers.
+
 
 # Return multiset containing multiplicity of elements of its basis sort.
 # <text>3`dot</text>
@@ -201,8 +199,8 @@ end
 # c TypeOF sort of multiplicity
 # d KindOf (instance of this sort)
 
-#! This MUST return an expression.
-#! ALL `parse_term` will be expressions fed to term rewriteer.
+#! This MUST return an expression. OR TermInterface with toexpr().
+#! ALL `parse_term` will be TermInterface fed to term rewrite then toexpr().
 # operator: numberof
 # output: Expression for term rewrite into `pnmlmultiset`. #! TermInterface.maketerm
 # 2 inputs: multiplicity, term evaluating to an element of basis sort
@@ -218,24 +216,26 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
         stnode = first(EzXML.elements(subterm))
         tag = Symbol(EzXML.nodename(stnode))
         if tag == :numberconstant && isnothing(multiplicity)
-            (multiplicity, ncsort) = parse_term(Val(tag), stnode, pntd)
+            multiplicity, _ = parse_term(Val(tag), stnode, pntd)
             # RealSort as first numberconstant might confuse `Multiset.jl`.
         else
             # If 2 numberconstants, first is `multiplicity`, this is `instance`.
-            # A constant/0-arity operator returning a constant of sort, that, with `multiplicity`, forms a multiset.
-            # Can be a n-ary operator, like tuple, or a variable.
-            (instance, isort) = parse_term(stnode, pntd)
-            @show instance isort
+            instance, isort = parse_term(stnode, pntd) #
+            @show instance isort sortof(instance)
+            # should it be sortof?
             isa(instance, MultisetSort) && throw(ArgumentError("numberof's output sort cannot be MultisetSort"))
+            #~ Many other things that could be here: operators, as in TermInterface expressions, rewrite rules
         end
     end
-    isnothing(multiplicity) && throw(ArgumentError("Missing numberof numberconstant subterm"))
-    isnothing(instance) && throw(ArgumentError("Missing numberof sort instance. Expected `dotconstant` or similar."))
+    isnothing(multiplicity) && throw(ArgumentError("Missing numberof multiplicity subterm, expected :numberconstannt"))
+    isnothing(instance) && throw(ArgumentError("Missing numberof instance subterm. Expected oprtator or constant, et al."))
 
-    @show multiplicity multiplicity() instance sortof(instance)
-    term = maketerm(Expr, :call, [:pnmlmultiset, instance, isort, multiplicity], nothing)
-    return (term, isort)
-    #return (pnmlmultiset(instance, isort, multiplicity()), isort)
+    @show multiplicity multiplicity() #instance sortof(instance) #! term rewite _evaluate
+    @show term = maketerm(Expr, :call, [:pnmlmultiset, isort, instance, multiplicity()], nothing)
+    #return (term, isort) # `instance` should be a TermInterface term that has a toexpr() method.
+    return (pnmlmultiset(isort, instance, multiplicity()), isort) # <numberof> instance not always ground term!
+    maketerm()
+#~ maketerm(::Type{Bag}, basis, x, multi, metadata)
 end
 
 function parse_term(::Val{:feconstant}, node::XMLNode, pntd::PnmlType)
@@ -275,20 +275,38 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
         isnothing(stopval) &&
             throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
-        sort = FiniteIntRangeSort(startval, stopval) #! de-duplicate
-
         value = tryparse(Int, valuestr)
         isnothing(value) &&
             throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
 
-        value in start(sort):stop(sort) || throw(ArgumentError("$value not in range $(start(sort)):$(stop(sort))"))
-        return (FiniteIntRangeConstant(value, sort), sort)
+        if !(startval <= value && value <= stopval)
+            throw(ArgumentError("$value not in range $(startval):$(stopval)"))
+        end
+
+        sort = FiniteIntRangeSort(startval, stopval)
+
+        fis = nothing
+        for (refid,nsort) in pairs(namedsorts()) # look for first equalSorts
+            if equalSorts(sort, sortdefinition(nsort))
+                @show refid nsort
+                @show fis = usersort(refid)
+                break
+            end
+        end
+        if isnothing(fis) # Create a deduplicated sortdefinition
+            ustag = Symbol(sorttag,"_",startstr,"_",stopstr)
+            @show sort
+            fill_sort_tag(ustag, "FIRConst"*"_"*startstr*"_"*stopstr, sort)
+            fis = usersort(ustag)
+        end
+        @show typeof(fis) DECLDICT[]
+        return (FiniteIntRangeConstant(value, fis), usersort(:integer)) #! TermInterface
     end
     throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
 end
 
 #====================================================================================#
-#! partition is a sort declaration!
+#! partition is a sort declaration! not a sort.
 #=
 Partition # id, name, usersort, partitionelement[]
 =#

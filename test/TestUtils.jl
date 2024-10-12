@@ -71,7 +71,7 @@ Multisets.set_key_value_show()
     MultisetSort, ProductSort, PartitionSort,
     UserSort, NamedSort,
     ListSort, StringSort, TupleSort, NullSort,
-    sortof, TransitionRate
+    sortof, sortref, TransitionRate
 
 @reexport using PNML: NumberConstant, DotConstant
 

@@ -8,10 +8,11 @@ end
 #     @show typeof(PNML.DECLDICT[])
 # end
 
-@testset "_evaluate" begin
-    f() = "testing"
-    @test PNML._evaluate(f) == "testing"
-end
+# 2024-10-11 remove _evaluate for Callables
+# @testset "_evaluate" begin
+#     f() = "testing"
+#     @test PNML._evaluate(f) == "testing"
+# end
 
 @testset "ExXML" begin
     @test_throws ArgumentError xmlroot("")

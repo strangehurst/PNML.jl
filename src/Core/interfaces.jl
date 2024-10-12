@@ -4,16 +4,26 @@
 """
     pid(x) -> Symbol
 
-Return pnml id symbol. An id's value is identity/unique. A tag may have multiple of same value.
+Return pnml id symbol of `x`. An id's value is unique in the XML model of PNML.
+[`REFID`](@ref) is used for refrences to pnml ids.
 """
 function pid end
 
 """
     tag(x) -> Symbol
 
-Return tag symbol. A tag may have multiple of same value. An id's value is identity/unique.
+Return tag symbol. Multiple objects may hold the same tag value.
+Often used to refer to an XML tag.
 """
 function tag end
+
+
+"""
+    refid(x) -> REFID
+
+Return reference id symbol. Multiple objects may hold the same refid value.
+"""
+function refid end
 
 
 """
@@ -396,15 +406,33 @@ hassort(::Any) = false
 
 
 """
-    sortof(x) -> NamedSort
+    sortof(x) -> AbstractSort
 
 Return the sort of an object or type. Any type that supports the PNML sort interface
 is expected to define [`hassort`](@ref) to be true and a `sortof` method that returns
-a NamedSort instance.
+a sort instance.
 """
 function sortof end
+
+"""
+    sortref(x) -> UserSort
+
+Return a REFID wrapped in a [`UserSort`](@ref)
+"""
+function sortref end
 
 function sortelements end
 function basis end
 
 function def_sort_element end
+
+function usersort end
+
+"""
+    sortdefinition(NamedSort|ArbitrarySort|PartitionSort)
+
+Return [`AbstractSort`](@ref) from a [`SortDeclaration`](@ref).
+Expected usage pattern is _usersort -> sortdeclaration -> sortdefinition_.
+This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@ref)
+"""
+function sortdefinition end

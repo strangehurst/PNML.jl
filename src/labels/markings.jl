@@ -49,7 +49,7 @@ value(marking::Marking) = marking.value::Number
 # 1'value where value isa eltype(sortof(marking)) (<:Number)
 # because we assume a multiplicity of 1, and the sort is simple
 #TODO add sort trait where simple means has concrete eltype
-# Assume eltype(sortof(marking)) == typeof(value(marking))
+# Assume eltype(sortdefinition(marking)) == typeof(value(marking))
 
 """
 $(TYPEDSIGNATURES)
@@ -71,15 +71,24 @@ as ASTs. And thus need to be "evaluated".
 (mark::Marking)() = _evaluate(value(mark)) # Will be identity for ::Number #TODO rewite rule
 
 # Non-high-level
-basis(marking::Marking) = sortof(marking)
-sortof(marking::Marking) = sortof(value(marking)) # Returns sort of a Number
+basis(marking::Marking)   = sortof(marking)
+sortref(marking::Marking) = sortref(value(marking))  # value <: Number
+sortof(marking::Marking)  = sortof(sortref(marking))  # value <: Number
+
 # These are some <:Numbers that have sorts.
-sortof(::Type{<:Int64})   = sortof(usersort(:integer))
-sortof(::Type{<:Integer}) = sortof(usersort(:integer))
-sortof(::Type{<:Float64}) = sortof(usersort(:real))
-sortof(::Int64)   = sortof(usersort(:integer))
-sortof(::Integer) = sortof(usersort(:integer))
-sortof(::Float64) = sortof(usersort(:real))
+sortref(::Type{<:Int64})   = usersort(:integer)
+sortref(::Type{<:Integer}) = usersort(:integer)
+sortref(::Type{<:Float64}) = usersort(:real)
+sortref(::Int64)   = usersort(:integer)
+sortref(::Integer) = usersort(:integer)
+sortref(::Float64) = usersort(:real)
+
+sortof(::Type{<:Int64})   = sortdefinition(namedsort(:integer))
+sortof(::Type{<:Integer}) = sortdefinition(namedsort(:integer))
+sortof(::Type{<:Float64}) = sortdefinition(namedsort(:real))
+sortof(::Int64)   = sortdefinition(namedsort(:integer))
+sortof(::Integer) = sortdefinition(namedsort(:integer))
+sortof(::Float64) = sortdefinition(namedsort(:real))
 
 "Translate Number type to a sort tag symbol."
 sorttag(i::Number) = sorttag(typeof(i))
@@ -123,8 +132,8 @@ Multiset literals ... are defined using Add and NumberOf (multiset operators).
 
 ```julia
 ; setup=:(using PNML; using PNML: HLMarking, NaturalSort, NumberConstant; PNML.fill_nonhl!(PNML.DECLDICT[]))
-julia> m = HLMarking(PNML.pnmlmultiset(1, usersort(:integer)))
-HLMarking(pnmlmultiset(1, usersort(:integer)))
+julia> m = HLMarking(PNML.pnmlmultiset(usersort(:integer), 1))
+HLMarking(pnmlmultiset(usersort(:integer), 1))
 
 julia> m()
 1
@@ -132,10 +141,18 @@ julia> m()
 """
 mutable struct HLMarking{T} <: HLAnnotation #! TODO TermInterface
     text::Maybe{String} # Supposed to be for human consumption.
-    #! PnmlMultiset? multiset sort whose basis sort is the same as place's sorttype
-    term::PnmlMultiset{T}  # With sort matching placesort.
-    # `term` is the result of evaluating the expression AST rooted at `term``.
+
+    term::PnmlMultiset{T}  # With basis sort matching place's sorttype.
+    # The expression AST rooted at `term` in the XML stream.
     # Markings are ground terms, so no variables.
+    #^ TermInterface, Metatheory rewrite rules used to set value of marking with a ground term.
+    #^ Initial marking value set by dynamic evaluation rewrite rules
+    #^ Firing rules update the marking value using rewrite rules.
+    #! This is where the initial value expression is stored.
+    #! The evaluated value is placed in the marking vector (as the initial value:).
+    #! Firing rules use arc inscriptions to determine the new value for marking vector.
+
+    # Terms are rewritten/optimized and hopefully compiled once.
 
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -146,13 +163,13 @@ HLMarking(s::Maybe{AbstractString}, t::PnmlMultiset, g, to) = HLMarking(s, t, g,
 
 value(marking::HLMarking) = marking.term
 basis(marking::HLMarking) = basis(value(marking))
-sortof(marking::HLMarking) = sortof(value(marking))
+sortof(marking::HLMarking) = sortof(value(marking)) # value <: PnmlMultiset
 
 """
 $(TYPEDSIGNATURES)
 Evaluate a [`HLMarking`](@ref) instance by returning its term.
 """
-(hlm::HLMarking)() = _evaluate(value(hlm)) #! TODO rewrite rule
+(hlm::HLMarking)() = _evaluate(value(hlm)) #! TODO term rewrite rule
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, indent(io), "HLMarking(")
@@ -209,7 +226,7 @@ default_marking(::T) where {T<:AbstractHLCore} =
 
 function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
     el = def_sort_element(placetype)
-    HLMarking(pnmlmultiset(el, usersort(placetype), 0)) # empty, el used for its type
+    HLMarking(pnmlmultiset(sortref(placetype), el, 0)) # empty, el used for its type #! TODO TermInterface expression
 end
 
 # At some point we will be feeding things to Metatheory/SymbolicsUtils,

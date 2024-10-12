@@ -25,27 +25,27 @@ sorts() = _subtypes(AbstractSort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<dot/>", pntd)::UserSort
+    sort = parse_sort(xml"<dot/>", pntd)::DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<bool/>", pntd)::UserSort
+    sort = parse_sort(xml"<bool/>", pntd)::BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<integer/>", pntd)::UserSort
+    sort = parse_sort(xml"<integer/>", pntd)::IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<natural/>", pntd)::UserSort
+    sort = parse_sort(xml"<natural/>", pntd)::NaturalSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<positive/>", pntd)::UserSort
+    sort = parse_sort(xml"<positive/>", pntd)::PositiveSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -87,19 +87,25 @@ sorts() = _subtypes(AbstractSort)
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"""<productsort>
-                               <usersort declaration="id1"/>
-                               <natural/>
-                            </productsort>""", pntd)::ProductSort
-     @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    #! only contains usersort references to a sort declaration wrapping a sort definition
+    #! usersort -> namedsort -> sortdefinition
+    #! Built-in sorts have the obvious usersort, namedsort duo.
+    # PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
+    # sort = parse_sort(xml"""<productsort>
+    #                            <usersort declaration="id1"/>
+    #                            <natural/>
+    #                         </productsort>""", pntd)::ProductSort
+    #  @test_logs sprint(show, sort)
+    # @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
+    PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
+    PNML.Parser.fill_sort_tag!(:duck, "duck", PositiveSort())
+
     sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
                             </multisetsort>""", pntd)::MultisetSort
-     @test_logs sprint(show, sort)
+    @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
@@ -166,29 +172,29 @@ end
         PNML.fill_nonhl!()
 
 
-        @show PNML.idregistry[]
-        @show base_decl_length = length(PNML.namedsorts())
+        #@show PNML.idregistry[]
+        base_decl_length = length(PNML.namedsorts())
 
         decl = parse_declaration(node, pntd)::PNML.Declaration # Add 3 declarations.
 
-        @show PNML.idregistry[] decl
+        #@show PNML.idregistry[] decl
         @test length(PNML.namedsorts()) == base_decl_length + 3
-println()
+        println()
         for nsort in values(PNML.namedsorts())
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
             # by wraping an ID of a declared sort.
             # named sort -> cyclic enumeration -> fe constant
             #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
-            @show nsort pid(nsort)
+            #@show nsort pid(nsort)
             @test isregistered(PNML.idregistry[], pid(nsort))
             #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
             #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
             #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
 
-            @show sortname = PNML.name(nsort)
-            @show cesort   = PNML.sortof(nsort)
-            @show feconsts = PNML.sortelements(cesort) # should be iteratable ordered collection
-            #@test feconsts isa Vector{PNML.FEConstant}
+            sortname = PNML.name(nsort)
+            cesort   = PNML.sortdefinition(nsort)
+            feconsts = PNML.sortelements(cesort) # should be iteratable ordered collection
+            feconsts isa Vector{PNML.FEConstant}
             #!@test length(feconsts) == 2
             # for fec in feconsts
             #     @test fec isa PNML.FEConstant
@@ -263,10 +269,10 @@ end
 
             @test PNML.isregistered(PNML.idregistry[], pid(psort))
             @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-            @show psort
-            @show partname = PNML.name(psort)
-            @show partsort = PNML.sortof(psort)
-            @show part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+            #@show psort
+            partname = PNML.name(psort)
+            partsort = PNML.Declarations.sortdefinition(psort)
+            part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
             for element in part_elements
                 @test PNML.isregistered(PNML.idregistry[], pid(element))
@@ -285,15 +291,15 @@ const nonsimple_sorts = (MultisetSort, UserSort,
     #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
     for s in [x for x in sorts() if x ∉ nonsimple_sorts]
         println(s)
-        a = s()
-        b = s()
+        a = s() #! term rewrite _evaluate
+        b = s() #! term rewrite _evaluate
         @test PNML.equals(a, a)
     end
 
     for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
         for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
-            a = sorta()
-            b = sortb()
+            a = sorta() #! term rewrite _evaluate
+            b = sortb() #! term rewrite _evaluate
             #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
             sorta != sortb && @test a != b && !PNML.equals(a, b)
             sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
@@ -302,13 +308,16 @@ const nonsimple_sorts = (MultisetSort, UserSort,
 
     #TODO Add tests for enumerated sorts, et al., with content.
     # MultisetSort
+    println("""
+    #! Multisets use UserSorts
     for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
         for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
-            a = PNML.MultisetSort(sorta())
-            b = PNML.MultisetSort(sortb())
+            a = PNML.MultisetSort(sorta()) #! UserSort
+            b = PNML.MultisetSort(sortb()) #! UserSort
             sorta != sortb && @test a != b && !PNML.equals(a, b)
             sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
         end
     end
+    """)
     println("============================")
 end

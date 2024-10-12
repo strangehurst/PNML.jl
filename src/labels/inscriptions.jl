@@ -23,9 +23,10 @@ end
 Inscription(value::Number) = Inscription(value, nothing, nothing)
 
 value(i::Inscription) = i.value #! returns <:Number
-(inscription::Inscription)() = _evaluate(value(inscription)) #! TODO term rewrite rule
+(inscription::Inscription)() = _evaluate(value(inscription)::Number) #! TODO term rewrite rule
 
-sortof(inscription::Inscription) = sortof(value(inscription))
+sortref(inscription::Inscription) = sortref(value(inscription))
+sortof(inscription::Inscription) = sortof(sortref(inscription))::NumberSort
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
@@ -85,9 +86,10 @@ HLInscription(t::PnmlMultiset) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::PnmlMultiset) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
-sortof(hli::HLInscription) = sortof(value(hli)) #! IMPLEMENT ME! Deduce sort of inscription
+sortref(hli::HLInscription) = sortref(value(hli))
+sortof(hli::HLInscription) = sortof(sortref(hli))::PnmlMultiset
 
-(hlinscription::HLInscription)() = _evaluate(value(hlinscription)) #! TODO term rewrite rule
+(hlinscription::HLInscription)() = _evaluate(value(hlinscription)::PnmlMultiset) #! TODO term rewrite rule
 
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")
@@ -150,5 +152,5 @@ Has meaning of unity, as in `one` of the adjacent place's sorttype.
 """
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
     el = def_sort_element(placetype)
-    HLInscription(pnmlmultiset(el, usersort(placetype), 1)) # not empty multiset. singleton multiset
+    HLInscription(pnmlmultiset(sortref(placetype), el, 1)) # not empty multiset. singleton multiset
 end

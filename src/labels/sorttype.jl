@@ -66,14 +66,16 @@ end
 
 # >The label Type of a place defines the type by referring to some sort;
 # >by the fixed interpretation of built-in sorts, this sort defines the type of the place.
-# I interpret this as: use a UserSort to reference a BuiltInSort, NamedSort, and someday an AbstractSort.
+# I interpret this as: use a UserSort to reference a NamedSort or AbstractSort.
+# Built-in sorts are given names & NamedSorts.
 
 SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
-usersort(t::SortType)  = t.sort_ # UserSort
-sortof(t::SortType) = sortof(usersort(t)) # usersort -> namedsort -> sort
+#! clashes with decldict usersort(t::SortType)  = t.sort_ # Access UserSort
+sortref(t::SortType) = t.sort_
+sortof(t::SortType) = sortdefinition(namedsort(sortref(t))) #? also arbitrarysort, partitionsort
 sortelements(t::SortType) = sortelements(sortof(t))
 
 """
@@ -88,7 +90,7 @@ has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element(pt)
     els = sortelements(pt)
-    @show Base.IteratorSize(els) # == Base.HasLength() # High-level (HLPNG) allows infinite sets (Natural numbers).
+    #@show Base.IteratorSize(els) # == Base.HasLength() # High-level (HLPNG) allows infinite sets (Natural numbers).
     first(els) # Default to first of sort's elements (how often is this best?, make this a generic choice?)
 end
 
@@ -96,7 +98,7 @@ end
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")
     show(io, text(st)); print(io, ", ")
-    show(io, usersort(st))
+    show(io, sortref(st))
     if has_graphics(st)
         print(io, ", ")
         show(io, graphics(st))

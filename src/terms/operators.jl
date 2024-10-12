@@ -21,63 +21,69 @@ variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr,
 
 ===================================#
 
-# Two levels of predicate. Is it an expression, then is it *also* callable.
-# TermInterface.isexpr(op::AbstractOperator)    = false
-# TermInterface.iscall(op::AbstractOperator)    = false # users promise that this is only called if isexpr is true.
-# TermInterface.head(op::AbstractOperator)      = error("NOT IMPLEMENTED: $(typeof(op))")
-# TermInterface.children(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
-# TermInterface.operation(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-# TermInterface.arguments(op::AbstractOperator) = error("NOT IMPLEMENTED: $(typeof(op))")
-# TermInterface.arity(op::AbstractOperator)     = error("NOT IMPLEMENTED: $(typeof(op))")
-# TermInterface.metadata(op::AbstractOperator)  = error("NOT IMPLEMENTED: $(typeof(op))")
+"TermInterface expressions"
+abstract type PnmlExpr end
+
+TermInterface.isexpr(::PnmlExpr)     = true
+TermInterface.iscall(p::PnmlExpr)    = true
+TermInterface.head(p::PnmlExpr)      = p.head
+TermInterface.operation(p::PnmlExpr) = p.head
+TermInterface.children(p::PnmlExpr)  = p.children
+TermInterface.arguments(p::PnmlExpr) = p.children
+TermInterface.arity(p::PnmlExpr)     = length(p.children)
 
 """
-Operator as Functor
+PNML Operator as Functor
 
 tag maps to func, a functor/function Callable. Its arity is same as length of inexprs and insorts
 """
 struct Operator <: AbstractOperator
     tag::Symbol
-    func::Union{Function, Type} # `func` to `inexprs`: evaluated with current variable values and constants.
-    inexprs::Vector{AbstractTerm}
+    func::Union{Function, Type} # Apply `func` to `inexprs`:
+    inexprs::Vector{AbstractTerm} #! TermInterface expressions some may be variables (not just ground terms).
     insorts::Vector{UserSort} # typeof(inexprs[i]) == eltype(insorts[i])
-    outsort::UserSort # wraps IDREF Symbol
+    outsort::UserSort # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
     metadata::Any
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
     #todo all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
 end
 
 Operator(t, f, inex, ins, outs; metadata=nothing) = Operator(t, f, inex, ins, outs, metadata)
-tag(op::Operator)       = op.tag
-sortof(op::Operator)    = sortof(op.outsort)
-inputs(op::Operator)    = op.inexprs
-basis(op::Operator)     = basis(sortof(op))
+tag(op::Operator)       = op.tag # PNML XML tag
+inputs(op::Operator)    = op.inexprs #! when should these be eval(toexpr)'ed)
+sortref(op::Operator)   = op.outsort # also abstractsort, partitionsort
+sortof(op::Operator)    = sortdefinition(namedsort(op.outsort)) # also abstractsort, partitionsort
+metadata(op::Operator)  = op.metadata
 
 value(op::Operator)     = _evaluate(op)       #
-_evaluate(op::Operator) = op() #TODO
+_evaluate(op::Operator) = op() #TODO term rewrite
 
-function (op::Operator)()
-    #~ println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
+#? Possible to pass variables at this point? Pass marking vector?
+function (op::Operator)() #! after term rewrite _evaluate
+    println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
     input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
-    #@show typeof.(input) op.insorts eltype.(op.insorts)
+
     @assert all((in,so) -> typeof(in) == eltype(so), zip(input, insorts(op)))
     out = op.func(input) #^ apply func to evaluated +/-inputs
     @assert isa(out, eltype(sortof(op)))
     return out
 end
 
-
+# Like Metatheory.@matchable
 TermInterface.isexpr(op::Operator)    = true
-TermInterface.iscall(op::Operator)    = true # users promise that this is only called if isexpr is true.
-TermInterface.head(op::Operator)      = tag(op)
-TermInterface.children(op::Operator)  = inputs(op)
-TermInterface.operation(op::Operator) = op.func
-TermInterface.arguments(op::Operator) = inputs(op)
+TermInterface.iscall(op::Operator)    = true
+TermInterface.head(op::Operator)      = Operator #! A constructor
+TermInterface.operation(op::Operator) = TermInterface.head(op)
+#!TermInterface.children(op::Operator)  = nothing#getfield.((op,), ($(QuoteNode.(fields)...),))
+TermInterface.arguments(op::Operator) = TermInterface.children(op)
 TermInterface.arity(op::Operator)     = length(inputs(op))
-TermInterface.metadata(op::Operator)  = nothing
+TermInterface.metadata(op::Operator)  = metadata(op)
 
-function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
-    Operator(iscall, operation, arguments...; metadata)
+#!TermInterface.arity(x::$name) = $(length(fields))
+
+# maketerm is used to rewrite terms of the inexprs.
+function TermInterface.maketerm(::Type{Operator}, head, children, metadata)
+    head(children...)
 end
 
 function Base.show(io::IO, t::Operator)
@@ -88,6 +94,205 @@ function Base.show(io::IO, t::Operator)
     print(io, ")")
 end
 
+##############################################################
+##############################################################
+
+
+#& Multiset Operator
+struct All <: AbstractOperator
+    sort::REFID #! All is a literal. Bag expression -> PnmlMultiset object
+end
+struct Empty <: AbstractOperator
+    sort::REFID #! Empty is a literal. Bag expression -> PnmlMultiset object
+end
+struct Add{T} <: AbstractOperator #T <: PnmlMultiset
+    args::Vector{T} # >=2
+end
+struct Subtract{T} <: AbstractOperator #T <: PnmlMultiset
+    lhs::T
+    rhs::T
+end
+struct ScalarProduct{T} <: AbstractOperator #T <: PnmlMultiset
+    n::Int
+    m::T
+end
+struct NumberOf <: AbstractOperator #T <: PnmlMultiset
+    n::Int
+    sort::REFID
+end
+struct Cardinality{T} <: AbstractOperator #T <: PnmlMultiset
+    arg::T # multiset
+end
+struct CardinalityOf{T} <: AbstractOperator #T <: PnmlMultiset
+    ms::T
+    sort::REFID
+end
+struct Contains{T} <: AbstractOperator #T <: PnmlMultiset
+    args::Vector{T} # =2
+end
+
+struct BoolExpr end  #! TODO placeholder
+
+#& Boolean Operators
+struct Or <: AbstractOperator
+    lhs::BoolExpr
+    rhs::BoolExpr
+end
+struct And <: AbstractOperator
+    lhs::BoolExpr
+    rhs::BoolExpr
+end
+struct Not <: AbstractOperator
+    lhs::BoolExpr
+    rhs::BoolExpr
+end
+struct Imply <: AbstractOperator
+    lhs::BoolExpr
+    rhs::BoolExpr
+end
+struct Equality{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Inequality{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+
+
+#& Cyclic Enumeration Operators
+struct Successor <: AbstractOperator
+    arg::Any
+end
+struct Predecessor <: AbstractOperator
+    arg::Any
+end
+
+#& FiniteIntRange Operators work on integrs in spec, we extend to Number
+#=
+#! Use the Integer version. The difference is how the number is accessed!
+struct LessThan{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct LessThanOrEqual{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct GreaterThan{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct GreaterThanOrEqual{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+=#
+
+#& Partition
+# PartitionElement is an operator declaration. Is this a literal?
+struct PartitionElementOp <: AbstractOperator #! Same as PartitionElement, for term rerwite?
+    id::Symbol
+    name::Union{String,SubString{String}}
+    refs::Vector{REFID} # to FEConstant
+end
+#> comparison functions on the partition elements which is based on
+#> the order in which they occur in the declaration of the partition
+struct PartitionLessThan{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct PartitionGreaterThan{T} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct PartitionElementOf <: AbstractOperator
+    are::Any
+    refpartition::Any # UserSort, REFID
+end
+
+#& Integer (we extend to generic Number)
+struct Addition{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Subtraction{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Multiplication{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Division{T <: Number}<: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct GreaterThan{T <: Number}<: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct GreaterThanOrEqual{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct LessThan{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct LessThanOrEqual{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Modulo{T <: Number} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+
+#& Strings
+struct Concatenation{T <: AbstractString} <: AbstractOperator
+    args::Vector{T} # =2
+end
+struct Append{T <: AbstractString} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct StringLength{T <: AbstractString} <: AbstractOperator
+    arg::T
+end
+struct StringLessThan{T <: AbstractString} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct StringLessThanOrEqual{T <: AbstractString} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct StringGreaterThan{T <: AbstractString} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct StringGreaterThanOrEqual{T <: AbstractString} <: AbstractOperator
+    lhs::T
+    rhs::T
+end
+struct Substring{T <: AbstractString} <: AbstractOperator
+    str::T
+    start::Int
+    length::Int
+end
+
+#& Lists
+struct ListLength <: AbstractOperator
+end
+struct ListConcatenation <: AbstractOperator
+end
+struct Sublist <: AbstractOperator
+end
+struct ListAppend <: AbstractOperator
+end
+struct MemberAtIndex <: AbstractOperator
+end
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
@@ -491,7 +696,7 @@ $(TYPEDFIELDS)
 User operators refers to a [`NamedOperator`](@ref) declaration.
 """
 struct UserOperator <: AbstractOperator
-    declaration::Symbol # of a NamedOperator
+    declaration::REFID # of a NamedOperator
 end
 
 function (uo::UserOperator)(#= pass arguments to operator =#)
@@ -522,5 +727,5 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     end
 end
 
-sortof(uo::UserOperator) = sortof(operator(uo.declaration)) # return sortof NamedOperator
+sortof(uo::UserOperator) = sortof(operator(uo.declaration)) # return sortof NamedOperator or AbstractOperator
 basis(uo::UserOperator) = sortof(uo)

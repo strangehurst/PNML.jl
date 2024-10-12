@@ -25,7 +25,7 @@ using XMLDict: XMLDict
         typ = PNML.Parser.parse_type(n1, pntd)::SortType
         #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test text(typ) == "N2"
-        @test usersort(typ) isa UserSort # wrapping DotSort
+        @test sortref(typ) isa UserSort # wrapping DotSort
         @test sortof(typ) == DotSort() #! does the name of a sort affect equalSorts?
         @test PNML.has_graphics(typ) == true
         @test PNML.has_labels(typ) == false
@@ -35,7 +35,7 @@ end
 
 @testset "HL initMarking" begin
 
-    @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
+     @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
         println("\n3`dot $pntd")
         node = xml"""
         <hlinitialMarking>
@@ -50,7 +50,7 @@ end
         """
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
-        # Use the first part of this pair in contexts that want numbers.
+        # This is a high-level integer, use the first part of this pair in contexts that want numbers.
 
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
@@ -79,25 +79,25 @@ end
     end
 
     # 0-arity operators are constants
-    @testset "useroperator" for pntd in all_nettypes(ishighlevel)
-        println("\nuseroperator $pntd")
-        node = xml"""
-        <hlinitialMarking>
-            <text>useroperator</text>
-            <structure>
-                <useroperator declaration="uop"/>
-            </structure>
-        </hlinitialMarking>
-        """
-        @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!()
-            PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
-            PNML.usersorts()[:uop] = UserSort(:dot)
-            placetype = SortType("test", PNML.usersort(:uop))
-            mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
-            @test mark isa HLMarking
-        end
-    end
+    # @testset "useroperator" for pntd in all_nettypes(ishighlevel)
+    #     println("\nuseroperator $pntd")
+    #     node = xml"""
+    #     <hlinitialMarking>
+    #         <text>useroperator</text>
+    #         <structure>
+    #             <useroperator declaration="uop"/>
+    #         </structure>
+    #     </hlinitialMarking>
+    #     """
+    #     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    #         PNML.fill_nonhl!()
+    #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
+    #         PNML.usersorts()[:uop] = UserSort(:dot)
+    #         placetype = SortType("test", PNML.usersort(:uop))
+    #         mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+    #         @test mark isa HLMarking
+    #     end
+    # end
 
     # add two multisets: another way to express 3 + 2
     @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)

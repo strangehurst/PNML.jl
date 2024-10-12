@@ -55,9 +55,10 @@ $(TYPEDFIELDS)
 struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::UserSort
+    sort::UserSort # user -> named -> sort object
 end
-sortof(vd::VariableDeclaration) = sortof(vd.sort)::AbstractSort # user -> named -> sort object
+sortref(vd::VariableDeclaration) = vd.sort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd))) #? partitionsort
 
 """
 $(TYPEDEF)
@@ -71,22 +72,19 @@ struct NamedSort{S <: AbstractSort} <: SortDeclaration
     name::Union{String,SubString{String}}
     def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, BUILT-IN sorts!
 end
-NamedSort(id::Symbol, name::AbstractString, sort::AbstractSort) = NamedSort(id, name, sort)
-definition(namedsort::NamedSort) = namedsort.def
+
+sortdefinition(namedsort::NamedSort) = namedsort.def
 
 Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
 
-#! Everywhere else sortof returns a UserSort that refers to a NamedSort holding some sort.
-#! NamedSort is like Julia's symbol=>value concept. With NamedSort being a Symbolic reference.
-sortof(namedsort::NamedSort) = definition(namedsort) # NamedSort cannot contain a UserSort (for Symmetric and lower only?)
-
+ # NamedSort cannot contain a UserSort (for Symmetric and lower only?
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
     io = inc_indent(io)
-    show(io, definition(nsort));
+    show(io, sortdefinition(nsort));
     print(io, ")")
 end
 
@@ -98,7 +96,7 @@ $(TYPEDFIELDS)
 See [`UserOperator`](@ref)
 
 Vector of `VariableDeclaration` for parameters (ordered),
-and duck-typed `AbstractTerm` for its body definition.
+and duck-typed `AbstractTerm` for its body.
 """
 struct NamedOperator{T} <: OperatorDeclaration
     id::Symbol
@@ -111,6 +109,9 @@ NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], D
 
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
-sortof(no::NamedOperator) = sortof(operator(no)) # sort of the wrapped operator definition
+sortref(no::NamedOperator) = error("IMPLEMENT ME: sortref(no)") # sort of the wrapped operator definition
+sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
 
-#----------------------------------------------------------------------------------
+
+# toelem(no::NamedOperator) #! Expr(:call, toexpr(no.def), map(x->toexpr, no.parameter))
+#? id & name should map to the function whose body is `def` and inputs are `parameters`

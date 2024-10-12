@@ -14,8 +14,6 @@ struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     # The initial marking must be of sorttype.
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
-    # sortof(place.initialMarking) == sortof(place) == sortof(place.sorttype)
-    # sortof(arc_inscription) == sortof(arc_source_place) == sortof(arc_target_place)
     sorttype::SortType # Label with human text/graphics. And a sort.
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
@@ -25,7 +23,8 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
-sortof(place::Place) = sortof(place.sorttype)
+sortref(place::Place) = sortref(place.sorttype)
+sortof(place::Place) = sortof(sortref(place))
 
 function Base.show(io::IO, place::Place)
     print(io, nameof(typeof(place)), "(")
@@ -96,7 +95,8 @@ Multisets' _evaluate is cardinality (natural)
 """
 inscription(arc::Arc) = _evaluate(arc.inscription)
 
-sortof(arc::Arc) = sortof(arc.inscription)
+sortref(arc::Arc) = sortref(arc.inscription)
+sortof(arc::Arc)  = sortof(sortref(arc))
 
 """
     source(arc) -> Symbol

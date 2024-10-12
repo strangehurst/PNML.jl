@@ -1,11 +1,14 @@
 module Sorts
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
+import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 import Multisets: Multisets, Multiset
 using PNML
-import PNML: sortof, sortelements, basis, value, _evaluate, tag, pid, namedsort
-using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent
+import PNML: sortof, sortref, sortelements, basis, value, _evaluate, tag, pid, refid,
+        usersort, namedsort, sortdefinition
+using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID
+
 
 """
 $(TYPEDEF)
@@ -15,10 +18,16 @@ NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
 The pnml specification sometimes uses overlapping language.
 
 From the 'primer': built-in sorts of Symmetric Nets are the following:
-booleans, integerrange, finite enumerations, cyclic enumerations, permutations and dots.
-And partitions.
+booleans, integerrange, finite enumerations, cyclic enumerations, permutations, dots and partitions.
 
-The `eltype` is expected to be a concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
+And more sorts for HLPNG: integer, strings, list
+
+With additions we made: real.
+
+Oh, also ArbitrarySorts.
+
+The `eltype` is expected to be a
+concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
 
 # Extras
 
@@ -46,8 +55,7 @@ export AbstractSort, UserSort, MultisetSort, ProductSort, TupleSort,
         ListSort, StringSort,
         DotConstant, FiniteIntRangeConstant,
         NullSort
-export equalSorts, multisetsort,
-    integersort, naturalsort, positivesort, realsort, nullsort,
+export equalSorts,integersort, naturalsort, positivesort, realsort, nullsort,
     equals, start, stop
 
 end # module Sorts

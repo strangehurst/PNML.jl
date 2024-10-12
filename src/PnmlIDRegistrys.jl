@@ -10,14 +10,13 @@ using Base: Base.IdSet
 import Base: eltype
 
 """
-Holds a set of PNML ID symbols and , optionally, a lock to allow safe reentrancy.
+Holds a set of PNML ID symbols and, optionally, a lock to allow safe reentrancy.
 
 $(TYPEDEF)
 """
 @kwdef struct PnmlIDRegistry
     idset::IdSet{Symbol} = IdSet{Symbol}()
     lk::ReentrantLock = ReentrantLock()
-    #lk2::Base.Lockable(idset::IdSet{Symbol}())
 end
 
 function Base.show(io::IO, reg::PnmlIDRegistry)
