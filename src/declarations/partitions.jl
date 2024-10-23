@@ -90,8 +90,7 @@ struct PartitionSort <: SortDeclaration
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
 
     function PartitionSort(i,n,d,e)
-        # Assert that `d` leads to proper sortdefinition wrapped in a namedsort.
-        has_namedsort(d) || throw(ArgumentError("REFID $d is not a NamedSort"))
+        has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
         # Look at what is wrapped.
         tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
         new(i,n,d,e)
@@ -100,8 +99,8 @@ end
 PartitionSort() = PartitionSort(:partition, "Empty Partition", :dot,  PartitionElement[])
 #! :dot is a stand-in, it will not work well, but it is a "finite sort".
 
-#TODO also do AbstractSort?
-sortdefinition(partition::PartitionSort) = sortdefinition(namedsort(partition.def)) #! what is the sort of a partition
+#TODO also do AbstractSort, another SortDeclaration
+sortdefinition(partition::PartitionSort) = sortdefinition(namedsort(partition.def))
 sortelements(partition::PartitionSort) = partition.elements
 
 # TODO Add Partition/PartitionElement methods here
