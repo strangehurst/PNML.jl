@@ -2,7 +2,10 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Label of a Transition that determines when the transition fires.
+Label a Transition with an boolean expression used to determine when/if the transition fires.
+
+There may be other things evaluating to boolean used to determine transition firing filters,
+including: priority labels, inhibitor arc, place capacity labels, time/delay labels.
 
 # Examples
 
@@ -13,33 +16,28 @@ Condition("", false)
 julia> c()
 false
 
-julia> c = PNML.Labels.Condition("xx", false)
-Condition("xx", false)
+julia> c = PNML.Labels.Condition("xx", true)
+Condition("xx", true)
 
 julia> c()
-false
+true
 ```
 """
 @auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
-    value::AbstractTerm # term is expression that evaluates to Boolean. #! BoolExpr
-    # A function that returns Boolean will boolan-and:
-    #  - evaluate value, an expression in the High-level algebra (color function)
-    #  - priority function
-    #  - filtering function: timed petri net, inhibitor arc, capacity place
+    term::Any #! has toexpr()
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
-# more reasons for the split: Number vs Term
-Condition(value::Bool)                       = Condition(nothing, BooleanConstant(value), nothing, nothing)
-Condition(value::BooleanConstant)            = Condition(nothing, value, nothing, nothing)
-Condition(text::AbstractString, value::Bool) = Condition(text, BooleanConstant(value), nothing, nothing)
-Condition(text::AbstractString, value::BooleanConstant) = Condition(text, value, nothing, nothing)
+#! 2024-10-21 as part of transition to TermInterface change value to term a duck-typed BoolExpr
+Condition(term) = Condition(nothing, term, nothing, nothing)
+Condition(text::AbstractString, term) = Condition(text, term, nothing, nothing)
 
 condition_type(::Type{<:PnmlType}) = Condition
-Base.eltype(::Type{<:Condition}) = Bool # Output type of _evaluate when iterating over transitions.
+Base.eltype(::Type{<:Condition}) = Bool
 
-value(c::Condition) = (c.value)() #! term rewrite _evaluate
+#! Term may be non-ground and need arguments (variables) that reference a marking's value.
+value(c::Condition) = toexpr(c.term) #! term rewrite _evaluate
 (c::Condition)() = _evaluate(value(c))::eltype(c) # Bool isa Number
 
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
@@ -57,6 +55,4 @@ $(TYPEDSIGNATURES)
 Return default condition based on `PNTD`. Has meaning of true or always.
 """
 function default_condition end
-default_condition(::PnmlType)              = Condition(true)
-default_condition(::AbstractContinuousNet) = Condition(true)
-default_condition(pntd::AbstractHLCore)    = Condition(BooleanConstant(true))
+default_condition(::PnmlType)              = Condition(BooleanConstant(true))
