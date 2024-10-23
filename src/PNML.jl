@@ -65,6 +65,7 @@ end
 import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
+import Base: (*), (+), (-)
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
@@ -87,7 +88,7 @@ using Compat: @compat
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export declarations, pid, refid, sortof, sortref
+export declarations, pid, refid, sortof, sortref, basis
 
 export has_variable, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
     has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
@@ -107,11 +108,22 @@ export placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
 
 export page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
+
 export variabledecls,
-    usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    useroperators, namedoperators, arbitraryops, feconstants,
+    usersorts,  namedsorts, arbitrarysorts, partitionsorts, partitionops,
+    useroperators, namedoperators, arbitraryops,
+    feconstants,
     usersort, namedsort, feconstant
 
+export toexpr, PnmlExpr, BoolExpr,
+    Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
+    NumberOf, And, Not, Imply, Equality, Inequality, Successor, Predecessor,
+    PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,
+    Addition, Subtraction, Multiplication, Division,
+    GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo,
+    Concatenation, Append, StringLength, Substring,
+    StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual,
+    ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
 
 include("PnmlTypeDefs.jl")
 using .PnmlTypeDefs
@@ -139,10 +151,12 @@ const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 include("sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 
+include("terms/multisets.jl") # uses UserSort declaration
 include("terms/constterm.jl") #
 include("terms/booleans.jl")
 include("terms/variables.jl") #~ Work in progress
 
+include("terms/expressions.jl") # Bag
 include("terms/operators.jl")
 
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
@@ -159,9 +173,7 @@ using .Declarations: sortdefinition
 
 # Declarations are inside a <declaration> Label.
 # NamedSort declaration wraps (ID, name, <:AbstractSort).
-# UserSort declaration refers to NamedSort by REFID.
-
-include("terms/multisets.jl") # uses NamedSort declaration
+# UserSort is not a declaration, but a sort that refers to a declaration by REFID.
 
 #^ Above here are things that appear in  DeclDict contents.
 #^ 2024-07-17 Changed DeclDict to be Any based,
