@@ -26,5 +26,5 @@ value(v::Variable) = begin #! XXX FIXME XXX
 end
 _evaluate(v::Variable) = begin println("_evaluate: variable $(refid(v))"); _evaluate(value(v)); end #! dynamic expression, term rewrite, firing rule
 
-sortref(v::Variable) = sortref(variable(refid(v))) # Access variabledecl in decldicts
+sortref(v::Variable) = sortref(variable(refid(v)))::UserSort # Access variabledecl in decldicts
 sortof(v::Variable)  = sortof(variable(refid(v)))  # Access variabledecl in decldicts
