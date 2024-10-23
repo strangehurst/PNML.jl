@@ -451,5 +451,11 @@ Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declarat
 """
 function basis end
 
-abstract type  PnmlExpr end
-abstract type  BoolExpr <: PnmlExpr end
+"""
+TermInterface expression types.
+"""
+abstract type PnmlExpr end
+"""
+TermInterface boolean expression types.
+"""
+abstract type BoolExpr <: PnmlExpr end
