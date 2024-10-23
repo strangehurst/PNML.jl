@@ -71,7 +71,7 @@ end
         @test parse_transition(node, pntd) isa Transition
 
         node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-        @test_throws "ArgumentError: missing condition term element in <structure>" parse_transition(node, pntd)
+        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
 
         node = xml"""<transition id ="t4">
             <condition>
@@ -79,7 +79,7 @@ end
                 <structure> true  </structure>
             </condition>
         </transition>"""
-        @test_throws "missing condition term element in <structure>" parse_transition(node, pntd)
+        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
         # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
         # parse_transition(node, pntd))
         # @test_opt target_modules=(@__MODULE__,) condition(t)
