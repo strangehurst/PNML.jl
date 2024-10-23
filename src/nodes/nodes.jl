@@ -23,7 +23,7 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
-sortref(place::Place) = sortref(place.sorttype)
+sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))
 
 function Base.show(io::IO, place::Place)
@@ -95,7 +95,7 @@ Multisets' _evaluate is cardinality (natural)
 """
 inscription(arc::Arc) = _evaluate(arc.inscription)
 
-sortref(arc::Arc) = sortref(arc.inscription)
+sortref(arc::Arc) = sortref(arc.inscription)::UserSort
 sortof(arc::Arc)  = sortof(sortref(arc))
 
 """

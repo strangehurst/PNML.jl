@@ -25,8 +25,8 @@ Inscription(value::Number) = Inscription(value, nothing, nothing)
 value(i::Inscription) = i.value #! returns <:Number
 (inscription::Inscription)() = _evaluate(value(inscription)::Number) #! TODO term rewrite rule
 
-sortref(inscription::Inscription) = sortref(value(inscription))
-sortof(inscription::Inscription) = sortof(sortref(inscription))::NumberSort
+sortref(inscription::Inscription) = sortref(value(inscription))::UserSort
+sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
@@ -86,8 +86,8 @@ HLInscription(t::PnmlMultiset) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::PnmlMultiset) = HLInscription(s, t, nothing, nothing)
 
 value(i::HLInscription) = i.term
-sortref(hli::HLInscription) = sortref(value(hli))
-sortof(hli::HLInscription) = sortof(sortref(hli))::PnmlMultiset
+sortref(hli::HLInscription) = sortref(value(hli))::UserSort
+sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset
 
 (hlinscription::HLInscription)() = _evaluate(value(hlinscription)::PnmlMultiset) #! TODO term rewrite rule
 

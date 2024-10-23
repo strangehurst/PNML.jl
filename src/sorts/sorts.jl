@@ -47,7 +47,7 @@ refid(us::UserSort) = us.declaration
 
 "Get NamedSort from UserSort REFID"
 namedsort(us::UserSort) = namedsort(refid(us)) # usersort -> namedsort
-sortref(us::UserSort) = us
+sortref(us::UserSort) = identity(us)::UserSort
 sortof(us::UserSort) = sortdefinition(namedsort(us))
 
 # Forward operations to the NamedSort matching the declaration REFID.

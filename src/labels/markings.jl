@@ -72,8 +72,8 @@ as ASTs. And thus need to be "evaluated".
 
 # Non-high-level
 basis(marking::Marking)   = sortof(marking)
-sortref(marking::Marking) = sortref(value(marking))  # value <: Number
-sortof(marking::Marking)  = sortof(sortref(marking))  # value <: Number
+sortref(marking::Marking) = sortref(value(marking))::UserSort  # value <: Number
+sortof(marking::Marking)  = sortof(sortref(marking))::NumberSort  # value <: Number
 
 # These are some <:Numbers that have sorts.
 sortref(::Type{<:Int64})   = usersort(:integer)
@@ -83,12 +83,12 @@ sortref(::Int64)   = usersort(:integer)
 sortref(::Integer) = usersort(:integer)
 sortref(::Float64) = usersort(:real)
 
-sortof(::Type{<:Int64})   = sortdefinition(namedsort(:integer))
-sortof(::Type{<:Integer}) = sortdefinition(namedsort(:integer))
-sortof(::Type{<:Float64}) = sortdefinition(namedsort(:real))
-sortof(::Int64)   = sortdefinition(namedsort(:integer))
-sortof(::Integer) = sortdefinition(namedsort(:integer))
-sortof(::Float64) = sortdefinition(namedsort(:real))
+sortof(::Type{<:Int64})   = sortdefinition(namedsort(:integer))::IntegerSort
+sortof(::Type{<:Integer}) = sortdefinition(namedsort(:integer))::IntegerSort
+sortof(::Type{<:Float64}) = sortdefinition(namedsort(:real))::RealSort
+sortof(::Int64)   = sortdefinition(namedsort(:integer))::IntegerSort
+sortof(::Integer) = sortdefinition(namedsort(:integer))::IntegerSort
+sortof(::Float64) = sortdefinition(namedsort(:real))::RealSort
 
 "Translate Number type to a sort tag symbol."
 sorttag(i::Number) = sorttag(typeof(i))
@@ -143,8 +143,11 @@ mutable struct HLMarking{T} <: HLAnnotation #! TODO TermInterface
     text::Maybe{String} # Supposed to be for human consumption.
 
     term::PnmlMultiset{T}  # With basis sort matching place's sorttype.
+    #~ NOTE #! marking can also be PnmlTuple, or other sort instance matching placetype.
+
     # The expression AST rooted at `term` in the XML stream.
     # Markings are ground terms, so no variables.
+
     #^ TermInterface, Metatheory rewrite rules used to set value of marking with a ground term.
     #^ Initial marking value set by dynamic evaluation rewrite rules
     #^ Firing rules update the marking value using rewrite rules.
@@ -163,7 +166,8 @@ HLMarking(s::Maybe{AbstractString}, t::PnmlMultiset, g, to) = HLMarking(s, t, g,
 
 value(marking::HLMarking) = marking.term
 basis(marking::HLMarking) = basis(value(marking))
-sortof(marking::HLMarking) = sortof(value(marking)) # value <: PnmlMultiset
+sortref(marking::HLMarking) = sortref(value(marking))::UserSort
+sortof(marking::HLMarking) = sortdefinition(namedsort(sortref(marking))) # value <: PnmlMultiset
 
 """
 $(TYPEDSIGNATURES)
