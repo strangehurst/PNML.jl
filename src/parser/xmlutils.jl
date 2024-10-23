@@ -79,3 +79,15 @@ function attribute(node::XMLNode, key::AbstractString, msg::String="attribute $k
     EzXML.haskey(node, key) || throw(MalformedException(msg))
     return @inbounds node[key]
 end
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Unwrap a subterm. Error if is not 'subterm'.
+"""
+function unwrap_subterm(st::XMLNode)
+    check_nodename(st, "subterm")
+    child = EzXML.firstelement(st)
+    return (child, Symbol(EzXML.nodename(child)))
+end

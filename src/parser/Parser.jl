@@ -43,6 +43,15 @@ using PNML:
     coordinate_type, coordinate_value_type,
     validate_declarations,
     def_sort_element
+using PNML:  toexpr,
+    Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
+    NumberOf, And, Not, Imply, Equality, Inequality, Successor, Predecessor,
+    PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,
+    Addition, Subtraction, Multiplication, Division,
+    GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo,
+    Concatenation, Append, StringLength, Substring,
+    StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual,
+    ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
 
 using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
@@ -81,6 +90,7 @@ export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file,
     parse_namedsort, parse_namedoperator, parse_variable, parse_sort,
     parse_unknowndecl, parse_term, parse_feconstants, parse_variabledecl,
     parse_excluded, parse_structure,
-    registry
+    registry,
+    unwrap_subterm
 
 end

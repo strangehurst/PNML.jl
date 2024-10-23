@@ -45,10 +45,8 @@ end
 
 @testset "default_condition($pntd)" for pntd in all_nettypes()#ishighlevel)
     c = default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
-    #println("default_condition($pntd) = ", c)
-    cv = Labels.value(c)::Bool
-    #@test sortof(c) isa BoolSort
-    @test cv == true
+    #println("default_condition($pntd) = ", repr(c))
+    @test toexpr(value(c)) == true
 end
 #println()
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin

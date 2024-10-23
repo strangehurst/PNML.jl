@@ -5,8 +5,9 @@ import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 import Multisets: Multisets, Multiset
 using PNML
-import PNML: sortof, sortref, sortelements, basis, value, _evaluate, tag, pid, refid,
-        usersort, namedsort, sortdefinition
+import PNML: sortof, sortref, sortelements, sortdefinition,
+    basis, value, _evaluate, tag, pid, refid,
+    usersort, namedsort, toexpr
 using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID
 
 
