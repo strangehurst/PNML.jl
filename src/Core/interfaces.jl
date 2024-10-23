@@ -436,3 +436,20 @@ Expected usage pattern is _usersort -> sortdeclaration -> sortdefinition_.
 This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@ref)
 """
 function sortdefinition end
+
+"""
+    toexpr(::TermInterface) -> Expr
+
+Recursivly call `toexpr` on contained terms.
+"""
+function toexpr end
+
+"""
+    basis(x) -> UserSort
+
+Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
+"""
+function basis end
+
+abstract type  PnmlExpr end
+abstract type  BoolExpr <: PnmlExpr end
