@@ -187,7 +187,6 @@ end
 
 "Return `true` if collection `v` contains label with `tagvalue`."
 function has_label(iteratable, tagvalue::Symbol)
-    @show typeof(iteratable)
     !isempty(get_labels(iteratable, tagvalue))
 end
 
