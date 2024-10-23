@@ -205,7 +205,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     vsort = parse_sort(EzXML.firstelement(node), pntd)::UserSort
     isnothing(vsort) &&
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
-    @show id name vsort
+    @warn "VariableDeclaration" id name vsort
 
     VariableDeclaration(id, name, vsort)
 end
