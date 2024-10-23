@@ -109,7 +109,7 @@ NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], D
 
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
-sortref(no::NamedOperator) = error("IMPLEMENT ME: sortref(no)") # sort of the wrapped operator definition
+sortref(no::NamedOperator) = sortref(operator(no))::UserSort # of the wrapped operator
 sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
 
 
