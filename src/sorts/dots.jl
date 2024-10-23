@@ -1,10 +1,10 @@
 # dot sort operators
 
 """
-Built-in sort whose `eltype` is `Int`
+Built-in sort whose `eltype` is `Bool`, the smallest Integer subtype that can represent one.
 """
 @auto_hash_equals struct DotSort <: AbstractSort end
-Base.eltype(::Type{<:DotSort}) = Int
+Base.eltype(::Type{<:DotSort}) = Bool # What would be iterated over. See `sortelements`.
 sortelements(::DotSort) = tuple(DotConstant())
 
 """
@@ -14,5 +14,5 @@ Duck-typed as AbstractOperator.
 struct DotConstant end
 sortref(::DotConstant) = usersort(:dot)
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
-(d::DotConstant)() = 1 #TODO what kind of one?
-toexpr(c::DotConstant) = c()
+(d::DotConstant)() = 1 # true is a number, one
+toexpr(c::DotConstant) = :(c())
