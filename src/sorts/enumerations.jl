@@ -28,10 +28,12 @@ $(TYPEDEF)
 Wraps tuple of REFIDs into feconstant(decldict).
 Operations differ between `EnumerationSort`s. All wrap a tuple of symbols and
 metadata, allowing attachment of Partition/PartitionElement.
+
+See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predecessor
 """
 @auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID}  # ordered collection of FEConstant REFIDs
-    metadata::M #! TermInfo metadata
+    metadata::M #! TermInterface metadata
 end
 function CyclicEnumerationSort(fecs)
     CyclicEnumerationSort(fecs, nothing)
@@ -44,7 +46,8 @@ Wraps tuple of IDREFs into feconstant(decldict).
 """
 @auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
-    metadata::M #! TermInfo metadata
+    #TODO! version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
+    metadata::M #! TermInterface metadata
 end
 function FiniteEnumerationSort(fe_refs)
     FiniteEnumerationSort(fe_refs, nothing)
@@ -69,12 +72,12 @@ end
 @auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    meta::M #! TermInfo metadata
+    meta::M #! TermInterface metadata
 end
 FiniteIntRangeSort(start, stop; meta=nothing) = FiniteIntRangeSort(start, stop, meta)
 
 tag(::FiniteIntRangeSort) = :finiteintrange
-Base.eltype(::FiniteIntRangeSort{T}) where {T} = T
+Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
 
@@ -94,10 +97,10 @@ struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 
-#! FIR constants have an embedded sort definition, NOT a namedsort or usersort
-sortref(c::FiniteIntRangeConstant) = error("sortref(c::FiniteIntRangeConstant) not defind!")
-sortof(c::FiniteIntRangeConstant) = sortdefinition(c)
-sortdefinition(c::FiniteIntRangeConstant) = c.sort
+# FIRconstants have an embedded sort definition, NOT a namedsort or usersort, that
+# we create a usersort, namedsort duo to match. Is expected to be a IntegerSort.
+sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
+sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
 
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
