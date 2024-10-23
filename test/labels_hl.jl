@@ -100,12 +100,12 @@ end
     # end
 
     # add two multisets: another way to express 3 + 2
-    @testset "1`3 ++ 1`2" for pntd in all_nettypes(ishighlevel)
-        println("\n\"1`3 ++ 1`2\" $pntd")
+    @testset "3`dot ++ 2'dot" for pntd in all_nettypes(ishighlevel)
+        println("\n\"3'dot ++ 2'dot\" $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
-            <text>1`3 ++ 1`2</text>
+            <text>3'dot ++ 2'dot</text>
             <structure>
                 <add>
                     <subterm>
@@ -150,10 +150,10 @@ end
             placetype = SortType("test", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             val = Labels.value(mark)::PNML.PnmlMultiset{<:Any}
-            @test PNML.basis(val) isa PositiveSort
-            @test PNML.multiplicity(val, NumberConstant{Int64, PositiveSort}(8, PositiveSort())) == 1
+            @test PNML.basis(val) isa UserSort
+            @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
-            @test NumberConstant{Int64, PositiveSort}(8, PositiveSort()) in val.mset
+            @test NumberConstant{Int64}(8, usersort(:positive)) in val.mset
         end
      end
 
