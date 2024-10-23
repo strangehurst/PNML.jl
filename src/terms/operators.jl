@@ -1,36 +1,3 @@
-####################################################################################
-##! add *MORE* TermInteface here
-####################################################################################
-
-#==================================
- TermInterface
-:(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible?
-:(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])  #~ operator
-
-:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is a constant when 0-airy Callable
-
-variables are used in token firing rules.
-Of all enabled firing modes for a transition one is chosen (randomly?).
-Marking expressions are made of ground terms (without variables).
-Arc inscriptiins and transition condition expessions may include variable terms.
-Selecting a firing mode associates tokens with variables.
-Transition firing removes tokens from input places and adds tokens into output places.
-Variables in input inscription, output inscription and conditions are associated with same token sort.
-
-variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr, :ref, [:variables, :pid])
-
-===================================#
-
-"TermInterface expressions"
-abstract type PnmlExpr end
-
-TermInterface.isexpr(::PnmlExpr)     = true
-TermInterface.iscall(p::PnmlExpr)    = true
-TermInterface.head(p::PnmlExpr)      = p.head
-TermInterface.operation(p::PnmlExpr) = p.head
-TermInterface.children(p::PnmlExpr)  = p.children
-TermInterface.arguments(p::PnmlExpr) = p.children
-TermInterface.arity(p::PnmlExpr)     = length(p.children)
 
 """
 PNML Operator as Functor
@@ -74,7 +41,7 @@ TermInterface.isexpr(op::Operator)    = true
 TermInterface.iscall(op::Operator)    = true
 TermInterface.head(op::Operator)      = Operator #! A constructor
 TermInterface.operation(op::Operator) = TermInterface.head(op)
-#!TermInterface.children(op::Operator)  = nothing#getfield.((op,), ($(QuoteNode.(fields)...),))
+#!TermInterface.children(op::Operator)  = nothing #getfield.((op,), ($(QuoteNode.(fields)...),))
 TermInterface.arguments(op::Operator) = TermInterface.children(op)
 TermInterface.arity(op::Operator)     = length(inputs(op))
 TermInterface.metadata(op::Operator)  = metadata(op)
@@ -86,6 +53,22 @@ function TermInterface.maketerm(::Type{Operator}, head, children, metadata)
     head(children...)
 end
 
+
+#=
+TermInterface.isexpr(op::Operator)    = true
+TermInterface.iscall(op::Operator)    = true # users promise that this is only called if isexpr is true.
+TermInterface.head(op::Operator)      = tag(op)
+TermInterface.children(op::Operator)  = inputs(op)
+TermInterface.operation(op::Operator) = op.func
+TermInterface.arguments(op::Operator) = inputs(op)
+TermInterface.arity(op::Operator)     = length(inputs(op))
+TermInterface.metadata(op::Operator)  = nothing
+
+function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
+    Operator(iscall, operation, arguments...; metadata)
+end
+=#
+
 function Base.show(io::IO, t::Operator)
     print(io, nameof(typeof(t)), "(")
     show(io, tag(t)); print(io, ", ");
@@ -96,203 +79,6 @@ end
 
 ##############################################################
 ##############################################################
-
-
-#& Multiset Operator
-struct All <: AbstractOperator
-    sort::REFID #! All is a literal. Bag expression -> PnmlMultiset object
-end
-struct Empty <: AbstractOperator
-    sort::REFID #! Empty is a literal. Bag expression -> PnmlMultiset object
-end
-struct Add{T} <: AbstractOperator #T <: PnmlMultiset
-    args::Vector{T} # >=2
-end
-struct Subtract{T} <: AbstractOperator #T <: PnmlMultiset
-    lhs::T
-    rhs::T
-end
-struct ScalarProduct{T} <: AbstractOperator #T <: PnmlMultiset
-    n::Int
-    m::T
-end
-struct NumberOf <: AbstractOperator #T <: PnmlMultiset
-    n::Int
-    sort::REFID
-end
-struct Cardinality{T} <: AbstractOperator #T <: PnmlMultiset
-    arg::T # multiset
-end
-struct CardinalityOf{T} <: AbstractOperator #T <: PnmlMultiset
-    ms::T
-    sort::REFID
-end
-struct Contains{T} <: AbstractOperator #T <: PnmlMultiset
-    args::Vector{T} # =2
-end
-
-struct BoolExpr end  #! TODO placeholder
-
-#& Boolean Operators
-struct Or <: AbstractOperator
-    lhs::BoolExpr
-    rhs::BoolExpr
-end
-struct And <: AbstractOperator
-    lhs::BoolExpr
-    rhs::BoolExpr
-end
-struct Not <: AbstractOperator
-    lhs::BoolExpr
-    rhs::BoolExpr
-end
-struct Imply <: AbstractOperator
-    lhs::BoolExpr
-    rhs::BoolExpr
-end
-struct Equality{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Inequality{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-
-
-#& Cyclic Enumeration Operators
-struct Successor <: AbstractOperator
-    arg::Any
-end
-struct Predecessor <: AbstractOperator
-    arg::Any
-end
-
-#& FiniteIntRange Operators work on integrs in spec, we extend to Number
-#=
-#! Use the Integer version. The difference is how the number is accessed!
-struct LessThan{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct LessThanOrEqual{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct GreaterThan{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct GreaterThanOrEqual{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-=#
-
-#& Partition
-# PartitionElement is an operator declaration. Is this a literal?
-struct PartitionElementOp <: AbstractOperator #! Same as PartitionElement, for term rerwite?
-    id::Symbol
-    name::Union{String,SubString{String}}
-    refs::Vector{REFID} # to FEConstant
-end
-#> comparison functions on the partition elements which is based on
-#> the order in which they occur in the declaration of the partition
-struct PartitionLessThan{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct PartitionGreaterThan{T} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct PartitionElementOf <: AbstractOperator
-    are::Any
-    refpartition::Any # UserSort, REFID
-end
-
-#& Integer (we extend to generic Number)
-struct Addition{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Subtraction{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Multiplication{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Division{T <: Number}<: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct GreaterThan{T <: Number}<: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct GreaterThanOrEqual{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct LessThan{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct LessThanOrEqual{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Modulo{T <: Number} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-
-#& Strings
-struct Concatenation{T <: AbstractString} <: AbstractOperator
-    args::Vector{T} # =2
-end
-struct Append{T <: AbstractString} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct StringLength{T <: AbstractString} <: AbstractOperator
-    arg::T
-end
-struct StringLessThan{T <: AbstractString} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct StringLessThanOrEqual{T <: AbstractString} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct StringGreaterThan{T <: AbstractString} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct StringGreaterThanOrEqual{T <: AbstractString} <: AbstractOperator
-    lhs::T
-    rhs::T
-end
-struct Substring{T <: AbstractString} <: AbstractOperator
-    str::T
-    start::Int
-    length::Int
-end
-
-#& Lists
-struct ListLength <: AbstractOperator
-end
-struct ListConcatenation <: AbstractOperator
-end
-struct Sublist <: AbstractOperator
-end
-struct ListAppend <: AbstractOperator
-end
-struct MemberAtIndex <: AbstractOperator
-end
 
 #-----------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------
@@ -388,222 +174,56 @@ function null_function(inputs)#::Vector{AbstractTerm})
     return nothing
 end
 
-# Boolean Built-in Operators
-#-----------------------------
-function builtin_or(inputs)#::Vector{AbstractTerm})
-    println("builtin_or: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_and(inputs)#::Vector{AbstractTerm})
-    println("builtin_and: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_not(inputs)#::Vector{AbstractTerm})
-    println("builtin_not: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-function builtin_imply(inputs)#::Vector{AbstractTerm})
-    println("builtin_imply: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_equality(inputs)#::Vector{AbstractTerm})
-    println("builtin_equality: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_inequality(inputs)#::Vector{AbstractTerm})
-    println("builtin_inequality: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-# Integer Built-in Operators
-#-----------------------------:
-function builtin_addition(inputs) # "Addition",
-    println("builtin_addition: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_subtraction(inputs) # "Subtraction",
-    println("builtin_subtraction: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_mult(inputs) # "Multiplication",
-    println("builtin_mult: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_div(inputs) # "Division",
-    println("builtin_div: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_mod(inputs) # "Modulo",
-    println("builtin_mod: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_gt(inputs) # "GreaterThan",
-    println("builtin_gt: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_geq(inputs) # "GreaterThanOrEqual",
-    println("builtin_geq: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_lt(inputs) # "LessThan",
-    println("builtin_lt: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_leq(inputs) # "LessThanOrEqual",)
-    println("builtin_leq: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-# Multiset Built-in Operators
-#-----------------------------
-function builtin_add(inputs)
-    println("builtin_all: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_all(inputs)
-    println("builtin_all: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_numberof(inputs)
-    println("builtin_numberof: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_subtract(inputs)
-    println("builtin_subtract: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_scalarproduct(inputs)
-    println("builtin_scalarproduct: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_empty(inputs)
-    println("builtin_empty: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_cardnality(inputs)
-    println("builtin_cardnality: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_cardnalitiyof(inputs)
-    println("builtin_cardnalitiyof: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_contains(inputs)
-    println("builtin_contains: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-# Finite Enumeration Built-in Operators
-#-----------------------------
-function builtin_lessthan(inputs)
-    println("builtin_lessthan: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_lessthanorequal(inputs)
-    println("builtin_lessthanorequal: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_greaterthan(inputs)
-    println("builtin_greaterthan: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_greaterthanorequal(inputs)
-    println("builtin_greaterthanorequal: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_finiteintrangeconstant(inputs)
-    println("builtin_finiteintrangeconstant: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-# Partition Built-in Operators
-#-----------------------------
-function builtin_ltp(inputs)
-    println("builtin_ltp: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_gtp(inputs)
-    println("builtin_gtp: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_partitionelementof(inputs)
-    println("builtin_partitionelementof: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-#  Constant Built-in Operators
-#-----------------------------
-function builtin_numberconstant(inputs)
-    println("builtin_numberconstant: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_dotconstant(inputs)
-    println("builtin_:dotconstant ", inputs)
-    return false #! Lie until we know how! XXX
-end
-function builtin_booleanconstant(inputs)
-    println("builtin_booleanconstant: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-#-----------------------------
-function builtin_tuple(inputs)
-    println("builtin_tuple: ", inputs)
-    return false #! Lie until we know how! XXX
-end
-
-
 #---------------------------------------------------------------------
-"""
-    hl_operators[Symbol] -> Function, Sort
+# """
+#     hl_operators[Symbol] -> Function, Sort
 
-Map PNML operation ID to a tuple of function that accepts a single vector of arguments
-and the sort of the result. See [`pnml_hl_operator`](@ref)
-"""
-const hl_operators = Dict(
-    :or => builtin_or,
-    :and => builtin_and,
-    :not => builtin_not,
-    :imply => builtin_imply,
-    :equality => builtin_equality,
-    :inequality => builtin_inequality,
+# Map PNML operation ID to a tuple of function that accepts a single vector of arguments
+# and the sort of the result. See [`pnml_hl_operator`](@ref)
+# """
+# const hl_operators = Dict(
+#     :or => builtin_or,
+#     :and => builtin_and,
+#     :not => builtin_not,
+#     :imply => builtin_imply,
+#     :equality => builtin_equality,
+#     :inequality => builtin_inequality,
 
-    :addition => builtin_addition,
-    :subtraction => builtin_subtraction,
-    :mult => builtin_mult,
-    :div => builtin_div,
-    :mod => builtin_mod,
-    :gt => builtin_gt,
-    :geq => builtin_geq,
-    :lt => builtin_lt,
-    :leq => builtin_leq,
+#     :addition => builtin_addition,
+#     :subtraction => builtin_subtraction,
+#     :mult => builtin_mult,
+#     :div => builtin_div,
+#     :mod => builtin_mod,
+#     :gt => builtin_gt,
+#     :geq => builtin_geq,
+#     :lt => builtin_lt,
+#     :leq => builtin_leq,
 
-    :add => builtin_add,
-    :all => builtin_all,
-    :numberof => builtin_numberof,
-    :subtract => builtin_subtract,
-    :scalarproduct => builtin_scalarproduct,
-    :empty => builtin_empty, #! return empty multiset with given basis sort
-    :cardnality => builtin_cardnality,
-    :cardnalitiyof => builtin_cardnalitiyof,
-    :contains => builtin_contains,
+#     :add => builtin_add,
+#     :all => builtin_all,
+#     :numberof => builtin_numberof,
+#     :subtract => builtin_subtract,
+#     :scalarproduct => builtin_scalarproduct,
+#     :empty => builtin_empty, #! return empty multiset with given basis sort
+#     :cardnality => builtin_cardnality,
+#     :cardnalitiyof => builtin_cardnalitiyof,
+#     :contains => builtin_contains,
 
-    :lessthan => builtin_lessthan,
-    :lessthanorequal => builtin_lessthanorequal,
-    :greaterthan => builtin_greaterthan,
-    :greaterthanorequal => builtin_greaterthanorequal,
-    :finiteintrangeconstant => builtin_finiteintrangeconstant,
+#     :lessthan => builtin_lessthan,
+#     :lessthanorequal => builtin_lessthanorequal,
+#     :greaterthan => builtin_greaterthan,
+#     :greaterthanorequal => builtin_greaterthanorequal,
+#     :finiteintrangeconstant => builtin_finiteintrangeconstant,
 
-    :ltp => builtin_ltp,
-    :gtp => builtin_gtp,
-    :partitionelementof => builtin_partitionelementof, #! partition IDREF as input
+#     :ltp => builtin_ltp,
+#     :gtp => builtin_gtp,
+#     :partitionelementof => builtin_partitionelementof, #! partition IDREF as input
 
-    :tuple => builtin_tuple,
-    #:numberconstant => builtin_,
-    #:dotconstant => builtin_,
-    #:booleanconstant => builtin_,
-)
+#     :tuple => builtin_tuple,
+#     #:numberconstant => builtin_,
+#     #:dotconstant => builtin_,
+#     #:booleanconstant => builtin_,
+# )
 
 """
     pnml_hl_operator(tag::Symbol) -> Callable(::Vector{AbstractTerm})
@@ -611,12 +231,13 @@ const hl_operators = Dict(
 Return callable with a single argument, a vector of inputs.
 """
 function pnml_hl_operator(tag::Symbol)
-    if haskey(hl_operators, tag)
-        return hl_operators[tag]
-    else
-        @error "$tag is not a known hl_operator, return null_function"
-        return null_function #, NullSort()
-    end
+    # if haskey(hl_operators, tag)
+    #     return hl_operators[tag]
+    # else
+    #     @error "$tag is not a known hl_operator, return null_function"
+    #     return null_function #, NullSort()
+    # end
+    return null_function #, NullSort()
 end
 
 """
