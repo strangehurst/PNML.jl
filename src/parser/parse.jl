@@ -447,7 +447,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType)
 end
 
 """
-    parse_arc(node::XMLNode, pntd::PnmlType) -> Arc{typeof(pntd), typeof(inscription)}
+    parse_arc(node::XMLNode, pntd::PnmlType) -> Arc
 
 Construct an `Arc` with labels specialized for the PnmlType.
 """
@@ -635,7 +635,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, tsort = termparser(child, pntd) # Apply function/functor
-            @show term tsort
+            #@show term tsort
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -689,9 +689,9 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
     #@show placetype sortof(placetype) typeof(sortof(placetype))
     mvt = eltype(sortof(placetype))
-    #@show mvt
+    #@show mvt,
 
-    mvt == marking_value_type(pntd) ||
+    mvt == marking_value_type(pntd) || #! could be DotSort, PnmlTuple, numbera
         throw(ArgumentError("initial marking value type of $pntd must be $(marking_value_type(pntd)), found: $mvt"))
 
     value = if isnothing(l.text)
@@ -701,8 +701,8 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     end
 
     #@show placetype value eltype(sortof(placetype))
-    value isa mvt || throw(ArgumentError(string("eltype of marking placetype, $mvt",
-            ", does not match type of `value`, $(typeof(value))",
+    value isa mvt || throw(ArgumentError(string("eltype of marking placetype = $mvt",
+            ", does not match type of `value` = $(typeof(value))",
             ", for a $pntd")))
 
     Marking(value, l.graphics, l.tools)
@@ -753,12 +753,12 @@ NB: Used by PTNets that assume placetype is DotSort().
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
-    @warn pntd l.text l.term l.sort
+    # @warn pntd l.text l.term l.sort
     # Marking label content is expected to be a TermInterface expression.
     # All declarations are expected to have been processed before the
     # first place is encountered.
 
-    mark = if isnothing(l.term)
+    markterm = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
         pnmlmultiset(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface expression
     else
@@ -768,11 +768,11 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         @show l.term typeof(l.term)
         l.term
     end
-    equalSorts(sortof(basis(mark)), sortof(placetype)) ||
+    equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
         error(string("HL marking sort mismatch,",
-            "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
+            "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
             "\n\t sortof(placetype) = ", sortof(placetype)))
-    HLMarking(l.text, mark, l.graphics, l.tools)
+    HLMarking(l.text, markterm, l.graphics, l.tools)
 end
 
 ""
@@ -797,9 +797,13 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
 
         mark, sort = parse_term(term, pntd)
 
-        @show mark typeof(mark)
-        mark = eval(mark) #! requires recursive `toexpr` of all terms.
-        @show mark typeof(mark) sortof(mark)
+        @show mark
+        println()
+        @show ex = toexpr(mark) #~ recursive `toexpr`.
+        #dump(ex)
+        mark = eval(ex)
+
+        @show mark typeof(mark) #sortof(mark)
         @show sort typeof(sort)
         @show typeof(placetype(pmt))
 
@@ -828,10 +832,13 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         isa(placetype(pmt), UserSort) ||
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
-        equalSorts(sortof(basis(mark)), sortof(placetype(pmt))) ||
+        @show basis(mark)
+        if !equalSorts(sortof(basis(mark)), sortof(placetype(pmt)))
+            @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
             throw(ArgumentError(string("parse marking term sort mismatch:",
                 "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
                 "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
+        end
         return (mark, sort)
     end
     throw(ArgumentError("missing marking term in <structure>"))
@@ -891,7 +898,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
 
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
-        inscript, _ = parse_term(term, pntd)
+        inscript, _ = parse_term(term, pntd) #! TermInterface expression with a toexpr method.
     else
         # Default to an  multiset whose basis is placetype
         inscript = def_insc(netdata(pit), source(pit), target(pit))
@@ -947,28 +954,26 @@ Label of transition nodes.
 
 # Details
 
-Condition is defined by the ISO Specification as a High-level Annotation,
-meaning it has <text> and <structure> elements. With all meaning in the element
-that the <structure> holds evaluating to a boolean value.
-We extend this to anything that evaluates to a boolean value when
-treated as a functor.
+Condition has <text> and <structure> elements. With all meaning in the <structure> that
+holds (an expression) evaluating to a boolean value.
 
-A Condition should evaluate to a boolean.
-See [`AbstractTerm`](@ref).
+See [`BoolExpr`](@ref).
 """
 function parse_condition end
 
 function parse_condition(node::XMLNode, pntd::T) where {T<:AbstractHLCore}
-    check_nodename(node, "condition")
-    l = parse_label_content(node, parse_condition_term, pntd)
-    PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
+    l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
+    @show l
+    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools)
 end
 
 function parse_condition(node::XMLNode, pntd::PnmlType) # Non-HL
-    check_nodename(node, "condition")
-    l = parse_label_content(node, parse_condition_term, pntd)
+    l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
+    @show l
+    #term = toexpr(l.term) # All non-HL net conditions are literal expressions.
+    #@show term
     #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
-    PNML.Labels.Condition(l.text, something(l.term, BooleanConstant(true)), l.graphics, l.tools)
+    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools)
 end
 
 """
@@ -980,9 +985,9 @@ PTNets are extended to have conditions and use a `BooleanConstant` to set the in
 function parse_condition_term(cnode::XMLNode, pntd::PnmlType)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
-        return parse_term(EzXML.firstelement(cnode), pntd)
+        return parse_term(EzXML.firstelement(cnode), pntd) # expression
     end
-    throw(ArgumentError("missing condition term element in <structure>"))
+    throw(ArgumentError("missing condition term in <structure>"))
 end
 
 """
