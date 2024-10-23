@@ -85,7 +85,12 @@
                         <toolspecific tool="conditionnametool" version="1.0"><atool x="0"/></toolspecific>
                     </name>
                     <text>some expression</text>
-                    <structure> <or> </or> </structure>
+                    <structure>
+                        <or>
+                            <subterm><booleanconstant value="true"/></subterm>
+                            <subterm><booleanconstant value="false"/></subterm>
+                        </or>
+                    </structure>
                     <graphics><position x="100" y="100"/></graphics>
                     <toolspecific tool="conditiontool" version="1.0"><atool x="0"/></toolspecific>
                 </condition>
