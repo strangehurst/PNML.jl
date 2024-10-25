@@ -43,7 +43,7 @@ using PNML:
     coordinate_type, coordinate_value_type,
     validate_declarations,
     def_sort_element
-using PNML:  toexpr,
+using PNML:  toexpr, VariableEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
     NumberOf, And, Not, Imply, Equality, Inequality, Successor, Predecessor,
     PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,
@@ -75,7 +75,9 @@ include("toolspecific.jl")
 Construct an empty PNML ID registry using a ReentrantLock.
 """
 function registry()
-    PnmlIDRegistry()
+    r = PnmlIDRegistry()
+    println("create PnmlIDRegistry ", objectid(r)) #! debug
+    return r
 end
 
 export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file,

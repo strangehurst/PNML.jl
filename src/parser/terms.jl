@@ -84,8 +84,10 @@ end
 #----------------------------------------------------------------------------------------
 # Expect only an attribute referencing the declaration.
 function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
-    var = Variable(Symbol(attribute(node, "refvariable")))
-    return (var, sortof(var)) #! does DeclDict lookup #TODO XXX toexpr(::Variable)
+    @warn "parse_term :variable"
+    var = VariableEx(Symbol(attribute(node, "refvariable")))
+    usort = sortref(variable(var.refid))
+    return (var, usort) #! toexpr(var) is expression for Variable with this UserSort
 end
 
 # Has value "true"|"false" and is BoolSort.
@@ -352,6 +354,78 @@ function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType)
     return Or(sts[1], sts[2]), usersort(:bool)
 end
 
+#^#########################################################################
+"""
+    parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType) -> Natural
+# XML Example
+"""
+function parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType)
+    sts = Vector{Any}()
+    for subterm in EzXML.eachelement(node)
+        stnode, tag = unwrap_subterm(subterm)
+        println("parse_term :equality arg ", repr(tag))
+        @show st, _ = parse_term(Val(tag), stnode, pntd)
+        isnothing(st) && throw(MalformedException("<equality> operator argument missing"))
+        push!(sts, st)
+    end
+    @show sts
+    @assert length(sts) == 2
+    #@assert equalSorts(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
+    return Equality(sts[1], sts[2]), usersort(:bool)
+end
+
+"""
+    parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType) -> Natural
+# XML Example
+"""
+function parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType)
+    sts = Vector{Any}()
+    for subterm in EzXML.eachelement(node)
+        stnode, tag = unwrap_subterm(subterm)
+        println("parse_term :inequality arg ", repr(tag))
+        @show st, _ = parse_term(Val(tag), stnode, pntd)
+        isnothing(st) && throw(MalformedException("<inequality> operator argument missing"))
+        push!(sts, st)
+    end
+    @show sts
+    @assert length(sts) == 2
+    @assert equalSorts(sts[1], sts[2])
+    return Inequality(sts[1], sts[2]), usersort(:bool)
+end
+
+# """
+#     parse_term(::Val{:}, node::XMLNode, pntd::PnmlType) -> Natural
+# # XML Example
+# """
+# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
+#     sts = Vector{Any}()
+#     for subterm in EzXML.eachelement(node)
+#         stnode, tag = unwrap_subterm(subterm)
+#         @show st, _ = parse_term(Val(tag), stnode, pntd)
+#         isnothing(st) && throw(MalformedException("<> operator argument missing"))
+#         push!(sts, st)
+#     end
+#     @show sts
+#     @assert length(sts) == 2
+#     return (sts[1], sts[2]), usersort(:bool)
+# end
+
+# """
+#     parse_term(::Val{:}, node::XMLNode, pntd::PnmlType) -> Natural
+# # XML Example
+# """
+# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
+#     sts = Vector{Any}()
+#     for subterm in EzXML.eachelement(node)
+#         stnode, tag = unwrap_subterm(subterm)
+#         @show st, _ = parse_term(Val(tag), stnode, pntd)
+#         isnothing(st) && throw(MalformedException("<> operator argument missing"))
+#         push!(sts, st)
+#     end
+#     @show sts
+#     @assert length(sts) == 2
+#     return (sts[1], sts[2]), usersort(:bool)
+# end
 
 ##########################################################################
 

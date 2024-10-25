@@ -115,7 +115,7 @@ export variabledecls,
     feconstants,
     usersort, namedsort, feconstant
 
-export toexpr, PnmlExpr, BoolExpr,
+export toexpr, PnmlExpr, BoolExpr, VariableEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
     NumberOf, And, Not, Imply, Equality, Inequality, Successor, Predecessor,
     PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,

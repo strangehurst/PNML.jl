@@ -81,6 +81,23 @@ inscription <- :numberof :numberconstant :mult :variable :variable
 =#
 
 """
+    VariableEx
+
+TermInterface expression constructing a [`Variable`](@ref)
+
+"""
+VariableEx
+@matchable struct VariableEx <: PnmlExpr
+    refid::REFID # REFID in variables(). Accessed by variable(refid).
+end
+toexpr(op::VariableEx) = begin
+    :($Variable($(op.refid)))
+end
+function Base.show(io::IO, x::VariableEx)
+    print(io, "VariableEx(", x.refid, ")" )
+end
+
+"""
     Bag
 
 TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
@@ -105,6 +122,10 @@ toexpr(b::Bag) = begin
 end
 # Expr(:call, :pnmlmultiset, [b.basis, toexpr(b.x), toexpr(b.multi)])
 
+function Base.show(io::IO, x::Bag)
+    print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
+end
+
 #& Multiset Operator
 # struct All  <: PnmlExpr# #! :all is a literal, ground term, parsed as Bag expression
 #     sort::REFID
@@ -122,6 +143,9 @@ toexpr(op::Add) = begin # multiset add: Bag × Bag -> PnmlMultiset
         $reduce(+, ($(map(toexpr, op.args)...),)) #! construct a new PnmlMultiset when evaluated!
     end
 end
+function Base.show(io::IO, x::Add)
+    print(io, "Add(", x.args, ")" )
+end
 
 @matchable struct Subtract <: PnmlExpr
     lhs::Bag
@@ -130,6 +154,9 @@ end
 toexpr(op::Subtract) = begin # multiset difference returning a PnmlMultiset
     :(toexpr(op.lhs) - toexpr(op.rhs))
 end
+function Base.show(io::IO, x::Subtract)
+    print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
+end
 
 @matchable struct ScalarProduct <: PnmlExpr
     n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
@@ -137,6 +164,9 @@ end
 end
 toexpr(op::ScalarProduct) = begin # returning a integer scalar product of PnmlMultiset
     :(PnmlMultiset(basis(op.bag), :(toexpr(op.n) * toexpr(op.bag))))
+end
+function Base.show(io::IO, x::ScalarProduct)
+    print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
 
 struct NumberOf # Bag, may be nonground term, must eval(toexpr) the value as multiset.
@@ -150,6 +180,9 @@ end
 toexpr(op::Cardinality) = begin
     :(length(toexpr(op.arg).mset))
 end
+function Base.show(io::IO, x::Cardinality)
+    print(io, "Cardinality(", x.arg, ")" )
+end
 
 @matchable struct CardinalityOf <: PnmlExpr
     ms::Any # multiset expression
@@ -158,6 +191,9 @@ end
 toexpr(op::CardinalityOf) = begin
     m = toexpr(op.ms)
     :($m.mset[op.refid])
+end
+function Base.show(io::IO, x::CardinalityOf)
+    print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
 end
 
 @matchable struct Contains{T} <: PnmlExpr
@@ -168,6 +204,9 @@ toexpr(op::Contains) = begin
     m = toexpr(op.ms)
     :($(m.mset[op.refid]) >  0)
 end
+function Base.show(io::IO, x::Contains)
+    print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
+end
 
 #& Boolean Operators
 @matchable struct Or <: BoolExpr
@@ -177,6 +216,9 @@ end
 toexpr(op::Or) = begin
     :(op.lhs || op.rhs)
 end
+function Base.show(io::IO, x::Or)
+    print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
+end
 
 @matchable struct And <: BoolExpr
     lhs::Any # BoolExpr
@@ -185,12 +227,18 @@ end
 toexpr(op::And) = begin
     :(op.lhs && op.rhs)
 end
+function Base.show(io::IO, x::And)
+    print(io, "And(", x.lhs, ", ", x.rhs, ")" )
+end
 
 @matchable struct Not <: BoolExpr
     rhs::Any # BoolExpr
 end
 toexpr(op::Not) = begin
     :(!(op.rhs))
+end
+function Base.show(io::IO, x::Not)
+    print(io, "Not(", x.rhs, ")" )
 end
 
 @matchable struct Imply <: BoolExpr
@@ -200,6 +248,9 @@ end
 toexpr(op::Imply) = begin
     :(!op.lhs || op.rhs)
 end
+function Base.show(io::IO, x::Imply)
+    print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
+end
 
 @matchable struct Equality{T} <: PnmlExpr
     lhs::T # expression evaluating to a T
@@ -208,6 +259,9 @@ end
 toexpr(op::Equality) = begin
     :(op.lhs == op.rhs)
 end
+function Base.show(io::IO, x::Equality)
+    print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
+end
 
 @matchable struct Inequality{T} <: PnmlExpr
     lhs::T # expression evaluating to a T
@@ -215,6 +269,9 @@ end
 end
 toexpr(op::Inequality) = begin
     :(op.lhs != op.rhs)
+end
+function Base.show(io::IO, x::Inequality)
+    print(io, "Inequality(", x.lhs, ", ", x.rhs, ")" )
 end
 
 
@@ -225,12 +282,18 @@ end
 toexpr(op::Successor) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::Successor)
+    print(io, "Successor(", x.arg, ")" )
+end
 
 struct Predecessor <: PnmlExpr
     arg::Any
 end
 toexpr(op::Predecessor) = begin
     error("implement me")
+end
+function Base.show(io::IO, x::Predecessor)
+    print(io, "Predecessor(", x.arg, ")" )
 end
 
 
@@ -265,6 +328,9 @@ end
 toexpr(op::PartitionElementOp) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::PartitionElementOp)
+    print(io, "PartitionElementOp(", x.id, ", ", x.name, ", ", x.refs, ")" )
+end
 
 #> comparison functions on the partition elements which is based on
 #> the order in which they occur in the declaration of the partition
@@ -276,6 +342,9 @@ end
 toexpr(op::PartitionLessThan) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::PartitionLessThan)
+    print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
+end
 
 struct PartitionGreaterThan{T} <: PnmlExpr
     lhs::T
@@ -285,14 +354,20 @@ end
 toexpr(op::PartitionGreaterThan) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::PartitionGreaterThan)
+    print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
+end
 
 struct PartitionElementOf <: PnmlExpr
-    are::Any
+    arg::Any
     refpartition::Any # UserSort, REFID
     # return BoolExpr
 end
 toexpr(op::PartitionElementOf) = begin
     error("implement me")
+end
+function Base.show(io::IO, x::PartitionElementOf)
+    print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
 end
 
 
@@ -305,6 +380,9 @@ end
 toexpr(op::Addition) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::Addition)
+    print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
+end
 
 struct Subtraction{T <: Number} <: PnmlExpr
     lhs::T
@@ -314,12 +392,16 @@ end
 toexpr(op::Subtraction) = begin
     error("implement me")
 end
+function Base.show(io::IO, x::Subtraction)
+    print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
+end
 
 struct Multiplication{T <: Number} <: PnmlExpr
     lhs::T
     rhs::T
     # use :(*)
 end
+
 struct Division{T <: Number}<: PnmlExpr
     lhs::T
     rhs::T
