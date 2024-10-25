@@ -10,7 +10,7 @@ Example input: <variable refvariable="varx"/>.
 struct Variable <: AbstractVariable
     refvariable::REFID
     function Variable(v::REFID)
-        # Check that REFID is valid.
+        # Check that REFID is valid in DECLDICT[].
         has_variable(v) || throw(ArgumentError("$(v) not a variable reference ID"))
         new(v)
     end

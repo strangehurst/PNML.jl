@@ -69,7 +69,7 @@ function parse_pnml(node::XMLNode)
     empty!(TOPDECLVEC) #  This prevents more than one PnmlModel existing.
     # Need a netid to populate
     for _ in xmlnets
-        push!(IDRegistryVec, PnmlIDRegistry())
+        push!(IDRegistryVec, registry())
         push!(TOPDECLVEC, DeclDict())
     end
     length(xmlnets) == length(IDRegistryVec) ||
@@ -337,7 +337,7 @@ see [`fill_nonhl!`](@ref)
 """
 function parse_place(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "place")
-    id   = register_idof!(PNML.idregistry[], node)
+    id   = register_idof!(idregistry[], node)
     mark = nothing
     sorttype::Maybe{SortType} = nothing
     name::Maybe{Name}         = nothing
@@ -417,8 +417,8 @@ $(TYPEDSIGNATURES)
 """
 function parse_transition(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "transition")
-    id   = register_idof!(idregistry[], node)
-        name::Maybe{Name} = nothing
+    id = register_idof!(idregistry[], node)
+    name::Maybe{Name} = nothing
     cond::Maybe{PNML.Labels.Condition} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
@@ -453,7 +453,7 @@ Construct an `Arc` with labels specialized for the PnmlType.
 """
 function parse_arc(node, pntd; netdata)
     check_nodename(node, "arc")
-    arcid = register_idof!(PNML.idregistry[], node)
+    arcid = register_idof!(idregistry[], node)
     source = Symbol(attribute(node, "source"))
     target = Symbol(attribute(node, "target"))
 
@@ -504,8 +504,8 @@ _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
 $(TYPEDSIGNATURES)
 """
 function parse_refPlace(node::XMLNode, pntd::PnmlType)
-    nn = check_nodename(node, "referencePlace")
-    id = register_idof!(PNML.idregistry[], node)
+    check_nodename(node, "referencePlace")
+    id = register_idof!(idregistry[], node)
     ref = Symbol(attribute(node, "ref"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
@@ -533,8 +533,8 @@ end
 $(TYPEDSIGNATURES)
 """
 function parse_refTransition(node::XMLNode, pntd::PnmlType)
-    nn = check_nodename(node, "referenceTransition")
-    id = register_idof!(PNML.idregistry[], node)
+    check_nodename(node, "referenceTransition")
+    id = register_idof!(idregistry[], node)
     ref = Symbol(attribute(node, "ref"))
     name::Maybe{Name} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing

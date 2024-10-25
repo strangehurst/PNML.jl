@@ -20,18 +20,3 @@ Both scalar and multiset are possible.
 # term_value_type(::Type{<:AbstractHLCore}) = eltype(DotSort)  #! basis of multiset
 
 # Must be suitable as a marking, ie. a ground term without variables.
-
-#=
-TermInterface.isexpr(op::Operator)    = true
-TermInterface.iscall(op::Operator)    = true # users promise that this is only called if isexpr is true.
-TermInterface.head(op::Operator)      = tag(op)
-TermInterface.children(op::Operator)  = inputs(op)
-TermInterface.operation(op::Operator) = op.func
-TermInterface.arguments(op::Operator) = inputs(op)
-TermInterface.arity(op::Operator)     = length(inputs(op))
-TermInterface.metadata(op::Operator)  = nothing
-
-function TermInterface.maketerm(::Type{Operator}, operation, arguments, metadata)
-    Operator(iscall, operation, arguments...; metadata)
-end
-=#
