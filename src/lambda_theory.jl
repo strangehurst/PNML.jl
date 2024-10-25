@@ -1,4 +1,6 @@
 # 2024-10-03 JDH Copied/Hacked/Butchered the Metatheory.jl tutorial: Lambda theory
+This is not usable! Ideas only. Copy to somewhere like terms/extressions.jl
+
 using Metatheory, Test, TermInterface
 
 # # Lambda theory
@@ -12,7 +14,7 @@ using Metatheory, Test, TermInterface
 # which we can implement as subtypes of an abstract `LambdaExpr`ession:
 
 # PNML Variables in High-level Petri nets are used in a functional language.
-# 
+#
 
 abstract type LambdaExpr end
 
@@ -50,7 +52,7 @@ x = Variable(:x)
 λ(:x, Apply(x, x))
 
 # The $\beta$-reduction can be implemented via an additional type `Let`. To get started we can ignore
-# the cases where we need $\alpha$-conversion and already implement 
+# the cases where we need $\alpha$-conversion and already implement
 
 @matchable struct Let <: LambdaExpr
   variable
@@ -59,29 +61,10 @@ x = Variable(:x)
 end
 Base.show(io::IO, x::Let) = print(io, "$(x.body)[$(x.variable) := $(x.value)]")
 
-# λT = @theory v e c v1 v2 a b body begin
-#   Let(v, e, c::Any) --> c # let-const
-#   Let(v1, e, Variable(v1)) --> e # let-Variable-same
-#   Let(v1, e, Variable(v2)) => v1 == v2 ? e : Variable(v2) # let-Variable-diff
-#   Let(v1, e, λ(v1, body)) --> λ(v1, body) # let-lam-same
-#   Let(v1, e, λ(v2, body)) --> λ(v2, Let(v1, e, body)) # let-lam-diff
-#   Apply(λ(v, body), e) --> Let(v, e, body) # beta reduction
-#   Let(v, e, Apply(a, b)) --> Apply(Let(v, e, a), Let(v, e, b)) # let-Apply
-# end
-# 
-# x = Variable(:x)
-# y = Variable(:y)
-# ex = Apply(λ(:x, λ(:y, Apply(x, y))), y)
-# g = EGraph(ex)
-# saturate!(g, λT)
-# extract!(g, astsize)
-
-
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-# Unfortunately, the above does not correctly perform $\alpha$-conversion. To do
-# so we need to keep track of free and bound variables in each eclass.
+# to keep track of free and bound variables in each eclass.
 # Essentially, we want to add a rule to our theory which reads:
 #
 # ```julia
