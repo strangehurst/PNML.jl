@@ -1,6 +1,26 @@
 Base.eltype(::Type{<:AbstractSort}) = Int
 
 """
+Tuple of sort IDs that are considered builtin.
+There will be a version defined for each in the `DECLDICT[]`.
+Users may (re)define these.
+"""
+builtin_sorts() = (:integer,
+                 :natural,
+                 :positive,
+                 :real,
+                 :dot,
+                 :bool,
+                 :null,)
+
+"""
+    isbuiltinsort(::Symbol) -> Bool
+
+Is tag in `builtin_sorts`.
+"""
+isbuiltinsort(tag::Symbol) = tag in builtin_sorts()
+
+"""
 $(TYPEDSIGNATURES)
 For sorts to be the same, first they must have the same type.
 Then any contents of the sorts are compared semantically.

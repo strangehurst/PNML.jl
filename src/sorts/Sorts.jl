@@ -55,8 +55,8 @@ export AbstractSort, UserSort, MultisetSort, ProductSort, TupleSort,
         CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
         ListSort, StringSort,
         DotConstant, FiniteIntRangeConstant,
-        NullSort
-export equalSorts,integersort, naturalsort, positivesort, realsort, nullsort,
+        NullSort, builtin_sorts, isbuiltinsort
+export equalSorts, integersort, naturalsort, positivesort, realsort, nullsort,
     equals, start, stop
 
 end # module Sorts

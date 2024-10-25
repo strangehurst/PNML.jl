@@ -34,6 +34,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
             if tag == "structure" # accumulate declarations
+                @show idregistry[]
                 _parse_decl_structure!(dd, child, pntd)
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
@@ -100,7 +101,20 @@ Declaration that wraps a Sort, adding an ID and name.
 """
 function parse_namedsort(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "namedsort")
-    id = register_idof!(PNML.idregistry[], node) # use ScopedValue
+    # Will have created usersort, namedsort duos for builtin sorts.
+    # Replacement of those duos, in particular, :dot, will trigger a duplicate id error
+    # unless the `(builtinsorts)` are excluded from the register_idof! check.
+    # Note: builtin sort definitions are all singleton types.
+    EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
+    id = Symbol(@inbounds(node["id"]))
+    if !isbuiltinsort(id)
+        # Rest of register_idof! Needed the ID to replace the duo.
+        if isregistered(idregistry[], id)
+            @warn "trying to register existing id $id in registry $(objectid(idregistry[]))" idregistry[]
+        end
+        register_id!(idregistry[], id)
+    end
+
     name = attribute(node, "name")
     child = EzXML.firstelement(node)
     isnothing(child) && error("no sort definition element for namedsort $(repr(id)) $name")
@@ -249,7 +263,7 @@ end
 
 "Tags used in sort XML elements."
 const sort_ids = (:usersort,
-                  :dot, :bool, :integer, :natural, :positive, :real,
+                  :dot, :bool, :integer, :natural, :positive, :real, # builtins
                   :multisetsort, :productsort,
                   :partition, # :partition is over a :finiteenumeration
                   :list, :strings,

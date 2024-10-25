@@ -222,7 +222,8 @@ function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
         namedsorts(dd)[tag] = NamedSort(tag, name, sort)
     end
     if !has_usersort(dd, tag) # Do not overwrite existing content.
-        !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
+        #! DO NOT register the REFID! ID owned by a NamedSort, ArbitrarySort, PartitionSort
+        #! !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
         usersorts(dd)[tag] = UserSort(tag)
     end
 end
