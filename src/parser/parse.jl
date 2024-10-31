@@ -494,11 +494,11 @@ function parse_arc(node, pntd; netdata)
 end
 
 # By specializing arc inscription label parsing we hope to return stable type.
-_parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
-            netdata) = parse_inscription(node, source, target, pntd)
+_parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType; netdata) =
+    parse_inscription(node, source, target, pntd) #! , netdata) #
 _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
-                     netdata) where {T<:AbstractHLCore} =
-    parse_hlinscription(node, source, target, netdata)
+                    netdata) where {T<:AbstractHLCore} =
+    parse_hlinscription(node, source, target, pntd; netdata)
 
 """
 $(TYPEDSIGNATURES)
@@ -765,7 +765,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         #!
         #! Evaluate the expression. Expect a pnmlmultiset expression result (from an operator).
         #!
-        @show l.term typeof(l.term)
+        @show l.term typeof(l.term); flush(stdout)
         l.term
     end
     equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
@@ -797,15 +797,16 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
 
         mark, sort = parse_term(term, pntd)
 
-        @show mark
+        # @show mark
         println()
         @show ex = toexpr(mark) #~ recursive `toexpr`.
+        flush(stdout)
         #dump(ex)
         mark = eval(ex)
 
-        @show mark typeof(mark) #sortof(mark)
-        @show sort typeof(sort)
-        @show typeof(placetype(pmt))
+        # @show mark typeof(mark) #sortof(mark)
+        # @show sort typeof(sort)
+        # @show typeof(placetype(pmt))
 
         #! MARK will be a TERM, a symbolic expression using TermInterface
         #! that, when evaluated, produces a PnmlMultiset object.
@@ -832,7 +833,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         isa(placetype(pmt), UserSort) ||
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
-        @show basis(mark)
+        @show basis(mark); flush(stdout)
         if !equalSorts(sortof(basis(mark)), sortof(placetype(pmt)))
             @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
             throw(ArgumentError(string("parse marking term sort mismatch:",
@@ -876,7 +877,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     check_nodename(inscnode, "structure")
-    #println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
+    println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
 
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
@@ -886,7 +887,9 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     # The core PNML specification allows arcs from place to place, and transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
-    place = if haskey(placedict(netdata(pit)), source(pit))
+
+    # Find adjacent place.
+    adjacentplace = if haskey(placedict(netdata(pit)), source(pit))
         @assert haskey(transitiondict(netdata(pit)), target(pit))
         placedict(netdata(pit))[source(pit)]
     elseif haskey(placedict(netdata(pit)),target(pit))
@@ -895,6 +898,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     else
         error("inscription place not found, source = $(source(pit)), target = $(target(pit))")
     end
+    placesort = sortof(adjacentplace) #~
 
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
@@ -904,21 +908,29 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
         inscript = def_insc(netdata(pit), source(pit), target(pit))
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
-    # @show inscript sort typeof(inscript) sortof(inscript) basis(inscript)
-    isa(inscript, AbstractTerm) ||
-        error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
-    isa(sortof(inscript), AbstractSort) ||
-        error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
+
+    # @show inscript
+    println()
+    @show ex = toexpr(inscript) #~ recursive `toexpr`.
+    flush(stdout)
+    #dump(ex)
+    inscript = eval(ex)
+
+    #! inscript isa PnmlExpr, do these tests during/after firing/eval
+    @show inscript typeof(inscript) #sortref(inscript) basis(inscript)
+    @show placesort typeof(placesort); flush(stdout)
+
+    # isa(inscript, AbstractTerm) ||
+    #     error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
+    # isa(sortof(inscript), AbstractSort) ||
+    #     error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
     # @assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
 
-    placesort = sortof(place)
-    # @show placesort
-
-    equalSorts(sortof(basis(inscript)), placesort) ||
-        throw(ArgumentError(string("sort mismatch:",
-            "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
-            "\n\t placesort ", placesort)))
-    return (inscript, sortof(inscript))
+    #  equalSorts(sortof(basis(inscript)), placesort) ||
+    #     throw(ArgumentError(string("sort mismatch:",
+    #         "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
+    #         "\n\t placesort ", placesort)))
+    return (inscript, placesort)
 end
 
 "adjacent place of an arc is either the `source` or `target`"
@@ -963,13 +975,13 @@ function parse_condition end
 
 function parse_condition(node::XMLNode, pntd::T) where {T<:AbstractHLCore}
     l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
-    @show l
+    @show l; flush(stdout)
     PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools)
 end
 
 function parse_condition(node::XMLNode, pntd::PnmlType) # Non-HL
     l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
-    @show l
+    @show l; flush(stdout)
     #term = toexpr(l.term) # All non-HL net conditions are literal expressions.
     #@show term
     #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
