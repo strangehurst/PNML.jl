@@ -62,21 +62,24 @@ sortelements(ms::PnmlMultiset{<:Any}) = sortelements(basis(ms))
 
 function Base.show(io::IO, t::PnmlMultiset)
     print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
-    print(io, ", mset=", nameof(typeof(t.mset)), "(",)
-    io = inc_indent(io)
-    for (k,v) in pairs(t.mset) # Control formatting.
-        println(io, repr(k), " => ", repr(v), ",")
-    end
-    print(io, "))") # Close BOTH parens.
+    print(io, ", mset=", repr(t.mset),")")
+    # nameof(typeof(t.mset)), "(",)
+    # io = inc_indent(io)
+    # for (k,v) in pairs(t.mset) # Control formatting.
+    #     println(io, repr(k), " => v, ",")
+    # end
+    # print(io, "))") # Close BOTH parens.
 end
 
 
 """
     pnmlmultiset(basis::UserSort, x, multi::Int=1) -> PnmlMultiset
+    pnmlmultiset(basis::UserSort, x::Multisets.Multiset) -> PnmlMultiset
     pnmlmultiset(basis::UserSort) -> PnmlMultiset
 
 Constructs a [`PnmlMultiset`](@ref) containing a multiset and a sort from either
   - a usersort, one element and a multiplicity, default = 1, denoted "1'x",
+  - a usersort and `Multiset`
   - or just a sort (not usersort or multisetsort), uses all sortelements(sort), each with multiplicity = 1.
 
 Are mapping to Multisets.jl implementation:
@@ -102,33 +105,36 @@ function pnmlmultiset(basis::UserSort, ms::Multiset)
 end
 
 # For empty or singleton multiset.
-function pnmlmultiset(basis::UserSort, x, multi::Int=1; metadata=nothing)
-    println("pnmlmultiset: ", " basis = ", repr(basis), ", x = ", repr(x), ", multi = ", repr(multi),
-            (isnothing(metadata) ? "" : ", metadata = "*repr(metadata)))
-    if isa(sortof(x), MultisetSort) # not usersort or namedsort, but definition
-        throw(ArgumentError("Cannot be a MultisetSort: found $(sortof(x)) for $(repr(x))"))
+function pnmlmultiset(basis::UserSort, element, multi::Int=1)
+    println("pnmlmultiset: ", repr(basis), ", ", repr(element), ", ", repr(multi))
+    #! Are transitioning to call pnmlmultiset() from an expression.
+    #! Expect `element` and `muti` to have been eval'ed.  So no longer a Bag.
+
+    # `element` will be an expression. Bag
+    if isa(basis, MultisetSort) # not usersort or namedsort, but definition
+        throw(ArgumentError("Cannot be a MultisetSort: found $basis for $(repr(element))"))
     end
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
     #^ Where/how is absence of sort loop checked?
-    if !(equalSorts(sortof(basis), sortof(x)) || (typeof(x) == eltype(basis)))
-        @warn "!equalSorts" sortof(basis) sortof(x) typeof(x) eltype(basis)
-    end
-    M = Multiset{typeof(x)}()
-    M[x] = multi
+    # if !(equalSorts(sortof(basis), sortof(element)) || (typeof(element) == eltype(basis)))
+    #     @warn "!equalSorts" sortof(basis) sortof(element) typeof(element) eltype(basis)
+    # end
+    M = Multiset{typeof(element)}()
+    M[element] = multi
     PnmlMultiset(basis, M)
 end
 
 # For <all> only the basis is needed.
-function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing; metadata=nothing) #! 2024-10-05 add for <all>
-    println("pnmlmultiset: basis = ", repr(basis),
-            (isnothing(metadata) ? "" : ", metadata = "*repr(metadata)))
-    if isa(basis, MultisetSort) # use EqualSorts?
+function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 add for <all>
+    println("pnmlmultiset: basis = ", repr(basis), ", ", repr(sortof(basis)), ", ", eltype(basis))
+    if isa(basis, MultisetSort) # use EqualSorts?us::UserSort
         throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
     M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
     for e in sortelements(basis) # iterator over one instance of each element of the set/sort
+        @show M e; flush(stdout)
         push!(M, e)
     end
     PnmlMultiset(basis, M)
