@@ -455,7 +455,13 @@ function basis end
 TermInterface expression types.
 """
 abstract type PnmlExpr end
+
 """
 TermInterface boolean expression types.
 """
 abstract type BoolExpr <: PnmlExpr end
+
+"""
+TermInterface operator expression types.
+"""
+abstract type OpExpr <: PnmlExpr end
