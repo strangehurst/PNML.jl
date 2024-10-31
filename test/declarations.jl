@@ -16,11 +16,14 @@ function _subtypes!(out, type::Type)
     return out
 end
 
-sorts() = _subtypes(AbstractSort)
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "parse_sort $pntd" for pntd in core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
+    PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
+    PNML.Parser.fill_sort_tag!(:X, "X", PositiveSort())
+
     sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd)::UserSort
+    #@show PNML.DECLDICT[] sortof(sort)
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -117,27 +120,27 @@ sorts() = _subtypes(AbstractSort)
 end
 end
 
-@with PNML.DECLDICT => PNML.DeclDict() begin
 @testset "empty declarations $pntd" for pntd in core_nettypes()
-    #PNML.fill_nonhl!(PNML.DECLDICT[])
-    # The attribute should be ignored.
-    decl = parse_declaration(xml"""<declaration key="test empty">
-            <structure><declarations></declarations></structure>
-        </declaration>""", pntd)::Declaration
-    @show decl
-    @test length(decl) == 0 # nothing in <declarations>
-    @test isempty(decl)
-    @test PNML.graphics(decl) === nothing
-    @test PNML.tools(decl) === nothing
+    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+        #PNML.fill_nonhl!(PNML.DECLDICT[])
+        # The attribute should be ignored.
+        decl = parse_declaration(xml"""<declaration key="test empty">
+                <structure><declarations></declarations></structure>
+            </declaration>""", pntd)::Declaration
+        @show decl
+        @test length(decl) == 0 # nothing in <declarations>
+        @test isempty(decl)
+        @test PNML.graphics(decl) === nothing
+        @test PNML.tools(decl) === nothing
 
-    @test_opt PNML.declarations(decl)
-    @test_opt PNML.graphics(decl)
-    @test_opt PNML.tools(decl)
+        @test_opt PNML.declarations(decl)
+        @test_opt PNML.graphics(decl)
+        @test_opt PNML.tools(decl)
 
-    @test_call PNML.declarations(decl)
-    @test_call PNML.graphics(decl)
-    @test_call PNML.tools(decl)
-end
+        @test_call PNML.declarations(decl)
+        @test_call PNML.graphics(decl)
+        @test_call PNML.tools(decl)
+    end
 end
 
 @testset "namedsort declaration $pntd" for pntd in core_nettypes()
@@ -283,6 +286,7 @@ end
 
 const nonsimple_sorts = (MultisetSort, UserSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
+sorts() = _subtypes(AbstractSort)
 
 @testset "equal sorts" begin
     println("============================")
