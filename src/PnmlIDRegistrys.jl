@@ -56,7 +56,7 @@ $(TYPEDSIGNATURES)
 Empty the set of id symbols. Use case is unit tests.
 """
 function reset_reg!(registry::PnmlIDRegistry)
-    println("reset PnmlIDRegistry") #! debug
+    #println("reset PnmlIDRegistry ", objectid(registry)) #! debug
     @lock registry.lk empty!(registry.idset)
     return nothing
 end
