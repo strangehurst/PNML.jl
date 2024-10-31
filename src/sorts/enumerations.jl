@@ -7,7 +7,7 @@ Both hold an ordered collection of [`PNML.Declarations.FEConstant`](@ref) REFIDs
 """
 abstract type EnumerationSort{N,M} <: AbstractSort end
 
-refs(sort::EnumerationSort) = sort.fec_refs
+refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 
 """
     sortelements(sort::EnumerationSort) -> Iterator
@@ -15,12 +15,22 @@ refs(sort::EnumerationSort) = sort.fec_refs
 Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-sortelements(sort::EnumerationSort) = Iterators.map(Fix1(feconstant, PNML.DECLDICT[]), refs(sort))
+sortelements(sort::EnumerationSort) = refs(sort) #! was Iterators.map(Fix1(feconstant, PNML.DECLDICT[]), refs(sort))
 
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
 
-Base.eltype(::EnumerationSort) = REFID
+Base.eltype(::EnumerationSort) = REFID # Use to access in the `DECLDICT[]`.
+
+function Base.show(io::IO, esort::EnumerationSort)
+    print(io, nameof(typeof(esort)), "([")
+    io = inc_indent(io)
+    for  (i, fec_ref) in enumerate(refs(esort))
+        print(io, '\n', indent(io), fec_ref);
+        i < length(esort) && print(io, ",")
+    end
+    print(io, "])")
+end
 
 """
 $(TYPEDEF)
@@ -30,6 +40,8 @@ Operations differ between `EnumerationSort`s. All wrap a tuple of symbols and
 metadata, allowing attachment of Partition/PartitionElement.
 
 See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predecessor
+
+MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
 @auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID}  # ordered collection of FEConstant REFIDs
@@ -53,18 +65,6 @@ function FiniteEnumerationSort(fe_refs)
     FiniteEnumerationSort(fe_refs, nothing)
 end
 tag(::FiniteEnumerationSort) = :finiteenumeration
-
-# MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant>
-
-function Base.show(io::IO, esort::EnumerationSort)
-    print(io, nameof(typeof(esort)), "([")
-    io = inc_indent(io)
-    for  (i, fec) in enumerate(sortelements(esort))
-        print(io, '\n', indent(io), fec);
-        i < length(esort) && print(io, ",")
-    end
-    print(io, "])")
-end
 
 """
     FiniteIntRangeSort(start::T, stop::T; meta) where {T<:Integer} -> Range
