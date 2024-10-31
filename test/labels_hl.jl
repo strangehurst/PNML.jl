@@ -151,9 +151,10 @@ end
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             val = Labels.value(mark)::PNML.PnmlMultiset{<:Any}
             @test PNML.basis(val) isa UserSort
-            @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))) == 1
+            #@show val NumberConstant{Int64}(8, usersort(:positive))()
+            @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))()) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
-            @test NumberConstant{Int64}(8, usersort(:positive)) in val.mset
+            @test NumberConstant{Int64}(8, usersort(:positive))() in val.mset
         end
      end
 
