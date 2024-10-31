@@ -9,7 +9,6 @@ using PNML, ..TestUtils, JET
               <name> <text>page name</text> </name>
               <graphics><offset x="0" y="0"/></graphics>
               <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-              <text>net5 declaration label</text>
               <graphics><offset x="0" y="0"/></graphics>
               <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
 
@@ -30,27 +29,29 @@ using PNML, ..TestUtils, JET
           </net>
         </pnml>
         """)
-    model = parse_pnml(node)
-
+    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+        model = parse_pnml(node)
+    end
     @test model isa PnmlModel
 end
 
 @testset "Document & ID Registry" begin
     emptypage = xmlroot("""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-      <net id="net" type="pnmlcore"> <page id="page"/> </net>
+      <net id="netid1" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """)
-    @test_logs(match_mode=:all, parse_pnml(emptypage) )
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @test_logs(match_mode=:all, parse_pnml(emptypage) )
 
-    @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
-    @test_call target_modules=target_modules parse_pnml(emptypage)
-
+        @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
+        @test_call target_modules=target_modules parse_pnml(emptypage)
     #TODO ===============================================
     #=
     Create a tuple of ID Registries of the same shape as the nets of the model.
     =#
     #TODO ===============================================
+    end
 end
 
 @testset "multiple net type" begin
@@ -67,53 +68,57 @@ end
       <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """))
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 
-    @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
-    @test PNML.regs(model) isa Vector{PnmlIDRegistry}
-    @test length(PNML.regs(model)) == length(PNML.nets(model))
+        @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
+        @test PNML.regs(model) isa Vector{PnmlIDRegistry}
+        @test length(PNML.regs(model)) == length(PNML.nets(model))
 
-    modelnets = PNML.nets(model)::Tuple
-    @test length(modelnets) == 5
+        modelnets = PNML.nets(model)::Tuple
+        @test length(modelnets) == 5
 
-    for net in modelnets
-        ntup = PNML.find_nets(model, net)
-        t = PNML.nettype(net)
-        @test PNML.name(net) == string(pid(net)) # true by special construction
-        for n in ntup
-            @test t === PNML.nettype(n)
+        for net in modelnets
+            ntup = PNML.find_nets(model, net)
+            t = PNML.nettype(net)
+            @test PNML.name(net) == string(pid(net)) # true by special construction
+            for n in ntup
+                @test t === PNML.nettype(n)
+            end
         end
-    end
 
-    @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
-                                        :hlnet, :symmetric, :continuous]
-        @test_opt  PNML.find_nets(model, pt)
-        @test_call PNML.find_nets(model, pt)
+        @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
+                                            :hlnet, :symmetric, :continuous]
+            @test_opt  PNML.find_nets(model, pt)
+            @test_call PNML.find_nets(model, pt)
 
-        for (l,m,r) in zip(PNML.find_nets(model, pt),
-                           PNML.find_nets(model, pnmltype(pt)),
-                           PNML.find_nets(model, string(pt)))
-            @test l === m === r
-            @test l.type === m.type ===  r.type === pnmltype(pt)
+            for (l,m,r) in zip(PNML.find_nets(model, pt),
+                            PNML.find_nets(model, pnmltype(pt)),
+                            PNML.find_nets(model, string(pt)))
+                @test l === m === r
+                @test l.type === m.type ===  r.type === pnmltype(pt)
+            end
         end
+
+        # First use is here, so test mechanism here.
+        @test PNML.ispid(:net1)(:net1)
+
+        @test PNML.find_net(model, :net1) isa PnmlNet
+        @test PNML.find_net(model, :net2) isa PnmlNet
+        @test PNML.find_net(model, :net3) isa PnmlNet
+        @test PNML.find_net(model, :net4) isa PnmlNet
+        @test PNML.find_net(model, :net5) isa PnmlNet
+
+        @test_call PNML.find_net(model, :net1)
+        @test_opt  PNML.find_net(model, :net1)
     end
-
-    # First use is here, so test mechanism here.
-    @test PNML.ispid(:net1)(:net1)
-
-    @test PNML.find_net(model, :net1) isa PnmlNet
-    @test PNML.find_net(model, :net2) isa PnmlNet
-    @test PNML.find_net(model, :net3) isa PnmlNet
-    @test PNML.find_net(model, :net4) isa PnmlNet
-    @test PNML.find_net(model, :net5) isa PnmlNet
-
-    @test_call PNML.find_net(model, :net1)
-    @test_opt  PNML.find_net(model, :net1)
 end
 
 @testset "empty page" begin
-    @test parse_str("""<?xml version="1.0"?>
-        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-          <net id="net" type="pnmlcore"><page id="emptypage"> </page></net>
-        </pnml>
-        """) isa PnmlModel
+    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @test parse_str("""<?xml version="1.0"?>
+            <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+              <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
+            </pnml>
+            """) isa PnmlModel
+    end
 end
