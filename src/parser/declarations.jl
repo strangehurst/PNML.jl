@@ -34,7 +34,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
             if tag == "structure" # accumulate declarations
-                @show idregistry[]
+                # @show idregistry[]
                 _parse_decl_structure!(dd, child, pntd)
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
@@ -78,8 +78,9 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
             variabledecls(dd)[pid(vardecl)] = vardecl
 
         elseif tag == "partition"
-            part = parse_sort(Val(:partition), child, pntd)::SortDeclaration
+            part = parse_partition(child, pntd)::SortDeclaration
             partitionsorts(dd)[pid(part)] = part
+
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
         #!    partop = parse_partition_op(child, pntd)
@@ -118,7 +119,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType)
     name = attribute(node, "name")
     child = EzXML.firstelement(node)
     isnothing(child) && error("no sort definition element for namedsort $(repr(id)) $name")
-    def = parse_sort(EzXML.firstelement(node), pntd)::AbstractSort # check for loops?
+    def = parse_sort(EzXML.firstelement(node), pntd, id)::AbstractSort # check for loops?
     isnothing(def) && error("failed to parse sort definition for namedsort $(repr(id)) $name")
     NamedSort(id, name, def)
 end
@@ -216,7 +217,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     # Variables are used during firing a transition to
     # identify tokens removed from input place marking to 1 or more output place markins.
 
-    vsort = parse_sort(EzXML.firstelement(node), pntd)::UserSort
+    vsort = parse_sort(EzXML.firstelement(node), pntd, id)::UserSort
     isnothing(vsort) &&
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
     @warn "VariableDeclaration" id name vsort
@@ -237,13 +238,15 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType)
 end
 
 """
-    parse_feconstants(node::XMLNode, pntd::PnmlType) -> Tuple{Symbols}
+    parse_feconstants(::XMLNode, ::PnmlType, ::REFID) -> Tuple{Symbols}
 
 Place the constants into feconstants(). Return tuple of finite enumeration constant REFIDs.
+
+Access as 0-ary operator indexed by REFID
 """
-function parse_feconstants(node::XMLNode, pntd::PnmlType)
+function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:nothing)
     sorttag = EzXML.nodename(node)
-    @assert sorttag in ("finiteenumeration", "cyclicenumeration")
+    @assert sorttag in ("finiteenumeration", "cyclicenumeration") #? partition
     EzXML.haselement(node) || error("$sorttag has no child element")
 
     fec_refs = Symbol[]
@@ -254,7 +257,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType)
         else
             id = register_idof!(idregistry[], child)
             name = attribute(child, "name")
-            feconstants()[id] = FEConstant(id, name) #TODO partition/enumeration id?
+            feconstants()[id] = FEConstant(id, name, sortrefid) #TODO partition/enumeration id?
             push!(fec_refs, id)
         end
     end
@@ -279,32 +282,32 @@ function make_usersort(tag::Symbol, name::String, sort)
 end
 
 # Singleton sorts map to unique named sorts. Some are built-ins.
-function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:dot, "Dot", DotSort())
 end
-function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:bool, "Bool", BoolSort())
 end
 
-function parse_sort(::Val{:integer}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:integer}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:integer, "Integer", IntegerSort())
 end
 
-function parse_sort(::Val{:natural}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:natural}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:natural, "Natural", NaturalSort())
 end
 
-function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:positive, "Positive", PositiveSort())
 end
 
-function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:real, "Real", RealSort())
 end
 
 # ############################################################
 # # User Sort wraps a REFID to a NamedSort , AbstractSort, PartitionSort sort declaration.
-function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType) #! see parse_namedsort
+function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing) #! see parse_namedsort
     check_nodename(node, "usersort")
     UserSort(Symbol(attribute(node, "declaration")))
 end
@@ -313,39 +316,36 @@ end
 #! XXX TODO Sorts that are not singletons. Must be wrapped in a NamedSort or Partition
 
 # is a finiteenumeration with additional operators: successor, predecessor
-function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     check_nodename(node, "cyclicenumeration")
-    #make_usersort(:cyclicenumeration, "CyclicEnumeration",
-    CyclicEnumerationSort(parse_feconstants(node, pntd))
+    CyclicEnumerationSort(parse_feconstants(node, pntd, refid))
 end
 
-function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     check_nodename(node, "finiteenumeration")
-    #make_usersort(:finiteenumeration, "FiniteEnumeration",
-    FiniteEnumerationSort(parse_feconstants(node, pntd))
+    FiniteEnumerationSort(parse_feconstants(node, pntd, refid))
 end
 
-function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     check_nodename(node, "finiteintrange")
     start = parse(Int, attribute(node, "start"))
     stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
-    #make_usersort(:finiteintrange, "FiniteIntRange",
     FiniteIntRangeSort(start, stop)
 end
 
-function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     @error("IMPLEMENT ME: :list")
     #make_usersort(:list, "List", #TODO Wrap in UserSort,NamedSort duo.
     ListSort()
 end
 
-function parse_sort(::Val{:strings}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:strings}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     @error("IMPLEMENT ME: :string")
     #make_usersort(:strings, "Strings", #TODO Wrap in UserSort,NamedSort duo.
     StringSort()
 end
 
-function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort"))
 
@@ -385,14 +385,14 @@ end
 #       <natural/>
 #     </productsort>
 #   </namedsort> element
-function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType)
+function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REFID=:nothing)
     check_nodename(node, "productsort")
 
     sorts = REFID[] # Orderded collection of zero or more Sorts
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
         if tag === :usersort
-            us = parse_sort(Val(tag), child, pntd)::UserSort
+            us = parse_sort(Val(tag), child, pntd, rid)::UserSort
             push!(sorts, refid(us)) # need REFID
         else
             throw(MalformedException("<productsort> contains unexpected sort $tag"))
@@ -414,11 +414,11 @@ Some nesting is used. Meaning that some sorts contain other sorts.
 
 See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_variabledecl`](@ref).
 """
-function parse_sort(node::XMLNode, pntd::PnmlType)
+function parse_sort(node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
     sortid = Symbol(EzXML.nodename(node))
     sort = if sortid in sort_ids
-        parse_sort(Val(sortid), node, pntd)::AbstractSort #Union{NamedSort, UserSort}
+        parse_sort(Val(sortid), node, pntd, refid)::AbstractSort #Union{NamedSort, UserSort}
     else
         @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids.")
     end
@@ -433,15 +433,4 @@ Returns [`UserSort`](@ref) wraping the REFID of a [`NamedSort`](@ref) or [`Abstr
 function parse_usersort(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "usersort")
     UserSort(Symbol(attribute(node, "declaration")))
-end
-
-"""
-$(TYPEDSIGNATURES)
-A reference to a variable declaration.
-"""
-function parse_variable(node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "variable")
-    # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
-    # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
-    Variable(Symbol(attribute(node, "refvariable")))
 end
