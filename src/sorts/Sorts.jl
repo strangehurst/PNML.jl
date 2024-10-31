@@ -52,7 +52,7 @@ include("strings.jl")
 export AbstractSort, UserSort, MultisetSort, ProductSort, TupleSort,
         DotSort,  BoolSort,
         NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort,
-        CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
+        EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
         ListSort, StringSort,
         DotConstant, FiniteIntRangeConstant,
         NullSort, builtin_sorts, isbuiltinsort

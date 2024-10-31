@@ -43,9 +43,9 @@ using PNML:
     coordinate_type, coordinate_value_type,
     validate_declarations,
     def_sort_element
-using PNML:  toexpr, VariableEx,
+using PNML:  toexpr, VariableEx, UserOperatorEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
-    NumberOf, And, Not, Imply, Equality, Inequality, Successor, Predecessor,
+    And, Not, Imply, Equality, Inequality, Successor, Predecessor,
     PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,
     Addition, Subtraction, Multiplication, Division,
     GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo,
@@ -76,7 +76,7 @@ Construct an empty PNML ID registry using a ReentrantLock.
 """
 function registry()
     r = PnmlIDRegistry()
-    println("create PnmlIDRegistry ", objectid(r)) #! debug
+    #println("create PnmlIDRegistry ", objectid(r)) #! debug
     return r
 end
 
@@ -89,7 +89,7 @@ export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file,
     parse_initialMarking, parse_hlinitialMarking,
     parse_graphics, parse_graphics_coordinate, parse_tokengraphics, parse_tokenposition,
     parse_declaration,
-    parse_namedsort, parse_namedoperator, parse_variable, parse_sort,
+    parse_namedsort, parse_namedoperator, parse_sort,
     parse_unknowndecl, parse_term, parse_feconstants, parse_variabledecl,
     parse_excluded, parse_structure,
     registry,
