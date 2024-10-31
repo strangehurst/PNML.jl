@@ -29,7 +29,7 @@ end
 
 # We also need to define equality for our matchables expression. Ignore any metadata.
 function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
-    a.head == b.head && a.args == b.args && a.foo == b.foo
+    a.head == b.head && a.args == b.args && a.foo == b.foo #! is this corrct XXX
 end
 
 # TermInterface operators are s-expressions: first is function, rest are arguments.
@@ -80,23 +80,28 @@ inscription <- :userop :variable :numberconstant
 inscription <- :numberof :numberconstant :mult :variable :variable
 =#
 
-"""
-    VariableEx
 
-TermInterface expression constructing a [`Variable`](@ref)
-
-"""
-VariableEx
+###################################################################################
+# expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
     refid::REFID # REFID in variables(). Accessed by variable(refid).
 end
-toexpr(op::VariableEx) = begin
-    :($Variable($(op.refid)))
-end
+toexpr(op::VariableEx) = :($Variable($(op.refid)))
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
 end
 
+###################################################################################
+# expression wrapping a REFID used to do operator lookup `operator(REFID)`.
+@matchable struct UserOperatorEx <: OpExpr
+    refid::REFID # operator(REFID) returns operator callable.
+end
+toexpr(op::UserOperatorEx) = :(operator($(op.refid)))
+function Base.show(io::IO, x::UserOperatorEx)
+    print(io, "UserOperatorEx(", x.refid, ")" )
+end
+
+###################################################################################
 """
     Bag
 
@@ -116,11 +121,8 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 
 basis(b::Bag) = b.basis
 
-toexpr(b::Bag) = begin
-    #@show b.basis b.element b.multi
-    :($pnmlmultiset($(b.basis), $(b.element), $(b.multi)))
-end
-# Expr(:call, :pnmlmultiset, [b.basis, toexpr(b.x), toexpr(b.multi)])
+toexpr(b::Bag) = :($pnmlmultiset($(b.basis), toexpr($(b.element)), toexpr($(b.multi))))
+#@show b.basis b.element b.multi #! causes eval
 
 function Base.show(io::IO, x::Bag)
     print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
@@ -134,52 +136,48 @@ end
 #     sort::REFID
 # end
 
+#"Multiset add: Bag × Bag -> PnmlMultiset"
 @matchable struct Add <: PnmlExpr
-    args::Vector{Bag} # >=2 #! maybe not ground term expressions TODO NTuplex[]
+    args::Vector{Bag} # >=2 # TODO NTuplex[]
 end
-toexpr(op::Add) = begin # multiset add: Bag × Bag -> PnmlMultiset
+toexpr(op::Add) = begin
     @assert length(op.args) >= 2
-    quote
-        $reduce(+, ($(map(toexpr, op.args)...),)) #! construct a new PnmlMultiset when evaluated!
-    end
+    :($reduce(+, ($(map(toexpr, op.args)...),))) # constructs a new PnmlMultiset
 end
 function Base.show(io::IO, x::Add)
     print(io, "Add(", x.args, ")" )
 end
 
+#"Multiset subtract: Bag × Bag -> PnmlMultiset"
 @matchable struct Subtract <: PnmlExpr
     lhs::Bag
     rhs::Bag
 end
-toexpr(op::Subtract) = begin # multiset difference returning a PnmlMultiset
-    :(toexpr(op.lhs) - toexpr(op.rhs))
-end
+toexpr(op::Subtract) = :(toexpr(toexpr(op.lhs)) - toexpr(toexpr(op.rhs)))
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
 
+#"#Multiset integer scalar product: ℕ x Bag -> PnmlMultiset"
 @matchable struct ScalarProduct <: PnmlExpr
     n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Bag is an expression
 end
-toexpr(op::ScalarProduct) = begin # returning a integer scalar product of PnmlMultiset
-    :(PnmlMultiset(basis(op.bag), :(toexpr(op.n) * toexpr(op.bag))))
-end
+toexpr(op::ScalarProduct) = :(PnmlMultiset(basis(op.bag), :(toexpr(op.n) * toexpr(op.bag))))
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
 
-struct NumberOf # Bag, may be nonground term, must eval(toexpr) the value as multiset.
-    n::Any #! expression evaluating to integer >= 0
-    value::Any #! expression evaluating to a term
-end
+# See parse_term(Val{:numberof} ...
+# struct NumberOf # Bag, may be nonground term, must eval(toexpr) the value as multiset.
+#     n::Any #! expression evaluating to integer >= 0
+#     value::Any #! expression evaluating to a term
+# end
 
 @matchable struct Cardinality <: PnmlExpr
-    arg::Any # eval(toexp) to a multiset
+    arg::Any # multiset expression
 end
-toexpr(op::Cardinality) = begin
-    :(length(toexpr(op.arg).mset))
-end
+toexpr(op::Cardinality) = :(length(toexpr(op.arg).mset))
 function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
 end
@@ -188,22 +186,17 @@ end
     ms::Any # multiset expression
     refid::REFID # element of basis sort
 end
-toexpr(op::CardinalityOf) = begin
-    m = toexpr(op.ms)
-    :($m.mset[op.refid])
-end
+toexpr(op::CardinalityOf) = :(toexpr(op.ms).mset[op.refid])
 function Base.show(io::IO, x::CardinalityOf)
     print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
 end
 
+#"Bag -> Bool"
 @matchable struct Contains{T} <: PnmlExpr
     ms::Any # multiset expression
     refid::Any
 end
-toexpr(op::Contains) = begin
-    m = toexpr(op.ms)
-    :($(m.mset[op.refid]) >  0)
-end
+toexpr(op::Contains) = :(toexpr(op.ms).mset[op.refid] >  0)
 function Base.show(io::IO, x::Contains)
     print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
 end
@@ -213,9 +206,7 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Or) = begin
-    :(op.lhs || op.rhs)
-end
+toexpr(op::Or) = :(toexpr(toexpr(op.lhs)) || toexpr(op.rhs))
 function Base.show(io::IO, x::Or)
     print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -224,9 +215,7 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::And) = begin
-    :(op.lhs && op.rhs)
-end
+toexpr(op::And) = :(toexpr(toexpr(op.lhs)) && toexpr(op.rhs))
 function Base.show(io::IO, x::And)
     print(io, "And(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -234,9 +223,7 @@ end
 @matchable struct Not <: BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Not) = begin
-    :(!(op.rhs))
-end
+toexpr(op::Not) = :(!(toexpr(op.rhs)))
 function Base.show(io::IO, x::Not)
     print(io, "Not(", x.rhs, ")" )
 end
@@ -245,53 +232,43 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Imply) = begin
-    :(!op.lhs || op.rhs)
-end
+toexpr(op::Imply) = :(!toexpr(toexpr(op.lhs)) || toexpr(op.rhs))
 function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Equality{T} <: PnmlExpr
-    lhs::T # expression evaluating to a T
-    rhs::T # expression evaluating to a T
+@matchable struct Equality <: PnmlExpr
+    lhs::Any # expression evaluating to a T
+    rhs::Any # expression evaluating to a T
 end
-toexpr(op::Equality) = begin
-    :(op.lhs == op.rhs)
-end
+toexpr(op::Equality) = :(toexpr(op.lhs) == toexpr(op.rhs))
 function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Inequality{T} <: PnmlExpr
-    lhs::T # expression evaluating to a T
-    rhs::T # expression evaluating to a T
+@matchable struct Inequality <: PnmlExpr
+    lhs::Any # expression evaluating to a T
+    rhs::Any # expression evaluating to a T
 end
-toexpr(op::Inequality) = begin
-    :(op.lhs != op.rhs)
-end
+toexpr(op::Inequality) = :(toexpr(op.lhs) != toexpr(op.rhs))
 function Base.show(io::IO, x::Inequality)
     print(io, "Inequality(", x.lhs, ", ", x.rhs, ")" )
 end
 
 
 #& Cyclic Enumeration Operators
-struct Successor <: PnmlExpr
+@matchable struct Successor <: PnmlExpr
     arg::Any
 end
-toexpr(op::Successor) = begin
-    error("implement me")
-end
+toexpr(op::Successor) = error("implement me arg ", repr(op.arg))
 function Base.show(io::IO, x::Successor)
     print(io, "Successor(", x.arg, ")" )
 end
 
-struct Predecessor <: PnmlExpr
+@matchable struct Predecessor <: PnmlExpr
     arg::Any
 end
-toexpr(op::Predecessor) = begin
-    error("implement me")
-end
+toexpr(op::Predecessor) = error("implement me arg ", repr(op.arg))
 function Base.show(io::IO, x::Predecessor)
     print(io, "Predecessor(", x.arg, ")" )
 end
@@ -318,156 +295,175 @@ struct GreaterThanOrEqual{T} <: PnmlExpr
 end
 =#
 
+#& Integer (we extend to generic Number)
+@matchable struct Addition <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::Addition) = :(toexpr(op.lhs) + toexpr(op.rhs))
+function Base.show(io::IO, x::Addition)
+    print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct Subtraction <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::Subtraction) = :(toexpr(op.lhs) - toexpr(op.rhs))
+function Base.show(io::IO, x::Subtraction)
+    print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct Multiplication <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::Multiplication) = :(toexpr(op.lhs) * toexpr(op.rhs))
+function Base.show(io::IO, x::Multiplication)
+    print(io, "Multiplication(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct Division <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::Division) = :(div(toexpr(op.lhs), toexpr(op.rhs)))
+function Base.show(io::IO, x::Division)
+    print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct GreaterThan <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::GreaterThan) = :(toexpr(op.lhs) > toexpr(op.rhs))
+function Base.show(io::IO, x::GreaterThan)
+    print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct GreaterThanOrEqual <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::GreaterThanOrEqual) = :(toexpr(op.lhs) >= toexpr(op.rhs))
+function Base.show(io::IO, x::GreaterThanOrEqual)
+    print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct LessThan <: PnmlExpr # Everything is an expression here. #? NumExpr?
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::LessThan) = :(toexpr(op.lhs) < toexpr(op.rhs))
+function Base.show(io::IO, x::LessThan)
+    print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct LessThanOrEqual <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::LessThanOrEqual) = :(toexpr(op.lhs) <= toexpr(op.rhs))
+function Base.show(io::IO, x::LessThanOrEqual)
+    print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
+end
+
+@matchable struct Modulo <: PnmlExpr
+    lhs::Any
+    rhs::Any
+end
+toexpr(op::Modulo) = :(mod(toexpr(op.lhs), toexpr(op.rhs)))
+function Base.show(io::IO, x::Modulo)
+    print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
+end
+
+
 #& Partition
 # PartitionElement is an operator declaration. Is this a literal?
-struct PartitionElementOp <: PnmlExpr #! Same as PartitionElement, for term rerwite?
+@matchable struct PartitionElementOp <: OpExpr #! Same as PartitionElement, for term rerwite?
     id::Symbol
     name::Union{String,SubString{String}}
     refs::Vector{REFID} # to FEConstant
 end
-toexpr(op::PartitionElementOp) = begin
-    error("implement me")
-end
+toexpr(op::PartitionElementOp) = error("implement me")
 function Base.show(io::IO, x::PartitionElementOp)
     print(io, "PartitionElementOp(", x.id, ", ", x.name, ", ", x.refs, ")" )
 end
 
 #> comparison functions on the partition elements which is based on
 #> the order in which they occur in the declaration of the partition
-struct PartitionLessThan{T} <: PnmlExpr
+@matchable struct PartitionLessThan{T} <: PnmlExpr
     lhs::T
     rhs::T
     # return BoolExpr
 end
-toexpr(op::PartitionLessThan) = begin
-    error("implement me")
-end
+toexpr(op::PartitionLessThan) = error("implement me")
 function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-struct PartitionGreaterThan{T} <: PnmlExpr
+@matchable struct PartitionGreaterThan{T} <: PnmlExpr
     lhs::T
     rhs::T
     # return BoolExpr
 end
-toexpr(op::PartitionGreaterThan) = begin
-    error("implement me")
-end
+toexpr(op::PartitionGreaterThan) = error("implement me ", repr(op))
 function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-struct PartitionElementOf <: PnmlExpr
+@matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
     refpartition::Any # UserSort, REFID
     # return BoolExpr
 end
-toexpr(op::PartitionElementOf) = begin
-    error("implement me")
-end
+toexpr(op::PartitionElementOf) = error("implement me ", repr(op))
 function Base.show(io::IO, x::PartitionElementOf)
     print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
 end
 
-
-#& Integer (we extend to generic Number)
-struct Addition{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-    # use :(+)
-end
-toexpr(op::Addition) = begin
-    error("implement me")
-end
-function Base.show(io::IO, x::Addition)
-    print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
-end
-
-struct Subtraction{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-    # use :(-)
-end
-toexpr(op::Subtraction) = begin
-    error("implement me")
-end
-function Base.show(io::IO, x::Subtraction)
-    print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
-end
-
-struct Multiplication{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-    # use :(*)
-end
-
-struct Division{T <: Number}<: PnmlExpr
-    lhs::T
-    rhs::T
-    # use :(/) or :(\div) or ?
-end
-struct GreaterThan{T <: Number}<: PnmlExpr
-    lhs::T
-    rhs::T
-     # :(>) return BoolExpr
-    end
-struct GreaterThanOrEqual{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-     # :(>=) return BoolExpr
-    end
-struct LessThan{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-     # :(<) return BoolExpr
-    end
-struct LessThanOrEqual{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-     # :(<=) return BoolExpr
-    end
-struct Modulo{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-    # use ?
-end
-
 #& Strings
-struct Concatenation{T <: AbstractString} <: PnmlExpr
+@matchable struct Concatenation{T <: AbstractString} <: PnmlExpr
     args::Vector{T} # =2
     # use ?
 end
-struct Append{T <: AbstractString} <: PnmlExpr
+
+@matchable struct Append{T <: AbstractString} <: PnmlExpr
     lhs::T
     rhs::T
     # use ?
 end
-struct StringLength{T <: AbstractString} <: PnmlExpr
+
+@matchable struct StringLength{T <: AbstractString} <: PnmlExpr
     arg::T
     # use ?
 end
-struct StringLessThan{T <: AbstractString} <: PnmlExpr
+
+@matchable struct StringLessThan{T <: AbstractString} <: PnmlExpr
     lhs::T
     rhs::T
     # use ?
 end
-struct StringLessThanOrEqual{T <: AbstractString} <: PnmlExpr
+
+@matchable struct StringLessThanOrEqual{T <: AbstractString} <: PnmlExpr
     lhs::T
     rhs::T
     # use ?
 end
-struct StringGreaterThan{T <: AbstractString} <: PnmlExpr
+
+@matchable struct StringGreaterThan{T <: AbstractString} <: PnmlExpr
     lhs::T
     rhs::T
     # use ?
 end
-struct StringGreaterThanOrEqual{T <: AbstractString} <: PnmlExpr
+
+@matchable struct StringGreaterThanOrEqual{T <: AbstractString} <: PnmlExpr
     lhs::T
     rhs::T
     # use ?
 end
-struct Substring{T <: AbstractString} <: PnmlExpr
+
+@matchable struct Substring{T <: AbstractString} <: PnmlExpr
     str::T
     start::Int
     length::Int
@@ -475,13 +471,17 @@ struct Substring{T <: AbstractString} <: PnmlExpr
 end
 
 #& Lists
-struct ListLength <: PnmlExpr
+@matchable struct ListLength <: PnmlExpr
 end
-struct ListConcatenation <: PnmlExpr
+
+@matchable struct ListConcatenation <: PnmlExpr
 end
-struct Sublist <: PnmlExpr
+
+@matchable struct Sublist <: PnmlExpr
 end
-struct ListAppend <: PnmlExpr
+
+@matchable struct ListAppend <: PnmlExpr
 end
-struct MemberAtIndex <: PnmlExpr
+
+@matchable struct MemberAtIndex <: PnmlExpr
 end
