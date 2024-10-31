@@ -55,3 +55,5 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
     return x
 end
+
+toexpr(::Nothing) = nothing
