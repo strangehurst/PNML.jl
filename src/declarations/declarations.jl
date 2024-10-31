@@ -43,6 +43,9 @@ abstract type SortDeclaration <: AbstractDeclaration end
 
 """
 $(TYPEDEF)
+
+[`NamedOperator`](@ref). [`FEConstant`](@ref), [`PartitionElement`](@ref) and
+[`ArbitraryOperator`](@ref) are all referenced by [`UserOperator`](@ref).
 """
 abstract type OperatorDeclaration <: AbstractDeclaration end
 
