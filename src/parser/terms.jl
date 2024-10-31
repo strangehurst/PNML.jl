@@ -1,51 +1,63 @@
 
 # See `TermInterface.jl`, `Metatheory.jl`
 """
-$(TYPEDSIGNATURES)
+    parse_term(::XMLNode, ::PnmlType) -> PnmlExpr
+    parse_term(::Val{:tag}::XMLNode, ::PnmlType) -> PnmlExpr
 
-There will be no XML node <term>. Instead it is the interpertation of the child of some
-<structure>, <subterm> or <def> elements. The Relax NG Schema does contain "Term".
-Terms kinds are Variable and Operator.
+There will be no XML node `<term>`. Instead it is the interpertation of the child of a
+`<structure>`, `<subterm>` or `<def>` element with a `nodename` of `tag`.
+
+The Relax NG Schema does contain concept of an abstact "Term".
+Concrete term kinds are `Variable` and `Operator`.
 
 All terms have a sort, #TODO
+
 Will be using `TermInterface.jl` to build an expression tree (AST) that can contain:
 operators, constants (as 0-airity operators), and variables.
 
 AST are evaluated for place initialMarking (ground terms only) and transition firing
 where conditions and inscription expressions may contain non-ground terms (using variables).
-
-# TIDBITS
-
-Is this a useful pattern for handling ASTs:
-    p isa MP.SomeType && MP.isconstant(p) && return convert(Number, p)
-
 """
 function parse_term(node::XMLNode, pntd::PnmlType)
     tag = Symbol(EzXML.nodename(node))
-    printstyled("parse_term tag = $tag \n"; color=:bold)
-    if isoperator(tag)#! 2024-10-17 everything except a UserOperator
-        return parse_term(Val(tag), node, pntd) #^ MUST be same type as parse_operator_term.
-    else # arity > 0, build & return an Operator Functor that has a vector of inputs.
-        @assert tag === :useroperator
+    printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout)
+    if tag === :namedoperator
+        # arity > 0, build & return an Operator Functor that has a vector of inputs.
         return parse_operator_term(tag, node, pntd)
+    else
+        return parse_term(Val(tag), node, pntd) # expression
     end
-     #! Return something that can do toexpr(term)
+    #! Return something that can do toexpr(term)
     #! XXX do parse_term, parse_operator_term have same type XXX
+    #! YES, if they are PnmlExpr!
+end
+
+"""
+    subterms(node, pntd) -> Vector{PnmlExpr}
+
+Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref).
+"""
+function subterms(node, pntd)
+    sts = Vector{Any}()
+    for subterm in EzXML.eachelement(node) # arguments are Bags
+        stnode, tag = unwrap_subterm(subterm)
+        st, _ = parse_term(Val(tag), stnode, pntd)
+        isnothing(st) && throw(MalformedException("operator subterm is nothing"))
+        push!(sts, st)
+    end
+    @show sts
+    return sts
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Build an [`Operator`](@ref) Functor from the XML tree at `node`.
-
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
     printstyled("parse_operator_term: $(repr(tag))\n"; color=:green);
-
-    isoperator(tag) || @error "tag $tag is not an operator"
-
+    @assert tag === :namedoperator
     func = pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
-
     # maketerm() constructs
     # - Expr
     # - object with toexpr() that will make a Expr
@@ -82,19 +94,22 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
 end
 
 #----------------------------------------------------------------------------------------
-# Expect only an attribute referencing the declaration.
 function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
-    @warn "parse_term :variable"
+    check_nodename(node, "variable")
+    # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
+    # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
+    # Expect only an attribute referencing the declaration.
     var = VariableEx(Symbol(attribute(node, "refvariable")))
     usort = sortref(variable(var.refid))
-    return (var, usort) #! toexpr(var) is expression for Variable with this UserSort
+    @warn "parseed variable" var usort
+    return (var, usort) # expression for Variable with this UserSort
 end
 
+#----------------------------------------------------------------------------------------
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType)
     bc = BooleanConstant(attribute(node, "value"))
-    return (bc, sortof(bc)) #TODO XXX toexpr(::BooleanConstant)
-    #return (Operator(tag, func, interms, insorts, outsort, nothing), outsort)
+    return (bc, sortof(bc))
 end
 
 # Has a value that is a subsort of NumberSort (<:Number).
@@ -125,20 +140,15 @@ function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType)
     return (DotConstant(), usersort(:dot)) #TODO XXX maketerm, toexpr -> ::DotConstant or 1
 end
 
-#~
+
+#~##############################
 #~ Multiset Operator terms
-#~
+#~##############################
 
+# XML Examples
 # <all><usersort declaration="N1"/></all>
-"""
-    parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType) -> Bag
-
- `<all>` operator creates a [`Bag`](@ref) that contains exactly one of each element a sort.
- Is a literal/ground term and can be used for intialMarking expressions.
-
-# XML Example
-    `<all><usersort declaration="N1"/></all>`
-"""
+# `<all>` operator creates a [`Bag`](@ref) that contains exactly one of each element a sort.
+# Is a literal/ground term and can be used for intialMarking expressions.
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(MalformedException("<all> operator missing sort argument"))
@@ -147,13 +157,9 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType)
     return Bag(basis), basis #! toexpr(::Bag) makes expression that calls pnmlmultiset(basis)
 end
 
-"""
-    parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType) -> Bag
-
 # XML Examples
-    `<empty><usersort declaration="N1"/></empty>`
-    `<empty>/integer></empty>`
-"""
+#    `<empty><usersort declaration="N1"/></empty>`
+#    `<empty>/integer></empty>`
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(MalformedException("<empty> operator missing sort argument"))
@@ -163,67 +169,38 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType)
     return Bag(basis, x, 0), basis #! toexpr(::Bag) makes expression that calls pnmlmultiset(basis, x, 0)
 end
 
-"""
-    parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType) -> Add
-
-Add multiset expressions.
-# XML Example
-"""
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType)
-    bags = Vector{Bag}()
-    for subterm in EzXML.eachelement(node) # arguments are Bags
-        stnode, tag = unwrap_subterm(subterm)
-        bag, _ = parse_term(Val(tag), stnode, pntd)
-        isnothing(bag) && throw(MalformedException("<add> operator argument missing"))
-        #@show tag bag
-        push!(bags, bag)
-    end
-    return Add(bags), basis(first(bags)) #! toexpr(::Add) makes expression that calls pnmlmultiset(basis, sum_of_Multiset)
+    sts = subterms(node, pntd)
+    @assert length(sts) >= 2
+    return Add(sts), basis(first(sts)) #! toexpr(::Add) makes expression that calls pnmlmultiset(basis, sum_of_Multiset)
 end
 
-"""
-    parse_term(::Val{:subtract}, node::XMLNode, pntd::PnmlType) -> Subtract
-# XML Example
-"""
 function parse_term(::Val{:subtract}, node::XMLNode, pntd::PnmlType)
-    bags = Vector{Bag}()
-    for subterm in EzXML.eachelement(node) # arguments are Bags
-        stnode, tag = unwrap_subterm(subterm)
-        bag, _ = parse_term(Val(tag), stnode, pntd)::Bag
-        isnothing(bag) && throw(MalformedException("<add> operator argument missing"))
-        push!(bags, bag)
-    end
-    @assert length(bags) == 2
-    return Subtract(bags), basis(first(bags)) #! toexpr(::Subtract) makes expression that calls pnmlmultiset(basis, difference_of_Multiset)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Subtract(bags), basis(first(sts)) #! toexpr(::Subtract) makes expression that calls pnmlmultiset(basis, difference_of_Multiset)
 end
 
-"""
-    parse_term(::Val{:scalarproduct}, node::XMLNode, pntd::PnmlType) -> ScalarProduct
-
-# XML Example
-
-The only example found:
-```
-<scalarproduct>
-    <subterm>
-        <cardinality>
-            <subterm>
-                <variable refvariable="id4"/>
-            </subterm>
-        </cardinality>
-    </subterm>
-    <subterm>
-        <variable refvariable="id4"/>
-    </subterm>
-</scalarproduct>
-```
-The first subterm is an expression that evaluates to a natural number.
-
-The second subterm is an expression that evaluates to a PnmlMultiset.
-
-Notably, this differs from `:numberof` by both arguments being variables, NOT ground terms.
-As well as the 2nd being a multiset rather than a sort.
-"""
+# The only example found:
+# ```
+# <scalarproduct>
+#     <subterm>
+#         <cardinality>
+#             <subterm>
+#                 <variable refvariable="id4"/>
+#             </subterm>
+#         </cardinality>
+#     </subterm>
+#     <subterm>
+#         <variable refvariable="id4"/>
+#     </subterm>
+# </scalarproduct>
+# ```
+# The first subterm is an expression that evaluates to a natural number.
+# The second subterm is an expression that evaluates to a PnmlMultiset.
+#
+# Notably, this differs from `:numberof` by both arguments being variables, NOT ground terms.
+# As well as the 2nd being a multiset rather than a sort.
 function parse_term(::Val{:scalarproduct}, node::XMLNode, pntd::PnmlType)
     scalar = nothing # integer expression
     bag = nothing # Bag
@@ -285,16 +262,11 @@ end
 # output: Expression for term rewrite into `pnmlmultiset`. #! TermInterface.maketerm
 # 2 inputs: multiplicity, term evaluating to an element of basis sort
 # Use rewrite rule to dynamically evaluate output to materialize a PnmlMultiset.
-"""
-    parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType) -> Bag
-# XML Example
-    ```
-    <numberof>
-        <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
-        <subterm><dotconstant/></subterm>
-    </numberof>
-    ```
-"""
+# # XML Example
+#     <numberof>
+#         <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
+#         <subterm><dotconstant/></subterm>
+#     </numberof>
 function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     multiplicity = nothing
     instance = nothing
@@ -306,9 +278,9 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
             # RealSort as first numberconstant might confuse `Multiset.jl`.
             # Negative integers will cause problems. Don't do that either.
         else
-            # If 2 numberconstants, first is `multiplicity`, this is `instance`.
+            @show tag # If 2 numberconstants, first is `multiplicity`, this is `instance`.
             instance, isort = parse_term(stnode, pntd) #!  PnmlExpr, UserSort
-            @show instance isort
+            # @show instance isort
             isa(instance, MultisetSort) &&
                 throw(ArgumentError("numberof's output basis cannot be MultisetSort"))
         end
@@ -324,10 +296,6 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     return Bag(isort, instance, multiplicity()), isort #!  PnmlExpr, UserSort
 end
 
-"""
-    parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType) -> Natural
-# XML Example
-"""
 function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType)
     subterm = EzXML.firstelement(node) # single argument subterm
     stnode, _ = unwrap_subterm(subterm)
@@ -337,95 +305,137 @@ function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType)
     return Cardinality(expr), usersort(:natural) #!  PnmlExpr, UserSort toexpr(::Cardinality) >= 0
 end
 
-"""
-    parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType) -> Natural
-# XML Example
-"""
+#^#########################################################################
+#^ Booleans
+#^#########################################################################
+
 function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType)
-    sts = Vector{Any}()
-    for subterm in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(subterm)
-        @show st, _ = parse_term(Val(tag), stnode, pntd)
-        isnothing(st) && throw(MalformedException("<or> operator argument missing"))
-        push!(sts, st)
-    end
-    @show sts
+    sts = subterms(node, pntd)
     @assert length(sts) == 2
     return Or(sts[1], sts[2]), usersort(:bool)
 end
 
-#^#########################################################################
-"""
-    parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType) -> Natural
-# XML Example
-"""
+function parse_term(::Val{:and}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return And(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:not}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Not(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:imply}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Imply(sts[1], sts[2]), usersort(:bool)
+end
+
 function parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType)
-    sts = Vector{Any}()
-    for subterm in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(subterm)
-        println("parse_term :equality arg ", repr(tag))
-        @show st, _ = parse_term(Val(tag), stnode, pntd)
-        isnothing(st) && throw(MalformedException("<equality> operator argument missing"))
-        push!(sts, st)
-    end
-    @show sts
+    sts = subterms(node, pntd)
     @assert length(sts) == 2
     #@assert equalSorts(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return Equality(sts[1], sts[2]), usersort(:bool)
 end
 
-"""
-    parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType) -> Natural
-# XML Example
-"""
 function parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType)
-    sts = Vector{Any}()
-    for subterm in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(subterm)
-        println("parse_term :inequality arg ", repr(tag))
-        @show st, _ = parse_term(Val(tag), stnode, pntd)
-        isnothing(st) && throw(MalformedException("<inequality> operator argument missing"))
-        push!(sts, st)
-    end
-    @show sts
+    sts = subterms(node, pntd)
     @assert length(sts) == 2
-    @assert equalSorts(sts[1], sts[2])
+    #@assert equalSorts(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return Inequality(sts[1], sts[2]), usersort(:bool)
 end
 
-# """
-#     parse_term(::Val{:}, node::XMLNode, pntd::PnmlType) -> Natural
-# # XML Example
-# """
+#&#########################################################################
+#& Cyclic Enumeration Operators
+#&#########################################################################
+
+function parse_term(::Val{:successor}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 1
+    return Successor(sts[1]), usersort(:bool)
+end
+
+function parse_term(::Val{:predecessor}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 1
+    return Predecessor(sts[1]), usersort(:bool)
+end
+
+#& FiniteIntRange Operators work on integrs in spec So use that implementation for
+#& LessThan LessThanOrEqual GreaterThan GreaterThanOrEqual
+
+function parse_term(::Val{:addition}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Addition(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:subtraction}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Subtraction(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:multiplication}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Multiplication(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:division}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Division(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:greaterthan}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return GreaterThan(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:lessthan}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return LessThan(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:lessthanorequal}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return LessThanOrEqual(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:greaterthanorequal}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return GreaterThanOrEqual(sts[1], sts[2]), usersort(:bool)
+end
+
+function parse_term(::Val{:modulo}, node::XMLNode, pntd::PnmlType)
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    return Modulo(sts[1], sts[2]), usersort(:bool)
+end
+
+
 # function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
-#     sts = Vector{Any}()
-#     for subterm in EzXML.eachelement(node)
-#         stnode, tag = unwrap_subterm(subterm)
-#         @show st, _ = parse_term(Val(tag), stnode, pntd)
-#         isnothing(st) && throw(MalformedException("<> operator argument missing"))
-#         push!(sts, st)
-#     end
+#     sts = subterms(node, pntd)
 #     @show sts
 #     @assert length(sts) == 2
 #     return (sts[1], sts[2]), usersort(:bool)
 # end
 
-# """
-#     parse_term(::Val{:}, node::XMLNode, pntd::PnmlType) -> Natural
-# # XML Example
-# """
+
 # function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
-#     sts = Vector{Any}()
-#     for subterm in EzXML.eachelement(node)
-#         stnode, tag = unwrap_subterm(subterm)
-#         @show st, _ = parse_term(Val(tag), stnode, pntd)
-#         isnothing(st) && throw(MalformedException("<> operator argument missing"))
-#         push!(sts, st)
-#     end
+#     sts = subterms(node, pntd)
 #     @show sts
 #     @assert length(sts) == 2
 #     return (sts[1], sts[2]), usersort(:bool)
 # end
+
 
 ##########################################################################
 
@@ -438,20 +448,22 @@ end
 # end
 
 function parse_term(::Val{:unparsed}, node::XMLNode, pntd::PnmlType)
-    @error "parse_term(::Val{:unparsed} not implemented"
+    flush(stdout); @error "parse_term(::Val{:unparsed} not implemented"
 end
 
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType)
-    @error "parse_term(::Val{:tuple} not implemented"
+    flush(stdout); @error "parse_term(::Val{:tuple} not implemented"
 end
 
 # <structure>
 #   <useroperator declaration="id4"/>
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType)
-    uo = UserOperator(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
-    @warn "returning $uo"
-    return (uo, sortof(uo))
+    uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
+    @show PNML.operators() PNML.operator(uo.refid); flush(stdout)
+    usort = sortref(PNML.operator(uo.refid))
+    @warn "returning useroperator" uo usort
+    return (uo, usort)
 end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType)
@@ -480,23 +492,28 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
         sort = FiniteIntRangeSort(startval, stopval)
 
+        # Note: The specification specifically
+
+        # if !any(nsort->equalSorts(sort, sortdefinition(nsort)), values(namedsorts()))
+        #   create namedsort, usersort with ID derived from tag, start, stop.
+        # else
+        #   use the ID of the first matching sort.
+
         ustag = nothing
         for (refid, nsort) in pairs(namedsorts()) # look for first equalSorts
             if equalSorts(sort, sortdefinition(nsort))
-                @show refid nsort
+                # @show refid nsort
                 ustag = refid
                 break
             end
         end
-        #if !any(nsort->equalSorts(sort, sortdefinition(nsort)), values(namedsorts()))
-        # Create a deduplicated sortdefinition
+        # Create a deduplicated sortdefinition in scoped value
         if isnothing(ustag)
             ustag = Symbol(sorttag,"_",startstr,"_",stopstr)
             println("fill_sort_tag ",  repr(ustag), ", ", sort)
             fill_sort_tag(ustag, "FIRConst"*"_"*startstr*"_"*stopstr, sort)
             #fis = usersort(ustag)
         end
-        #@show typeof(fis) # DECLDICT[]
         return (value, usersort(ustag)) #! toexpr is identity for numbers
     end
     throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
@@ -507,18 +524,19 @@ end
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
-function parse_sort(::Val{:partition}, node::XMLNode, pntd::PnmlType)
+function parse_partition(node::XMLNode, pntd::PnmlType,)
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
-    @warn "partition $(repr(id)) $nameval" #~ debug
+    @warn "partition $(repr(id)) $nameval"; flush(stdout);  #~ debug
     psort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into psort that form a equivalance class.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
+            #TODO pass REFID?
             psort = parse_usersort(child, pntd)::UserSort #? sortof isa EnumerationSort
-        elseif tag === "partitionelement" # Each holds REFIDs to sort elements segment of the enumeration.
-            parse_partitionelement!(elements, child)
+        elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
+            parse_partitionelement!(elements, child, id) # pass REFID to partition
         else
             throw(MalformedException(string("partition child element unknown: $tag, ",
                                 "allowed are usersort, partitionelement")))
@@ -542,7 +560,7 @@ end
 
 Parse `<partitionelement>`, add FEconstant refids to the element and append element to the vector.
 """
-function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
+function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode, rid::REFID)
     check_nodename(node, "partitionelement")
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
@@ -553,7 +571,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
             # PartitionElements refer to the FEConstants of the referenced finite sort.
             # UserOperator holds an IDREF to a FEConstant operator.
             refid = Symbol(attribute(child, "declaration"))
-            PNML.has_feconstant(PNML.DECLDICT[], refid) ||
+            PNML.has_feconstant(refid) ||
                 error("refid $refid not found in feconstants") #! move to verify?
             push!(terms, refid)
         else
@@ -562,6 +580,6 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     end
     isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms"))
 
-    push!(elements, PartitionElement(id, nameval, terms))
+    push!(elements, PartitionElement(id, nameval, terms, rid)) # REFID to enclosing partition
     return nothing
 end
