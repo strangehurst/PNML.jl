@@ -55,10 +55,9 @@ sortelements(::BoolSort) = tuple(true, false)
 """
 $(TYPEDEF)
 
-Holds a reference id (REFID) to a subtype of Declaratons.SortDeclaration.
+Holds a reference id (REFID) to a subtype of [`PNML.Declaratons.SortDeclaration`](@ref).
 
 [`PNML.Declarations.NamedSort`](@ref) is used to construct a sort out of builtin sorts.
-Used in a Place's sort type property.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::REFID #TODO validate as a NamedSort REFID
@@ -69,6 +68,7 @@ refid(us::UserSort) = us.declaration
 namedsort(us::UserSort) = namedsort(refid(us)) # usersort -> namedsort
 sortref(us::UserSort) = identity(us)::UserSort
 sortof(us::UserSort) = sortdefinition(namedsort(us))
+Base.eltype(us::UserSort) = eltype(sortof(us))
 
 # Forward operations to the NamedSort matching the declaration REFID.
 sortelements(us::UserSort) = sortelements(sortdefinition(namedsort(us)))
