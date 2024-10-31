@@ -1,4 +1,29 @@
+#=
 
+
+getSubterm -> list term
+getOutput -> sort
+getInput -> list sort
+
+getDeclaration
+
+useroperator -> operator declaration -> builtin operator
+Let OpExpr <: PnmlExpr
+
+finite element constant is 0-ary operator expressed as useroperator wrapping an REFID
+
+`:(feconstant(REFID)())`
+locates the FEConstant element in the DECLDICT and return its value/id/name(TBD).
+there are 4 kinds of operator declarations:
+    feconstant, nameoperator, arbitraryoperator, partitionelement
+each have different types.
+See decldictcore.jl
+
+sortdefinition(outsort) isa FEConstant, inexprs, insorts are empty.
+
+
+eval(::FEXEx)
+=#
 """
 PNML Operator as Functor
 
@@ -327,9 +352,6 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     # @show uo
     # dd = DECLDICT[]
     # @show _op_dictionaries()
-    # for op in _op_dictionaries()
-    #     @show op getfield(dd, op)
-    # end
     # println()
     # _ops(dd)
     # println()
@@ -338,11 +360,10 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     #! FEConstants are 0-ary operators. namedoperators?
 
     if !has_operator(uo.declaration)
-        @warn "found NO operator $(uo.declaration), returning `false`"
-        return false
+        error("found NO operator $(repr(uo.declaration))")
     else
         op = operator(uo.declaration) # get operator from decldict
-        @warn "found operator $(uo.declaration)`"
+        @warn "found operator for $(uo.declaration)" op
         r  = op(#= pass arguments to functor/operator =#)
         return r
     end
