@@ -37,7 +37,7 @@
 =#
 
 """
-    PartitionElement(id::Symbol, name, Vector{IDREF})
+    PartitionElement(id::Symbol, name, Vector{IDREF}, REFID)
 
 $(TYPEDFIELDS)
 
@@ -69,6 +69,7 @@ struct PartitionElement <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     terms::Vector{REFID} # 1 or more, feconstant in parent partitions's referenced sort
+    partition::REFID
     #todo verify terms are in parent partitions's referenced sort
 end
 
