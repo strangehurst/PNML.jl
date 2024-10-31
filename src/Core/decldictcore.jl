@@ -134,7 +134,7 @@ feconstant(id::Symbol)     = feconstants(PNML.DECLDICT[])[id]
 usersort(id::Symbol)       = usersorts(PNML.DECLDICT[])[id]
 useroperator(id::Symbol)   = useroperators(PNML.DECLDICT[])[id]
 
-#TODO :useroperators
+#TODO :useroperator -> opdictionary -> op  # how type-stable is this?
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
 _ops(dd) = Iterators.map(op -> getfield(dd, op), _op_dictionaries())
 
@@ -143,7 +143,7 @@ _ops(dd) = Iterators.map(op -> getfield(dd, op), _op_dictionaries())
 Iterate over each operator in the operator subset of declaration dictionaries .
 """
 operators(dd::DeclDict) = Iterators.flatten(Iterators.map(values, _ops(dd)))
-operators() = operators(dd::DeclDict)
+operators() = operators(PNML.DECLDICT[])
 
 "Does any operator dictionary contain `id`?"
 has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(dd))
@@ -154,12 +154,49 @@ has_operator(id::Symbol) = has_operator(PNML.DECLDICT[], id)
 _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id), _ops(dd)))
 
 """
-Return operator with `id`. Operators include: `NamedOperator`, `FEConstant`, `PartitionElement`.
+    operator(dd::DeclDict, id::Symbol) -> AbstractOperator
+    operator(id::Symbol) -> AbstractOperator
+
+Return operator TermInterface expression for `id`.
+    `toexpr(::OpExpr) = :(useroperator(REFID)())`
+
+"Operator Declarations" include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
+with types `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
+These define operators of different types that are placed into separate dictionaries.
+
+#! CORRECT AbstractOperator type hierarchy that has `Operator` as concrete type.
+#! AbstractDeclarations and AbstractTerms are "parallel" hierarchies in the UML,
+#! with AbstractTerms divided into AbstractOperators and AbstractVariables.
+
+useroperator(REFID) is used to locate the operator definition, when it is found in `feconstants()`,
+is a callable returning a `FEConstant` literal.
+
+    `toexpr(::FEConstantEx) = :(useroperator(REFID)())`
+
+The FEConstant operators defined by the declaration do not have a distinct type name in the specification.
+Note that a FEConstant's value in the specification is its identity.
+We could use `objectid(::FEConstant)`, `REFID` or `name` for output value.
+Output sort of op is FEConstant.
+
+Other `OperatorDeclaration` dictionarys also hold `TermInterface` expressions accessed by
+
+    `toexpr(::OpExpr) = :(useroperator(REFID)())`
+
+where `OpExpr` is the `TermInterface` to match `OperatorDeclaration`.
+With output sort to match `OperatorDeclaration` .
+
+#TODO named operator input variables and thier sorts
+
+#TODO partition element
+
+#TODO arbitrary opearator
+
+#TODO built-in operators
 """
 function operator(dd::DeclDict, id::Symbol)
     dict = _get_op_dict(dd, id)
     op = dict[id]
-    return op
+    return op #!TODO! TermInterface expression
 end
 operator(id::Symbol) = operator(PNML.DECLDICT[], id)
 
