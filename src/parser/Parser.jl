@@ -11,7 +11,7 @@ using DocStringExtensions
 import Multisets: Multisets, Multiset
 using TermInterface
 using PNML
-import PNML: elements, sortelements, sortof, basis, value, tag, pid, refid
+import PNML: elements, sortelements, sortof, basis, value, tag, pid, refid, toexpr
 #import InteractiveUtils
 
 using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value,

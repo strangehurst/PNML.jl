@@ -6,7 +6,7 @@ using DocStringExtensions
 import Multisets: Multisets, Multiset
 using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition,
-    basis, value, _evaluate, tag, pid, refid,
+    basis, value, tag, pid, refid,
     usersort, namedsort, toexpr
 using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID
 

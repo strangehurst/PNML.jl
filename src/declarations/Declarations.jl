@@ -14,6 +14,7 @@ using TermInterface
 
 using PNML
 import PNML: sortof, sortref, sortdefinition, sortelements, basis, tag, pid, refid, name, REFID
+import PNML: toexpr
 using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 
 using PNML: page_idset, place_idset, transition_idset, arc_idset,
