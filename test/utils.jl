@@ -4,15 +4,6 @@ import EzXML
 @testset "CONFIG" begin
     @show PNML.CONFIG[]
 end
-# @testset "DECLDICT" begin
-#     @show typeof(PNML.DECLDICT[])
-# end
-
-# 2024-10-11 remove _evaluate for Callables
-# @testset "_evaluate" begin
-#     f() = "testing"
-#     @test PNML._evaluate(f) == "testing"
-# end
 
 @testset "ExXML" begin
     @test_throws ArgumentError xmlroot("")
@@ -54,8 +45,7 @@ end
     PNML.fill_nonhl!(PNML.DECLDICT[])
 
     i = if ishighlevel(pntd)
-        # placetype = SortType("test", UserSort(:integer))
-        placetype = SortType("test", UserSort(:dot))
+        placetype = SortType("default_inscription", UserSort(:dot))
         default_hlinscription(pntd, placetype)
     else
         default_inscription(pntd)

@@ -56,7 +56,7 @@ end
             PNML.fill_nonhl!()
 
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-            placetype = SortType("test", PNML.usersort(:dot))
+            placetype = SortType("XXX", PNML.usersort(:dot))
 
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             @test mark isa PNML.marking_type(pntd)
@@ -93,7 +93,7 @@ end
     #         PNML.fill_nonhl!()
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
     #         PNML.usersorts()[:uop] = UserSort(:dot)
-    #         placetype = SortType("test", PNML.usersort(:uop))
+    #         placetype = SortType("YYY", PNML.usersort(:uop))
     #         mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
     #         @test mark isa HLMarking
     #     end
@@ -126,7 +126,7 @@ end
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
-            placetype = SortType("test", PNML.usersort(:dot))
+            placetype = SortType("dot sorttype", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
         end
     end
@@ -147,7 +147,7 @@ end
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
-            placetype = SortType("test", PNML.usersort(:positive))
+            placetype = SortType("positive sorttype", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             val = Labels.value(mark)::PNML.PnmlMultiset{<:Any}
             @test PNML.basis(val) isa UserSort
@@ -166,7 +166,7 @@ end
         """
         @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
-            placetype = SortType("test", PNML.usersort(:dot))
+            placetype = SortType("testdot", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
         end
     end
@@ -207,7 +207,7 @@ end
 #     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort())
 #     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort())
 
-#     @show placetype = SortType("test", TupleSort(UserSort[UserSort(:dot),
+#     @show placetype = SortType("XXX", TupleSort(UserSort[UserSort(:dot),
 #                                                           UserSort(:dot)]))
 
 #     mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
@@ -273,7 +273,7 @@ end
 #     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
 #     dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
 #     dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
-#     @show placetype = SortType("test", UserSort(:dot))
+#     @show placetype = SortType("XXX", UserSort(:dot))
 
 
 #     #@show PNML.TOPDECLDICTIONARY

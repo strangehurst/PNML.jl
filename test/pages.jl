@@ -58,8 +58,8 @@ model = @inferred PNML.PnmlModel parse_str("""<?xml version="1.0"?>
                 <page id="page14" />
             </page>
             <page id="page2">
-            <place id="p2"/>
-            <transition id ="t2"/>
+                <place id="p2"/>
+                <transition id ="t2"/>
                 <arc id="a21" source="t2" target="p2"/>
                 <arc id="a22" source="t2" target="rp2"/>
                 <referencePlace id="rp2" ref="p3111"/>

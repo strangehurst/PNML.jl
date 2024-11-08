@@ -88,9 +88,9 @@ println("-----------------------------------------\n")
             #@show n
             #println("-----------------------------------------")
 
-            Base.redirect_stdio(stdout=testshow, stderr=testshow) do
+            Base.redirect_stdio(stdout=nothing, stderr=nothing) do
                 #TODO use MetaGraph as base of a validation tool
-                println("pagetree")
+                println("pagetree"); flush(stdout)
                 PNML.pagetree(n)
                 println("print_tree")
                 AbstractTrees.print_tree(n)
@@ -99,7 +99,7 @@ println("-----------------------------------------\n")
                 @show vc = PNML.vertex_codes(n)
                 @show vl = PNML.vertex_labels(n)
                 println("-----------------------------------------")
-
+                @show arcs(n)
                 for a in arcs(n)
                     @show a
                     println("Edge ", vc[PNML.source(a)], " -> ",  vc[PNML.target(a)])
@@ -121,7 +121,7 @@ println("\n-----------------------------------------")
 println("AirplaneLD-col-0010.pnml")
 println("-----------------------------------------\n")
 @testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
-    println(testfile)
+    println(testfile); flush(stdout)
     model = parse_file(testfile)::PnmlModel
     #!model = @test_logs(match_mode=:all, parse_file(testfile))
 
@@ -172,9 +172,10 @@ end
 # Read a SymmetricNet with partitions, tuples from pnmlframework test file.
 println("\n-----------------------------------------")
 println("sampleSNPrio.pnml")
-println("-----------------------------------------\n")
+println("-----------------------------------------\n"); flush(stdout)
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
+    model = parse_file(fname)::PnmlModel
     model = @test_throws ArgumentError parse_file(fname)::PnmlModel
     #show #println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
     #@test PNML.verify(net; verbose=true)

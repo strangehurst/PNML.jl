@@ -49,7 +49,7 @@ end
 
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
-        placetype = SortType("test", UserSort(PNML.sorttag(marking_value_type(pntd))))
+        placetype = SortType("PT initMarking", UserSort(PNML.sorttag(marking_value_type(pntd))))
 
         # Parse ignoring unexpected child
         mark = @test_logs((:warn, r"^ignoring unexpected child"),
@@ -63,7 +63,7 @@ end
         @test_call PNML.Marking(23)
         @test typeof(mark1()) == typeof(23) #! term rewrite, _evaluate
         @test mark1() == value(mark1) == 23
-        @test_opt broken=true mark1()
+        @test_opt broken=false mark1()
         @test_call mark1()
 
         @test graphics(mark1) === nothing

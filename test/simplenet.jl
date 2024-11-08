@@ -104,7 +104,7 @@ str1 = """
             @test pid(a) ===  a.id
                         @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
-            @test @inferred(inscription(a)) !== nothing
+            @test @inferred(Number, inscription(a)) !== nothing
         end
     end
 
@@ -237,7 +237,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    #println(); println(pntd);println()
+    println(); println("extract a graph $pntd"); println(); flush(stdout)
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -268,7 +268,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         <page id="page0">
             <place id="p1"> $marking </place>
             <place id="p2"/>
-            <place id="p3"/>map
+            <place id="p3"/>
             <place id="p4"/>
             <place id="p0"/>
             <transition id="t1">
@@ -294,7 +294,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     </pnml>
     """
     anet = PNML.SimpleNet(str3)
-    # @show anet
+    @show anet
     mg = PNML.metagraph(anet)
 
     @test anet isa PNML.AbstractPetriNet

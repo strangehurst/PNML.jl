@@ -21,7 +21,7 @@ select(y, n) = select(y, tuple(n))
 #############################################################################
 @time "TESTS" begin
 
-@testset verbose=true failfast=true showtiming=false "PNML.jl" begin
+@testset verbose=true failfast=false showtiming=false "PNML.jl" begin
     if !isempty(ARGS) && select("NONE")
         return nothing # Have chosen to bail before any tests.
     end

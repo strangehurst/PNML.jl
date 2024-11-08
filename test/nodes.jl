@@ -9,7 +9,7 @@ using PNML, ..TestUtils, JET, XMLDict
     """
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
-        placetype = SortType("test", UserSort(:integer))
+        placetype = SortType("XXX", UserSort(:integer))
 
         n  = parse_place(node, pntd)::Place
         @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd)
@@ -57,18 +57,17 @@ end
     @with PNML.idregistry => registry() PNML.DECLDICT => DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         n = @inferred Transition parse_transition(node, PnmlCoreNet())
-        @test typeof(n) <: Transition
+        @test n isa Transition
         @test pid(n) === :transition1
         @test has_name(n)
         @test name(n) == "Some transition"
         @test condition(n) isa Bool
 
-        node = xml"""<transition id ="t1"> <condition><text>test</text></condition></transition>"""
-        #@test_throws ErrorException parse_transition(node, pntd)
-        @test parse_transition(node, pntd) !== nothing
+        node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
+        @test_throws MalformedException parse_transition(node, pntd)
 
         node = xml"""<transition id ="t2"> <condition/> </transition>"""
-        @test parse_transition(node, pntd) isa Transition
+        @test_throws Exception parse_transition(node, pntd)
 
         node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
         @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
