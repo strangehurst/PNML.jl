@@ -14,20 +14,8 @@ Things that are functors:
 using AbstractTrees, PNML, InteractiveUtils, Markdown
 ```
 
-[`_evaluate`](@ref)
-```@example methods
-methods(PNML._evaluate) # hide
-```
-
 ## Examples
 
-```jldoctest; setup=(using PNML: _evaluate)
-julia> _evaluate(1)
-1
-
-julia> _evaluate(true)
-true
-```
 ## XMLDict format Terms
 [XMLDict.jl](https://github.com/JuliaCloud/XMLDict.jl)
 
@@ -69,26 +57,12 @@ The output sort of numberof is the sort of the element in 2nd subterm.
 </hlinitialMarking>
 ```
 
-```
-value(mark) = Term(:add,
-    (d["subterm"] = [(d["numberof"] = (d["subterm"] =
-                            [(d["numberconstant"] = (d[:value] = "1", d["positive"] = ())),
-                             (d["numberconstant"] = (d[:value] = "3", d["positive"] = ()))])),
-                     (d["numberof"] = (d["subterm"] =
-                            [(d["numberconstant"] = (d[:value] = "1", d["positive"] = ())),
-                             (d["numberconstant"] = (d[:value] = "2", d["positive"] = ()))]))]))
-
-```
-
 Constructs an expression that adds 2 multisets.
-When all multiplicities are 1 and sortof subterm has an eltype (is simple), can apply usual math operator.
-Output sort needs to match eltype of operation result in case there is promotion.
+When all multiplicities are 1 and sortof subterm has an eltype the usual math applies.
+Output sort needs to match eltype of operation result.
 
 ```
 1`3 + 1`2 = 3 + 2 = 5
 2`3 + 1`2 = 3 + 3 + 2 = 8
 ```
 # Zero
-```julia
-value(mark) = Term(:zero, 0)
-```

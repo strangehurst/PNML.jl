@@ -17,6 +17,7 @@ Have not considered any part of creating or writing out a Petri Net model.
 This package, PNML.jl, aims to provide infrastructure to interact with other Julia packages,
 including graphs, category theory, SciML, agents.
 All focus has been on the "load" part of the expected behavior.
+The meta-models are encoded in the structure of PNML.jl, notably in the type system.
 Doing "something useful" is mostly aspriational until adequate function is present.
 
 The first useful things will be trivial and obvious:
@@ -27,14 +28,14 @@ The first useful things will be trivial and obvious:
 Next will be to interface with graph-theoretical packages.
 Enhancing the display and analysis features.
 
-Altering markings will be begun after an initial data structure has been adopted to load models.
+Editing petri net models is not planned, so writing the model is trivial
 
 Checkpointing and writing in some "non-PNML" format is another anticipated feature.
 
-Features mentioned in a preview of
+Features mentioned in
 [ISO/IEC 15909-3:2021 Part 3: Extensions and Structuring Mechanisms](https://www.iso.org/standard/81504.html)
 
-- capacity: maximum multiset of tokens a place can hold
-- FIFO queue (queues in general)
 - special arcs: inhibitor, read, reset
+- capacity place: maximum multiset of tokens a place can hold
+- FIFO queue place (queues in general)
 - sort generator: sorts and operators from signatures

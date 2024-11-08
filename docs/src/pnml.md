@@ -34,21 +34,23 @@ In this section 'PNML' refers to the markup language, its specification and sche
 
 <http://www.pnml.org>
   - has publications and tutorials covering PNML at various points in its evolution.
-  - has links to a series of ISO/IEC 15909 standards relating to PNML. They cost money.
-  - is the cannonical site for the RELAX-NG XML schemas that define the grammar of several Petri Net Type Defintions (pntd), including:
+  - has links to a series of ISO/IEC 15909 standards relating to PNML.
+  - is the cannonical site for the meta-models, RELAX-NG XML schemas that define the grammar of several Petri Net Type Defintions (pntd), including:
 	  - PT Net (Place/Transition Net)
-	  - High-level Place/Transition Net
 	  - Symmetric Net
+  - and more: examples, meta-models in EMF, java-based framework
 
-There are 2 flavors currently covered by PNML: Discrete integer-valued & High-level many-sorted algebra. The _ISO/IEC 15909-2_ specification explicitly restricts the many-sorted algebra to use integers.
+There are 2 flavors currently covered by PNML meta-models:
+  - integer-valued, where tokens have collective identities.
+  - High-level, where tokens have individual identities using a many-sorted algebra.
+__TODO__ cite J. Baez.
 
-It seems the people behind PNML are of the Model Driven Engineering (MDE) camp and have chosen Java, Eclipse and its modeling framework (EMF). They provide such EMF files on this site.
+The people behind PNML, and as stated in _15909-2_, are of the Model Driven Software Engineering camp and have chosen Java, Eclipse and its modeling framework (EMF).
 
-There is GUI focus in the core pnml. Most of the Petri Net components, including the annotation labels, may have graphical presentation data attached. The page driven structure should be useful for at least GUIs.
+See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the RelaxNG Schema as definitive like the 'primer' counsels.
 
-The high-level marking, inscription, condition and declaration are where the hard work waits.
-
-See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the RelaxNG Schema as definitive like the 'primer' counsels. That is what any XML validation tool works from.
+Note that the pnml XML file is the working intermediate representation of a suite of tools that use
+RelaxNG and Schematron for validation of the interchange file's content.
 
 ## Interoperability
 
@@ -57,7 +59,7 @@ Petri Net Markup Language files (pnml) are intended to be validated against a pn
 
 For interchange of pnml between tools it should be enough to support the same pntd schema.
 
-Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. Some bits are on the [Roadmap](@ref) based on freely viewable table of contents. And some http://www.pnml.org extension grammer files mention some of these things.
+Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. And some http://www.pnml.org files address these extensions.
 
 It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
@@ -77,8 +79,6 @@ See [Traits](@ref) for more details.
 If you want interchangability of pnml models, you will have to stick to
 the standard pnml pntds. The High Level Petri Net, even when restricted to
 _symmetricnet.pntd_, is very expressive. Even the base _pnmlcore.pntd_ is useful.
-
-Note that the official pntd schema files are in the grammer directory.
 
 ## Why no Schema Verification
 
@@ -270,3 +270,5 @@ nLab [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+th
 the Call for Models, which gathers Petri net models proposed by the scientific community,
 and the Call for Tools, which benchmarks verification tools developed within the scientific community."
 Each year new models are added to the contest.
+
+ "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"

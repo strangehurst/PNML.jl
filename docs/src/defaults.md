@@ -36,7 +36,7 @@ the kind on number they use:
 See [PnmlType - Petri Net Type Definition](@ref) for the full hierarchy.
 
 This means there are at least 3 sets of default value types.
-We use the pntd [`PnmlType`](@ref) singleton as a trait to determin the default types/values.
+We use the pntd [`PnmlType`](@ref) as a trait to determine the default types/values.
 
 A consequence is that the default value's type ripples through the type system.
 
