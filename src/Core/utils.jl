@@ -5,24 +5,15 @@
 # end
 
 """
-    _evaluate(x::Number) -> identity(x)
-    _evaluate(x::Base.Callable) -> (x)()
-
-Return the value of "x", defaults to identity.
+    toexpr(x::Number) -> identity(x)
 
 # Examples
 
-Since High-level PNML schemas are based on zero, Natural numbers and booleans,
-it seems reasonable to assume `Number`, which includes `Bool`, for the non-callable type.
-Especially as it allows negative numbers and reals.
-A zero-argument functor is expected as the callable type, allowing expressions in the many-sorted algebra
-to be evaluated to a `Number`.
+Since PNML is based on integer numbers and booleans it seems reasonable to use `Number`,
+which includes `Bool` and `Real`.
 """
-function _evaluate end
-_evaluate(x::Number) = begin println("_evaluate Number $(nameof(typeof(x)))"); identity(x); end #! dynamic term rewrite
-#! _evaluate(x::Base.Callable) = begin println("_evaluate call $(nameof(typeof(x)))"); (x)(); end #! dynamic term rewrite
+toexpr(x::Number) = identity(x) #! literal
 
-toexpr(x::Number) = x
 
 """
     ispid(x::Symbol)
