@@ -168,7 +168,7 @@ function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
 
-# See parse_term(Val{:numberof} ...
+# See parse_term(Val{:numberof}, returns Bag
 # struct NumberOf # Bag, may be nonground term, must eval(toexpr) the value as multiset.
 #     n::Any #! expression evaluating to integer >= 0
 #     value::Any #! expression evaluating to a term

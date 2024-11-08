@@ -4,18 +4,15 @@
 $(DocStringExtensions.TYPEDFIELDS)
 
 Collection of dictionaries holding various kinds of PNML declarations.
-Used to define the multisorted algebra of a high-level petri net graph.
+Each keyed by REFID symbols.
 """
 @kwdef struct DeclDict
     variabledecls::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    #TODO use namedsorts to wrap built-in and arbitrary sorts'
     namedsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    # useroperator refers to a OperatorDeclaration by name.
-    # todo use flattened iterator over all OperatorDeclarations
     # OperatorDecls include: namedoperator, feconstant, partition element, et al.
     # namedoperators are used to access built-in operators
     namedoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
@@ -23,13 +20,10 @@ Used to define the multisorted algebra of a high-level petri net graph.
     # PartitionElement is an operator, there are other built-in operators
     partitionops::Dict{Symbol, Any} = Dict{Symbol, Any}()
     # FEConstants are 0-ary OperatorDeclarations.
-    # The only explicit attributes are ID symbol and name string.
-    # TODO record an optional partition id when used by a partition
     feconstants::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    # Allows using an IDREF symbol as a network-level "global".
-    # Useful for non-high-level networks that mimic HLNets to share implementation.
-    # Long way of saying generic? (in what sense generic?)
+    # AllowsThese use an IDREF symbol as a network-level "global" by referencing  abstract
+    # SortDeclaration or Operatordeclaration.
     usersorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
 end
@@ -44,15 +38,25 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
+"Return dictonary of UserSort"
 usersorts(dd::DeclDict)      = dd.usersorts
+"Return dictonary of UserOperator"
 useroperators(dd::DeclDict)  = dd.useroperators
+"Return dictonary of VariableDecl"
 variabledecls(dd::DeclDict)  = dd.variabledecls
+"Return dictonary of NamedSort"
 namedsorts(dd::DeclDict)     = dd.namedsorts
+"Return dictonary of ArbitrarySort"
 arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
+"Return dictonary of PartitionSort"
 partitionsorts(dd::DeclDict) = dd.partitionsorts
+"Return dictonary of NamedOperator"
 namedoperators(dd::DeclDict) = dd.namedoperators
+"Return dictonary of ArbitraryOperator"
 arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
+"Return dictonary of partitionops (PartitionElement)"
 partitionops(dd::DeclDict)   = dd.partitionops
+"Return dictonary of FEConstant"
 feconstants(dd::DeclDict)    = dd.feconstants
 
 # Default to ScopedValue
@@ -135,7 +139,9 @@ usersort(id::Symbol)       = usersorts(PNML.DECLDICT[])[id]
 useroperator(id::Symbol)   = useroperators(PNML.DECLDICT[])[id]
 
 #TODO :useroperator -> opdictionary -> op  # how type-stable is this?
+"Return tuple of operator dictionary fields in the Declaration Dictionaries."
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
+"Return iterator over operator dictionaries of Declaration Dictionaries."
 _ops(dd) = Iterators.map(op -> getfield(dd, op), _op_dictionaries())
 
 """
@@ -209,8 +215,8 @@ function validate_declarations(dd::DeclDict)
 end
 
 """
-    fill_nonhl!() -> nothing
-    fill_nonhl!(dd::DeclDict) -> nothing
+    fill_nonhl!() -> Nothing
+    fill_nonhl!(dd::DeclDict) -> Nothing
 
 Fill a DeclDict with defaults and values needed by non-high-level networks.
 Defaults to filling the scoped value PNML.DECLDICT[].
@@ -249,7 +255,7 @@ end
 """
     fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
 
-If not already in the declarations dictionary, create and add a namedsort, usersort for `tag`.
+If not already in the declarations dictionary, create and add a namedsort, usersort duo for `tag`.
 """
 function fill_sort_tag! end
 
@@ -259,10 +265,9 @@ function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
         namedsorts(dd)[tag] = NamedSort(tag, name, sort)
     end
     if !has_usersort(dd, tag) # Do not overwrite existing content.
-        #! DO NOT register the REFID! ID owned by a NamedSort, ArbitrarySort, PartitionSort
-        #! !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
+        #! DO NOT register REFID! ID owned by NamedSort
         usersorts(dd)[tag] = UserSort(tag)
     end
 end
 
-fill_sort_tag!(tag::Symbol, name, sort) = fill_sort_tag!(PNML.:DECLDICT[], tag::Symbol, name, sort)
+fill_sort_tag!(tag::Symbol, name, sort) = fill_sort_tag!(PNML.DECLDICT[], tag::Symbol, name, sort)

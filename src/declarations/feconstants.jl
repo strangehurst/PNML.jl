@@ -16,7 +16,7 @@ end
 sortref(fec::FEConstant) = usersort(fec.refid)
 Base.eltype(::FEConstant) = FEConstant
 
-(fec::FEConstant)() = fec.name #! rewrite term _evaluate maketerm/toexpr
+(fec::FEConstant)() = fec.name #! todo toexpr()
 
 sortof(fec::FEConstant) = begin
     # These sort declarations share behavior in attaching

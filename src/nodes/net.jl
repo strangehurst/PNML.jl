@@ -106,6 +106,7 @@ all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || t
 src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
 
+"Lookup inscription in [`arcdict`](@ref)"
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
 
 has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
@@ -117,7 +118,7 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
 function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
-    verbose && println("verify PnmlNet $(pid(net))")
+    verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
     errors = String[]
 
     verify!(errors, net; verbose)

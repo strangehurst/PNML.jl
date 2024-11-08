@@ -106,7 +106,7 @@ end
 
 # For empty or singleton multiset.
 function pnmlmultiset(basis::UserSort, element, multi::Int=1)
-    println("pnmlmultiset: ", repr(basis), ", ", repr(element), ", ", repr(multi))
+    #println("pnmlmultiset: ", repr(basis), ", ", repr(element), ", ", repr(multi))
     #! Are transitioning to call pnmlmultiset() from an expression.
     #! Expect `element` and `muti` to have been eval'ed.  So no longer a Bag.
 
@@ -126,7 +126,7 @@ end
 
 # For <all> only the basis is needed.
 function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 add for <all>
-    println("pnmlmultiset: basis = ", repr(basis), ", ", repr(sortof(basis)), ", ", eltype(basis))
+    #println("pnmlmultiset: basis = ", repr(basis), ", ", repr(sortof(basis)), ", ", eltype(basis))
     if isa(basis, MultisetSort) # use EqualSorts?us::UserSort
         throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
     end

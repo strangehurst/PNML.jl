@@ -101,7 +101,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
     # Expect only an attribute referencing the declaration.
     var = VariableEx(Symbol(attribute(node, "refvariable")))
     usort = sortref(variable(var.refid))
-    @warn "parseed variable" var usort
+    @warn "parsed variable" var usort
     return (var, usort) # expression for Variable with this UserSort
 end
 
@@ -460,7 +460,7 @@ end
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType)
     uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
-    @show PNML.operators() PNML.operator(uo.refid); flush(stdout)
+    @show PNML.operator(uo.refid); flush(stdout)
     usort = sortref(PNML.operator(uo.refid))
     @warn "returning useroperator" uo usort
     return (uo, usort)

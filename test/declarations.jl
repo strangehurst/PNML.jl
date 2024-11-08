@@ -21,7 +21,6 @@ end
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
     PNML.Parser.fill_sort_tag!(:X, "X", PositiveSort())
-
     sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd)::UserSort
     #@show PNML.DECLDICT[] sortof(sort)
     @test_logs sprint(show, sort)

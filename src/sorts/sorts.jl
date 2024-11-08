@@ -55,7 +55,7 @@ sortelements(::BoolSort) = tuple(true, false)
 """
 $(TYPEDEF)
 
-Holds a reference id (REFID) to a subtype of [`PNML.Declaratons.SortDeclaration`](@ref).
+Holds a reference id (REFID) to a subtype of SortDeclaration.
 
 [`PNML.Declarations.NamedSort`](@ref) is used to construct a sort out of builtin sorts.
 """

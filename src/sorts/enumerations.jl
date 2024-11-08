@@ -105,5 +105,3 @@ sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are a
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
 toexpr(c::FiniteIntRangeConstant) = value(c)
-
-#!_evaluate(c::FiniteIntRangeConstant) = begin println("_evaluate: FiniteIntRangeConstant"); value(c); end #! TODO term rewrite

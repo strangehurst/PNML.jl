@@ -431,14 +431,14 @@ function usersort end
 """
     sortdefinition(NamedSort|ArbitrarySort|PartitionSort)
 
-Return [`AbstractSort`](@ref) from a [`SortDeclaration`](@ref).
+Return [`AbstractSort`](@ref) from a SortDeclaration.
 Expected usage pattern is _usersort -> sortdeclaration -> sortdefinition_.
 This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@ref)
 """
 function sortdefinition end
 
 """
-    toexpr(::TermInterface) -> Expr
+    toexpr(::Any) -> Expr
 
 Recursivly call `toexpr` on contained terms.
 """

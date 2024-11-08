@@ -25,7 +25,7 @@ true
 """
 @auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
-    term::Any #! has toexpr()
+    term::Any #! has toexpr() BoolExpr
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -36,9 +36,10 @@ Condition(text::AbstractString, term) = Condition(text, term, nothing, nothing)
 condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
 
-#! Term may be non-ground and need arguments (variables) that reference a marking's value.
-value(c::Condition) = toexpr(c.term) #! term rewrite _evaluate
-(c::Condition)() = _evaluate(value(c))::eltype(c) # Bool isa Number
+#! Term may be non-ground and need arguments:
+#! pnml variable expressions that reference a marking's value?
+value(c::Condition) = toexpr(c.term) #todo! pnml variables
+(c::Condition)() = value(c)::eltype(c) # Bool isa Number #todo! pnml variables
 
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
