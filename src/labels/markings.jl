@@ -27,13 +27,14 @@ julia> m()
 ```
 """
 struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
+    #! hl adds text here
     term::T #! expression
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Maybe{Vector{ToolInfo}}
 end
 # Allow any Number subtype, only a few concrete subtypes are expected.
-Marking(m::Number) = Marking(NumberEx(sortref(m), m))
-Marking(nx::NumberEx) = Marking(nx, nothing, nothing)
+Marking(m::Number) = Marking(NumberEx(m))
+Marking(nx::NumberEx) = Marking(#=nothing,=# nx, nothing, nothing)
 
 term(marking::Marking) = marking.term
 

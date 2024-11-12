@@ -134,11 +134,11 @@ end
     TermInterface expression for a NumberSort.
 """
 NumberEx # Need to avoid @matchable to have docstring
-@matchable struct NumberEx <: PnmlExpr
+@matchable struct NumberEx{T<:Number} <: PnmlExpr
     basis::UserSort # Wraps a sort REFID.
-    element::Any #TODO! method unless nothing
+    element::T #TODO! method unless nothing
 end
-NumberEx(x) = NumberEx(sortref(x), x)
+NumberEx(x::Number) = NumberEx(sortref(x)::UserSort, x)
 basis(x::NumberEx) = x.basis
 toexpr(b::NumberEx) = toexpr(b.element) # eval isa ::eltype(b.basis)
 function Base.show(io::IO, x::NumberEx)
