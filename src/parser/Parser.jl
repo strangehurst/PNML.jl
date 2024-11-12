@@ -11,7 +11,7 @@ using DocStringExtensions
 import Multisets: Multisets, Multiset
 using TermInterface
 using PNML
-import PNML: elements, sortelements, sortof, basis, value, tag, pid, refid, toexpr
+import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
 #import InteractiveUtils
 
 using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value,
@@ -43,7 +43,7 @@ using PNML:
     coordinate_type, coordinate_value_type,
     validate_declarations,
     def_sort_element
-using PNML:  toexpr, VariableEx, UserOperatorEx,
+using PNML:  toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
     And, Not, Imply, Equality, Inequality, Successor, Predecessor,
     PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,

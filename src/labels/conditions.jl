@@ -23,9 +23,9 @@ julia> c()
 true
 ```
 """
-@auto_hash_equals struct Condition <: Annotation #TODO make LL & HL like marking, inscription
+@auto_hash_equals struct Condition{T<:PnmlExpr} <: Annotation #TODO make LL & HL like marking, inscription
     text::Maybe{String}
-    term::Any #! has toexpr() BoolExpr
+    term::T #! has toexpr() BoolExpr
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -38,8 +38,8 @@ Base.eltype(::Type{<:Condition}) = Bool
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
-value(c::Condition) = toexpr(c.term) #todo! pnml variables
-(c::Condition)() = value(c)::eltype(c) # Bool isa Number #todo! pnml variables
+term(c::Condition) = c.term #todo! pnml variables
+(c::Condition)() = eval(toexpr(term(c)))::eltype(c) # Bool isa Number #todo! pnml variables
 
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
@@ -47,7 +47,7 @@ condition_value_type(::Type{<: AbstractHLCore}) = eltype(BoolSort)
 function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")
     show(io, text(c)); print(io, ", ")
-    show(io, value(c))
+    show(io, term(c))
     print(io, ")")
 end
 
@@ -56,4 +56,4 @@ $(TYPEDSIGNATURES)
 Return default condition based on `PNTD`. Has meaning of true or always.
 """
 function default_condition end
-default_condition(::PnmlType)              = Condition(BooleanConstant(true))
+default_condition(::PnmlType) = Condition(BooleanEx(BooleanConstant(true)))

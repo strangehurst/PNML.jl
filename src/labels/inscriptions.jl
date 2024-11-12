@@ -14,23 +14,25 @@ julia> i()
 3
 ```
 """
-struct Inscription{T<:Number}  <: Annotation
-    value::T #TODO make Inscription use TermInterface
+struct Inscription{T<:PnmlExpr} <: Annotation
+    term::T #! expression
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
 
-Inscription(value::Number) = Inscription(value, nothing, nothing)
+Inscription(x::Number) = Inscription(sortref(x), x)
+Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
+Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
-value(i::Inscription) = i.value #! returns <:Number
-(inscription::Inscription)() = _evaluate(value(inscription)::Number) #! TODO term rewrite rule
+term(i::Inscription) = toexpr(i.term)
+(inscription::Inscription)() = term(inscription)::Number
 
-sortref(inscription::Inscription) = sortref(value(inscription))::UserSort
+sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
-    show(io, value(inscription))
+    show(io, term(inscription))
     if has_graphics(inscription)
         print(io, ", ")
         show(io, graphics(inscription))
@@ -49,52 +51,31 @@ $(TYPEDFIELDS)
 Labels an Arc with a term in a many-sorted algebra.
 See also [`Inscription`](@ref) for non-high-level net inscriptions.
 
-`HLInscription(t::PnmlMultiset)()` is a functor returning a value of the `eltype` of sort of inscription.
+`HLInscription(t::PnmlExpr)()` is a functor evaluating the expression and a value of the `eltype` of sort of inscription.
 
 # Examples
     ins() isa eltype(sortof(ins))
 
 """
-struct HLInscription{T<:PnmlMultiset} <: HLAnnotation
+struct HLInscription{T <: PnmlExpr} <: HLAnnotation
     text::Maybe{String}
-    term::T # Multiset whose basis sort is the same as adjacent place's sorttype.
+    term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
-#! XXX Make HLInscription use TermInterface
-#! TODO CHANGE TO PnmlMultiset
-# ```jldoctest; setup=:(using PNML; using PNML: HLInscription, NumberConstant, NaturalSort)
-# julia> i2 = HLInscription(NumberConstant(3, NaturalSort()))
-# HLInscription("", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
+HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
+HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing)
 
-# julia> i2()
-# 3
+(hlinscription::HLInscription)() = eval(term(hlinscription))
 
-# julia> i3 = HLInscription("text", NumberConstant(1, NaturalSort()))
-# HLInscription("text", NumberConstant{Int64, NaturalSort}(1, NaturalSort()))
-
-# julia> i3()
-# 1
-
-# julia> i4 = HLInscription("text", NumberConstant(3, NaturalSort()))
-# HLInscription("text", NumberConstant{Int64, NaturalSort}(3, NaturalSort()))
-
-# julia> i4()
-# 3
-# ```
-HLInscription(t::PnmlMultiset) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::PnmlMultiset) = HLInscription(s, t, nothing, nothing)
-
-value(i::HLInscription) = i.term
-sortref(hli::HLInscription) = sortref(value(hli))::UserSort
-sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset
-
-(hlinscription::HLInscription)() = _evaluate(value(hlinscription)::PnmlMultiset) #! TODO term rewrite rule
+term(i::HLInscription) = toexpr(i.term)
+sortref(hli::HLInscription) = sortref(term(hli))::UserSort
+sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset #TODO other sorts
 
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")
     show(io, text(inscription)); print(io, ", "),
-    show(io, value(inscription))
+    show(io, term(inscription))
     if has_graphics(inscription)
         print(io, ", ")
         show(io, graphics(inscription))
@@ -124,8 +105,8 @@ end
 
 # Julia Type is the "fixed" part.
 
-inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{inscription_value_type(T)}
-inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{inscription_value_type(T)}
+inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr} #inscription_value_type(T)}
+inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr} #inscription_value_type(T)}
 
 inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort)
 inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
@@ -151,6 +132,7 @@ Has meaning of unity, as in `one` of the adjacent place's sorttype.
 #TODO Add element of sort selector
 """
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
+    basis = sortref(placetype)
     el = def_sort_element(placetype)
-    HLInscription(pnmlmultiset(sortref(placetype), el, 1)) # not empty multiset. singleton multiset
+    HLInscription(Bag(basis, el, 1)) # non-empty singleton multiset.
 end

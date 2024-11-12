@@ -36,8 +36,8 @@ end
 
 @testset "default_condition($pntd)" for pntd in all_nettypes()#ishighlevel)
     c = default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
-    #println("default_condition($pntd) = ", repr(c))
-    @test toexpr(value(c)) == true
+    println("default_condition($pntd) = ", repr(c))
+    @test c() == true
 end
 #println()
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin

@@ -27,7 +27,7 @@ Base.eltype(::Type{PnmlMultiset{T}}) where {T} = T
 Base.zero(::Type{PnmlMultiset{<:Any}}) = zero(Int) #! what meaning/use?
 Base.one(::Type{PnmlMultiset{<:Any}})  = one(Int) #! what meaning/use?
 
-sortref(ms::PnmlMultiset{<:Any}) = basis(ms) # definition of basis sort
+sortref(ms::PnmlMultiset{<:Any}) = basis(ms)::UserSort # definition of basis sort
 sortof(ms::PnmlMultiset{<:Any}) = sortof(basis(ms)) # definition of basis sort
 
 _evaluate(ms::PnmlMultiset{<:Any}) = begin println("_evaluate: PnmlMultiset see Bag for operator, this is a data structure "); cardinality(ms); end #! TODO rewrite rule

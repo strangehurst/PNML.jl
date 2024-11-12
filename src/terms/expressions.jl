@@ -122,12 +122,46 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 basis(b::Bag) = b.basis
 
 toexpr(b::Bag) = :($pnmlmultiset($(b.basis), toexpr($(b.element)), toexpr($(b.multi))))
-#@show b.basis b.element b.multi #! causes eval
 
 function Base.show(io::IO, x::Bag)
     print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
 end
 
+###################################################################################
+"""
+    NumberEx
+
+    TermInterface expression for a NumberSort.
+"""
+NumberEx # Need to avoid @matchable to have docstring
+@matchable struct NumberEx <: PnmlExpr
+    basis::UserSort # Wraps a sort REFID.
+    element::Any #TODO! method unless nothing
+end
+NumberEx(x) = NumberEx(sortref(x), x)
+basis(x::NumberEx) = x.basis
+toexpr(b::NumberEx) = toexpr(b.element) # eval isa ::eltype(b.basis)
+function Base.show(io::IO, x::NumberEx)
+    print(io, "NumberEx(", x.basis, ", ", x.element,")")
+end
+
+"""
+    BooleanEx
+
+    TermInterface expression for a BooleanSort.
+"""
+BooleanEx # Need to avoid @matchable to have docstring
+@matchable struct BooleanEx <: BoolExpr
+    #basis::UserSort # Wraps a sort REFID.
+    element::BooleanConstant #TODO! method unless nothing
+end
+basis(::BooleanEx) = usersort(:bool) # is constant
+toexpr(b::BooleanEx) = toexpr(b.element()) #todo  eval isa ::eltype(b.basis)
+function Base.show(io::IO, x::BooleanEx)
+    print(io, "BooleanEx(", x.element,")")
+end
+
+###################################################################################
 #& Multiset Operator
 # struct All  <: PnmlExpr# #! :all is a literal, ground term, parsed as Bag expression
 #     sort::REFID
@@ -158,7 +192,7 @@ function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
 
-#"#Multiset integer scalar product: ℕ x Bag -> PnmlMultiset"
+#"Multiset integer scalar product: ℕ x Bag -> PnmlMultiset"
 @matchable struct ScalarProduct <: PnmlExpr
     n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Bag is an expression

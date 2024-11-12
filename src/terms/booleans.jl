@@ -12,7 +12,7 @@ function BooleanConstant(s::Union{AbstractString,SubString{String}})
     BooleanConstant(parse(eltype(BoolSort), s))
 end
 tag(::BooleanConstant) = :booleanconstant
-sortref(::BooleanConstant) = usersort(:bool) # usersort,namedsort duo
+sortref(::BooleanConstant) = usersort(:bool)::UserSort # usersort,namedsort duo
 sortof(::BooleanConstant) = sortdefinition(namedsort(:bool)) # usersort,namedsort duo
 
 (c::BooleanConstant)() = value(c)

@@ -90,8 +90,6 @@ const XDVT2 = Union{DictType,  String,  SubString{String}}
 const XDVT = Union{XDVT2, Vector{XDVT2}}
 
 tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
-#! value(d::DictType) = d[tag(d)]
-#! value(s::Union{String, SubString{String}}) = s
 
 #--------------------------------------------
 # Terms & Sorts

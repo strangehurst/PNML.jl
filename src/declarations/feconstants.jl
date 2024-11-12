@@ -13,7 +13,7 @@ struct FEConstant <: OperatorDeclaration
     refid::REFID # of contining partition, enumeration, (and partitionelement?)
 end
 
-sortref(fec::FEConstant) = usersort(fec.refid)
+sortref(fec::FEConstant) = usersort(fec.refid)::UserSort
 Base.eltype(::FEConstant) = FEConstant
 
 (fec::FEConstant)() = fec.name #! todo toexpr()

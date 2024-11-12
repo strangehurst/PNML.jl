@@ -60,7 +60,7 @@ struct VariableDeclaration <: AbstractDeclaration
     name::Union{String,SubString{String}}
     sort::UserSort # user -> named -> sort object
 end
-sortref(vd::VariableDeclaration) = vd.sort
+sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd))) #? partitionsort
 
 """

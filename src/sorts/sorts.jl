@@ -89,7 +89,7 @@ Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
         end
     end
 end
-sortref(ms::MultisetSort) = ms.basis # 2024-10-09 make be a usersort
+sortref(ms::MultisetSort) = identity(ms.basis)::UserSort # 2024-10-09 make be a usersort
 sortof(ms::MultisetSort) = sortdefinition(namedsort(basis(ms))) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
 

@@ -349,6 +349,13 @@ May return an Expr that returns the value when eval'ed.
 function value end
 
 """
+    term(x)
+Return term of x.
+PnmlExpr that eval'ed returns the value.
+"""
+function term end
+
+"""
 $(TYPEDSIGNATURES)
 Return value type.
 """
@@ -361,12 +368,12 @@ function inscription_type end
 
 """
     inscription_value_type(pntd) -> Union{Int64, Float64, <:PnmlMultiset}
-Return value type.
+Return value type of `pntd`. Used after `eval` of `toexpr` of inscription value.
 """
 function inscription_value_type end
 
 """
-    marking_type(pntd) -> Marking{marking_value_type(pntd)}.
+    marking_type(pntd) -> Marking  #!{marking_value_type(pntd)}.
 """
 function marking_type end
 
@@ -422,7 +429,6 @@ Return a REFID wrapped in a [`UserSort`](@ref)
 function sortref end
 
 function sortelements end
-function basis end
 
 function def_sort_element end
 

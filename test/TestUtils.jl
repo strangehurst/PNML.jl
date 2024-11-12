@@ -21,7 +21,7 @@ Multisets.set_key_value_show()
     XDVT, PnmlMultiset,
     pid, ispid,
     name, has_name,
-    length, arity, tag, value, Labels.text, elements,
+    length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
     DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag
 

@@ -9,7 +9,7 @@ Each place has an initial marking that determines the sorttype
 struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    initialMarking::M
+    initialMarking::M #! expression label
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The initial marking must be of sorttype.
     # The inscription of an arc to or from a place defines which tokens are added or removed
@@ -45,7 +45,7 @@ $(TYPEDFIELDS)
 struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    condition::C
+    condition::C #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -57,7 +57,11 @@ nettype(::Transition{T}) where {T <: PnmlType} = T
 """
 Return value of condition.
 """
-condition(transition::Transition) = _evaluate(transition.condition)::condition_value_type(nettype(transition))
+condition(transition::Transition) = begin
+    printstyled("(condition∘transition∘eval∘value)(", transition.condition, ")",
+                "::", condition_value_type(nettype(transition)), "\n"; color=:red)
+    transition.condition()::condition_value_type(nettype(transition))
+end
 
 function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
@@ -76,7 +80,7 @@ struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
-    inscription::I
+    inscription::I #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -87,13 +91,11 @@ Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 """
-    inscription(arc::Arc) -> Integer
+    inscription(arc::Arc) -> Number
 
-Every inscription is treated as a functor by calling _evaluate on arc.inscription.
-Numbers' _evaluate is identity.
-Multisets' _evaluate is cardinality (natural)
+Every inscription is treated as a functor.
 """
-inscription(arc::Arc) = _evaluate(arc.inscription)
+inscription(arc::Arc) = arc.inscription()
 
 sortref(arc::Arc) = sortref(arc.inscription)::UserSort
 sortof(arc::Arc)  = sortof(sortref(arc))

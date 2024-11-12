@@ -12,7 +12,7 @@ sortelements(::DotSort) = tuple(DotConstant())
 Duck-typed as AbstractOperator.
 """
 struct DotConstant end
-sortref(::DotConstant) = usersort(:dot)
+sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
 toexpr(c::DotConstant) = DotConstant()

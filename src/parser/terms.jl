@@ -109,7 +109,7 @@ end
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType)
     bc = BooleanConstant(attribute(node, "value"))
-    return (bc, sortof(bc))
+    return (BooleanEx(bc), usersort(:bool)) #! BoolExpr
 end
 
 # Has a value that is a subsort of NumberSort (<:Number).
@@ -119,7 +119,7 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
     isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
-        usersort(sorttag) #! parse_sort(Val(sorttag), child, pntd) # Built-in, expect to exist!
+        usersort(sorttag)
     else
         throw(MalformedException("sort not supported for :numberconstant: $sorttag"))
     end
@@ -131,8 +131,8 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType)
     elseif sort isa PositiveSort
         nv > 0 || throw(ArgumentError("not a Positive Number: $nv"))
     end
-    nc = NumberConstant(nv, sort) #! TermInterface rewrite to maketerm
-    return (nc, sort) #TODO XXX maketerm, toexpr -> ::Number literal/constant
+    nc = NumberEx(sort, nv) #! expression
+    return (nc, sort)
 end
 
 # Dot is the high-level concept of an integer, use 1 as the value.
@@ -293,7 +293,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     # Note how we evaluate the multiplicity PnmlExpr here as it is a constant.
     # Return of a sort is required because the sort may not be deducable from the expression,
     # Consider NaturalSort vs PositiveSort.
-    return Bag(isort, instance, multiplicity()), isort #!  PnmlExpr, UserSort
+    return Bag(isort, instance, multiplicity), isort #!  PnmlExpr, UserSort
 end
 
 function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType)

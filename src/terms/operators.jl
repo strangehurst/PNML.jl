@@ -43,7 +43,7 @@ end
 Operator(t, f, inex, ins, outs; metadata=nothing) = Operator(t, f, inex, ins, outs, metadata)
 tag(op::Operator)       = op.tag # PNML XML tag
 inputs(op::Operator)    = op.inexprs #! when should these be eval(toexpr)'ed)
-sortref(op::Operator)   = op.outsort # also abstractsort, partitionsort
+sortref(op::Operator)   = identity(op.outsort)::UserSort
 sortof(op::Operator)    = sortdefinition(namedsort(op.outsort)) # also abstractsort, partitionsort
 metadata(op::Operator)  = op.metadata
 

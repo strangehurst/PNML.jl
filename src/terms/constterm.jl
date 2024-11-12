@@ -9,12 +9,12 @@ struct NumberConstant{T<:Number} <: AbstractOperator
     sort::UserSort # value isa eltype(sort), verified by parser.
     # pnml Schema allows a SubTerm[], not used here.
 end
-sortref(nc::NumberConstant) = nc.sort
+
+sortref(nc::NumberConstant) = identity(nc.sort)::UserSort
 sortof(nc::NumberConstant) = sortdefinition(namedsort(sortref(nc)))
 basis(nc::NumberConstant) = typeof(nc.value) # multisets need type of the value
 
 # others want the value of the value
-# The operator inteface assumes this trio: functor -> value() -> toexpr (maybe identity).
 (c::NumberConstant)() = value(c)
 value(nc::NumberConstant) = nc.value
 toexpr(nc::NumberConstant) = value(nc)

@@ -18,7 +18,7 @@ using PNML, ..TestUtils, JET, XMLDict
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
         @test_call initial_marking(n)
-        @test @inferred(initial_marking(n)()) == 100
+        @test initial_marking(n)() == 100
     end
 end
 
@@ -40,8 +40,6 @@ end
         @test @inferred(name(n)) == "with text"
         @test_call target_modules=(@__MODULE__,) initial_marking(n)
         im = initial_marking(n)
-        #!@show zero(PNML.marking_value_type(pntd))
-        #!@test initial_marking(n)() == zero(PNML.marking_value_type(pntd)) # text has no meaning here
     end
 end
 

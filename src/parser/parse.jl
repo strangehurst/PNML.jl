@@ -391,12 +391,13 @@ function parse_place(node::XMLNode, pntd::PnmlType)
     #@show basis(mark) sortof(mark) sortof(sorttype)
     #@show mark sorttype
 
+    #! These are TermInterface expressions. Test elsewhere, after eval.
     # The basis sort of mark label must be the same as the sort of sorttype label.
-    if !equalSorts(sortof(basis(mark)), sortof(sorttype))
-        error(string("place $(repr(id)) of $pntd: sort mismatch,",
-                        "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
-                        "\n\t sortof(sorttype) = ", sortof(sorttype)))
-    end
+    # if !equalSorts(sortof(basis(mark)), sortof(sorttype))
+    #     error(string("place $(repr(id)) of $pntd: sort mismatch,",
+    #                     "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
+    #                     "\n\t sortof(sorttype) = ", sortof(sorttype)))
+    # end
 
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
 end
@@ -618,7 +619,7 @@ end
 #----------------------------------------------------------
 """
     parse_label_content(node::XMLNode, termparser, pntd) -> NamedTuple
-
+parse_label_content
 Parse label using a `termparser` callable applied to any structure element.
 Also parses text, toolinfo, graphics, term and sort of term.
 """
@@ -628,14 +629,14 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
     tsort ::Maybe{AbstractSort}= nothing
-
+    @show termparser
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, tsort = termparser(child, pntd) # Apply function/functor
-            #@show term tsort
+            @show term tsort
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -682,30 +683,31 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # sortelements is needed to support the <all> operator that forms a multiset out of
     # one of each of the finite sorts elements. This leads to iteration. Thus eltype.
 
-    # If there is no appropriate eltype method defined expect eltype(x) @ Base abstractarray.jl:241
-    # to return Int64.
-    # Base.eltype is for collections: what would an iterator return.
+    # If there is no appropriate eltype method defined expect
+    # `eltype(x) @ Base abstractarray.jl:241` to return Int64.
+    # Base.eltype is for collections: what an iterator would return.
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
-    #@show placetype sortof(placetype) typeof(sortof(placetype))
-    mvt = eltype(sortof(placetype))
-    #@show mvt,
-
-    mvt == marking_value_type(pntd) || #! could be DotSort, PnmlTuple, numbera
-        throw(ArgumentError("initial marking value type of $pntd must be $(marking_value_type(pntd)), found: $mvt"))
+    pt = eltype(sortref(placetype))
+    mvt = eltype(marking_value_type(pntd))
+    @show mvt pt
+    mvt == pt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
 
     value = if isnothing(l.text)
-        zero(mvt)
+        zero(pt)
     else
-        number_value(mvt, l.text)
+        number_value(pt, l.text)
     end
 
-    #@show placetype value eltype(sortof(placetype))
-    value isa mvt || throw(ArgumentError(string("eltype of marking placetype = $mvt",
-            ", does not match type of `value` = $(typeof(value))",
-            ", for a $pntd")))
+    # #@show placetype value eltype(sortof(placetype))
+    #! value isa mvt || throw(ArgumentError(string("eltype of marking placetype = $mvt",
+    #!         ", does not match type of `value` = $(typeof(value))",
+    #!         ", for a $pntd")))
 
-    Marking(value, l.graphics, l.tools)
+    #TODO Create a NumberConstant expression and use the high-level path.
+    #TODO Use pntd for dispatch when different behavior is needed.
+
+    Marking(NumberEx(sortref(pt), value), l.graphics, l.tools)
 end
 
 """
@@ -739,7 +741,8 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         CONFIG[].warn_on_fixup &&
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
-    Inscription(value, graphics, tools)
+
+    Inscription(NumberEx(value), graphics, tools)
 end
 
 """
@@ -753,25 +756,22 @@ NB: Used by PTNets that assume placetype is DotSort().
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
-    # @warn pntd l.text l.term l.sort
+    @warn pntd l
     # Marking label content is expected to be a TermInterface expression.
-    # All declarations are expected to have been processed before the
-    # first place is encountered.
+    # All declarations are expected to have been processed before the first place.
 
     markterm = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
-        pnmlmultiset(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface expression
+        Bag(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
     else
-        #!
-        #! Evaluate the expression. Expect a pnmlmultiset expression result (from an operator).
-        #!
-        @show l.term typeof(l.term); flush(stdout)
         l.term
     end
-    equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
-        error(string("HL marking sort mismatch,",
-            "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
-            "\n\t sortof(placetype) = ", sortof(placetype)))
+    @show typeof(markterm) markterm; flush(stdout)
+    #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
+    # equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
+    #     @error(string("HL marking sort mismatch,",
+    #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
+    #         "\n\t sortof(placetype) = ", sortof(placetype)))
     HLMarking(l.text, markterm, l.graphics, l.tools)
 end
 
@@ -796,19 +796,16 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         term = EzXML.firstelement(marknode) # ignore any others
 
         mark, sort = parse_term(term, pntd)
+        @show typeof(mark), sort; flush(stdout)
+        @assert mark isa PnmlExpr
+        # ex = toexpr(mark); #^ ___ RECURSIVE `toexpr` ___
+        # println("evaluate marking expression ", repr(ex))
+        # mark = eval(ex) #^ ___ EVALUATE EXPRESSION ___
+        # @show typeof(mark) mark; println(); flush(stdout)
 
-        # @show mark
-        println()
-        @show ex = toexpr(mark) #~ recursive `toexpr`.
-        flush(stdout)
-        #dump(ex)
-        mark = eval(ex)
-
-        # @show mark typeof(mark) #sortof(mark)
-        # @show sort typeof(sort)
         # @show typeof(placetype(pmt))
 
-        #! MARK will be a TERM, a symbolic expression using TermInterface
+        #! MARK will be a TERM, a symbolic expression using TermInterface, @matchable
         #! that, when evaluated, produces a PnmlMultiset object.
 
         #@assert sort == sortof(mark) # sortof multiset is the basis sort
@@ -833,14 +830,14 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         isa(placetype(pmt), UserSort) ||
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
-        @show basis(mark); flush(stdout)
-        if !equalSorts(sortof(basis(mark)), sortof(placetype(pmt)))
-            @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
-            throw(ArgumentError(string("parse marking term sort mismatch:",
-                "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
-                "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
-        end
-        return (mark, sort)
+        # @show basis(mark); flush(stdout)
+        # if !equalSorts(sortof(basis(mark)), sortof(placetype(pmt)))
+        #     @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
+        #     throw(ArgumentError(string("parse marking term sort mismatch:",
+        #         "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
+        #         "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
+        # end
+        return (mark, sort) # TermInterface, UserSort
     end
     throw(ArgumentError("missing marking term in <structure>"))
 end
@@ -854,7 +851,8 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd)
-    HLInscription(l.text, l.term, l.graphics, l.tools)
+    @show l.term #! term is expression
+    HLInscription(l.text, l.term, l.graphics, l.tools) #! term is expression
 end
 
 """
@@ -877,7 +875,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     check_nodename(inscnode, "structure")
-    println("\n(pmt::ParseInscriptionTerm) ", source(pit), ", ", target(pit))
+    println("\n(pmt::ParseInscriptionTerm) ", source(pit), " -> ", target(pit))
 
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
@@ -898,7 +896,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     else
         error("inscription place not found, source = $(source(pit)), target = $(target(pit))")
     end
-    placesort = sortof(adjacentplace) #~
+    placesort = sortref(adjacentplace)::UserSort
 
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
@@ -909,16 +907,14 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
 
-    # @show inscript
-    println()
-    @show ex = toexpr(inscript) #~ recursive `toexpr`.
-    flush(stdout)
-    #dump(ex)
-    inscript = eval(ex)
+    # println()
+    # ex = toexpr(inscript) #^ ___ RECURSIVE `toexpr` ___
+    # @show typeof(ex) ex; flush(stdout)
+    # println("evaluate inscription expression")
+    # inscript = eval(ex) #^ ___ EVALUATE EXPRESSION ___
 
     #! inscript isa PnmlExpr, do these tests during/after firing/eval
-    @show inscript typeof(inscript) #sortref(inscript) basis(inscript)
-    @show placesort typeof(placesort); flush(stdout)
+    @show inscript placesort; flush(stdout)
 
     # isa(inscript, AbstractTerm) ||
     #     error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
@@ -960,36 +956,37 @@ function def_insc(netdata, source, target)
 end
 
 """
-$(TYPEDSIGNATURES)
+    parse_condition(::XMLNode, ::PnmlType) -> BoolExpr
 
-Label of transition nodes.
+Label of transition node. Used in the enabling function.
 
 # Details
 
-Condition has <text> and <structure> elements. With all meaning in the <structure> that
-holds (an expression) evaluating to a boolean value.
+ISO/IEC 15909-1:2019(E) Concept 15 (symmetric net) introduces
+Φ(transition) a guard or filter function that is and'ed into the enabling function.
+Part 2 maps this to `<condition>` expressions.
+
+Later concepts add filter functions that are also and'ed into the enabling function.
+- Concept 28 (prioritized Petri net enabling rule)
+- Concept 31 (time Petri net enabling rule)
+
+We support PTNets having `condition>` with same syntax as High-level nets.
+Condition has `<text>` and `<structure>` elements, with all meaning in the `<structure>`
+that holds an expression evaluating to a boolean value.
 
 See [`BoolExpr`](@ref).
 """
 function parse_condition end
-
-function parse_condition(node::XMLNode, pntd::T) where {T<:AbstractHLCore}
-    l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
-    @show l; flush(stdout)
-    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools)
-end
-
 function parse_condition(node::XMLNode, pntd::PnmlType) # Non-HL
-    l = parse_label_content(node, parse_condition_term, pntd) #! term is expession
-    @show l; flush(stdout)
-    #term = toexpr(l.term) # All non-HL net conditions are literal expressions.
-    #@show term
-    #@warn("condition for $pntd = $(repr(l)) l.term = $(l.term)")
-    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools)
+    condlabel = parse_label_content(node, parse_condition_term, pntd)
+    #@show condlabel; flush(stdout) #! debug
+    #@warn("parse_condition label = $(condlabel)")
+    isnothing(condlabel.term) && throw(MalformedException("missing condition term in $(repr(condlabel))"))
+    PNML.Labels.Condition(condlabel.text, condlabel.term, condlabel.graphics, condlabel.tools) #! term is expession
 end
 
 """
-$(TYPEDSIGNATURES)
+    parse_condition_term(::XMLNode, ::PnmlType) -> PnmlExpr, UserSort
 
 `Condition` label of a `Transition` will have a structure element containing a term.
 PTNets are extended to have conditions and use a `BooleanConstant` to set the initial value.
@@ -997,7 +994,7 @@ PTNets are extended to have conditions and use a `BooleanConstant` to set the in
 function parse_condition_term(cnode::XMLNode, pntd::PnmlType)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
-        return parse_term(EzXML.firstelement(cnode), pntd) # expression
+        return parse_term(EzXML.firstelement(cnode), pntd) # expression, usersort
     end
     throw(ArgumentError("missing condition term in <structure>"))
 end
