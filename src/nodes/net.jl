@@ -93,7 +93,6 @@ condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 arc(net::PnmlNet, id::Symbol)      = arcdict((net))[id]
 has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict((net)), id)
 
-
 """
 Return `Arc` from 's' to 't' or `nothing`. Useful for graphs where arcs are represented by a tuple(source,target).
 """
@@ -106,7 +105,7 @@ all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || t
 src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
 tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
 
-"Lookup inscription in [`arcdict`](@ref)"
+"Lookup inscription in `arcdict`"
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
 
 has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
