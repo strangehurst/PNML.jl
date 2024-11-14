@@ -20,7 +20,7 @@ import PNML: place_type, transition_type, arc_type, refplace_type, reftransition
 import PNML: marking_type, inscription_type, condition_type, coordinate_type
 import PNML: marking_value_type, inscription_value_type, condition_value_type, coordinate_value_type
 import PNML: rate_value_type
-import PNML: toexpr, NumberEx, BooleanEx
+import PNML: toexpr, NumberEx, BooleanEx, PnmlTupleEx
 
 using ..PnmlTypeDefs
 using ..Sorts

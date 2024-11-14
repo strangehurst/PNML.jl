@@ -126,7 +126,7 @@ end
         decl = parse_declaration(xml"""<declaration key="test empty">
                 <structure><declarations></declarations></structure>
             </declaration>""", pntd)::Declaration
-        @show decl
+        #@show decl
         @test length(decl) == 0 # nothing in <declarations>
         @test isempty(decl)
         @test PNML.graphics(decl) === nothing

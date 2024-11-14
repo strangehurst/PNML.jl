@@ -157,12 +157,9 @@ ispartitionoperator(tag::Symbol) = tag in partition_operators
 
 
 # these constants are operators
-builtin_constants = (:numberconstant,
-                     :dotconstant,
-                     :booleanconstant,
-                     )
+builtin_constants = (:numberconstant, :dotconstant, :booleanconstant,)
 
-isbuiltinoperator(tag::Symbol) = tag in builtin_operators
+isbuiltinoperator(tag::Symbol) = errror("implement tag in builtin_operators")
 
 # boolean_constants = (:true, :false)
 """
@@ -198,57 +195,6 @@ function null_function(inputs)#::Vector{AbstractTerm})
     println("NULL_FUNCTION: ", inputs)
     return nothing
 end
-
-#---------------------------------------------------------------------
-# """
-#     hl_operators[Symbol] -> Function, Sort
-
-# Map PNML operation ID to a tuple of function that accepts a single vector of arguments
-# and the sort of the result. See [`pnml_hl_operator`](@ref)
-# """
-# const hl_operators = Dict(
-#     :or => builtin_or,
-#     :and => builtin_and,
-#     :not => builtin_not,
-#     :imply => builtin_imply,
-#     :equality => builtin_equality,
-#     :inequality => builtin_inequality,
-
-#     :addition => builtin_addition,
-#     :subtraction => builtin_subtraction,
-#     :mult => builtin_mult,
-#     :div => builtin_div,
-#     :mod => builtin_mod,
-#     :gt => builtin_gt,
-#     :geq => builtin_geq,
-#     :lt => builtin_lt,
-#     :leq => builtin_leq,
-
-#     :add => builtin_add,
-#     :all => builtin_all,
-#     :numberof => builtin_numberof,
-#     :subtract => builtin_subtract,
-#     :scalarproduct => builtin_scalarproduct,
-#     :empty => builtin_empty, #! return empty multiset with given basis sort
-#     :cardnality => builtin_cardnality,
-#     :cardnalitiyof => builtin_cardnalitiyof,
-#     :contains => builtin_contains,
-
-#     :lessthan => builtin_lessthan,
-#     :lessthanorequal => builtin_lessthanorequal,
-#     :greaterthan => builtin_greaterthan,
-#     :greaterthanorequal => builtin_greaterthanorequal,
-#     :finiteintrangeconstant => builtin_finiteintrangeconstant,
-
-#     :ltp => builtin_ltp,
-#     :gtp => builtin_gtp,
-#     :partitionelementof => builtin_partitionelementof, #! partition IDREF as input
-
-#     :tuple => builtin_tuple,
-#     #:numberconstant => builtin_,
-#     #:dotconstant => builtin_,
-#     #:booleanconstant => builtin_,
-# )
 
 """
     pnml_hl_operator(tag::Symbol) -> Callable(::Vector{AbstractTerm})
@@ -318,9 +264,8 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
         @warn "pnml_hl_outsort does not handle tuple yet"
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         first(insorts)
-        #todo assert   TupleSort()  #! pnml_hl_outsort will need content?
     elseif tag === :numberconstant
-        usersort(:integer) #! should be NumberSort()
+        usersort(:integer)
     elseif tag === :dotconstant
         usersort(:dot)
     elseif tag === :booleanconstant
@@ -346,25 +291,12 @@ struct UserOperator <: AbstractOperator
 end
 
 function (uo::UserOperator)(#= pass arguments to operator =#)
-    # println()
-    # println()
-    #~ println("UserOperator functor $uo")
-    # @show uo
-    # dd = DECLDICT[]
-    # @show _op_dictionaries()
-    # println()
-    # _ops(dd)
-    # println()
-    # operators(dd)
-    # println()
-    #! FEConstants are 0-ary operators. namedoperators?
-
     if !has_operator(uo.declaration)
         error("found NO operator $(repr(uo.declaration))")
     else
         op = operator(uo.declaration) # get operator from decldict
         @warn "found operator for $(uo.declaration)" op
-        r  = op(#= pass arguments to functor/operator =#)
+        r = op(#= pass arguments to functor/operator =#) # treat as functor
         return r
     end
 end

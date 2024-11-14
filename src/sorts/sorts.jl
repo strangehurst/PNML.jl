@@ -5,13 +5,8 @@ Tuple of sort IDs that are considered builtin.
 There will be a version defined for each in the `DECLDICT[]`.
 Users may (re)define these.
 """
-builtin_sorts() = (:integer,
-                 :natural,
-                 :positive,
-                 :real,
-                 :dot,
-                 :bool,
-                 :null,)
+builtin_sorts() = (:integer, :natural, :positive, :real, :dot, :bool, :null,)
+#todo Use set instead of tuple?
 
 """
     isbuiltinsort(::Symbol) -> Bool
@@ -37,7 +32,7 @@ equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
 basis(a::AbstractSort) = sortof(a)
 sortof(a::AbstractSort) = identity(a)
-sortelements(::AbstractSort) = ()
+#! sortelements(::AbstractSort) = () # sort that has no elements will lead to errors!
 
 """
 Built-in sort whose `eltype` is `Bool`
@@ -96,33 +91,20 @@ basis(ms::MultisetSort) = ms.basis
 """
 $(TYPEDEF)
 
-An ordered collection of sorts.
+An ordered collection of sorts. The elements of the sort are [`PnmlTuple`](@ref).
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
     ae::Vector{REFID} #! NamedSorts and UserSorts are linked by REFIDs
 end
 ProductSort() = ProductSort(REFID[])
 # sortof(ps::ProductSort) is a vector/tuple of sorts
+sortelements(ps::ProductSort) = Iterators.product(Iterators.map(sortelements∘usersort, ps.ae))
 
-#------------------------------------------------------------------------------
-"""
-    TupleSort holds tuple of sorts. One for each of the elements of the <tuple>.
-
-PnmlTuples have a similarity to NamedTuples with Sorts taking the place of names.
-Will not achieve the same transparancy and efficency as NamedTuples.
-
-"""
-@auto_hash_equals struct TupleSort <: AbstractSort
-    tup::Vector{REFID} #! UserSort REFIDs
-end
-TupleSort() = TupleSort(REFID[])
-
-function sortof(ts::TupleSort)
-    println("sortof(::TupleSort: ", ts) #! bringup debug
-    if isempty(ts.tup)
-        @error "TupleSort is empty, require as many sorts as the tuple has elements, return NullSort"
-        NullSort()
+function sortof(s::ProductSort)
+    println("sortof(::ProductSort ", s) #! bringup debug
+    if isempty(s.ae)
+        error("ProductSort is empty")
     else
-        sortof(first(ts.tup)) #TODO set of sorts, iterator
+        (map(sortof, s.ae)...,) # map REFIDs to tuple of sorts
     end
 end

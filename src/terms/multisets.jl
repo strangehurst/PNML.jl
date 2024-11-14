@@ -134,7 +134,7 @@ function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 a
     M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
     for e in sortelements(basis) # iterator over one instance of each element of the set/sort
-        @show M e; flush(stdout)
+        #@show M e; flush(stdout)
         push!(M, e)
     end
     PnmlMultiset(basis, M)

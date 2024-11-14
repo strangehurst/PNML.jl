@@ -49,7 +49,7 @@ end
 
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
-        @show marking_value_type(pntd)
+        #@show marking_value_type(pntd)
         placetype = SortType("$pntd initMarking", sortref(marking_value_type(pntd))::UserSort)
 
         # Parse ignoring unexpected child

@@ -76,7 +76,6 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd)
             variabledecls(dd)[pid(vardecl)] = vardecl
-
         elseif tag == "partition"
             part = parse_partition(child, pntd)::SortDeclaration
             partitionsorts(dd)[pid(part)] = part
@@ -88,7 +87,7 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
 
         #elseif tag == "arbitrarysort"
         else
-            #TODO  add to DeclDict
+            #TODO  add unknown_decls to DeclDict
             push!(unknown_decls, parse_unknowndecl(child, pntd))
         end
     end
@@ -400,7 +399,9 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     end
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
     #make_usersort(:productsort, "ProductSort",
-    ProductSort(sorts)
+    productsort = ProductSort(sorts)
+    @show productsort; flush(stdout)
+    return productsort
 end
 
 ############################################################

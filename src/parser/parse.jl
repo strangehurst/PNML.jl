@@ -629,7 +629,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
     tsort ::Maybe{AbstractSort}= nothing
-    @show termparser
+    @show nameof(typeof(termparser))
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
@@ -690,7 +690,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
     pt = eltype(sortref(placetype))
     mvt = eltype(marking_value_type(pntd))
-    @show mvt pt
+    #@show mvt pt
     mvt == pt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
 
     value = if isnothing(l.text)
@@ -757,7 +757,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
     @warn pntd l
-    # Marking label content is expected to be a TermInterface expression.
+    # Marking label content is expe^\s*sortref\(cted to be a TermInterface expression.
     # All declarations are expected to have been processed before the first place.
 
     markterm = if isnothing(l.term)
@@ -766,7 +766,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     else
         l.term
     end
-    @show typeof(markterm) markterm; flush(stdout)
+    #@show typeof(markterm) markterm; flush(stdout)
     #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
     # equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
     #     @error(string("HL marking sort mismatch,",
@@ -796,7 +796,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         term = EzXML.firstelement(marknode) # ignore any others
 
         mark, sort = parse_term(term, pntd)
-        @show typeof(mark), sort; flush(stdout)
+        #@show typeof(mark), sort; flush(stdout)
         @assert mark isa PnmlExpr
         # ex = toexpr(mark); #^ ___ RECURSIVE `toexpr` ___
         # println("evaluate marking expression ", repr(ex))
@@ -851,7 +851,7 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd)
-    @show l.term #! term is expression
+    #@show l.term #! term is expression
     HLInscription(l.text, l.term, l.graphics, l.tools) #! term is expression
 end
 
@@ -914,7 +914,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     # inscript = eval(ex) #^ ___ EVALUATE EXPRESSION ___
 
     #! inscript isa PnmlExpr, do these tests during/after firing/eval
-    @show inscript placesort; flush(stdout)
+    #@show inscript placesort; flush(stdout)
 
     # isa(inscript, AbstractTerm) ||
     #     error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")

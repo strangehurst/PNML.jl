@@ -43,7 +43,7 @@ using PNML:
     coordinate_type, coordinate_value_type,
     validate_declarations,
     def_sort_element
-using PNML:  toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx,
+using PNML:  toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx, PnmlTupleEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
     And, Not, Imply, Equality, Inequality, Successor, Predecessor,
     PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,

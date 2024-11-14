@@ -208,8 +208,7 @@ end
 #     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort())
 #     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort())
 
-#     @show placetype = SortType("XXX", TupleSort(UserSort[UserSort(:dot),
-#                                                           UserSort(:dot)]))
+#     @show placetype = SortType("XXX", ProductSort(UserSort[UserSort(:dot),UserSort(:dot)]))
 
 #     mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
 

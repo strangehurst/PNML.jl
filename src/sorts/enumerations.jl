@@ -15,17 +15,17 @@ refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-sortelements(sort::EnumerationSort) = refs(sort) #! was Iterators.map(Fix1(feconstant, PNML.DECLDICT[]), refs(sort))
+sortelements(sort::EnumerationSort) = Iterators.map(feconstant, refs(sort))
 
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
 
-Base.eltype(::EnumerationSort) = REFID # Use to access in the `DECLDICT[]`.
+Base.eltype(::EnumerationSort) = REFID # Use to access `DECLDICT[]`.
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
     io = inc_indent(io)
-    for  (i, fec_ref) in enumerate(refs(esort))
+    for (i, fec_ref) in enumerate(refs(esort))
         print(io, '\n', indent(io), fec_ref);
         i < length(esort) && print(io, ",")
     end
@@ -44,13 +44,16 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
 @auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
-    fec_refs::NTuple{N,REFID}  # ordered collection of FEConstant REFIDs
+    # Difference from FiniteEnumerationSort is successor/predecessor operators.
+    fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     metadata::M #! TermInterface metadata
 end
 function CyclicEnumerationSort(fecs)
     CyclicEnumerationSort(fecs, nothing)
 end
-tag(::CyclicEnumerationSort) = :cyclicenumeration # Used in metaprogramming?
+tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
+
+#TODO successor/predecessor methods
 
 """
 $(TYPEDEF)

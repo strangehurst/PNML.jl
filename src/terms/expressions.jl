@@ -47,8 +47,13 @@ Selected abstracted expressins from pnml example files.
 
 #^ Markings are ground terms (no variables).
 #^ These expressions set the initial state of the net marking.
-#TODO What can a pnml tuple hold? The ISO Standard seems to think it is obvious (and don't say).
-#TODO Usage suggests anything a marking may hold.
+# What can a pnml tuple hold? The ISO Standard seems to think it is obvious (and don't say).
+# The RelaxNG Schema says <tuple> it is a generic operator with >= 0 inputs and and 1 output.
+# Usage suggests anything a marking may hold (is used as initial marking).
+# A Tuple is an element of a ProductSort.
+# Element Forms: useroperator, variable, expression.
+
+
 initialMarking <- :all
 initialMarking <- :tuple (:all,:all)
 initialMarking <- :add subterms
@@ -518,4 +523,17 @@ end
 end
 
 @matchable struct MemberAtIndex <: PnmlExpr
+end
+
+#--------------------------------------------------------------
+@matchable struct PnmlTupleEx#{T<:PnmlExpr}
+    args::Vector{Any} # >=2 # TODO NTuplex[], AbstractTerm PnmlExpr
+end
+toexpr(op::PnmlTupleEx) = begin
+    error("implement me ", repr(op))
+    @assert length(op.args) >= 2
+    :(PnmlTuple($(map(toexpr, op.args)...),))
+end
+function Base.show(io::IO, x::PnmlTupleEx)
+    print(io, "PnmlTupleEx(", x.args, ")" )
 end

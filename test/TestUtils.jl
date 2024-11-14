@@ -65,12 +65,10 @@ Multisets.set_key_value_show()
     marking_value_type, inscription_value_type, condition_value_type,
     rate_value_type
 
-@reexport using PNML: AbstractSort, SortType, BoolSort, DotSort,
+@reexport using PNML: AbstractSort, SortType, UserSort, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
-    MultisetSort, ProductSort, PartitionSort,
-    UserSort, NamedSort,
-    ListSort, StringSort, TupleSort, NullSort,
+    MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, NullSort,
     sortof, sortref, TransitionRate
 
 @reexport using PNML: NumberConstant, DotConstant

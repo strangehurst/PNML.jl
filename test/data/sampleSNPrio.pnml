@@ -8,9 +8,8 @@
 		</name>
 		<declaration>
 			<text>
-				Without the following structure this Symmetric net
-				example will not be a structurally conformant High-level
-				Petri Net.
+				Without the following structure this Symmetric net example
+                will not be a structurally conformant High-levelPetri Net.
 			</text>
 			<structure>
 				<declarations>

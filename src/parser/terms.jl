@@ -39,10 +39,10 @@ Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref).
 """
 function subterms(node, pntd)
     sts = Vector{Any}()
-    for subterm in EzXML.eachelement(node) # arguments are Bags
+    for subterm in EzXML.eachelement(node)
         stnode, tag = unwrap_subterm(subterm)
         st, _ = parse_term(Val(tag), stnode, pntd)
-        isnothing(st) && throw(MalformedException("operator subterm is nothing"))
+        isnothing(st) && throw(MalformedException("subterm is nothing"))
         push!(sts, st)
     end
     @show sts
@@ -272,17 +272,18 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     instance = nothing
     isort = nothing
     for st in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(st) #
+        stnode, tag = unwrap_subterm(st)
+        @show tag
         if tag == :numberconstant && isnothing(multiplicity)
             multiplicity, _ = parse_term(Val(tag), stnode, pntd) #! PnmlExpr, UserSort
             # RealSort as first numberconstant might confuse `Multiset.jl`.
             # Negative integers will cause problems. Don't do that either.
         else
-            @show tag # If 2 numberconstants, first is `multiplicity`, this is `instance`.
+            # If 2 numberconstants, first is `multiplicity`, this is `instance`.
             instance, isort = parse_term(stnode, pntd) #!  PnmlExpr, UserSort
             # @show instance isort
             isa(instance, MultisetSort) &&
-                throw(ArgumentError("numberof's output basis cannot be MultisetSort"))
+                throw(ArgumentError("numberof's basis cannot be MultisetSort"))
         end
     end
     isnothing(multiplicity) &&
@@ -452,7 +453,13 @@ function parse_term(::Val{:unparsed}, node::XMLNode, pntd::PnmlType)
 end
 
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType)
-    flush(stdout); @error "parse_term(::Val{:tuple} not implemented"
+    @warn "parse_term(::Val{:tuple}"; flush(stdout);
+    sts = subterms(node, pntd)
+    @assert length(sts) >= 2
+    @show tup = PnmlTupleEx(sts) #! We have PnmlExpr elements at this point.
+    # When turned into expressions and evaluated, each tuple element will have a sort,
+    # the combination of element sorts must have a matching product sort.
+    return tup, usersort(:null) #todo! when can we map to product sort?
 end
 
 # <structure>
@@ -460,7 +467,7 @@ end
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType)
     uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
-    @show PNML.operator(uo.refid); flush(stdout)
+    #@show PNML.operator(uo.refid); flush(stdout)
     usort = sortref(PNML.operator(uo.refid))
     @warn "returning useroperator" uo usort
     return (uo, usort)
