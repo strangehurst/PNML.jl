@@ -11,13 +11,13 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
 
 ```jldoctest; setup=:(using PNML; using PNML: BooleanConstant)
 julia> c = PNML.Labels.Condition(false)
-Condition("", false)
+Condition("", BooleanEx(BooleanConstant(false)))
 
 julia> c()
 false
 
-julia> c = PNML.Labels.Condition("xx", true)
-Condition("xx", true)
+julia> c = PNML.Labels.Condition("xx", BooleanEx(BooleanConstant(true)))
+Condition("xx", BooleanEx(BooleanConstant(true)))
 
 julia> c()
 true
@@ -30,8 +30,12 @@ true
     tools::Maybe{Vector{ToolInfo}}
 end
 #! 2024-10-21 as part of transition to TermInterface change value to term a duck-typed BoolExpr
-Condition(term) = Condition(nothing, term, nothing, nothing)
-Condition(text::AbstractString, term) = Condition(text, term, nothing, nothing)
+Condition(term::Bool)         = Condition(BooleanConstant(term))
+Condition(c::BooleanConstant) = Condition(BooleanEx(c))
+Condition(ex::BooleanEx)      = Condition(nothing, ex, nothing, nothing)
+Condition(text::AbstractString, term::Bool)         = Condition(text, BooleanConstant(term))
+Condition(text::AbstractString, c::BooleanConstant) = Condition(text, BooleanEx(c))
+Condition(text::AbstractString, ex::BooleanEx)      = Condition(text, ex, nothing, nothing)
 
 condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
