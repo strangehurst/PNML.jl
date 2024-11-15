@@ -79,6 +79,7 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
         elseif tag == "partition"
             part = parse_partition(child, pntd)::SortDeclaration
             partitionsorts(dd)[pid(part)] = part
+            usersorts(dd)[pid(part)] = part #! usersort, partition duo.
 
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
