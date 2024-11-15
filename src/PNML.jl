@@ -168,7 +168,7 @@ include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, a
 
 include("declarations/Declarations.jl")
 using .Declarations
-import .Declarations: NamedSort, SortDeclaration
+import .Declarations: NamedSort, SortDeclaration, PartitionElementOp
 using .Declarations: sortdefinition
 
 # Declarations are inside a <declaration> Label.

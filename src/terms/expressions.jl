@@ -423,6 +423,7 @@ end
     id::Symbol
     name::Union{String,SubString{String}}
     refs::Vector{REFID} # to FEConstant
+    partition::REFID
 end
 toexpr(op::PartitionElementOp) = error("implement me")
 function Base.show(io::IO, x::PartitionElementOp)
@@ -431,9 +432,9 @@ end
 
 #> comparison functions on the partition elements which is based on
 #> the order in which they occur in the declaration of the partition
-@matchable struct PartitionLessThan{T} <: PnmlExpr
-    lhs::T
-    rhs::T
+@matchable struct PartitionLessThan <: PnmlExpr
+    lhs::Any #PartitionElement
+    rhs::Any #PartitionElement
     # return BoolExpr
 end
 toexpr(op::PartitionLessThan) = error("implement me")
@@ -441,9 +442,9 @@ function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct PartitionGreaterThan{T} <: PnmlExpr
-    lhs::T
-    rhs::T
+@matchable struct PartitionGreaterThan <: PnmlExpr
+    lhs::Any #PartitionElement
+    rhs::Any #PartitionElement
     # return BoolExpr
 end
 toexpr(op::PartitionGreaterThan) = error("implement me ", repr(op))
@@ -451,10 +452,11 @@ function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
+# 0-arity despite the refpartition
 @matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
     refpartition::Any # UserSort, REFID
-    # return BoolExpr
+    # return PartitionElement
 end
 toexpr(op::PartitionElementOf) = error("implement me ", repr(op))
 function Base.show(io::IO, x::PartitionElementOf)

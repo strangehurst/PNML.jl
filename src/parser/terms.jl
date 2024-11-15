@@ -587,6 +587,35 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     end
     isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms"))
 
-    push!(elements, PartitionElement(id, nameval, terms, rid)) # REFID to enclosing partition
+    push!(elements, PartitionElement(id, nameval, terms, rid)) # rid is REFID to enclosing partition
     return nothing
+end
+
+"""
+    parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
+
+Parse `<partitionelement>`, add FEconstant refids to the element and append element to the vector.
+"""
+function parse_term(::Val{:partitionelementof}, node::XMLNode, pntd::PnmlType)
+    check_nodename(node, "partitionelementof")
+    refpartition = Symbol(attribute(node, "refpartition"))
+    sts = subterms(node, pntd)
+    @assert length(sts) == 1
+    @show peo = PartitionElementOf(first(sts), refpartition) #! PnmlExpr
+    #@show DECLDICT[]; flush(stdout; #! debug)
+    return peo, usersort(refpartition) # UserSort duos used for all sort declarations.
+end
+
+"""
+    `<gtp>` Partition element greater than.
+"""
+function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType)
+    @warn "parse_term(::Val{:gtp}"; flush(stdout);
+    sts = subterms(node, pntd)
+    @assert length(sts) == 2
+    @show sts # PartitionElementOps
+    pe = PartitionGreaterThan(sts...) #! We have PnmlExpr elements at this point.
+    #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
+    @assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
+    return pe, usersort(first(sts).refpartition) #todo! when can we map to partition
 end
