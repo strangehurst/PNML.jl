@@ -3,15 +3,6 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Labels an Arc. See also [`HLInscription`](@ref).
-
-# Examples
-
-```jldoctest; setup=:(using PNML: Inscription)
-julia> i = Inscription(3)
-Inscription(3)
-
-julia> i()
-3
 ```
 """
 struct Inscription{T<:PnmlExpr} <: Annotation
@@ -25,7 +16,7 @@ Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
 Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
 term(i::Inscription) = toexpr(i.term)
-(inscription::Inscription)() = term(inscription)::Number
+(inscription::Inscription)() = eval(term(inscription))::Number
 
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
