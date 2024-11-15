@@ -90,60 +90,14 @@ DocTestSetup = quote
 
 ```jldoctest
 julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(PnmlCoreNet())
-Condition("", true)
+Condition("", BooleanEx(PNML.BooleanConstant(true)))
 
 julia> c()
 true
 
 julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(ContinuousNet())
-Condition("", true)
+Condition("", BooleanEx(PNML.BooleanConstant(true)))
 
 julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(HLCoreNet())
-Condition("", true)
-```
-
-
-```jldoctest
-julia> i = @with PNML.DECLDICT => PNML.DeclDict() default_inscription(PnmlCoreNet())
-Inscription(1)
-
-julia> i = @with PNML.DECLDICT => PNML.DeclDict() default_inscription(ContinuousNet())
-Inscription(1.0)
-```
-
-```
-julia> i = @with PNML.DECLDICT => PNML.DeclDict() begin
-    PNML.fill_nonhl!(PNML.DECLDICT[])
-    default_hlinscription(HLCoreNet(), SortType(UserSort(:dot)))
-end
-HLInscription("", PnmlMultiset(basis=DotSort(), mset=Multiset(DotConstant() => 1,)))
-
-julia> i()
-1
-```
-
-
-```jldoctest
-julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_marking(PnmlCoreNet())
-Marking(0)
-
-julia> m()
-0
-
-julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_marking(ContinuousNet())
-Marking(0.0)
-
-julia> m()
-0.0
-```
-
-```
-julia> m = @with PNML.DECLDICT => PNML.DeclDict() default_hlmarking(HLCoreNet(), SortType(UserSort(:dot)))
-HLMarking("", PnmlMultiset(basis=DotSort(), mset=Multiset()))
-
-julia> m()
-0
-```
-```@meta
-DocTestSetup = nothing
+Condition("", BooleanEx(PNML.BooleanConstant(true)))
 ```

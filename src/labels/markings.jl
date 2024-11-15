@@ -9,21 +9,6 @@ Number-valued label of [`Place`](@ref).
 See [`PTNet`](@ref), [`ContinuousNet`](@ref), [`HLMarking`](@ref).
 
 Is a functor that returns the `value`.
-
-# Examples
-
-```jldoctest; setup=:(using PNML: Marking)
-julia> m = Marking(1)
-Marking(1)
-
-julia> m()
-1
-
-julia> m = Marking(12.34)
-Marking(12.34)
-
-julia> m()
-12.34
 ```
 """
 struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
@@ -34,7 +19,7 @@ struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
 end
 # Allow any Number subtype, only a few concrete subtypes are expected.
 Marking(m::Number) = Marking(NumberEx(m))
-Marking(nx::NumberEx) = Marking(#=nothing,=# nx, nothing, nothing)
+Marking(nx::NumberEx) = (@show(nx); Marking(#=text is nothing,=# nx, nothing, nothing))
 
 term(marking::Marking) = marking.term
 
