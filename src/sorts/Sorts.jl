@@ -8,7 +8,7 @@ using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition,
     basis, value, term, tag, pid, refid,
     usersort, namedsort, toexpr
-using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID
+using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID, PnmlTuple
 
 
 """

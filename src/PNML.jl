@@ -123,7 +123,8 @@ export toexpr, PnmlExpr, BoolExpr, VariableEx, UserOperatorEx, NumberEx, Boolean
     GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo,
     Concatenation, Append, StringLength, Substring,
     StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual,
-    ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+    ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex,
+    PnmlTuple
 
 include("PnmlTypeDefs.jl")
 using .PnmlTypeDefs
@@ -148,6 +149,7 @@ const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 
 # Parts of Labels and Nodes.
 
+include("terms/tuples.jl") #~ Work in progress
 include("sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 
@@ -160,7 +162,6 @@ include("terms/expressions.jl") # Bag
 include("terms/operators.jl")
 
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
-include("terms/tuples.jl") #~ Work in progress
 include("Core/rewrite.jl")
 
 # 2024-07-22 moved forward, holds Any rather than node types.
