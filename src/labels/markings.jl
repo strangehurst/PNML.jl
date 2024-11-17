@@ -19,7 +19,7 @@ struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
 end
 # Allow any Number subtype, only a few concrete subtypes are expected.
 Marking(m::Number) = Marking(NumberEx(m))
-Marking(nx::NumberEx) = (@show(nx); Marking(#=text is nothing,=# nx, nothing, nothing))
+Marking(nx::NumberEx) = Marking(#=text is nothing,=# nx, nothing, nothing)
 
 term(marking::Marking) = marking.term
 
