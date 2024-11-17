@@ -58,8 +58,8 @@ nettype(::Transition{T}) where {T <: PnmlType} = T
 Return value of condition.
 """
 condition(transition::Transition) = begin
-    printstyled("(condition∘transition∘eval∘value)(", transition.condition, ")",
-                "::", condition_value_type(nettype(transition)), "\n"; color=:red)
+    # printstyled("(condition∘transition∘eval∘value)(", transition.condition, ")", #! debug
+    #             "::", condition_value_type(nettype(transition)), "\n"; color=:red)
     transition.condition()::condition_value_type(nettype(transition))
 end
 

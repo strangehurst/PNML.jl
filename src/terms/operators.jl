@@ -52,7 +52,7 @@ _evaluate(op::Operator) = op() #TODO term rewrite
 
 #? Possible to pass variables at this point? Pass marking vector?
 function (op::Operator)() #! after term rewrite _evaluate
-    println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))")
+    #println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))") #! debug
     input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
 
     @assert all((in,so) -> typeof(in) == eltype(so), zip(input, insorts(op)))

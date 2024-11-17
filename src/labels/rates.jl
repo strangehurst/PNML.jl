@@ -63,7 +63,7 @@ Supports
   - ("closed", 2.0, 6.0)     -> [2.0, 6.0]
 """
 function delay(transition)
-    @show transition; flush(stdout)
+    #@show transition; flush(stdout) #! debug
     if has_labels(transition)
         ls = labels(transition)
         if has_label(ls, :delay)

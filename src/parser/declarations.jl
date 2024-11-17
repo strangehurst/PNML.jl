@@ -163,7 +163,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
                                     " name=", repr(name),
                                     " id=", repr(id),
                                     "> does not have a <def> element")))
-    @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>"
+    #@warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" #! debug
     NamedOperator(id, name, parameters, def) #! todo TermInterface rewrite
 end
 
@@ -220,7 +220,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     vsort = parse_sort(EzXML.firstelement(node), pntd, id)::UserSort
     isnothing(vsort) &&
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
-    @warn "VariableDeclaration" id name vsort
+    #@warn "VariableDeclaration" id name vsort #! debug
 
     VariableDeclaration(id, name, vsort)
 end
@@ -354,7 +354,7 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::
     # but not <partition> or <partitionelement>. Definitely not another multiset.
 
     tag = Symbol(EzXML.nodename(basisnode))
-    println(":multisetsort basis tag = $tag")
+    #println(":multisetsort basis tag = $tag") #! debug
     part_tags = (:partition, :partitionelement) #! XXX look inside usersort definition XXX
     tag in part_tags &&
         throw(ArgumentError("multisetsort basis $tag not allowed: $part_tags"))
@@ -401,7 +401,7 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
     #make_usersort(:productsort, "ProductSort",
     productsort = ProductSort(sorts)
-    @show productsort; flush(stdout)
+    #@show productsort; flush(stdout) #! debug
     return productsort
 end
 

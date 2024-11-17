@@ -36,7 +36,7 @@ end
 @testset "HL initMarking" begin
 
      @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
-        println("\n3`dot $pntd")
+        #println("\n3`dot $pntd")
         node = xml"""
         <hlinitialMarking>
             <text>3`dot</text>
@@ -59,7 +59,7 @@ end
             placetype = SortType("XXX", PNML.usersort(:dot))
 
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
-            @show mark
+            #@show mark
             @test mark isa PNML.marking_type(pntd)
 
             @test PNML.term(mark) isa PNML.Bag
@@ -67,8 +67,8 @@ end
 
             @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
             @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-            @show markexpr = toexpr(term(mark))
-            @show markterm = eval(markexpr)
+            markexpr = toexpr(term(mark))
+            markterm = eval(markexpr)
             @test markterm isa PNML.PnmlMultiset{<:Any} # pnml many-sorted operator -> multiset
             # @test arity(markterm) == 2
             # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
@@ -102,7 +102,7 @@ end
 
     # add two multisets: another way to express 3 + 2
     @testset "3`dot ++ 2'dot" for pntd in all_nettypes(ishighlevel)
-        println("\n\"3'dot ++ 2'dot\" $pntd")
+        #println("\n\"3'dot ++ 2'dot\" $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
@@ -133,7 +133,7 @@ end
     end
     # The constant eight.
     @testset "1`8" for pntd in all_nettypes(ishighlevel)
-        println("\n1`8 $pntd")
+        #println("\n1`8 $pntd")
         #~ @show
         node = xml"""
         <hlinitialMarking>
@@ -172,7 +172,7 @@ end
         end
     end
 
-    println()
+    #println()
 end
 
 

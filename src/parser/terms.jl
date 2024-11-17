@@ -20,7 +20,7 @@ where conditions and inscription expressions may contain non-ground terms (using
 """
 function parse_term(node::XMLNode, pntd::PnmlType)
     tag = Symbol(EzXML.nodename(node))
-    printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout)
+    #printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout) #! debug
     if tag === :namedoperator
         # arity > 0, build & return an Operator Functor that has a vector of inputs.
         return parse_operator_term(tag, node, pntd)
@@ -45,7 +45,7 @@ function subterms(node, pntd)
         isnothing(st) && throw(MalformedException("subterm is nothing"))
         push!(sts, st)
     end
-    @show sts
+    #@show sts #! debug
     return sts
 end
 
@@ -55,7 +55,7 @@ $(TYPEDSIGNATURES)
 Build an [`Operator`](@ref) Functor from the XML tree at `node`.
 """
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType)
-    printstyled("parse_operator_term: $(repr(tag))\n"; color=:green);
+    #printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
     @assert tag === :namedoperator
     func = pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
     # maketerm() constructs
@@ -101,7 +101,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType)
     # Expect only an attribute referencing the declaration.
     var = VariableEx(Symbol(attribute(node, "refvariable")))
     usort = sortref(variable(var.refid))
-    @warn "parsed variable" var usort
+    #@warn "parsed variable" var usort #! debug
     return (var, usort) # expression for Variable with this UserSort
 end
 
@@ -273,7 +273,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType)
     isort = nothing
     for st in EzXML.eachelement(node)
         stnode, tag = unwrap_subterm(st)
-        @show tag
+        #@show tag
         if tag == :numberconstant && isnothing(multiplicity)
             multiplicity, _ = parse_term(Val(tag), stnode, pntd) #! PnmlExpr, UserSort
             # RealSort as first numberconstant might confuse `Multiset.jl`.
@@ -453,10 +453,10 @@ function parse_term(::Val{:unparsed}, node::XMLNode, pntd::PnmlType)
 end
 
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType)
-    @warn "parse_term(::Val{:tuple}"; flush(stdout);
+    #@warn "parse_term(::Val{:tuple}"; flush(stdout); #! debug
     sts = subterms(node, pntd)
     @assert length(sts) >= 2
-    @show tup = PnmlTupleEx(sts) #! We have PnmlExpr elements at this point.
+    tup = PnmlTupleEx(sts) #! We have PnmlExpr elements at this point.
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
     return tup, usersort(:null) #todo! when can we map to product sort?
@@ -469,7 +469,7 @@ function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType)
     uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
     #@show PNML.operator(uo.refid); flush(stdout)
     usort = sortref(PNML.operator(uo.refid))
-    @warn "returning useroperator" uo usort
+    #@warn "returning useroperator" uo usort #! debug
     return (uo, usort)
 end
 
@@ -534,7 +534,7 @@ Partition # id, name, usersort, partitionelement[]
 function parse_partition(node::XMLNode, pntd::PnmlType,)
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
-    @warn "partition $(repr(id)) $nameval"; flush(stdout);  #~ debug
+    #@warn "partition $(repr(id)) $nameval"; flush(stdout);  #! debug
     psort::Maybe{UserSort} = nothing
     elements = PartitionElement[] # References into psort that form a equivalance class.
     for child in EzXML.eachelement(node)
@@ -610,10 +610,10 @@ end
     `<gtp>` Partition element greater than.
 """
 function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType)
-    @warn "parse_term(::Val{:gtp}"; flush(stdout);
+    @warn "parse_term(::Val{:gtp}"; flush(stdout); #! debug
     sts = subterms(node, pntd)
     @assert length(sts) == 2
-    @show sts # PartitionElementOps
+    #@show sts # PartitionElementOps
     pe = PartitionGreaterThan(sts...) #! We have PnmlExpr elements at this point.
     #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
     @assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))

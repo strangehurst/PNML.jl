@@ -95,7 +95,7 @@ function Base.show(io::IO, page::Page)
 end
 
 function verify(page::Page; verbose::Bool = CONFIG[].verbose)
-    verbose && println("verify Page $(pid(page))"); flush(stdout)
+    #verbose && println("verify Page $(pid(page))"); flush(stdout)
     errors = String[]
     verify!(errors, page; verbose)
     isempty(errors) ||

@@ -108,7 +108,7 @@ end
         </transition>"""
         t = parse_transition(node, pntd)::Transition
         @test has_label(labels(t), :delay)
-        @show PNML.get_label(labels(t), :delay)
+        #@show PNML.get_label(labels(t), :delay) #! debg
 
         @test PNML.delay(t) isa Tuple
 

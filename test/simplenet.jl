@@ -39,7 +39,7 @@ str1 = """
     net0 = @inferred PnmlNet first(nets(model))
     snet1 = @inferred SimpleNet SimpleNet(model)
     snet  = @inferred SimpleNet SimpleNet(net0)
-    @show snet1
+    #@show snet1
 
     @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
     @test_call broken=false SimpleNet(net0)
@@ -71,7 +71,7 @@ str1 = """
     end
 
     # page, pnmlnet, petrinet, the 3 top=levels
-    @show typeof(first(pages(snet.net))) typeof(snet.net) typeof(snet)
+    #@show typeof(first(pages(snet.net))) typeof(snet.net) typeof(snet)
     @test first(pages(snet.net)) isa Page
     @test snet.net isa PnmlNet
     @test snet isa PNML.AbstractPetriNet
@@ -237,7 +237,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    println(); println("extract a graph $pntd"); println(); flush(stdout)
+    #println(); println("extract a graph $pntd"); println(); flush(stdout) #! debug
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -294,7 +294,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     </pnml>
     """
     anet = PNML.SimpleNet(str3)::PNML.AbstractPetriNet
-    @show anet
+    #@show anet
     mg = PNML.metagraph(anet)
 
     println(); flush(stdout)

@@ -117,7 +117,7 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
 function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
-    verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
+    #verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
     errors = String[]
 
     verify!(errors, net; verbose)

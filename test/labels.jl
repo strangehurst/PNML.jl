@@ -72,12 +72,12 @@ end
 
         # Floating point
         mark2 = PNML.Marking(3.5)
+        #@show mark2 mark2()
         @test_opt PNML.Marking(3.5)
         @test_call PNML.Marking(3.5)
         @test typeof(mark2()) == typeof(3.5) #! term rewrite, _evaluate
         @test mark2() ≈ 3.5
         @test_call mark2()
-
         @test graphics(mark2) === nothing
         @test tools(mark2) === nothing || isempty(tools(mark2))
     end
@@ -101,7 +101,7 @@ end
                             parse_inscription(n1, :nothing, :nothing, pntd))
         @test inscript isa PNML.Inscription
         #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
-        @show inscript
+        #@show inscript
         #@test_broken inscript() == 12 #! term rewrite, _evaluate
         #@test graphics(inscript) !== nothing
         #@test tools(inscript) === nothing || !isempty(tools(inscript))

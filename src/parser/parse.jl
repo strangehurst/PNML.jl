@@ -629,14 +629,14 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}}  = nothing
     tsort ::Maybe{AbstractSort}= nothing
-    @show nameof(typeof(termparser))
+    #@show nameof(typeof(termparser)) #! debug
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, tsort = termparser(child, pntd) # Apply function/functor
-            @show term tsort
+            #@show term tsort #! debug
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -756,7 +756,7 @@ NB: Used by PTNets that assume placetype is DotSort().
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
-    @warn pntd l
+    #@warn pntd l #! debug
     # Marking label content is expe^\s*sortref\(cted to be a TermInterface expression.
     # All declarations are expected to have been processed before the first place.
 
@@ -792,7 +792,7 @@ placetype(pmt::ParseMarkingTerm) = pmt.placetype
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
+        #println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
         term = EzXML.firstelement(marknode) # ignore any others
 
         mark, sort = parse_term(term, pntd)
@@ -875,7 +875,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     check_nodename(inscnode, "structure")
-    println("\n(pmt::ParseInscriptionTerm) ", source(pit), " -> ", target(pit))
+    #println("\n(pmt::ParseInscriptionTerm) ", source(pit), " -> ", target(pit))
 
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
