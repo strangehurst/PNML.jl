@@ -124,10 +124,19 @@ end
     initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
 
 LVector labelled with place id and holding initial marking's value.
+High-level nets use cardinality of its multiset place marking value.
 """
-function initial_markings(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
+function initial_markings end #TODO move "lvector tools" section
+function initial_markings(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
+    return initial_markings(net)
+end
+function initial_markings(net::PnmlNet)
     m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
+    return m1
+end
+function initial_markings(net::PnmlNet{<:AbstractHLCore})
+    m1 = LVector((;[id => cardinality(initial_marking(p)()) for (id,p) in pairs(placedict(net))]...))
     return m1
 end
 
@@ -318,27 +327,37 @@ end
 """
     enabled(::AbstractPetriNet, ::LVector) -> LVector
 
-Returns labelled vector of id=>boolean where `true` means transitionid is enabled at marking.
-Each input place's marking in sufficient to allow it to be fired.
+Return labelled vector of id=>boolean where `true` means transition `id` is enabled at current `marking`.
 """
 function enabled(petrinet::AbstractPetriNet, marking)
-    net = pnmlnet(petrinet)
-    return enabled(net, marking)
-    #LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
+    return enabled(pnmlnet(petrinet), marking)
 end
 
 function enabled(net::PnmlNet, marking)
-    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t)) for t in transition_idset(net)]...))
+    # For each transition, look at each of its input arcs, compare the inscription to the place marking
+    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t))
+            for t in transition_idset(net)]...))
 end
 
-function enabled(net::PnmlNet{<:AbstractHLCore}, marking)transition_idset(net)
-    @warn marking transition_idset(net)
-    for t in transition_idset(net)
-        @show marking[p]cardinality(marking[p])
-        @show cardinality(inscription(arc(net,p,t)), preset(net, t))
-        flush(stdout)
-    end
-    LVector((;[t => all(p -> cardinality(marking[p]) >= cardinality(inscription(arc(net,p,t)), preset(net, t))) for t in transition_idset(net)]...))
+function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
+    # @warn marking transition_idset(net)
+    # for t in transition_idset(net)
+    #     #@show  collect(preset(net, t))
+    #     for p in preset(net, t)
+    #         println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
+    #     end
+    #     for p in preset(net, t)
+    #         println(
+    #             "inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t)),
+    #             " cardinality = ", cardinality(inscription(arc(net,p,t)))
+    #         )
+    #     end
+    # end
+    # flush(stdout)
+    #! Why is marking[p] not a multiset here?
+    #! Because of initial_markings produce a LVector using cardinality.
+    LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))), preset(net, t))
+            for t in transition_idset(net)]...))
 end
 
 # AlgebraicJulia wants LabelledPetriNet constructed with

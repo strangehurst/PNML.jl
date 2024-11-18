@@ -237,7 +237,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 #@show nettype_strings()
 
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    #println(); println("extract a graph $pntd"); println(); flush(stdout) #! debug
+    println("-------"); println("extract a graph $pntd"); println("-------"); flush(stdout) #! debug
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -301,11 +301,11 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @show C  = PNML.incidence_matrix(anet)
     @show m₀ = initial_markings(anet) #::LVector
 
-    @error "muladd(C', [1,0,0,0], m₀) is BROKEN !!!"
-    #@show muladd(C', [1,0,0,0], m₀)
+    #@error "muladd(C', [1,0,0,0], m₀) !!!"
+    @show muladd(C', [1,0,0,0], m₀)
 
-    @error "PNML.enabled(anet, m₀) is BROKEN !!!"
-    # @show e  = PNML.enabled(anet, m₀) #::LVector
+    #@error "PNML.enabled(anet, m₀) !!!"
+    @show e  = PNML.enabled(anet, m₀) #::LVector
     # @test values(e) == [true,false,false,false]
     # @test e == [true,false,false,false]
     # @test e == Bool[1,0,0,0]
