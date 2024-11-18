@@ -301,23 +301,23 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @show C  = PNML.incidence_matrix(anet)
     @show m₀ = initial_markings(anet) #::LVector
 
-    #@error "muladd(C', [1,0,0,0], m₀) !!!"
     @show muladd(C', [1,0,0,0], m₀)
 
-    #@error "PNML.enabled(anet, m₀) !!!"
     @show e  = PNML.enabled(anet, m₀) #::LVector
-    # @test values(e) == [true,false,false,false]
-    # @test e == [true,false,false,false]
-    # @test e == Bool[1,0,0,0]
-    # @test e == [1,0,0,0]
+    @test values(e) == [true,false,false,false]
+    @test e == [true,false,false,false] # 3 representations ov the enabled vector.
+    @test e == Bool[1,0,0,0]
+    @test e == [1,0,0,0]
 
-    # m₁ = PNML.fire!(C, e, m₀)
+    @show m₁ = PNML.fire!(C, e, m₀)
+    @show e = enabled(anet, m₁)
+    @test values(e) == [false,true,false,false]
 
-    #@test values(enabled(anet, m₁)) == [false,true,false,false]
+    @show m₂ = PNML.fire!(C, e, m₁)
+    @show e = enabled(anet, m₂)
+    @test values(e) == [false,false,true,false]
+
 #=
-    @show m₂ =  muladd(C', [0,1,0,0], m₁) typeof(m₂)
-    #@test enabled(anet, m₂) == [false,false,true,false]
-
     @show m₃ =  muladd(C', [0,0,1,0], m₂) typeof(m₃)
     #@test enabled(anet, m₃) == [false,false,false,true]
 
