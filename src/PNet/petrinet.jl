@@ -330,7 +330,19 @@ end
 Return labelled vector of id=>boolean where `true` means transition `id` is enabled at current `marking`.
 """
 function enabled(petrinet::AbstractPetriNet, marking)
-    return enabled(pnmlnet(petrinet), marking)
+    net = pnmlnet(petrinet)
+    @warn marking transition_idset(net)
+    for t in transition_idset(net)
+        for p in preset(net, t)
+            println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
+        end
+        for p in preset(net, t)
+            println("inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t))
+            )
+        end
+    end
+    flush(stdout)
+    return enabled(net, marking)
 end
 
 function enabled(net::PnmlNet, marking)
@@ -340,20 +352,6 @@ function enabled(net::PnmlNet, marking)
 end
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
-    # @warn marking transition_idset(net)
-    # for t in transition_idset(net)
-    #     #@show  collect(preset(net, t))
-    #     for p in preset(net, t)
-    #         println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
-    #     end
-    #     for p in preset(net, t)
-    #         println(
-    #             "inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t)),
-    #             " cardinality = ", cardinality(inscription(arc(net,p,t)))
-    #         )
-    #     end
-    # end
-    # flush(stdout)
     #! Why is marking[p] not a multiset here?
     #! Because of initial_markings produce a LVector using cardinality.
     LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))), preset(net, t))

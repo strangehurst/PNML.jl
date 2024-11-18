@@ -14,7 +14,6 @@ struct PnmlMultiset{T} #! data type, not operator, see Bag, pnmlmultiset()
     basis::UserSort # REFID indirection to NamedSort or ArbitrarySort
     mset::Multiset{T} # @assert eltype(basis) isa T
 end
-#
 
 """
     multiplicity(ms::PnmlMultiset{<:Any}, x) -> Integer
