@@ -331,17 +331,17 @@ Return labelled vector of id=>boolean where `true` means transition `id` is enab
 """
 function enabled(petrinet::AbstractPetriNet, marking)
     net = pnmlnet(petrinet)
-    @warn marking transition_idset(net)
-    for t in transition_idset(net)
-        for p in preset(net, t)
-            println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
-        end
-        for p in preset(net, t)
-            println("inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t))
-            )
-        end
-    end
-    flush(stdout)
+    # @warn marking transition_idset(net)
+    # for t in transition_idset(net)
+    #     for p in preset(net, t)
+    #         println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
+    #     end
+    #     for p in preset(net, t)
+    #         println("inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t))
+    #         )
+    #     end
+    # end
+    # flush(stdout)
     return enabled(net, marking)
 end
 

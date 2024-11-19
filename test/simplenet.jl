@@ -313,26 +313,16 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @show e = enabled(anet, m₁)
     @test values(e) == [false,true,false,false]
 
-    @show m₂ = PNML.fire!(C, e, m₁)
-    @show e = enabled(anet, m₂)
+    m₂ = PNML.fire!(C, e, m₁)
+    e = enabled(anet, m₂)
     @test values(e) == [false,false,true,false]
 
-#=
-    @show m₃ =  muladd(C', [0,0,1,0], m₂) typeof(m₃)
-    #@test enabled(anet, m₃) == [false,false,false,true]
+    m₃ = PNML.fire!(C, e, m₂)
+    e = enabled(anet, m₃)
+    @test values(e) == [false,false,false,true]
 
-    @show m₄ =  muladd(C', [0,0,0,1], m₃)
-    #@test enabled(anet, m₄) == [true,false,false,false]
+    m₄ = PNML.fire!(C, e, m₃)
+    e = enabled(anet, m₄)
+    @test values(e) == [true,false,false,false]
 
-    @show m₅ =  muladd(C', [1,0,0,0], m₄)
-    #@test enabled(anet, m₅) == [false,true,false,false]
-    @show m₆ =  muladd(C', [0,1,0,0], m₅)
-    #@test enabled(anet, m₆) == [false,false,true,false]
-    @show m₇ =  muladd(C', [0,0,1,0], m₆)
-    #@test enabled(anet, m₇) == [false,false,false,true]
-    @show m₈ =  muladd(C', [0,0,0,1], m₇)
-    #@test enabled(anet, m₈) == [true,false,false,false]
-    @show m₉ =  muladd(C', [1,0,0,0], m₈)
-    #@test enabled(anet, m₉) == [false,false,false,true]
-=#
 end
