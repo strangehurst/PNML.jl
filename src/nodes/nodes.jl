@@ -25,6 +25,8 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
 sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))
+"Return zero valued PnmlMultiset with same basis and eltype as place's marking."
+zero_marking(place::Place) = 0 * initial_marking(place)
 
 function Base.show(io::IO, place::Place)
     print(io, nameof(typeof(place)), "(")
