@@ -124,19 +124,37 @@ end
     initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
 
 LVector labelled with place id and holding initial marking's value.
-High-level nets use cardinality of its multiset place marking value.
+Used to create a vector of place markings indexed by place ID.
+
+#TODO refactor from LVector to tuples of pairs.
+
+High-level P/T Nets use cardinality of its multiset place marking value.
+Really, the implementation should be the same as for PTNet.
+
+Other HL Nets use multisets.
 """
 function initial_markings end #TODO move "lvector tools" section
+
 function initial_markings(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    return initial_markings(net)
+    return initial_markings(net) # Dispatch on nettype.
 end
+
 function initial_markings(net::PnmlNet)
-    m1 = LVector((;[id => initial_marking(p)() for (id,p) in pairs(placedict(net))]...))
+    m1 = LVector((;[id => initial_marking(p)()::Number for (id,p) in pairs(placedict(net))]...))
+    #todo m1 = tuple([id => initial_marking(p)()::Number for (id,p) in pairs(placedict(net))]...)
     return m1
 end
+
+#! pt_hlpng multisets of dotconstants map well to integer via cardinality.
+function initial_markings(net::PT_HLPNG)
+    m1 = LVector((;[id => cardinality(initial_marking(p)()::PnmlMultiset)::Number for (id,p) in pairs(placedict(net))]...))
+    return m1
+end
+
+#! Other HL need it to be treated as mutiset, not simple numbers!
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
-    m1 = LVector((;[id => cardinality(initial_marking(p)()) for (id,p) in pairs(placedict(net))]...))
+    m1 = LVector((;[id => initial_marking(p)()::PnmlMultiset for (id,p) in pairs(placedict(net))]...))
     return m1
 end
 
@@ -148,6 +166,7 @@ LVector labelled with transition id and holding its condition's value.
 function conditions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
+    #todo tuple([id => condition(t) for (id, t) in pairs(transitiondict(net))]...)
 end
 
 #####################################################################################
@@ -177,34 +196,50 @@ See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
 postset(net, id) = Iterators.map(target, src_arcs(net, id))
 
 """
+    inscription_value(::Type{T}, a) -> Union{Number, PnmlMultiset}
+
+Return inscription value or default to `zero` or zero-like PnmlMultiset (TBD).
+"""
+function inscription_value end
+
+inscription_value(::Type{T}, a) where {T<:Number} = begin
+    isnothing(a) ? zero(T) : inscription(a)::T #! These 2 need to be type stable.
+end
+
+inscription_value(::Type{T}, a) where {T<:PnmlMultiset} = begin
+    # create special null PnmlMultiset
+    isnothing(a) ? zero(T) : inscription(a)::T #! These 2 need to be type stable.
+end
+
+"""
     input_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
 
 Create and return a matrix ntransitions x nplaces
 """
 function input_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    imatrix = Matrix{inscription_value_type(net)}(undef,
-                                                  ntransitions(net),
-                                                  nplaces(net))
-    return input_matrix!(imatrix, net) # fill the matrix & return it
+    imatrix = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
+    return input_matrix!(imatrix, net) # Dispatch on net type.
 end
 
+# TODO: high-level will be multiset (except for PT_HLPNG)
 function input_matrix!(imatrix, net::PnmlNet{<:AbstractHLCore})
-    for (p, place_id) in enumerate(place_idset(net))
-        for (t, transition_id) in enumerate(transition_idset(net))
+    for (t, transition_id) in enumerate(transition_idset(net))
+        for (p, place_id) in enumerate(place_idset(net))
+            z = zero_marking(place(net, place_id))# empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
-            # TODO high-level
-            imatrix[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            imatrix[t,p] = inscription_value(inscription_value_type(net), a, z)::PnmlMultiset
         end
     end
     return imatrix
  end
 
+ #! These will be `Number`
  function input_matrix!(imatrix, net::PnmlNet)
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
             a = arc(net, place_id, transition_id)
-            imatrix[t,p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            imatrix[t,p] = inscription_value(inscription_value_type(net), a)::Number
         end
     end
     return imatrix
@@ -212,21 +247,21 @@ function input_matrix!(imatrix, net::PnmlNet{<:AbstractHLCore})
 
 """
     output_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
+
+Create and return a matrix ntransitions x nplaces.
 """
 function output_matrix(petrinet::AbstractPetriNet)
     net = pnmlnet(petrinet)
-    omatrix = Matrix{inscription_value_type(net)}(undef,
-                                                  ntransitions(net),
-                                                  nplaces(net))
-    return output_matrix!(omatrix, net) # fill the matrix & return it
+    omatrix = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
+    return output_matrix!(omatrix, net) # Dispatch on net type.
 end
 
 function output_matrix!(omatrix, net::PnmlNet{<:AbstractHLCore})
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
+            z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
-             # TODO high-level
-             omatrix[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            omatrix[t, p] = inscription_value(inscription_value_type(net), a, z)::PnmlMultiset
         end
     end
     return omatrix
@@ -236,7 +271,7 @@ function output_matrix!(omatrix, net::PnmlNet)
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
             a = arc(net, transition_id, place_id)
-            omatrix[t, p] = isnothing(a) ? zero(inscription_value_type(net)) : inscription(a)
+            omatrix[t, p] = inscription_value(inscription_value_type(net), a)::Number
         end
     end
     return omatrix
@@ -261,64 +296,36 @@ function incidence_matrix(petrinet::AbstractPetriNet)
 end
 
 function incidence_matrix(net::PnmlNet{<:AbstractHLCore})
-
-    #todo  MAKE labelled Matrix? ComponentArray?
-    #! Always integes.  high-level? Continuous?
-    C = Matrix{Int}(undef, ntransitions(net), nplaces(net)) #Preallocate storage
-    z = zero(Int) # continuous would use float64
-    @assert z isa Number
-
+    C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id) in enumerate(place_idset(net))
+        for (p, place_id)  in enumerate(place_idset(net))
+            z = zero_marking(place(net, place_id))
 
             #! inscription(arc) can return HLInscription or Inscription
             #! which have values of PnmlMultiset or Number respectivly.
             #^ Here we use the cardinality of the multiset for ALL high-level nets.
             tp = arc(net, transition_id, place_id)
-            l = if isnothing(tp)
-                z
-            else
-                cardinality(inscription(tp))::Number
-            end
-
+            l = cardinality(inscription_value(inscription_value_type(net), tp), z)::Number
             pt = arc(net, place_id, transition_id)
-            r = if isnothing(pt)
-                z
-            else
-                cardinality(inscription(pt))::Number
-            end
+            r = cardinality(inscription_value(inscription_value_type(net), pt), z)::Number
 
-            c = l - r
-            C[t, p] = c
+            C[t, p] = l - r
         end
     end
     return C
 end
 # Everything else. All non-high-level nets.
 function incidence_matrix(net::PnmlNet)
-    #todo  MAKE labelled Matrix? ComponentArray?
-    C = Matrix{Int}(undef, ntransitions(net), nplaces(net)) #Preallocate storage
-    z = zero(Int) #! continuous would use Float64 for C and z
-
-    @assert z isa Number
+    C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
+            z = zero_marking(place(net, place_id))
             tp = arc(net, transition_id, place_id)
-            l = if isnothing(tp)
-                z
-            else
-                inscription(tp)::Number
-            end
-
+            l = inscription_value(inscription_value_type(net), tp, z)::Number
             pt = arc(net, place_id, transition_id)
-            r = if isnothing(pt)
-                z
-            else
-                inscription(pt)::Number
-            end
+            r = inscription_value(inscription_value_type(net), pt, z)::Number
 
-            c = l - r
-            C[t, p] = c
+            C[t, p] = l - r
         end
     end
     return C
@@ -331,7 +338,7 @@ Return labelled vector of id=>boolean where `true` means transition `id` is enab
 """
 function enabled(petrinet::AbstractPetriNet, marking)
     net = pnmlnet(petrinet)
-    # @warn marking transition_idset(net)
+    # @warn marking transition_idset(net) #! debug
     # for t in transition_idset(net)
     #     for p in preset(net, t)
     #         println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
@@ -341,8 +348,8 @@ function enabled(petrinet::AbstractPetriNet, marking)
     #         )
     #     end
     # end
-    # flush(stdout)
-    return enabled(net, marking)
+    # flush(stdout) #! debug
+    return enabled(net, marking) # Dispatch on net type.
 end
 
 function enabled(net::PnmlNet, marking)
@@ -350,10 +357,52 @@ function enabled(net::PnmlNet, marking)
     LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t))
             for t in transition_idset(net)]...))
 end
+#==========================================================================
+Color class (concept 13) a non-empty finite set, may be linearly ordered, circular or unordered.
+Color domain (concept 14) a finite cartesian product of color classes.
+C is a mapping which defines for each place and each transition its color domain.
+W is the weight function, associates with each arc a general color function from C(t) to Bag(C(p)).
+
+Color functions (concept 16, 17),
+Let D be a color domain
+Basic color functions are:
+ - projection that selects one component of a color
+ - successor that selects successor of color component
+ - all that maps any color to the "sum" of color components in class Cᵢ (`<all>` operator)
+Class/General color functions
+ - linear combination (fᵢ) of basic color functions that select >0 tokens
+
+Arcs must have a weight function (inscrition) that is a general color function
+
+Color Domain vs. Place SortType
+ProductSort defines a color domain with >1 color classes (aka other Sorts) .
+Color functions select a single color component from the domain.
+ProductSort -> PnmlTuple elements.
+Selecting one tuple field is well founded math, julia handels it.
+ProductSort only used by high-level nets.
+Tuple elements will evaluate to Bags whose basis matches the place's ProductSort sorttype.
+
+Need a PnmlMultiset that servers as `zero` for `*` and `+`.
+PnmlMultiset with basis of `zero` or `null` sort, hold an empty Multiset{T}
+matching eltype T for type stability, and acting like `zero`.
+
+Let z be the special PnmlMultiset
+Let m be an ordinary PnmlMultiset
+    z * m = z
+    z + m = m
+
+Where can special PnmlMultiset appear: incidence_matrix, where it represents no arc.
+They are forbidden as a marking.
+Will not appear in input marking or output of fire!(incidence, enabled, marking).
+
+
+===========================================================================#
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     #! Why is marking[p] not a multiset here?
     #! Because of initial_markings produce a LVector using cardinality.
+    #! Note: standard lists the weight function, a color function, that maps to a multiset.
+    #! So shouled be using multiset without cardinality: marking[p] >= inscription(arc(net,p,t))), preset(net, t)
     LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))), preset(net, t))
             for t in transition_idset(net)]...))
 end
