@@ -92,6 +92,9 @@ basis(ms::MultisetSort) = ms.basis
 $(TYPEDEF)
 
 An ordered collection of sorts. The elements of the sort are [`PnmlTuple`](@ref).
+
+ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
+Where sorts are the syntax for color classes and ProduceSort is the color domain.
 """
 @auto_hash_equals struct ProductSort <: AbstractSort
     ae::Vector{REFID} #! NamedSorts and UserSorts are linked by REFIDs
