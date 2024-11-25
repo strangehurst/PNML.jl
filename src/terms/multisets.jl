@@ -11,25 +11,41 @@ Thre are constants defined that must be multisets since HL markings are multiset
 multi`x is text representation of the numberof operator that produces a multiset.
 """
 struct PnmlMultiset{T} #! data type, not operator, see Bag, pnmlmultiset()
-    basis::UserSort # REFID indirection to NamedSort or ArbitrarySort
+    basis::UserSort # REFID indirection #^ MOVE TO TYPE DOMAIN?
     mset::Multiset{T} # @assert eltype(basis) isa T
 end
 
 """
     multiplicity(ms::PnmlMultiset{<:Any}, x) -> Integer
 """
-multiplicity(ms::PnmlMultiset{<:Any}, x) = ms.mset[x]
-cardinality(ms::PnmlMultiset{<:Any}) = length(ms.mset)
-issingletonmultiset(ms::PnmlMultiset{<:Any}) = cardinality(ms) == 1
+multiplicity(ms::PnmlMultiset, x) = ms.mset[x]
+cardinality(ms::PnmlMultiset) = length(ms.mset)
+issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
+"""
+    basis(ms::PnmlMultiset) -> UserSort
+Multiset basis sort is a UserSort that references the declaration of a NamedSort.
+Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
+MultisetSorts not allowed. Nor loops in sort references.
+"""
+basis(ms::PnmlMultiset) = ms.basis
+
+"""
+    sortelements(ms::PnmlMultiset{<:Any}) -> iterator
+
+Iterates over elements of the basis sort. __May not be finite sort!__
+"""
 Base.eltype(::Type{PnmlMultiset{T}}) where {T} = T
-Base.zero(::Type{PnmlMultiset{<:Any}}) = zero(Int) #! what meaning/use?
+
+Base.zero(::Type{PnmlMultiset{T}}) where {T} = begin
+    PnmlMultiset(basis, Multiset{T}()) # zero(Int) #! empty multiset
+end
+
 Base.one(::Type{PnmlMultiset{<:Any}})  = one(Int) #! what meaning/use?
 
-sortref(ms::PnmlMultiset{<:Any}) = basis(ms)::UserSort # definition of basis sort
-sortof(ms::PnmlMultiset{<:Any}) = sortof(basis(ms)) # definition of basis sort
-
-_evaluate(ms::PnmlMultiset{<:Any}) = begin println("_evaluate: PnmlMultiset see Bag for operator, this is a data structure "); cardinality(ms); end #! TODO rewrite rule
+sortref(ms::PnmlMultiset)      = basis(ms)::UserSort # definition of basis sort
+sortof(ms::PnmlMultiset)       = sortof(basis(ms)) # definition of basis sort
+sortelements(ms::PnmlMultiset) = sortelements(basis(ms)) # basis element iterator
 
 #! toexpr(ms::PnmlMultiset{<:Any}) see Bag for operator, this is a data structure
 
@@ -43,31 +59,9 @@ function (+)(A::PnmlMultiset{T}, B::PnmlMultiset{T}) where {T}
     PnmlMultiset(basis(A), A.mset + B.mset)
 end
 
-"""
-    basis(ms::PnmlMultiset) -> UserSort
-Multiset basis sort is a UserSort that references the declaration of a NamedSort.
-Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
-MultisetSorts not allowed. Nor loops in sort references.
-"""
-basis(ms::PnmlMultiset{<:Any}) = ms.basis
-
-"""
-    sortelements(ms::PnmlMultiset{<:Any}) -> iterator
-
-Iterates over elements of the basis sort. __May not be finite sort!__
-"""
-sortelements(ms::PnmlMultiset{<:Any}) = sortelements(basis(ms))
-
-
 function Base.show(io::IO, t::PnmlMultiset)
     print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
     print(io, ", mset=", repr(t.mset),")")
-    # nameof(typeof(t.mset)), "(",)
-    # io = inc_indent(io)
-    # for (k,v) in pairs(t.mset) # Control formatting.
-    #     println(io, repr(k), " => v, ",")
-    # end
-    # print(io, "))") # Close BOTH parens.
 end
 
 
