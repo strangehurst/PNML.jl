@@ -84,6 +84,9 @@ tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tgt_arcs(pnmlnet(petrinet), i
 
 "Forward inscription lookup to `pnmlnet`"
 inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = inscription(pnmlnet(petrinet), arc_id)
+#! ====================================================================================
+#^   HL inscription() require a SubstitutionDict to evaluate the compiled expression
+#! ====================================================================================
 
 #------------------------------------------------------------------
 refplace_idset(petrinet::AbstractPetriNet)            = refplace_idset(pnmlnet(petrinet))
@@ -154,6 +157,7 @@ end
 
 #! Other HL need it to be treated as mutiset, not simple numbers!
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
+    # Evaluate the ground term expression into a mutiset.
     m1 = LVector((;[id => initial_marking(p)()::PnmlMultiset for (id,p) in pairs(placedict(net))]...))
     return m1
 end
@@ -165,6 +169,7 @@ LVector labelled with transition id and holding its condition's value.
 """
 function conditions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
+    # Evaluate conditions here. #TODO! non-ground terms
     LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
     #todo tuple([id => condition(t) for (id, t) in pairs(transitiondict(net))]...)
 end
@@ -173,27 +178,6 @@ end
 #
 #####################################################################################
 
-#-----------------------------------------------------------------
-#=
-Given x ∈ S ∪ T
-  - the set •x = {y | (y, x) ∈ F } is the preset of x.
-  - the set x• = {y | (x, y) ∈ F } is the postset of x.
-=#
-"""
-Iterate ids of input (arc source) for output transition or place `id`.
-
-See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
-"""
-preset(net, id) = Iterators.map(source, tgt_arcs(net, id))
-
-"""
-    postset(net, id) -> Iterator
-
-Iterate ids of output (arc target) for source transition or place `id`.
-
-See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
-"""
-postset(net, id) = Iterators.map(target, src_arcs(net, id))
 
 """
     inscription_value(::Type{T}, a) -> Union{Number, PnmlMultiset}
@@ -205,6 +189,10 @@ function inscription_value end
 inscription_value(::Type{T}, a) where {T<:Number} = begin
     isnothing(a) ? zero(T) : inscription(a)::T #! These 2 need to be type stable.
 end
+
+#! ====================================================================================
+#^   HL inscription() require a SubstitutionDict to evaluate the compiled expression
+#! ====================================================================================
 
 inscription_value(::Type{T}, a) where {T<:PnmlMultiset} = begin
     # create special null PnmlMultiset
@@ -331,6 +319,57 @@ function incidence_matrix(net::PnmlNet)
     return C
 end
 
+
+#^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), source(a), target(a))
+
+#^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+"""
+    binding_value_sets(net::PnmlNet, marking)
+
+Return dictionary with transaction ID is key and value is binding set for variables of that transition.
+Each variable of an enabled transition will have a non-empty binding.
+"""
+function binding_value_sets(net::PnmlNet, marking)
+    bv_sets = Vector{Dict{REFID,Any}}[] # One dictionary for each transition.
+    # The order of transitions is maintained.
+    for t in transitions(net)::Transition
+        bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
+        push!(bv_sets, bvalset)
+
+        for a in preset(net, t)::Arc
+            @show adj = adjacent_place(net, a)
+            @show placesort = sortref(adj)
+
+            @show vs = vars(inscription(a))::Tuple #todo PnmlExpr
+            for v in vs # inscription that is not a ground term
+                equalSorts(placesort, v) || error("not equalSorts for variable $v and marking $placesort")
+                #? for creating Ref need index into product sort/PnmlTuple
+                bvs = Dict{REFID,Set{eltype(basis)}}() # For this arc
+                # bind elements of the multiset to the variable when the multiplicities match.
+                for el in keys(marking[pid(adj)])
+                    # each element with enough multiplicity can be bound.
+                    if multiplicity(marking[pid(adj)], el) >= length(filter(==(v), vs))
+                        push!(bvs[v], el)
+                    end
+                end
+
+                for k in keys(bvs)
+                    bvalset[k] = haskey(bvalset, k) ? intersect(bvalset[k], bvs[k]) : bvs[k]
+                end
+            end
+            # any tracking object with an empty binding value set means the transition is not enabled
+            isempty(bvalset)
+        end
+    end
+    #! Have at least 1 consistent substitution if there are any variables.
+    @assert  isempty(vars) || !isempty(bvalset) #! 1st stage of enabling rule has succeded.
+    return bvalset
+end
+
+
+
+#^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
     enabled(::AbstractPetriNet, ::LVector) -> LVector
 

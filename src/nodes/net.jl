@@ -8,8 +8,10 @@ One Petri Net of a PNML model.
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
-    netdata::PnmlNetData{PNTD} # !, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
-    page_set::Set{Symbol} # Keys of pages in pagedict owned by this net. Top-level of a tree with PnmlNetKeys in Pages.
+    netdata::PnmlNetData{PNTD} #!, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
+    page_set::OrderedSet{Symbol} # Unordered keys of pages in pagedict owned by this net.
+    # Top-level of a tree with PnmlNetKeys in Pages.
+    #
     declaration::Declaration
     namelabel::Maybe{Name}
     tools::Maybe{Vector{ToolInfo}}
@@ -23,8 +25,8 @@ nettype(net::PnmlNet) = typeof(net.type)
 pid(net::PnmlNet)  = net.id
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
-pagedict(n::PnmlNet) = n.pagedict
-page_idset(n::PnmlNet)  = n.page_set
+pagedict(n::PnmlNet) = n.pagedict # Will be ordered.
+page_idset(n::PnmlNet)  = n.page_set #! Not ordered! Dictionaries in netdata ARE ordered.
 
 netdata(n::PnmlNet)  = n.netdata
 
@@ -101,11 +103,15 @@ arc(net, s::Symbol, t::Symbol) = begin
     isempty(x) ? nothing : first(x)
 end
 
-all_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id || target(a) === id, arcs(net))
-src_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> source(a) === id, arcs(net))
-tgt_arcs(net::PnmlNet, id::Symbol) = Iterators.filter(a -> target(a) === id, arcs(net))
+# Iterate IDs of arcs that have given source or target.values(arcdict((net)))
+all_arcs(net::PnmlNet, id::Symbol) =
+    Iterators.map(pid, Iterators.filter(a -> (source(a) === id || target(a) === id), values(arcdict(net))))
+src_arcs(net::PnmlNet, id::Symbol) =
+    Iterators.map(pid, Iterators.filter(a -> (source(a) === id), values(arcdict(net))))
+tgt_arcs(net::PnmlNet, id::Symbol) =
+    Iterators.map(pid, Iterators.filter(a -> (target(a) === id), values(arcdict(net))))
 
-"Lookup inscription in `arcdict`"
+"Forward `inscription` to `arcdict`"
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
 
 has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
@@ -113,6 +119,93 @@ refplace(net::PnmlNet, id::Symbol)          = refplacedict((net))[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict((net)), id)
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 
+#-----------------------------------------------------------------
+# Given x ∈ S ∪ T
+#   - the set •x = {y | (y, x) ∈ F } is the preset of x.
+#   - the set x• = {y | (x, y) ∈ F } is the postset of x.
+
+"""
+    preset(net, id) -> Iterator
+
+Iterate ids of input (arc's source) for output transition or place `id`.
+
+See [`in_inscriptions`](@ref) and [`transition_function`](@ref).
+"""
+preset(net::PnmlNet, id::Symbol) = begin
+    Iterators.map(x -> source(arcdict(net)[x]), tgt_arcs(net, id))
+end
+
+"""
+    postset(net, id) -> Iterator
+
+Iterate ids of output (arc's target) for source transition or place `id`.
+
+See [`out_inscriptions`](@ref) and [`transition_function`](@ref).
+"""
+postset(net::PnmlNet , id::Symbol) = begin
+    Iterators.map(x -> target(arcdict(net)[x]), src_arcs(net, id))
+end
+
+#------------------------------------------------------------------------------
+# Rewrite
+#------------------------------------------------------------------------------
+"""
+    rewriteXXX(net)
+
+Rewrite PnmlExpr (TermInterface) expressions.
+"""
+function rewriteXXX(net::PnmlNet)
+    printstyled("## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
+    for pl in places(net)
+        println("p ",repr(pid(pl)), " ", repr(initial_marking(pl)), " ", toexpr(term(initial_marking(pl)))) # expression
+        # capacity expression
+    end
+    for ar in arcs(net)
+        println("a ",repr(pid(ar)), " ", repr(ar.inscription)) # expression
+    end
+    for tr in transitions(net)
+        transitionid = pid(tr)
+        println("t ",repr(transitionid), " ", repr(condition(tr))) # expression
+        #println("   rate ", repr(rate(transition(net, transitionid))))
+
+        # Slower than values
+        #println(join(Iterators.map(a -> (a,source(arcdict(net)[a]),target(arcdict(net)[a])), keys(arcdict(net))), " "))
+        # Faster than keys
+        println(join(Iterators.map(a -> (pid(a),source(a),target(a)), values(arcdict(net))), " "))
+
+        println("$transitionid tgts ", collect(tgt_arcs(net, transitionid)))
+        println("$transitionid srcs ", collect(src_arcs(net, transitionid)))
+
+        println("presets ")
+        for placeid in preset(net, transitionid)
+            a = arc(net, placeid, transitionid)
+            if !isnothing(a)
+                @show transitionid placeid
+                @show variables(a.inscription)
+                println(repr(transitionid), " ", variables(a.inscription)) #! SubstitutionDict
+            end
+        end
+
+        println("postsets ")
+        for placeid in preset(net, transitionid)
+            a = arc(net, placeid, transitionid)
+            if !isnothing(a)
+                @show transitionid placeid
+                @show variables(a.inscription)
+                println(repr(transitionid), " ", variables(a.inscription)) #! SubstitutionDict
+            end
+        end
+        println()
+    end
+
+    # namedoperators
+    # arbitraryops
+    # partitionops
+    #
+    printstyled("##  \n"; color=:magenta)
+end
+
+#------------------------------------------------------------------------------
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
@@ -172,6 +265,7 @@ function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     return nothing
 end
 
+#------------------------------------------------------------------------------
 function Base.summary(net::PnmlNet)
     string(typeof(net), " id ", pid(net),
             " name '", has_name(net) ? name(net) : "", ", ",
@@ -225,6 +319,9 @@ function Base.show(io::IO, net::PnmlNet)
 
 end
 
+#------------------------------------------------------------------------------
+# Construct Types
+#------------------------------------------------------------------------------
 pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
                                                       place_type(T),
                                                       transition_type(T),
