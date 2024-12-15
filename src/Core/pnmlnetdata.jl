@@ -43,10 +43,11 @@ nreftransitions(d::PnmlNetData) = length(reftransitiondict(d))
 valtype(d::OrderedDict{Symbol,T}) where T = T
 
 function tunesize!(d::PnmlNetData;
-                    nplace::Int = 32,
+                    nplace::Int = 32, #TODO Make these prefrences.
                     ntransition::Int = 32,
                     narc::Int = 32,
-                    npref::Int = 1, # References only matter when npage > 1.
+                    # References only matter when npage > 1.
+                    npref::Int = 1,
                     ntref::Int = 1)
 
     sizehint!(d.place_dict, nplace)
@@ -87,29 +88,30 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Per-page structure of `Set`s of pnml IDs for each "owned" `Page` and other
+Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and other
 [`AbstractPnmlObject`](@ref).
 """
 @kwdef struct PnmlNetKeys
-    page_set::Set{Symbol} = Set{Symbol}() # Subpages of page
-    place_set::Set{Symbol} = Set{Symbol}()
-    transition_set::Set{Symbol} = Set{Symbol}()
-    arc_set::Set{Symbol} = Set{Symbol}()
-    reftransition_set::Set{Symbol} = Set{Symbol}()
-    refplace_set::Set{Symbol} = Set{Symbol}()
+    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}() # Subpages of page, empty if no children.
+    place_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    transition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    arc_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    reftransition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    refplace_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
 end
-
-page_idset(s::PnmlNetKeys) = s.page_set
-"Return an `Set{Symbol}, should it be an iterator?"
-place_idset(s::PnmlNetKeys) = s.place_set
-transition_idset(s::PnmlNetKeys) = s.transition_set
-arc_idset(s::PnmlNetKeys) = s.arc_set
-reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
-refplace_idset(s::PnmlNetKeys) = s.refplace_set
+# 2024-12-08 JDH renamed accessors from *_idset to *_pnk as this is the only place used.
+# And they duplicated unless used as extension point/organization mechanism in
+page_pnk(s::PnmlNetKeys) = s.page_set
+"Return a `OrderedSet{Symbol}, should it be an iterator?"
+place_pnk(s::PnmlNetKeys) = s.place_set
+transition_pnk(s::PnmlNetKeys) = s.transition_set
+arc_pnk(s::PnmlNetKeys) = s.arc_set
+reftransition_pnk(s::PnmlNetKeys) = s.reftransition_set
+refplace_pnk(s::PnmlNetKeys) = s.refplace_set
 
 function tunesize!(s::PnmlNetKeys;
                    npage::Int = 1, # Usually just 1 page per net.
-                   nplace::Int = 32,
+                   nplace::Int = 32, # TODO Preferences.
                    ntransition::Int = 32,
                    narc::Int = 32,
                    npref::Int = 1, # References only matter when npage > 1.
@@ -125,22 +127,22 @@ end
 #-------------------
 Base.summary(io::IO, pns::PnmlNetKeys) = print(io, summary(pns))
 function Base.summary(pns::PnmlNetKeys)
-    string(length(page_idset(pns)), " pages, ",
-            length(place_idset(pns)), " places, ",
-            length(transition_idset(pns)), " transitions, ",
-            length(arc_idset(pns)), " arcs, ",
-            length(refplace_idset(pns)), " refPlaces, ",
-            length(reftransition_idset(pns)), " refTransitions, ",
+    string(length(page_pnk(pns)), " pages, ",
+            length(place_pnk(pns)), " places, ",
+            length(transition_pnk(pns)), " transitions, ",
+            length(arc_pnk(pns)), " arcs, ",
+            length(refplace_pnk(pns)), " refPlaces, ",
+            length(reftransition_pnk(pns)), " refTransitions, ",
         )::String
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (tag, idset) in (("pages", page_idset),
-                        ("places", place_idset),
-                        ("transitions", transition_idset),
-                        ("arcs", arc_idset),
-                        ("refplaces", refplace_idset),
-                        ("refTransitions", reftransition_idset))
+    for (tag, idset) in (("pages", page_pnk),
+                        ("places", place_pnk),
+                        ("transitions", transition_pnk),
+                        ("arcs", arc_pnk),
+                        ("refplaces", refplace_pnk),
+                        ("refTransitions", reftransition_pnk))
         print(io, indent(io), length(idset(pns)), " ", tag, ": ")
         iio = inc_indent(io)
         for (i,k) in enumerate(values(idset(pns)))

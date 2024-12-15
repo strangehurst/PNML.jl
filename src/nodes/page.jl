@@ -21,6 +21,7 @@ mutable struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     netdata::PnmlNetData{PNTD} # !, P, T, A, RP, RT} # All Places, Arcs, etc. Shared by net and its pages.
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
     # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.
+    # There could be >1 nets. `netdata` is ordered, `netsets` are unordered.
 end
 
 Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
@@ -54,13 +55,13 @@ reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idse
 
 declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
 
-page_idset(page::Page)          = page_idset(netsets(page)) # subpages of this page
+page_idset(page::Page)          = page_pnk(netsets(page)) # subpages of this page
 "Return netsets place_idset"
-place_idset(page::Page)         = place_idset(netsets(page))
-transition_idset(page::Page)    = transition_idset(netsets(page))
-arc_idset(page::Page)           = arc_idset(netsets(page))
-reftransition_idset(page::Page) = reftransition_idset(netsets(page))
-refplace_idset(page::Page)      = refplace_idset(netsets(page))
+place_idset(page::Page)         = place_pnk(netsets(page))
+transition_idset(page::Page)    = transition_pnk(netsets(page))
+arc_idset(page::Page)           = arc_pnk(netsets(page))
+reftransition_idset(page::Page) = reftransition_pnk(netsets(page))
+refplace_idset(page::Page)      = refplace_pnk(netsets(page))
 
 place(page::Page, id::Symbol) = placedict(page)[id]
 has_place(page::Page, id::Symbol) = in(id, place_idset(page))
