@@ -65,17 +65,19 @@ outs(net, transition_id::Symbol) =
 # See input flow
 "Iterate over preset of transition, returning source place id => inscription value pairs."
 function in_inscriptions(net, transitionid)
-    Iterators.map(preset(net, transitionid)) do placeid
+    #for placeid in preset(net, transitionid)
+    Iterators.map(postset(net, transitionid)) do placeid
         a = arc(net, placeid, transitionid)
-        source(a) => inscription(a)
+        source(a) => inscription(a) #! SubstitutionDict
     end
 end
 
 # See output flow
 "Iterate over postset of transition, returning target place id => inscription value pairs."
 function out_inscriptions(net, transitionid)
+    #for placeid in postset(net, transitionid)
     Iterators.map(postset(net, transitionid)) do placeid
         a = arc(net, transitionid, placeid)
-        target(a) => inscription(a)
+        target(a) => inscription(a) #! SubsittutionDict
     end
 end

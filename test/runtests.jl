@@ -58,9 +58,11 @@ select(y, n) = select(y, tuple(n))
         @safetestset "labels"       begin include("labels.jl") end
     end
     if select(("ALL", "HL"), ("!HL",))
+        println("HL")
         @safetestset "labels_hl"       begin include("labels_hl.jl") end
     end
     if select(("ALL", "CORE2"), ("!CORE2",))
+        println("CORE2")
         @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
@@ -75,6 +77,7 @@ select(y, n) = select(y, tuple(n))
     end
 
      if select(("ALL", "NET2"), ("!NET2",))
+        println("NET2")
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end

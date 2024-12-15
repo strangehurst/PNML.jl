@@ -4,7 +4,7 @@ using XMLDict: XMLDict
 
 
 @testset "type $pntd" for pntd in all_nettypes(ishighlevel)
-    # Add usersort
+    # Add usersort, namedsort duo as test context.
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
         PNML.namedsorts()[:N2] = PNML.NamedSort(:N2, "N2", DotSort())
@@ -13,23 +13,15 @@ using XMLDict: XMLDict
 <type>
     <text>N2</text>
     <structure> <usersort declaration="N2"/> </structure>
-    <graphics><offset x="0" y="0"/></graphics>
-    <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-    <unknown id="unkn">
-        <name> <text>unknown label</text> </name>
-        <text>content text</text>
-    </unknown>
 </type>
     """
-        #println()
         typ = PNML.Parser.parse_type(n1, pntd)::SortType
-        #@test_logs (:warn,"ignoring unexpected child of <type>: 'unknown'")
         @test text(typ) == "N2"
         @test sortref(typ) isa UserSort # wrapping DotSort
         @test sortof(typ) == DotSort() #! does the name of a sort affect equalSorts?
-        @test PNML.has_graphics(typ) == true
+        @test PNML.has_graphics(typ) == false
         @test PNML.has_labels(typ) == false
-        @test occursin("Graphics", sprint(show, typ))
+        @test !occursin("Graphics", sprint(show, typ))
     end
 end
 
@@ -67,8 +59,9 @@ end
 
             @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
             @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-            markexpr = toexpr(term(mark))
-            markterm = eval(markexpr)
+            @show term(mark)
+            @show markexpr = toexpr(term(mark))
+            @show markterm = eval(markexpr)
             @test markterm isa PNML.PnmlMultiset{<:Any} # pnml many-sorted operator -> multiset
             # @test arity(markterm) == 2
             # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())

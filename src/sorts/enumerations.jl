@@ -107,4 +107,4 @@ sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are a
 
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
-toexpr(c::FiniteIntRangeConstant) = value(c)
+toexpr(c::FiniteIntRangeConstant, ::SubstitutionDict) = value(c)

@@ -266,14 +266,14 @@ $(TYPEDSIGNATURES)
 function has_reftransition end
 
 """
-    refplace_idset(x) -> Set{Symbol} #TODO iterator?
+    refplace_idset(x) -> OrderedSet{Symbol} #TODO iterator?
 
 Return reference place pnml ids.
 """
 function refplace_idset end
 
 """
-    reftransition_idset(x) -> Set{Symbol} #TODO iterator?
+    reftransition_idset(x) -> OrderedSet{Symbol} #TODO iterator?
 
 Return reference transition pnml ids.
 """
@@ -444,11 +444,14 @@ This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@re
 function sortdefinition end
 
 """
-    toexpr(::Any) -> Expr
+    toexpr(ex::PnmlExpr[, var::SubstitutionDict]) -> Expr
 
 Recursivly call `toexpr` on contained terms.
+`SubstutionDict` used to replace variables with values.
 """
-function toexpr end
+function toexpr(ex)
+    toexpr(ex, SubstitutionDict())
+end
 
 """
     basis(x) -> UserSort
@@ -471,3 +474,20 @@ abstract type BoolExpr <: PnmlExpr end
 TermInterface operator expression types.
 """
 abstract type OpExpr <: PnmlExpr end
+
+"""
+    adjacent_place(net::PnmlNet, id::Arc) -> Place
+    adjacent_place(netdata, source,::Symbol target::Symbol) -> Place
+
+Adjacent place of an arc is either the `source` or `target`.
+"""
+function adjacent_place end
+# Note that this behavior is suitable to many Petri nets.
+# But the PNML core does not have this limit; it is imposed by meta-models.
+#todo Remove limitation of requiring arcs to be between place and transition.
+#todo Use traits?
+
+"""
+    variables(x) -> Tuple{REFID}
+"""
+function variables end

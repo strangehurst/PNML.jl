@@ -8,7 +8,7 @@ The exact mixture changes as the project continues.
 
 The tags of the XML are used as keys and names as much as possible.
 
-What is accepted as values is ~~often~~ a supartitionsperset of what a given pntd schema specifies.
+What is accepted as values is ~~often~~ a superset of what a given pntd schema specifies.
 This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
 
 The pnml specification has layers. This package has layers: `PnmlNet`, `AbstractPetriNet`
@@ -64,14 +64,14 @@ end
 
 import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
-import Base: eltype
+import Base: eltype, keys
 import Base: (*), (+), (-)
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
 import Graphs
 import MetaGraphsNext
-import OrderedCollections: OrderedDict, LittleDict, freeze
+import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
 using TermInterface
@@ -125,6 +125,8 @@ export toexpr, PnmlExpr, BoolExpr, VariableEx, UserOperatorEx, NumberEx, Boolean
     StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual,
     ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex,
     PnmlTuple
+
+export adjacent_place, preset, postset, variables, SubstitutionDict
 
 include("PnmlTypeDefs.jl")
 using .PnmlTypeDefs

@@ -5,13 +5,14 @@ import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 import Multisets
+import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 
 using PNML
 using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value, REFID
 using PNML: indent, inc_indent
 using PNML: DeclDict, DictType, XDVT, XDVT2
 using PNML: PnmlMultiset, pnmlmultiset, BooleanConstant, NumberConstant, AbstractTerm
-using PNML: namedsort
+using PNML: namedsort, SubstitutionDict
 
 import PNML: usersort, sortdefinition, def_sort_element
 import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
@@ -21,6 +22,7 @@ import PNML: marking_type, inscription_type, condition_type, coordinate_type
 import PNML: marking_value_type, inscription_value_type, condition_value_type, coordinate_value_type
 import PNML: rate_value_type
 import PNML: toexpr, NumberEx, BooleanEx, PnmlTupleEx
+import PNML: variables
 
 using ..PnmlTypeDefs
 using ..Sorts

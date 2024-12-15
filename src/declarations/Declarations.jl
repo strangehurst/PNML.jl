@@ -17,8 +17,7 @@ import PNML: sortof, sortref, sortdefinition, sortelements, basis, tag, pid, ref
 import PNML: toexpr
 using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 
-using PNML: page_idset, place_idset, transition_idset, arc_idset,
-    refplace_idset, reftransition_idset
+using PNML: place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 using PNML: variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
     namedoperators, arbitraryops, feconstants

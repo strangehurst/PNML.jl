@@ -17,4 +17,4 @@ sortof(::BooleanConstant) = sortdefinition(namedsort(:bool)) # usersort,namedsor
 
 (c::BooleanConstant)() = value(c)
 value(bc::BooleanConstant) = bc.value
-toexpr(c::BooleanConstant) = value(c)
+toexpr(c::BooleanConstant, ::SubstitutionDict) = value(c)

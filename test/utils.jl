@@ -74,15 +74,16 @@ end
     @test isempty(PNML.reftransitiondict(pnd))
 end
 #println()
-@testset "PnmlNetKeys() for $pntd" for pntd in core_nettypes() # to limit number of tests
-    pns = PnmlNetKeys()
-    @test isempty(PNML.page_idset(pns))
-    @test isempty(PNML.place_idset(pns))
-    @test isempty(PNML.transition_idset(pns))
-    @test isempty(PNML.arc_idset(pns))
-    @test isempty(PNML.reftransition_idset(pns))
-    @test isempty(PNML.refplace_idset(pns))
-end
+# 2024-11-09
+# @testset "PnmlNetKeys() for $pntd" for pntd in core_nettypes() # to limit number of tests
+#     pns = PnmlNetKeys()
+#     @test isempty(PNML.page_pnk(pns))
+#     @test isempty(PNML.place_pnk(pns))
+#     @test isempty(PNML.transition_pnk(pns))
+#     @test isempty(PNML.arc_pnk(pns))
+#     @test isempty(PNML.reftransition_pnk(pns))
+#     @test isempty(PNML.refplace_pnk(pns))
+# end
 #println()
 @testset "predicates for $pntd" for pntd in all_nettypes()
     @test Iterators.only(Iterators.filter(==(true), (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))

@@ -4,15 +4,10 @@
 #     isnothing(i) ? nothing : v[i]
 # end
 
-"""
-    toexpr(x::Number) -> identity(x)
 
-# Examples
-
-Since PNML is based on integer numbers and booleans it seems reasonable to use `Number`,
-which includes `Bool` and `Real`.
-"""
-toexpr(x::Number) = identity(x) #! literal
+# Since PNML is based on integer numbers and booleans it seems reasonable to use `Number`,
+# which includes `Bool` and `Real`.
+toexpr(x::Number, ::Any) = identity(x) #! literal
 
 
 """
@@ -43,8 +38,8 @@ Parse string as a type T <: Number.
 """
 function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     x = tryparse(T, s)
-    isnothing(x) && throw(ArgumentError("cannot parse '$s' as $T"))
+    isnothing(x) && throw(ArgumentError(lazy"cannot parse '$s' as $T"))
     return x
 end
 
-toexpr(::Nothing) = nothing
+toexpr(::Nothing, ::Any) = nothing

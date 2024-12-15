@@ -145,7 +145,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
             # NamedOperators have a def element that is a expression of existing
             # operators &/or variable parameters that define the operation.
             # The sortof the operator is the output sort of def.
-            def, _ = parse_term(EzXML.firstelement(child), pntd) #! todo term rewrite
+            def, _, _ = parse_term(EzXML.firstelement(child), pntd; vars=()) #! todo term rewrite
         elseif tag == "parameter"
             # Zero or more parameters for operator (arity). Map from id to sort object.
             #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations

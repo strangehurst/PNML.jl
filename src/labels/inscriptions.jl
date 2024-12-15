@@ -15,11 +15,13 @@ Inscription(x::Number) = Inscription(sortref(x), x)
 Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
 Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
-term(i::Inscription) = toexpr(i.term)
-(inscription::Inscription)() = eval(term(inscription))::Number
+term(i::Inscription, var::SubstitutionDict) = toexpr(i.term, var) # TODO when is the optimized away ()
+(i::Inscription)(var::SubstitutionDict) = eval(term(i), var)::Number
 
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
+
+variables(::Inscription) = () #TODO
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")
@@ -48,20 +50,23 @@ See also [`Inscription`](@ref) for non-high-level net inscriptions.
     ins() isa eltype(sortof(ins))
 
 """
-struct HLInscription{T <: PnmlExpr} <: HLAnnotation
+struct HLInscription{T <: PnmlExpr, N} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
+    vars::NTuple{N,REFID}
 end
 HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing)
+HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing, ())
 
-(hlinscription::HLInscription)() = eval(term(hlinscription))
+(hlinscription::HLInscription)() = eval(term(hlinscription)) #TODO compile expression using var SubstitutionDict.
 
-term(i::HLInscription) = toexpr(i.term)
+term(i::HLInscription, var::SubstitutionDict) = toexpr(i.term, var)
 sortref(hli::HLInscription) = sortref(term(hli))::UserSort
 sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset #TODO other sorts
+
+variables(i::HLInscription) = i.vars
 
 function Base.show(io::IO, inscription::HLInscription)
     print(io, "HLInscription(")

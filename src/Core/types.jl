@@ -191,3 +191,17 @@ coordinate_value_type(pntd::PnmlType) = coordinate_value_type(typeof(pntd))
 
 rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
 rate_value_type(::Type{<:PnmlType}) = Float64
+
+####################################################################
+"""
+    SubstitutionDict = OrderderDict{REFID, Any}
+
+Variable ID used to access marking value. One for each variable of a transition.
+
+A higher level will produce candidate consistent substitution dictionaries,
+filtering them by one or more guards. `Condition` callable object guards are part of
+selecting enabled transition => subsitution dictionary firing pairs.
+The firing rule selects one of the firing pairs, using the substitution dictionary to
+construct postset marking updates.
+"""
+const SubstitutionDict = OrderedDict{REFID, Any}

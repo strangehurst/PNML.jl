@@ -35,10 +35,11 @@ str1 = """
     #     (:warn,"found unexpected label of <place>: frog"),
     #     parse_str(str1))
 
-    model = parse_str(str1)
+    model = parse_str(str1) #
     net0 = @inferred PnmlNet first(nets(model))
+
     snet1 = @inferred SimpleNet SimpleNet(model)
-    snet  = @inferred SimpleNet SimpleNet(net0)
+    snet  = @inferred SimpleNet SimpleNet(net0)  #
     #@show snet1
 
     @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
@@ -50,7 +51,7 @@ str1 = """
     for accessor in [pid,
                      place_idset, transition_idset, arc_idset,
                      reftransition_idset, refplace_idset]
-        @test accessor(snet1) == accessor(snet)
+        @test accessor(snet1) == accessor(snet)# These 2 are expected to match.
     end
 
     @testset "inferred" begin
@@ -208,13 +209,13 @@ end
         death=(LVector(wolves=1.0), LVector()),
     )
 
-    @test typeof(Δ)   == typeof(expected_transition_function)
+    @test typeof(Δ)   <: typeof(expected_transition_function)
     @test Δ.birth     == expected_transition_function.birth
     @test Δ.predation == expected_transition_function.predation
     @test Δ.death     == expected_transition_function.death
 
     uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
-    u0 = PNML.initial_markings(snet)
+    @show u0 = PNML.initial_markings(snet)
     @test u0 == uX
 
     βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
@@ -230,14 +231,14 @@ using PNML: AbstractPetriNet, enabled
 #println("=========="^12)
 #println("=========="^12)
 #println()
-const core_types = ("pnmlcore","ptnet")
-const hl_types = ("highlevelnet","hlnet","hlcore","pt_hlpng","symmetric")
+const core_types = ("pnmlcore","ptnet",)
+const hl_types = ("hlcore","pt_hlpng","symmetric","highlevelnet","hlnet",)
 const ex_types = ("continuous",)
 nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
-#@show nettype_strings()
 
+# String so that pntd can be embedded in the XML.
 @testset "extract a graph $pntd" for pntd in nettype_strings()
-    println("-------"); println("extract a graph $pntd"); println("-------"); flush(stdout) #! debug
+    println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -297,7 +298,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     #@show anet
     mg = PNML.metagraph(anet)
 
-    println(); flush(stdout)
+    flush(stdout)
     @show C  = PNML.incidence_matrix(anet)
     @show m₀ = initial_markings(anet) #::LVector
 

@@ -1,5 +1,5 @@
 module Parser
-import OrderedCollections: OrderedDict, LittleDict, freeze
+import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
@@ -12,6 +12,7 @@ import Multisets: Multisets, Multiset
 using TermInterface
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
+import PNML: adjacent_place, page_pnk, place_pnk, arc_pnk, transition_pnk, refplace_pnk, reftransition_pnk
 #import InteractiveUtils
 
 using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value,

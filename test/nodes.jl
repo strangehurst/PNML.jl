@@ -72,20 +72,15 @@ end
 
         node = xml"""<transition id ="t4">
             <condition>
-            <text>test true</text>
-                <structure> true  </structure>
+            <text>test true 1</text>
+                <structure> true </structure>
             </condition>
         </transition>"""
         @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
-        # t = @test_logs((:warn, "replacing empty <structure> content value for condition term with: true"),
-        # parse_transition(node, pntd))
-        # @test_opt target_modules=(@__MODULE__,) condition(t)
-        # @test_call condition(t)
-        # @test condition(t) === true
 
         node = xml"""<transition id ="t5">
             <condition>
-                <text>test true</text>
+                <text>test true 2</text>
                 <structure> <booleanconstant value="true"/> </structure>
             </condition>
         </transition>"""
@@ -108,7 +103,7 @@ end
         </transition>"""
         t = parse_transition(node, pntd)::Transition
         @test has_label(labels(t), :delay)
-        #@show PNML.get_label(labels(t), :delay) #! debg
+        #@show PNML.get_label(labels(t), :delay) #! debug
 
         @test PNML.delay(t) isa Tuple
 

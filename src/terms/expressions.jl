@@ -89,9 +89,14 @@ inscription <- :numberof :numberconstant :mult :variable :variable
 ###################################################################################
 # expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
+    # sub::SubstitutionDict #! Ref ?
     refid::REFID # REFID in variables(). Accessed by variable(refid).
 end
-toexpr(op::VariableEx) = :($Variable($(op.refid)))
+#! What is really wanted is SubstitutionDict[op.refid].
+#! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
+# var(sub, id) = sub[id]
+toexpr(op::VariableEx, var::SubstitutionDict) = :($(var[op.refid]))
+
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
 end
@@ -101,7 +106,7 @@ end
 @matchable struct UserOperatorEx <: OpExpr
     refid::REFID # operator(REFID) returns operator callable.
 end
-toexpr(op::UserOperatorEx) = :(operator($(op.refid)))
+toexpr(op::UserOperatorEx, var::SubstitutionDict) = :(operator($(op.refid)))
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
@@ -126,7 +131,7 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 
 basis(b::Bag) = b.basis
 
-toexpr(b::Bag) = :($pnmlmultiset($(b.basis), toexpr($(b.element)), toexpr($(b.multi))))
+toexpr(b::Bag, var::SubstitutionDict) = :($pnmlmultiset($(b.basis), toexpr($(b.element), $var), toexpr($(b.multi), $var)))
 
 function Base.show(io::IO, x::Bag)
     print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
@@ -145,7 +150,7 @@ NumberEx # Need to avoid @matchable to have docstring
 end
 NumberEx(x::Number) = NumberEx(sortref(x)::UserSort, x)
 basis(x::NumberEx) = x.basis
-toexpr(b::NumberEx) = toexpr(b.element) # eval isa ::eltype(b.basis)
+toexpr(b::NumberEx, var::SubstitutionDict) = toexpr(b.element, var) # eval isa ::eltype(b.basis)
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
 end
@@ -153,15 +158,14 @@ end
 """
     BooleanEx
 
-    TermInterface expression for a BooleanSort.
+TermInterface expression for a BooleanSort.
 """
 BooleanEx # Need to avoid @matchable to have docstring
 @matchable struct BooleanEx <: BoolExpr
-    #basis::UserSort # Wraps a sort REFID.
-    element::BooleanConstant #TODO! method unless nothing
+    element::BooleanConstant
 end
 basis(::BooleanEx) = usersort(:bool) # is constant
-toexpr(b::BooleanEx) = toexpr(b.element()) #todo  eval isa ::eltype(b.basis)
+toexpr(b::BooleanEx, var::SubstitutionDict) = toexpr(b.element(), var) #todo eval isa ::eltype(b.basis)
 function Base.show(io::IO, x::BooleanEx)
     print(io, "BooleanEx(", x.element,")")
 end
@@ -176,33 +180,34 @@ end
 # end
 
 #"Multiset add: Bag × Bag -> PnmlMultiset"
-@matchable struct Add <: PnmlExpr
+@matchable struct Add <: PnmlExpr #^ multiset add uses `+` operator.
     args::Vector{Bag} # >=2 # TODO NTuplex[]
 end
-toexpr(op::Add) = begin
+toexpr(op::Add, var::SubstitutionDict) = begin
     @assert length(op.args) >= 2
-    :($reduce(+, ($(map(toexpr, op.args)...),))) # constructs a new PnmlMultiset
+    :($reduce(+, (map(Fix2(toexpr,$var), $(op.args))...),)) # constructs a new PnmlMultiset
 end
 function Base.show(io::IO, x::Add)
     print(io, "Add(", x.args, ")" )
 end
 
 #"Multiset subtract: Bag × Bag -> PnmlMultiset"
-@matchable struct Subtract <: PnmlExpr
+@matchable struct Subtract <: PnmlExpr #^ multiset subtract uses `-` operator.
     lhs::Bag
     rhs::Bag
 end
-toexpr(op::Subtract) = :(toexpr(toexpr(op.lhs)) - toexpr(toexpr(op.rhs)))
+toexpr(op::Subtract, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
 
 #"Multiset integer scalar product: ℕ x Bag -> PnmlMultiset"
-@matchable struct ScalarProduct <: PnmlExpr
+@matchable struct ScalarProduct <: PnmlExpr #^ multiset scalar multiply uses `*` operator.
     n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Bag is an expression
 end
-toexpr(op::ScalarProduct) = :(PnmlMultiset(basis(op.bag), :(toexpr(op.n) * toexpr(op.bag))))
+toexpr(op::ScalarProduct, var::SubstitutionDict) =
+    :(PnmlMultiset(basis($(op.bag)), :(toexpr($$(op.n), $$var) * toexpr($$(op.bag), $$var))))
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
@@ -213,83 +218,83 @@ end
 #     value::Any #! expression evaluating to a term
 # end
 
-@matchable struct Cardinality <: PnmlExpr
+@matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.
     arg::Any # multiset expression
 end
-toexpr(op::Cardinality) = :(length(toexpr(op.arg).mset))
+toexpr(op::Cardinality, var::SubstitutionDict) = :(length(toexpr($(op.arg).mset), $var)) #TODO
 function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
 end
 
-@matchable struct CardinalityOf <: PnmlExpr
+@matchable struct CardinalityOf <: PnmlExpr #^ cardinalityof accesses multiset.
     ms::Any # multiset expression
     refid::REFID # element of basis sort
 end
-toexpr(op::CardinalityOf) = :(toexpr(op.ms).mset[op.refid])
+toexpr(op::CardinalityOf, var::SubstitutionDict) = :(toexpr($(op.ms.mset[op.refid]), $var)) #TODO
 function Base.show(io::IO, x::CardinalityOf)
     print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
 end
 
 #"Bag -> Bool"
-@matchable struct Contains{T} <: PnmlExpr
+@matchable struct Contains{T} <: PnmlExpr #^ multiset contains access multiset.
     ms::Any # multiset expression
     refid::Any
 end
-toexpr(op::Contains) = :(toexpr(op.ms).mset[op.refid] >  0)
+toexpr(op::Contains, var::SubstitutionDict) = :(toexpr($(op.ms.mset[op.refid]), $var) >  0)
 function Base.show(io::IO, x::Contains)
     print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
 end
 
 #& Boolean Operators
-@matchable struct Or <: BoolExpr
+@matchable struct Or <: BoolExpr #? Uses `||` operator.
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Or) = :(toexpr(toexpr(op.lhs)) || toexpr(op.rhs))
+toexpr(op::Or, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Or)
     print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct And <: BoolExpr
+@matchable struct And <: BoolExpr #? Uses `&&` operator.
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::And) = :(toexpr(toexpr(op.lhs)) && toexpr(op.rhs))
+toexpr(op::And, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) && toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::And)
     print(io, "And(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Not <: BoolExpr
+@matchable struct Not <: BoolExpr #? Uses `!` operator.
     rhs::Any # BoolExpr
 end
-toexpr(op::Not) = :(!(toexpr(op.rhs)))
+toexpr(op::Not, var::SubstitutionDict) = :(!(toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Not)
     print(io, "Not(", x.rhs, ")" )
 end
 
-@matchable struct Imply <: BoolExpr
+@matchable struct Imply <: BoolExpr #? Uses `!` and `||` operators.
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Imply) = :(!toexpr(toexpr(op.lhs)) || toexpr(op.rhs))
+toexpr(op::Imply, var::SubstitutionDict) = :(!toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Equality <: PnmlExpr
+@matchable struct Equality <: PnmlExpr #? Uses `==` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
-toexpr(op::Equality) = :(toexpr(op.lhs) == toexpr(op.rhs))
+toexpr(op::Equality, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) == toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Inequality <: PnmlExpr
+@matchable struct Inequality <: PnmlExpr #? Uses `!=` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
-toexpr(op::Inequality) = :(toexpr(op.lhs) != toexpr(op.rhs))
+toexpr(op::Inequality, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) != toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Inequality)
     print(io, "Inequality(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -299,7 +304,7 @@ end
 @matchable struct Successor <: PnmlExpr
     arg::Any
 end
-toexpr(op::Successor) = error("implement me arg ", repr(op.arg))
+toexpr(op::Successor, var::SubstitutionDict) = error("implement me arg ", repr(op.arg))
 function Base.show(io::IO, x::Successor)
     print(io, "Successor(", x.arg, ")" )
 end
@@ -307,111 +312,99 @@ end
 @matchable struct Predecessor <: PnmlExpr
     arg::Any
 end
-toexpr(op::Predecessor) = error("implement me arg ", repr(op.arg))
+toexpr(op::Predecessor, var::SubstitutionDict) = error("implement me arg ", repr(op.arg))
 function Base.show(io::IO, x::Predecessor)
     print(io, "Predecessor(", x.arg, ")" )
 end
 
 
 #& FiniteIntRange Operators work on integrs in spec, we extend to Number
-#=
-#! Use the Integer version. The difference is how the number is accessed!
-struct LessThan{T <: Number} <: PnmlExpr
-    lhs::T
-    rhs::T
-end
-struct LessThanOrEqual{T} <: PnmlExpr
-    lhs::T
-    rhs::T
-end
-struct GreaterThan{T} <: PnmlExpr
-    lhs::T
-    rhs::T
-end
-struct GreaterThanOrEqual{T} <: PnmlExpr
-    lhs::T
-    rhs::T
-end
-=#
 
-#& Integer (we extend to generic Number)
-@matchable struct Addition <: PnmlExpr
+#! Use the Integer version. The difference is how the number is accessed!
+# struct LessThan{T <: Number} <: PnmlExpr #! Use the Integer version.
+# struct LessThanOrEqual{T} <: PnmlExpr #! Use the Integer version.
+# struct GreaterThan{T} <: PnmlExpr #! Use the Integer version.
+# struct GreaterThanOrEqual{T} <: PnmlExpr #! Use the Integer version.
+
+
+#& Integer # we extend to `Number`, really anything that supports the operator used:)
+@matchable struct Addition <: PnmlExpr #? Use `+` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::Addition) = :(toexpr(op.lhs) + toexpr(op.rhs))
+toexpr(op::Addition, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) + toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Addition)
     print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Subtraction <: PnmlExpr
+@matchable struct Subtraction <: PnmlExpr #? Use `-` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::Subtraction) = :(toexpr(op.lhs) - toexpr(op.rhs))
+toexpr(op::Subtraction, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Subtraction)
     print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Multiplication <: PnmlExpr
+@matchable struct Multiplication <: PnmlExpr #? Use `*` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::Multiplication) = :(toexpr(op.lhs) * toexpr(op.rhs))
+toexpr(op::Multiplication, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) * toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Multiplication)
     print(io, "Multiplication(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Division <: PnmlExpr
+@matchable struct Division <: PnmlExpr #? Use `div` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::Division) = :(div(toexpr(op.lhs), toexpr(op.rhs)))
+toexpr(op::Division, var::SubstitutionDict) = :(div(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Division)
     print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThan <: PnmlExpr
+@matchable struct GreaterThan <: PnmlExpr #? Use `>` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::GreaterThan) = :(toexpr(op.lhs) > toexpr(op.rhs))
+toexpr(op::GreaterThan, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) > toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::GreaterThan)
     print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThanOrEqual <: PnmlExpr
+@matchable struct GreaterThanOrEqual <: PnmlExpr #? Use `>=` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::GreaterThanOrEqual) = :(toexpr(op.lhs) >= toexpr(op.rhs))
+toexpr(op::GreaterThanOrEqual, var::SubstitutionDict) = :(toexpr($(op.lhs)) >= toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::GreaterThanOrEqual)
     print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThan <: PnmlExpr # Everything is an expression here. #? NumExpr?
+@matchable struct LessThan <: PnmlExpr #? Use `<` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::LessThan) = :(toexpr(op.lhs) < toexpr(op.rhs))
+toexpr(op::LessThan, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) < toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::LessThan)
     print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThanOrEqual <: PnmlExpr
+@matchable struct LessThanOrEqual <: PnmlExpr #? Use `<=` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::LessThanOrEqual) = :(toexpr(op.lhs) <= toexpr(op.rhs))
+toexpr(op::LessThanOrEqual, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) <= toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::LessThanOrEqual)
     print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Modulo <: PnmlExpr
+@matchable struct Modulo <: PnmlExpr #? Use `mod` operator.
     lhs::Any
     rhs::Any
 end
-toexpr(op::Modulo) = :(mod(toexpr(op.lhs), toexpr(op.rhs)))
+toexpr(op::Modulo, var::SubstitutionDict) = :(mod(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Modulo)
     print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -425,7 +418,7 @@ end
     refs::Vector{REFID} # to FEConstant
     partition::REFID
 end
-toexpr(op::PartitionElementOp) = error("implement me")
+toexpr(op::PartitionElementOp, var::SubstitutionDict) = error("implement me")
 function Base.show(io::IO, x::PartitionElementOp)
     print(io, "PartitionElementOp(", x.id, ", ", x.name, ", ", x.refs, ")" )
 end
@@ -437,7 +430,7 @@ end
     rhs::Any #PartitionElement
     # return BoolExpr
 end
-toexpr(op::PartitionLessThan) = error("implement me")
+toexpr(op::PartitionLessThan, var::SubstitutionDict) = error("implement me")
 function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -447,7 +440,7 @@ end
     rhs::Any #PartitionElement
     # return BoolExpr
 end
-toexpr(op::PartitionGreaterThan) = error("implement me ", repr(op))
+toexpr(op::PartitionGreaterThan, var::SubstitutionDict) = error("implement me ", repr(op))
 function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -458,7 +451,7 @@ end
     refpartition::Any # UserSort, REFID
     # return PartitionElement
 end
-toexpr(op::PartitionElementOf) = error("implement me ", repr(op))
+toexpr(op::PartitionElementOf, var::SubstitutionDict) = error("implement me ", repr(op))
 function Base.show(io::IO, x::PartitionElementOf)
     print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
 end
@@ -528,13 +521,25 @@ end
 end
 
 #--------------------------------------------------------------
-@matchable struct PnmlTupleEx#{T<:PnmlExpr}
-    args::Vector{Any} # >=2 # TODO NTuplex[], AbstractTerm PnmlExpr
+"""
+    PnmlTupleEx(args::Vector)
+
+PnmlTuple TermInterface expression object wraps an ordered collection of PnmlExpr objects.
+There is a related `ProductSort`: an ordered collection of sorts.
+Each tuple element will have the same sort as the corresponding product sort.
+
+
+"""
+PnmlTupleEx
+
+@matchable struct PnmlTupleEx <: PnmlExpr #{N, T<:PnmlExpr}
+    args::Vector{Any} # >=2 # TODO NTuple
+    #x::NTuple{N,T}
 end
-toexpr(op::PnmlTupleEx) = begin
-    error("implement me ", repr(op))
+toexpr(op::PnmlTupleEx, var::SubstitutionDict) = begin
+    error("implement me ", repr(op), var)
     @assert length(op.args) >= 2
-    :(PnmlTuple($(map(toexpr, op.args)...),))
+    :(PnmlTuple($(map(Fix2(toexpr,var), op.args)...),))
 end
 function Base.show(io::IO, x::PnmlTupleEx)
     print(io, "PnmlTupleEx(", x.args, ")" )
