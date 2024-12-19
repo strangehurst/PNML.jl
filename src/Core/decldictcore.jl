@@ -94,7 +94,7 @@ function declarations(dd::DeclDict)
     ])
 end
 
-has_variable(dd::DeclDict, id::Symbol)       = haskey(variabledecls(dd), id)
+has_variabledecl(dd::DeclDict, id::Symbol)   = haskey(variabledecls(dd), id)
 has_namedsort(dd::DeclDict, id::Symbol)      = haskey(namedsorts(dd), id)
 has_arbitrarysort(dd::DeclDict, id::Symbol)  = haskey(arbitrarysorts(dd), id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
@@ -105,16 +105,16 @@ has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
 has_usersort(dd::DeclDict, id::Symbol)       = haskey(usersorts(dd), id)
 has_useroperator(dd::DeclDict, id::Symbol)   = haskey(usersorts(dd), id)
 
-has_variable(id::Symbol) = (PNML.DECLDICT[], id)
-has_namedsort(id::Symbol) = has_namedsort(PNML.DECLDICT[], id)
+has_variabledecl(id::Symbol)  = has_variabledecl(PNML.DECLDICT[], id)
+has_namedsort(id::Symbol)     = has_namedsort(PNML.DECLDICT[], id)
 has_arbitrarysort(id::Symbol) = has_arbitrarysort(PNML.DECLDICT[], id)
 has_partitionsort(id::Symbol) = has_partitionsort(PNML.DECLDICT[], id)
-has_namedop(id::Symbol) = has_namedop(PNML.DECLDICT[], id)
-has_arbitraryop(id::Symbol) = has_arbitraryop(PNML.DECLDICT[], id)
-has_partitionop(id::Symbol) = has_partitionop(PNML.DECLDICT[], id)
-has_feconstant(id::Symbol) = has_feconstant(PNML.DECLDICT[], id)
-has_usersort(id::Symbol) = has_usersort(PNML.DECLDICT[], id)
-has_useroperator(id::Symbol) = has_useroperator(PNML.DECLDICT[], id)
+has_namedop(id::Symbol)       = has_namedop(PNML.DECLDICT[], id)
+has_arbitraryop(id::Symbol)   = has_arbitraryop(PNML.DECLDICT[], id)
+has_partitionop(id::Symbol)   = has_partitionop(PNML.DECLDICT[], id)
+has_feconstant(id::Symbol)    = has_feconstant(PNML.DECLDICT[], id)
+has_usersort(id::Symbol)      = has_usersort(PNML.DECLDICT[], id)
+has_useroperator(id::Symbol)  = has_useroperator(PNML.DECLDICT[], id)
 
 variable(dd::DeclDict, id::Symbol)       = variabledecls(dd)[id]
 namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]

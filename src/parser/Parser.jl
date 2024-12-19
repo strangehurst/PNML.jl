@@ -29,7 +29,7 @@ using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value
     pnml_hl_operator, pnml_hl_outsort
 using PNML: page_idset, place_idset, transition_idset, arc_idset,
     refplace_idset, reftransition_idset
-using PNML: has_variable, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
+using PNML: has_variabledecl, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
     has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
     usersorts, useroperators, variabledecls, namedsorts,
     arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants,
