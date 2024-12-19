@@ -441,7 +441,7 @@ function parse_term(::Val{:lessthanorequal}, node::XMLNode, pntd::PnmlType; vars
     return LessThanOrEqual(sts[1], sts[2]), usersort(:bool), vars
 end
 
-function parse_term(::Val{:greaterthanorequal}, node::XMLNode, pntd::PnmlType); vars
+function parse_term(::Val{:greaterthanorequal}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
     return GreaterThanOrEqual(sts[1], sts[2]), usersort(:bool),vars
