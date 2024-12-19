@@ -15,7 +15,7 @@ Inscription(x::Number) = Inscription(sortref(x), x)
 Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
 Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
-term(i::Inscription, var::SubstitutionDict) = toexpr(i.term, var) # TODO when is the optimized away ()
+term(i::Inscription) = i.term # TODO when is the optimized away ()
 (i::Inscription)(var::SubstitutionDict) = eval(term(i), var)::Number
 
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
@@ -60,9 +60,9 @@ end
 HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing, ())
 
-(hlinscription::HLInscription)() = eval(term(hlinscription)) #TODO compile expression using var SubstitutionDict.
+(hlinscription::HLInscription)(varsub::SubstitutionDict) = eval(toexpr(term(hlinscription), varsub)) #TODO compile expression using var SubstitutionDict.
 
-term(i::HLInscription, var::SubstitutionDict) = toexpr(i.term, var)
+term(i::HLInscription) = i.term
 sortref(hli::HLInscription) = sortref(term(hli))::UserSort
 sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset #TODO other sorts
 

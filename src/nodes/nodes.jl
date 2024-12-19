@@ -25,8 +25,9 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 initial_marking(place::Place) = place.initialMarking
 sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))
+
 "Return zero valued PnmlMultiset with same basis and eltype as place's marking."
-zero_marking(place::Place) = 0 * initial_marking(place)
+zero_marking(place::Place) = 0 * initial_marking(place)()  # PnmlExpr needs to be evaluated.
 
 function Base.show(io::IO, place::Place)
     print(io, nameof(typeof(place)), "(")
@@ -57,17 +58,19 @@ end
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
 """
-Return value of condition.
+    condition(::Transition) -> Condition
+
+Return condition label.
 """
 condition(transition::Transition) = begin
     # printstyled("(condition∘transition∘eval∘value)(", transition.condition, ")", #! debug
     #             "::", condition_value_type(nettype(transition)), "\n"; color=:red)
-    transition.condition()::condition_value_type(nettype(transition))
+    transition.condition # ()::condition_value_type(nettype(transition))
 end
 
 function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
-    show(io, condition(trans))
+    show(io, condition(trans)())
     print(io, ")")
 end
 
@@ -95,9 +98,9 @@ Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
 """
     inscription(arc::Arc) -> Number
 
-Every inscription is treated as a functor.
+Every inscription label is treated as a functor.
 """
-inscription(arc::Arc) = arc.inscription()
+inscription(arc::Arc) = arc.inscription # PnmlExpr, needs SubstitutionDict
 
 sortref(arc::Arc) = sortref(arc.inscription)::UserSort
 sortof(arc::Arc)  = sortof(sortref(arc))

@@ -107,7 +107,7 @@ reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(pnmlnet(pe
 """
 function inscriptions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
-    LVector((;[arc_id => inscription(a) for (arc_id, a) in pairs(arcdict(net))]...))
+    LVector((;[arc_id => inscription(a)() for (arc_id, a) in pairs(arcdict(net))]...))
 end
 
 """
@@ -170,8 +170,8 @@ LVector labelled with transition id and holding its condition's value.
 function conditions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
     # Evaluate conditions here. #TODO! non-ground terms
-    LVector((;[id => condition(t) for (id, t) in pairs(transitiondict(net))]...))
-    #todo tuple([id => condition(t) for (id, t) in pairs(transitiondict(net))]...)
+    LVector((;[id => condition(t)() for (id, t) in pairs(transitiondict(net))]...))
+    #todo tuple([id => condition(t)() for (id, t) in pairs(transitiondict(net))]...)
 end
 
 #####################################################################################
@@ -187,7 +187,7 @@ Return inscription value or default to `zero` or zero-like PnmlMultiset (TBD).
 function inscription_value end
 
 inscription_value(::Type{T}, a) where {T<:Number} = begin
-    isnothing(a) ? zero(T) : inscription(a)::T #! These 2 need to be type stable.
+    isnothing(a) ? zero(T) : inscription(a)()::T #! These 2 need to be type stable.
 end
 
 #! ====================================================================================
@@ -196,7 +196,7 @@ end
 
 inscription_value(::Type{T}, a) where {T<:PnmlMultiset} = begin
     # create special null PnmlMultiset
-    isnothing(a) ? zero(T) : inscription(a)::T #! These 2 need to be type stable.
+    isnothing(a) ? zero(T) : inscription(a)()::T #! These 2 need to be type stable.
 end
 
 """
@@ -342,6 +342,7 @@ function binding_value_sets(net::PnmlNet, marking)
             @show placesort = sortref(adj)
 
             @show vs = vars(inscription(a))::Tuple #todo PnmlExpr
+
             for v in vs # inscription that is not a ground term
                 equalSorts(placesort, v) || error("not equalSorts for variable $v and marking $placesort")
                 #? for creating Ref need index into product sort/PnmlTuple
@@ -393,7 +394,7 @@ end
 
 function enabled(net::PnmlNet, marking)
     # For each transition, look at each of its input arcs, compare the inscription to the place marking
-    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t)), preset(net, t))
+    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(), preset(net, t))
             for t in transition_idset(net)]...))
 end
 #==========================================================================
@@ -442,7 +443,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     #! Because of initial_markings produce a LVector using cardinality.
     #! Note: standard lists the weight function, a color function, that maps to a multiset.
     #! So shouled be using multiset without cardinality: marking[p] >= inscription(arc(net,p,t))), preset(net, t)
-    LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))), preset(net, t))
+    LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))()), preset(net, t))
             for t in transition_idset(net)]...))
 end
 

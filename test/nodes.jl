@@ -59,7 +59,7 @@ end
         @test pid(n) === :transition1
         @test has_name(n)
         @test name(n) == "Some transition"
-        @test condition(n) isa Bool
+        @test condition(n)() isa Bool
 
         node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
         @test_throws MalformedException parse_transition(node, pntd)
@@ -86,7 +86,7 @@ end
         </transition>"""
         t = parse_transition(node, pntd)
         @test t isa Transition
-        @test condition(t) === true
+        @test condition(t)() === true
 
         # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
         # This bit may be from the pre-standard era.

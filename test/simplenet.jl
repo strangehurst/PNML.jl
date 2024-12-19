@@ -95,7 +95,7 @@ str1 = """
             t == @inferred Maybe{Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
 
-            @test @inferred(condition(t)) !== nothing
+            @test @inferred(condition(t)()) !== nothing
         end
 
         @test_call target_modules=target_modules arcs(top)
@@ -105,7 +105,7 @@ str1 = """
             @test pid(a) ===  a.id
                         @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
-            @test @inferred(Number, inscription(a)) !== nothing
+            @test @inferred(Number, inscription(a)()) !== nothing
         end
     end
 
