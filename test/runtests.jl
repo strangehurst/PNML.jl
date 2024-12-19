@@ -18,10 +18,12 @@ using .TestUtils
 select(y, n::Tuple=()) = isempty(ARGS) ? true : (any(∈(ARGS), y) && !any(∈(ARGS), n))
 select(y, n) = select(y, tuple(n))
 
+const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
+@show FAILFAST
+
 #############################################################################
 @time "TESTS" begin
-
-@testset verbose=true failfast=true showtiming=false "PNML.jl" begin
+@testset verbose=true failfast=FAILFAST showtiming=false "PNML.jl" begin
     if !isempty(ARGS) && select("NONE")
         return nothing # Have chosen to bail before any tests.
     end
@@ -76,8 +78,13 @@ select(y, n) = select(y, tuple(n))
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
 
-     if select(("ALL", "NET2"), ("!NET2",))
+    if select(("ALL", "NET2"), ("!NET2",))
         println("NET2")
+        @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
+    end
+
+     if select(("ALL", "NET3"), ("!NET3",))
+        println("NET3")
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end

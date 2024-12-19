@@ -168,16 +168,3 @@ println("-----------------------------------------\n")
         #TODO apply metagraph tools
     end
 end
-
-# Read a SymmetricNet with partitions, tuples from pnmlframework test file.
-println("\n-----------------------------------------")
-println("sampleSNPrio.pnml")
-println("-----------------------------------------\n"); flush(stdout)
-@testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
-    #false &&
-    model = parse_file(fname)::PnmlModel
-    #println("model = ", model) #!net = first(nets(model)) # Multi-net models not common in the wild.
-    #@test PNML.verify(net; verbose=true)
-    #TODO apply metagraph tools
-    println(); flush(stdout)
-end
