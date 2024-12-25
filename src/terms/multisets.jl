@@ -21,6 +21,7 @@ end
 multiplicity(ms::PnmlMultiset, x) = ms.mset[x]
 cardinality(ms::PnmlMultiset) = length(ms.mset)
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
+keys(ms::PnmlMultiset) = keys(ms.mset)
 
 """
     basis(ms::PnmlMultiset) -> UserSort
@@ -58,6 +59,22 @@ function (+)(A::PnmlMultiset{T}, B::PnmlMultiset{T}) where {T}
     @assert basis(A) == basis(B)
     PnmlMultiset(basis(A), A.mset + B.mset)
 end
+
+"""
+`A*B` for PnmlMultisets is forwarded `Multiset`.
+"""
+function (*)(A::PnmlMultiset{T}, B::PnmlMultiset{T}) where {T}
+    @assert basis(A) == basis(B)
+    PnmlMultiset(basis(A), A.mset * B.mset)
+end
+
+"""
+`n*B` for PnmlMultisets is the scalar multiset product.
+"""
+function (*)(n::Number, B::PnmlMultiset{T}) where {T}
+    PnmlMultiset(basis(B), n * B.mset)
+end
+(*)(B::PnmlMultiset{T}, n::Number) where {T} = n * B
 
 function Base.show(io::IO, t::PnmlMultiset)
     print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
@@ -124,10 +141,11 @@ function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 a
         throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
+    @show basis eltype(basis)
     M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
     for e in sortelements(basis) # iterator over one instance of each element of the set/sort
-        #@show M e; flush(stdout)
+        @show M e; flush(stdout)
         push!(M, e)
     end
     PnmlMultiset(basis, M)
