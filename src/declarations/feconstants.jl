@@ -5,7 +5,8 @@ Finite enumeration constant.
 
 # Usage
     fec = FEConstant(:anID, "somevalue", :sortrefid)
-    fec() == "somevalue"
+    fec() == :anID
+    fec.name = "somevalue"
 """
 struct FEConstant <: OperatorDeclaration
     id::Symbol # ID is unique within net.
@@ -14,9 +15,9 @@ struct FEConstant <: OperatorDeclaration
 end
 
 sortref(fec::FEConstant) = usersort(fec.refid)::UserSort
-Base.eltype(::FEConstant) = FEConstant
+Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
 
-(fec::FEConstant)() = fec.name #! todo toexpr()
+(fec::FEConstant)() = fec.id # is a literal
 
 sortof(fec::FEConstant) = begin
     # These sort declarations share behavior in attaching

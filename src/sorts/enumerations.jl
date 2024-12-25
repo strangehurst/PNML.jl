@@ -7,6 +7,11 @@ Both hold an ordered collection of [`PNML.Declarations.FEConstant`](@ref) REFIDs
 """
 abstract type EnumerationSort{N,M} <: AbstractSort end
 
+"""
+    refs(sort::EnumerationSort) -> NTuple{N,REFID}
+
+Return `NTuple` of `FEConstant` `REFID`s.
+"""
 refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 
 """
@@ -15,7 +20,7 @@ refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-sortelements(sort::EnumerationSort) = Iterators.map(feconstant, refs(sort))
+sortelements(sort::EnumerationSort) = refs(sort) # 2024-12-20 return REFID iterator
 
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
