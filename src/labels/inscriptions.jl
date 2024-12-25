@@ -16,7 +16,7 @@ Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
 Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
 term(i::Inscription) = i.term # TODO when is the optimized away ()
-(i::Inscription)(var::SubstitutionDict) = eval(term(i), var)::Number
+(i::Inscription)(var::SubstitutionDict) = eval(toexpr(term(i), var))::Number
 
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
