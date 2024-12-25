@@ -444,14 +444,13 @@ This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@re
 function sortdefinition end
 
 """
-    toexpr(ex::PnmlExpr[, var::SubstitutionDict]) -> Expr
+    toexpr(ex::PnmlExpr[, subs::SubstitutionDict]) -> Expr
 
 Recursivly call `toexpr` on contained terms.
 `SubstutionDict` used to replace variables with values.
 """
-function toexpr(ex)
-    toexpr(ex, SubstitutionDict())
-end
+toexpr(ex) = toexpr(ex, SubstitutionDict())
+
 
 """
     basis(x) -> UserSort

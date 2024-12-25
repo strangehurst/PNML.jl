@@ -23,7 +23,8 @@ Multisets.set_key_value_show()
     name, has_name,
     length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
-    DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag
+    DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag,
+    SubstitutionDict
 
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict,
     page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset

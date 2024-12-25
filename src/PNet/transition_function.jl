@@ -68,7 +68,7 @@ function in_inscriptions(net, transitionid)
     #for placeid in preset(net, transitionid)
     Iterators.map(postset(net, transitionid)) do placeid
         a = arc(net, placeid, transitionid)
-        source(a) => inscription(a)() #! SubstitutionDict
+        source(a) => inscription(a)(SubstitutionDict()) #! SubstitutionDict
     end
 end
 
@@ -78,6 +78,6 @@ function out_inscriptions(net, transitionid)
     #for placeid in postset(net, transitionid)
     Iterators.map(postset(net, transitionid)) do placeid
         a = arc(net, transitionid, placeid)
-        target(a) => inscription(a)() #! SubsittutionDict
+        target(a) => inscription(a)(SubstitutionDict()) #! SubsittutionDict
     end
 end

@@ -107,7 +107,7 @@ reftransition(petrinet::AbstractPetriNet, id::Symbol) = reftransition(pnmlnet(pe
 """
 function inscriptions(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
-    LVector((;[arc_id => inscription(a)() for (arc_id, a) in pairs(arcdict(net))]...))
+    LVector((;[arc_id => inscription(a)(SubstitutionDict()) for (arc_id, a) in pairs(arcdict(net))]...))
 end
 
 """
@@ -149,7 +149,7 @@ function initial_markings(net::PnmlNet)
     return m1
 end
 
-#! pt_hlpng multisets of dotconstants map well to integer via cardinality.
+# PT_HLPNG multisets of dotconstants map well to integer via cardinality.
 function initial_markings(net::PT_HLPNG)
     m1 = LVector((;[id => cardinality(initial_marking(p)()::PnmlMultiset)::Number for (id,p) in pairs(placedict(net))]...))
     return m1
@@ -180,23 +180,23 @@ end
 
 
 """
-    inscription_value(::Type{T}, a) -> Union{Number, PnmlMultiset}
+    inscription_value(::Type{T}, a, z) -> Union{Number, PnmlMultiset}
 
 Return inscription value or default to `zero` or zero-like PnmlMultiset (TBD).
 """
 function inscription_value end
 
-inscription_value(::Type{T}, a) where {T<:Number} = begin
-    isnothing(a) ? zero(T) : inscription(a)()::T #! These 2 need to be type stable.
+inscription_value(::Type{T}, a, z) where {T<:Number} = begin
+    isnothing(a) ? z : inscription(a)(SubstitutionDict())::T #! These 2 need to be type stable.
 end
 
 #! ====================================================================================
 #^   HL inscription() require a SubstitutionDict to evaluate the compiled expression
 #! ====================================================================================
 
-inscription_value(::Type{T}, a) where {T<:PnmlMultiset} = begin
+inscription_value(::Type{T}, a, z) where {T<:PnmlMultiset} = begin
     # create special null PnmlMultiset
-    isnothing(a) ? zero(T) : inscription(a)()::T #! These 2 need to be type stable.
+    isnothing(a) ? z : inscription(a)(SubstitutionDict())::T #! These 2 need to be type stable.
 end
 
 """
@@ -226,8 +226,9 @@ function input_matrix!(imatrix, net::PnmlNet{<:AbstractHLCore})
  function input_matrix!(imatrix, net::PnmlNet)
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
+            z = zero(marking_value_type(pntd(net)))
             a = arc(net, place_id, transition_id)
-            imatrix[t,p] = inscription_value(inscription_value_type(net), a)::Number
+            imatrix[t,p] = inscription_value(inscription_value_type(net), a, z)::Number
         end
     end
     return imatrix
@@ -258,8 +259,9 @@ end
 function output_matrix!(omatrix, net::PnmlNet)
     for (t,transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
+            z = zero(marking_value_type(pntd(net)))
             a = arc(net, transition_id, place_id)
-            omatrix[t, p] = inscription_value(inscription_value_type(net), a)::Number
+            omatrix[t, p] = inscription_value(inscription_value_type(net), a, z)::Number
         end
     end
     return omatrix
@@ -304,13 +306,15 @@ function incidence_matrix(net::PnmlNet{<:AbstractHLCore})
 end
 # Everything else. All non-high-level nets.
 function incidence_matrix(net::PnmlNet)
+    #@show net
     C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(place_idset(net))
+            @show transition_id, place_id
             z = zero_marking(place(net, place_id))
-            tp = arc(net, transition_id, place_id)
+            tp = arc(net, transition_id, place_id)#::Arc
             l = inscription_value(inscription_value_type(net), tp, z)::Number
-            pt = arc(net, place_id, transition_id)
+            pt = arc(net, place_id, transition_id)#::Arc
             r = inscription_value(inscription_value_type(net), pt, z)::Number
 
             C[t, p] = l - r
@@ -325,18 +329,16 @@ adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), source(a), t
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
-    binding_value_sets(net::PnmlNet, marking)
+    binding_value_sets(net::PnmlNet, marking) -> Vector{Dict{REFID,Any}}
 
 Return dictionary with transaction ID is key and value is binding set for variables of that transition.
 Each variable of an enabled transition will have a non-empty binding.
 """
 function binding_value_sets(net::PnmlNet, marking)
-    bv_sets = Vector{Dict{REFID,Any}}[] # One dictionary for each transition.
+    bv_sets = Vector{Dict{REFID,Any}}() # One dictionary for each transition.
     # The order of transitions is maintained.
     for t in transitions(net)::Transition
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
-        push!(bv_sets, bvalset)
-
         for a in preset(net, t)::Arc
             @show adj = adjacent_place(net, a)
             @show placesort = sortref(adj)
@@ -359,13 +361,12 @@ function binding_value_sets(net::PnmlNet, marking)
                     bvalset[k] = haskey(bvalset, k) ? intersect(bvalset[k], bvs[k]) : bvs[k]
                 end
             end
-            # any tracking object with an empty binding value set means the transition is not enabled
-            isempty(bvalset)
+            # Empty binding value set means the transition is not enabled.
+            isempty(vars) || !isempty(bvalset) || error("expected non-empty binding value set")
         end
+        push!(bv_sets, bvalset)
     end
-    #! Have at least 1 consistent substitution if there are any variables.
-    @assert  isempty(vars) || !isempty(bvalset) #! 1st stage of enabling rule has succeded.
-    return bvalset
+    return bv_sets
 end
 
 
