@@ -22,7 +22,7 @@ Base.eltype(r::TransitionRate) = typeof(value(r))
 value(r::TransitionRate) = r.value
 
 """
-$(TYPEDSIGNATURES)
+    rate(t::Transition) -> Real
 
 Return rate label value of `transition`.  Missing rate labels are defaulted to zero.
 
@@ -32,7 +32,7 @@ See [`rate_value_type`](@ref).
 """
 function rate(transition)
     tr = transition_rate(transition)::Maybe{TransitionRate}
-    return !isnothing(tr) ? value(tr) : zero(rate_value_type(nettype(transition)))
+    return isnothing(tr) ? zero(rate_value_type(nettype(transition))) : value(tr)
 end
 
 transition_rate(transition) = begin
