@@ -70,6 +70,7 @@ import FunctionWrappers
 import Reexport: @reexport
 import DecFP
 import Graphs
+import MacroTools
 import MetaGraphsNext
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
