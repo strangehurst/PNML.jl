@@ -107,8 +107,8 @@ inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr
 inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort)
 inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
 #
-#~ does this need to be a UnionAll
-inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
+#~ B is a value of type UserSort, wrapping a REFID used to index into other data structures.
+inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 
 """
 $(TYPEDSIGNATURES)

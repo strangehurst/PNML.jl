@@ -119,8 +119,8 @@ julia> m()
 mutable struct HLMarking{T<:PnmlExpr} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
 
-    term::T #PnmlMultiset{T}  #! expression # With basis sort matching place's sorttype.
-    #~ NOTE #! marking can also be PnmlTuple, or other sort instance matching placetype.
+    term::T # SymmetricNet restricts to Bag with basis sort matching place's sorttype.
+    #~ NOTE #! Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
 
     # The expression AST rooted at `term` in the XML stream.
     # Markings are ground terms, so no variables.
@@ -151,9 +151,15 @@ term(marking::HLMarking) = marking.term
 
 """
 $(TYPEDSIGNATURES)
-Evaluate a [`HLMarking`](@ref) instance by returning its term.
+Evaluate a [`HLMarking`](@ref) term.
 """
-(hlm::HLMarking)() = eval(toexpr(term(hlm)::PnmlExpr))
+(hlm::HLMarking)() = begin
+    @warn hlm
+    @show t = term(hlm)
+    @show ex = toexpr(t)
+    dump(ex)
+    eval(ex) # ground term = no variable substitutions.
+end
 
 basis(marking::HLMarking) = basis(term(marking))::UserSort
 sortref(marking::HLMarking) = sortref(term(marking))::UserSort
@@ -184,7 +190,7 @@ marking_value_type(::Type{<:PnmlType}) =  Int #! NumberEx
 marking_value_type(::Type{<:AbstractContinuousNet}) = Float64 #! NumberEx
 
 # These are networks were the tokens have individual identities.
-marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any} #! PnmlExpr
+marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any} #! PnmlExpr
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 #--------------------------------------------------------------------------------------
@@ -220,9 +226,8 @@ Return default marking value based on `PnmlType`. Has meaning of empty, as in `z
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default_marking end
-function default_marking(::T) where {T<:PnmlType}
-    Marking(zero(marking_value_type(T)))
+function default_marking(t::PnmlType)
+    Marking(zero(marking_value_type(t)))
 end
 default_marking(::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
