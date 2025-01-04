@@ -21,11 +21,34 @@ Variables in input inscription, output inscription and conditions are associated
 variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr, :ref, [:variables, :pid])
 
 ===================================#
+#! From SymbolicUtils.jl NOTE: this is NOT TermInterface (a.k.a. PnmlExpr)
+recurse_expr(ex::Expr, sub) = Expr(ex.head, recurse_expr.(ex.args, (sub,))...)
+recurse_expr(ex, sub) = toexpr(ex, sub)
+
+#recurse_expr(ex::PnmlExpr, sub) = Expr(ex.head, recurse_expr.(ex.args, (sub,))...)
 
 "@matchable TermInterface expressions"
 function TermInterface.maketerm(::Type{<:PnmlExpr}, head, children, metadata = nothing)
   head(children...)
 end
+# head and operation are the structure name, i.e. type/constructor
+# children and arguments are the fields of the structure
+# arity is length of fields
+#
+
+#! From Metatheory.jl. see also SymbolicUtils.substitute for recursive use of maketerm
+# function to_expr(x::PatExpr)
+#     if iscall(x)
+#       maketerm(Expr, :call, [x.quoted_head; to_expr.(arguments(x))], nothing)
+#     else
+#       maketerm(Expr, operation(x), to_expr.(arguments(x)), nothing)
+#     end
+# end
+
+# Metatheory.quoted_head: nameof(x) for Union{Function,DataType}), else identity
+# All @matchable structs are iscall() so use Metatheory.quoted_head #todo cache?
+# The other leg is for things that are not callable.
+# NB: constructors are callable
 
 # We also need to define equality for our matchables expression. Ignore any metadata.
 function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
@@ -33,7 +56,7 @@ function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
 end
 
 # TermInterface operators are s-expressions: first is function, rest are arguments.
-# @matchable uses the struct name as head, making maketerm into a constructor call.
+# @matchable u>ses the struct name as head, making maketerm into a constructor call.
 
 # from SymUtils.toexpr: Expr(:call, toexpr(op, st), map(x->toexpr(x, st), args)...)
 # `st` is extra to the TermInterface operation and arguments.
@@ -43,7 +66,7 @@ end
 After possible term rewriting there will be a recusive `toexpr` followed by `eval`.
 This term (the @matchable) may not be at the root of the expression tree.
 
-Selected abstracted expressins from pnml example files.
+Selected abstracted expressions from pnml example files.
 
 #^ Markings are ground terms (no variables).
 #^ These expressions set the initial state of the net marking.
@@ -95,7 +118,10 @@ end
 #! What is really wanted is SubstitutionDict[op.refid].
 #! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
 # var(sub, id) = sub[id]
-toexpr(op::VariableEx, var::SubstitutionDict) = :($(var[op.refid]))
+toexpr(op::VariableEx, var::SubstitutionDict) = begin
+    @show var[op.refid] :($(var[op.refid]))
+    :($(var[op.refid]))
+end
 
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
@@ -106,10 +132,15 @@ end
 @matchable struct UserOperatorEx <: OpExpr
     refid::REFID # operator(REFID) returns operator callable.
 end
-toexpr(op::UserOperatorEx, var::SubstitutionDict) = :(operator($(op.refid)))
+toexpr(op::UserOperatorEx, ::SubstitutionDict) = Expr(:call, operator, op.refid) # :(operator($(op.refid)))
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
+#! maketerm(Expr, :call, [:operator; op.refid], nothing)
+#! Expr(:call, operator, op.refid)
+#! Expr(:call, toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
+#! maketerm(Expr, :call, [x.quoted_head; to_expr.(arguments(x))], nothing)
+
 
 ###################################################################################
 """
@@ -123,15 +154,21 @@ See [`Operator`](@ref) for another TermInterface operator.
 Bag # Need to avoid @matchable to have docstring
 @matchable struct Bag <: PnmlExpr
     basis::UserSort # Wraps a sort REFID.
-    element::Any # eval(toexpr(element)) isa  eltype(basis). #! method unless nothing
-    multi::Any # multiplicity of element #! must have toexpr() method unless nothing
+    element::Any # ground term expression
+    multi::Any # multiplicity expression of element in a multiset
 end
 Bag(b, x) = Bag(b, x, 1) # singleton multiset
 Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis sort.
 
 basis(b::Bag) = b.basis
 
-toexpr(b::Bag, var::SubstitutionDict) = :($pnmlmultiset($(b.basis), toexpr($(b.element), $var), toexpr($(b.multi), $var)))
+toexpr(b::Bag, var::SubstitutionDict) = begin
+    @show b var
+    Expr(:call, pnmlmultiset, b.basis, toexpr(b.element, var), toexpr(b.multi, var))
+end
+    #:($pnmlmultiset($(b.basis), $(toexpr($(b.element), $var)), $(toexpr($(b.multi), $var))))
+
+#toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
 
 function Base.show(io::IO, x::Bag)
     print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
@@ -150,7 +187,7 @@ NumberEx # Need to avoid @matchable to have docstring
 end
 NumberEx(x::Number) = NumberEx(sortref(x)::UserSort, x)
 basis(x::NumberEx) = x.basis
-toexpr(b::NumberEx, var::SubstitutionDict) = toexpr(b.element, var) # eval isa ::eltype(b.basis)
+toexpr(b::NumberEx, var::SubstitutionDict) = toexpr(b.element, var)
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
 end
@@ -183,20 +220,32 @@ end
 @matchable struct Add <: PnmlExpr #^ multiset add uses `+` operator.
     args::Vector{Bag} # >=2 # TODO NTuplex[]
 end
-toexpr(op::Add, var::SubstitutionDict) = begin
+toexpr(op::Add, subdict::SubstitutionDict) = begin
     @assert length(op.args) >= 2
-    :($reduce(+, (map(Fix2(toexpr,$var), $(op.args))...),)) # constructs a new PnmlMultiset
+    #:($reduce(+, ($map(Fix2(toexpr,$var), $(op.args))...),))
+    println()
+    @show op.args
+    @show toexpr.(op.args, Ref(subdict))
+    xx = :(($(toexpr.(op.args, Ref(subdict))...),))
+    @show xx
+    #dump(xx)
+    #@show reduce(+, map(Fix2(toexpr,subdict), op.args)...)
+    #Expr(:call, :reduce, :+, map(Fix2(toexpr,subdict), op.args)...) # constructs a new PnmlMultiset
+    Expr(:call, sum, toexpr.(op.args, Ref(subdict))...) # constructs a new PnmlMultiset
 end
 function Base.show(io::IO, x::Add)
     print(io, "Add(", x.args, ")" )
 end
+
+#Expr(:ref, toexpr(args[1], states), toexpr.(args[2:end] .+ offset, (states,))...)
+
 
 #"Multiset subtract: Bag × Bag -> PnmlMultiset"
 @matchable struct Subtract <: PnmlExpr #^ multiset subtract uses `-` operator.
     lhs::Bag
     rhs::Bag
 end
-toexpr(op::Subtract, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
+toexpr(op::Subtract, var::SubstitutionDict) = Expr(:call, :(-), toexpr(op.lhs, var), toexpr(op.rhs, var)) # :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -206,8 +255,9 @@ end
     n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Bag is an expression
 end
-toexpr(op::ScalarProduct, var::SubstitutionDict) =
-    :(PnmlMultiset(basis($(op.bag)), :(toexpr($$(op.n), $$var) * toexpr($$(op.bag), $$var))))
+toexpr(op::ScalarProduct, var::SubstitutionDict) = Expr(:call, PnmlMultiset, basis(op.bag), Expr(:call, :(*), toexpr(op.n, var), toexpr(op.bag, var)))
+#^:(PnmlMultiset(basis($(op.bag)), :(toexpr($$(op.n), $$var) * toexpr($$(op.bag), $$var))))
+
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
@@ -221,7 +271,8 @@ end
 @matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.
     arg::Any # multiset expression
 end
-toexpr(op::Cardinality, var::SubstitutionDict) = :(length(toexpr($(op.arg).mset), $var)) #TODO
+toexpr(op::Cardinality, var::SubstitutionDict) = Expr(:call, :cardinality, toexpr(op.arg, var)) #:(length(toexpr($(op.arg).mset), $var)) #TODO
+
 function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
 end
@@ -230,7 +281,7 @@ end
     ms::Any # multiset expression
     refid::REFID # element of basis sort
 end
-toexpr(op::CardinalityOf, var::SubstitutionDict) = :(toexpr($(op.ms.mset[op.refid]), $var)) #TODO
+toexpr(op::CardinalityOf, var::SubstitutionDict) = Expr(:call, :multiplicity, toexpr(op.ms, var), op.refid) #:(toexpr($(op.ms, var).mset[op.refid]), $var)) #TODO
 function Base.show(io::IO, x::CardinalityOf)
     print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
 end
@@ -240,7 +291,8 @@ end
     ms::Any # multiset expression
     refid::Any
 end
-toexpr(op::Contains, var::SubstitutionDict) = :(toexpr($(op.ms.mset[op.refid]), $var) >  0)
+toexpr(op::Contains, var::SubstitutionDict) = Expr(:call, :(>), Expr(:call, :multiplicity, toexpr(op.ms, var), op.refid), 0)
+#:(toexpr($(op.ms.mset[op.refid]), $var) >  0)
 function Base.show(io::IO, x::Contains)
     print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
 end
@@ -250,7 +302,8 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Or, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
+toexpr(op::Or, var::SubstitutionDict) =  Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
+
 function Base.show(io::IO, x::Or)
     print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -259,7 +312,8 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::And, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) && toexpr($(op.rhs), $var))
+toexpr(op::And, var::SubstitutionDict) = Expr(:call, :(&&), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) && toexpr($(op.rhs), $var))
+#!
 function Base.show(io::IO, x::And)
     print(io, "And(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -267,7 +321,7 @@ end
 @matchable struct Not <: BoolExpr #? Uses `!` operator.
     rhs::Any # BoolExpr
 end
-toexpr(op::Not, var::SubstitutionDict) = :(!(toexpr($(op.rhs), $var)))
+toexpr(op::Not, var::SubstitutionDict) = Expr(:call, :(!), toexpr(op.rhs, var)) #:(!(toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Not)
     print(io, "Not(", x.rhs, ")" )
 end
@@ -276,7 +330,7 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Imply, var::SubstitutionDict) = :(!toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
+toexpr(op::Imply, var::SubstitutionDict) = Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(!toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -285,7 +339,7 @@ end
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
-toexpr(op::Equality, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) == toexpr($(op.rhs), $var))
+toexpr(op::Equality, var::SubstitutionDict) = Expr(:call, :(==), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) == toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -294,7 +348,7 @@ end
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
-toexpr(op::Inequality, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) != toexpr($(op.rhs), $var))
+toexpr(op::Inequality, var::SubstitutionDict) = Expr(:call, :(!=), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) != toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Inequality)
     print(io, "Inequality(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -305,6 +359,8 @@ end
     arg::Any
 end
 toexpr(op::Successor, var::SubstitutionDict) = error("implement me arg ", repr(op.arg))
+#! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
+#! Expr(:call, toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
 function Base.show(io::IO, x::Successor)
     print(io, "Successor(", x.arg, ")" )
 end
@@ -332,7 +388,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Addition, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) + toexpr($(op.rhs), $var))
+toexpr(op::Addition, var::SubstitutionDict) = Expr(:call, :(+), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) + toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Addition)
     print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -341,7 +397,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Subtraction, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
+toexpr(op::Subtraction, var::SubstitutionDict) = :Expr(:call, :(-), toexpr(op.lhs, var), toexpr(op.rhs, var)) #(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Subtraction)
     print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -350,7 +406,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Multiplication, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) * toexpr($(op.rhs), $var))
+toexpr(op::Multiplication, var::SubstitutionDict) = Expr(:call, :(*), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) * toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::Multiplication)
     print(io, "Multiplication(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -359,7 +415,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Division, var::SubstitutionDict) = :(div(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
+toexpr(op::Division, var::SubstitutionDict) = Expr(:call, :div, toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(div(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Division)
     print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -368,7 +424,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::GreaterThan, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) > toexpr($(op.rhs), $var))
+toexpr(op::GreaterThan, var::SubstitutionDict) = Expr(:call, :(>), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) > toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::GreaterThan)
     print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -377,7 +433,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::GreaterThanOrEqual, var::SubstitutionDict) = :(toexpr($(op.lhs)) >= toexpr($(op.rhs), $var))
+toexpr(op::GreaterThanOrEqual, var::SubstitutionDict) = Expr(:call, :(>=), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs)) >= toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::GreaterThanOrEqual)
     print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -386,7 +442,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::LessThan, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) < toexpr($(op.rhs), $var))
+toexpr(op::LessThan, var::SubstitutionDict) = Expr(:call, :(<), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) < toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::LessThan)
     print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -395,7 +451,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::LessThanOrEqual, var::SubstitutionDict) = :(toexpr($(op.lhs), $var) <= toexpr($(op.rhs), $var))
+toexpr(op::LessThanOrEqual, var::SubstitutionDict) = Expr(:call, :(<=), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) <= toexpr($(op.rhs), $var))
 function Base.show(io::IO, x::LessThanOrEqual)
     print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -404,7 +460,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Modulo, var::SubstitutionDict) = :(mod(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
+toexpr(op::Modulo, var::SubstitutionDict) = Expr(:call, :mod, toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(mod(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
 function Base.show(io::IO, x::Modulo)
     print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -418,7 +474,8 @@ end
     refs::Vector{REFID} # to FEConstant
     partition::REFID
 end
-toexpr(op::PartitionElementOp, var::SubstitutionDict) = error("implement me")
+toexpr(op::PartitionElementOp, var::SubstitutionDict) = error("implement me ", repr(op))
+#! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionElementOp)
     print(io, "PartitionElementOp(", x.id, ", ", x.name, ", ", x.refs, ")" )
 end
@@ -430,7 +487,8 @@ end
     rhs::Any #PartitionElement
     # return BoolExpr
 end
-toexpr(op::PartitionLessThan, var::SubstitutionDict) = error("implement me")
+toexpr(op::PartitionLessThan, var::SubstitutionDict) = error("implement me ", repr(op))
+#! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -441,6 +499,7 @@ end
     # return BoolExpr
 end
 toexpr(op::PartitionGreaterThan, var::SubstitutionDict) = error("implement me ", repr(op))
+#! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -452,6 +511,7 @@ end
     # return PartitionElement
 end
 toexpr(op::PartitionElementOf, var::SubstitutionDict) = error("implement me ", repr(op))
+#! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionElementOf)
     print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
 end
@@ -537,10 +597,145 @@ PnmlTupleEx
     #x::NTuple{N,T}
 end
 toexpr(op::PnmlTupleEx, var::SubstitutionDict) = begin
-    error("implement me ", repr(op), var)
+    @error("implement me ", repr(op), " substitutions ", var)
     @assert length(op.args) >= 2
-    :(PnmlTuple($(map(Fix2(toexpr,var), op.args)...),))
+    Expr(:call, :PnmlTuple, toexpr.(op.args, Ref(var))...) #:(PnmlTuple($(map(Fix2(toexpr,var), op.args)...),))
 end
 function Base.show(io::IO, x::PnmlTupleEx)
     print(io, "PnmlTupleEx(", x.args, ")" )
 end
+
+
+##########################################################################################
+# LiteralExpr from SymbolicUtils code.jl. Used by
+# ModelingToolkit src/structural_transformation/codegen.jl and Symbolics.
+# The "Literal" here is a reference to being non-Symbolic.
+#
+# Any term rewriting should be done before toexpr is called.
+# For `st` we use variable substitution dictionary (or NamedTuple)
+#
+# ModelingToolkit has a Differential Equation focus,
+# supports Real, Complex, (and maybe Quarterions, Octoions).
+# And Linear Algebra.
+# PNML is doing high-level petri nets with a multi-sorted algebra and a XML markup language.
+#
+# code.jl also uses @matchable, calling toexpr on the likes of
+#   Assignment, Let, Func, MakeArray, etc.
+#
+##########################################################################################
+
+"""
+    LiteralExpr(ex)
+
+Literally `ex`, an `Expr`. `toexpr` on `LiteralExpr` recursively calls
+`toexpr` on any interpolated symbolic expressions.
+"""
+struct LiteralExpr
+    ex
+end
+toexpr(exp::LiteralExpr, st) = recurse_expr(exp.ex, st)
+
+#= Example Uses
+
+function _make_sparse_array(arr, similarto, cse)
+    if arr isa Union{SubArray, Base.ReshapedArray, LinearAlgebra.Transpose}
+        LiteralExpr(quote
+            $Setfield.@set $(nzmap(x->true, arr)).parent =
+                $(_make_array(parent(arr), typeof(parent(arr)), cse))
+            end)
+    else
+        LiteralExpr(quote
+                        let __reference = copy($(nzmap(x->true, arr)))
+                            $Setfield.@set __reference.nzval =
+                            $(_make_array(arr.nzval, Vector{symtype(eltype(arr))}, cse))
+                        end
+                    end)
+    end
+end
+#---------------
+for j in jj
+    push!(exprs, _set_array(LiteralExpr(:($out[$j])), nothing, rhss[j], checkbounds, skipzeros, cse))
+end
+LiteralExpr(quote
+                $(exprs...)
+            end)
+
+
+#---------------
+op_body = :(let $outsym = zeros(Float64, map(length, ($(shape(op)...),)))
+            $body
+        $outsym
+    end) |> LiteralExpr
+
+#---------------
+
+=#
+
+# SymbolicUtils substitute.jl
+
+# """
+#     substitute(expr, dict; fold=true)
+
+# substitute any subexpression that matches a key in `dict` with
+# the corresponding value. If `fold=false`,
+# expressions which can be evaluated won't be evaluated.
+
+# ```julia
+# julia> substitute(1+sqrt(y), Dict(y => 2), fold=true)
+# 2.414213562373095
+# julia> substitute(1+sqrt(y), Dict(y => 2), fold=false)
+# 1 + sqrt(2)
+# ```
+# """
+# function substitute(expr, dict; fold=true)
+#     haskey(dict, expr) && return dict[expr] #~ Substitute
+
+#     if iscall(expr)
+#         #~ Always susbtitute operation and arguments.
+#         op = substitute(operation(expr), dict; fold=fold)
+#         if fold
+#             canfold = !(op isa Symbolic) #! what is Symbolic to US?
+#             args = map(arguments(expr)) do x
+#                 x′ = substitute(x, dict; fold=fold)
+#                 canfold = canfold && !(x′ isa Symbolic) #! found Symbolic arg in tree.
+#                 x′ #! to return substituted argument
+#             end
+#             canfold && return op(args...) #~ When no Symbolic in the expression tree, fold
+#             args #! why is this here (to help compiler?)
+#         else
+#             args = map(x->substitute(x, dict; fold=fold), arguments(expr))
+#         end
+
+#         #~ Rewrite term after substitutions
+#         maketerm(typeof(expr),
+#                  op,
+#                  args,
+#                  metadata(expr))
+#     else
+#         expr #~ not a call
+#     end
+# end
+
+"""
+    substitute(expr, dict)
+
+Recursivly substitute a VariableEx with its the value from `dict`.
+The values in `dict` will be ground terms of a place's sorttype.
+These values are from the current marking vector.
+```
+"""
+function substitute(expr::PnmlExpr, dict::SubstitutionDict)
+    expr isa VariableEx && return dict[expr.refid] #todo store marking vector index in dict.
+
+    if iscall(expr) # all @matchable structs
+        #~ Always substitute operation and arguments.
+        op = substitute(operation(expr), dict) #? is operation ever an expression?
+        args = map(x->substitute(x, dict), arguments(expr))
+
+        #~ Rewrite term after substitutions
+        maketerm(typeof(expr), op, args, metadata(expr))
+    else
+        expr #~ not a call, leave it alone
+    end
+end
+# maketerm(typeof(expr), operation(expr), map(x->recurse_expr(x, dict), arguments(expr)), metadata(expr))
