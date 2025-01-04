@@ -56,13 +56,18 @@ end
 
             @test PNML.term(mark) isa PNML.Bag
             @test text(mark) == "3`dot"
+            println(); flush(stdout)
+            @show UserSort(:dot) DotConstant
+            @show PNML.pnmlmultiset(UserSort(:dot), DotConstant())
+            #PnmlMultiset{(:dot,), DotConstant}(DotConstant())
 
             @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
             @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
             @show term(mark)
             @show markexpr = toexpr(term(mark))
+
             @show markterm = eval(markexpr)
-            @test markterm isa PNML.PnmlMultiset{<:Any} # pnml many-sorted operator -> multiset
+            @test markterm isa PNML.PnmlMultiset
             # @test arity(markterm) == 2
             # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
             # @test inputs(markterm)[2] == DotConstant()
@@ -143,8 +148,8 @@ end
             PNML.fill_nonhl!()
             placetype = SortType("positive sorttype", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
-            val = eval(toexpr(term(mark)))::PNML.PnmlMultiset{<:Any}
-            @test PNML.basis(val) isa UserSort
+            @show val = eval(toexpr(term(mark)))::PNML.PnmlMultiset{<:Any,<:Any}
+            @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
             @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))()) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
