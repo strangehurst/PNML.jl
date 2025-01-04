@@ -43,3 +43,4 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
 end
 
 toexpr(::Nothing, ::Any) = nothing
+toexpr(s::Symbol, ::Any) = QuoteNode(s)
