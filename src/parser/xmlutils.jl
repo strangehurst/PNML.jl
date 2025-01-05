@@ -86,9 +86,9 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
+    unwrap_subterm(st::XMLNode) -> XMLNode, Symbol
 
-Unwrap a subterm. Error if is not 'subterm'.
+Unwrap a `<subterm>` by returning tuple of child node and child's tag.
 """
 function unwrap_subterm(st::XMLNode)
     check_nodename(st, "subterm")

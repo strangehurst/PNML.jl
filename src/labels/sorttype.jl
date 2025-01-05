@@ -89,10 +89,10 @@ Uses include default inscription value and default initial marking value sort.
 has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element(pt)
-    #println("def_sort_element($(repr(pt)))"); flush(stdout); #! debug
     els = sortelements(pt) # High-level (HLPNG) allows infinite iterators.
-    #@show collect(els)
-    first(els) # Default to first of sort's elements (how often is this best?, make this a generic choice?)
+    el = first(els) # Default to first of sort's elements (how often is this best?)
+    println("\ndef_sort_element($(repr(pt))) ", el); #! debug
+    return el
 end
 
 

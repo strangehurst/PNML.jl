@@ -9,12 +9,12 @@ Each place has an initial marking that determines the sorttype
 struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    initialMarking::M #! expression label
+    initialMarking::M #^ Expression label that evaluates to a PnmlMultiset object.
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The initial marking must be of sorttype.
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
-    sorttype::SortType # Label with human text/graphics. And a sort.
+    sorttype::SortType #^ Label with human text/graphics. And a sort.
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -22,7 +22,7 @@ struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
 end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
-initial_marking(place::Place) = place.initialMarking
+initial_marking(place::Place) = place.initialMarking # PnmlExpr
 sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))
 

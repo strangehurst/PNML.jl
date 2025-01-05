@@ -22,38 +22,15 @@ function parse_term(node::XMLNode, pntd::PnmlType; vars)
     tag = Symbol(EzXML.nodename(node))
     #printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout) #! debug
     ttup = if tag === :namedoperator
-        # build & return an Operator Functor that has a vector of inputs.
+        # build & return an Operator Expression that has a vector of inputs.
         parse_operator_term(tag, node, pntd; vars)
     else
         #& Non-ground terms have arguments (variables that are bound to a marking value).
         #& Collect REFIDs
         parse_term(Val(tag), node, pntd; vars)
     end
-    # tuple(expression||literal, sort, vars)
-    !isempty(ttup[3]) && @error ttup
-    for v in ttup[3]
-        @show variable(v)
-        # A variable is bound to a place's marking during enabling rule and firing rule evaluations.
-        # Enabling rule used on input place markings to generate a
-        # set of transitions and variable bindings for which the enabling rule is true.
-        # Conditions are are boolean expression labels attached to Transitions.
-        # Conditions are `or`ed into the transition enabling rule.
-
-        # Condition object is evaluated by passing a collection of
-        # variable's REFID paired with a reference to a marking value.
-        # When the enabling rule is true (Condition is true) the Transition with
-        # that binding is elgible for firing.
-
-        # A variable can have multiple bindings for a single transition.
-        # It can bind to multiple places.
-        # Both as part of a tuple-valued multiset with a ProductSort basis
-        # and a "scalar"-valued  multiset with a basis that is in the ProductSort.
-        # Variable that is tuple-valued is also possible.
-
-        # When variable binds to part of a tuple-valued marking
-        # there must be variables or constants for each tuple element.
-
-    end
+    # ttup is a tuple(expression||literal, sort, vars)
+    !isempty(ttup[3]) && @error ttup #! debug. parse_term returns `vars` in 3rd.
     return ttup
     #! Return something that can do toexpr(term)
     #! XXX do parse_term, parse_operator_term have same type XXX
@@ -185,7 +162,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars)
     isnothing(child) && throw(MalformedException("<all> operator missing sort argument"))
     basis = parse_usersort(child, pntd)::UserSort # Can there be anything else?
     #! @assert isfinitesort(basis) #^ Only expect finite sorts here.
-    return Bag(basis), basis, vars #! toexpr(::Bag) makes expression that calls pnmlmultiset(basis)
+    return Bag(basis), basis, vars # expression that calls pnmlmultiset(basis)
 end
 
 # XML Examples
@@ -197,14 +174,13 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars)
     basis = parse_usersort(child, pntd)::UserSort # Can there be anything else?
     x = first(sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
-    return Bag(basis, x, 0), basis, vars #! toexpr(::Bag) makes expression that calls pnmlmultiset(basis, x, 0)
+    return Bag(basis, x, 0), basis, vars # expression that calls pnmlmultiset(basis, x, 0)
 end
 
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
-    #@warn sts vars
     @assert length(sts) >= 2
-    return Add(sts), basis(first(sts)), vars #! toexpr(::Add) makes expression that calls pnmlmultiset(basis, sum_of_Multiset)
+    return Add(sts), basis(first(sts)), vars # expression that calls pnmlmultiset(basis, sum_of_Multiset)
 end
 
 function parse_term(::Val{:subtract}, node::XMLNode, pntd::PnmlType; vars)
@@ -461,15 +437,6 @@ end
 #     return (sts[1], sts[2]), usersort(:bool)
 # end
 
-
-# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
-#     sts = subterms(node, pntd)
-#     @show sts
-#     @assert length(sts) == 2
-#     return (sts[1], sts[2]), usersort(:bool)
-# end
-
-
 ##########################################################################
 
 # """ #! feconstant always part of enumeration, in the declarations, are constants!
@@ -491,7 +458,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
     tup = PnmlTupleEx(sts) #! We have PnmlExpr elements at this point.
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
-    return tup, usersort(:null), vars #todo! when can we map to product sort?
+    return tup, usersort(:null), vars #todo! when do we map to product sort?
 end
 
 # <structure>
@@ -502,7 +469,7 @@ function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType; vars)
     #@show PNML.operator(uo.refid); flush(stdout)
     usort = sortref(PNML.operator(uo.refid))
     #@warn "returning useroperator" uo usort #! debug
-    return (uo, usort, vars) #Todo handle vars
+    return (uo, usort, vars)
 end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType; vars)

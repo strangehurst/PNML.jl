@@ -130,7 +130,7 @@ $(TYPEDSIGNATURES)
 Declaration that wraps an operator by giving a name to a definition term (expression in many-sorted algebra).
 
 An operator of arity 0 is a constant.
-When arity > 0, where is the parameter value stored? With operator or variable declaration
+When arity > 0, the parameters are variables, using a SubstitutionDict for values.
 """
 function parse_namedoperator(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "namedoperator")
@@ -145,7 +145,11 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
             # NamedOperators have a def element that is a expression of existing
             # operators &/or variable parameters that define the operation.
             # The sortof the operator is the output sort of def.
-            def, _, _ = parse_term(EzXML.firstelement(child), pntd; vars=()) #! todo term rewrite
+            def, _, vars = parse_term(EzXML.firstelement(child), pntd; vars=()) #! todo term rewrite
+            if !isempty(vars)
+                @error "named operator has variables" id name def vars
+                #! length(vars) == arity(def)
+            end
         elseif tag == "parameter"
             # Zero or more parameters for operator (arity). Map from id to sort object.
             #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
