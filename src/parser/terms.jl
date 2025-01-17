@@ -30,7 +30,7 @@ function parse_term(node::XMLNode, pntd::PnmlType; vars)
         parse_term(Val(tag), node, pntd; vars)
     end
     # ttup is a tuple(expression||literal, sort, vars)
-    !isempty(ttup[3]) && @error ttup #! debug. parse_term returns `vars` in 3rd.
+    #!debug !isempty(ttup[3]) && @error ttup # parse_term returns `vars` in 3rd.
     return ttup
     #! Return something that can do toexpr(term)
     #! XXX do parse_term, parse_operator_term have same type XXX

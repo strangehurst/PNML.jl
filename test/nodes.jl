@@ -18,7 +18,7 @@ using PNML, ..TestUtils, JET, XMLDict
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
         @test_call initial_marking(n)
-        @test initial_marking(n)() == 100
+        @test initial_marking(n) == 100
     end
 end
 

@@ -144,9 +144,7 @@ end
 
 ###################################################################################
 """
-    Bag
-
-TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
+Bag: a TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
 a [`PnmlMultiset`](@ref).
 
 See [`Operator`](@ref) for another TermInterface operator.
@@ -163,15 +161,12 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 basis(b::Bag) = b.basis
 
 toexpr(b::Bag, var::SubstitutionDict) = begin
-    @show b var
+    #^ Warning: can introduce a PnmlMultiset for element
     Expr(:call, pnmlmultiset, b.basis, toexpr(b.element, var), toexpr(b.multi, var))
 end
-    #:($pnmlmultiset($(b.basis), $(toexpr($(b.element), $var)), $(toexpr($(b.multi), $var))))
-
-#toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
 
 function Base.show(io::IO, x::Bag)
-    print(io, "Bag(",x.basis, ",", x.element, ",", x.multi,")"  )
+    print(io, "Bag(",x.basis, ", ", x.element, ", ", x.multi,")"  )
 end
 
 ###################################################################################
@@ -183,7 +178,7 @@ end
 NumberEx # Need to avoid @matchable to have docstring
 @matchable struct NumberEx{T<:Number} <: PnmlExpr
     basis::UserSort # Wraps a sort REFID.
-    element::T #TODO! method unless nothing
+    element::T #
 end
 NumberEx(x::Number) = NumberEx(sortref(x)::UserSort, x)
 basis(x::NumberEx) = x.basis
@@ -223,18 +218,18 @@ end
 toexpr(op::Add, subdict::SubstitutionDict) = begin
     @assert length(op.args) >= 2
     #:($reduce(+, ($map(Fix2(toexpr,$var), $(op.args))...),))
-    println()
-    @show op.args
-    @show toexpr.(op.args, Ref(subdict))
-    xx = :(($(toexpr.(op.args, Ref(subdict))...),))
-    @show xx
+    # println()
+    # @show op.args
+    # @show toexpr.(op.args, Ref(subdict))
+    # xx = :(($(toexpr.(op.args, Ref(subdict))...),))
+    # @show xx
     #dump(xx)
     #@show reduce(+, map(Fix2(toexpr,subdict), op.args)...)
     #Expr(:call, :reduce, :+, map(Fix2(toexpr,subdict), op.args)...) # constructs a new PnmlMultiset
     Expr(:call, sum, toexpr.(op.args, Ref(subdict))...) # constructs a new PnmlMultiset
 end
 function Base.show(io::IO, x::Add)
-    print(io, "Add(", x.args, ")" )
+    print(io, "Add(", join(x.args, ", "), ")" )
 end
 
 #Expr(:ref, toexpr(args[1], states), toexpr.(args[2:end] .+ offset, (states,))...)
@@ -724,13 +719,13 @@ The values in `dict` will be ground terms of a place's sorttype.
 These values are from the current marking vector.
 ```
 """
-function substitute(expr::PnmlExpr, dict::SubstitutionDict)
-    expr isa VariableEx && return dict[expr.refid] #todo store marking vector index in dict.
+function substitute(expr::PnmlExpr, var::SubstitutionDict)
+    expr isa VariableEx && return var[expr.refid] #todo store marking vector index in dict.
 
     if iscall(expr) # all @matchable structs
         #~ Always substitute operation and arguments.
-        op = substitute(operation(expr), dict) #? is operation ever an expression?
-        args = map(x->substitute(x, dict), arguments(expr))
+        op = substitute(operation(expr), var) #? is operation ever an expression?
+        args = map(x->substitute(x, var), arguments(expr))
 
         #~ Rewrite term after substitutions
         maketerm(typeof(expr), op, args, metadata(expr))

@@ -189,8 +189,9 @@ end
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
-    @show PNML.input_matrix(snet)
-    @show PNML.output_matrix(snet)
+    @show m₀ = initial_markings(snet) #::LVector
+    @show PNML.input_matrix(snet, m₀) # needs marking
+    @show PNML.output_matrix(snet, m₀)
     @show PNML.conditions(snet)
     @show PNML.inscriptions(snet)
     println("all arcs = ", collect(PNML.all_arcs(snet, :wolves)))
@@ -298,8 +299,9 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     mg = PNML.metagraph(anet)
 
     flush(stdout)
-    @show C  = PNML.incidence_matrix(anet)
+
     @show m₀ = initial_markings(anet) #::LVector
+    @show C  = PNML.incidence_matrix(anet, m₀) #! needs marking
 
     @show muladd(C', [1,0,0,0], m₀)
 

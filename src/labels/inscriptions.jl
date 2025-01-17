@@ -21,7 +21,8 @@ term(i::Inscription) = i.term # TODO when is the optimized away ()
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
 
-variables(::Inscription) = () #TODO
+# What variables are in the expression.
+variables(::Inscription) = () # There are no Variables in non-high-level nets.
 
 function Base.show(io::IO, inscription::Inscription)
     print(io, "Inscription(")

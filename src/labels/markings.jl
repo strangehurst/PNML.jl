@@ -147,18 +147,16 @@ end
 HLMarking(t::PnmlExpr) = HLMarking(nothing, t)
 HLMarking(s::Maybe{AbstractString}, t::PnmlExpr) = HLMarking(s, t, nothing, nothing)
 
+"term(marking) -> PnmlExpr"
 term(marking::HLMarking) = marking.term
 
 """
-$(TYPEDSIGNATURES)
+    (hlm::HLMarking)() -> PnmlMultieset
 Evaluate a [`HLMarking`](@ref) term.
 """
 (hlm::HLMarking)() = begin
-    @warn hlm
-    @show t = term(hlm)
-    @show ex = toexpr(t)
-    dump(ex)
-    eval(ex) # ground term = no variable substitutions.
+    @show term(hlm)
+    eval(toexpr(term(hlm)::PnmlExpr)) # ground term = no variable substitutions.
 end
 
 basis(marking::HLMarking) = basis(term(marking))::UserSort

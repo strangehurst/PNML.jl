@@ -59,6 +59,37 @@ struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::UserSort # user -> named -> sort object
+
+    # Implementation of variables use a reference to a marking paired with a variable declaration REFID
+    #   (ref::Ref{sortof(vdecl)}(mark), REFID)
+    # where the sort of the mark matches the VariableDeclaration sort.
+
+    # If the place sorttype is a product sort
+    #   variable's sort will be one of the product member sorts or same product sort
+    #   If part of a product sort,
+    #       other variables or multiples of this one must combine to form a multiset element.
+    # else
+    #   variable's sort will be sorttype
+
+    # There will be a value of `sort`
+    #   removed from input marking(s) and/or added to output marking(s)
+    #   is possible that only one action happens for a variable
+
+    # How to match marking element?
+    # A place has one marking, a multiset, with sorttype(place) as basis sort.
+    # if sorttype(place) isa productsort
+    #   if sortof(variable) isa productsort
+    #       add/remove tuple, with cost
+    #   else
+    #       need an index into the product to add/remove (Ref(mark,i))
+    # else
+    #   add/remove sort
+
+    # Find index in tuple? The inscription will be tuple-valued as will the relevant marking.
+    # When parsing a <variable>, identify its enclosing tuple & index #TODO
+
+    # Will PnmlTuple ever have fields mutated? Or will mark updated be done by replacement?
+    # PnmlTuple fields will be read as part of enabling function (condition)
 end
 sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd))) #? partitionsort
@@ -114,7 +145,6 @@ operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
 sortref(no::NamedOperator) = sortref(operator(no))::UserSort # of the wrapped operator
 sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
-
 
 # toelem(no::NamedOperator) #! Expr(:call, toexpr(no.def), map(x->toexpr, no.parameter))
 #? id & name should map to the function whose body is `def` and inputs are `parameters`
