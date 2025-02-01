@@ -2,7 +2,7 @@ using PNML, ..TestUtils, JET, Logging
 const idregistry = ScopedValue{PnmlIDRegistry}()
 
 @testset "ID registry" begin
-    @with idregistry => registry() begin
+    @with idregistry => registry() begin # ScopedValue
         PnmlIDRegistrys.reset_reg!(idregistry[])
         register_id!(idregistry[], :p1)
         @test @inferred(isregistered(idregistry[], :p1)) == true
@@ -11,11 +11,9 @@ const idregistry = ScopedValue{PnmlIDRegistry}()
         @test !isregistered(idregistry[], :p1)
         PNML.register_id!(idregistry[], :p1)
         @test isregistered(idregistry[], :p1)
-        @show idregistry[]
+        #@show idregistry[]
     end
-end
 
-@testset "test_call"  begin
     @test_opt target_modules=(@__MODULE__,) registry()
     @test_call registry()
     @with idregistry => registry() begin
