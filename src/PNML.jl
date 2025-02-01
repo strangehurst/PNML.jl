@@ -89,7 +89,8 @@ using Compat: @compat
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export declarations, pid, refid, sortof, sortref, basis
+export declarations, pid, refid, sortof, sortref, basis, multiset
+export SubstitutionDict
 
 export has_variabledecl, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
     has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,

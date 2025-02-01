@@ -4,6 +4,7 @@ using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
+using NamedTupleTools
 import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 

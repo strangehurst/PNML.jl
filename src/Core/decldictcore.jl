@@ -164,7 +164,7 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
     operator(id::Symbol) -> AbstractOperator
 
 Return operator TermInterface expression for `id`.
-    `toexpr(::OpExpr) = :(useroperator(REFID)())`
+    `toexpr(::OpExpr, varsub) = :(useroperator(REFID)(varsub))`
 
 "Operator Declarations" include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
 with types `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
@@ -177,7 +177,7 @@ These define operators of different types that are placed into separate dictiona
 useroperator(REFID) is used to locate the operator definition, when it is found in `feconstants()`,
 is a callable returning a `FEConstant` literal.
 
-    `toexpr(::FEConstantEx) = :(useroperator(REFID)())`
+    `toexpr(::FEConstantEx, varsub) = :(useroperator(REFID)(varsub))`
 
 The FEConstant operators defined by the declaration do not have a distinct type name in the specification.
 Note that a FEConstant's value in the specification is its identity.
@@ -186,7 +186,7 @@ Output sort of op is FEConstant.
 
 Other `OperatorDeclaration` dictionarys also hold `TermInterface` expressions accessed by
 
-    `toexpr(::OpExpr) = :(useroperator(REFID)())`
+    `toexpr(::OpExpr, varsub) = :(useroperator(REFID)(varsub))`
 
 where `OpExpr` is the `TermInterface` to match `OperatorDeclaration`.
 With output sort to match `OperatorDeclaration` .

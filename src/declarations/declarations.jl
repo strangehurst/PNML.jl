@@ -146,5 +146,4 @@ parameters(no::NamedOperator) = no.parameter
 sortref(no::NamedOperator) = sortref(operator(no))::UserSort # of the wrapped operator
 sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
 
-# toelem(no::NamedOperator) #! Expr(:call, toexpr(no.def), map(x->toexpr, no.parameter))
 #? id & name should map to the function whose body is `def` and inputs are `parameters`

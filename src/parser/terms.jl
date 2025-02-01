@@ -109,7 +109,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars)
     usort = sortref(variable(var.refid))
     #@warn "parsed variable" var usort #! debug
     #! 2024-11-30 jdh add tuple of variable REFIDs. Empty tuple for ground terms.
-    # vars are the keys of SubstitutionDict
+    # vars are the keys of a NamedTuple
     return (var, usort, tuple(vars..., var.refid)) # expression for Variable with this UserSort
 end
 
@@ -465,9 +465,9 @@ end
 #   <useroperator declaration="id4"/>
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType; vars)
-    uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
+    @show uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
     #@show PNML.operator(uo.refid); flush(stdout)
-    usort = sortref(PNML.operator(uo.refid))
+    @show usort = sortref(PNML.operator(uo.refid))
     #@warn "returning useroperator" uo usort #! debug
     return (uo, usort, vars)
 end

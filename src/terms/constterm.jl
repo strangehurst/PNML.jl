@@ -17,4 +17,4 @@ basis(nc::NumberConstant) = typeof(nc.value) # multisets need type of the value
 # others want the value of the value
 (c::NumberConstant)() = value(c)
 value(nc::NumberConstant) = nc.value
-toexpr(nc::NumberConstant, ::SubstitutionDict) = value(nc)
+toexpr(nc::NumberConstant, ::NamedTuple) = value(nc)

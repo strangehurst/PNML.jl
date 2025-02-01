@@ -3,6 +3,7 @@ using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
+using NamedTupleTools
 import Multisets: Multisets, Multiset
 using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition,

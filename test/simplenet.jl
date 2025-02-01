@@ -105,7 +105,7 @@ str1 = """
             @test pid(a) ===  a.id
                         @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
-            @test @inferred(Number, inscription(a)(SubstitutionDict())) !== nothing
+            @test @inferred(Number, inscription(a)(NamedTuple())) !== nothing
         end
     end
 
@@ -301,7 +301,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     flush(stdout)
 
     @show m₀ = initial_markings(anet) #::LVector
-    @show C  = PNML.incidence_matrix(anet, m₀) #! needs marking
+    @show C  = PNML.incidence_matrix(anet, m₀)
 
     @show muladd(C', [1,0,0,0], m₀)
 

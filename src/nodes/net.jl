@@ -149,60 +149,173 @@ end
 #------------------------------------------------------------------------------
 # Rewrite
 #------------------------------------------------------------------------------
+
 """
-    rewriteXXX(net)
+    accum_varsets!(bvs, arc_bvs) -> Bool
+Collect variable bindings, intersecting among arcs.
+Return enabled status of false if any variable does not have a substitution.
+"""
+accum_varsets!(bvs::OrderedDict, arc_bvs::OrderedDict) = begin
+    for v in keys(arc_bvs) # Each variable found in arc is merged into transaction set.
+        accum_varset!(bvs, arc_bvs, v)
+    end
+    # Transition enabled when all(s->cardinality(s) > 0, values(bvs)).
+    all(!isempty, values(bvs))
+end
+
+"Collect/intersect binding of one arc variable binding set."
+accum_varset!(bvs::OrderedDict, arc_bvs::OrderedDict, v::REFID) = begin
+    @assert arc_bvs[v] != 0 # This arc must satisfy all its variables.
+    if !haskey(bvs, v) # Previous arcs did not have variable.
+        bvs[v] = arc_bvs[v] # Initial value from 1st use.
+    else
+        @assert eltype(bvs[v]) == eltype(arc_bvs[v]) # Same type is expected.
+        intersect!(bvs[v], arc_bvs[v])
+    end
+end
+
+"""
+    rewriteXXX(net, marking)
 
 Rewrite PnmlExpr (TermInterface) expressions.
 """
-function rewriteXXX(net::PnmlNet)
-    printstyled("## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
+function rewriteXXX(net::PnmlNet, marking)
+    printstyled("\n## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
+
+    println("\nPLACES")
     for pl in places(net)
-        println("p ",repr(pid(pl)), " ", repr(initial_marking(pl)), " ", toexpr(term(initial_marking(pl)))) # expression
-        # capacity expression
+        println("p ",repr(pid(pl)), " marking ",  marking[pid(pl)])
+        # other place labels: capacity expression
     end
-    for ar in arcs(net)
-        println("a ",repr(pid(ar)), " ", repr(ar.inscription)) # expression
-    end
+
+    #~bv_sets = Dict{REFID, SubstitutionDict}() # keys are transaction id
+    # Each SubstitutionDict is a dictionary of multisets,
+    #   key is variable REFID
+    #   value is set of substitutions for that REFID (with multiplicity via multiset)
+    #
+    # Used as working storage that is a valid variable substitution only at the end of the algorythim.
+    #
+    # algorythim iterates over transitions of net
+    # only enabled transitions remain in bv_sets at end of algorythim
+
+    # println("\nARCS")
+    # for ar in arcs(net)
+    #     println("a ",repr(pid(ar)), " ", repr(ar.inscription), " vars = ",variables(ar.inscription)) # expression
+    #     #@show toexpr(term(ar.inscription), subdict)
+    # end
+
+    println("\nTRANSITIONS")
     for tr in transitions(net)
-        transitionid = pid(tr)
-        println("t ",repr(transitionid), " ", repr(condition(tr))) # expression
-        #println("   rate ", repr(rate(transition(net, transitionid))))
+        trid = pid(tr)
+        enabled = true # Assume all transitions possible.
+        tr.varsubs = NamedTuple[]
 
-        # Slower than values
-        #println(join(Iterators.map(a -> (a,source(arcdict(net)[a]),target(arcdict(net)[a])), keys(arcdict(net))), " "))
-        # Faster than keys
-        println(join(Iterators.map(a -> (pid(a),source(a),target(a)), values(arcdict(net))), " "))
+        println("t ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
+        println("   tgts $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), tgt_arcs(net, trid)))
+        println("   srcs $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), src_arcs(net, trid)))
 
-        println("$transitionid tgts ", collect(tgt_arcs(net, transitionid)))
-        println("$transitionid srcs ", collect(src_arcs(net, transitionid)))
+        #!2025-01-27 JDH moved tr_vars to Transition tr.vars
+        bvs = OrderedDict{REFID, Any}() # During enabling rule, bvs maps variable to a set of elements.
+        #~ marking = PnmlMultiset{B, T}(Multiset{T}(T() => 1)) singleton
+        # varsub maps a variable to 1 element of multiset(marking[trid]) when enabling/firing transition.
+        # Multiset type set from first use
+        # Operator parameters are an ordered collection of value, sort.
+        # Where sort is a REFID to a variable declaration with name and sort.
+        # And value is in a marking in the marking vector (marking vector, placeid, element).
+        # marking[placeid][element] > 0 (multiplicity >= arc_var matching variableid)
+        # Will element be a copy?
 
-        println("presets ")
-        for placeid in preset(net, transitionid)
-            a = arc(net, placeid, transitionid)
-            if !isnothing(a)
-                @show transitionid placeid
-                @show variables(a.inscription)
-                println(repr(transitionid), " ", variables(a.inscription)) #! SubstitutionDict
+        println("presets of $(repr(trid))") # arcs whose target is tr
+        for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
+            placeid   = source(ar) # adjacent place
+            mark      = marking[placeid]
+            println("   arc ", repr(pid(ar)), " = ", repr(placeid), " -> ", repr(trid))
+            println("      marking = ", mark)
+
+            arc_vars  = Multiset(variables(inscription(ar))...) # counts variables
+            isempty(arc_vars) && continue # to next arc, no variable to substitute here.
+
+            union!(tr.vars, keys(arc_vars)) # Only the variable REFID stored in transaction.
+            @show tr.vars
+
+            arc_bvs   = OrderedDict{REFID, Multiset{eltype(mark)}}() # bvs is a per-transaction, this is per-arc.
+
+            placesort = sortref(place(net, placeid)) # TODO create exception
+            for v in keys(arc_vars) # Each variable must have a non-empty substitution.
+                arc_bvs[v] = Multiset{eltype(mark)}()
+                println("   v  $(repr(v)) isa $(sortref(variable(v)))")
+                placesort !== sortref(variable(v)) && error("not equal sorts ($placesort, $(sortref(variable(v))))")
+                for (el,mu) in pairs(multiset(mark)) #! el may be a PnmlMultiset
+                    println("   el  ", el)
+                    # Multiple of same variable in inscription expression means arc_bvs only includes
+                    # elements with a multiplicity at least as that value. Will later update bvs.
+                    if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
+                        @show push!(arc_bvs[v], el) # Add to set of satisfying substitutions for arc.
+
+                    end
+                end
+                if isempty(arc_bvs[v])
+                    enabled = false
+                    break
+                end
             end
+            enabled || break
+            enabled &= accum_varsets!(bvs, arc_bvs) # Transaction accumulates/intersects arc bindings.
+            enabled || break
+        end # preset arcs
+
+        #& XXX variable substitutions fully specified by preset of transition XXX
+        vid = tuple(keys(bvs)...) # names of tuple elements are variable REFIDs
+        length(tr.vars) > 1 &&
+            printstyled("\n=========\nMultiple transition variables\n=========\n\n"; color=:bold)
+        @show tr.vars vid
+        # foreach(println, pairs(bvs))
+
+        if enabled
+            #! 1st stage of enabling rule has succeded. (there exists a substitution for each variable)
+            println("\n----------------------------------------------------------")
+            # Produce a vector of tuples. Each tuple is a substitution for each variable.
+            vsubiter = Iterators.product(tuple.(keys.(values(bvs))))
+            @assert length(vid) == length(vsubiter)
+            foreach(vsubiter) do  params
+                vsub = namedtuple(vid, params)
+                if eval(toexpr(term(condition(tr)), vsub))
+                    @show push!(tr.varsubs, vsub)
+                end
+            end
+            @show tr.varsubs
+            println("----------------------------------------------------------")
+            enabled &= any(vsub->eval(toexpr(term(condition(tr)), vsub)), varsubs(net, trid))
+            enabled || println("condition eliminated all substitutions.") #! debug
+            #! REMEMBER marking multiset element may be a PnmlMultiset.
+            #! Does assuming a singleton multiset simplify?
         end
 
-        println("postsets ")
-        for placeid in preset(net, transitionid)
-            a = arc(net, placeid, transitionid)
+        if enabled
+            # Condition passed
+            printstyled("ENABLED ", length(tr.varsubs), " firing candidates\n"; color=:green)
+        else
+            printstyled("DISABLED\n"; color=:red)
+        end
+
+        println("postset of $(repr(trid))")
+        for placeid in postset(net, trid)
+            a = arc(net, trid, placeid)
             if !isnothing(a)
-                @show transitionid placeid
-                @show variables(a.inscription)
-                println(repr(transitionid), " ", variables(a.inscription)) #! SubstitutionDict
+                println("   arc to ", repr(placeid), " variables ", variables(a.inscription)) #! SubstitutionDict
             end
         end
         println()
-    end
+    end # for tr
 
+    #~printstyled("bv_sets\n"; color=:magenta)
+    #~foreach(println, pairs(bv_sets))
     # namedoperators
     # arbitraryops
     # partitionops
     #
     printstyled("##  \n"; color=:magenta)
+    println()
 end
 
 #------------------------------------------------------------------------------

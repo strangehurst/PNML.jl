@@ -20,7 +20,7 @@ using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 using PNML: place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 using PNML: variabledecls,
     usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    namedoperators, arbitraryops, feconstants
+    namedoperators, arbitraryops, feconstants, SubstitutionDict
 
 using ..Sorts
 using ..PnmlIDRegistrys

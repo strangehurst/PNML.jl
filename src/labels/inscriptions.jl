@@ -16,7 +16,7 @@ Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
 Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
 
 term(i::Inscription) = i.term # TODO when is the optimized away ()
-(i::Inscription)(var::SubstitutionDict) = eval(toexpr(term(i), var))::Number
+(i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub))::Number
 
 sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
 sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
@@ -61,7 +61,7 @@ end
 HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
 HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing, ())
 
-(hlinscription::HLInscription)(varsub::SubstitutionDict) = eval(toexpr(term(hlinscription), varsub)) #TODO compile expression using var SubstitutionDict.
+(hlinscription::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hlinscription), varsub)) #TODO compile expression using varsub.
 
 term(i::HLInscription) = i.term
 sortref(hli::HLInscription) = sortref(term(hli))::UserSort

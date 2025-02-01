@@ -49,7 +49,7 @@ The result must be a ground term, and is used to update a marking.
 For non-High,level nets, the inscrition TermInterface expression evaluates to a Number
 and the condition is a boolean expression (default true).
 """
-(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr)) #~ same for HL #! Combine
+(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple())) #~ same for HL #! Combine
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
 
@@ -154,9 +154,9 @@ term(marking::HLMarking) = marking.term
     (hlm::HLMarking)() -> PnmlMultieset
 Evaluate a [`HLMarking`](@ref) term.
 """
-(hlm::HLMarking)() = begin
-    @show term(hlm)
-    eval(toexpr(term(hlm)::PnmlExpr)) # ground term = no variable substitutions.
+(hlm::HLMarking)(varsub::NamedTuple=NamedTuple()) = begin
+    @show term(hlm) toexpr(term(hlm)::PnmlExpr, varsub)
+    eval(toexpr(term(hlm)::PnmlExpr, varsub)) # ground term = no variable substitutions.
 end
 
 basis(marking::HLMarking) = basis(term(marking))::UserSort

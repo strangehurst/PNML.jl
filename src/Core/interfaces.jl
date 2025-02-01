@@ -443,14 +443,6 @@ This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@re
 """
 function sortdefinition end
 
-"""
-    toexpr(ex::PnmlExpr[, subs::SubstitutionDict]) -> Expr
-
-Recursivly call `toexpr` on contained terms.
-`SubstutionDict` used to replace variables with values.
-"""
-toexpr(ex) = toexpr(ex, SubstitutionDict())
-
 
 """
     basis(x) -> UserSort
@@ -473,6 +465,14 @@ abstract type BoolExpr <: PnmlExpr end
 TermInterface operator expression types.
 """
 abstract type OpExpr <: PnmlExpr end
+
+# """
+#     toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
+
+# Recursivly call `toexpr` on contained terms.
+# `varsubs` used to replace variables with values.
+# """
+# toexpr(ex::PnmlExpr) = toexpr(ex, NamedTuple())
 
 """
     adjacent_place(net::PnmlNet, id::Arc) -> Place

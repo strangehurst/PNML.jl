@@ -8,6 +8,7 @@ import EzXML
 import XMLDict
 #using Reexport
 using DocStringExtensions
+using NamedTupleTools
 import Multisets: Multisets, Multiset
 using TermInterface
 using PNML

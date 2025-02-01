@@ -88,13 +88,23 @@ function parse_pnml(node::XMLNode)
         #! Allocation? Runtime Dispatch? This is a parser! What did you expect?
         @with PNML.idregistry => reg PNML.DECLDICT => ddict begin
             net = parse_net(netnode)
-            #~ At this point the XML has been processed.
+            #~ At this point the XML has been processed into PnmlExpr terms.
+            # Ground terms used to set initial markings rewritten and evaluated here.
+            #todo test 0-arity expressions here, some are used for marking vector's initial value.
+            # 0-arity means empty variable substitution.
+            printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
+            @show m₀ = initial_markings(net) # Create a mutable vector of markings
 
-            # Term rewrite of each net.
-            PNML.rewriteXXX(net)
+            # Substitutions using indices into the marking vector.
+            # Rewrite inscription and condition terms with variable substitution.
+
             # Create "color functions" that process variables using TermInterface expressions.
-            # Ground terms used to set initial markings here.
-            # Pre-caculate as much as is practical
+            # Pre-caculate as much as is practical.
+            # Enabling rule
+            # Firing rule.
+
+            #^
+            PNML.rewriteXXX(net, m₀)
             net_tup = (net_tup..., net)
         end
     end
@@ -478,7 +488,8 @@ function parse_transition(node::XMLNode, pntd::PnmlType)
     end
 
     Transition{typeof(pntd), condition_type(pntd)}(pntd, id,
-                something(cond, default_condition(pntd)), name, graphics, tools, labels)
+                something(cond, default_condition(pntd)), name, graphics, tools, labels,
+                Set{REFID}(), NamedTuple[])
 end
 
 """
@@ -676,7 +687,8 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
         elseif tag == "structure"
             #! `parse_label_content` collects variables returned by `termparser`.
             term,tsort,vars = termparser(child, pntd) #collects variables
-            @show (term, tsort, vars) #! debug
+            # @show (term, tsort, vars) #! debug
+            # @show typeof(term)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -934,9 +946,9 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     adjacentplace = adjacent_place(netdata(pit), source(pit), target(pit))
     placesort = sortref(adjacentplace)::UserSort
     vars = () #
-    # SubstitutionDict for a transition affects postset arc inscription,
+    # Variable substitution for a transition affects postset arc inscription,
     # whose expression is used to determine the new marking.
-    # SubstitutionDict covers all variables in a transition. Variables are from inscriptions.
+    # Variable substitution covers all variables in a transition. Variables are from inscriptions.
     # A condition expression may use variables from an inscripion.
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
@@ -946,7 +958,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
         inscript = def_insc(netdata(pit), source(pit), target(pit))
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
-    !isempty(vars) && @error vars
+    #!debug !isempty(vars) && @error vars
 
     # println()
     # ex = toexpr(inscript) #^ ___ RECURSIVE `toexpr` ___
@@ -1004,8 +1016,8 @@ Label of transition node. Used in the enabling function.
 # Details
 
 ISO/IEC 15909-1:2019(E) Concept 15 (symmetric net) introduces
-Φ(transition) a guard or filter function that is and'ed into the enabling function.
-Part 2 maps this to `<condition>` expressions.
+Φ(transition), a guard or filter function, that is and'ed into the enabling function.
+15909-2 maps this to `<condition>` expressions.
 
 Later concepts add filter functions that are also and'ed into the enabling function.
 - Concept 28 (prioritized Petri net enabling rule)

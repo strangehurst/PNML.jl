@@ -15,4 +15,4 @@ struct DotConstant end
 sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
-toexpr(::DotConstant, ::SubstitutionDict) = DotConstant()
+toexpr(::DotConstant, ::NamedTuple) = DotConstant()

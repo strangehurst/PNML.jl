@@ -46,8 +46,10 @@ tools(o::AbstractPnmlObject)     = hasproperty(o, :tools) ? o.tools : nothing
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
 
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && has_label(labels(o), tagvalue)
-get_label(o::AbstractPnmlObject, tagvalue::Symbol) = has_labels(o) && get_label(labels(o), tagvalue)
+has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
+    (isnothing(o) && error("o is nothing")) || (has_labels(o) && has_label(labels(o), tagvalue))
+get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
+    (isnothing(o) && error("o is nothing")) || (has_labels(o) && get_label(labels(o), tagvalue))
 
 
 #--------------------------------------------
@@ -194,7 +196,7 @@ rate_value_type(::Type{<:PnmlType}) = Float64
 
 ####################################################################
 """
-    SubstitutionDict = OrderderDict{REFID, Set}
+    SubstitutionDict = OrderderDict{REFID, Multiset}
 
 Variable ID used to access marking value. One for each variable of a transition.
 
@@ -204,4 +206,4 @@ selecting enabled transition => subsitution dictionary firing pairs.
 The firing rule selects one of the firing pairs, using the substitution dictionary to
 construct postset marking updates.
 """
-const SubstitutionDict = OrderedDict{REFID, Set} # OrderedDict{REFID,Set{eltype(basis)}}
+const SubstitutionDict = OrderedDict{REFID, Multiset}

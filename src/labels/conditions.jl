@@ -57,23 +57,23 @@ variables(c::Condition) = c.vars
 
 Use `args`, a dictionary of variable substitutions into the expression to return a Bool.
 """
-(c::Condition)(sub::SubstitutionDict=SubstitutionDict()) = begin
-    # `sub` a Dict mapping a variable REFID symbol to an element of the basis sort of marking multiset.
+(c::Condition)(varsub::NamedTuple=NamedTuple()) = begin
+    # `varsub` a Dict mapping a variable REFID symbol to an element of the basis sort of marking multiset.
     # It will be a "consistent substitution"
     # Markings are ground terms, can be fully evaluated here. In fact, here we are operating
     # on a marking vector. This vector starts with the initial_marking expression's value.
-    return cond_implementation(c, sub)
+    return cond_implementation(c, varsub)
 end
 
 # color function?
-function cond_implementation(c::Condition, sub::SubstitutionDict)
-    for arg in keys(sub)
+function cond_implementation(c::Condition, varsub::NamedTuple)
+    for arg in keys(varsub)
         @show arg
     end
     # BooleanEx is a literal. BoolExpr <: PnmlExpr can be non-literal (non-ground term).
-    isa(term(c), BooleanEx) || @warn term(c) sub toexpr(term(c), sub) #! debug
+    isa(term(c), BooleanEx) || @warn term(c) varsub toexpr(term(c), varsub) #! debug
 
-    eval(toexpr(term(c), sub))::eltype(c) # Bool isa Number
+    eval(toexpr(term(c), varsub))::eltype(c) # Bool isa Number
 end
 
 condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)

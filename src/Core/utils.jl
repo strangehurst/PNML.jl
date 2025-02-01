@@ -7,7 +7,7 @@
 
 # Since PNML is based on integer numbers and booleans it seems reasonable to use `Number`,
 # which includes `Bool` and `Real`.
-toexpr(x::Number, ::Any) = identity(x) #! literal
+toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
 
 
 """
@@ -42,5 +42,5 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     return x
 end
 
-toexpr(::Nothing, ::Any) = nothing
-toexpr(s::Symbol, ::Any) = QuoteNode(s)
+toexpr(::Nothing, ::NamedTuple) = nothing
+toexpr(s::Symbol, ::NamedTuple) = QuoteNode(s)
