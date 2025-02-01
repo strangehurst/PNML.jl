@@ -17,16 +17,18 @@ end
 sortref(fec::FEConstant) = usersort(fec.refid)::UserSort
 Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
 
-(fec::FEConstant)() = fec.id # is a literal
+(fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
+(fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use string.
 
 sortof(fec::FEConstant) = begin
-    # These sort declarations share behavior in attaching
-    # an ID and name to a component or components. These components have
-    # separate dictionarys in the `DECLDICT`.
+    # Search on REFID of containing sort defintion.
+    # These share behavior in attaching an ID and name to a component or components.
+    # These components have seperate dictionaries in the `DECLDICT`.
     if has_namedsort(fec.refid)
         sortdefinition(namedsort(fec.refid))::EnumerationSort
     elseif has_partitionsort(fec.refid)
         sortdefinition(partitionsort(fec.refid))::PartitionSort
+        # Partitions are over a single EnumerationSort
     else
         # partition element?
         error("could not find a sortof REFID in ", repr(fec))
