@@ -71,10 +71,10 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
             namedsorts(dd)[pid(ns)] = ns
             usersorts(dd)[pid(ns)] = UserSort(pid(ns)) # make usersort, namedsort duo
         elseif tag == "namedoperator"
-            no = parse_namedoperator(child, pntd)
+            @show no = parse_namedoperator(child, pntd)
             namedoperators(dd)[pid(no)] = no
         elseif tag == "variabledecl"
-            vardecl = parse_variabledecl(child, pntd)
+            @show vardecl = parse_variabledecl(child, pntd)
             variabledecls(dd)[pid(vardecl)] = vardecl
         elseif tag == "partition"
             part = parse_partition(child, pntd)::SortDeclaration
@@ -127,10 +127,10 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Declaration that wraps an operator by giving a name to a definition term (expression in many-sorted algebra).
+Declaration of an operator expression in many-sorted algebra.
 
-An operator of arity 0 is a constant.
-When arity > 0, the parameters are variables, using a SubstitutionDict for values.
+An operator of arity 0 is a constant (ground-term, literal).
+When arity > 0, the parameters are variables, using a NamedTuple for values.
 """
 function parse_namedoperator(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "namedoperator")
@@ -157,6 +157,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd))
             end
+            # Create the object in declaration that is referenced by VariableEx's REFID.
         else
             @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
                     "with tag ", tag, ", allowed: 'def', 'parameter'")
@@ -167,7 +168,8 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
                                     " name=", repr(name),
                                     " id=", repr(id),
                                     "> does not have a <def> element")))
-    #@warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" #! debug
+    @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" #! debug
+    @show parameters
     NamedOperator(id, name, parameters, def) #! todo TermInterface rewrite
 end
 

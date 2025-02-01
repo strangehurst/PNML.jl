@@ -6,7 +6,7 @@ When evaluated each of the expressions will have the same sort as in the Product
 struct PnmlTuple
     terms::Vector{AbstractTerm}
     # ProductSort has ordered collection of sorts. corresponding to terms' sorts.
-    #? How do we locate the ProductSort? When? It will be the basis of a mutiset.
+    #? How do we locate the ProductSort? When? It will be the basis of a multiset.
 end
 
 terms(t::PnmlTuple) = t.terms

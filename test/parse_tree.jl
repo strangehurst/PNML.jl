@@ -140,7 +140,7 @@ println("-----------------------------------------\n")
             #@show n
             #println("-----------------------------------------")
             Base.redirect_stdio(stdout=devnull, stderr=devnull) do
-            #Base.redirect_stdio(stdout=nothing, stderr=nothing) do
+            #Base.redirect_stdio(stdout=nothing, stderr=nothing) do #! debug
                 #TODO use MetaGraph as base of a validation tool
                 println("pagetree"); flush(stdout)
                 PNML.pagetree(n)

@@ -63,13 +63,13 @@ end
     @test PnmlTypeDefs.pnmltype("nonstandard" ) === PnmlCoreNet()
     @test PnmlTypeDefs.pnmltype("continuous"  ) === ContinuousNet()
 
-    @test PnmlTypeDefs.pnmltype(:pnmlcore)   === PnmlCoreNet()
-    @test PnmlTypeDefs.pnmltype(:hlcore)     === HLCoreNet()
-    @test PnmlTypeDefs.pnmltype(:ptnet)      === PTNet()
-    @test PnmlTypeDefs.pnmltype(:hlnet)      === HLPNG()
-    @test PnmlTypeDefs.pnmltype(:pt_hlpng)   === PT_HLPNG()
-    @test PnmlTypeDefs.pnmltype(:symmetric)  === SymmetricNet()
-    @test PnmlTypeDefs.pnmltype(:continuous) === ContinuousNet()
+    @test PnmlTypeDefs.pnmltype(:pnmlcore)   === PnmlCoreNet() # most basic
+    @test PnmlTypeDefs.pnmltype(:ptnet)      === PTNet() # collective token identity meta-model
+    @test PnmlTypeDefs.pnmltype(:hlcore)     === HLCoreNet() # individual token identity meta-model
+    @test PnmlTypeDefs.pnmltype(:pt_hlpng)   === PT_HLPNG() # really-restricted meta-model
+    @test PnmlTypeDefs.pnmltype(:symmetric)  === SymmetricNet() # restricted meta-model
+    @test PnmlTypeDefs.pnmltype(:hlnet)      === HLPNG() # full-fat meta-model
+    @test PnmlTypeDefs.pnmltype(:continuous) === ContinuousNet() # not in standard, collective identity
 end
 
 @testset "pnml traits $pntd" for pntd in all_nettypes()
