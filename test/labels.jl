@@ -25,16 +25,16 @@ end
     #TODO add parse_graphics
     #TODO add toolinfo
 end
+
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
 @testset "PT initMarking $pntd" for pntd in NON_HL_NETS
-    text_value = iscontinuous(pntd) ? "123.0" : "123"
     str = """
     <initialMarking>
-        <text> $text_value </text>
+        <text> $(iscontinuous(pntd) ? "123.0" : "123") </text>
         <toolspecific tool="org.pnml.tool" version="1.0">
             <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
         </toolspecific>
@@ -133,12 +133,9 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
 @testset "labels $pntd" for pntd in core_nettypes()
     lab = PnmlLabel[]
-    reg = registry()
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
-        node = xmlroot("<test$x> $i </test$x>")::XMLNode
-
-        lab = Parser.add_label!(lab, node, pntd)
+        lab = Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>")::XMLNode, pntd)
         @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end
@@ -157,7 +154,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     @test has_label(lab, :test1)
     @test !has_label(lab, :bumble)
 
-    v = get_label(lab, :test2)
+    v = @inferred get_label(lab, :test2)
     @test v isa PnmlLabel
     @test tag(v) === :test2
     @test elements(v) == "3"
