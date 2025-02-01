@@ -23,7 +23,7 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
 
 #############################################################################
 @time "TESTS" begin
-@testset verbose=true failfast=FAILFAST showtiming=false "PNML.jl" begin
+@testset verbose=true failfast=FAILFAST showtiming=true "PNML.jl" begin
     if !isempty(ARGS) && select("NONE")
         return nothing # Have chosen to bail before any tests.
     end
@@ -59,10 +59,12 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
     end
+
     if select(("ALL", "HL"), ("!HL",))
         println("HL")
         @safetestset "labels_hl"       begin include("labels_hl.jl") end
     end
+
     if select(("ALL", "CORE2"), ("!CORE2",))
         println("CORE2")
         @safetestset "declarations" begin include("declarations.jl") end
@@ -72,9 +74,18 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @safetestset "flatten"      begin include("flatten.jl") end
     end
 
+    if select(("ALL", "EXPR"), ("!EXPR",))
+        println("EXPR")
+        @safetestset "pnmlexpr"     begin include("pnmlexpr.jl") end
+    end
+
     if select(("ALL", "NET"), ("!NET",))
         println("NET")
         @safetestset "document"     begin include("document.jl") end
+    end
+
+    if select(("ALL", "NET1"), ("!NET1",))
+        println("NET1")
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
 
