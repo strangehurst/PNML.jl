@@ -176,6 +176,7 @@ hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 Filter iteratable collection for elements having `s` as the `tag`.
 """
 function get_labels(iteratable, tagvalue::Symbol)
+    isnothing(iteratable) && error("iteratable is nothing")
     Iterators.filter(Fix2(hastag, tagvalue), iteratable)
 end
 
