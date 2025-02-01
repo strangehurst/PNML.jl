@@ -13,34 +13,50 @@ since HL markings are multisets.
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.
 """
-struct PnmlMultiset{B,T} #! data type, not operator, see Bag, pnmlmultiset()
+@auto_hash_equals struct PnmlMultiset{B,T} #! data type, not operator, see Bag, pnmlmultiset()
     #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
+
     mset::Multiset{T}
     function PnmlMultiset{B,T}(m) where {B,T}
-    #     B <: UserSort || error("unexpected basis:", repr(B))
-    #     eltype(B) isa T || error("!isa(", eltype(B), ", ", repr(T), ")")
+        #T <: PnmlMultiset && @warn("construct PnmlMultiset containing PnmlMultiset)")
         new{B,T}(m)
     end
 end
 
 """
-    multiplicity(ms::PnmlMultiset, x) -> Integer
+    multiset(ms::PnmlMultiset) -> Multiset
+Access wrapped multiset.
 """
-multiplicity(ms::PnmlMultiset, x) = ms.mset[x]
-cardinality(ms::PnmlMultiset) = length(ms.mset)
+multiset(ms::PnmlMultiset) = ms.mset
+
+"""
+    multiplicity(ms::PnmlMultiset, x) -> Integer
+    multiplicity(ms::Number, x) -> Number
+"""
+multiplicity(ms::PnmlMultiset, x) = multiset(ms)[x]
+"""
+    cardinality(ms::PnmlMultiset, x) -> Integer
+"""
+cardinality(ms::PnmlMultiset) = length(multiset(ms))
+cardinality(ms::Number) = ms
+
+Base.keys(ms::PnmlMultiset) = keys(multiset(ms))
+Base.values(ms::PnmlMultiset) = values(multiset(ms))
+
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
-keys(ms::PnmlMultiset) = keys(ms.mset)
 
 """
     basis(ms::PnmlMultiset) -> UserSort
 
-Multiset basis sort is a UserSort that references the declaration of a NamedSort.
+Multiset basis (B type parameter) is a REFID to a UserSort that references a NamedSort.
 Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
 MultisetSorts not allowed here. Nor loops in sort references.
 """
 basis(::PnmlMultiset{B,T}) where {B,T} = UserSort(first(B)) # tuple(REFID) in type domain
 
 Base.eltype(::Type{PnmlMultiset{B,T}}) where {B,T} = T
+
+#similar(p::PnmlMultiset{B, T}) where {B,T} =
 
 # Return empty multiset with matching basis sort.
 Base.zero(::Type{PnmlMultiset{B, T}}) where {B,T} = begin
@@ -71,7 +87,7 @@ sortelements(ms::PnmlMultiset) = sortelements(basis(ms)) # basis element iterato
 """
 function (+)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(a.mset + b.mset)
+    PnmlMultiset{B,T}(multiset(a) + multiset(b))
 end
 
 """
@@ -79,23 +95,22 @@ end
 """
 function (*)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(a.mset * b.mset)
+    PnmlMultiset{B,T}(multiset(a) * multiset(b))
 end
 
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
 function (*)(n::Number, b::PnmlMultiset{B,T}) where {B,T}
-    PnmlMultiset{B,T}(n * b.mset)
+    PnmlMultiset{B,T}(n * multiset(b))
 end
 function(*)(b::PnmlMultiset{B,T}, n::Number) where {B,T}
-    PnmlMultiset{B,T}(n * b.mset)
+    PnmlMultiset{B,T}(n * multiset(b))
 end
 
-function Base.show(io::IO, t::PnmlMultiset)
-    print(io, nameof(typeof(t)), "(basis=", repr(basis(t)))
-    print(io, ", mset=", repr(t.mset),")")
-end
+# function Base.show(io::IO, t::PnmlMultiset)
+#     print(io, nameof(typeof(t)), "(", multiset(t), ")")
+# end
 
 
 """
@@ -116,7 +131,7 @@ Create empty Multiset{T}() then fill.
 Usages
   - ⟨all⟩ wants all sortelements
   - default marking, inscription want one element or zero elements (elements can be PnmlTuples)
-we always find a sort to use, And use dummy elements for their `typeof` for empty mutisets.
+we always find a sort to use, And use dummy elements for their `typeof` for empty multisets.
 
 Expect to be called from a `@matchable` `Terminterface`, thusly:
   - `eval(toexpr(Bag(basis, x, multi)))`
@@ -127,7 +142,7 @@ function pnmlmultiset end
 
 # Constructor call
 function pnmlmultiset(basis::UserSort, ms::Multiset)
-    PnmlMultiset{(refid(basis),),eltype(ms)}(ms)
+    PnmlMultiset{(refid(basis),), eltype(ms)}(ms)
 end
 
 # function pnmlmultiset(basis::UserSort, element::Symbol, multi::Int=1)
@@ -136,10 +151,11 @@ end
 
 # For empty or singleton multiset.
 function pnmlmultiset(basis::UserSort, element, multi::Int=1)
-    print("pnmlmultiset: ")
-    print(repr(basis), ", ")
-    print(repr(element), ", ")
-    println(repr(multi))
+    element isa PnmlMultiset && @warn("element isa PnmlMultiset: ", element)
+    # print("pnmlmultiset: ")
+    # print(repr(basis), ", ")
+    # print(repr(element), ", ")
+    # println(repr(multi))
     #! Are transitioning to call pnmlmultiset() from an expression.
     #! Expect `element` and `muti` to have been eval'ed.  So no longer a Bag.
 
@@ -164,11 +180,11 @@ function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 a
         throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
-    @show basis eltype(basis)
+    #@show basis eltype(basis) #! debug
     M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
     for e in sortelements(basis) # iterator over one instance of each element of the set/sort
-        @show M e; flush(stdout)
+        #@show M e; flush(stdout) #! debug
         push!(M, e)
     end
     PnmlMultiset{(refid(basis),), eltype(M)}(M)
