@@ -118,8 +118,9 @@ end
 #! What is really wanted is NamedTuple[op.refid].
 #! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
 toexpr(op::VariableEx, varsub::NamedTuple) = begin
-    @show var[op.refid] :($(var[op.refid]))
-    :($(var[op.refid]))
+    @show varsub op.refid
+    @show varsub[op.refid] :($(varsub[op.refid]))
+    :($(varsub[op.refid]))
 end
 
 function Base.show(io::IO, x::VariableEx)
@@ -133,7 +134,7 @@ end
 end
 toexpr(op::UserOperatorEx, varsub::NamedTuple) = begin
     #@warn "toexpr(op::UserOperatorEx, varsub::NamedTuple)" op varsub operator(op.refid)
-    Expr(:call, operator, op.refid) # operator(op.refid)(varsub) returns callable object
+    Expr(:call, operator, QuoteNode(op.refid)) #
 end
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
@@ -163,7 +164,9 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 basis(b::Bag) = b.basis
 
 toexpr(b::Bag, varsub::NamedTuple) = begin
-    #^ Warning: can introduce a PnmlMultiset for element
+    @show b, varsub
+    #^ Warning: b.element can be: PnmlMultiset, tuple
+    # tuples are elements of a ProductSort
     Expr(:call, pnmlmultiset, b.basis, toexpr(b.element, varsub), toexpr(b.multi, varsub))
 end
 
@@ -219,7 +222,6 @@ end
 end
 toexpr(op::Add, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    println("Add")
     @show op.args varsub #toexpr.(op.args, Ref(varsub))
     Expr(:call, sum, (eval ∘ toexpr).(op.args, Ref(varsub))) # constructs a new PnmlMultiset
     #Expr(:call, reduce, :(+), toexpr.(op.args, Ref(subdict))) # constructs a new PnmlMultiset
@@ -293,7 +295,7 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::Or, var::NamedTuple) =  Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) || toexpr($(op.rhs), $var))
+toexpr(op::Or, var::NamedTuple) =  Expr(:(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 
 function Base.show(io::IO, x::Or)
     print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
@@ -303,8 +305,8 @@ end
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
-toexpr(op::And, var::NamedTuple) = Expr(:call, :(&&), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) && toexpr($(op.rhs), $var))
-#!
+toexpr(op::And, var::NamedTuple) = Expr(:(&&), toexpr(op.lhs, var), toexpr(op.rhs, var))
+
 function Base.show(io::IO, x::And)
     print(io, "And(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -312,7 +314,7 @@ end
 @matchable struct Not <: BoolExpr #? Uses `!` operator.
     rhs::Any # BoolExpr
 end
-toexpr(op::Not, var::NamedTuple) = Expr(:call, :(!), toexpr(op.rhs, var)) #:(!(toexpr($(op.rhs), $var)))
+toexpr(op::Not, var::NamedTuple) = Expr(:call, :(!), toexpr(op.rhs, var))
 function Base.show(io::IO, x::Not)
     print(io, "Not(", x.rhs, ")" )
 end
@@ -374,7 +376,7 @@ end
 # struct GreaterThanOrEqual{T} <: PnmlExpr #! Use the Integer version.
 
 
-#& Integer # we extend to `Number`, really anything that supports the operator used:)
+#& Integer in standard # we extend to `Number`, really anything that supports the operator used:)
 @matchable struct Addition <: PnmlExpr #? Use `+` operator.
     lhs::Any
     rhs::Any
@@ -588,8 +590,10 @@ PnmlTupleEx
 end
 toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    @show toexpr.(op.args, Ref(varsub))
-    Expr(:call, :PnmlTuple, toexpr.(op.args, Ref(varsub))...)
+    #@warn "toexpr(op::PnmlTupleEx," op.args varsub toexpr.(op.args, Ref(varsub))
+    #@show (eval ∘ toexpr).(op.args, Ref(varsub))
+    Expr(:call, pnmltuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
+    #Expr(:call, :PnmlTuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
 end
 function Base.show(io::IO, x::PnmlTupleEx)
     print(io, "PnmlTupleEx(", x.args, ")" )
