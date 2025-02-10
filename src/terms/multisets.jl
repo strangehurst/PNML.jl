@@ -17,7 +17,7 @@ As does `<all>` operator.
     #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
 
     mset::Multiset{T}
-    function PnmlMultiset{B,T}(m) where {B,T}
+    function PnmlMultiset{B,T}(m::Multiset{T}) where {B,T}
         #T <: PnmlMultiset && @warn("construct PnmlMultiset containing PnmlMultiset)")
         new{B,T}(m)
     end
@@ -34,14 +34,18 @@ multiset(ms::PnmlMultiset) = ms.mset
     multiplicity(ms::Number, x) -> Number
 """
 multiplicity(ms::PnmlMultiset, x) = multiset(ms)[x]
+
 """
     cardinality(ms::PnmlMultiset, x) -> Integer
 """
 cardinality(ms::PnmlMultiset) = length(multiset(ms))
 cardinality(ms::Number) = ms
 
+Base.length(ms::PnmlMultiset) = length(multiset(ms))
 Base.keys(ms::PnmlMultiset) = keys(multiset(ms))
 Base.values(ms::PnmlMultiset) = values(multiset(ms))
+Base.iterate(ms::PnmlMultiset, ss) = iterate(multiset(ms), ss)
+Base.iterate(ms::PnmlMultiset) = iterate(multiset(ms))
 
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
@@ -58,10 +62,10 @@ Base.eltype(::Type{PnmlMultiset{B,T}}) where {B,T} = T
 
 #similar(p::PnmlMultiset{B, T}) where {B,T} =
 
-# Return empty multiset with matching basis sort.
-Base.zero(::Type{PnmlMultiset{B, T}}) where {B,T} = begin
-    PnmlMultiset{B,T}(Multiset{T}()) #^ empty multiset
-end
+# Return empty multiset with matching basis sort, element type.
+#Base.zero(::Type{PnmlMultiset{B, T}}) where {B,T} = begin
+Base.zero(::PnmlMultiset{B, T}) where {B,T} = PnmlMultiset{B,T}(Multiset{T}()) #^ empty multiset
+
 # Choose an arbitrary value (probably 0) to have multiplicity of 1.
 Base.one(::Type{PnmlMultiset{B,T}}) where {B,T} = begin
     o = PnmlMultiset{B,T}(Multiset{T}(first(sortelements(B[1]))))  #^ singleton multiset
@@ -90,6 +94,14 @@ function (+)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     PnmlMultiset{B,T}(multiset(a) + multiset(b))
 end
 
+ """
+`A-B` for PnmlMultisets is the disjoint union of enclosed multiset.
+"""
+function (-)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+    @assert basis(a) == basis(b)
+    PnmlMultiset{B,T}(multiset(a) - multiset(b))
+end
+
 """
 `A*B` for PnmlMultisets is forwarded `Multiset`.
 """
@@ -105,7 +117,41 @@ function (*)(n::Number, b::PnmlMultiset{B,T}) where {B,T}
     PnmlMultiset{B,T}(n * multiset(b))
 end
 function(*)(b::PnmlMultiset{B,T}, n::Number) where {B,T}
-    PnmlMultiset{B,T}(n * multiset(b))
+    # @show n multiset(b)
+    # @show convert(Int,true) * multiset(b)
+    # @show convert(Int,false) * multiset(b)
+
+    PnmlMultiset{B,T}(convert(Int,n) * multiset(b))
+end
+
+
+"""
+`A<B` for PnmlMultisets is forwarded `Multiset`.
+"""
+function (<)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+    @assert basis(a) == basis(b)
+    multiset(a) < multiset(b)
+end
+"""
+`A>B` for PnmlMultisets is forwarded `Multiset`.
+"""
+function (>)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+    @assert basis(a) == basis(b)
+    multiset(a) > multiset(b)
+end
+"""
+`A<=B` for PnmlMultisets is forwarded `Multiset`.
+"""
+function (<=)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+    @assert basis(a) == basis(b)
+    multiset(a) <= multiset(b)
+end
+"""
+`A>=B` for PnmlMultisets is forwarded `Multiset`.
+"""
+function (>=)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+    @assert basis(a) == basis(b)
+    multiset(a) >= multiset(b)
 end
 
 # function Base.show(io::IO, t::PnmlMultiset)
@@ -149,22 +195,19 @@ end
 #     error("pnmlmultiset element is a symbol")
 # end
 
+# Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
 # For empty or singleton multiset.
 function pnmlmultiset(basis::UserSort, element, multi::Int=1)
-    element isa PnmlMultiset && @warn("element isa PnmlMultiset: ", element)
-    # print("pnmlmultiset: ")
-    # print(repr(basis), ", ")
-    # print(repr(element), ", ")
-    # println(repr(multi))
-    #! Are transitioning to call pnmlmultiset() from an expression.
-    #! Expect `element` and `muti` to have been eval'ed.  So no longer a Bag.
+    #element isa PnmlMultiset && @warn("element isa PnmlMultiset: ", element)
+    # NOTE: This is legal and used.
+    # Seem to recall something about singleton-multisets serving as "numbers".
+    # Should we test `issingletonmultiset` here?
 
-    # `element` will be an expression. Bag
     if isa(basis, MultisetSort) # not usersort or namedsort, but definition
+        #^ Where/how is absence of sort loop checked?
         throw(ArgumentError("Cannot be a MultisetSort: found $basis for $(repr(element))"))
     end
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
-    #^ Where/how is absence of sort loop checked?
     # if !(equalSorts(sortof(basis), sortof(element)) || (typeof(element) == eltype(basis)))
     #     @warn "!equalSorts" sortof(basis) sortof(element) typeof(element) eltype(basis)
     # end
