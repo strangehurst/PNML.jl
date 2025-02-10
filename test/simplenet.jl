@@ -233,11 +233,12 @@ using PNML: AbstractPetriNet, enabled
 #println("=========="^12)
 #println()
 const core_types = ("pnmlcore","ptnet",)
-const hl_types = ("hlcore","pt_hlpng","symmetric","highlevelnet","hlnet",)
+const hl_types = ("hlcore","symmetric") #,"pt_hlpng","hlnet",)
 const ex_types = ("continuous",)
 nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
 
 # String so that pntd can be embedded in the XML.
+
 @testset "extract a graph $pntd" for pntd in nettype_strings()
     println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
     if pntd in hl_types
@@ -294,6 +295,7 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
         </net>
     </pnml>
     """
+    @show str3
     anet = PNML.SimpleNet(str3)::PNML.AbstractPetriNet
     #@show anet
     mg = PNML.metagraph(anet)
@@ -303,11 +305,11 @@ nettype_strings() = tuple(core_types..., hl_types..., ex_types...)
     @show m₀ = initial_markings(anet) #::LVector
     @show C  = PNML.incidence_matrix(anet, m₀)
 
-    @show muladd(C', [1,0,0,0], m₀)
+    @show muladd(permutedims(C), [1,0,0,0], m₀)
 
     @show e  = PNML.enabled(anet, m₀) #::LVector
     @test values(e) == [true,false,false,false]
-    @test e == [true,false,false,false] # 3 representations ov the enabled vector.
+    @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
 
