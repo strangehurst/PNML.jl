@@ -142,13 +142,18 @@ useroperator(id::Symbol)   = useroperators(PNML.DECLDICT[])[id]
 "Return tuple of operator dictionary fields in the Declaration Dictionaries."
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
 "Return iterator over operator dictionaries of Declaration Dictionaries."
-_ops(dd) = Iterators.map(op -> getfield(dd, op), _op_dictionaries())
+_ops(dd) = Iterators.map(Fix1(getfield, dd), _op_dictionaries())
+
+"Return tuple of sort dictionary fields in the Declaration Dictionaries."
+_sort_dictionaries() = (:namedsorts, :usersorts, :partitionsorts, :arbitrarysorts)
+"Return iterator over sort dictionaries of Declaration Dictionaries."
+_sorts(dd) = Iterators.map(Fix1(getfield, dd), _sort_dictionaries())
 
 """
     operators(dd::DeclDict)-> Iterator
 Iterate over each operator in the operator subset of declaration dictionaries .
 """
-operators(dd::DeclDict) = Iterators.flatten(Iterators.map(values, _ops(dd)))
+operators(dd::DeclDict) = Iterators.flatten(Iterators.map(keys, _ops(dd)))
 operators() = operators(PNML.DECLDICT[])
 
 "Does any operator dictionary contain `id`?"
@@ -199,10 +204,15 @@ With output sort to match `OperatorDeclaration` .
 
 #TODO built-in operators
 """
-function operator(dd::DeclDict, id::Symbol)
-    dict = _get_op_dict(dd, id)
-    op = dict[id]
-    return op #!TODO! TermInterface expression
+function operator(dd::DeclDict, opid::Symbol)
+    #println("operator($id)")
+    for dict in _ops(dd)
+        if haskey(dict, opid)
+            @show dict[opid]
+            return dict[opid] #! not type stable because each dict holds different type.
+        end
+    end
+    return nothing
 end
 operator(id::Symbol) = operator(PNML.DECLDICT[], id)
 
@@ -210,8 +220,35 @@ operator(id::Symbol) = operator(PNML.DECLDICT[], id)
     validate_declarations(dd::DeclDict) -> Bool
 """
 function validate_declarations(dd::DeclDict)
-    #! println("validate declarations")
+    println("validate declarations")
+    show_sorts(dd)
+    @show _op_dictionaries()
+    println()
+    @show all(Fix1(hasfield, typeof(dd)), _op_dictionaries())
+    foreach(_op_dictionaries()) do opd
+        println(opd, " length ", length(getfield(dd, opd)))
+        @show getfield(dd, opd)
+    end
+    #@show collect(_ops(dd))
+    println()
+    @show collect(operators(dd))
+    println()
+    for opid in operators(dd)
+        @show operator(opid)
+        @show operator(opid)(NamedTuple()) # operators take parameters
+    end
+    println("-----------------------------------------")
     return true
+end
+
+function show_sorts(dd::DeclDict)
+    println("show_sorts")
+    @show _sort_dictionaries()
+    foreach(_sort_dictionaries()) do s
+        println(s, " length ", length(getfield(dd, s)))
+        @show getfield(dd, s)
+    end
+   println()
 end
 
 """
