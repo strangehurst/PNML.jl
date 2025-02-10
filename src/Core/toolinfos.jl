@@ -146,3 +146,31 @@ function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
     match_version = match(versionrex, version(ti))
     !isnothing(match_name) && !isnothing(match_version)
 end
+
+
+##################################################################
+# Validation, Analysis, Reports, Etc.
+##################################################################
+
+"""
+    validate_toolinfos(infos, dd) -> Bool
+
+Validate each `ToolInfo` in the iterable `infos` collection.
+
+Note that each info may contain any well-formed XML. That XML for other tools must be ignored.
+Any info for this tool will have deeper validation implemented.
+"""
+function validate_toolinfos(tools)
+    isnothing(tools) && return true
+    for tool in tools
+        @show tool #todo more tests tan this.
+    end
+    return true
+end
+function list_toolinfos(tools)   isnothing(tools) && return true
+    if isnothing(tools)
+        for tool in tools
+            @show tool
+        end
+    end
+end
