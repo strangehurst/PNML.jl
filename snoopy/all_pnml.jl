@@ -3,6 +3,8 @@
 #julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
 #julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
 #julia -t1 --project=.snoopy  -e 'include("snoopy/all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
+# julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle")'
+# julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/ePNK-pnml-examples/org.pnml.tools.epnk.examples_1.2.0")'
 using PNML
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
@@ -17,7 +19,7 @@ pnml_files(files) = filter(files) do f
 end
 
 function testfile(file::AbstractString = "test-files.list";
-                  topdir = "/home/jeff/PetriNet/PNML",
+                  topdir = "/home/jeff/PetriNet/PNML", # prefix to each file in list.
                   outdir = "/home/jeff/Jules/testpmnl")
     opened = open(file)
     tests = filter(l -> !isempty(l) && !contains(l, r"^\s*#"), readlines(opened))
@@ -115,7 +117,7 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             println(stat(testf), " at ", Time(file_start))
             println()
 
-            stats = @timed parse_file(testf) #^ PARSE PNML MODEL
+            stats = @timed PNML.parse_file(testf) #^ PARSE PNML MODEL
 
             #todo Add fields of testf path components to allow sorting the table.
             push!(df, (file=testf, fsize=filesize(testf),
