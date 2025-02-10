@@ -134,6 +134,21 @@ function parse_pnml(node::XMLNode)
 end
 
 """
+    get_toolinfos!(tools, node, pntd) -> tools
+
+Calls `add_toolinfo(tools, info, pntd)`` for each info found.
+"""
+function get_toolinfos!(tools, node, pntd)
+    toolinfos = allchildren(node, "toolspecific")
+    if !isempty(toolinfos)
+        for info in toolinfos
+            tools = add_toolinfo(tools, info, pntd)
+        end
+    end
+    return tools
+end
+
+"""
 $(TYPEDSIGNATURES)
 Return a [`PnmlNet`](@ref)`.
 """
@@ -197,22 +212,17 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # this includes any Declarations attached to Pages.
     # Place any/all declarations in scoped value PNML.DECLDICT[].
     # It is like we are flattening only the declarations.
-    # Only the first <declaration> text and graphics will be preserved.
+    # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the specification).
     decls = alldecendents(node, "declaration") # There may be none.
     declaration = parse_declaration(decls, pntd)::Declaration
 
-    validate_declarations(DECLDICT[])
+    validate_declarations(DECLDICT[]) # Pass ScopedValue
 
-    # We collect all the toolinfos at this level.
-    # This enables use in later parsing.
-    tools::Maybe{Vector{ToolInfo}} = nothing
-    nettoolinfo = allchildren(node, "toolspecific")
-    if !isempty(nettoolinfo)
-        for ti in nettoolinfo
-            tools = add_toolinfo(tools, ti, pntd)
-        end
-    end
+    # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
+    tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
+
+    validate_toolinfos(tools)
 
     # Create empty net.
     net = PnmlNet(; type=pntd, id=netid,
@@ -282,13 +292,8 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
     rp_set         = refplace_pnk(netsets)
     rt_set         = reftransition_pnk(netsets)
 
-    tools::Maybe{Vector{ToolInfo}} = nothing
-    nettoolinfo = allchildren(node, "toolspecific")
-    if !isempty(nettoolinfo)
-        for ti in nettoolinfo
-            tools = add_toolinfo(tools, ti, pntd)
-        end
-    end
+    tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
+    validate_toolinfos(tools)
 
     for p in allchildren(node, "place")
         parse_place!(place_set, netdata, p, pntd)
