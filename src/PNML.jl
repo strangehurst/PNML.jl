@@ -65,7 +65,7 @@ end
 import AutoHashEquals: @auto_hash_equals
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype, keys
-import Base: (*), (+), (-)
+import Base: (*), (+), (-), (<), (>),(>=), (<=), zero, length, iterate
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
@@ -91,6 +91,7 @@ using Compat: @compat
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export declarations, pid, refid, sortof, sortref, basis, multiset
 export SubstitutionDict
+export zero
 
 export has_variabledecl, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
     has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
