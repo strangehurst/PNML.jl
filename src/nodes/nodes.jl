@@ -65,6 +65,7 @@ end
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
 varsubs(transition::Transition) = transition.varsubs
+
 """
     condition(::Transition) -> Condition
 

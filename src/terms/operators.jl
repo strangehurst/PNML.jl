@@ -117,6 +117,7 @@ boolean_operators = (:or,
 isbooleanoperator(tag::Symbol) = tag in boolean_operators
 # boolean constants true, false
 
+
 #for sorts: integer, natural, positive
 integer_operators = (:addition, # "Addition",
                      :subtraction, # "Subtraction",
@@ -294,7 +295,7 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     if !has_operator(uo.declaration)
         error("found NO operator $(repr(uo.declaration))")
     else
-        op = operator(uo.declaration) # get operator from decldict
+        op = operator(uo.declaration) # lookup operator REFID using ScopedValue decldict
         @warn "found operator for $(uo.declaration)" op
         r = op(#= pass arguments to functor/operator =#) # treat as functor
         return r

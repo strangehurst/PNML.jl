@@ -4,7 +4,7 @@ using OrderedCollections
 using Documenter
 using JET, Aqua
 
-println("ARGS = ", ARGS)
+@show ARGS
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -62,7 +62,7 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
 
     if select(("ALL", "HL"), ("!HL",))
         println("HL")
-        @safetestset "labels_hl"       begin include("labels_hl.jl") end
+        @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select(("ALL", "CORE2"), ("!CORE2",))

@@ -157,6 +157,12 @@ Bag # Need to avoid @matchable to have docstring
     basis::UserSort # Wraps a sort REFID.
     element::Any # ground term expression
     multi::Any # multiplicity expression of element in a multiset
+    Bag(b, x, m) = begin
+        # if x isa PnmlTupleEx
+        #     @error "bag element is tuple" b x m
+        # end
+        new(b, x, m)
+    end
 end
 Bag(b, x) = Bag(b, x, 1) # singleton multiset
 Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis sort.
@@ -590,8 +596,8 @@ PnmlTupleEx
 end
 toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    #@warn "toexpr(op::PnmlTupleEx," op.args varsub toexpr.(op.args, Ref(varsub))
-    #@show (eval ∘ toexpr).(op.args, Ref(varsub))
+    # @warn "toexpr(op::PnmlTupleEx," op.args varsub toexpr.(op.args, Ref(varsub))
+    # @show (eval ∘ toexpr).(op.args, Ref(varsub))
     Expr(:call, pnmltuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
     #Expr(:call, :PnmlTuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
 end

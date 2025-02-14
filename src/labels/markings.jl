@@ -155,7 +155,10 @@ term(marking::HLMarking) = marking.term
 Evaluate a [`HLMarking`](@ref) term.
 """
 (hlm::HLMarking)(varsub::NamedTuple=NamedTuple()) = begin
-    @show term(hlm) toexpr(term(hlm)::PnmlExpr, varsub)
+    @show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub)
+    #if toexpr(term(hlm)::PnmlExpr, varsub) isa Tuple
+    #println("(hlm::HLMarking) stacktrace");  foreach(println, Base.StackTraces.stacktrace())
+    #end
     eval(toexpr(term(hlm)::PnmlExpr, varsub)) # ground term = no variable substitutions.
 end
 

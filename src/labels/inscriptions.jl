@@ -108,7 +108,9 @@ inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr
 inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort)
 inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
 #
-#~ B is a value of type UserSort, wrapping a REFID used to index into other data structures.
+# PnmlMultiset{B,T} # basis
+#~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
+#~ T is the Multiset type parameter,
 inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 
 """

@@ -84,7 +84,8 @@ Multisets.set_key_value_show()
 using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
 using DocStringExtensions
-using Compat: @compat
+#using Compat: @compat
+#using StackTraces
 
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml

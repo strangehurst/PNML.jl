@@ -371,7 +371,7 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::
     MultisetSort(basissort)
 end
 
-to_usersort(x::UserSort) = x # identity
+to_usersort(x::UserSort) = identity(x)
 to_usersort(::IntegerSort) = usersort(:integer)
 to_usersort(::NaturalSort) = usersort(:natural)
 to_usersort(::PositiveSort) = usersort(:reapositivel)
@@ -406,9 +406,9 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     end
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
     #make_usersort(:productsort, "ProductSort",
-    productsort = ProductSort(sorts)
-    #@show productsort; flush(stdout) #! debug
-    return productsort
+    psort = ProductSort(tuple(sorts...))
+    @warn "parse :productsort" psort; flush(stdout) #! debug
+    return psort
 end
 
 ############################################################

@@ -438,8 +438,9 @@ function parse_place(node::XMLNode, pntd::PnmlType)
         sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing)
     end
     #@show basis(mark) sortof(mark) sortof(sorttype)
-    #@show mark sorttype
-
+    #if mark isa Tuple
+    #    @show mark sorttype
+    #end
     #! These are TermInterface expressions. Test elsewhere, after eval.
     # The basis sort of mark label must be the same as the sort of sorttype label.
     # if !equalSorts(sortof(basis(mark)), sortof(sorttype))
@@ -807,7 +808,8 @@ end
 $(TYPEDSIGNATURES)
 
 High-level initial marking labels are expected to have a <structure> child containing a ground term.
-Sort of marking term must be the same as `placetype`, a `UserSort` that holds the ID of a sort declaration.
+Sort of marking term must be the same as `placetype`, the places SortType.
+Will be a `UserSort` that holds the ID of a sort declaration.
 
 NB: Used by PTNets that assume placetype is DotSort().
 """
@@ -815,11 +817,16 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
     #@warn pntd l #! debug
-    # Marking label content is expe^\s*sortref\(cted to be a TermInterface expression.
+    # Marking label content is expected to be a TermInterface expression.
     # All declarations are expected to have been processed before the first place.
 
     markterm = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
+        # arg 2 is used to deduce the sort.
+        # ProductSorts need to use a tuple of values.
+        if placetype isa ProductSort
+            @show def_sort_element(placetype)
+        end
         Bag(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
     else
         l.term

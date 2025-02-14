@@ -91,23 +91,40 @@ basis(ms::MultisetSort) = ms.basis
 """
 $(TYPEDEF)
 
-An ordered collection of sorts. The elements of the sort are [`PnmlTuple`](@ref).
+An ordered collection of sorts. The elements of the sort are tuples of elements of each sort.
 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProduceSort is the color domain.
 """
-@auto_hash_equals struct ProductSort <: AbstractSort
-    ae::Vector{REFID} #! NamedSorts and UserSorts are linked by REFIDs
+@auto_hash_equals struct ProductSort{N} <: AbstractSort
+    ae::NTuple{N,REFID}
 end
-ProductSort() = ProductSort(REFID[])
-# sortof(ps::ProductSort) is a vector/tuple of sorts
-sortelements(ps::ProductSort) = Iterators.product(Iterators.map(sortelements∘usersort, ps.ae))
 
-function sortof(s::ProductSort)
+"""
+    sorts(ps::ProductSort)
+Return sorts that are in the product.
+"""
+sorts(ps::ProductSort) = ps.ae
+
+#ProductSort() = ProductSort(REFID[])
+# sortof(ps::ProductSort) is a tuple of sort REFIDs
+sortelements(ps::ProductSort) =  Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
+    # @warn ps collect((values ∘ sortelements ∘ usersort).(ps.ae))
+    # for s in ps.ae
+    #     @show s usersort(s)
+    #     @show (sortelements∘usersort)(s)
+    #     foreach(println, (sortelements∘usersort)(s))
+
+    #     collect(Iterators.product((sortelements ∘ usersort).(ps.ae)...))
+    # end
+
+
+
+function sortof(ps::ProductSort)
     println("sortof(::ProductSort ", s) #! bringup debug
-    if isempty(s.ae)
+    if isempty(sorts(ps))
         error("ProductSort is empty")
     else
-        (map(sortof, s.ae)...,) # map REFIDs to tuple of sorts
+        (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
     end
 end

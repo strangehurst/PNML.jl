@@ -283,8 +283,9 @@ end
     end
 end
 
-const nonsimple_sorts = (MultisetSort, UserSort,
+const nonsimple_sorts = (MultisetSort, UserSort,ProductSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
+
 sorts() = _subtypes(AbstractSort)
 
 @testset "equal sorts" begin
@@ -294,8 +295,8 @@ sorts() = _subtypes(AbstractSort)
     #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
     for s in [x for x in sorts() if x ∉ nonsimple_sorts]
         println(s)
-        a = s() #! term rewrite _evaluate
-        b = s() #! term rewrite _evaluate
+        a = s()
+        b = s()
         @test PNML.equals(a, a)
     end
 

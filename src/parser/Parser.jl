@@ -43,7 +43,7 @@ using PNML:
     marking_value_type, inscription_value_type, condition_value_type,
     rate_value_type,
     coordinate_type, coordinate_value_type,
-    validate_declarations,
+    validate_declarations, validate_toolinfos,
     def_sort_element
 using PNML:  toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx, PnmlTupleEx,
     Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,

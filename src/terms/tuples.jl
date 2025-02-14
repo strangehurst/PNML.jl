@@ -2,15 +2,16 @@
 """
 The `<tuple>` operator is used to wrap an ordered sequence of AbstractTerm instances.
 When evaluated each of the expressions will have the same sort as in the ProductSort.
-"""
-struct PnmlTuple
-    terms::Vector{AbstractTerm}
-    # ProductSort has ordered collection of sorts. corresponding to terms' sorts.
-    #? How do we locate the ProductSort? When? It will be the basis of a multiset.
-end
 
-terms(t::PnmlTuple) = t.terms
-(t::PnmlTuple)() = error("(t::PnmlTuple)() not implemented, t = repr(t)") #Iterators.map(_evaluate, terms(t))
+PnmlTupleEx is the PnmlExpr that produces an expression calling pnmltuple.
+"""
+const PnmlTuple = Tuple
+# ProductSort has ordered collection of sorts. corresponding to terms' sorts.
+#? How do we locate the ProductSort? When? It will be the basis of a multiset.
+
+# Use NamedTuple, where names are a tuple of sort REFIDs
+pnmltuple(args...) = tuple(args...)
+terms(t::PnmlTuple) = identity(t)
 
 #todo This should implement the operator interface? TermInterface?
 #todo contents are PnmlExpressions (what constraints, PNTD?)

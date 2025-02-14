@@ -217,8 +217,8 @@ end
 #! Default `<:Number`
 function input_matrix!(imatrix, net::PnmlNet, marking)
     for (t, transition_id) in enumerate(transition_idset(net))
-        @show varsubvec = variable_subs(transition(net, transition_id), marking)
-        varsub = first(varsubvec)
+        @show varsubvec = varsubs(transition(net, transition_id))
+        varsub = isempty(varsubvec) ? NamedTuple() : first(varsubvec)
         for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))# empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
@@ -253,8 +253,8 @@ end
 
 function output_matrix!(omatrix, net::PnmlNet, marking)
     for (t, transition_id) in enumerate(transition_idset(net))
-        varsubvec = variable_subs(transition(net, transition_id), marking)
-        varsub = first(varsubvec)
+        varsubvec = varsubs(transition(net, transition_id))
+        varsub = isempty(varsubvec) ? NamedTuple() : first(varsubvec)
         for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
@@ -290,27 +290,30 @@ Symmetric nets are restricted, and thus easier to deal with and reason about.
 We use multiset cardinality to turn high-level inscriptions into integers.
 """
 function incidence_matrix(petrinet::AbstractPetriNet, marking)
-    net = pnmlnet(petrinet)
-    return incidence_matrix(net, marking)
+    C = incidence_matrix(pnmlnet(petrinet), marking)
+    @show typeof(C) axes(C)
+    return C
 end
 
+# There will be
 function incidence_matrix(net::PnmlNet, marking) #{<:AbstractHLCore}, marking)
     C = Matrix{inscription_value_type(net)}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
-        varsubvec = variable_subs(transition(net, transition_id), marking)
-        varsub = first(varsubvec)
+        varsubvec = varsubs(transition(net, transition_id))
+        varsub = isempty(varsubvec) ? NamedTuple() : first(varsubvec)
         for (p, place_id)  in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))
 
             #! inscription(arc) can return HLInscription or Inscription
             #! which have values of PnmlMultiset or Number respectivly.
             #^ Here we use the cardinality of the multiset for ALL high-level nets.
-            @show tp = arc(net, transition_id, place_id)
-            @show l = inscription_value(inscription_value_type(net), tp, z, varsub)
-            #@show l = cardinality(inscription_value(inscription_value_type(net), tp, z, varsub))::Number
-            @show pt = arc(net, place_id, transition_id)
-            @show r = inscription_value(inscription_value_type(net), pt, z, varsub)
-            #@show r = cardinality(inscription_value(inscription_value_type(net), pt, z, varsub))::Number
+            #! 2025-02-01 JDH Need to specialize AbstractHLCore
+            tp = arc(net, transition_id, place_id)
+            l = inscription_value(inscription_value_type(net), tp, z, varsub)
+            #@show tp l
+            pt = arc(net, place_id, transition_id)
+            r = inscription_value(inscription_value_type(net), pt, z, varsub)
+            #@show pt r
 
             C[t, p] = l - r
         end
@@ -383,14 +386,10 @@ function binding_value_sets(net::PnmlNet, marking)
     return bv_sets
 end
 
-function variable_subs(tr::Transition, marking)
-    @error("implement me variable_subs($tr, $marking)")
-
-
-    #transition(net, transition_id)
-
-    return NamedTuple[NamedTuple()] # empty tuple vector
-end
+# function variable_subs(tr::Transition, marking)
+#     #@error("implement me variable_subs($tr, $marking)")
+#     return varsubs(tr)
+# end
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
@@ -475,12 +474,28 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     #^ We need to find the varsub. Is linked to the transition.
     #^ Calculated for evey transition at each enabling rule.
     #^ Choice of transition is part of firing rule that selects from the returned vector of booleans.
-
-    # update each transition's varsub vector.
+    println("\n\n\nUpdating transition varsubs")
+    enabledXXX(net, marking)
+    for t in transition_idset(net)
+        println(t)
+        tr = transition(net,t)
+        @show tr.vars
+        foreach(println, varsubs(tr))
+    end
+    println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+    # Update each transition's varsub vector. Then generate the enabled vector.
     # Note that there may be multiple varsubs, one for each firing mode.
-    # varsub vector will not be empty. Will have at least an empty NamedTuple.
-    LVector((;[t => all(p -> marking[p] >= cardinality(inscription(arc(net,p,t))(varsub(t))), preset(net, t))
-            for t in transition_idset(net)]...))
+    # varsubs vector will not be empty. Will have at least an empty NamedTuple.
+    # Enabled is the boolean of: substitution exists for every variable & condition is true.
+    # The substitution validity check subsumes the multiplicity test for high-level nets.
+    # The construction of tr.varsubs tests condition for each substitution,
+    # with only those passing being in tr.varsubs.
+    # When there is no variable, condition is a constant.
+    # When there are variables, only those passing condition are in tr.varubs.
+    enx(tr) = isempty(tr.vars) ? eval(toexpr(term(condition(tr)),NamedTuple())) : !only(==(NamedTuple()), tr.varsubs)
+    LVector((;enabledXXX(net, marking)...))
+    # LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(first(varsubs(transition(net,t)))), preset(net, t))
+    #     for t in transition_idset(net)]...))
 end
 
 # AlgebraicJulia wants LabelledPetriNet constructed with
@@ -495,7 +510,8 @@ Return the marking after firing transition:   marking + incidence * enabled
 `marking` LVector values added to product of `incidence'` matrix and firing vector `enabled`.
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
-    m₁ = muladd(incidence', enabled, m₀)
+    @show typeof(incidence) enabled typeof(m₀)
+    @show m₁ = muladd(permutedims(incidence), enabled, m₀)
     LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end
 

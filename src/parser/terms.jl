@@ -466,9 +466,7 @@ end
 # </structure>
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType; vars)
     @show uo = UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
-    #@show PNML.operator(uo.refid); flush(stdout)
     @show usort = sortref(PNML.operator(uo.refid))
-    #@warn "returning useroperator" uo usort #! debug
     return (uo, usort, vars)
 end
 
