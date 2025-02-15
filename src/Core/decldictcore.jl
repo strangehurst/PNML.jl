@@ -208,7 +208,7 @@ function operator(dd::DeclDict, opid::Symbol)
     #println("operator($id)")
     for dict in _ops(dd)
         if haskey(dict, opid)
-            @show dict[opid]
+            #@show dict[opid]
             return dict[opid] #! not type stable because each dict holds different type.
         end
     end
@@ -222,33 +222,33 @@ operator(id::Symbol) = operator(PNML.DECLDICT[], id)
 function validate_declarations(dd::DeclDict)
     println("validate declarations")
     show_sorts(dd)
-    @show _op_dictionaries()
-    println()
-    @show all(Fix1(hasfield, typeof(dd)), _op_dictionaries())
-    foreach(_op_dictionaries()) do opd
-        println(opd, " length ", length(getfield(dd, opd)))
-        @show getfield(dd, opd)
-    end
-    #@show collect(_ops(dd))
-    println()
-    @show collect(operators(dd))
-    println()
-    for opid in operators(dd)
-        @show operator(opid)
-        @show operator(opid)(NamedTuple()) # operators take parameters
-    end
-    println("-----------------------------------------")
+    # @show _op_dictionaries()
+    # println()
+    # @show all(Fix1(hasfield, typeof(dd)), _op_dictionaries())
+    # foreach(_op_dictionaries()) do opd
+    #     println("opd = ", opd, ", length = ", length(getfield(dd, opd)))
+    #     foreach(println, getfield(dd, opd))
+    # end
+    # #@show collect(_ops(dd))
+    # println()
+    # @show collect(operators(dd))
+    # println()
+    # for opid in operators(dd)
+    #     @show operator(opid)
+    #     @show operator(opid)(NamedTuple()) # operators take parameters
+    # end
+    # println("-----------------------------------------")
     return true
 end
 
 function show_sorts(dd::DeclDict)
     println("show_sorts")
     @show _sort_dictionaries()
-    foreach(_sort_dictionaries()) do s
-        println(s, " length ", length(getfield(dd, s)))
-        @show getfield(dd, s)
-    end
-   println()
+#     foreach(_sort_dictionaries()) do s
+#         println("sort = ", s, ", length = ", length(getfield(dd, s)))
+#         foreach(println, getfield(dd, s))
+#     end
+#     println()
 end
 
 """

@@ -824,9 +824,9 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         # Default is an empty multiset whose basis matches placetype.
         # arg 2 is used to deduce the sort.
         # ProductSorts need to use a tuple of values.
-        if placetype isa ProductSort
-            @show def_sort_element(placetype)
-        end
+        # if placetype isa ProductSort
+        #     @show def_sort_element(placetype)
+        # end
         Bag(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
     else
         l.term
@@ -1074,7 +1074,7 @@ Allow all pntd's places to have a <type> label.  Non high-level are expecting a 
 """
 function parse_type(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "type")
-    @show l = parse_label_content(node, parse_sorttype_term, pntd)
+    l = parse_label_content(node, parse_sorttype_term, pntd)
     @assert isempty(l.vars)
     # High-level nets are expected to have a sorttype term defined.
     # Others will use a default (until syntax to describe them is invented.)

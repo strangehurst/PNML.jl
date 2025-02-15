@@ -178,14 +178,15 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
         arc_bvs[v] = Multiset{eltype(mark)}() # Empty substution set.
         println("   v  $(repr(v)) isa $(sortref(variable(v)))")
-        @show placesort
+        #@show placesort
         #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-        if placesort isa ProductSort
-            for s in sorts(placesort)
-                @show s
-                s !== sortref(variable(v)) &&
-                    error("not equal sorts ($s, $(sortref(variable(v))))")
-            end
+        if sortof(placesort) isa ProductSort
+            # for s in sorts(sortof(placesort))
+            #     @show s
+            # end
+            # @show sorts(sortof(placesort))
+            any(s -> s !== sortref(variable(v)), sorts(sortof(placesort))) ||
+                    error("none are equal sorts of $(sortref(variable(v)))")
         else
             placesort !== sortref(variable(v)) &&
                 error("not equal sorts ($placesort, $(sortref(variable(v))))")
@@ -195,7 +196,7 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
             # Multiple of same variable in inscription expression means arc_bvs only includes
             # elements with a multiplicity at least as that large.
             if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
-                @show push!(arc_bvs[v], el) # Add to set of satisfying substitutions for arc.
+                push!(arc_bvs[v], el) # Add to set of satisfying substitutions for arc.
             end
         end
         if !isempty(arc_vars) && isempty(arc_bvs[v])
@@ -285,15 +286,15 @@ function enabledXXX(net::PnmlNet, marking)
                     # Use the transition-level variable substution bindings `bvs`.
                     # Iterate over the cartesian product to produce a list of candidate firings.
                     # A candidate firing is a NamedTuple
-                    #println()
-                    #@show pairs(bvs)
+                    foreach(println,  pairs(bvs))
                     #@show vid
                     vtup = tuple(values(bvs)...) # Tuple of Multisets{PnmlMultiset}
                     # If an element is a PnmlMultiset it probably is a singleton. Treat as literal value.
-                    #println()
-                    sub1 = tuple(keys(vtup...)...) # substitutions
+                    println()
+                    @show sub1 = tuple((keys.(vtup))...) # substitutions
+                    println("sub1"); foreach(println, sub1)
                     #!vsubiter = Iterators.product(tuple(collect(keys.(values(bvs)))...))
-                    vsubiter = Iterators.product(sub1)
+                    vsubiter = Iterators.product(sub1...)
                     #println()
                     #@show collect(vsubiter)
                     foreach(vsubiter) do  params
@@ -301,7 +302,7 @@ function enabledXXX(net::PnmlNet, marking)
                         #@show params #typeof(params)
                         # Is params a tuple
                         vsub = namedtuple(vid, params) # names, values
-                        #@show term(inscription(ar))
+                        @show term(inscription(ar))
                         inscription_val = eval(toexpr(term(inscription(ar)), vsub))
                         #@show inscription_val
                         # A marking is a PnmlMultiset.

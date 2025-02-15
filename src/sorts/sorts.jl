@@ -108,7 +108,7 @@ sorts(ps::ProductSort) = ps.ae
 
 #ProductSort() = ProductSort(REFID[])
 # sortof(ps::ProductSort) is a tuple of sort REFIDs
-sortelements(ps::ProductSort) =  Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
+sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
     # @warn ps collect((values ∘ sortelements ∘ usersort).(ps.ae))
     # for s in ps.ae
     #     @show s usersort(s)

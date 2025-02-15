@@ -50,7 +50,7 @@ include("lists.jl")
 include("numbers.jl")
 include("strings.jl")
 
-export AbstractSort, UserSort, MultisetSort, ProductSort,
+export AbstractSort, UserSort, MultisetSort, ProductSort, sorts,
         DotSort,  BoolSort,
         NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort,
         EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,

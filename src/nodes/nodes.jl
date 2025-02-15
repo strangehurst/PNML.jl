@@ -105,7 +105,7 @@ Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 """
-    inscription(arc::Arc) -> Number
+    inscription(arc::Arc) -> Union{Number,PnmlMultiset}
 
 Every inscription label is treated as a functor.
 """

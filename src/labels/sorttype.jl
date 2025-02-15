@@ -91,7 +91,7 @@ has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
 function def_sort_element(pt::SortType)
     els = sortelements(pt) # High-level (HLPNG) allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
-    println("def_sort_element($(repr(pt))) ", el); #! debug
+    # println("def_sort_element($(repr(pt))) ", el); #! debug
     # @error "def_sort_element" pt sortof(pt) collect(sortelements(pt))
     return el
 end

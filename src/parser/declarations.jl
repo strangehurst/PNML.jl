@@ -71,10 +71,10 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
             namedsorts(dd)[pid(ns)] = ns
             usersorts(dd)[pid(ns)] = UserSort(pid(ns)) # make usersort, namedsort duo
         elseif tag == "namedoperator"
-            @show no = parse_namedoperator(child, pntd)
+            no = parse_namedoperator(child, pntd)
             namedoperators(dd)[pid(no)] = no
         elseif tag == "variabledecl"
-            @show vardecl = parse_variabledecl(child, pntd)
+            vardecl = parse_variabledecl(child, pntd)
             variabledecls(dd)[pid(vardecl)] = vardecl
         elseif tag == "partition"
             part = parse_partition(child, pntd)::SortDeclaration

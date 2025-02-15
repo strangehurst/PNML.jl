@@ -118,9 +118,9 @@ end
 #! What is really wanted is NamedTuple[op.refid].
 #! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
 toexpr(op::VariableEx, varsub::NamedTuple) = begin
-    @show varsub op.refid
-    @show varsub[op.refid] :($(varsub[op.refid]))
-    :($(varsub[op.refid]))
+    #@show varsub op.refid
+    vsub = varsub[op.refid]
+    vsub isa Symbol ? :($(QuoteNode(vsub))) : :($(vsub))
 end
 
 function Base.show(io::IO, x::VariableEx)
@@ -170,7 +170,7 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 basis(b::Bag) = b.basis
 
 toexpr(b::Bag, varsub::NamedTuple) = begin
-    @show b, varsub
+    #@show b, varsub
     #^ Warning: b.element can be: PnmlMultiset, tuple
     # tuples are elements of a ProductSort
     Expr(:call, pnmlmultiset, b.basis, toexpr(b.element, varsub), toexpr(b.multi, varsub))
@@ -497,7 +497,11 @@ end
     rhs::Any #PartitionElement
     # return BoolExpr
 end
-toexpr(op::PartitionGreaterThan, var::NamedTuple) = error("implement me ", repr(op))
+toexpr(op::PartitionGreaterThan, varsub::NamedTuple) = begin
+    @warn "toexpr PartitionGreaterThan" op varsub
+    error("implement me ", repr(op))
+    Expr(:call, :mod, toexpr(op.lhs, var), toexpr(op.rhs, var))
+end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )

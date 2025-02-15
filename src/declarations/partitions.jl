@@ -87,13 +87,13 @@ it used indirection via a `UserSort`.
 struct PartitionSort <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
-    def::REFID # like UserSort REFID refers to a sort declaration (NamedSort) that wraps, FiniteEnumeration, CyclicEnumeration, FiniteIntRange
+    def::REFID # Like a UserSort, REFID refers to a sort declaration (NamedSort) that wraps an EnumerationSort (FiniteEnumeration, CyclicEnumeration, FiniteIntRange)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
 
     function PartitionSort(i,n,d,e)
         has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
         # Look at what is wrapped.
-        tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
+        @assert tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
         new(i,n,d,e)
     end
 end
