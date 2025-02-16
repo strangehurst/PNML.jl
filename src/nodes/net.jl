@@ -214,7 +214,7 @@ function enabledXXX(net::PnmlNet, marking)
         enabled = true # Assume all transitions possible.
         tr.varsubs = NamedTuple[]
 
-        println("t ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
+        println("\nt ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
         println("   tgts $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), tgt_arcs(net, trid)))
         println("   srcs $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), src_arcs(net, trid)))
 
@@ -229,19 +229,20 @@ function enabledXXX(net::PnmlNet, marking)
         # marking[placeid][element] > 0 (multiplicity >= arc_var matching variableid)
         # Will element be a copy?
 
-        println("get transition variable substitution from preset arcs of $(repr(trid))")
+        # println("get transition variable substitution from preset arcs of $(repr(trid))")
         for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
             placeid   = source(ar) # adjacent place
             mark      = marking[placeid]
-            println("   arc ", repr(pid(ar)), " = ", repr(placeid), " -> ", repr(trid))
-            println("      marking = ", mark)
+            # println("   arc ", repr(pid(ar)), " : ", repr(placeid), " -> ", repr(trid))
+            # println("      marking = ", mark)
 
             arc_vars  = Multiset(variables(inscription(ar))...) # counts variables
             #! No variable must still be tested for place marking >= inscription & condition.
             #& isempty(arc_vars) && continue # to next arc, no variable to substitute here.
 
-            isempty(arc_vars) || union!(tr.vars, keys(arc_vars)) # Only the variable REFID is stored in transaction.
-            @show tr.vars
+            isempty(arc_vars) ||
+                union!(tr.vars, keys(arc_vars)) # Only variable REFID is stored in transaction.
+            # @show tr.vars
 
             arc_bvs   = OrderedDict{REFID, Multiset{eltype(mark)}}() # bvs is a per-transaction, this is per-arc.
 
@@ -266,7 +267,8 @@ function enabledXXX(net::PnmlNet, marking)
             for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
                 placeid   = source(ar) # adjacent place
                 mark      = marking[placeid]
-                @show mark
+                println("ar ", repr(pid(ar)), " : input place ", repr(placeid))
+                # @show mark
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
                 # Condition evaluates to `true`
@@ -286,13 +288,13 @@ function enabledXXX(net::PnmlNet, marking)
                     # Use the transition-level variable substution bindings `bvs`.
                     # Iterate over the cartesian product to produce a list of candidate firings.
                     # A candidate firing is a NamedTuple
-                    foreach(println,  pairs(bvs))
+                    # foreach(println,  pairs(bvs))
                     #@show vid
                     vtup = tuple(values(bvs)...) # Tuple of Multisets{PnmlMultiset}
                     # If an element is a PnmlMultiset it probably is a singleton. Treat as literal value.
-                    println()
-                    @show sub1 = tuple((keys.(vtup))...) # substitutions
-                    println("sub1"); foreach(println, sub1)
+                    # println()
+                    sub1 = tuple((keys.(vtup))...) # substitutions
+                    # println("sub1"); foreach(println, sub1)
                     #!vsubiter = Iterators.product(tuple(collect(keys.(values(bvs)))...))
                     vsubiter = Iterators.product(sub1...)
                     #println()
@@ -304,18 +306,18 @@ function enabledXXX(net::PnmlNet, marking)
                         vsub = namedtuple(vid, params) # names, values
                         @show term(inscription(ar))
                         inscription_val = eval(toexpr(term(inscription(ar)), vsub))
-                        #@show inscription_val
+                        @show inscription_val
                         # A marking is a PnmlMultiset.
                         # In the wrapped Multiset we allow one singleton PnmlMultiset
                         if mark isa PnmlMultiset #todo where should this live (if it works?)
                             # That contains PnmlMultisets
                             if eltype(mark) <: PnmlMultiset
-                                println("\n\neltype(mark) isa PnmlMultiset\n")
+                                # println("\n\neltype(mark) isa PnmlMultiset\n") #! Log
                                 # Look at its first element.
                                 single = first(multiset(mark))
                                 eltype(single) <: PnmlMultiset && error("recursive PnmlMultisets not allowed here")
                                 @show mark = single # Replace mark with the wrapped PnmlMultiset
-                                println()
+                                # println()
                             end
                         else
                             @warn "mark in not a PnmlMultiset" mark
@@ -324,7 +326,7 @@ function enabledXXX(net::PnmlNet, marking)
                         #println()
                         #? Do we want <= or is it issubset(A,B)?
                         #println("issubset(inscription_val, mark)")
-                        @show mi_val = issubset(inscription_val, mark)
+                        mi_val = issubset(inscription_val, mark)
                         # println("inscription_val <= mark")
                         # @show mi_val = inscription_val <= mark
                         !mi_val && println("mark ⊂ inscription_val") #! debug
@@ -341,7 +343,6 @@ function enabledXXX(net::PnmlNet, marking)
                     #@show tr.varsubs
                 end
             end
-            println("----------------------------------------------------------")
             #! REMEMBER marking multiset element may be a PnmlMultiset.
         end
 
@@ -352,7 +353,8 @@ function enabledXXX(net::PnmlNet, marking)
             printstyled("DISABLED\n"; color=:red)
         end
         @show push!(evector, trid => enabled)
-  end # for tr
+        println("----------------------------------------------------------")
+    end # for tr
   return evector
 end
 
@@ -364,7 +366,7 @@ Rewrite PnmlExpr (TermInterface) expressions.
 function rewriteXXX(net::PnmlNet, marking)
     printstyled("\n## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
 
-    println("OPERATORS")
+    #println("OPERATORS")
     @show collect(operators()) # Accesses ScopedValue, return irterator
 
     println("\nPLACES")
