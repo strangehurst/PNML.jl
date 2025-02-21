@@ -191,12 +191,7 @@ function pnmlmultiset(basis::UserSort, ms::Multiset)
     PnmlMultiset{(refid(basis),), eltype(ms)}(ms)
 end
 
-# function pnmlmultiset(basis::UserSort, element::Symbol, multi::Int=1)
-#     error("pnmlmultiset element is a symbol")
-# end
-
 # Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
-# For empty or singleton multiset.
 function pnmlmultiset(basis::UserSort, element, multi::Int=1)
     #element isa PnmlMultiset && @warn("element isa PnmlMultiset: ", element)
     # NOTE: This is legal and used.
