@@ -92,7 +92,16 @@ struct VariableDeclaration <: AbstractDeclaration
     # PnmlTuple fields will be read as part of enabling function (condition)
 end
 sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd))) #? partitionsort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd)))
+refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
+
+function Base.show(io::IO, declare::VariableDeclaration)
+    print(io, nameof(typeof(declare)), "(")
+    show(io, pid(declare)); print(io, ", ")
+    show(io, name(declare)); print(io, ", ")
+    show(io, refid(declare))
+    print(io, ")")
+end
 
 """
 $(TYPEDEF)

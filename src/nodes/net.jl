@@ -174,29 +174,72 @@ function accum_varset!(bvs::OrderedDict, arc_bvs::OrderedDict, v::REFID)
     end
 end
 
+"""
+    unwrap_pmset(mark) -> Multiset
+
+If marking wraps a PnmlMultiset, extract a singleton.
+"""
+function unwrap_pmset(mark)
+    if mark isa PnmlMultiset
+        # That contains PnmlMultisets
+        if eltype(mark) <: PnmlMultiset
+            # In the wrapped Multiset we allow one singleton PnmlMultiset
+            # println("\n\neltype(mark) isa PnmlMultiset\n") #! Log
+            single = only(multiset(mark))
+            @warn "unwrapping PnmlMultiset" single
+            eltype(single) <: PnmlMultiset && error("recursive PnmlMultisets not allowed here")
+            return single # Replace mark with the wrapped PnmlMultiset
+        end
+    else
+        @warn "mark in not a PnmlMultiset" mark
+    end
+    return mark
+end
+
+"""
+    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark) -> Bool
+
+Fill `arc_bvs` with entry for each `arc_vars`
+"""
 function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
-        arc_bvs[v] = Multiset{eltype(mark)}() # Empty substution set.
-        println("   v  $(repr(v)) isa $(sortref(variable(v)))")
-        #@show placesort
-        #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
+        #! arc_bvs[v] = Multiset{eltype(mark)}() # Empty substution set.
+        #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
+        arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
+        varrefid = refid(sortref(variable(v)))
+        println("   v  $(repr(v)) isa $(sortref(variable(v))), refid = $varrefid")
+
+        # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
-            # for s in sorts(sortof(placesort))
-            #     @show s
-            # end
+            #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
+            # for s in sorts(sortof(placesort)); @show s; end
             # @show sorts(sortof(placesort))
-            any(s -> s !== sortref(variable(v)), sorts(sortof(placesort))) ||
-                    error("none are equal sorts of $(sortref(variable(v)))")
+            any(==(varrefid), sorts(sortof(placesort))) ||
+                    error("none of tuple are equal sorts of $varrefid: $(sorts(sortof(placesort))))")
         else
             placesort !== sortref(variable(v)) &&
                 error("not equal sorts ($placesort, $(sortref(variable(v))))")
         end
-        for (el,mu) in pairs(multiset(mark)) #! el may be a PnmlMultiset
+
+        for (el,mu) in pairs(multiset(mark))
             println("   el  ", el)
+            #! arc_bvs counts possible substitutions in source place's marking.
             # Multiple of same variable in inscription expression means arc_bvs only includes
             # elements with a multiplicity at least as that large.
             if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
-                push!(arc_bvs[v], el) # Add to set of satisfying substitutions for arc.
+                if el isa Tuple
+                    # Select the tuple element matching variable sort.
+                    # Standard PnmlTuple are pairs. We allow tuple of at least one element.
+                    for e in el #? PnmlMultiset?
+                        if refid(e) == varrefid
+                            e2 = e()
+                            println("   e2  ", e2)
+                            push!(arc_bvs[v], e2) # Add value to count of substitutions.
+                        end
+                    end
+                else #! el may be a PnmlMultiset
+                    push!(arc_bvs[v], el) # Add value to count of substitutions.
+                end
             end
         end
         if !isempty(arc_vars) && isempty(arc_bvs[v])
@@ -206,7 +249,11 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
     return true # No variables or all of them have at least 1 substution.
 end
 
-"Update tr.vars, tr.varsubs for every transition tr."
+"""
+    enabledXXX(net::PnmlNet, marking)
+
+Update tr.vars, tr.varsubs for every transition `tr` in `net` using `marking`.
+"""
 function enabledXXX(net::PnmlNet, marking)
     evector = Pair{REFID,Bool}[]
     for tr in transitions(net)
@@ -223,28 +270,24 @@ function enabledXXX(net::PnmlNet, marking)
         #~ marking = PnmlMultiset{B, T}(Multiset{T}(T() => 1)) singleton
         # varsub maps a variable to 1 element of multiset(marking[trid]) when enabling/firing transition.
         # Multiset type set from first use
-        # Operator parameters are an ordered collection of value, sort.
+        # Operator parameters are an ordered collection of value, sort. {variables!}
         # Where sort is a REFID to a variable declaration with name and sort.
-        # And value is in a marking in the marking vector (marking vector, placeid, element).
-        # marking[placeid][element] > 0 (multiplicity >= arc_var matching variableid)
-        # Will element be a copy?
 
-        # println("get transition variable substitution from preset arcs of $(repr(trid))")
+        # marking[placeid][element] > 0 (multiplicity >= arc_var matching variableid)
+
+        # Get transition variable substitution from preset arcs.
         for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
             placeid   = source(ar) # adjacent place
-            mark      = marking[placeid]
+            mark      = unwrap_pmset(marking[placeid]) #! Possibly extract a singlton.
             # println("   arc ", repr(pid(ar)), " : ", repr(placeid), " -> ", repr(trid))
             # println("      marking = ", mark)
 
-            arc_vars  = Multiset(variables(inscription(ar))...) # counts variables
-            #! No variable must still be tested for place marking >= inscription & condition.
-            #& isempty(arc_vars) && continue # to next arc, no variable to substitute here.
-
+            arc_vars  = Multiset(variables(inscription(ar))...) # Count variables.
+            #! No variable arcs must still be tested for place marking >= inscription & condition.
             isempty(arc_vars) ||
                 union!(tr.vars, keys(arc_vars)) # Only variable REFID is stored in transaction.
-            # @show tr.vars
 
-            arc_bvs   = OrderedDict{REFID, Multiset{eltype(mark)}}() # bvs is a per-transaction, this is per-arc.
+            arc_bvs   = OrderedDict{REFID, Multiset{Symbol}}() # Per-arc binding.
 
             placesort = sortref(place(net, placeid)) # TODO create exception
             enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
@@ -303,25 +346,14 @@ function enabledXXX(net::PnmlNet, marking)
                         #println()
                         #@show params #typeof(params)
                         # Is params a tuple
-                        vsub = namedtuple(vid, params) # names, values
-                        @show term(inscription(ar))
+                        @show vsub = namedtuple(vid, params) # names, values
+                        @show term(inscription(ar)) toexpr(term(inscription(ar)), vsub)
+
                         inscription_val = eval(toexpr(term(inscription(ar)), vsub))
                         @show inscription_val
-                        # A marking is a PnmlMultiset.
-                        # In the wrapped Multiset we allow one singleton PnmlMultiset
-                        if mark isa PnmlMultiset #todo where should this live (if it works?)
-                            # That contains PnmlMultisets
-                            if eltype(mark) <: PnmlMultiset
-                                # println("\n\neltype(mark) isa PnmlMultiset\n") #! Log
-                                # Look at its first element.
-                                single = first(multiset(mark))
-                                eltype(single) <: PnmlMultiset && error("recursive PnmlMultisets not allowed here")
-                                @show mark = single # Replace mark with the wrapped PnmlMultiset
-                                # println()
-                            end
-                        else
-                            @warn "mark in not a PnmlMultiset" mark
-                        end
+
+                        mark = unwrap_pmset(mark)
+
 
                         #println()
                         #? Do we want <= or is it issubset(A,B)?
@@ -368,6 +400,8 @@ function rewriteXXX(net::PnmlNet, marking)
 
     #println("OPERATORS")
     @show collect(operators()) # Accesses ScopedValue, return irterator
+
+    @show DECLDICT[]
 
     println("\nPLACES")
     for pl in places(net)

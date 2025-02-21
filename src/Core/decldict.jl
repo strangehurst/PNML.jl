@@ -34,7 +34,8 @@ function Base.show(io::IO, dd::DeclDict)
 
     print(io, "PartitionElement[")
     for (k,v) in pairs(partitionops(dd))
-        print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+        print(iio, '\n', indent(iio)); show(io, k); println(io, " => ", v)
+        @error element_ids(v.terms)
     end
     println(io, "]")
 

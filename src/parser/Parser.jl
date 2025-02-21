@@ -95,6 +95,6 @@ export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file,
     parse_unknowndecl, parse_term, parse_feconstants, parse_variabledecl,
     parse_excluded, parse_structure,
     registry,
-    unwrap_subterm
+    unwrap_subterm, deduce_sort
 
 end

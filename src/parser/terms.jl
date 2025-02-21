@@ -455,10 +455,32 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
     #@warn "parse_term(::Val{:tuple}"; flush(stdout); #! debug
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) >= 2
-    tup = PnmlTupleEx(sts) #! We have PnmlExpr elements at this point.
+    tup = PnmlTupleEx(sts)
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
-    return tup, usersort(:null), vars #todo! when do we map to product sort?
+
+    #!@show DECLDICT[]op.args
+    # VariableEx can lookup sort.
+    # UserOperatorEx (constant?) also has enclosng sort.
+    # Both hold refid field.
+
+    psorts = tuple((deduce_sort.(sts))...)
+    for us in usersorts()
+        if isproductsort(us.second) && sorts(sortof(us.second)) == psorts
+            println("$psorts => ", us.first) #! debug
+            return tup, usersort(us.first), vars
+        end
+    end
+    error("Did not find productsort sort for $tup")
+end
+deduce_sort(s) = begin
+    if s isa VariableEx
+        refid(variable(s.refid))
+    elseif s isa UserOperatorEx
+        refid(feconstant(s.refid))
+    else
+        error("only expected Union{VariableEx,UserOperatorEx} found $s")
+    end
 end
 
 # <structure>

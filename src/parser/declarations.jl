@@ -405,9 +405,9 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
         end
     end
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
-    #make_usersort(:productsort, "ProductSort",
     psort = ProductSort(tuple(sorts...))
     @warn "parse :productsort" psort; flush(stdout) #! debug
+    #make_usersort(:productsort, "ProductSort", psort)
     return psort
 end
 

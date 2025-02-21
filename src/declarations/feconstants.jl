@@ -13,7 +13,7 @@ struct FEConstant <: OperatorDeclaration
     name::Union{String, SubString{String}} # Must name be unique within a sort?
     refid::REFID # of contining partition, enumeration, (and partitionelement?)
 end
-
+refid(fec::FEConstant) = fec.refid
 sortref(fec::FEConstant) = usersort(fec.refid)::UserSort
 Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
 

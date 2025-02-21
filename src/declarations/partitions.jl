@@ -68,10 +68,21 @@ Test for membership by iterating over each partition element, and over each term
 struct PartitionElement <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    terms::Vector{REFID} # 1 or more, feconstant in parent partitions's referenced sort
+    terms::Vector{REFID} # 1 or more ref to feconstant in partitions's referenced sort.
     partition::REFID
     #todo verify terms are in parent partitions's referenced sort
 end
+
+"Return Bool true is fec in pe.terms"
+function contains(pe::PartitionElement, fec::REFID)
+    fec in pe.terms
+end
+
+function Base.show(io::IO, pe::PartitionElement)
+    print(io, nameof(typeof(pe)), "(", pid(pe), ", ", repr(name(pe)), ", ")
+    show(io,  pe.terms)
+    print(io, ", ",  repr(pe.partition), ")")
+ end
 
 
 """
@@ -109,7 +120,7 @@ sortelements(partition::PartitionSort) = partition.elements
 # list PartitionElement terms
 # access by partition id, element id
 
-"Iterator over partition element PNML IDs"
+"Iterator over partition element REFIDs of a `PartitionSort"
 function element_ids(ps::PartitionSort, netid::Symbol)
     Iterators.map(pid, sortelements(ps))
 end
@@ -120,14 +131,29 @@ function element_names(ps::PartitionSort, netid::Symbol)
 end
 
 function Base.show(io::IO, ps::PartitionSort)
-    println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ",", )
+    println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ", ", repr(ps.def), ",")
     io = inc_indent(io)
-    println(io, indent(io), sortdefinition(ps), ",");
-    print(io, "FE[")
+    print(io, indent(io), "[")
     e = sortelements(ps)
     for  (i, c) in enumerate(e)
-        print(io, '\n', indent(io)); show(io, c);
-        i < length(e) && print(io, ",")
+        show(io, c)
+        i < length(e) && print(io, ",\n", indent(io), " ")
     end
     print(io, "])")
+end
+
+function gtp_impl(lhs, rhs)
+    #@warn "gtp_impl" lhs  rhs
+    lhs > rhs
+end
+
+function ltp_impl(lhs, rhs)
+    #@warn "ltp_impl" lhs  rhs
+    lhs < rhs
+end
+
+function peo_impl(lhs, refpart)
+    #@warn "peo_impl" lhs refpart
+    p = partitionsort(refpart)
+    findfirst(e -> contains(e, lhs), p.elements)
 end

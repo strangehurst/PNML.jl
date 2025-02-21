@@ -69,6 +69,8 @@ Base.eltype(us::UserSort) = eltype(sortof(us))
 sortelements(us::UserSort) = sortelements(sortdefinition(namedsort(us)))
 name(us::UserSort) = name(namedsort(us))
 
+isproductsort(us::UserSort) = sortdefinition(namedsort(us)) isa ProductSort
+
 """
 $(TYPEDEF)
 
@@ -99,6 +101,8 @@ Where sorts are the syntax for color classes and ProduceSort is the color domain
 @auto_hash_equals struct ProductSort{N} <: AbstractSort
     ae::NTuple{N,REFID}
 end
+isproductsort(::ProductSort) = true
+isproductsort(::Any) = false
 
 """
     sorts(ps::ProductSort)

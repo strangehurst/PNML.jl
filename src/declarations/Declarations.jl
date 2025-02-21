@@ -4,7 +4,7 @@ export AbstractDeclaration, UnknownDeclaration,
         SortDeclaration, OperatorDeclaration, VariableDeclaration,
         NamedSort, NamedOperator,
         ArbitrarySort, ArbitraryOperator,
-        FEConstant, PartitionElement, PartitionSort
+        FEConstant, PartitionElement, PartitionSort, gtp_impl, peo_impl, refid
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype

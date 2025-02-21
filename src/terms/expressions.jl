@@ -119,8 +119,9 @@ end
 #! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
 toexpr(op::VariableEx, varsub::NamedTuple) = begin
     #@show varsub op.refid
-    vsub = varsub[op.refid]
-    vsub isa Symbol ? :($(QuoteNode(vsub))) : :($(vsub))
+    @show vsub = varsub[op.refid]
+    #vsub isa Symbol ? :($(QuoteNode(vsub))) : :($(vsub))
+    vsub isa Symbol ? QuoteNode(vsub) : :($(vsub))
 end
 
 function Base.show(io::IO, x::VariableEx)
@@ -450,7 +451,7 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::LessThanOrEqual, var::NamedTuple) = Expr(:call, :(<=), toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(toexpr($(op.lhs), $var) <= toexpr($(op.rhs), $var))
+toexpr(op::LessThanOrEqual, var::NamedTuple) = Expr(:call, :(<=), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::LessThanOrEqual)
     print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -459,14 +460,14 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Modulo, var::NamedTuple) = Expr(:call, :mod, toexpr(op.lhs, var), toexpr(op.rhs, var)) #:(mod(toexpr($(op.lhs), $var), toexpr($(op.rhs), $var)))
+toexpr(op::Modulo, var::NamedTuple) = Expr(:call, :mod, toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::Modulo)
     print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
 end
 
 
 #& Partition
-# PartitionElement is an operator declaration. Is this a literal?
+# PartitionElement is an operator declaration. Is this a literal? See PartitionElementOf.
 @matchable struct PartitionElementOp <: OpExpr #! Same as PartitionElement, for term rerwite?
     id::Symbol
     name::Union{String,SubString{String}}
@@ -498,9 +499,9 @@ end
     # return BoolExpr
 end
 toexpr(op::PartitionGreaterThan, varsub::NamedTuple) = begin
-    @warn "toexpr PartitionGreaterThan" op varsub
-    error("implement me ", repr(op))
-    Expr(:call, :mod, toexpr(op.lhs, var), toexpr(op.rhs, var))
+    #@warn "toexpr PartitionGreaterThan" op varsub
+    # error("implement me ", repr(op))
+    Expr(:call, gtp_impl, toexpr(op.lhs, varsub), toexpr(op.rhs, varsub))
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionGreaterThan)
@@ -513,7 +514,11 @@ end
     refpartition::Any # UserSort, REFID
     # return PartitionElement
 end
-toexpr(op::PartitionElementOf, var::NamedTuple) = error("implement me ", repr(op))
+toexpr(op::PartitionElementOf, varsub::NamedTuple) = begin
+    #@warn "toexpr PartitionElementOf" op varsub
+    # error("implement me ", repr(op))
+    Expr(:call, peo_impl, toexpr(op.arg, varsub), QuoteNode(op.refpartition))
+end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionElementOf)
     print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
@@ -590,8 +595,6 @@ end
 PnmlTuple TermInterface expression object wraps an ordered collection of PnmlExpr objects.
 There is a related `ProductSort`: an ordered collection of sorts.
 Each tuple element will have the same sort as the corresponding product sort.
-
-
 """
 PnmlTupleEx
 
@@ -600,8 +603,13 @@ PnmlTupleEx
 end
 toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    # @warn "toexpr(op::PnmlTupleEx," op.args varsub toexpr.(op.args, Ref(varsub))
-    # @show (eval ∘ toexpr).(op.args, Ref(varsub))
+    @warn "toexpr PnmlTupleEx" op.args varsub toexpr.(op.args, Ref(varsub))
+    @show (eval ∘ toexpr).(op.args, Ref(varsub))
+    # foreach(Fix2(getproperty, :refid), op.args)
+    # Extract tuple of sort REFIDs from expressions.  Map to ProductSort
+    @show psorts = tuple((deduce_sort.(op.args))...)
+
+    # PnmlTuple{psorts}()
     Expr(:call, pnmltuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
     #Expr(:call, :PnmlTuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
 end
