@@ -310,7 +310,7 @@ function enabledXXX(net::PnmlNet, marking)
             for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
                 placeid   = source(ar) # adjacent place
                 mark      = marking[placeid]
-                println("ar ", repr(pid(ar)), " : input place ", repr(placeid))
+                println("\nar ", repr(pid(ar)), " : input place ", repr(placeid))
                 # @show mark
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
@@ -321,10 +321,10 @@ function enabledXXX(net::PnmlNet, marking)
                     #@show term(inscription(ar))
                     inscription_val = eval(toexpr(term(inscription(ar)), NamedTuple()))
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
-                    !mi_val && println("mark < inscription_val.") #! debug
+                    # !mi_val && println("mark < inscription_val.") #! debug
                     #@show term(condition(tr))
                     condition_val = eval(toexpr(term(condition(tr)), NamedTuple()))
-                    !condition_val && println("condition false.") #! debug
+                    # !condition_val && println("condition false.") #! debug
                     enabled &= mi_val && condition_val
                 else
                     #@show pairs(multiset(mark))
@@ -346,11 +346,12 @@ function enabledXXX(net::PnmlNet, marking)
                         #println()
                         #@show params #typeof(params)
                         # Is params a tuple
-                        @show vsub = namedtuple(vid, params) # names, values
-                        @show term(inscription(ar)) toexpr(term(inscription(ar)), vsub)
-
+                        vsub = namedtuple(vid, params) # names, values
+                        # @show term(inscription(ar))
+                        # @show toexpr(term(inscription(ar)), vsub)
+                        # println("=-=-=-=-=-=-=-=-")
                         inscription_val = eval(toexpr(term(inscription(ar)), vsub))
-                        @show inscription_val
+                        # @show inscription_val
 
                         mark = unwrap_pmset(mark)
 
@@ -359,12 +360,11 @@ function enabledXXX(net::PnmlNet, marking)
                         #? Do we want <= or is it issubset(A,B)?
                         #println("issubset(inscription_val, mark)")
                         mi_val = issubset(inscription_val, mark)
-                        # println("inscription_val <= mark")
-                        # @show mi_val = inscription_val <= mark
-                        !mi_val && println("mark ⊂ inscription_val") #! debug
+                        # mi_val = inscription_val <= mark
+                        # !mi_val && println("mark ⊂ inscription_val") #! debug
 
-                        @show condition_val = eval(toexpr(term(condition(tr)), vsub))
-                        !condition_val && println("condition false.") #! debug
+                        condition_val = eval(toexpr(term(condition(tr)), vsub))
+                        # !condition_val && println("condition false.") #! debug
 
                         if mi_val && condition_val
                             push!(tr.varsubs, vsub)
