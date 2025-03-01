@@ -4,13 +4,15 @@ export AbstractDeclaration, UnknownDeclaration,
         SortDeclaration, OperatorDeclaration, VariableDeclaration,
         NamedSort, NamedOperator,
         ArbitrarySort, ArbitraryOperator,
-        FEConstant, PartitionElement, PartitionSort, gtp_impl, peo_impl, refid
+        FEConstant, PartitionElement, PartitionSort,
+        gtp_impl, peo_impl, refid, element_ids
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 using TermInterface
+using Logging, LoggingExtras
 
 using PNML
 import PNML: sortof, sortref, sortdefinition, sortelements, basis, tag, pid, refid, name, REFID
@@ -26,8 +28,8 @@ using ..Sorts
 using ..PnmlIDRegistrys
 
 include("declarations.jl")
-include("partitions.jl")
 include("feconstants.jl")
+include("partitions.jl")
 include("arbitrarydeclarations.jl")
 
 end # module Declarations
