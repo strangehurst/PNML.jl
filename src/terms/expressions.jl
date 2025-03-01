@@ -118,10 +118,8 @@ end
 #! What is really wanted is NamedTuple[op.refid].
 #! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
 toexpr(op::VariableEx, varsub::NamedTuple) = begin
-    #@show varsub op.refid
-    @show vsub = varsub[op.refid]
-    #vsub isa Symbol ? :($(QuoteNode(vsub))) : :($(vsub))
-    vsub isa Symbol ? QuoteNode(vsub) : :($(vsub))
+    vsub = varsub[op.refid]
+    vsub isa Symbol ? Expr(:call, feconstant, QuoteNode(vsub)) : :($(vsub))
 end
 
 function Base.show(io::IO, x::VariableEx)
@@ -603,16 +601,37 @@ PnmlTupleEx
 end
 toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    @warn "toexpr PnmlTupleEx" op.args varsub toexpr.(op.args, Ref(varsub))
-    @show (eval ∘ toexpr).(op.args, Ref(varsub))
+    # @warn("toexpr PnmlTupleEx", op.args, varsub,
+    #         toexpr.(op.args, Ref(varsub)),
+    #         (eval ∘ toexpr).(op.args, Ref(varsub)),)
+    #~ Must allow for mixed constant (0-ary operator) and variable expressions.
+    #? Do input arc inscriptions ever have constant expressions?
+    #* Defaults for example.
+    #! Start by assuming tuples are either all constants or all variables.
     # foreach(Fix2(getproperty, :refid), op.args)
     # Extract tuple of sort REFIDs from expressions.  Map to ProductSort
-    @show psorts = tuple((deduce_sort.(op.args))...)
 
-    # PnmlTuple{psorts}()
-    Expr(:call, pnmltuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
-    #Expr(:call, :PnmlTuple, (eval ∘ toexpr).(op.args, Ref(varsub))...)
+    # @show psorts = tuple((deduce_sort.(op.args))...)
+    # args = if all(Fix2(isa, Symbol), op.args)
+    #     map(vexp -> feconstant(vexp.refid), op.args)
+
+
+    args = op.args
+    # if all(Fix2(isa, VariableEx), op.args)
+    #     # toexpr is to QuoteNode holding REFID.
+    #     map(vexp -> feconstant(vexp.refid), op.args)
+    # else
+    #     op.args
+    # end
+    # @show args
+    # PnmlTuple{psorts}(x...)
+    Expr(:call, pnmltuple, (eval ∘ toexpr).(args, Ref(varsub))...)
 end
+
+#? Would this be a candidate for rewriting?
+_deref_variable(v::Any) = identity(v) # Bet that it is an operator  expression -> FEConstant!
+_deref_variable(vexp::VariableEx) = feconstant(vexp.refid)
+
 function Base.show(io::IO, x::PnmlTupleEx)
     print(io, "PnmlTupleEx(", x.args, ")" )
 end
