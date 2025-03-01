@@ -5,6 +5,8 @@ import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 using NamedTupleTools
 import Multisets: Multisets, Multiset
+using Logging, LoggingExtras
+
 using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition,
     basis, value, term, tag, pid, refid,

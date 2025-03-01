@@ -11,6 +11,8 @@ using DocStringExtensions
 using NamedTupleTools
 import Multisets: Multisets, Multiset
 using TermInterface
+using Logging, LoggingExtras
+
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
 import PNML: adjacent_place, page_pnk, place_pnk, arc_pnk, transition_pnk, refplace_pnk, reftransition_pnk
@@ -70,6 +72,9 @@ include("graphics.jl")
 include("declarations.jl")
 include("terms.jl")
 include("toolspecific.jl")
+
+# global_logger(PNML.pnml_logger[])
+# @info "parser logger $(current_logger())"
 
 """
     registry() -> PnmlIDRegistry

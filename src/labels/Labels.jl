@@ -7,6 +7,7 @@ using DocStringExtensions
 using NamedTupleTools
 import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
+using Logging, LoggingExtras
 
 using PNML
 using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value, REFID

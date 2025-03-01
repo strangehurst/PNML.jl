@@ -25,7 +25,8 @@ This is the level that Petri Net conformance can be imposed.
 It is also where other Net constructs can be defined over `PnmlNet`s. Perhaps as new meta-models.
 """
 module PNML
-
+using Logging
+using LoggingExtras
 # CONFIG structure copied from Tim Holy's Cthulhu.jl.
 """
 Configuration with default values that can be overidden by a LocalPreferences.toml.
@@ -41,10 +42,19 @@ Configuration with default values that can be overidden by a LocalPreferences.to
 Base.@kwdef mutable struct PnmlConfig
     indent_width::Int           = 4
     text_element_optional::Bool = true
-    verbose::Bool           = false
-    warn_on_fixup::Bool     = false
-    warn_on_namespace::Bool = true
-    warn_on_unclaimed::Bool = false
+
+    #app_env::String             = DEV
+    verbose::Bool               = false
+    base_path::String           = "PNML"
+    log_path::String            = "log"
+    log_level::Logging.LogLevel = Logging.Info
+    log_to_file::Bool           = false
+    log_requests::Bool          = true
+    log_date_format::String     = "yyyy-mm-dd HH:MM:SS"
+
+    warn_on_fixup::Bool         = false
+    warn_on_namespace::Bool     = true
+    warn_on_unclaimed::Bool     = false
     warn_on_unimplemented::Bool = false
 end
 
@@ -86,6 +96,8 @@ using NamedTupleTools
 using DocStringExtensions
 #using Compat: @compat
 #using StackTraces
+
+# EXPORTS
 
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
@@ -131,6 +143,12 @@ export toexpr, PnmlExpr, BoolExpr, VariableEx, UserOperatorEx, NumberEx, Boolean
     PnmlTuple
 
 export adjacent_place, preset, postset, variables, SubstitutionDict
+
+include("logging.jl")
+pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
+
+#global_logger(pnml_logger[])
+#@info """global logger\n$(current_logger())"""
 
 include("PnmlTypeDefs.jl")
 using .PnmlTypeDefs

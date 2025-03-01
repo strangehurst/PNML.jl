@@ -54,6 +54,9 @@ And each net has an independent ID Registry.
 function parse_pnml(node::XMLNode)
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
+    #@error "parser logger = $(current_logger())"
+    #@show PNML.pnml_logger[]
+    #@info "parser logger $(global_logger())"
 
     xmlnets = allchildren(node ,"net") #! allocate Vector{XMLNode}
     isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
@@ -86,6 +89,7 @@ function parse_pnml(node::XMLNode)
     net_tup = ()
     for (netnode, reg, ddict) in zip(xmlnets, IDRegistryVec, TOPDECLVEC)
         #! Allocation? Runtime Dispatch? This is a parser! What did you expect?
+
         @with PNML.idregistry => reg PNML.DECLDICT => ddict begin
             net = parse_net(netnode)
             #~ At this point the XML has been processed into PnmlExpr terms.
