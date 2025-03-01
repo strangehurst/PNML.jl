@@ -35,13 +35,14 @@ function Base.show(io::IO, dd::DeclDict)
     print(io, "PartitionElement[")
     for (k,v) in pairs(partitionops(dd))
         print(iio, '\n', indent(iio)); show(io, k); println(io, " => ", v)
-        @error element_ids(v.terms)
+        #@error  Iterators.map(pid, sortelements(v.terms))
     end
     println(io, "]")
 
     print(io, "FEConstant[")
     for (k,v) in pairs(feconstants(dd))
-        print(iio, '\n', indent(iio)); show(io, k); print(io, " => "); show(io, v)
+        print(iio, '\n', indent(iio));
+        show(io, k); print(io, " => "); show(io, v)
     end
     println(io, "]")
 

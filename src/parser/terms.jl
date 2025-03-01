@@ -473,7 +473,9 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
     end
     error("Did not find productsort sort for $tup")
 end
-deduce_sort(s) = begin
+
+"Return sort REFID."
+function deduce_sort(s)
     if s isa VariableEx
         refid(variable(s.refid))
     elseif s isa UserOperatorEx
