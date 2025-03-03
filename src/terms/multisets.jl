@@ -4,7 +4,7 @@
 Construct as a multiset with one element, `x`, with default multiplicity of 1.
 
 PnmlMultiset wraps a Multisets.Multiset{T} and has type parameters
-B, a NamedSort value, and a sort element type `T`.
+B, a tuple of NamedSort REFIDs (first is the sort), and a matching sort element of type `T`.
 
 Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
 Thre are constants (and 0-arity operators) defined that must be multisets
@@ -15,11 +15,9 @@ As does `<all>` operator.
 """
 @auto_hash_equals struct PnmlMultiset{B,T} #! data type, not operator, see Bag, pnmlmultiset()
     #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
-
     mset::Multiset{T}
     function PnmlMultiset{B,T}(m::Multiset{T}) where {B,T}
-        #T <: PnmlMultiset && @warn("construct PnmlMultiset containing PnmlMultiset)")
-        new{B,T}(m)
+        new{B,T}(m) #todo assert B and T match.
     end
 end
 
@@ -193,7 +191,6 @@ end
 
 # Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
 function pnmlmultiset(basis::UserSort, element, multi::Int=1)
-    #element isa PnmlMultiset && @warn("element isa PnmlMultiset: ", element)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
     # Should we test `issingletonmultiset` here?

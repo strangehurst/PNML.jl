@@ -146,7 +146,7 @@ end
             placetype = SortType("positive sorttype", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
             val = eval(toexpr(term(mark), NamedTuple()))::PNML.PnmlMultiset{<:Any,<:Any}
-            @show PNML.basis(val) # isa UserSort
+            # @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
             @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))()) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort

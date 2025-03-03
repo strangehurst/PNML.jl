@@ -168,8 +168,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType)
                                     " name=", repr(name),
                                     " id=", repr(id),
                                     "> does not have a <def> element")))
-    @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" #! debug
-    @show parameters
+    @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" parameters #! debug
     NamedOperator(id, name, parameters, def) #! todo TermInterface rewrite
 end
 
@@ -406,7 +405,7 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     end
     isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
     psort = ProductSort(tuple(sorts...))
-    @warn "parse :productsort" psort; flush(stdout) #! debug
+    # @warn "parse :productsort" psort; flush(stdout) #! debug
     #make_usersort(:productsort, "ProductSort", psort)
     return psort
 end

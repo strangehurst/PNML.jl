@@ -153,8 +153,7 @@ exp_reftransition_ids = [:rt2]
 @test isempty(setdiff(@inferred(reftransition_idset(net)), exp_reftransition_ids))
 
 for arcid in exp_arc_ids
-    @show a = arc(net, arcid)
-    @test !isnothing(a)
+    @test !isnothing(arc(net, arcid))
 end
 
 @test arcs(net) !== nothing

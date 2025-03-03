@@ -124,7 +124,7 @@ end
 
 
 """
-    initial_markings(petrinet) -> LVector{marking_value_type(pntd)}
+    initial_markings(petrinet) -> LVector{marking_value_type}
 
 LVector labelled with place id and holding initial marking's value.
 Used to create a vector of place markings indexed by place ID.
@@ -217,7 +217,7 @@ end
 #! Default `<:Number`
 function input_matrix!(imatrix, net::PnmlNet, marking)
     for (t, transition_id) in enumerate(transition_idset(net))
-        @show varsubvec = varsubs(transition(net, transition_id))
+        varsubvec = varsubs(transition(net, transition_id))
         varsub = isempty(varsubvec) ? NamedTuple() : first(varsubvec)
         for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))# empty multiset similar to placetype
@@ -258,7 +258,7 @@ function output_matrix!(omatrix, net::PnmlNet, marking)
         for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
-            @show omatrix[t, p] = inscription_value(inscription_value_type(net), a, z, varsub)::Union{PnmlMultiset, Number}
+            omatrix[t, p] = inscription_value(inscription_value_type(net), a, z, varsub)::Union{PnmlMultiset, Number}
         end
     end
     return omatrix
@@ -357,10 +357,9 @@ function binding_value_sets(net::PnmlNet, marking)
     for t in transitions(net)::Transition
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
         for a in preset(net, t)::Arc
-            @show adj = adjacent_place(net, a)
-            @show placesort = sortref(adj)
-
-            @show vs = vars(inscription(a))::Tuple #todo PnmlExpr
+            adj = adjacent_place(net, a)
+            placesort = sortref(adj)
+            vs = vars(inscription(a))::Tuple #todo PnmlExpr
 
             for v in vs # inscription that is not a ground term
                 equalSorts(placesort, v) || error("not equalSorts for variable $v and marking $placesort")
@@ -398,19 +397,7 @@ end
 Return labelled vector of id=>boolean where `true` means transition `id` is enabled at current `marking`.
 """
 function enabled(petrinet::AbstractPetriNet, marking)
-    net = pnmlnet(petrinet)
-    # @warn marking transition_idset(net) #! debug
-    # for t in transition_idset(net)
-    #     for p in preset(net, t)
-    #         println("marking[$(repr(p))] = ", marking[p]) #cardinality(marking[p])
-    #     end
-    #     for p in preset(net, t)
-    #         println("inscription(arc(net,$(repr(p)),$(repr(t)))) = ", inscription(arc(net,p,t))
-    #         )
-    #     end
-    # end
-    # flush(stdout) #! debug
-    return enabled(net, marking) # Dispatch on net type.
+    return enabled(pnmlnet(petrinet), marking) # Dispatch on net type.
 end
 
 function enabled(net::PnmlNet, marking)
@@ -482,7 +469,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
         @show tr.vars
         foreach(println, varsubs(tr))
     end
-    println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+    # println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
     # Update each transition's varsub vector. Then generate the enabled vector.
     # Note that there may be multiple varsubs, one for each firing mode.
     # varsubs vector will not be empty. Will have at least an empty NamedTuple.
@@ -492,7 +479,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     # with only those passing being in tr.varsubs.
     # When there is no variable, condition is a constant.
     # When there are variables, only those passing condition are in tr.varubs.
-    enx(tr) = isempty(tr.vars) ? eval(toexpr(term(condition(tr)),NamedTuple())) : !only(==(NamedTuple()), tr.varsubs)
+    # enx(tr) = isempty(tr.vars) ? eval(toexpr(term(condition(tr)),NamedTuple())) : !only(==(NamedTuple()), tr.varsubs)
     LVector((;enabledXXX(net, marking)...))
     # LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(first(varsubs(transition(net,t)))), preset(net, t))
     #     for t in transition_idset(net)]...))
@@ -510,7 +497,7 @@ Return the marking after firing transition:   marking + incidence * enabled
 `marking` LVector values added to product of `incidence'` matrix and firing vector `enabled`.
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
-    @show typeof(incidence) enabled typeof(m₀)
+    # @show typeof(incidence) enabled typeof(m₀)
     @show m₁ = muladd(permutedims(incidence), enabled, m₀)
     LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end

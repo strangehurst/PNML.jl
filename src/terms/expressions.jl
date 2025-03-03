@@ -227,7 +227,7 @@ end
 end
 toexpr(op::Add, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    @show op.args varsub #toexpr.(op.args, Ref(varsub))
+    # @show op.args varsub #toexpr.(op.args, Ref(varsub))
     Expr(:call, sum, (eval ∘ toexpr).(op.args, Ref(varsub))) # constructs a new PnmlMultiset
     #Expr(:call, reduce, :(+), toexpr.(op.args, Ref(subdict))) # constructs a new PnmlMultiset
 end

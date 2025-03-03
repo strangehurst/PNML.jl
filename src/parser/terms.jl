@@ -467,7 +467,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
     psorts = tuple((deduce_sort.(sts))...)
     for us in usersorts()
         if isproductsort(us.second) && sorts(sortof(us.second)) == psorts
-            println("$psorts => ", us.first) #! debug
+            # println("$psorts => ", us.first) #! debug
             return tup, usersort(us.first), vars
         end
     end
@@ -622,7 +622,7 @@ function parse_term(::Val{:partitionelementof}, node::XMLNode, pntd::PnmlType; v
     refpartition = Symbol(attribute(node, "refpartition"))
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 1
-    @show peo = PartitionElementOf(first(sts), refpartition) #! PnmlExpr
+    peo = PartitionElementOf(first(sts), refpartition) #! PnmlExpr
     #@show DECLDICT[]; flush(stdout; #! debug)
     return peo, usersort(refpartition), vars # UserSort duos used for all sort declarations.
 end

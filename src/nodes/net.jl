@@ -186,12 +186,12 @@ function unwrap_pmset(mark)
             # In the wrapped Multiset we allow one singleton PnmlMultiset
             # println("\n\neltype(mark) isa PnmlMultiset\n") #! Log
             single = only(multiset(mark))
-            @warn "unwrapping PnmlMultiset" single
+            # @warn "unwrapping PnmlMultiset" single
             eltype(single) <: PnmlMultiset && error("recursive PnmlMultisets not allowed here")
             return single # Replace mark with the wrapped PnmlMultiset
         end
-    else
-        @warn "mark in not a PnmlMultiset" mark
+    # else
+    #     @warn "mark in not a PnmlMultiset" mark
     end
     return mark
 end
@@ -207,7 +207,7 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
         #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
         varrefid = refid(sortref(variable(v)))
-        println("   v  $(repr(v)) isa $(sortref(variable(v))), refid = $varrefid")
+        # println("   v  $(repr(v)) isa $(sortref(variable(v))), refid = $varrefid")
 
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
@@ -222,7 +222,7 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
         end
 
         for (el,mu) in pairs(multiset(mark))
-            println("   el  ", el)
+            # println("   el  ", el)
             #! arc_bvs counts possible substitutions in source place's marking.
             # Multiple of same variable in inscription expression means arc_bvs only includes
             # elements with a multiplicity at least as that large.
@@ -233,7 +233,7 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
                     for e in el #? PnmlMultiset?
                         if refid(e) == varrefid
                             e2 = e()
-                            println("   e2  ", e2)
+                            # println("   e2  ", e2)
                             push!(arc_bvs[v], e2) # Add value to count of substitutions.
                         end
                     end
@@ -261,9 +261,9 @@ function enabledXXX(net::PnmlNet, marking)
         enabled = true # Assume all transitions possible.
         tr.varsubs = NamedTuple[]
 
-        println("\nt ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
-        println("   tgts $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), tgt_arcs(net, trid)))
-        println("   srcs $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), src_arcs(net, trid)))
+        # println("\nt ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
+        # println("   tgts $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), tgt_arcs(net, trid)))
+        # println("   srcs $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), src_arcs(net, trid)))
 
         #!2025-01-27 JDH moved tr_vars to Transition tr.vars
         bvs = OrderedDict{REFID, Any}() # During enabling rule, bvs maps variable to a set of elements.
@@ -298,19 +298,19 @@ function enabledXXX(net::PnmlNet, marking)
         #& XXX variable substitutions fully specified by preset of transition XXX
         #& tr.vars is complete. bvs has valid substitutions (if any exist)
 
-        @show vid = tuple(keys(bvs)...) # names of tuple elements are variable REFIDs
-        length(tr.vars) > 1 &&
-            printstyled("\n=========\nMultiple transition variables\n=========\n\n"; color=:bold)
+        vid = tuple(keys(bvs)...) # names of tuple elements are variable REFIDs
+        # length(tr.vars) > 1 &&
+        #     printstyled("\n=========\nMultiple transition variables\n=========\n\n"; color=:bold)
         #@show tr.vars vid
         # foreach(println, pairs(bvs))
 
         if enabled
             #! 2st stage of enabling rule has succeded. (place marking >= inscription)
-            println("\n----------------------------------------------------------")
+            # println("\n----------------------------------------------------------")
             for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
                 placeid   = source(ar) # adjacent place
                 mark      = marking[placeid]
-                println("\nar ", repr(pid(ar)), " : input place ", repr(placeid))
+                # println("\nar ", repr(pid(ar)), " : input place ", repr(placeid))
                 # @show mark
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
@@ -378,14 +378,14 @@ function enabledXXX(net::PnmlNet, marking)
             #! REMEMBER marking multiset element may be a PnmlMultiset.
         end
 
-        if enabled
-            # Condition passed
-            printstyled("ENABLED ", length(tr.varsubs), " variable substitution candidates\n"; color=:green)
-        else
-            printstyled("DISABLED\n"; color=:red)
-        end
-        @show push!(evector, trid => enabled)
-        println("----------------------------------------------------------")
+        # if enabled
+        #     # Condition passed
+        #     printstyled("ENABLED ", length(tr.varsubs), " variable substitution candidates\n"; color=:green)
+        # else
+        #     printstyled("DISABLED\n"; color=:red)
+        # end
+        push!(evector, trid => enabled)
+        # println("----------------------------------------------------------")
     end # for tr
   return evector
 end
@@ -396,18 +396,18 @@ end
 Rewrite PnmlExpr (TermInterface) expressions.
 """
 function rewriteXXX(net::PnmlNet, marking)
-    printstyled("\n## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
+    # printstyled("\n## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
 
     #println("OPERATORS")
-    @show collect(operators()) # Accesses ScopedValue, return irterator
+    # @show collect(operators()) # Accesses ScopedValue, return irterator
 
-    @show DECLDICT[]
+    # @show DECLDICT[]
 
-    println("\nPLACES")
-    for pl in places(net)
-        println("p ",repr(pid(pl)), " marking ",  marking[pid(pl)])
-        # other place labels: capacity expression
-    end
+    # println("\nPLACES")
+    # for pl in places(net)
+    #     println("p ",repr(pid(pl)), " marking ",  marking[pid(pl)])
+    #     # other place labels: capacity expression
+    # end
 
     #~bv_sets = Dict{REFID, SubstitutionDict}() # keys are transaction id
     # Each SubstitutionDict is a dictionary of multisets,
@@ -425,7 +425,7 @@ function rewriteXXX(net::PnmlNet, marking)
     #     #@show toexpr(term(ar.inscription), subdict)
     # end
 
-    println("\nTRANSITIONS")
+    # println("\nTRANSITIONS")
     enabledXXX(net, marking)
 
     # println()
@@ -440,8 +440,8 @@ function rewriteXXX(net::PnmlNet, marking)
     # arbitraryops
     # partitionopsoperators(dd) = Base.Iterators.Flatten{Base.Generator{Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}, typeof(values)}}(Base.Generator{Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}, typeof(values)}(values, Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}(PNML.var"#3#4"{DeclDict}(DeclDict(
     #
-    printstyled("##  \n"; color=:magenta)
-    println()
+    # printstyled("##  \n"; color=:magenta)
+    # println()
 
 end
 

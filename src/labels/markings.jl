@@ -182,7 +182,7 @@ function Base.show(io::IO, hlm::HLMarking)
 end
 
 #--------------------------------------------------------------------------------------
-marking_type(::Type{T}) where {T <: PnmlType} = Marking #!{marking_value_type(T)}
+marking_type(::Type{T}) where {T <: PnmlType} = Marking
 marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
 
 # From John Baez, et al _Categories of Nets_
@@ -228,14 +228,14 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default_marking(t::PnmlType)
-    Marking(zero(marking_value_type(t)))
+    Marking(zero(marking_value_type(t))) #! Will not be a PnmlMultiset.
 end
 default_marking(::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
 function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
     el = def_sort_element(placetype)
-    HLMarking(Bag(sortref(placetype), el, 0)) # empty, el used for its type
+    HLMarking(Bag(sortref(placetype), el, 0)) # empty multiset, el used for its type
 end
 
 # 2024-08-07 encountered the need to handle a <numberof> as an expression (NamedOpertor)

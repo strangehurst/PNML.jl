@@ -96,8 +96,8 @@ function parse_pnml(node::XMLNode)
             # Ground terms used to set initial markings rewritten and evaluated here.
             #todo test 0-arity expressions here, some are used for marking vector's initial value.
             # 0-arity means empty variable substitution.
-            printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
-            @show m₀ = initial_markings(net) # Create a mutable vector of markings
+            # printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
+            m₀ = initial_markings(net) # Create a mutable vector of markings
 
             # Substitutions using indices into the marking vector.
             # Rewrite inscription and condition terms with variable substitution.
@@ -753,19 +753,13 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
     pt = eltype(sortref(placetype))
     mvt = eltype(marking_value_type(pntd))
-    #@show mvt pt
-    mvt == pt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
+    pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
 
     value = if isnothing(l.text)
         zero(pt)
     else
         number_value(pt, l.text)
     end
-
-    # #@show placetype value eltype(sortof(placetype))
-    #! value isa mvt || throw(ArgumentError(string("eltype of marking placetype = $mvt",
-    #!         ", does not match type of `value` = $(typeof(value))",
-    #!         ", for a $pntd")))
 
     #TODO Create a NumberConstant expression and use the high-level path.
     #TODO Use pntd for dispatch when different behavior is needed.

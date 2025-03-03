@@ -368,12 +368,12 @@ function inscription_type end
 
 """
     inscription_value_type(pntd) -> Union{Int64, Float64, <:PnmlMultiset}
-Return value type of `pntd`. Used after `eval` of `toexpr` of inscription value.
+Return value type of `pntd`.
 """
 function inscription_value_type end
 
 """
-    marking_type(pntd) -> Marking  #!{marking_value_type(pntd)}.
+    marking_type(pntd) -> Marking
 """
 function marking_type end
 

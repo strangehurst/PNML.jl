@@ -220,8 +220,8 @@ operator(id::Symbol) = operator(PNML.DECLDICT[], id)
     validate_declarations(dd::DeclDict) -> Bool
 """
 function validate_declarations(dd::DeclDict)
-    println("validate declarations")
-    show_sorts(dd)
+    # println("validate declarations")
+    # show_sorts(dd)
     # @show _op_dictionaries()
     # println()
     # @show all(Fix1(hasfield, typeof(dd)), _op_dictionaries())
@@ -242,7 +242,7 @@ function validate_declarations(dd::DeclDict)
 end
 
 function show_sorts(dd::DeclDict)
-    println("show_sorts")
+    # println("show_sorts")
     @show _sort_dictionaries()
 #     foreach(_sort_dictionaries()) do s
 #         println("sort = ", s, ", length = ", length(getfield(dd, s)))

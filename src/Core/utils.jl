@@ -45,6 +45,6 @@ end
 toexpr(::Nothing, ::NamedTuple) = nothing
 toexpr(s::Symbol, ::NamedTuple) = QuoteNode(s)
 toexpr(t::Tuple, vsub::NamedTuple) = begin
-    @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
+    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
     return t
 end
