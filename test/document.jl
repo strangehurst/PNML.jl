@@ -92,10 +92,10 @@ end
             @test_call PNML.find_nets(model, pt)
 
             for (l,m,r) in zip(PNML.find_nets(model, pt),
-                            PNML.find_nets(model, pnmltype(pt)),
+                            PNML.find_nets(model, PnmlTypeDefs.pnmltype(pt)),
                             PNML.find_nets(model, string(pt)))
                 @test l === m === r
-                @test l.type === m.type ===  r.type === pnmltype(pt)
+                @test l.type === m.type ===  r.type === PnmlTypeDefs.pnmltype(pt)
             end
         end
 

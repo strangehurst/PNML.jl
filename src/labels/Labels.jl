@@ -14,7 +14,7 @@ using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value, REFID
 using PNML: indent, inc_indent
 using PNML: DeclDict, DictType, XDVT, XDVT2
 using PNML: PnmlMultiset, pnmlmultiset, BooleanConstant, NumberConstant, AbstractTerm
-using PNML: namedsort, SubstitutionDict
+using PNML: namedsort
 
 import PNML: usersort, sortdefinition, def_sort_element
 import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
@@ -38,11 +38,10 @@ include("conditions.jl")
 include("rates.jl")
 include("structure.jl")
 
-export AbstractLabel, Name, Marking, HLMarking, Condition, Inscription, HLInscription,
-       Declaration, SortType, PnmlLabel, TransitionRate,
-       default_typeusersort,
-       text, get_labels, get_label, decldict, rate, delay,
-       default_inscription, default_hlinscription, default_condition,
-       default_marking, default_hlmarking, default_typeusersort
+export AbstractLabel, Name, Marking, HLMarking, Condition, Inscription, HLInscription
+export Declaration, SortType, PnmlLabel, TransitionRate
+export text, get_labels, get_label, decldict, rate, delay
+export default_typeusersort, default_inscription, default_hlinscription, default_condition
+export default_marking, default_hlmarking, default_typeusersort
 
 end # module labels

@@ -16,8 +16,7 @@ using PNML: Maybe
 using ..PnmlTypeDefs
 import PNML: coordinate_type, coordinate_value_type
 
-export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics,
-    Coordinate, Line, Fill, Font
+export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics, Coordinate, Line, Fill, Font
 
 """
 $(TYPEDEF)

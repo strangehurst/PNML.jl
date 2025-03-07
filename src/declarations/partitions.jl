@@ -102,7 +102,7 @@ struct PartitionSort <: SortDeclaration
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
 
     function PartitionSort(i,n,d,e)
-        has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
+        PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
         # Look at what is wrapped.
         @assert tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
         new(i,n,d,e)
@@ -140,20 +140,4 @@ function Base.show(io::IO, ps::PartitionSort)
         i < length(e) && print(io, ",\n", indent(io), " ")
     end
     print(io, "])")
-end
-
-function gtp_impl(lhs, rhs)
-    #@warn "gtp_impl" lhs  rhs
-    lhs > rhs
-end
-
-function ltp_impl(lhs, rhs)
-    #@warn "ltp_impl" lhs  rhs
-    lhs < rhs
-end
-
-function peo_impl(lhs, refpart)
-    #@warn "peo_impl" lhs refpart
-    p = partitionsort(refpart)
-    findfirst(e -> contains(e, lhs), p.elements)
 end

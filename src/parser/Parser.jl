@@ -18,44 +18,40 @@ import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid
 import PNML: adjacent_place, page_pnk, place_pnk, arc_pnk, transition_pnk, refplace_pnk, reftransition_pnk
 #import InteractiveUtils
 
-using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value,
-    Graphics, Coordinate, TokenGraphics,
-    ToolInfo, DictType,
-    XDVT, XDVT2, indent, inc_indent,
-    DeclDict, PnmlNetData, PnmlNetKeys, tunesize!, fill_nonhl!,
-    PartitionElement,
-    PnmlMultiset, pnmlmultiset,
-    BooleanConstant, NumberConstant,
-    AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator,
-    isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator,
-    isfiniteoperator, ispartitionoperator, isbuiltinoperator,
-    pnml_hl_operator, pnml_hl_outsort
-using PNML: page_idset, place_idset, transition_idset, arc_idset,
-    refplace_idset, reftransition_idset
-using PNML: has_variabledecl, has_namedsort, has_arbitrarysort, has_partitionsort, has_namedop,
-    has_arbitraryop, has_partitionop, has_feconstant, has_usersort, has_useroperator,
-    usersorts, useroperators, variabledecls, namedsorts,
-    arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants,
-    variable, namedsort, arbitrarysort, partitionsort,
-    namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
+using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value
+using PNML: Graphics, Coordinate, TokenGraphics
+using PNML: ToolInfo, DictType
+using PNML: XDVT, XDVT2, indent, inc_indent
+using PNML: DeclDict, PnmlNetData, PnmlNetKeys, tunesize!, fill_nonhl!
+using PNML: PartitionElement,PnmlMultiset, pnmlmultiset, BooleanConstant, NumberConstant
+using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
+using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
+using PNML: page_idset, place_idset, transition_idset, arc_idset
+using PNML: refplace_idset, reftransition_idset
+using PNML: has_partitionsort
+using PNML: has_partitionop, has_feconstant
+using PNML: usersorts, useroperators, variabledecls, namedsorts
+using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
+using PNML: variable, namedsort, arbitrarysort, partitionsort
+using PNML: namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
 using PNML: fill_sort_tag!
-using PNML:
-    page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    marking_type, inscription_type, condition_type,
-    marking_value_type, inscription_value_type, condition_value_type,
-    rate_value_type,
-    coordinate_type, coordinate_value_type,
-    validate_declarations, validate_toolinfos,
-    def_sort_element
-using PNML:  toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx, PnmlTupleEx,
-    Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or,
-    And, Not, Imply, Equality, Inequality, Successor, Predecessor,
-    PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf,
-    Addition, Subtraction, Multiplication, Division,
-    GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo,
-    Concatenation, Append, StringLength, Substring,
-    StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual,
-    ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+
+using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type
+using PNML: marking_type, inscription_type, condition_type
+using PNML: marking_value_type, inscription_value_type, condition_value_type
+using PNML: rate_value_type
+using PNML: coordinate_type, coordinate_value_type
+using PNML: validate_declarations, validate_toolinfos
+using PNML: def_sort_element
+using PNML: toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx, PnmlTupleEx
+using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
+using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
+using PNML: PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+using PNML: Addition, Subtraction, Multiplication, Division
+using PNML: GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
+using PNML: Concatenation, Append, StringLength, Substring
+using PNML: StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
+using PNML: ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
 
 using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
@@ -87,19 +83,14 @@ function registry()
     return r
 end
 
-export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file,
-    unparsed_tag,
+export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file, unparsed_tag,
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_condition,
-    parse_inscription, parse_hlinscription,
-    parse_initialMarking, parse_hlinitialMarking,
+    parse_inscription, parse_hlinscription, parse_initialMarking, parse_hlinitialMarking,
     parse_graphics, parse_graphics_coordinate, parse_tokengraphics, parse_tokenposition,
-    parse_declaration,
-    parse_namedsort, parse_namedoperator, parse_sort,
+    parse_declaration, parse_namedsort, parse_namedoperator, parse_sort,
     parse_unknowndecl, parse_term, parse_feconstants, parse_variabledecl,
-    parse_excluded, parse_structure,
-    registry,
-    unwrap_subterm, deduce_sort
+    parse_excluded, parse_structure, registry, unwrap_subterm, deduce_sort
 
 end

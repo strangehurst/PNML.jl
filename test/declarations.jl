@@ -17,7 +17,7 @@ function _subtypes!(out, type::Type)
 end
 
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-@testset "parse_sort $pntd" for pntd in core_nettypes()
+@testset "parse_sort $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
     PNML.Parser.fill_sort_tag!(:X, "X", PositiveSort())
@@ -119,7 +119,7 @@ end
 end
 end
 
-@testset "empty declarations $pntd" for pntd in core_nettypes()
+@testset "empty declarations $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
         #PNML.fill_nonhl!(PNML.DECLDICT[])
         # The attribute should be ignored.
@@ -142,7 +142,7 @@ end
     end
 end
 
-@testset "namedsort declaration $pntd" for pntd in core_nettypes()
+@testset "namedsort declaration $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     node = xml"""
     <declaration>
         <structure>
@@ -211,7 +211,7 @@ end
 end
 
 
-@testset "partition declaration $pntd" for pntd in core_nettypes()
+@testset "partition declaration $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     node = xml"""
     <declaration>
         <structure>
@@ -302,8 +302,8 @@ sorts() = _subtypes(AbstractSort)
 
     for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
         for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
-            a = sorta() #! term rewrite _evaluate
-            b = sortb() #! term rewrite _evaluate
+            a = sorta()
+            b = sortb()
             #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
             sorta != sortb && @test a != b && !PNML.equals(a, b)
             sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)

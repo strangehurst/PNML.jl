@@ -31,17 +31,14 @@ end
 end
 
 
-
-
-
-@testset "default_condition($pntd)" for pntd in all_nettypes()#ishighlevel)
+@testset "default_condition($pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
     c = default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
     println("default_condition($pntd) = ", repr(c))
     @test c() == true
 end
 #println()
 @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
-@testset "default_inscription($pntd)" for pntd in all_nettypes()
+@testset "default_inscription($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     PNML.fill_nonhl!(PNML.DECLDICT[])
 
     i = if ishighlevel(pntd)
@@ -54,18 +51,18 @@ end
 end
 end
 println()
-@testset "default_typeusersort($pntd)" for pntd in all_nettypes()
+@testset "default_typeusersort($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     t = default_typeusersort(pntd)::UserSort
     #println("default_typeusersort($pntd) = ", t)
 end
 #println()
-@testset "rate_value_type($pntd)" for pntd in all_nettypes()
+@testset "rate_value_type($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     r = rate_value_type(pntd)
     #println("rate_value_type($pntd) = ", r)
     @test r == eltype(RealSort)
 end
 #println()
-@testset "PnmlNetData($pntd)" for pntd in core_nettypes() # to limit number of tests
+@testset "PnmlNetData($pntd)" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests
     pnd = PnmlNetData(pntd)
     @test isempty(PNML.placedict(pnd))
     @test isempty(PNML.transitiondict(pnd))
@@ -75,7 +72,7 @@ end
 end
 #println()
 # 2024-11-09
-# @testset "PnmlNetKeys() for $pntd" for pntd in core_nettypes() # to limit number of tests
+# @testset "PnmlNetKeys() for $pntd" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests
 #     pns = PnmlNetKeys()
 #     @test isempty(PNML.page_pnk(pns))
 #     @test isempty(PNML.place_pnk(pns))
@@ -85,7 +82,7 @@ end
 #     @test isempty(PNML.refplace_pnk(pns))
 # end
 #println()
-@testset "predicates for $pntd" for pntd in all_nettypes()
+@testset "predicates for $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     @test Iterators.only(Iterators.filter(==(true), (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
     tp = typeof(pntd) # translate from singleton to type
     @test Iterators.only(Iterators.filter(==(true), (isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
@@ -93,18 +90,18 @@ end
 
 using PNML: pnmltype_map, default_pntd_map
 @testset "add_nettype" begin
-    #default_pntd_map # string -> symbol
-    #pnmltype_map # symbol -> PnmlType
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :pnmlcore, PnmlCoreNet())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :hlcore, HLCoreNet())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :ptnet, PTNet())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :hlnet, HLPNG())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :pt_hlpng, PT_HLPNG())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :symmetric, SymmetricNet())
-    @test_logs (:info, r"^updating mapping") PNML.add_nettype!(pnmltype_map, :continuous, ContinuousNet())
+    add_type! = PnmlTypeDefs.add_nettype!
+    typemap   = PnmlTypeDefs.pnmltype_map
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :pnmlcore, PnmlCoreNet())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :hlcore, HLCoreNet())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :ptnet, PTNet())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :hlnet, HLPNG())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :pt_hlpng, PT_HLPNG())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :symmetric, SymmetricNet())
+    @test_logs (:info, r"^updating mapping") add_type!(typemap, :continuous, ContinuousNet())
 
-    @test_logs (:info, r"^adding mapping") PNML.add_nettype!(pnmltype_map, :newpntd, PnmlCoreNet())
-    @test :newpntd in keys(pnmltype_map)
-    @test pnmltype_map[:newpntd] === PnmlCoreNet()
-    @show pnmltype_map
+    @test_logs (:info, r"^adding mapping") add_type!(typemap, :newpntd, PnmlCoreNet())
+    @test :newpntd in keys(typemap)
+    @test typemap[:newpntd] === PnmlCoreNet()
+    @show typemap
 end

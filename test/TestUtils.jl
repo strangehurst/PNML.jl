@@ -12,8 +12,8 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlIDRegistrys
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
-@reexport using PNML: PnmlIDRegistrys, registry, isregistered
-@reexport using PNML: PnmlTypeDefs, core_nettypes, all_nettypes,
+@reexport using PNML: PnmlIDRegistrys, registry, isregistered, pid
+@reexport using PNML.PnmlTypeDefs
     ishighlevel, isdiscrete, iscontinuous
 
 @reexport using PNML: Maybe, DeclDict,
@@ -24,7 +24,7 @@ Multisets.set_key_value_show()
     length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
     DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag,
-    SubstitutionDict, multiset
+    multiset
 
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict,
     page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset

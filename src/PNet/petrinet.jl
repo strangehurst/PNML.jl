@@ -362,7 +362,7 @@ function binding_value_sets(net::PnmlNet, marking)
             vs = vars(inscription(a))::Tuple #todo PnmlExpr
 
             for v in vs # inscription that is not a ground term
-                equalSorts(placesort, v) || error("not equalSorts for variable $v and marking $placesort")
+                equal(placesort, v) || error("sorts not equal for variable $v and marking $placesort")
                 #? for creating Ref need index into product sort/PnmlTuple
                 bvs = Dict{REFID,Set{eltype(basis)}}() # For this arc
                 # bind elements of the multiset to the variable when the multiplicities match.
@@ -505,6 +505,7 @@ end
 
 "reachability_graph"
 function reachability_graph(net)
+    @error "rechability graph" net
 end
 
 #-----------------------------------------------------------------

@@ -24,9 +24,9 @@ sortof(fec::FEConstant) = begin
     # Search on REFID of containing sort defintion.
     # These share behavior in attaching an ID and name to a component or components.
     # These components have seperate dictionaries in the `DECLDICT`.
-    if has_namedsort(fec.refid)
+    if PNML.has_namedsort(fec.refid)
         sortdefinition(namedsort(fec.refid))::EnumerationSort
-    elseif has_partitionsort(fec.refid)
+    elseif PNML.has_partitionsort(fec.refid)
         sortdefinition(partitionsort(fec.refid))::PartitionSort
         # Partitions are over a single EnumerationSort
     else

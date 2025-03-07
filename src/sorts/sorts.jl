@@ -11,9 +11,9 @@ builtin_sorts() = (:integer, :natural, :positive, :real, :dot, :bool, :null,)
 """
     isbuiltinsort(::Symbol) -> Bool
 
-Is tag in `builtin_sorts`.
+Is tag in `builtin_sorts()`.
 """
-isbuiltinsort(tag::Symbol) = tag in builtin_sorts()
+isbuiltinsort(tag::Symbol) = (tag in builtin_sorts())
 
 """
 $(TYPEDSIGNATURES)

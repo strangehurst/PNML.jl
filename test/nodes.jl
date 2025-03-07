@@ -1,6 +1,6 @@
 using PNML, ..TestUtils, JET, XMLDict
 
-@testset "place $pntd" for pntd in all_nettypes(!ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypeDefs.all_nettypes(!ishighlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -22,7 +22,7 @@ using PNML, ..TestUtils, JET, XMLDict
     end
 end
 
-@testset "place $pntd" for pntd in all_nettypes(ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -43,7 +43,7 @@ end
     end
 end
 
-@testset "transition $pntd" for pntd in all_nettypes()
+@testset "transition $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
@@ -134,7 +134,7 @@ end
 end
 
 #! Needs scaffolding
-# @testset "arc $pntd"  for pntd in all_nettypes()
+# @testset "arc $pntd"  for pntd in PnmlTypeDefs.all_nettypes()
 #     insc_xml = if ishighlevel(pntd)
 #         """<hlinscription>
 #             <text>6</text>
@@ -174,7 +174,7 @@ end
 #     end
 # end
 
-@testset "ref Trans $pntd" for pntd in all_nettypes()
+@testset "ref Trans $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     node = xml"""
     <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
@@ -191,12 +191,12 @@ end
         #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
         n = parse_refTransition(node, pntd)::RefTransition
         @test pid(n) === :rt1
-        @test refid(n) === :t1
+        @test PNML.refid(n) === :t1
         @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
     end
 end
 
-@testset "ref Place $pntd" for pntd in all_nettypes()
+@testset "ref Place $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     n1 = (node = xml"""
     <referencePlace id="rp2" ref="rp1">
         <name>
@@ -230,7 +230,7 @@ end
             #    (:warn, "found unexpected child of <referencePlace>: unknown"),
             n = parse_refPlace(s.node, ContinuousNet())::RefPlace
             @test pid(n) === Symbol(s.id)
-            @test refid(n) === Symbol(s.ref)
+            @test PNML.refid(n) === Symbol(s.ref)
         end
     end
 end

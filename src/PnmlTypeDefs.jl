@@ -7,21 +7,13 @@ import Base: eltype
 using DocStringExtensions
 
 # Abstract Types
-export PnmlType,
-       AbstractPnmlCore,
-       AbstractHLCore,
-       AbstractContinuousNet
+export PnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContinuousNet
 
-# Singletons (concrete types)
-export PnmlCoreNet, PTNet,
-       HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG,
-       ContinuousNet
+# Concrete Types
+export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
 
 # Functions
-export pnmltype, pnmltype_map, default_pntd_map,
-        pntd_symbol,
-        all_nettypes, core_nettypes, add_nettype!,
-        isdiscrete, iscontinuous, ishighlevel
+export isdiscrete, iscontinuous, ishighlevel
 
 """
 $(TYPEDEF)

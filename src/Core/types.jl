@@ -72,7 +72,6 @@ function Base.getproperty(rn::ReferenceNode, name::Symbol)
     return getfield(rn, name)
 end
 
-"Return the `id` of the referenced node."
 refid(r::ReferenceNode) = r.ref
 
 #--------------------------------------------

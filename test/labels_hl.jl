@@ -3,7 +3,7 @@ using EzXML: EzXML
 using XMLDict: XMLDict
 
 
-@testset "type $pntd" for pntd in all_nettypes(ishighlevel)
+@testset "type $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     # Add usersort, namedsort duo as test context.
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
@@ -18,7 +18,7 @@ using XMLDict: XMLDict
         typ = PNML.Parser.parse_type(n1, pntd)::SortType
         @test text(typ) == "N2"
         @test sortref(typ) isa UserSort # wrapping DotSort
-        @test sortof(typ) == DotSort() #! does the name of a sort affect equalSorts?
+        @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?
         @test PNML.has_graphics(typ) == false
         @test PNML.has_labels(typ) == false
         @test !occursin("Graphics", sprint(show, typ))
@@ -27,7 +27,7 @@ end
 
 @testset "HL initMarking" begin
 
-     @testset "3`dot $pntd" for pntd in all_nettypes(ishighlevel)
+     @testset "3`dot $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
         #println("\n3`dot $pntd")
         node = xml"""
         <hlinitialMarking>
@@ -74,7 +74,7 @@ end
     end
 
     # 0-arity operators are constants
-    # @testset "useroperator" for pntd in all_nettypes(ishighlevel)
+    # @testset "useroperator" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     #     println("\nuseroperator $pntd")
     #     node = xml"""
     #     <hlinitialMarking>
@@ -95,7 +95,7 @@ end
     # end
 
     # add two multisets: another way to express 3 + 2
-    @testset "3`dot ++ 2'dot" for pntd in all_nettypes(ishighlevel)
+    @testset "3`dot ++ 2'dot" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
         #println("\n\"3'dot ++ 2'dot\" $pntd")
         #~ @show
         node = xml"""
@@ -127,7 +127,7 @@ end
         end
     end
     # The constant eight.
-    @testset "1`8" for pntd in all_nettypes(ishighlevel)
+    @testset "1`8" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
         #println("\n1`8 $pntd")
         #~ @show
         node = xml"""
@@ -155,7 +155,7 @@ end
      end
 
     # This is the same as when the element is omitted.
-    @testset "x" for pntd in all_nettypes(ishighlevel)
+    @testset "x" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
         node = xml"""
         <hlinitialMarking>
         </hlinitialMarking>
@@ -174,7 +174,7 @@ end
 
 
 
-# @testset "<All,All>" for pntd in all_nettypes(ishighlevel)
+# @testset "<All,All>" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
 #     println("\n<All,All> $pntd")
 #     # <All,All> example from Sudoku-COL-A-N01.pnml
 #     #~ YES, markings can be tuples, an operator, cries for TermInterface,Metatheory
@@ -245,7 +245,7 @@ end
 #     # @test PNML._attribute(use2, :declaration) == "N2"
 # end
 
-# @testset "hlinscription $pntd" for pntd in all_nettypes(ishighlevel)
+# @testset "hlinscription $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
 #     println("\nhlinscription $pntd")
 #     n1 = xml"""
 #     <hlinscription>
@@ -299,7 +299,7 @@ end
 #     #@test value(inputs(inscterm)[2]) Needs DeclDict
 # end
 
-# @testset "structure $pntd" for pntd in all_nettypes(ishighlevel)
+# @testset "structure $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
 #     node = xml"""
 #      <structure>
 #         <tuple>
@@ -334,7 +334,7 @@ end
 
 #! Setting up TOPDECLDICTIONARY is not worth the hassel
 # # Conditions are for everybody, but we cannot (feasibily) test high-level
-# @testset "condition $pntd" for pntd in all_nettypes(ishighlevel)
+# @testset "condition $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
 #     n1 = xml"""
 #  <condition>
 #     <text>pt==cts||pt==ack</text>

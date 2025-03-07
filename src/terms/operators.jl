@@ -46,12 +46,10 @@ inputs(op::Operator)    = op.inexprs #! when should these be eval(toexpr)'ed)
 sortref(op::Operator)   = identity(op.outsort)::UserSort
 sortof(op::Operator)    = sortdefinition(namedsort(op.outsort)) # also abstractsort, partitionsort
 metadata(op::Operator)  = op.metadata
-
-value(op::Operator)     = _evaluate(op)       #
-_evaluate(op::Operator) = op() #TODO term rewrite
+value(op::Operator)     = op(#= parameters? =#)
 
 #? Possible to pass variables at this point? Pass marking vector?
-function (op::Operator)() #! after term rewrite _evaluate
+function (op::Operator)(#= parameters? =#)
     #println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))") #! debug
     input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
 
@@ -144,13 +142,18 @@ multiset_operators = (:add,
                       )
 ismultisetoperator(tag::Symbol) = tag in multiset_operators
 
-finite_operators  = (:lessthan,
+finite_operators()  = (:lessthan,
                      :lessthanorequal,
                      :greaterthan,
                      :greaterthanorequal,
                      :finiteintrangeconstant,
                      )
-isfiniteoperator(tag::Symbol) = tag in finite_operators
+"""
+    iisfiniteoperator(::Symbol) -> Bool
+
+Is tag in `finite_operators()`?
+"""
+iisfiniteoperator(tag::Symbol) = (tag in finite_operators())
 
 partition_operators = (:ltp, :gtp, :partitionelementof)
 
@@ -160,7 +163,12 @@ ispartitionoperator(tag::Symbol) = tag in partition_operators
 # these constants are operators
 builtin_constants = (:numberconstant, :dotconstant, :booleanconstant,)
 
-isbuiltinoperator(tag::Symbol) = errror("implement tag in builtin_operators")
+"""
+    isbuiltinoperator(::Symbol) -> Bool
+
+Is tag in `builtin_operators()`?
+"""
+isbuiltinoperator(tag::Symbol) = (tag in builtin_constants()) #todo whrat are these?
 
 # boolean_constants = (:true, :false)
 """

@@ -68,18 +68,18 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
             ns = parse_namedsort(child, pntd)
-            namedsorts(dd)[pid(ns)] = ns
-            usersorts(dd)[pid(ns)] = UserSort(pid(ns)) # make usersort, namedsort duo
+            PNML.namedsorts(dd)[pid(ns)] = ns
+            PNML.usersorts(dd)[pid(ns)] = UserSort(pid(ns)) # make usersort, namedsort duo
         elseif tag == "namedoperator"
             no = parse_namedoperator(child, pntd)
-            namedoperators(dd)[pid(no)] = no
+            PNML.namedoperators(dd)[pid(no)] = no
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd)
-            variabledecls(dd)[pid(vardecl)] = vardecl
+            PNML.variabledecls(dd)[pid(vardecl)] = vardecl
         elseif tag == "partition"
             part = parse_partition(child, pntd)::SortDeclaration
-            partitionsorts(dd)[pid(part)] = part
-            usersorts(dd)[pid(part)] = part #! usersort, partition duo.
+            PNML.partitionsorts(dd)[pid(part)] = part
+            PNML.usersorts(dd)[pid(part)] = part #! usersort, partition duo.
 
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -108,7 +108,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType)
     # Note: builtin sort definitions are all singleton types.
     EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
     id = Symbol(@inbounds(node["id"]))
-    if !isbuiltinsort(id)
+    if !Sorts.isbuiltinsort(id)
         # Rest of register_idof! Needed the ID to replace the duo.
         if isregistered(idregistry[], id)
             @warn "trying to register existing id $id in registry $(objectid(idregistry[]))" idregistry[]
@@ -175,58 +175,37 @@ end
 
 
 
-#=  From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml
-
-#? how do operators share variables as part of a firing rule?
-
+#=
+From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml
 <namedoperator id="id3" name="sum">
     <parameter> <!-- as many variabledecls as operator has variable subterms. -->
-        <variabledecl id="id4" name="x">
-            <integer/>
-        </variabledecl>
-        <variabledecl id="id5" name="y">
-            <integer/>
-        </variabledecl>
+        <variabledecl id="id4" name="x"> <integer/> </variabledecl>
+        <variabledecl id="id5" name="y"> <integer/> </variabledecl>
     </parameter>
     <def>
         <addition><!-- existing operator -->
-            <subterm>
-                <variable refvariable="id4"/>
-            </subterm>
-            <subterm>
-                <variable refvariable="id5"/>
-            </subterm>
+            <subterm> <variable refvariable="id4"/> </subterm>
+            <subterm> <variable refvariable="id5"/> </subterm>
         </addition>
     </def>
 </namedoperator>
 =#
 
-#=
-
-=#
-
-
 #########################################################################################
 """
-$(TYPEDSIGNATURES)
+    parse_variabledecl(node::XMLNode, pntd::PnmlType) -> VariableDeclaration
+
+Variables are used during firing a transition to identify tokens
+removed from input place markings, added to output place markings.
 """
 function parse_variabledecl(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "variabledecl")
     id = register_idof!(idregistry[], node)
     name = attribute(node, "name")
     # firstelement throws on nothing. Ignore more than 1.
-    #! There should be an actual way to store the value of the variable!
-    #! Indexed by the id.  id can also map to (possibly de-duplicated) sort. And a eltype.
-    #! All that work can be defered to a post-parse phase. Followed by the verification phase.
-
-    # Variables are used during firing a transition to
-    # identify tokens removed from input place marking to 1 or more output place markins.
-
     vsort = parse_sort(EzXML.firstelement(node), pntd, id)::UserSort
     isnothing(vsort) &&
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
-    #@warn "VariableDeclaration" id name vsort #! debug
-
     VariableDeclaration(id, name, vsort)
 end
 
@@ -269,7 +248,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:noth
     return tuple(fec_refs...)
 end
 
-"Tags used in sort XML elements."
+"Tag names of sort XML elements."
 const sort_ids = (:usersort,
                   :dot, :bool, :integer, :natural, :positive, :real, # builtins
                   :multisetsort, :productsort,
@@ -286,7 +265,7 @@ function make_usersort(tag::Symbol, name::String, sort)
     return sort #usersort(tag) # Lookup and return.
 end
 
-# Singleton sorts map to unique named sorts. Some are built-ins.
+# Singleton sorts map to named sorts that have no type parameters. Some are built-ins.
 function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
     make_usersort(:dot, "Dot", DotSort())
 end

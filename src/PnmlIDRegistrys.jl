@@ -5,7 +5,8 @@ module PnmlIDRegistrys
 using Preferences
 using DocStringExtensions
 
-export PnmlIDRegistry, register_id!, isregistered, reset_reg!
+export PnmlIDRegistry, register_id!, isregistered
+public reset_reg!
 using Base: Base.IdSet
 import Base: eltype
 

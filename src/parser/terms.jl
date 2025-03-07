@@ -63,7 +63,7 @@ Build an [`Operator`](@ref) Functor from the XML tree at `node`.
 function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars)
     #printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
     @assert tag === :namedoperator
-    func = pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
+    func = Terms.pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
     # maketerm() constructs
     # - Expr
     # - object with toexpr() that will make a Expr
@@ -87,7 +87,7 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars)
     #     @show t s
     #     println()
     # end
-    outsort = pnml_hl_outsort(tag; insorts) #! some sorts need content
+    outsort = Terms.pnml_hl_outsort(tag; insorts) #! some sorts need content
 
     println("parse_operator_term returning $(repr(tag)) $(func)")
     println("   interms ", interms)
@@ -103,13 +103,13 @@ end
 function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars)
     check_nodename(node, "variable")
     # References a VariableDeclaration. The 'primer' UML2 uses variableDecl.
-    # Corrected to refvariable by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
+    # Corrected to "refvariable" by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
     # Expect only an attribute referencing the declaration.
-    var = VariableEx(Symbol(attribute(node, "refvariable"))) #! add SubstitutionDict
+    var = VariableEx(Symbol(attribute(node, "refvariable")))
     usort = sortref(variable(var.refid))
     #@warn "parsed variable" var usort #! debug
     #! 2024-11-30 jdh add tuple of variable REFIDs. Empty tuple for ground terms.
-    # vars are the keys of a NamedTuple
+    # vars are the keys of a NamedTuple of substitutions?
     return (var, usort, tuple(vars..., var.refid)) # expression for Variable with this UserSort
 end
 
@@ -345,14 +345,14 @@ end
 function parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    #@assert equalSorts(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
+    #@assert equalS(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return Equality(sts[1], sts[2]), usersort(:bool), vars
 end
 
 function parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    #@assert equalSorts(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
+    #@assert equal(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return Inequality(sts[1], sts[2]), usersort(:bool), vars
 end
 
@@ -465,10 +465,10 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
     # Both hold refid field.
 
     psorts = tuple((deduce_sort.(sts))...)
-    for us in usersorts()
-        if isproductsort(us.second) && sorts(sortof(us.second)) == psorts
+    for us in PNML.usersorts()
+        if Sorts.isproductsort(us.second) && sorts(sortof(us.second)) == psorts
             # println("$psorts => ", us.first) #! debug
-            return tup, usersort(us.first), vars
+            return tup, PNML.usersort(us.first), vars
         end
     end
     error("Did not find productsort sort for $tup")
@@ -522,14 +522,14 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
         # Note: The specification specifically
 
-        # if !any(nsort->equalSorts(sort, sortdefinition(nsort)), values(namedsorts()))
+        # if !any(nsort -> equal(sort, sortdefinition(nsort)), values(namedsorts()))
         #   create namedsort, usersort with ID derived from tag, start, stop.
         # else
         #   use the ID of the first matching sort.
 
         ustag = nothing
-        for (refid, nsort) in pairs(namedsorts()) # look for first equalSorts
-            if equalSorts(sort, sortdefinition(nsort))
+        for (refid, nsort) in pairs(namedsorts()) # look for first equal Sorts
+            if equal(sort, sortdefinition(nsort))
                 # @show refid nsort
                 ustag = refid
                 break

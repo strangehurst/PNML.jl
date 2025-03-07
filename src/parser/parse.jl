@@ -447,7 +447,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
     #end
     #! These are TermInterface expressions. Test elsewhere, after eval.
     # The basis sort of mark label must be the same as the sort of sorttype label.
-    # if !equalSorts(sortof(basis(mark)), sortof(sorttype))
+    # if !equal(sortof(basis(mark)), sortof(sorttype))
     #     error(string("place $(repr(id)) of $pntd: sort mismatch,",
     #                     "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
     #                     "\n\t sortof(sorttype) = ", sortof(sorttype)))
@@ -522,8 +522,8 @@ function parse_arc(node, pntd; netdata)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "inscription" || tag == "hlinscription"
-            # Input arc inscription and source's marking/placesort must have equalSorts.
-            # Output arc inscription and target's marking/placesort must have equalSorts.
+            # Input arc inscription and source's marking/placesort must have equal Sorts.
+            # Output arc inscription and target's marking/placesort must have equal Sorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
             inscription = _parse_inscription(child, source, target, pntd; netdata)
@@ -832,7 +832,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     @assert isempty(l.vars) # markings are ground terms
     #@show typeof(markterm) markterm; flush(stdout)
     #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
-    # equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
+    # equal(sortof(basis(markterm)), sortof(placetype)) ||
     #     @error(string("HL marking sort mismatch,",
     #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
     #         "\n\t sortof(placetype) = ", sortof(placetype)))
@@ -896,7 +896,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
         # @show basis(mark); flush(stdout)
-        # if !equalSorts(sortof(basis(mark)), sortof(placetype(pmt)))
+        # if !equal(sortof(basis(mark)), sortof(placetype(pmt)))
         #     @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
         #     throw(ArgumentError(string("parse marking term sort mismatch:",
         #         "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
@@ -985,7 +985,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     #     error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
     # @assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
 
-    #  equalSorts(sortof(basis(inscript)), placesort) ||
+    #  equal(sortof(basis(inscript)), placesort) ||
     #     throw(ArgumentError(string("sort mismatch:",
     #         "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
     #         "\n\t placesort ", placesort)))
@@ -996,7 +996,7 @@ function adjacent_place(netdata, source::REFID, target::REFID)
     if haskey(placedict(netdata), source)
         @assert haskey(transitiondict(netdata), target) # Meta-model constraint.
         @inline placedict(netdata)[source]
-    elseif haskey(placedict(netdata),target)
+    elseif haskey(placedict(netdata), target)
         @assert haskey(transitiondict(netdata), source) # Meta-model constraint.
         @inline placedict(netdata)[target]
     else

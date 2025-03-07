@@ -23,7 +23,7 @@ Marking(nx::NumberEx) = Marking(#=text is nothing,=# nx, nothing, nothing)
 
 term(marking::Marking) = marking.term
 
-# 1'value where value isa eltype(sortof(marking)) (<:Number)
+# 1'value where value isa eltype(sortof(marking))
 # because we assume a multiplicity of 1, and the sort is simple
 #TODO add sort trait where simple means has concrete eltype
 # Assume eltype(sortdefinition(marking)) == typeof(value(marking))
@@ -124,7 +124,7 @@ mutable struct HLMarking{T<:PnmlExpr} <: HLAnnotation
 
     # The expression AST rooted at `term` in the XML stream.
     # Markings are ground terms, so no variables.
-    # equalSorts(sortof(basis(markterm)), sortof(placetype)) ||
+    # equal(sortof(basis(markterm)), sortof(placetype)) ||
     #     @error(string("HL marking sort mismatch,",
     #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
     #

@@ -3,12 +3,12 @@ using EzXML: EzXML
 using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
-@testset "text $pntd" for pntd in core_nettypes()
+@testset "text $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @with PNML.idregistry=>registry() @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
-@testset "name $pntd" for pntd in core_nettypes()
+@testset "name $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd)
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == ""
@@ -75,7 +75,7 @@ end
         #@show mark2 mark2()
         @test_opt PNML.Marking(3.5)
         @test_call PNML.Marking(3.5)
-        @test typeof(mark2()) == typeof(3.5) #! term rewrite, _evaluate
+        @test typeof(mark2()) == typeof(3.5)
         @test mark2() ≈ 3.5
         @test_call mark2()
         @test graphics(mark2) === nothing
@@ -102,7 +102,7 @@ end
         @test inscript isa PNML.Inscription
         #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
         #@show inscript
-        #@test_broken inscript() == 12 #! term rewrite, _evaluate
+        #@test_broken inscript() == 12
         #@test graphics(inscript) !== nothing
         #@test tools(inscript) === nothing || !isempty(tools(inscript))
         #@test_throws MethodError labels(inscript)
@@ -113,7 +113,7 @@ end
 
 FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
-#@testset "add_labels JET $pntd" for pntd in core_nettypes()
+#@testset "add_labels JET $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # lab = PnmlLabel[]
     # reg = registry()
     # @show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
@@ -131,7 +131,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     #                             add_label!(lab, node, pntd))
 #end
 
-@testset "labels $pntd" for pntd in core_nettypes()
+@testset "labels $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     lab = PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
@@ -211,7 +211,7 @@ function test_unclaimed(pntd, xmlstring::String)
         end
 end
 
-@testset "unclaimed $pntd" for pntd in core_nettypes()
+@testset "unclaimed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
     ctrl = [ # Vector of tuples of XML string, expected result `Pair`.

@@ -483,7 +483,10 @@ end
 @matchable struct PartitionLessThan <: PnmlExpr
     lhs::Any #PartitionElement
     rhs::Any #PartitionElement
-    # return BoolExpr
+end
+function ltp_impl(lhs, rhs)
+    #@warn "ltp_impl" lhs  rhs
+    lhs < rhs
 end
 toexpr(op::PartitionLessThan, var::NamedTuple) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
@@ -496,9 +499,12 @@ end
     rhs::Any #PartitionElement
     # return BoolExpr
 end
+function gtp_impl(lhs, rhs)
+    #@warn "gtp_impl" lhs  rhs
+    lhs > rhs
+end
 toexpr(op::PartitionGreaterThan, varsub::NamedTuple) = begin
     #@warn "toexpr PartitionGreaterThan" op varsub
-    # error("implement me ", repr(op))
     Expr(:call, gtp_impl, toexpr(op.lhs, varsub), toexpr(op.rhs, varsub))
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
@@ -510,11 +516,14 @@ end
 @matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
     refpartition::Any # UserSort, REFID
-    # return PartitionElement
+end
+function peo_impl(lhs, refpart)
+    #@warn "peo_impl" lhs refpart
+    p = partitionsort(refpart)
+    findfirst(e -> Declarations.contains(e, lhs), p.elements)
 end
 toexpr(op::PartitionElementOf, varsub::NamedTuple) = begin
     #@warn "toexpr PartitionElementOf" op varsub
-    # error("implement me ", repr(op))
     Expr(:call, peo_impl, toexpr(op.arg, varsub), QuoteNode(op.refpartition))
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))

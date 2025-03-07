@@ -1,11 +1,10 @@
 module Declarations
 
-export AbstractDeclaration, UnknownDeclaration,
-        SortDeclaration, OperatorDeclaration, VariableDeclaration,
-        NamedSort, NamedOperator,
-        ArbitrarySort, ArbitraryOperator,
-        FEConstant, PartitionElement, PartitionSort,
-        gtp_impl, peo_impl, refid, element_ids
+export AbstractDeclaration, UnknownDeclaration
+export SortDeclaration, OperatorDeclaration, VariableDeclaration
+export NamedSort, NamedOperator, ArbitrarySort, ArbitraryOperator
+export FEConstant, PartitionElement, PartitionSort
+export refid, element_ids
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
@@ -20,9 +19,9 @@ import PNML: toexpr
 using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
 
 using PNML: place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
-using PNML: variabledecls,
-    usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-    namedoperators, arbitraryops, feconstants, SubstitutionDict
+using PNML: variabledecls
+using PNML: usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops
+using PNML: namedoperators, arbitraryops, feconstants
 
 using ..Sorts
 using ..PnmlIDRegistrys

@@ -8,9 +8,8 @@ import Multisets: Multisets, Multiset
 using Logging, LoggingExtras
 
 using PNML
-import PNML: sortof, sortref, sortelements, sortdefinition,
-    basis, value, term, tag, pid, refid,
-    usersort, namedsort, toexpr
+import PNML: sortof, sortref, sortelements, sortdefinition
+import PNML: basis, value, term, tag, pid, refid, usersort, namedsort, toexpr
 using PNML: DeclDict, namedsort, DECLDICT, indent, inc_indent, REFID, PnmlTuple
 
 
@@ -52,15 +51,12 @@ include("lists.jl")
 include("numbers.jl")
 include("strings.jl")
 
-export AbstractSort, UserSort, MultisetSort, ProductSort, sorts,
-        DotSort,  BoolSort,
-        NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort,
-        EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort,
-        ListSort, StringSort,
-        DotConstant, FiniteIntRangeConstant,
-        NullSort, builtin_sorts, isbuiltinsort
-export equalSorts, integersort, naturalsort, positivesort, realsort, nullsort,
-    equals, start, stop,
-    isproductsort
+export AbstractSort, UserSort, MultisetSort, ProductSort
+export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
+export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
+export ListSort, StringSort, DotConstant, FiniteIntRangeConstant
+export NullSort, builtin_sorts
+export integersort, naturalsort, positivesort, realsort, nullsort
+export sorts, equals
 
 end # module Sorts

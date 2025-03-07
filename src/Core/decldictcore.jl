@@ -7,24 +7,28 @@ Collection of dictionaries holding various kinds of PNML declarations.
 Each keyed by REFID symbols.
 """
 @kwdef struct DeclDict
+    """
+        Holds [`VariableDeclaration`](@ref).
+        A [`Variable`](@ref) is used to locate the declaration's name and sort.
+    """
     variabledecls::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    namedsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    namedsorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
     # OperatorDecls include: namedoperator, feconstant, partition element, et al.
     # namedoperators are used to access built-in operators
-    namedoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    namedoperators::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitraryoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
     # PartitionElement is an operator, there are other built-in operators
-    partitionops::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    partitionops::Dict{Symbol, Any}       = Dict{Symbol, Any}()
     # FEConstants are 0-ary OperatorDeclarations.
-    feconstants::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    feconstants::Dict{Symbol, Any}        = Dict{Symbol, Any}()
 
     # AllowsThese use an IDREF symbol as a network-level "global" by referencing  abstract
     # SortDeclaration or Operatordeclaration.
-    usersorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
 end
 

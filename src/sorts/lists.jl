@@ -6,7 +6,7 @@ $(TYPEDEF)
     ae::Vector{AbstractSort} #~ ABSTRACT
 end
 ListSort() = ListSort(IntegerSort[])
-#! equalSorts(a::ListSort, b::ListSort) = a.ae == b.ae
+#! equal(a::ListSort, b::ListSort) = a.ae == b.ae
 
 function Base.show(io::IO, s::ListSort)
     print(io, "ListSort([")

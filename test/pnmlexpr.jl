@@ -6,7 +6,7 @@ using XMLDict: XMLDict
 _op() = (; args=(Bag(UserSort(:pro), 1, NumberEx(UserSort(:natural), 1)),
                 Bag(UserSort(:pro), 2, NumberEx(UserSort(:natural), 1)), ))
 
-@testset "add $pntd" for pntd in all_nettypes(ishighlevel)
+@testset "add $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     #
     println()
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin

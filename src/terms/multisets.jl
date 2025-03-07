@@ -200,8 +200,8 @@ function pnmlmultiset(basis::UserSort, element, multi::Int=1)
         throw(ArgumentError("Cannot be a MultisetSort: found $basis for $(repr(element))"))
     end
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
-    # if !(equalSorts(sortof(basis), sortof(element)) || (typeof(element) == eltype(basis)))
-    #     @warn "!equalSorts" sortof(basis) sortof(element) typeof(element) eltype(basis)
+    # if !(equal(sortof(basis), sortof(element)) || (typeof(element) == eltype(basis)))
+    #     @warn "!equal" sortof(basis) sortof(element) typeof(element) eltype(basis)
     # end
     M = Multiset{typeof(element)}()
     M[element] = multi

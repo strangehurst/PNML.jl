@@ -433,7 +433,7 @@ function rewriteXXX(net::PnmlNet, marking)
     # for placeid in postset(net, trid)
     #     a = arc(net, trid, placeid)
     #     if !isnothing(a)
-    #         println("   arc to ", repr(placeid), " variables ", variables(a.inscription)) #! SubstitutionDict
+    #         println("   arc to ", repr(placeid), " variables ", variables(a.inscription))
     #     end
     # end
     # namedoperators

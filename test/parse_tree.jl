@@ -98,7 +98,7 @@ println("-----------------------------------------\n")
         @test PNML.nrefplaces(net) == 0
         @test isempty(PNML.refplaces(net))
 
-        reset_reg!(PNML.idregistry[])
+        PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
 
         @test_call target_modules=target_modules parse_file(testfile)
         @test_call nets(model)

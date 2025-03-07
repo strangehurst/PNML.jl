@@ -1,29 +1,29 @@
 using PNML, ..TestUtils, JET
 
 @testset "pntd_symbol" begin
-    @test_opt pntd_symbol("foo")
-    @test_call pntd_symbol("foo")
+    @test_opt PnmlTypeDefs.pntd_symbol("foo")
+    @test_call PnmlTypeDefs.pntd_symbol("foo")
 
-    @test pntd_symbol("foo") === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("foo") === :pnmlcore
 
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/ptnet") === :ptnet
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/highlevelnet") === :hlnet
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/pnmlcoremodel") === :pnmlcore
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/pnmlcore") === :pnmlcore
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/pt-hlpng") === :pt_hlpng
-    @test pntd_symbol("http://www.pnml.org/version-2009/grammar/symmetricnet") === :symmetric
-    @test pntd_symbol("pnmlcore"  ) === :pnmlcore
-    @test pntd_symbol("ptnet"     ) === :ptnet
-    @test pntd_symbol("hlnet"     ) === :hlnet
-    @test pntd_symbol("hlcore"    ) === :hlcore
-    @test pntd_symbol("pt-hlpng"  ) === :pt_hlpng
-    @test pntd_symbol("pt_hlpng"  ) === :pt_hlpng
-    @test pntd_symbol("symmetric" ) === :symmetric
-    @test pntd_symbol("symmetricnet") === :symmetric
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/ptnet") === :ptnet
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/highlevelnet") === :hlnet
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/pnmlcoremodel") === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/pnmlcore") === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/pt-hlpng") === :pt_hlpng
+    @test PnmlTypeDefs.pntd_symbol("http://www.pnml.org/version-2009/grammar/symmetricnet") === :symmetric
+    @test PnmlTypeDefs.pntd_symbol("pnmlcore"  ) === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("ptnet"     ) === :ptnet
+    @test PnmlTypeDefs.pntd_symbol("hlnet"     ) === :hlnet
+    @test PnmlTypeDefs.pntd_symbol("hlcore"    ) === :hlcore
+    @test PnmlTypeDefs.pntd_symbol("pt-hlpng"  ) === :pt_hlpng
+    @test PnmlTypeDefs.pntd_symbol("pt_hlpng"  ) === :pt_hlpng
+    @test PnmlTypeDefs.pntd_symbol("symmetric" ) === :symmetric
+    @test PnmlTypeDefs.pntd_symbol("symmetricnet") === :symmetric
 
-    @test pntd_symbol("nonstandard" ) === :pnmlcore
-    @test pntd_symbol("open"        ) === :pnmlcore
-    @test pntd_symbol("continuous"  ) === :continuous
+    @test PnmlTypeDefs.pntd_symbol("nonstandard" ) === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("open"        ) === :pnmlcore
+    @test PnmlTypeDefs.pntd_symbol("continuous"  ) === :continuous
 end
 
 @testset "pnmltype" begin
@@ -72,7 +72,7 @@ end
     @test PnmlTypeDefs.pnmltype(:continuous) === ContinuousNet() # not in standard, collective identity
 end
 
-@testset "pnml traits $pntd" for pntd in all_nettypes()
+@testset "pnml traits $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     @test isdiscrete(pntd) isa Bool
     @test iscontinuous(pntd) isa Bool
     @test ishighlevel(pntd) isa Bool

@@ -15,7 +15,7 @@ println("EXCEPTIONS")
     end
 end
 
-@testset "missing namespace $pntd" for pntd in core_nettypes()
+@testset "missing namespace $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
         parse_pnml(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 
@@ -24,7 +24,7 @@ end
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
-@testset "malformed $pntd" for pntd in core_nettypes()
+@testset "malformed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
         parse_pnml(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
 
@@ -70,7 +70,7 @@ end
     end
 end
 
-@testset "missing id $pntd" for pntd in core_nettypes()
+@testset "missing id $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
 
         PNML.fill_nonhl!(PNML.DECLDICT[])

@@ -237,7 +237,7 @@ using PNML: AbstractPetriNet, enabled
 # String so that pntd can be embedded in the XML.
 const core_types = ("pnmlcore","ptnet",)
 @warn "hl nets do not currently do linear algebra! 'fire!' will error."
-const hl_types = () # ("hlcore","symmetric") #,"pt_hlpng","hlnet",)
+const hl_types = ("pt_hlpng",) # ("hlcore","symmetric") #,"pt_hlpng","hlnet",)
 const ex_types = ("continuous",)
 @testset "extract a graph $pntd" for pntd in tuple(core_types..., hl_types..., ex_types...)
     println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
@@ -304,7 +304,6 @@ const ex_types = ("continuous",)
 
     @show m₀ = initial_markings(anet) #::LVector
     @show C  = PNML.incidence_matrix(anet, m₀)
-
     @show muladd(permutedims(C), [1,0,0,0], m₀)
 
     @show e  = PNML.enabled(anet, m₀) #::LVector
@@ -313,6 +312,7 @@ const ex_types = ("continuous",)
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
 
+    @show typeof(C) typeof(e) typeof(m₀)
     @show m₁ = PNML.fire!(C, e, m₀)
     @show e = enabled(anet, m₁)
     @test values(e) == [false,true,false,false]

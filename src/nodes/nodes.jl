@@ -109,7 +109,7 @@ Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
 
 Every inscription label is treated as a functor.
 """
-inscription(arc::Arc) = arc.inscription # PnmlExpr, needs SubstitutionDict
+inscription(arc::Arc) = arc.inscription # label
 
 sortref(arc::Arc) = sortref(arc.inscription)::UserSort
 sortof(arc::Arc)  = sortof(sortref(arc))

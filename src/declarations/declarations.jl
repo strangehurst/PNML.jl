@@ -53,12 +53,12 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-[`PNML.DeclDict`](@ref) variabledecls[id] = tuple(VariableDeclaration(id, "human name", sort), instance_of_sort)
+[`PNML.DeclDict`](@ref) variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
 struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::UserSort # user -> named -> sort object
+    sort::UserSort # user sort -> named sort -> sort object
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
     #   (ref::Ref{sortof(vdecl)}(mark), REFID)
