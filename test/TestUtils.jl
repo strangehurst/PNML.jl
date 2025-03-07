@@ -55,11 +55,6 @@ Multisets.set_key_value_show()
     inscription,
     condition
 
-@reexport using PNML.Labels: default_marking, default_hlmarking,
-    default_inscription, default_hlinscription,
-    default_condition,
-    default_typeusersort
-
 @reexport using PNML: page_type,
     place_type, transition_type, arc_type, refplace_type, reftransition_type,
     marking_type, inscription_type, condition_type,

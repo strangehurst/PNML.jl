@@ -115,7 +115,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return instance of default SortType UserSort based on `PNTD`.
+Return instance of `UserSort` for default `SortType` of a `PNTD`.
 Useful for non-high-level nets and PTNet.
 See [`PNML.fill_nonhl!`](@ref)
 """

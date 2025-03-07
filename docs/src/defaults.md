@@ -79,9 +79,9 @@ methods(PNML.default_condition) # hide
 DocTestSetup = quote
     using Base.ScopedValues
     using PNML
-    using PNML: default_condition
-    using PNML: default_inscription, default_hlinscription
-    using PNML: default_marking, default_hlmarking
+    using PNML.Labels: default_condition
+    using PNML.Labels: default_inscription, default_hlinscription
+    using PNML.Labels: default_marking, default_hlmarking
     using PNML: SortType, UserSort, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant

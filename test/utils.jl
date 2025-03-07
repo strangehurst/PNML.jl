@@ -32,7 +32,7 @@ end
 
 
 @testset "default_condition($pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
-    c = default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
+    c = Labels.default_condition(pntd)::Labels.Condition #! TestUtils & Base export Condition
     println("default_condition($pntd) = ", repr(c))
     @test c() == true
 end
@@ -43,19 +43,17 @@ end
 
     i = if ishighlevel(pntd)
         placetype = SortType("default_inscription", UserSort(:dot))
-        default_hlinscription(pntd, placetype)
+        Labels.default_hlinscription(pntd, placetype)
     else
-        default_inscription(pntd)
+        Labels.default_inscription(pntd)
     end
     #println("default_inscription($pntd) = ", i)
 end
 end
 println()
 @testset "default_typeusersort($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
-    t = default_typeusersort(pntd)::UserSort
-    #println("default_typeusersort($pntd) = ", t)
+    t = Labels.default_typeusersort(pntd)::UserSort
 end
-#println()
 @testset "rate_value_type($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     r = rate_value_type(pntd)
     #println("rate_value_type($pntd) = ", r)
@@ -88,7 +86,6 @@ end
     @test Iterators.only(Iterators.filter(==(true), (isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
 end
 
-using PNML: pnmltype_map, default_pntd_map
 @testset "add_nettype" begin
     add_type! = PnmlTypeDefs.add_nettype!
     typemap   = PnmlTypeDefs.pnmltype_map

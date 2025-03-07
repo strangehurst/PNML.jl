@@ -115,9 +115,9 @@ type_funs = (
             )
 
 def_funs = (
-            default_inscription,
-            #!default_marking, #! needs ids
-            default_condition,
+            Labels.default_inscription,
+            #!Labels.default_marking, #! needs ids
+            Labels.default_condition,
             )
 
 @testset "by pntd $pntd" for pntd in PnmlTypeDefs.core_nettypes()

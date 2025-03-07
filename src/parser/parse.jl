@@ -405,7 +405,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
         sorttype = parse_type(typenode, pntd)
     else
         #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd))
-        sorttype = SortType("default", default_typeusersort(pntd), nothing, nothing)
+        sorttype = SortType("default", Labels.default_typeusersort(pntd), nothing, nothing)
     end
     #@warn "parse_place $id" sorttype
 
@@ -430,9 +430,9 @@ function parse_place(node::XMLNode, pntd::PnmlType)
 
     if isnothing(mark)
         if ishighlevel(pntd)
-            mark = default_hlmarking(pntd, sorttype) # additive identity of multiset
+            mark = Labels.default_hlmarking(pntd, sorttype) # additive identity of multiset
         else
-            mark = default_marking(pntd) # additive identity of number
+            mark = Labels.default_marking(pntd) # additive identity of number
         end
     end
 
@@ -498,7 +498,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType)
     end
 
     Transition{typeof(pntd), condition_type(pntd)}(pntd, id,
-                something(cond, default_condition(pntd)), name, graphics, tools, labels,
+                something(cond, Labels.default_condition(pntd)), name, graphics, tools, labels,
                 Set{REFID}(), NamedTuple[])
 end
 
@@ -540,9 +540,9 @@ function parse_arc(node, pntd; netdata)
     end
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
-            default_hlinscription(pntd, SortType("default_condition", UserSort(:dot)))
+            Labels.default_hlinscription(pntd, SortType("default", UserSort(:dot)))
         else
-            default_inscription(pntd)
+            Labels.default_inscription(pntd)
         end
         #@info("missing inscription for arc $(repr(arcid)), replace with $(repr(inscription))")
     end

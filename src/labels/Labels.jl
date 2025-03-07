@@ -41,7 +41,5 @@ include("structure.jl")
 export AbstractLabel, Name, Marking, HLMarking, Condition, Inscription, HLInscription
 export Declaration, SortType, PnmlLabel, TransitionRate
 export text, get_labels, get_label, decldict, rate, delay
-export default_typeusersort, default_inscription, default_hlinscription, default_condition
-export default_marking, default_hlmarking, default_typeusersort
 
 end # module labels
