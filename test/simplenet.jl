@@ -303,29 +303,32 @@ const ex_types = ("continuous",)
     flush(stdout)
 
     @show m₀ = initial_markings(anet) #::LVector
-    @show C  = PNML.incidence_matrix(anet, m₀)
+    @show C  = PNML.incidence_matrix(anet, m₀) # Matrix of PnmlMultiset
     @show muladd(permutedims(C), [1,0,0,0], m₀)
+    @show e  = PNML.enabled(anet, m₀)
+    @show muladd(permutedims(C), e, m₀)
+    # println("==================================")
+    # @show m = PNML.fire!(C, [1,0,0,0], m₀)
+    println("==================================")
 
-    @show e  = PNML.enabled(anet, m₀) #::LVector
-    @test values(e) == [true,false,false,false]
+    #!@test values(e) == [true,false,false,false]
     @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
 
-    @show typeof(C) typeof(e) typeof(m₀)
     @show m₁ = PNML.fire!(C, e, m₀)
     @show e = enabled(anet, m₁)
-    @test values(e) == [false,true,false,false]
+    @test e == [false,true,false,false]
 
-    m₂ = PNML.fire!(C, e, m₁)
-    e = enabled(anet, m₂)
-    @test values(e) == [false,false,true,false]
+    @show m₂ = PNML.fire!(C, e, m₁)
+    @show e = enabled(anet, m₂)
+    @test e == [false,false,true,false]
 
     m₃ = PNML.fire!(C, e, m₂)
     e = enabled(anet, m₃)
-    @test values(e) == [false,false,false,true]
+    @test e == [false,false,false,true]
 
     m₄ = PNML.fire!(C, e, m₃)
     e = enabled(anet, m₄)
-    @test values(e) == [true,false,false,false]
+    @test e == [true,false,false,false]
 end

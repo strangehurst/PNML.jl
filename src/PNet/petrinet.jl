@@ -356,7 +356,7 @@ function binding_value_sets(net::PnmlNet, marking)
     # The order of transitions is maintained.
     for t in transitions(net)::Transition
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
-        for a in preset(net, t)::Arc
+        for a in PNML.preset(net, t)::Arc
             adj = adjacent_place(net, a)
             placesort = sortref(adj)
             vs = vars(inscription(a))::Tuple #todo PnmlExpr
@@ -400,11 +400,13 @@ function enabled(petrinet::AbstractPetriNet, marking)
     return enabled(pnmlnet(petrinet), marking) # Dispatch on net type.
 end
 
+# For each transition's input arcs, compare the inscription to the place marking.
 function enabled(net::PnmlNet, marking)
-    # For each transition, look at each of its input arcs, compare the inscription to the place marking
-    varsub = NamedTuple() # There are no varibles here.
-    LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(varsub), preset(net, t))
-            for t in transition_idset(net)]...))
+    varsub = NamedTuple() # There are no varibles possible here.
+    #! LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(varsub), preset(net, t))
+    #!         for t in transition_idset(net)]...))
+    [all(p -> marking[p] >= inscription(arc(net,p,t))(varsub),
+                        PNML.preset(net, t)) for t in transition_idset(net)]
 end
 #==========================================================================
 Notes based on ISO Standard Part 1, 2nd Edition #TODO cite full(er) version
@@ -453,36 +455,10 @@ function varsubs(net::PnmlNet, transition_id::REFID)
 end
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
-    #! Why is marking[p] not a multiset here?
-    #! Because of initial_markings produce a LVector using cardinality.
-    #! Note: standard lists the weight function, a color function, that maps to a multiset.
-    #! So shouled be using multiset without cardinality: marking[p] >= inscription(arc(net,p,t))), preset(net, t)
-
-    #^ We need to find the varsub. Is linked to the transition.
-    #^ Calculated for evey transition at each enabling rule.
-    #^ Choice of transition is part of firing rule that selects from the returned vector of booleans.
-    println("\n\n\nUpdating transition varsubs")
-    enabledXXX(net, marking)
-    for t in transition_idset(net)
-        println(t)
-        tr = transition(net,t)
-        @show tr.vars
-        foreach(println, varsubs(tr))
-    end
-    # println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-    # Update each transition's varsub vector. Then generate the enabled vector.
-    # Note that there may be multiple varsubs, one for each firing mode.
-    # varsubs vector will not be empty. Will have at least an empty NamedTuple.
-    # Enabled is the boolean of: substitution exists for every variable & condition is true.
-    # The substitution validity check subsumes the multiplicity test for high-level nets.
-    # The construction of tr.varsubs tests condition for each substitution,
-    # with only those passing being in tr.varsubs.
-    # When there is no variable, condition is a constant.
-    # When there are variables, only those passing condition are in tr.varubs.
-    # enx(tr) = isempty(tr.vars) ? eval(toexpr(term(condition(tr)),NamedTuple())) : !only(==(NamedTuple()), tr.varsubs)
-    LVector((;enabledXXX(net, marking)...))
+    #!LVector((;enabledXXX(net, marking)...))
     # LVector((;[t => all(p -> marking[p] >= inscription(arc(net,p,t))(first(varsubs(transition(net,t)))), preset(net, t))
     #     for t in transition_idset(net)]...))
+    enabledXXX(net, marking)::Vector{Bool} #todo refactor the XXX
 end
 
 # AlgebraicJulia wants LabelledPetriNet constructed with
@@ -497,7 +473,8 @@ Return the marking after firing transition:   marking + incidence * enabled
 `marking` LVector values added to product of `incidence'` matrix and firing vector `enabled`.
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
-    # @show typeof(incidence) enabled typeof(m₀)
+    println("fire!")
+    @show typeof(incidence) enabled typeof(m₀)
     @show m₁ = muladd(permutedims(incidence), enabled, m₀)
     LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end

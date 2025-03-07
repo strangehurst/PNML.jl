@@ -255,7 +255,7 @@ end
 Update tr.vars, tr.varsubs for every transition `tr` in `net` using `marking`.
 """
 function enabledXXX(net::PnmlNet, marking)
-    evector = Pair{REFID,Bool}[]
+    evector = Bool[] #!Pair{REFID,Bool}[]
     for tr in transitions(net)
         trid = pid(tr)
         enabled = true # Assume all transitions possible.
@@ -384,9 +384,11 @@ function enabledXXX(net::PnmlNet, marking)
         # else
         #     printstyled("DISABLED\n"; color=:red)
         # end
-        push!(evector, trid => enabled)
+        #!push!(evector, trid => enabled)
+        push!(evector, enabled)
         # println("----------------------------------------------------------")
     end # for tr
+    @show evector
   return evector
 end
 
