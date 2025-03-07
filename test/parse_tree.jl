@@ -32,7 +32,7 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
         #println()
         #@show pid(net)::Symbol
         #@show net
-        map(println, PNML.declarations(PNML.declarations(net))) # Iterate over all declarations
+        map(println, PNML.declarations(PNML.decldict(net))) # Iterate over all declarations
 
         for page in pages(net)
             @test page isa Page
@@ -51,7 +51,7 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
             end
-            # for decl in PNML.declarations(page) #! we harvest all declarations as one thing
+            # for decl in PNML.decldict(page) #! we harvest all declarations as one thing
             #     @test decl isa Declaration
             #     @test decl[:text] !== nothing || decl[:structure] !== nothing
             # end

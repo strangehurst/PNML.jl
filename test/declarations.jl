@@ -132,11 +132,11 @@ end
         @test PNML.graphics(decl) === nothing
         @test PNML.tools(decl) === nothing
 
-        @test_opt PNML.declarations(decl)
+        @test_opt PNML.Labels.decldict(decl)
         @test_opt PNML.graphics(decl)
         @test_opt PNML.tools(decl)
 
-        @test_call PNML.declarations(decl)
+        @test_call PNML.Labels.decldict(decl)
         @test_call PNML.graphics(decl)
         @test_call PNML.tools(decl)
     end

@@ -53,7 +53,7 @@ arcs(page::Page)        = Iterators.filter(v -> in(pid(v), arc_idset(page)), val
 refplaces(page::Page)   = Iterators.filter(v -> in(pid(v), refplace_idset(page)), values(refplacedict(page)))
 reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idset(page)), values(reftransitiondict(page)))
 
-declarations(page::Page) = declarations(page.declaration) # Forward to the collection object.
+decldict(page::Page) = Labels.decldict(page.declaration) # Forward to the collection object.
 
 page_idset(page::Page)          = page_pnk(netsets(page)) # subpages of this page
 "Return netsets place_idset"
@@ -91,7 +91,7 @@ function Base.show(io::IO, page::Page)
     print(iio, indent(iio), "refPlaces:",     repr(refplace_idset(page)), ",\n");
     print(iio, indent(iio), "refTransitions: ", repr(reftransition_idset(page)), ",\n");
     print(iio, indent(iio), "subpages: ",     repr(page_idset(page)), ",\n");
-    print(iio, indent(iio), "declarations: ", "repr(declarations(page)) suppressed", ",\n");
+    print(iio, indent(iio), "declarations: ", "repr(Labels.decldict(page)) suppressed", ",\n");
     print(io, ")")
 end
 

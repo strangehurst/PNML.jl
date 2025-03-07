@@ -197,7 +197,7 @@ $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
 
-All the declarations in the <structure> are placed into a single per-net dictonary.
+All the declarations in the <structure> are placed into a single per-net dictonary `ddict`.
 The text, graphics, and tools fields are expected to be nothing, but are present because,
 being labels, it is allowed.
 """
@@ -209,6 +209,5 @@ being labels, it is allowed.
 end
 
 decldict(d::Declaration) = d.ddict
-declarations(d::Declaration) = decldict(d)
-Base.length(d::Declaration) = length(declarations(d))
-Base.isempty(d::Declaration) = isempty(declarations(d))
+Base.length(d::Declaration) = length(decldict(d))
+Base.isempty(d::Declaration) = isempty(decldict(d))

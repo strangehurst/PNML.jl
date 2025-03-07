@@ -65,7 +65,7 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 
-declarations(net::PnmlNet) = declarations(net.declaration) # Forward to the collection object.
+decldict(net::PnmlNet) = Labels.decldict(net.declaration) # Access a label's value.
 
 has_tools(net::PnmlNet) = !isnothing(net.tools)
 tools(net::PnmlNet)     = net.tools
@@ -529,7 +529,7 @@ function Base.show(io::IO, net::PnmlNet)
         print(iio, '\n', indent(iio)); show(iio, page)
     end
     println(io)
-    print(io, "Declarations = ", repr(declarations(net)))
+    print(io, "Declarations = ", repr(PNML.decldict(net)))
     show(io, tools(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
     show(io, nettype(net)); println(io, ")")
