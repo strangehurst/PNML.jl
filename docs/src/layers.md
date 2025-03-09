@@ -124,7 +124,7 @@ See [`PnmlNet`](@ref)s & [`AbstractPnmlObject`](@ref)s
 
 #### pnmltype\_map
 ```@docs; canonical=false
-pnmltype_map
+PNML.PnmlTypeDefs.pnmltype_map
 ```
 ```@example
 using PNML # hide

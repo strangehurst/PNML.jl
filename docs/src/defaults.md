@@ -15,7 +15,6 @@ Determine type of `Number` to parse with [`number_value`](@ref) by using `pntd` 
   - [`inscription_value_type`](@ref)
   - [`marking_value_type`](@ref)
   - [`coordinate_value_type`](@ref)
-  - removed term_value_type
   - [`rate_value_type`](@ref)
 
 
@@ -36,15 +35,15 @@ the kind on number they use:
 See [PnmlType - Petri Net Type Definition](@ref) for the full hierarchy.
 
 This means there are at least 3 sets of default value types.
-We use the pntd [`PnmlType`](@ref) as a trait to determine the default types/values.
+We use the pntd [PnmlType](@ref PNML.PnmlTypeDefs.PnmlType) as a trait to determine the default types/values.
 
 A consequence is that the default value's type ripples through the type system.
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
-using PNML: default_condition
-using PNML: default_inscription, default_hlinscription
-using PNML: default_marking, default_hlmarking
+using PNML: Labels.default_condition
+using PNML: Labels.default_inscription, Labels.default_hlinscription
+using PNML: Labels.default_marking, Labels.default_hlmarking
 using PNML: SortType, UserSort, IntegerSort, DotSort,
             PnmlCoreNet, ContinuousNet, HLCoreNet,
             NumberConstant, DotConstant
@@ -56,22 +55,22 @@ end
 
 ## Methods
 
-[`PNML.default_marking`](@ref)
+[`PNML.Labels.default_marking`](@ref)
 
 ```@example methods
-methods(PNML.default_marking) # hide
+methods(PNML.Labels.default_marking) # hide
 ```
 
-[`PNML.default_inscription`](@ref)
+`[PNML.Labels.default_inscription]`(ref)
 
 ```@example methods
-methods(PNML.default_inscription) # hide
+methods(PNML.Labels.default_inscription) # hide
 ```
 
-[`PNML.default_condition`](@ref)
+[`PNML.Labels.default_condition`](@ref)
 
 ```@example methods
-methods(PNML.default_condition) # hide
+methods(PNML.Labels.default_condition) # hide
 ```
 
 ## Examples
@@ -89,15 +88,15 @@ DocTestSetup = quote
 ```
 
 ```jldoctest
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(PnmlCoreNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(PnmlCoreNet())
 Condition("", BooleanEx(PNML.BooleanConstant(true)))
 
 julia> c()
 true
 
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(ContinuousNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(ContinuousNet())
 Condition("", BooleanEx(PNML.BooleanConstant(true)))
 
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() default_condition(HLCoreNet())
+julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(HLCoreNet())
 Condition("", BooleanEx(PNML.BooleanConstant(true)))
 ```

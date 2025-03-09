@@ -83,7 +83,7 @@ $(TYPEDSIGNATURES)
 Return the [`PnmlType`](@ref) subtype representing the flavor (or pntd) of this kind of
 Petri Net Graph.
 
-See also [`pnmltype`](@ref)
+See also [`pnmltype`](@ref PnmlTypeDefs.pnmltype)
 """
 function nettype end
 
