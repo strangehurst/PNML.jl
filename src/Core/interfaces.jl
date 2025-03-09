@@ -490,3 +490,11 @@ function adjacent_place end
     variables(x) -> Tuple{REFID}
 """
 function variables end
+
+"""
+    decldict(x) -> DeclDict
+
+`PnmlNet` and `Page` may have `<declaration>` labels.
+We coalesce them into one `DeclDict` that both access. As may others.
+"""
+function decldict end
