@@ -97,7 +97,8 @@ function parse_pnml(node::XMLNode)
             #todo test 0-arity expressions here, some are used for marking vector's initial value.
             # 0-arity means empty variable substitution.
             # printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
-            m₀ = initial_markings(net) # Create a mutable vector of markings
+            #~ Evaluate expressions to create a mutable vector of markings.
+            m₀ = PNML.initial_markings(net)
 
             # Substitutions using indices into the marking vector.
             # Rewrite inscription and condition terms with variable substitution.
@@ -360,8 +361,8 @@ end
 "Fill arc_set, arc_dict."
 function parse_arc!(arc_set, netdata, child, pntd)
     a = parse_arc(child, pntd; netdata)
-    a isa valtype(arcdict(netdata)) ||
-        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a))")
+    a isa valtype(PNML.arcdict(netdata)) ||
+        @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_set, pid(a))
     netdata.arc_dict[pid(a)] = a
     return nothing
@@ -751,7 +752,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Base.eltype is for collections: what an iterator would return.
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
-    pt = eltype(sortref(placetype))
+    pt = eltype(PNML.sortref(placetype))
     mvt = eltype(marking_value_type(pntd))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
 
@@ -764,7 +765,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     #TODO Create a NumberConstant expression and use the high-level path.
     #TODO Use pntd for dispatch when different behavior is needed.
 
-    Marking(NumberEx(sortref(pt), value), l.graphics, l.tools)
+    Marking(PNML.NumberEx(PNML.sortref(pt), value), l.graphics, l.tools)
 end
 
 """
@@ -799,7 +800,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
 
-    Inscription(NumberEx(value), graphics, tools)
+    Inscription(PNML.NumberEx(value), graphics, tools)
 end
 
 """
@@ -813,7 +814,7 @@ NB: Used by PTNets that assume placetype is DotSort().
 """
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore)
     check_nodename(node, "hlinitialMarking")
-    l = parse_label_content(node, ParseMarkingTerm(sortref(placetype)), pntd)::NamedTuple
+    l = parse_label_content(node, ParseMarkingTerm(PNML.sortref(placetype)), pntd)::NamedTuple
     #@warn pntd l #! debug
     # Marking label content is expected to be a TermInterface expression.
     # All declarations are expected to have been processed before the first place.
@@ -825,7 +826,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         # if placetype isa ProductSort
         #     @show def_sort_element(placetype)
         # end
-        Bag(sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
+        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
     else
         l.term
     end
@@ -863,12 +864,6 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         !isempty(vars) && @error vars
         #@show typeof(mark), sort; flush(stdout)
         @assert mark isa PnmlExpr
-        # ex = toexpr(mark); #^ ___ RECURSIVE `toexpr` ___
-        # println("evaluate marking expression ", repr(ex))
-        # mark = eval(ex) #^ ___ EVALUATE EXPRESSION ___
-        # @show typeof(mark) mark; println(); flush(stdout)
-
-        # @show typeof(placetype(pmt))
 
         #! MARK will be a TERM, a symbolic expression using TermInterface, @matchable
         #! that, when evaluated, produces a PnmlMultiset object.
@@ -953,8 +948,8 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
 
     # Find adjacent place.
 
-    adjacentplace = adjacent_place(netdata(pit), source(pit), target(pit))
-    placesort = sortref(adjacentplace)::UserSort
+    adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
+    placesort = PNML.sortref(adjacentplace)::UserSort
     vars = () #
     # Variable substitution for a transition affects postset arc inscription,
     # whose expression is used to determine the new marking.
@@ -969,12 +964,6 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
     #!debug !isempty(vars) && @error vars
-
-    # println()
-    # ex = toexpr(inscript) #^ ___ RECURSIVE `toexpr` ___
-    # @show typeof(ex) ex; flush(stdout)
-    # println("evaluate inscription expression")
-    # inscript = eval(ex) #^ ___ EVALUATE EXPRESSION ___
 
     #! inscript isa PnmlExpr, do these tests during/after firing/eval
     #@show inscript placesort; flush(stdout)
@@ -992,13 +981,13 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     return (inscript, placesort, vars)
 end
 
-function adjacent_place(netdata, source::REFID, target::REFID)
-    if haskey(placedict(netdata), source)
-        @assert haskey(transitiondict(netdata), target) # Meta-model constraint.
-        @inline placedict(netdata)[source]
-    elseif haskey(placedict(netdata), target)
-        @assert haskey(transitiondict(netdata), source) # Meta-model constraint.
-        @inline placedict(netdata)[target]
+function PNML.adjacent_place(netdata, source::REFID, target::REFID)
+    if haskey(PNML.placedict(netdata), source)
+        @assert haskey(PNML.transitiondict(netdata), target) # Meta-model constraint.
+        @inline PNML.placedict(netdata)[source]
+    elseif haskey(PNML.placedict(netdata), target)
+        @assert haskey(PNML.transitiondict(netdata), source) # Meta-model constraint.
+        @inline PNML.placedict(netdata)[target]
     else
         error("inscription place not found, source = $source, target = $target")
     end
@@ -1013,7 +1002,7 @@ function def_insc(netdata, source,::REFID, target::REFID)
     place = adjacent_place(netdata, source, target)
     placetype = place.sorttype
     el = def_sort_element(placetype)
-    inscr = pnmlmultiset(sortref(placetype), el, 1)
+    inscr = pnmlmultiset(PNML.sortref(placetype), el, 1)
     #@show inscr
     return inscr
 end

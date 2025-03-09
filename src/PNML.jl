@@ -94,49 +94,26 @@ Multisets.set_key_value_show()
 using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
 using DocStringExtensions
-#using Compat: @compat
-#using StackTraces
 
 # EXPORTS
 
 #export @xml_str, xmlroot
 #export parse_str, parse_file, parse_pnml
+
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export declarations, sortref, basis, multiset
-
-export has_partitionsort
-export has_partitionop, has_feconstant
-export usersorts, useroperators, variabledecls, namedsorts
-export arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
-export variable, namedsort, arbitrarysort, partitionsort
-export namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
-
-export DeclDict, UserOperator, NamedOperator, UserSort, NamedSort, sortdefinition
 export PnmlException, MissingIDException, MalformedException
+export usersort, namedsort
+export PnmlExpr, toexpr
 
-export Variable
-
-export place_idset, transition_function, initial_markings, rates
-
-export placedict, transitiondict, arcdict, refplacedict, reftransitiondict
-export nplaces, ntransitions, narcs, nrefplaces, nreftransitions
-
-export page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
-
-export usersorts,  namedsorts, arbitrarysorts, partitionsorts, partitionops
-export useroperators, namedoperators, arbitraryops, usersort, namedsort, feconstant, feconstants
-
-export toexpr, PnmlExpr, BoolExpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx
-export PnmlTupleEx, Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
-export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
-export PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf
-export Addition, Subtraction, Multiplication, Division
-export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
-export Concatenation, Append, StringLength, Substring
-export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
-export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex, PnmlTuple
-
-export adjacent_place, preset, postset, variables
+# export BoolExpr, VariableEx, UserOperatorEx
+# export PnmlTupleEx, Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
+# export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
+# export PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+# export Addition, Subtraction, Multiplication, Division
+# export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
+# export Concatenation, Append, StringLength, Substring
+# export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
+# export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex, PnmlTuple
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
@@ -187,7 +164,7 @@ include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, a
 
 include("declarations/Declarations.jl")
 using .Declarations
-import .Declarations: NamedSort, SortDeclaration, PartitionElementOp
+import .Declarations: NamedSort, SortDeclaration
 using .Declarations: sortdefinition
 
 # Declarations are inside a <declaration> Label.

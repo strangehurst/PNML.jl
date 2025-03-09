@@ -12,8 +12,8 @@ struct Inscription{T<:PnmlExpr} <: Annotation
 end
 
 Inscription(x::Number) = Inscription(sortref(x), x)
-Inscription(s::UserSort, x::Number) = Inscription(NumberEx(s, x))
-Inscription(ex::NumberEx) = Inscription(ex, nothing, nothing)
+Inscription(s::UserSort, x::Number) = Inscription(PNML.NumberEx(s, x))
+Inscription(ex::PNML.NumberEx) = Inscription(ex, nothing, nothing)
 
 term(i::Inscription) = i.term # TODO when is the optimized away ()
 (i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub))::Number
@@ -134,5 +134,5 @@ Has meaning of unity, as in `one` of the adjacent place's sorttype.
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
     basis = sortref(placetype)
     el = def_sort_element(placetype)
-    HLInscription(Bag(basis, el, 1)) # non-empty singleton multiset.
+    HLInscription(PNML.Bag(basis, el, 1)) # non-empty singleton multiset.
 end

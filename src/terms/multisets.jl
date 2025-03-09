@@ -10,6 +10,8 @@ Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
 Thre are constants (and 0-arity operators) defined that must be multisets
 since HL markings are multisets.
 
+See [`Bag`](@ref) for expression that returns this data structure.
+
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.
 """
@@ -80,7 +82,6 @@ Iterates over elements of the basis sort. __May not be finite sort!__
 """
 sortelements(ms::PnmlMultiset) = sortelements(basis(ms)) # basis element iterator
 
-#! toexpr(ms::PnmlMultiset) see Bag for operator, this is a data structure
 
 # TODO! forward what ops to Multiset?
 
@@ -178,8 +179,8 @@ Usages
 we always find a sort to use, And use dummy elements for their `typeof` for empty multisets.
 
 Expect to be called from a `@matchable` `Terminterface`, thusly:
-  - `eval(toexpr(Bag(basis, x, multi)))`
-  - `eval(toexpr(Bag(basis)))`
+  - `eval(toexpr(Bag(basis, x, multi), variable_substitutions))`
+  - `eval(toexpr(Bag(basis)), variable_substitutions))`
 
 """
 function pnmlmultiset end

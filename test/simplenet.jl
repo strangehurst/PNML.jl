@@ -111,9 +111,9 @@ str1 = """
 
     # PetriNet-only methods.
     @testset "initialMarking" begin
-        u1 = @inferred LArray initial_markings(snet)
-        #!u2 = @inferred LArray initial_markings(snet.net)
-        #!u3 = @inferred LArray initial_markings(first(pages(snet.net)))
+        u1 = @inferred LArray PNML.initial_markings(snet)
+        #!u2 = @inferred LArray PNML.initial_markings(snet.net)
+        #!u3 = @inferred LArray PNML.initial_markings(first(pages(snet.net)))
 
         #@test u1 == u2
         #@test u1 == u3
@@ -190,7 +190,7 @@ end
 
     S = @inferred collect(PNML.place_idset(snet)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(snet))
-    @show m₀ = initial_markings(snet) #::LVector
+    @show m₀ = PNML.initial_markings(snet) #::LVector
     @show PNML.input_matrix(snet, m₀) # needs marking
     @show PNML.output_matrix(snet, m₀)
     @show PNML.conditions(snet)
@@ -273,7 +273,8 @@ const ex_types = ("continuous",)
             <place id="p2"/>
             <place id="p3"/>
             <place id="p4"/>
-            <place id="p0"/>
+            <place id="pcount"/>
+
             <transition id="t1">
                 <condition>
                     <text></text><structure><booleanconstant value="true"/></structure>
@@ -282,15 +283,20 @@ const ex_types = ("continuous",)
             <transition id="t2"/>
             <transition id="t3"/>
             <transition id="t4"/>
+
             <arc id="a1" source="p1"   target="t1"/>
             <arc id="a2" source="t1"   target="p2"/>
+
             <arc id="a3" source="p2"   target="t2"/>
             <arc id="a4" source="t2"   target="p3"/>
+
             <arc id="a5" source="p3"   target="t3"/>
             <arc id="a6" source="t3"   target="p4"/>
+
             <arc id="a7" source="p4"   target="t4"/>
             <arc id="a8" source="t4"   target="p1"/>
-            <arc id="a9" source="t4"   target="p0"/>
+
+            <arc id="a9" source="t4"   target="pcount"/> <!-- of loops completed -->
         </page>
         </net>
     </pnml>
@@ -302,16 +308,14 @@ const ex_types = ("continuous",)
 
     flush(stdout)
 
-    @show m₀ = initial_markings(anet) #::LVector
+    @show m₀ = PNML.initial_markings(anet) #::LVector
     @show C  = PNML.incidence_matrix(anet, m₀) # Matrix of PnmlMultiset
-    @show muladd(permutedims(C), [1,0,0,0], m₀)
     @show e  = PNML.enabled(anet, m₀)
-    @show muladd(permutedims(C), e, m₀)
-    # println("==================================")
+    # @show muladd(permutedims(C), [1,0,0,0], m₀)
+    # @show muladd(permutedims(C), e, m₀)
     # @show m = PNML.fire!(C, [1,0,0,0], m₀)
     println("==================================")
 
-    #!@test values(e) == [true,false,false,false]
     @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
@@ -324,11 +328,19 @@ const ex_types = ("continuous",)
     @show e = enabled(anet, m₂)
     @test e == [false,false,true,false]
 
-    m₃ = PNML.fire!(C, e, m₂)
-    e = enabled(anet, m₃)
+    @show m₃ = PNML.fire!(C, e, m₂)
+    @show e = enabled(anet, m₃)
     @test e == [false,false,false,true]
 
-    m₄ = PNML.fire!(C, e, m₃)
-    e = enabled(anet, m₄)
+    @show m₄ = PNML.fire!(C, e, m₃)
+    @show e = enabled(anet, m₄)
     @test e == [true,false,false,false]
+
+    println("==================================")
+    let mx = m₀
+        for n in 1:10
+            mx = PNML.fire!(C, enabled(anet, mx), mx)
+        end
+        @show mx
+    end
 end

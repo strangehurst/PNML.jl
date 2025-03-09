@@ -29,7 +29,6 @@ using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
 using PNML: page_idset, place_idset, transition_idset, arc_idset
 using PNML: refplace_idset, reftransition_idset
 using PNML: has_partitionsort
-using PNML: has_partitionop, has_feconstant
 using PNML: usersorts, useroperators, variabledecls, namedsorts
 using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
 using PNML: variable, namedsort, arbitrarysort, partitionsort
@@ -43,10 +42,10 @@ using PNML: rate_value_type
 using PNML: coordinate_type, coordinate_value_type
 using PNML: validate_declarations, validate_toolinfos
 using PNML: def_sort_element
-using PNML: toexpr, VariableEx, UserOperatorEx, NumberEx, BooleanEx, PnmlTupleEx
+using PNML: toexpr, VariableEx, UserOperatorEx, PnmlTupleEx
 using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
-using PNML: PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf
 using PNML: Addition, Subtraction, Multiplication, Division
 using PNML: GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
 using PNML: Concatenation, Append, StringLength, Substring

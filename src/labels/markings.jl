@@ -18,8 +18,8 @@ struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
     tools::Maybe{Vector{ToolInfo}}
 end
 # Allow any Number subtype, only a few concrete subtypes are expected.
-Marking(m::Number) = Marking(NumberEx(m))
-Marking(nx::NumberEx) = Marking(#=text is nothing,=# nx, nothing, nothing)
+Marking(m::Number) = Marking(PNML.NumberEx(m))
+Marking(nx::PNML.NumberEx) = Marking(#=text is nothing,=# nx, nothing, nothing)
 
 term(marking::Marking) = marking.term
 
@@ -235,7 +235,7 @@ default_marking(::T) where {T<:AbstractHLCore} =
 
 function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
     el = def_sort_element(placetype)
-    HLMarking(Bag(sortref(placetype), el, 0)) # empty multiset, el used for its type
+    HLMarking(PNML.Bag(sortref(placetype), el, 0)) # empty multiset, el used for its type
 end
 
 # 2024-08-07 encountered the need to handle a <numberof> as an expression (NamedOpertor)

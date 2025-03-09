@@ -132,11 +132,11 @@ end
         @test PNML.graphics(decl) === nothing
         @test PNML.tools(decl) === nothing
 
-        @test_opt PNML.Labels.decldict(decl)
+        @test_opt PNML.PNML.decldict(decl)
         @test_opt PNML.graphics(decl)
         @test_opt PNML.tools(decl)
 
-        @test_call PNML.Labels.decldict(decl)
+        @test_call PNML.PNML.decldict(decl)
         @test_call PNML.graphics(decl)
         @test_call PNML.tools(decl)
     end
@@ -265,7 +265,7 @@ end
         @test typeof(decl) <: Declaration
 
         # Examine 3 partition sorts
-        for psort in values(PNML.partitionsorts(decldict(decl)))
+        for psort in values(PNML.partitionsorts(PNML.decldict(decl)))
             # named partition -> partition element -> fe constant
             @test typeof(psort) <: PartitionSort # is a declaration
 

@@ -176,7 +176,7 @@ function test_unclaimed(pntd, xmlstring::String)
     reg2 = registry()
     @with PNML.idregistry => reg2 PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[];)
-        (t,u) = unparsed_tag(node) # tag is a string
+        (t,u) = Parser.unparsed_tag(node) # tag is a string
         l = PnmlLabel(t, u)
         a = anyelement(node, pntd)
 
@@ -184,16 +184,16 @@ function test_unclaimed(pntd, xmlstring::String)
         @test l isa PnmlLabel
         @test a isa AnyElement
 
-        @test_opt target_modules=(@__MODULE__,) unparsed_tag(node)
+        @test_opt target_modules=(@__MODULE__,) Parser.unparsed_tag(node)
         @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
-        @test_opt target_modules=(@__MODULE__,) function_filter=pff anyelement(node, pntd)
+        @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node, pntd)
 
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) unparsed_tag(node)
+                                JET.AnyFrameModule(XMLDict)) Parser.unparsed_tag(node)
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u)
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) anyelement(node, pntd)
+                                JET.AnyFrameModule(XMLDict)) Parser.anyelement(node, pntd)
 
         nn = Symbol(EzXML. EzXML.nodename(node))
         @test t == EzXML.nodename(node)

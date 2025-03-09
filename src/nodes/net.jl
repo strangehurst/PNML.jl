@@ -65,7 +65,7 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 
-decldict(net::PnmlNet) = Labels.decldict(net.declaration) # Access a label's value.
+decldict(net::PnmlNet) = decldict(net.declaration) # Access a label's value.
 
 has_tools(net::PnmlNet) = !isnothing(net.tools)
 tools(net::PnmlNet)     = net.tools
@@ -282,7 +282,7 @@ function enabledXXX(net::PnmlNet, marking)
             # println("   arc ", repr(pid(ar)), " : ", repr(placeid), " -> ", repr(trid))
             # println("      marking = ", mark)
 
-            arc_vars  = Multiset(variables(inscription(ar))...) # Count variables.
+            arc_vars  = Multiset(Labels.variables(inscription(ar))...) # Count variables.
             #! No variable arcs must still be tested for place marking >= inscription & condition.
             isempty(arc_vars) ||
                 union!(tr.vars, keys(arc_vars)) # Only variable REFID is stored in transaction.
@@ -531,7 +531,7 @@ function Base.show(io::IO, net::PnmlNet)
         print(iio, '\n', indent(iio)); show(iio, page)
     end
     println(io)
-    print(io, "Declarations = ", repr(PNML.decldict(net)))
+    print(io, "Declarations = ", repr(decldict(net)))
     show(io, tools(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
     show(io, nettype(net)); println(io, ")")

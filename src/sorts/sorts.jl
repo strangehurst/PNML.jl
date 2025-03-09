@@ -25,7 +25,7 @@ equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
 
 # Returns true if sorts are semantically the same sort, even in two different objects.
 # Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
-# Unless they have content just the types are sufficent.
+# Unless they have content, just the types are sufficent.
 # Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
 # Called when both a and b are the same concrete type.
 equalSorts(a::AbstractSort, b::AbstractSort) = a == b

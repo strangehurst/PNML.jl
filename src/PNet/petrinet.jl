@@ -474,8 +474,8 @@ Return the marking after firing transition:   marking + incidence * enabled
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
     println("fire!")
-    @show typeof(incidence) enabled typeof(m₀)
-    @show m₁ = muladd(permutedims(incidence), enabled, m₀)
+    # @show typeof(incidence) enabled typeof(m₀)
+    m₁ = muladd(permutedims(incidence), enabled, m₀)
     LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end
 

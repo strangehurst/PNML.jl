@@ -9,7 +9,7 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: BooleanConstant)
+```jldoctest; setup=:(using PNML; using PNML: BooleanEx, BooleanConstant)
 julia> c = PNML.Labels.Condition(false)
 Condition("", BooleanEx(BooleanConstant(false)))
 
@@ -34,11 +34,11 @@ end
 
 #! 2024-10-21 as part of transition to TermInterface change value to term,
 Condition(b::Bool)            = Condition(BooleanConstant(b))
-Condition(c::BooleanConstant) = Condition(BooleanEx(c))
-Condition(expr::BooleanEx)    = Condition(nothing, expr, nothing, nothing, ())
+Condition(c::BooleanConstant) = Condition(PNML.BooleanEx(c))
+Condition(expr::PNML.BooleanEx)    = Condition(nothing, expr, nothing, nothing, ())
 Condition(text::AbstractString, b::Bool)            = Condition(text, BooleanConstant(b))
-Condition(text::AbstractString, c::BooleanConstant) = Condition(text, BooleanEx(c))
-Condition(text::AbstractString, expr::BooleanEx)    = Condition(text, expr, nothing, nothing, ())
+Condition(text::AbstractString, c::BooleanConstant) = Condition(text, PNML.BooleanEx(c))
+Condition(text::AbstractString, expr::PNML.BooleanEx) = Condition(text, expr, nothing, nothing, ())
 
 condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
@@ -71,7 +71,7 @@ function cond_implementation(c::Condition, varsub::NamedTuple)
         @show arg
     end
     # BooleanEx is a literal. BoolExpr <: PnmlExpr can be non-literal (non-ground term).
-    isa(term(c), BooleanEx) || @warn term(c) varsub toexpr(term(c), varsub) #! debug
+    isa(term(c), PNML.BooleanEx) || @warn term(c) varsub toexpr(term(c), varsub) #! debug
 
     eval(toexpr(term(c), varsub))::eltype(c) # Bool isa Number
 end
@@ -90,4 +90,4 @@ end
 
 Has meaning of true or always.
 """
-default_condition(::PnmlType) = Condition(BooleanEx(BooleanConstant(true)))
+default_condition(::PnmlType) = Condition(PNML.BooleanEx(BooleanConstant(true)))

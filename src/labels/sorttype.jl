@@ -72,8 +72,7 @@ end
 SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
-text(t::SortType)   = ifelse(isnothing(t.text), "", t.text)
-#! clashes with decldict usersort(t::SortType)  = t.sort_ # Access UserSort
+text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) #! see text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 sortof(t::SortType) = sortdefinition(namedsort(sortref(t))) #? also arbitrarysort, partitionsort
 sortelements(t::SortType) = sortelements(sortof(t))

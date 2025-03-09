@@ -3,8 +3,8 @@ using EzXML: EzXML
 using XMLDict: XMLDict
 
 # See PnmlExpr
-_op() = (; args=(Bag(UserSort(:pro), 1, NumberEx(UserSort(:natural), 1)),
-                Bag(UserSort(:pro), 2, NumberEx(UserSort(:natural), 1)), ))
+_op() = (; args=(PNML.Bag(UserSort(:pro), 1, PNML.NumberEx(UserSort(:natural), 1)),
+PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1)), ))
 
 @testset "add $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     #
@@ -13,13 +13,13 @@ _op() = (; args=(Bag(UserSort(:pro), 1, NumberEx(UserSort(:natural), 1)),
         varsub = NamedTuple()
         #@show PNML.pnmlmultiset(UserSort(:dot), DotConstant())
         #Add
-        b1 = Bag(UserSort(:pro), 1, NumberEx(UserSort(:natural), 1))
-        b2 = Bag(UserSort(:pro), 2, NumberEx(UserSort(:natural), 1))
+        b1 = PNML.Bag(UserSort(:pro), 1, PNML.NumberEx(UserSort(:natural), 1))
+        b2 = PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1))
         #@show b1 b2
-        @show a = Add([b1, b2])
-        ex = toexpr(a, varsub)
+        @show a = PNML.Add([b1, b2])
+        ex = PNML.toexpr(a, varsub)
         @show val = eval(ex)
-        @test val == eval(toexpr(b1, varsub)) + eval(toexpr(b2, varsub))
+        @test val == eval(PNML.toexpr(b1, varsub)) + eval(PNML.toexpr(b2, varsub))
 
         # op = _op()::NamedTuple
         # #; args=(b1,b2))

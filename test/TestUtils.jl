@@ -4,7 +4,7 @@ using EzXML, Preferences, XMLDict, Reexport, Multisets
 Multisets.set_key_value_show()
 @reexport using Base.ScopedValues
 
-@reexport using PNML: PNML
+@reexport using PNML
 @reexport using PNML.Sorts
 @reexport using PNML.Labels
 @reexport using PNML.Parser
@@ -12,9 +12,8 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlIDRegistrys
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
-@reexport using PNML: PnmlIDRegistrys, registry, isregistered, pid
-@reexport using PNML.PnmlTypeDefs
-    ishighlevel, isdiscrete, iscontinuous
+# @reexport using PNML: PnmlIDRegistrys, registry, isregistered, pid
+# @reexport using PNML.PnmlTypeDefs, ishighlevel, isdiscrete, iscontinuous
 
 @reexport using PNML: Maybe, DeclDict,
     XMLNode, xmlroot,  Parser.firstchild, Parser.allchildren,

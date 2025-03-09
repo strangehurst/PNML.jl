@@ -153,7 +153,7 @@ finite_operators()  = (:lessthan,
 
 Is tag in `finite_operators()`?
 """
-iisfiniteoperator(tag::Symbol) = (tag in finite_operators())
+isfiniteoperator(tag::Symbol) = (tag in finite_operators())
 
 partition_operators = (:ltp, :gtp, :partitionelementof)
 
@@ -303,7 +303,7 @@ function (uo::UserOperator)(#= pass arguments to operator =#)
     if !has_operator(uo.declaration)
         error("found NO operator $(repr(uo.declaration))")
     else
-        op = operator(uo.declaration) # lookup operator REFID using ScopedValue decldict
+        op = operator(uo.declaration) # lookup operator REFID using ScopedValue
         @warn "found operator for $(uo.declaration)" op
         r = op(#= pass arguments to functor/operator =#) # treat as functor
         return r

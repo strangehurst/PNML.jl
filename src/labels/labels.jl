@@ -82,7 +82,6 @@ has_labels(l::AbstractLabel) = false
 
 # Some Labels are functors: marking, inscription, condition.
 # Usually where it is possible to have a high-level term.
-#! toexpr(label::AbstractLabel) = toexpr(label())
 
 #--------------------------------------------
 """
@@ -108,7 +107,7 @@ This concrete type is for "unclaimed" labels in a high-level petri net.
 Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
 [`Declaration`](@ref), [`HLMarking`](@ref), [`HLInscription`](@ref).
 """
-struct HLLabel{PNTD} <: Annotation
+struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
@@ -203,11 +202,11 @@ being labels, it is allowed.
 """
 @kwdef struct Declaration <: Annotation
     text::Maybe{String} = nothing
-    ddict::DeclDict = DeclDict()
+    ddict::DeclDict = DeclDict() # Empty is allowed and the default.
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
 end
 
-decldict(d::Declaration) = d.ddict
-Base.length(d::Declaration) = length(decldict(d))
-Base.isempty(d::Declaration) = isempty(decldict(d))
+PNML.decldict(d::Declaration) = d.ddict # Coalesced into this per-net DeclDict.
+Base.length(d::Declaration) = length(PNML.decldict(d))
+Base.isempty(d::Declaration) = isempty(PNML.decldict(d))

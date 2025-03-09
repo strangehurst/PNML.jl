@@ -23,8 +23,9 @@ import PNML: place_type, transition_type, arc_type, refplace_type, reftransition
 import PNML: marking_type, inscription_type, condition_type, coordinate_type
 import PNML: marking_value_type, inscription_value_type, condition_value_type, coordinate_value_type
 import PNML: rate_value_type
-import PNML: toexpr, NumberEx, BooleanEx, PnmlTupleEx
+import PNML: toexpr, PnmlExpr, PnmlTupleEx
 import PNML: variables
+import PNML: decldict
 
 using ..PnmlTypeDefs
 using ..Sorts
@@ -38,8 +39,10 @@ include("conditions.jl")
 include("rates.jl")
 include("structure.jl")
 
-export AbstractLabel, Name, Marking, HLMarking, Condition, Inscription, HLInscription
-export Declaration, SortType, PnmlLabel, TransitionRate
-export text, get_labels, get_label, decldict, rate, delay
+export AbstractLabel, Condition, Declaration, Inscription, Marking
+export Name, PnmlLabel, SortType, TransitionRate
+export HLAnnotation, HLInscription, HLMarking, HLLabel
+
+export text, get_labels, get_label, rate, delay
 
 end # module labels
