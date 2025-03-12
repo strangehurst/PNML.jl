@@ -409,7 +409,7 @@ function enabled(net::PnmlNet, marking)
                         PNML.preset(net, t)) for t in transition_idset(net)]
 end
 #==========================================================================
-Notes based on ISO Standard Part 1, 2nd Edition #TODO cite full(er) version
+Notes based on ISO/IEC 15909-1:2019 (Part 1, 2nd Edition).
 
 Color class (concept 13) a non-empty finite set, may be linearly ordered, circular or unordered.
 Color domain (concept 14) a finite cartesian product of color classes.
@@ -435,7 +435,7 @@ Selecting one tuple field is well founded math, julia handles it.
 ProductSort only used by high-level nets.
 Tuple elements will evaluate to Bags whose basis matches the place's ProductSort sorttype.
 
-Need a PnmlMultiset that servers as `zero` for `*` and `+`.
+Need a PnmlMultiset that serves as `zero` for `*` and `+`.
 PnmlMultiset with basis of `zero` or `null` sort, hold an empty Multiset{T}
 matching eltype T for type stability, and acting like `zero`.
 #~ See the zero method.
@@ -450,6 +450,7 @@ They are forbidden as a marking since the basis used is imaginary.
 Will not appear in input marking or output of fire!(incidence, enabled, marking).
 
 ===========================================================================#
+
 function varsubs(net::PnmlNet, transition_id::REFID)
     varsubs(transition(net, transition_id))
 end
@@ -473,12 +474,26 @@ Return the marking after firing transition:   marking + incidence * enabled
 `marking` LVector values added to product of `incidence'` matrix and firing vector `enabled`.
 """
 function fire!(incidence, enabled, m₀) #TODO move "lvector tools" section
-    println("fire!")
-    # @show typeof(incidence) enabled typeof(m₀)
+    #println("fire!")
+    #@show typeof(incidence) enabled typeof(m₀)
+    #@show permutedims(incidence) * enabled
+    #! Multisets do not have negative multiplicities so al; HL Nets fail here!
     m₁ = muladd(permutedims(incidence), enabled, m₀)
     LVector(namedtuple(symbols(m₀), m₁)) # old names, new values
 end
 
+function fire2(C, anet, mx)
+    pntd = nettype(anet)
+    if pntd <: PT_HLPNG
+        println("fire $(repr(pntd)) not implemented")
+        PNML.fire!(C, enabled(anet, mx), mx)
+    elseif pntd <: AbstractHLCore
+        println("fire $(repr(pntd)) not implemented")
+        PNML.fire!(C, enabled(anet, mx), mx)
+    else
+        PNML.fire!(C, enabled(anet, mx), mx)
+    end
+end
 
 "reachability_graph"
 function reachability_graph(net)

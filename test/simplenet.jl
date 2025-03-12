@@ -320,26 +320,22 @@ const ex_types = ("continuous",)
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
 
-    @show m₁ = PNML.fire!(C, e, m₀)
-    @show e = enabled(anet, m₁)
-    @test e == [false,true,false,false]
+    @show m₁ = PNML.fire2(C, anet, m₀)
+    @test enabled(anet, m₁) == [false,true,false,false]
 
-    @show m₂ = PNML.fire!(C, e, m₁)
-    @show e = enabled(anet, m₂)
-    @test e == [false,false,true,false]
+    @show m₂ = PNML.fire2(C, anet, m₁)
+    @test enabled(anet, m₂) == [false,false,true,false]
 
-    @show m₃ = PNML.fire!(C, e, m₂)
-    @show e = enabled(anet, m₃)
-    @test e == [false,false,false,true]
+    @show m₃ = PNML.fire2(C, anet, m₂)
+    @test enabled(anet, m₃) == [false,false,false,true]
 
-    @show m₄ = PNML.fire!(C, e, m₃)
-    @show e = enabled(anet, m₄)
-    @test e == [true,false,false,false]
+    @show m₄ = PNML.fire2(C, anet, m₃)
+    @test enabled(anet, m₄) == [true,false,false,false]
 
     println("==================================")
     let mx = m₀
         for n in 1:10
-            mx = PNML.fire!(C, enabled(anet, mx), mx)
+            mx = PNML.fire2(C, anet, mx)
         end
         @show mx
     end
