@@ -57,9 +57,9 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType <: Annotation # Not limited to high-level dialects.
+struct SortType <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::UserSort # indirection NamedSort or ArbitrarySort
+    sort_::UserSort # REFID of NamedSort or ArbitrarySort.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -72,23 +72,13 @@ end
 SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
-text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) #! see text(::AbstractLabel)
+text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 sortof(t::SortType) = sortdefinition(namedsort(sortref(t))) #? also arbitrarysort, partitionsort
 sortelements(t::SortType) = sortelements(sortof(t))
 
-"""
-    def_sort_element(pt)
-
-Return an arbitrary element of the sort.
-All sorts are expected to be iteratable, so we return `first`.
-Uses include default inscription value and default initial marking value sort.
-
-`pt` can be anything with a `sortelements` method that returns an iterator that
-has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
-"""
 function def_sort_element(pt::SortType)
-    els = sortelements(pt) # High-level (HLPNG) allows infinite iterators.
+    els = sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
     # println("def_sort_element($(repr(pt))) ", el); #! debug
     # @error "def_sort_element" pt sortof(pt) collect(sortelements(pt))
