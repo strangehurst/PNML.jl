@@ -120,15 +120,25 @@ has_feconstant(id::Symbol)    = has_feconstant(PNML.DECLDICT[], id)
 has_usersort(id::Symbol)      = has_usersort(PNML.DECLDICT[], id)
 has_useroperator(id::Symbol)  = has_useroperator(PNML.DECLDICT[], id)
 
+"Lookup variable with `id` in DeclDict."
 variable(dd::DeclDict, id::Symbol)       = variabledecls(dd)[id]
+"Lookup namedsort with `id` in DeclDict."
 namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
+"Lookup arbitrarysort with `id` in DeclDict."
 arbitrarysort(dd::DeclDict, id::Symbol)  = arbitrarysorts(dd)[id]
+"Lookup partitionsort with `id` in DeclDict."
 partitionsort(dd::DeclDict, id::Symbol)  = partitionsorts(dd)[id]
+"Lookup namedop with `id` in DeclDict."
 namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
-arbitrary_op(dd::DeclDict, id::Symbol)   = arbitraryoperators(dd)[id]
+"Lookup arbitraryop with `id` in DeclDict."
+arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryoperators(dd)[id]
+"Lookup partitionop with `id` in DeclDict."
 partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
+"Lookup feconstant with `id` in DeclDict."
 feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
+"Lookup usersort with `id` in DeclDict."
 usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
+"Lookup useroperator with `id` in DeclDict."
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
 variable(id::Symbol)       = variabledecls(PNML.DECLDICT[])[id]
@@ -136,7 +146,7 @@ namedsort(id::Symbol)      = namedsorts(PNML.DECLDICT[])[id]
 arbitrarysort(id::Symbol)  = arbitrarysorts(PNML.DECLDICT[])[id]
 partitionsort(id::Symbol)  = partitionsorts(PNML.DECLDICT[])[id]
 namedop(id::Symbol)        = namedoperators(PNML.DECLDICT[])[id]
-arbitrary_op(id::Symbol)   = arbitraryoperators(PNML.DECLDICT[])[id]
+arbitraryop(id::Symbol)   = arbitraryoperators(PNML.DECLDICT[])[id]
 partitionop(id::Symbol)    = partitionops(PNML.DECLDICT[])[id]
 feconstant(id::Symbol)     = feconstants(PNML.DECLDICT[])[id]
 usersort(id::Symbol)       = usersorts(PNML.DECLDICT[])[id]
