@@ -354,7 +354,7 @@ function enabledXXX(net::PnmlNet, marking)
                         # println("=-=-=-=-=-=-=-=-")
                         #inscription_val = eval(toexpr(term(inscription(ar)), NamedTuple()))
                         inscription_val = _cvt_inscription_value(net, ar, zero_marking(place(net, placeid)), vsub)
-                        @show inscription_val
+                        #@show inscription_val
 
                         mark = unwrap_pmset(mark)
 
