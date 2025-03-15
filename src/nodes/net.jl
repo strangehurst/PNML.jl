@@ -319,7 +319,9 @@ function enabledXXX(net::PnmlNet, marking)
                     # This includes the non-HL net types that do not have variables.
                     # 0-ary operators
                     #@show term(inscription(ar))
-                    inscription_val = eval(toexpr(term(inscription(ar)), NamedTuple()))
+                    inscription_val = _cvt_inscription_value(net, ar,
+                                                    zero_marking(place(net, placeid)),
+                                                    NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
                     # !mi_val && println("mark < inscription_val.") #! debug
                     #@show term(condition(tr))
@@ -350,11 +352,11 @@ function enabledXXX(net::PnmlNet, marking)
                         # @show term(inscription(ar))
                         # @show toexpr(term(inscription(ar)), vsub)
                         # println("=-=-=-=-=-=-=-=-")
-                        inscription_val = eval(toexpr(term(inscription(ar)), vsub))
-                        # @show inscription_val
+                        #inscription_val = eval(toexpr(term(inscription(ar)), NamedTuple()))
+                        inscription_val = _cvt_inscription_value(net, ar, zero_marking(place(net, placeid)), vsub)
+                        @show inscription_val
 
                         mark = unwrap_pmset(mark)
-
 
                         #println()
                         #? Do we want <= or is it issubset(A,B)?
@@ -388,8 +390,8 @@ function enabledXXX(net::PnmlNet, marking)
         push!(evector, enabled)
         # println("----------------------------------------------------------")
     end # for tr
-    @show evector
-  return evector
+    #@show evector
+    return evector
 end
 
 """

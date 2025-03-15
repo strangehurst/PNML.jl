@@ -102,16 +102,21 @@ end
 
 # Julia Type is the "fixed" part.
 
-inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr} #inscription_value_type(T)}
-inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr} #inscription_value_type(T)}
+inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr}
+inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr}
 
-inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort)
-inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort)
+#!============================================================================
+#! inscription_value_type must match adjacent place marking_value_type
+#! with inscription being PositiveSort and marking being NaturalSort.
+#!============================================================================
+inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
+inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 #
 # PnmlMultiset{B,T} # basis
 #~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
-#~ T is the Multiset type parameter,
-inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Tuple, <:Any}
+#~ T is the Multiset type parameter, Keep B and T in sync!
+inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
+# inscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
 inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), DotConstant}
 
 """
@@ -129,10 +134,9 @@ $(TYPEDSIGNATURES)
 
 Return default `HLInscription` value based on `PNTD`.
 Has meaning of unity, as in `one` of the adjacent place's sorttype.
-#TODO Add element of sort selector
 """
 function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
-    basis = sortref(placetype)
+    basis = sortref(placetype)::UserSort
     el = def_sort_element(placetype)
     HLInscription(PNML.Bag(basis, el, 1)) # non-empty singleton multiset.
 end
