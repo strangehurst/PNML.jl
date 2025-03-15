@@ -105,9 +105,9 @@ Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 """
-    inscription(arc::Arc) -> Union{Number,PnmlMultiset}
+    inscription(arc::Arc) -> Union{Inscription,HLInscription}
 
-Every inscription label is treated as a functor.
+Access inscription label of arc.
 """
 inscription(arc::Arc) = arc.inscription # label
 
