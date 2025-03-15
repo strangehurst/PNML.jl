@@ -773,6 +773,7 @@ $(TYPEDSIGNATURES)
 Ignore the source & target IDREF symbols.
 """
 function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType)
+    @assert !(pntd isa AbstractHLCore)
     check_nodename(node, "inscription")
     txt = nothing
     value = nothing
