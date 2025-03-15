@@ -187,17 +187,20 @@ marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
 
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
-marking_value_type(::Type{<:PnmlType}) =  Int #! NumberEx
-marking_value_type(::Type{<:AbstractContinuousNet}) = Float64 #! NumberEx
+marking_value_type(::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
+marking_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any} #! PnmlExpr
+marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
+
+#~ Note the close relation of marking_value_type to inscription_value_type.
+#~ Inscription values are non-zero while marking values may be zero.
 
 #--------------------------------------------------------------------------------------
 # Basis sort can be, and are, restricted by/on PnmlType in the ISO standard.
 # That is a statement about the XML file content. Allows a partial implementation that
-# only supports the PTNet meta-model. SymmetricNet met-model, full fat HLPNG.
+# only supports the PTNet meta-model or SymmetricNet meta-model of Petri nets.
 # The PnmlCoreNet, upon which PTNet, SymmetricNet, HLPNG, etc. are defined can be used
 # to implement non-Petri net meta-models.
 #
