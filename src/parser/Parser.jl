@@ -32,7 +32,7 @@ using PNML: has_partitionsort
 using PNML: usersorts, useroperators, variabledecls, namedsorts
 using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
 using PNML: variable, namedsort, arbitrarysort, partitionsort
-using PNML: namedop, arbitrary_op, partitionop, feconstant, usersort, useroperator
+using PNML: namedop, arbitraryop, partitionop, feconstant, usersort, useroperator
 using PNML: fill_sort_tag!
 
 using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type
