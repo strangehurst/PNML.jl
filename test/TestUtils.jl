@@ -12,8 +12,6 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlIDRegistrys
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
-# @reexport using PNML: PnmlIDRegistrys, registry, isregistered, pid
-# @reexport using PNML.PnmlTypeDefs, ishighlevel, isdiscrete, iscontinuous
 
 @reexport using PNML: Maybe, DeclDict,
     XMLNode, xmlroot,  Parser.firstchild, Parser.allchildren,
@@ -46,19 +44,13 @@ Multisets.set_key_value_show()
 
 @reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels,
     Condition
-@reexport using PNML.Parser: add_label!
+
 @reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
 
 @reexport using PNML: AbstractDeclaration, Declaration, refid,
     initial_marking, initial_markings,
     inscription,
     condition
-
-@reexport using PNML: page_type,
-    place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    marking_type, inscription_type, condition_type,
-    marking_value_type, inscription_value_type, condition_value_type,
-    rate_value_type
 
 @reexport using PNML: AbstractSort, SortType, UserSort, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,

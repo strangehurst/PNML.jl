@@ -76,7 +76,7 @@ end
         PNML.fill_nonhl!(PNML.DECLDICT[])
         @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")
 
-        pagedict = OrderedDict{Symbol, page_type(pntd)}()
+        pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
         netdata = PNML.PnmlNetData(pntd)
         netsets = PNML.PnmlNetKeys()
 

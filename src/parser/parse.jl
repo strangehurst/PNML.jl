@@ -753,7 +753,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
     pt = eltype(PNML.sortref(placetype))
-    mvt = eltype(marking_value_type(pntd))
+    mvt = eltype(PNML.marking_value_type(pntd))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
 
     value = if isnothing(l.text)
@@ -784,7 +784,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         tag = EzXML.nodename(child)
         if tag == "text"
             txt = string(strip(EzXML.nodecontent(child)))
-            value = number_value(inscription_value_type(pntd), txt)
+            value = number_value(PNML.inscription_value_type(pntd), txt)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -796,7 +796,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
 
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value)
-        value = one(inscription_value_type(pntd))
+        value = one(PNML.inscription_value_type(pntd))
         CONFIG[].warn_on_fixup &&
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end

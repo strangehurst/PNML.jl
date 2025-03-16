@@ -227,12 +227,6 @@ end
 end
 
 using Graphs, MetaGraphsNext
-using PNML: AbstractPetriNet, enabled
-
-#println()
-#println("=========="^12)
-#println("=========="^12)
-#println()
 
 # String so that pntd can be embedded in the XML.
 const core_types = ("pnmlcore","ptnet",)
@@ -321,16 +315,16 @@ const ex_types = ("continuous",)
     @test e == [1,0,0,0]
 
     m₁ = PNML.fire2(C, anet, m₀)
-    @test enabled(anet, m₁) == [false,true,false,false]
+    @test PNML.enabled(anet, m₁) == [false,true,false,false]
 
     m₂ = PNML.fire2(C, anet, m₁)
-    @test enabled(anet, m₂) == [false,false,true,false]
+    @test PNML.enabled(anet, m₂) == [false,false,true,false]
 
     m₃ = PNML.fire2(C, anet, m₂)
-    @test enabled(anet, m₃) == [false,false,false,true]
+    @test PNML.enabled(anet, m₃) == [false,false,false,true]
 
     m₄ = PNML.fire2(C, anet, m₃)
-    @test enabled(anet, m₄) == [true,false,false,false]
+    @test PNML.enabled(anet, m₄) == [true,false,false,false]
 
     #println("==================================")
     let mx = m₀

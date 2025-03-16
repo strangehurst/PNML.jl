@@ -5,7 +5,7 @@ Parse high-level place-transition net's (HL-PTNet) toolspecific structure define
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "tokengraphics")
-    tpos = coordinate_type(pntd)[]
+    tpos = PNML.coordinate_type(pntd)[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "tokenposition"
@@ -39,7 +39,7 @@ Return a [`Graphics`](@ref) holding the union of possibilities.
 function parse_graphics(node, pntd)
     nn = check_nodename(node, "graphics")
     args = Dict()
-    _positions = Coordinate{coordinate_value_type(pntd)}[]
+    _positions = Coordinate{PNML.coordinate_value_type(pntd)}[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag ==   "dimension"
@@ -59,7 +59,7 @@ function parse_graphics(node, pntd)
         end
     end
     args[:positions] = _positions
-    Graphics{coordinate_value_type(pntd)}(; pairs(args)...)
+    Graphics{PNML.coordinate_value_type(pntd)}(; pairs(args)...)
 end
 
 """
@@ -92,8 +92,8 @@ function parse_graphics_coordinate(node, pntd)
     EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x"))
     EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y"))
 
-    Coordinate(number_value(coordinate_value_type(pntd), node["x"]),
-               number_value(coordinate_value_type(pntd), node["y"]))
+    Coordinate(number_value(PNML.coordinate_value_type(pntd), node["x"]),
+               number_value(PNML.coordinate_value_type(pntd), node["y"]))
 end
 
 """

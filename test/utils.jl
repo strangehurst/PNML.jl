@@ -55,7 +55,7 @@ println()
     t = Labels.default_typeusersort(pntd)::UserSort
 end
 @testset "rate_value_type($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
-    r = rate_value_type(pntd)
+    r = PNML.rate_value_type(pntd)
     #println("rate_value_type($pntd) = ", r)
     @test r == eltype(RealSort)
 end

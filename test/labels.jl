@@ -50,7 +50,7 @@ end
     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
         #@show marking_value_type(pntd)
-        placetype = SortType("$pntd initMarking", sortref(marking_value_type(pntd))::UserSort)
+        placetype = SortType("$pntd initMarking", sortref(PNML.marking_value_type(pntd))::UserSort)
 
         # Parse ignoring unexpected child
         mark = @test_logs((:warn, r"^ignoring unexpected child"),
@@ -116,26 +116,26 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 #@testset "add_labels JET $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # lab = PnmlLabel[]
     # reg = registry()
-    # @show pff(PNML.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
-    # @test_opt add_label!(lab, node, pntd)
+    # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
+    # @test_opt PNML.Parser.add_label!(lab, node, pntd)
     # @test_opt(broken=false,
     #             ignored_modules=(JET.AnyFrameModule(EzXML),
     #                             JET.AnyFrameModule(XMLDict),
     #                             JET.AnyFrameModule(Base.CoreLogging)),
     #             function_filter=pff,
-    #             add_label!(lab, xml"""<test1> 1 </test1>""", pntd))
+    #             PNML.Parser.add_label!(lab, xml"""<test1> 1 </test1>""", pntd))
 
-    # @test_call add_label!(lab, node, pntd)
+    # @test_call PNML.Parser.add_label!(lab, node, pntd)
     # @test_call(ignored_modules=(JET.AnyFrameModule(EzXML),
     #                             JET.AnyFrameModule(XMLDict)),
-    #                             add_label!(lab, node, pntd))
+    #                             PNML.Parser.add_label!(lab, node, pntd))
 #end
 
 @testset "labels $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     lab = PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
-        lab = Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>")::XMLNode, pntd)
+        lab = PNML.Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>")::XMLNode, pntd)
         @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end

@@ -37,9 +37,6 @@ using PNML: fill_sort_tag!
 
 using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type
 using PNML: marking_type, inscription_type, condition_type
-using PNML: marking_value_type, inscription_value_type, condition_value_type
-using PNML: rate_value_type
-using PNML: coordinate_type, coordinate_value_type
 using PNML: validate_declarations, validate_toolinfos
 using PNML: def_sort_element
 using PNML: toexpr, VariableEx, UserOperatorEx, PnmlTupleEx

@@ -1,5 +1,4 @@
 using PNML, ..TestUtils, JET
-#using PNML: x, y
 
 @testset "coordinate" begin
     PNML.Coordinate(1, 2)

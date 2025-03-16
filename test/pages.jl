@@ -99,20 +99,20 @@ net = first(nets(model)) # The nets of a model not inferrable.
 verify_sets(net)
 
 type_funs = (
-            arc_type,
-            place_type,
-            transition_type,
-            condition_type,
-            condition_value_type,
-            inscription_type,
-            inscription_value_type,
-            marking_type,
-            marking_value_type,
-            page_type,
-            refplace_type,
-            reftransition_type,
-            rate_value_type,
-            )
+    PNML.arc_type,
+    PNML.place_type,
+    PNML.transition_type,
+    PNML.condition_type,
+    PNML.condition_value_type,
+    PNML.inscription_type,
+    PNML.inscription_value_type,
+    PNML.marking_type,
+    PNML.marking_value_type,
+    PNML.page_type,
+    PNML.refplace_type,
+    PNML.reftransition_type,
+    PNML.rate_value_type,
+    )
 
 def_funs = (
             Labels.default_inscription,
@@ -239,23 +239,23 @@ end
 end
 
 @testset "lookup types $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-    @test arc_type(pntd) <: PNML.Arc
-    @test place_type(pntd) <: PNML.Place
-    @test transition_type(pntd) <: PNML.Transition
-    @test condition_type(pntd) <: PNML.Labels.Condition
-    @test condition_value_type(pntd) <: Bool
-    @test inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
+    @test PNML.arc_type(pntd) <: PNML.Arc
+    @test PNML.place_type(pntd) <: PNML.Place
+    @test PNML.transition_type(pntd) <: PNML.Transition
+    @test PNML.condition_type(pntd) <: PNML.Labels.Condition
+    @test PNML.condition_value_type(pntd) <: Bool
+    @test PNML.inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     if ishighlevel(pntd)
-        @test inscription_value_type(pntd) <: PnmlMultiset{<:Any, <:Any}
+        @test PNML.inscription_value_type(pntd) <: PnmlMultiset{<:Any, <:Any}
     else
-        @test inscription_value_type(pntd) <: Number
+        @test PNML.inscription_value_type(pntd) <: Number
     end
     #@show inscription_value_type(pntd)
-    @test marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
-    @test marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:Any}}
+    @test PNML.marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
+    @test PNML.marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:Any}}
 
-    @test page_type(pntd) <: PNML.Page
-    @test refplace_type(pntd) <: PNML.RefPlace
-    @test reftransition_type(pntd) <: PNML.RefTransition
-    @test rate_value_type(pntd) <: Float64
+    @test PNML.page_type(pntd) <: PNML.Page
+    @test PNML.refplace_type(pntd) <: PNML.RefPlace
+    @test PNML.reftransition_type(pntd) <: PNML.RefTransition
+    @test PNML.rate_value_type(pntd) <: Float64
 end
