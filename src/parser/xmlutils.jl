@@ -66,7 +66,7 @@ $(TYPEDSIGNATURES)
 Return registered symbol from id attribute of node. See [`PnmlIDRegistry`](@ref).
 """
 function register_idof!(registry::PnmlIDRegistry, node::XMLNode)
-    EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
+    EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     id = Symbol(@inbounds(node["id"]))
     if isregistered(idregistry[], id)
         @warn "trying to register existing id $id in registry $(objectid(idregistry[]))" idregistry[]
@@ -80,7 +80,7 @@ Return XML attribute value.
 """
 function attribute(node::XMLNode, key::AbstractString, msg::String="attribute $key missing")
     key == "id" && error("'id' attribute not handled here")
-    EzXML.haskey(node, key) || throw(MalformedException(msg))
+    EzXML.haskey(node, key) || throw(PNML.MalformedException(msg))
     return @inbounds node[key]
 end
 

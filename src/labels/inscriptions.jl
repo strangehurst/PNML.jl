@@ -102,22 +102,23 @@ end
 
 # Julia Type is the "fixed" part.
 
-inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr}
-inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr}
+PNML.inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr}
+PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr}
 
 #!============================================================================
 #! inscription_value_type must match adjacent place marking_value_type
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
-inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
-inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
+
+PNML.inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
+PNML.inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 #
-# PnmlMultiset{B,T} # basis
+# PnmlMultiset{B,T}
 #~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
 #~ T is the Multiset type parameter, Keep B and T in sync!
-inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-# inscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
-inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), DotConstant}
+PNML.inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
+# iPNML.nscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
+PNML.inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), DotConstant}
 
 """
 $(TYPEDSIGNATURES)

@@ -35,8 +35,6 @@ using PNML: variable, namedsort, arbitrarysort, partitionsort
 using PNML: namedop, arbitraryop, partitionop, feconstant, usersort, useroperator
 using PNML: fill_sort_tag!
 
-using PNML: page_type, place_type, transition_type, arc_type, refplace_type, reftransition_type
-using PNML: marking_type, inscription_type, condition_type
 using PNML: validate_declarations, validate_toolinfos
 using PNML: def_sort_element
 using PNML: toexpr, VariableEx, UserOperatorEx, PnmlTupleEx

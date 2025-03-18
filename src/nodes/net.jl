@@ -467,7 +467,7 @@ end
 function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     # Are the things with PNML IDs in the PnmlIDRegistry?
     !isregistered(idregistry[], pid(net)) &&
-        push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
+         push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
 
     for pg in pages(net)
         !isregistered(idregistry[], pid(pg)) &&

@@ -48,7 +48,7 @@ function subterms(node, pntd; vars)
     for subterm in EzXML.eachelement(node)
         stnode, tag = unwrap_subterm(subterm)
         st, _, vars = parse_term(Val(tag), stnode, pntd; vars)
-        isnothing(st) && throw(MalformedException("subterm is nothing"))
+        isnothing(st) && throw(PNML.MalformedException("subterm is nothing"))
         push!(sts, st) #TODO vars?
     end
     #@show sts vars #! debug
@@ -124,12 +124,12 @@ end
 function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType; vars)
     value = attribute(node, "value")::String
     child = EzXML.firstelement(node) # Child is the sort of value attribute.
-    isnothing(child) && throw(MalformedException("<numberconstant> missing sort element"))
+    isnothing(child) && throw(PNML.MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
         usersort(sorttag)
     else
-        throw(MalformedException("sort not supported for :numberconstant: $sorttag"))
+        throw(PNML.MalformedException("sort not supported for :numberconstant: $sorttag"))
     end
 
     nv = number_value(eltype(sort), value)
@@ -159,7 +159,7 @@ end
 # Is a literal/ground term and can be used for intialMarking expressions.
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars)
     child = EzXML.firstelement(node) # Child is the one argument.
-    isnothing(child) && throw(MalformedException("<all> operator missing sort argument"))
+    isnothing(child) && throw(PNML.MalformedException("<all> operator missing sort argument"))
     basis = parse_usersort(child, pntd)::UserSort # Can there be anything else?
     #! @assert isfinitesort(basis) #^ Only expect finite sorts here.
     return PNML.Bag(basis), basis, vars # expression that calls pnmlmultiset(basis)
@@ -170,7 +170,7 @@ end
 #    `<empty>/integer></empty>`
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars)
     child = EzXML.firstelement(node) # Child is the one argument.
-    isnothing(child) && throw(MalformedException("<empty> operator missing sort argument"))
+    isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
     basis = parse_usersort(child, pntd)::UserSort # Can there be anything else?
     x = first(sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
@@ -308,7 +308,7 @@ end
 function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType; vars)
     subterm = EzXML.firstelement(node) # single argument subterm
     stnode, _ = unwrap_subterm(subterm)
-    isnothing(stnode) && throw(MalformedException("<cardinality> missing argument subterm"))
+    isnothing(stnode) && throw(PNML.MalformedException("<cardinality> missing argument subterm"))
     expr, _, vars = parse_term(stnode, pntd; vars) # PnmlExpr that eval(toexp) to a PnmlMultiset, includes variable.
 
     return PNML.Cardinality(expr), usersort(:natural), vars
@@ -497,7 +497,7 @@ end
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType; vars)
     valuestr = attribute(node, "value")::String
     child = EzXML.firstelement(node) # Child is the sort of value
-    isnothing(child) && throw(MalformedException("<finiteintrangeconstant> missing sort element"))
+    isnothing(child) && throw(PNML.MalformedException("<finiteintrangeconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     if sorttag == :finiteintrange
         startstr = attribute(child, "start")
@@ -544,7 +544,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
         end
         return (value, usersort(ustag), vars) #! toexpr is identity for numbers
     end
-    throw(MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
+    throw(PNML.MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
 end
 
 #====================================================================================#
@@ -566,8 +566,8 @@ function parse_partition(node::XMLNode, pntd::PnmlType,)
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
             parse_partitionelement!(elements, child, id) # pass REFID to partition
         else
-            throw(MalformedException(string("partition child element unknown: $tag, ",
-                                "allowed are usersort, partitionelement")))
+            throw(PNML.MalformedException(string("partition child element unknown: ", tag,
+                                " allowed are usersort, partitionelement")))
         end
     end
     isnothing(psort) &&
@@ -603,7 +603,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
                 error("refid $refid not found in feconstants") #! move to verify?
             push!(terms, refid)
         else
-            throw(MalformedException("partitionelement child element unknown: $tag"))
+            throw(PNML.MalformedException("partitionelement child element unknown: $tag"))
         end
     end
     isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms"))

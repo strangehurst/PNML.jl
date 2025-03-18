@@ -14,7 +14,7 @@ struct FEConstant <: OperatorDeclaration
     refid::REFID # of contining partition, enumeration, (and partitionelement?)
 end
 refid(fec::FEConstant) = fec.refid
-sortref(fec::FEConstant) = usersort(fec.refid)::UserSort
+sortref(fec::FEConstant) = PNML.usersort(fec.refid)::UserSort
 Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
 
 (fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.

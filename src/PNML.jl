@@ -101,19 +101,9 @@ using DocStringExtensions
 #export parse_str, parse_file, parse_pnml
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export PnmlException, MissingIDException, MalformedException
-export usersort, namedsort
+public PnmlException, MissingIDException, MalformedException
+public usersort, namedsort
 export PnmlExpr, toexpr
-
-# export BoolExpr, VariableEx, UserOperatorEx
-# export PnmlTupleEx, Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
-# export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
-# export PartitionElementOp, PartitionLessThan, PartitionGreaterThan, PartitionElementOf
-# export Addition, Subtraction, Multiplication, Division
-# export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
-# export Concatenation, Append, StringLength, Substring
-# export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
-# export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex, PnmlTuple
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))

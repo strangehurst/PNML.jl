@@ -40,8 +40,9 @@ Condition(text::AbstractString, b::Bool)            = Condition(text, BooleanCon
 Condition(text::AbstractString, c::BooleanConstant) = Condition(text, PNML.BooleanEx(c))
 Condition(text::AbstractString, expr::PNML.BooleanEx) = Condition(text, expr, nothing, nothing, ())
 
-condition_type(::Type{<:PnmlType}) = Condition
+PNML.condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
+PNML.condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
@@ -76,7 +77,6 @@ function cond_implementation(c::Condition, varsub::NamedTuple)
     eval(toexpr(term(c), varsub))::eltype(c) # Bool isa Number
 end
 
-condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
 
 function Base.show(io::IO, c::Condition)
     print(io, nameof(typeof(c)), "(")

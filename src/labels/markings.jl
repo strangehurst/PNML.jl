@@ -182,16 +182,16 @@ function Base.show(io::IO, hlm::HLMarking)
 end
 
 #--------------------------------------------------------------------------------------
-marking_type(::Type{T}) where {T <: PnmlType} = Marking
-marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
+PNML.marking_type(::Type{T}) where {T <: PnmlType} = Marking
+PNML.marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
 
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
-marking_value_type(::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
-marking_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
+PNML.marking_value_type(::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
+PNML.marking_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
+PNML.marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 #~ Note the close relation of marking_value_type to inscription_value_type.
@@ -231,7 +231,7 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default_marking(t::PnmlType)
-    Marking(zero(marking_value_type(t))) #! Will not be a PnmlMultiset.
+    Marking(zero(PNML.marking_value_type(t))) #! Will not be a PnmlMultiset.
 end
 default_marking(::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")

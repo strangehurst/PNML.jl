@@ -62,7 +62,7 @@ end
         @test condition(n)() isa Bool
 
         node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
-        @test_throws MalformedException parse_transition(node, pntd)
+        @test_throws PNML.MalformedException parse_transition(node, pntd)
 
         node = xml"""<transition id ="t2"> <condition/> </transition>"""
         @test_throws Exception parse_transition(node, pntd)

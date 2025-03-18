@@ -80,7 +80,7 @@ Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
     basis::UserSort
     function MultisetSort(b::UserSort)
         if isa(sortdefinition(namedsort(b)), MultisetSort)
-            throw(MalformedException("MultisetSort basis cannot be MultisetSort"))
+            throw(PNML.MalformedException("MultisetSort basis cannot be MultisetSort"))
         else
             new(b)
         end

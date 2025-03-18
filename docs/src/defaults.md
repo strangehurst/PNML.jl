@@ -15,7 +15,7 @@ Determine type of `Number` to parse with [`number_value`](@ref) by using `pntd` 
   - [`inscription_value_type`](@ref)
   - [`marking_value_type`](@ref)
   - [`coordinate_value_type`](@ref)
-  - [`rate_value_type`](@ref)
+  - [`rate_value_type`](@ref PNML.rate_value_type)
 
 
 There are many items in the XML that are permitted to be missing and a defaut value is assumed.

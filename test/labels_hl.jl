@@ -17,7 +17,7 @@ using XMLDict: XMLDict
     """
         typ = PNML.Parser.parse_type(n1, pntd)::SortType
         @test text(typ) == "N2"
-        @test PNML.sortref(typ) isa UserSort # wrapping DotSort
+        @test PNML.sortref(typ) isa PNML.UserSort # wrapping DotSort
         @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?
         @test PNML.has_graphics(typ) == false
         @test PNML.has_labels(typ) == false
@@ -148,9 +148,9 @@ end
             val = eval(toexpr(term(mark), NamedTuple()))::PNML.PnmlMultiset{<:Any,<:Any}
             # @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
-            @test PNML.multiplicity(val, NumberConstant{Int64}(8, usersort(:positive))()) == 1
+            @test PNML.multiplicity(val, NumberConstant{Int64}(8, PNML.usersort(:positive))()) == 1
             @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
-            @test NumberConstant{Int64}(8, usersort(:positive))() in multiset(val)
+            @test NumberConstant{Int64}(8, PNML.usersort(:positive))() in multiset(val)
         end
      end
 

@@ -28,11 +28,11 @@ Return rate label value of `transition`.  Missing rate labels are defaulted to z
 
 All net types may have a rate value type. Expected label XML: <rate> <text>0.3</text> </rate>
 
-See [`rate_value_type`](@ref).
+See [`rate_value_type`](@ref PNML.rate_value_type).
 """
 function rate(transition)
     tr = transition_rate(transition)::Maybe{TransitionRate}
-    return isnothing(tr) ? zero(rate_value_type(nettype(transition))) : value(tr)
+    return isnothing(tr) ? zero(PNML.rate_value_type(nettype(transition))) : value(tr)
 end
 
 transition_rate(transition) = begin
@@ -40,7 +40,7 @@ transition_rate(transition) = begin
         l = labels(transition)
         if has_label(l, :rate)
             str = text_content(elements(@inbounds(get_label(l, :rate))))
-            return TransitionRate(number_value(rate_value_type(nettype(transition)), str))
+            return TransitionRate(number_value(PNML.rate_value_type(nettype(transition)), str))
         end
     end
     return nothing

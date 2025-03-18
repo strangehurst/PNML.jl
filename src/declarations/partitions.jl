@@ -104,7 +104,7 @@ struct PartitionSort <: SortDeclaration
     function PartitionSort(i,n,d,e)
         PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
         # Look at what is wrapped.
-        @assert tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
+        @assert tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
         new(i,n,d,e)
     end
 end
@@ -112,7 +112,7 @@ PartitionSort() = PartitionSort(:partition, "Empty Partition", :dot,  PartitionE
 #! :dot is a stand-in, it will not work well, but it is a "finite sort".
 
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(partition::PartitionSort) = sortdefinition(namedsort(partition.def))
+sortdefinition(partition::PartitionSort) = sortdefinition(PNML.namedsort(partition.def))
 sortelements(partition::PartitionSort) = partition.elements
 
 # TODO Add Partition/PartitionElement methods here

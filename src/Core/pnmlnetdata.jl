@@ -25,7 +25,7 @@ PnmlNetData(pntd::PnmlType) =
                 OrderedDict{Symbol, Any}(), # ! , place_type(pntd)}(),
                 OrderedDict{Symbol, Any}(), # ! , transition_type(pntd)}(),
                 OrderedDict{Symbol, Any}(), # ! , arc_type(pntd)}(),
-                OrderedDict{Symbol, Any}(), # ! , q refplace_type(pntd)}(),
+                OrderedDict{Symbol, Any}(), # ! , refplace_type(pntd)}(),
                 OrderedDict{Symbol, Any}()) # ! , reftransition_type(pntd)}())
 
 placedict(d::PnmlNetData)         = d.place_dict

@@ -59,7 +59,7 @@ function parse_pnml(node::XMLNode)
     #@info "parser logger $(global_logger())"
 
     xmlnets = allchildren(node ,"net") #! allocate Vector{XMLNode}
-    isempty(xmlnets) && throw(MalformedException("<pnml> does not have any <net> elements"))
+    isempty(xmlnets) && throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
 
     # Vector of ID registries of the same length as the number of nets. May alias.
     IDRegistryVec = PnmlIDRegistry[]
@@ -173,7 +173,7 @@ function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     # Now we know the PNTD and can parse a net.
 
     isempty(allchildren(node ,"page")) &&
-        throw(MalformedException("""<net> $netid does not have any <page> child"""))
+        throw(PNML.MalformedException("""<net> $netid does not have any <page> child"""))
 
     return parse_net_1(node, pntd, netid) # RUNTIME DISPATCH
 end
@@ -188,7 +188,7 @@ Note the use of scoped value `DECLDICT[]` to access the per-net data structure a
 Some uses of this scoped value are embedded in accessor methods like `variabledecls()`.
 """
 function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
-    pgtype = page_type(typeof(pntd))
+    pgtype = PNML.page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
     # The type information is used by PnmlNet.
@@ -498,7 +498,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType)
         end
     end
 
-    Transition{typeof(pntd), condition_type(pntd)}(pntd, id,
+    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, id,
                 something(cond, Labels.default_condition(pntd)), name, graphics, tools, labels,
                 Set{REFID}(), NamedTuple[])
 end
@@ -1034,7 +1034,8 @@ function parse_condition(node::XMLNode, pntd::PnmlType) # Non-HL
     l = parse_label_content(node, parse_condition_term, pntd) #! also return vars tuple
     #@show condlabel; flush(stdout) #! debug
     #@warn("parse_condition label = $(condlabel)")
-    isnothing(l.term) && throw(MalformedException("missing condition term in $(repr(l))"))
+
+    isnothing(l.term) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
     PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools, l.vars) #! term is expession
 end
 

@@ -4,8 +4,8 @@ using OrderedCollections
 println("EXCEPTIONS")
 
 @testset "showerr" begin
-    e1 = MissingIDException("test showerr")::PnmlException
-    e2 = MalformedException("test showerr")::PnmlException
+    e1 = PNML.MissingIDException("test showerr")::PNML.PnmlException
+    e2 = PNML.MalformedException("test showerr")::PNML.PnmlException
     @test sprint(showerror,e1) != sprint(showerror,e2)
     Base.redirect_stdio(stdout=devnull, stderr=devnull) do
         @test_logs showerror(stdout,e1)

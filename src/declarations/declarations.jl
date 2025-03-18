@@ -88,8 +88,8 @@ struct VariableDeclaration <: AbstractDeclaration
     # Find index in tuple? The inscription will be tuple-valued as will the relevant marking.
     # When parsing a <variable>, identify its enclosing tuple & index #TODO
 
-    # Will PnmlTuple ever have fields mutated? Or will mark updated be done by replacement?
-    # PnmlTuple fields will be read as part of enabling function (condition)
+    # Will PnmlTuple ever have fields mutated? No, marking vectors are not mutated! They are preserved as part of reachability graph.
+    # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 end
 sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd)))
@@ -120,8 +120,6 @@ sortdefinition(namedsort::NamedSort) = namedsort.def
 
 Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
 
- # NamedSort cannot contain a UserSort (for Symmetric and lower only?
-
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
@@ -130,7 +128,6 @@ function Base.show(io::IO, nsort::NamedSort)
     show(io, sortdefinition(nsort));
     print(io, ")")
 end
-
 
 """
 $(TYPEDEF)
@@ -154,5 +151,3 @@ operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter
 sortref(no::NamedOperator) = sortref(operator(no))::UserSort # of the wrapped operator
 sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
-
-#? id & name should map to the function whose body is `def` and inputs are `parameters`

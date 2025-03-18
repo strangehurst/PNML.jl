@@ -42,7 +42,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd)
             elseif tag == "toolspecific" # accumulate tool specific
-                tools = add_toolinfo(tools, child, pntd)
+                tools = add_toolinfo(tools, child, pntd) # declarations are labels
             else
                 @warn "ignoring unexpected child of <declaration>: '$tag'"
             end
@@ -106,7 +106,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType)
     # Replacement of those duos, in particular, :dot, will trigger a duplicate id error
     # unless the `(builtinsorts)` are excluded from the register_idof! check.
     # Note: builtin sort definitions are all singleton types.
-    EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
+    EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     id = Symbol(@inbounds(node["id"]))
     if !Sorts.isbuiltinsort(id)
         # Rest of register_idof! Needed the ID to replace the duo.
@@ -237,7 +237,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:noth
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag != "feconstant"
-            throw(MalformedException("$sorttag has unexpected child element $tag"))
+            throw(PNML.MalformedException("$sorttag has unexpected child element $tag"))
         else
             id = register_idof!(idregistry[], child)
             name = attribute(child, "name")
@@ -379,10 +379,10 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
             us = parse_sort(Val(tag), child, pntd, rid)::UserSort
             push!(sorts, refid(us)) # need REFID
         else
-            throw(MalformedException("<productsort> contains unexpected sort $tag"))
+            throw(PNML.MalformedException("<productsort> contains unexpected sort $tag"))
         end
     end
-    isempty(sorts) && throw(MalformedException("<productsort> contains no sorts"))
+    isempty(sorts) && throw(PNML.MalformedException("<productsort> contains no sorts"))
     psort = ProductSort(tuple(sorts...))
     # @warn "parse :productsort" psort; flush(stdout) #! debug
     #make_usersort(:productsort, "ProductSort", psort)

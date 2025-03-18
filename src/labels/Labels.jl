@@ -19,10 +19,6 @@ using PNML: namedsort
 import PNML: usersort, sortdefinition, def_sort_element
 import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
-import PNML: place_type, transition_type, arc_type, refplace_type, reftransition_type
-import PNML: marking_type, inscription_type, condition_type
-import PNML: marking_value_type, inscription_value_type, condition_value_type
-import PNML: rate_value_type
 import PNML: toexpr, PnmlExpr, PnmlTupleEx
 import PNML: variables
 import PNML: decldict

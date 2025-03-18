@@ -599,7 +599,7 @@ end
 """
     PnmlTupleEx(args::Vector)
 
-PnmlTuple TermInterface expression object wraps an ordered collection of PnmlExpr objects.
+`PnmlTupleEx` `TermInterface` expression object wraps an ordered collection of `PnmlExpr` objects.
 There is a related `ProductSort`: an ordered collection of sorts.
 Each tuple element will have the same sort as the corresponding product sort.
 """
@@ -608,6 +608,7 @@ PnmlTupleEx
 @matchable struct PnmlTupleEx <: PnmlExpr #{N, T<:PnmlExpr}
     args::Vector{Any} # >=2 # TODO NTuple #x::NTuple{N,T}
 end
+
 toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
     # @warn("toexpr PnmlTupleEx", op.args, varsub,
@@ -634,7 +635,7 @@ toexpr(op::PnmlTupleEx, varsub::NamedTuple) = begin
     # end
     # @show args
     # PnmlTuple{psorts}(x...)
-    Expr(:call, pnmltuple, (eval ∘ toexpr).(args, Ref(varsub))...)
+    Expr(:call, pnmltuple, (eval ∘ toexpr).(args, Ref(varsub))...) # pnmltuple()
 end
 
 #? Would this be a candidate for rewriting?
