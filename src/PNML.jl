@@ -152,7 +152,7 @@ include("Core/rewrite.jl")
 # 2024-07-22 moved forward, holds Any rather than node types.
 include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
 
-include("declarations/Declarations.jl")
+include("Declarations/Declarations.jl")
 using .Declarations
 import .Declarations: NamedSort, SortDeclaration
 using .Declarations: sortdefinition
@@ -172,7 +172,7 @@ using .PnmlGraphics
 include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
 
 # Labels
-include("labels/Labels.jl")
+include("Labels/Labels.jl")
 using .Labels
 
 # Nodes #TODO make into a module?
@@ -185,7 +185,7 @@ include("nodes/model.jl") # Holds multiple PnmlNets.
 include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 
 # PARSE
-include("parser/Parser.jl")
+include("Parser/Parser.jl")
 using .Parser
 
 # API: Petri nets, metagraph
