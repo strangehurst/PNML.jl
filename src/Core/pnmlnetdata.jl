@@ -99,15 +99,15 @@ Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and othe
     reftransition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
     refplace_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
 end
-# 2024-12-08 JDH renamed accessors from *_idset to *_pnk as this is the only place used.
+# 2024-12-08 JDH renamed accessors from *_idset to *_idset as this is the only place used.
 # And they duplicated unless used as extension point/organization mechanism in
-page_pnk(s::PnmlNetKeys) = s.page_set
+page_idset(s::PnmlNetKeys) = s.page_set
 "Return a `OrderedSet{Symbol}, should it be an iterator?"
-place_pnk(s::PnmlNetKeys) = s.place_set
-transition_pnk(s::PnmlNetKeys) = s.transition_set
-arc_pnk(s::PnmlNetKeys) = s.arc_set
-reftransition_pnk(s::PnmlNetKeys) = s.reftransition_set
-refplace_pnk(s::PnmlNetKeys) = s.refplace_set
+place_idset(s::PnmlNetKeys) = s.place_set
+transition_idset(s::PnmlNetKeys) = s.transition_set
+arc_idset(s::PnmlNetKeys) = s.arc_set
+reftransition_idset(s::PnmlNetKeys) = s.reftransition_set
+refplace_idset(s::PnmlNetKeys) = s.refplace_set
 
 function tunesize!(s::PnmlNetKeys;
                    npage::Int = 1, # Usually just 1 page per net.
@@ -127,22 +127,22 @@ end
 #-------------------
 Base.summary(io::IO, pns::PnmlNetKeys) = print(io, summary(pns))
 function Base.summary(pns::PnmlNetKeys)
-    string(length(page_pnk(pns)), " pages, ",
-            length(place_pnk(pns)), " places, ",
-            length(transition_pnk(pns)), " transitions, ",
-            length(arc_pnk(pns)), " arcs, ",
-            length(refplace_pnk(pns)), " refPlaces, ",
-            length(reftransition_pnk(pns)), " refTransitions, ",
+    string(length(page_idset(pns)), " pages, ",
+            length(place_idset(pns)), " places, ",
+            length(transition_idset(pns)), " transitions, ",
+            length(arc_idset(pns)), " arcs, ",
+            length(refplace_idset(pns)), " refPlaces, ",
+            length(reftransition_idset(pns)), " refTransitions, ",
         )::String
 end
 
 function Base.show(io::IO, pns::PnmlNetKeys)
-    for (tag, idset) in (("pages", page_pnk),
-                        ("places", place_pnk),
-                        ("transitions", transition_pnk),
-                        ("arcs", arc_pnk),
-                        ("refplaces", refplace_pnk),
-                        ("refTransitions", reftransition_pnk))
+    for (tag, idset) in (("pages", page_idset),
+                        ("places", place_idset),
+                        ("transitions", transition_idset),
+                        ("arcs", arc_idset),
+                        ("refplaces", refplace_idset),
+                        ("refTransitions", reftransition_idset))
         print(io, indent(io), length(idset(pns)), " ", tag, ": ")
         iio = inc_indent(io)
         for (i,k) in enumerate(values(idset(pns)))

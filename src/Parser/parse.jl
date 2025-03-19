@@ -232,7 +232,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # Create empty net.
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
-                    page_set=page_pnk(netsets), #! XXX   NOT SORTED!   XXX
+                    page_set=page_idset(netsets), #! XXX   NOT SORTED!   XXX
                     declaration, # Wraps a DeclDict, the current scoped value of PNML.DECLDICT[].
                     namelabel, tools, labels=nothing,
                     idregistry=PNML.idregistry[]
@@ -271,7 +271,7 @@ end
 function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(idregistry[], node)
-    push!(page_pnk(netsets), pageid) # Doing depth-first traversal, record id before decending.
+    push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
     pg = _parse_page!(pagedict, netdata, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
@@ -291,11 +291,11 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
     labels::Maybe{Vector{PnmlLabel}}= nothing
 
     # Track which objects belong to this page.
-    place_set      = place_pnk(netsets)
-    transition_set = transition_pnk(netsets)
-    arc_set        = arc_pnk(netsets)
-    rp_set         = refplace_pnk(netsets)
-    rt_set         = reftransition_pnk(netsets)
+    place_set      = place_idset(netsets)
+    transition_set = transition_idset(netsets)
+    arc_set        = arc_idset(netsets)
+    rp_set         = refplace_idset(netsets)
+    rt_set         = reftransition_idset(netsets)
 
     tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
     validate_toolinfos(tools)
@@ -1000,7 +1000,7 @@ function def_insc(netdata, source,::REFID, target::REFID)
     # Core PNML specification allows arcs from place to place & transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
-    place = adjacent_place(netdata, source, target)
+    place = PNML.adjacent_place(netdata, source, target)
     placetype = place.sorttype
     el = def_sort_element(placetype)
     inscr = pnmlmultiset(PNML.sortref(placetype), el, 1)

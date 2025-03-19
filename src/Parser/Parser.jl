@@ -15,7 +15,8 @@ using Logging, LoggingExtras
 
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
-import PNML: adjacent_place, page_pnk, place_pnk, arc_pnk, transition_pnk, refplace_pnk, reftransition_pnk
+import PNML: adjacent_place
+import PNML: page_idset, place_idset, arc_idset, transition_idset, refplace_idset, reftransition_idset
 #import InteractiveUtils
 
 using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value

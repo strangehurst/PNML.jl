@@ -55,13 +55,13 @@ reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idse
 
 decldict(page::Page) = decldict(page.declaration) # Forward to the collection object.
 
-page_idset(page::Page)          = page_pnk(netsets(page)) # subpages of this page
+page_idset(page::Page)          = page_idset(netsets(page)) # subpages of this page
 "Return netsets place_idset"
-place_idset(page::Page)         = place_pnk(netsets(page))
-transition_idset(page::Page)    = transition_pnk(netsets(page))
-arc_idset(page::Page)           = arc_pnk(netsets(page))
-reftransition_idset(page::Page) = reftransition_pnk(netsets(page))
-refplace_idset(page::Page)      = refplace_pnk(netsets(page))
+place_idset(page::Page)         = place_idset(netsets(page))
+transition_idset(page::Page)    = transition_idset(netsets(page))
+arc_idset(page::Page)           = arc_idset(netsets(page))
+reftransition_idset(page::Page) = reftransition_idset(netsets(page))
+refplace_idset(page::Page)      = refplace_idset(netsets(page))
 
 place(page::Page, id::Symbol) = placedict(page)[id]
 has_place(page::Page, id::Symbol) = in(id, place_idset(page))
