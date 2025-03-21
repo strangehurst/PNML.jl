@@ -405,18 +405,18 @@ Return rate value type based on net type.
 function rate_value_type end
 
 """
-    hassort(x) -> Bool
+    has_sort(x) -> Bool
 
 Predicate testing applicability of `sortof`.
 """
-hassort(::Any) = false
+has_sort(::Any) = false
 
 
 """
     sortof(x) -> AbstractSort
 
 Return the sort of an object or type. Any type that supports the PNML sort interface
-is expected to define [`hassort`](@ref) to be true and a `sortof` method that returns
+is expected to define [`has_sort`](@ref) to be true and a `sortof` method that returns
 a sort instance.
 """
 function sortof end
