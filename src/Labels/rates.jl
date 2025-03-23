@@ -40,7 +40,7 @@ transition_rate(transition) = begin
         l = labels(transition)
         if has_label(l, :rate)
             str = text_content(elements(@inbounds(get_label(l, :rate))))
-            return TransitionRate(number_value(PNML.rate_value_type(nettype(transition)), str))
+            return TransitionRate(PNML.number_value(PNML.rate_value_type(nettype(transition)), str))
         end
     end
     return nothing
@@ -76,9 +76,9 @@ function delay(transition)
                 (isnothing(cn) || isempty(cn)) &&
                         throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
                 if cn isa Vector
-                    n = Float64[number_value(Float64, x)::Float64 for x in cn]
+                    n = Float64[PNML.number_value(Float64, x)::Float64 for x in cn]
                 else
-                    n = Float64[number_value(Float64, cn)::Float64]
+                    n = Float64[PNML.number_value(Float64, cn)::Float64]
                 end
             end
 

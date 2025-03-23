@@ -15,18 +15,15 @@ using Logging, LoggingExtras
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
 import PNML: adjacent_place
-import PNML: page_idset, place_idset, arc_idset, transition_idset, refplace_idset, reftransition_idset
+#import PNML: page_idset, place_idset, arc_idset, transition_idset, refplace_idset, reftransition_idset
 
-using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement, number_value
+using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
 using PNML: Graphics, Coordinate, TokenGraphics
 using PNML: ToolInfo, DictType
-using PNML: indent, inc_indent
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement,PnmlMultiset, BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
-using PNML: page_idset, place_idset, transition_idset, arc_idset
-using PNML: refplace_idset, reftransition_idset
 
 using PNML: def_sort_element
 

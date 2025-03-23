@@ -142,10 +142,10 @@ tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
 
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    print(io, indent(io), "PnmlLabel[")
-    io = inc_indent(io)
+    print(io, PNML.indent(io), "PnmlLabel[")
+    io = PNML.inc_indent(io)
     for (i,label) in enumerate(labelvector)
-        i > 1 && print(io, indent(io))
+        i > 1 && print(io, PNML.indent(io))
         print(io, "(",);
         show(io, tag(label)); print(io, ", "); dict_show(io, elements(label), 0);
         print(")")
@@ -155,7 +155,7 @@ function Base.show(io::IO, labelvector::Vector{PnmlLabel})
 end
 
 function Base.show(io::IO, label::PnmlLabel)
-    print(io, indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
+    print(io, PNML.indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
 end
 
 #--------------------------------------

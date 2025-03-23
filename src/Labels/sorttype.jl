@@ -84,7 +84,7 @@ function def_sort_element(pt::SortType)
 end
 
 function Base.show(io::IO, st::SortType)
-    print(io, indent(io), "SortType(")
+    print(io, PNML.indent(io), "SortType(")
     show(io, text(st)); print(io, ", ")
     show(io, sortref(st))
     if has_graphics(st)

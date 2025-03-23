@@ -232,7 +232,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # Create empty net.
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
-                    page_set=page_idset(netsets), #! XXX   NOT SORTED!   XXX
+                    page_set=PNML.page_idset(netsets), #! XXX   NOT SORTED!   XXX
                     declaration, # Wraps a DeclDict, the current scoped value of PNML.DECLDICT[].
                     namelabel, tools, labels=nothing,
                     idregistry=PNML.idregistry[]
@@ -271,7 +271,7 @@ end
 function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(idregistry[], node)
-    push!(page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
+    push!(PNML.page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
     pg = _parse_page!(pagedict, netdata, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
@@ -291,11 +291,11 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
     labels::Maybe{Vector{PnmlLabel}}= nothing
 
     # Track which objects belong to this page.
-    place_set      = place_idset(netsets)
-    transition_set = transition_idset(netsets)
-    arc_set        = arc_idset(netsets)
-    rp_set         = refplace_idset(netsets)
-    rt_set         = reftransition_idset(netsets)
+    place_set      = PNML.place_idset(netsets)
+    transition_set = PNML.transition_idset(netsets)
+    arc_set        = PNML.arc_idset(netsets)
+    rp_set         = PNML.refplace_idset(netsets)
+    rt_set         = PNML.reftransition_idset(netsets)
 
     tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
     validate_toolinfos(tools)
@@ -753,12 +753,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     pt = eltype(PNML.sortref(placetype))
     mvt = eltype(PNML.marking_value_type(pntd))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
-
-    value = if isnothing(l.text)
-        zero(pt)
-    else
-        number_value(pt, l.text)
-    end
+    value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
 
     #TODO Create a NumberConstant expression and use the high-level path.
     #TODO Use pntd for dispatch when different behavior is needed.
@@ -782,7 +777,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         tag = EzXML.nodename(child)
         if tag == "text"
             txt = string(strip(EzXML.nodecontent(child)))
-            value = number_value(PNML.inscription_value_type(pntd), txt)
+            value = PNML.number_value(PNML.inscription_value_type(pntd), txt)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"

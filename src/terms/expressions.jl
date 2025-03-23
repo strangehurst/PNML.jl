@@ -112,11 +112,9 @@ inscription <- :numberof :numberconstant :mult :variable :variable
 ###################################################################################
 # expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
-    # sub::NamedTuple #! Ref ?
-    refid::REFID # REFID in variables(). Accessed by variable(refid).
+    refid::REFID
 end
-#! What is really wanted is NamedTuple[op.refid].
-#! Where a non-ground expression is compiled into a method with a substitution dictionary as an argument.
+
 toexpr(op::VariableEx, varsub::NamedTuple) = begin
     vsub = varsub[op.refid]
     vsub isa Symbol ? Expr(:call, feconstant, QuoteNode(vsub)) : :($(vsub))
@@ -138,11 +136,6 @@ end
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
-#! maketerm(Expr, :call, [:operator; op.refid], nothing)
-#! Expr(:call, operator, op.refid)
-#! Expr(:call, toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
-#! maketerm(Expr, :call, [x.quoted_head; to_expr.(arguments(x))], nothing)
-
 
 ###################################################################################
 """
@@ -227,43 +220,37 @@ end
 end
 toexpr(op::Add, varsub::NamedTuple) = begin
     @assert length(op.args) >= 2
-    # @show op.args varsub #toexpr.(op.args, Ref(varsub))
     Expr(:call, sum, (eval ∘ toexpr).(op.args, Ref(varsub))) # constructs a new PnmlMultiset
-    #Expr(:call, reduce, :(+), toexpr.(op.args, Ref(subdict))) # constructs a new PnmlMultiset
 end
 function Base.show(io::IO, x::Add)
     print(io, "Add(", join(x.args, ", "), ")" )
 end
-
-#Expr(:ref, toexpr(args[1], states), toexpr.(args[2:end] .+ offset, (states,))...)
-
 
 #"Multiset subtract: Bag × Bag -> PnmlMultiset"
 @matchable struct Subtract <: PnmlExpr #^ multiset subtract uses `-` operator.
     lhs::Bag
     rhs::Bag
 end
-toexpr(op::Subtract, var::NamedTuple) = Expr(:call, :(-), toexpr(op.lhs, var), toexpr(op.rhs, var)) # :(toexpr($(op.lhs), $var) - toexpr($(op.rhs), $var))
+toexpr(op::Subtract, var::NamedTuple) = Expr(:call, :(-), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
 
 #"Multiset integer scalar product: ℕ x Bag -> PnmlMultiset"
 @matchable struct ScalarProduct <: PnmlExpr #^ multiset scalar multiply uses `*` operator.
-    n::Any #! expression evaluating to integer, use Any to allow `Symbolic` someday.
-    bag::Bag #! Bag is an expression
+    n::Any #! Expression evaluating to integer, use Any to allow `Symbolic` someday.
+    bag::Bag #! Expression
 end
 toexpr(op::ScalarProduct, var::NamedTuple) = Expr(:call, PnmlMultiset, basis(op.bag), Expr(:call, :(*), toexpr(op.n, var), toexpr(op.bag, var)))
-#^:(PnmlMultiset(basis($(op.bag)), :(toexpr($$(op.n), $$var) * toexpr($$(op.bag), $$var))))
 
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
 end
 
 # See parse_term(Val{:numberof}, returns Bag
-# struct NumberOf # Bag, may be nonground term, must eval(toexpr) the value as multiset.
-#     n::Any #! expression evaluating to integer >= 0
-#     value::Any #! expression evaluating to a term
+# struct NumberOf
+#     n::Any #! Expression evaluating to integer >= 0
+#     value::Any #! Expression evaluating to a term
 # end
 
 @matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.

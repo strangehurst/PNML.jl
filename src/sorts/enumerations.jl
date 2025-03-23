@@ -29,9 +29,9 @@ Base.eltype(::EnumerationSort) = REFID # Use to access `DECLDICT[]`.
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
-    io = inc_indent(io)
+    io = PNML.inc_indent(io)
     for (i, fec_ref) in enumerate(refs(esort))
-        print(io, '\n', indent(io), fec_ref);
+        print(io, '\n', PNML.indent(io), fec_ref);
         i < length(esort) && print(io, ",")
     end
     print(io, "])")

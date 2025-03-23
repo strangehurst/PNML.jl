@@ -257,10 +257,6 @@ function enabledXXX(net::PnmlNet, marking)
         enabled = true # Assume all transitions possible.
         tr.varsubs = NamedTuple[]
 
-        # println("\nt ",repr(trid), " ", repr(condition(tr))) #  #! variable substitution needed for condition
-        # println("   tgts $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), tgt_arcs(net, trid)))
-        # println("   srcs $(repr(trid)) = ", map(a->(a=>variables(inscription(arc(net, a)))), src_arcs(net, trid)))
-
         #!2025-01-27 JDH moved tr_vars to Transition tr.vars
         bvs = OrderedDict{REFID, Any}() # During enabling rule, bvs maps variable to a set of elements.
         #~ marking = PnmlMultiset{B, T}(Multiset{T}(T() => 1)) singleton

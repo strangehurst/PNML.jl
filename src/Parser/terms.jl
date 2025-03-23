@@ -132,7 +132,7 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType; vars)
         throw(PNML.MalformedException("sort not supported for :numberconstant: $sorttag"))
     end
 
-    nv = number_value(eltype(sort), value)
+    nv = PNML.number_value(eltype(sort), value)
     # Bounds check not needed for IntegerSort, RealSort.
     if sort isa NaturalSort
         nv >= 0 || throw(ArgumentError("not a Natural Number: $nv"))

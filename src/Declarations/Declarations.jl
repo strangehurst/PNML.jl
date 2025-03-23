@@ -23,7 +23,6 @@ import PNML: pid, refid # PNML ID
 import PNML: toexpr # expressions
 
 using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
-using PNML: indent, inc_indent
 using PNML: place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 using PNML: namedsorts, arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants

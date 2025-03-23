@@ -497,11 +497,6 @@ function adjacent_place end
 #todo Use traits?
 
 """
-    variables(x) -> Tuple{REFID}
-"""
-function variables end
-
-"""
     decldict(x) -> DeclDict
 
 `PnmlNet` and `Page` may have `<declaration>` labels.

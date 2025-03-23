@@ -129,7 +129,7 @@ function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
-    io = inc_indent(io)
+    io = PNML.inc_indent(io)
     show(io, sortdefinition(nsort));
     print(io, ")")
 end

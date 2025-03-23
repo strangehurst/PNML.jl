@@ -10,8 +10,7 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using Logging, LoggingExtras
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value
-using PNML: indent, inc_indent
+using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
 using PNML: namedsort
@@ -20,8 +19,7 @@ import PNML: usersort, sortdefinition, def_sort_element
 import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
 import PNML: toexpr, PnmlExpr, PnmlTupleEx
-import PNML: variables
-import PNML: decldict
+import PNML: decldict # Declaration Label wraps the declarations dictionaries of a net.
 
 using ..PnmlTypeDefs
 using ..Sorts

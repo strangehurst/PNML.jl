@@ -10,7 +10,6 @@ using Logging, LoggingExtras
 using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition
 import PNML: basis, value, term, tag, pid, refid, usersort, namedsort, toexpr
-using PNML: indent, inc_indent
 
 
 """

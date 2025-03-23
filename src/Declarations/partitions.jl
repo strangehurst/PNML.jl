@@ -132,12 +132,12 @@ end
 
 function Base.show(io::IO, ps::PartitionSort)
     println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ", ", repr(ps.def), ",")
-    io = inc_indent(io)
-    print(io, indent(io), "[")
+    io = PNML.inc_indent(io)
+    print(io, PNML.indent(io), "[")
     e = sortelements(ps)
     for  (i, c) in enumerate(e)
         show(io, c)
-        i < length(e) && print(io, ",\n", indent(io), " ")
+        i < length(e) && print(io, ",\n", PNML.indent(io), " ")
     end
     print(io, "])")
 end

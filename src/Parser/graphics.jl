@@ -92,8 +92,8 @@ function parse_graphics_coordinate(node, pntd)
     EzXML.haskey(node, "x") || throw(PNML.MalformedException("$nn missing x"))
     EzXML.haskey(node, "y") || throw(PNML.MalformedException("$nn missing y"))
 
-    PnmlGraphics.Coordinate(number_value(PNML.coordinate_value_type(pntd), node["x"]),
-                            number_value(PNML.coordinate_value_type(pntd), node["y"]))
+    PnmlGraphics.Coordinate(PNML.number_value(PNML.coordinate_value_type(pntd), node["x"]),
+                            PNML.number_value(PNML.coordinate_value_type(pntd), node["y"]))
 end
 
 """
@@ -114,7 +114,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Font`](@ref).
+Return [`Font`](@ref PnmlGraphics.Font).
 """
 function parse_graphics_font(node, pntd)
     check_nodename(node, "font")

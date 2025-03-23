@@ -73,7 +73,7 @@ sortof(::Integer) = sortdefinition(namedsort(:integer))::IntegerSort
 sortof(::Float64) = sortdefinition(namedsort(:real))::RealSort
 
 function Base.show(io::IO, ptm::Marking)
-    print(io, indent(io), "Marking(")
+    print(io, PNML.indent(io), "Marking(")
     show(io, term(ptm))
     if has_graphics(ptm)
         print(io, ", ")
@@ -167,7 +167,7 @@ sortref(marking::HLMarking) = sortref(term(marking))::UserSort
 sortof(marking::HLMarking) = sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
 
 function Base.show(io::IO, hlm::HLMarking)
-    print(io, indent(io), "HLMarking(")
+    print(io, PNML.indent(io), "HLMarking(")
     show(io, text(hlm)); print(io, ", ")
     show(io, term(hlm)) # Term
     if has_graphics(hlm)
