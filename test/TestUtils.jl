@@ -13,21 +13,17 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
 
-@reexport using PNML: Maybe, DeclDict,
-    XMLNode, xmlroot,  Parser.firstchild, Parser.allchildren,
-    XDVT, PnmlMultiset,
-    pid, ispid,
-    name, has_name,
-    length, arity, tag, value, term, Labels.text, elements,
+@reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot
+@reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
+    name, has_name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
     DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag,
     multiset
+@reexport using PNML: toexpr, PnmlExpr
 
-@reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict,
-    page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
+@reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
 
-@reexport using PNML: PnmlModel,
-    PnmlNet, nets, nettype,
+@reexport using PNML: PnmlModel, PnmlNet, nets, nettype,
     Page, pages, npages, firstpage, allpages, flatten_pages!,
     Place, place, places, nplaces,  has_place,
     Transition, transition, transitions, ntransitions, has_transition,
@@ -42,26 +38,22 @@ Multisets.set_key_value_show()
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,
     parse_initialMarking, parse_inscription, parse_sort, parse_declaration
 
-@reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels,
-    Condition
+@reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels, Condition
 
 @reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
 
-@reexport using PNML: AbstractDeclaration, Declaration, refid,
-    initial_marking, initial_markings,
-    inscription,
-    condition
+@reexport using PNML: AbstractDeclaration, Declaration, refid
+@reexport using PNML: initial_marking, initial_markings, inscription, condition
 
 @reexport using PNML: AbstractSort, SortType, UserSort, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
-    MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, NullSort,
+    MultisetSort, ProductSort, PartitionSort, ListSort, StringSort,
     sortof, sortref, TransitionRate
 
 @reexport using PNML: NumberConstant, DotConstant, zero
 
-@reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator,
-    inputs, incidence_matrix
+@reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs, incidence_matrix
 
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false

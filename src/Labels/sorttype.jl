@@ -80,11 +80,8 @@ sortelements(t::SortType) = sortelements(sortof(t))
 function def_sort_element(pt::SortType)
     els = sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
-    # println("def_sort_element($(repr(pt))) ", el); #! debug
-    # @error "def_sort_element" pt sortof(pt) collect(sortelements(pt))
     return el
 end
-
 
 function Base.show(io::IO, st::SortType)
     print(io, indent(io), "SortType(")

@@ -261,7 +261,7 @@ const sort_ids = (:usersort,
 Fill the declaration dictionary with a namedsort and usersort.
 """
 function make_usersort(tag::Symbol, name::String, sort)
-    fill_sort_tag!(tag, name, sort)
+    PNML.fill_sort_tag!(tag, name, sort)
     return sort #usersort(tag) # Lookup and return.
 end
 
@@ -349,14 +349,14 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::
     MultisetSort(basissort)
 end
 
-to_usersort(x::UserSort) = identity(x)
-to_usersort(::IntegerSort) = usersort(:integer)
-to_usersort(::NaturalSort) = usersort(:natural)
-to_usersort(::PositiveSort) = usersort(:reapositivel)
-to_usersort(::RealSort) = usersort(:real)
-to_usersort(::DotSort) = usersort(:dot)
-to_usersort(::NullSort) = usersort(:null)
-to_usersort(::BoolSort) = usersort(:bool)
+to_usersort(x::Sorts.UserSort) = identity(x)
+to_usersort(::Sorts.IntegerSort) = usersort(:integer)
+to_usersort(::Sorts.NaturalSort) = usersort(:natural)
+to_usersort(::Sorts.PositiveSort) = usersort(:reapositivel)
+to_usersort(::Sorts.RealSort) = usersort(:real)
+to_usersort(::Sorts.DotSort) = usersort(:dot)
+to_usersort(::Sorts.NullSort) = usersort(:null)
+to_usersort(::Sorts.BoolSort) = usersort(:bool)
 
 function to_usersort(x::AbstractSort)
     println("to_usersort($(nameof(typeof(x))))")

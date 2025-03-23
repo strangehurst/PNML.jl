@@ -10,10 +10,10 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using Logging, LoggingExtras
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value, REFID
+using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo, number_value
 using PNML: indent, inc_indent
-using PNML: DeclDict, DictType, XDVT, XDVT2
-using PNML: PnmlMultiset, pnmlmultiset, BooleanConstant, NumberConstant, AbstractTerm
+using PNML: DeclDict, DictType
+using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
 using PNML: namedsort
 
 import PNML: usersort, sortdefinition, def_sort_element

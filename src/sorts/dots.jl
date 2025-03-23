@@ -1,5 +1,3 @@
-# dot sort operators
-
 """
 Built-in sort whose `eltype` is `Bool`, the smallest Integer subtype that can represent one.
 """
@@ -15,4 +13,4 @@ struct DotConstant end
 sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
-toexpr(::DotConstant, ::NamedTuple) = DotConstant()
+PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant()

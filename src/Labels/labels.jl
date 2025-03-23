@@ -134,7 +134,7 @@ while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::XDVT
+    elements::PNML.XDVT
 end
 PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 

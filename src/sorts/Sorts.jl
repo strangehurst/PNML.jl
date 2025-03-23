@@ -10,7 +10,7 @@ using Logging, LoggingExtras
 using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition
 import PNML: basis, value, term, tag, pid, refid, usersort, namedsort, toexpr
-using PNML: indent, inc_indent, REFID, PnmlTuple
+using PNML: indent, inc_indent
 
 
 """
@@ -55,8 +55,5 @@ export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort, DotConstant, FiniteIntRangeConstant
-export NullSort, builtin_sorts
-export integersort, naturalsort, positivesort, realsort, nullsort
-export sorts, equals
 
 end # module Sorts

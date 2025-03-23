@@ -49,8 +49,8 @@ str1 = """
     @test_call broken=false SimpleNet(model)
 
     for accessor in [pid,
-                     place_idset, transition_idset, arc_idset,
-                     reftransition_idset, refplace_idset]
+                     PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
+                     PNML.reftransition_idset, PNML.refplace_idset]
         @test accessor(snet1) == accessor(snet)# These 2 are expected to match.
     end
 
@@ -80,7 +80,7 @@ str1 = """
     for top in [first(pages(snet.net)), snet.net, snet]
 
         @test_call target_modules=target_modules places(top)
-        for placeid in place_idset(top)
+        for placeid in PNML.place_idset(top)
             has_place(top, placeid)
             @test_call has_place(top, placeid)
             @test @inferred has_place(top, placeid)

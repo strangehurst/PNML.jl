@@ -1,4 +1,5 @@
 using PNML, ..TestUtils, JET, AbstractTrees
+using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 
 function verify_sets(net::PnmlNet)
     println("\nverify sets and structure ++++++++++++++++++++++")

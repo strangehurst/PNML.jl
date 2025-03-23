@@ -466,7 +466,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars)
 
     psorts = tuple((deduce_sort.(sts))...)
     for us in PNML.usersorts()
-        if Sorts.isproductsort(us.second) && sorts(sortof(us.second)) == psorts
+        if Sorts.isproductsort(us.second) && Sorts.sorts(sortof(us.second)) == psorts
             # println("$psorts => ", us.first) #! debug
             return tup, PNML.usersort(us.first), vars
         end
@@ -539,7 +539,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
         if isnothing(ustag)
             ustag = Symbol(sorttag,"_",startstr,"_",stopstr)
             println("fill_sort_tag ",  repr(ustag), ", ", sort)
-            fill_sort_tag(ustag, "FIRConst"*"_"*startstr*"_"*stopstr, sort)
+            PNML.fill_sort_tag(ustag, "FIRConst"*"_"*startstr*"_"*stopstr, sort)
             #fis = usersort(ustag)
         end
         return (value, usersort(ustag), vars) #! toexpr is identity for numbers

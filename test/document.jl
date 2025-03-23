@@ -29,7 +29,7 @@ using PNML, ..TestUtils, JET
           </net>
         </pnml>
         """)
-    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         model = parse_pnml(node)
     end
     @test model isa PnmlModel
@@ -41,7 +41,7 @@ end
       <net id="netid1" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
     """)
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         @test_logs(match_mode=:all, parse_pnml(emptypage) )
 
         @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
@@ -68,7 +68,7 @@ end
       <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """))
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
 
         @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
         @test PNML.regs(model) isa Vector{PnmlIDRegistry}
@@ -114,7 +114,7 @@ end
 end
 
 @testset "empty page" begin
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         @test parse_str("""<?xml version="1.0"?>
             <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
               <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>

@@ -7,7 +7,7 @@ PrecompileTools.@setup_workload begin
         let pntds = ["pnmlcore", "ptnet", "continuous"]
             for pntd in pntds
                 #@show pntd
-                parse_str("""<?xml version="1.0"?>
+                Parser.parse_str("""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="net_$pntd" type="$pntd">
                     <page id="page0">

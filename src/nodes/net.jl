@@ -203,19 +203,15 @@ Fill `arc_bvs` with entry for each `arc_vars`
 """
 function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
-        #! arc_bvs[v] = Multiset{eltype(mark)}() # Empty substution set.
         #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
         varrefid = refid(sortref(variable(v)))
-        # println("   v  $(repr(v)) isa $(sortref(variable(v))), refid = $varrefid")
 
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
             #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            # for s in sorts(sortof(placesort)); @show s; end
-            # @show sorts(sortof(placesort))
-            any(==(varrefid), sorts(sortof(placesort))) ||
-                    error("none of tuple are equal sorts of $varrefid: $(sorts(sortof(placesort))))")
+            any(==(varrefid), Sorts.sorts(sortof(placesort))) ||
+                    error("none of tuple are equal sorts of $varrefid: $(Sorts.sorts(sortof(placesort))))")
         else
             placesort !== sortref(variable(v)) &&
                 error("not equal sorts ($placesort, $(sortref(variable(v))))")

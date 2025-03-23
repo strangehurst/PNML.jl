@@ -105,24 +105,12 @@ isproductsort(::ProductSort) = true
 isproductsort(::Any) = false
 
 """
-    sorts(ps::ProductSort)
+    sorts(ps::ProductSort) -> NTuple
 Return sorts that are in the product.
 """
 sorts(ps::ProductSort) = ps.ae
 
-#ProductSort() = ProductSort(REFID[])
-# sortof(ps::ProductSort) is a tuple of sort REFIDs
 sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
-    # @warn ps collect((values ∘ sortelements ∘ usersort).(ps.ae))
-    # for s in ps.ae
-    #     @show s usersort(s)
-    #     @show (sortelements∘usersort)(s)
-    #     foreach(println, (sortelements∘usersort)(s))
-
-    #     collect(Iterators.product((sortelements ∘ usersort).(ps.ae)...))
-    # end
-
-
 
 function sortof(ps::ProductSort)
     println("sortof(::ProductSort ", s) #! bringup debug

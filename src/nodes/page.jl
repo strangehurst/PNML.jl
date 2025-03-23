@@ -56,7 +56,6 @@ reftransitions(page::Page) = Iterators.filter(v -> in(pid(v), reftransition_idse
 decldict(page::Page) = decldict(page.declaration) # Forward to the collection object.
 
 page_idset(page::Page)          = page_idset(netsets(page)) # subpages of this page
-"Return netsets place_idset"
 place_idset(page::Page)         = place_idset(netsets(page))
 transition_idset(page::Page)    = transition_idset(netsets(page))
 arc_idset(page::Page)           = arc_idset(netsets(page))

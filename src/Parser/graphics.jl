@@ -34,7 +34,7 @@ end
 $(TYPEDSIGNATURES)
 
 Arcs, Annotations and Nodes have different graphics semantics.
-Return a [`Graphics`](@ref) holding the union of possibilities.
+Return a [`Graphics`](@ref PnmlGraphics.Graphics) holding the union of possibilities.
 """
 function parse_graphics(node, pntd)
     nn = check_nodename(node, "graphics")
@@ -65,7 +65,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Line`](@ref).
+Return [`Line`](@ref PnmlGraphics.Line).
 """
 function parse_graphics_line(node, pntd)
     check_nodename(node, "line")
@@ -74,13 +74,13 @@ function parse_graphics_line(node, pntd)
     EzXML.haskey(node, "shape") && (args[:shape] = node["shape"])
     EzXML.haskey(node, "style") && (args[:style] = node["style"])
     EzXML.haskey(node, "width") && (args[:width] = node["width"])
-    Line(; pairs(args)...)
+    PnmlGraphics.Line(; pairs(args)...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return [`Coordinate`](@ref).
+Return [`Coordinate`](@ref PnmlGraphics.Coordinate).
 Specification seems to only use integers, we also allow real numbers.
 """
 function parse_graphics_coordinate(node, pntd)
@@ -92,14 +92,14 @@ function parse_graphics_coordinate(node, pntd)
     EzXML.haskey(node, "x") || throw(PNML.MalformedException("$nn missing x"))
     EzXML.haskey(node, "y") || throw(PNML.MalformedException("$nn missing y"))
 
-    Coordinate(number_value(PNML.coordinate_value_type(pntd), node["x"]),
-               number_value(PNML.coordinate_value_type(pntd), node["y"]))
+    PnmlGraphics.Coordinate(number_value(PNML.coordinate_value_type(pntd), node["x"]),
+                            number_value(PNML.coordinate_value_type(pntd), node["y"]))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return [`Fill`](@ref)
+Return [`Fill`](@ref PnmlGraphics.Fill)
 """
 function parse_graphics_fill(node, pntd)
     check_nodename(node, "fill")
@@ -108,7 +108,7 @@ function parse_graphics_fill(node, pntd)
     EzXML.haskey(node, "image") &&  (args[:image] = node["image"])
     EzXML.haskey(node, "gradient-color")    && (args[:gradient_color] = node["gradient-color"])
     EzXML.haskey(node, "gradient-rotation") && (args[:gradient_rotation] = node["gradient-rotation"])
-    Fill(; args...)
+    PnmlGraphics.Fill(; args...)
 end
 
 """
@@ -126,5 +126,5 @@ function parse_graphics_font(node, pntd)
     EzXML.haskey(node, "family")     && (args[:family] = node["family"])
     EzXML.haskey(node, "rotation")   && (args[:rotation] = node["rotation"])
     EzXML.haskey(node, "size")       && (args[:size]   = node["size"])
-    Font(; pairs(args)...)
+    PnmlGraphics.Font(; pairs(args)...)
 end

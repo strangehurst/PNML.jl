@@ -7,7 +7,7 @@ using PNML, ..TestUtils, JET, XMLDict
         <initialMarking> <text>100</text> </initialMarking>
         </place>
     """
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         placetype = SortType("XXX", UserSort(:integer))
 
@@ -29,7 +29,7 @@ end
         <hlinitialMarking> <text>100</text> </hlinitialMarking>
         </place>
     """
-    @with PNML.idregistry => registry() PNML.DECLDICT => DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         n  = parse_place(node, pntd)::Place
         @test_call target_modules=target_modules parse_place(node, pntd)
@@ -52,7 +52,7 @@ end
         </condition>
       </transition>
     """
-    @with PNML.idregistry => registry() PNML.DECLDICT => DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         n = @inferred Transition parse_transition(node, PnmlCoreNet())
         @test n isa Transition
@@ -186,7 +186,7 @@ end
         </unknown>
     </referenceTransition>
     """
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
         n = parse_refTransition(node, pntd)::RefTransition
@@ -224,7 +224,7 @@ end
     </referencePlace>""", id="rp1", ref="Sync1")
 
     @testset "referencePlaces" for s in [n1, n2]
-        @with PNML.idregistry => registry()  PNML.DECLDICT => PNML.DeclDict() begin
+        @with PNML.idregistry => PnmlIDRegistry()  PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!(PNML.DECLDICT[])
             #n = @test_logs(match_mode=:any,
             #    (:warn, "found unexpected child of <referencePlace>: unknown"),

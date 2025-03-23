@@ -16,11 +16,11 @@ function _subtypes!(out, type::Type)
     return out
 end
 
-@with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+@with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "parse_sort $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
-    PNML.Parser.fill_sort_tag!(:X, "X", PositiveSort())
+    PNML.fill_nonhl!(PNML.DECLDICT[])
+    PNML.fill_sort_tag!(:X, "X", PositiveSort())
     sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd)::UserSort
     #@show PNML.DECLDICT[] sortof(sort)
     @test_logs sprint(show, sort)
@@ -101,8 +101,8 @@ end
     # @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    PNML.Parser.fill_nonhl!(PNML.DECLDICT[])
-    PNML.Parser.fill_sort_tag!(:duck, "duck", PositiveSort())
+    PNML.fill_nonhl!(PNML.DECLDICT[])
+    PNML.fill_sort_tag!(:duck, "duck", PositiveSort())
 
     sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
@@ -120,7 +120,7 @@ end
 end
 
 @testset "empty declarations $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         #PNML.fill_nonhl!(PNML.DECLDICT[])
         # The attribute should be ignored.
         decl = parse_declaration(xml"""<declaration key="test empty">
@@ -170,7 +170,7 @@ end
     </declaration>
     """
 
-    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
 
 
@@ -259,7 +259,7 @@ end
     </declaration>
     """
 
-    @with PNML.idregistry => PNML.registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         decl = parse_declaration(node, pntd)
         @test typeof(decl) <: Declaration
@@ -286,27 +286,27 @@ end
 const nonsimple_sorts = (MultisetSort, UserSort,ProductSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
 
-sorts() = _subtypes(AbstractSort)
+_sorts() = _subtypes(AbstractSort)
 
 @testset "equal sorts" begin
     println("============================")
-    println("  equal sorts: $(sorts())")
+    println("  equal sorts: $(_sorts())")
     println("============================")
     #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
-    for s in [x for x in sorts() if x ∉ nonsimple_sorts]
+    for s in [x for x in _sorts() if x ∉ nonsimple_sorts]
         println(s)
         a = s()
         b = s()
-        @test PNML.equals(a, a)
+        @test PNML.Sorts.equals(a, a)
     end
 
-    for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
-        for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
+    for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
+        for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
             a = sorta()
             b = sortb()
-            #println(repr(a), " == ", repr(b), " --> ", PNML.equals(a, b), ", ", (a == b))
-            sorta != sortb && @test a != b && !PNML.equals(a, b)
-            sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
+            #println(repr(a), " == ", repr(b), " --> ", PNML.Sorts.equals(a, b), ", ", (a == b))
+            sorta != sortb && @test a != b && !PNML.Sorts.equals(a, b)
+            sorta == sortb && @test PNML.Sorts.equals(a, b)::Bool && (a == b)
         end
     end
 
@@ -314,8 +314,8 @@ sorts() = _subtypes(AbstractSort)
     # MultisetSort
     println("""
     #! Multisets use UserSorts
-    for sorta in [x for x in sorts() if x ∉ nonsimple_sorts]
-        for sortb in [x for x in sorts() if x ∉ nonsimple_sorts]
+    for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
+        for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
             a = PNML.MultisetSort(sorta()) #! UserSort
             b = PNML.MultisetSort(sortb()) #! UserSort
             sorta != sortb && @test a != b && !PNML.equals(a, b)

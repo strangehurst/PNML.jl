@@ -215,9 +215,9 @@ function pnml_hl_operator(tag::Symbol)
     #     return hl_operators[tag]
     # else
     #     @error "$tag is not a known hl_operator, return null_function"
-    #     return null_function #, NullSort()
+    #     return null_function
     # end
-    return null_function #, NullSort()
+    return null_function
 end
 
 """

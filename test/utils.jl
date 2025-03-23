@@ -37,7 +37,7 @@ end
     @test c() == true
 end
 #println()
-@with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+@with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
 @testset "default_inscription($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     PNML.fill_nonhl!(PNML.DECLDICT[])
 
@@ -70,9 +70,9 @@ end
 end
 #println()
 @testset "predicates for $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-    @test Iterators.only(Iterators.filter(==(true), (isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypeDefs.isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
     tp = typeof(pntd) # translate from singleton to type
-    @test Iterators.only(Iterators.filter(==(true), (isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypeDefs.isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
 end
 
 @testset "add_nettype" begin

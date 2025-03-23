@@ -5,7 +5,7 @@ using XMLDict: XMLDict
 
 @testset "type $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     # Add usersort, namedsort duo as test context.
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
         PNML.namedsorts()[:N2] = PNML.NamedSort(:N2, "N2", DotSort())
         PNML.usersorts()[:N2]  = PNML.UserSort(:N2)
@@ -44,7 +44,7 @@ end
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
 
-        @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
 
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
@@ -84,7 +84,7 @@ end
     #         </structure>
     #     </hlinitialMarking>
     #     """
-    #     @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    #     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
     #         PNML.fill_nonhl!()
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
     #         PNML.usersorts()[:uop] = UserSort(:dot)
@@ -119,7 +119,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("dot sorttype", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
@@ -141,7 +141,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("positive sorttype", PNML.usersort(:positive))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
@@ -149,7 +149,7 @@ end
             # @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
             @test PNML.multiplicity(val, NumberConstant{Int64}(8, PNML.usersort(:positive))()) == 1
-            @test PNML.sortof(PNML.basis(val)) === PNML.positivesort
+            @test PNML.sortof(PNML.basis(val)) === PNML.PositiveSort()
             @test NumberConstant{Int64}(8, PNML.usersort(:positive))() in multiset(val)
         end
      end
@@ -160,7 +160,7 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("testdot", PNML.usersort(:dot))
             mark = PNML.parse_hlinitialMarking(node, placetype, pntd)

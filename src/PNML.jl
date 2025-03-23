@@ -101,9 +101,10 @@ using DocStringExtensions
 #export parse_str, parse_file, parse_pnml
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
+export REFID
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
-export PnmlExpr, toexpr
+public PnmlExpr, toexpr
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
@@ -117,7 +118,7 @@ using .PnmlTypeDefs
 include("PnmlIDRegistrys.jl")
 using .PnmlIDRegistrys
 
-"ID registry of the current scope. Nets are the usual scope = a net-level-global."
+"PNML ID registry of the current scope. Nets are the usual scope = a net-level-global."
 const idregistry = ScopedValue{PnmlIDRegistry}() # undefined until PnmlModel created
 
 include("Core/exceptions.jl")

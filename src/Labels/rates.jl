@@ -114,7 +114,7 @@ Find first :text in vx and return its :content as string.
 """
 function text_content end
 
-function text_content(vx::Vector{XDVT2})
+function text_content(vx::Vector{PNML.XDVT2})
     isempty(vx) && throw(ArgumentError("empty `Vector{XDVT}` not expected"))
     text_content(first(vx))
 end

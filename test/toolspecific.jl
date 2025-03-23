@@ -62,7 +62,7 @@ str5 = (tool="org.pnml.tool", version="1.0",
 end
 
 @testset "combined tools" begin
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         n::XMLNode = xmlroot(
             """<place id="place0">

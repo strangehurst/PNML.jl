@@ -9,7 +9,7 @@ PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1)), ))
 @testset "add $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     #
     println()
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         varsub = NamedTuple()
         #@show PNML.pnmlmultiset(UserSort(:dot), DotConstant())
         #Add

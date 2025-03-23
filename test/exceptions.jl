@@ -63,7 +63,7 @@ end
 </pnml>
 """))
 
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         @test_throws("MalformedException: attribute type missing",
              parse_net(xml"""<net id="4712"> </net>"""))
@@ -71,7 +71,7 @@ end
 end
 
 @testset "missing id $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
 
         PNML.fill_nonhl!(PNML.DECLDICT[])
         @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")

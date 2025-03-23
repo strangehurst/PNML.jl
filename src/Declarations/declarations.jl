@@ -53,7 +53,12 @@ abstract type OperatorDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-[`PNML.DeclDict`](@ref) variabledecls[id] = VariableDeclaration(id, "human name", sort)
+Variable declaration `<variabledecl>` adds a name string and sort to the `id`
+shared with `<variable>` terms in non-ground terms.
+
+EXAMPLE
+
+[`PNML.DeclDict`](@ref) PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
 struct VariableDeclaration <: AbstractDeclaration
     id::Symbol

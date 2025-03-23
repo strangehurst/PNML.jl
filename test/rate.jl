@@ -2,7 +2,7 @@ using PNML, ..TestUtils, JET
 
 println("RATE")
 @testset "get rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         trans = PNML.parse_transition(xml"""<transition id ="birth"><rate> <text>0.3</text> </rate></transition>""", pntd)
         lab = PNML.labels(trans)
@@ -27,7 +27,7 @@ end
 # Ensure not seeing very similar label while getting default.
 @testset "get defaulted rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     tr = @test_logs((:warn, "unexpected label of <transition> id=birth: rateX"),
-        @with(PNML.idregistry => registry(), PNML.DECLDICT => PNML.DeclDict(),
+        @with(PNML.idregistry => PnmlIDRegistry(), PNML.DECLDICT => PNML.DeclDict(),
             PNML.parse_transition(xml"""
             <transition id ="birth">
               <rateX> <text>0.3</text> </rateX>

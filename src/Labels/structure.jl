@@ -19,7 +19,7 @@ Here we provide a fallback for *unclaimed tags*.
 """
 struct Structure
     tag::Symbol
-    el::XDVT
+    el::PNML.XDVT
 end
 Structure(s::AbstractString, e) = Structure(Symbol(s), e)
 

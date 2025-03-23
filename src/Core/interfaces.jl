@@ -431,14 +431,14 @@ function sortref end
 function sortelements end
 
 """
-    def_sort_element(pt)
+    def_sort_element(x)
 
-Return an arbitrary element of sort `pt`.
+Return an arbitrary element of sort `x`.
 All sorts are expected to be iteratable and non-empty, so we return `first`.
 Uses include default inscription value and default initial marking value sorts.
 
-`pt` can be anything with a `sortelements(pt)` method that returns an iterator that
-has length. See [`AbstractSort`](@ref), [`SortType`](@ref).
+`x` can be anything with a `sortelements(x)` method that returns an iterator with length.
+See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element end
 
@@ -476,13 +476,13 @@ TermInterface operator expression types.
 """
 abstract type OpExpr <: PnmlExpr end
 
-# """
-#     toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
+"""
+    toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
 
-# Recursivly call `toexpr` on contained terms.
-# `varsubs` used to replace variables with values.
-# """
-# toexpr(ex::PnmlExpr) = toexpr(ex, NamedTuple())
+Recursivly call `toexpr` on contained terms.
+`varsubs` used to replace variables with values.
+"""
+function toexpr end
 
 """
     adjacent_place(net::PnmlNet, id::Arc) -> Place

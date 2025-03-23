@@ -41,19 +41,19 @@ end
     @test length(n.positions) == 2
     @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
 
-    @test n.line isa PNML.Line
+    @test n.line isa PnmlGraphics.Line
     @test n.line.color == "linecolor"
     @test n.line.shape == "line"
     @test n.line.style == "solid"
     @test n.line.width == "1.0"
 
-    @test n.fill isa PNML.Fill
+    @test n.fill isa PnmlGraphics.Fill
     @test n.fill.color == "fillcolor"
     @test isempty(n.fill.image) # === nothing
     @test n.fill.gradient_color == "none"
     @test n.fill.gradient_rotation == "horizontal"
 
-    @test n.font isa PNML.Font
+    @test n.font isa PnmlGraphics.Font
     @test n.font.family == "Dialog"
     @test n.font.style == "normal"
     @test n.font.weight == "normal"

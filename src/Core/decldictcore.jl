@@ -290,13 +290,13 @@ function fill_nonhl! end
 
 fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
 function fill_nonhl!(dd::DeclDict)
-    for (tag, name, sort) in ((:integer, "Integer", IntegerSort()),
-                              (:natural, "Natural", NaturalSort()),
-                              (:positive, "Positive", PositiveSort()),
-                              (:real, "Real", RealSort()),
-                              (:dot, "Dot", DotSort()),
-                              (:bool, "Bool", BoolSort()),
-                              (:null, "Null", NullSort()),
+    for (tag, name, sort) in ((:integer, "Integer", Sorts.IntegerSort()),
+                              (:natural, "Natural", Sorts.NaturalSort()),
+                              (:positive, "Positive", Sorts.PositiveSort()),
+                              (:real, "Real", Sorts.RealSort()),
+                              (:dot, "Dot", Sorts.DotSort()),
+                              (:bool, "Bool", Sorts.BoolSort()),
+                              (:null, "Null", Sorts.NullSort()),
                               )
         #TODO list, strings, arbitrarysorts other built-ins
         fill_sort_tag!(dd, tag, name, sort)

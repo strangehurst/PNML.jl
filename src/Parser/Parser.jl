@@ -6,7 +6,6 @@ import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 import EzXML
 import XMLDict
-#using Reexport
 using DocStringExtensions
 using NamedTupleTools
 import Multisets: Multisets, Multiset
@@ -17,28 +16,29 @@ using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
 import PNML: adjacent_place
 import PNML: page_idset, place_idset, arc_idset, transition_idset, refplace_idset, reftransition_idset
-#import InteractiveUtils
 
-using PNML: Maybe, CONFIG, DECLDICT, REFID, idregistry, AnyElement, number_value
+using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement, number_value
 using PNML: Graphics, Coordinate, TokenGraphics
 using PNML: ToolInfo, DictType
-using PNML: XDVT, XDVT2, indent, inc_indent
-using PNML: DeclDict, PnmlNetData, PnmlNetKeys, tunesize!, fill_nonhl!
-using PNML: PartitionElement,PnmlMultiset, pnmlmultiset, BooleanConstant, NumberConstant
+using PNML: indent, inc_indent
+using PNML: DeclDict, PnmlNetData, PnmlNetKeys
+using PNML: PartitionElement,PnmlMultiset, BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
 using PNML: page_idset, place_idset, transition_idset, arc_idset
 using PNML: refplace_idset, reftransition_idset
-using PNML: has_partitionsort
-using PNML: usersorts, useroperators, variabledecls, namedsorts
+
+using PNML: def_sort_element
+
+using PNML: usersorts, useroperators, namedsorts
 using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
 using PNML: variable, namedsort, arbitrarysort, partitionsort
 using PNML: namedop, arbitraryop, partitionop, feconstant, usersort, useroperator
-using PNML: fill_sort_tag!
 
 using PNML: validate_declarations, validate_toolinfos
-using PNML: def_sort_element
-using PNML: toexpr, VariableEx, UserOperatorEx, PnmlTupleEx
+
+# Expressions
+using PNML: toexpr, PnmlExpr, VariableEx, UserOperatorEx, PnmlTupleEx
 using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
 using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -64,28 +64,16 @@ include("declarations.jl")
 include("terms.jl")
 include("toolspecific.jl")
 
-# global_logger(PNML.pnml_logger[])
-# @info "parser logger $(current_logger())"
-
-"""
-    registry() -> PnmlIDRegistry
-
-Construct an empty PNML ID registry using a ReentrantLock.
-"""
-function registry()
-    r = PnmlIDRegistry()
-    #println("create PnmlIDRegistry ", objectid(r)) #! debug
-    return r
-end
-
-export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file, unparsed_tag,
-    parse_net, parse_page!,
-    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
-    parse_name, parse_text, parse_condition,
-    parse_inscription, parse_hlinscription, parse_initialMarking, parse_hlinitialMarking,
-    parse_graphics, parse_graphics_coordinate, parse_tokengraphics, parse_tokenposition,
-    parse_declaration, parse_namedsort, parse_namedoperator, parse_sort,
-    parse_unknowndecl, parse_term, parse_feconstants, parse_variabledecl,
-    parse_excluded, parse_structure, registry, unwrap_subterm, deduce_sort
+export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file, unparsed_tag
+export parse_net, parse_page!
+export parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition
+export parse_name, parse_text
+export parse_inscription, parse_initialMarking
+export parse_condition, parse_hlinscription, parse_hlinitialMarking
+export parse_graphics, parse_graphics_coordinate, parse_tokengraphics, parse_tokenposition
+export parse_declaration, parse_sort, parse_term, parse_namedsort, parse_namedoperator
+export parse_unknowndecl, parse_feconstants, parse_variabledecl
+export parse_excluded, parse_structure
+public deduce_sort
 
 end

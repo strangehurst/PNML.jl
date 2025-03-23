@@ -60,10 +60,7 @@ basis(::PnmlMultiset{B,T}) where {B,T} = UserSort(first(B)) # tuple(REFID) in ty
 
 Base.eltype(::Type{PnmlMultiset{B,T}}) where {B,T} = T
 
-#similar(p::PnmlMultiset{B, T}) where {B,T} =
-
 # Return empty multiset with matching basis sort, element type.
-#Base.zero(::Type{PnmlMultiset{B, T}}) where {B,T} = begin
 Base.zero(::PnmlMultiset{B, T}) where {B,T} = PnmlMultiset{B,T}(Multiset{T}()) #^ empty multiset
 
 # Choose an arbitrary value (probably 0) to have multiplicity of 1.
@@ -102,9 +99,9 @@ function (-)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
 end
 
 """
-`A*B` for PnmlMultisets is forwarded `Multiset`.
+`A*B` for PnmlMultisets is forwarded to `Multiset`.
 """
-function (*)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function Base.:*(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
     PnmlMultiset{B,T}(multiset(a) * multiset(b))
 end
@@ -112,17 +109,13 @@ end
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
-function (*)(n::Number, b::PnmlMultiset{B,T}) where {B,T}
-    PnmlMultiset{B,T}(n * multiset(b))
-end
-function(*)(b::PnmlMultiset{B,T}, n::Number) where {B,T}
-    # @show n multiset(b)
-    # @show convert(Int,true) * multiset(b)
-    # @show convert(Int,false) * multiset(b)
-
-    PnmlMultiset{B,T}(convert(Int,n) * multiset(b))
+function Base.:*(n::Number, b::PnmlMultiset{B,T}) where {B,T}
+    PnmlMultiset{B,T}(convert(Int, n) * multiset(b))
 end
 
+function Base.:*(b::PnmlMultiset{B,T}, n::Number) where {B,T}
+    PnmlMultiset{B,T}(convert(Int, n) * multiset(b))
+end
 
 """
 `A<B` for PnmlMultisets is forwarded `Multiset`.

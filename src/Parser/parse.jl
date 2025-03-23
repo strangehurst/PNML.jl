@@ -73,7 +73,7 @@ function parse_pnml(node::XMLNode)
     empty!(TOPDECLVEC) #  This prevents more than one PnmlModel existing.
     # Need a netid to populate
     for _ in xmlnets
-        push!(IDRegistryVec, registry())
+        push!(IDRegistryVec, PnmlIDRegistry())
         push!(TOPDECLVEC, DeclDict())
     end
     length(xmlnets) == length(IDRegistryVec) ||
@@ -196,8 +196,8 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netdata = PnmlNetData(pntd)
     netsets = PnmlNetKeys()
-    tunesize!(netdata)
-    tunesize!(netsets)
+    PNML.tunesize!(netdata)
+    PNML.tunesize!(netsets)
 
     @assert isregistered(PNML.idregistry[], netid)
 
@@ -211,7 +211,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # We use the declarations toolkit for non-high-level nets,
     # and assume a minimum function for high-level nets.
     # Declarations present in the input file will overwrite these.
-    fill_nonhl!(DECLDICT[])
+    PNML.fill_nonhl!(DECLDICT[])
 
     # Parse *ALL* Declarations here (assuming this the tree root),
     # this includes any Declarations attached to Pages.
@@ -386,8 +386,6 @@ end
 
 """
 $(TYPEDSIGNATURES)
-
-see [`fill_nonhl!`](@ref)
 """
 function parse_place(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "place")
@@ -824,15 +822,11 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         # Default is an empty multiset whose basis matches placetype.
         # arg 2 is used to deduce the sort.
         # ProductSorts need to use a tuple of values.
-        # if placetype isa ProductSort
-        #     @show def_sort_element(placetype)
-        # end
-        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype), 0) #! TermInterface @matchable
+        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype), 0)
     else
         l.term
     end
     @assert isempty(l.vars) # markings are ground terms
-    #@show typeof(markterm) markterm; flush(stdout)
     #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
     # equal(sortof(basis(markterm)), sortof(placetype)) ||
     #     @error(string("HL marking sort mismatch,",
@@ -1003,7 +997,7 @@ function def_insc(netdata, source,::REFID, target::REFID)
     place = PNML.adjacent_place(netdata, source, target)
     placetype = place.sorttype
     el = def_sort_element(placetype)
-    inscr = pnmlmultiset(PNML.sortref(placetype), el, 1)
+    inscr = PNML.pnmlmultiset(PNML.sortref(placetype), el, 1)
     #@show inscr
     return inscr
 end
@@ -1070,13 +1064,7 @@ function parse_type(node::XMLNode, pntd::PnmlType)
 
     SortType(l.text, l.term, l.graphics, l.tools) # Basic label structure.
 end
-#=
-#~ MOVE THIS
-Built from many different elements that contain a Sort:
-type, namedsort, variabledecl, multisetsort, productsort, numberconstant, partition...
-parse_type(
-Sort = BuiltInSort | MultisetSort | ProductSort | UserSort
-=#
+
 """
     parse_sorttype_term(::XMLNode, ::PnmlType) ->
 The PNML "type" of a `Place` is a "sort" of the high-level many-sorted algebra.

@@ -1,14 +1,3 @@
-# "Return first true `f` of `v` or `nothing`."
-# function getfirst(f, v)
-#     i = findfirst(f, v) # Cannot use nothing as an index/key.
-#     isnothing(i) ? nothing : v[i]
-# end
-
-
-# Since PNML is based on integer numbers and booleans it seems reasonable to use `Number`,
-# which includes `Bool` and `Real`.
-toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
-
 
 """
     ispid(x::Symbol)
@@ -16,12 +5,6 @@ toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
 Return function to be used like: any(ispid(:asym), iterable_with_pid).
 """
 ispid(x::Symbol) = Fix2(===, x)
-
-# "Extract pnml network ID from trail of symbols"
-# netid(x::Tuple) = first(x)
-# netid(x::Any) = hasproperty(x, :ids) ? first(x.ids) : error("$(typeof(x)) missing ids")
-
-
 
 "Return blank string of current indent size in `io`."
 indent(io::IO) = indent(get(io, :indent, 0)::Int)
@@ -43,6 +26,7 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
 end
 
 toexpr(::Nothing, ::NamedTuple) = nothing
+toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
 toexpr(s::Symbol, ::NamedTuple) = QuoteNode(s)
 toexpr(t::Tuple, vsub::NamedTuple) = begin
     # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub

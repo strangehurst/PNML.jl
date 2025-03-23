@@ -16,13 +16,16 @@ using TermInterface
 using Logging, LoggingExtras
 
 using PNML
-import PNML: sortof, sortref, sortdefinition, sortelements, basis, tag, pid, refid, name, REFID
-import PNML: toexpr
+# Extend PNML core #TODO what interfaces?
+import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
+import PNML: name # Lots has human-readable name strings.
+import PNML: pid, refid # PNML ID
+import PNML: toexpr # expressions
 
-using PNML: AnyElement, AbstractTerm, indent, inc_indent, UserOperator, UserSort
+using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
+using PNML: indent, inc_indent
 using PNML: place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
-using PNML: variabledecls
-using PNML: usersorts, namedsorts, arbitrarysorts, partitionsorts, partitionops
+using PNML: namedsorts, arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
 
 using ..Sorts

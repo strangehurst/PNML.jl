@@ -4,7 +4,7 @@ using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
 @testset "text $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry=>registry() @test parse_text(xml"<text>ready</text>", pntd) == "ready"
+    @with PNML.idregistry=>PnmlIDRegistry() @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
@@ -47,7 +47,7 @@ end
     #println(str)
     node = xmlroot(str)
 
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
         #@show marking_value_type(pntd)
         placetype = SortType("$pntd initMarking", sortref(PNML.marking_value_type(pntd))::UserSort)
@@ -95,7 +95,7 @@ end
             <text>unknown content text</text>
         </unknown>
     </inscription>"""
-    @with PNML.idregistry => registry() PNML.DECLDICT => PNML.DeclDict() begin
+    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
         inscript = @test_logs((:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
                             parse_inscription(n1, :nothing, :nothing, pntd))
@@ -115,7 +115,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
 #@testset "add_labels JET $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # lab = PnmlLabel[]
-    # reg = registry()
+    # reg = PnmlIDRegistry()
     # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
     # @test_opt PNML.Parser.add_label!(lab, node, pntd)
     # @test_opt(broken=false,
@@ -172,8 +172,8 @@ end
 
 function test_unclaimed(pntd, xmlstring::String)
     node::XMLNode = xmlroot(xmlstring)
-    reg1 = registry()# 2 registries to ensure any ids do not collide.
-    reg2 = registry()
+    reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
+    reg2 = PnmlIDRegistry()
     @with PNML.idregistry => reg2 PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[];)
         (t,u) = Parser.unparsed_tag(node) # tag is a string

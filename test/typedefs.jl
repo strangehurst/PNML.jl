@@ -73,7 +73,7 @@ end
 end
 
 @testset "pnml traits $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-    @test isdiscrete(pntd) isa Bool
+    @test PnmlTypeDefs.isdiscrete(pntd) isa Bool
     @test iscontinuous(pntd) isa Bool
     @test ishighlevel(pntd) isa Bool
 end
