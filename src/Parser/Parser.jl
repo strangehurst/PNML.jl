@@ -15,7 +15,6 @@ using Logging, LoggingExtras
 using PNML
 import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
 import PNML: adjacent_place
-#import PNML: page_idset, place_idset, arc_idset, transition_idset, refplace_idset, reftransition_idset
 
 using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
 using PNML: Graphics, Coordinate, TokenGraphics
@@ -23,17 +22,11 @@ using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement,PnmlMultiset, BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
-using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
 
 using PNML: def_sort_element
+using PNML: usersort
 
-using PNML: useroperators, namedsorts
-using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
-using PNML: variable, namedsort, arbitrarysort, partitionsort
-using PNML: namedop, arbitraryop, partitionop, feconstant, usersort, useroperator
-
-# Expressions
-using PNML: toexpr, PnmlExpr, VariableEx, UserOperatorEx, PnmlTupleEx
+using PNML: toexpr, PnmlExpr, VariableEx, UserOperatorEx, PnmlTupleEx # Expressions
 using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
 using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf

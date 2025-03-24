@@ -106,7 +106,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars)
     # Expect only a reference to a VariableDeclaration. The 'primer' UML2 uses variableDecl.
     # Corrected to "refvariable" by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
     var = VariableEx(Symbol(attribute(node, "refvariable")))
-    usort = PNML.sortref(variable(var.refid))
+    usort = PNML.sortref(PNML.variable(var.refid))
     # vars will be the keys of a NamedTuple of substitutions &
     # the keys into the declaration dictionary of variable declarations.
     return (var, usort, tuple(vars..., var.refid))
@@ -472,9 +472,9 @@ end
 "Return sort REFID."
 function deduce_sort(s)
     if s isa PNML.VariableEx
-        refid(variable(s.refid))
+        refid(PNML.variable(s.refid))
     elseif s isa PNML.UserOperatorEx
-        refid(feconstant(s.refid))
+        refid(PNML.feconstant(s.refid))
     else
         error("only expected Union{VariableEx,UserOperatorEx} found $s")
     end
@@ -517,13 +517,13 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
         # Note: The specification specifically
 
-        # if !any(nsort -> equal(sort, sortdefinition(nsort)), values(namedsorts()))
+        # if !any(nsort -> equal(sort, sortdefinition(nsort)), values(PNML.namedsorts()))
         #   create namedsort, usersort with ID derived from tag, start, stop.
         # else
         #   use the ID of the first matching sort.
 
         ustag = nothing
-        for (refid, nsort) in pairs(namedsorts()) # look for first equal Sorts
+        for (refid, nsort) in pairs(PNML.namedsorts()) # look for first equal Sorts
             if equal(sort, sortdefinition(nsort))
                 # @show refid nsort
                 ustag = refid
@@ -587,7 +587,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     check_nodename(node, "partitionelement")
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
-    terms = REFID[] # ordered collection of IDREF, usually useroperators (as constants)
+    terms = REFID[] # Ordered collection, usually useroperator (feconstant) IDs.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag === "useroperator"
