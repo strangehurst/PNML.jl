@@ -27,12 +27,10 @@ using PNML: isoperator, isbooleanoperator, isintegeroperator, ismultisetoperator
 
 using PNML: def_sort_element
 
-using PNML: usersorts, useroperators, namedsorts
+using PNML: useroperators, namedsorts
 using PNML: arbitrarysorts, partitionsorts, namedoperators, arbitraryops, partitionops, feconstants
 using PNML: variable, namedsort, arbitrarysort, partitionsort
 using PNML: namedop, arbitraryop, partitionop, feconstant, usersort, useroperator
-
-using PNML: validate_declarations, validate_toolinfos
 
 # Expressions
 using PNML: toexpr, PnmlExpr, VariableEx, UserOperatorEx, PnmlTupleEx
