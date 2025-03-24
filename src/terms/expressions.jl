@@ -176,7 +176,7 @@ end
 """
     NumberEx
 
-    TermInterface expression for a NumberSort.
+    TermInterface expression for a `<numberconstant>`.
 """
 NumberEx # Need to avoid @matchable to have docstring
 @matchable struct NumberEx{T<:Number} <: PnmlExpr

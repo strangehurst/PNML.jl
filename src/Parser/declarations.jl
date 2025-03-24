@@ -59,27 +59,28 @@ end
 
 function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "structure")
-    EzXML.haselement(node) || throw(ArgumentError("missing <declaration> <structure> element"))
+    EzXML.haselement(node) ||
+        throw(ArgumentError("missing <declaration><structure> element"))
     declarations = EzXML.firstelement(node)
     check_nodename(declarations, "declarations")
     unknown_decls = AbstractDeclaration[]
 
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
-        if tag == "namedsort"
+        if tag == "namedsort" # make usersort, namedsort duo
             ns = parse_namedsort(child, pntd)
             PNML.namedsorts(dd)[pid(ns)] = ns
-            PNML.usersorts(dd)[pid(ns)] = UserSort(pid(ns)) # make usersort, namedsort duo
+            PNML.usersorts(dd)[pid(ns)] = UserSort(pid(ns))
         elseif tag == "namedoperator"
             no = parse_namedoperator(child, pntd)
             PNML.namedoperators(dd)[pid(no)] = no
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd)
             PNML.variabledecls(dd)[pid(vardecl)] = vardecl
-        elseif tag == "partition"
+        elseif tag == "partition" # usersort, partitionsort duo.
             part = parse_partition(child, pntd)::SortDeclaration
             PNML.partitionsorts(dd)[pid(part)] = part
-            PNML.usersorts(dd)[pid(part)] = part #! usersort, partition duo.
+            PNML.usersorts(dd)[pid(part)] = part
 
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -111,7 +112,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType)
     if !Sorts.isbuiltinsort(id)
         # Rest of register_idof! Needed the ID to replace the duo.
         if isregistered(idregistry[], id)
-            @warn "trying to register existing id $id in registry $(objectid(idregistry[]))" idregistry[]
+            @warn "registering existing id $id in $(objectid(idregistry[]))" idregistry[]
         end
         register_id!(idregistry[], id)
     end
@@ -352,7 +353,7 @@ end
 to_usersort(x::Sorts.UserSort) = identity(x)
 to_usersort(::Sorts.IntegerSort) = usersort(:integer)
 to_usersort(::Sorts.NaturalSort) = usersort(:natural)
-to_usersort(::Sorts.PositiveSort) = usersort(:reapositivel)
+to_usersort(::Sorts.PositiveSort) = usersort(:positive)
 to_usersort(::Sorts.RealSort) = usersort(:real)
 to_usersort(::Sorts.DotSort) = usersort(:dot)
 to_usersort(::Sorts.NullSort) = usersort(:null)

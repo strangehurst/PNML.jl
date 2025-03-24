@@ -80,8 +80,6 @@ feconstants()    = feconstants(PNML.DECLDICT[])
     declarations(dd::DeclDict) -> Iterator
 
 Return an iterator over all the declaration dictionaries' values.
-Flattens iterators: variabledecls, namedsorts, arbitrarysorts, partitionsorts, partitionops,
-namedoperators, arbitraryops, feconstants, usersorts, useroperators.
 """
 function declarations(dd::DeclDict)
     Iterators.flatten([
