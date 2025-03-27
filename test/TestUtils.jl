@@ -49,7 +49,7 @@ Multisets.set_key_value_show()
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort, ListSort, StringSort,
-    sortof, sortref, TransitionRate
+    sortof, sortref
 
 @reexport using PNML: NumberConstant, DotConstant, zero
 

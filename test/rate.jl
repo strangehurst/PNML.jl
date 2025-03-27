@@ -19,8 +19,9 @@ println("RATE")
         @test_call PNML.labels(trans)
         @test_call PNML.rate(trans)
 
-        tr = @inferred Maybe{PNML.TransitionRate} PNML.rate(trans)
-        @test eltype(tr) == PNML.rate_value_type(PNML.nettype(trans))
+        tr = @inferred PNML.rate(trans)
+        #tr = @inferred Maybe{PNML.TransitionRate} PNML.rate(trans)
+        #@test eltype(tr) == PNML.rate_value_type(PNML.nettype(trans))
     end
 end
 

@@ -31,21 +31,15 @@ All net types may have a rate value type. Expected label XML: <rate> <text>0.3</
 See [`rate_value_type`](@ref PNML.rate_value_type).
 """
 function rate(transition)
-    tr = transition_rate(transition)::Maybe{TransitionRate}
-    return isnothing(tr) ? zero(PNML.rate_value_type(nettype(transition))) : value(tr)
-end
-
-transition_rate(transition) = begin
     if has_labels(transition)
         l = labels(transition)
         if has_label(l, :rate)
             str = text_content(elements(@inbounds(get_label(l, :rate))))
-            return TransitionRate(PNML.number_value(PNML.rate_value_type(nettype(transition)), str))
+            return PNML.number_value(PNML.rate_value_type(nettype(transition)), str)
         end
     end
-    return nothing
+    return zero(PNML.rate_value_type(nettype(transition)))
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -118,6 +112,7 @@ function text_content(vx::Vector{PNML.XDVT2})
     isempty(vx) && throw(ArgumentError("empty `Vector{XDVT}` not expected"))
     text_content(first(vx))
 end
+
 function text_content(d::DictType)
     x = get(d, "text", nothing)
     isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
@@ -134,4 +129,3 @@ function _attribute(vx::DictType, key::Symbol)
     isa(x, AbstractString)|| throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(vx[key]))"))
     return x
  end
-#! _attribute(s::Union{String,SubString{String}}, _::Symbol) = error(string("_attribute does not support ", s))
