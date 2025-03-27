@@ -74,7 +74,7 @@ SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
-sortof(t::SortType) = sortdefinition(namedsort(sortref(t))) #? also arbitrarysort, partitionsort
+sortof(t::SortType) = sortdefinition(namedsort(sortref(t)))
 sortelements(t::SortType) = sortelements(sortof(t))
 
 function def_sort_element(pt::SortType)

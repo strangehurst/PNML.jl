@@ -40,7 +40,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[
 
         deref!(net; trim, verbose)
     end
-    return nothing
+    return nothing # net
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
@@ -138,7 +138,7 @@ as part of [`flatten_pages!`](@ref),
 function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[].verbose)
     if isempty(refplaces(net)) && isempty(nreftransitions(net))
         verbose && println("no references")
-        return nothing
+        return nothing # net
     end
     isempty(arcdict(net)) && error("no arcs")
 
@@ -164,7 +164,7 @@ function deref!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[].verbos
         empty!(refplacedict(net))
         empty!(reftransitiondict(net))
     end
-    return nothing
+    return nothing # net
 end
 
 """

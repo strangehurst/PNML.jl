@@ -498,7 +498,7 @@ function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     # declarations(net)
     # tools(net)
     # labels(net)
-    return nothing
+    return errors
 end
 
 #------------------------------------------------------------------------------

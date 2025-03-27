@@ -93,7 +93,7 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
             push!(unknown_decls, parse_unknowndecl(child, pntd))
         end
     end
-    return nothing
+    return dd
 end
 
 """

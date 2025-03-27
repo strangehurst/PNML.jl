@@ -368,7 +368,7 @@ function parse_term(::Val{:predecessor}, node::XMLNode, pntd::PnmlType; vars)
     return PNML.Predecessor(sts[1]), usersort(:bool), vars
 end
 
-#& FiniteIntRange Operators work on integrs in spec So use that implementation for
+#& FiniteIntRange Operators work on integrs so use that implementation for
 #& LessThan LessThanOrEqual GreaterThan GreaterThanOrEqual
 
 function parse_term(::Val{:addition}, node::XMLNode, pntd::PnmlType; vars)
@@ -587,12 +587,12 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     check_nodename(node, "partitionelement")
     id = register_idof!(idregistry[], node)
     nameval = attribute(node, "name")
-    terms = REFID[] # Ordered collection, usually useroperator (feconstant) IDs.
+    terms = REFID[] # Ordered collection, usually feconstant.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag === "useroperator"
             # PartitionElements refer to the FEConstants of the referenced finite sort.
-            # UserOperator holds an IDREF to a FEConstant operator.
+            # UserOperator holds an REFID to a FEConstant callable object.
             refid = Symbol(attribute(child, "declaration"))
             PNML.has_feconstant(refid) ||
                 error("refid $refid not found in feconstants") #! move to verify?
@@ -604,7 +604,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms"))
 
     push!(elements, PartitionElement(id, nameval, terms, rid)) # rid is REFID to enclosing partition
-    return nothing
+    return elements
 end
 
 """

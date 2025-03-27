@@ -11,6 +11,11 @@ using PNML
 import PNML: sortof, sortref, sortelements, sortdefinition
 import PNML: basis, value, term, tag, pid, refid, usersort, namedsort, toexpr
 
+export AbstractSort, UserSort, MultisetSort, ProductSort
+export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
+export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
+export ListSort, StringSort
+export DotConstant, FiniteIntRangeConstant
 
 """
 $(TYPEDEF)
@@ -49,10 +54,5 @@ include("enumerations.jl")
 include("lists.jl")
 include("numbers.jl")
 include("strings.jl")
-
-export AbstractSort, UserSort, MultisetSort, ProductSort
-export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
-export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
-export ListSort, StringSort, DotConstant, FiniteIntRangeConstant
 
 end # module Sorts

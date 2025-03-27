@@ -194,7 +194,7 @@ function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
     @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
     #@assert pntd ∉ values(dict) "$pntd already in pnml nettype dictionary"
     dict[s] = pntd
-    return nothing
+    return dict
 end
 
 """

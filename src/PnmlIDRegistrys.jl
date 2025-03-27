@@ -39,7 +39,7 @@ end
 _reg!(registry, id) = begin
     #println("register id ", repr(id), " in reg ", objectid(registry)) #! debug
     id ∈ registry.idset ? duplicate_id_action(id) : push!(registry.idset, id)
-    return nothing
+    return registry
 end
 
 """
@@ -59,7 +59,7 @@ Empty the set of id symbols. Use case is unit tests.
 function reset_reg!(registry::PnmlIDRegistry)
     #println("reset PnmlIDRegistry ", objectid(registry)) #! debug
     @lock registry.lk empty!(registry.idset)
-    return nothing
+    return registry
 end
 
 function Base.isempty(registry::PnmlIDRegistry)

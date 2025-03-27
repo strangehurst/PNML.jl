@@ -275,7 +275,7 @@ function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     pg = _parse_page!(pagedict, netdata, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
-    return nothing
+    return pagedict
 end
 
 """
@@ -347,7 +347,7 @@ function parse_place!(place_set, netdata, child, pntd)
     pl = parse_place(child, pntd)::valtype(netdata.place_dict)
     push!(place_set, pid(pl))
     netdata.place_dict[pid(pl)] = pl
-    return nothing
+    return place_set
 end
 
 "Fill transition_set, transition_dict."
@@ -355,7 +355,7 @@ function parse_transition!(transition_set, netdata, child, pntd)
     tr = parse_transition(child, pntd)::valtype(netdata.transition_dict)
     push!(transition_set, pid(tr))
     netdata.transition_dict[pid(tr)] = tr
-    return nothing
+    return transition_set
 end
 
 "Fill arc_set, arc_dict."
@@ -365,7 +365,7 @@ function parse_arc!(arc_set, netdata, child, pntd)
         @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_set, pid(a))
     netdata.arc_dict[pid(a)] = a
-    return nothing
+    return arc_set
 end
 
 "Fill refplace_set, refplace_dict."
@@ -373,7 +373,7 @@ function parse_refPlace!(refplace_set, netdata, child, pntd)
     rp = parse_refPlace(child, pntd)::valtype(netdata.refplace_dict)
     push!(refplace_set, pid(rp))
     netdata.refplace_dict[pid(rp)] = rp
-    return nothing
+    return refplace_set
 end
 
 "Fill reftransition_set, reftransition_dict."
@@ -381,7 +381,7 @@ function parse_refTransition!(reftransition_set, netdata, child, pntd)
     rt = parse_refTransition(child, pntd)::valtype(netdata.reftransition_dict)
     push!(reftransition_set, pid(rt))
     netdata.reftransition_dict[pid(rt)] = rt
-    return nothing
+    return reftransition_set
 end
 
 """

@@ -20,7 +20,7 @@ using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
 using PNML: Graphics, Coordinate, TokenGraphics
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
-using PNML: PartitionElement,PnmlMultiset, BooleanConstant, NumberConstant
+using PNML: PartitionElement, PnmlMultiset, BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
 using PNML: def_sort_element
