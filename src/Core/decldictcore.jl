@@ -17,7 +17,7 @@ Each keyed by REFID symbols.
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    # OperatorDecls include: namedoperator, feconstant, partition element, et al.
+    # OperatorDecls
     # namedoperators are used to access built-in operators
     namedoperators::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitraryoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
@@ -26,10 +26,11 @@ Each keyed by REFID symbols.
     # FEConstants are 0-ary OperatorDeclarations.
     feconstants::Dict{Symbol, Any}        = Dict{Symbol, Any}()
 
-    # AllowsThese use an IDREF symbol as a network-level "global" by referencing  abstract
+    # Use an REFID symbol as a network-level "global" to reference
     # SortDeclaration or Operatordeclaration.
-    usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
-    useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    # usersort used to wrap REFID to <: SortDeclaration is well used
+    usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
+    useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
 
 _decldict_fields = (:namedsorts, :arbitrarysorts,
@@ -203,9 +204,9 @@ Output sort of op is FEConstant.
 
 Other `OperatorDeclaration` dictionarys also hold `TermInterface` expressions accessed by
 
-    `toexpr(::OpExpr, varsub) = :(useroperator(REFID)(varsub))`
+    `toexpr(::PnmlExpr, varsub) = :(useroperator(REFID)(varsub))`
 
-where `OpExpr` is the `TermInterface` to match `OperatorDeclaration`.
+where `PnmlExpr` is the `TermInterface` to match `OperatorDeclaration`.
 With output sort to match `OperatorDeclaration` .
 
 #TODO named operator input variables and thier sorts
