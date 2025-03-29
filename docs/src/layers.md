@@ -111,8 +111,64 @@ using  PNML, InteractiveUtils, Markdown
 list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
-
 ```
+```@setup fields
+using  PNML, InteractiveUtils, Markdown
+list_fields(f) = foreach(println, fieldnames(f))
+```
+
+## Data Storage
+
+### Declaration Dictionaries
+
+The net-global storage resides here.
+
+[`DeclDict`](@ref) holds unordered collections indexed by REFID symbol.
+
+```@example fields
+list_fields(PNML.DeclDict) # hide
+```
+The XML file format allows declarations to be declared in <net> and <page> elements.
+
+All [`Declaration`](@ref) labels for a net share the same `DeclDict` as a `ScopedValue`.
+
+XML XPath is used to gather this information before parsing the rest of the elements.
+Allows using `DeclDict` while parsing.
+
+### Net Data Dictionaries
+
+This is where the graph node storage resides.
+
+ [`PnmlNetData`](@ref) contains ordered collections of the graph node objects, indexed by REFID symbols.
+
+```@example fields
+list_fields(PNML.PnmlNetData) # hide
+```
+
+The XML file format distributes a <net> over one or more <page>s. As the pages are parsed,
+the nodes are appended to a `PnmlNetData` dictionary and a `PnmlNetKeys` set.
+
+The each `PnmlNetData` dictionary maintains insertion order.
+
+Each graph node may have labels attached.
+What labels depends on the [`PnmlTypeDefs`](@ref)
+
+### ID Sets
+
+[`PnmlNetKeys`](@ref) contains ordered sets of REFID symbols.
+
+ ```@example fields
+list_fields(PNML.PnmlNetKeys) # hide
+```
+
+Each `PnmlNetKeys` set maintains insertion order.
+
+Uses REFIDs to keep track of which page owns which graph nodes or sub-page.
+We always use the [`flatten_pages!`](@ref) version.
+Testing of non-flattened nets is very minimal.
+
+!!! warning
+    After `flatten_pages!` the `PnmlNetKeys` of the only remaining page are assumed to be the same as the `keys` of corresponding `PnmlNetData` dictionary.
 
 ## Type Lookup Layers
 

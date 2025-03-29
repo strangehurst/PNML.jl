@@ -96,10 +96,7 @@ Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and othe
     reftransition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
     refplace_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
 end
-# 2024-12-08 JDH renamed accessors from *_idset to *_idset as this is the only place used.
-# And they duplicated unless used as extension point/organization mechanism in
 page_idset(s::PnmlNetKeys) = s.page_set
-"Return a `OrderedSet{Symbol}, should it be an iterator?"
 place_idset(s::PnmlNetKeys) = s.place_set
 transition_idset(s::PnmlNetKeys) = s.transition_set
 arc_idset(s::PnmlNetKeys) = s.arc_set
