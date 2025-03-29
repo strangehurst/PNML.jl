@@ -157,11 +157,11 @@ end
 #     PNML.CONFIG[].warn_on_unclaimed = true
 #     if ishighlevel(pntd)
 #         @test_throws("ArgumentError: missing inscription term in <structure>",
-#                     parse_arc(node, pntd), netdata=PNML.PnmlNetData(pntd)))
+#                     parse_arc(node, pntd), netdata=PNML.PnmlNetData()))
 #     else
 #         a1 = @test_logs(match_mode=:any,
 #                 (:warn, "found unexpected child of <arc>: unknown"),
-#                 parse_arc(node, pntd), netdata=PNML.PnmlNetData(pntd)))
+#                 parse_arc(node, pntd), netdata=PNML.PnmlNetData()))
 #         a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
 #         @testset "a1,a2" for a in [a1, a2]
 #             @test typeof(a) <: Arc

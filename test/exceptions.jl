@@ -77,13 +77,13 @@ end
         @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")
 
         pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
-        netdata = PNML.PnmlNetData(pntd)
+        netdata = PNML.PnmlNetData()
         netsets = PNML.PnmlNetKeys()
 
         @test_throws r"^MissingIDException: page" PNML.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd)
         @test_throws r"^MissingIDException: place" PNML.parse_place(xml"<place></place>", pntd)
         @test_throws r"^MissingIDException: transition" PNML.parse_transition(xml"<transition></transition>", pntd)
-        @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData(pntd))
+        @test_throws r"^MissingIDException: arc" PNML.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData())
         @test_throws r"^MissingIDException: referencePlace" PNML.parse_refPlace(xml"<referencePlace></referencePlace>", pntd)
         @test_throws r"^MissingIDException: referenceTransition" PNML.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd)
     end

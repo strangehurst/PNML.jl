@@ -194,7 +194,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # The type information is used by PnmlNet.
     #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
-    netdata = PnmlNetData(pntd)
+    netdata = PnmlNetData()
     netsets = PnmlNetKeys()
     PNML.tunesize!(netdata)
     PNML.tunesize!(netsets)

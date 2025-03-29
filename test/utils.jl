@@ -60,8 +60,8 @@ end
     @test r == eltype(RealSort)
 end
 #println()
-@testset "PnmlNetData($pntd)" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests
-    pnd = PnmlNetData(pntd)
+@testset "PnmlNetData()" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests
+    pnd = PnmlNetData()
     @test isempty(PNML.placedict(pnd))
     @test isempty(PNML.transitiondict(pnd))
     @test isempty(PNML.arcdict(pnd))

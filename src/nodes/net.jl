@@ -8,7 +8,7 @@ One Petri Net of a PNML model.
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
-    netdata::PnmlNetData{PNTD} #!, P, T, A, RP, RT} # Shared by pages, holds all places, transitions, arcs, refs
+    netdata::PnmlNetData # Shared by pages, holds all places, transitions, arcs, refs
     page_set::OrderedSet{Symbol} # Unordered keys of pages in pagedict owned by this net.
     # Top-level of a tree with PnmlNetKeys in Pages.
     #
