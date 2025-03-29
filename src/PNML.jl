@@ -136,7 +136,7 @@ const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 # Parts of Labels and Nodes.
 
 include("terms/tuples.jl") #~ Work in progress
-include("sorts/Sorts.jl") # used in Variables, Operators, Places
+include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 
 include("terms/multisets.jl") # uses UserSort declaration
