@@ -52,8 +52,8 @@ include("declarations.jl")
 include("terms.jl")
 include("toolspecific.jl")
 
-export XMLNode, xmlroot, @xml_str, parse_str, parse_pnml, parse_file, unparsed_tag
-export parse_net, parse_page!
+export XMLNode, xmlroot, @xml_str
+export parse_str, parse_pnml, parse_file, parse_net, parse_page!
 export parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition
 export parse_name, parse_text
 export parse_inscription, parse_initialMarking

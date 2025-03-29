@@ -78,7 +78,7 @@ function pff(@nospecialize(ft))
         ft === Base.string ||
         ft === Base.print ||
         ft === Base.println ||
-        ft === PNML.unparsed_tag ||
+        ft === PNML.Parser.unparsed_tag ||
         ft === PNML.Parser.add_label! ||
         ft === XMLDict.xml_dict ||
         false
