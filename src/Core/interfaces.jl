@@ -165,9 +165,9 @@ $(TYPEDSIGNATURES)
 function transition_idset end
 
 """
-$(TYPEDSIGNATURES)
+    conditions(net::PnmlNet) -> Iterator
 
-Return a labelled vector of condition values.
+Iterate over REFID => condition(transaction) pairs of `net`. This is the same order as `transactions`.
 """
 function conditions end
 

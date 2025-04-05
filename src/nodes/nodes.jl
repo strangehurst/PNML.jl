@@ -64,6 +64,15 @@ end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
 
+"""
+    varsubs(transition) -> Vector{NamedTuple}
+
+Access the variable substitutions of a transition.
+Variable substitutions depend of the marking.
+Use transition field to cache value as part of enabling rule.
+"""
+function varsubs end
+
 varsubs(transition::Transition) = transition.varsubs
 
 """

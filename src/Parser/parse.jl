@@ -93,12 +93,17 @@ function parse_pnml(node::XMLNode)
         @with PNML.idregistry => reg PNML.DECLDICT => ddict begin
             net = parse_net(netnode)
             #~ At this point the XML has been processed into PnmlExpr terms.
-            # Ground terms used to set initial markings rewritten and evaluated here.
+
             #todo test 0-arity expressions here, some are used for marking vector's initial value.
             # 0-arity means empty variable substitution.
-            # printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
+
+            #! PLUGIN ACCESS POINT BEGIN
+            # Ground terms used to set initial markings rewritten and evaluated here.
+
             #~ Evaluate expressions to create a mutable vector of markings.
-            m₀ = PNML.initial_markings(net)
+            #^ This is used in enabling and firing rules.
+            # printstyled("\ninitial marking vector $(pid(net)) $(net.namelabel))\n"; color=:light_red)
+            m₀ = PNML.PNet.initial_markings(net)
 
             # Substitutions using indices into the marking vector.
             # Rewrite inscription and condition terms with variable substitution.
@@ -109,7 +114,9 @@ function parse_pnml(node::XMLNode)
             # Firing rule.
 
             #^
-            PNML.rewriteXXX(net, m₀)
+            PNML.enabledXXX(net, m₀)
+            #! END PLUGIN
+
             net_tup = (net_tup..., net)
         end
     end
@@ -162,7 +169,7 @@ function parse_net(node::XMLNode, pntd_override::Maybe{PnmlType} = nothing)
     netid = register_idof!(PNML.idregistry[], node)
 
     # Parse the required-by-specification petri net type input.
-    pn_typedef = PnmlTypeDefs.pnmltype(attribute(node, "type"))
+    pn_typedef = pnmltype(attribute(node, "type"))
     # Override of the Petri Net Type Definition (PNTD) value for fun & games.
     if isnothing(pntd_override)
         pntd = pn_typedef

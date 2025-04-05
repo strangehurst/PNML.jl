@@ -33,7 +33,7 @@ function transition_function end
 
 transition_function(petrinet::AbstractPetriNet) = transition_function(pnmlnet(petrinet))
 transition_function(net::PnmlNet) =
-    LVector((;[tid => in_out(net, tid) for tid in transition_idset(net)]...))
+    LVector((;[tid => in_out(net, tid) for tid in PNML.transition_idset(net)]...))
 
 """
 $(TYPEDSIGNATURES)
@@ -50,32 +50,41 @@ in_out(net::PnmlNet, transition_id::Symbol) = (ins(net, transition_id), outs(net
 """
     ins(net, transition_id) -> LVector
 
-Return vector of inscription values labeled with source place id for arcs with `transition_id` as the target id.
+Inscription values labeled with source place id for arcs with `transition_id` as the target id.
 """
-ins(net, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transition_id))...))
+ins(net::PnmlNet, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transition_id))...))
 
 """
     outs(net, transition_id) -> LVector
 
-Return vector of inscription values labeled with target place id for arcs with `transition_id` as the source id.
+Inscription values labeled with target place id for arcs with `transition_id` as the source id.
 """
-outs(net, transition_id::Symbol) =
-    LVector((; collect(out_inscriptions(net, transition_id))...))
+outs(net::PnmlNet, transition_id::Symbol) =
+        LVector((; collect(out_inscriptions(net, transition_id))...))
 
-# See input flow #todo cite part 1
-"Iterate over preset of transition, returning source place id => inscription value pairs."
-function in_inscriptions(net, transitionid)
+#
+# See input flow #todo cite ISO 15909-1:2019 (part 1, 2ed)
+"""
+    in_inscriptions(net, transitionid) -> Iterator
+
+Iterate over preset of transition, returning source place id => inscription value pairs.
+"""
+function in_inscriptions(net::PnmlNet, transitionid)
     Iterators.map(PNML.preset(net, transitionid)) do placeid
-        a = arc(net, placeid, transitionid)
-        source(a) => inscription(a)(NamedTuple())
+        a = PNML.arc(net, placeid, transitionid)
+        PNML.source(a) => PNML.inscription(a)(NamedTuple())
     end
 end
 
-# See output flow #todo cite part 1
-"Iterate over postset of transition, returning target place id => inscription value pairs."
-function out_inscriptions(net, transitionid)
+# See output flow #todo cite  ISO 15909-1:2019 (part 1, 2ed)
+"""
+    out_inscriptions(net, transitionid) -> Iterator
+
+Iterate over postset of transition, returning target place id => inscription value pairs.
+"""
+function out_inscriptions(net::PnmlNet, transitionid)
     Iterators.map(PNML.postset(net, transitionid)) do placeid
-        a = arc(net, transitionid, placeid)
-        target(a) => inscription(a)(NamedTuple())
+        a = PNML.arc(net, transitionid, placeid)
+        PNML.target(a) => PNML.inscription(a)(NamedTuple())
     end
 end

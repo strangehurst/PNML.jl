@@ -12,6 +12,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlIDRegistrys
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
+@reexport using PNML.PNet
 
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
@@ -31,7 +32,7 @@ Multisets.set_key_value_show()
     RefTransition, reftransition, reftransitions, nreftransitions,
     Arc, arc, arcs, narcs, source, target, has_arc
 
-@reexport using PNML: SimpleNet, labels
+@reexport using PNML: labels
 @reexport using PNML.Parser: parse_file, parse_str, parse_pnml,
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
@@ -43,7 +44,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
 
 @reexport using PNML: AbstractDeclaration, Declaration, refid
-@reexport using PNML: initial_marking, initial_markings, inscription, condition
+@reexport using PNML: PNet.initial_marking, PNet.initial_markings, inscription, condition
 
 @reexport using PNML: AbstractSort, SortType, UserSort, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
@@ -53,7 +54,7 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: NumberConstant, DotConstant, zero
 
-@reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs, incidence_matrix
+@reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
 
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false

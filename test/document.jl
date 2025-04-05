@@ -78,6 +78,7 @@ end
         @test length(modelnets) == 5
 
         for net in modelnets
+            @test_opt PNML.pntd(net)
             ntup = PNML.find_nets(model, net)
             t = PNML.nettype(net)
             @test PNML.name(net) == string(pid(net)) # true by special construction
@@ -88,14 +89,16 @@ end
 
         @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
                                             :hlnet, :symmetric, :continuous]
-            @test_opt  PNML.find_nets(model, pt)
+
+            @test_opt pnmltype(pt)
+            #@test_opt  PNML.find_nets(model, pt) #! Why will it be run-time dispatch to iterate?
             @test_call PNML.find_nets(model, pt)
 
             for (l,m,r) in zip(PNML.find_nets(model, pt),
-                            PNML.find_nets(model, PnmlTypeDefs.pnmltype(pt)),
+                            PNML.find_nets(model, pnmltype(pt)),
                             PNML.find_nets(model, string(pt)))
                 @test l === m === r
-                @test l.type === m.type ===  r.type === PnmlTypeDefs.pnmltype(pt)
+                @test l.type === m.type ===  r.type === pnmltype(pt)
             end
         end
 

@@ -18,14 +18,14 @@ See [`PnmlTypeDefs`](@ref) module page.
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
 [`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCoreNet` is used by some `AbstractPetriNet` concrete types ([`SimpleNet`](@ref)).
+`PnmlCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.SimpleNet`](@ref)).
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
 It is a nonstandard extension to the ISO specification.
 
 [`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
-`HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`HLPetriNet`](@ref)).
+`HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
 The IR does not try to impose semantics on the model. Those semantics should

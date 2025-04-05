@@ -367,26 +367,26 @@ methods(PNML.conditions)  # hide
 methods(PNML.condition)  # hide
 ```
 ### transition\_function - return `LVector` of `in_out` for all transitions
-[`transition_function`](@ref)
+[`transition_function`](@ref PNML.PNet.transition_function)
 ```@example methods
-methods(PNML.transition_function)  # hide
+methods(PNML.PNet.transition_function)  # hide
 ```
 ### in\_out - tuple of `ins`, `outs` of one transition
-[`in_out`](@ref)
+[`PNet.in_out`](@ref)
 ```@example methods
-methods(PNML.in_out)  # hide
+methods(PNML.PNet.in_out)  # hide
 ```
 
 ### ins - `LVector` of source arc evaluated inscriptions.
-[`ins`](@ref)
+[`PNet.ins`](@ref)
 ```@example methods
-methods(PNML.ins)  # hide
+methods(PNML.PNet.ins)  # hide
 ```
 
 ### outs - `LVector` of target arc evaluated inscriptions.
-[`outs`](@ref)
+[`PNet.outs`](@ref)
 ```@example methods
-methods(PNML.outs)  # hide
+methods(PNML.PNet.outs)  # hide
 ```
 
 ## Labels - `Annotation` and `HLAnnotation`

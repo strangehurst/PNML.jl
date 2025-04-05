@@ -80,8 +80,8 @@ import FunctionWrappers
 import Reexport: @reexport
 import DecFP
 import Graphs
-import MacroTools
 import MetaGraphsNext
+import MacroTools
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
@@ -89,6 +89,11 @@ using TermInterface
 using Metatheory
 import Multisets: Multisets, Multiset
 #~import StyledStrings
+
+using Graphs: SimpleDiGraphFromIterator, Edge
+using MetaGraphsNext: MetaGraph
+
+
 Multisets.set_key_value_show()
 
 using LabelledArrays #Todo beware namespace pollution
@@ -179,9 +184,15 @@ using .Labels
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
 include("nodes/page.jl") # Contains nodes.
-include("nodes/net.jl") # The level of IDREGISTRY, DECLDICT. API for Petri nets, graphs work.
+include("nodes/net.jl") # PnmlNet
 include("nodes/pagetree.jl") # AbstractTree used to print a PnmlNet.
 include("nodes/model.jl") # Holds multiple PnmlNets.
+
+include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.
+include("NetAPI/enabling_rule.jl")
+include("NetAPI/firing_rule.jl")
+include("NetAPI/metagraph.jl")
+#include("NetAPI/")
 
 include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 
@@ -190,9 +201,11 @@ include("Parser/Parser.jl")
 using .Parser
 
 # API: Petri nets, metagraph
-include("PNet/petrinet.jl")
-include("PNet/transition_function.jl")
-include("PNet/metagraph.jl")
+include("PNet/PNet.jl")
+using .PNet
+#include("PNet/petrinet.jl")
+#include("PNet/transition_function.jl")
+#include("PNet/metagraph.jl")
 
 include("precompile.jl")
 

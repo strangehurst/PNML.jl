@@ -82,7 +82,7 @@ Tool specific information objects can be attached to nodes and labels,
 """
 abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"Dictionary filled by `XMLDict` in [`unparsed_tag`](@ref)"
+"Dictionary filled by `XMLDict` in `unparsed_tag`"
 const DictType = LittleDict{Union{Symbol,String}, Any}
 
 const XDVT2 = Union{DictType,  String,  SubString{String}}

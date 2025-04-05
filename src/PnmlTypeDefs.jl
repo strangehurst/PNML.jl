@@ -13,7 +13,7 @@ export PnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContinuousNet
 export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
 
 # Functions
-export isdiscrete, iscontinuous, ishighlevel
+export pnmltype, isdiscrete, iscontinuous, ishighlevel
 
 """
 $(TYPEDEF)
