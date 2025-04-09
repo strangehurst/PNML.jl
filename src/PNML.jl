@@ -128,6 +128,7 @@ const idregistry = ScopedValue{PnmlIDRegistry}() # undefined until PnmlModel cre
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
+include("Core/coordinates.jl")
 
 include("Core/interfaces.jl") # Function docstrings mostly.
 include("Core/types.jl") # Abstract Types with docstrings.
@@ -172,10 +173,10 @@ using .Declarations: sortdefinition
 #^ with the hope that the accessors defined here provide type inferrability.
 include("Core/decldict.jl") # Just show()
 
-include("Core/graphics.jl") # labels and nodes can both have graphics
-using .PnmlGraphics
-
-include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
+#! 2025-04-09 move toolinfo and graphic to Labels
+# include("Labels/PnmlGraphics.jl") # labels and nodes can both have graphics
+# using .PnmlGraphics
+#include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
 
 # Labels
 include("Labels/Labels.jl")
@@ -200,12 +201,9 @@ include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 include("Parser/Parser.jl")
 using .Parser
 
-# API: Petri nets, metagraph
+# API Facade:
 include("PNet/PNet.jl")
 using .PNet
-#include("PNet/petrinet.jl")
-#include("PNet/transition_function.jl")
-#include("PNet/metagraph.jl")
 
 include("precompile.jl")
 

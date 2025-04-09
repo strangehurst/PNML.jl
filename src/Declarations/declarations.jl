@@ -37,7 +37,7 @@ end
 """
 $(TYPEDEF)
 
-See [`PNML.Declarations.NamedSort`](@ref) and [`PNML.Declarations.ArbitrarySort`] as concrete subtypes.
+See [`Declarations.NamedSort`](@ref) and Declarations.ArbitrarySort`] as concrete subtypes.
 """
 abstract type SortDeclaration <: AbstractDeclaration end
 

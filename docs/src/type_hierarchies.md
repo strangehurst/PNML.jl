@@ -108,11 +108,7 @@ type_tree(PNML.AbstractLabel) # hide
     - Labels are extendable.
     - Labels are named by the xml tag. Any "unknown" tag of an Object is presumed to be a label.
 
-## AbstractPnmlTool
-See [`ToolInfo`](@ref).
-```@example type
-type_tree(PNML.AbstractPnmlTool) # hide
-```
+
 ## PnmlException
 ```@example type
 type_tree(PNML.PnmlException) # hide

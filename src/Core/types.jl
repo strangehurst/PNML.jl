@@ -75,12 +75,12 @@ end
 refid(r::ReferenceNode) = r.ref
 
 #--------------------------------------------
-"""
-$(TYPEDEF)
-Tool specific information objects can be attached to nodes and labels,
-[`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
-"""
-abstract type AbstractPnmlTool end #TODO see ToolInfo
+# """
+# $(TYPEDEF)
+# Tool specific information objects can be attached to nodes and labels,
+# [`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
+# """
+# abstract type AbstractPnmlTool end #TODO see ToolInfo
 
 "Dictionary filled by `XMLDict` in `unparsed_tag`"
 const DictType = LittleDict{Union{Symbol,String}, Any}
@@ -194,15 +194,15 @@ rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
 rate_value_type(::Type{<:PnmlType}) = Float64
 
 ####################################################################
-"""
-    SubstitutionDict = OrderderDict{REFID, Multiset}
+# """
+#     SubstitutionDict = OrderderDict{REFID, Multiset}
 
-Variable ID used to access marking value. One for each variable of a transition.
+# Variable ID used to access marking value. One for each variable of a transition.
 
-A higher level will produce candidate consistent substitution dictionaries,
-filtering them by one or more guards. `Condition` callable object guards are part of
-selecting enabled transition => subsitution dictionary firing pairs.
-The firing rule selects one of the firing pairs, using the substitution dictionary to
-construct postset marking updates.
-"""
-const SubstitutionDict = OrderedDict{REFID, Multiset}
+# A higher level will produce candidate consistent substitution dictionaries,
+# filtering them by one or more guards. `Condition` callable object guards are part of
+# selecting enabled transition => subsitution dictionary firing pairs.
+# The firing rule selects one of the firing pairs, using the substitution dictionary to
+# construct postset marking updates.
+# """
+# const SubstitutionDict = OrderedDict{REFID, Multiset}

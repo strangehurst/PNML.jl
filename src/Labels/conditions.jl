@@ -9,14 +9,14 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML: BooleanEx, BooleanConstant)
-julia> c = PNML.Labels.Condition(false)
+```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant)
+julia> c = Labels.Condition(false)
 Condition("", BooleanEx(BooleanConstant(false)))
 
 julia> c()
 false
 
-julia> c = PNML.Labels.Condition("xx", BooleanEx(BooleanConstant(true)))
+julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true)))
 Condition("xx", BooleanEx(BooleanConstant(true)))
 
 julia> c()

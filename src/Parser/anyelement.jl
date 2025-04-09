@@ -14,7 +14,7 @@ $(TYPEDSIGNATURES)
 Return tuple of (tag, `XDVT`) holding well formed XML tree. `XMLDict`
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
-or [`PNML.Labels.Structure`](@ref).
+or [`Labels.Structure`](@ref).
 """
 function unparsed_tag(node::XMLNode)
     tag = EzXML.nodename(node)

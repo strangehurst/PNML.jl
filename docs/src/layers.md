@@ -72,7 +72,7 @@ PnmlModel
     - Places, Marking, unclaimed labels  [SortType] [Capacity]
     - Transitions, Condition, unclaimed labels [rate]
     - Arcs, Inscription, unclaimed labels [ArcType]
-    - Toolinfos [TokenGraphics]
+    - Toolinfos [Labels.TokenGraphics]
     - Labels unclaimed, [Declaration]
     - Subpages
   * Name (everybody has name)

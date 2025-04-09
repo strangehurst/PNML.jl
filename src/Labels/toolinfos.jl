@@ -32,11 +32,11 @@ function Base.show(io::IO, toolvector::Vector{ToolInfo})
 end
 
 function Base.show(io::IO, ti::ToolInfo)
-    print(io, indent(io), "ToolInfo(")
+    print(io, PNML.indent(io), "ToolInfo(")
     show(io, name(ti)); print(io, ", ");
     show(io, version(ti)); print(io, ", [");
     println(io);
-    io = inc_indent(io)
+    io = PNML.inc_indent(io)
     for i in infos(ti)
         show(IOContext(io, :typeinfo=>AnyElement), i)
         println(io, ",")
@@ -53,12 +53,12 @@ $(TYPEDFIELDS)
 TokenGraphics is <toolspecific> content.
 Combines the <tokengraphics> and <tokenposition> elements.
 """
-struct TokenGraphics{T <: Float32} <: AbstractPnmlTool
-    positions::Vector{Coordinate{T}}
+struct TokenGraphics{T <: Float32}
+    positions::Vector{PNML.Coordinate{T}}
 end
 
 # Empty TokenGraphics is allowed in spec.
-TokenGraphics{T}() where {T <: Float32} = TokenGraphics{T}(Coordinate{T}[])
+TokenGraphics{T}() where {T <: Float32} = TokenGraphics{T}(PNML.Coordinate{T}[])
 
 function Base.show(io::IO, tg::TokenGraphics)
     print(io, "TokenGraphics(", tg.positions, ")")

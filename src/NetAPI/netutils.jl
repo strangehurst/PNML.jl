@@ -14,7 +14,7 @@ adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), source(a), t
 
 Iterate ids of input (arc's source) for output transition or place `id`.
 
-See [`PNet.in_inscriptions`](@ref) and [`transition_function`](@ref PNML.PNet.transition_function).
+See [`PNet.in_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
 """
 preset(net::PnmlNet, id::Symbol) = begin
     Iterators.map(x -> source(arcdict(net)[x]), tgt_arcs(net, id))
@@ -26,7 +26,7 @@ end
 
 Iterate ids of output (arc's target) for source transition or place `id`.
 
-See [`PNet.out_inscriptions`](@ref) and [`transition_function`](@ref PNML.PNet.transition_function).
+See [`PNet.out_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
 """
 postset(net::PnmlNet , id::Symbol) = begin
     Iterators.map(x -> target(arcdict(net)[x]), src_arcs(net, id))
@@ -133,7 +133,6 @@ function rewriteXXX(net::PnmlNet, marking)
     #     # other place labels: capacity expression
     # end
 
-    #~bv_sets = Dict{REFID, SubstitutionDict}() # keys are transaction id
     # Each SubstitutionDict is a dictionary of multisets,
     #   key is variable REFID
     #   value is set of substitutions for that REFID (with multiplicity via multiset)

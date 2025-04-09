@@ -41,7 +41,7 @@
 
 $(TYPEDFIELDS)
 
-Establishes an equivalence class over a [`PNML.Declarations.PartitionSort`](@ref)'s emumeration.
+Establishes an equivalence class over a [`Declarations.PartitionSort`](@ref)'s emumeration.
 See also [`FiniteEnumerationSort`](@ref).
 Gives a name to an element of a partition. The element is an equivalence class.
 

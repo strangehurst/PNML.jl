@@ -17,7 +17,7 @@ import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid
 import PNML: adjacent_place
 
 using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
-using PNML: Graphics, Coordinate, TokenGraphics
+using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset, BooleanConstant, NumberConstant
@@ -40,7 +40,7 @@ using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
 using ..Sorts
-using ..PnmlGraphics
+#using ..PnmlGraphics #!  moved to Labels 2025-04-08
 using ..Declarations
 
 include("xmlutils.jl")

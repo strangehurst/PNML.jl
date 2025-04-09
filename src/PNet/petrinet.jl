@@ -255,9 +255,9 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
-SimpleNet(s::AbstractString) = SimpleNet(PNML.Parser.parse_str(s))
-SimpleNet(node::XMLNode)     = SimpleNet(PNML.Parser.parse_pnml(node))
-SimpleNet(model::PnmlModel)  = SimpleNet(first(PNML.nets(model)))
+SimpleNet(s::AbstractString)  = SimpleNet(PNML.Parser.parse_str(s))
+SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.parse_pnml(node))
+SimpleNet(model::PnmlModel)   = SimpleNet(first(PNML.nets(model)))
 function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)
     SimpleNet(PNML.pid(net), net)

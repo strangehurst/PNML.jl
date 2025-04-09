@@ -43,9 +43,9 @@ value of arc inscription's value for use as a transition function.
 #TODO When do these get called "pre" and "post"?
 """
 function in_out end
+in_out(net::PnmlNet, transition_id) = (ins(net, transition_id), outs(net, transition_id))
 # Look in the PnmlNet
-in_out(petrinet::AbstractPetriNet, transition_id::Symbol) = in_out(pnmlnet(petrinet), transition_id)
-in_out(net::PnmlNet, transition_id::Symbol) = (ins(net, transition_id), outs(net, transition_id))
+in_out(petrinet::AbstractPetriNet, transition_id) = in_out(pnmlnet(petrinet), transition_id)
 
 """
     ins(net, transition_id) -> LVector
@@ -59,8 +59,7 @@ ins(net::PnmlNet, transition_id::Symbol) = LVector((; collect(in_inscriptions(ne
 
 Inscription values labeled with target place id for arcs with `transition_id` as the source id.
 """
-outs(net::PnmlNet, transition_id::Symbol) =
-        LVector((; collect(out_inscriptions(net, transition_id))...))
+outs(net::PnmlNet, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
 
 #
 # See input flow #todo cite ISO 15909-1:2019 (part 1, 2ed)

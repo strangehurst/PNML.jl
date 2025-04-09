@@ -4,7 +4,6 @@ using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
-import EzXML
 import XMLDict
 using DocStringExtensions
 using NamedTupleTools
@@ -14,10 +13,10 @@ using Logging, LoggingExtras
 using LabelledArrays #Todo beware namespace pollution
 
 using PNML
-using PNML: XMLNode
+#using PNML: XMLNode
 import PNML: initial_marking, PnmlMultiset, pid
 
-using ..PnmlIDRegistrys
+#using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
 using ..Sorts

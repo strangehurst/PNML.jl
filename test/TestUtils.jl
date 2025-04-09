@@ -7,13 +7,13 @@ Multisets.set_key_value_show()
 @reexport using PNML
 @reexport using PNML.Sorts
 @reexport using PNML.Labels
+@reexport using PNML.Labels: TokenGraphics, has_toolinfo, get_toolinfo, version
 @reexport using PNML.Parser
 @reexport using PNML.Declarations
 @reexport using PNML.PnmlIDRegistrys
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
 @reexport using PNML.PNet
-
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, has_name, length, arity, tag, value, term, Labels.text, elements,
@@ -41,7 +41,7 @@ Multisets.set_key_value_show()
 
 @reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels, Condition
 
-@reexport using PNML: ToolInfo, tools, get_toolinfo, version, TokenGraphics
+@reexport using PNML: tools
 
 @reexport using PNML: AbstractDeclaration, Declaration, refid
 @reexport using PNML: PNet.initial_marking, PNet.initial_markings, inscription, condition

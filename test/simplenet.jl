@@ -315,22 +315,22 @@ const ex_types = ("continuous",)
     @test e == Bool[1,0,0,0]
     @test e == [1,0,0,0]
 
-    m₁ = PNML.PNet.fire2(C, anet, m₀)
+    m₁ = PNML.fire2(C, anet.net, m₀)
     @test PNML.enabled(anet.net, m₁) == [false,true,false,false]
 
-    m₂ = PNML.PNet.fire2(C, anet, m₁)
+    m₂ = PNML.fire2(C, anet.net, m₁)
     @test PNML.enabled(anet.net, m₂) == [false,false,true,false]
 
-    m₃ = PNML.PNet.fire2(C, anet, m₂)
+    m₃ = PNML.fire2(C, anet.net, m₂)
     @test PNML.enabled(anet.net, m₃) == [false,false,false,true]
 
-    m₄ = PNML.PNet.fire2(C, anet, m₃)
+    m₄ = PNML.fire2(C, anet.net, m₃)
     @test PNML.enabled(anet.net, m₄) == [true,false,false,false]
 
     #println("==================================")
     let mx = m₀
         for n in 1:10
-            mx = PNML.PNet.fire2(C, anet, mx)
+            mx = PNML.fire2(C, anet.net, mx)
         end
         @show mx
     end

@@ -234,7 +234,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
     tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
 
-    PNML.validate_toolinfos(tools)
+    PNML.Labels.validate_toolinfos(tools)
 
     # Create empty net.
     net = PnmlNet(; type=pntd, id=netid,
@@ -305,7 +305,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
     rt_set         = PNML.reftransition_idset(netsets)
 
     tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
-    PNML.validate_toolinfos(tools)
+    PNML.Labels.validate_toolinfos(tools)
 
     for p in allchildren(node, "place")
         parse_place!(place_set, netdata, p, pntd)

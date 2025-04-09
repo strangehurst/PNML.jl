@@ -1,7 +1,8 @@
 """
 $(TYPEDSIGNATURES)
 
-Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics. See [`TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
+Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics.
+See [`Labels.TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "tokengraphics")
@@ -17,7 +18,7 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     if isempty(tpos)
         @warn "tokengraphics does not have any <tokenposition> elements"
     end
-    TokenGraphics(tpos)
+    Labels.TokenGraphics(tpos)
 end
 
 """

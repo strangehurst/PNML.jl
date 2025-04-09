@@ -10,11 +10,12 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using Logging, LoggingExtras
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, Graphics, ToolInfo
+using PNML: Maybe, nettype, AnyElement
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
 using PNML: namedsort
 
+import PNML: name
 import PNML: usersort, sortdefinition, def_sort_element
 import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
@@ -23,6 +24,11 @@ import PNML: decldict # Declaration Label wraps the declarations dictionaries of
 
 using ..PnmlTypeDefs
 using ..Sorts
+
+include("toolinfos.jl") # labels and nodes can both have tool specific information
+
+include("PnmlGraphics.jl") # labels and nodes can both have graphics
+using .PnmlGraphics
 
 include("labels.jl")
 include("name.jl")
@@ -36,7 +42,8 @@ include("structure.jl")
 export AbstractLabel, Condition, Declaration, Inscription, Marking
 export Name, PnmlLabel, SortType, TransitionRate
 export HLAnnotation, HLInscription, HLMarking, HLLabel
-
+export Graphics, PnmlGraphics
+export ToolInfo
 export text, get_labels, get_label, rate, delay
 
 end # module labels

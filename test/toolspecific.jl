@@ -50,7 +50,7 @@ str5 = (tool="org.pnml.tool", version="1.0",
 
         @test isa(tooli, ToolInfo)
         @test name(tooli) == s.tool
-        @test PNML.version(tooli) == s.version
+        @test PNML.Labels.version(tooli) == s.version
 
         @test get_toolinfo(tooli, s.tool, s.version) == tooli # Is identity on scalar
         @test get_toolinfo(tooli, s.tool) == tooli
@@ -82,19 +82,19 @@ end
         @test length(placetools) == 5
         @test all(t -> isa(t, ToolInfo), placetools)
 
-        @test PNML.has_toolinfo(placetools, r"petrinet3", r"1\.*")
-        @test PNML.has_toolinfo(placetools, "petrinet3", "1.0")
-        @test PNML.has_toolinfo(placetools, "petrinet3")
-        @test !PNML.has_toolinfo(placetools, "XXX")
-        @test !PNML.has_toolinfo(placetools, "petrinet3", "2.0")
+        @test has_toolinfo(placetools, r"petrinet3", r"1\.*")
+        @test has_toolinfo(placetools, "petrinet3", "1.0")
+        @test has_toolinfo(placetools, "petrinet3")
+        @test !has_toolinfo(placetools, "XXX")
+        @test !has_toolinfo(placetools, "petrinet3", "2.0")
         # Assumes ordered collection.
         for (i,s) in enumerate([str1, str2, str3, str4, str5])
             ti = get_toolinfo(placetools, s.tool, s.version)
             @test ti isa ToolInfo
             @test PNML.name(placetools[i])    == PNML.name(ti) == s.tool
-            @test PNML.version(placetools[i]) == PNML.version(ti) == s.version
+            @test PNML.Labels.version(placetools[i]) == PNML.Labels.version(ti) == s.version
             @test_call PNML.name(placetools[i])
-            @test_call PNML.version(placetools[i])
+            @test_call PNML.Labels.version(placetools[i])
             @test typeof(placetools[i].infos) == typeof(ti.infos)
         end
     end

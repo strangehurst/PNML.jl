@@ -30,7 +30,7 @@ end
              parse_graphics(xmlroot(str), pntd))
 
     # There can only be one offset, last tag parsed wins.
-    @test PnmlGraphics.x(n.offset) == 7.0 && PnmlGraphics.y(n.offset) == 8.0
+    @test PNML.x(n.offset) == 7.0 && PNML.y(n.offset) == 8.0
     @test n.offset == PNML.Coordinate(7.0, 8.0)
     @test n.offset == PNML.Coordinate(7, 8.0)
     @test n.offset == PNML.Coordinate(7, 8)
@@ -73,7 +73,7 @@ end
     n = @test_logs(match_mode=:all,
         (:warn,"tokengraphics does not have any <tokenposition> elements"),
         parse_tokengraphics(xmlroot(str0), pntd))
-    @test n isa PNML.TokenGraphics
+    @test n isa TokenGraphics
     @test length(n.positions) == 0
 
     str1 = """<tokengraphics>
@@ -83,7 +83,7 @@ end
     n = @test_logs(match_mode=:all,
         (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
         parse_tokengraphics(xmlroot(str1), pntd))
-    @test n isa PNML.TokenGraphics
+    @test n isa TokenGraphics
     @test length(n.positions) == 1
 
     str2 = """<tokengraphics>
@@ -91,7 +91,7 @@ end
                 <tokenposition x="2"  y="3"/>
             </tokengraphics>"""
     n = parse_tokengraphics(xmlroot(str2), pntd)
-    @test n isa PNML.TokenGraphics
+    @test n isa TokenGraphics
     @test length(n.positions) == 2
 
     str3 = """<tokengraphics>
@@ -100,7 +100,7 @@ end
                     <tokenposition x="-2" y="2"/>
             </tokengraphics>"""
     n = parse_tokengraphics(xmlroot(str3), pntd)
-    @test n isa PNML.TokenGraphics
+    @test n isa TokenGraphics
     @test length(n.positions) == 3
     #TODO test ordering
 end
