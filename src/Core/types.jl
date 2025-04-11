@@ -46,6 +46,7 @@ tools(o::AbstractPnmlObject)     = hasproperty(o, :tools) ? o.tools : nothing
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
 
+# Jet once needed a hint about `o`.
 has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
     (isnothing(o) && error("o is nothing")) || (has_labels(o) && has_label(labels(o), tagvalue))
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
@@ -82,15 +83,48 @@ refid(r::ReferenceNode) = r.ref
 # """
 # abstract type AbstractPnmlTool end #TODO see ToolInfo
 
-"Dictionary filled by `XMLDict` in `unparsed_tag`"
+"Dictionary filled by `XMLDict` in `unparsed_tag`."
 const DictType = LittleDict{Union{Symbol,String}, Any}
 
+"Union of `DictType` dictionary, String"
 const XDVT2 = Union{DictType,  String,  SubString{String}}
 
-"XMLDict values type. Maybe too large for union-splitting."
+"XMLDict values type or Vector of values. Maybe too large for union-splitting."
 const XDVT = Union{XDVT2, Vector{XDVT2}}
 
 tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
+
+"""
+$(TYPEDSIGNATURES)
+Find first :text in vx and return its :content as string.
+"""
+function text_content end
+
+function text_content(vx::Vector{PNML.XDVT2})
+    isempty(vx) && throw(ArgumentError("empty `Vector{XDVT}` not expected"))
+    text_content(first(vx))
+end
+
+function text_content(d::DictType)
+    x = get(d, "text", nothing)
+    isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
+    return x
+end
+text_content(s::Union{String,SubString{String}}) = s
+
+"""
+XMLDict uses symbols as keys. Value returned is a string.
+"""
+function _attribute(vx::DictType, key::Symbol)
+    x = get(vx, key, nothing)
+    isnothing(x) && throw(ArgumentError("missing $key value"))
+    isa(x, AbstractString) ||
+        throw(ArgumentError("expected AbstractString got $(typeof(vx[key]))"))
+    return x
+ end
+
+
+
 
 #--------------------------------------------
 # Terms & Sorts

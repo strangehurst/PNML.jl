@@ -34,7 +34,7 @@ function rate(transition)
     if has_labels(transition)
         l = labels(transition)
         if has_label(l, :rate)
-            str = text_content(elements(@inbounds(get_label(l, :rate))))
+            str = PNML.text_content(elements(@inbounds(get_label(l, :rate))))
             return PNML.number_value(PNML.rate_value_type(nettype(transition)), str)
         end
     end
@@ -62,8 +62,8 @@ function delay(transition)
         ls = labels(transition)
         if has_label(ls, :delay)
             (tag, interval) = first(elements(@inbounds(get_label(ls, :delay))))
-            tag == "interval"
-            closure  = _attribute(interval, :closure) # from Parser
+            tag == "interval" || error("expected 'interval', found '$tag'")
+            closure  = PNML._attribute(interval, :closure)
 
             if haskey(interval, "cn") # Expect at least one cn.
                 cn = @inbounds interval["cn"]
@@ -101,31 +101,3 @@ function _ci(i)
 end
 
 #-----------------------------------------------------------------------------
-
-"""
-$(TYPEDSIGNATURES)
-Find first :text in vx and return its :content as string.
-"""
-function text_content end
-
-function text_content(vx::Vector{PNML.XDVT2})
-    isempty(vx) && throw(ArgumentError("empty `Vector{XDVT}` not expected"))
-    text_content(first(vx))
-end
-
-function text_content(d::DictType)
-    x = get(d, "text", nothing)
-    isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
-    return x
-end
-text_content(s::Union{String,SubString{String}}) = s
-
-"""
-Find an XML attribute. XMLDict uses symbols as keys. Value returned is a string.
-"""
-function _attribute(vx::DictType, key::Symbol)
-    x = get(vx, key, nothing)
-    isnothing(x) && throw(ArgumentError("missing $key value"))
-    isa(x, AbstractString)|| throw(ArgumentError("wrong type for attribute value, expected AbstractString got $(typeof(vx[key]))"))
-    return x
- end
