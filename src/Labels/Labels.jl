@@ -16,8 +16,9 @@ using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
 using PNML: namedsort
 
 import PNML: name
-import PNML: usersort, sortdefinition, def_sort_element
-import PNML: sortof, sortref, sortelements, basis, value,term,  graphics, tools, refid, tag, elements
+import PNML: usersort, def_sort_element
+import PNML: sortof, sortref, sortelements, sortdefinition, basis
+import PNML: value,term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
 import PNML: toexpr, PnmlExpr, PnmlTupleEx
 import PNML: decldict # Declaration Label wraps the declarations dictionaries of a net.

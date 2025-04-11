@@ -8,8 +8,8 @@ import Multisets: Multisets, Multiset
 using Logging, LoggingExtras
 
 using PNML
-import PNML: sortof, sortref, sortelements, sortdefinition
-import PNML: basis, value, term, tag, pid, refid, usersort, namedsort, toexpr
+import PNML: sortof, sortref, sortelements, sortdefinition, basis
+import PNML: value, term, tag, pid, refid, usersort, namedsort, toexpr
 
 export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort

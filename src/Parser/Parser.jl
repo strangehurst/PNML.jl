@@ -13,7 +13,8 @@ using TermInterface
 using Logging, LoggingExtras
 
 using PNML
-import PNML: elements, sortelements, sortof, basis, value, term, tag, pid, refid, toexpr
+import PNML: elements, sortelements, sortof, basis
+import PNML: value, term, tag, pid, refid, toexpr
 import PNML: adjacent_place
 
 using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
