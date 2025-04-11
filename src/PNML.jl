@@ -162,7 +162,6 @@ include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, a
 include("Declarations/Declarations.jl")
 using .Declarations
 import .Declarations: NamedSort, SortDeclaration
-using .Declarations: sortdefinition
 
 # Declarations are inside a <declaration> Label.
 # NamedSort declaration wraps (ID, name, <:AbstractSort).

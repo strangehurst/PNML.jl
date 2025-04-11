@@ -12,7 +12,6 @@ using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
-using TermInterface
 using Logging, LoggingExtras
 
 using PNML
