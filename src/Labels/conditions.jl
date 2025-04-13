@@ -32,10 +32,9 @@ true
     vars::NTuple{N,REFID}
 end
 
-#! 2024-10-21 as part of transition to TermInterface change value to term,
-Condition(b::Bool)            = Condition(BooleanConstant(b))
-Condition(c::BooleanConstant) = Condition(PNML.BooleanEx(c))
-Condition(expr::PNML.BooleanEx)    = Condition(nothing, expr, nothing, nothing, ())
+Condition(b::Bool)              = Condition(BooleanConstant(b))
+Condition(c::BooleanConstant)   = Condition(PNML.BooleanEx(c))
+Condition(expr::PNML.BooleanEx) = Condition(nothing, expr, nothing, nothing, ())
 Condition(text::AbstractString, b::Bool)            = Condition(text, BooleanConstant(b))
 Condition(text::AbstractString, c::BooleanConstant) = Condition(text, PNML.BooleanEx(c))
 Condition(text::AbstractString, expr::PNML.BooleanEx) = Condition(text, expr, nothing, nothing, ())
@@ -52,7 +51,6 @@ term(c::Condition) = c.term #todo! pnml variables
 
 variables(c::Condition) = c.vars
 
-#^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
     (c::Condition)(args) -> Bool
 

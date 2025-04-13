@@ -297,7 +297,7 @@ function fill_nonhl!(dd::DeclDict)
                               (:bool, "Bool", Sorts.BoolSort()),
                               (:null, "Null", Sorts.NullSort()),
                               )
-        #TODO list, strings, arbitrarysorts other built-ins
+        #TODO Add list, strings, arbitrarysorts other built-ins.
         fill_sort_tag!(dd, tag, name, sort)
     end
 end

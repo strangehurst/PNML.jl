@@ -41,6 +41,7 @@ end
 $(TYPEDEF)
 
 Wraps tuple of REFIDs into feconstant(decldict).
+
 Operations differ between `EnumerationSort`s. All wrap a tuple of symbols and
 metadata, allowing attachment of Partition/PartitionElement.
 
@@ -49,9 +50,9 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
 @auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
-    # Difference from FiniteEnumerationSort is successor/predecessor operators.
+    # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
-    metadata::M #! TermInterface metadata
+    metadata::M # TODO TermInterface metadata
 end
 function CyclicEnumerationSort(fecs)
     CyclicEnumerationSort(fecs, nothing)
@@ -62,12 +63,14 @@ tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
 
 """
 $(TYPEDEF)
-Wraps tuple of IDREFs into feconstant(decldict).
+Wraps tuple of `FEConstant` REFIDs into feconstant(decldict).
+
+See [`Parser.parse_feconstant`](@ref)
 """
 @auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     #TODO! version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
-    metadata::M #! TermInterface metadata
+    metadata::M # TODO TermInterface metadata
 end
 function FiniteEnumerationSort(fe_refs)
     FiniteEnumerationSort(fe_refs, nothing)
@@ -75,12 +78,13 @@ end
 tag(::FiniteEnumerationSort) = :finiteenumeration
 
 """
+    $(TYPEDEF)
     FiniteIntRangeSort(start::T, stop::T; meta) where {T<:Integer} -> Range
 """
 @auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    meta::M #! TermInterface metadata
+    meta::M # TODO TermInterface metadata
 end
 FiniteIntRangeSort(start, stop; meta=nothing) = FiniteIntRangeSort(start, stop, meta)
 
@@ -89,24 +93,31 @@ Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
 
-"Return iterator from range start to range stop, inclusive"
+"""
+    $(TYPEDEF)
+Return iterator from `start` to `stop`, inclusive.
+"""
 sortelements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(fir))
 
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")
 end
 
+
+
 """
+    $(TYPEDEF)
 Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
 """
 struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
     value::T
     sort::UserSort # wrapping a FiniteIntRangeSort
+    #TODO! Assert that T is a sort eltype.
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 
-# FIRconstants have an embedded sort definition, NOT a namedsort or usersort, that
-# we create a usersort, namedsort duo to match. Is expected to be a IntegerSort.
+# FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
+# We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
 sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
 sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
 

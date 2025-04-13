@@ -59,7 +59,7 @@ function binding_value_sets(net::PnmlNet, marking)
         for a in PNML.preset(net, t)::Arc
             adj = adjacent_place(net, a)
             placesort = sortref(adj)
-            vs = vars(inscription(a))::Tuple #todo PnmlExpr
+            vs = vars(inscription(a))::Tuple
 
             for v in vs # inscription that is not a ground term
                 equal(placesort, v) || error("sorts not equal for variable $v and marking $placesort")

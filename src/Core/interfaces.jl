@@ -479,8 +479,8 @@ abstract type OpExpr <: PnmlExpr end
 """
     toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
 
-Recursivly call `toexpr` on contained terms.
-`varsubs` used to replace variables with values.
+Return `Expr`. Recursivly call `toexpr` on contained terms.
+`varsubs` used to replace variables with values in expressions.
 """
 function toexpr end
 

@@ -25,7 +25,7 @@ end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
 
-initial_marking(place::Place) = (place.initialMarking)() # evaluate marking PnmlExpr
+initial_marking(place::Place) = (place.initialMarking)()
 
 sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))

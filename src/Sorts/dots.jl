@@ -13,4 +13,5 @@ struct DotConstant end
 sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
-PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant()
+
+PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant() #todo move to terms
