@@ -34,8 +34,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
             if tag == "structure" # accumulate declarations
-                # @show idregistry[]
-                _parse_decl_structure!(dd, child, pntd)
+                fill_decl_dict!(dd, child, pntd) # Assumes high-level semantics.
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
                 @info "declaration text: $text" # Do not expect text here, so it must be important.
@@ -52,23 +51,26 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
     Declaration(; text, ddict=dd, graphics, tools)
 end
 
-#"Assumes high-level semantics until someone specializes."
-function _parse_decl_structure!(dd::DeclDict, node::XMLNode, pntd::T) where {T <: PnmlType}
-    fill_decl_dict!(dd, node, pntd)
-end
+"""
+    fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType) -> DeclDict
 
+Add `<declaration>` `<declarations>` to ScopedValue `dd`, return `dd`.
+`<declaration>` may be attached to `<net>` and `<page>` elements.
+Each will have contents in a `<structure>` element.
+Are net-level values.
+"""
 function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "structure")
     EzXML.haselement(node) ||
         throw(ArgumentError("missing <declaration><structure> element"))
-    declarations = EzXML.firstelement(node)
+    declarations = EzXML.firstelement(node) # Only child node must be `<declarations>`.
     check_nodename(declarations, "declarations")
     unknown_decls = AbstractDeclaration[]
 
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
         if tag == "namedsort" # make usersort, namedsort duo
-            ns = parse_namedsort(child, pntd)
+            ns = parse_namedsort(child, pntd)::SortDeclaration
             PNML.namedsorts(dd)[pid(ns)] = ns
             PNML.usersorts(dd)[pid(ns)] = UserSort(pid(ns))
         elseif tag == "namedoperator"
@@ -87,9 +89,12 @@ function fill_decl_dict!(dd::DeclDict, node::XMLNode, pntd::PnmlType)
         #!    partop = parse_partition_op(child, pntd)
         #!     dd.partitionops[pid(partop)] = partop
 
-        #elseif tag == "arbitrarysort"
-        else
-            #TODO  add unknown_decls to DeclDict
+        elseif tag == "arbitrarysort" # TODO
+            @warn "arbitrarysort declaration not supported yet"
+            # arb = parse_arbitrarysort(child, pntd)
+            # PNML.variabledecls(dd)[pid(arb)] = arb
+       else
+            #TODO add unknown_decls to DeclDict
             push!(unknown_decls, parse_unknowndecl(child, pntd))
         end
     end
@@ -246,16 +251,9 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:noth
             push!(fec_refs, id)
         end
     end
-    return tuple(fec_refs...)
+    return tuple(fec_refs...) #todo NTuple?
 end
 
-"Tag names of sort XML elements."
-const sort_ids = (:usersort,
-                  :dot, :bool, :integer, :natural, :positive, :real, # builtins
-                  :multisetsort, :productsort,
-                  :partition, # :partition is over a :finiteenumeration
-                  :list, :strings,
-                  :cyclicenumeration, :finiteenumeration, :finiteintrange)
 """
     make_usersort(tag::Symbol, name::String, sort) -> sort
 
@@ -342,7 +340,7 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::
     #println(":multisetsort basis tag = $tag") #! debug
     part_tags = (:partition, :partitionelement) #! XXX look inside usersort definition XXX
     tag in part_tags &&
-        throw(ArgumentError("multisetsort basis $tag not allowed: $part_tags"))
+        throw(ArgumentError("multisetsort basis $tag not allowed"))
 
     basissort = parse_sort(Val(tag), basisnode, pntd)::AbstractSort
     #! need to become a UserSort
@@ -360,8 +358,7 @@ to_usersort(::Sorts.NullSort) = usersort(:null)
 to_usersort(::Sorts.BoolSort) = usersort(:bool)
 
 function to_usersort(x::AbstractSort)
-    println("to_usersort($(nameof(typeof(x))))")
-    error("XXX IMPLEMENT ME XXX")
+    error("IMPLEMENT to_usersort($(nameof(typeof(x))))")
 end
 
 #   <namedsort id="id2" name="MESSAGE">
@@ -391,6 +388,15 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
 end
 
 ############################################################
+"Tag names of sort XML elements."
+const sort_ids = (:usersort,
+                  :dot, :bool, :integer, :natural, :positive, :real, # builtins
+                  :multisetsort, :productsort,
+                  :cyclicenumeration, :finiteenumeration, :finiteintrange,
+                  :partition, # over a :finiteenumeration or :cyclicenumeration
+                  :list, :strings,
+                  )
+
 """
 $(TYPEDSIGNATURES)
 
