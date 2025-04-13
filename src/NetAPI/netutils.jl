@@ -61,7 +61,6 @@ if isnothing(a)
     z::T
 else
     eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub))::T
-    #(inscription(a))(varsub)::T # Evaluates PnmlExpr.
 end
 end
 
@@ -115,57 +114,12 @@ Will not appear in input marking or output of fir!(incidence, enabled, marking).
 ===========================================================================#
 
 """
-    rewriteXXX(net, marking)
+    rewrite(net)
 
-Rewrite PnmlExpr (TermInterface) expressions.
+Rewrite TermInterface expressions.
 """
-function rewriteXXX(net::PnmlNet, marking)
-    # printstyled("\n## rewrite PnmlNet ", repr(pid(net)), " ", pntd(net), "\n"; color=:magenta)
-
-    #println("OPERATORS")
-    # @show collect(operators()) # Accesses ScopedValue, return irterator
-
-    # @show DECLDICT[]
-
-    # println("\nPLACES")
-    # for pl in places(net)
-    #     println("p ",repr(pid(pl)), " marking ",  marking[pid(pl)])
-    #     # other place labels: capacity expression
-    # end
-
-    # Each SubstitutionDict is a dictionary of multisets,
-    #   key is variable REFID
-    #   value is set of substitutions for that REFID (with multiplicity via multiset)
-    #
-    # Used as working storage that is a valid variable substitution only at the end of the algorythim.
-    #
-    # algorythim iterates over transitions of net
-    # only enabled transitions remain in bv_sets at end of algorythim
-
-    # println("\nARCS")
-    # for ar in arcs(net)
-    #     println("a ",repr(pid(ar)), " ", repr(ar.inscription), " vars = ",variables(ar.inscription)) # expression
-    #     #@show toexpr(term(ar.inscription), subdict)
-    # end
-
-    # println("\nTRANSITIONS")
-    enabledXXX(net, marking)
-
-    # println()
-    # println("postset of $(repr(trid))")
-    # for placeid in postset(net, trid)
-    #     a = arc(net, trid, placeid)
-    #     if !isnothing(a)
-    #         println("   arc to ", repr(placeid), " variables ", variables(a.inscription))
-    #     end
-    # end
-    # namedoperators
-    # arbitraryops
-    # partitionopsoperators(dd) = Base.Iterators.Flatten{Base.Generator{Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}, typeof(values)}}(Base.Generator{Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}, typeof(values)}(values, Base.Generator{NTuple{4, Symbol}, PNML.var"#3#4"{DeclDict}}(PNML.var"#3#4"{DeclDict}(DeclDict(
-    #
-    # printstyled("##  \n"; color=:magenta)
-    # println()
-
+function rewrite(net::PnmlNet, marking)
+    # TODO!
 end
 
 
