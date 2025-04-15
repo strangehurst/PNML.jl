@@ -581,7 +581,7 @@ end
 """
     parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
 
-Parse `<partitionelement>`, add FEconstant refids to the element and append element to the vector.
+Parse `<partitionelement>`, add FEConstant refids to the element and append element to the vector.
 """
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode, rid::REFID)
     check_nodename(node, "partitionelement")
@@ -610,7 +610,7 @@ end
 """
     parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
 
-Parse `<partitionelement>`, add FEconstant refids to the element and append element to the vector.
+Parse `<partitionelement>`, add FEConstant refids to the element and append element to the vector.
 """
 function parse_term(::Val{:partitionelementof}, node::XMLNode, pntd::PnmlType; vars)
     check_nodename(node, "partitionelementof")

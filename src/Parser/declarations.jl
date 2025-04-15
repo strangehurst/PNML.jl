@@ -247,7 +247,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:noth
         else
             id = register_idof!(idregistry[], child)
             name = attribute(child, "name")
-            PNML.feconstants()[id] = FEConstant(id, name, sortrefid) #TODO partition/enumeration id?
+            PNML.feconstants()[id] = PNML.FEConstant(id, name, sortrefid) #TODO partition/enumeration id?
             push!(fec_refs, id)
         end
     end

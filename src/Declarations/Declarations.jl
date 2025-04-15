@@ -2,7 +2,7 @@ module Declarations
 
 export AbstractDeclaration
 export      SortDeclaration, NamedSort, ArbitrarySort, PartitionSort
-export      OperatorDeclaration, NamedOperator, ArbitraryOperator, FEConstant, PartitionElement
+export      OperatorDeclaration, NamedOperator, ArbitraryOperator, PartitionElement
 export      VariableDeclaration
 export      UnknownDeclaration
 
@@ -29,7 +29,6 @@ using ..Sorts
 using ..PnmlIDRegistrys
 
 include("declarations.jl")
-include("feconstants.jl")
 include("partitions.jl")
 include("arbitrarydeclarations.jl")
 

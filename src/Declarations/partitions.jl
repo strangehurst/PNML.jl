@@ -73,10 +73,9 @@ struct PartitionElement <: OperatorDeclaration
     #todo verify terms are in parent partitions's referenced sort
 end
 
-"Return Bool true if fec in pe.terms"
+"Return Bool true if partition contains the FEConstant"
 function contains end
 contains(pe::PartitionElement, fec::REFID) = fec in pe.terms
-contains(pe::PartitionElement, fec::FEConstant) = fec() in pe.terms
 
 function Base.show(io::IO, pe::PartitionElement)
     print(io, nameof(typeof(pe)), "(", pid(pe), ", ", repr(name(pe)), ", ")

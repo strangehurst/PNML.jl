@@ -504,14 +504,14 @@ end
     arg::Any
     refpartition::Any # UserSort, REFID
 end
-function peo_impl(lhs, refpart)
+function _peo_impl(fec::FEConstant, refpart)
     #@warn "peo_impl" lhs refpart
     p = partitionsort(refpart)
-    findfirst(e -> Declarations.contains(e, lhs), p.elements)
+    findfirst(e -> Declarations.contains(e, fec()), p.elements)
 end
 toexpr(op::PartitionElementOf, varsub::NamedTuple) = begin
     #@warn "toexpr PartitionElementOf" op varsub
-    Expr(:call, peo_impl, toexpr(op.arg, varsub), QuoteNode(op.refpartition))
+    Expr(:call, _peo_impl, toexpr(op.arg, varsub), QuoteNode(op.refpartition))
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 function Base.show(io::IO, x::PartitionElementOf)
