@@ -81,3 +81,14 @@ sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are a
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
 PNML.toexpr(c::FiniteIntRangeConstant, ::NamedTuple) = value(c)
+
+"""
+    DotConstant
+Duck-typed as AbstractOperator.
+"""
+struct DotConstant end #todo move to term/constterm.jl
+sortref(::DotConstant) = usersort(:dot)::UserSort
+sortof(::DotConstant) = sortdefinition(namedsort(:dot))
+(d::DotConstant)() = 1 # true is a number, one
+
+PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant() #todo move to terms

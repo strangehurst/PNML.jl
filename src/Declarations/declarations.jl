@@ -152,7 +152,8 @@ struct NamedOperator{T} <: OperatorDeclaration
     def::T # operator or variable term (with inferred sort) #TODO how to infer ===
 end
 NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator")
-NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], DotConstant())
+# Empty parameter vector. Default to dots.
+NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant())
 
 operator(no::NamedOperator) = no.def
 parameters(no::NamedOperator) = no.parameter

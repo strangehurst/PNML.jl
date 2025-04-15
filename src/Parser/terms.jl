@@ -144,7 +144,7 @@ end
 
 # Dot is the high-level concept of an integer 1.
 function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType; vars)
-    return (DotConstant(), usersort(:dot), vars)
+    return (PNML.DotConstant(), usersort(:dot), vars)
 end
 
 

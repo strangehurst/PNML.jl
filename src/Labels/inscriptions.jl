@@ -117,8 +117,8 @@ PNML.inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) 
 #~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
 #~ T is the Multiset type parameter, Keep B and T in sync!
 PNML.inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-# iPNML.nscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
-PNML.inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), DotConstant}
+# PNML.inscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
+PNML.inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
 
 """
 $(TYPEDSIGNATURES)
