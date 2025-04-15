@@ -147,7 +147,6 @@ using .Sorts
 
 include("terms/multisets.jl") # uses UserSort declaration
 include("terms/constterm.jl") #
-include("terms/booleans.jl")
 include("terms/variables.jl") #~ Work in progress
 
 include("terms/expressions.jl") # Bag
