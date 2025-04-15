@@ -15,7 +15,7 @@ export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
-export DotConstant, FiniteIntRangeConstant
+export DotConstant
 
 """
 $(TYPEDEF)

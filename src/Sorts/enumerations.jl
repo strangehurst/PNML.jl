@@ -3,7 +3,7 @@
 """
 $(TYPEDEF)
 See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
-Both hold an ordered collection of [`PNML.Declarations.FEConstant`](@ref) REFIDs and metadata.
+Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs and metadata.
 """
 abstract type EnumerationSort{N,M} <: AbstractSort end
 
@@ -20,12 +20,12 @@ refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-sortelements(sort::EnumerationSort) = refs(sort) # 2024-12-20 return REFID iterator
+sortelements(sort::EnumerationSort) = refs(sort)
 
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
 
-Base.eltype(::EnumerationSort) = REFID # Use to access `DECLDICT[]`.
+Base.eltype(::EnumerationSort) = REFID # Used to access `DECLDICT[]`.
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
@@ -62,14 +62,12 @@ tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
 #TODO successor/predecessor methods
 
 """
-$(TYPEDEF)
-Wraps tuple of `FEConstant` REFIDs into feconstant(decldict).
-
-See [`Parser.parse_feconstant`](@ref)
+    FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{N,M}
+Wraps a tuple of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
 """
 @auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
-    #TODO! version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
+    #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
     metadata::M # TODO TermInterface metadata
 end
 function FiniteEnumerationSort(fe_refs)
@@ -102,25 +100,3 @@ sortelements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")
 end
-
-
-
-"""
-    $(TYPEDEF)
-Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
-"""
-struct FiniteIntRangeConstant{T<:Integer} # Duck-type  <: AbstractOperator
-    value::T
-    sort::UserSort # wrapping a FiniteIntRangeSort
-    #TODO! Assert that T is a sort eltype.
-end
-tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
-
-# FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
-# We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
-sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
-sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
-
-value(c::FiniteIntRangeConstant) = c.value
-(c::FiniteIntRangeConstant)() = value(c)
-PNML.toexpr(c::FiniteIntRangeConstant, ::NamedTuple) = value(c)

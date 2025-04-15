@@ -60,3 +60,24 @@ end
 function Base.show(io::IO, fec::FEConstant)
     print(io, nameof(typeof(fec)), "(", repr(pid(fec)), ", ", repr(fec()), ", ", repr(fec.refid), ")")
 end
+
+
+"""
+    $(TYPEDEF)
+Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
+"""
+struct FiniteIntRangeConstant{T<:Integer} # <: AbstractOperator #todo move to term/constterm.jl
+    value::T
+    sort::UserSort # wrapping a FiniteIntRangeSort
+    #TODO! Assert that T is a sort eltype.
+end
+tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
+
+# FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
+# We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
+sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
+sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
+
+value(c::FiniteIntRangeConstant) = c.value
+(c::FiniteIntRangeConstant)() = value(c)
+PNML.toexpr(c::FiniteIntRangeConstant, ::NamedTuple) = value(c)
