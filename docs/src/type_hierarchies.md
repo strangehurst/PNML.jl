@@ -11,14 +11,14 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 AbstractTrees.children(x::Type) = subtypes(x)
 type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
-## PnmlType - Petri Net Type Definition
+## PnmlType - Petri Net Type Definition (PNTD)
 
 See [`PnmlTypeDefs`](@ref) module page.
 
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
 [`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.SimpleNet`](@ref)).
+`PnmlCoreNet` is used by some [`AbstractPetriNet`](@ref) concrete types ([`PNet.SimpleNet`](@ref)).
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
@@ -28,9 +28,10 @@ It is a nonstandard extension to the ISO specification.
 `HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.HLPetriNet`](@ref)).
 Think of it as a testable implementation of `AbstractHLCore`.
 
-The IR does not try to impose semantics on the model. Those semantics should
-be part of [`AbstractPetriNet`](@ref).  The IR tries to represent the model (all models)
-at a structural level. It may paramertize types to facilitate specilization.
+Tries to represent the model (all models) at a structural level.
+Tries to avoid imposing semantics. It is a toolkit with a wide range of behavior.
+Those semantics should be part of [`AbstractPetriNet`](@ref).
+Yes, the [`PnmlType`](@ref) in use selects some semantics and affects the toolkit.
 
 ```@example type
 type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
@@ -38,31 +39,17 @@ type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
 
 | PnmlType     | Description                                               |
 | :---------   | :-------------------------------------------------------- |
-| PnmlCoreNet  | <name> is only defined label                              |
-| PTNet        | <initialMarking>, <inscription> labels only have <text>   |
-| HLCoreNet    | support structure used by all HL Petri Net Graphs         |
-| PT-HLPNG     | restrict sort to dot, condition always true               |
-| SymmetricNet | restrict sorts to finite, annotations have <structure>    |
-| HLNet        | extend symmetric with arbitrary sorts                     |
-| Stochastic   | continuous or discrete                                    |
-| Timed        | continuous or discrete                                    |
-| Open         | continuous or discrete                                    |
+| PnmlCoreNet  | Core structure. Only defined label is <name>.  |
+| PTNet        | Using <initialMarking>, <inscription> labels that have a <text> containing a number.  |
+| HLCoreNet    | HL Petri Net Graphs structure. Using <hlinitialMarking>, <hlinscription> labels with <structure>. Multisorted algebra.      |
+| PT-HLPNG     | Restrict sort to dot, condition always true.              |
+| SymmetricNet | Restrict sorts to finite, annotations have <structure>.   |
+| HLNet        | Unrestricted, Arbitrary Sorts, Operators, Lists, Strings. |
+| Stochastic   | Extended PNML. Use <rate> label                           |
+| Timed        | Extended PNML.                                            |
+| Open         | Extended PNML .                                           |
 
 Todo: Continuous Petri Net
-
-| Full Name     | Node       | Label Description                                   |
-|:--------------|:-----------|:----------------------------------------------------|
-| Marking       | Place      |                                                     |
-| Inscription   | Arc        |                                                     |
-| HLMarking     | Place      |                                                     |
-| HLInscription | Arc        |                                                     |
-| Condition     | Transition |                                                     |
-| Rate          | Transition | random variable or function of marking, firing rate |
-| Priority      | Transition | firing order of enabled transitions                 |
-| Weight        | Transition | firing tiebreaker                                   |
-
-Note that *Rate*, *Priority* and *Weight* are not part of base specification.
-See [Unclaimed Labels](@ref)
 
 ## AbstractPetriNet
 [`AbstractPetriNet`](@ref) uses the Intermediate Representation's
@@ -81,13 +68,13 @@ type_tree(PNML.AbstractPnmlObject) # hide
 
 Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 
-| Name     | Type |
+| Name     | Description |
 |:---------|:-----------------------------------|
-| id       | Symbol |
-| pntd     | <: PnmlType |
-| name     | Maybe{Name} |
-| labels   | PnmlLabel |
-| tools    | ToolInfo |
+| id       | Symbol, see ['REFID](@ref PNML.REFID) |
+| pntd     | <: [`PnmlType`](@ref) identifies the meta-model of a net. |
+| name     | Optional [`Name`](@ref) label. |
+| labels   | Optional [`PnmlLabel`](@ref) collection of unclaimed labels. |
+| tools    | Optional [`ToolInfo`](@ref) collection of tool specific content. |
 
 ## AbstractLabel
 [`AbstractLabel`](@ref)s are attached to `AbstractPnmlObject`s.
@@ -95,6 +82,22 @@ Kinds of label include: marking, inscription, condition and declarations, sort, 
 Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance
 is a label and add it to a collection of 'other labels'.
 Some 'other labels' can be accessed using: [`rate`](@ref), [`delay`](@ref).
+
+**Some Labels of Interest**
+
+| Full Name     | Node       | Label Description                                   |
+|:--------------|:-----------|:----------------------------------------------------|
+| Marking       | Place      | Value is a number.                                  |
+| Inscription   | Arc        | Value is a number.                                  |
+| HLMarking     | Place      | Value is a ground term.                             |
+| HLInscription | Arc        | Value is a ground term.                             |
+| Condition     | Transition | Value is a boolean term.                            |
+| Rate          | Transition | Value is a floating point number.                   |
+| Priority      | Transition | Firing order of enabled transitions.                |
+| Weight        | Transition | Firing tiebreaker.                                  |
+
+Note that *Rate*, *Priority* and *Weight* are not part of base specification.
+See [Unclaimed Labels](@ref)
 
 ```@example type
 type_tree(PNML.AbstractLabel) # hide
@@ -131,7 +134,6 @@ For high-level nets the sorttype object is an [`SortType`](@ref) `HLAnnotation`
 subtype containing an [`AbstractSort`](@ref).
 
 ## AbstractDeclaration
-
 Labels attached to [`PnmlNet`](@ref) and/or [`Page`](@ref).
 The [`Declaration`](@ref)s contained in a <declarations> apply to the whole net even when attached to a `Page`.
 ```@example type
@@ -147,4 +149,21 @@ Part of the *many-sorted algebra* of a High-level net.
 See [`AbstractOperator`](@ref). [`Variable`](@ref)
 ```@example type
 type_tree(PNML.AbstractTerm) # hide
+```
+
+## PnmlExpr
+Expressions of the *many-sorted algebra* are part of a petri net's dynamic behavior.
+[`PnmlExpr`](@ref) are `TermInterface` compatible.
+Used to do variable substitution before evaluation of mutisorted algebra expressions
+in enabling and firing rules. Ground terms contain no variables and therefore
+do not depend on the current marking of the net.
+```@example type
+type_tree(PNML.PnmlExpr) # hide
+```
+
+##  AbstractPetriNet
+__Note__ [`AbstractPetriNet`](@ref) is a facade for [`PnmlNet`](@ref).
+There may be other facades. For example stock flow nets.
+```@example type
+type_tree(PNML.AbstractPetriNet) # hide
 ```

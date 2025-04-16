@@ -17,17 +17,6 @@ The intermediate representation (IR) is between the XML model and
 a "usable" network. Many different flavors of Petri Nets are expected
 to be implemented using the IR.
 
-The IR is constructed by traversing the XML and using tag names as dictonary keys.
-
-In the first part of parsing, a named tuple is filled with appropriate
-initial values for each xml tag. Then optional child keys have values bound
-as they are parsed.
-
-The second part of parsing instantiates objects using the named tuple as input.
-
-The structure of the IR follows the tree structure of a well-formed XML document
-and the PNML specification.
-
 XML attribute names and child element tag names are used for keys
 of the same dictonary. The _pnml_ specification/schemas do not use colliding names.
 However, the <toolspecific> tag's content is not required to be valid pnml, just
@@ -51,13 +40,9 @@ PnmlModel
 
 The IR is implemented under the assumption the the input pnml file is valid.
 All tags are assumed to be meaningful to the resulting network.
-The pnmlcore schema requires undefined tags will be considered pnml labels.
+The pnmlcore schema requires undefined tags on objects will be considered pnml labels.
 The IR is capable of handling arbitrary labels.
-Many label tags from higherlevel pnml schemas are recognized by the IR parsers.
-
-While the Petri Net Type Definition (pntd) is present in every valid net,
-it was not necessary to consult the type during creation of the IR.
-It is expected that conforming to pntd will be done at a higher level.
+Many label tags from higherlevel pnml schemas are recognized by the IR core parser.
 
 Some parts of pnml are complicated. Not yet completed bits may be implemented
 as wrappers holdind unparsed XML. In fact, parts of pnml are specified as holding
@@ -81,30 +66,11 @@ PnmlModel
 
 It is expected that conforming to pntd will be done at a higher level.
 
-| Level      | Sorts              |   |
-|------------|--------------------|---|
-| Core       | Bool, Int          |   |
-| PT         | Bool, Int          |   |
-| Continuous | Bool, Float64      |   |
-| Hybrid     | Bool, Int, Float64 |   |
-| high-level | Bool, Int, Term    |   |
-| Symmetric  | Bool, Int, Term    |   |
-| PTHLPNG    | Bool, Int, Term    |   |
-
 ## Core Layer
 
-What is permitted by the specification in a XML file will be a subset of the implementation.
+What is permitted by the specification will be a subset of the implementation.
 
 Concepts from High-Level Petri Nets will be used in the Core layer.
-
-| PNTD                  | Sort value        |   |
-|-----------------------|-------------------|---|
-| PnmlType              | Int               |   |
-| AbstractContinuousNet | Float64           |   |
-| AbstractHLCore        | DotConstant())    |   |
-
-Use `Union{Bool, Int, Float64, DictType}` as the set of types that a `Term`'s can contain.
-Consider Bool, Int, Float64 as builtin-sorts, and `DictType` as "user defined" sorts.
 
 ```@setup types
 using  PNML, InteractiveUtils, Markdown
@@ -148,7 +114,7 @@ list_fields(PNML.PnmlNetData) # hide
 The XML file format distributes a <net> over one or more <page>s. As the pages are parsed,
 the nodes are appended to a `PnmlNetData` dictionary and a `PnmlNetKeys` set.
 
-The each `PnmlNetData` dictionary maintains insertion order.
+The `PnmlNetData` dictionaries maintain insertion order.
 
 Each graph node may have labels attached.
 What labels depends on the [`PnmlTypeDefs`](@ref)
