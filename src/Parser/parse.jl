@@ -444,7 +444,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
 
     if isnothing(sorttype) # Infer sortype of place from mark?
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
-        @error("infer sorttype", value(mark), sortof(mark), basis(mark))
+        @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing)
     end
 

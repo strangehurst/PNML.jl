@@ -31,7 +31,7 @@ function parse_term(node::XMLNode, pntd::PnmlType; vars)
     end
     # ttup is a tuple(expression||literal, sort, vars)
     # Ensure that there is a `toexpr` method. #! DEBUG only?
-    @assert which(toexpr, (typeof(ttup[1]), NamedTuple)) isa Method
+    @assert which(PNML.toexpr, (typeof(ttup[1]), NamedTuple)) isa Method
 
     #! XXX are parse_term, parse_operator_term type-stable XXX
     #! YES, if they are PnmlExpr! What if they are literals?
@@ -171,7 +171,7 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
     basis = parse_usersort(child, pntd)::UserSort # Can there be anything else?
-    x = first(sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
+    x = first(PNML.sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
     return PNML.Bag(basis, x, 0), basis, vars # expression that calls pnmlmultiset(basis, x, 0)
 end
@@ -472,9 +472,9 @@ end
 "Return sort REFID."
 function deduce_sort(s)
     if s isa PNML.VariableEx
-        refid(PNML.variable(s.refid))
+        PNML.refid(PNML.variable(s.refid))
     elseif s isa PNML.UserOperatorEx
-        refid(PNML.feconstant(s.refid))
+        PNML.refid(PNML.feconstant(s.refid))
     else
         error("only expected Union{VariableEx,UserOperatorEx} found $s")
     end

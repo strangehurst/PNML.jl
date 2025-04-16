@@ -375,7 +375,7 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
         tag = Symbol(EzXML.nodename(child))
         if tag === :usersort
             us = parse_sort(Val(tag), child, pntd, rid)::UserSort
-            push!(sorts, refid(us)) # need REFID
+            push!(sorts, PNML.refid(us)) # need REFID
         else
             throw(PNML.MalformedException("<productsort> contains unexpected sort $tag"))
         end

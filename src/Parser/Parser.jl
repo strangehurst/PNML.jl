@@ -1,3 +1,6 @@
+"""
+    Parser module of PNML
+"""
 module Parser
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using Base.ScopedValues
@@ -13,21 +16,23 @@ using TermInterface
 using Logging, LoggingExtras
 
 using PNML
-import PNML: elements, sortelements, sortof, basis
-import PNML: value, term, tag, pid, refid, toexpr
+
+# Methods implemented in this module.
 import PNML: adjacent_place
 
 using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
 using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
-using PNML: PartitionElement, PnmlMultiset, BooleanConstant, NumberConstant
+using PNML: PartitionElement, PnmlMultiset
+using PNML: BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
 using PNML: def_sort_element
-using PNML: usersort
+using PNML: usersort, sortof, basis, pid
 
-using PNML: toexpr, PnmlExpr, VariableEx, UserOperatorEx, PnmlTupleEx # Expressions
+using PNML: PnmlExpr, BoolExpr, OpExpr
+using PNML: VariableEx, UserOperatorEx, PnmlTupleEx # Expressions
 using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
 using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf
