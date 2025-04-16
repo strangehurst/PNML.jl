@@ -447,10 +447,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
         @error("infer sorttype", value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing)
     end
-    #@show basis(mark) sortof(mark) sortof(sorttype)
-    #if mark isa Tuple
-    #    @show mark sorttype
-    #end
+
     #! These are TermInterface expressions. Test elsewhere, after eval.
     # The basis sort of mark label must be the same as the sort of sorttype label.
     # if !equal(sortof(basis(mark)), sortof(sorttype))
@@ -887,7 +884,6 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType)
         isa(placetype(pmt), UserSort) ||
             error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
 
-        # @show basis(mark); flush(stdout)
         # if !equal(sortof(basis(mark)), sortof(placetype(pmt)))
         #     @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
         #     throw(ArgumentError(string("parse marking term sort mismatch:",
@@ -908,8 +904,7 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd)
-    #@show l.term #! term is expression
-    HLInscription(l.text, l.term, l.graphics, l.tools, l.vars) #! term is expression
+    HLInscription(l.text, l.term, l.graphics, l.tools, l.vars)
 end
 
 """
