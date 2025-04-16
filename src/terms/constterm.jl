@@ -4,7 +4,7 @@
 Builtin operator that has arity=0 means the same result every time, a constant.
 Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 """
-struct NumberConstant{T<:Number} <: AbstractOperator #todo put all constant operators here
+struct NumberConstant{T<:Number} <: AbstractOperator
     value::T
     sort::UserSort # value isa eltype(sort), verified by parser.
     # pnml Schema allows a SubTerm[], not used here.
@@ -30,7 +30,7 @@ Finite enumeration constant.
     fec() == :anID
     fec.name = "somevalue"
 """
-struct FEConstant <: AbstractOperator # 2025-04-14 move to term/constterm.jl
+struct FEConstant <: AbstractOperator
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
     refid::REFID # of contining partition, enumeration, (and partitionelement?)
@@ -68,7 +68,7 @@ end
     $(TYPEDEF)
 Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
 """
-struct FiniteIntRangeConstant{T<:Integer} # <: AbstractOperator #todo move to term/constterm.jl
+struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
     value::T
     sort::UserSort # wrapping a FiniteIntRangeSort
     #TODO! Assert that T is a sort eltype.
@@ -87,25 +87,24 @@ PNML.toexpr(c::FiniteIntRangeConstant, ::NamedTuple) = value(c)
 
 """
     DotConstant
-Duck-typed as AbstractOperator.
 """
-struct DotConstant end #todo move to term/constterm.jl
+struct DotConstant <: AbstractOperator end
 sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
 
-PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant() #todo move to terms
+PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant()
 
 
 """
     BooleanConstant("true"|"false") is a built-in operator (constants are 0-ary operators).
     c = BooleanConstant(true); c() == true
 """
-struct BooleanConstant <: AbstractOperator #todo move to term/constterm.jl
+struct BooleanConstant <: AbstractOperator
     value::Bool
 end
 
-function BooleanConstant(s::Union{AbstractString,SubString{String}}) #todo move BooleanConstant to operators
+function BooleanConstant(s::Union{AbstractString,SubString{String}})
 
     BooleanConstant(parse(eltype(sortdefinition(namedsort(:bool))), s))
 end
