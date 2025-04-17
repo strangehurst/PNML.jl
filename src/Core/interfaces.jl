@@ -430,17 +430,7 @@ function sortref end
 
 function sortelements end
 
-"""
-    def_sort_element(x)
 
-Return an arbitrary element of sort `x`.
-All sorts are expected to be iteratable and non-empty, so we return `first`.
-Uses include default inscription value and default initial marking value sorts.
-
-`x` can be anything with a `sortelements(x)` method that returns an iterator with length.
-See [`AbstractSort`](@ref), [`SortType`](@ref).
-"""
-function def_sort_element end
 
 function usersort end
 
