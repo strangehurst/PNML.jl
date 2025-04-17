@@ -9,7 +9,7 @@ $(TYPEDFIELDS)
 Hold well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 
 Creates a tree whose nodes are `Union{DictType, String, SubString{String}}`.
-#TODO when can there be leaf nodes of String, Substring{String?}
+#TODO when can there be leaf nodes of String, SubString{String?}
 See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
