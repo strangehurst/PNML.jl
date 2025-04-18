@@ -65,7 +65,7 @@ end
 
 @testset "graphics exception $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     str0 = """<bogus x="1" y="2" />"""
-    @test_throws r"^ArgumentError" PNML.parse_graphics_coordinate(xmlroot(str0), pntd)
+    @test_throws r"^ArgumentError" PNML.Parser.parse_graphics_coordinate(xmlroot(str0), pntd)
 end
 
 @testset "tokengraphics $pntd" for pntd in PnmlTypeDefs.core_nettypes()

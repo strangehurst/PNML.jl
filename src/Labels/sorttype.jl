@@ -73,12 +73,22 @@ SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
-sortref(t::SortType) = t.sort_
-sortof(t::SortType) = sortdefinition(namedsort(sortref(t)))
-sortelements(t::SortType) = sortelements(sortof(t))
+PNML.Sorts.sortref(t::SortType) = t.sort_
+PNML.Sorts.sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(sortref(t)))
+PNML.Sorts.sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
 
+"""
+    def_sort_element(x)
+
+Return an arbitrary element of sort `x`.
+All sorts are expected to be iteratable and non-empty, so we return `first`.
+Uses include default inscription value and default initial marking value sorts.
+
+`x` can be anything with a `sortelements(x)` method that returns an iterator with length.
+See [`AbstractSort`](@ref), [`SortType`](@ref).
+"""
 function def_sort_element(pt::SortType)
-    els = sortelements(pt) # HLPNG allows infinite iterators.
+    els = PNML.Sorts.sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
     return el
 end

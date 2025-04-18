@@ -13,18 +13,18 @@ using PNML
 using PNML: Maybe, nettype, AnyElement
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
-using PNML: namedsort
+using PNML: usersort, namedsort
 
 import PNML: name
-import PNML: usersort, def_sort_element
-import PNML: sortof, sortref, sortelements, sortdefinition, basis
-import PNML: value,term,  graphics, tools, refid, tag, elements
+import PNML: value, term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
-import PNML: toexpr, PnmlExpr, PnmlTupleEx
-import PNML: decldict # Declaration Label wraps the declarations dictionaries of a net.
+import PNML: toexpr, PnmlExpr
 
-using ..PnmlTypeDefs
+using ..PnmlTypeDefs # PNML PNTD
+
 using ..Sorts
+# Some labels implement the Sort interface
+import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
 
 include("toolinfos.jl") # labels and nodes can both have tool specific information
 
@@ -46,5 +46,6 @@ export HLAnnotation, HLInscription, HLMarking, HLLabel
 export Graphics, PnmlGraphics
 export ToolInfo
 export text, get_labels, get_label, rate, delay
+export def_sort_element
 
 end # module labels

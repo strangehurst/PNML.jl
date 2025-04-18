@@ -9,17 +9,17 @@ end
 
 #------------------------------------------------
 @testset "name $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name></name>", pntd)
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd)
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == ""
 
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.parse_name(xml"<name>stuff</name>", pntd)
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd)
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
     @test n.tools === nothing || isempty(n.tools)
 
-    n = PNML.parse_name(xml"<name><text>some name</text></name>", pntd)
+    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd)
     @test n isa PNML.Name
     @test PNML.text(n) == "some name"
     #TODO add parse_graphics

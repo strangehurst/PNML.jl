@@ -28,17 +28,17 @@ using PNML: PartitionElement, PnmlMultiset
 using PNML: BooleanConstant, NumberConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
-using PNML: def_sort_element
 using PNML: usersort, sortof, basis, pid
 
-using PNML: PnmlExpr, BoolExpr, OpExpr
-using PNML: VariableEx, UserOperatorEx, PnmlTupleEx # Expressions
+# Expressions (TermInterface compatible) are created in Parser, defined in terms/expressions.jl
+using PNML: PnmlExpr, BoolExpr, OpExpr # Abstract types
+using PNML: VariableEx, UserOperatorEx, PnmlTupleEx
 using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
 using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf
 using PNML: Addition, Subtraction, Multiplication, Division
 using PNML: GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
-using PNML: Concatenation, Append, StringLength, Substring
+using PNML: Concatenation, Append, StringLength, SubstringEx
 using PNML: StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
 using PNML: ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
 
@@ -59,14 +59,17 @@ include("terms.jl")
 include("toolspecific.jl")
 
 export XMLNode, xmlroot, @xml_str
-export parse_str, parse_pnml, parse_file, parse_net, parse_page!
+export parse_str, parse_pnml, parse_file
+export parse_net, parse_page!
 export parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition
 export parse_name, parse_text
 export parse_inscription, parse_initialMarking
-export parse_condition, parse_hlinscription, parse_hlinitialMarking
-export parse_graphics, parse_graphics_coordinate, parse_tokengraphics, parse_tokenposition
-export parse_declaration, parse_sort, parse_term, parse_namedsort, parse_namedoperator
-export parse_unknowndecl, parse_feconstants, parse_variabledecl
+export parse_hlinscription, parse_hlinitialMarking, parse_condition
+export parse_graphics, parse_graphics_coordinate
+export parse_tokengraphics, parse_tokenposition
+export parse_declaration, parse_sort, parse_term
+export parse_namedsort, parse_namedoperator
+export parse_unknowndecl, parse_variabledecl, parse_feconstants
 export parse_excluded, parse_structure
 public deduce_sort
 

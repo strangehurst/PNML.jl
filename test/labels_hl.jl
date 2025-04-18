@@ -50,7 +50,7 @@ end
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
             placetype = SortType("XXX", PNML.usersort(:dot))
 
-            mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+            mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd)
             #@show mark
             @test mark isa PNML.marking_type(pntd)
 

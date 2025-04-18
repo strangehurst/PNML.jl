@@ -15,13 +15,13 @@ toolname, version tool specifics.
 end
 
 "Name of tool to for this tool specific information element."
-name(ti::ToolInfo) = ti.toolname
+PNML.name(ti::ToolInfo) = ti.toolname
+
 "Version of tool for this tool specific information element."
 version(ti::ToolInfo) = ti.version
+
 "Content of a ToolInfo."
 infos(ti::ToolInfo) = ti.infos::Vector{AnyElement}
-
-##Base.eltype(ti::ToolInfo) = eltype(infos(ti))
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")
@@ -33,7 +33,7 @@ end
 
 function Base.show(io::IO, ti::ToolInfo)
     print(io, PNML.indent(io), "ToolInfo(")
-    show(io, name(ti)); print(io, ", ");
+    show(io, PNML.name(ti)); print(io, ", ");
     show(io, version(ti)); print(io, ", [");
     println(io);
     io = PNML.inc_indent(io)
@@ -84,7 +84,7 @@ end
 
 function has_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
     any(infos) do tool
-       !isnothing(match(namerex, name(tool))) &&
+       !isnothing(match(namerex, PNML.name(tool))) &&
         !isnothing(match(versionrex, version(tool)))
     end
 end
@@ -142,7 +142,7 @@ _match(ti::ToolInfo, name::AbstractString) = _match(ti.info, Regex(name))
 _match(ti::ToolInfo, name::AbstractString, version::AbstractString) = _match(ti.inf, Regex(name), Regex(version))
 
 function _match(ti::ToolInfo, namerex::Regex, versionrex::Regex = r"^.*$")
-    match_name = match(namerex, name(ti))
+    match_name = match(namerex, PNML.name(ti))
     match_version = match(versionrex, version(ti))
     !isnothing(match_name) && !isnothing(match_version)
 end

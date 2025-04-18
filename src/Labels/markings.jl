@@ -53,9 +53,9 @@ and the condition is a boolean expression (default true).
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
 
-basis(marking::Marking)   = sortref(marking)
-sortref(marking::Marking) = basis(term(marking))::UserSort
-sortof(marking::Marking)  = sortdefinition(namedsort(sortref(marking)))::NumberSort
+PNML.Sorts.basis(marking::Marking)   = PNML.Sorts.sortref(marking)
+PNML.Sorts.sortref(marking::Marking) = PNML.Sorts.basis(term(marking))::UserSort
+PNML.Sorts.sortof(marking::Marking)  = PNML.Sorts.sortdefinition(namedsort(sortref(marking)))::NumberSort
 
 # These are some <:Numbers that have sorts.
 sortref(::Type{<:Int64})   = usersort(:integer)
@@ -104,6 +104,9 @@ NB: The place's sorttype is not a multiset
 > the set of multisets over the type associated with the basis sort.
 
 Multiset literals ... are defined using Add and NumberOf (multiset operators).
+
+The term is a expression that will, when evaluated, have a `Sort`.
+Implement the Sort interface.
 
 # Examples
 
@@ -162,9 +165,10 @@ Evaluate a [`HLMarking`](@ref) term.
     eval(toexpr(term(hlm)::PnmlExpr, varsub)) # ground term = no variable substitutions.
 end
 
-basis(marking::HLMarking) = basis(term(marking))::UserSort
-sortref(marking::HLMarking) = sortref(term(marking))::UserSort
-sortof(marking::HLMarking) = sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
+# Sort interface
+PNML.Sorts.basis(marking::HLMarking) = PNML.Sorts.basis(term(marking))::UserSort
+PNML.Sorts.sortref(marking::HLMarking) = PNML.Sorts.sortref(term(marking))::UserSort
+PNML.Sorts.sortof(marking::HLMarking) = PNML.Sorts.sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, PNML.indent(io), "HLMarking(")
