@@ -32,11 +32,11 @@ true
     vars::NTuple{N,REFID}
 end
 
-Condition(b::Bool)              = Condition(BooleanConstant(b))
-Condition(c::BooleanConstant)   = Condition(PNML.BooleanEx(c))
+Condition(b::Bool)              = Condition(PNML.BooleanConstant(b))
+Condition(c::PNML.BooleanConstant)   = Condition(PNML.BooleanEx(c))
 Condition(expr::PNML.BooleanEx) = Condition(nothing, expr, nothing, nothing, ())
-Condition(text::AbstractString, b::Bool)            = Condition(text, BooleanConstant(b))
-Condition(text::AbstractString, c::BooleanConstant) = Condition(text, PNML.BooleanEx(c))
+Condition(text::AbstractString, b::Bool)            = Condition(text, PNML.BooleanConstant(b))
+Condition(text::AbstractString, c::PNML.BooleanConstant) = Condition(text, PNML.BooleanEx(c))
 Condition(text::AbstractString, expr::PNML.BooleanEx) = Condition(text, expr, nothing, nothing, ())
 
 PNML.condition_type(::Type{<:PnmlType}) = Condition
@@ -88,4 +88,4 @@ end
 
 Has meaning of true or always.
 """
-default_condition(::PnmlType) = Condition(PNML.BooleanEx(BooleanConstant(true)))
+default_condition(::PnmlType) = Condition(PNML.BooleanEx(PNML.BooleanConstant(true)))

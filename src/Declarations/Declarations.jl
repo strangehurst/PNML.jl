@@ -19,7 +19,7 @@ using PNML
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
-import PNML: toexpr # expressions
+import ..Expressions: toexpr
 
 using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
 using PNML: arbitrarysorts, partitionsorts, partitionops

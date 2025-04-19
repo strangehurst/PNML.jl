@@ -25,28 +25,16 @@ using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
-using PNML: BooleanConstant, NumberConstant
+import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
 using PNML: usersort, sortof, basis, pid
 
-# Expressions (TermInterface compatible) are created in Parser, defined in terms/expressions.jl
-using PNML: PnmlExpr, BoolExpr, OpExpr # Abstract types
-using PNML: VariableEx, UserOperatorEx, PnmlTupleEx
-using PNML: Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
-using PNML: And, Not, Imply, Equality, Inequality, Successor, Predecessor
-using PNML: PartitionLessThan, PartitionGreaterThan, PartitionElementOf
-using PNML: Addition, Subtraction, Multiplication, Division
-using PNML: GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
-using PNML: Concatenation, Append, StringLength, SubstringEx
-using PNML: StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
-using PNML: ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
-
+using ..Expressions
 using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
 using ..Sorts
-#using ..PnmlGraphics #!  moved to Labels 2025-04-08
 using ..Declarations
 
 include("xmlutils.jl")

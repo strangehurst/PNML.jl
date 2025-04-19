@@ -451,28 +451,6 @@ Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declarat
 """
 function basis end
 
-"""
-TermInterface expression types.
-"""
-abstract type PnmlExpr end
-
-"""
-TermInterface boolean expression types.
-"""
-abstract type BoolExpr <: PnmlExpr end
-
-"""
-TermInterface operator expression types.
-"""
-abstract type OpExpr <: PnmlExpr end
-
-"""
-    toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
-
-Return `Expr`. Recursivly call `toexpr` on contained terms.
-`varsubs` used to replace variables with values in expressions.
-"""
-function toexpr end
 
 """
     adjacent_place(net::PnmlNet, id::Arc) -> Place

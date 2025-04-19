@@ -56,6 +56,8 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
 
+@reexport using PNML.Expressions
+
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false
 

@@ -44,9 +44,9 @@ using AbstractTrees, PNML, InteractiveUtils, Markdown
 using PNML: Labels.default_condition
 using PNML: Labels.default_inscription, Labels.default_hlinscription
 using PNML: Labels.default_marking, Labels.default_hlmarking
-using PNML: SortType, UserSort, IntegerSort, DotSort,
-            PnmlCoreNet, ContinuousNet, HLCoreNet,
-            NumberConstant, DotConstant
+using PNML: SortType, UserSort, IntegerSort, DotSort
+using PNML: PnmlCoreNet, ContinuousNet, HLCoreNet
+using PNML: NumberConstant, DotConstant
 
 list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))

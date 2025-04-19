@@ -10,7 +10,7 @@ Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
 Thre are constants (and 0-arity operators) defined that must be multisets
 since HL markings are multisets.
 
-See [`Bag`](@ref) for expression that returns this data structure.
+See `Bag` for expression that returns this data structure.
 
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.

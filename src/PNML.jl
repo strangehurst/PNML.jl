@@ -109,7 +109,6 @@ export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
-public PnmlExpr, toexpr
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
@@ -141,15 +140,18 @@ const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 
 # Parts of Labels and Nodes.
 
-include("terms/tuples.jl") #~ Work in progress
+include("terms/tuples.jl")
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 
 include("terms/multisets.jl") # uses UserSort declaration
 include("terms/constterm.jl") #
-include("terms/variables.jl") #~ Work in progress
+include("terms/variables.jl")
 
-include("terms/expressions.jl") # Bag
+include("terms/expressions.jl")
+using .Expressions
+#!using .Expressions: toexpr, PnmlExpr, BoolExpr, OpExpr
+
 include("terms/operators.jl")
 
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.

@@ -60,16 +60,16 @@ $(TYPEDSIGNATURES)
 
 Build an [`Operator`](@ref) Functor from the XML tree at `node`.
 """
-function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars)
-    #printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
+function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars) #! ?User/Tested?
+    printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
     @assert tag === :namedoperator
     func = PNML.pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
     # maketerm() constructs
     # - Expr
     # - object with toexpr() that will make a Expr
     #   PnmlExpr that has a vector f arguments
-    interms = Any[] #Union{AbstractVariable, AbstractOperator}[] #TODO tuple?
-    insorts = UserSort[] # REFID of sort declaration
+    interms = Any[] # Will be creating an expression.
+    insorts = UserSort[] # warapped REFID of sort declaration
 
     # Extract the input term and sort from each <subterm>
     for child in EzXML.eachelement(node)
@@ -78,9 +78,9 @@ function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars)
 
         (t, s, vars) = parse_term(subterm, pntd; vars) # term and its user sort
 
-        # returns an AST
-        push!(interms, t) #! should be TermInterface to be to_expr'ed
-        push!(insorts, s) #~ sort may be inferred from place, variable, operator output
+        # returns an AST #todo expand]
+        push!(interms, t) #! A PnmlTerm to later be toexpr'ed then eval'ed.
+        push!(insorts, s) #~ sort may be inferred from place, variable, operator output #! defer to eval time?
     end
     @assert length(interms) == length(insorts)
     # for (t,s) in zip(interms,insorts) # Lots of output. Leave this here for debug, bring-up
@@ -115,7 +115,7 @@ end
 #----------------------------------------------------------------------------------------
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType; vars)
-    bc = BooleanConstant(attribute(node, "value"))
+    bc = PNML.BooleanConstant(attribute(node, "value"))
     return (PNML.BooleanEx(bc), usersort(:bool), vars) #TODO make into literal
 end
 

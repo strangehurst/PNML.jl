@@ -111,7 +111,7 @@ Implement the Sort interface.
 # Examples
 
 ```julia
-; setup=:(using PNML; using PNML: HLMarking, NaturalSort, NumberConstant; PNML.fill_nonhl!(PNML.DECLDICT[]))
+; setup=:(using PNML; using PNML: HLMarking, NaturalSort; PNML.fill_nonhl!(PNML.DECLDICT[]))
 julia> m = HLMarking(PNML.pnmlmultiset(usersort(:integer), 1))
 HLMarking(Bag(usersort(:integer), 1))
 
@@ -221,9 +221,6 @@ PNML.marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 # High-Level Petri Net Graph adds:
 #   IntegerSort, PositiveSort, NaturalSort
 #   StringSort, ListSort
-#
-# Any number constant `value` can be represented by the operator/functor:
-#    NumberConstant(::eltype(T), ::T) where {T<:NumberSort}, and NumberEx/TermInterface
 #
 # Implementation detail: the concrete NumberSort subtypes are Singleton types held in a field.
 # NB: not all sort types are singletons, example FiniteEnumerationSort.

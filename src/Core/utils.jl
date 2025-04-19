@@ -24,11 +24,3 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     isnothing(x) && throw(ArgumentError(lazy"cannot parse '$s' as $T"))
     return x
 end
-
-toexpr(::Nothing, ::NamedTuple) = nothing
-toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
-toexpr(s::Symbol, ::NamedTuple) = QuoteNode(s)
-toexpr(t::Tuple, vsub::NamedTuple) = begin
-    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
-    return t
-end

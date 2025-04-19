@@ -12,13 +12,14 @@ using Logging, LoggingExtras
 using PNML
 using PNML: Maybe, nettype, AnyElement
 using PNML: DeclDict, DictType
-using PNML: PnmlMultiset, BooleanConstant, NumberConstant, AbstractTerm
+using PNML: PnmlMultiset, AbstractTerm
 using PNML: usersort, namedsort
 
 import PNML: name
 import PNML: value, term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations
-import PNML: toexpr, PnmlExpr
+
+import ..Expressions: toexpr, PnmlExpr
 
 using ..PnmlTypeDefs # PNML PNTD
 

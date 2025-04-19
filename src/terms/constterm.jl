@@ -17,7 +17,6 @@ basis(nc::NumberConstant) = typeof(nc.value) # multisets need type of the value
 # others want the value of the value
 (c::NumberConstant)() = value(c)
 value(nc::NumberConstant) = nc.value
-toexpr(nc::NumberConstant, ::NamedTuple) = value(nc)
 
 
 """
@@ -41,8 +40,6 @@ Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
 
 (fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
 (fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use string.
-
-# toexpr(nc::FEConstant, ::NamedTuple) is not defined! Or called!
 
 sortof(fec::FEConstant) = begin
     # Search on REFID of containing sort defintion.
@@ -83,7 +80,6 @@ sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are a
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
 
-PNML.toexpr(c::FiniteIntRangeConstant, ::NamedTuple) = value(c)
 
 """
     DotConstant
@@ -92,8 +88,6 @@ struct DotConstant <: AbstractOperator end
 sortref(::DotConstant) = usersort(:dot)::UserSort
 sortof(::DotConstant) = sortdefinition(namedsort(:dot))
 (d::DotConstant)() = 1 # true is a number, one
-
-PNML.toexpr(::DotConstant, ::NamedTuple) = DotConstant()
 
 
 """
@@ -115,5 +109,3 @@ sortof(::BooleanConstant) = sortdefinition(namedsort(:bool)) # usersort,namedsor
 
 (c::BooleanConstant)() = value(c)
 value(bc::BooleanConstant) = bc.value
-
-toexpr(c::BooleanConstant, ::NamedTuple) = value(c)

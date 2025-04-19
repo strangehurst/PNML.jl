@@ -38,3 +38,7 @@ Modules = [PNML.Parser]
 ```@autodocs
 Modules = [PNML.PNet]
 ```
+## PNML.Expressions
+```@autodocs
+Modules = [PNML.Expressions]
+```

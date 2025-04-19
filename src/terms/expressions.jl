@@ -1,4 +1,66 @@
-# TermInterface infrastructure # 2024-10-17 seprated from operators#=
+module Expressions
+
+using TermInterface
+using Metatheory
+
+using PNML
+using PNML: BooleanConstant, FEConstant , feconstant
+using PNML: pnmltuple, pnmlmultiset, operator, partitionsort
+using ..Sorts: UserSort
+import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
+
+export toexpr
+export PnmlExpr, BoolExpr, OpExpr # abstract types
+# concrete types
+export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
+export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
+export And, Not, Imply, Equality, Inequality, Successor, Predecessor
+export PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+export Addition, Subtraction, Multiplication, Division
+export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
+export Concatenation, Append, StringLength, SubstringEx
+export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
+export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+
+"""
+TermInterface expression types.
+"""
+abstract type PnmlExpr end
+
+"""
+TermInterface boolean expression types.
+"""
+abstract type BoolExpr <: PnmlExpr end
+
+"""
+TermInterface operator expression types.
+"""
+abstract type OpExpr <: PnmlExpr end
+
+"""
+    toexpr(ex::PnmlExpr, varsubs::NamedTuple]) -> Expr
+
+Return `Expr`. Recursivly call `toexpr` on any contained terms.
+`varsubs` used to replace variables with values in expressions.
+"""
+function toexpr end
+
+toexpr(::Nothing, ::NamedTuple) = nothing
+toexpr(x::Number, ::NamedTuple) = identity(x) #! literal
+toexpr(s::Symbol, ::NamedTuple) = QuoteNode(s)
+toexpr(t::Tuple, vsub::NamedTuple) = begin
+    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
+    return t
+end
+
+toexpr(nc::PNML.NumberConstant, ::NamedTuple) = value(nc)
+#!toexpr(nc::FEConstant, ::NamedTuple) is not defined! Or called!
+toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple) = value(c)
+toexpr(::PNML.DotConstant, ::NamedTuple) = PNML.DotConstant()
+toexpr(c::PNML.BooleanConstant, ::NamedTuple) = value(c)
+
+
+# TermInterface infrastructure
 ####################################################################################
 ##! add *MORE* TermInteface here
 ####################################################################################
@@ -140,9 +202,9 @@ end
 ###################################################################################
 """
 Bag: a TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
-a [`PnmlMultiset`](@ref).
+a [`PNML.PnmlMultiset`](@ref).
 
-See [`Operator`](@ref) for another TermInterface operator.
+See [`PNML.Operator`](@ref) for another TermInterface operator.
 """
 Bag # Need to avoid @matchable to have docstring
 @matchable struct Bag <: PnmlExpr
@@ -183,7 +245,7 @@ NumberEx # Need to avoid @matchable to have docstring
     basis::UserSort # Wraps a sort REFID.
     element::T #
 end
-NumberEx(x::Number) = NumberEx(sortref(x)::UserSort, x)
+NumberEx(x::Number) = NumberEx(PNML.sortref(x)::UserSort, x)
 basis(x::NumberEx) = x.basis
 toexpr(b::NumberEx, var::NamedTuple) = toexpr(b.element, var)
 function Base.show(io::IO, x::NumberEx)
@@ -241,7 +303,7 @@ end
     n::Any #! Expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Expression
 end
-toexpr(op::ScalarProduct, var::NamedTuple) = Expr(:call, PnmlMultiset, basis(op.bag), Expr(:call, :(*), toexpr(op.n, var), toexpr(op.bag, var)))
+toexpr(op::ScalarProduct, var::NamedTuple) = Expr(:call, PNML.PnmlMultiset, basis(op.bag), Expr(:call, :(*), toexpr(op.n, var), toexpr(op.bag, var)))
 
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
@@ -507,7 +569,7 @@ end
 function _peo_impl(fec::FEConstant, refpart)
     #@warn "peo_impl" lhs refpart
     p = partitionsort(refpart)
-    findfirst(e -> Declarations.contains(e, fec()), p.elements)
+    findfirst(e -> PNML.Declarations.contains(e, fec()), p.elements)
 end
 toexpr(op::PartitionElementOf, varsub::NamedTuple) = begin
     #@warn "toexpr PartitionElementOf" op varsub
@@ -767,3 +829,4 @@ function substitute(expr::PnmlExpr, var::NamedTuple)
     end
 end
 # maketerm(typeof(expr), operation(expr), map(x->recurse_expr(x, dict), arguments(expr)), metadata(expr))
+end # module Expressons

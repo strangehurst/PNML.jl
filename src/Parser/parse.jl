@@ -759,9 +759,6 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
     value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
 
-    #TODO Create a NumberConstant expression and use the high-level path.
-    #TODO Use pntd for dispatch when different behavior is needed.
-
     Marking(PNML.NumberEx(PNML.sortref(pt), value), l.graphics, l.tools)
 end
 
