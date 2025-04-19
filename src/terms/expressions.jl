@@ -559,7 +559,7 @@ end
     # use ?
 end
 
-@matchable struct Substring{T <: AbstractString} <: PnmlExpr
+@matchable struct SubstringEx{T <: AbstractString} <: PnmlExpr
     str::T
     start::Int
     length::Int
