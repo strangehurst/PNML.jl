@@ -4,7 +4,7 @@ println("RATE")
 @testset "get rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
-        trans = PNML.parse_transition(xml"""<transition id ="birth"><rate> <text>0.3</text> </rate></transition>""", pntd)
+        trans = PNML.Parser.parse_transition(xml"""<transition id ="birth"><rate> <text>0.3</text> </rate></transition>""", pntd)
         lab = PNML.labels(trans)
         @test PNML.tag(first(lab)) === :rate # assumes is only label
         @test PNML.has_labels(trans) === true
@@ -29,7 +29,7 @@ end
 @testset "get defaulted rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     tr = @test_logs((:warn, "unexpected label of <transition> id=birth: rateX"),
         @with(PNML.idregistry => PnmlIDRegistry(), PNML.DECLDICT => PNML.DeclDict(),
-            PNML.parse_transition(xml"""
+            PNML.Parser.parse_transition(xml"""
             <transition id ="birth">
               <rateX> <text>0.3</text> </rateX>
             </transition>""", pntd)))

@@ -37,7 +37,8 @@ Multisets.set_key_value_show()
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,
-    parse_initialMarking, parse_inscription, parse_sort, parse_declaration
+    parse_initialMarking, parse_inscription, parse_sort, parse_declaration,
+    parse_hlinitialMarking, parse_hlinscription
 
 @reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels, Condition
 

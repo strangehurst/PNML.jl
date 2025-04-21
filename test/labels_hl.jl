@@ -50,7 +50,7 @@ end
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
             placetype = SortType("XXX", PNML.usersort(:dot))
 
-            mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd)
+            mark = parse_hlinitialMarking(node, placetype, pntd)
             #@show mark
             @test mark isa PNML.marking_type(pntd)
 
@@ -89,7 +89,7 @@ end
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
     #         PNML.usersorts()[:uop] = UserSort(:dot)
     #         placetype = SortType("YYY", PNML.usersort(:uop))
-    #         mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+    #         mark = parse_hlinitialMarking(node, placetype, pntd)
     #         @test mark isa HLMarking
     #     end
     # end
@@ -122,7 +122,7 @@ end
         @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("dot sorttype", PNML.usersort(:dot))
-            mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+            mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd)
             #TODO add tests
         end
     end
@@ -144,7 +144,7 @@ end
         @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("positive sorttype", PNML.usersort(:positive))
-            mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+            mark = parse_hlinitialMarking(node, placetype, pntd)
             val = eval(toexpr(term(mark), NamedTuple()))::PNML.PnmlMultiset{<:Any,<:Any}
             # @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
@@ -163,7 +163,7 @@ end
         @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!()
             placetype = SortType("testdot", PNML.usersort(:dot))
-            mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+            mark = parse_hlinitialMarking(node, placetype, pntd)
         end
     end
 
@@ -274,7 +274,7 @@ end
 #     #@show PNML.TOPDECLDICTIONARY
 #     insc = @test_logs(match_mode=:all,
 #             (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
-#             PNML.parse_hlinscription(n1, pntd)
+#             PNML.Parser.parse_hlinscription(n1, pntd)
 
 #     @test typeof(insc) <: PNML.AbstractLabel
 #     @test typeof(insc) <: PNML.inscription_type(pntd)
