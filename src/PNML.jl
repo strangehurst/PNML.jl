@@ -102,11 +102,12 @@ using DocStringExtensions
 
 # EXPORTS
 
-#export @xml_str, xmlroot
-#export parse_str, parse_file, parse_pnml
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
+
+public @xml_str, xmlroot
+public parse_str, parse_file, parse_pnml
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
 
@@ -145,7 +146,7 @@ include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 
 include("terms/multisets.jl") # uses UserSort declaration
-include("terms/constterm.jl") #
+include("terms/constterm.jl")
 include("terms/variables.jl")
 
 include("terms/expressions.jl")
@@ -170,13 +171,10 @@ import .Declarations: NamedSort, SortDeclaration
 
 #^ Above here are things that appear in  DeclDict contents.
 #^ 2024-07-17 Changed DeclDict to be Any based,
-#^ with the hope that the accessors defined here provide type inferrability.
-include("Core/decldict.jl") # Just show()
+#^ with the hope that the accessor methods provide type inferrability.
+include("Core/decldict.jl") # Just contains show(). See decldictcore.jl.
 
 #! 2025-04-09 move toolinfo and graphic to Labels
-# include("Labels/PnmlGraphics.jl") # labels and nodes can both have graphics
-# using .PnmlGraphics
-#include("Core/toolinfos.jl") # labels and nodes can both have tool specific information
 
 # Labels
 include("Labels/Labels.jl")
