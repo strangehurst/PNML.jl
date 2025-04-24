@@ -23,14 +23,14 @@ Then any contents of the sorts are compared semantically.
 equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b) # Are same sort type.
 equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
 
-# Returns true if sorts are semantically the same sort, even in two different objects.
+# Returns true if sorts are semantically  #! should be usersortthe same sort, even in two different objects.
 # Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
 # Unless they have content, just the types are sufficent.
 # Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
 # Called when both a and b are the same concrete type.
 equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
-basis(a::AbstractSort) = sortof(a)
+basis(a::AbstractSort) = sortref(a)::UserSort
 sortof(a::AbstractSort) = identity(a)
 #! sortelements(::AbstractSort) = () # sort that has no elements will lead to errors!
 
@@ -87,7 +87,7 @@ Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
     end
 end
 sortref(ms::MultisetSort) = identity(ms.basis)::UserSort # 2024-10-09 make be a usersort
-sortof(ms::MultisetSort) = sortdefinition(namedsort(basis(ms))) #TODO abstract
+sortof(ms::MultisetSort) = sortdefinition(namedsort(basis(ms)::UserSort)) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
 
 """
@@ -112,7 +112,7 @@ sorts(ps::ProductSort) = ps.ae
 
 sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
 
-function sortof(ps::ProductSort)
+sortof(ps::ProductSort) = begin
     println("sortof(::ProductSort ", s) #! bringup debug
     if isempty(sorts(ps))
         error("ProductSort is empty")

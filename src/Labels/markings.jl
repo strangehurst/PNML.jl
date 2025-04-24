@@ -52,12 +52,12 @@ and the condition is a boolean expression (default true).
 (mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple())) #~ same for HL #! Combine
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
+# These have basis == sortref.
+basis(marking::Marking)   = sortref(term(marking))::UserSort
+sortref(marking::Marking) = sortref(term(marking))::UserSort
+sortof(marking::Marking)  = sortdefinition(namedsort(sortref(marking)))::NumberSort
 
-PNML.Sorts.basis(marking::Marking)   = PNML.Sorts.sortref(marking)
-PNML.Sorts.sortref(marking::Marking) = PNML.Sorts.basis(term(marking))::UserSort
-PNML.Sorts.sortof(marking::Marking)  = PNML.Sorts.sortdefinition(namedsort(sortref(marking)))::NumberSort
-
-# These are some <:Numbers that have sorts.
+# These are some <:Number that have sorts (usersort, namedsort duos).
 sortref(::Type{<:Int64})   = usersort(:integer)
 sortref(::Type{<:Integer}) = usersort(:integer)
 sortref(::Type{<:Float64}) = usersort(:real)
@@ -157,18 +157,18 @@ term(marking::HLMarking) = marking.term
     (hlm::HLMarking)() -> PnmlMultieset
 Evaluate a [`HLMarking`](@ref) term.
 """
-(hlm::HLMarking)(varsub::NamedTuple=NamedTuple()) = begin
+(hlm::HLMarking)() = begin #varsub::NamedTuple=NamedTuple()) = begin
     #@show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub)
     #if toexpr(term(hlm)::PnmlExpr, varsub) isa Tuple
     #println("(hlm::HLMarking) stacktrace");  foreach(println, Base.StackTraces.stacktrace())
     #end
-    eval(toexpr(term(hlm)::PnmlExpr, varsub)) # ground term = no variable substitutions.
+    eval(toexpr(term(hlm)::PnmlExpr, NamedTuple())) # ground term = no variable substitutions.
 end
 
 # Sort interface
-PNML.Sorts.basis(marking::HLMarking) = PNML.Sorts.basis(term(marking))::UserSort
-PNML.Sorts.sortref(marking::HLMarking) = PNML.Sorts.sortref(term(marking))::UserSort
-PNML.Sorts.sortof(marking::HLMarking) = PNML.Sorts.sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
+basis(marking::HLMarking) = basis(term(marking))::UserSort
+sortref(marking::HLMarking) = sortref(term(marking))::UserSort
+sortof(marking::HLMarking) = sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, PNML.indent(io), "HLMarking(")

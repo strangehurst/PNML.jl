@@ -293,22 +293,22 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-User operators refers to a [`NamedOperator`](@ref) declaration.
+User operators refers to a [`OperatorDeclaration`](@ref).
 """
 struct UserOperator <: AbstractOperator
-    declaration::REFID # of a NamedOperator
+    declaration::REFID # of a NamedOperator, AbstractOperator.
 end
 
-function (uo::UserOperator)(#= pass arguments to operator =#)
-    if !has_operator(uo.declaration)
-        error("found NO operator $(repr(uo.declaration))")
-    else
-        op = operator(uo.declaration) # lookup operator REFID using ScopedValue
-        @warn "found operator for $(uo.declaration)" op
-        r = op(#= pass arguments to functor/operator =#) # treat as functor
+# Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.
+function (uo::UserOperator)(parameters)
+    if has_operator(uo.declaration)
+        op = operator(uo.declaration) # Lookup operator in DeclDict.
+        r = op(parameters) # Operator objects are functors.
+        @warn "found operator for $(uo.declaration)" op r
         return r
     end
+    error("found NO operator $(repr(uo.declaration))")
 end
 
-sortof(uo::UserOperator) = sortof(operator(uo.declaration)) # return sortof NamedOperator or AbstractOperator
-basis(uo::UserOperator) = sortof(uo)
+sortof(uo::UserOperator) = sortof(operator(uo.declaration))
+basis(uo::UserOperator)  = basis(operator(uo.declaration))

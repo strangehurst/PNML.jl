@@ -71,13 +71,13 @@ Base.one(::Type{PnmlMultiset{B,T}}) where {B,T} = begin
 end
 
 sortref(ms::PnmlMultiset)      = basis(ms)::UserSort # definition of basis sort
-sortof(ms::PnmlMultiset)       = sortof(basis(ms)) # definition of basis sort
+sortof(ms::PnmlMultiset)       = sortof(basis(ms)::UserSort) # definition of basis sort
 """
     sortelements(ms::PnmlMultiset) -> iterator
 
 Iterates over elements of the basis sort. __May not be finite sort!__
 """
-sortelements(ms::PnmlMultiset) = sortelements(basis(ms)) # basis element iterator
+sortelements(ms::PnmlMultiset) = sortelements(basis(ms)::UserSort) # basis element iterator
 
 
 # TODO! forward what ops to Multiset?

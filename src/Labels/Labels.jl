@@ -25,7 +25,7 @@ using ..PnmlTypeDefs # PNML PNTD
 
 using ..Sorts
 # Some labels implement the Sort interface
-import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
+import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
 include("toolinfos.jl") # labels and nodes can both have tool specific information
 

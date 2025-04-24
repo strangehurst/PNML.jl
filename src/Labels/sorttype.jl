@@ -59,7 +59,7 @@ Ground terms have no variables and can be evaluated outside of a transition firi
 """
 struct SortType <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::UserSort # REFID of NamedSort or ArbitrarySort.
+    sort_::UserSort # REFID of NamedSort or ArbitrarySort. NOT PartitionSort.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
 end
@@ -73,9 +73,9 @@ SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
 SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
-PNML.Sorts.sortref(t::SortType) = t.sort_
-PNML.Sorts.sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(sortref(t)))
-PNML.Sorts.sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
+sortref(t::SortType) = t.sort_
+sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(sortref(t)))
+sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
 
 """
     def_sort_element(x)

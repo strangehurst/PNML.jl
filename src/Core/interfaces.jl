@@ -418,38 +418,60 @@ has_sort(::Any) = false
 Return the sort of an object or type. Any type that supports the PNML sort interface
 is expected to define [`has_sort`](@ref) to be true and a `sortof` method that returns
 a sort instance.
+
+Often implemented as `sortdefinition(namedsort(sortref(x)))` or other call of `sordefinition`.
+Default implementation is `identity`.
+
+We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.
 """
 function sortof end
 
 """
     sortref(x) -> UserSort
 
-Return a REFID wrapped in a [`UserSort`](@ref)
+Return a REFID wrapped in a [`UserSort`](@ref).
+
+Things that have a sortref include:
+Place, Arc, Inscription, HLInscription, Marking, HLMarking,
+MultisetSort,  SortType,
+NumberConstant, Int64, Integer, Float64,
+FEConstant, FiniteIntRangeConstant, DotConstant, BooleanConstant,
+PnmlMultiset, Operator, Variable,
 """
 function sortref end
 
-function sortelements end
-
-
-
-function usersort end
-
 """
-    sortdefinition(NamedSort|ArbitrarySort|PartitionSort)
+    sortdefinition(NamedSort|ArbitrarySort|PartitionSort) -> Sort
 
-Return [`AbstractSort`](@ref) from a SortDeclaration.
-Expected usage pattern is _usersort -> sortdeclaration -> sortdefinition_.
-This uses REFIDs to the objects in dictionarys in `ScopedValue` [`DeclDict`](@ref)
+Return concrete sort attached to a sort declaration object.
+
+Dictionaries in a [`DeclDict`](@ref) network-level `ScopedValue` hold
+`NamedSort`, `ArbitrarySort` and `PartitionSort` declarations.
+These declarations add an ID and name to a concrete sort,
+with the ID symbol used as the dictionary key.
+
+# Examples
+    sortdefinition(namedsort(refid))
+    sortdefinition(partitionsort(refid))
 """
 function sortdefinition end
-
 
 """
     basis(x) -> UserSort
 
 Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
+`MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
+Place marking & sorttype, arc inscriptions have a `basis`.
 """
 function basis end
+
+
+"""
+    sortelements(x) -> Iterator
+
+Return iterator over elements of the sort of x.
+"""
+function sortelements end
 
 
 """

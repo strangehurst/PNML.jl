@@ -7,12 +7,12 @@ Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 struct NumberConstant{T<:Number} <: AbstractOperator
     value::T
     sort::UserSort # value isa eltype(sort), verified by parser.
-    # pnml Schema allows a SubTerm[], not used here.
+    # Constant operators are 0-arity by definition. Parameter vector not used here.
 end
 
 sortref(nc::NumberConstant) = identity(nc.sort)::UserSort
+basis(nc::NumberConstant)   = sortref(nc.value)::UserSort
 sortof(nc::NumberConstant) = sortdefinition(namedsort(sortref(nc)))
-basis(nc::NumberConstant) = typeof(nc.value) # multisets need type of the value
 
 # others want the value of the value
 (c::NumberConstant)() = value(c)
@@ -75,7 +75,9 @@ tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 # FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
 # We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
 sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
+"Special case to ` IntegerSort()`, it is part of the name, innit."
 sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
+# or sortdefinition(namedsort(:integer))::IntegerSort
 
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)

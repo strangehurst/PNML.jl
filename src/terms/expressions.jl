@@ -6,8 +6,8 @@ using Metatheory
 using PNML
 using PNML: BooleanConstant, FEConstant , feconstant
 using PNML: pnmltuple, pnmlmultiset, operator, partitionsort
+import PNML: basis, sortref, sortof, sortelements, sortdefinition
 using ..Sorts: UserSort
-import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
 
 export toexpr
 export PnmlExpr, BoolExpr, OpExpr # abstract types
@@ -303,7 +303,9 @@ end
     n::Any #! Expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Expression
 end
-toexpr(op::ScalarProduct, var::NamedTuple) = Expr(:call, PNML.PnmlMultiset, basis(op.bag), Expr(:call, :(*), toexpr(op.n, var), toexpr(op.bag, var)))
+toexpr(op::ScalarProduct, var::NamedTuple) =
+    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::UserSort,
+        Expr(:call, :(*), optoexpr(op.n, var), toexpr(op.bag, var)))
 
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )

@@ -98,6 +98,7 @@ struct VariableDeclaration <: AbstractDeclaration
     # Will PnmlTuple ever have fields mutated? No, marking vectors are not mutated! They are preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 end
+
 sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd)))
 refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol

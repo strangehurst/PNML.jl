@@ -25,7 +25,7 @@ using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
-import ..Sorts: basis, sortref, sortof, sortelements, sortdefinition
+import PNML: basis, sortref, sortof, sortelements, sortdefinition
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
 using PNML: usersort, sortof, basis, pid

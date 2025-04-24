@@ -149,7 +149,7 @@ end
             # @show PNML.basis(val) # isa UserSort
             #@show val NumberConstant{Int64}(8, usersort(:positive))()
             @test PNML.multiplicity(val, NumberConstant{Int64}(8, PNML.usersort(:positive))()) == 1
-            @test PNML.sortof(PNML.basis(val)) === PNML.PositiveSort()
+            @test PNML.sortof(PNML.basis(val)::UserSort) === PNML.PositiveSort()
             @test NumberConstant{Int64}(8, PNML.usersort(:positive))() in multiset(val)
         end
      end
