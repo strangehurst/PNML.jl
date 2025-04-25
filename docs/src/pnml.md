@@ -43,7 +43,6 @@ In this section 'PNML' refers to the markup language, its specification and sche
 There are 2 flavors currently covered by PNML meta-models:
   - integer-valued, where tokens have collective identities.
   - High-level, where tokens have individual identities using a many-sorted algebra.
-__TODO__ cite J. Baez.
 
 The people behind PNML, and as stated in _15909-2_, are of the Model Driven Software Engineering camp and have chosen Java, Eclipse and its modeling framework (EMF).
 
@@ -226,16 +225,27 @@ L.M. Hillah and E. Kindler and F. Kordon and L. Petrucci and N. Trèves:
 [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)
 Petri Net Newsletter 76:9--28, October 2009 (originally presented at the 10th International workshop on Practical Use of Colored Petri Nets and the CPN Tools -- CPN'09).
 
-
 ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-1:2019 — Part 1: Concepts, definitions and graphical notation*](https://www.iso.org/en/contents/data/standard/06/72/67235.html)
 - [*ISO/IEC 15909-2:2011 — Part 2: Transfer format*](https://www.iso.org/en/contents/data/standard/04/35/43538.html)
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
+[_nLab_](https://ncatlab.org/nlab/) a wiki for collaborative work on Mathematics, Physics, and Philosophy:
+   - [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
+   - [Petri net](https://ncatlab.org/nlab/show/Petri+net)
+
+
 [Well-formed Petri nets](https://en.wikipedia.org/wiki/Well-formed_Petri_net)
 "...only a limited set of operators are available (identify, broadcast, successor and predecessor functions are allowed on circular finite types)".
 Restrictions that differentiates `SymmetricNet` and `HLPNG`.
+
+John Baez, Fabrizio Genovese, Jade Master, Michael Shulman, _Categories of Nets_, [arXiv:2101.04238](https://arxiv.org/abs/2101.04238)
+
+R.J. van Glabbeek (2005): [_The Individual and Collective Token Interpretations of Petri Nets_](http://boole.stanford.edu/pub/individual.pdf).
+In M. Abadi & L. de Alfaro, editors:
+_Proceedings 16th International Conference on Concurrency Theory, CONCUR’05_,
+San Francisco, USA, LNCS 3653, Springer, pp. 323-337.
 
 [PNML Framework](https://pnml.lip6.fr/)
 "... a free and open-source prototype implementation of ISO/IEC-15909, International Standard on Petri Nets".
@@ -258,8 +268,6 @@ Rust language.
 
  [Browsable PNML Grammar from Grammar Zoo](https://slebok.github.io/zoo/automata/petri/pnml/standard/symmetric/extracted/index.html)
  For Symmetric Nets.
-
-nLab [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
 
 [Automated Code Optimization with E-Graphs](https://arxiv.org/abs/2112.14714): Alessandro Cheli's Thesis on Metatheory.jl.
 

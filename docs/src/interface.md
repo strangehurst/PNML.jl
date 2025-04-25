@@ -68,9 +68,9 @@ One mechanism used is type parameters.
 
 Remember, the IR trys to be as promiscuous as possible.
 
-XML <net> tags are parsed by [`parse_net`](@ref) into a [`PnmlNet`](@ref).
+XML <net> tags are parsed by [`parse_net`](@ref PNML.Parser.parse_net) into a [`PnmlNet`](@ref).
 
-XML <page> tags are parsed by [`parse_page!`](@ref) into a [`Page`](@ref).
+XML <page> tags are parsed by [`parse_page!`](@ref PNML.Parser.parse_page!) into a [`Page`](@ref).
 
 ## Places
 
