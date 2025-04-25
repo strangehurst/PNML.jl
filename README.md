@@ -11,7 +11,6 @@ Features that have not been started:
 
 Features that are not complete:
   - HLPNG - many-sorted algebras are complex. Work in process.
-  - Symbolic handlingof  HLPNG (many-sorted algebra)
   - pntd specialize
   - toolspecific usage
   - API definition
