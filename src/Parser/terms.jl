@@ -179,14 +179,14 @@ end
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) >= 2
-    return PNML.Add(sts), basis(first(sts)), vars # expression that calls pnmlmultiset(basis, sum_of_Multiset)
+    return PNML.Add(sts), basis(first(sts))::UserSort, vars # expression that calls pnmlmultiset(basis, sum_of_Multiset)
     # All are of same sort so we use the basis sort of first multiset.
 end
 
 function parse_term(::Val{:subtract}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Subtract(sts), basis(first(sts)), vars # expression that calls pnmlmultiset(basis, difference_of_Multiset)
+    return PNML.Subtract(sts), basis(first(sts))::UserSort, vars # expression that calls pnmlmultiset(basis, difference_of_Multiset)
 end
 
 #! ePNK-pnml-examples/release-0.9.0/MS-Bool-Int-technical-example.pnml
@@ -359,13 +359,13 @@ end
 function parse_term(::Val{:successor}, node::XMLNode, pntd::PnmlType); vars
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 1
-    return PNML.Successor(sts[1]), usersort(:bool), vars
+    return PNML.Successor(sts[1]), usersort(:bool), vars #! wrong sort
 end
 
 function parse_term(::Val{:predecessor}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 1
-    return PNML.Predecessor(sts[1]), usersort(:bool), vars
+    return PNML.Predecessor(sts[1]), usersort(:bool), vars #! wrong sort
 end
 
 #& FiniteIntRange Operators work on integrs so use that implementation for
@@ -374,25 +374,25 @@ end
 function parse_term(::Val{:addition}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Addition(sts[1], sts[2]), usersort(:bool), vars
+    return PNML.Addition(sts[1], sts[2]), usersort(:bool), vars #! wrong sort
 end
 
 function parse_term(::Val{:subtraction}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Subtraction(sts[1], sts[2]), usersort(:bool), vars
+    return PNML.Subtraction(sts[1], sts[2]), usersort(:bool), vars #! wrong sort
 end
 
 function parse_term(::Val{:multiplication}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Multiplication(sts[1], sts[2]), usersort(:bool), vars
+    return PNML.Multiplication(sts[1], sts[2]), usersort(:bool), vars #! wrong sort
 end
 
 function parse_term(::Val{:division}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Division(sts[1], sts[2]), usersort(:bool), vars
+    return PNML.Division(sts[1], sts[2]), usersort(:bool), vars #! wrong sort
 end
 
 function parse_term(::Val{:greaterthan}, node::XMLNode, pntd::PnmlType; vars)
@@ -422,7 +422,7 @@ end
 function parse_term(::Val{:modulo}, node::XMLNode, pntd::PnmlType; vars)
     sts, vars = subterms(node, pntd; vars)
     @assert length(sts) == 2
-    return PNML.Modulo(sts[1], sts[2]), usersort(:bool), vars
+    return PNML.Modulo(sts[1], sts[2]), usersort(:bool), vars #! wrong sort
 end
 
 
