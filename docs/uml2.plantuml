@@ -1,0 +1,188 @@
+@startuml
+skinparam BackgroundColor transparent
+skinparam componentStyle rectangle
+
+title "PNML.jl Architecture"
+
+component API {
+component PNet {
+    [petrinet]
+    [metagraph]
+}
+note left of PNet
+    PNet is the facade
+    that gives a
+    simplified use of NetAPI
+end note
+
+component NetAPI {
+    [metagraph2]
+}
+note left of NetAPI
+    Provides methods and macros
+    for use by PNet
+end note
+}
+
+
+cloud "pnml.com" {
+    database "RelaxNG Schema" $schema
+    file PNTD
+}
+file "Input.pnml"
+component Parser #Yellow {
+    [EzXML]
+    [XMLDict]
+}
+component Core {
+    component IDRegistry #Yellow
+    component PNTDs #Yellow {
+        [PnmlCoreNet]
+        [PTNet]
+        [ContinuousNet]
+        component HighLevel {
+            [HLCoreNet]
+            [PT_HLPNG]
+            [SymmetricNet]
+            [HLPNG]
+        }
+    }
+    [Coordinate]
+    component Storage {
+        component [DeclDict] {
+            component variabledecls
+            component namedsorts
+            component arbitrarysorts
+            component partitionsorts
+            component namedoperators
+            component arbitraryoperators
+            component partitionops
+            component feconstants
+            component usersorts
+            component useroperators
+        }
+        component [NetKeys] {
+            component page_set
+            component place_set
+            component transition_set
+            component arc_set
+            component reftransition_set
+            component refplace_set
+        }
+        component [NetData] {
+            component place_dict
+            component transition_dict
+            component arc_dict
+            component refplace_dict
+            component reftransition_dict
+        }
+    }
+    [XDVT]
+}
+
+component Model {
+    component [PnmlNet] {
+        component Sort #Yellow {
+            [Dot]
+            [Enumeration]
+            [Multiset]
+            [Number]
+            [List]
+            [String]
+            [Partition]
+            [Product]
+        }
+        component Term {
+            component Operator {
+                [Tuple]
+                [FEConstant]
+            }
+            [Variable]
+        }
+        component Expression #Yellow {
+            [Bag]
+            [VariableEx]
+            [UserOperatorEx]
+            [NumberEx]
+            [BooleanEx]
+            [And]
+            [Modulo]
+            [PartitionElementOf]
+        }
+        component Declarations #Yellow {
+            component OperatorDeclaration {
+                [ArbitraryOperator]
+                [NamedOperator]
+            }
+            component SortDeclaration {
+                [ArbitrarySort]
+                [NamedSort]
+                [PartitionSort]
+            }
+            [VariableDeclaration]
+        }
+        component Page {
+            [Place]
+            [Transition]
+            [Arc]
+        }
+        component Label #Yellow {
+            [Marking]
+            [Inscription]
+            [Condition]
+            [Rate]
+            [Graphics]
+            [ToolInfo]
+        }
+        [flatten]
+    }
+}
+
+
+"Input.pnml" -- PNTD : uri
+PNTD -- "RelaxNG Schema"
+
+PNet -- NetAPI
+NetAPI -- Model
+IDRegistry -- Parser
+IDRegistry -- Model
+
+PNTDs -- Parser
+PNTDs -- Model
+PNTDs -- NetAPI
+EzXML -- Parser
+Parser -- Model
+Parser -- Core
+Parser -- Input.pnml : xml
+
+Core -- Model
+Core -- NetAPI
+
+PnmlNet -- Page
+PnmlNet -- Label
+
+Declarations -- Label
+Declarations -- Term
+Declarations -- Sort
+Declarations -- Page
+Declarations -- PnmlNet
+Transition -- Label
+Place -- Label
+Arc -- Label
+
+Term -- Sort
+Term -- Marking
+Term -- Inscription
+Term -- Condition
+Term -- Transition
+
+Term -- Expression
+Parser -- Expression
+Label -- Expression
+Declarations -- Expression
+
+Place -- Marking
+Transition -- Condition
+Transition -- Rate
+Arc -- Inscription
+@enduml
