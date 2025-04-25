@@ -293,7 +293,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-User operators refers to a [`OperatorDeclaration`](@ref).
+User operator wraps a [`REFID`](@ref) to a [`OperatorDeclaration`](@ref).
 """
 struct UserOperator <: AbstractOperator
     declaration::REFID # of a NamedOperator, AbstractOperator.

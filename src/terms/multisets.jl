@@ -70,8 +70,8 @@ Base.one(::Type{PnmlMultiset{B,T}}) where {B,T} = begin
     return o
 end
 
-sortref(ms::PnmlMultiset)      = basis(ms)::UserSort # definition of basis sort
-sortof(ms::PnmlMultiset)       = sortof(basis(ms)::UserSort) # definition of basis sort
+sortref(ms::PnmlMultiset) = basis(ms)::UserSort # definition of basis sort
+sortof(ms::PnmlMultiset)  = sortof(basis(ms)::UserSort) # definition of basis sort
 """
     sortelements(ms::PnmlMultiset) -> iterator
 
