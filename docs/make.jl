@@ -1,5 +1,12 @@
-push!(LOAD_PATH,"../src/")
+push!(LOAD_PATH, "../src/")
 using Pkg, Documenter, PNML
+
+the_repo() =  if isempty(get(ENV, "DOCUMENTER_KEY", ""))
+    "github.com/strangehurst/PNML.jl"
+else
+    "/home/jeff/Jules/PNML"
+end
+#println("Build documentation, repo = $(to_repo())")
 
 ################################################################################
 #                 Building HTML documentation with Documenter                  #
@@ -10,12 +17,13 @@ makedocs(;
          doctest=false, # runtests.jl also does doctest
          modules=[PNML],
          authors="Jeff Hurst <strangehurst@users.noreply.github.com>",
-         #repo="/home/jeff/PNML/{path}",
+         #repo="/home/jeff/Jules/PNML/{path}",
          #repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
 
          checkdocs = :all,
 
-         format=Documenter.HTML(;#repolink=
+         format=Documenter.HTML(;
+                                edit_link=nothing,
                                 # CI means publish documentation on GitHub.
                                 #prettyurls=true,
                                 prettyurls=get(ENV, "CI", nothing) == "true",
