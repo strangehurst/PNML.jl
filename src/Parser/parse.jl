@@ -27,9 +27,9 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a string containing XML.
 See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_str(str::AbstractString) #! We never provide a registry
+function parse_str(str::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
-    parse_pnml(xmlroot(str))
+    parse_pnml(xmlroot(str); tp_vec, lp_vec)
 end
 
 """
@@ -37,11 +37,10 @@ $(TYPEDSIGNATURES)
 
 Build a PnmlModel from a file containing XML.
 See [`parse_str`](@ref) and [`parse_pnml`](@ref).
-
 """
-function parse_file(fname::AbstractString) #! We never provide a registry
+function parse_file(fname::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    parse_pnml(EzXML.root(EzXML.readxml(fname)))
+    parse_pnml(EzXML.root(EzXML.readxml(fname)); tp_vec, lp_vec)
 end
 
 """
@@ -50,8 +49,10 @@ end
 Start parse from the root `node` of a well formed pnml XML document.
 Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
 And each net has an independent ID Registry.
+
+
 """
-function parse_pnml(node::XMLNode)
+function parse_pnml(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
     #@error "parser logger = $(current_logger())"
@@ -62,7 +63,7 @@ function parse_pnml(node::XMLNode)
     isempty(xmlnets) && throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
 
     # Vector of ID registries of the same length as the number of nets. May alias.
-    IDRegistryVec = PnmlIDRegistry[]
+    idregistryvec = PnmlIDRegistry[]
     # Per-net vector of declaration dictionaries.
     TOPDECLVEC = DeclDict[]
 
@@ -73,11 +74,11 @@ function parse_pnml(node::XMLNode)
     empty!(TOPDECLVEC) #  This prevents more than one PnmlModel existing.
     # Need a netid to populate
     for _ in xmlnets
-        push!(IDRegistryVec, PnmlIDRegistry())
+        push!(idregistryvec, PnmlIDRegistry())
         push!(TOPDECLVEC, DeclDict())
     end
-    length(xmlnets) == length(IDRegistryVec) ||
-        error("length(xmlnets) $(length(xmlnets)) != length(IDRegistryVec) $(length(IDRegistryVec))")
+    length(xmlnets) == length(idregistryvec) ||
+        error("length(xmlnets) $(length(xmlnets)) != length(idregistryvec) $(length(idregistryvec))")
     length(xmlnets) == length(TOPDECLVEC) ||
         error("length(xmlnets) $(length(xmlnets)) != length(TOPDECLVEC) $(length(TOPDECLVEC))")
 
@@ -87,10 +88,11 @@ function parse_pnml(node::XMLNode)
     # We can torture the code by violating that belief.
     # Note the use of ScopedValues.
     net_tup = ()
-    for (netnode, reg, ddict) in zip(xmlnets, IDRegistryVec, TOPDECLVEC)
+    for (netnode, reg, ddict) in zip(xmlnets, idregistryvec, TOPDECLVEC)
         #! Allocation? Runtime Dispatch? This is a parser! What did you expect?
 
         @with PNML.idregistry => reg PNML.DECLDICT => ddict begin
+            # Each net gets its own ScopedValues for some things.
             net = parse_net(netnode)
             #~ At this point the XML has been processed into PnmlExpr terms.
 
@@ -142,13 +144,13 @@ function parse_pnml(node::XMLNode)
 
     ======================================================================================#
 
-    PnmlModel(net_tup, namespace, IDRegistryVec) #TODO Also keep TOPDECLVEC
+    PnmlModel(net_tup, namespace, idregistryvec) #TODO Also keep TOPDECLVEC
 end
 
 """
     get_toolinfos!(tools, node, pntd) -> tools
 
-Calls `add_toolinfo(tools, info, pntd)`` for each info found.
+Calls `add_toolinfo(tools, info, pntd)` for each info found.
 """
 function get_toolinfos!(tools, node, pntd)
     toolinfos = allchildren(node, "toolspecific")

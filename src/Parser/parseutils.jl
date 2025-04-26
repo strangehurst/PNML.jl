@@ -26,6 +26,24 @@ function add_label(v::Maybe{Vector{PnmlLabel}}, node::XMLNode, pntd)
     labels = isnothing(v) ? PnmlLabel[] : v
     return add_label!(labels, node, pntd)
 end
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+
+Holds a parser for a `<labeltag>` tag's well-formed contents.
+"""
+@auto_hash_equals struct LabelParser
+    tag::Symbol
+    func::Base.Callable
+end
+
+"Name of xml tag."
+PNML.tag(lp::LabelParser) = lp.tag
+
+"Callable."
+func(lp::LabelParser) = lp.func
+
 #---------------------------------------------------------------------
 # TOOLINFO
 #---------------------------------------------------------------------

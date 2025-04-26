@@ -48,5 +48,6 @@ export Graphics, PnmlGraphics
 export ToolInfo
 export text, get_labels, get_label, rate, delay
 export def_sort_element
+export ToolParser
 
 end # module labels

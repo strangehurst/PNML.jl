@@ -52,13 +52,13 @@ str5 = (tool="org.pnml.tool", version="1.0",
         @test name(tooli) == s.tool
         @test PNML.Labels.version(tooli) == s.version
 
-        @test get_toolinfo(tooli, s.tool, s.version) == tooli # Is identity on scalar
-        @test get_toolinfo(tooli, s.tool) == tooli
-        @test get_toolinfo(tooli, s.tool, r"^.*$") == tooli
-        @test get_toolinfo(tooli, Regex(s.tool), r"^.*$") == tooli
-        @test get_toolinfo(tooli, Regex(s.tool)) == tooli
+        @test get_toolinfo([tooli], s.tool, s.version) == tooli # Is identity on scalar
+        @test get_toolinfo([tooli], s.tool) == tooli
+        @test get_toolinfo([tooli], s.tool, r"^.*$") == tooli
+        @test get_toolinfo([tooli], Regex(s.tool), r"^.*$") == tooli
+        @test get_toolinfo([tooli], Regex(s.tool)) == tooli
 
-        @test_call broken=false get_toolinfo(tooli, s.tool, s.version)
+        @test_call broken=false get_toolinfo([tooli], s.tool, s.version)
 end
 
 @testset "combined tools" begin
@@ -78,7 +78,7 @@ end
         combinedplace = parse_place(n, PnmlCoreNet())
 
         @test_call tools(combinedplace)
-        placetools = tools(combinedplace)
+        @show placetools = tools(combinedplace)
         @test length(placetools) == 5
         @test all(t -> isa(t, ToolInfo), placetools)
 

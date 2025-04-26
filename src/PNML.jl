@@ -139,6 +139,7 @@ include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 # Single per-net DeclDict
 const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 
+
 # Parts of Labels and Nodes.
 
 include("terms/tuples.jl")
@@ -179,6 +180,11 @@ include("Core/decldict.jl") # Just contains show(). See decldictcore.jl.
 # Labels
 include("Labels/Labels.jl")
 using .Labels
+
+"""
+Vector that associates a `Function` with a tool name and vector.
+"""
+const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]
 
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
