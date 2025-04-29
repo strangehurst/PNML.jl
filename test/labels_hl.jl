@@ -15,7 +15,7 @@ using XMLDict: XMLDict
     <structure> <usersort declaration="N2"/> </structure>
 </type>
     """
-        typ = PNML.Parser.parse_type(n1, pntd)::SortType
+        typ = PNML.Parser.parse_sorttype(n1, pntd)::SortType
         @test text(typ) == "N2"
         @test PNML.sortref(typ) isa PNML.UserSort # wrapping DotSort
         @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?

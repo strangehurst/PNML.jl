@@ -410,7 +410,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
     # First get sorttype.
     typenode = firstchild(node, "type")
     if !isnothing(typenode)
-        sorttype = parse_type(typenode, pntd)
+        sorttype = parse_sorttype(typenode, pntd)
     else
         #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd))
         sorttype = SortType("default", Labels.default_typeusersort(pntd), nothing, nothing)
@@ -1051,7 +1051,7 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 
 Allow all pntd's places to have a <type> label.  Non high-level are expecting a numeric sort: eltype(sort) <: Number.
 """
-function parse_type(node::XMLNode, pntd::PnmlType)
+function parse_sorttype(node::XMLNode, pntd::PnmlType) # place sorttype
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd)
     @assert isempty(l.vars)

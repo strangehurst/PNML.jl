@@ -479,6 +479,6 @@ methods(PNML.refplace_type) # hide
 methods(PNML.reftransition_type) # hide
 ```
 
-!!! info "parse_type is different"
-    [`Parser.parse_type`](@ref) is used to parse an XML <type> element.
+!!! info "parse_sorttype is different"
+    [`Parser.parse_sorttype`](@ref) is used to parse an XML <type> element.
     It is not one of these look-up a type trait methods.
