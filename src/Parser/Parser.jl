@@ -1,5 +1,7 @@
 """
-    Parser module of PNML
+Parser module of PNML.
+
+See [`LabelParser`](@ref), (`Labels.ToolParser`)(@ref).
 """
 module Parser
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
@@ -40,7 +42,9 @@ using ..Declarations
 include("xmlutils.jl")
 include("parseutils.jl")
 include("anyelement.jl")
-include("parse.jl")
+include("model.jl")
+include("nodes.jl")
+include("labels.jl")
 include("graphics.jl")
 include("declarations.jl")
 include("terms.jl")
@@ -49,6 +53,6 @@ include("toolspecific.jl")
 export XMLNode, xmlroot, @xml_str
 export parse_str, parse_pnml, parse_file
 
-public deduce_sort
+public deduce_sort, LabelParser
 
 end
