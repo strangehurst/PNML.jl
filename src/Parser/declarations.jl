@@ -17,7 +17,7 @@ $(TYPEDSIGNATURES)
 Return [`Declaration`](@ref) label of 'net' or 'page' node.
 Assume behavior of a High-level Net label in that the meaning is in a <structure>.
 
-Expected format: <declaration> <structure> <declarations> <namedsort/> <namedsort/> ...
+Expected format: `<declaration> <structure> <declarations> <namedsort/> <namedsort/> ...`
 """
 function parse_declaration end
 parse_declaration(node::XMLNode, pntd::PnmlType) = parse_declaration([node], pntd)
@@ -385,6 +385,70 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     # @warn "parse :productsort" psort; flush(stdout) #! debug
     #make_usersort(:productsort, "ProductSort", psort)
     return psort
+end
+
+
+#=
+Partition # id, name, usersort, partitionelement[]
+=#
+function parse_partition(node::XMLNode, pntd::PnmlType,) #! partition is a sort declaration!
+    id = register_idof!(idregistry[], node)
+    nameval = attribute(node, "name")
+    #@warn "partition $(repr(id)) $nameval"; flush(stdout);  #! debug
+    psort::Maybe{UserSort} = nothing
+    elements = PartitionElement[] # References into psort that form a equivalance class.
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "usersort" # The sort that partitionelements reference into.
+            #TODO pass REFID?
+            psort = parse_usersort(child, pntd)::UserSort #? sortof isa EnumerationSort
+        elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
+            parse_partitionelement!(elements, child, id) # pass REFID to partition
+        else
+            throw(PNML.MalformedException(string("partition child element unknown: ", tag,
+                                " allowed are usersort, partitionelement")))
+        end
+    end
+    isnothing(psort) &&
+        throw(ArgumentError("<partition id=$id, name=$nameval> <usersort> element missing"))
+
+    # One or more partitionelements.
+    isempty(elements) &&
+        error("partitions must have at least one partition element, found none: ",
+                "id = ", repr(id), ", name = ", repr(nameval), ", sort = ", repr(psort))
+
+    #~verify_partition(sort, elements)
+
+    return PNML.PartitionSort(id, nameval, psort.declaration, elements) # A Declaraion named Sort!
+end
+
+"""
+    parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode)
+
+Parse `<partitionelement>`, add FEConstant refids to the element and append element to the vector.
+"""
+function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode, rid::REFID)
+    check_nodename(node, "partitionelement")
+    id = register_idof!(idregistry[], node)
+    nameval = attribute(node, "name")
+    terms = REFID[] # Ordered collection, usually feconstant.
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag === "useroperator"
+            # PartitionElements refer to the FEConstants of the referenced finite sort.
+            # UserOperator holds an REFID to a FEConstant callable object.
+            refid = Symbol(attribute(child, "declaration"))
+            PNML.has_feconstant(refid) ||
+                error("refid $refid not found in feconstants") #! move to verify?
+            push!(terms, refid)
+        else
+            throw(PNML.MalformedException("partitionelement child element unknown: $tag"))
+        end
+    end
+    isempty(terms) && throw(ArgumentError("<partitionelement id=$id, name=$nameval> has no terms"))
+
+    push!(elements, PartitionElement(id, nameval, terms, rid)) # rid is REFID to enclosing partition
+    return elements
 end
 
 ############################################################
