@@ -180,7 +180,7 @@ Any info for this tool will have deeper validation implemented.
 function validate_toolinfos(tools)
     isnothing(tools) && return true
     for tool in tools
-        @show tool #todo more tests tan this.
+        @show tool #todo more tests than this.
     end
     return true
 end
