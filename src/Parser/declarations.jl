@@ -255,6 +255,16 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortrefid::REFID=:noth
 end
 
 """
+$(TYPEDSIGNATURES)
+
+Returns [`UserSort`](@ref) wraping the REFID of a [`NamedSort`](@ref) or [`AbstractSort`](@ref).
+"""
+function parse_usersort(node::XMLNode, pntd::PnmlType)
+    check_nodename(node, "usersort")
+    UserSort(Symbol(attribute(node, "declaration")))
+end
+
+"""
     make_usersort(tag::Symbol, name::String, sort) -> sort
 
 Fill the declaration dictionary with a namedsort and usersort.
@@ -262,6 +272,36 @@ Fill the declaration dictionary with a namedsort and usersort.
 function make_usersort(tag::Symbol, name::String, sort)
     PNML.fill_sort_tag!(tag, name, sort)
     return sort #usersort(tag) # Lookup and return.
+end
+
+"Tag names of sort XML elements."
+const sort_ids = (:usersort,
+                  :dot, :bool, :integer, :natural, :positive, :real, # builtins
+                  :multisetsort, :productsort,
+                  :cyclicenumeration, :finiteenumeration, :finiteintrange,
+                  :partition, # over a :finiteenumeration or :cyclicenumeration
+                  :list, :strings,
+                  )
+
+"""
+$(TYPEDSIGNATURES)
+
+Sorts are found within an enclosing XML element, usually <structure>.
+PNML maps the sort element name, frequently called a 'tag', to the body of the sort.
+Heavily-used in the high-level abstract syntax tree.
+Some nesting is used. Meaning that some sorts contain other sorts.
+
+See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_variabledecl`](@ref).
+"""
+function parse_sort(node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
+    # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
+    sortid = Symbol(EzXML.nodename(node))
+    sort = if sortid in sort_ids
+        parse_sort(Val(sortid), node, pntd, refid)::AbstractSort #Union{NamedSort, UserSort}
+    else
+        @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids.")
+    end
+    return sort
 end
 
 # Singleton sorts map to named sorts that have no type parameters. Some are built-ins.
@@ -452,42 +492,3 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
 end
 
 ############################################################
-"Tag names of sort XML elements."
-const sort_ids = (:usersort,
-                  :dot, :bool, :integer, :natural, :positive, :real, # builtins
-                  :multisetsort, :productsort,
-                  :cyclicenumeration, :finiteenumeration, :finiteintrange,
-                  :partition, # over a :finiteenumeration or :cyclicenumeration
-                  :list, :strings,
-                  )
-
-"""
-$(TYPEDSIGNATURES)
-
-Sorts are found within an enclosing XML element, usually <structure>.
-PNML maps the sort element name, frequently called a 'tag', to the body of the sort.
-Heavily-used in the high-level abstract syntax tree.
-Some nesting is used. Meaning that some sorts contain other sorts.
-
-See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_variabledecl`](@ref).
-"""
-function parse_sort(node::XMLNode, pntd::PnmlType, refid::REFID=:nothing)
-    # Note: Sorts are not PNML labels. Will not have <text>, <graphics>, <toolspecific>.
-    sortid = Symbol(EzXML.nodename(node))
-    sort = if sortid in sort_ids
-        parse_sort(Val(sortid), node, pntd, refid)::AbstractSort #Union{NamedSort, UserSort}
-    else
-        @error("parse_sort $(repr(sortid)) not implemented: allowed: $sort_ids.")
-    end
-    return sort
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Returns [`UserSort`](@ref) wraping the REFID of a [`NamedSort`](@ref) or [`AbstractSort`](@ref).
-"""
-function parse_usersort(node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration")))
-end
