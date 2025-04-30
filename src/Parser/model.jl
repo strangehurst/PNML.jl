@@ -342,7 +342,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
         end
     end
     #! Attach empty DeclDict to page, all declarations are attached to PnmlNet!
-    return Page(pntd, pageid, Declaration(), name, graphics, tools, labels,
+    return Page(pntd, pageid, name, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
                 netsets,  # OrderedSet of ids "owned" by this page.

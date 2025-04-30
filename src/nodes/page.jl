@@ -11,7 +11,7 @@ See [`PnmlNet`](@ref)
 mutable struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     pntd::PNTD
     id::Symbol
-    declaration::Declaration
+    #! declaration::Declaration
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
@@ -24,13 +24,13 @@ mutable struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     # There could be >1 nets. `netdata` is ordered, `netsets` are unordered.
 end
 
-Page(pntd, i, dec, nam, c, pdict, ndata, nsets) =
+Page(pntd, i, nam, c, pdict, ndata, nsets) =
     Page{typeof(pntd), #! ? typeof ?
          place_type(pntd),
          transition_type(pntd),
          arc_type(pntd),
          refplace_type(pntd),
-         reftransition_type(pntd)}(pntd, i, dec, nam, c, pdict, ndata, nsets)
+         reftransition_type(pntd)}(pntd, i, nam, c, pdict, ndata, nsets)
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
