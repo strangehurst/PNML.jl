@@ -21,49 +21,61 @@ AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements # label elements
 
-function Base.show(io::IO, label::AnyElement)
+function Base.show(io::IO, ae::AnyElement)
     print(io, "AnyElement(")
-    show(io, tag(label)); print(io, ", ")
-    dict_show(io, elements(label), 0)
+    show(io, tag(ae)); print(io, ", ")
+    dict_show(io, elements(ae))
     print(io, ")")
+end
+function Base.show(io::IO, vae::Vector{AnyElement})
+    print(io, "AnyElement[")
+    io = inc_indent(io)  # one more indent
+    foreach(vae) do ae
+        print(io, indent(io));
+        dict_show(io, elements(ae))
+    end
+    print(io, "]")
 end
 
 #--------------------------------------------
 # Show Dict
 #--------------------------------------------
 """
-    dict_show(io::IO, x, 0)
+    dict_show(io::IO, x)
 
 Internal helper for things that contain `DictType`.
 """
 function dict_show end
 
-const increment::Int = 4
 
-d_show(io::IO, x::Union{Vector,Tuple}, indent_by, before, after ) = begin
+d_show(io::IO, x::Union{Vector,Tuple}, before, after ) = begin
     print(io, before)
     for (i, e) in enumerate(x)
-        dict_show(io, e, indent_by+increment) #
-        i < length(x) && print(io, ",\n", indent(indent_by))
+        iio = inc_indent(io)
+        #! dict_show prints `first` here
+        dict_show(iio, e) #! this is `second`.
+        i < length(x) && print(io, ",\n", indent(io))
     end
-    print(io, after)
+    println(io, after)
 end
 
-dict_show(io::IO, d::DictType, indent_by::Int=0 ) = begin
+dict_show(io::IO, d::DictType) = begin
     print(io, "(")
     for (i, k) in enumerate(pairs(d))
+        iio = inc_indent(io)
         print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
-        dict_show(io, k.second, indent_by+increment) #! And here.
-        i < length(keys(d)) && print(io, ",\n", indent(indent_by))
+        dict_show(iio, k.second) #! And here.
+        i < length(keys(d)) && print(io, ",\n", indent(io))
     end
-    print(io, ")")
+    println(io, ")")
 end
-dict_show(io::IO, v::Vector, indent_by::Int=0) = d_show(io, v, indent_by, '[', ']')
-dict_show(io::IO, v::Tuple, indent_by::Int=0) =  d_show(io, v, indent_by, '(', ')')
-dict_show(io::IO, s::SubString{String}, _::Int) = show(io, s)
-dict_show(io::IO, s::AbstractString, _::Int) = show(io, s)
-dict_show(io::IO, p::Pair, _::Int) = show(io, p)
-dict_show(io::IO, p::Number, _::Int) = show(io, p)
+
+dict_show(io::IO, v::Vector) = d_show(io, v, '[', ']')
+dict_show(io::IO, v::Tuple) =  d_show(io, v, '(', ')')
+dict_show(io::IO, s::SubString{String}) = show(io, s)
+dict_show(io::IO, s::AbstractString) = show(io, s)
+dict_show(io::IO, p::Pair) = show(io, p)
+dict_show(io::IO, p::Number) = show(io, p)
 
 #=
     Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
