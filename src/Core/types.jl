@@ -96,7 +96,7 @@ tag(d::DictType)   = first(keys(d)) # Expect only one key here, String or Symbol
 
 """
 $(TYPEDSIGNATURES)
-Find first :text in vx and return its :content as string.
+Find first :text and return its :content as string.
 """
 function text_content end
 

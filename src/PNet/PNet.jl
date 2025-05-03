@@ -14,11 +14,12 @@ using LabelledArrays #Todo beware namespace pollution
 
 using PNML
 #using PNML: XMLNode
-import PNML: initial_marking, PnmlMultiset, pid
+import PNML: initial_marking, PnmlMultiset, pid, Parser.LabelParser
 
 #using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
+using ..Labels: ToolParser
 using ..Sorts
 using ..PnmlGraphics
 using ..Declarations

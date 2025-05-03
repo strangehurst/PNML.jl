@@ -107,7 +107,7 @@ export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
 
 public @xml_str, xmlroot
-public parse_str, parse_file, parse_pnml
+public parse_string, parse_file, parse_pnml
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
 
@@ -182,9 +182,11 @@ include("Labels/Labels.jl")
 using .Labels
 
 """
-Vector that associates a `Function` with a tool name and vector.
+Vector{ToolParser} of objects that associate a tool name and version with a callable.
+The callable parses the content of a `<toolspecific tool="toolname" version="string">`
+XML element.
 """
-const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]
+const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]#Labels.ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)]
 
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.

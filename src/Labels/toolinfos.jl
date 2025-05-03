@@ -8,10 +8,10 @@ It wraps a iteratable collection (currently vector) of well formed elements
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals struct ToolInfo
+@auto_hash_equals struct ToolInfo{T}
     toolname::String
     version::String
-    infos::Vector{AnyElement}
+    infos::Vector{T}
 end
 
 "Name of tool to for this tool specific information element."
@@ -21,7 +21,7 @@ PNML.name(ti::ToolInfo) = ti.toolname
 version(ti::ToolInfo) = ti.version
 
 "Content of a ToolInfo."
-infos(ti::ToolInfo) = ti.infos::Vector{AnyElement}
+infos(ti::ToolInfo{T}) where T  = ti.infos::Vector{T}
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")
@@ -68,6 +68,8 @@ version(ti::ToolParser) = ti.version
 
 "Content of a ToolInfo."
 func(ti::ToolParser) = ti.func
+
+#!tokengraphics_toolparser = ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)
 
 ###############################################################################
 
@@ -124,31 +126,29 @@ See [`has_toolinfo`](@ref).
 """
 function get_toolinfo end
 
-# get_toolinfo(ti::ToolInfo, name::AbstractString) = get_toolinfo(ti, Regex(name))
-# get_toolinfo(ti::ToolInfo, name::AbstractString, version::AbstractString) =
-#     get_toolinfo(ti, Regex(name), Regex(version))
-# get_toolinfo(ti::ToolInfo, name::AbstractString, versionrex::Regex) =
-#     get_toolinfo(ti, Regex(name),  versionrex)
-# get_toolinfo(ti::ToolInfo, namerex::Regex, versionrex::Regex=r"^.*$") =
-#     _match(ti, namerex, versionrex) ? ti : nothing
-
-
 # Collections
-get_toolinfo(infos, name::AbstractString) =
-    get_toolinfo(infos, Regex(name))
-get_toolinfo(infos, name::AbstractString, version::AbstractString) =
+get_toolinfo(infos, name::AbstractString) = get_toolinfo(infos, Regex(name))
+function  get_toolinfo(infos, name::AbstractString, version::AbstractString)
     get_toolinfo(infos, Regex(name), Regex(version))
-get_toolinfo(infos, name::AbstractString, versionrex::Regex) =
+end
+function get_toolinfo(infos, name::AbstractString, versionrex::Regex)
     get_toolinfo(infos, Regex(name), versionrex)
-get_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$") =
+end
+function get_toolinfo(infos, namerex::Regex, versionrex::Regex = r"^.*$")
+    isempty(infos) && return nothing
+    infos = get_toolinfos(infos, namerex, r"^.*$") # filter by toolname regex
     isempty(infos) ? nothing : first(get_toolinfos(infos, namerex, versionrex))
+end
 
 """
     get_toolinfos(infos, toolname::Regex, version::Regex) -> Iterator
 
-Return iterator over `infos` collection matching toolname and version regular expressions.
+`infos` may be a collection of `ToolInfo` or `ToolParser`.
+Return iterator over `infos` matching toolname and version regular expressions.
+Default version regex matches anything, returning all infos for a tool or all parsers for a tool.
 """
-function get_toolinfos(infos, namerex::Regex, versionrex::Regex)
+function get_toolinfos(infos, namerex::Regex, versionrex::Regex = r"^.*$")
+    #!@show infos namerex versionrex
     Iterators.filter(ti -> _match(ti, namerex, versionrex), infos)
 end
 

@@ -27,8 +27,8 @@ $(TYPEDSIGNATURES)
 Build a PnmlModel from a string containing XML.
 See [`parse_file`](@ref) and [`parse_pnml`](@ref).
 """
-function parse_str(str::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
-    isempty(str) && throw(ArgumentError("parse_str must have a non-empty string argument"))
+function parse_string(str::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
+    isempty(str) && throw(ArgumentError("parse_string must have a non-empty string argument"))
     parse_pnml(xmlroot(str); tp_vec, lp_vec)
 end
 
@@ -36,7 +36,7 @@ end
 $(TYPEDSIGNATURES)
 
 Build a PnmlModel from a file containing XML.
-See [`parse_str`](@ref) and [`parse_pnml`](@ref).
+See [`parse_string`](@ref) and [`parse_pnml`](@ref).
 """
 function parse_file(fname::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
@@ -148,11 +148,12 @@ function parse_pnml(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParse
 end
 
 """
-    get_toolinfos!(tools, node, pntd) -> tools
+    find_toolinfos!(tools, node, pntd) -> tools
 
 Calls `add_toolinfo(tools, info, pntd)` for each info found.
+See [`Labels.get_toolinfos`](@ref) for accessing `ToolInfo`s.
 """
-function get_toolinfos!(tools, node, pntd)
+function find_toolinfos!(tools, node, pntd)
     toolinfos = allchildren(node, "toolspecific")
     if !isempty(toolinfos)
         for info in toolinfos
@@ -234,7 +235,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
     PNML.validate_declarations(DECLDICT[]) # Pass ScopedValue
 
     # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
-    tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
+    tools = find_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
 
     PNML.Labels.validate_toolinfos(tools)
 
@@ -306,7 +307,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
     rp_set         = PNML.refplace_idset(netsets)
     rt_set         = PNML.reftransition_idset(netsets)
 
-    tools = get_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
+    tools = find_toolinfos!(nothing, node, pntd)::Maybe{Vector{ToolInfo}}
     PNML.Labels.validate_toolinfos(tools)
 
     for p in allchildren(node, "place")

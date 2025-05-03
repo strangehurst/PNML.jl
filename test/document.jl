@@ -55,7 +55,7 @@ end
 end
 
 @testset "multiple net type" begin
-    model = @test_logs(match_mode=:all, parse_str("""
+    model = @test_logs(match_mode=:all, parse_string("""
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -118,7 +118,7 @@ end
 
 @testset "empty page" begin
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        @test parse_str("""<?xml version="1.0"?>
+        @test parse_string("""<?xml version="1.0"?>
             <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
               <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
             </pnml>

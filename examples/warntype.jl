@@ -6,4 +6,4 @@ reg = registry()
 pntd = PnmlCoreNet()
 
 InteractiveUtils.@code_warntype PNML.parse_file("file")
-InteractiveUtils.@code_warntype PNML.parse_str("</tag>")
+InteractiveUtils.@code_warntype PNML.parse_string("</tag>")

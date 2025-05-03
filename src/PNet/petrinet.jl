@@ -1,4 +1,32 @@
 using Base: Fix2, Fix1
+#=
+=====================================================================================
+2025-05-01 Consider a declarative API to define different nets.
+
+Tool Info Parsers: from an `(XLNode, PnmlType)` parse well-formed XML into a `ToolInfo`.
+    What type is returned? `Vector{AnyElement}` is the default.
+    `TokenGraphics` is defined in ISO/IEC 15909-2:2011 for `PTNets`.
+    Some run-time dispatch expected during parsing phase.
+    Returned value will be accessed from enclosing object. #TODO API
+    Enclosing object will have a collection of `ToolInfo` objects.
+    AnyElement from fallback parer is from the XMLDict parser.
+    Registering a parser provides a toolname, version and `ToolParser`.
+    When a `<toolspecific>` tag is found only registered parsers are used (first match?).
+    The registered parsers return a PNML object that may be different from AnyElement. #TODO
+    Users find the `ToolInfo` from toolname, version regular expression matches.
+    Users are expected to know how to deal with the `ToolInfo{T}}` type parameter.
+    We can define infrastructure for these parsers. #TODO API
+    #todo! add NUPN API see https://mcc.lip6.fr/2025/nupn.php
+
+Label Parsers:
+    There are 2 levels of Labels in PNML: core/PTNet, High-Level.
+    In core the labels use `<text>` for meaning, while
+    in HL the labels use `<structure>` for meaning.
+    Keep the tag semantics consistent.
+
+=====================================================================================
+=#
+
 
 """
 $(TYPEDEF)
@@ -204,7 +232,7 @@ struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 "Construct from string of valid pnml XML, using the first network in model."
-HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Parser.parse_str(str))
+HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Parser.parse_string(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
 HLPetriNet(model::PnmlModel)    = HLPetriNet(first(nets(model)))
 
 #=
@@ -255,8 +283,8 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
-SimpleNet(s::AbstractString)  = SimpleNet(PNML.Parser.parse_str(s))
-SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.parse_pnml(node))
+SimpleNet(s::AbstractString)  = SimpleNet(PNML.Parser.parse_string(s; tp_vec=ToolParser[], lp_vec=LabelParser[]))
+SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.parse_pnml(node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
 SimpleNet(model::PnmlModel)   = SimpleNet(first(PNML.nets(model)))
 function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)

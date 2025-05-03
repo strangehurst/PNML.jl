@@ -29,13 +29,13 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=target_modules parse_str(str1)
+    @test_call target_modules=target_modules parse_string(str1)
     # model = @test_logs(match_mode=:any,
     #     (:warn,"found unexpected label of <place>: structure"),
     #     (:warn,"found unexpected label of <place>: frog"),
-    #     parse_str(str1))
+    #     parse_string(str1))
 
-    model = parse_str(str1) #
+    model = parse_string(str1) #
     net0 = @inferred PnmlNet first(nets(model))
 
     simp1 = @inferred SimpleNet SimpleNet(model)
@@ -155,7 +155,7 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel parse_str(str2)
+    model = @inferred PNML.PnmlModel parse_string(str2)
     net = @inferred first(nets(model))
     simp = @inferred PNML.SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
@@ -184,8 +184,8 @@ end
         </net>
     </pnml>
     """
-    #!model = @test_logs(@inferred(PNML.PnmlModel, parse_str(str3)));
-    model = @inferred PNML.PnmlModel parse_str(str3)
+    #!model = @test_logs(@inferred(PNML.PnmlModel, parse_string(str3)));
+    model = @inferred PNML.PnmlModel parse_string(str3)
     net1 = first(nets(model));          #@show typeof(net1)
     simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
 
