@@ -279,4 +279,11 @@ the Call for Models, which gathers Petri net models proposed by the scientific c
 and the Call for Tools, which benchmarks verification tools developed within the scientific community."
 Each year new models are added to the contest.
 
+[Nested-Unit Petri Nets (NUPN)](https://mcc.lip6.fr/2025/nupn.php)
+an "extension of P/T nets" used by MCC:
+  - existence of units has no effect on the transition firing rules
+  - partitions the set of places
+  - if a net is unit-safe, units express linear inequality invariants on reachable markings, and tools may take advantage of such invariants to perform logarithmic reductions in the size of marking encodings.
+
+
  "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"
