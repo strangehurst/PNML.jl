@@ -5,9 +5,7 @@ The common usage is that 'label' usually be read as annotation-label.
 Attribute-labels do not have associated graphics elements. Since <graphics> are
 optional for annotation-labels they share the same implementation.
 
-Unknown tags get parsed by `unparsed_tag`.  Annotation-labels usually have
-known tags and dedicated parsers. `parse_pnml_object_common` puts unregistered children
-into the labels collection of a [`AbstractPnmlObject`].  It can include annotations and attributes.
+Unknown tags get parsed by `unparsed_tag`.
 =#
 
 

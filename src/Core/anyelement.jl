@@ -79,10 +79,9 @@ dict_show(io::IO, p::Number) = show(io, p)
 
 #=
     Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
-    Note that Term also does Bool, Int, Float64, in addition to String.
-    And that Term is (meant to be) Variable and Operator.
 
-    This is the form of well-behaved XML: single rooted tree whose tag is the symbol.
+    This is the form of well-behaved XML: forest of single rooted tree whose tag is the symbol.
+
     DictType is a collection of pairs: tag, value, where value may be a string/number or DictType.
 
     top-level tag symbol
