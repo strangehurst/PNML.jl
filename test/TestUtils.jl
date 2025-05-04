@@ -24,7 +24,8 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
 
-@reexport using PNML: PnmlModel, PnmlNet, nets, nettype,
+@reexport using PNML: PnmlModel,
+    PnmlNet, nets, nettype,
     Page, pages, npages, firstpage, allpages, flatten_pages!,
     Place, place, places, nplaces,  has_place,
     Transition, transition, transitions, ntransitions, has_transition,
@@ -33,8 +34,7 @@ Multisets.set_key_value_show()
     Arc, arc, arcs, narcs, source, target, has_arc
 
 @reexport using PNML: labels
-@reexport using PNML.Parser: parse_file, pnmlmodel,
-    parse_net, parse_page!,
+@reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,
     parse_initialMarking, parse_inscription, parse_sort, parse_declaration,

@@ -107,7 +107,7 @@ export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
 
 export @xml_str, xmlroot
-public parse_file, pnmlmodel
+public pnmlmodel
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
 

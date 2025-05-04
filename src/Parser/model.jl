@@ -24,23 +24,16 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a PnmlModel from a file containing XML.
-See [`pnmlmodel`](@ref).
+Build a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref)
+from a file containing XML or a XMLNode.
 """
-function parse_file(fname::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
-    isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
+function pnmlmodel end
+
+function pnmlmodel(filename::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
+    isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))
     pnmlmodel(EzXML.root(EzXML.readxml(fname)); tp_vec, lp_vec)
 end
 
-"""
-    pnmlmodel(xmlnode) -> PnmlModel
-
-Start parse from the root `node` of a well formed pnml XML document.
-Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
-And each net has an independent ID Registry.
-
-
-"""
 function pnmlmodel(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)

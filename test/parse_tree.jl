@@ -65,8 +65,8 @@ println("AirplaneLD-col-0010.pnml")
 println("-----------------------------------------\n")
 @testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
     println(testfile); flush(stdout)
-    model = parse_file(testfile)::PnmlModel
-    #!model = @test_logs(match_mode=:all, parse_file(testfile))
+    model = pnmlmodel(testfile)::PnmlModel
+    #!model = @test_logs(match_mode=:all, pnmlmodel(testfile))
 
     netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
@@ -100,7 +100,7 @@ println("-----------------------------------------\n")
 
         PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
 
-        @test_call target_modules=target_modules parse_file(testfile)
+        @test_call target_modules=target_modules pnmlmodel(testfile)
         @test_call nets(model)
 
         @test !isempty(repr(PNML.netdata(net)))
@@ -119,8 +119,8 @@ end
 #     # model = @test_logs(match_mode=:any,
 #     #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
 #     #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-#     #     parse_file(fname)::PnmlModel)
-#     model = parse_file(fname)::PnmlModel
+#     #     pnmlmodel(fname)::PnmlModel)
+#     model = pnmlmodel(fname)::PnmlModel
 #     # println("----"^10); @show model; println("----"^10)
 #     #!@show model
 #     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!

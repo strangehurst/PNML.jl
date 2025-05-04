@@ -232,11 +232,10 @@ struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 "Construct from string of valid pnml XML, using the first network in model."
+HLPetriNet(str::AbstractString) = HLPetriNet(pnmlmodel(xmlroot(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[]))
 HLPetriNet(model::PnmlModel)    = HLPetriNet(first(nets(model)))
-#! HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Parser.parse_string(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
 
-#=HLPetriNet(str::AbstractString) = HLPetriNet(PNML.Parser.parse_string(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
-
+#=
 # What are the characteristics of a SimpleNet?
 
 This use-case is for explorations, might abuse the standard. The goal of PNML.jl
