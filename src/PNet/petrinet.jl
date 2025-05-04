@@ -284,7 +284,7 @@ struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
 end
 
 SimpleNet(s::AbstractString)  = SimpleNet(PNML.Parser.parse_string(s; tp_vec=ToolParser[], lp_vec=LabelParser[]))
-SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.parse_pnml(node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
+SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.pnmlmodel(node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
 SimpleNet(model::PnmlModel)   = SimpleNet(first(PNML.nets(model)))
 function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)

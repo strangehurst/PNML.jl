@@ -14,7 +14,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlTypeDefs
 @reexport using PNML.PnmlGraphics
 @reexport using PNML.PNet
-@reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot
+@reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot, @xml_str
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, has_name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
@@ -33,7 +33,7 @@ Multisets.set_key_value_show()
     Arc, arc, arcs, narcs, source, target, has_arc
 
 @reexport using PNML: labels
-@reexport using PNML.Parser: parse_file, parse_string, parse_pnml,
+@reexport using PNML.Parser: parse_file, parse_string, pnmlmodel,
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,

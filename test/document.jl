@@ -1,7 +1,7 @@
 using PNML, ..TestUtils, JET
 
 @testset "Show" begin
-    node = xmlroot("""<?xml version="1.0"?>
+    node = xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
           <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
           <name> <text>P/T Net with one place</text> </name>
@@ -28,24 +28,24 @@ using PNML, ..TestUtils, JET
             </page>
           </net>
         </pnml>
-        """)
+        """
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        model = parse_pnml(node)
+        model = pnmlmodel(node)
     end
     @test model isa PnmlModel
 end
 
 @testset "Document & ID Registry" begin
-    emptypage = xmlroot("""<?xml version="1.0"?>
+    emptypage = xml"""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="netid1" type="pnmlcore"> <page id="page"/> </net>
     </pnml>
-    """)
+    """
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        @test_logs(match_mode=:all, parse_pnml(emptypage) )
+        @test_logs(match_mode=:all, pnmlmodel(emptypage) )
 
-        @test_opt target_modules=(@__MODULE__,) parse_pnml(emptypage)
-        @test_call target_modules=target_modules parse_pnml(emptypage)
+        @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
+        @test_call target_modules=target_modules pnmlmodel(emptypage)
     #TODO ===============================================
     #=
     Create a tuple of ID Registries of the same shape as the nets of the model.

@@ -1,6 +1,6 @@
 using PNML, ..TestUtils, JET, OrderedCollections, AbstractTrees
 
-const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
+const pnmldoc = xml"""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
     <name> <text>P/T Net with one place</text> </name>
@@ -20,11 +20,11 @@ const pnmldoc = PNML.xmlroot("""<?xml version="1.0"?>
     </page>
   </net>
 </pnml>
-""") # shared by testsets
+"""
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = parse_pnml(pnmldoc)
+    pnml_ir = pnmlmodel(pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)

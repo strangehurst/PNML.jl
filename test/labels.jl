@@ -32,7 +32,7 @@ end
 #------------------------------------------------
 #------------------------------------------------
 @testset "PT initMarking $pntd" for pntd in NON_HL_NETS
-    str = """
+    node = xmlroot("""
     <initialMarking>
         <text> $(iscontinuous(pntd) ? "123.0" : "123") </text>
         <toolspecific tool="org.pnml.tool" version="1.0">
@@ -43,9 +43,8 @@ end
             <text>content text</text>
         </unknown>
     </initialMarking>
-    """
+    """)
     #println(str)
-    node = xmlroot(str)
 
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!()
@@ -135,7 +134,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     lab = PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
-        lab = PNML.Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>")::XMLNode, pntd)
+        lab = PNML.Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>"), pntd)
         @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end
@@ -171,7 +170,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 end
 
 function test_unclaimed(pntd, xmlstring::String)
-    node::XMLNode = xmlroot(xmlstring)
+    node = xmlroot(xmlstring)::XMLNode
     reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = PnmlIDRegistry()
     @with PNML.idregistry => reg2 PNML.DECLDICT => PNML.DeclDict() begin

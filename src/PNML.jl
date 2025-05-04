@@ -106,8 +106,8 @@ using DocStringExtensions
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
 
-public @xml_str, xmlroot
-public parse_string, parse_file, parse_pnml
+export @xml_str, xmlroot
+public parse_string, parse_file, pnmlmodel
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
 

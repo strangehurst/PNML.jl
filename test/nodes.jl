@@ -144,7 +144,7 @@ end
 #         """<inscription> <text>6</text> </inscription>"""
 #     end
 
-#     node = xmlroot("""
+#     node = xml"""
 #       <arc source="transition1" target="place1" id="arc1">
 #         <name> <text>Some arc</text> </name>
 #         $insc_xml
@@ -153,7 +153,7 @@ end
 #             <text>content text</text>
 #         </unknown>
 #       </arc>
-#     """)
+#     """
 #     PNML.CONFIG[].warn_on_unclaimed = true
 #     if ishighlevel(pntd)
 #         @test_throws("ArgumentError: missing inscription term in <structure>",

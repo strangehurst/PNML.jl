@@ -5,15 +5,16 @@ See [`LabelParser`](@ref), (`Labels.ToolParser`)(@ref).
 """
 module Parser
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
-using Base.ScopedValues
-using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 import EzXML
 import XMLDict
+import Multisets: Multisets, Multiset
+
+using Base.ScopedValues
+using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
-import Multisets: Multisets, Multiset
 using TermInterface
 using Logging, LoggingExtras
 
@@ -27,15 +28,16 @@ using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
-import PNML: basis, sortref, sortof, sortelements, sortdefinition
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 
 using PNML: usersort, sortof, basis, pid
+import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
 using ..Expressions
 using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
+using ..Labels: ToolParser
 using ..Sorts
 using ..Declarations
 
@@ -51,7 +53,7 @@ include("terms.jl")
 include("toolspecific.jl")
 
 export XMLNode, xmlroot, @xml_str
-export parse_str, parse_pnml, parse_file
+export parse_string, pnmlmodel, parse_file
 
 public deduce_sort, LabelParser
 

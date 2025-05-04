@@ -6,12 +6,12 @@ import EzXML
 end
 
 @testset "ExXML" begin
-    @test_throws ArgumentError xmlroot("")
-    @test_throws "empty XML string" xmlroot("")
+    @test_throws ArgumentError xml""
+    @test_throws "empty XML string" xml""
 end
 
 @testset "getfirst XMLNode" begin
-    node = xml"""<test>
+    @show node = xml"""<test>
         <a name="a1"/>
         <a name="a2"/>
         <a name="a3"/>

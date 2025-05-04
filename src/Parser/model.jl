@@ -25,26 +25,26 @@ end
 $(TYPEDSIGNATURES)
 
 Build a PnmlModel from a string containing XML.
-See [`parse_file`](@ref) and [`parse_pnml`](@ref).
+See [`parse_file`](@ref) and [`pnmlmodel`](@ref).
 """
 function parse_string(str::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(str) && throw(ArgumentError("parse_string must have a non-empty string argument"))
-    parse_pnml(xmlroot(str); tp_vec, lp_vec)
+    pnmlmodel(xmlroot(str); tp_vec, lp_vec)
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Build a PnmlModel from a file containing XML.
-See [`parse_string`](@ref) and [`parse_pnml`](@ref).
+See [`parse_string`](@ref) and [`pnmlmodel`](@ref).
 """
 function parse_file(fname::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
-    parse_pnml(EzXML.root(EzXML.readxml(fname)); tp_vec, lp_vec)
+    pnmlmodel(EzXML.root(EzXML.readxml(fname)); tp_vec, lp_vec)
 end
 
 """
-    parse_pnml(xmlnode) -> PnmlModel
+    pnmlmodel(xmlnode) -> PnmlModel
 
 Start parse from the root `node` of a well formed pnml XML document.
 Return a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref).
@@ -52,7 +52,7 @@ And each net has an independent ID Registry.
 
 
 """
-function parse_pnml(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
+function pnmlmodel(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
     #@error "parser logger = $(current_logger())"

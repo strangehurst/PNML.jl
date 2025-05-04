@@ -12,7 +12,7 @@ $(TYPEDSIGNATURES)
 See [`xmlroot`](@ref).
 """
 macro xml_str(s)
-    xmlroot(s)
+    :(xmlroot($s))
 end
 
 """
