@@ -7,7 +7,7 @@ PrecompileTools.@setup_workload begin
         let pntds = ["pnmlcore", "ptnet", "continuous"]
             for pntd in pntds
                 #@show pntd
-                Parser.parse_string("""<?xml version="1.0"?>
+                Parser.pnmlmodel(xml"""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="net_$pntd" type="$pntd">
                     <page id="page0">
@@ -27,7 +27,7 @@ PrecompileTools.@setup_workload begin
         let pntds = ["hlcore", "hlnet", "pt_hlpng", "symmetricnet"]
             for pntd in pntds
                 #@show pntd
-                metagraph(SimpleNet("""<?xml version="1.0"?>
+                metagraph(SimpleNet(xml"""<?xml version="1.0"?>
                     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                     <net id="smallnet_$pntd" type="$pntd">
                     <name> <text>Some Net</text> </name>

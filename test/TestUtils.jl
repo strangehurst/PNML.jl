@@ -33,7 +33,7 @@ Multisets.set_key_value_show()
     Arc, arc, arcs, narcs, source, target, has_arc
 
 @reexport using PNML: labels
-@reexport using PNML.Parser: parse_file, parse_string, pnmlmodel,
+@reexport using PNML.Parser: parse_file, pnmlmodel,
     parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,

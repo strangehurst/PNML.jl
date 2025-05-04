@@ -29,13 +29,13 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=target_modules parse_string(str1)
+    @test_call target_modules=target_modules pnmlmodel(xmlroot(str1))
     # model = @test_logs(match_mode=:any,
     #     (:warn,"found unexpected label of <place>: structure"),
     #     (:warn,"found unexpected label of <place>: frog"),
     #     parse_string(str1))
 
-    model = parse_string(str1) #
+    model = pnmlmodel(xmlroot(str1)) #
     net0 = @inferred PnmlNet first(nets(model))
 
     simp1 = @inferred SimpleNet SimpleNet(model)
@@ -126,7 +126,7 @@ end
 # Used in precompile.
 @testset "simple ptnet" begin
     @show "precompile's SimpleNet"
-    @test PNML.SimpleNet("""<?xml version="1.0"?>
+    @test PNML.SimpleNet(xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
             <name> <text>P/T Net with one place</text> </name>
@@ -155,7 +155,15 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel parse_string(str2)
+    model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        <net id="net0" type="core">
+        <page id="page0">
+            <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
+        </page>
+        </net>
+    </pnml>
+    """)
     net = @inferred first(nets(model))
     simp = @inferred PNML.SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
@@ -184,8 +192,7 @@ end
         </net>
     </pnml>
     """
-    #!model = @test_logs(@inferred(PNML.PnmlModel, parse_string(str3)));
-    model = @inferred PNML.PnmlModel parse_string(str3)
+    model = @inferred PNML.PnmlModel pnmlmodel(xmlroot(str3))
     net1 = first(nets(model));          #@show typeof(net1)
     simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
 
@@ -297,7 +304,7 @@ const ex_types = ("continuous",)
     </pnml>
     """
     #@show str3
-    anet = PNML.SimpleNet(str3)::PNML.AbstractPetriNet
+    anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
     #@show anet
     mg = PNML.metagraph(anet.net)
 

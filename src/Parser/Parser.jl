@@ -53,7 +53,7 @@ include("terms.jl")
 include("toolspecific.jl")
 
 export XMLNode, xmlroot, @xml_str
-export parse_string, pnmlmodel, parse_file
+export pnmlmodel, parse_file
 
 public deduce_sort, LabelParser
 

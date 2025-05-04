@@ -24,19 +24,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a PnmlModel from a string containing XML.
-See [`parse_file`](@ref) and [`pnmlmodel`](@ref).
-"""
-function parse_string(str::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
-    isempty(str) && throw(ArgumentError("parse_string must have a non-empty string argument"))
-    pnmlmodel(xmlroot(str); tp_vec, lp_vec)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
 Build a PnmlModel from a file containing XML.
-See [`parse_string`](@ref) and [`pnmlmodel`](@ref).
+See [`pnmlmodel`](@ref).
 """
 function parse_file(fname::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(fname) && throw(ArgumentError("parse_file must have a non-empty file name argument"))
