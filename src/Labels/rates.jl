@@ -14,8 +14,10 @@ $(TYPEDFIELDS)
 
 Wrap value of rate label of a `Transition`.
 """
-struct TransitionRate{T<:Number} <: Annotation
-    value::T
+@kwdef struct TransitionRate{T<:Number} <: Annotation
+    value::T # text?
+    graphics::Maybe{Graphics} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
 end
 
 Base.eltype(r::TransitionRate) = typeof(value(r))
@@ -34,7 +36,8 @@ function rate(transition)
     if has_labels(transition)
         l = labels(transition)
         if has_label(l, :rate)
-            str = PNML.text_content(elements(@inbounds(get_label(l, :rate))))
+            @show get_label(l, :rate)::PnmlLabel
+            str = PNML.text_content(elements(@inbounds(get_label(l, :rate)::PnmlLabel)))
             return PNML.number_value(PNML.rate_value_type(nettype(transition)), str)
         end
     end
