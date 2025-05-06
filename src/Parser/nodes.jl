@@ -41,6 +41,7 @@ function parse_refTransition!(reftransition_set, netdata, child, pntd)
     return reftransition_set
 end
 
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -77,7 +78,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd) # place
         else # labels (unclaimed) are everything-else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <place>: $tag"
             labels = add_label(labels, child, pntd)
@@ -107,6 +108,157 @@ function parse_place(node::XMLNode, pntd::PnmlType)
     # end
 
     Place(pntd, id, mark, sorttype, name, graphics, tools, labels)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_transition(node::XMLNode, pntd::PnmlType)
+    check_nodename(node, "transition")
+    id = register_idof!(idregistry[], node)
+    name::Maybe{Name} = nothing
+    cond::Maybe{PNML.Labels.Condition} = nothing
+    graphics::Maybe{Graphics} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
+    labels::Maybe{Vector{PnmlLabel}} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "condition"
+            cond = parse_condition(child, pntd)
+        elseif tag == "name"
+            name = parse_name(child, pntd)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            tools = add_toolinfo(tools, child, pntd) # transition
+        else # Labels (unclaimed) are everything-else. We expect at least one here!
+            #! Create extension point here? Add more tag names to list?
+            any(==(tag), transition_xlabels) ||
+                @warn "unexpected label of <transition> id=$id: $tag"
+            labels = add_label(labels, child, pntd)
+        end
+    end
+
+    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, id,
+                something(cond, Labels.default_condition(pntd)), name, graphics, tools, labels,
+                Set{REFID}(), NamedTuple[])
+end
+
+"""
+    parse_arc(node::XMLNode, pntd::PnmlType) -> Arc
+
+Construct an `Arc` with labels specialized for the PnmlType.
+"""
+function parse_arc(node::XMLNode, pntd::PnmlType; netdata)
+    check_nodename(node, "arc")
+    arcid = register_idof!(idregistry[], node)
+    source = Symbol(attribute(node, "source"))
+    target = Symbol(attribute(node, "target"))
+
+    name::Maybe{Name} = nothing
+    tools::Maybe{Vector{ToolInfo}}  = nothing
+    labels::Maybe{Vector{PnmlLabel}} = nothing
+    inscription::Maybe{Any} = nothing # 2 kinds of inscriptions
+    graphics::Maybe{Graphics} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "inscription" || tag == "hlinscription"
+            # Input arc inscription and source's marking/placesort must have equal Sorts.
+            # Output arc inscription and target's marking/placesort must have equal Sorts.
+            # Have IDREF to source & target place & transition.
+            # They which must have been parsed and can be found in netdata.
+            inscription = _parse_inscription(child, source, target, pntd; netdata)
+        elseif tag == "name"
+            name = parse_name(child, pntd)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            tools = add_toolinfo(tools, child, pntd) # arc
+        else # labels (unclaimed) are everything-else
+            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
+            labels = add_label(labels, child, pntd)
+        end
+    end
+    if isnothing(inscription)
+        inscription = if ishighlevel(pntd)
+            Labels.default_hlinscription(pntd, SortType("default", UserSort(:dot)))
+        else
+            Labels.default_inscription(pntd)
+        end
+        #@info("missing inscription for arc $(repr(arcid)), replace with $(repr(inscription))")
+    end
+    Arc(arcid, Ref(source), Ref(target), inscription, name, graphics, tools, labels)
+end
+
+# By specializing arc inscription label parsing we hope to return stable type.
+function _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
+                    netdata)
+    parse_inscription(node, source, target, pntd) #! , netdata)
+end
+function _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
+                    netdata) where {T<:AbstractHLCore}
+    parse_hlinscription(node, source, target, pntd; netdata)
+    # `netdata` used to find adjacent place's sorttype.
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_refPlace(node::XMLNode, pntd::PnmlType)
+    check_nodename(node, "referencePlace")
+    id = register_idof!(idregistry[], node)
+    ref = Symbol(attribute(node, "ref"))
+    name::Maybe{Name} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
+    labels::Maybe{Vector{PnmlLabel}} = nothing
+    graphics::Maybe{Graphics} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "name"
+            name => parse_name(child, pntd)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            tools = add_toolinfo(tools, child, pntd) # refPlace
+        else # labels (unclaimed) are everything-else
+            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
+            labels = add_label(labels, child, pntd)
+        end
+    end
+
+    RefPlace(id, ref, name, graphics, tools, labels)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_refTransition(node::XMLNode, pntd::PnmlType)
+    check_nodename(node, "referenceTransition")
+    id = register_idof!(idregistry[], node)
+    ref = Symbol(attribute(node, "ref"))
+    name::Maybe{Name} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
+    labels::Maybe{Vector{PnmlLabel}}= nothing
+    graphics::Maybe{Graphics} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "name"
+            name = parse_name(child, pntd)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            tools = add_toolinfo(tools, child, pntd) # refTransition
+        else # labels (unclaimed) are everything-else
+            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
+            labels = add_label(labels, child, pntd)
+        end
+    end
+
+    RefTransition(id, ref, name, graphics, tools, labels)
 end
 
 

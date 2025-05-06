@@ -1,152 +1,6 @@
 "Transition enrichment labels."
 const transition_xlabels = ("rate", "delay") #TODO
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_transition(node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "transition")
-    id = register_idof!(idregistry[], node)
-    name::Maybe{Name} = nothing
-    cond::Maybe{PNML.Labels.Condition} = nothing
-    graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "condition"
-            cond = parse_condition(child, pntd)
-        elseif tag == "name"
-            name = parse_name(child, pntd)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
-        else # Labels (unclaimed) are everything-else. We expect at least one here!
-            #! Create extension point here? Add more tag names to list?
-            any(==(tag), transition_xlabels) ||
-                @warn "unexpected label of <transition> id=$id: $tag"
-            labels = add_label(labels, child, pntd)
-        end
-    end
-
-    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, id,
-                something(cond, Labels.default_condition(pntd)), name, graphics, tools, labels,
-                Set{REFID}(), NamedTuple[])
-end
-
-"""
-    parse_arc(node::XMLNode, pntd::PnmlType) -> Arc
-
-Construct an `Arc` with labels specialized for the PnmlType.
-"""
-function parse_arc(node, pntd; netdata)
-    check_nodename(node, "arc")
-    arcid = register_idof!(idregistry[], node)
-    source = Symbol(attribute(node, "source"))
-    target = Symbol(attribute(node, "target"))
-
-    name::Maybe{Name} = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
-    inscription::Maybe{Any} = nothing # 2 kinds of inscriptions
-    graphics::Maybe{Graphics} = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "inscription" || tag == "hlinscription"
-            # Input arc inscription and source's marking/placesort must have equal Sorts.
-            # Output arc inscription and target's marking/placesort must have equal Sorts.
-            # Have IDREF to source & target place & transition.
-            # They which must have been parsed and can be found in netdata.
-            inscription = _parse_inscription(child, source, target, pntd; netdata)
-        elseif tag == "name"
-            name = parse_name(child, pntd)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
-        else # labels (unclaimed) are everything-else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
-            labels = add_label(labels, child, pntd)
-        end
-    end
-    if isnothing(inscription)
-        inscription = if ishighlevel(pntd)
-            Labels.default_hlinscription(pntd, SortType("default", UserSort(:dot)))
-        else
-            Labels.default_inscription(pntd)
-        end
-        #@info("missing inscription for arc $(repr(arcid)), replace with $(repr(inscription))")
-    end
-    Arc(arcid, Ref(source), Ref(target), inscription, name, graphics, tools, labels)
-end
-
-# By specializing arc inscription label parsing we hope to return stable type.
-_parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType; netdata) =
-    parse_inscription(node, source, target, pntd) #! , netdata) #
-_parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
-                    netdata) where {T<:AbstractHLCore} =
-    parse_hlinscription(node, source, target, pntd; netdata)
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_refPlace(node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "referencePlace")
-    id = register_idof!(idregistry[], node)
-    ref = Symbol(attribute(node, "ref"))
-    name::Maybe{Name} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
-    graphics::Maybe{Graphics} = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "name"
-            name => parse_name(child, pntd)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
-        else # labels (unclaimed) are everything-else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
-            labels = add_label(labels, child, pntd)
-        end
-    end
-
-    RefPlace(id, ref, name, graphics, tools, labels)
-end
-
-"""
-$(TYPEDSIGNATURES)
-"""
-function parse_refTransition(node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "referenceTransition")
-    id = register_idof!(idregistry[], node)
-    ref = Symbol(attribute(node, "ref"))
-    name::Maybe{Name} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}}= nothing
-    graphics::Maybe{Graphics} = nothing
-
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "name"
-            name = parse_name(child, pntd)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
-        else # labels (unclaimed) are everything-else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
-            labels = add_label(labels, child, pntd)
-        end
-    end
-
-    RefTransition(id, ref, name, graphics, tools, labels)
-end
 
 #----------------------------------------------------------
 
@@ -177,7 +31,7 @@ function parse_name(node::XMLNode, pntd::PnmlType)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd) # name label
         else
             @warn "ignoring unexpected child of <name>: '$tag'"
         end
@@ -229,14 +83,13 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
-            #! `parse_label_content` collects variables returned by `termparser`.
             term,tsort,vars = termparser(child, pntd) #collects variables
             # @show (term, tsort, vars) #! debug
             # @show typeof(term)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd) # label content termparser
         else
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
         end
@@ -313,7 +166,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd)
+            tools = add_toolinfo(tools, child, pntd) # inscription label
         else
             @warn("ignoring unexpected child of <inscription>: '$tag'")
         end
@@ -362,9 +215,6 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     HLMarking(l.text, markterm, l.graphics, l.tools)
 end
 
-""
-function eval_initialmarking_term()
-end
 """
     ParseMarkingTerm(placetype) -> Functor
 
@@ -466,8 +316,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
 
-    # Find adjacent place.
-
+    # Find adjacent place's sorttype using `netdata`.
     adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
     placesort = PNML.sortref(adjacentplace)::UserSort
     vars = () #
@@ -477,19 +326,18 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType)
     # A condition expression may use variables from an inscripion.
     if EzXML.haselement(inscnode)
         term = EzXML.firstelement(inscnode) # ignore any others
-        inscript, _, vars = parse_term(term, pntd; vars) #! TermInterface expression with a toexpr method.
+        inscript, _, vars = parse_term(term, pntd; vars)
     else
-        # Default to an  multiset whose basis is placetype
+        # Default to a multiset whose basis is placetype.
         inscript = def_insc(netdata(pit), source(pit), target(pit))
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
-    #!debug !isempty(vars) && @error vars
+    #@show inscript placesort; flush(stdout) #! debug
+
+    isa(inscript, PnmlExpr) ||
+        error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
 
     #! inscript isa PnmlExpr, do these tests during/after firing/eval
-    #@show inscript placesort; flush(stdout)
-
-    # isa(inscript, AbstractTerm) ||
-    #     error("inscription is a $(nameof(typeof(inscript))), expected AbstractTerm")
     # isa(sortof(inscript), AbstractSort) ||
     #     error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
     # @assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
@@ -594,7 +442,7 @@ end
     parse_sorttype_term(::XMLNode, ::PnmlType) ->
 The PNML "type" of a `Place` is a "sort" of the high-level many-sorted algebra.
 """
-function parse_sorttype_term(typenode, pntd)
+function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
