@@ -11,7 +11,6 @@ See [`PnmlNet`](@ref)
 mutable struct Page{PNTD <: PnmlType, P, T, A, RP, RT} <: AbstractPnmlObject
     pntd::PNTD
     id::Symbol
-    #! declaration::Declaration
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}

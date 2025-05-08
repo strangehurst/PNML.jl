@@ -426,13 +426,6 @@ function parse_term(::Val{:modulo}, node::XMLNode, pntd::PnmlType; vars)
 end
 
 
-# function parse_term(::Val{:}, node::XMLNode, pntd::PnmlType)
-#     sts = subterms(node, pntd)
-#     @show sts
-#     @assert length(sts) == 2
-#     return (sts[1], sts[2]), usersort(:bool)
-# end
-
 ##########################################################################
 
 # """ #! feconstant always part of enumeration, in the declarations, are constants!
