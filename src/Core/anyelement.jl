@@ -56,7 +56,7 @@ d_show(io::IO, x::Union{Vector,Tuple}, before, after ) = begin
         dict_show(iio, e) #! this is `second`.
         i < length(x) && print(io, ",\n", indent(io))
     end
-    println(io, after)
+    print(io, after)
 end
 
 dict_show(io::IO, d::DictType) = begin
@@ -67,7 +67,7 @@ dict_show(io::IO, d::DictType) = begin
         dict_show(iio, k.second) #! And here.
         i < length(keys(d)) && print(io, ",\n", indent(io))
     end
-    println(io, ")")
+    print(io, ")")
 end
 
 dict_show(io::IO, v::Vector) = d_show(io, v, '[', ']')
