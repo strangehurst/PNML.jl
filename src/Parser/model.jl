@@ -31,7 +31,7 @@ function pnmlmodel end
 
 function pnmlmodel(filename::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))
-    pnmlmodel(EzXML.root(EzXML.readxml(fname)); tp_vec, lp_vec)
+    pnmlmodel(EzXML.root(EzXML.readxml(filename)); tp_vec, lp_vec)
 end
 
 function pnmlmodel(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
@@ -139,7 +139,7 @@ function find_toolinfos!(tools, node, pntd)
     toolinfos = allchildren(node, "toolspecific")
     if !isempty(toolinfos)
         for info in toolinfos
-            tools = add_toolinfo(tools, info, pntd)
+            tools = add_toolinfo(tools, info, pntd) # nets and pages
         end
     end
     return tools
@@ -207,7 +207,7 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
 
     # Parse *ALL* Declarations here (assuming this the tree root),
     # this includes any Declarations attached to Pages.
-    # Place any/all declarations in scoped value PNML.DECLDICT[].
+    # Place any/all declarations in scoped value PNML.DECLDICT[]. #TODO can Context hold collections
     # It is like we are flattening only the declarations.
     # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the specification).
@@ -244,9 +244,9 @@ function parse_net_1(node::XMLNode, pntd::PnmlType, netid::Symbol)
             parse_page!(pagedict, netdata, netsets, child, pntd)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
-        else # PnmlLabels are assumed to be every other child.
+        else # Unclaimed labels are assumed to be every other child.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            net.labels = add_label(net.labels, child, pntd) # No accessor because it has no user.
+            net.labels = add_label(net.labels, child, pntd) # Net unclaimed label.
             # The specification allows meta-models defined upon the core to define
             # additional labels that conform to the Schema.
             # We use XMLDict as the parser for unclaimed labels (and anynet).
@@ -263,7 +263,7 @@ end
 function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(idregistry[], node)
-    push!(PNML.page_idset(netsets), pageid) # Doing depth-first traversal, record id before decending.
+    push!(PNML.page_idset(netsets), pageid) # Record id before decending.
     pg = _parse_page!(pagedict, netdata, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
@@ -271,7 +271,7 @@ function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType)
 end
 
 """
-    parse_page!(pagedict, netdata, node, pntd) -> Page
+    _parse_page!(pagedict, netdata, node, pntd) -> Page
 
 Place `Page` in `pagedict` using id as the key.
 """
@@ -321,10 +321,10 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol)
             graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            labels = add_label(labels, child, pntd)
+            labels = add_label(labels, child, pntd) # page unclaimed label
         end
     end
-    #! Attach empty DeclDict to page, all declarations are attached to PnmlNet!
+
     return Page(pntd, pageid, name, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
