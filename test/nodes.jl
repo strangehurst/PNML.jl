@@ -188,8 +188,12 @@ end
     """
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         PNML.fill_nonhl!(PNML.DECLDICT[])
-        #n = @test_logs((:warn, "found unexpected child of <referenceTransition>: unknown"),
-        n = parse_refTransition(node, pntd)::RefTransition
+        n = if PNML.CONFIG[].warn_on_unclaimed == true
+            @test_logs((:warn, "^ignoring unexpected child"),
+                    parse_refTransition(node, pntd)::RefTransition)
+        else
+            parse_refTransition(node, pntd)::RefTransition
+        end
         @test pid(n) === :rt1
         @test PNML.refid(n) === :t1
         @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
@@ -226,10 +230,14 @@ end
     @testset "referencePlaces" for s in [n1, n2]
         @with PNML.idregistry => PnmlIDRegistry()  PNML.DECLDICT => PNML.DeclDict() begin
             PNML.fill_nonhl!(PNML.DECLDICT[])
-            #n = @test_logs(match_mode=:any,
-            #    (:warn, "found unexpected child of <referencePlace>: unknown"),
-            n = parse_refPlace(s.node, ContinuousNet())::RefPlace
+            n = if PNML.CONFIG[].warn_on_unclaimed
+                @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
+                        parse_refPlace(s.node, ContinuousNet())::RefPlace)
+            else
+                parse_refPlace(s.node, ContinuousNet())::RefPlace
+           end
             @test pid(n) === Symbol(s.id)
+
             @test PNML.refid(n) === Symbol(s.ref)
         end
     end

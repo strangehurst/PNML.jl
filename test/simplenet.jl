@@ -30,12 +30,7 @@ str1 = """
 
 @testset "SIMPLENET" begin
     @test_call target_modules=target_modules pnmlmodel(xmlroot(str1))
-    # model = @test_logs(match_mode=:any,
-    #     (:warn,"found unexpected label of <place>: structure"),
-    #     (:warn,"found unexpected label of <place>: frog"),
-    #     parse_string(str1))
-
-    model = pnmlmodel(xmlroot(str1)) #
+    model = pnmlmodel(xmlroot(str1))::PnmlModel #
     net0 = @inferred PnmlNet first(nets(model))
 
     simp1 = @inferred SimpleNet SimpleNet(model)
