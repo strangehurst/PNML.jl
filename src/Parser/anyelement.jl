@@ -11,14 +11,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return tuple of (tag, `XDVT`) holding well formed XML tree. `XMLDict`
+Return tuple of (tag, `XDVT`) holding well formed XML as parsed by `XMLDict`.
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
 or [`Labels.Structure`](@ref).
 """
 function unparsed_tag(node::XMLNode)
     tag = EzXML.nodename(node)
-    xd = XMLDict.xml_dict(node, LittleDict{Union{Symbol, String}, Any}; strip_text=true)
-    return (tag, xd)
+    #!xd = XMLDict.xml_dict(node, LittleDict{Union{Symbol, String}, Any}; strip_text=true)
+    xd = XMLDict.xml_dict(node, DictType; strip_text=true)
+    return tuple(tag, xd)
     # empty dictionarys are a valid thing.
 end

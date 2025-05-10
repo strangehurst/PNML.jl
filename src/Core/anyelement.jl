@@ -1,4 +1,3 @@
-# Core anyelement() XDVT
 #--------------------------------------------
 # Any Element
 #--------------------------------------------
@@ -14,7 +13,7 @@ See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
     tag::Symbol # XML tag
-    elements::XDVT
+    elements::Any # XDVT is too complex
 end
 AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 

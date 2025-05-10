@@ -123,18 +123,19 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap an `AbstractDict` holding a PNML Label as parsed by `XMLDict`. Use the XML tag as identifier.
+Wrap an `XDVT` holding a PNML Label as parsed by `XMLDict`.
+Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
 a dedicated parse method. Claimed labels will have a type/parser defined to make use
 of the structure defined by the pntd schema.
 
-See also [`AnyElement`](@ref). The difference is that `AnyElement` allows any well-formed XML,
-while `PnmlLabel` is restricted to PNML Labels (with extensions in PNML.jl).
+See also [`AnyElement`](@ref) which allows any well-formed XML,
+while `PnmlLabel` is restricted to PNML Labels.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Symbol
-    elements::PNML.XDVT
+    elements::Any # PNML.XDVT is too complex
 end
 PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
