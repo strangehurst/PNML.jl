@@ -22,6 +22,8 @@ Multisets.set_key_value_show()
     multiset
 @reexport using PNML: toexpr, PnmlExpr
 
+@reexport using PNML: Context
+
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
 
 @reexport using PNML: PnmlModel,

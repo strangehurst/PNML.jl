@@ -31,7 +31,8 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Holds a parser for a `<labeltag>` tag's well-formed contents.
+Maps a `Symbol` to a parser callable for a `<labeltag>` tag's well-formed contents.
+The parser will be called as func(node, pntd) and return
 """
 @auto_hash_equals struct LabelParser
     tag::Symbol

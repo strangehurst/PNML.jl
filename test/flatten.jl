@@ -2,7 +2,7 @@ using PNML, ..TestUtils, JET
 
 println("FLATTEN")
 @testset "flatten" begin
-    model = pnmlmodel(xml"""<?xml version="1.0"?>
+    model = pnmlmodel(Context(), xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
             <net id="net0" type="pnmlcore">
                 <page id="page1">

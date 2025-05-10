@@ -13,7 +13,8 @@ using Logging, LoggingExtras
 using LabelledArrays #Todo beware namespace pollution
 
 using PNML
-#using PNML: XMLNode
+using PNML: Context
+
 import PNML: initial_marking, PnmlMultiset, pid, Parser.LabelParser
 
 #using ..PnmlIDRegistrys

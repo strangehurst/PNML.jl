@@ -17,19 +17,19 @@ end
 
 @testset "missing namespace $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
-        pnmlmodel(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
+        pnmlmodel(Context(), xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 
     @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
-        pnmlmodel(xml"""<?xml version="1.0" encoding="UTF-8"?>
+        pnmlmodel(Context(), xml"""<?xml version="1.0" encoding="UTF-8"?>
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
 @testset "malformed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
-        pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
+        pnmlmodel(Context(), xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
 
     @test_throws("MalformedException: attribute tool missing",
-        pnmlmodel(xml"""
+        pnmlmodel(Context(), xml"""
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
     <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
     <page id="pg1">
@@ -49,7 +49,7 @@ end
     """))
 
     @test_throws("MalformedException: attribute type missing",
-        pnmlmodel(xml"""
+        pnmlmodel(Context(), xml"""
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="4712">
     <page id="3">

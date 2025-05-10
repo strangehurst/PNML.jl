@@ -29,12 +29,12 @@ from a file containing XML or a XMLNode.
 """
 function pnmlmodel end
 
-function pnmlmodel(filename::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
+function pnmlmodel(ctx::Context, filename::AbstractString; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))
-    pnmlmodel(EzXML.root(EzXML.readxml(filename)); tp_vec, lp_vec)
+    pnmlmodel(ctx, EzXML.root(EzXML.readxml(filename)); tp_vec, lp_vec)
 end
 
-function pnmlmodel(node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
+function pnmlmodel(ctx::Context, node::XMLNode; tp_vec=Labels.ToolParser[], lp_vec=LabelParser[])
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
     #@error "parser logger = $(current_logger())"

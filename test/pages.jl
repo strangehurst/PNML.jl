@@ -39,7 +39,7 @@ function verify_sets(net::PnmlNet)
     end
 end
 
-model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
+model = @inferred PNML.PnmlModel pnmlmodel(Context(), xml"""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="pnmlcore">
             <page id="page1">

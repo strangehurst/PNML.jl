@@ -30,7 +30,7 @@ using PNML, ..TestUtils, JET
         </pnml>
         """
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        model = pnmlmodel(node)
+        model = pnmlmodel(Context(), node)
     end
     @test model isa PnmlModel
 end
@@ -42,10 +42,10 @@ end
     </pnml>
     """
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        @test_logs(match_mode=:all, pnmlmodel(emptypage) )
+        @test_logs(match_mode=:all, pnmlmodel(Context(), emptypage) )
 
-        @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
-        @test_call target_modules=target_modules pnmlmodel(emptypage)
+        @test_opt target_modules=(@__MODULE__,) pnmlmodel(Context(), emptypage)
+        @test_call target_modules=target_modules pnmlmodel(Context(), emptypage)
     #TODO ===============================================
     #=
     Create a tuple of ID Registries of the same shape as the nets of the model.
@@ -55,7 +55,7 @@ end
 end
 
 @testset "multiple net type" begin
-    model = @test_logs(match_mode=:all, pnmlmodel(xml"""
+    model = @test_logs(match_mode=:all, pnmlmodel(Context(), xml"""
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
       <net id="net1" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -118,7 +118,7 @@ end
 
 @testset "empty page" begin
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        @test pnmlmodel(xml"""<?xml version="1.0"?>
+        @test pnmlmodel(Context(), xml"""<?xml version="1.0"?>
             <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
               <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
             </pnml>

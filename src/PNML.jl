@@ -130,6 +130,8 @@ include("Core/exceptions.jl")
 include("Core/utils.jl")
 include("Core/coordinates.jl")
 
+include("context.jl")
+
 include("Core/interfaces.jl") # Function docstrings mostly.
 include("Core/types.jl") # Abstract Types with docstrings.
 include("Core/anyelement.jl") # AnyElement, DictType

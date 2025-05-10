@@ -29,8 +29,9 @@ using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
-
+using PNML: Context
 using PNML: usersort, sortof, basis, pid
+
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
 using ..Expressions

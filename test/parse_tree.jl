@@ -24,7 +24,7 @@ const pnmldoc = xml"""<?xml version="1.0"?>
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = pnmlmodel(pnmldoc)
+    pnml_ir = pnmlmodel(Context(), pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
@@ -65,8 +65,8 @@ println("AirplaneLD-col-0010.pnml")
 println("-----------------------------------------\n")
 @testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
     println(testfile); flush(stdout)
-    model = pnmlmodel(testfile)::PnmlModel
-    #!model = @test_logs(match_mode=:all, pnmlmodel(testfile))
+    model = pnmlmodel(Context(), testfile)::PnmlModel
+    #!model = @test_logs(match_mode=:all, pnmlmodel(Context(), testfile))
 
     netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
@@ -100,7 +100,7 @@ println("-----------------------------------------\n")
 
         PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
 
-        @test_call target_modules=target_modules pnmlmodel(testfile)
+        @test_call target_modules=target_modules pnmlmodel(Context(), testfile)
         @test_call nets(model)
 
         @test !isempty(repr(PNML.netdata(net)))
@@ -119,8 +119,8 @@ end
 #     # model = @test_logs(match_mode=:any,
 #     #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
 #     #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-#     #     pnmlmodel(fname)::PnmlModel)
-#     model = pnmlmodel(fname)::PnmlModel
+#     #     pnmlmodel(Context(), fname)::PnmlModel)
+#     model = pnmlmodel(Context(), fname)::PnmlModel
 #     # println("----"^10); @show model; println("----"^10)
 #     #!@show model
 #     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
