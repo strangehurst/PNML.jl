@@ -87,8 +87,15 @@ end
         t = parse_transition(node, pntd)
         @test t isa Transition
         @test condition(t)() === true
+    end
+end
 
-        # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
+println("\n==============================================================================")
+
+@testset "delay label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+   @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
+        PNML.fill_nonhl!(PNML.DECLDICT[])
+         # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
         # This bit may be from the pre-standard era.
         # <ci> is a variable(constant) like pi, infinity.
         # <cn> is a number (real)
@@ -96,16 +103,18 @@ end
         node = xml"""<transition id ="t6">
             <delay>
                 <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
-                    <cn>4</cn>
+                    <cn>4.0</cn>
                     <cn>9</cn>
                 </interval>
             </delay>
         </transition>"""
         t = parse_transition(node, pntd)::Transition
         @test has_label(labels(t), :delay)
-        #@show PNML.get_label(labels(t), :delay) #! debug
-
-        @test PNML.delay(t) isa Tuple
+        @show PNML.get_label(labels(t), :delay) #! debug
+        @show PNML.labelof(t, :delay) #! debug
+        @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
+        @test PNML.delay_value(t) isa Tuple
+        println()
 
         # unbounded interval [4,∞)
         node = xml"""<transition id ="t7">
@@ -117,7 +126,9 @@ end
             </delay>
         </transition>"""
         t = parse_transition(node, pntd)::Transition
-        @test PNML.delay(t) isa Tuple
+        @test PNML.delay_value(t) isa Tuple
+        @show PNML.labelof(t, :delay) #! debug
+        println()
 
         # interval (3,5)
         node = xml"""<transition id ="t8">
@@ -129,7 +140,9 @@ end
             </delay>
         </transition>"""
         t = parse_transition(node, pntd)::Transition
-        @test PNML.delay(t) isa Tuple
+        @test PNML.delay_value(t) isa Tuple
+        @show PNML.labelof(t, :delay) #! debug
+       println()
     end
 end
 

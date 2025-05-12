@@ -12,42 +12,63 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap value of rate label of a `Transition`.
+Real valued label. An expected use is as a transition rate.
 """
-@kwdef struct TransitionRate{T<:Number} <: Annotation
-    value::T # text?
+@kwdef struct Rate{T<:Number} <: Annotation
+    value::T # text? PnmlExpr?
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
 end
 
-Base.eltype(r::TransitionRate) = typeof(value(r))
-value(r::TransitionRate) = r.value
+Base.eltype(r::Rate) = typeof(value(r))
+value(r::Rate) = r.value
+
+
+#! Move rate_value_type
+# lookup value_type of PnmlLabel
+function value_type_of(x)
+end
+
+"Parse content of `<text>` as a number of `value_type`."
+function number_content_parser(label, value_type)
+    @show label value_type #! debug
+    str = PNML.text_content(elements(label))
+    PNML.number_value(value_type, str)::Number
+ end
 
 """
-    rate(t::Transition) -> Real
+    rate_value(t) -> Real
 
-Return rate label value of `transition`.  Missing rate labels are defaulted to zero.
+Return value of a `Rate` label.  Missing rate labels are defaulted to zero.
 
-All net types may have a rate value type. Expected label XML: <rate> <text>0.3</text> </rate>
+Expected label XML: `<rate> <text>0.3</text> </rate>`
 
 See [`rate_value_type`](@ref PNML.rate_value_type).
+
+# Arguments
+    `t` is anything that supports `labelof(t, tag)`.
+    `tag::Symbol` is the XML element tag, default `:rate`.
+    `value_type::Type{<:Number}` is concrete `Type` used to parse value.
+    `content_parser`::Base.Callable with arguments of `labelof(t, tag)` and `value_type`.
+    `default_value` = zero(value_type) is returned when `labelof(t, tag)` returns `nothing`.
 """
-function rate(transition)
-    if has_labels(transition)
-        l = labels(transition)
-        if has_label(l, :rate)
-            @show get_label(l, :rate)::PnmlLabel
-            str = PNML.text_content(elements(@inbounds(get_label(l, :rate)::PnmlLabel)))
-            return PNML.number_value(PNML.rate_value_type(nettype(transition)), str)
-        end
+function rate_value(t;
+            tag = :rate,
+            value_type::Type{<:Number} = PNML.rate_value_type(nettype(t)), #! Move rate_value_type
+            content_parser::Base.Callable = number_content_parser,
+            default_value = zero(value_type),)
+    label = labelof(t, tag)
+    if isnothing(label)
+        default_value
+    else
+        content_parser(label, value_type)
     end
-    return zero(PNML.rate_value_type(nettype(transition)))
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return delay label value of `transition` as interval tuple: ("closure-string", left, right)
+Return delay label value as interval tuple: ("closure-string", left, right)
 Missing delay labels default to ("closed", 0.0, 0.0) a.k.a. zero.
 
 All net types may have a delay value type. Expected label XML: see MathML.
@@ -59,40 +80,53 @@ Supports
   - ("open", 2.0, 6.0)       -> (2.0, 6.0)
   - ("closed", 2.0, 6.0)     -> [2.0, 6.0]
 """
-function delay(transition)
-    #@show transition; flush(stdout) #! debug
-    if has_labels(transition)
-        ls = labels(transition)
-        if has_label(ls, :delay)
-            (tag, interval) = first(elements(@inbounds(get_label(ls, :delay))))
-            tag == "interval" || error("expected 'interval', found '$tag'")
-            closure  = PNML._attribute(interval, :closure)
-
-            if haskey(interval, "cn") # Expect at least one cn.
-                cn = @inbounds interval["cn"]
-                (isnothing(cn) || isempty(cn)) &&
-                        throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
-                if cn isa Vector
-                    n = Float64[PNML.number_value(Float64, x)::Float64 for x in cn]
-                else
-                    n = Float64[PNML.number_value(Float64, cn)::Float64]
-                end
-            end
-
-            if haskey(interval, "ci") # At most one ci named constant.
-                ci = @inbounds interval["ci"]
-                (isnothing(ci) || isempty(ci)) &&
-                        throw(ArgumentError("<interval> <ci> element is $ci"))
-                if ci isa Vector
-                    i = Float64[_ci(x) for x in ci]
-                else
-                    i = Float64[_ci(ci)]
-                end
-            end
-            return (closure, n[1], length(n) == 1 ? i[1] : n[2])
-        end
+function delay_value(t;
+            tag = :delay,
+            value_type::Type{<:Number} = Float64,
+            content_parser::Base.Callable = delay_content_parser,
+            default_value = tuple("closed", 0.0, 0.0))
+    label = labelof(t, tag)
+    if isnothing(label)
+        default_value
+    else
+        content_parser(label, value_type)
     end
-    return ("closed", 0.0, 0.0)
+end
+
+function delay_content_parser(label, value_type)
+    (tag, interval) = first(elements(label))
+    tag == "interval" || error("expected 'interval', found '$tag'")
+    closure  = PNML._attribute(interval, :closure)
+
+    n = if haskey(interval, "cn") # Expect at least one cn.
+        let cn = @inbounds interval["cn"]
+            (isnothing(cn) || isempty(cn)) &&
+                throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
+            if cn isa Vector
+                value_type[PNML.number_value(value_type, x) for x in cn]
+            else
+                value_type[PNML.number_value(value_type, cn)]
+            end
+        end
+    else
+        throw(ArgumentError(string("<delay><interval> missing any <cn> element")))
+    end
+
+    i = if haskey(interval, "ci") # At most one ci named constant.
+        let ci = @inbounds interval["ci"]
+            (isnothing(ci) || isempty(ci)) &&
+                throw(ArgumentError("<interval> <ci> element is $ci"))
+            if ci isa Vector
+                value_type[_ci(x) for x in ci]
+            else
+                value_type[_ci(ci)]
+            end
+        end
+    else
+        length(n) == 1 && throw(ArgumentError("<interval> <ci> element missing."))
+    end
+    length(i) > 1 && throw(ArgumentError("<interval> has too many <ci> elements."))
+    return tuple(closure, n[1], length(n) == 1 ? i[1] : n[2])
 end
 
 function _ci(i)
@@ -102,5 +136,3 @@ function _ci(i)
         error("may only contain infin|infty, found: $ci")
     end
 end
-
-#-----------------------------------------------------------------------------

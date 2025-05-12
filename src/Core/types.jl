@@ -52,6 +52,19 @@ has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
 get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
     (isnothing(o) && error("o is nothing")) || (has_labels(o) && get_label(labels(o), tagvalue))
 
+"""
+    labelof(x, sym::Symbol) -> Maybe{PnmlLabel}
+
+`x` is anyting that supports has_label/get_label,
+`tag` is the tag of the xml label element.
+"""
+function labelof(x, tag::Symbol)
+    if has_labels(x)
+        l = labels(x)
+        return has_label(l, tag) ? @inbounds(get_label(l, tag))::PnmlLabel : nothing
+    end
+    return nothing
+end
 
 #--------------------------------------------
 """
@@ -136,14 +149,10 @@ values: DictType, String, SubString, Vector{Union{DictType, String, SubString}}
 "Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `unparsed_tag`."
 const DictType = LittleDict{Union{Symbol,String}, Any #= XDVT =#}
 
-"Union of `DictType` dictionary, String"
-const XDVT2 = Union{DictType,  String,  SubString{String}}
+"XMLDict Value Type is value or Vector of values from `XMLDict.xml_dict`."
+const XDVT = Union{DictType, String, SubString, Vector{Union{DictType,String,SubString}}}
 
-"XMLDict values type or Vector of values. Maybe too large for union-splitting."
-const XDVT = Union{XDVT2, Vector{XDVT2}}
-# XDVT = Union{DictType, String, SubString, Vector{Union{DictType,String,SubString}}}
-
-tag(d::DictType) = first(keys(d)) # Expect only one key here, String or Symbol
+tag(d::DictType) = first(keys(d)) # String or Symbol
 
 """
 $(TYPEDSIGNATURES)
@@ -274,6 +283,17 @@ inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
 
 coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))
 coordinate_value_type(pntd::PnmlType) = coordinate_value_type(typeof(pntd))
+
+#---------------------------------------------------------------------------
+# Extend by allowing a transition to be labeled with a floating point rate.
+#---------------------------------------------------------------------------
+"""
+    rate_value_type(::PnmlType) -> Number
+    rate_value_type(::Type{<:PnmlType}) -> Number
+
+Return rate value type based on net type.
+"""
+function rate_value_type end
 
 rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
 rate_value_type(::Type{<:PnmlType}) = Float64

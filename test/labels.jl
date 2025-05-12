@@ -148,7 +148,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
     @test_call has_label(lab, :test1)
     @test_call get_label(lab, :test1)
-    @test_call get_labels(lab, :test1)
+    @test_call labels(lab, :test1)
 
     @test has_label(lab, :test1)
     @test !has_label(lab, :bumble)
@@ -159,7 +159,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     @test elements(v) == "3"
 
     @testset "label $labeltag" for labeltag in [:test1, :test2]
-        vec = PNML.get_labels(lab, labeltag)
+        vec = PNML.labels(lab, labeltag)
         lv = 0
         for l in vec
             @test tag(l) === labeltag

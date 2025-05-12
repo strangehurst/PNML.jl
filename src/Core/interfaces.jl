@@ -55,6 +55,7 @@ function has_labels end
 
 """
     labels(x) -> Iterateable
+    labels(x, tag::Symbol) -> Iterateable
 
 Return iterator of labels attached to `x`.
 """
@@ -393,16 +394,6 @@ $(TYPEDSIGNATURES)
 Return type of value in a `Coordinate`.
 """
 function coordinate_value_type end
-
-#---------------------------------------------------------------------------
-# Extend by allowing a transition to be labeled with a floating point rate.
-#---------------------------------------------------------------------------
-"""
-    rate_value_type(::PnmlType) -> Number
-
-Return rate value type based on net type.
-"""
-function rate_value_type end
 
 """
     has_sort(x) -> Bool

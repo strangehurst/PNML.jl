@@ -14,6 +14,7 @@ using PNML: Maybe, nettype, AnyElement
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm
 using PNML: usersort, namedsort
+using PNML: labelof
 
 import PNML: name
 import PNML: value, term,  graphics, tools, refid, tag, elements
@@ -42,12 +43,14 @@ include("rates.jl")
 include("structure.jl")
 
 export AbstractLabel, Condition, Declaration, Inscription, Marking
-export Name, PnmlLabel, SortType, TransitionRate
+export Name, PnmlLabel, SortType
 export HLAnnotation, HLInscription, HLMarking, HLLabel
 export Graphics, PnmlGraphics
 export ToolInfo
-export text, get_labels, get_label, rate, delay
+export text, get_label, rate_value, delay_value
 export def_sort_element
 export ToolParser
+
+export Rate
 
 end # module labels

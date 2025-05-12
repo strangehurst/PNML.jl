@@ -11,17 +11,17 @@ println("RATE")
         @test PNML.has_label(trans, :rate) === true
         @test PNML.get_label(trans, :rate) === first(PNML.labels(trans))
         @test PNML.get_label(trans, :rate) !== nothing
-        @test PNML.rate(trans) ≈ 0.3
+        @show trans
+        @test PNML.rate_value(trans) ≈ 0.3
 
         @test_call PNML.has_labels(trans)
         @test_call PNML.has_label(trans, :rate)
         @test_call PNML.get_label(trans, :rate)
         @test_call PNML.labels(trans)
-        @test_call PNML.rate(trans)
+        @test_call PNML.rate_value(trans)
 
-        tr = @inferred PNML.rate(trans)
-        #tr = @inferred Maybe{PNML.TransitionRate} PNML.rate(trans)
-        #@test eltype(tr) == PNML.rate_value_type(PNML.nettype(trans))
+        tr = @inferred PNML.rate_value(trans)
+        @test eltype(tr) == PNML.rate_value_type(PNML.nettype(trans))
     end
 end
 
@@ -33,5 +33,5 @@ end
             <transition id ="birth">
               <rateX> <text>0.3</text> </rateX>
             </transition>""", pntd)))
-    @test PNML.rate(tr) ≈ 0.0
+    @test PNML.rate_value(tr) ≈ 0.0
 end

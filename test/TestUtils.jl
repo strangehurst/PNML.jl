@@ -42,7 +42,7 @@ Multisets.set_key_value_show()
     parse_initialMarking, parse_inscription, parse_sort, parse_declaration,
     parse_hlinitialMarking, parse_hlinscription
 
-@reexport using PNML.Labels: PnmlLabel, has_label, get_label, get_labels, Condition
+@reexport using PNML.Labels: PnmlLabel, has_label, get_label, Condition
 
 @reexport using PNML: tools
 

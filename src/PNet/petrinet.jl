@@ -136,18 +136,22 @@ inscriptions(petrinet::AbstractPetriNet) = LVector(; collect(PNML.inscriptions(p
 function conditions end #TODO! non-ground terms
 conditions(petrinet::AbstractPetriNet)  = LVector(; collect(conditions(pnmlnet(petrinet)))...)
 
+
+
 """
-    rates(petrinet::AbstractPetriNet) -> LVector[id(transition) => rate(transition]
+    rates(petrinet::AbstractPetriNet) -> LVector[id(transition) => rate_value(transition)]
 
 Return a transition-id labelled vector of rate values.
 
-We allow all PNML nets to be stochastic Petri nets. See [`rate`](@ref).
+We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
 """
 function rates(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
     net = pnmlnet(petrinet)
-    LVector((;[tid => rate(t) for (tid, t) in pairs(PNML.transitiondict(net))]...))
+    LVector((;[tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]...))
 end
-
+# rate label implements the PnmlLabel interface.
+# Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
+# Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
     initial_markings(petrinet) -> LVector{marking_value_type}
@@ -229,11 +233,12 @@ $(TYPEDFIELDS)
 
 """
 struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
+    ctx::Context
     net::PnmlNet{PNTD}
 end
 "Construct from string of valid pnml XML, using the first network in model."
-HLPetriNet(str::AbstractString) = HLPetriNet(pnmlmodel(xmlroot(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[]))
-HLPetriNet(model::PnmlModel)    = HLPetriNet(first(nets(model)))
+HLPetriNet(ctx::Context, str::AbstractString) = HLPetriNet(ctx, pnmlmodel(ctx, xmlroot(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[]))
+HLPetriNet(ctx::Context, model::PnmlModel)    = HLPetriNet(ctx, first(nets(model)))
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -279,16 +284,17 @@ Note: A multi-page petri net can always be flattened by removing
 referenceTransitions & referencePlaces, and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
+    ctx::Context
     id::Symbol # Redundant copy of the net's ID for dispatch.
     net::PnmlNet{PNTD}
 end
 
-SimpleNet(s::AbstractString)  = SimpleNet(xmlroot(s))
-SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.pnmlmodel(node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
-SimpleNet(model::PnmlModel)   = SimpleNet(first(PNML.nets(model)))
-function SimpleNet(net::PnmlNet)
+SimpleNet(ctx::Context, s::AbstractString)  = SimpleNet(ctx, xmlroot(s))
+SimpleNet(ctx::Context, node::PNML.XMLNode) = SimpleNet(ctx, PNML.Parser.pnmlmodel(ctx, node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
+SimpleNet(ctx::Context, model::PnmlModel)   = SimpleNet(ctx, first(PNML.nets(model)))
+function SimpleNet(ctx::Context, net::PnmlNet)
     PNML.flatten_pages!(net)
-    SimpleNet(PNML.pid(net), net)
+    SimpleNet(ctx, PNML.pid(net), net)
 end
 
 #-------------------------------------------------------------------------------

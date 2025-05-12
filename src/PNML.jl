@@ -110,6 +110,7 @@ export @xml_str, xmlroot
 public pnmlmodel
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
+public labelof
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))

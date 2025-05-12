@@ -83,6 +83,8 @@ has_labels(l::AbstractLabel) = false
 # Some Labels are functors: marking, inscription, condition.
 # Usually where it is possible to have a high-level term.
 
+
+
 #--------------------------------------------
 """
 $(TYPEDEF)
@@ -123,7 +125,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Wrap an `XDVT` holding a PNML Label as parsed by `XMLDict`.
+Wrap a PNML Label as parsed by `XMLDict`.
 Use the XML tag as identifier.
 
 Used for "unclaimed" labels that do not have, or we choose not to use,
@@ -170,24 +172,19 @@ Return method with one argument. Duck-typed to test anything with tag accessor.
 """
 hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
 
-"""
-    get_labels(iteratable, s::Symbol) -> Iterator
-
-Filter iteratable collection for elements having `s` as the `tag`.
-"""
-function get_labels(iteratable, tagvalue::Symbol)
+function labels(iteratable, tagvalue::Symbol)
     isnothing(iteratable) && error("iteratable is nothing")
     Iterators.filter(Fix2(hastag, tagvalue), iteratable)
 end
 
 "Return label matching `tagvalue`` or `nothing``."
 function get_label(iteratable, tagvalue::Symbol)
-    first(get_labels(iteratable, tagvalue))
+    first(labels(iteratable, tagvalue))
 end
 
 "Return `true` if collection `v` contains label with `tagvalue`."
 function has_label(iteratable, tagvalue::Symbol)
-    !isempty(get_labels(iteratable, tagvalue))
+    !isempty(labels(iteratable, tagvalue))
 end
 
 """
