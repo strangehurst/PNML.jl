@@ -81,7 +81,7 @@ Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 Kinds of label include: marking, inscription, condition and declarations, sort, and ad-hoc.
 Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance
 is a label and add it to a collection of 'other labels'.
-Some 'other labels' can be accessed using: [`rate`](@ref), [`delay`](@ref).
+Some 'other labels' can be accessed using: [`rate_value`](@ref), [`delay_value`](@ref).
 
 **Some Labels of Interest**
 

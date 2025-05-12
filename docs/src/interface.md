@@ -105,7 +105,7 @@ interchangable with other tools.
 
 [VANESA](https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8)
 
-See [`rate`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
+See [`rate_value`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
 Implements a continuous petri net as part of the first working use-case.
 Demonstrates the expressiveness of pnml.
 

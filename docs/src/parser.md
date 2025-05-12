@@ -23,7 +23,7 @@ __TODO__ Implement a `ToolInfo` for PNML.jl extensions.
 Applies label semantics to a `DictType`.
 Used for not-yet-implemented labels. Many of the labels used for high-level many-sorted algebra have not been implemented.
 
-See [`rate`](@ref) for a use case.
+See [`rate_value`](@ref) for a use case.
 
 
 ## Sorts

@@ -55,7 +55,7 @@ PnmlModel
 - Net
   * Pages
     - Places, Marking, unclaimed labels  [SortType] [Capacity]
-    - Transitions, Condition, unclaimed labels [rate]
+    - Transitions, Condition, unclaimed labels [TransitionRate]
     - Arcs, Inscription, unclaimed labels [ArcType]
     - Toolinfos [Labels.TokenGraphics]
     - Labels unclaimed, [Declaration]
