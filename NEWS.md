@@ -1,5 +1,9 @@
 # News
 
+Version 0.0.19 2025-05-12
+  - Introduce Context
+  - Start ToolParser, LabelParse inteface exploration
+
 Version 0.0.18 2025-04-25
   - Parser creates TermInterface objects.
   - Variable substitution works. Uses `Expr`.
