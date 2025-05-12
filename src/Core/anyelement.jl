@@ -7,8 +7,9 @@ $(TYPEDFIELDS)
 
 Hold well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 
-Creates a tree whose nodes are `Union{DictType, String, SubString{String}}`.
-#TODO when can there be leaf nodes of String, SubString{String?}
+Creates a tree where the leaf node values are `Union{String, SubString{String}}``, and
+interior nodes values are `Union{DictType, Vector{DictType}}`
+
 See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
@@ -63,7 +64,7 @@ dict_show(io::IO, d::DictType) = begin
     for (i, k) in enumerate(pairs(d))
         iio = inc_indent(io)
         print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
-        dict_show(iio, k.second) #! And here.
+        dict_show(iio, k.second)            #! And here.
         i < length(keys(d)) && print(io, ",\n", indent(io))
     end
     print(io, ")")

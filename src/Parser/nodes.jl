@@ -134,8 +134,12 @@ function parse_transition(node::XMLNode, pntd::PnmlType)
             tools = add_toolinfo(tools, child, pntd) # transition
         else # Labels (unclaimed) are everything-else. We expect at least one here!
             #! Create extension point here? Add more tag names to list?
-            any(==(tag), transition_xlabels) ||
+            #! Use LabelParse here
+            # Lookup parser for tag
+            #
+            any(==(tag), ("rate", "delay")) ||
                 @warn "unexpected label of <transition> id=$id: $tag"
+
             labels = add_label(labels, child, pntd)
         end
     end

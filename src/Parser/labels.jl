@@ -1,13 +1,7 @@
-"Transition enrichment labels."
-const transition_xlabels = ("rate", "delay") #TODO
-
-
-#----------------------------------------------------------
-
 """
 $(TYPEDSIGNATURES)
 
-Return the stripped string of node's content.
+Return the stripped string of `<text>` node's content.
 """
 function parse_text(node::XMLNode, _::PnmlType)
     check_nodename(node, "text")
@@ -17,7 +11,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`Name`](@ref) label holding text value and optional tool & GUI information.
+Return [`Name`](@ref) label holding `<text>` value.
+With optional `<toolspecific>` & `<graphics>` information.
 """
 function parse_name(node::XMLNode, pntd::PnmlType)
     check_nodename(node, "name")
@@ -38,13 +33,12 @@ function parse_name(node::XMLNode, pntd::PnmlType)
     end
 
     # There are pnml files that break the rules & do not have a text element here.
-    # Ex: PetriNetPlans-PNP/parallel.jl
     # Attempt to harvest content of <name> element instead of the child <text> element.
     if isnothing(text)
-        emsg = "<name> missing <text> element"
+        emsg = "<name> missing <text> element."
         if CONFIG[].text_element_optional
             text = string(strip(EzXML.nodecontent(node)))::String
-            @warn string(emsg, " Using name content = '", text, "'")::String
+            @warn string(emsg, "Using content = '", text, "'")::String
         else
             throw(ArgumentError(emsg))
         end
@@ -83,7 +77,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
-            term,tsort,vars = termparser(child, pntd) #collects variables
+            term, tsort, vars = termparser(child, pntd) #collects variables
             # @show (term, tsort, vars) #! debug
             # @show typeof(term)
         elseif tag == "graphics"
@@ -105,7 +99,7 @@ Non-high-level `PnmlType` initial marking parser. Most things are assumed to be 
 function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType)
     nn = check_nodename(node, "initialMarking")
     # See if there is a <structure> attached to the label. This is non-standard.
-    # But allows use of same mechanism used for high-level nets.
+    # Allows use of same mechanism used for high-level nets.
     l = parse_label_content(node, parse_structure, pntd)::NamedTuple
     if !isnothing(l.term) # There was a <structure> tag. Used in the high-level meta-models.
         @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.term)"
