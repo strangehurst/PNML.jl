@@ -62,7 +62,7 @@ function parse_place(node::XMLNode, pntd::PnmlType)
         sorttype = parse_sorttype(typenode, pntd)
     else
         #@warn("default sorttype $pntd $(repr(id))", default_typeusersort(pntd))
-        sorttype = SortType("default", Labels.default_typeusersort(pntd), nothing, nothing)
+        sorttype = SortType("default", Labels.default_typeusersort(pntd)::UserSort, nothing, nothing)
     end
     #@warn "parse_place $id" sorttype
 

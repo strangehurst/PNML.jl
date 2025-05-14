@@ -85,7 +85,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType) where
         elseif tag == "toolspecific"
             tools = add_toolinfo(tools, child, pntd) # label content termparser
         else
-            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'")
+            @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", termparser, pntd)
         end
     end
     return (; text, term, sort=tsort, graphics, tools, vars)
@@ -420,29 +420,34 @@ Label that defines the "sort" of tokens held by the place and semantics of the m
 NB: The "type" of a place from _many-sorted algebra_ is different from
 the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 
-Allow all pntd's places to have a <type> label.  Non high-level are expecting a numeric sort: eltype(sort) <: Number.
+Allow all pntd's places to have a <type> label.
+Non-high-level are expecting a numeric sort: eltype(sort) <: Number.
 """
 function parse_sorttype(node::XMLNode, pntd::PnmlType) # place sorttype
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd)
     @assert isempty(l.vars)
     # High-level nets are expected to have a sorttype term defined.
-    # Others will use a default (until syntax to describe them is invented.)
 
     SortType(l.text, l.term, l.graphics, l.tools) # Basic label structure.
 end
 
 """
-    parse_sorttype_term(::XMLNode, ::PnmlType) ->
-The PNML "type" of a `Place` is a "sort" of the high-level many-sorted algebra.
+    parse_sorttype_term(::XMLNode, ::PnmlType) -> Tuple
+
+The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algebra.
+Because we are sharing the HL implementation with the other meta-models,
+we support it in all nets. The term here is a `UserSort` in all cases.
+
+See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 """
 function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType)
     check_nodename(typenode, "structure")
-    EzXML.haselement(typenode) || throw(ArgumentError("missing sort type element in <structure>"))
+    EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
     sorttype = parse_sort(sortnode, pntd)::UserSort
-    isa(sorttype, MultisetSort) && error("multiset sort not allowed for Place type")
-    return (sorttype, sortof(sorttype), ()) # Ground term has no variables.
+    isa(sorttype, MultisetSort) && error("multiset sort not allowed for place <type>")
+    return (sorttype, sortof(sorttype)::AbstractSort, ()) # Ground term has no variables.
 end
 
 """
