@@ -1,21 +1,24 @@
 module PNet
-import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
+
 using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
-import Base: eltype
-import AutoHashEquals: @auto_hash_equals
-import XMLDict
 using DocStringExtensions
 using NamedTupleTools
-import Multisets: Multisets, Multiset
 using TermInterface
 using Logging, LoggingExtras
 using LabelledArrays #Todo beware namespace pollution
+
+import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
+import Base: eltype
+import AutoHashEquals: @auto_hash_equals
+import XMLDict
+import Multisets: Multisets, Multiset
 
 using PNML
 using PNML: Context
 
 import PNML: initial_marking, PnmlMultiset, pid, Parser.LabelParser
+import PNML: metagraph
 
 #using ..PnmlIDRegistrys
 using ..PnmlTypeDefs

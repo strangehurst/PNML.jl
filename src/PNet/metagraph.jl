@@ -17,6 +17,4 @@ using MetaGraphsNext: MetaGraph
 
 Return MetaGraph instance based on a `SimpleDiGraph` with PNML nodes attached to vertices and edges.
 """
-function metagraph end
-
 metagraph(pn::AbstractPetriNet) = metagraph(pnmlnet(pn))
