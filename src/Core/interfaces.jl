@@ -55,14 +55,14 @@ function has_labels end
 
 """
     labels(x) -> Iterateable
-    labels(x, tag::Symbol) -> Iterateable
+    labels(x, tag::Union{Symbol, String, SubString{String}) -> Iterateable
 
 Return iterator of labels attached to `x`.
 """
 function labels end
 
 """
-    has_label(x, tag::Symbol) -> Bool
+    has_label(x, tag::Union{Symbol, String, SubString{String}) -> Bool
 
 Does `x` have any label with a matching `tag`.
 """

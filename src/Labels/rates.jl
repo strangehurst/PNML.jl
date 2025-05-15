@@ -47,13 +47,13 @@ See [`rate_value_type`](@ref PNML.rate_value_type).
 
 # Arguments
     `t` is anything that supports `labelof(t, tag)`.
-    `tag::Symbol` is the XML element tag, default `:rate`.
+    `tag::String` is the XML element tag, default `"rate"`.
     `value_type::Type{<:Number}` is concrete `Type` used to parse value.
     `content_parser`::Base.Callable with arguments of `labelof(t, tag)` and `value_type`.
     `default_value` = zero(value_type) is returned when `labelof(t, tag)` returns `nothing`.
 """
 function rate_value(t;
-            tag = :rate,
+            tag::String = "rate",
             value_type::Type{<:Number} = PNML.rate_value_type(nettype(t)), #! Move rate_value_type
             content_parser::Base.Callable = number_content_parser,
             default_value = zero(value_type),)
@@ -81,7 +81,7 @@ Supports
   - ("closed", 2.0, 6.0)     -> [2.0, 6.0]
 """
 function delay_value(t;
-            tag = :delay,
+            tag::String = "delay",
             value_type::Type{<:Number} = Float64,
             content_parser::Base.Callable = delay_content_parser,
             default_value = tuple("closed", 0.0, 0.0))

@@ -109,10 +109,10 @@ println("\n=====================================================================
             </delay>
         </transition>"""
         t = parse_transition(node, pntd)::Transition
-        @test has_label(labels(t), :delay)
-        @show PNML.get_label(labels(t), :delay) #! debug
-        @show PNML.labelof(t, :delay) #! debug
-        @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
+        @test has_label(labels(t), "delay")
+        @show PNML.get_label(labels(t), "delay") #! debug
+        @show PNML.labelof(t, "delay") #! debug
+        @test PNML.get_label(labels(t), "delay") == PNML.labelof(t, "delay")
         @test PNML.delay_value(t) isa Tuple
         println()
 
@@ -127,7 +127,7 @@ println("\n=====================================================================
         </transition>"""
         t = parse_transition(node, pntd)::Transition
         @test PNML.delay_value(t) isa Tuple
-        @show PNML.labelof(t, :delay) #! debug
+        @show PNML.labelof(t, "delay") #! debug
         println()
 
         # interval (3,5)
@@ -141,7 +141,7 @@ println("\n=====================================================================
         </transition>"""
         t = parse_transition(node, pntd)::Transition
         @test PNML.delay_value(t) isa Tuple
-        @show PNML.labelof(t, :delay) #! debug
+        @show PNML.labelof(t, "delay") #! debug
        println()
     end
 end

@@ -13,28 +13,28 @@ interior nodes values are `Union{DictType, Vector{DictType}}`
 See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
-    tag::Symbol # XML tag
-    elements::Any # XDVT is too complex
+    # XMLDict uses symbols for attribute keys and string for elements/children keys.
+    tag::Union{Symbol, String, SubString{String}}
+    elements::Any # Value of attribute or content of child
 end
-AnyElement(s::AbstractString, elems) = AnyElement(Symbol(s), elems)
 
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements # label elements
 
 function Base.show(io::IO, ae::AnyElement)
-    print(io, "AnyElement(")
-    show(io, tag(ae)); print(io, ", ")
+    print(io, "AnyElement(", tag(ae), ", ")
     dict_show(io, elements(ae))
     print(io, ")")
 end
+
 function Base.show(io::IO, vae::Vector{AnyElement})
     print(io, "AnyElement[")
     io = inc_indent(io)  # one more indent
-    foreach(vae) do ae
-        print(io, indent(io));
-        dict_show(io, elements(ae))
+    for (i, ae) in enumerate(vae)
+        show(io, ae)
+        i < length(vae) && print(io, ",\n", indent(io))
     end
-    print(io, "]")
+    println(io, "]")
 end
 
 #--------------------------------------------
@@ -47,31 +47,35 @@ Internal helper for things that contain `DictType`.
 """
 function dict_show end
 
-
-d_show(io::IO, x::Union{Vector,Tuple}, before, after ) = begin
+"Alternate to dict_show. Prints `before`, `after`"
+_d_show(io::IO, x::Union{Vector,Tuple}, before, after ) = begin
     print(io, before)
+    iio = inc_indent(io)
     for (i, e) in enumerate(x)
-        iio = inc_indent(io)
-        #! dict_show prints `first` here
-        dict_show(iio, e) #! this is `second`.
-        i < length(x) && print(io, ",\n", indent(io))
+        #! dict_show prints the key here, but vector, tuple do not have keys.
+        i > 1 && print(io, "\n", indent(io))
+        dict_show(iio, e) #! this is the value.
+        i < length(keys(x)) && print(io, ",")
+        #i < length(x) && print(io, ",\n", indent(io))
     end
-    print(io, after)
+    println(io, after)
 end
 
 dict_show(io::IO, d::DictType) = begin
-    print(io, "(")
-    for (i, k) in enumerate(pairs(d))
-        iio = inc_indent(io)
-        print(io, "d[$(repr(k.first))] = ") #! Differs from `d_show` here.
-        dict_show(iio, k.second)            #! And here.
-        i < length(keys(d)) && print(io, ",\n", indent(io))
+    print(io, "(") # before
+    iio = inc_indent(io)
+    for (i, kv) in enumerate(pairs(d))
+        i > 1 && print(io, "\n", indent(io))
+        print(io, "d[$(repr(kv.first))] = ") #! Differs from `_d_show` here.
+        dict_show(iio, kv.second)            #! And here.
+        i < length(keys(d)) && print(io, ",")
+        #i < length(keys(d)) && print(io, ",\n", indent(io))
     end
-    print(io, ")")
+    print(io, ")") # after
 end
 
-dict_show(io::IO, v::Vector) = d_show(io, v, '[', ']')
-dict_show(io::IO, v::Tuple) =  d_show(io, v, '(', ')')
+dict_show(io::IO, v::Vector) = _d_show(io, v, '[', ']')
+dict_show(io::IO, v::Tuple) =  _d_show(io, v, '(', ')')
 dict_show(io::IO, s::SubString{String}) = show(io, s)
 dict_show(io::IO, s::AbstractString) = show(io, s)
 dict_show(io::IO, p::Pair) = show(io, p)

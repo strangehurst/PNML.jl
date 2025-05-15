@@ -216,13 +216,13 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node::XMLNode, pntd::PnmlType)
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType) #? just a label?
     nn = EzXML.nodename(node)
     id = register_idof!(idregistry[], node)
     name = attribute(node, "name")
-    @warn("parse unknown declaration: tag = $nn, id = $id, name = $name")
-    content = AnyElement[anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing]
-    return UnknownDeclaration(id, name, nn, content)
+    unkncontent = [anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing]
+    @warn("parse unknown declaration: tag = $nn, id = $id, name = $name", unkncontent)
+    return UnknownDeclaration(id, name, nn, unkncontent)
 end
 
 """

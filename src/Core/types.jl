@@ -47,10 +47,15 @@ has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.
 graphics(o::AbstractPnmlObject)     = o.graphics
 
 # Jet once needed a hint about `o`.
-has_label(o::AbstractPnmlObject, tagvalue::Symbol) =
-    (isnothing(o) && error("o is nothing")) || (has_labels(o) && has_label(labels(o), tagvalue))
-get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
-    (isnothing(o) && error("o is nothing")) || (has_labels(o) && get_label(labels(o), tagvalue))
+function has_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
+    (isnothing(o) && error("o is nothing")) ||
+        (has_labels(o) && has_label(labels(o), tag))
+end
+
+function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
+    (isnothing(o) && error("o is nothing")) ||
+        (has_labels(o) && get_label(labels(o), tag))
+end
 
 """
     labelof(x, sym::Symbol) -> Maybe{PnmlLabel}
@@ -58,7 +63,7 @@ get_label(o::AbstractPnmlObject, tagvalue::Symbol) =
 `x` is anyting that supports has_label/get_label,
 `tag` is the tag of the xml label element.
 """
-function labelof(x, tag::Symbol)
+function labelof(x, tag::Union{Symbol, String, SubString{String}})
     if has_labels(x)
         l = labels(x)
         return has_label(l, tag) ? @inbounds(get_label(l, tag))::PnmlLabel : nothing

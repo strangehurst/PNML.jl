@@ -136,10 +136,10 @@ See also [`AnyElement`](@ref) which allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
-    tag::Symbol
-    elements::Any # PNML.XDVT is too complex
+    tag::Union{Symbol, String, SubString{String}}
+    elements::Any #Vector{AnyElement} PNML.XDVT is too complex
 end
-PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
+#!PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
@@ -164,27 +164,27 @@ end
 #--------------------------------------
 #TODO this is more general, make a utiity (and use somewhere else)?
 """
-    hastag(x, tagvalue::Symbol) -> Function
+    hastag(x, tag::Union{Symbol, String, SubString{String}}) -> Function
 Return method with one argument. Duck-typed to test anything with tag accessor.
 
 # EXAMPLES
-    Iterators.filter(Fix2(hastag, tagvalue), iteratable)
+    Iterators.filter(Fix2(hastag, tag), iteratable)
 """
-hastag(l, tagvalue::Symbol) = tag(l) === tagvalue
+hastag(l, tagvalue::Union{Symbol, String, SubString{String}}) = tag(l) === tagvalue
 
-function labels(iteratable, tagvalue::Symbol)
+function labels(iteratable, tag::Union{Symbol, String, SubString{String}})
     isnothing(iteratable) && error("iteratable is nothing")
-    Iterators.filter(Fix2(hastag, tagvalue), iteratable)
+    Iterators.filter(Fix2(hastag, tag), iteratable)
 end
 
 "Return label matching `tagvalue`` or `nothing``."
-function get_label(iteratable, tagvalue::Symbol)
-    first(labels(iteratable, tagvalue))
+function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
+    first(labels(iteratable, tag))
 end
 
 "Return `true` if collection `v` contains label with `tagvalue`."
-function has_label(iteratable, tagvalue::Symbol)
-    !isempty(labels(iteratable, tagvalue))
+function has_label(iteratable, tag::Union{Symbol, String, SubString{String}})
+    !isempty(labels(iteratable, tag))
 end
 
 """

@@ -143,22 +143,23 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     for l in lab
         @test_opt tag(l)
         @test_call tag(l)
-        @test tag(l) === :test1 || tag(l) === :test2
+        @test tag(l) === "test1" || tag(l) === "test2"
     end
 
-    @test_call has_label(lab, :test1)
-    @test_call get_label(lab, :test1)
-    @test_call labels(lab, :test1)
+    @test_call has_label(lab, "test1")
+    @test_call get_label(lab, "test1")
+    @test_call labels(lab, "test1")
 
-    @test has_label(lab, :test1)
+    @test has_label(lab, "test1")
     @test !has_label(lab, :bumble)
+    @test !has_label(lab, "bumble")
 
-    v = @inferred get_label(lab, :test2)
+    v = @inferred get_label(lab, "test2")
     @test v isa PnmlLabel
-    @test tag(v) === :test2
+    @test tag(v) === "test2"
     @test elements(v) == "3"
 
-    @testset "label $labeltag" for labeltag in [:test1, :test2]
+    @testset "label $labeltag" for labeltag in ["test1", "test2"]
         vec = PNML.labels(lab, labeltag)
         lv = 0
         for l in vec
@@ -194,10 +195,11 @@ function test_unclaimed(pntd, xmlstring::String)
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) Parser.anyelement(node, pntd)
 
-        nn = Symbol(EzXML. EzXML.nodename(node))
+        nn = Symbol(EzXML.nodename(node))
         @test t == EzXML.nodename(node)
-        @test tag(l) === nn
-        @test tag(a) === nn
+        @show typeof(tag(l)) typeof(tag(a))
+        @test tag(l) isa Symbol && tag(l) === nn || tag(l) == string(nn)
+        @test tag(a) isa Symbol && tag(a) === nn || tag(a) == string(nn)
 
         @test u isa DictType
         @test l.elements isa DictType
@@ -213,44 +215,44 @@ end
 @testset "unclaimed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
-    ctrl = [ # Vector of tuples of XML string, expected result `Pair`.
+    ctrl = [ # Vector of tuples of XML string, expected result from `XMLDict.xml_dict`.
         ("""<declarations> </declarations>""",
-            :declarations => DictType()),
+            "declarations" => DictType()),
 
         ("""<declarations atag="atag1"> </declarations>""",
-            :declarations => DictType(:atag =>"atag1")),
+            "declarations" => DictType(:atag =>"atag1")),
 
         ("""<foo><declarations> </declarations></foo>""",
-            :foo => DictType("declarations" => DictType())),
+            "foo" => DictType("declarations" => DictType())),
 
         # no content, no attribute maybe results in empty tuple.
         ("""<null></null>""",
-            :null => DictType()),
+            "null" => DictType()),
         ("""<null2/>""",
-            :null2 => DictType()),
+            "null2" => DictType()),
         # no content, with attribute
         ("""<null at="null"></null>""",
-            :null => DictType(:at => "null")),
+            "null" => DictType(:at => "null")),
         ("""<null2 at="null2" />""",
-            :null2 => DictType(:at => "null2")),
+            "null2" => DictType(:at => "null2")),
         # empty content, no attribute
         ("""<empty> </empty>""",
-            :empty => DictType()),
+            "empty" => DictType()),
         # empty content, with attribute
         ("""<empty at="empty"> </empty>""",
-            :empty => DictType(:at => "empty")),
+            "empty" => DictType(:at => "empty")),
         # unclaimed do not register id
         ("""<foo id="testid1" />""",
-            :foo => DictType(:id => "testid1")),
+            "foo" => DictType(:id => "testid1")),
         ("""<foo id="testid2"/>""",
-            :foo => DictType(:id => "testid2")),
+            "foo" => DictType(:id => "testid2")),
 
         ("""<foo id="repeats">
                 <one>ONE</one>
                 <one>TWO</one>
                 <one>TRI</one>
             </foo>""",
-            :foo => DictType(:id => "repeats",
+            "foo" => DictType(:id => "repeats",
                             "one" => Any["ONE", "TWO", "TRI"])),
 
         ("""<declarations atag="atag2">
@@ -261,7 +263,7 @@ end
                     <value tag3="tagthree"/>
                 </something2>
             </declarations>""",
-            :declarations => DictType(:atag => "atag2",
+            "declarations"=> DictType(:atag => "atag2",
                         "something" => Any["some content", "other stuff"],
                         "something2" =>
                             DictType(:tag2 => "tagtwo",
@@ -272,10 +274,12 @@ end
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected...)
+        @show tag(lab) tag(expected_label)
         @test tag(lab) == tag(expected_label)
         @test length(elements(lab)) == length(elements(expected_label))
         # TODO recursive compare
         expected_any = AnyElement(expected...)
+        @show anye expected_any
         @test tag(anye) == tag(expected_any)
         @test length(elements(anye)) == length(elements(expected_any))
         # TODO recursive compare
