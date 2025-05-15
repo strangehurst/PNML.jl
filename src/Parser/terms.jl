@@ -122,8 +122,10 @@ end
 # Has a value that is a subsort of NumberSort (<:Number).
 function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType; vars)
     value = attribute(node, "value")::String
-    child = EzXML.firstelement(node) # Child is the sort of value attribute.
-    isnothing(child) && throw(PNML.MalformedException("<numberconstant> missing sort element"))
+    # Child is the sort of value attribute.
+    child = EzXML.haselement(node) ? EzXML.firstelement(node) : nothing
+    isnothing(child) &&
+        throw(PNML.MalformedException("<numberconstant> missing sort element"))
     sorttag = Symbol(EzXML.nodename(child))
     sort = if sorttag in (:integer, :natural, :positive, :real) #  We allow non-standard real.
         usersort(sorttag)
