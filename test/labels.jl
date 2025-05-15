@@ -197,7 +197,6 @@ function test_unclaimed(pntd, xmlstring::String)
 
         nn = Symbol(EzXML.nodename(node))
         @test t == EzXML.nodename(node)
-        @show typeof(tag(l)) typeof(tag(a))
         @test tag(l) isa Symbol && tag(l) === nn || tag(l) == string(nn)
         @test tag(a) isa Symbol && tag(a) === nn || tag(a) == string(nn)
 
@@ -274,12 +273,10 @@ end
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
         expected_label = PnmlLabel(expected...)
-        @show tag(lab) tag(expected_label)
         @test tag(lab) == tag(expected_label)
         @test length(elements(lab)) == length(elements(expected_label))
         # TODO recursive compare
         expected_any = AnyElement(expected...)
-        @show anye expected_any
         @test tag(anye) == tag(expected_any)
         @test length(elements(anye)) == length(elements(expected_any))
         # TODO recursive compare
