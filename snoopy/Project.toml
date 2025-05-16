@@ -36,4 +36,5 @@ TestEnv = "1e6cf692-eddd-4d53-88a5-2d735e33781b"
 XMLDict = "228000da-037f-5747-90a9-8195ccbf91a5"
 
 [compat]
+DataFrames = "1.7.0"
 Metatheory = "3.0.0"
