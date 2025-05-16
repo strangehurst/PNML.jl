@@ -181,7 +181,7 @@ end
 
         #@show PNML.idregistry[] decl
         @test length(PNML.namedsorts()) == base_decl_length + 3
-        println()
+        #println()
         for nsort in values(PNML.namedsorts())
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
             # by wraping an ID of a declared sort.

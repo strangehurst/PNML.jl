@@ -35,7 +35,7 @@ function parse_declaration(nodes::Vector{XMLNode}, pntd::PnmlType)
                 fill_decl_dict!(dd, child, pntd) # Assumes high-level semantics.
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
-                @info "declaration text: $text" # Do not expect text here, so it must be important.
+                #@info "declaration text: $text" # Do not expect text here, so it must be important.
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd)
             elseif tag == "toolspecific" # accumulate tool specific

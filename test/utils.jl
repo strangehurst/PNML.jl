@@ -50,7 +50,7 @@ end
     #println("default_inscription($pntd) = ", i)
 end
 end
-println()
+#println()
 @testset "default_typeusersort($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     t = Labels.default_typeusersort(pntd)::UserSort
 end

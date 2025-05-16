@@ -7,7 +7,10 @@ One or more Petri Nets and an ID Registries.
 mutable struct PnmlModel
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
+
+    #~ refactor #! move registry, decldict to PnmlNet
     regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alias.
+    decldict::Vector{DeclDict}   # Same size as nets.
 end
 
 """
@@ -58,10 +61,8 @@ end
 
 # No indent done here.
 function Base.show(io::IO, model::PnmlModel)
-    print(io, "PnmlModel(")
-    show(io, namespace(model)); print(io, ", ",)
+    print(io, "PnmlModel(", namespace(model), ", ",)
     println(io, length(nets(model)), " nets:" )
-
     for (i, net) in enumerate(nets(model))
         show(io, net)
         if i < length(nets(model))

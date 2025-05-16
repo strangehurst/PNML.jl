@@ -11,7 +11,7 @@ println("RATE")
         @test PNML.has_label(trans, "rate") === true
         @test PNML.get_label(trans, "rate") === first(PNML.labels(trans))
         @test PNML.get_label(trans, "rate") !== nothing
-        @show trans
+        #@show trans
         @test PNML.rate_value(trans) ≈ 0.3
 
         @test_call PNML.has_labels(trans)

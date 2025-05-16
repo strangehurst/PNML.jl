@@ -8,7 +8,7 @@ PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1)), ))
 
 @testset "add $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     #
-    println()
+    #println()
     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
         varsub = NamedTuple()
         #@show PNML.pnmlmultiset(UserSort(:dot), DotConstant())
@@ -16,9 +16,9 @@ PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1)), ))
         b1 = PNML.Bag(UserSort(:pro), 1, PNML.NumberEx(UserSort(:natural), 1))
         b2 = PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1))
         #@show b1 b2
-        @show a = PNML.Add([b1, b2])
+        a = PNML.Add([b1, b2])
         ex = PNML.toexpr(a, varsub)
-        @show val = eval(ex)
+        val = eval(ex)
         @test val == eval(PNML.toexpr(b1, varsub)) + eval(PNML.toexpr(b2, varsub))
 
         # op = _op()::NamedTuple

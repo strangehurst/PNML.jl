@@ -8,19 +8,19 @@ The content can be one or more well-formed xml elements.
 """
 function parse_toolspecific(node, pntd;
             tp_vec = [ToolParser( "org.pnml.tool", "1.0", tokengraphics_content)])
-    nn = check_nodename(node, "toolspecific")
+    check_nodename(node, "toolspecific")
     tool    = attribute(node, "tool")
     version = attribute(node, "version")
 
-    # Find parser for tool,version pair from (ScopedValue?).
-    @show tp_vec
-    @show tool_parser = Labels.get_toolinfo(tp_vec, tool, version)
+    # Find parser for tool, version
+    #@show tp_vec
+    tool_parser = Labels.get_toolinfo(tp_vec, tool, version)
     if !isnothing(tool_parser)
         tool_parser = tool_parser.func
     end
-       @show toolspecific_content = something(tool_parser, toolspecific_content_fallback)
-    # Handle all other toolinfos as AnyElement (holding well-formed XML).
-    @show content = toolspecific_content(node, pntd)
+    toolspecific_content = something(tool_parser, toolspecific_content_fallback)
+
+    content = toolspecific_content(node, pntd)
     return Labels.ToolInfo(tool, version, content)
 end
 
@@ -28,9 +28,5 @@ end
 Return `Vector{AnyElement}` for each well-formed element of a `<toolspecific> `node.`
 """
 function toolspecific_content_fallback(node::XMLNode, pntd::PnmlType)
-    content = AnyElement[]
-    for child in EzXML.eachelement(node)
-        push!(content, anyelement(child, pntd))
-    end
-    return content # Empty is allowed.
+    [anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing] # Empty is OK.
 end

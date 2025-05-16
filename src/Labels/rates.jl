@@ -31,7 +31,7 @@ end
 
 "Parse content of `<text>` as a number of `value_type`."
 function number_content_parser(label, value_type)
-    @show label value_type #! debug
+    #@show label value_type #! debug
     str = PNML.text_content(elements(label))
     PNML.number_value(value_type, str)::Number
  end
