@@ -5,9 +5,11 @@
 #julia -t1 --project=.snoopy  -e 'include("snoopy/all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
 # julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle")'
 # julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/ePNK-pnml-examples/org.pnml.tools.epnk.examples_1.2.0")'
-using PNML
+
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
 using LoggingExtras
+using PNML
+using PNML: pid, narcs, nplaces, ntransitions, PNet.pnmlnet
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -117,7 +119,7 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             println(stat(testf), " at ", Time(file_start))
             println()
 
-            stats = @timed PNML.parse_file(testf) #^ PARSE PNML MODEL
+            stats = @timed PNML.pnmlmodel(PNML.Context(), testf) #^ PARSE PNML MODEL
 
             #todo Add fields of testf path components to allow sorting the table.
             push!(df, (file=testf, fsize=filesize(testf),
@@ -145,8 +147,10 @@ end
 function exersize_netA(model)
     println(model)
     # Petri Net & Graph
-    @showtime anet = PNML.SimpleNet(model)
-    if !(PNML.narcs(anet) > 0 && PNML.nplaces(anet) > 0 && PNML.ntransitions(anet) > 0)
+    @showtime anet = PNML.SimpleNet(PNML.Context(), model)
+    if !(PNML.narcs(pnmlnet(anet)) > 0 &&
+         PNML.nplaces(pnmlnet(anet)) > 0 &&
+         PNML.ntransitions(pnmlnet(anet)) > 0)
         println("incomplete graph $(PNML.pid(anet)) not compatible with `exersize_netA`")
         return
     end
