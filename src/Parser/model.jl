@@ -126,7 +126,7 @@ function parse_net(node::XMLNode;
         pntd_override
     end
     # Now we know the PNTD and can parse a net.
-    @debug pntd
+    #@debug pntd
 
     isempty(allchildren(node ,"page")) &&
         throw(PNML.MalformedException("""<net> $netid does not have any <page> child"""))
@@ -284,7 +284,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            labels = add_label(labels, child, pntd) # page unclaimed label
+            labels = add_label(labels, child, pntd, ddict) # page unclaimed label
         end
     end
 
