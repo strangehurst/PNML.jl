@@ -72,6 +72,12 @@ function parse_graphics(node, pntd)
     Graphics{PNML.coordinate_value_type(pntd)}(; pairs(args)...)
 end
 
+"Add XMLNode attribute, value pair to dictionary."
+function kw!(args::AbstractDict, node::XMLNode, key::AbstractString)
+    sym = Symbol(replace(key, "-" => "_")) # make proper identifier for readibility
+    EzXML.haskey(node, key) && (args[sym] = node[key])
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -80,12 +86,13 @@ Return [`Line`](@ref PnmlGraphics.Line).
 function parse_graphics_line(node, pntd)
     check_nodename(node, "line")
     args = Dict()
-    EzXML.haskey(node, "color") && (args[:color] = node["color"])
-    EzXML.haskey(node, "shape") && (args[:shape] = node["shape"])
-    EzXML.haskey(node, "style") && (args[:style] = node["style"])
-    EzXML.haskey(node, "width") && (args[:width] = node["width"])
+    for key in ["color", "shape", "style", "width"]
+        kw!(args, node, key)
+    end
     PnmlGraphics.Line(; pairs(args)...)
 end
+
+
 
 """
 $(TYPEDSIGNATURES)
@@ -113,11 +120,10 @@ Return [`Fill`](@ref PnmlGraphics.Fill)
 """
 function parse_graphics_fill(node, pntd)
     check_nodename(node, "fill")
-    args = Dict()
-    EzXML.haskey(node, "color") && (args[:color] = node["color"])
-    EzXML.haskey(node, "image") &&  (args[:image] = node["image"])
-    EzXML.haskey(node, "gradient-color")    && (args[:gradient_color] = node["gradient-color"])
-    EzXML.haskey(node, "gradient-rotation") && (args[:gradient_rotation] = node["gradient-rotation"])
+    args = Dict{Symbol,Union{String,SubString{String}}}()
+    for key in ["color", "image", "gradient-color", "gradient-rotation"]
+        kw!(args, node, key)
+    end
     PnmlGraphics.Fill(; args...)
 end
 
@@ -129,12 +135,8 @@ Return [`Font`](@ref PnmlGraphics.Font).
 function parse_graphics_font(node, pntd)
     check_nodename(node, "font")
     args = Dict()
-    EzXML.haskey(node, "weight")     && (args[:weight] = node["weight"])
-    EzXML.haskey(node, "style")      && (args[:style] = node["style"])
-    EzXML.haskey(node, "align")      && (args[:align] = node["align"])
-    EzXML.haskey(node, "decoration") && (args[:decoration] = node["decoration"])
-    EzXML.haskey(node, "family")     && (args[:family] = node["family"])
-    EzXML.haskey(node, "rotation")   && (args[:rotation] = node["rotation"])
-    EzXML.haskey(node, "size")       && (args[:size]   = node["size"])
+    for key in ["weight", "style", "align", "decoration", "family", "rotation", "size"]
+         kw!(args, node, key)
+    end
     PnmlGraphics.Font(; pairs(args)...)
 end
