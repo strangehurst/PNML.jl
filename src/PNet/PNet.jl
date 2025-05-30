@@ -19,6 +19,7 @@ using PNML: Context
 
 import PNML: initial_marking, PnmlMultiset, pid, Parser.LabelParser
 import PNML: metagraph
+using PNML: DeclDict
 
 #using ..PnmlIDRegistrys
 using ..PnmlTypeDefs

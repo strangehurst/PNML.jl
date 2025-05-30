@@ -33,6 +33,12 @@ Each keyed by REFID symbols.
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
 
+"Create DeclDict with default minimum content."
+function decldict(idreg::PnmlIDRegistry)
+    dd = DeclDict()
+    return fill_nonhl!(dd; idreg)
+end
+
 _decldict_fields = (:namedsorts, :arbitrarysorts,
                     :namedoperators, :arbitraryoperators,
                     :variabledecls,
@@ -63,19 +69,6 @@ arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
 partitionops(dd::DeclDict)   = dd.partitionops
 "Return dictonary of FEConstant"
 feconstants(dd::DeclDict)    = dd.feconstants
-
-# Default to ScopedValue
-usersorts()      = usersorts(PNML.DECLDICT[])
-useroperators()  = useroperators(PNML.DECLDICT[])
-variabledecls()  = variabledecls(PNML.DECLDICT[])
-namedsorts()     = namedsorts(PNML.DECLDICT[])
-arbitrarysorts() = arbitrarysorts(PNML.DECLDICT[])
-partitionsorts() = partitionsorts(PNML.DECLDICT[])
-namedoperators() = namedoperators(PNML.DECLDICT[])
-arbitraryops()   = arbitraryops(PNML.DECLDICT[])
-partitionops()   = partitionops(PNML.DECLDICT[])
-feconstants()    = feconstants(PNML.DECLDICT[])
-
 
 """
     declarations(dd::DeclDict) -> Iterator
@@ -108,17 +101,6 @@ has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
 has_usersort(dd::DeclDict, id::Symbol)       = haskey(usersorts(dd), id)
 has_useroperator(dd::DeclDict, id::Symbol)   = haskey(usersorts(dd), id)
 
-has_variabledecl(id::Symbol)  = has_variabledecl(PNML.DECLDICT[], id)
-has_namedsort(id::Symbol)     = has_namedsort(PNML.DECLDICT[], id)
-has_arbitrarysort(id::Symbol) = has_arbitrarysort(PNML.DECLDICT[], id)
-has_partitionsort(id::Symbol) = has_partitionsort(PNML.DECLDICT[], id)
-has_namedop(id::Symbol)       = has_namedop(PNML.DECLDICT[], id)
-has_arbitraryop(id::Symbol)   = has_arbitraryop(PNML.DECLDICT[], id)
-has_partitionop(id::Symbol)   = has_partitionop(PNML.DECLDICT[], id)
-has_feconstant(id::Symbol)    = has_feconstant(PNML.DECLDICT[], id)
-has_usersort(id::Symbol)      = has_usersort(PNML.DECLDICT[], id)
-has_useroperator(id::Symbol)  = has_useroperator(PNML.DECLDICT[], id)
-
 "Lookup variable with `id` in DeclDict."
 variable(dd::DeclDict, id::Symbol)       = variabledecls(dd)[id]
 "Lookup namedsort with `id` in DeclDict."
@@ -140,17 +122,6 @@ usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
 "Lookup useroperator with `id` in DeclDict."
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
-variable(id::Symbol)       = variabledecls(PNML.DECLDICT[])[id]
-namedsort(id::Symbol)      = namedsorts(PNML.DECLDICT[])[id]
-arbitrarysort(id::Symbol)  = arbitrarysorts(PNML.DECLDICT[])[id]
-partitionsort(id::Symbol)  = partitionsorts(PNML.DECLDICT[])[id]
-namedop(id::Symbol)        = namedoperators(PNML.DECLDICT[])[id]
-arbitraryop(id::Symbol)    = arbitraryoperators(PNML.DECLDICT[])[id]
-partitionop(id::Symbol)    = partitionops(PNML.DECLDICT[])[id]
-feconstant(id::Symbol)     = feconstants(PNML.DECLDICT[])[id]
-usersort(id::Symbol)       = usersorts(PNML.DECLDICT[])[id]
-useroperator(id::Symbol)   = useroperators(PNML.DECLDICT[])[id]
-
 #TODO :useroperator -> opdictionary -> op  # how type-stable is this?
 "Return tuple of operator dictionary fields in the Declaration Dictionaries."
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
@@ -167,11 +138,9 @@ _sorts(dd) = Iterators.map(Fix1(getfield, dd), _sort_dictionaries())
 Iterate over each operator in the operator subset of declaration dictionaries .
 """
 operators(dd::DeclDict) = Iterators.flatten(Iterators.map(keys, _ops(dd)))
-operators() = operators(PNML.DECLDICT[])
 
 "Does any operator dictionary contain `id`?"
 has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(dd))
-has_operator(id::Symbol) = has_operator(PNML.DECLDICT[], id)
 
 #! Change first to only when de-duplication implementd? as test?
 "Return operator dictionary containing key `id`."
@@ -179,10 +148,9 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
 
 """
     operator(dd::DeclDict, id::Symbol) -> AbstractOperator
-    operator(id::Symbol) -> AbstractOperator
 
 Return operator TermInterface expression for `id`.
-    `toexpr(::OpExpr, varsub) = :(useroperator(REFID)(varsub))`
+    `toexpr(::OpExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
 "Operator Declarations" include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
 with types `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
@@ -195,7 +163,7 @@ These define operators of different types that are placed into separate dictiona
 useroperator(REFID) is used to locate the operator definition, when it is found in `feconstants()`,
 is a callable returning a `FEConstant` literal.
 
-    `toexpr(::FEConstantEx, varsub) = :(useroperator(REFID)(varsub))`
+    `toexpr(::FEConstantEx, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
 The FEConstant operators defined by the declaration do not have a distinct type name in the specification.
 Note that a FEConstant's value in the specification is its identity.
@@ -204,7 +172,7 @@ Output sort of op is FEConstant.
 
 Other `OperatorDeclaration` dictionarys also hold `TermInterface` expressions accessed by
 
-    `toexpr(::PnmlExpr, varsub) = :(useroperator(REFID)(varsub))`
+    `toexpr(::PnmlExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
 where `PnmlExpr` is the `TermInterface` to match `OperatorDeclaration`.
 With output sort to match `OperatorDeclaration` .
@@ -227,7 +195,6 @@ function operator(dd::DeclDict, opid::Symbol)
     end
     return nothing
 end
-operator(id::Symbol) = operator(PNML.DECLDICT[], id)
 
 """
     validate_declarations(dd::DeclDict) -> Bool
@@ -265,11 +232,9 @@ function show_sorts(dd::DeclDict)
 end
 
 """
-    fill_nonhl!() -> Nothing
-    fill_nonhl!(dd::DeclDict) -> Nothing
+    fill_nonhl!(dd::DeclDict; idreg::PnmlIDRegistry) -> DeclDict
 
 Fill a DeclDict with defaults and values needed by non-high-level networks.
-Defaults to filling the scoped value PNML.DECLDICT[].
 
     NamedSort(:integer, "Integer", IntegerSort())
     NamedSort(:natural, "Natural", NaturalSort())
@@ -278,46 +243,42 @@ Defaults to filling the scoped value PNML.DECLDICT[].
     NamedSort(:dot, "Dot", DotSort())
     NamedSort(:bool, "Bool", BoolSort())
 
-    UserSort(:integer)
-    UserSort(:natural)
-    UserSort(:positive)
-    UserSort(:real)
-    UserSort(:dot)
-    UserSort(:bool)
+    UserSort(:integer, ddict)
+    UserSort(:natural, ddict))
+    UserSort(:positive, ddict))
+    UserSort(:real, ddict))
+    UserSort(:dot, ddict))
+    UserSort(:bool, ddict))
 """
-function fill_nonhl! end
-
-fill_nonhl!() = fill_nonhl!(PNML.:DECLDICT[]) # ScopedValue
-function fill_nonhl!(dd::DeclDict)
+function fill_nonhl!(dd::DeclDict; idreg::PnmlIDRegistry)
     for (tag, name, sort) in ((:integer, "Integer", Sorts.IntegerSort()),
                               (:natural, "Natural", Sorts.NaturalSort()),
                               (:positive, "Positive", Sorts.PositiveSort()),
                               (:real, "Real", Sorts.RealSort()),
-                              (:dot, "Dot", Sorts.DotSort()),
+                              (:dot, "Dot", Sorts.DotSort(dd)), #users can override
                               (:bool, "Bool", Sorts.BoolSort()),
                               (:null, "Null", Sorts.NullSort()),
                               )
         #TODO Add list, strings, arbitrarysorts other built-ins.
-        fill_sort_tag!(dd, tag, name, sort)
+        fill_sort_tag!(dd, tag, name, sort; idreg)
     end
+    #@show dd
+    return dd
 end
 
 """
-    fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
+    fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort; idreg)
 
 If not already in the declarations dictionary, create and add a namedsort, usersort duo for `tag`.
 """
-function fill_sort_tag! end
-
-function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort)
+function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort; idreg::PnmlIDRegistry)
     if !has_namedsort(dd, tag) # Do not overwrite existing content.
-        !isregistered(PNML.idregistry[], tag) && register_id!(PNML.idregistry[], tag)
-        namedsorts(dd)[tag] = NamedSort(tag, name, sort)
+        !isregistered(idreg, tag) && register_id!(idreg, tag)
+        namedsorts(dd)[tag] = NamedSort(tag, name, sort, dd)
     end
+
     if !has_usersort(dd, tag) # Do not overwrite existing content.
-        #! DO NOT register REFID! ID owned by NamedSort
-        usersorts(dd)[tag] = UserSort(tag)
+        # DO NOT register REFID! ID owned by NamedSort.
+        usersorts(dd)[tag] = UserSort(tag, dd)
     end
 end
-
-fill_sort_tag!(tag::Symbol, name, sort) = fill_sort_tag!(PNML.DECLDICT[], tag::Symbol, name, sort)

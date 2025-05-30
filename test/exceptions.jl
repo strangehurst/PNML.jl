@@ -17,19 +17,19 @@ end
 
 @testset "missing namespace $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
-        pnmlmodel(Context(), xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
+        pnmlmodel(xml"""<pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 
     @test_logs(match_mode=:any, (:warn, "pnml missing namespace"),
-        pnmlmodel(Context(), xml"""<?xml version="1.0" encoding="UTF-8"?>
+        pnmlmodel(xml"""<?xml version="1.0" encoding="UTF-8"?>
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
 @testset "malformed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
-        pnmlmodel(Context(), xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
+        pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
 
     @test_throws("MalformedException: attribute tool missing",
-        pnmlmodel(Context(), xml"""
+        pnmlmodel(xml"""
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
     <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
     <page id="pg1">
@@ -49,7 +49,7 @@ end
     """))
 
     @test_throws("MalformedException: attribute type missing",
-        pnmlmodel(Context(), xml"""
+        pnmlmodel(xml"""
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
   <net id="4712">
     <page id="3">
@@ -63,29 +63,27 @@ end
 </pnml>
 """))
 
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        @test_throws("MalformedException: attribute type missing",
+    @test_throws("MalformedException: attribute type missing",
              parse_net(xml"""<net id="4712"> </net>"""))
-    end
 end
 
 @testset "missing id $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
+    idreg = PnmlIDRegistry()
+    ddict = PNML.decldict(idreg)
 
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>")
+    @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>"; idreg, ddict)
 
-        pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
-        netdata = PNML.PnmlNetData()
-        netsets = PNML.PnmlNetKeys()
+    pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
+    netdata = PNML.PnmlNetData()
+    netsets = PNML.PnmlNetKeys()
 
-        @test_throws r"^MissingIDException: page" PNML.Parser.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd)
-        @test_throws r"^MissingIDException: place" PNML.Parser.parse_place(xml"<place></place>", pntd)
-        @test_throws r"^MissingIDException: transition" PNML.Parser.parse_transition(xml"<transition></transition>", pntd)
-        @test_throws r"^MissingIDException: arc" PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData())
-        @test_throws r"^MissingIDException: referencePlace" PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd)
-        @test_throws r"^MissingIDException: referenceTransition" PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd)
+    @with PNML.idregistry => idreg begin
+    @test_throws r"^MissingIDException: page" PNML.Parser.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd; ddict)
+    @test_throws r"^MissingIDException: place" PNML.Parser.parse_place(xml"<place></place>", pntd; ddict)
+    @test_throws r"^MissingIDException: transition" PNML.Parser.parse_transition(xml"<transition></transition>", pntd; ddict)
+    @test_throws r"^MissingIDException: arc" PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData(); ddict)
+    @test_throws r"^MissingIDException: referencePlace" PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd; ddict)
+    @test_throws r"^MissingIDException: referenceTransition" PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd; ddict)
     end
 end
 

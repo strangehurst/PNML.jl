@@ -84,19 +84,24 @@ DocTestSetup = quote
     using PNML: SortType, UserSort, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
+    using PNML.PnmlIDRegistrys
  end
 ```
 
 ```jldoctest
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(PnmlCoreNet())
-Condition("", BooleanEx(PNML.BooleanConstant(true)))
+julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), PnmlCoreNet())
+Condition("", BooleanEx(BooleanConstant(true)))
 
 julia> c()
 true
 
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(ContinuousNet())
-Condition("", BooleanEx(PNML.BooleanConstant(true)))
+julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), ContinuousNet())
+Condition("", BooleanEx(BooleanConstant(true)))
 
-julia> c = @with PNML.DECLDICT => PNML.DeclDict() PNML.Labels.default_condition(HLCoreNet())
-Condition("", BooleanEx(PNML.BooleanConstant(true)))
+julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), HLCoreNet())
+Condition("", BooleanEx(BooleanConstant(true)))
+```
+
+```@meta
+DocTestSetup = nothing
 ```

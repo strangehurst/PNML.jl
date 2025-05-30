@@ -11,16 +11,21 @@ See [`PTNet`](@ref), [`ContinuousNet`](@ref), [`HLMarking`](@ref).
 Is a functor that returns the `value`.
 ```
 """
-struct Marking{T <: PnmlExpr} <: Annotation # TODO TermInterface
-    #! hl adds text here
+struct Marking{T <: PnmlExpr} <: Annotation
+    #! HLMarking has text here #todo support for PTNet
     term::T #! expression
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
     tools::Maybe{Vector{ToolInfo}}
+    declarationdicts::DeclDict
 end
-# Allow any Number subtype, only a few concrete subtypes are expected.
-Marking(m::Number) = Marking(PNML.NumberEx(m))
-Marking(nx::PNML.NumberEx) = Marking(#=text is nothing,=# nx, nothing, nothing)
 
+# Allow any Number subtype, only a few concrete subtypes are expected.
+function Marking(m::Number, ddict::DeclDict)
+    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::UserSort, m), ddict)
+end
+Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, ddict)
+
+decldict(marking::Marking) = marking.declarationdicts
 term(marking::Marking) = marking.term
 
 # 1'value where value isa eltype(sortof(marking))
@@ -49,28 +54,30 @@ The result must be a ground term, and is used to update a marking.
 For non-High,level nets, the inscrition TermInterface expression evaluates to a Number
 and the condition is a boolean expression (default true).
 """
-(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple())) #~ same for HL #! Combine
+(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark))) #~ same for HL? #TODO! Combine
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
 # These have basis == sortref.
-basis(marking::Marking)   = sortref(term(marking))::UserSort
-sortref(marking::Marking) = sortref(term(marking))::UserSort
-sortof(marking::Marking)  = sortdefinition(namedsort(sortref(marking)))::NumberSort
+basis(m::Marking)   = sortref(term(m))::UserSort
+sortref(m::Marking) = _sortref(decldict(m), term(m))::UserSort
+sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort #sortdefinition(namedsorts(decldict(m))[sortref(m)])::NumberSort
 
 # These are some <:Number that have sorts (usersort, namedsort duos).
-sortref(::Type{<:Int64})   = usersort(:integer)
-sortref(::Type{<:Integer}) = usersort(:integer)
-sortref(::Type{<:Float64}) = usersort(:real)
-sortref(::Int64)   = usersort(:integer)
-sortref(::Integer) = usersort(:integer)
-sortref(::Float64) = usersort(:real)
+_sortref(dd::DeclDict, ::Type{<:Int64})   = usersorts(dd)[:integer]
+_sortref(dd::DeclDict, ::Type{<:Integer}) = usersorts(dd)[:integer]
+_sortref(dd::DeclDict, ::Type{<:Float64}) = usersorts(dd)[:real]
+_sortref(dd::DeclDict, ::Int64)   = usersorts(dd)[:integer]
+_sortref(dd::DeclDict, ::Integer) = usersorts(dd)[:integer]
+_sortref(dd::DeclDict, ::Float64) = usersorts(dd)[:real]
+_sortref(dd::DeclDict, x::Any) = sortref(x)
 
-sortof(::Type{<:Int64})   = sortdefinition(namedsort(:integer))::IntegerSort
-sortof(::Type{<:Integer}) = sortdefinition(namedsort(:integer))::IntegerSort
-sortof(::Type{<:Float64}) = sortdefinition(namedsort(:real))::RealSort
-sortof(::Int64)   = sortdefinition(namedsort(:integer))::IntegerSort
-sortof(::Integer) = sortdefinition(namedsort(:integer))::IntegerSort
-sortof(::Float64) = sortdefinition(namedsort(:real))::RealSort
+_sortof(dd::DeclDict, ::Type{<:Int64})   = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
+_sortof(dd::DeclDict, ::Type{<:Integer}) = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
+_sortof(dd::DeclDict, ::Type{<:Float64}) = sortdefinition(namedsorts(dd)[:real])::RealSort
+_sortof(dd::DeclDict, ::Int64)   = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
+_sortof(dd::DeclDict, ::Integer) = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
+_sortof(dd::DeclDict, ::Float64) = sortdefinition(namedsorts(dd)[:real])::RealSort
+_sortof(dd::DeclDict, x::Any) = sortof(x)
 
 function Base.show(io::IO, ptm::Marking)
     print(io, PNML.indent(io), "Marking(")
@@ -111,9 +118,9 @@ Implement the Sort interface.
 # Examples
 
 ```julia
-; setup=:(using PNML; using PNML: HLMarking, NaturalSort; PNML.fill_nonhl!(PNML.DECLDICT[]))
-julia> m = HLMarking(PNML.pnmlmultiset(usersort(:integer), 1))
-HLMarking(Bag(usersort(:integer), 1))
+; setup=:(using PNML; using PNML: HLMarking, NaturalSort, ddict)
+julia> m = HLMarking(PNML.pnmlmultiset(usersort(integer), 1; ddict))
+HLMarking(Bag(usersort(ddict, :integer), 1))
 
 julia> m()
 1
@@ -146,29 +153,32 @@ mutable struct HLMarking{T<:PnmlExpr} <: HLAnnotation
 
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
+    declarationdicts::DeclDict
 end
-HLMarking(t::PnmlExpr) = HLMarking(nothing, t)
-HLMarking(s::Maybe{AbstractString}, t::PnmlExpr) = HLMarking(s, t, nothing, nothing)
+#HLMarking(t::PnmlExpr, ddict) = HLMarking(nothing, t, ddict)
+HLMarking(s::Maybe{AbstractString}, t::PnmlExpr, ddict) = HLMarking(s, t, nothing, nothing, ddict)
 
 "term(marking) -> PnmlExpr"
 term(marking::HLMarking) = marking.term
+
+decldict(marking::HLMarking) = marking.declarationdicts
 
 """
     (hlm::HLMarking)() -> PnmlMultieset
 Evaluate a [`HLMarking`](@ref) term.
 """
 (hlm::HLMarking)() = begin #varsub::NamedTuple=NamedTuple()) = begin
-    #@show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub)
-    #if toexpr(term(hlm)::PnmlExpr, varsub) isa Tuple
+    #@show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm))
+    #if toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm)) isa Tuple
     #println("(hlm::HLMarking) stacktrace");  foreach(println, Base.StackTraces.stacktrace())
     #end
-    eval(toexpr(term(hlm)::PnmlExpr, NamedTuple())) # ground term = no variable substitutions.
+    eval(toexpr(term(hlm)::PnmlExpr, NamedTuple(), decldict(hlm))) # ground term = no variable substitutions.
 end
 
 # Sort interface
-basis(marking::HLMarking) = basis(term(marking))::UserSort
-sortref(marking::HLMarking) = sortref(term(marking))::UserSort
-sortof(marking::HLMarking) = sortdefinition(namedsort(sortref(marking)))::AbstractSort # value <: PnmlMultiset
+basis(marking::HLMarking) = basis(term(marking), decldict(marking))::UserSort
+sortref(marking::HLMarking) = _sortref(decldict(marking), term(marking))::UserSort
+sortof(m::HLMarking) = sortdefinition(namedsort(decldict(m), sortref(m)))::AbstractSort
 
 function Base.show(io::IO, hlm::HLMarking)
     print(io, PNML.indent(io), "HLMarking(")
@@ -199,7 +209,7 @@ PNML.marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
 #marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
 
 #~ Note the close relation of marking_value_type to inscription_value_type.
-#~ Inscription values are non-zero while marking values may be zero.
+#~ Inscription values are non-zero while marking values may be zdecldict(ero.
 
 #--------------------------------------------------------------------------------------
 # Basis sort can be, and are, restricted by/on PnmlType in the ISO standard.
@@ -231,15 +241,15 @@ Return default marking value based on `PnmlType`. Has meaning of empty, as in `z
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default_marking(t::PnmlType)
-    Marking(zero(PNML.marking_value_type(t))) #! Will not be a PnmlMultiset.
+function default_marking(ddict, t::PnmlType)
+    Marking(zero(PNML.marking_value_type(t)), ddict) #! Will not be a PnmlMultiset.
 end
-default_marking(::T) where {T<:AbstractHLCore} =
+default_marking(ddict, ::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
-function default_hlmarking(::T, placetype::SortType) where {T<:AbstractHLCore}
+function default_hlmarking(ddict, ::T, placetype::SortType) where {T<:AbstractHLCore}
     el = def_sort_element(placetype)
-    HLMarking(PNML.Bag(sortref(placetype), el, 0)) # empty multiset, el used for its type
+    HLMarking("default", PNML.Bag(sortref(placetype), el, 0), ddict) # empty multiset, el used for its type
 end
 
 # 2024-08-07 encountered the need to handle a <numberof> as an expression (NamedOpertor)

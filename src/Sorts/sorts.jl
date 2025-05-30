@@ -2,7 +2,7 @@ Base.eltype(::Type{<:AbstractSort}) = Int
 
 """
 Tuple of sort IDs that are considered builtin.
-There will be a version defined for each in the `DECLDICT[]`.
+There will be a version defined for each in the `DeclDict`.
 Users may (re)define these.
 """
 builtin_sorts() = (:integer, :natural, :positive, :real, :dot, :bool, :null,)
@@ -56,11 +56,13 @@ Holds a reference id (REFID) to a subtype of SortDeclaration.
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::REFID #TODO validate as a NamedSort REFID
+    declarationdicts::DeclDict
 end
 refid(us::UserSort) = us.declaration
+decldict(us::UserSort) = us.declarationdicts
 
 "Get NamedSort from UserSort REFID"
-namedsort(us::UserSort) = namedsort(refid(us)) # usersort -> namedsort
+namedsort(us::UserSort) = namedsort(decldict(us), refid(us)) # usersort -> namedsort
 sortref(us::UserSort) = identity(us)::UserSort
 sortof(us::UserSort) = sortdefinition(namedsort(us))
 Base.eltype(us::UserSort) = eltype(sortof(us))
@@ -69,7 +71,11 @@ Base.eltype(us::UserSort) = eltype(sortof(us))
 sortelements(us::UserSort) = sortelements(sortdefinition(namedsort(us)))
 name(us::UserSort) = name(namedsort(us))
 
-isproductsort(us::UserSort) = sortdefinition(namedsort(us)) isa ProductSort
+function Base.show(io::IO, us::UserSort)
+    print(io, PNML.indent(io), "UserSort(", repr(refid(us)), ")")
+end
+
+isproductsort(us::UserSort) = isa(sortdefinition(namedsort(us)), ProductSort)
 
 """
 $(TYPEDEF)
@@ -78,17 +84,25 @@ Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort <: AbstractSort
     basis::UserSort
-    function MultisetSort(b::UserSort)
-        if isa(sortdefinition(namedsort(b)), MultisetSort)
+    declarationdicts::PNML.DeclDict
+
+    function MultisetSort(b::UserSort, ddict)
+        if isa(sortdefinition(namedsort(ddict, refid(b))), MultisetSort)
             throw(PNML.MalformedException("MultisetSort basis cannot be MultisetSort"))
         else
-            new(b)
+            new(b, ddict)
         end
     end
 end
+
+decldict(ms::MultisetSort) = ms.declarationdicts
 sortref(ms::MultisetSort) = identity(ms.basis)::UserSort # 2024-10-09 make be a usersort
-sortof(ms::MultisetSort) = sortdefinition(namedsort(basis(ms)::UserSort)) #TODO abstract
+sortof(ms::MultisetSort) = sortdefinition(namedsort(decldict(ms), basis(ms)::UserSort)) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
+
+function Base.show(io::IO, us::MultisetSort)
+    print(io, PNML.indent(io), "MultisetSort(", repr(basis(us)), ")")
+end
 
 """
 $(TYPEDEF)
@@ -100,7 +114,10 @@ Where sorts are the syntax for color classes and ProduceSort is the color domain
 """
 @auto_hash_equals struct ProductSort{N} <: AbstractSort
     ae::NTuple{N,REFID}
+    declarationdicts::DeclDict
 end
+
+decldict(ps::ProductSort) = ps.declarationdicts
 isproductsort(::ProductSort) = true
 isproductsort(::Any) = false
 
@@ -110,7 +127,7 @@ Return sorts that are in the product.
 """
 sorts(ps::ProductSort) = ps.ae
 
-sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ usersort).(sorts(ps))...)
+sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ Fix1(usersort, decldict(ps))).(sorts(ps))...)
 
 sortof(ps::ProductSort) = begin
     println("sortof(::ProductSort ", s) #! bringup debug
@@ -119,4 +136,8 @@ sortof(ps::ProductSort) = begin
     else
         (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
     end
+end
+
+function Base.show(io::IO, ps::ProductSort)
+    print(io, PNML.indent(io), "MultisetSort(", ps.ae, ")")
 end

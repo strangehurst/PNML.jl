@@ -11,7 +11,8 @@ toolname, version tool specifics.
 @auto_hash_equals struct ToolInfo{T}
     toolname::String
     version::String
-    infos::Vector{T}
+    infos::Vector{T} # Expect content::Vector{AnyElement}
+    declarationdicts::DeclDict
 end
 
 "Name of tool to for this tool specific information element."
@@ -21,7 +22,7 @@ PNML.name(ti::ToolInfo) = ti.toolname
 version(ti::ToolInfo) = ti.version
 
 "Content of a ToolInfo."
-infos(ti::ToolInfo{T}) where T  = ti.infos::Vector{T}
+infos(ti::ToolInfo{T}) where T  = ti.infos
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")
@@ -58,6 +59,7 @@ See `toolspecific_content_fallback(node, pntd)`.
     toolname::String
     version::String
     func::Base.Callable
+    #todo! declarationdicts::DeclDict
 end
 
 "Name of tool."
@@ -180,11 +182,12 @@ Any info for this tool will have deeper validation implemented.
 function validate_toolinfos(tools)
     isnothing(tools) && return true
     for tool in tools
-        @show tool #todo more tests than this.
+        @assert tool isa ToolInfo #todo more tests than this.
     end
     return true
 end
-function list_toolinfos(tools)   isnothing(tools) && return true
+function list_toolinfos(tools)
+    isnothing(tools) && return true
     if isnothing(tools)
         for tool in tools
             @show tool

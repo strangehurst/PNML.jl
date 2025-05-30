@@ -24,7 +24,7 @@ const pnmldoc = xml"""<?xml version="1.0"?>
 
 @testset "parse node level" begin
     # Do a full parse and maybe print the generated data structure.
-    pnml_ir = pnmlmodel(Context(), pnmldoc)
+    pnml_ir = pnmlmodel(pnmldoc)
     @test pnml_ir isa PnmlModel
 
     for net in nets(pnml_ir)
@@ -32,7 +32,7 @@ const pnmldoc = xml"""<?xml version="1.0"?>
         #println()
         #@show pid(net)::Symbol
         #@show net
-        map(println, PNML.declarations(PNML.decldict(net))) # Iterate over all declarations
+        #map(println, PNML.declarations(PNML.decldict(net))) # Iterate over all declarations
 
         for page in pages(net)
             @test page isa Page
@@ -65,15 +65,15 @@ println("AirplaneLD-col-0010.pnml")
 println("-----------------------------------------\n")
 @testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
     println(testfile); flush(stdout)
-    model = pnmlmodel(Context(), testfile)::PnmlModel
-    #!model = @test_logs(match_mode=:all, pnmlmodel(Context(), testfile))
+    model = pnmlmodel(testfile)::PnmlModel
+    #!model = @test_logs(match_mode=:all, pnmlmodel(testfile))
 
     netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
 
     net = first(netvec)::PnmlNet{<:SymmetricNet}
     # Need to set scoped value PNML.idregistry to value for net
-    with(PNML.idregistry => PNML.registry_of(model, pid(net))) do
+    with(PNML.idregistry => PNML.registry_of(net)) do
         @test PNML.verify(net; verbose=true)
 
         @test pages(net) isa Base.Iterators.Filter
@@ -100,7 +100,7 @@ println("-----------------------------------------\n")
 
         PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
 
-        @test_call target_modules=target_modules pnmlmodel(Context(), testfile)
+        @test_call target_modules=target_modules pnmlmodel(testfile)
         @test_call nets(model)
 
         @test !isempty(repr(PNML.netdata(net)))
@@ -119,8 +119,8 @@ end
 #     # model = @test_logs(match_mode=:any,
 #     #     (:warn, "ignoring unexpected child of <condition>: 'name'"),
 #     #     (:warn, "parse unknown declaration: tag = unknowendecl, id = unk1, name = u"),
-#     #     pnmlmodel(Context(), fname)::PnmlModel)
-#     model = pnmlmodel(Context(), fname)::PnmlModel
+#     #     pnmlmodel(fname)::PnmlModel)
+#     model = pnmlmodel(fname)::PnmlModel
 #     # println("----"^10); @show model; println("----"^10)
 #     #!@show model
 #     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
@@ -130,7 +130,6 @@ end
 
 #     for n in PNML.nets(model)
 #         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
-#             #!PNML.fill_nonhl!(PNML.DECLDICT[])
 #             #println("-----------------------------------------")
 #             @test PNML.verify(n; verbose=false)
 #             PNML.flatten_pages!(n; verbose=false)

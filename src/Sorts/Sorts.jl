@@ -8,6 +8,8 @@ import Multisets: Multisets, Multiset
 using Logging, LoggingExtras
 
 using PNML
+using PNML: DeclDict
+
 import PNML: sortof, sortref, sortelements, sortdefinition, basis
 import PNML: value, term, tag, pid, refid, usersort, namedsort
 

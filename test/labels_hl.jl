@@ -5,20 +5,20 @@ using XMLDict: XMLDict
 
 @testset "type $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
     # Add usersort, namedsort duo as test context.
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!()
-        PNML.namedsorts()[:N2] = PNML.NamedSort(:N2, "N2", DotSort())
-        PNML.usersorts()[:N2]  = PNML.UserSort(:N2)
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        PNML.namedsorts(ddict)[:N2] = PNML.NamedSort(:N2, "N2", DotSort(ddict), ddict)
+        PNML.usersorts(ddict)[:N2]  = PNML.UserSort(:N2, ddict)
         n1 = xml"""
 <type>
     <text>N2</text>
     <structure> <usersort declaration="N2"/> </structure>
 </type>
     """
-        typ = PNML.Parser.parse_sorttype(n1, pntd)::SortType
+        typ = PNML.Parser.parse_sorttype(n1, pntd; ddict)::SortType
         @test text(typ) == "N2"
         @test PNML.sortref(typ) isa PNML.UserSort # wrapping DotSort
-        @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?
+        @test PNML.sortof(typ) == DotSort(ddict) #! does the name of a sort affect equal Sorts?
         @test PNML.has_graphics(typ) == false
         @test PNML.has_labels(typ) == false
         @test !occursin("Graphics", sprint(show, typ))
@@ -44,13 +44,13 @@ end
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
 
-        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!()
+        @with PNML.idregistry => PnmlIDRegistry() begin
+            ddict = PNML.decldict(PNML.idregistry[])
 
             # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-            placetype = SortType("XXX", PNML.usersort(:dot))
+            placetype = SortType("XXX", PNML.usersort(ddict, :dot), ddict)
 
-            mark = parse_hlinitialMarking(node, placetype, pntd)
+            mark = parse_hlinitialMarking(node, placetype, pntd; ddict)
             #@show mark
             @test mark isa PNML.marking_type(pntd)
 
@@ -58,15 +58,16 @@ end
             @test text(mark) == "3`dot"
             #println(); flush(stdout)
             #@show UserSort(:dot) DotConstant
-            @show PNML.pnmlmultiset(UserSort(:dot), DotConstant())
-            #PnmlMultiset{(:dot,), DotConstant}(DotConstant())
+            #@show PNML.pnmlmultiset(UserSort(:dot, ddict), DotConstant(ddict); ddict)
+            #PnmlMultiset{(:dot,), DotConstant}(DotConstant(ddict))
 
             @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
             @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-            @test eval(PNML.toexpr(term(mark), NamedTuple())) isa PNML.PnmlMultiset
+            #@show PNML.toexpr(term(mark), NamedTuple(), ddict)
+            @test eval(PNML.toexpr(term(mark), NamedTuple(), ddict)) isa PNML.PnmlMultiset
             # @test arity(markterm) == 2
             # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
-            # @test inputs(markterm)[2] == DotConstant()
+            # @test inputs(markterm)[2] == DotConstant(ddict)
 
             #TODO HL implementation not complete:
             #TODO  evaluate the HL expression, check place sorttype
@@ -84,11 +85,10 @@ end
     #         </structure>
     #     </hlinitialMarking>
     #     """
-    #     @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-    #         PNML.fill_nonhl!()
+    #     @with PNML.idregistry => PnmlIDRegistry() begin
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
-    #         PNML.usersorts()[:uop] = UserSort(:dot)
-    #         placetype = SortType("YYY", PNML.usersort(:uop))
+    #         PNML.usersorts(ddict)[:uop] = UserSort(:dot)
+    #         placetype = SortType("YYY", PNML.usersort(ddict, :uop))
     #         mark = parse_hlinitialMarking(node, placetype, pntd)
     #         @test mark isa HLMarking
     #     end
@@ -119,10 +119,10 @@ end
             </structure>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!()
-            placetype = SortType("dot sorttype", PNML.usersort(:dot))
-            mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd)
+        @with PNML.idregistry => PnmlIDRegistry() begin
+            ddict = PNML.decldict(PNML.idregistry[])
+            placetype = SortType("dot sorttype", PNML.usersort(ddict, :dot), ddict)
+            mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; ddict)
             #TODO add tests
         end
     end
@@ -141,16 +141,17 @@ end
             </structure>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!()
-            placetype = SortType("positive sorttype", PNML.usersort(:positive))
-            mark = parse_hlinitialMarking(node, placetype, pntd)
-            val = eval(toexpr(term(mark), NamedTuple()))::PNML.PnmlMultiset{<:Any,<:Any}
+        @with PNML.idregistry => PnmlIDRegistry() begin
+            ddict = PNML.decldict(PNML.idregistry[])
+            placetype = SortType("positive sorttype", PNML.usersort(ddict, :positive), ddict)
+            mark = parse_hlinitialMarking(node, placetype, pntd; ddict)
+            val = eval(toexpr(term(mark), NamedTuple(), ddict))::PNML.PnmlMultiset{<:Any,<:Any}
             # @show PNML.basis(val) # isa UserSort
-            #@show val NumberConstant{Int64}(8, usersort(:positive))()
-            @test PNML.multiplicity(val, NumberConstant{Int64}(8, PNML.usersort(:positive))()) == 1
+            #@show val NumberConstant(8, PNML.usersort(ddict, :positive), ddict)()
+            #@show PNML.usersort(ddict, :positive)
+            @test PNML.multiplicity(val, NumberConstant(8, PNML.usersort(ddict, :positive),ddict)()) == 1
             @test PNML.sortof(PNML.basis(val)::UserSort) === PNML.PositiveSort()
-            @test NumberConstant{Int64}(8, PNML.usersort(:positive))() in multiset(val)
+            @test NumberConstant(8, PNML.usersort(ddict, :positive), ddict)() in multiset(val)
         end
      end
 
@@ -160,10 +161,10 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!()
-            placetype = SortType("testdot", PNML.usersort(:dot))
-            mark = parse_hlinitialMarking(node, placetype, pntd)
+        @with PNML.idregistry => PnmlIDRegistry() begin
+            ddict = PNML.decldict(PNML.idregistry[])
+            placetype = SortType("testdot", PNML.usersort(ddict, :dot), ddict)
+            mark = parse_hlinitialMarking(node, placetype, pntd; ddict)
         end
     end
 
@@ -197,8 +198,6 @@ end
 #     </hlinitialMarking>
 #  """
 
-#     empty!(PNML.TOPDECLDICTIONARY)
-#     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
 #     dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
 #     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort())
 #     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort())
@@ -264,14 +263,11 @@ end
 #         </unknown>
 #       </hlinscription>
 #     """
-#     empty!(PNML.TOPDECLDICTIONARY)
-#     dd = PNML.TOPDECLDICTIONARY[:NN] = PNML.DeclDict()
 #     dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
 #     dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
 #     @show placetype = SortType("XXX", UserSort(:dot))
 
 
-#     #@show PNML.TOPDECLDICTIONARY
 #     insc = @test_logs(match_mode=:all,
 #             (:warn,"ignoring unexpected child of <hlinscription>: 'unknown'"),
 #             PNML.Parser.parse_hlinscription(n1, pntd)
@@ -332,7 +328,6 @@ end
 
 
 
-#! Setting up TOPDECLDICTIONARY is not worth the hassel
 # # Conditions are for everybody, but we cannot (feasibily) test high-level
 # @testset "condition $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
 #     n1 = xml"""
@@ -367,7 +362,6 @@ end
 #         # dd.variabledecls[:pt] = PNML.VariableDeclaration(:pt, "", DotSort())
 #         # dd.namedoperators[:cts] = PNML.NamedOperator(:cts, "")
 #         # dd.namedoperators[:ack] = PNML.NamedOperator(:ack, "")
-#         # PNML.TOPDECLDICTIONARY[:NN] = dd
 
 #         cond = @test_logs(match_mode=:all,
 #                 (:warn, "ignoring unexpected child of <condition>: 'unknown'"),

@@ -7,13 +7,13 @@ using PNML, ..TestUtils, JET, XMLDict
         <initialMarking> <text>100</text> </initialMarking>
         </place>
     """
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        placetype = SortType("XXX", UserSort(:integer))
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        placetype = SortType("XXX", UserSort(:integer, ddict), nothing, nothing, ddict)
 
-        n  = parse_place(node, pntd)::Place
-        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd)
-        @test_call target_modules=target_modules parse_place(node, pntd)
+        n  = parse_place(node, pntd; ddict)::Place
+        @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; ddict)
+        @test_call target_modules=target_modules parse_place(node, pntd; ddict)
         @test @inferred(pid(n)) === :place1
         @test has_name(n)
         @test @inferred(name(n)) == "with text"
@@ -29,10 +29,10 @@ end
         <hlinitialMarking> <text>100</text> </hlinitialMarking>
         </place>
     """
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        n  = parse_place(node, pntd)::Place
-        @test_call target_modules=target_modules parse_place(node, pntd)
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        n = parse_place(node, pntd; ddict)::Place
+        @test_call target_modules=target_modules parse_place(node, pntd; ddict)
 
         @test pid(n) === :place1
         @test @inferred(pid(n)) === :place1
@@ -52,23 +52,24 @@ end
         </condition>
       </transition>
     """
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        n = @inferred Transition parse_transition(node, PnmlCoreNet())
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        n = @inferred Transition parse_transition(node, PnmlCoreNet(); ddict)
         @test n isa Transition
         @test pid(n) === :transition1
         @test has_name(n)
         @test name(n) == "Some transition"
+        #@show condition(n)()
         @test condition(n)() isa Bool
 
         node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
-        @test_throws PNML.MalformedException parse_transition(node, pntd)
+        @test_throws PNML.MalformedException parse_transition(node, pntd; ddict)
 
         node = xml"""<transition id ="t2"> <condition/> </transition>"""
-        @test_throws Exception parse_transition(node, pntd)
+        @test_throws Exception parse_transition(node, pntd; ddict)
 
         node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
+        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd; ddict)
 
         node = xml"""<transition id ="t4">
             <condition>
@@ -76,7 +77,7 @@ end
                 <structure> true </structure>
             </condition>
         </transition>"""
-        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd)
+        @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd; ddict)
 
         node = xml"""<transition id ="t5">
             <condition>
@@ -84,7 +85,7 @@ end
                 <structure> <booleanconstant value="true"/> </structure>
             </condition>
         </transition>"""
-        t = parse_transition(node, pntd)
+        t = parse_transition(node, pntd; ddict)
         @test t isa Transition
         @test condition(t)() === true
     end
@@ -93,9 +94,9 @@ end
 println("\n==============================================================================")
 
 @testset "delay label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-   @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-         # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
+   @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
         # This bit may be from the pre-standard era.
         # <ci> is a variable(constant) like pi, infinity.
         # <cn> is a number (real)
@@ -108,7 +109,7 @@ println("\n=====================================================================
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd)::Transition
+        t = parse_transition(node, pntd; ddict)::Transition
         @test has_label(labels(t), "delay")
         #@show PNML.get_label(labels(t), "delay") #! debug
         #@show PNML.labelof(t, "delay") #! debug
@@ -125,7 +126,7 @@ println("\n=====================================================================
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd)::Transition
+        t = parse_transition(node, pntd; ddict)::Transition
         @test PNML.delay_value(t) isa Tuple
         #@show PNML.labelof(t, "delay") #! debug
         #println()
@@ -139,7 +140,7 @@ println("\n=====================================================================
                 </interval>
             </delay>
         </transition>"""
-        t = parse_transition(node, pntd)::Transition
+        t = parse_transition(node, pntd; ddict)::Transition
         @test PNML.delay_value(t) isa Tuple
         #@show PNML.labelof(t, "delay") #! debug
         #println()
@@ -199,13 +200,13 @@ end
         </unknown>
     </referenceTransition>
     """
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
         n = if PNML.CONFIG[].warn_on_unclaimed == true
             @test_logs((:warn, "^ignoring unexpected child"),
-                    parse_refTransition(node, pntd)::RefTransition)
+                    parse_refTransition(node, pntd; ddict)::RefTransition)
         else
-            parse_refTransition(node, pntd)::RefTransition
+            parse_refTransition(node, pntd; ddict)::RefTransition
         end
         @test pid(n) === :rt1
         @test PNML.refid(n) === :t1
@@ -241,13 +242,13 @@ end
     </referencePlace>""", id="rp1", ref="Sync1")
 
     @testset "referencePlaces" for s in [n1, n2]
-        @with PNML.idregistry => PnmlIDRegistry()  PNML.DECLDICT => PNML.DeclDict() begin
-            PNML.fill_nonhl!(PNML.DECLDICT[])
+        @with PNML.idregistry => PnmlIDRegistry() begin
+            ddict = PNML.decldict(PNML.idregistry[])
             n = if PNML.CONFIG[].warn_on_unclaimed
                 @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                        parse_refPlace(s.node, ContinuousNet())::RefPlace)
+                        parse_refPlace(s.node, ContinuousNet(); ddict)::RefPlace)
             else
-                parse_refPlace(s.node, ContinuousNet())::RefPlace
+                parse_refPlace(s.node, ContinuousNet(); ddict)::RefPlace
            end
             @test pid(n) === Symbol(s.id)
 

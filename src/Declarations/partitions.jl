@@ -70,6 +70,7 @@ struct PartitionElement <: OperatorDeclaration
     name::Union{String,SubString{String}}
     terms::Vector{REFID} # 1 or more ref to feconstant in partitions's referenced sort.
     partition::REFID
+    declarationdicts::DeclDict
     #todo verify terms are in parent partitions's referenced sort
 end
 
@@ -82,7 +83,6 @@ function Base.show(io::IO, pe::PartitionElement)
     show(io,  pe.terms)
     print(io, ", ",  repr(pe.partition), ")")
  end
-
 
 """
 $(TYPEDEF)
@@ -99,20 +99,21 @@ struct PartitionSort <: SortDeclaration
     name::Union{String, SubString{String}}
     def::REFID # Like a UserSort, REFID refers to a sort declaration (NamedSort) that wraps an EnumerationSort (FiniteEnumeration, CyclicEnumeration, FiniteIntRange)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
+    declarationdicts::DeclDict
 
-    function PartitionSort(i,n,d,e)
-        PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
-        # Look at what is wrapped.
-        @assert PNML.tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
-        new(i,n,d,e)
+    function PartitionSort(i, n, d, e, dd)
+        # PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
+        # # Look at what is wrapped.
+        # @assert PNML.tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
+        new(i, n, d, e, dd)
     end
 end
-PartitionSort() = PartitionSort(:partition, "Empty Partition", :dot,  PartitionElement[])
-#! :dot is a stand-in, it will not work well, but it is a "finite sort".
+
+decldict(p::PartitionSort) = p.declarationdicts
 
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(partition::PartitionSort) = sortdefinition(PNML.namedsort(partition.def))
-sortelements(partition::PartitionSort) = partition.elements
+sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(decldict(p), p.def))
+sortelements(p::PartitionSort) = p.elements
 
 # TODO Add Partition/PartitionElement methods here
 # list PartitionElement ids & names

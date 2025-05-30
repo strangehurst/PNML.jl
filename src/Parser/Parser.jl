@@ -23,14 +23,14 @@ using PNML
 # Methods implemented in this module.
 import PNML: adjacent_place
 
-using PNML: Maybe, CONFIG, DECLDICT, idregistry, AnyElement
+using PNML: Maybe, CONFIG, idregistry, AnyElement
 using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 using PNML: Context
-using PNML: usersort, sortof, basis, pid
+using PNML: usersort, usersorts, pid
 
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
 

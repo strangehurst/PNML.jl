@@ -6,22 +6,21 @@ Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 """
-function parse_toolspecific(node, pntd;
+function parse_toolspecific(node, pntd; ddict::DeclDict,
             tp_vec = [ToolParser( "org.pnml.tool", "1.0", tokengraphics_content)])
     check_nodename(node, "toolspecific")
     tool    = attribute(node, "tool")
     version = attribute(node, "version")
 
     # Find parser for tool, version
-    #@show tp_vec
     tool_parser = Labels.get_toolinfo(tp_vec, tool, version)
     if !isnothing(tool_parser)
         tool_parser = tool_parser.func
     end
     toolspecific_content = something(tool_parser, toolspecific_content_fallback)
 
-    content = toolspecific_content(node, pntd)
-    return Labels.ToolInfo(tool, version, content)
+    content = toolspecific_content(node, pntd) # Run ToolParser callable.
+    return Labels.ToolInfo(tool, version, content, ddict)
 end
 
 """

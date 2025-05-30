@@ -29,21 +29,20 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=target_modules pnmlmodel(Context(), xmlroot(str1))
-    model = pnmlmodel(Context(), xmlroot(str1))::PnmlModel #
+    @test_call target_modules=target_modules pnmlmodel(xmlroot(str1))
+    model = pnmlmodel(xmlroot(str1))::PnmlModel #
     net0 = @inferred PnmlNet first(nets(model))
 
-    simp1 = @inferred SimpleNet SimpleNet(Context(), model)
-    simp  = @inferred SimpleNet SimpleNet(Context(), net0)
+    simp1 = @inferred SimpleNet SimpleNet(model)
+    simp  = @inferred SimpleNet SimpleNet(net0)
 
-    @test_opt target_modules=(@__MODULE__,) SimpleNet(Context(), net0)
-    @test_call broken=false SimpleNet(Context(), net0)
+    @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
+    @test_call broken=false SimpleNet(net0)
 
-    @test_opt target_modules=(@__MODULE__,) SimpleNet(Context(), model)
-    @test_call broken=false SimpleNet(Context(), model)
+    @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
+    @test_call broken=false SimpleNet(model)
 
-    @show
-    for accessor in [PNML.pid,
+     for accessor in [PNML.pid,
                      PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
                      PNML.reftransition_idset, PNML.refplace_idset]
         @show accessor
@@ -121,7 +120,7 @@ end
 # Used in precompile.
 @testset "simple ptnet" begin
     @show "precompile's SimpleNet"
-    @test PNML.SimpleNet(Context(), xml"""<?xml version="1.0"?>
+    @test PNML.SimpleNet(xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
             <name> <text>P/T Net with one place</text> </name>
@@ -150,7 +149,7 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel pnmlmodel(Context(), xml"""<?xml version="1.0"?>
+    model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="core">
         <page id="page0">
@@ -160,7 +159,7 @@ end
     </pnml>
     """)
     net = @inferred first(nets(model))
-    simp = @inferred PNML.SimpleNet(Context(), net)
+    simp = @inferred PNML.SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
     β = PNML.PNet.rates(simp)
     #@show β
@@ -187,17 +186,17 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel pnmlmodel(Context(), xmlroot(str3))
+    model = @inferred PNML.PnmlModel pnmlmodel(xmlroot(str3))
     net1 = first(nets(model));          #@show typeof(net1)
-    simp = @inferred PNML.SimpleNet(Context(), net1); #@show typeof(simp)
+    simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
 
     S = @inferred collect(PNML.place_idset(simp.net)) # [:rabbits, :wolves]
     T = @inferred collect(PNML.transition_idset(simp.net))
     @show m₀ = PNML.initial_markings(simp.net) #::LVector
     @show PNML.input_matrix(simp.net, m₀) # needs marking
     @show PNML.output_matrix(simp.net, m₀)
-    @show PNML.conditions(simp.net)
-    @show PNML.inscriptions(simp.net)
+    #@show PNML.conditions(simp.net)
+    #@show PNML.inscriptions(simp.net)
     println("all arcs = ", collect(PNML.all_arcs(simp.net, :wolves)))
     println("src arcs = ", collect(PNML.src_arcs(simp.net, :wolves)))
     println("tgt arcs = ", collect(PNML.tgt_arcs(simp.net, :wolves)))
@@ -299,7 +298,7 @@ const ex_types = ("continuous",)
     </pnml>
     """
     #@show str3
-    anet = PNML.SimpleNet(Context(), xmlroot(str3))::PNML.AbstractPetriNet
+    anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
     #@show anet
     mg = PNML.metagraph(anet.net)
 

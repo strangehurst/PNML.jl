@@ -10,25 +10,31 @@ One Petri Net of a PNML model.
     pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
     netdata::PnmlNetData # Shared by pages, holds all places, transitions, arcs, refs
     page_set::OrderedSet{Symbol} # Unordered keys of pages in pagedict owned by this net.
-    # Top-level of a tree with PnmlNetKeys in Pages.
-    #
-    declaration::Declaration
-    namelabel::Maybe{Name}
-    tools::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    # Top-level of a tree of Page ID keys into pagedict.
+
+    declaration::Declaration # Label with optional `Text` `Graphics`, `ToolInfo`.
+    # Zero or more `Declarations` used to populate ddict::DeclDict field.
+    # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
+    namelabel::Maybe{Name} = nothing
+    tools::Maybe{Vector{ToolInfo}} = nothing
+    labels::Vector{PnmlLabel} = PnmlLabel[] #
     idregistry::PnmlIDRegistry
 end
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
 
-pid(net::PnmlNet)  = net.id
+pid(net::PnmlNet) = net.id
+
+# "Return PnmlIDRegistry of a PnmlNet."
+registry_of(net::PnmlNet) = net.idregistry
+decldict(net::PnmlNet) = decldict(net.declaration)
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(n::PnmlNet) = n.pagedict # Will be ordered.
-page_idset(n::PnmlNet)  = n.page_set #! Not ordered! Dictionaries in netdata ARE ordered.
+page_idset(n::PnmlNet) = n.page_set #! Not ordered! Dictionaries in netdata ARE ordered.
 
-netdata(n::PnmlNet)  = n.netdata
+netdata(n::PnmlNet) = n.netdata
 
 placedict(n::PnmlNet)         = placedict(netdata(n))
 transitiondict(n::PnmlNet)    = transitiondict(netdata(n))
@@ -64,8 +70,6 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = first(values(pagedict(net)))
-
-decldict(net::PnmlNet) = decldict(net.declaration) # Access a label's value.
 
 has_tools(net::PnmlNet) = !isnothing(net.tools)
 tools(net::PnmlNet)     = net.tools

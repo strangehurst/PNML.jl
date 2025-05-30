@@ -18,10 +18,14 @@ As does `<all>` operator.
 @auto_hash_equals struct PnmlMultiset{B,T} #! data type, not operator, see Bag, pnmlmultiset()
     #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
     mset::Multiset{T}
-    function PnmlMultiset{B,T}(m::Multiset{T}) where {B,T}
-        new{B,T}(m) #todo assert B and T match.
+    declarationdicts::DeclDict
+
+    function PnmlMultiset{B,T}(m::Multiset{T}, dd) where {B,T}
+        new{B,T}(m, dd) #todo assert B and T match.
     end
 end
+
+decldict(ms::PnmlMultiset) = ms.declarationdicts
 
 """
     multiset(ms::PnmlMultiset) -> Multiset
@@ -56,7 +60,7 @@ Multiset basis (B type parameter) is a REFID to a UserSort that references a Nam
 Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
 MultisetSorts not allowed here. Nor loops in sort references.
 """
-basis(::PnmlMultiset{B,T}) where {B,T} = UserSort(first(B)) # tuple(REFID) in type domain
+basis(ms::PnmlMultiset{B,T}) where {B,T} = UserSort(first(B), decldict(ms)) # tuple(REFID) in type domain
 
 Base.eltype(::Type{PnmlMultiset{B,T}}) where {B,T} = T
 
@@ -87,7 +91,7 @@ sortelements(ms::PnmlMultiset) = sortelements(basis(ms)::UserSort) # basis eleme
 """
 function (+)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) + multiset(b))
+    PnmlMultiset{B,T}(multiset(a) + multiset(b), decldict(a))
 end
 
  """
@@ -95,7 +99,7 @@ end
 """
 function (-)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) - multiset(b))
+    PnmlMultiset{B,T}(multiset(a) - multiset(b), decldict(a))
 end
 
 """
@@ -103,18 +107,18 @@ end
 """
 function Base.:*(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) * multiset(b))
+    PnmlMultiset{B,T}(multiset(a) * multiset(b), decldict(a))
 end
 
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
 function Base.:*(n::Number, b::PnmlMultiset{B,T}) where {B,T}
-    PnmlMultiset{B,T}(convert(Int, n) * multiset(b))
+    PnmlMultiset{B,T}(convert(Int, n) * multiset(b), decldict(b))
 end
 
 function Base.:*(b::PnmlMultiset{B,T}, n::Number) where {B,T}
-    PnmlMultiset{B,T}(convert(Int, n) * multiset(b))
+    PnmlMultiset{B,T}(convert(Int, n) * multiset(b), decldict(a))
 end
 
 """
@@ -152,9 +156,9 @@ end
 
 
 """
-    pnmlmultiset(basis::UserSort, x, multi::Int=1) -> PnmlMultiset
-    pnmlmultiset(basis::UserSort, x::Multisets.Multiset) -> PnmlMultiset
-    pnmlmultiset(basis::UserSort) -> PnmlMultiset
+    pnmlmultiset(basis::UserSort, x, multi::Int=1; ddict) -> PnmlMultiset
+    pnmlmultiset(basis::UserSort, x::Multisets.Multiset; ddict) -> PnmlMultiset
+    pnmlmultiset(basis::UserSort; ddict) -> PnmlMultiset
 
 Constructs a [`PnmlMultiset`](@ref) containing a multiset and a sort from either
   - a usersort, one element and a multiplicity, default = 1, denoted "1'x",
@@ -172,19 +176,19 @@ Usages
 we always find a sort to use, And use dummy elements for their `typeof` for empty multisets.
 
 Expect to be called from a `@matchable` `Terminterface`, thusly:
-  - `eval(toexpr(Bag(basis, x, multi), variable_substitutions))`
-  - `eval(toexpr(Bag(basis)), variable_substitutions))`
+  - `eval(toexpr(Bag(basis, x, multi, ddict), variable_substitutions))`
+  - `eval(toexpr(Bag(basis), ddict), variable_substitutions))`
 
 """
 function pnmlmultiset end
 
 # Constructor call
-function pnmlmultiset(basis::UserSort, ms::Multiset)
-    PnmlMultiset{(refid(basis),), eltype(ms)}(ms)
+function pnmlmultiset(basis::UserSort, ms::Multiset; ddict::DeclDict)
+    PnmlMultiset{(refid(basis),), eltype(ms), DeclDict}(ms, ddict)
 end
 
 # Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
-function pnmlmultiset(basis::UserSort, element, multi::Int=1)
+function pnmlmultiset(basis::UserSort, element, multi::Int=1; ddict::DeclDict)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
     # Should we test `issingletonmultiset` here?
@@ -199,11 +203,11 @@ function pnmlmultiset(basis::UserSort, element, multi::Int=1)
     # end
     M = Multiset{typeof(element)}()
     M[element] = multi
-    PnmlMultiset{(refid(basis),), eltype(M)}(M)
+    PnmlMultiset{(refid(basis),), eltype(M)}(M, ddict)
 end
 
 # For <all> only the basis is needed.
-function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 add for <all>
+function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing; ddict::DeclDict)
     #println("pnmlmultiset: basis = ", repr(basis), ", ", repr(sortof(basis)), ", ", eltype(basis))
     if isa(basis, MultisetSort) # use EqualSorts? us::UserSort
         throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
@@ -216,5 +220,5 @@ function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing) #! 2024-10-05 a
         #@show M e; flush(stdout) #! debug
         push!(M, e)
     end
-    PnmlMultiset{(refid(basis),), eltype(M)}(M)
+    PnmlMultiset{(refid(basis),), eltype(M)}(M, ddict)
 end

@@ -62,19 +62,23 @@ struct SortType <: Annotation # Label not limited to high-level dialects.
     sort_::UserSort # REFID of NamedSort or ArbitrarySort. NOT PartitionSort.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
+    declarationdicts::DeclDict
 end
 
 # >The label Type of a place defines the type by referring to some sort;
-# >by the fixed interpretation of built-in sorts, this sort defines the type of the place.
+# > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 # I interpret this as: use a UserSort to reference a NamedSort or AbstractSort.
 # Built-in sorts are given names & NamedSorts.
 
-SortType(sort::UserSort) = SortType(nothing, sort, nothing, nothing)
-SortType(s::AbstractString, sort::UserSort) = SortType(s, sort, nothing, nothing)
+SortType(sort::UserSort, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
+SortType(s::AbstractString, sort::UserSort, ddict) = SortType(s, sort, nothing, nothing, ddict)
+
+decldict(t::SortType) = t.declarationdicts
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
-sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(sortref(t)))
+refid(t::SortType) = refid(sortref(t))
+sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(decldict(t), refid(t)))
 sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
 
 """
@@ -116,8 +120,8 @@ Useful for non-high-level nets and PTNet.
 See [`PNML.fill_nonhl!`](@ref)
 """
 function default_typeusersort end
-default_typeusersort(pntd::PnmlType) = default_typeusersort(typeof(pntd))
-default_typeusersort(::Type{<:PnmlType}) = UserSort(:integer)
-default_typeusersort(::Type{<:AbstractContinuousNet}) = UserSort(:real)
-default_typeusersort(::Type{<:AbstractHLCore}) = UserSort(:dot)
+default_typeusersort(pntd::PnmlType, ddict) = default_typeusersort(typeof(pntd), ddict)
+default_typeusersort(::Type{<:PnmlType}, ddict) = UserSort(:integer, ddict)
+default_typeusersort(::Type{<:AbstractContinuousNet}, ddict) = UserSort(:real, ddict)
+default_typeusersort(::Type{<:AbstractHLCore}, ddict) = UserSort(:dot, ddict)
 # todo value types

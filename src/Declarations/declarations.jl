@@ -11,12 +11,12 @@ abstract type AbstractDeclaration end
 pid(decl::AbstractDeclaration) = decl.id
 has_name(decl::AbstractDeclaration) = hasproperty(decl, :name)
 name(decl::AbstractDeclaration) = decl.name
+decldict(decl::AbstractDeclaration) = decl.declarationdicts
 
 function Base.show(io::IO, declare::AbstractDeclaration)
     print(io, nameof(typeof(declare)), "(")
     show(io, pid(declare)); print(io, ", ")
     show(io, name(declare)); print(io, ", ")
-
     print(io, ")")
 end
 
@@ -32,6 +32,12 @@ struct UnknownDeclaration  <: AbstractDeclaration
     name::Union{String,SubString{String}}
     nodename::Union{String,SubString{String}}
     content::Vector{AnyElement}
+    declarationdicts::DeclDict
+end
+
+function Base.show(io::IO, x::UnknownDeclaration)
+    print(io, nameof(typeof(x)), "(", repr(id), ", ", repr(name), ", ",
+            repr(nodename), content, ")")
 end
 
 """
@@ -66,6 +72,7 @@ struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::UserSort # user sort -> named sort -> sort object
+    declarationdicts::DeclDict
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
     #   (ref::Ref{sortof(vdecl)}(mark), REFID)
@@ -92,15 +99,18 @@ struct VariableDeclaration <: AbstractDeclaration
     # else
     #   add/remove sort
 
-    # Find index in tuple? The inscription will be tuple-valued as will the relevant marking.
+    # Find index in tuple? The inscription will be pnml-tuple-valued as will the relevant marking.
     # When parsing a <variable>, identify its enclosing tuple & index #TODO
 
-    # Will PnmlTuple ever have fields mutated? No, marking vectors are not mutated! They are preserved as part of reachability graph.
+    # Will PnmlTuple ever have fields mutated? No, marking vectors are not mutated!
+    # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 end
 
+decldict(vd::VariableDeclaration) = vd.declarationsdict
+
 sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(sortref(vd)))
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
 refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
 
 function Base.show(io::IO, declare::VariableDeclaration)
@@ -115,16 +125,17 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Declaration of a `NamedSort`. Wraps an instance of an `AbstractSort`.
+Declaration of a `NamedSort`. Wraps a concrete instance of an `AbstractSort`.
 See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 """
 struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, BUILT-IN sorts!
+    declarationdicts::DeclDict
 end
 
-sortdefinition(namedsort::NamedSort) = namedsort.def
+sortdefinition(namedsort::NamedSort) = namedsort.def # Instance of concrete sort.
 
 Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
 
@@ -149,14 +160,21 @@ and duck-typed `AbstractTerm` for its body.
 struct NamedOperator{T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO ===
-    def::T # operator or variable term (with inferred sort) #TODO how to infer ===
+    parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO XXX
+    def::T # operator or variable term (with inferred sort) #TODO! XXX how to infer ===
+    declarationdicts::DeclDict
 end
-NamedOperator() = NamedOperator(:namedoperator, "Empty Named Operator")
-# Empty parameter vector. Default to dots.
-NamedOperator(id::Symbol, str) = NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant())
 
-operator(no::NamedOperator) = no.def
+# Empty parameter vector. Default to return sort of dots.
+NamedOperator(id::Symbol, str; ddict) = NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant(ddict), ddict)
+
+decldict(no::NamedOperator) = no.declarationdicts
+operator(ddict, no::NamedOperator) = operator(ddict, no.def)
 parameters(no::NamedOperator) = no.parameter
-sortref(no::NamedOperator) = sortref(operator(no))::UserSort # of the wrapped operator
-sortof(no::NamedOperator) = sortdefinition(namedsort(sortref(no)))
+sortref(no::NamedOperator) = sortref(operators(decldict(no))[no.def])::UserSort # of the wrapped operator
+sortof(no::NamedOperator) = sortdefinition(namedsort(decldict(no), sortref(no)))
+
+function Base.show(io::IO, op::NamedOperator)
+    print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ",
+            parameter, ", ", def,  ")")
+end

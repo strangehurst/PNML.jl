@@ -9,17 +9,17 @@ struct Inscription{T<:PnmlExpr} <: Annotation
     term::T #! expression
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
+    declarationdicts::DeclDict
 end
 
-Inscription(x::Number) = Inscription(sortref(x), x)
-Inscription(s::UserSort, x::Number) = Inscription(PNML.NumberEx(s, x))
-Inscription(ex::PNML.NumberEx) = Inscription(ex, nothing, nothing)
+Inscription(ex::PNML.NumberEx, ddict) = Inscription(ex, nothing, nothing, ddict)
 
+decldict(inscription::Inscription) = inscription.declarationdicts
 term(i::Inscription) = i.term # TODO when is the optimized away ()
-(i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub))::Number
+(i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub, decldict(i)))::Number
 
-sortref(inscription::Inscription) = sortref(term(inscription))::UserSort
-sortof(inscription::Inscription) = sortdefinition(namedsort(sortref(inscription)))::NumberSort
+sortref(i::Inscription) = _sortref(decldict(i), term(i))::UserSort
+sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::NumberSort
 
 # What variables are in the expression.
 variables(::Inscription) = () # There are no Variables in non-high-level nets.
@@ -45,7 +45,8 @@ $(TYPEDFIELDS)
 Labels an Arc with a term in a many-sorted algebra.
 See also [`Inscription`](@ref) for non-high-level net inscriptions.
 
-`HLInscription(t::PnmlExpr)()` is a functor evaluating the expression and a value of the `eltype` of sort of inscription.
+`HLInscription(t::PnmlExpr)()` is a functor evaluating the expression and
+returns a value of the `eltype` of sort of inscription.
 
 # Examples
     ins() isa eltype(sortof(ins))
@@ -57,15 +58,19 @@ struct HLInscription{T <: PnmlExpr, N} <: HLAnnotation
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     vars::NTuple{N,REFID}
+    declarationdicts::DeclDict
 end
-HLInscription(t::PnmlExpr) = HLInscription(nothing, t)
-HLInscription(s::Maybe{AbstractString}, t::PnmlExpr) = HLInscription(s, t, nothing, nothing, ())
 
-(hlinscription::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hlinscription), varsub)) #TODO compile expression using varsub.
+#! HLInscription(t::PnmlExpr, ddict) =t, ddict)
+#! HLInscription(s::Maybe{AbstractString}, t::PnmlExpr, ddict) = HLInscription(nothing,  HLInscription(s, t, nothing, nothing, (), ddict)
 
-term(i::HLInscription) = i.term
-sortref(hli::HLInscription) = sortref(term(hli))::UserSort
-sortof(hli::HLInscription) = sortdefinition(namedsort(sortref(hli)))::PnmlMultiset #TODO other sorts
+decldict(hli::HLInscription) = hli.declarationdicts
+
+(i::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hli), varsub, decldict(hli)))
+
+term(hli::HLInscription) = hli.term
+sortref(hli::HLInscription) = _sortref(decldict(hli), term(hli))::UserSort
+sortof(hli::HLInscription) = sortdefinition(namedsort(decldict(hli), sortref(hli)))::PnmlMultiset #TODO other sorts
 
 variables(i::HLInscription) = i.vars
 
@@ -123,11 +128,14 @@ PNML.inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.Dot
 """
 $(TYPEDSIGNATURES)
 Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
+Value is a `PnmlExpr`.
 """
 function default_inscription end
-default_inscription(::T) where {T<:PnmlType}              = Inscription(one(Int))
-default_inscription(::T) where {T<:AbstractContinuousNet} = Inscription(one(Float64))
-default_inscription(::T) where {T<:AbstractHLCore} =
+default_inscription(::T, ddict) where {T<:PnmlType} =
+    Inscription(PNML.NumberEx(usersort(ddict, :natural), one(Int)), nothing, nothing, ddict)
+default_inscription(::T, ddict) where {T<:AbstractContinuousNet} =
+    Inscription(PNML.NumberEx(usersort(ddict, :real), one(Float64)), nothing, nothing, ddict)
+default_inscription(::T, ddict) where {T<:AbstractHLCore} =
     error("no default_inscription method for $T, did you mean default_hlinscription")
 
 """
@@ -135,9 +143,10 @@ $(TYPEDSIGNATURES)
 
 Return default `HLInscription` value based on `PNTD`.
 Has meaning of unity, as in `one` of the adjacent place's sorttype.
+Value is a `PnmlExpr`.
 """
-function default_hlinscription(::T, placetype::SortType) where {T<:AbstractHLCore}
+function default_hlinscription(::T, placetype::SortType, ddict) where {T<:AbstractHLCore}
     basis = sortref(placetype)::UserSort
     el = def_sort_element(placetype)
-    HLInscription(PNML.Bag(basis, el, 1)) # non-empty singleton multiset.
+    HLInscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
 end

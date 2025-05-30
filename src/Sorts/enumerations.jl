@@ -17,7 +17,7 @@ refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 """
     sortelements(sort::EnumerationSort) -> Iterator
 
-Return iterator into feconstant(DECLDICT[]) for this sort's `FEConstants`.
+Return iterator into feconstant(decldict) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
 sortelements(sort::EnumerationSort) = refs(sort)
@@ -25,7 +25,7 @@ sortelements(sort::EnumerationSort) = refs(sort)
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
 
-Base.eltype(::EnumerationSort) = REFID # Used to access `DECLDICT[]`.
+Base.eltype(::EnumerationSort) = REFID
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
@@ -53,6 +53,7 @@ MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> 
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     metadata::M # TODO TermInterface metadata
+    declarationdicts::DeclDict
 end
 function CyclicEnumerationSort(fecs)
     CyclicEnumerationSort(fecs, nothing)
@@ -69,7 +70,9 @@ Wraps a tuple of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
     metadata::M # TODO TermInterface metadata
+    declarationdicts::DeclDict
 end
+
 function FiniteEnumerationSort(fe_refs)
     FiniteEnumerationSort(fe_refs, nothing)
 end
@@ -83,6 +86,7 @@ tag(::FiniteEnumerationSort) = :finiteenumeration
     start::T
     stop::T # XML Schema calls this 'end'.
     meta::M # TODO TermInterface metadata
+    declarationdicts::DeclDict
 end
 FiniteIntRangeSort(start, stop; meta=nothing) = FiniteIntRangeSort(start, stop, meta)
 

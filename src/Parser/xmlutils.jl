@@ -68,8 +68,8 @@ Return registered symbol from id attribute of node. See [`PnmlIDRegistry`](@ref)
 function register_idof!(registry::PnmlIDRegistry, node::XMLNode)
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     id = Symbol(@inbounds(node["id"]))
-    if isregistered(idregistry[], id)
-        @warn "trying to register existing id $id in registry $(objectid(idregistry[]))" idregistry[]
+    if isregistered(registry, id)
+        @error "trying to register existing id $id in registry $(objectid(registry))" idregistry
     end
     return register_id!(registry, id)
 end

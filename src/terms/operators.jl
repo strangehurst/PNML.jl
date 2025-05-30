@@ -13,7 +13,7 @@ Let OpExpr <: PnmlExpr
 finite element constant is 0-ary operator expressed as useroperator wrapping an REFID
 
 `:(feconstant(REFID)())`
-locates the FEConstant element in the DECLDICT and return its value/id/name(TBD).
+locates the FEConstant element in the DeclDict and return its value/id/name(TBD).
 there are 4 kinds of operator declarations:
     feconstant, nameoperator, arbitraryoperator, partitionelement
 each have different types.
@@ -36,17 +36,20 @@ struct Operator <: AbstractOperator
     insorts::Vector{UserSort} # typeof(inexprs[i]) == eltype(insorts[i])
     outsort::UserSort # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
     metadata::Any
+    declarationdicts::DeclDict
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
     #todo all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
 end
 
-Operator(t, f, inex, ins, outs; metadata=nothing) = Operator(t, f, inex, ins, outs, metadata)
-tag(op::Operator)       = op.tag # PNML XML tag
-inputs(op::Operator)    = op.inexprs #! when should these be eval(toexpr)'ed)
-sortref(op::Operator)   = identity(op.outsort)::UserSort
-sortof(op::Operator)    = sortdefinition(namedsort(op.outsort)) # also abstractsort, partitionsort
-metadata(op::Operator)  = op.metadata
-value(op::Operator)     = op(#= parameters? =#)
+Operator(t, f, inex, ins, outs; metadata=nothing, ddict) = Operator(t, f, inex, ins, outs, metadata, ddict)
+
+decldict(op::Operator) = op.declarationdicts
+tag(op::Operator)     = op.tag # PNML XML tag
+inputs(op::Operator)  = op.inexprs #! when should these be eval(toexpr)'ed)
+sortref(op::Operator) = identity(op.outsort)::UserSort
+sortof(op::Operator)  = sortdefinition(namedsort(decldict(op), op.outsort)) # also abstractsort, partitionsort
+metadata(op::Operator) = op.metadata
+value(op::Operator)   = op(#= parameters? =#)
 
 #? Possible to pass variables at this point? Pass marking vector?
 function (op::Operator)(#= parameters? =#)
@@ -225,7 +228,7 @@ end
 
 Return sort that operator `tag` returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}, ddict::DeclDict)
     #=
     Question? can these ever be built-in sorts? If so, when, why?
     UserSorts are the expected form. This allows mapping id to AbstractSort via NamedSorts.
@@ -233,9 +236,9 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
     =#
 
     if isbooleanoperator(tag) # 0-arity function is a constant
-        usersort(:bool) # BoolSort()
+        usersort(ddict, :bool) # BoolSort()
     elseif isintegeroperator(tag) # 0-arity function is a constant
-        usersort(:integer) # IntegerSort()
+        usersort(ddict, :integer) # IntegerSort()
     elseif ismultisetoperator(tag)
         if tag in (:add,)
             length(insorts) >= 2 ||
@@ -249,11 +252,11 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
             length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
             first(insorts)
         elseif tag === :cardnality
-            usersorts()[:natural] # NaturalSort()
+            usersorts(ddict)[:natural] # NaturalSort()
         elseif tag === :cardnalitiyof
-            usersorts()[:natural] # NaturalSort()
+            usersorts(ddict)[:natural] # NaturalSort()
         elseif tag === :contains
-            usersorts()[:bool] # BoolSort()
+            usersorts(ddict)[:bool] # BoolSort()
         else
             error("$tag not a known multiset operator")
         end
@@ -268,20 +271,20 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort})
         #:ltp, :gtp, :partitionelementof
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         first(insorts)
-        #todo assert is PartitionSort() #! pnml_hl_outsort will need content
+        #todo assert is PartitionSort #! pnml_hl_outsort will need content
     elseif tag === :tuple
         @warn "pnml_hl_outsort does not handle tuple yet"
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         first(insorts)
     elseif tag === :numberconstant
-        usersort(:integer)
+        usersort(ddict, :integer)
     elseif tag === :dotconstant
-        usersort(:dot)
+        usersort(ddict, :dot)
     elseif tag === :booleanconstant
-        usersort(:bool)
+        usersort(ddict, :bool)
     else
          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
-         usersort(:null)
+         usersort(ddict, :null)
     end
 end
 
@@ -297,12 +300,14 @@ User operator wraps a [`REFID`](@ref) to a [`OperatorDeclaration`](@ref).
 """
 struct UserOperator <: AbstractOperator
     declaration::REFID # of a NamedOperator, AbstractOperator.
+    declarationdicts::DeclDict
 end
+decldict(uo::UserOperator) = uo.declarationdicts
 
 # Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.
 function (uo::UserOperator)(parameters)
     if has_operator(uo.declaration)
-        op = operator(uo.declaration) # Lookup operator in DeclDict.
+        op = operator(decldict(uo), uo.declaration) # Lookup operator in DeclDict.
         r = op(parameters) # Operator objects are functors.
         @warn "found operator for $(uo.declaration)" op r
         return r
@@ -310,5 +315,9 @@ function (uo::UserOperator)(parameters)
     error("found NO operator $(repr(uo.declaration))")
 end
 
-sortof(uo::UserOperator) = sortof(operator(uo.declaration))
-basis(uo::UserOperator)  = basis(operator(uo.declaration))
+sortof(uo::UserOperator) = sortof(operator(decldict(uo), uo.declaration))
+basis(uo::UserOperator)  = basis(operator(decldict(uo), uo.declaration))
+
+function Base.show(io::IO, uo::UserOperator)
+    print(io, nameof(typeof(uo)), "(", repr(uo.declaration), ")")
+end

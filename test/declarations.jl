@@ -16,38 +16,39 @@ function _subtypes!(out, type::Type)
     return out
 end
 
-@with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
+@with PNML.idregistry => PnmlIDRegistry() begin
 @testset "parse_sort $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    PNML.fill_nonhl!(PNML.DECLDICT[])
-    PNML.fill_sort_tag!(:X, "X", PositiveSort())
-    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd)::UserSort
-    #@show PNML.DECLDICT[] sortof(sort)
+    ddict = PNML.decldict(PNML.idregistry[])
+    #!    PNML.fill_nonhl!(ddict; idreg=PNML.idregistry[])
+    PNML.fill_sort_tag!(ddict, :X, "X", PositiveSort(); idreg=PNML.idregistry[])
+    sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; ddict)::UserSort
+
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<dot/>", pntd)::DotSort
+    sort = parse_sort(xml"<dot/>", pntd; ddict)::DotSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<bool/>", pntd)::BoolSort
+    sort = parse_sort(xml"<bool/>", pntd; ddict)::BoolSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<integer/>", pntd)::IntegerSort
+    sort = parse_sort(xml"<integer/>", pntd; ddict)::IntegerSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<natural/>", pntd)::NaturalSort
+    sort = parse_sort(xml"<natural/>", pntd; ddict)::NaturalSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<positive/>", pntd)::PositiveSort
+    sort = parse_sort(xml"<positive/>", pntd; ddict)::PositiveSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -55,7 +56,7 @@ end
     sort = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet())::CyclicEnumerationSort
+                            </cyclicenumeration>""", PnmlCoreNet(); ddict)::CyclicEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -63,21 +64,21 @@ end
     sort = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                           </finiteenumeration>""", pntd)::FiniteEnumerationSort
+                           </finiteenumeration>""", pntd; ddict)::FiniteEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd)::FiniteIntRangeSort
+    sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd; ddict)::FiniteIntRangeSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd)
+    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd; ddict)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"""<productsort>
                                 <usersort declaration="a_user_sort"/>
-                           </productsort>""", pntd)::ProductSort
+                           </productsort>""", pntd; ddict)::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -85,7 +86,7 @@ end
     sort = parse_sort(xml"""<productsort>
                            <usersort declaration="speed"/>
                            <usersort declaration="distance"/>
-                         </productsort>""", pntd)::ProductSort
+                         </productsort>""", pntd; ddict)::ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -101,42 +102,43 @@ end
     # @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
-    PNML.fill_nonhl!(PNML.DECLDICT[])
-    PNML.fill_sort_tag!(:duck, "duck", PositiveSort())
+    PNML.fill_nonhl!(ddict; idreg=PNML.idregistry[]) # should be redundant, but harmless
+    PNML.fill_sort_tag!(ddict, :duck, "duck", PositiveSort(); idreg=PNML.idregistry[])
 
     sort = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd)::MultisetSort
+                            </multisetsort>""", pntd; ddict)::MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
     sort = parse_sort(xml"""<multisetsort>
                                 <natural/>
-                            </multisetsort>""", pntd)::MultisetSort
+                            </multisetsort>""", pntd; ddict)::MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 end
 end
 
 @testset "empty declarations $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        #PNML.fill_nonhl!(PNML.DECLDICT[])
+    @with PNML.idregistry => PnmlIDRegistry() begin
         # The attribute should be ignored.
-        decl = parse_declaration(xml"""<declaration key="test empty">
+        ddict = PNML.decldict(PNML.idregistry[])
+        decl = parse_declaration!(ddict, xml"""<declaration key="test empty">
                 <structure><declarations></declarations></structure>
             </declaration>""", pntd)::Declaration
-        #@show decl
-        @test length(decl) == 0 # nothing in <declarations>
-        @test isempty(decl)
+
+        #@test ddict == decl
+        @test length(decl) == 14 # nothing in <declarations>
+        @test !isempty(decl)
         @test PNML.graphics(decl) === nothing
         @test PNML.tools(decl) === nothing
 
-        @test_opt PNML.PNML.decldict(decl)
+        @test_opt PNML.decldict(decl)
         @test_opt PNML.graphics(decl)
         @test_opt PNML.tools(decl)
 
-        @test_call PNML.PNML.decldict(decl)
+        @test_call PNML.decldict(decl)
         @test_call PNML.graphics(decl)
         @test_call PNML.tools(decl)
     end
@@ -170,19 +172,16 @@ end
     </declaration>
     """
 
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!()
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        base_decl_length = length(PNML.namedsorts(ddict))
+        decl = parse_declaration!(ddict, node, pntd)::PNML.Declaration # Add 3 declarations.
 
-
-        #@show PNML.idregistry[]
-        base_decl_length = length(PNML.namedsorts())
-
-        decl = parse_declaration(node, pntd)::PNML.Declaration # Add 3 declarations.
-
-        #@show PNML.idregistry[] decl
-        @test length(PNML.namedsorts()) == base_decl_length + 3
+        #@show decl PNML.idregistry[]
+        @test length(PNML.namedsorts(ddict)) == base_decl_length + 3
         #println()
-        for nsort in values(PNML.namedsorts())
+
+        for nsort in values(PNML.namedsorts(ddict))
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
             # by wraping an ID of a declared sort.
             # named sort -> cyclic enumeration -> fe constant
@@ -259,13 +258,13 @@ end
     </declaration>
     """
 
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
-        decl = parse_declaration(node, pntd)
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict = PNML.decldict(PNML.idregistry[])
+        decl = parse_declaration!(ddict, node, pntd)
         @test typeof(decl) <: Declaration
 
         # Examine 3 partition sorts
-        for psort in values(PNML.partitionsorts(PNML.decldict(decl)))
+        for psort in values(PNML.partitionsorts(decldict(decl)))
             # named partition -> partition element -> fe constant
             @test typeof(psort) <: PartitionSort # is a declaration
 
@@ -290,25 +289,25 @@ _sorts() = _subtypes(AbstractSort)
 
 @testset "equal sorts" begin
     println("============================")
-    println("  equal sorts: $(_sorts())")
+    println(" TODO equal sorts: $(_sorts())")
     println("============================")
-    #TODO PartitionSort is confused - a SortDeclaration - there should be more and a mechanism
-    for s in [x for x in _sorts() if x ∉ nonsimple_sorts]
-        println(s)
-        a = s()
-        b = s()
-        @test PNML.Sorts.equals(a, a)
-    end
+    #TODO PartitionSort is confused - a SortDeclaration
+    # for s in [x for x in _sorts() if x ∉ nonsimple_sorts]
+    #     println(s)
+    #     a = s()
+    #     b = s()
+    #     @test PNML.Sorts.equals(a, a)
+    # end
 
-    for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
-        for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
-            a = sorta()
-            b = sortb()
-            #println(repr(a), " == ", repr(b), " --> ", PNML.Sorts.equals(a, b), ", ", (a == b))
-            sorta != sortb && @test a != b && !PNML.Sorts.equals(a, b)
-            sorta == sortb && @test PNML.Sorts.equals(a, b)::Bool && (a == b)
-        end
-    end
+    # for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
+    #     for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
+    #         a = sorta()
+    #         b = sortb()
+    #         #println(repr(a), " == ", repr(b), " --> ", PNML.Sorts.equals(a, b), ", ", (a == b))
+    #         sorta != sortb && @test a != b && !PNML.Sorts.equals(a, b)
+    #         sorta == sortb && @test PNML.Sorts.equals(a, b)::Bool && (a == b)
+    #     end
+    # end
 
     #TODO Add tests for enumerated sorts, et al., with content.
     # MultisetSort

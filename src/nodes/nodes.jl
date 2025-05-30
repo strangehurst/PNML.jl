@@ -21,6 +21,7 @@ mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    declarationdicts::DeclDict
 end
 
 nettype(::Place{T}) where {T <: PnmlType} = T
@@ -38,7 +39,7 @@ function Base.show(io::IO, place::Place)
     show(io, pid(place)); print(io, ", ")
     show(io, name(place)); print(io, ", ")
     show(io, place.sorttype); print(io, ", ")
-    show(io, initial_marking(place));
+    show(io, term(place.initialMarking)) #initial_marking(place));
     print(io, ")")
 end
 
@@ -60,10 +61,11 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
 
     vars::Set{REFID}
     varsubs::Vector{NamedTuple}
+    declarationdicts::DeclDict
 end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
-
+decldict(transition::Transition) = transition.declarationdicts
 """
     varsubs(transition) -> Vector{NamedTuple}
 
@@ -88,7 +90,7 @@ end
 
 function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
-    show(io, condition(trans)())
+    show(io, term(condition(trans)))
     print(io, ")")
 end
 
@@ -108,6 +110,7 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    declarationdicts::DeclDict
 end
 
 Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
@@ -122,7 +125,7 @@ inscription(arc::Arc) = arc.inscription # label
 
 sortref(arc::Arc) = sortref(arc.inscription)::UserSort
 sortof(arc::Arc)  = sortof(sortref(arc))
-
+decldict(arc::Arc) = arc.declarationdicts
 """
     source(arc) -> Symbol
 
@@ -161,6 +164,7 @@ struct RefPlace <: ReferenceNode
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    declarationdicts::DeclDict
 end
 
 #-------------------
@@ -177,6 +181,7 @@ struct RefTransition <: ReferenceNode
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    declarationdicts::DeclDict
 end
 
 function Base.show(io::IO, r::ReferenceNode)

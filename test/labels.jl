@@ -9,22 +9,25 @@ end
 
 #------------------------------------------------
 @testset "name $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd)
+@with PNML.idregistry=>PnmlIDRegistry() begin
+    ddict = PNML.decldict(PNML.idregistry[])
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd; ddict)
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == ""
 
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd)
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd; ddict)
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
     @test n.tools === nothing || isempty(n.tools)
 
-    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd)
+    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; ddict)
     @test n isa PNML.Name
     @test PNML.text(n) == "some name"
     #TODO add parse_graphics
     #TODO add toolinfo
 end
+end # @with
 
 #------------------------------------------------
 #------------------------------------------------
@@ -46,21 +49,23 @@ end
     """)
     #println(str)
 
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!()
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict= PNML.decldict(PNML.idregistry[])
         #@show marking_value_type(pntd)
-        placetype = SortType("$pntd initMarking", sortref(PNML.marking_value_type(pntd))::UserSort)
+        placetype = SortType("$pntd initMarking",
+            PNML.Labels._sortref(ddict, PNML.marking_value_type(pntd))::UserSort,
+            nothing, nothing, ddict)
 
         # Parse ignoring unexpected child
         mark = @test_logs((:warn, r"^ignoring unexpected child"),
-                    parse_initialMarking(node, placetype, pntd)::PNML.Marking)
+                    parse_initialMarking(node, placetype, pntd; ddict)::PNML.Marking)
         #@test typeof(value(mark)) <: Union{Int,Float64}
         @test mark()::Union{Int,Float64} == 123
 
         # Integer
-        mark1 = PNML.Marking(23)
-        @test_opt PNML.Marking(23)
-        @test_call PNML.Marking(23)
+        mark1 = PNML.Marking(23, ddict)
+        @test_opt PNML.Marking(23, ddict)
+        @test_call PNML.Marking(23, ddict)
         @test typeof(mark1()) == typeof(23)
         @test mark1() == 23
         @test_opt broken=false mark1()
@@ -70,10 +75,10 @@ end
         @test tools(mark1) === nothing || isempty(tools(mark1))
 
         # Floating point
-        mark2 = PNML.Marking(3.5)
+        mark2 = PNML.Marking(3.5, ddict)
         #@show mark2 mark2()
-        @test_opt PNML.Marking(3.5)
-        @test_call PNML.Marking(3.5)
+        @test_opt PNML.Marking(3.5, ddict)
+        @test_call PNML.Marking(3.5, ddict)
         @test typeof(mark2()) == typeof(3.5)
         @test mark2() ≈ 3.5
         @test_call mark2()
@@ -94,10 +99,10 @@ end
             <text>unknown content text</text>
         </unknown>
     </inscription>"""
-    @with PNML.idregistry => PnmlIDRegistry() PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[])
+    @with PNML.idregistry => PnmlIDRegistry() begin
+        ddict= PNML.decldict(PNML.idregistry[])
         inscript = @test_logs((:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                            parse_inscription(n1, :nothing, :nothing, pntd))
+                            parse_inscription(n1, :nothing, :nothing, pntd; ddict))
         @test inscript isa PNML.Inscription
         #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
         #@show inscript
@@ -131,10 +136,15 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 #end
 
 @testset "labels $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+    @with PNML.idregistry => PnmlIDRegistry() begin
     lab = PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
-        lab = PNML.Parser.add_label!(lab, xmlroot("<test$x> $i </test$x>"), pntd)
+
+        lab = PNML.Parser.add_label!(lab,
+            xmlroot("<test$x> $i </test$x>"),
+            pntd,
+            decldict(PNML.idregistry[]))
         @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end
@@ -154,7 +164,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     @test !has_label(lab, :bumble)
     @test !has_label(lab, "bumble")
 
-    v = @inferred get_label(lab, "test2")
+    v = @inferred PnmlLabel get_label(lab, "test2")
     @test v isa PnmlLabel
     @test tag(v) === "test2"
     @test elements(v) == "3"
@@ -168,16 +178,17 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
         end
         @test lv == 2
     end
+    end # with
 end
 
 function test_unclaimed(pntd, xmlstring::String)
     node = xmlroot(xmlstring)::XMLNode
     reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = PnmlIDRegistry()
-    @with PNML.idregistry => reg2 PNML.DECLDICT => PNML.DeclDict() begin
-        PNML.fill_nonhl!(PNML.DECLDICT[];)
+    @with PNML.idregistry => reg2 begin
+        ddict = PNML.decldict(PNML.idregistry[])
         (t,u) = Parser.unparsed_tag(node) # tag is a string
-        l = PnmlLabel(t, u)
+        l = PnmlLabel(t, u, ddict)
         a = anyelement(node, pntd)
 
         @test u isa PNML.DictType
@@ -185,13 +196,13 @@ function test_unclaimed(pntd, xmlstring::String)
         @test a isa AnyElement
 
         @test_opt target_modules=(@__MODULE__,) Parser.unparsed_tag(node)
-        @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u)
+        @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u,ddict)
         @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node, pntd)
 
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) Parser.unparsed_tag(node)
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                                JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u)
+                                JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u,ddict)
         @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                                 JET.AnyFrameModule(XMLDict)) Parser.anyelement(node, pntd)
 
@@ -214,6 +225,7 @@ end
 @testset "unclaimed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
+    @with PNML.idregistry => PnmlIDRegistry() begin
     ctrl = [ # Vector of tuples of XML string, expected result from `XMLDict.xml_dict`.
         ("""<declarations> </declarations>""",
             "declarations" => DictType()),
@@ -272,7 +284,7 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(expected...)
+        expected_label = PnmlLabel(expected..., decldict(PNML.idregistry[]))
         @test tag(lab) == tag(expected_label)
         @test length(elements(lab)) == length(elements(expected_label))
         # TODO recursive compare
@@ -281,4 +293,5 @@ end
         @test length(elements(anye)) == length(elements(expected_any))
         # TODO recursive compare
     end
+    end # with
 end

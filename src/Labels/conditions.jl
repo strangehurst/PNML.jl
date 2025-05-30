@@ -9,14 +9,14 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant)
-julia> c = Labels.Condition(false)
+```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant; using PNML.PnmlIDRegistrys; ddict=decldict(PnmlIDRegistry()))
+julia> c = Labels.Condition(false, ddict)
 Condition("", BooleanEx(BooleanConstant(false)))
 
 julia> c()
 false
 
-julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true)))
+julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true, ddict)), ddict)
 Condition("xx", BooleanEx(BooleanConstant(true)))
 
 julia> c()
@@ -30,18 +30,20 @@ true
     graphics::Maybe{Graphics} #TODO switch order of graphics, tools everywhere!
     tools::Maybe{Vector{ToolInfo}}
     vars::NTuple{N,REFID}
+    declarationdicts::DeclDict
 end
 
-Condition(b::Bool)              = Condition(PNML.BooleanConstant(b))
-Condition(c::PNML.BooleanConstant)   = Condition(PNML.BooleanEx(c))
-Condition(expr::PNML.BooleanEx) = Condition(nothing, expr, nothing, nothing, ())
-Condition(text::AbstractString, b::Bool)            = Condition(text, PNML.BooleanConstant(b))
-Condition(text::AbstractString, c::PNML.BooleanConstant) = Condition(text, PNML.BooleanEx(c))
-Condition(text::AbstractString, expr::PNML.BooleanEx) = Condition(text, expr, nothing, nothing, ())
+Condition(b::Bool, ddict) = Condition(PNML.BooleanConstant(b, ddict), ddict)
+Condition(c::PNML.BooleanConstant, ddict) = Condition(PNML.BooleanEx(c), ddict)
+Condition(expr::PNML.BooleanEx, ddict) = Condition(nothing, expr, nothing, nothing, (), ddict)
+Condition(text::AbstractString, b::Bool, ddict) = Condition(text, PNML.BooleanConstant(b, ddict), ddict)
+Condition(text::AbstractString, c::PNML.BooleanConstant, ddict) = Condition(text, PNML.BooleanEx(c), ddict)
+Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, (), ddict)
 
 PNML.condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
 PNML.condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
+decldict(c::Condition) = c.declarationdicts
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
@@ -66,13 +68,13 @@ end
 
 # color function?
 function cond_implementation(c::Condition, varsub::NamedTuple)
-    for arg in keys(varsub)
-        @show arg
-    end
+    # for arg in keys(varsub)
+    #     @show arg
+    # end
     # BooleanEx is a literal. BoolExpr <: PnmlExpr can be non-literal (non-ground term).
-    isa(term(c), PNML.BooleanEx) || @warn term(c) varsub toexpr(term(c), varsub) #! debug
-
-    eval(toexpr(term(c), varsub))::eltype(c) # Bool isa Number
+    isa(term(c), PNML.BooleanEx) || @warn term(c) varsub  #! debug
+    #@show term(c) varsub toexpr(term(c), varsub, decldict(c))
+    eval(toexpr(term(c), varsub, decldict(c)))::eltype(c) # Bool isa Number
 end
 
 
@@ -84,8 +86,9 @@ function Base.show(io::IO, c::Condition)
 end
 
 """
-    default_condition(pntd::PnmlType) -> Condition
+    default_condition(ddict, pntd::PnmlType) -> Condition
 
 Has meaning of true or always.
 """
-default_condition(::PnmlType) = Condition(PNML.BooleanEx(PNML.BooleanConstant(true)))
+default_condition(ddict::DeclDict, ::PnmlType) =
+    Condition(PNML.BooleanEx(PNML.BooleanConstant(true, ddict)), ddict)

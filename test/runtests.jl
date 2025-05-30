@@ -44,29 +44,29 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         end
     end
     if select(("ALL", "BASE"), "!BASE")
-        println("BASE")
+        println("# BASE #")
         @safetestset "typedefs"  begin include("typedefs.jl") end
         @safetestset "registry"  begin include("idregistry.jl") end
         @safetestset "utils"     begin include("utils.jl") end
     end
     if select(("ALL", "REWRITE"), "!REWRITE")
-        println("REWRITE")
+        println("# REWRITE #")
         @safetestset "rewrite"     begin include("rewrite.jl") end
     end
     if select(("ALL", "CORE"), "!CORE")
-        println("CORE")
+        println("# CORE #")
         @safetestset "graphics"     begin include("graphics.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
     end
 
     if select(("ALL", "HL"), ("!HL",))
-        println("HL")
+        println("# HL #")
         @safetestset "labels_hl"    begin include("labels_hl.jl") end
     end
 
     if select(("ALL", "CORE2"), ("!CORE2",))
-        println("CORE2")
+        println("# CORE2 #")
         @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
@@ -75,33 +75,33 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     end
 
     if select(("ALL", "EXPR"), ("!EXPR",))
-        println("EXPR")
+        println("# EXPR #")
         @safetestset "pnmlexpr"     begin include("pnmlexpr.jl") end
     end
 
     if select(("ALL", "NET"), ("!NET",))
-        println("NET")
+        println("# NET #")
         @safetestset "document"     begin include("document.jl") end
     end
 
     if select(("ALL", "NET1"), ("!NET1",))
-        println("NET1")
+        println("# NET1 #")
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
     end
 
     if select(("ALL", "NET2"), ("!NET2",))
-        println("NET2")
+        println("# NET2 #")
         @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
     end
 
      if select(("ALL", "NET3"), ("!NET3",))
-        println("NET3")
+        println("# NET3 #")
         @safetestset "rate"         begin include("rate.jl") end
         @safetestset "simplenet"    begin include("simplenet.jl") end
     end
 
     if select(("ALL", "DOC"), ("!DOC",))
-        println("DOC")
+        println("# DOC #")
         @testset "doctest" begin doctest(PNML, manual = true) end
     end
 end

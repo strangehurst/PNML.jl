@@ -168,29 +168,21 @@ Other HL Nets use multisets.
 """
 function initial_markings end #TODO move "lvector tools" section
 
-function initial_markings(petrinet::AbstractPetriNet)
-    net = pnmlnet(petrinet)
-    return initial_markings(net) # Dispatch on nettype.
-end
-
+initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet))
 
 function initial_markings(net::PnmlNet)
-    m1 = LVector((;[id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...))
-    #todo m1 = tuple([id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...)
-    return m1
+    LVector((;[id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...))
 end
 
 # PT_HLPNG multisets of dotconstants map well to integer via cardinality.
 function initial_markings(net::PnmlNet{PT_HLPNG})
-    m1 = LVector((;[id => PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for (id,p) in pairs(PNML.placedict(net))]...))
-    return m1
+    LVector((;[id => PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for (id,p) in pairs(PNML.placedict(net))]...))
 end
 
 #! Other HL need it to be treated as multiset, not simple numbers!
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
     # Evaluate the ground term expression into a multiset.
-    m1 = LVector((;[id => initial_marking(p)::PnmlMultiset for (id,p) in pairs(PNML.placedict(net))]...))
-    return m1
+    LVector((;[id => initial_marking(p)::PnmlMultiset for (id,p) in pairs(PNML.placedict(net))]...))
 end
 
 #####################################################################################
@@ -284,17 +276,22 @@ Note: A multi-page petri net can always be flattened by removing
 referenceTransitions & referencePlaces, and merging pages into the first page.
 """
 struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
-    ctx::Context
     id::Symbol # Redundant copy of the net's ID for dispatch.
     net::PnmlNet{PNTD}
+    metadata::Any #
 end
 
-SimpleNet(ctx::Context, s::AbstractString)  = SimpleNet(ctx, xmlroot(s))
-SimpleNet(ctx::Context, node::PNML.XMLNode) = SimpleNet(ctx, PNML.Parser.pnmlmodel(ctx, node; tp_vec=ToolParser[], lp_vec=LabelParser[]))
-SimpleNet(ctx::Context, model::PnmlModel)   = SimpleNet(ctx, first(PNML.nets(model)))
-function SimpleNet(ctx::Context, net::PnmlNet)
+# Method Cascade.
+# First two run the parser and can have addded tool and label plugins as context.
+# tools => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
+SimpleNet(s::AbstractString; context...)  = SimpleNet(xmlroot(s); context...)
+SimpleNet(node::PNML.XMLNode; context...) = SimpleNet(PNML.Parser.pnmlmodel(node; context...))
+
+# These two use the flattened 1st net of the PnmlModel.
+SimpleNet(model::PnmlModel; metadata=nothing) = SimpleNet(first(PNML.nets(model)); metadata)
+function SimpleNet(net::PnmlNet; metadata=nothing)
     PNML.flatten_pages!(net)
-    SimpleNet(ctx, PNML.pid(net), net)
+    SimpleNet(PNML.pid(net), net, metadata)
 end
 
 #-------------------------------------------------------------------------------

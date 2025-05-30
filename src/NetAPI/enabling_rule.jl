@@ -58,7 +58,7 @@ function binding_value_sets(net::PnmlNet, marking)
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
         for a in PNML.preset(net, t)::Arc
             adj = adjacent_place(net, a)
-            placesort = sortref(adj)
+            placesort = _sortref(decldict(net), adj)
             vs = vars(inscription(a))::Tuple
 
             for v in vs # inscription that is not a ground term
@@ -95,6 +95,7 @@ end
     enabled(::PnmlNet, marking) -> LVector
 
 Return vector boolean where `true` means transition is enabled at current `marking`.
+Used in the firing rule.
 """
 function enabled end
 
@@ -113,59 +114,13 @@ end
 # example LabelledPetriNet([:S, :I, :R], :inf=>((:S,:I)=>(:I,:I)), :rec=>(:I=>:R))
 
 """
-    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark) -> Bool
-
-Fill `arc_bvs` with entry for each `arc_vars`
-"""
-function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
-    for v in keys(arc_vars) # Each variable must have a non-empty substitution.
-        #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
-        arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
-        varrefid = refid(sortref(variable(v)))
-
-        # Verify variable sort matches placesort.
-        if sortof(placesort) isa ProductSort
-            #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            any(==(varrefid), Sorts.sorts(sortof(placesort))) ||
-                    error("none of tuple are equal sorts of $varrefid: $(Sorts.sorts(sortof(placesort))))")
-        else
-            placesort !== sortref(variable(v)) &&
-                error("not equal sorts ($placesort, $(sortref(variable(v))))")
-        end
-
-        for (el,mu) in pairs(multiset(mark))
-            #! arc_bvs counts possible substitutions in source place's marking.
-            # Multiple of same variable in inscription expression means arc_bvs only includes
-            # elements with a multiplicity at least as that large.
-            if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
-                if el isa Tuple
-                    # Select the tuple element matching variable sort.
-                    # Standard PnmlTuple are pairs. We allow tuple of at least one element.
-                    for e in el #? PnmlMultiset?
-                        if refid(e) == varrefid
-                            e2 = e()
-                            push!(arc_bvs[v], e2) # Add value to count of substitutions.
-                        end
-                    end
-                else #! el may be a PnmlMultiset
-                    push!(arc_bvs[v], el) # Add value to count of substitutions.
-                end
-            end
-        end
-        if !isempty(arc_vars) && isempty(arc_bvs[v])
-            return false # There are variables and one of them has no substitution.
-        end
-    end
-    return true # No variables or all of them have at least 1 substution.
-end
-
-"""
     enabledXXX(net::PnmlNet, marking) -> Vector{Bool}
 
-The vector has `true` for mtching transitions;
+Return vector of booleans where `true` means the matching transition is enabled;
 has the same order as the `transitions` dictionary.
 
-Update tr.vars Set and tr.varsubs NamedTuple for every [`Transition`](@ref) `tr` in `net` using `marking`.
+Update tr.vars Set and tr.varsubs NamedTuple
+for every [`Transition`](@ref) `tr` in `net` using `marking`.
 """
 function enabledXXX(net::PnmlNet, marking)
     evector = Bool[]
@@ -193,10 +148,10 @@ function enabledXXX(net::PnmlNet, marking)
             isempty(arc_vars) ||
                 union!(tr.vars, keys(arc_vars)) # Only variable REFID is stored in transaction.
 
-            arc_bvs   = OrderedDict{REFID, Multiset{Symbol}}() # Per-arc binding.
+            arc_bvs   = OrderedDict{REFID, Multiset{Symbol}}() # Empty per-arc binding.
 
             placesort = sortref(place(net, placeid)) # TODO create exception
-            enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark)
+            enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, decldict(net))
             enabled || break
             enabled &= accum_varsets!(bvs, arc_bvs) # Transaction accumulates/intersects arc bindings.
             enabled || break
@@ -208,19 +163,19 @@ function enabledXXX(net::PnmlNet, marking)
 
         if enabled
             #! 2st stage of enabling rule has succeded. (place marking >= inscription)
-            for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
-                placeid   = source(ar) # adjacent place
+            for arc in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
+                placeid   = source(arc) # adjacent place
                 mark      = marking[placeid]
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
                 # Condition evaluates to `true`
                 if isempty(tr.vars) # 0-ary operators
                     # This includes the non-HL net types that do not have variables.
-                    inscription_val = _cvt_inscription_value(net, ar,
+                    inscription_val = _cvt_inscription_value(net, arc,
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
-                    condition_val = eval(toexpr(term(condition(tr)), NamedTuple()))
+                    condition_val = eval(toexpr(term(condition(tr)), NamedTuple(), decldict(tr)))
                     enabled &= mi_val && condition_val
                 else
                     # Use the transition-level variable substution bindings `bvs`.
@@ -234,12 +189,12 @@ function enabledXXX(net::PnmlNet, marking)
                     foreach(vsubiter) do  params
                         # Is params a tuple
                         vsub = namedtuple(vid, params) # names, values
-                        inscription_val = _cvt_inscription_value(net, ar, zero_marking(place(net, placeid)), vsub)
+                        inscription_val = _cvt_inscription_value(net, arc, zero_marking(place(net, placeid)), vsub)
                         mark = unwrap_pmset(mark)
 
                         #? Do we want <= or is it issubset(A,B)?
                         mi_val = issubset(inscription_val, mark)
-                        condition_val = eval(toexpr(term(condition(tr)), vsub))
+                        condition_val = eval(toexpr(term(condition(tr)), vsub, decldict(tr)))
 
                         if mi_val && condition_val
                             push!(tr.varsubs, vsub)
@@ -264,4 +219,53 @@ function enabledXXX(net::PnmlNet, marking)
     end # for tr
     #@show evector
     return evector
+end
+
+
+"""
+    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark) -> Bool
+
+Fill `arc_bvs` with entry for each `arc_vars`.
+Return `true` if no variables or all variables have at least 1 substution.
+"""
+function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, ddict)
+    for v in keys(arc_vars) # Each variable must have a non-empty substitution.
+        #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
+        arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
+        varrefid = refid(sortref(variable(ddict, v)))
+
+        # Verify variable sort matches placesort.
+        if sortof(placesort) isa ProductSort
+            #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
+            any(==(varrefid), Sorts.sorts(sortof(placesort))) ||
+                    error("none of tuple are equal sorts of $varrefid: $(Sorts.sorts(sortof(placesort))))")
+        else
+            placesort !== sortref(variable(ddict, v)) &&
+                error("not equal sorts ($placesort, $(sortref(variable(ddict, v))))")
+        end
+
+        for (el,mu) in pairs(multiset(mark))
+            #! arc_bvs counts possible substitutions in source place's marking.
+            # Multiple of same variable in inscription expression means arc_bvs only includes
+            # elements with a multiplicity at least as that large.
+            if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
+                if el isa Tuple
+                    # Select the tuple element matching variable sort.
+                    # Standard PnmlTuple are pairs. We allow tuple of at least one element.
+                    for e in el #? PnmlMultiset?
+                        if refid(e) == varrefid
+                            e2 = e()
+                            push!(arc_bvs[v], e2) # Add value to count of substitutions.
+                        end
+                    end
+                else #! el may be a PnmlMultiset
+                    push!(arc_bvs[v], el) # Add value to count of substitutions.
+                end
+            end
+        end
+        if !isempty(arc_vars) && isempty(arc_bvs[v])
+            return false # There are variables and one of them has no substitution.
+        end
+    end
+    return true # No variables or all of them have at least 1 substution.
 end

@@ -8,9 +8,12 @@ mutable struct PnmlModel
     nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
     namespace::String
 
-    #~ refactor #! move registry, decldict to PnmlNet
-    regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alias.
-    decldict::Vector{DeclDict}   # Same size as nets.
+    #~ refactor #! move registry, decldict to PnmlNet?
+    # registry only accessed during parse.
+    # decldict accessed AFTER parse, printing in particular.
+    # ddict::DeclDict is a field of `Declaration`
+    #! regs::Vector{PnmlIDRegistry} # Same size as nets. Registries may alias.
+    #! decldict::Vector{DeclDict}   # Same size as nets. #! See `Declaration`
 end
 
 """
@@ -20,19 +23,19 @@ Return all `nets` of `model`.
 """
 nets(model::PnmlModel) = model.nets
 
-"""
-$(TYPEDSIGNATURES)
+# """
+# $(TYPEDSIGNATURES)
 
-Return all `PnmlIDRegistrys` of `model`.
-"""
-regs(model::PnmlModel) = model.regs
+# Return all `PnmlIDRegistrys` of `model`.
+# """
+# regs(model::PnmlModel) = model.regs #~ refactor #! move registry, decldict to PnmlNet?
 
-"Return PnmlIDRegistry of a PnmlNet in a model."
-registry_of(model::PnmlModel, netid::Symbol) = begin
-    indexof = findfirst(ispid(netid), map(pid, nets(model)))
-    isnothing(indexof) && error("registry_of could not find net $netid")
-    regs(model)[indexof]::PnmlIDRegistry
-end
+# "Return PnmlIDRegistry of a PnmlNet in a model."
+# registry_of(model::PnmlModel, netid::Symbol) = begin #~ refactor #! move registry, decldict to PnmlNet?
+#     indexof = findfirst(ispid(netid), map(pid, nets(model)))
+#     isnothing(indexof) && error("registry_of could not find net $netid")
+#     regs(model)[indexof]::PnmlIDRegistry
+# end
 
 namespace(model::PnmlModel) = model.namespace
 netsets(::PnmlModel) = throw(ArgumentError("`PnmlModel` does not have a PnmlKeySet, did you want a `Page`?"))
@@ -69,9 +72,10 @@ function Base.show(io::IO, model::PnmlModel)
             println(io)
         end
     end
-    println(io, length(regs(model)), " registry:" )
-    for reg in regs(model)
-        println(io, repr(reg))
-    end
-    print(io, ")")
+    #~ refactor #! move registry, decldict to PnmlNet?
+    # println(io, length(regs(model)), " registry:" )
+    # for reg in regs(model)
+    #     println(io, repr(reg))
+    # end
+    # print(io, ")")
 end

@@ -351,8 +351,7 @@ function value end
 
 """
     term(x)
-Return term of x.
-PnmlExpr that eval'ed returns the value.
+Return 'PnmlExpr` term of x.
 """
 function term end
 
@@ -410,8 +409,8 @@ Return the sort of an object or type. Any type that supports the PNML sort inter
 is expected to define [`has_sort`](@ref) to be true and a `sortof` method that returns
 a sort instance.
 
-Often implemented as `sortdefinition(namedsort(sortref(x)))` or other call of `sordefinition`.
-Default implementation is `identity`.
+Often implemented as `sortdefinition(namedsort(ddict, sortref(x)))`
+or other call of `sortdefinition`. Default implementation is `identity`.
 
 We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.
 """
@@ -432,23 +431,23 @@ PnmlMultiset, Operator, Variable,
 function sortref end
 
 """
-    sortdefinition(NamedSort|ArbitrarySort|PartitionSort) -> Sort
+    sortdefinition(::SortDeclaration) -> Sort
 
 Return concrete sort attached to a sort declaration object.
 
-Dictionaries in a [`DeclDict`](@ref) network-level `ScopedValue` hold
+Dictionaries in a network-level [`DeclDict`](@ref) hold, among other things,
 `NamedSort`, `ArbitrarySort` and `PartitionSort` declarations.
 These declarations add an ID and name to a concrete sort,
 with the ID symbol used as the dictionary key.
 
 # Examples
-    sortdefinition(namedsort(refid))
-    sortdefinition(partitionsort(refid))
+    sortdefinition(namedsort(decldict, refid))
+    sortdefinition(partitionsort(decldict, refid))
 """
 function sortdefinition end
 
 """
-    basis(x) -> UserSort
+    basis(x, ddict) -> UserSort
 
 Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
 `MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
@@ -478,9 +477,9 @@ function adjacent_place end
 #todo Use traits?
 
 """
+    decldict(idreg) -> DeclDict
     decldict(x) -> DeclDict
 
-`PnmlNet` and `Page` may have `<declaration>` labels.
-We coalesce them into one `DeclDict` that both access. As may others.
+`PnmlNet`,`Page` and `Declaration` labels have bindings to the net-level `DeclDict`.
 """
 function decldict end

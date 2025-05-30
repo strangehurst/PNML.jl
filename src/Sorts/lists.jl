@@ -4,6 +4,7 @@ $(TYPEDEF)
 @auto_hash_equals struct ListSort <: AbstractSort
     #
     ae::Vector{AbstractSort} #~ ABSTRACT
+    declarationdicts::DeclDict
 end
 ListSort() = ListSort(IntegerSort[])
 #! equal(a::ListSort, b::ListSort) = a.ae == b.ae

@@ -13,10 +13,15 @@ struct ArbitrarySort <: SortDeclaration
     id::Symbol # TODO NamedSort?
     name::Union{String,SubString{String}}
     body::Symbol #! Are id and declaration redundent?
+    declarationdicts::DeclDict
 end
 
 function ArbitrarySort()
     ArbitrarySort(:arbitrarysort, "ArbitrarySort", nothing)
+end
+
+function Base.show(io::IO, s::ArbitrarySort)
+    print(io, nameof(typeof(s)), "(", repr(id), ", ", repr(name), ", ", repr(body), ")")
 end
 
 """
@@ -31,4 +36,9 @@ struct ArbitraryOperator <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     declaration::Symbol #! Are id and declaration redundent?
+    declarationdicts::DeclDict
+end
+
+function Base.show(io::IO, op::ArbitraryOperator)
+    print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ", repr(declaration), ")")
 end

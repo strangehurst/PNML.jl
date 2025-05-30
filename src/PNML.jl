@@ -73,7 +73,6 @@ if !haskey(ENV, "COLUMNS")
 end
 
 import AutoHashEquals: @auto_hash_equals
-using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype, keys
 import Base: *, (+), (-), (<), (>),(>=), (<=), zero, length, iterate
 import FunctionWrappers
@@ -85,16 +84,14 @@ import MacroTools
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
-using TermInterface
-using Metatheory
 import Multisets: Multisets, Multiset
 #~import StyledStrings
 
+using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
+using TermInterface
+using Metatheory
 using Graphs: SimpleDiGraphFromIterator, Edge
 using MetaGraphsNext: MetaGraph
-
-
-Multisets.set_key_value_show()
 
 using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
@@ -102,15 +99,17 @@ using DocStringExtensions
 
 # EXPORTS
 
-
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
 export REFID
+export decldict
 
 export @xml_str, xmlroot
 public pnmlmodel
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
 public labelof
+
+Multisets.set_key_value_show()
 
 include("logging.jl")
 pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
@@ -137,10 +136,11 @@ include("Core/interfaces.jl") # Function docstrings mostly.
 include("Core/types.jl") # Abstract Types with docstrings.
 include("Core/anyelement.jl") # AnyElement, DictType, XDVT
 
+
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
-# Single per-net DeclDict
-const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
+#! Single per-net DeclDict
+#! const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
 
 
 # Parts of Labels and Nodes.
@@ -185,6 +185,8 @@ include("Labels/Labels.jl")
 using .Labels
 
 """
+    TOOLSPECIFIC_PARSERS
+
 Vector{ToolParser} of objects that associate a tool name and version with a callable.
 The callable parses the content of a `<toolspecific tool="toolname" version="string">`
 XML element.

@@ -18,15 +18,20 @@ Real valued label. An expected use is as a transition rate.
     value::T # text? PnmlExpr?
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
+    declarationdicts::DeclDict
 end
 
 Base.eltype(r::Rate) = typeof(value(r))
 value(r::Rate) = r.value
 
+function Base.show(io::IO, r::Rate)
+    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphicd,  ", ", r.tools, ")")
+end
 
 #! Move rate_value_type
 # lookup value_type of PnmlLabel
 function value_type_of(x)
+    error("unmplemented?")
 end
 
 "Parse content of `<text>` as a number of `value_type`."

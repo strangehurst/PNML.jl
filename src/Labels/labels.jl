@@ -114,6 +114,7 @@ struct HLLabel{PNTD} <: HLAnnotation
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
+    declarationdicts::DeclDict
     #TODO validate in constructor: must have text or structure (depends on pntd?)
     #TODO make all labels have text &/or structure?
 end
@@ -138,6 +139,7 @@ while `PnmlLabel` is restricted to PNML Labels.
 @auto_hash_equals struct PnmlLabel <: Annotation
     tag::Union{Symbol, String, SubString{String}}
     elements::Any #Vector{AnyElement} PNML.XDVT is too complex
+    declarationdicts::DeclDict
 end
 #!PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
@@ -194,17 +196,26 @@ $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
 
-All the declarations in the <structure> are placed into a single per-net dictonary `ddict`.
+All the declarations in the <structure> are placed into a single per-net dictionary `ddict`.
 The text, graphics, and tools fields are expected to be nothing, but are present because,
 being labels, it is allowed.
 """
 @kwdef struct Declaration <: Annotation
     text::Maybe{String} = nothing
-    ddict::DeclDict = DeclDict() # Empty is allowed and the default.
+    ddict::DeclDict
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
 end
 
-PNML.decldict(d::Declaration) = d.ddict # Coalesced into this per-net DeclDict.
+PNML.decldict(d::Declaration) = d.ddict
 Base.length(d::Declaration) = length(PNML.decldict(d))
 Base.isempty(d::Declaration) = isempty(PNML.decldict(d))
+
+function Base.show(io::IO, d::Declaration)
+    print(io, nameof(typeof(d)), "(")
+    show(io, text(d)); print(io, ", ")
+    show(io, d.graphics); print(io, ", ")
+    show(io, d.tools); print(io, ", ")
+    show(io, decldict(d))
+    print(io, ")")
+end
