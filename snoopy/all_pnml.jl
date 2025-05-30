@@ -70,6 +70,7 @@ function _testpn(tests::Vector{String} = String[];
     @show start_time = now()
     cd(topdir) do
         @time for (i,test) in enumerate(tests)
+            # RUN THE TEST
             print(i, " of ", length(tests), ": ")
             per_file!(df, joinpath(outdir, string(test, ".txt")), test)
             GC.gc()
@@ -91,11 +92,11 @@ function _testpn(tests::Vector{String} = String[];
     sort!(df, [:time])
     dt = joinpath(outdir, "DataFrame.txt")
     Base.redirect_stdio(; stdout=dt, stderr=dt) do
-        show(df; truncate=80)
+        show(df; truncate=120) # Sorted DataFrame
         println()
     end
     println()
-    show(df; truncate=80)
+    show(df; truncate=120)
     println()
     CSV.write(joinpath(outdir, "DataFrame.csv"), df)
     println("finish_time = ", now(), ", elapsed time = ", (now() - start_time))
@@ -119,7 +120,7 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             println(stat(testf), " at ", Time(file_start))
             println()
 
-            stats = @timed PNML.pnmlmodel(PNML.Context(), testf) #^ PARSE PNML MODEL
+            stats = @timed PNML.pnmlmodel(testf) #^ PARSE PNML MODEL
 
             #todo Add fields of testf path components to allow sorting the table.
             push!(df, (file=testf, fsize=filesize(testf),
@@ -147,7 +148,7 @@ end
 function exersize_netA(model)
     println(model)
     # Petri Net & Graph
-    @showtime anet = PNML.SimpleNet(PNML.Context(), model)
+    @showtime anet = PNML.SimpleNet(model)
     if !(PNML.narcs(pnmlnet(anet)) > 0 &&
          PNML.nplaces(pnmlnet(anet)) > 0 &&
          PNML.ntransitions(pnmlnet(anet)) > 0)
@@ -164,7 +165,7 @@ function exersize_netA(model)
     println("-----")
     #C = PNML.incidence_matrix(anet)
     #@showtime C  = PNML.incidence_matrix(anet)
-    @show m₀ = PNML.initial_markings(anet)
+    @show m₀ = PNML.initial_markings(anet) #!
     #@showtime e  = PNML.enabled(anet, m₀)
     println("-----")
 end

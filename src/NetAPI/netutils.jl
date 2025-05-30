@@ -48,7 +48,7 @@ function conditions(net::PnmlNet) #TODO! non-ground terms
 end
 
 """
-inscription_value(::Type{T}, a, z, varsub) -> T
+inscription_value(::Type{T}, a::Arc, z, varsub) -> T
 
 If `a` is nothing return `z` else evaluate inscription expression with varsub)`;
 where `z` is `zero` or zero-like PnmlMultiset of same type as inscription and adjacent place.
@@ -56,16 +56,17 @@ and `varsub` is a possibly empty variable substitution for High-level net compat
 """
 function inscription_value end
 
-function inscription_value(::Type{T}, a, z, varsub) where {T}
+function inscription_value(::Type{T}, a::Maybe{Arc}, z, varsub) where {T}
 if isnothing(a)
-    z::T
+    z::T # return "zero"
 else
-    eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub))::T
+    #@show PNML.term(PNML.inscription(a))
+    eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))::T
 end
 end
 
 "Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
-function _cvt_inscription_value(net::PnmlNet, a, z, varsub)
+function _cvt_inscription_value(net::PnmlNet, a::Maybe{Arc}, z, varsub)
     val = inscription_value(PNML.inscription_value_type(net), a, z, varsub)
     return PNML.pntd(net) isa PT_HLPNG ? cardinality(val) : val
 end

@@ -15,15 +15,16 @@ using DocStringExtensions
 using Logging, LoggingExtras
 
 using PNML
+using PNML: DeclDict
+using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
+using PNML: arbitrarysorts, partitionsorts, partitionops
+using PNML: namedoperators, arbitraryops, feconstants
+
 # Extend PNML core #TODO what interfaces?
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
 import ..Expressions: toexpr
-
-using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
-using PNML: arbitrarysorts, partitionsorts, partitionops
-using PNML: namedoperators, arbitraryops, feconstants
 
 using ..Sorts
 using ..PnmlIDRegistrys

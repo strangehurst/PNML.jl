@@ -172,23 +172,23 @@ end
 
 Return id of referenced place. If trim is `true` (default) the reference is removed.
 """
-function deref_place(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::Bool = CONFIG[].verbose)::Symbol
+function deref_place(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::Bool = CONFIG[].verbose)
     netid = pid(net)
     has_refplace(net, id) ||
         throw(ArgumentError("expected refplace $id to be found in net $netid"))
 
-    rp = refplace(net, id)
-    isnothing(rp) && # Something is really, really wrong.
+    rid = refid(refplace(net, id))
+    isnothing(rid) && # Something is really, really wrong.
         throw(ArgumentError("failed to lookup reference place id $id in net $netid)"))
-    has_place(net, refid(rp)) || has_refplace(net, refid(rp)) ||
-        throw(ArgumentError("$(refid(rp)) is not a place or reference place"))
+    has_place(net, rid) || has_refplace(net, rid) ||
+        throw(ArgumentError("$(rid) is not a place or reference place"))
 
     if trim
         delete!(refplacedict(net), id)
         has_refplace(net, id) &&
             error("did not expect refplace $id in net $netid after delete")
     end
-    return refid(rp)
+    return rid
 end
 
 """
@@ -196,7 +196,7 @@ end
 
 Return id of referenced transition. If trim is `true` (default) the reference is removed.
 """
-function deref_transition(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::Bool = CONFIG[].verbose)::Symbol
+function deref_transition(net::PnmlNet, id::Symbol; trim::Bool = true, verbose::Bool = CONFIG[].verbose)
     netid = pid(net)
     has_reftransition(net, id) || (throw ∘ ArgumentError)("expected reftransition $id in net $netid")
     rt = reftransition(net, id)
