@@ -126,7 +126,6 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             push!(df, (file=testf, fsize=filesize(testf),
                        time=stats.time, bytes=stats.bytes, gctime=stats.gctime))
 
-            # Display PnmlModel as a test of parsing, creation and show().
             !isnothing(exersize_net) && exersize_net(stats.value) #^ EXERSIZE PNML MODEL
             println("took ", stats.time, " memory: ", stats.bytes, " bytes")
 
@@ -145,6 +144,11 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
     run(Cmd(`grep "^CAUGHT EXCEPTION" $outfile`, ignorestatus=true))
 end
 
+"""
+- Display PnmlModel as a test of parsing, creation and show().
+- Simple metagraph operations.
+- Initial marking vector.
+"""
 function exersize_netA(model)
     println(model)
     # Petri Net & Graph
@@ -165,7 +169,8 @@ function exersize_netA(model)
     println("-----")
     #C = PNML.incidence_matrix(anet)
     #@showtime C  = PNML.incidence_matrix(anet)
-    @show m₀ = PNML.initial_markings(anet) #!
-    #@showtime e  = PNML.enabled(anet, m₀)
+    @showtime m₀ = PNML.initial_markings(anet.net) #!
+    @showtime i  = PNML.incidence_matrix(anet.net, m₀)
+    @showtime e  = PNML.enabled(anet.net, m₀)
     println("-----")
 end
