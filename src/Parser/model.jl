@@ -34,45 +34,35 @@ function pnmlmodel(filename::AbstractString; context...)
     pnmlmodel(EzXML.root(EzXML.readxml(filename)); context...)
 end
 
+@kwdef struct ParseContext
+    idregistry::PnmlIDRegistry
+    ddict::DeclDict
+    labelparser::Vector{LabelParser} = LabelParser[]
+    toolparser::Vector{ToolParser} = ToolParser[]
+end
+
+function parser_context()
+    idreg = PnmlIDRegistry()
+    ParseContext(; idregistry=idreg, ddict=decldict(idreg))
+end
+
 function pnmlmodel(node::XMLNode; context...)
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node)
     xmlnets = allchildren(node ,"net")
     isempty(xmlnets) && throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
-    # Labels.ToolParser[], lp_vec=LabelParser[])
 
     # Do not YET have a PNTD defined. Each net can be different net type.
-    # Note the use of ScopedValues.
+
     net_tup = ()
     for netnode in xmlnets
-        #! LabelParser PLUGIN Setup BEGIN
-        #! LabelParser PLUGIN END
 
-        #! ToolParser PLUGIN Setup BEGIN
-        #! ToolParser PLUGIN END
+        parse_context = parser_context()::ParseContext
+        #! parse_context LabelParser[] filled using context
+        #! parse_context ToolParser[] filled using context
 
-        net = parse_net(netnode; context...)
-        #~ --------------------------------------------------------------
-        #~ At this point the XML has been processed into PnmlExpr terms.
-        #~ --------------------------------------------------------------
+        net = parse_net(netnode; parse_context) #idreg. ddict
 
-        @with PNML.idregistry => PNML.registry_of(net) begin
-            # Ground terms used to set initial markings rewritten and evaluated here.
-            # 0-arity operator means empty variable substitution, i.e. constant.
-
-            #~ Evaluate expressions to create a mutable vector of markings.
-            #todo API for using ToolInfo in expressions?
-            #^ Marking vector is used in enabling and firing rules.
-            m₀ = PNML.PNet.initial_markings(net)
-
-            # Substitutions using indices into the marking vector. #TODO
-            # Rewrite inscription and condition terms with variable substitution.
-
-            # Create "color functions" that process variables using TermInterface expressions.
-            # Pre-caculate as much as is practical.
-
-            PNML.enabledXXX(net, m₀) # enabling rule?
-        end
         net_tup = (net_tup..., net)
     end
     length(net_tup) > 0 || error("length(net_tup) is zero")
@@ -111,10 +101,9 @@ end
 """
 function parse_net(node::XMLNode;
                     pntd_override::Maybe{PnmlType} = nothing,
-                    idreg=PnmlIDRegistry(), # Net level value
-                    ddict=decldict(idreg))  # Net level value
+                    parse_context::ParseContext)
 
-    netid = register_idof!(idreg, node)
+    netid = register_idof!(parse_context.idregistry, node)
 
     # Parse the required-by-specification petri net type. Not the place sort `<type`.
     pn_typedef = pnmltype(attribute(node, "type"))
@@ -131,7 +120,28 @@ function parse_net(node::XMLNode;
     isempty(allchildren(node ,"page")) &&
         throw(PNML.MalformedException("""<net> $netid does not have any <page> child"""))
 
-    return @with PNML.idregistry=>idreg parse_net_1!(ddict, node, pntd, netid; ddict)
+     @with PNML.idregistry=>parse_context.idregistry begin
+        net = parse_net_1!(node, pntd, netid; parse_context)
+        #~ --------------------------------------------------------------
+        #~ At this point the XML has been processed into PnmlExpr terms.
+        #~ --------------------------------------------------------------
+
+        # Ground terms used to set initial markings can be rewritten and evaluated here.
+        # 0-arity operator means empty variable substitution, i.e. constant.
+
+        #~ Evaluate expressions to create a mutable vector of markings.
+        #todo API for using ToolInfo in expressions?
+        #^ Marking vector is used in enabling and firing rules.
+        m₀ = PNML.PNet.initial_markings(net)
+
+        # ?Rewrite inscription and condition terms with variable substitution.
+
+        # Create "color functions" that process variables using TermInterface expressions.
+        # Pre-caculate as much as is practical.
+
+        PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
+        return net
+    end
 end
 
 """
@@ -140,7 +150,7 @@ attached to the nodes of a petri net graph, including: marking, inscription, con
 
 Page IDs are appended as the XML tree is descended, followed by node IDs.
 """
-function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol; ddict)
+function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_context)
     pgtype = PNML.page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
@@ -152,13 +162,13 @@ function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol
     PNML.tunesize!(netdata)
     PNML.tunesize!(netsets)
 
-    @assert isregistered(PNML.idregistry[], netid)
+    @assert isregistered(parse_context.idregistry, netid)
 
     # Having the name is useful for error/log messages.
     namelabel::Maybe{Name} = nothing
     nameelement = firstchild(node, "name")
     if !isnothing(nameelement)
-        namelabel = parse_name(nameelement, pntd; ddict)
+        namelabel = parse_name(nameelement, pntd; parse_context.ddict)
     end
 
     # We use the declarations toolkit for non-high-level nets,
@@ -175,12 +185,12 @@ function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol
     decls = alldecendents(node, "declaration") # There may be none.
 
     # If there are multiple `<declaration>`s parsed the will share the DeclDict.
-    declaration = parse_declaration!(ddict, decls, pntd)::Declaration
-    @assert PNML.decldict(declaration) === dd
+    declaration = parse_declaration!(parse_context.ddict, decls, pntd)::Declaration
+    @assert PNML.decldict(declaration) === parse_context.ddict
     PNML.validate_declarations(PNML.decldict(declaration)) #
 
     # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
-    tools = find_toolinfos!(nothing, node, pntd, ddict)::Maybe{Vector{ToolInfo}}
+    tools = find_toolinfos!(nothing, node, pntd, parse_context.ddict)::Maybe{Vector{ToolInfo}}
 
     PNML.Labels.validate_toolinfos(tools)
 
@@ -190,7 +200,7 @@ function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol
                     page_set=PNML.page_idset(netsets), #! Not sorted!
                     declaration, # Label, Wraps DeclDict.
                     namelabel, tools,
-                    idregistry=PNML.idregistry[] # Store scoped value.
+                    parse_context.idregistry
                     )
 
     # Fill the pagedict, netsets, netdata by depth first traversal of pages.
@@ -204,12 +214,12 @@ function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol
             # Note that one can always flatten a multi-page PnmlNet to a single page
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
-            parse_page!(pagedict, netdata, netsets, child, pntd; ddict)
+            parse_page!(pagedict, netdata, netsets, child, pntd; parse_context) #
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
         else # Unclaimed labels are assumed to be every other child.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            net.labels = add_label(net.labels, child, pntd, ddict) # Net unclaimed label.
+            net.labels = add_label(net.labels, child, pntd, parse_context.ddict) # Net unclaimed label.
             # The specification allows meta-models defined upon the core to define
             # additional labels that conform to the Schema.
             # We use XMLDict as the parser for unclaimed labels (and anynet).
@@ -223,11 +233,11 @@ function parse_net_1!(dd::DeclDict, node::XMLNode, pntd::PnmlType, netid::Symbol
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
-function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; ddict)
+function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
-    pageid = register_idof!(idregistry[], node)
+    pageid = register_idof!(parse_context.idregistry, node)
     push!(PNML.page_idset(netsets), pageid) # Record id before decending.
-    pg = _parse_page!(pagedict, netdata, node, pntd, pageid; ddict)
+    pg = _parse_page!(pagedict, netdata, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
     return pagedict
@@ -238,7 +248,8 @@ end
 
 Place `Page` in `pagedict` using id as the key.
 """
-function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol; ddict) where {T<:PnmlType}
+function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
+            parse_context::ParseContext) where {T<:PnmlType}
     netsets = PnmlNetKeys() # Allocate per-page data.
 
     name::Maybe{Name} = nothing
@@ -252,23 +263,23 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
     rp_set         = PNML.refplace_idset(netsets)
     rt_set         = PNML.reftransition_idset(netsets)
 
-    tools = find_toolinfos!(nothing, node, pntd, ddict)::Maybe{Vector{ToolInfo}}
+    tools = find_toolinfos!(nothing, node, pntd, parse_context.ddict)::Maybe{Vector{ToolInfo}}
     PNML.Labels.validate_toolinfos(tools)
 
     for p in allchildren(node, "place")
-        parse_place!(place_set, netdata, p, pntd; ddict)
+        parse_place!(place_set, netdata, p, pntd; parse_context.ddict)
     end
     for rp in allchildren(node, "referencePlace")
-        parse_refPlace!(rp_set, netdata, rp, pntd; ddict)
+        parse_refPlace!(rp_set, netdata, rp, pntd; parse_context.ddict)
     end
     for t in allchildren(node, "transition")
-        parse_transition!(transition_set, netdata, t, pntd; ddict)
+        parse_transition!(transition_set, netdata, t, pntd; parse_context.ddict)
     end
     for rt in allchildren(node, "referenceTransition")
-        parse_refTransition!(rt_set, netdata, rt, pntd; ddict)
+        parse_refTransition!(rt_set, netdata, rt, pntd; parse_context.ddict)
     end
     for a in allchildren(node, "arc")
-        parse_arc!(arc_set, netdata, a, pntd; ddict)
+        parse_arc!(arc_set, netdata, a, pntd; parse_context.ddict)
     end
 
     for child in EzXML.eachelement(node)
@@ -277,14 +288,14 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
                     "referencePlace", "referenceTransition", "toolspecific"]
             # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage
-            parse_page!(pagedict, netdata, netsets, child, pntd; ddict)
+            parse_page!(pagedict, netdata, netsets, child, pntd; parse_context)
         elseif tag == "name"
-            name = parse_name(child, pntd; ddict)
+            name = parse_name(child, pntd; parse_context.ddict)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            labels = add_label(labels, child, pntd, ddict) # page unclaimed label
+            labels = add_label(labels, child, pntd, parse_context.ddict) # page unclaimed label
         end
     end
 

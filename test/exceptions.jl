@@ -64,26 +64,40 @@ end
 """))
 
     @test_throws("MalformedException: attribute type missing",
-             parse_net(xml"""<net id="4712"> </net>"""))
+             parse_net(xml"""<net id="4712"> </net>"""; parse_context=PNML.Parser.parser_context()))
 end
 
 @testset "missing id $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    idreg = PnmlIDRegistry()
-    ddict = PNML.decldict(idreg)
-
-    @test_throws "MissingIDException: net" parse_net(xml"<net type='test'></net>"; idreg, ddict)
+    #idreg = PnmlIDRegistry()
+    #ddict = PNML.decldict(idreg)
+    parse_context = PNML.Parser.parser_context()
+    @test_throws("MissingIDException: net",
+            parse_net(xml"<net type='test'></net>"; parse_context))
 
     pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
     netdata = PNML.PnmlNetData()
     netsets = PNML.PnmlNetKeys()
 
-    @with PNML.idregistry => idreg begin
-    @test_throws r"^MissingIDException: page" PNML.Parser.parse_page!(pagedict, netdata, netsets, xml"<page></page>", pntd; ddict)
-    @test_throws r"^MissingIDException: place" PNML.Parser.parse_place(xml"<place></place>", pntd; ddict)
-    @test_throws r"^MissingIDException: transition" PNML.Parser.parse_transition(xml"<transition></transition>", pntd; ddict)
-    @test_throws r"^MissingIDException: arc" PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData(); ddict)
-    @test_throws r"^MissingIDException: referencePlace" PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd; ddict)
-    @test_throws r"^MissingIDException: referenceTransition" PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>", pntd; ddict)
+    @with PNML.idregistry => parse_context.idregistry begin
+    @test_throws(r"^MissingIDException: page",
+        PNML.Parser.parse_page!(pagedict, netdata, netsets, xml"<page></page>",
+            pntd; parse_context))
+    @test_throws(r"^MissingIDException: place",
+        PNML.Parser.parse_place(xml"<place></place>",
+            pntd;  parse_context.ddict))
+    @test_throws(r"^MissingIDException: transition",
+        PNML.Parser.parse_transition(xml"<transition></transition>",
+            pntd;  parse_context.ddict))
+    @test_throws(r"^MissingIDException: arc",
+        PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData();
+            parse_context.ddict))
+
+    @test_throws(r"^MissingIDException: referencePlace",
+        PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd;
+            parse_context.ddict))
+    @test_throws(r"^MissingIDException: referenceTransition",
+        PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>",
+            pntd;  parse_context.ddict))
     end
 end
 
