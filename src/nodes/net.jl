@@ -128,54 +128,56 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
-function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
+function verify(net::PnmlNet;
+                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
     #verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
     errors = String[]
 
-    verify!(errors, net; verbose)
+    verify!(errors, net; verbose, idreg)
 
     isempty(errors) ||
         error("verify(net) error(s): ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors, net::PnmlNet; verbose::Bool = CONFIG[].verbose)
+function verify!(errors, net::PnmlNet;
+                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
     # Are the things with PNML IDs in the PnmlIDRegistry?
-    !isregistered(idregistry[], pid(net)) &&
+    !isregistered(idreg, pid(net)) &&
          push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
 
     for pg in pages(net)
-        !isregistered(idregistry[], pid(pg)) &&
+        !isregistered(idreg, pid(pg)) &&
         push!(errors, string("pages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pg in allpages(net)
-        !isregistered(idregistry[], pid(pg)) &&
+        !isregistered(idreg, pid(pg)) &&
             push!(errors, string("allpages() page id ", repr(pid(pg)), " not registered")::String)
     end
     for pl in places(net)
-        !isregistered(idregistry[], pid(pl)) &&
+        !isregistered(idreg, pid(pl)) &&
             push!(errors, string("place id ", repr(pid(pl)), " not registered")::String)
     end
     for tr in transitions(net)
-        !isregistered(idregistry[], pid(tr)) &&
+        !isregistered(idreg, pid(tr)) &&
             push!(errors, string("transition id ", repr(pid(tr)), " not registered")::String)
     end
     for ar in arcs(net)
-        !isregistered(idregistry[], pid(ar)) &&
+        !isregistered(idreg, pid(ar)) &&
             push!(errors, string("arc id ", repr(pid(ar)), " not registered")::String)
     end
     for rp in refplaces(net)
-        !isregistered(idregistry[], pid(rp)) &&
+        !isregistered(idreg, pid(rp)) &&
             push!(errors, string("refPlace id ", repr(pid(rp)), " not registered")::String)
     end
     for rt in reftransitions(net)
-        !isregistered(idregistry[], pid(rt)) &&
+        !isregistered(idreg, pid(rt)) &&
             push!(errors, string("refTranition id ", repr(pid(rt)), " not registered")::String)
     end
 
     # Call net object's verify method.
     for pg in allpages(net)
-        verify!(errors, pg; verbose) #TODO collect diagnostics, or die?
+        verify!(errors, pg; verbose, idreg) #TODO collect diagnostics, or die?
     end
     # places(net), transitions(net), arcs(net)
     # declarations(net)

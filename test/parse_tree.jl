@@ -74,7 +74,7 @@ println("-----------------------------------------\n")
     net = first(netvec)::PnmlNet{<:SymmetricNet}
     # Need to set scoped value PNML.idregistry to value for net
     with(PNML.idregistry => PNML.registry_of(net)) do
-        @test PNML.verify(net; verbose=true)
+        @test PNML.verify(net; verbose=true, idreg=PNML.idregistry[])
 
         @test pages(net) isa Base.Iterators.Filter
         @test only(allpages(net)) == only(pages(net))
@@ -131,9 +131,9 @@ end
 #     for n in PNML.nets(model)
 #         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
 #             #println("-----------------------------------------")
-#             @test PNML.verify(n; verbose=false)
+#             @test PNML.verify(n; verbose=false, idreg=PNML.idregistry[])
 #             PNML.flatten_pages!(n; verbose=false)
-#             @test PNML.verify(n; verbose=true)
+#             @test PNML.verify(n; verbose=true, idreg=PNML.idregistry[]))
 #             #println("-----------------------------------------")
 #             #println("FLATTENED NET")
 #             #@show n
