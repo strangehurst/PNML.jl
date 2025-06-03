@@ -1,7 +1,7 @@
 """
 Parser module of PNML.
 
-See [`LabelParser`](@ref), (`Labels.ToolParser`)(@ref).
+See [`LabelParser`](@ref), (`ToolParser`)(@ref).
 """
 module Parser
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
@@ -19,9 +19,12 @@ using TermInterface
 using Logging, LoggingExtras
 
 using PNML
-
-# Methods implemented in this module.
-import PNML: adjacent_place
+using ..Expressions
+using ..PnmlIDRegistrys
+using ..PnmlTypeDefs
+using ..Labels
+using ..Sorts
+using ..Declarations
 
 using PNML: Maybe, CONFIG, idregistry, AnyElement
 using PNML: Graphics, Coordinate
@@ -31,16 +34,11 @@ using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 using PNML: Context
 using PNML: usersort, usersorts, pid
+using PNML: ParseContext, parser_context, ToolParser, LabelParser
 
+# Methods implemented in this module.
+import PNML: adjacent_place
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
-
-using ..Expressions
-using ..PnmlIDRegistrys
-using ..PnmlTypeDefs
-using ..Labels
-using ..Labels: ToolParser
-using ..Sorts
-using ..Declarations
 
 include("xmlutils.jl")
 include("parseutils.jl")
@@ -56,6 +54,6 @@ include("toolspecific.jl")
 export XMLNode, xmlroot, @xml_str
 export pnmlmodel
 
-public deduce_sort, LabelParser
+public deduce_sort
 
 end

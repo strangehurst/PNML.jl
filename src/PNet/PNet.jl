@@ -16,18 +16,17 @@ import Multisets: Multisets, Multiset
 
 using PNML
 using PNML: Context
-
-import PNML: initial_marking, PnmlMultiset, pid, Parser.LabelParser
-import PNML: metagraph
 using PNML: DeclDict
-
 #using ..PnmlIDRegistrys
 using ..PnmlTypeDefs
 using ..Labels
-using ..Labels: ToolParser
 using ..Sorts
 using ..PnmlGraphics
 using ..Declarations
+
+import PNML: initial_marking, PnmlMultiset, pid
+import PNML: metagraph
+import PNML: ToolParser, LabelParser
 
 export AbstractPetriNet, SimpleNet, initial_markings
 

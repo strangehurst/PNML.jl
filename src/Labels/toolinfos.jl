@@ -18,7 +18,6 @@ end
 "Name of tool to for this tool specific information element."
 PNML.name(ti::ToolInfo) = ti.toolname
 
-"Version of tool for this tool specific information element."
 version(ti::ToolInfo) = ti.version
 
 "Content of a ToolInfo."
@@ -46,32 +45,6 @@ function Base.show(io::IO, ti::ToolInfo)
 end
 
 ###############################################################################
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Holds a parser for a `<toolspecific>` tag's well-formed contents.
-
-Wraps a iteratable collection that maps tool name & version to a parser callable.
-See `toolspecific_content_fallback(node, pntd)`.
-"""
-@auto_hash_equals struct ToolParser
-    toolname::String
-    version::String
-    func::Base.Callable
-    #todo! declarationdicts::DeclDict
-end
-
-"Name of tool."
-PNML.name(ti::ToolParser) = ti.toolname
-
-"Version of tool."
-version(ti::ToolParser) = ti.version
-
-"Content of a ToolInfo."
-func(ti::ToolParser) = ti.func
-
-#!tokengraphics_toolparser = ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)
 
 ###############################################################################
 

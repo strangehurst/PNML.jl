@@ -124,7 +124,7 @@ include("PnmlIDRegistrys.jl")
 using .PnmlIDRegistrys
 
 "PNML ID registry of the current scope. Nets are the usual scope = a net-level-global."
-const idregistry = ScopedValue{PnmlIDRegistry}() # undefined until PnmlModel created
+const idregistry = ScopedValue{PnmlIDRegistry}() #! undefined until PnmlModel created XXXXXXXXXXXXXXXXXXX
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
@@ -136,12 +136,12 @@ include("Core/interfaces.jl") # Function docstrings mostly.
 include("Core/types.jl") # Abstract Types with docstrings.
 include("Core/anyelement.jl") # AnyElement, DictType, XDVT
 
+include("Core/toolparser.jl")
+include("Core/labelparser.jl")
 
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
-#! Single per-net DeclDict
-#! const DECLDICT = ScopedValue{DeclDict}() # undefined until PnmlModel created
-
+# parse context has id registry and DeclDict
 
 # Parts of Labels and Nodes.
 
@@ -184,14 +184,14 @@ include("Core/decldict.jl") # Just contains show(). See decldictcore.jl.
 include("Labels/Labels.jl")
 using .Labels
 
-"""
-    TOOLSPECIFIC_PARSERS
+# """
+#     TOOLSPECIFIC_PARSERS
 
-Vector{ToolParser} of objects that associate a tool name and version with a callable.
-The callable parses the content of a `<toolspecific tool="toolname" version="string">`
-XML element.
-"""
-const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]#Labels.ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)]
+# Vector{ToolParser} of objects that associate a tool name and version with a callable.
+# The callable parses the content of a `<toolspecific tool="toolname" version="string">`
+# XML element.
+# """
+# const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]#Labels.ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)]
 
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
