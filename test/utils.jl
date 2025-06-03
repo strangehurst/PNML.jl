@@ -31,7 +31,6 @@ end
 end
 
 ctx = PNML.parser_context()
-##! @with PNML.idregistry => ctx.idregistry begin
 
 @testset "default_condition($pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
     c = Labels.default_condition(ctx.ddict, pntd)::Labels.Condition
@@ -60,7 +59,6 @@ end
     #println("rate_value_type($pntd) = ", r)
     @test r == eltype(RealSort)
 end
-##! end # @with
 
 #println()
 @testset "PnmlNetData()" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests

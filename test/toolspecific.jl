@@ -121,4 +121,3 @@ str7 = (tool="WoPeD", version="1.0", str = """
         @test typeof(placetools[i].infos) == typeof(ti.infos)
     end
 end
-#end # @with

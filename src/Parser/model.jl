@@ -40,17 +40,17 @@ function pnmlmodel(node::XMLNode; context...)
     xmlnets = allchildren(node ,"net")
     isempty(xmlnets) && throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
 
-    # Do not YET have a PNTD defined. Each net can be different net type.
-
     net_tup = ()
-    for netnode in xmlnets
+    for netnode in xmlnets #todo iterate nets, flag others
+        # Do not YET have a PNTD defined. Each net can be different net type.
 
         parse_context = parser_context()::ParseContext
         #! parse_context LabelParser[] filled using context
         #! parse_context ToolParser[] filled using context
 
-        net = parse_net(netnode; parse_context) #idreg. ddict
+        net = parse_net(netnode; parse_context) # Fully formed
 
+        #TODO Add verification plugin here. Make our verifiers the 1st plugin.
         net_tup = (net_tup..., net)
     end
     length(net_tup) > 0 || error("length(net_tup) is zero")
@@ -84,8 +84,7 @@ end
 
 # Arguments
  - pntd_override::Maybe{PnmlType}
- - idregistry=PnmlIDRegistry()
- - ddict=DeclDict()
+ - parse_context::ParseContext
 """
 function parse_net(node::XMLNode;
                     pntd_override::Maybe{PnmlType} = nothing,
@@ -103,33 +102,30 @@ function parse_net(node::XMLNode;
         pntd_override
     end
     # Now we know the PNTD and can parse a net.
-    #@debug pntd
 
     isempty(allchildren(node ,"page")) &&
         throw(PNML.MalformedException("""<net> $netid does not have any <page> child"""))
 
-     @with PNML.idregistry=>parse_context.idregistry begin
-        net = parse_net_1!(node, pntd, netid; parse_context)
-        #~ --------------------------------------------------------------
-        #~ At this point the XML has been processed into PnmlExpr terms.
-        #~ --------------------------------------------------------------
+    net = parse_net_1!(node, pntd, netid; parse_context)
+    #~ --------------------------------------------------------------
+    #~ At this point the XML has been processed into PnmlExpr terms.
+    #~ --------------------------------------------------------------
 
-        # Ground terms used to set initial markings can be rewritten and evaluated here.
-        # 0-arity operator means empty variable substitution, i.e. constant.
+    # Ground terms used to set initial markings can be rewritten and evaluated here.
+    # 0-arity operator means empty variable substitution, i.e. constant.
 
-        #~ Evaluate expressions to create a mutable vector of markings.
-        #todo API for using ToolInfo in expressions?
-        #^ Marking vector is used in enabling and firing rules.
-        m₀ = PNML.PNet.initial_markings(net)
+    #~ Evaluate expressions to create a mutable vector of markings.
+    #todo API for using ToolInfo in expressions?
+    #^ Marking vector is used in enabling and firing rules.
+    m₀ = PNML.PNet.initial_markings(net)
 
-        # ?Rewrite inscription and condition terms with variable substitution.
+    # ?Rewrite inscription and condition terms with variable substitution.
 
-        # Create "color functions" that process variables using TermInterface expressions.
-        # Pre-caculate as much as is practical.
+    # Create "color functions" that process variables using TermInterface expressions.
+    # Pre-caculate as much as is practical.
 
-        PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
-        return net
-    end
+    PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
+    return net
 end
 
 """
@@ -152,7 +148,6 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 
     @assert isregistered(parse_context.idregistry, netid)
 
-    # Having the name is useful for error/log messages.
     namelabel::Maybe{Name} = nothing
     nameelement = firstchild(node, "name")
     if !isnothing(nameelement)
@@ -207,7 +202,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             @warn "ignoring unexpected child of <net>: 'graphics'"
         else # Unclaimed labels are assumed to be every other child.
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            net.labels = add_label(net.labels, child, pntd, parse_context.ddict) # Net unclaimed label.
+            net.labels = add_label(net.labels, child, pntd, parse_context) # Net unclaimed label.
             # The specification allows meta-models defined upon the core to define
             # additional labels that conform to the Schema.
             # We use XMLDict as the parser for unclaimed labels (and anynet).
@@ -240,8 +235,9 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     netsets = PnmlNetKeys() # Allocate per-page data.
 
-    name::Maybe{Name} = nothing
+    namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
+    # no tools for model
     labels::Maybe{Vector{PnmlLabel}}= nothing
 
     # Track which objects belong to this page.
@@ -278,7 +274,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
         elseif tag == "page" # Subpage
             parse_page!(pagedict, netdata, netsets, child, pntd; parse_context)
         elseif tag == "name"
-            name = parse_name(child, pntd; parse_context)
+            namelabel = parse_name(child, pntd; parse_context)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         else
@@ -287,7 +283,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
         end
     end
 
-    return Page(pntd, pageid, name, graphics, tools, labels,
+    return Page(pntd, pageid, namelabel, graphics, tools, labels,
                 pagedict, # shared by net and all pages.
                 netdata,  # shared by net and all pages.
                 netsets,  # OrderedSet of ids "owned" by this page.

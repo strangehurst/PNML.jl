@@ -29,7 +29,7 @@ using PNML, ..TestUtils, JET
           </net>
         </pnml>
         """
-    model = @with PNML.idregistry => PnmlIDRegistry()  pnmlmodel(node)
+    model = pnmlmodel(node)
     @test model isa PnmlModel
 end
 
@@ -41,15 +41,13 @@ end
             </net>
         </pnml>
     """
-    @with PNML.idregistry => PnmlIDRegistry() begin
-        @test_logs(match_mode=:all, pnmlmodel(emptypage) )
+    @test_logs(match_mode=:all, pnmlmodel(emptypage) )
 
-        @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
-        @test_call target_modules=target_modules pnmlmodel(emptypage)
-        #TODO ===============================================
-        # Create a tuple of ID Registries of the same shape as the nets of the model.
-        #TODO ===============================================
-    end
+    @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
+    @test_call target_modules=target_modules pnmlmodel(emptypage)
+    #TODO ===============================================
+    # Create a tuple of ID Registries of the same shape as the nets of the model.
+    #TODO ===============================================
 end
 
 @testset "multiple net type" begin
@@ -66,7 +64,6 @@ end
       <net id="net5" type="pt_hlpng"> <name><text>net5</text></name> <page id="page5"/> </net>
     </pnml>
     """))
-    @with PNML.idregistry => PnmlIDRegistry() begin
 
         @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
         #!@test PNML.regs(model) isa Vector{PnmlIDRegistry}
@@ -112,14 +109,11 @@ end
         @test_call PNML.find_net(model, :net1)
         @test_opt  PNML.find_net(model, :net1)
     end
-end
 
 @testset "empty page" begin
-    @with PNML.idregistry => PnmlIDRegistry() begin
-        @test pnmlmodel(xml"""<?xml version="1.0"?>
-            <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-              <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
-            </pnml>
-            """) isa PnmlModel
-    end
+    @test pnmlmodel(xml"""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
+        </pnml>
+        """) isa PnmlModel
 end

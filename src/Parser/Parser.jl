@@ -26,7 +26,7 @@ using ..Labels
 using ..Sorts
 using ..Declarations
 
-using PNML: Maybe, CONFIG, idregistry, AnyElement
+using PNML: Maybe, CONFIG, AnyElement
 using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys

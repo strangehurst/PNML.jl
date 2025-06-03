@@ -2,7 +2,7 @@
 using Preferences: Preferences, @load_preference, @set_preferences!
 
 """
-    save_config!(config::PnmlConfig=CONFIG)
+    save_config!(config::PnmlConfig=CONFIG[])
 
 Save a configuration to your `LocalPreferences.toml` file using Preferences.jl.
 The saved preferences will be automatically loaded next time you do `using PNML`

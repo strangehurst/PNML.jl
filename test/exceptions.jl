@@ -78,7 +78,6 @@ end
     netdata = PNML.PnmlNetData()
     netsets = PNML.PnmlNetKeys()
 
-    @with PNML.idregistry => parse_context.idregistry begin
     @test_throws(r"^MissingIDException: page",
         PNML.Parser.parse_page!(pagedict, netdata, netsets, xml"<page></page>",
             pntd; parse_context))
@@ -98,7 +97,6 @@ end
     @test_throws(r"^MissingIDException: referenceTransition",
         PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>",
             pntd;  parse_context))
-    end
 end
 
 @testset "check_nodename" begin

@@ -60,8 +60,10 @@ end
 
 using Base.ScopedValues
 
+# Make the global `CONFIG` a `ScopedValue`.
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = ScopedValue(PnmlConfig()) # = PnmlConfig()
+
 include("preferences.jl")
 
 __init__() = read_config!(CONFIG[])
@@ -122,9 +124,6 @@ using .PnmlTypeDefs
 
 include("PnmlIDRegistrys.jl")
 using .PnmlIDRegistrys
-
-"PNML ID registry of the current scope. Nets are the usual scope = a net-level-global."
-const idregistry = ScopedValue{PnmlIDRegistry}() #! undefined until PnmlModel created XXXXXXXXXXXXXXXXXXX
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")

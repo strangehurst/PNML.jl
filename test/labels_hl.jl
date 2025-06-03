@@ -154,10 +154,8 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        @with PNML.idregistry => PnmlIDRegistry() begin
-            placetype = SortType("testdot", PNML.usersort(ctx.ddict, :dot), ctx.ddict)
-            mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
-        end
+        placetype = SortType("testdot", PNML.usersort(ctx.ddict, :dot), ctx.ddict)
+        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
     end
 
     #println()

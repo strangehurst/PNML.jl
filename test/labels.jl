@@ -4,7 +4,7 @@ using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
 @testset "text $pntd" for pntd in PnmlTypeDefs.core_nettypes()
-    @with PNML.idregistry=>PnmlIDRegistry() @test parse_text(xml"<text>ready</text>", pntd) == "ready"
+    @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
@@ -209,7 +209,7 @@ function test_unclaimed(pntd, xmlstring::String)
     #! unclaimed id is not registered
     x = get(u, :id, nothing)
     !isnothing(x) &&
-        @with PNML.idregistry => reg1 @test !isregistered(parse_context.idregistry, Symbol(x))
+        @test !isregistered(parse_context.idregistry, Symbol(x))
     return l, a
 end
 
