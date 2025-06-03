@@ -477,9 +477,13 @@ function adjacent_place end
 #todo Use traits?
 
 """
-    decldict(idreg) -> DeclDict
     decldict(x) -> DeclDict
 
 `PnmlNet`,`Page` and `Declaration` labels have bindings to the net-level `DeclDict`.
 """
 function decldict end
+
+"""
+"Version of tool for this tool specific information element and its parser."
+"""
+function version end

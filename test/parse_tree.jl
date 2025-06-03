@@ -72,44 +72,40 @@ println("-----------------------------------------\n")
     @test length(netvec) == 1
 
     net = first(netvec)::PnmlNet{<:SymmetricNet}
-    # Need to set scoped value PNML.idregistry to value for net
-    with(PNML.idregistry => PNML.registry_of(net)) do
-        @test PNML.verify(net; verbose=true, idreg=PNML.idregistry[])
 
-        @test pages(net) isa Base.Iterators.Filter
-        @test only(allpages(net)) == only(pages(net))
-        #todo compare pages(net) == allpages(net)
-        @test firstpage(net)::Page == first(pages(net))::Page
-        @test PNML.npages(net) == 1
+    @test PNML.verify(net; verbose=true)
 
-        @test !isempty(arcs(firstpage(net)))
-        @test PNML.narcs(net) >= 0
+    @test pages(net) isa Base.Iterators.Filter
+    @test only(allpages(net)) == only(pages(net))
+    #todo compare pages(net) == allpages(net)
+    @test firstpage(net)::Page == first(pages(net))::Page
+    @test PNML.npages(net) == 1
 
-        @test !isempty(places(firstpage(net)))
-        @test PNML.nplaces(net) >= 0
+    @test !isempty(arcs(firstpage(net)))
+    @test PNML.narcs(net) >= 0
 
-        @test !isempty(transitions(firstpage(net)))
-        @test PNML.ntransitions(net) >= 0
-        @test transitions(firstpage(net)) == transitions(first(pages(net)))
+    @test !isempty(places(firstpage(net)))
+    @test PNML.nplaces(net) >= 0
 
-        @test PNML.nreftransitions(net) == 0
-        @test isempty(PNML.reftransitions(net))
+    @test !isempty(transitions(firstpage(net)))
+    @test PNML.ntransitions(net) >= 0
+    @test transitions(firstpage(net)) == transitions(first(pages(net)))
 
-        @test PNML.nrefplaces(net) == 0
-        @test isempty(PNML.refplaces(net))
+    @test PNML.nreftransitions(net) == 0
+    @test isempty(PNML.reftransitions(net))
 
-        PnmlIDRegistrys.reset_reg!(PNML.idregistry[])
+    @test PNML.nrefplaces(net) == 0
+    @test isempty(PNML.refplaces(net))
 
-        @test_call target_modules=target_modules pnmlmodel(testfile)
-        @test_call nets(model)
+    @test_call target_modules=target_modules pnmlmodel(testfile)
+    @test_call nets(model)
 
-        @test !isempty(repr(PNML.netdata(net)))
-        @test !isempty(repr(PNML.netsets(firstpage(net))))
+    @test !isempty(repr(PNML.netdata(net)))
+    @test !isempty(repr(PNML.netsets(firstpage(net))))
 
-        @show summary(PNML.netsets(firstpage(net)))
+    @show summary(PNML.netsets(firstpage(net)))
 
-        #TODO apply metagraph tools
-    end
+    #TODO apply metagraph tools
 end
 
 # println("\n-----------------------------------------")
@@ -131,9 +127,9 @@ end
 #     for n in PNML.nets(model)
 #         @with PNML.idregistry => PNML.registry_of(model, pid(n)) begin
 #             #println("-----------------------------------------")
-#             @test PNML.verify(n; verbose=false, idreg=PNML.idregistry[])
+#             @test PNML.verify(n; verbose=false)
 #             PNML.flatten_pages!(n; verbose=false)
-#             @test PNML.verify(n; verbose=true, idreg=PNML.idregistry[]))
+#             @test PNML.verify(n; verbose=true))
 #             #println("-----------------------------------------")
 #             #println("FLATTENED NET")
 #             #@show n

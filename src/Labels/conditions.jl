@@ -9,14 +9,14 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
 
 # Examples
 
-```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant; using PNML.PnmlIDRegistrys; ddict=decldict(PnmlIDRegistry()))
-julia> c = Labels.Condition(false, ddict)
+```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant; using PNML.PnmlIDRegistrys; ctx=PNML.parser_context())
+julia> c = Labels.Condition(false, ctx.ddict)
 Condition("", BooleanEx(BooleanConstant(false)))
 
 julia> c()
 false
 
-julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true, ddict)), ddict)
+julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true, ctx.ddict)), ctx.ddict)
 Condition("xx", BooleanEx(BooleanConstant(true)))
 
 julia> c()

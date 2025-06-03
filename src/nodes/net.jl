@@ -26,7 +26,7 @@ nettype(net::PnmlNet) = typeof(net.type)
 
 pid(net::PnmlNet) = net.id
 
-# "Return PnmlIDRegistry of a PnmlNet."
+"Return PnmlIDRegistry of a PnmlNet."
 registry_of(net::PnmlNet) = net.idregistry
 decldict(net::PnmlNet) = decldict(net.declaration)
 
@@ -129,11 +129,11 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
 function verify(net::PnmlNet;
-                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
+                verbose::Bool = CONFIG[].verbose)
     #verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
     errors = String[]
 
-    verify!(errors, net; verbose, idreg)
+    verify!(errors, net; verbose, idreg=registry_of(net))
 
     isempty(errors) ||
         error("verify(net) error(s): ", join(errors, ",\n "))

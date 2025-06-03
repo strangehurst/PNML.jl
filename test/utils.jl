@@ -30,11 +30,12 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-@with PNML.idregistry => PnmlIDRegistry() begin
-ddict = PNML.decldict(PNML.idregistry[])
+ctx = PNML.parser_context()
+##! @with PNML.idregistry => ctx.idregistry begin
 
 @testset "default_condition($pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
-    c = Labels.default_condition(decldict(PNML.idregistry[]), pntd)::Labels.Condition #! TestUtils & Base export Condition
+    c = Labels.default_condition(ctx.ddict, pntd)::Labels.Condition
+    #! TestUtils & Base export Condition
     println("default_condition(decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
@@ -42,24 +43,24 @@ end
 @testset "default_inscription($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
 
     i = if ishighlevel(pntd)
-        placetype = SortType("default_inscription", UserSort(:dot, ddict), nothing, nothing, ddict)
-        Labels.default_hlinscription(pntd, placetype, ddict)
+        placetype = SortType("default_inscription", UserSort(:dot, ctx.ddict), nothing, nothing, ctx.ddict)
+        Labels.default_hlinscription(pntd, placetype, ctx.ddict)
     else
-        Labels.default_inscription(pntd, ddict)
+        Labels.default_inscription(pntd, ctx.ddict)
     end
     #println("default_i(hl)?nscription($pntd) = ", i)
 end
 
 #println()
 @testset "default_typeusersort($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
-    t = Labels.default_typeusersort(pntd, ddict)::UserSort
+    t = Labels.default_typeusersort(pntd, ctx.ddict)::UserSort
 end
 @testset "rate_value_type($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
     r = PNML.rate_value_type(pntd)
     #println("rate_value_type($pntd) = ", r)
     @test r == eltype(RealSort)
 end
-end # @with
+##! end # @with
 
 #println()
 @testset "PnmlNetData()" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests

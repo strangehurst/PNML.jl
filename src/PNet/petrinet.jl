@@ -229,7 +229,7 @@ struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 "Construct from string of valid pnml XML, using the first network in model."
-HLPetriNet(ctx::Context, str::AbstractString) = HLPetriNet(ctx, pnmlmodel(ctx, xmlroot(str); tp_vec=Labels.ToolParser[], lp_vec=LabelParser[]))
+HLPetriNet(ctx::Context, str::AbstractString) = HLPetriNet(ctx, pnmlmodel(ctx, xmlroot(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
 HLPetriNet(ctx::Context, model::PnmlModel)    = HLPetriNet(ctx, first(nets(model)))
 
 #=

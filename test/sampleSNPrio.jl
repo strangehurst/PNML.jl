@@ -10,7 +10,7 @@ println("-----------------------------------------\n"); flush(stdout)
     #false &&
     model = pnmlmodel(fname)::PnmlModel
     println("model = ", model) #! debug
-    #@test PNML.verify(net; verbose=true, idreg=PNML.idregistry[])
+    #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
     println(); flush(stdout)
 end

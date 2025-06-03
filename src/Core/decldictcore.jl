@@ -33,12 +33,6 @@ Each keyed by REFID symbols.
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
 
-"Create DeclDict with default minimum content."
-function decldict(idreg::PnmlIDRegistry)
-    dd = DeclDict()
-    return fill_nonhl!(dd; idreg)
-end
-
 _decldict_fields = (:namedsorts, :arbitrarysorts,
                     :namedoperators, :arbitraryoperators,
                     :variabledecls,
@@ -231,8 +225,23 @@ function show_sorts(dd::DeclDict)
 #     println()
 end
 
+
+@kwdef struct ParseContext
+    idregistry::PnmlIDRegistry
+    ddict::DeclDict
+    labelparser::Vector{LabelParser} = LabelParser[]
+    toolparser::Vector{ToolParser} = ToolParser[]
+end
+
+function parser_context()
+    dd = DeclDict() # empty
+    idreg = PnmlIDRegistry()
+    fill_nonhl!(ParseContext(; idregistry=idreg, ddict=dd))# Fill and return.
+end
+
+
 """
-    fill_nonhl!(dd::DeclDict; idreg::PnmlIDRegistry) -> DeclDict
+    fill_nonhl!(ctx::ParseContext; idreg::PnmlIDRegistry) -> DeclDict
 
 Fill a DeclDict with defaults and values needed by non-high-level networks.
 
@@ -250,35 +259,34 @@ Fill a DeclDict with defaults and values needed by non-high-level networks.
     UserSort(:dot, ddict))
     UserSort(:bool, ddict))
 """
-function fill_nonhl!(dd::DeclDict; idreg::PnmlIDRegistry)
+function fill_nonhl!(ctx::ParseContext)
     for (tag, name, sort) in ((:integer, "Integer", Sorts.IntegerSort()),
                               (:natural, "Natural", Sorts.NaturalSort()),
                               (:positive, "Positive", Sorts.PositiveSort()),
                               (:real, "Real", Sorts.RealSort()),
-                              (:dot, "Dot", Sorts.DotSort(dd)), #users can override
+                              (:dot, "Dot", Sorts.DotSort(ctx.ddict)), #users can override
                               (:bool, "Bool", Sorts.BoolSort()),
                               (:null, "Null", Sorts.NullSort()),
                               )
         #TODO Add list, strings, arbitrarysorts other built-ins.
-        fill_sort_tag!(dd, tag, name, sort; idreg)
+        fill_sort_tag!(ctx, tag, name, sort)
     end
-    #@show dd
-    return dd
+    return ctx
 end
 
 """
-    fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort; idreg)
+    fill_sort_tag!(ctx::ParseContext, tag::Symbol, name, sort)
 
 If not already in the declarations dictionary, create and add a namedsort, usersort duo for `tag`.
 """
-function fill_sort_tag!(dd::DeclDict, tag::Symbol, name, sort; idreg::PnmlIDRegistry)
-    if !has_namedsort(dd, tag) # Do not overwrite existing content.
-        !isregistered(idreg, tag) && register_id!(idreg, tag)
-        namedsorts(dd)[tag] = NamedSort(tag, name, sort, dd)
+function fill_sort_tag!(ctx::ParseContext, tag::Symbol, name, sort)
+    if !has_namedsort(ctx.ddict, tag) # Do not overwrite existing content.
+        !isregistered(ctx.idregistry, tag) && register_id!(ctx.idregistry, tag)
+        namedsorts(ctx.ddict)[tag] = NamedSort(tag, name, sort, ctx.ddict)
     end
 
-    if !has_usersort(dd, tag) # Do not overwrite existing content.
+    if !has_usersort(ctx.ddict, tag) # Do not overwrite existing content.
         # DO NOT register REFID! ID owned by NamedSort.
-        usersorts(dd)[tag] = UserSort(tag, dd)
+        usersorts(ctx.ddict)[tag] = UserSort(tag, ctx.ddict)
     end
 end

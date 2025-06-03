@@ -85,20 +85,21 @@ DocTestSetup = quote
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
     using PNML.PnmlIDRegistrys
+    ctx = PNML.parser_context()
  end
 ```
 
 ```jldoctest
-julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), PnmlCoreNet())
+julia> c = PNML.Labels.default_condition(ctx.ddict, PnmlCoreNet())
 Condition("", BooleanEx(BooleanConstant(true)))
 
 julia> c()
 true
 
-julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), ContinuousNet())
+julia> c = PNML.Labels.default_condition(ctx.ddict, ContinuousNet())
 Condition("", BooleanEx(BooleanConstant(true)))
 
-julia> c = PNML.Labels.default_condition(decldict(PnmlIDRegistry()), HLCoreNet())
+julia> c = PNML.Labels.default_condition(ctx.ddict, HLCoreNet())
 Condition("", BooleanEx(BooleanConstant(true)))
 ```
 

@@ -84,20 +84,20 @@ end
             pntd; parse_context))
     @test_throws(r"^MissingIDException: place",
         PNML.Parser.parse_place(xml"<place></place>",
-            pntd;  parse_context.ddict))
+            pntd;  parse_context))
     @test_throws(r"^MissingIDException: transition",
         PNML.Parser.parse_transition(xml"<transition></transition>",
-            pntd;  parse_context.ddict))
+            pntd;  parse_context))
     @test_throws(r"^MissingIDException: arc",
         PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData();
-            parse_context.ddict))
+            parse_context))
 
     @test_throws(r"^MissingIDException: referencePlace",
         PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd;
-            parse_context.ddict))
+            parse_context))
     @test_throws(r"^MissingIDException: referenceTransition",
         PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>",
-            pntd;  parse_context.ddict))
+            pntd;  parse_context))
     end
 end
 

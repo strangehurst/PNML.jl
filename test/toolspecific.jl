@@ -69,11 +69,10 @@ str7 = (tool="WoPeD", version="1.0", str = """
 """)
 
 #-----------------------------------------------------------------------------------
-@with PNML.idregistry => PnmlIDRegistry() begin
-ddict = PNML.decldict(PNML.idregistry[])
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
-    @show tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); ddict)
+    ctx = PNML.parser_context()
+    @show tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); parse_context=ctx)
 
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
@@ -86,9 +85,7 @@ ddict = PNML.decldict(PNML.idregistry[])
     @test get_toolinfo([tooli], Regex(s.tool)) == tooli
 
     @test_call broken=false get_toolinfo([tooli], s.tool, s.version)
-end
 
-@testset "combined tools" begin
     n::XMLNode = xmlroot("""<place id="place0">
         $(str1.str)
         $(str2.str)
@@ -101,7 +98,7 @@ end
     </place>
     """)
 
-    @show combinedplace = parse_place(n, PnmlCoreNet(); ddict)
+    @show combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
 
     @test_call tools(combinedplace)
     @show placetools = tools(combinedplace)
@@ -124,4 +121,4 @@ end
         @test typeof(placetools[i].infos) == typeof(ti.infos)
     end
 end
-end # @with
+#end # @with
