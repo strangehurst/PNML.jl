@@ -36,24 +36,29 @@ end
 
 function pnmlmodel(node::XMLNode; context...)
     check_nodename(node, "pnml")
-    namespace = pnml_namespace(node)
-    xmlnets = allchildren(node ,"net")
-    isempty(xmlnets) && throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
+    namespace = pnml_namespace(node) # Model level XML value.
 
     net_tup = ()
-    for netnode in xmlnets #todo iterate nets, flag others
-        # Do not YET have a PNTD defined. Each net can be different net type.
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "net"
 
-        parse_context = parser_context()::ParseContext
-        #! parse_context LabelParser[] filled using context
-        #! parse_context ToolParser[] filled using context
+            parse_context = parser_context()::ParseContext
+            #! parse_context LabelParser[] filled using context
+            #! parse_context ToolParser[] filled using context
 
-        net = parse_net(netnode; parse_context) # Fully formed
+            # Each net can be different PTND.
+            net = parse_net(child; parse_context)::PnmlNet # Fully formed
 
-        #TODO Add verification plugin here. Make our verifiers the 1st plugin.
-        net_tup = (net_tup..., net)
+            #TODO Add verification plugin here. Make our verifiers the 1st plugin.
+            net_tup = (net_tup..., net)
+        else
+            @error "`<model>` has umexpected child $(repr(tag))"
+        end
     end
-    length(net_tup) > 0 || error("length(net_tup) is zero")
+    length(net_tup) > 0 ||
+        throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
+
 
     #======================================================================================
     Want as much compiling of PnmlExpr trees as possible.
@@ -92,20 +97,18 @@ function parse_net(node::XMLNode;
 
     netid = register_idof!(parse_context.idregistry, node)
 
-    # Parse the required-by-specification petri net type. Not the place sort `<type`.
-    pn_typedef = pnmltype(attribute(node, "type"))
-    # Override of the Petri Net Type Definition (PNTD) value for fun & games.
-    pntd = if isnothing(pntd_override)
-        pn_typedef
-    else
-        @info "net $id pntd set to $pntd_override, overrides $pn_typedef"
-        pntd_override
+    # Parse the pnml net type attribute. Not the place sort `<type>` label.
+    pntd = let pn_typedef = pnmltype(attribute(node, "type"))
+        if isnothing(pntd_override)
+            pn_typedef
+        else
+            # Override of the Petri Net Type Definition (PNTD) value for fun & games.
+            @info "net $id pntd set to $pntd_override, overrides $pn_typedef"
+            pntd_override
+        end
     end
+
     # Now we know the PNTD and can parse a net.
-
-    isempty(allchildren(node ,"page")) &&
-        throw(PNML.MalformedException("""<net> $netid does not have any <page> child"""))
-
     net = parse_net_1!(node, pntd, netid; parse_context)
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
@@ -148,10 +151,8 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 
     @assert isregistered(parse_context.idregistry, netid)
 
-    namelabel::Maybe{Name} = nothing
-    nameelement = firstchild(node, "name")
-    if !isnothing(nameelement)
-        namelabel = parse_name(nameelement, pntd; parse_context)
+    namelabel = let n = firstchild(node, "name")
+        isnothing(n) ? nothing : parse_name(n, pntd; parse_context)::Name
     end
 
     # We use the declarations toolkit for non-high-level nets,
@@ -200,7 +201,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             parse_page!(pagedict, netdata, netsets, child, pntd; parse_context) #
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
-        else # Unclaimed labels are assumed to be every other child.
+        else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
             net.labels = add_label(net.labels, child, pntd, parse_context) # Net unclaimed label.
             # The specification allows meta-models defined upon the core to define
@@ -209,7 +210,6 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             #TODO mechanism for allowing new meta-models to provide specialized parsers
             #TODO When method `parse_unclaimed_label(Val(tag), child, pntd)` is defined,
             #TODO still need to be able to find the label to use it.
-
         end
     end
     return net
@@ -234,12 +234,6 @@ Place `Page` in `pagedict` using id as the key.
 function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     netsets = PnmlNetKeys() # Allocate per-page data.
-
-    namelabel::Maybe{Name} = nothing
-    graphics::Maybe{Graphics} = nothing
-    # no tools for model
-    labels::Maybe{Vector{PnmlLabel}}= nothing
-
     # Track which objects belong to this page.
     place_set      = PNML.place_idset(netsets)
     transition_set = PNML.transition_idset(netsets)
@@ -247,30 +241,45 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
     rp_set         = PNML.refplace_idset(netsets)
     rt_set         = PNML.reftransition_idset(netsets)
 
+    namelabel::Maybe{Name} = nothing
+    graphics::Maybe{Graphics} = nothing
+    # no tools for model
+    labels::Maybe{Vector{PnmlLabel}}= nothing
     tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
+
     PNML.Labels.validate_toolinfos(tools)
 
-    for p in allchildren(node, "place")
-        parse_place!(place_set, netdata, p, pntd; parse_context)
-    end
-    for rp in allchildren(node, "referencePlace")
-        parse_refPlace!(rp_set, netdata, rp, pntd; parse_context)
-    end
-    for t in allchildren(node, "transition")
-        parse_transition!(transition_set, netdata, t, pntd; parse_context)
-    end
-    for rt in allchildren(node, "referenceTransition")
-        parse_refTransition!(rt_set, netdata, rt, pntd; parse_context)
-    end
-    for a in allchildren(node, "arc")
-        parse_arc!(arc_set, netdata, a, pntd; parse_context)
-    end
+    # for p in allchildren(node, "place")
+    #     parse_place!(place_set, netdata, p, pntd; parse_context)
+    # end
+    # for rp in allchildren(node, "referencePlace")
+    #     parse_refPlace!(rp_set, netdata, rp, pntd; parse_context)
+    # end
+    # for t in allchildren(node, "transition")
+    #     parse_transition!(transition_set, netdata, t, pntd; parse_context)
+    # end
+    # for rt in allchildren(node, "referenceTransition")
+    #     parse_refTransition!(rt_set, netdata, rt, pntd; parse_context)
+    # end
+    # for a in allchildren(node, "arc")
+    #     parse_arc!(arc_set, netdata, a, pntd; parse_context)
+    # end
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        if tag in ["declaration", "place", "transition", "arc",
-                    "referencePlace", "referenceTransition", "toolspecific"]
-            # NOOP println("already parsed ", tag)
+        if tag == "place"
+            parse_place!(place_set, netdata, child, pntd; parse_context)
+        elseif tag == "referencePlace"
+            parse_refPlace!(rp_set, netdata, child, pntd; parse_context)
+        elseif tag == "transition"
+            parse_transition!(transition_set, netdata, child, pntd; parse_context)
+        elseif tag == "referenceTransition"
+            parse_refTransition!(rt_set, netdata, child, pntd; parse_context)
+        elseif tag == "arc"
+            parse_arc!(arc_set, netdata, child, pntd; parse_context)
+        # if tag in ["declaration", "place", "transition", "arc",
+        #             "referencePlace", "referenceTransition", "toolspecific"]
+        #     # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage
             parse_page!(pagedict, netdata, netsets, child, pntd; parse_context)
         elseif tag == "name"
@@ -279,7 +288,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            labels = add_label(labels, child, pntd, parse_context) # page unclaimed label
+            labels = add_label(labels, child, pntd, parse_context)
         end
     end
 
@@ -298,11 +307,8 @@ Calls `add_toolinfo(tools, info, pntd, parse_context)` for each info found.
 See [`Labels.get_toolinfos`](@ref) for accessing `ToolInfo`s.
 """
 function find_toolinfos!(tools, node, pntd, parse_context::ParseContext)
-    toolinfos = allchildren(node, "toolspecific")
-    if !isempty(toolinfos)
-        for info in toolinfos
-            tools = add_toolinfo(tools, info, pntd, parse_context) # nets and pages
-        end
+    for info in allchildren(node, "toolspecific")
+        tools = add_toolinfo(tools, info, pntd, parse_context) # nets and pages
     end
     return tools
 end
