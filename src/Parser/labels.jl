@@ -19,6 +19,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
+
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
@@ -57,12 +58,14 @@ end
 """
     parse_label_content(node::XMLNode, termparser, pntd; decldict) -> NamedTuple
 
-Parse top-level label using a `termparser` callable applied to any `<structure>` element.
+Parse top-level label  `node` using a `termparser` callable applied to any `<structure>` element.
 Also parses `<text>`, `<toolinfo>`, `graphics` and sort of term.
 
-Top-level labels are marking, inscription, condition. Each having a `termparser`.
+Top-level labels are attached to nodes, such as: marking, inscription, condition.
+Each having a `termparser`.
 
-Returns vars, a tuple of PNML variable REFIDs. Used in the muti-sorted algebra of High-level nets.
+Returns vars, a tuple of PNML variable REFIDs.
+Used in the muti-sorted algebra of High-level nets.
 """
 function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse_context::ParseContext) where {F}
     text::Maybe{Union{String,SubString{String}}} = nothing
@@ -344,14 +347,18 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
 end
 
 function PNML.adjacent_place(netdata, source::REFID, target::REFID)
+    # Meta-model constraint for Petri nets is that arcs must be between place and transition.
+    #
     if haskey(PNML.placedict(netdata), source)
-        @assert haskey(PNML.transitiondict(netdata), target) # Meta-model constraint.
+        haskey(PNML.transitiondict(netdata), target) ||
+            error("adjacent source plece $source does not have transition target $target")
         @inline PNML.placedict(netdata)[source]
     elseif haskey(PNML.placedict(netdata), target)
-        @assert haskey(PNML.transitiondict(netdata), source) # Meta-model constraint.
+        haskey(PNML.transitiondict(netdata), source) ||
+             error("adjacent target place $target does not have transition source $source")
         @inline PNML.placedict(netdata)[target]
-    else
-        error("inscription place not found, source = $source, target = $target")
+   else
+        error("adjacent place not found for source = $source, target = $target")
     end
 end
 
@@ -423,7 +430,7 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
 Allow all pntd's places to have a <type> label.
 Non-high-level are expecting a numeric sort: eltype(sort) <: Number.
 """
-function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) # place sorttype
+function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd; parse_context)
     @assert isempty(l.vars)
@@ -464,16 +471,4 @@ function parse_structure(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
 end
 
 
-#---------------------------------------------------------------------
-#TODO Will unclaimed_node handle this?
-"""
-$(TYPEDSIGNATURES)
-
-Should not often have a <label> tag, this will bark if one is found and return NamedTuple (tag,xml) to defer parsing the xml.
-"""
-function parse_label(node::XMLNode, ::PnmlType; parse_context::ParseContext) # In case there is a <label> found.
-    @assert node !== nothing
-    nn = check_nodename(node, "label")
-    @warn "there is a label named 'label'"
-    (; :tag => Symbol(nn), :xml => node) # Always add xml because this is unexpected.
-end
+#! 2025-06-04 removed parse_label
