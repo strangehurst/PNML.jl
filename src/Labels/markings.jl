@@ -126,30 +126,25 @@ julia> m()
 1
 ```
 """
-mutable struct HLMarking{T<:PnmlExpr} <: HLAnnotation
+struct HLMarking{T<:PnmlExpr} <: HLAnnotation
     text::Maybe{String} # Supposed to be for human consumption.
 
     term::T # SymmetricNet restricts to Bag with basis sort matching place's sorttype.
-    #~ NOTE #! Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
+    #! This is where the initial value expression is stored.
+    #! The evaluated value is placed in the marking vector (as the initial value:).
+    #! Firing rules use arc inscriptions to determine the new value for marking vector.
 
-    # The expression AST rooted at `term` in the XML stream.
+    #~ NOTE #? Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
+
+    # The expression AST rooted at `term` wrapped in a `<structure>` in the XML stream.
     # Markings are ground terms, so no variables.
+
     # equal(sortof(basis(markterm)), sortof(placetype)) ||
     #     @error(string("HL marking sort mismatch,",
     #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
     #
     # Difference between Marking and HLMarking is the expression.
     # One is a number the other a term.
-
-    #^ TermInterface, Metatheory rewrite rules used to set value of marking with a ground term.
-    #^ Initial marking value set by evaluation of expression.
-    #^ Firing rules update the marking value using rewrite rules.
-
-    #! This is where the initial value expression is stored.
-    #! The evaluated value is placed in the marking vector (as the initial value:).
-    #! Firing rules use arc inscriptions to determine the new value for marking vector.
-
-    # Terms are rewritten/optimized and hopefully compiled once.
 
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}

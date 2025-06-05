@@ -23,7 +23,7 @@ julia> c()
 true
 ```
 """
-@auto_hash_equals mutable struct Condition{T<:PnmlExpr, N} <: Annotation #TODO make LL & HL specializations?
+@auto_hash_equals struct Condition{T<:PnmlExpr, N} <: Annotation #TODO make LL & HL specializations?
     text::Maybe{String}
     term::T # duck-typed BoolExpr
     # color function: uses term and args, Built/JITed
