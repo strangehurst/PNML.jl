@@ -263,6 +263,12 @@ Go language.
 [github.com/stackdump/gopetri](https://github.com/stackdump/gopetri)
 Go language.
 
+[Petri net visualisator written in Go.](https://github.com/drahoslove/penego)
+Go language. Non-standard pnml xml syntax.
+
+[LTSmin](https://github.com/utwente-fmt/ltsmin) "a full (LTL/CTL/μ-calculus) model checker".
+C/M4/C++ language.
+
 [github.com/daemontus/pnml-parser](https://github.com/daemontus/pnml-parser)
 Rust language.
 
