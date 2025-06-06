@@ -36,6 +36,7 @@ include("PnmlGraphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
 
 include("labels.jl")
+include("declaration.jl")
 include("name.jl")
 include("sorttype.jl")
 include("inscriptions.jl")
