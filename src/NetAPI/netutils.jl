@@ -66,9 +66,10 @@ end
 end
 
 "Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
-function _cvt_inscription_value(net::PnmlNet, a::Maybe{Arc}, z, varsub)
-    val = inscription_value(PNML.inscription_value_type(net), a, z, varsub)
-    return PNML.pntd(net) isa PT_HLPNG ? cardinality(val) : val
+function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, z, varsub)
+    val = inscription_value(value_type(PNML.inscription_type(pntd), typeof(pntd)),
+                            a, z, varsub) # evaluate PnmExpr
+    return pntd isa PT_HLPNG ? cardinality(val) : val
 end
 
 #==========================================================================
@@ -128,15 +129,15 @@ end
 # firing rule
 ########################################################################################
 """
-    input_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
-    input_matrix(petrinet::PnmlNet) -> Matrix{inscription_value_type(net)}
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function input_matrix end
 function input_matrix(net::PnmlNet, marking)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.inscription_value_type(net)
+    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), pntd(net))
     imatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return input_matrix!(imatrix, net, marking) # Dispatch on net type.
 end
@@ -148,21 +149,21 @@ function input_matrix!(imatrix, net::PnmlNet, marking)
         for (p, place_id) in enumerate(PNML.place_idset(net))
             z = zero_marking(place(net, place_id)) # 0 or empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
-            imatrix[t, p] = _cvt_inscription_value(net, a, z, varsub)::Number
+            imatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
         end
     end
 return imatrix
 end
 
 """
-    output_matrix(petrinet::AbstractPetriNet) -> Matrix{inscription_value_type(net)}
-    output_matrix(petrinet::PnmlNet) -> Matrix{inscription_value_type(net)}
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function output_matrix end
 function output_matrix(net::PnmlNet, marking)
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.inscription_value_type(net)
+    ivt = pntd(net) isa PT_HLPNG ? Int : value_type(inscription_type(pntd(net)), pntd(net))
     omatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return output_matrix!(omatrix, net, marking) # Dispatch on net type.
 end
@@ -173,7 +174,7 @@ function output_matrix!(omatrix, net::PnmlNet, marking)
         for (p, place_id) in enumerate(PNML.place_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
-            omatrix[t, p] = _cvt_inscription_value(net, a, z, varsub)::Number
+            omatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
         end
     end
 return omatrix
@@ -195,16 +196,16 @@ function incidence_matrix end
 # There will be
 function incidence_matrix(net::PnmlNet, marking) #{<:AbstractHLCore}, marking)
     varsub = NamedTuple() #^ Here we support only PT_HLPNG
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.inscription_value_type(net)
+    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), typeof(pntd(net)))
     C = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id)  in enumerate(PNML.place_idset(net))
             z = zero_marking(place(net, place_id))
 
             tp = arc(net, transition_id, place_id)
-            l = _cvt_inscription_value(net, tp, z, varsub)::Number
+            l = _cvt_inscription_value(pntd(net), tp, z, varsub)::Number
             pt = arc(net, place_id, transition_id)
-            r = _cvt_inscription_value(net, pt, z, varsub)::Number
+            r = _cvt_inscription_value(pntd(net), pt, z, varsub)::Number
 
             C[t, p] = l - r
         end

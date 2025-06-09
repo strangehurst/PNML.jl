@@ -49,7 +49,7 @@ Return a [`Graphics`](@ref PnmlGraphics.Graphics) holding the union of possibili
 function parse_graphics(node, pntd)
     nn = check_nodename(node, "graphics")
     args = Dict()
-    _positions = Coordinate{PNML.coordinate_value_type(pntd)}[]
+    _positions = Coordinate[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag ==   "dimension"
@@ -69,7 +69,7 @@ function parse_graphics(node, pntd)
         end
     end
     args[:positions] = _positions
-    Graphics{PNML.coordinate_value_type(pntd)}(; pairs(args)...)
+    Graphics{eltype(Coordinate)}(; pairs(args)...)
 end
 
 "Add XMLNode attribute, value pair to dictionary."
@@ -109,8 +109,8 @@ function parse_graphics_coordinate(node, pntd)
     EzXML.haskey(node, "x") || throw(PNML.MalformedException("$nn missing x"))
     EzXML.haskey(node, "y") || throw(PNML.MalformedException("$nn missing y"))
 
-    PnmlGraphics.Coordinate(PNML.number_value(PNML.coordinate_value_type(pntd), node["x"]),
-                            PNML.number_value(PNML.coordinate_value_type(pntd), node["y"]))
+    PnmlGraphics.Coordinate(PNML.number_value(PNML.eltype(Coordinate), node["x"]),
+                            PNML.number_value(PNML.eltype(Coordinate), node["y"]))
 end
 
 """

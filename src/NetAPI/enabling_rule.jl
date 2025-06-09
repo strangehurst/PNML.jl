@@ -171,7 +171,7 @@ function enabledXXX(net::PnmlNet, marking)
                 # Condition evaluates to `true`
                 if isempty(tr.vars) # 0-ary operators
                     # This includes the non-HL net types that do not have variables.
-                    inscription_val = _cvt_inscription_value(net, arc,
+                    inscription_val = _cvt_inscription_value(pntd(net), arc,
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
@@ -189,7 +189,7 @@ function enabledXXX(net::PnmlNet, marking)
                     foreach(vsubiter) do  params
                         # Is params a tuple
                         vsub = namedtuple(vid, params) # names, values
-                        inscription_val = _cvt_inscription_value(net, arc, zero_marking(place(net, placeid)), vsub)
+                        inscription_val = _cvt_inscription_value(pntd(net), arc, zero_marking(place(net, placeid)), vsub)
                         mark = unwrap_pmset(mark)
 
                         #? Do we want <= or is it issubset(A,B)?

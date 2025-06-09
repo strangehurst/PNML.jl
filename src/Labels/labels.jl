@@ -54,11 +54,6 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 =#
 
-"""
-$(TYPEDEF)
-Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
-"""
-abstract type AbstractLabel end
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
@@ -78,7 +73,7 @@ graphics(l::AbstractLabel) =  l.graphics
 has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
 tools(l::AbstractLabel) = l.tools
 
-has_labels(l::AbstractLabel) = false
+has_labels(l::AbstractLabel) = false # Labels DO NOT have sub-labels.
 
 # Some Labels are functors: marking, inscription, condition.
 # Usually where it is possible to have a high-level term.
@@ -86,18 +81,6 @@ has_labels(l::AbstractLabel) = false
 
 
 #--------------------------------------------
-"""
-$(TYPEDEF)
-Label that may be displayed.
-Differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
-"""
-abstract type Annotation <: AbstractLabel end
-
-"""
-$(TYPEDEF)
-Annotation label that uses <text> and <structure>.
-"""
-abstract type HLAnnotation <: AbstractLabel end
 
 """
 $(TYPEDEF)
@@ -137,11 +120,11 @@ See also [`AnyElement`](@ref) which allows any well-formed XML,
 while `PnmlLabel` is restricted to PNML Labels.
 """
 @auto_hash_equals struct PnmlLabel <: Annotation
+    # XMLDict uses symbols for attribute keys and string for elements/children keys.
     tag::Union{Symbol, String, SubString{String}}
-    elements::Any #Vector{AnyElement} PNML.XDVT is too complex
+    elements::Any # NB: PNML.XDVT is too complex
     declarationdicts::DeclDict
 end
-#!PnmlLabel(s::AbstractString, elems) = PnmlLabel(Symbol(s), elems)
 
 tag(label::PnmlLabel) = label.tag
 elements(label::PnmlLabel) = label.elements
@@ -187,35 +170,4 @@ end
 "Return `true` if collection `v` contains label with `tagvalue`."
 function has_label(iteratable, tag::Union{Symbol, String, SubString{String}})
     !isempty(labels(iteratable, tag))
-end
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Label of a <net> or <page> that holds zero or more declarations. The declarations are used
-to define parts of the many-sorted algebra used by High-Level Petri Nets.
-
-All the declarations in the <structure> are placed into a single per-net dictionary `ddict`.
-The text, graphics, and tools fields are expected to be nothing, but are present because,
-being labels, it is allowed.
-"""
-@kwdef struct Declaration <: Annotation
-    text::Maybe{String} = nothing
-    ddict::DeclDict
-    graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
-end
-
-PNML.decldict(d::Declaration) = d.ddict
-Base.length(d::Declaration) = length(PNML.decldict(d))
-Base.isempty(d::Declaration) = isempty(PNML.decldict(d))
-
-function Base.show(io::IO, d::Declaration)
-    print(io, nameof(typeof(d)), "(")
-    show(io, text(d)); print(io, ", ")
-    show(io, d.graphics); print(io, ", ")
-    show(io, d.tools); print(io, ", ")
-    show(io, decldict(d))
-    print(io, ")")
 end

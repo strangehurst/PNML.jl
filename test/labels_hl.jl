@@ -359,7 +359,7 @@ end
 #         @test cond isa PNML.condition_type(pntd)
 #         @show cond
 #         @test text(cond) == "pt==cts||pt==ack"
-#         # @test value(cond) isa PNML.Operator #!Union{PNML.condition_value_type(pntd), PNML.Term} Boolean operator
+#         # @test value(cond) isa PNML.Operator
 #         # @test tag(value(cond)) == :or
 #         @test PNML.has_graphics(cond) == true
 #         @test PNML.has_labels(cond) == false

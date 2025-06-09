@@ -10,7 +10,7 @@ import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 
 using PNML
-using PNML: Maybe, Coordinate, coordinate_type, coordinate_value_type
+using PNML: Maybe, Coordinate, coordinate_type
 using ..PnmlTypeDefs
 
 export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics #, Line, Fill, Font
@@ -98,13 +98,13 @@ PNML Graphics can be attached to many parts of PNML models.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef struct Graphics{T <: coordinate_value_type()}
-    dimension::Coordinate{T} = Coordinate{T}(one(T), one(T))
+@kwdef struct Graphics{T <: eltype(Coordinate)}
+    dimension::Coordinate = Coordinate(one(eltype(Coordinate)), one(eltype(Coordinate)))
     fill::Fill = Fill(; color = "black")
     font::Font = Font(; weight = "black")
     line::Line = Line(; color = "black")
-    offset::Coordinate{T} = Coordinate{T}(zero(T), zero(T))
-    positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
+    offset::Coordinate = Coordinate(zero(eltype(Coordinate)), zero(eltype(Coordinate)))
+    positions::Vector{Coordinate} = Vector{Coordinate}[] # ordered collection
 end
 
 function Base.show(io::IO, g::Graphics)
@@ -119,21 +119,21 @@ function Base.show(io::IO, g::Graphics)
 end
 
 
-@kwdef struct ArcGraphics{T <: coordinate_value_type()}
+@kwdef struct ArcGraphics{T <: eltype(Coordinate)}
     line::Line = Line(; color = "black")
-    positions::Vector{Coordinate{T}} = Vector{Coordinate{T}}[] # ordered collection
+    positions::Vector{Coordinate} = Vector{Coordinate}[] # ordered collection
 end
 
-@kwdef struct NodeGraphics{T <: coordinate_value_type()}
-    postion::Coordinate{T} = Coordinate{T}()
-    dimension::Coordinate{T} = Coordinate(one(T), one(T))
+@kwdef struct NodeGraphics{T <: eltype(Coordinate)}
+    postion::Coordinate = Coordinate()
+    dimension::Coordinate = Coordinate(one(eltype(Coordinate)), one(eltype(Coordinate)))
     line::Line = Line(; color = "black")
     fill::Fill = Fill(; color = "black")
 end
 
-@kwdef struct AnnotationGraphics{T <: coordinate_value_type()}
+@kwdef struct AnnotationGraphics{T <: eltype(Coordinate)}
     fill::Fill = Fill(; color = "black")
-    offset::Coordinate{T} = Coordinate{T}(zero(T), zero(T))
+    offset::Coordinate = Coordinate(zero(eltype(Coordinate)), zero(eltype(Coordinate)))
     line::Line = Line(; color = "black")
     font::Font = Font(; weight = "black")
 end

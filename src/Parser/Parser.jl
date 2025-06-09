@@ -35,6 +35,7 @@ using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Oper
 using PNML: Context
 using PNML: usersort, usersorts, pid
 using PNML: ParseContext, parser_context, ToolParser, LabelParser
+using PNML: inscription_type, marking_type, transition_type
 
 # Methods implemented in this module.
 import PNML: adjacent_place

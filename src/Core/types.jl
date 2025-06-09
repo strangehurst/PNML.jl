@@ -18,6 +18,28 @@ Objects of a Petri Net Graph are pages, arcs, nodes.
 """
 abstract type AbstractPnmlObject end
 
+"""
+$(TYPEDEF)
+Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
+"""
+abstract type AbstractLabel end
+
+"""
+$(TYPEDEF)
+Label that may be displayed.
+Differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
+"""
+abstract type Annotation <: AbstractLabel end
+
+"""
+$(TYPEDEF)
+Annotation label that uses <text> and <structure>.
+"""
+abstract type HLAnnotation <: AbstractLabel end
+
+
+
+
 # function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 #     prop_name === :id   && return getfield(o, :id)::Symbol
 #     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
@@ -278,30 +300,17 @@ refplace_type(pntd::PnmlType)      = refplace_type(typeof(pntd))
 reftransition_type(pntd::PnmlType) = reftransition_type(typeof(pntd))
 
 marking_type(pntd::PnmlType)       = marking_type(typeof(pntd))
-marking_value_type(pntd::PnmlType) = marking_value_type(typeof(pntd))
+condition_type(pntd::PnmlType)     = condition_type(typeof(pntd))
+inscription_type(pntd::PnmlType)   = inscription_type(typeof(pntd))
+coordinate_type(pntd::PnmlType)    = coordinate_type(typeof(pntd))
 
-condition_type(pntd::PnmlType)       = condition_type(typeof(pntd))
-condition_value_type(pntd::PnmlType) = condition_value_type(typeof(pntd))
-
-inscription_type(pntd::PnmlType)       = inscription_type(typeof(pntd))
-inscription_value_type(pntd::PnmlType) = inscription_value_type(typeof(pntd))
-
-coordinate_type(pntd::PnmlType)       = coordinate_type(typeof(pntd))
-coordinate_value_type(pntd::PnmlType) = coordinate_value_type(typeof(pntd))
-
-#---------------------------------------------------------------------------
-# Extend by allowing a transition to be labeled with a floating point rate.
-#---------------------------------------------------------------------------
 """
-    rate_value_type(::PnmlType) -> Number
-    rate_value_type(::Type{<:PnmlType}) -> Number
+    value_type(::Type{<AbstractLabel}, ::Type{<:PnmlType}) -> Type
 
-Return rate value type based on net type.
+Return the Type of a label's value.
 """
-function rate_value_type end
-
-rate_value_type(pntd::PnmlType) = rate_value_type(typeof(pntd))
-rate_value_type(::Type{<:PnmlType}) = Float64
+function value_type end
+value_type(::Type{T}, pntd::PnmlType) where {T <: AbstractLabel}= value_type(T, typeof(pntd))
 
 ####################################################################
 # """

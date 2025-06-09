@@ -104,15 +104,15 @@ type_funs = (
     PNML.place_type,
     PNML.transition_type,
     PNML.condition_type,
-    PNML.condition_value_type,
+    #! PNML.condition_value_type,
     PNML.inscription_type,
-    PNML.inscription_value_type,
+    #! PNML.inscription_value_type,
     PNML.marking_type,
-    PNML.marking_value_type,
+    #! PNML.marking_value_type,
     PNML.page_type,
     PNML.refplace_type,
     PNML.reftransition_type,
-    PNML.rate_value_type,
+    #! PNML.rate_value_type,
     )
 
 def_funs = (
@@ -244,19 +244,18 @@ end
     @test PNML.place_type(pntd) <: PNML.Place
     @test PNML.transition_type(pntd) <: PNML.Transition
     @test PNML.condition_type(pntd) <: PNML.Labels.Condition
-    @test PNML.condition_value_type(pntd) <: Bool
+    @test PNML.value_type(PNML.condition_type(pntd), typeof(pntd)) <: Bool
     @test PNML.inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     if ishighlevel(pntd)
-        @test PNML.inscription_value_type(pntd) <: PnmlMultiset{<:Any, <:Any}
+        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: PnmlMultiset{<:Any, <:Any}
     else
-        @test PNML.inscription_value_type(pntd) <: Number
+        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: Number
     end
-    #@show inscription_value_type(pntd)
     @test PNML.marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
-    @test PNML.marking_value_type(pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:Any}}
+    @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:Any}}
 
     @test PNML.page_type(pntd) <: PNML.Page
     @test PNML.refplace_type(pntd) <: PNML.RefPlace
     @test PNML.reftransition_type(pntd) <: PNML.RefTransition
-    @test PNML.rate_value_type(pntd) <: Float64
+    @test PNML.value_type(Rate, pntd) <: Float64
 end

@@ -154,7 +154,7 @@ end
 # Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
-    initial_markings(petrinet) -> LVector{marking_value_type}
+    initial_markings(petrinet) -> LVector{value_type(marking)}
 
 LVector labelled with place id and holding initial marking's value.
 Used to create a vector of place markings indexed by place ID.

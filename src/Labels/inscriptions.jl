@@ -111,19 +111,18 @@ PNML.inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlE
 PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr}
 
 #!============================================================================
-#! inscription_value_type must match adjacent place marking_value_type
+#! inscription value_type must match adjacent place marking value_type
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
 
-PNML.inscription_value_type(::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
-PNML.inscription_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
+PNML.value_type(::Type{Inscription}, ::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
+PNML.value_type(::Type{Inscription}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 #
 # PnmlMultiset{B,T}
 #~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
 #~ T is the Multiset type parameter, Keep B and T in sync!
-PNML.inscription_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-# PNML.inscription_value_type(::Type{<:PT_HLPNG}) = eltype(DotSort)::Bool # promote to integer
-PNML.inscription_value_type(::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
+PNML.value_type(::Type{HLInscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
+PNML.value_type(::Type{HLInscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
 
 """
 $(TYPEDSIGNATURES)

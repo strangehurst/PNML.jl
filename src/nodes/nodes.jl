@@ -83,7 +83,7 @@ varsubs(transition::Transition) = transition.varsubs
 Return condition label.
 """
 condition(transition::Transition) = begin
-    transition.condition # ()::condition_value_type(nettype(transition))
+    transition.condition
 end
 
 function Base.show(io::IO, trans::Transition)

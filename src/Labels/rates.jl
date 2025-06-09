@@ -28,12 +28,6 @@ function Base.show(io::IO, r::Rate)
     print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphicd,  ", ", r.tools, ")")
 end
 
-#! Move rate_value_type
-# lookup value_type of PnmlLabel
-function value_type_of(x)
-    error("unmplemented?")
-end
-
 "Parse content of `<text>` as a number of `value_type`."
 function number_content_parser(label, value_type)
     #@show label value_type #! debug
@@ -48,8 +42,6 @@ Return value of a `Rate` label.  Missing rate labels are defaulted to zero.
 
 Expected label XML: `<rate> <text>0.3</text> </rate>`
 
-See [`rate_value_type`](@ref PNML.rate_value_type).
-
 # Arguments
     `t` is anything that supports `labelof(t, tag)`.
     `tag::String` is the XML element tag, default `"rate"`.
@@ -59,7 +51,7 @@ See [`rate_value_type`](@ref PNML.rate_value_type).
 """
 function rate_value(t;
             tag::String = "rate",
-            value_type::Type{<:Number} = PNML.rate_value_type(nettype(t)), #! Move rate_value_type
+            value_type::Type{<:Number} = PNML.value_type(Rate, nettype(t)),
             content_parser::Base.Callable = number_content_parser,
             default_value = zero(value_type),)
     label = labelof(t, tag)
@@ -69,6 +61,13 @@ function rate_value(t;
         content_parser(label, value_type)
     end
 end
+
+value_type(::Type{Rate}, ::Type{<:PnmlType}) = Float64
+
+
+#######################################################################################
+#^#####################################################################################
+#######################################################################################
 
 """
 $(TYPEDSIGNATURES)

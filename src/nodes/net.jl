@@ -16,6 +16,7 @@ One Petri Net of a PNML model.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
     namelabel::Maybe{Name} = nothing
+    # no graphics for net
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Vector{PnmlLabel} = PnmlLabel[] #
     idregistry::PnmlIDRegistry
@@ -276,12 +277,6 @@ arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition
 
-condition_type(net::PnmlNet)       = condition_type(nettype(net))
-condition_value_type(net::PnmlNet) = condition_value_type(nettype(net))
-
-inscription_type(net::PnmlNet)       = inscription_type(nettype(net))
-inscription_value_type(net::PnmlNet) = inscription_value_type(nettype(net))
-rate_value_type(net::PnmlNet)        = rate_value_type(nettype(net))
-
-marking_type(net::PnmlNet)       = marking_type(nettype(net))
-marking_value_type(net::PnmlNet) = marking_value_type(nettype(net))
+condition_type(net::PnmlNet)   = condition_type(nettype(net))
+inscription_type(net::PnmlNet) = inscription_type(nettype(net))
+marking_type(net::PnmlNet)     = marking_type(nettype(net))

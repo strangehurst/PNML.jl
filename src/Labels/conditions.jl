@@ -42,7 +42,8 @@ Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, e
 
 PNML.condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
-PNML.condition_value_type(::Type{<: PnmlType}) = eltype(BoolSort)
+PNML.value_type(::Type{<:Condition}, ::Type{<: PnmlType}) = eltype(BoolSort)
+
 decldict(c::Condition) = c.declarationdicts
 
 #! Term may be non-ground and need arguments:

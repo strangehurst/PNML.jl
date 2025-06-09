@@ -196,14 +196,15 @@ PNML.marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
 
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
-PNML.marking_value_type(::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
-PNML.marking_value_type(::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
+PNML.value_type(::Type{Marking}, ::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
+PNML.value_type(::Type{Marking}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-PNML.marking_value_type(::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-#marking_value_type(::Type{<:PT_HLPNG}) # Restricted to: multiset of DotSort,
+PNML.value_type(::Type{HLMarking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
+PNML.value_type(::Type{HLMarking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
 
-#~ Note the close relation of marking_value_type to inscription_value_type.
+
+#~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zdecldict(ero.
 
 #--------------------------------------------------------------------------------------
@@ -237,7 +238,7 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default_marking(ddict, t::PnmlType)
-    Marking(zero(PNML.marking_value_type(t)), ddict) #! Will not be a PnmlMultiset.
+    Marking(zero(PNML.value_type(PNML.marking_type(t), t)), ddict) #! Will not be a PnmlMultiset.
 end
 default_marking(ddict, ::T) where {T<:AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")

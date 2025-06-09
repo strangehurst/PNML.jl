@@ -37,7 +37,7 @@ end
     @test n.dimension == PNML.Coordinate(5.0, 6.0)
     @test n.offset isa PNML.Coordinate
     @test n.dimension isa PNML.Coordinate
-    @test n.positions isa Vector{PNML.Coordinate{PNML.coordinate_value_type()}}
+    @test n.positions isa Vector{PNML.Coordinate}
     @test length(n.positions) == 2
     @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
 

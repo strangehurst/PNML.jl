@@ -49,9 +49,8 @@ end # @with
     #println(str)
 
     parse_context = PNML.parser_context()
-    #@show marking_value_type(pntd)
     placetype = SortType("$pntd initMarking",
-        PNML.Labels._sortref(parse_context.ddict, PNML.marking_value_type(pntd))::UserSort,
+        PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.marking_type(pntd), pntd))::UserSort,
         nothing, nothing, parse_context.ddict)
 
     # Parse ignoring unexpected child

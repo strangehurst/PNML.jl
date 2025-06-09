@@ -355,22 +355,11 @@ Return 'PnmlExpr` term of x.
 """
 function term end
 
-"""
-$(TYPEDSIGNATURES)
-Return value type.
-"""
-function condition_value_type end
 
 """
-    inscription_type(pntd) -> Inscription{inscription_value_type(pntd)}.
+    inscription_type(pntd) -> Inscription
 """
 function inscription_type end
-
-"""
-    inscription_value_type(pntd) -> Union{Int64, Float64, <:PnmlMultiset}
-Return value type of `pntd`.
-"""
-function inscription_value_type end
 
 """
     marking_type(pntd) -> Marking
@@ -379,20 +368,8 @@ function marking_type end
 
 """
 $(TYPEDSIGNATURES)
-Return value type.
-"""
-function marking_value_type end
-
-"""
-$(TYPEDSIGNATURES)
-Return `Coordinate{coordinate_value_type(T)}`
 """
 function coordinate_type end
-"""
-$(TYPEDSIGNATURES)
-Return type of value in a `Coordinate`.
-"""
-function coordinate_value_type end
 
 """
     has_sort(x) -> Bool
