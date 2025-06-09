@@ -231,10 +231,12 @@ ISO *High-level Petri nets* Specification in multiple parts:
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
+[Towards a Standard for Modular Petri Nets:A Formalisation](https://portail.lipn.univ-paris13.fr/portail/plugins/publications/fichiers/EK-LP-ATPN09.pdf) expounds on structuring mechanism in 15909-3.
+From Proc. 30th Int. Conf. Application and Theory of Petri Nets (PetriNets’2009), Paris, France, June 2009, volume 5606 of Lecture Notes in Computer Science. Springer, 2009.
+
 [_nLab_](https://ncatlab.org/nlab/) a wiki for collaborative work on Mathematics, Physics, and Philosophy:
    - [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
    - [Petri net](https://ncatlab.org/nlab/show/Petri+net)
-
 
 [Well-formed Petri nets](https://en.wikipedia.org/wiki/Well-formed_Petri_net)
 "...only a limited set of operators are available (identify, broadcast, successor and predecessor functions are allowed on circular finite types)".
@@ -255,7 +257,6 @@ Uses Model-Driven Engineering to provide generated APIs.
 [github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework) hosts the source code of PNML Framework.
 See [apidocs](https://pnml.lip6.fr/pnmlframework/apidocs/index.html) and
 [XMLTestFilesRepository](https://github.com/lip6/pnmlframework/tree/master/pnmlFw-Tests/XMLTestFilesRepository).
-
 
 [github.com/loig/pinimili](https://github.com/loig/pinimili)
 Go language.
