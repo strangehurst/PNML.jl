@@ -14,11 +14,12 @@ See [`AbstractPnmlObject`](@ref) for those XML entities that have labels.
 Any "unknown" XML is presumed to be a label.
 """
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, ctx::ParseContext)
+    # `unparsed_tag` returns a ordered collection of `AnyElement`.
     return push!(v, PnmlLabel(unparsed_tag(node)..., ctx.ddict))
 end
 
 """
-    add_label(infos::Maybe{collection}, node::XMLNode, pntd) -> collection
+    add_label(infos::Maybe{collection}, node::XMLNode, pntd, parse_context) -> collection
 
 Allocate storage for collection on first use. Then parse and add a label.
 """
@@ -48,7 +49,7 @@ end
 
 Allocate storage for `infos` on first use. Then add to `infos`.
 """
-function add_toolinfo(infos::Maybe{Vector{ToolInfo}}, node::XMLNode, pntd, parse_context::ParseContext)
+function add_toolinfo(infos::Maybe{Vector{ToolInfo}}, node::XMLNode, pntd, ctx::ParseContext)
     i = isnothing(infos) ? ToolInfo[] : infos
-    return add_toolinfo!(i, node, pntd, parse_context)
+    return add_toolinfo!(i, node, pntd, ctx)
 end
