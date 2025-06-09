@@ -12,6 +12,7 @@ end
     unparsed_tag(node::XMLNode) -> Union{DictType, String, SubString{String}}
 
 Return tuple of (tag, `XDVT`) holding well formed XML as parsed by `XMLDict`.
+XMLDict uses symbols for attribute keys and string for elements/children keys.
 
 The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
 or [`Labels.Structure`](@ref).
