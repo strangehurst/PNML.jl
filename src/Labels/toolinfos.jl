@@ -25,21 +25,28 @@ infos(ti::ToolInfo{T}) where T  = ti.infos
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")
-    for ti in toolvector
-        show(io, ti); print(io, ", ")
+    io = PNML.inc_indent(io)
+    for (n, anye) in enumerate(toolvector)
+        n > 1 && print(io, PNML.indent(io))
+        show(io, anye);
+        length(toolvector) > 1 && n < length(toolvector) && println(io)
     end
     print(io, "]")
 end
 
 function Base.show(io::IO, ti::ToolInfo)
-    print(io, PNML.indent(io), "ToolInfo(")
-    show(io, PNML.name(ti)); print(io, ", ");
-    show(io, version(ti)); print(io, ", [");
-    println(io);
-    io = PNML.inc_indent(io)
-    for i in infos(ti)
-        show(IOContext(io, :typeinfo=>AnyElement), i)
-        println(io, ",")
+    print(io, "ToolInfo(", PNML.name(ti), ", ", version(ti), ", [")
+    if length(infos(ti)) == 1
+        show(io, first(infos(ti)))
+    elseif length(infos(ti)) > 1
+        println(io)
+        io = PNML.inc_indent(io)
+        for (n,info) in enumerate(infos(ti))
+            print(io, PNML.indent(io))
+            show(io, info)
+            #show(IOContext(io, :typeinfo=>AnyElement), info)
+            length(infos(ti)) > 1 && n < length(infos(ti)) && println(io)
+        end
     end
     print(io, "])")
 end
