@@ -1,4 +1,4 @@
-Base.eltype(::Type{<:AbstractSort}) = Int
+#! Base.eltype(::Type{<:AbstractSort}) = Int
 
 """
 Tuple of sort IDs that are considered builtin.
