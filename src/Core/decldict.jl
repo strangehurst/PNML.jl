@@ -4,7 +4,7 @@
 
 function Base.show(io::IO, dd::DeclDict)
 
-    println(io, "Decldict = ", nameof(typeof(dd)), "(")
+    println(io, nameof(typeof(dd)), "(")
 
     io = inc_indent(io)  # one indent
     iio = inc_indent(io) # two indents

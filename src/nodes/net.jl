@@ -211,7 +211,7 @@ function Base.show(io::IO, net::PnmlNet)
         print(iio, '\n', indent(iio)); show(iio, page)
     end
     println(io)
-    print(io, "Declarations = ", repr(decldict(net)))
+    println(io, "Declarations = ", repr(decldict(net)))
     show(io, tools(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
     show(io, nettype(net)); println(io, ")")
