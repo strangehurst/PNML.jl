@@ -91,9 +91,9 @@ function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_conte
 
     if isnothing(mark) # Use  additive identity of proper sort.
          mark = if ishighlevel(pntd)
-           Labels.default_hlmarking(parse_context.ddict, pntd, sorttype)
+            default(HLMarking, pntd, sorttype; parse_context.ddict)
         else
-            Labels.default_marking(parse_context.ddict, pntd)
+            default(Marking, pntd; parse_context.ddict)
         end
     end
 
@@ -151,7 +151,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
     end
 
     Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, id,
-            something(cond, Labels.default_condition(parse_context.ddict, pntd)),
+            something(cond, Labels.default(Labels.Condition, pntd; parse_context.ddict)),
             namelabel, graphics, tools, labels,
             Set{REFID}(),
             NamedTuple[], parse_context.ddict)
@@ -197,9 +197,10 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
 
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
-            Labels.default_hlinscription(pntd, SortType("default", UserSort(:dot, parse_context.ddict), parse_context.ddict), parse_context.ddict)
+            default(HLInscription, pntd,
+                SortType("default", UserSort(:dot, parse_context.ddict), parse_context.ddict); parse_context.ddict)
         else
-            Labels.default_inscription(pntd, parse_context.ddict)
+            default(Inscription, pntd; parse_context.ddict)
         end
     end
 

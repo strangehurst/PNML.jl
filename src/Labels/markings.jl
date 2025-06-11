@@ -178,7 +178,7 @@ sortof(m::HLMarking) = sortdefinition(namedsort(decldict(m), sortref(m)))::Abstr
 function Base.show(io::IO, hlm::HLMarking)
     print(io, PNML.indent(io), "HLMarking(")
     show(io, text(hlm)); print(io, ", ")
-    show(io, term(hlm)) # Term
+    show(io, term(hlm))
     if has_graphics(hlm)
         print(io, ", ")
         show(io, graphics(hlm))
@@ -237,13 +237,13 @@ Return default marking value based on `PnmlType`. Has meaning of empty, as in `z
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default_marking(ddict, t::PnmlType)
+function default(::Type{<:Marking}, t::PnmlType; ddict)
     Marking(zero(PNML.value_type(PNML.marking_type(t), t)), ddict) #! Will not be a PnmlMultiset.
 end
-default_marking(ddict, ::T) where {T<:AbstractHLCore} =
+default(::Type{<:Marking}, ::T; ddict) where {T <: AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
-function default_hlmarking(ddict, ::T, placetype::SortType) where {T<:AbstractHLCore}
+function default(::Type{<:HLMarking}, ::AbstractHLCore, placetype::SortType; ddict)
     el = def_sort_element(placetype)
     HLMarking("default", PNML.Bag(sortref(placetype), el, 0), ddict) # empty multiset, el used for its type
 end

@@ -32,20 +32,20 @@ end
 
 ctx = PNML.parser_context()
 
-@testset "default_condition($pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
-    c = Labels.default_condition(ctx.ddict, pntd)::Labels.Condition
+@testset "default(Condition, $pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
+    c = Labels.default(Labels.Condition, pntd; ctx.ddict)::Labels.Condition
     #! TestUtils & Base export Condition
-    println("default_condition(decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
+    println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
 #println()
-@testset "default_inscription($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "default inscription $pntd" for pntd in PnmlTypeDefs.all_nettypes()
 
     i = if ishighlevel(pntd)
         placetype = SortType("default_inscription", UserSort(:dot, ctx.ddict), nothing, nothing, ctx.ddict)
-        Labels.default_hlinscription(pntd, placetype, ctx.ddict)
+        Labels.default(HLInscription, pntd, placetype; ctx.ddict)
     else
-        Labels.default_inscription(pntd, ctx.ddict)
+        Labels.default(Inscription, pntd; ctx.ddict)
     end
     #println("default_i(hl)?nscription($pntd) = ", i)
 end

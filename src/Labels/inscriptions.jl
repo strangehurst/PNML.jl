@@ -125,27 +125,44 @@ PNML.value_type(::Type{HLInscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{
 PNML.value_type(::Type{HLInscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
 
 """
-$(TYPEDSIGNATURES)
-Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
-Value is a `PnmlExpr`.
-"""
-function default_inscription end
-default_inscription(::T, ddict) where {T<:PnmlType} =
+# $(TYPEDSIGNATURES)
+# Return default inscription value based on `PNTD`. Has meaning of unity, as in `one`.
+# Value is a `PnmlExpr`.
+# """
+# function default_inscription end
+# default_inscription(::T, ddict) where {T<:PnmlType} =
+#     Inscription(PNML.NumberEx(usersort(ddict, :natural), one(Int)), nothing, nothing, ddict)
+# default_inscription(::T, ddict) where {T<:AbstractContinuousNet} =
+#     Inscription(PNML.NumberEx(usersort(ddict, :real), one(Float64)), nothing, nothing, ddict)
+# default_inscription(::T, ddict) where {T<:AbstractHLCore} =
+#     error("no default_inscription method for $T, did you mean default_hlinscription")
+
+# """
+# $(TYPEDSIGNATURES)
+
+# Return default `HLInscription` value based on `PNTD`.
+# Has meaning of unity, as in `one` of the adjacent place's sorttype.
+# Value is a `PnmlExpr`.
+# """
+# function default_hlinscription(::T, placetype::SortType, ddict) where {T<:AbstractHLCore}
+#     basis = sortref(placetype)::UserSort
+#     el = def_sort_element(placetype)
+#     HLInscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
+# end
+
+function default(::Type{<:Inscription}, pntd::PnmlType; ddict::DeclDict)
     Inscription(PNML.NumberEx(usersort(ddict, :natural), one(Int)), nothing, nothing, ddict)
-default_inscription(::T, ddict) where {T<:AbstractContinuousNet} =
+end
+function default(::Type{<:Inscription}, pntd::AbstractContinuousNet; ddict::DeclDict)
     Inscription(PNML.NumberEx(usersort(ddict, :real), one(Float64)), nothing, nothing, ddict)
-default_inscription(::T, ddict) where {T<:AbstractHLCore} =
-    error("no default_inscription method for $T, did you mean default_hlinscription")
+end
+function default(::Type{<:Inscription}, pntd::AbstractHLCore; ddict::DeclDict)
+    error("No default Inscription method for AbstractHLCore, did you mean HLInscription?")
+end
 
-"""
-$(TYPEDSIGNATURES)
-
-Return default `HLInscription` value based on `PNTD`.
-Has meaning of unity, as in `one` of the adjacent place's sorttype.
-Value is a `PnmlExpr`.
-"""
-function default_hlinscription(::T, placetype::SortType, ddict) where {T<:AbstractHLCore}
+function default(::Type{<:HLInscription}, ::AbstractHLCore, placetype::SortType; ddict)
     basis = sortref(placetype)::UserSort
     el = def_sort_element(placetype)
     HLInscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
 end
+Int

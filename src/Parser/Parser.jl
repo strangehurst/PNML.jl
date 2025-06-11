@@ -36,6 +36,7 @@ using PNML: Context
 using PNML: usersort, usersorts, pid
 using PNML: ParseContext, parser_context, ToolParser, LabelParser
 using PNML: inscription_type, marking_type, transition_type
+using PNML: default
 
 # Methods implemented in this module.
 import PNML: adjacent_place

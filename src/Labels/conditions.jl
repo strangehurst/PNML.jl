@@ -54,6 +54,10 @@ term(c::Condition) = c.term #todo! pnml variables
 
 variables(c::Condition) = c.vars
 
+function default(::Type{<:Condition}, ::PnmlType; ddict::DeclDict)
+    Condition(PNML.BooleanEx(PNML.BooleanConstant(true, ddict)), ddict)
+end
+
 """
     (c::Condition)(args) -> Bool
 
@@ -85,11 +89,3 @@ function Base.show(io::IO, c::Condition)
     show(io, term(c))
     print(io, ")")
 end
-
-"""
-    default_condition(ddict, pntd::PnmlType) -> Condition
-
-Has meaning of true or always.
-"""
-default_condition(ddict::DeclDict, ::PnmlType) =
-    Condition(PNML.BooleanEx(PNML.BooleanConstant(true, ddict)), ddict)

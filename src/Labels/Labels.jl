@@ -23,9 +23,10 @@ import PNML: value_type
 import PNML: value, term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations, decldict
 
+using ..PnmlTypeDefs # PNML PNTD
+
 import ..Expressions: toexpr, PnmlExpr
 
-using ..PnmlTypeDefs # PNML PNTD
 
 using ..Sorts
 # Some labels implement the Sort interface
@@ -35,6 +36,14 @@ include("toolinfos.jl") # labels and nodes can both have tool specific informati
 
 include("PnmlGraphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
+
+"""
+    default(::Type{T<:AbstractLabel}, pntd::PnmlType; ddict::DeclDict) -> T
+
+Return a default label `T` for `pntd`.
+"""
+function default end
+
 
 include("labels.jl")
 include("declaration.jl")
@@ -56,5 +65,6 @@ export def_sort_element
 export ToolParser
 
 export Rate
+export default
 
 end # module labels
