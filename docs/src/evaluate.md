@@ -5,9 +5,9 @@ CurrentModule = PNML
 ## Evaluate possible functors
 
 Things that are functors:
-  - Marking: return [`marking_value_type`](@ref)
-  - Inscription: return [`inscription_value_type`](@ref)
-  - Condition: return [`condition_value_type`](@ref)
+  - Marking:
+  - Inscription
+  - Condition
   - Term: return a sort's value type **TBD**
 
 ```@setup methods

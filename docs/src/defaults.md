@@ -10,13 +10,7 @@ Varies by PNTD. Possibilitie include:
 
 The _ISO/IEC 15909-2_ specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to also allow continuous values to support nonstandard continuous and hybrid valued Petri Nets. Makes generating default values more interesting.
 
-Determine type of `Number` to parse with [`number_value`](@ref) by using `pntd` on:
-  - [`condition_value_type`](@ref)
-  - [`inscription_value_type`](@ref)
-  - [`marking_value_type`](@ref)
-  - [`coordinate_value_type`](@ref)
-  - [`rate_value_type`](@ref PNML.rate_value_type)
-
+Determine type of `Number` to parse with [`number_value`](@ref) by using [`value_type`](@ref).
 
 There are many items in the XML that are permitted to be missing and a defaut value is assumed.
 Examples are place _initial marking_, arc _inscription_, transition _condition_, graphics data.
@@ -41,9 +35,7 @@ A consequence is that the default value's type ripples through the type system.
 
 ```@setup methods
 using AbstractTrees, PNML, InteractiveUtils, Markdown
-using PNML: Labels.default_condition
-using PNML: Labels.default_inscription, Labels.default_hlinscription
-using PNML: Labels.default_marking, Labels.default_hlmarking
+using PNML: Labels.default
 using PNML: SortType, UserSort, IntegerSort, DotSort
 using PNML: PnmlCoreNet, ContinuousNet, HLCoreNet
 using PNML: NumberConstant, DotConstant
@@ -55,22 +47,10 @@ end
 
 ## Methods
 
-[`PNML.Labels.default_marking`](@ref)
+[`PNML.Labels.default`](@ref)
 
 ```@example methods
-methods(PNML.Labels.default_marking) # hide
-```
-
-`[PNML.Labels.default_inscription]`(ref)
-
-```@example methods
-methods(PNML.Labels.default_inscription) # hide
-```
-
-[`PNML.Labels.default_condition`](@ref)
-
-```@example methods
-methods(PNML.Labels.default_condition) # hide
+methods(PNML.Labels.default) # hide
 ```
 
 ## Examples
@@ -78,9 +58,7 @@ methods(PNML.Labels.default_condition) # hide
 DocTestSetup = quote
     using Base.ScopedValues
     using PNML
-    using PNML.Labels: default_condition
-    using PNML.Labels: default_inscription, default_hlinscription
-    using PNML.Labels: default_marking, default_hlmarking
+    using PNML.Labels: Condition, default
     using PNML: SortType, UserSort, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
@@ -90,16 +68,16 @@ DocTestSetup = quote
 ```
 
 ```jldoctest
-julia> c = PNML.Labels.default_condition(ctx.ddict, PnmlCoreNet())
+julia> c = default(Condition, PnmlCoreNet(); ctx.ddict)
 Condition("", BooleanEx(BooleanConstant(true)))
 
 julia> c()
 true
 
-julia> c = PNML.Labels.default_condition(ctx.ddict, ContinuousNet())
+julia> c = default(Condition, PnmlCoreNet(); ctx.ddict)
 Condition("", BooleanEx(BooleanConstant(true)))
 
-julia> c = PNML.Labels.default_condition(ctx.ddict, HLCoreNet())
+julia> c = default(Condition, PnmlCoreNet(); ctx.ddict)
 Condition("", BooleanEx(BooleanConstant(true)))
 ```
 
