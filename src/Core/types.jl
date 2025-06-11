@@ -115,103 +115,6 @@ end
 
 refid(r::ReferenceNode) = r.ref
 
-#--------------------------------------------
-# """
-# $(TYPEDEF)
-# Tool specific information objects can be attached to nodes and labels,
-# [`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
-# """
-# abstract type AbstractPnmlTool end #TODO see ToolInfo
-
-#=      XMLDict notes
-
-mutable struct XMLDictElement <: AbstractDict{Union{String,Symbol},Any}
-
-DictType is used for xml_dict's dict_type argument.
-
-
-r = dict_type()
-attribute a:  r[Symbol(nodename(a))] = nodecontent(a) #! Symbol key, String value (SubString?)
-
-# The empty-string key holds a vector of sub-elements.
-# This is necessary when grouping sub-elements would alter ordering...
-
-for c in eachnode(x)
-    if iselement(c)
-        n = nodename(c) #! String, SubString as key
-        v = xml_dict(c, dict_type; strip_text=strip_text)
-        if haskey(r, "")
-            push!(r[""], dict_type(n => v)) #! Vector of dicts and strings as value
-        elseif haskey(r, n)
-            a = isa(r[n], Array) ? r[n] : Any[r[n]] #! turn scalar into vector
-            push!(a, v)
-            r[n] = a #! Vector value
-        else
-            r[n] = v #! dict value
-        end
-    elseif is_text(c) && haskey(r, "")
-        push!(r[""], nodecontent(c)) #! String value
-    end
-end
-# Collapse leaf-node vectors containing only text...
-if haskey(r, "")
-    v = r[""]
-    if length(v) == 1 && isa(v[1], AbstractString)
-        if strip_text
-            v[1] = strip(v[1])
-        end
-        r[""] = v[1]
-
-        # If "r" contains no other keys, collapse the "" key...
-        if length(r) == 1
-            r = r[""]
-        end
-    end
-
-end
-values: DictType, String, SubString, Vector{Union{DictType, String, SubString}}
-=#
-
-
-"Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `unparsed_tag`."
-const DictType = LittleDict{Union{Symbol,String}, Any #= XDVT =#}
-
-"XMLDict Value Type is value or Vector of values from `XMLDict.xml_dict`."
-const XDVT = Union{DictType, String, SubString, Vector{Union{DictType,String,SubString}}}
-
-tag(d::DictType) = first(keys(d)) # String or Symbol
-
-"""
-$(TYPEDSIGNATURES)
-Find first :text and return its :content as string.
-"""
-function text_content end
-
-function text_content(vx::Vector{Any})
-    isempty(vx) && throw(ArgumentError("empty `Vector` not expected"))
-    text_content(first(vx))
-end
-
-function text_content(d::DictType)
-    x = get(d, "text", nothing)
-    isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
-    return x
-end
-text_content(s::Union{String,SubString{String}}) = s
-
-"""
-XMLDict uses symbols as keys. Value returned is a string.
-"""
-function _attribute(vx::DictType, key::Symbol)
-    x = get(vx, key, nothing)
-    isnothing(x) && throw(ArgumentError("missing $key value"))
-    isa(x, AbstractString) ||
-        throw(ArgumentError("expected AbstractString got $(typeof(vx[key]))"))
-    return x
- end
-
-
-
 
 #--------------------------------------------
 # Terms & Sorts
@@ -276,14 +179,15 @@ See [`NamedOperator`](@ref) and [`ArbitraryOperator`](@ref).
 abstract type AbstractOperator <: AbstractTerm end
 
 # Expect each operator instance to have fields:
-# - definition of expression (PNML Term) that evaluates to an instance of an output sort.
+# - expression (PnmlExpr <: TermInterfce) that evaluates to an instance of output sort.
 # - ordered sequence of zero or more input sorts #todo vector or tuple?
+# - ordered sequence of zero or more subterms
 # - one output sort
 # and support methods to:
 # - compare operator signatures for equality using sort eqality
 # - output sort type to test against place sort type (and others)
 #
-# Note that a zero input operator is a constant.
+# Note that a 0-ary operator is a constant.
 
 #---------------------------------------------------------------------------
 # Collect the Singleton to Type translations here.
