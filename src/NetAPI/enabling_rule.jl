@@ -189,7 +189,9 @@ function enabledXXX(net::PnmlNet, marking)
                     foreach(vsubiter) do  params
                         # Is params a tuple
                         vsub = namedtuple(vid, params) # names, values
-                        inscription_val = _cvt_inscription_value(pntd(net), arc, zero_marking(place(net, placeid)), vsub)
+                        inscription_val = _cvt_inscription_value(pntd(net), arc,
+                                            zero_marking(place(net, placeid)),
+                                            vsub)
                         mark = unwrap_pmset(mark)
 
                         #? Do we want <= or is it issubset(A,B)?

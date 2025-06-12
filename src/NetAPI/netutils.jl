@@ -48,27 +48,26 @@ function conditions(net::PnmlNet) #TODO! non-ground terms
 end
 
 """
-inscription_value(::Type{T}, a::Arc, z, varsub) -> T
+inscription_value(::Type{T}, a::Arc, def, varsub) -> T
 
-If `a` is nothing return `z` else evaluate inscription expression with varsub)`;
-where `z` is `zero` or zero-like PnmlMultiset of same type as inscription and adjacent place.
-and `varsub` is a possibly empty variable substitution for High-level net compatibility.
+If `a` is nothing return `def` else evaluate inscription expression with varsub,
+where `def` is a default value of same sort as adjacent place.
+and `varsub` is a possibly empty variable substitution.
 """
 function inscription_value end
 
-function inscription_value(::Type{T}, a::Maybe{Arc}, z, varsub) where {T}
-if isnothing(a)
-    z::T # return "zero"
-else
-    #@show PNML.term(PNML.inscription(a))
-    eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))::T
-end
+function inscription_value(::Type{T}, a::Maybe{Arc}, def, varsub) where {T}
+    if isnothing(a)
+        def::T # return supplied default.
+    else
+        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))::T
+    end
 end
 
 "Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
-function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, z, varsub)
+function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, def, varsub)
     val = inscription_value(value_type(PNML.inscription_type(pntd), typeof(pntd)),
-                            a, z, varsub) # evaluate PnmExpr
+                            a, def, varsub)
     return pntd isa PT_HLPNG ? cardinality(val) : val
 end
 
@@ -196,16 +195,17 @@ function incidence_matrix end
 # There will be
 function incidence_matrix(net::PnmlNet, marking) #{<:AbstractHLCore}, marking)
     varsub = NamedTuple() #^ Here we support only PT_HLPNG
+    #! TODO use traits
     ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), typeof(pntd(net)))
     C = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id)  in enumerate(PNML.place_idset(net))
-            z = zero_marking(place(net, place_id))
+            def = zero_marking(place(net, place_id)) # Match adjacent place sort.
 
-            tp = arc(net, transition_id, place_id)
-            l = _cvt_inscription_value(pntd(net), tp, z, varsub)::Number
-            pt = arc(net, place_id, transition_id)
-            r = _cvt_inscription_value(pntd(net), pt, z, varsub)::Number
+            tp_arc = arc(net, transition_id, place_id)
+            l = _cvt_inscription_value(pntd(net), tp_arc, def, varsub)::Number
+            pt_arc  = arc(net, place_id, transition_id)
+            r = _cvt_inscription_value(pntd(net), pt_arc, def, varsub)::Number
 
             C[t, p] = l - r
         end
