@@ -44,7 +44,6 @@ function Base.show(io::IO, ti::ToolInfo)
         for (n,info) in enumerate(infos(ti))
             print(io, PNML.indent(io))
             show(io, info)
-            #show(IOContext(io, :typeinfo=>AnyElement), info)
             length(infos(ti)) > 1 && n < length(infos(ti)) && println(io)
         end
     end

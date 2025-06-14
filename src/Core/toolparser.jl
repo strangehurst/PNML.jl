@@ -20,7 +20,7 @@ PNML.name(ti::ToolParser) = ti.toolname
 
 version(ti::ToolParser) = ti.version
 
-"Content of a ToolInfo."
+"Return callable parser of a ToolInfo."
 func(ti::ToolParser) = ti.func
 
 #!tokengraphics_toolparser = ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)

@@ -72,8 +72,8 @@ str7 = (tool="WoPeD", version="1.0", str = """
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
     ctx = PNML.parser_context()
-    @show tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); parse_context=ctx)
-
+    tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); parse_context=ctx)
+    @show tooli
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
     @test PNML.Labels.version(tooli) == s.version
