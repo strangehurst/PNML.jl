@@ -250,6 +250,13 @@ const ex_types = ("continuous",)
         </hlinitialMarking>
         """
         insctag = "hlinscription"
+    elseif pntd == "continuous"
+        marking = """
+        <initialMarking>
+            <text>1.0</text>
+        </initialMarking>
+        """
+        insctag = "inscription"
     else
         marking = """
         <initialMarking>
@@ -299,6 +306,7 @@ const ex_types = ("continuous",)
     """
     #@show str3
     anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
+    println("==================================")
     #@show anet
     mg = PNML.metagraph(anet.net)
 
