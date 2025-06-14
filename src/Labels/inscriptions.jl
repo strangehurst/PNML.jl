@@ -66,7 +66,7 @@ end
 
 decldict(hli::HLInscription) = hli.declarationdicts
 
-(i::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hli), varsub, decldict(hli)))
+(hli::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hli), varsub, decldict(hli)))
 
 term(hli::HLInscription) = hli.term
 sortref(hli::HLInscription) = _sortref(decldict(hli), term(hli))::UserSort
