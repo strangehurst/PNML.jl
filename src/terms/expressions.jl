@@ -261,10 +261,16 @@ NumberEx # Need to avoid @matchable to have docstring
 @matchable struct NumberEx{T<:Number} <: PnmlExpr
     basis::UserSort # Wraps a sort REFID.
     element::T #
+    # function NumberEx(b::UserSort, e::T) where {T<:Number}
+    #     eltype(b) == typeof(e) || #! run-time dispatch
+    #         throw(ArgumentError("eltype of basis = $(eltype(b)) is NOT a $e::$T"))
+    #     new{T}(b, e)
+    # end
 end
 
 basis(x::NumberEx) = x.basis
-toexpr(b::NumberEx, var::NamedTuple, ddict) = b.element
+toexpr(b::NumberEx{T}, var::NamedTuple, ddict) where {T<:Number} = b.element
+
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
 end
