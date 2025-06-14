@@ -28,9 +28,10 @@ end
 # Ensure not seeing very similar label while getting default.
 @testset "get defaulted rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
     parse_context = PNML.parser_context()
-    tr = PNML.Parser.parse_transition(xml"""
-                <transition id ="birth">
-                  <rateX> <text>0.3</text> </rateX>
-                </transition>""", pntd; parse_context)
+    node = xml"""<transition id ="birth">
+                    <rateX> <text> 0.3 </text> </rateX>
+                 </transition>"""
+    tr = @test_logs((:warn, "found unexpected label of <transition> id=birth: rateX"),
+                    PNML.Parser.parse_transition(node, pntd; parse_context))
     @test PNML.rate_value(tr) ≈ 0.0
 end
