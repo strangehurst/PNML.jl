@@ -9,18 +9,18 @@ function anyelement(node::XMLNode, pntd::PnmlType)::AnyElement
 end
 
 """
-    unparsed_tag(node::XMLNode) -> Union{DictType, String, SubString{String}}
+    unparsed_tag(node::XMLNode) -> (tag, Union{DictType, String, SubString{String}})
 
-Return tuple of (tag, `XDVT`) holding well formed XML as parsed by `XMLDict`.
-XMLDict uses symbols for attribute keys and string for elements/children keys.
+Return tuple holding a well formed XML tree as parsed by `XMLDict.xml_dict`.
+Symbols for attribute key, strings for element/child keys and strings for value/leaf.
 
-The main use-case is to be wrapped in a [`PnmlLabel`](@ref), [`AnyElement`](@ref),
-or [`Labels.Structure`](@ref).
+`tag` is the name of the XML element that is "unparsed". It is the root of the tree.
+
+See: [`anyelement`](@ref),
+[`AnyElement`](@ref),[`PnmlLabel`](@ref), [`Labels.Structure`](@ref).
 """
 function unparsed_tag(node::XMLNode)
-    tag = EzXML.nodename(node)
-    xd = XMLDict.xml_dict(node, DictType; strip_text=true)::Union{DictType, String, SubString{String}}
-    #print("unparsed_tag = "); dump(xd)
-    return tuple(tag, xd)
+    xd = XMLDict.xml_dict(node, DictType; strip_text=true)
+    return tuple(EzXML.nodename(node), xd::Union{DictType, String, SubString{String}})
     # empty dictionarys are a valid thing.
 end
