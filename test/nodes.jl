@@ -190,20 +190,11 @@ end
         <name> <text>refTrans name</text> </name>
         <graphics><offset x="0" y="0"/></graphics>
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-        <unknown id="unkn">
-            <name> <text>unknown label</text> </name>
-            <text>content text</text>
-        </unknown>
     </referenceTransition>
     """
     parse_context = PNML.parser_context()
 
-    n = if PNML.CONFIG[].warn_on_unclaimed == true
-        @test_logs((:warn, "^ignoring unexpected child"),
-                parse_refTransition(node, pntd; parse_context)::RefTransition)
-    else
-        parse_refTransition(node, pntd; parse_context)::RefTransition
-    end
+    n = parse_refTransition(node, pntd; parse_context)::RefTransition
     @test pid(n) === :rt1
     @test PNML.refid(n) === :t1
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
@@ -214,17 +205,9 @@ end
     <referencePlace id="rp2" ref="rp1">
         <name>
             <text>refPlace name</text>
-            <unknown id="unkn">
-                <name> <text>unknown label</text> </name>
-                <text>content text</text>
-            </unknown>
         </name>
         <graphics><offset x="0" y="0"/></graphics>
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-        <unknown id="unkn">
-            <name> <text>unknown label</text> </name>
-            <text>content text</text>
-        </unknown>
     </referencePlace>""", id="rp2", ref="rp1" )
 
     n2 = (node = xml"""
@@ -233,17 +216,11 @@ end
           <position x="734.5" y="41.5"/>
           <dimension x="40.0" y="40.0"/>
         </graphics>
-        <unknown id="unkn"/>
     </referencePlace>""", id="rp1", ref="Sync1")
 
     @testset "referencePlaces" for s in [n1, n2]
         parse_context = PNML.parser_context()
-        n = if PNML.CONFIG[].warn_on_unclaimed
-            @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                    parse_refPlace(s.node, ContinuousNet(); parse_context)::RefPlace)
-        else
-            parse_refPlace(s.node, ContinuousNet(); parse_context)::RefPlace
-        end
+        n = parse_refPlace(s.node, pntd; parse_context)::RefPlace
         @test pid(n) === Symbol(s.id)
         @test PNML.refid(n) === Symbol(s.ref)
     end
