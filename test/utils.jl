@@ -11,7 +11,7 @@ end
 end
 
 @testset "getfirst XMLNode" begin
-    @show node = xml"""<test>
+    node = xml"""<test>
         <a name="a1"/>
         <a name="a2"/>
         <a name="a3"/>
@@ -35,7 +35,7 @@ ctx = PNML.parser_context()
 @testset "default(Condition, $pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
     c = Labels.default(Labels.Condition, pntd; ctx.ddict)::Labels.Condition
     #! TestUtils & Base export Condition
-    println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
+    # println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
 #println()

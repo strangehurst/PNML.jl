@@ -73,7 +73,7 @@ str7 = (tool="WoPeD", version="1.0", str = """
     println("\n###### parse tool $(s.tool) $(s.version)")
     ctx = PNML.parser_context()
     tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); parse_context=ctx)
-    @show tooli
+    # @show tooli
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
     @test PNML.Labels.version(tooli) == s.version
@@ -98,10 +98,11 @@ str7 = (tool="WoPeD", version="1.0", str = """
     </place>
     """)
 
-    @show combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
+    combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
 
     @test_call tools(combinedplace)
-    @show placetools = tools(combinedplace)
+    placetools = tools(combinedplace)
+    # @show placetools
     @test length(placetools) == 7
     @test all(t -> isa(t, ToolInfo), placetools)
 
