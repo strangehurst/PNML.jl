@@ -127,7 +127,7 @@ function parse_net(node::XMLNode;
     # Create "color functions" that process variables using TermInterface expressions.
     # Pre-caculate as much as is practical.
 
-    PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
+    #PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
     return net
 end
 

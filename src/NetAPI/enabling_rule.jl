@@ -92,37 +92,26 @@ end
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
-    enabled(::PnmlNet, marking) -> LVector
+    enabled(::PnmlNet, marking) -> Vector{Bool}
 
-Return vector boolean where `true` means transition is enabled at current `marking`.
+Return vector of booleans where `true` means the matching transition is enabled at current `marking`.
+Has the same order as the `transitions` dictionary.
 Used in the firing rule.
+Update tr.vars Set and tr.varsubs NamedTuple.
 """
 function enabled end
-
-function enabled(net::PnmlNet, marking)
-    varsub = NamedTuple() # There are no varibles possible here.
-    [all(p -> marking[p] >= inscription(arc(net,p,t))(varsub),
-                                        PNML.preset(net, t)) for t in transition_idset(net)]
-end
-
-function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
-    enabledXXX(net, marking)::Vector{Bool} #todo refactor the XXX
-end
 
 # AlgebraicJulia want(s,ed) LabelledPetriNet constructed with
 # with Varargs pairs of transition_name=>((input_states)=>(output_states))
 # example LabelledPetriNet([:S, :I, :R], :inf=>((:S,:I)=>(:I,:I)), :rec=>(:I=>:R))
 
-"""
-    enabledXXX(net::PnmlNet, marking) -> Vector{Bool}
+function enabled(net::PnmlNet, marking)
+    varsub = NamedTuple() # There are no varibles possible here.
+    Bool[all(p -> marking[p] >= inscription(arc(net,p,t))(varsub),
+                                        PNML.preset(net, t)) for t in transition_idset(net)]
+end
 
-Return vector of booleans where `true` means the matching transition is enabled;
-has the same order as the `transitions` dictionary.
-
-Update tr.vars Set and tr.varsubs NamedTuple
-for every [`Transition`](@ref) `tr` in `net` using `marking`.
-"""
-function enabledXXX(net::PnmlNet, marking)
+function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     evector = Bool[]
     for tr in transitions(net)
         trid = pid(tr)
@@ -175,8 +164,8 @@ function enabledXXX(net::PnmlNet, marking)
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
-                    condition_val = eval(toexpr(term(condition(tr)), NamedTuple(), decldict(tr)))
-                    enabled &= mi_val && condition_val
+                    c_val = eval(toexpr(term(condition(tr)), NamedTuple(), decldict(tr)))
+                    enabled &= mi_val && c_val
                 else
                     # Use the transition-level variable substution bindings `bvs`.
                     # Iterate over the cartesian product to produce a list of candidate firings.
@@ -189,16 +178,16 @@ function enabledXXX(net::PnmlNet, marking)
                     foreach(vsubiter) do  params
                         # Is params a tuple
                         vsub = namedtuple(vid, params) # names, values
-                        inscription_val = _cvt_inscription_value(pntd(net), arc,
+                        i_val = _cvt_inscription_value(pntd(net), arc,
                                             zero_marking(place(net, placeid)),
                                             vsub)
                         mark = unwrap_pmset(mark)
 
                         #? Do we want <= or is it issubset(A,B)?
-                        mi_val = issubset(inscription_val, mark)
-                        condition_val = eval(toexpr(term(condition(tr)), vsub, decldict(tr)))
+                        mi_val = issubset(i_val, mark)
+                        c_val = eval(toexpr(term(condition(tr)), vsub, decldict(tr)))
 
-                        if mi_val && condition_val
+                        if mi_val && c_val
                             push!(tr.varsubs, vsub)
                         else
                            enabled = false
@@ -225,22 +214,23 @@ end
 
 
 """
-    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark) -> Bool
+    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, ddict) -> Bool
 
-Fill `arc_bvs` with entry for each `arc_vars`.
-Return `true` if no variables or all variables have at least 1 substution.
+Fill `arc_bvs` with an entry for each key in `arc_vars`.
+Return `true` if no variables are present or all variables have at least 1 substution.
 """
-function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, ddict)
+function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
         #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
-        varrefid = refid(sortref(variable(ddict, v)))
+        var_refid = refid(sortref(variable(ddict, v)))
 
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
             #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            any(==(varrefid), Sorts.sorts(sortof(placesort))) ||
-                    error("none of tuple are equal sorts of $varrefid: $(Sorts.sorts(sortof(placesort))))")
+            any(==(var_refid), Sorts.sorts(sortof(placesort))) ||
+                    error("none of tuple are equal sorts of $var_refid: ",
+                            Sorts.sorts(sortof(placesort)))
         else
             placesort !== sortref(variable(ddict, v)) &&
                 error("not equal sorts ($placesort, $(sortref(variable(ddict, v))))")
@@ -255,7 +245,7 @@ function get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, ddict)
                     # Select the tuple element matching variable sort.
                     # Standard PnmlTuple are pairs. We allow tuple of at least one element.
                     for e in el #? PnmlMultiset?
-                        if refid(e) == varrefid
+                        if refid(e) == var_refid
                             e2 = e()
                             push!(arc_bvs[v], e2) # Add value to count of substitutions.
                         end
