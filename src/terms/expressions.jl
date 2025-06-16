@@ -312,11 +312,12 @@ end
     args::Vector{Bag} # >=2 # TODO NTuplex[]
 end
 
-toexpr(op::Add, varsub::NamedTuple, ddict) = begin
+function toexpr(op::Add, varsub::NamedTuple, ddict)
     @assert length(op.args) >= 2
-    # varsub, ddict are shared/not broadcasted
-    Expr(:call, sum, [eval(toexpr(arg, varsub, ddict)) for arg in op.args]) # constructs a new PnmlMultiset
+    # Expr(:call, sum, [eval(toexpr(arg, varsub, ddict)) for arg in op.args])
+    :(sum(eval(toexpr(arg, $varsub, $ddict)) for arg in $(op.args))) # creates PnmlMultiset
 end
+
 function Base.show(io::IO, x::Add)
     print(io, "Add(", join(x.args, ", "), ")" )
 end
@@ -328,6 +329,7 @@ end
 end
 
 toexpr(op::Subtract, var::NamedTuple, ddict) = Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -378,45 +380,60 @@ end
     refid::Any
 end
 
-toexpr(op::Contains, var::NamedTuple, ddict) = Expr(:call, :(>), Expr(:call, :multiplicity, toexpr(op.ms, var, ddict), op.refid), 0)
+function toexpr(op::Contains, var::NamedTuple, ddict)
+    Expr(:call, :(>), Expr(:call, :multiplicity, toexpr(op.ms, var, ddict), op.refid), 0)
+end
 
 function Base.show(io::IO, x::Contains)
     print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
 end
 
 #& Boolean Operators
-@matchable struct Or <: BoolExpr #? Uses `||` operator.
-    lhs::Any # BoolExpr
-    rhs::Any # BoolExpr
+@matchable struct Or <: BoolExpr #^ Uses `||` operator.
+    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
 end
 
-toexpr(op::Or, var::NamedTuple, ddict) =  Expr(:(||), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Or, vars::NamedTuple, ddict)
+    #  Expr(:(||), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+    :(foldl(:(||), eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+end
 
 function Base.show(io::IO, x::Or)
-    print(io, "Or(", x.lhs, ", ", x.rhs, ")" )
+    print(io, "Or(", join(x.args, ", "), ")" )
 end
 
-@matchable struct And <: BoolExpr #? Uses `&&` operator.
-    lhs::Any # BoolExpr
-    rhs::Any # BoolExpr
+@matchable struct And <: BoolExpr #^ Uses `&&` operator.
+    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
 end
 
-toexpr(op::And, var::NamedTuple, ddict) = Expr(:(&&), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::And, vars::NamedTuple, ddict)
+    #Expr(:(&&), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+    :(foldl(:(&&), eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+end
+# Expr(:call, reduce (&), [eval(toexpr(arg, varsub, ddict)) for arg in op.args]) #todo short-circuit?
+
 
 function Base.show(io::IO, x::And)
-    print(io, "And(", x.lhs, ", ", x.rhs, ")" )
+    print(io, "And(", join(x.args, ", "), ")" )
 end
 
-@matchable struct Not <: BoolExpr #? Uses `!` operator.
-    rhs::Any # BoolExpr
+@matchable struct Not <: BoolExpr #^ Uses `!` operator.
+    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
+    #! rhs::Any # BoolExpr #todo handle ordered collection. return and of not.boolean
 end
 
-toexpr(op::Not, var::NamedTuple, ddict) = Expr(:call, :(!), toexpr(op.rhs, var, ddict))
+# !any(true) === all(!true)
+function toexpr(op::Not, vars::NamedTuple, ddict)
+    :(!any(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+end
+
+#todo short-circuit?
+
 function Base.show(io::IO, x::Not)
-    print(io, "Not(", x.rhs, ")" )
+    print(io, "Not(", x.args, ")" )
 end
 
-@matchable struct Imply <: BoolExpr #? Uses `!` and `||` operators.
+@matchable struct Imply <: BoolExpr #^ Uses `!` and `||` operators.
     lhs::Any # BoolExpr
     rhs::Any # BoolExpr
 end
@@ -426,7 +443,7 @@ function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Equality <: PnmlExpr #? Uses `==` operator.
+@matchable struct Equality <: BoolExpr #^ Uses `==` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
@@ -436,7 +453,7 @@ function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Inequality <: PnmlExpr #? Uses `!=` operator.
+@matchable struct Inequality <: BoolExpr #^ Uses `!=` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
@@ -503,6 +520,7 @@ end
 end
 
 toexpr(op::Multiplication, var::NamedTuple, ddict) = Expr(:call, :(*), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::Multiplication)
     print(io, "Multiplication(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -513,46 +531,51 @@ end
 end
 
 toexpr(op::Division, var::NamedTuple, ddict) = Expr(:call, :div, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::Division)
     print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThan <: PnmlExpr #? Use `>` operator.
+@matchable struct GreaterThan <: BoolExpr #? Use `>` operator.
     lhs::Any
     rhs::Any
 end
 
 toexpr(op::GreaterThan, var::NamedTuple, ddict) = Expr(:call, :(>), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::GreaterThan)
     print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThanOrEqual <: PnmlExpr #? Use `>=` operator.
+@matchable struct GreaterThanOrEqual <: BoolExpr #? Use `>=` operator.
     lhs::Any
     rhs::Any
 end
 
 toexpr(op::GreaterThanOrEqual, var::NamedTuple, ddict) = Expr(:call, :(>=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::GreaterThanOrEqual)
     print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThan <: PnmlExpr #? Use `<` operator.
+@matchable struct LessThan <: BoolExpr #? Use `<` operator.
     lhs::Any
     rhs::Any
 end
 
 toexpr(op::LessThan, var::NamedTuple, ddict) = Expr(:call, :(<), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+
 function Base.show(io::IO, x::LessThan)
     print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThanOrEqual <: PnmlExpr #? Use `<=` operator.
+@matchable struct LessThanOrEqual <: BoolExpr #? Use `<=` operator.
     lhs::Any
     rhs::Any
 end
 
 toexpr(op::LessThanOrEqual, var::NamedTuple, ddict) = Expr(:call, :(<=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+
 function Base.show(io::IO, x::LessThanOrEqual)
     print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -563,6 +586,7 @@ end
 end
 
 toexpr(op::Modulo, var::NamedTuple, ddict) = Expr(:call, :mod, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
 function Base.show(io::IO, x::Modulo)
     print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -579,13 +603,14 @@ end
 
 toexpr(op::PartitionElementOp, var::NamedTuple, ddict) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
+
 function Base.show(io::IO, x::PartitionElementOp)
     print(io, "PartitionElementOp(", x.id, ", ", x.name, ", ", x.refs, ")" )
 end
 
 #> comparison functions on the partition elements which is based on
 #> the order in which they occur in the declaration of the partition
-@matchable struct PartitionLessThan <: PnmlExpr
+@matchable struct PartitionLessThan <: BoolExpr
     lhs::Any #PartitionElement
     rhs::Any #PartitionElement
 end
@@ -594,13 +619,15 @@ function ltp_impl(lhs, rhs)
     #@warn "ltp_impl" lhs  rhs
     lhs < rhs
 end
+
 toexpr(op::PartitionLessThan, var::NamedTuple, ddict) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
+
 function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct PartitionGreaterThan <: PnmlExpr
+@matchable struct PartitionGreaterThan <: BoolExpr
     lhs::Any #PartitionElement
     rhs::Any #PartitionElement
     # return BoolExpr
@@ -610,11 +637,13 @@ function gtp_impl(lhs, rhs)
     #@warn "gtp_impl" lhs  rhs
     lhs > rhs
 end
+
 toexpr(op::PartitionGreaterThan, varsub::NamedTuple, ddict) = begin
     #@warn "toexpr PartitionGreaterThan" op varsub
     Expr(:call, gtp_impl, toexpr(op.lhs, varsub, ddict), toexpr(op.rhs, varsub, ddict))
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
+
 function Base.show(io::IO, x::PartitionGreaterThan)
     print(io, "PartitionGreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -631,11 +660,13 @@ function _peo_impl(fec::FEConstant, refpart, ddict)
     #findfirst(e -> PNML.Declarations.contains(e, fec()), p.elements)
     findfirst(Fix2(PNML.Declarations.contains, fec()), p.elements)
 end
+
 toexpr(op::PartitionElementOf, varsub::NamedTuple, ddict) = begin
     #@warn "toexpr PartitionElementOf" op varsub
     Expr(:call, _peo_impl, toexpr(op.arg, varsub, ddict), QuoteNode(op.refpartition), ddict)
 end
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
+
 function Base.show(io::IO, x::PartitionElementOf)
     print(io, "PartitionElementOf(", x.arg, ", ", x.refpartition, ")" )
 end
@@ -657,25 +688,25 @@ end
     # use ?
 end
 
-@matchable struct StringLessThan{T <: AbstractString} <: PnmlExpr
+@matchable struct StringLessThan{T <: AbstractString} <: BoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringLessThanOrEqual{T <: AbstractString} <: PnmlExpr
+@matchable struct StringLessThanOrEqual{T <: AbstractString} <: BoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringGreaterThan{T <: AbstractString} <: PnmlExpr
+@matchable struct StringGreaterThan{T <: AbstractString} <: BoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringGreaterThanOrEqual{T <: AbstractString} <: PnmlExpr
+@matchable struct StringGreaterThanOrEqual{T <: AbstractString} <: BoolExpr
     lhs::T
     rhs::T
     # use ?
