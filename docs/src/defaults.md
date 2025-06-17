@@ -29,7 +29,7 @@ the kind on number they use:
 See [PnmlType - Petri Net Type Definition](@ref) for the full hierarchy.
 
 This means there are at least 3 sets of default value types.
-We use the pntd [PnmlType](@ref PNML.PnmlTypeDefs.PnmlType) as a trait to determine the default types/values.
+We use the pntd [PnmlType](@ref PNML.PnmlTypes.PnmlType) as a trait to determine the default types/values.
 
 A consequence is that the default value's type ripples through the type system.
 
@@ -40,7 +40,7 @@ using PNML: SortType, UserSort, IntegerSort, DotSort
 using PNML: PnmlCoreNet, ContinuousNet, HLCoreNet
 using PNML: NumberConstant, DotConstant
 
-list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
 ```

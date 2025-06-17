@@ -18,7 +18,7 @@ using PNML
 using PNML: Context
 using PNML: DeclDict
 #using ..PnmlIDRegistrys
-using ..PnmlTypeDefs
+using ..PnmlTypes
 using ..Labels
 using ..Sorts
 using ..PnmlGraphics

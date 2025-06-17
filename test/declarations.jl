@@ -16,7 +16,7 @@ function _subtypes!(out, type::Type)
     return out
 end
 
-@testset "parse_sort $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
     parse_context = PNML.parser_context()::PNML.ParseContext
         PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
         PNML.fill_sort_tag!(parse_context, :X, "X", PositiveSort())
@@ -118,7 +118,7 @@ end
 
 end
 
-@testset "empty declarations $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
         decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
@@ -140,7 +140,7 @@ end
         @test_call PNML.tools(decl)
 end
 
-@testset "namedsort declaration $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "namedsort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
     <declaration>
         <structure>
@@ -205,7 +205,7 @@ end
 end
 
 
-@testset "partition declaration $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "partition declaration $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
     <declaration>
         <structure>

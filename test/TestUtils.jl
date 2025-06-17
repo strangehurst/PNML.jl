@@ -11,7 +11,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.Parser
 @reexport using PNML.Declarations
 @reexport using PNML.PnmlIDRegistrys
-@reexport using PNML.PnmlTypeDefs
+@reexport using PNML.PnmlTypes
 @reexport using PNML.PnmlGraphics
 @reexport using PNML.PNet
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot, @xml_str

@@ -10,7 +10,7 @@ using PNML, ..TestUtils, JET
     #TODO more tests
 end
 
-@testset "graphics $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "graphics $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
     <graphics>
      <offset x="1.0" y="2.0" />
@@ -63,12 +63,12 @@ end
     @test n.font.rotation == "0.0"
 end
 
-@testset "graphics exception $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "graphics exception $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""<bogus x="1" y="2" />"""
     @test_throws r"^ArgumentError" PNML.Parser.parse_graphics_coordinate(node, pntd)
 end
 
-@testset "tokengraphics $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "tokengraphics $pntd" for pntd in PnmlTypes.core_nettypes()
     node0 = xml"""<tokengraphics></tokengraphics>"""
     n = @test_logs(match_mode=:all,
         (:warn,"tokengraphics does not have any <tokenposition> elements"),

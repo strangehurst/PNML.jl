@@ -21,7 +21,7 @@ using Logging, LoggingExtras
 using PNML
 using ..Expressions
 using ..PnmlIDRegistrys
-using ..PnmlTypeDefs
+using ..PnmlTypes
 using ..Labels
 using ..Sorts
 using ..Declarations

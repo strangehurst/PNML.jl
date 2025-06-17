@@ -1,6 +1,3 @@
-# PNML (the ISO Specification) defines separate XML marking syntax variants for
-# Place/Transition Nets (plain) and High-level (many-sorted).
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -208,7 +205,7 @@ PNML.value_type(::Type{HLMarking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), P
 #~ Inscription values are non-zero while marking values may be zdecldict(ero.
 
 #--------------------------------------------------------------------------------------
-# Basis sort can be, and are, restricted by/on PnmlType in the ISO standard.
+# Basis sort can be, and are, restricted by/on PnmlType in the ISO 15909 standard.
 # That is a statement about the XML file content. Allows a partial implementation that
 # only supports the PTNet meta-model or SymmetricNet meta-model of Petri nets.
 # The PnmlCoreNet, upon which PTNet, SymmetricNet, HLPNG, etc. are defined can be used

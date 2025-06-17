@@ -6,9 +6,9 @@ CurrentModule = PNML
 ```@autodocs
 Modules = [PNML]
 ```
-## PNML.PnmlTypeDefs
+## PNML.PnmlTypes
 ```@autodocs
-Modules = [PNML.PnmlTypeDefs]
+Modules = [PNML.PnmlTypes]
 ```
 ## PNML.PnmlIDRegistrys
 ```@autodocs

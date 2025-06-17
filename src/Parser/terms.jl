@@ -166,7 +166,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     isnothing(child) && throw(PNML.MalformedException("<all> operator missing sort argument"))
     basis = parse_usersort(child, pntd; parse_context)::UserSort # Can there be anything else?
     #! @assert isfinitesort(basis) #^ Only expect finite sorts here.
-    return PNML.Bag(basis), basis, vars # expression that calls pnmlmultiset(basis)
+    return PNML.Bag(basis), basis, vars
 end
 
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
@@ -175,20 +175,20 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_co
     basis = parse_usersort(child, pntd; parse_context)::UserSort # Can there be anything else?
     x = first(PNML.sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
-    return PNML.Bag(basis, x, 0), basis, vars # expression that calls pnmlmultiset(basis, x, 0)
+    return PNML.Bag(basis, x, 0), basis, vars
 end
 
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) >= 2
-    return PNML.Add(sts), basis(first(sts))::UserSort, vars # expression that calls pnmlmultiset(basis, sum_of_Multiset)
+    return PNML.Add(sts), basis(first(sts))::UserSort, vars
     # All are of same sort so we use the basis sort of first multiset.
 end
 
 function parse_term(::Val{:subtract}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return PNML.Subtract(sts), basis(first(sts))::UserSort, vars # expression that calls pnmlmultiset(basis, difference_of_Multiset)
+    return PNML.Subtract(sts), basis(first(sts))::UserSort, vars
 end
 
 #! ePNK-pnml-examples/release-0.9.0/MS-Bool-Int-technical-example.pnml
@@ -318,20 +318,21 @@ end
 
 function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    @assert length(sts) == 2
-    return PNML.Or(sts[1], sts[2]), usersorts(parse_context.ddict)[:bool], vars
+    @assert length(sts) >= 2
+    return PNML.Or(sts), usersorts(parse_context.ddict)[:bool], vars
 end
 
 function parse_term(::Val{:and}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    @assert length(sts) == 2
-    return PNML.And(sts[1], sts[2]), usersorts(parse_context.ddict)[:bool], vars
+    @assert length(sts) >= 2
+    return PNML.And(sts), usersorts(parse_context.ddict)[:bool], vars
 end
 
 function parse_term(::Val{:not}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    @assert length(sts) == 2
-    return PNML.Not(sts[1], sts[2]), usersorts(parse_context.ddict)[:bool], vars
+    @show sts
+    @assert length(sts) >= 1 # OCL says 1, framework code wants >= 1
+    return PNML.Not(sts), usersorts(parse_context.ddict)[:bool], vars
 end
 
 function parse_term(::Val{:imply}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)

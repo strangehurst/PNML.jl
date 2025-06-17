@@ -1,7 +1,7 @@
 """
 Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 """
-module PnmlTypeDefs
+module PnmlTypes
 
 import Base: eltype
 using DocStringExtensions
@@ -61,7 +61,7 @@ $(TYPEDEF)
 Base of High Level Petri Net pntds which add large extensions to PNML core.
 hlinitialMarking, hlinscription, and defined label structures.
 
-See [`PnmlTypeDefs.HLCoreNet`](@ref), [`PnmlTypeDefs.SymmetricNet`](@ref), [`PnmlTypeDefs.PT_HLPNG`](@ref) and others.
+See [`PnmlTypes.HLCoreNet`](@ref), [`PnmlTypes.SymmetricNet`](@ref), [`PnmlTypes.PT_HLPNG`](@ref) and others.
 """
 abstract type AbstractHLCore <: PnmlType end
 
@@ -92,7 +92,7 @@ struct PT_HLPNG <: AbstractHLCore end
 """
 $(TYPEDEF)
 Symmetric Petri Net is the best-worked use case in the `primer`
-and ISO specification part 2.
+and ISO 15909 standard part 2.
 """
 struct SymmetricNet <: AbstractHLCore end
 
@@ -207,7 +207,7 @@ Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmlty
 # Examples
 
 ```jldoctest; setup=:(using PNML)
-julia> PNML.PnmlTypeDefs.pntd_symbol("foo")
+julia> PNML.PnmlTypes.pntd_symbol("foo")
 :pnmlcore
 ```
 """
@@ -221,7 +221,7 @@ pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, 
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The [`PnmlTypeDefs.pnmltype_map`](@ref) and [`PnmlTypeDefs.default_pntd_map`](@ref)
+The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref)
 are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore`.
@@ -280,4 +280,4 @@ ishighlevel(::Type{<:PnmlType}) = false
 ishighlevel(pntd::AbstractHLCore) = true
 ishighlevel(::Type{<:AbstractHLCore}) = true
 
-end # module PnmlTypeDefs
+end # module PnmlTypes

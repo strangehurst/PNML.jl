@@ -1,6 +1,6 @@
 using PNML, ..TestUtils, JET, XMLDict
 
-@testset "place $pntd" for pntd in PnmlTypeDefs.all_nettypes(!ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(!ishighlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -21,7 +21,7 @@ using PNML, ..TestUtils, JET, XMLDict
     @test initial_marking(n) == 100
 end
 
-@testset "place $pntd" for pntd in PnmlTypeDefs.all_nettypes(ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -41,7 +41,7 @@ end
     im = initial_marking(n)
 end
 
-@testset "transition $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "transition $pntd" for pntd in PnmlTypes.all_nettypes()
     node = xml"""
       <transition id="transition1">
         <name> <text>Some transition</text> </name>
@@ -90,7 +90,7 @@ end
 
 println("\n==============================================================================")
 
-@testset "delay label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
     parse_context = PNML.parser_context()
     # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
     # This bit may be from the pre-standard era.
@@ -144,7 +144,7 @@ println("\n=====================================================================
 end
 
 #! Needs scaffolding
-# @testset "arc $pntd"  for pntd in PnmlTypeDefs.all_nettypes()
+# @testset "arc $pntd"  for pntd in PnmlTypes.all_nettypes()
 #     insc_xml = if ishighlevel(pntd)
 #         """<hlinscription>
 #             <text>6</text>
@@ -184,7 +184,7 @@ end
 #     end
 # end
 
-@testset "ref Trans $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "ref Trans $pntd" for pntd in PnmlTypes.all_nettypes()
     node = xml"""
     <referenceTransition id="rt1" ref="t1">
         <name> <text>refTrans name</text> </name>
@@ -200,7 +200,7 @@ end
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
 end
 
-@testset "ref Place $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
     n1 = (node = xml"""
     <referencePlace id="rp2" ref="rp1">
         <name>

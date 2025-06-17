@@ -11,7 +11,7 @@ using DocStringExtensions
 
 using PNML
 using PNML: Maybe, Coordinate, coordinate_type
-using ..PnmlTypeDefs
+using ..PnmlTypes
 
 export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics #, Line, Fill, Font
 

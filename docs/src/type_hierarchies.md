@@ -13,7 +13,7 @@ type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition (PNTD)
 
-See [`PnmlTypeDefs`](@ref) module page.
+See [`PnmlTypes`](@ref) module page.
 
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
@@ -34,7 +34,7 @@ Those semantics should be part of [`AbstractPetriNet`](@ref).
 Yes, the [`PnmlType`](@ref) in use selects some semantics and affects the toolkit.
 
 ```@example type
-type_tree(PNML.PnmlTypeDefs.PnmlType) # hide
+type_tree(PNML.PnmlTypes.PnmlType) # hide
 ```
 
 | PnmlType     | Description                                               |

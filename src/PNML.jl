@@ -119,8 +119,8 @@ pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_leve
 #global_logger(pnml_logger[])
 #@info """global logger\n$(current_logger())"""
 
-include("PnmlTypeDefs.jl")
-using .PnmlTypeDefs
+include("PnmlTypes.jl")
+using .PnmlTypes
 
 include("PnmlIDRegistrys.jl")
 using .PnmlIDRegistrys

@@ -32,14 +32,14 @@ end
 
 ctx = PNML.parser_context()
 
-@testset "default(Condition, $pntd)" for pntd in PnmlTypeDefs.all_nettypes()#ishighlevel)
+@testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()#ishighlevel)
     c = Labels.default(Labels.Condition, pntd; ctx.ddict)::Labels.Condition
     #! TestUtils & Base export Condition
     # println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
 #println()
-@testset "default inscription $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
 
     i = if ishighlevel(pntd)
         placetype = SortType("default_inscription", UserSort(:dot, ctx.ddict), nothing, nothing, ctx.ddict)
@@ -51,17 +51,17 @@ end
 end
 
 #println()
-@testset "default_typeusersort($pntd)" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "default_typeusersort($pntd)" for pntd in PnmlTypes.all_nettypes()
     t = Labels.default_typeusersort(pntd, ctx.ddict)::UserSort
 end
-@testset "value_type(Rate, $pntd)" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)
     #println("value_type(Rate, $pntd) = ", r)
     @test r == eltype(RealSort)
 end
 
 #println()
-@testset "PnmlNetData()" for pntd in PnmlTypeDefs.core_nettypes() # to limit number of tests
+@testset "PnmlNetData()" for pntd in PnmlTypes.core_nettypes() # to limit number of tests
     pnd = PnmlNetData()
     @test isempty(PNML.placedict(pnd))
     @test isempty(PNML.transitiondict(pnd))
@@ -70,15 +70,15 @@ end
     @test isempty(PNML.reftransitiondict(pnd))
 end
 #println()
-@testset "predicates for $pntd" for pntd in PnmlTypeDefs.all_nettypes()
-    @test Iterators.only(Iterators.filter(==(true), (PnmlTypeDefs.isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
+@testset "predicates for $pntd" for pntd in PnmlTypes.all_nettypes()
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
     tp = typeof(pntd) # translate from singleton to type
-    @test Iterators.only(Iterators.filter(==(true), (PnmlTypeDefs.isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
 end
 
 @testset "add_nettype" begin
-    add_type! = PnmlTypeDefs.add_nettype!
-    typemap   = PnmlTypeDefs.pnmltype_map
+    add_type! = PnmlTypes.add_nettype!
+    typemap   = PnmlTypes.pnmltype_map
     @test_logs (:info, r"^updating mapping") add_type!(typemap, :pnmlcore, PnmlCoreNet())
     @test_logs (:info, r"^updating mapping") add_type!(typemap, :hlcore, HLCoreNet())
     @test_logs (:info, r"^updating mapping") add_type!(typemap, :ptnet, PTNet())

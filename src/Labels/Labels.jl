@@ -23,7 +23,7 @@ import PNML: value_type
 import PNML: value, term,  graphics, tools, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations, decldict
 
-using ..PnmlTypeDefs # PNML PNTD
+using ..PnmlTypes # PNML PNTD
 
 import ..Expressions: toexpr, PnmlExpr
 

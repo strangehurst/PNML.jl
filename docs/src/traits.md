@@ -16,7 +16,7 @@ Default place markings and arc inscriptions are different for the three.
 
 ```@setup types
 using  PNML, InteractiveUtils, Markdown
-list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
 ```

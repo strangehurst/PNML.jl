@@ -74,7 +74,7 @@ Concepts from High-Level Petri Nets will be used in the Core layer.
 
 ```@setup types
 using  PNML, InteractiveUtils, Markdown
-list_type(f) = for pntd in values(PNML.PnmlTypeDefs.pnmltype_map)
+list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
     println(rpad(pntd, 15), " -> ", f(pntd))
 end
 ```
@@ -117,7 +117,7 @@ the nodes are appended to a `PnmlNetData` dictionary and a `PnmlNetKeys` set.
 The `PnmlNetData` dictionaries maintain insertion order.
 
 Each graph node may have labels attached.
-What labels depends on the [`PnmlTypeDefs`](@ref)
+What labels depends on the [`PnmlTypes`](@ref)
 
 ### ID Sets
 
@@ -146,11 +146,11 @@ See [`PnmlNet`](@ref)s & [`AbstractPnmlObject`](@ref)s
 
 #### pnmltype\_map
 ```@docs; canonical=false
-PNML.PnmlTypeDefs.pnmltype_map
+PNML.PnmlTypes.pnmltype_map
 ```
 ```@example
 using PNML # hide
-PNML.PnmlTypeDefs.pnmltype_map
+PNML.PnmlTypes.pnmltype_map
 ```
 #### pnmlnet\_type
 ```@docs; canonical=false

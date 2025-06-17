@@ -121,7 +121,7 @@ def_funs = (
             #!Labels.default_condition,
             )
 
-@testset "by pntd $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "by pntd $pntd" for pntd in PnmlTypes.core_nettypes()
     for fun in type_funs
         @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
         @test_call fun(pntd)
@@ -239,7 +239,7 @@ end
     end
 end
 
-@testset "lookup types $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "lookup types $pntd" for pntd in PnmlTypes.all_nettypes()
     @test PNML.arc_type(pntd) <: PNML.Arc
     @test PNML.place_type(pntd) <: PNML.Place
     @test PNML.transition_type(pntd) <: PNML.Transition

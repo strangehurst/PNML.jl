@@ -74,7 +74,8 @@ end
 #==========================================================================
 Notes based on ISO/IEC 15909-1:2019 (Part 1, 2nd Edition).
 
-Color class (concept 13) a non-empty finite set, may be linearly ordered, circular or unordered.
+ISO 15909-1:2019 Concept 13: Color class is a non-empty finite set,
+may be linearly ordered, circular or unordered.
 Color domain (concept 14) a finite cartesian product of color classes.
 C is a mapping which defines for each place and each transition its color domain.
 W is the weight function, associates with each arc a general color function from C(t) to Bag(C(p)).

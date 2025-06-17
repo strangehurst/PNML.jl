@@ -62,7 +62,7 @@ Inscription values labeled with target place id for arcs with `transition_id` as
 outs(net::PnmlNet, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
 
 #
-# See input flow #todo cite ISO 15909-1:2019 (part 1, 2ed)
+# See input flow #todo cite ISO 15909-1:2019
 """
     in_inscriptions(net, transitionid) -> Iterator
 
@@ -75,7 +75,7 @@ function in_inscriptions(net::PnmlNet, transitionid)
     end
 end
 
-# See output flow #todo cite  ISO 15909-1:2019 (part 1, 2ed)
+# See output flow #todo cite  ISO 15909-1:2019
 """
     out_inscriptions(net, transitionid) -> Iterator
 

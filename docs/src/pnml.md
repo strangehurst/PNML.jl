@@ -100,12 +100,12 @@ Of some note it that PNML.jl extends PNML. These, non-standard pntd do not
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypeDefs.default_pntd_map)))) #hide
+using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
 ```
 
 PnmlType map (pntd symbol to singleton):
 ```@example
-using PNML; foreach(println, pairs(PNML.PnmlTypeDefs.pnmltype_map)) #hide
+using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
 ```
 
 ## Handling Labels
@@ -252,7 +252,7 @@ San Francisco, USA, LNCS 3653, Springer, pp. 323-337.
 [PNML Framework](https://pnml.lip6.fr/)
 "... a free and open-source prototype implementation of ISO/IEC-15909, International Standard on Petri Nets".
 The framework is an Eclipse/Java construction using Eclipse Public License 1.0.
-Uses Model-Driven Engineering to provide generated APIs.
+Uses 'Eclipse` Model-Driven Engineering [EMF](http://www.eclipse.org/modeling/emf/) to provide generated APIs.
 
 [github.com/lip6/pnmlframework](https://github.com/lip6/pnmlframework) hosts the source code of PNML Framework.
 See [apidocs](https://pnml.lip6.fr/pnmlframework/apidocs/index.html) and

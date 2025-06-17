@@ -436,7 +436,7 @@ methods(PNML.Labels.get_toolinfo) # hide
 
 ## PnmlType traits
 
-See PnmlTypeDefs for details of the singleton types used.
+See PnmlTypes for details of the singleton types used.
 
   - [`pnmlnet_type`](@ref)
 ```@example methods

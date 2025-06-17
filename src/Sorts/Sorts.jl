@@ -42,7 +42,7 @@ concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
 
 Notes:
 - `NamedSort` is a Declarations.SortDeclaration
-[`PNML.PnmlTypeDefs.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
+[`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
 - `UserSort` holds the id symbol of a `NamedSort`.
 - Here 'type' means a 'term' from the many-sorted algebra.
 - We use sorts even for non-high-level nets.

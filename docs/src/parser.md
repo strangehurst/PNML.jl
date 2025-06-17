@@ -29,7 +29,7 @@ See [`rate_value`](@ref) for a use case.
 ## Sorts
 
 Figure 11 of the _primer_ lists built-in sorts and functions for _Symmetric Nets_, a
-restricted _High-Level Petri Net Graph_. See [`PnmlTypeDefs`](@ref), [`PnmlTypeDefs.HLPNG`](@ref)
+restricted _High-Level Petri Net Graph_. See [`PnmlTypes`](@ref), [`PnmlTypes.HLPNG`](@ref)
 and [`AbstractHLCore`](@ref)
 
 Some of the restrictions:

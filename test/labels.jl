@@ -3,12 +3,12 @@ using EzXML: EzXML
 using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
-@testset "text $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "text $pntd" for pntd in PnmlTypes.core_nettypes()
     @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
-@testset "name $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "name $pntd" for pntd in PnmlTypes.core_nettypes()
     parse_context = PNML.parser_context()
     n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd; parse_context)
     @test n isa PNML.AbstractLabel
@@ -61,7 +61,7 @@ end # @with
 
     # Integer
     mark1 = PNML.Marking(23, parse_context.ddict)
-    @test_opt PNML.Marking(23, parse_context.ddict)
+    @test_opt broken=false PNML.Marking(23, parse_context.ddict)
     @test_call PNML.Marking(23, parse_context.ddict)
     @test typeof(mark1()) == typeof(23)
     @test mark1() == 23
@@ -74,7 +74,7 @@ end # @with
     # Floating point
     mark2 = PNML.Marking(3.5, parse_context.ddict)
     #@show mark2 mark2()
-    @test_opt PNML.Marking(3.5, parse_context.ddict)
+    @test_opt broken=false PNML.Marking(3.5, parse_context.ddict)
     @test_call PNML.Marking(3.5, parse_context.ddict)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
@@ -111,7 +111,7 @@ end
 
 FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
-#@testset "add_labels JET $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+#@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]
     # reg = PnmlIDRegistry()
     # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
@@ -129,7 +129,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     #                             PNML.Parser.add_label!(lab, node, pntd))
 #end
 
-@testset "labels $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "labels $pntd" for pntd in PnmlTypes.core_nettypes()
     parse_context = PNML.parser_context()
     lab = PnmlLabel[]
     for i in 1:4 # create & add 4 labels
@@ -212,7 +212,7 @@ function test_unclaimed(pntd, xmlstring::String)
     return l, a
 end
 
-@testset "unclaimed $pntd" for pntd in PnmlTypeDefs.core_nettypes()
+@testset "unclaimed $pntd" for pntd in PnmlTypes.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
     parse_context = PNML.parser_context()

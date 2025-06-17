@@ -1,7 +1,7 @@
 using PNML, ..TestUtils, JET
 
 println("RATE")
-@testset "get rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "get rate label $pntd" for pntd in PnmlTypes.all_nettypes()
     parse_context = PNML.parser_context()
 
     trans = PNML.Parser.parse_transition(xml"""<transition id ="birth"><rate> <text>0.3</text> </rate></transition>""",
@@ -26,7 +26,7 @@ println("RATE")
 end
 
 # Ensure not seeing very similar label while getting default.
-@testset "get defaulted rate label $pntd" for pntd in PnmlTypeDefs.all_nettypes()
+@testset "get defaulted rate label $pntd" for pntd in PnmlTypes.all_nettypes()
     parse_context = PNML.parser_context()
     node = xml"""<transition id ="birth">
                     <rateX> <text> 0.3 </text> </rateX>
