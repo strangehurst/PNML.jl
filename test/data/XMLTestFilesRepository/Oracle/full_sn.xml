@@ -245,7 +245,7 @@
 								</equality>
 							</subterm>
 							<subterm>
-								<and>
+								<and> <!-- JDH 2025-06-15 added <equality>  -->
 									<subterm>
                                     	<equality>
 									    <subterm>
@@ -289,7 +289,7 @@
 								</inequality>
 							</subterm>
 							<subterm>
-								<not>
+								<not> <!-- JDH 2025-06-15 added <equality>  -->
                                 <subterm>
     								<equality>
                                         <subterm>

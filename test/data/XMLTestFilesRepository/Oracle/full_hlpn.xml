@@ -245,12 +245,26 @@
 								</equality>
 							</subterm>
 							<subterm>
-								<and>
+								<and> <!-- JDH 2025-06-15 added <equality>  -->
 									<subterm>
-										<variable refvariable="varu" />
+                                    	<equality>
+									    <subterm>
+								            <useroperator  declaration="emacsId" />
+									    </subterm>
+									    <subterm>
+										    <variable refvariable="varu" />
+                                        </subterm>
+                                        </equality>
 									</subterm>
 									<subterm>
-										<variable refvariable="varv" />
+                                   	    <equality>
+                                            <subterm>
+        								        <useroperator  declaration="emacsId" />
+                                            </subterm>
+                                            <subterm>
+				        						<variable refvariable="varv" />
+                                            </subterm>
+                                        </equality>
 									</subterm>
 								</and>
 							</subterm>
@@ -275,13 +289,17 @@
 								</inequality>
 							</subterm>
 							<subterm>
-								<not>
-									<subterm>
-										<variable refvariable="varu" />
-									</subterm>
-									<subterm>
-										<variable refvariable="varv" />
-									</subterm>
+								<not> <!-- JDH 2025-06-15 added <equality>  -->
+                                <subterm>
+    								<equality>
+                                        <subterm>
+                                            <variable refvariable="varu" />
+                                        </subterm>
+                                        <subterm>
+                                            <variable refvariable="varv" />
+                                        </subterm>
+    								</equality>
+                                    </subterm>
 								</not>
 							</subterm>
 							<subterm>
