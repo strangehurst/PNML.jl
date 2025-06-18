@@ -389,26 +389,25 @@ function Base.show(io::IO, x::Contains)
 end
 
 #& Boolean Operators
-@matchable struct Or <: BoolExpr #^ Uses `||` operator.
+@matchable struct Or <: BoolExpr #^ Uses `any`.
     args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
 end
 
 function toexpr(op::Or, vars::NamedTuple, ddict)
-    #  Expr(:(||), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
-    :(foldl(:(||), eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+     :(any(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
 end
 
 function Base.show(io::IO, x::Or)
     print(io, "Or(", join(x.args, ", "), ")" )
 end
 
-@matchable struct And <: BoolExpr #^ Uses `&&` operator.
+@matchable struct And <: BoolExpr #^ Uses `all`.
     args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
 end
 
 function toexpr(op::And, vars::NamedTuple, ddict)
-    #Expr(:(&&), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
-    :(foldl(:(&&), eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+    #@show [eval(toexpr(arg, vars, ddict)) for arg in op.args]
+    :(all(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
 end
 # Expr(:call, reduce (&), [eval(toexpr(arg, varsub, ddict)) for arg in op.args]) #todo short-circuit?
 
