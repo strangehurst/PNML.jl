@@ -16,17 +16,40 @@ println("-----------------------------------------\n"); flush(stdout)
 end
 
 #
-# pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle
+# copied from pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle
 #
 datapath = "data/XMLTestFilesRepository/Oracle"
+
 println("-----------------------------------------")
-println("full_sn.xml")
-println("-----------------------------------------\n"); flush(stdout)
+println("full_coremodel.xml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, datapath, "full_coremodel.xml")
+    model = pnmlmodel(fname)::PnmlModel
+    #println("model = ", model) #! debug
+end
+
+println("-----------------------------------------")
+println("full_ptnet.xml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, datapath, "full_ptnet.xml")
+    model = pnmlmodel(fname)::PnmlModel
+    #println("model = ", model) #! debug
+end
+
+println("-----------------------------------------")
+println("full_sn.xml") # modified
+println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, datapath, "full_sn.xml")
-    #false &&
+    model = pnmlmodel(fname)::PnmlModel
+    #println("model = ", model) #! debug
+end
+
+println("-----------------------------------------")
+println("full_hlpn.xml") # modified
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, datapath, "full_hlpn.xml")
     model = pnmlmodel(fname)::PnmlModel
     println("model = ", model) #! debug
-    #@test PNML.verify(net; verbose=true)
-    #TODO apply metagraph tools
-    println(); flush(stdout)
 end
+
+println(); flush(stdout)
