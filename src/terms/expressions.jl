@@ -54,8 +54,8 @@ toexpr(::Nothing, ::NamedTuple, ddict) = nothing
 toexpr(x::T, ::NamedTuple, ddict) where {T <: Number} = identity(x) #! literal
 #toexpr(x::Number, ::NamedTuple, ::Any) = QuoteNode(x) #! literal
 toexpr(s::Symbol, ::NamedTuple, ddict) = QuoteNode(s)
-toexpr(t::Tuple, vsub::NamedTuple, ddict) = begin
-    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
+function toexpr(t::Tuple, vsub::NamedTuple, ddict)
+    @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
     return t
 end
 
@@ -183,7 +183,7 @@ inscription <- :numberof :numberconstant :mult :variable :variable
     refid::REFID
 end
 
-toexpr(op::VariableEx, varsub::NamedTuple, ddict) = begin
+function toexpr(op::VariableEx, varsub::NamedTuple, ddict)
     vsub = varsub[op.refid]
     if vsub isa Symbol
         Expr(:call, feconstant, QuoteNode(ddict), QuoteNode(vsub))
@@ -202,10 +202,11 @@ end
     refid::REFID # operator(ddict, REFID) returns operator callable.
 end
 
-toexpr(op::UserOperatorEx, varsub::NamedTuple, ddict) = begin
+function toexpr(op::UserOperatorEx, varsub::NamedTuple, ddict)
     #@warn "toexpr(op::UserOperatorEx, varsub::NamedTuple)" op varsub operator(ddict, op.refid)
     Expr(:call, operator, QuoteNode(ddict), QuoteNode(op.refid)) #
 end
+
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
@@ -234,7 +235,7 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 
 basis(b::Bag) = b.basis
 
-toexpr(b::Bag, varsub::NamedTuple, ddict) = begin
+function toexpr(b::Bag, varsub::NamedTuple, ddict)
     #@show b varsub Expr(:parameters, Expr(:kw,:ddict, ddict))
     #^ Warning: b.element can be: `PnmlMultiset`, `pnmltuple`
     #^ tuples are elements of a `ProductSort`pnmltuple
@@ -286,7 +287,7 @@ BooleanEx # Need to avoid @matchable to have docstring
 end
 
 basis(::BooleanEx, ddict::DeclDict) = usersort(ddict, :bool) # is constant
-toexpr(b::BooleanEx, var::NamedTuple, ddict) = begin
+function toexpr(b::BooleanEx, var::NamedTuple, ddict)
     if b.element isa BooleanConstant
         QuoteNode(PNML.Labels.value(b.element))
     else
@@ -328,7 +329,9 @@ end
     rhs::Bag
 end
 
-toexpr(op::Subtract, var::NamedTuple, ddict) = Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Subtract, var::NamedTuple, ddict)
+    Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::Subtract)
     print(io, "Subtract(", x.lhs, ", ", x.rhs, ")" )
@@ -340,9 +343,10 @@ end
     bag::Bag #! Expression
 end
 
-toexpr(op::ScalarProduct, var::NamedTuple, ddict) =
+function toexpr(op::ScalarProduct, var::NamedTuple, ddict)
     Expr(:call, PNML.PnmlMultiset, basis(op.bag)::UserSort,
         Expr(:call, :(*), toexpr(op.n, var, ddict), toexpr(op.bag, var, ddict)))
+end
 
 function Base.show(io::IO, x::ScalarProduct)
     print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
@@ -358,7 +362,9 @@ end
     arg::Any # multiset expression
 end
 
-toexpr(op::Cardinality, var::NamedTuple, ddict) = Expr(:call, :cardinality, toexpr(op.arg, var, ddict))
+function toexpr(op::Cardinality, var::NamedTuple, ddict)
+    Expr(:call, :cardinality, toexpr(op.arg, var, ddict))
+end
 
 function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
@@ -369,7 +375,10 @@ end
     refid::REFID # element of basis sort
 end
 
-toexpr(op::CardinalityOf, var::NamedTuple, ddict) = Expr(:call, :multiplicity, toexpr(op.ms, var, ddict), op.refid)
+function toexpr(op::CardinalityOf, var::NamedTuple, ddict)
+    Expr(:call, :multiplicity, toexpr(op.ms, var, ddict), op.refid)
+end
+
 function Base.show(io::IO, x::CardinalityOf)
     print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
 end
@@ -394,7 +403,7 @@ end
 end
 
 function toexpr(op::Or, vars::NamedTuple, ddict)
-     :(any(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
+    :(any(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
 end
 
 function Base.show(io::IO, x::Or)
@@ -409,8 +418,6 @@ function toexpr(op::And, vars::NamedTuple, ddict)
     #@show [eval(toexpr(arg, vars, ddict)) for arg in op.args]
     :(all(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
 end
-# Expr(:call, reduce (&), [eval(toexpr(arg, varsub, ddict)) for arg in op.args]) #todo short-circuit?
-
 
 function Base.show(io::IO, x::And)
     print(io, "And(", join(x.args, ", "), ")" )
@@ -421,12 +428,10 @@ end
     #! rhs::Any # BoolExpr #todo handle ordered collection. return and of not.boolean
 end
 
-# !any(true) === all(!true)
+#~  !any(true) === all(!true)
 function toexpr(op::Not, vars::NamedTuple, ddict)
     :(!any(eval(toexpr(arg, $vars, $ddict)) for arg in $(op.args)))
 end
-
-#todo short-circuit?
 
 function Base.show(io::IO, x::Not)
     print(io, "Not(", x.args, ")" )
@@ -437,7 +442,10 @@ end
     rhs::Any # BoolExpr
 end
 
-toexpr(op::Imply, var::NamedTuple, ddict) = Expr(:call, :(||), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Imply, var::NamedTuple, ddict)
+    Expr(:call, :(||), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
+
 function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -447,7 +455,10 @@ end
     rhs::Any # expression evaluating to a T
 end
 
-toexpr(op::Equality, var::NamedTuple, ddict) = Expr(:call, :(==), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Equality, var::NamedTuple, ddict)
+    Expr(:call, :(==), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
+
 function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -457,7 +468,10 @@ end
     rhs::Any # expression evaluating to a T
 end
 
-toexpr(op::Inequality, var::NamedTuple, ddict) = Expr(:call, :(!=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Inequality, var::NamedTuple, ddict)
+    Expr(:call, :(!=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
+
 function Base.show(io::IO, x::Inequality)
     print(io, "Inequality(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -471,6 +485,7 @@ end
 toexpr(op::Successor, var::NamedTuple, ddict) = error("implement me arg ", repr(op.arg))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
 #! Expr(:call, toexpr(c, m.head), toexpr.(Ref(c), m.args)...)
+
 function Base.show(io::IO, x::Successor)
     print(io, "Successor(", x.arg, ")" )
 end
@@ -480,6 +495,7 @@ end
 end
 
 toexpr(op::Predecessor, var::NamedTuple, ddict) = error("implement me arg ", repr(op.arg))
+
 function Base.show(io::IO, x::Predecessor)
     print(io, "Predecessor(", x.arg, ")" )
 end
@@ -499,7 +515,11 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Addition, var::NamedTuple, ddict) = Expr(:call, :(+), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
+function toexpr(op::Addition, var::NamedTuple, ddict)
+    Expr(:call, :(+), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
+
 function Base.show(io::IO, x::Addition)
     print(io, "Addition(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -508,7 +528,11 @@ end
     lhs::Any
     rhs::Any
 end
-toexpr(op::Subtraction, var::NamedTuple, ddict) = :Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+
+function toexpr(op::Subtraction, var::NamedTuple, ddict)
+    Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
+
 function Base.show(io::IO, x::Subtraction)
     print(io, "Subtraction(", x.lhs, ", ", x.rhs, ")" )
 end
@@ -518,7 +542,9 @@ end
     rhs::Any
 end
 
-toexpr(op::Multiplication, var::NamedTuple, ddict) = Expr(:call, :(*), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Multiplication, var::NamedTuple, ddict)
+    Expr(:call, :(*), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::Multiplication)
     print(io, "Multiplication(", x.lhs, ", ", x.rhs, ")" )
@@ -529,7 +555,9 @@ end
     rhs::Any
 end
 
-toexpr(op::Division, var::NamedTuple, ddict) = Expr(:call, :div, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Division, var::NamedTuple, ddict)
+    Expr(:call, :div, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::Division)
     print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
@@ -540,7 +568,9 @@ end
     rhs::Any
 end
 
-toexpr(op::GreaterThan, var::NamedTuple, ddict) = Expr(:call, :(>), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::GreaterThan, var::NamedTuple, ddict)
+    Expr(:call, :(>), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::GreaterThan)
     print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
@@ -551,7 +581,9 @@ end
     rhs::Any
 end
 
-toexpr(op::GreaterThanOrEqual, var::NamedTuple, ddict) = Expr(:call, :(>=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::GreaterThanOrEqual, var::NamedTuple, ddict)
+    Expr(:call, :(>=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::GreaterThanOrEqual)
     print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
@@ -562,7 +594,9 @@ end
     rhs::Any
 end
 
-toexpr(op::LessThan, var::NamedTuple, ddict) = Expr(:call, :(<), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+function toexpr(op::LessThan, var::NamedTuple, ddict)
+    Expr(:call, :(<), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+end
 
 function Base.show(io::IO, x::LessThan)
     print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
@@ -573,7 +607,9 @@ end
     rhs::Any
 end
 
-toexpr(op::LessThanOrEqual, var::NamedTuple, ddict) = Expr(:call, :(<=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+function toexpr(op::LessThanOrEqual, var::NamedTuple, ddict)
+    Expr(:call, :(<=), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var), ddict)
+end
 
 function Base.show(io::IO, x::LessThanOrEqual)
     print(io, "LessThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
@@ -584,7 +620,9 @@ end
     rhs::Any
 end
 
-toexpr(op::Modulo, var::NamedTuple, ddict) = Expr(:call, :mod, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+function toexpr(op::Modulo, var::NamedTuple, ddict)
+    Expr(:call, :mod, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
+end
 
 function Base.show(io::IO, x::Modulo)
     print(io, "Modulo(", x.lhs, ", ", x.rhs, ")" )
@@ -637,7 +675,7 @@ function gtp_impl(lhs, rhs)
     lhs > rhs
 end
 
-toexpr(op::PartitionGreaterThan, varsub::NamedTuple, ddict) = begin
+function toexpr(op::PartitionGreaterThan, varsub::NamedTuple, ddict)
     #@warn "toexpr PartitionGreaterThan" op varsub
     Expr(:call, gtp_impl, toexpr(op.lhs, varsub, ddict), toexpr(op.rhs, varsub, ddict))
 end
@@ -660,7 +698,7 @@ function _peo_impl(fec::FEConstant, refpart, ddict)
     findfirst(Fix2(PNML.Declarations.contains, fec()), p.elements)
 end
 
-toexpr(op::PartitionElementOf, varsub::NamedTuple, ddict) = begin
+function toexpr(op::PartitionElementOf, varsub::NamedTuple, ddict)
     #@warn "toexpr PartitionElementOf" op varsub
     Expr(:call, _peo_impl, toexpr(op.arg, varsub, ddict), QuoteNode(op.refpartition), ddict)
 end
@@ -748,7 +786,7 @@ PnmlTupleEx
     args::Vector{Any} # >=2 # TODO NTuple #x::NTuple{N,T}
 end
 
-toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict) = begin
+function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
     @assert length(op.args) >= 2
     # @warn("toexpr PnmlTupleEx", op.args, varsub,
     #         toexpr.(op.args, Ref(varsub)),
