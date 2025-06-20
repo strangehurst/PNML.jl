@@ -15,12 +15,25 @@ const REFID = Symbol
 $(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
+
+Expected interfce is for every concrete object to have fields:
+    - id
+    - namelabel
+    - graphics
+    - labels
+    - tools
 """
 abstract type AbstractPnmlObject end
 
 """
 $(TYPEDEF)
 Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
+
+Expected interface is for every concrete label to have fields:
+    - text
+    - graphics
+    - tools
+    - declarationdicts
 """
 abstract type AbstractLabel end
 
@@ -28,25 +41,29 @@ abstract type AbstractLabel end
 $(TYPEDEF)
 Label that may be displayed.
 Differs from an Attribute Label by possibly having a [`Graphics`](@ref) field.
+We do not implement a separate Attribute type since `graphics` is optional.
 """
 abstract type Annotation <: AbstractLabel end
 
 """
 $(TYPEDEF)
-Annotation label that uses <text> and <structure>.
+Annotation label that adds <structure>.
 """
 abstract type HLAnnotation <: AbstractLabel end
 
 
 
 
-# function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
-#     prop_name === :id   && return getfield(o, :id)::Symbol
+function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
+    prop_name === :id   && return getfield(o, :id)::Symbol
 #     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
-#     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
+    prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
+    prop_name === :graphics   && return getfield(o, :graphics)::Maybe{Graphics}
+    prop_name === :labels   && return getfield(o, :labels)::Maybe{Vector{PnmlLabel}}
+    prop_name === :tools   && return getfield(o, :tools)::Maybe{Vector{ToolInfo}}
 
-#     return getfield(o, prop_name)
-# end
+    return getfield(o, prop_name)
+end
 
 pid(o::AbstractPnmlObject)        = o.id
 

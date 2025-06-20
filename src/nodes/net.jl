@@ -76,7 +76,7 @@ has_tools(net::PnmlNet) = !isnothing(net.tools)
 tools(net::PnmlNet)     = net.tools
 
 has_labels(net::PnmlNet) = !isnothing(net.labels)
-labels(net::PnmlNet)     = net.labels
+labels(net::PnmlNet)     = net.labels # Vectors are iteratable.
 
 has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
 name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""

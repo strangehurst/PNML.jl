@@ -57,7 +57,9 @@ High-Level Petri Net Graphs extends Symmetric Nets
 
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
-    #prop_name === :pntd && return getfield(o, :pntd)::PnmlType # Do labels have this?
+    prop_name === :graphics && return getfield(o, :graphics)::Maybe{Graphics}
+    prop_name === :tools && return getfield(o, :tools)::Maybe{Vector{ToolInfo}}
+    prop_name === :declarationdicts && return getfield(o, :declarationdicts)::Maybe{DeclDict}
 
     return getfield(o, prop_name)
 end
@@ -74,11 +76,6 @@ has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
 tools(l::AbstractLabel) = l.tools
 
 has_labels(l::AbstractLabel) = false # Labels DO NOT have sub-labels.
-
-# Some Labels are functors: marking, inscription, condition.
-# Usually where it is possible to have a high-level term.
-
-
 
 #--------------------------------------------
 
@@ -149,13 +146,13 @@ end
 #--------------------------------------
 #TODO this is more general, make a utiity (and use somewhere else)?
 """
-    hastag(x, tag::Union{Symbol, String, SubString{String}}) -> Function
-Return method with one argument. Duck-typed to test anything with tag accessor.
+    hastag(x, tagvalue::Union{Symbol, String, SubString{String}}) -> Bool
+Test anything with `tag` accessor for equality with `tagvalue`.
 
 # EXAMPLES
-    Iterators.filter(Fix2(hastag, tag), iteratable)
+    Iterators.filter(Fix2(hastag, :asymbol), iteratable)
 """
-hastag(l, tagvalue::Union{Symbol, String, SubString{String}}) = tag(l) === tagvalue
+hastag(l, tagvalue::Union{Symbol, String, SubString{String}}) = tag(l) == tagvalue
 
 function labels(iteratable, tag::Union{Symbol, String, SubString{String}})
     isnothing(iteratable) && error("iteratable is nothing")
