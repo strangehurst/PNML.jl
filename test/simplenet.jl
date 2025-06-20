@@ -236,7 +236,7 @@ const core_types = ("pnmlcore","ptnet",)
 const hl_types = ("pt_hlpng",) # ("hlcore","symmetric") #,"pt_hlpng","hlnet",)
 const ex_types = ("continuous",)
 @testset "extract a graph $pntd" for pntd in tuple(core_types..., hl_types..., ex_types...)
-    println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
+    # println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -306,19 +306,16 @@ const ex_types = ("continuous",)
     """
     #@show str3
     anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
-    println("==================================")
+    #println("==================================")
     #@show anet
     mg = PNML.metagraph(anet.net)
 
     flush(stdout)
 
-    @show m₀ = PNML.initial_markings(anet.net) #::LVector
-    @show C  = PNML.incidence_matrix(anet.net, m₀) # Matrix of PnmlMultiset
-    @show e  = PNML.enabled(anet.net, m₀)
-    # @show muladd(permutedims(C), [1,0,0,0], m₀)
-    # @show muladd(permutedims(C), e, m₀)
-    # @show m = PNML.fire(C, [1,0,0,0], m₀)
-    println("==================================")
+    m₀ = PNML.initial_markings(anet.net) #::LVector
+    C  = PNML.incidence_matrix(anet.net, m₀) # Matrix of PnmlMultiset
+    e  = PNML.enabled(anet.net, m₀)
+    #println("==================================")
 
     @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]
@@ -341,6 +338,6 @@ const ex_types = ("continuous",)
         for n in 1:10
             mx = PNML.fire2(C, anet.net, mx)
         end
-        @show mx
+        #@show mx
     end
 end
