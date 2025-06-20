@@ -2,16 +2,13 @@ using PNML, ..TestUtils, JET, NamedTupleTools, AbstractTrees
 using EzXML: EzXML
 using XMLDict: XMLDict
 
-# See PnmlExpr
-_op() = (; args=(PNML.Bag(UserSort(:pro), 1, PNML.NumberEx(UserSort(:natural), 1)),
-                 PNML.Bag(UserSort(:pro), 2, PNML.NumberEx(UserSort(:natural), 1)), ))
-
 const pntd = HLCoreNet()
 const ctx = PNML.parser_context()
 const ddict = ctx.ddict
 const varsub = NamedTuple()
 
 @testset "multiset add $pntd" begin
+    # When will it be noticed that `:pro` is not a valid REFID?
     b1 = PNML.Bag(UserSort(:pro, ddict), 1, PNML.NumberEx(UserSort(:natural, ddict), 1))
     b2 = PNML.Bag(UserSort(:pro, ddict), 2, PNML.NumberEx(UserSort(:natural, ddict), 1))
     b3 = PNML.Bag(UserSort(:pro, ddict), 3, PNML.NumberEx(UserSort(:natural, ddict), 2))
