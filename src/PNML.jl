@@ -25,6 +25,7 @@ This is the level that Petri Net conformance can be imposed.
 It is also where other Net constructs can be defined over `PnmlNet`s. Perhaps as new meta-models.
 """
 module PNML
+__precompile__(true)
 using Logging
 using LoggingExtras
 # CONFIG structure copied from Tim Holy's Cthulhu.jl.
