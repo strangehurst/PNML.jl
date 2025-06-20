@@ -21,7 +21,7 @@ Tool and label parsers used for `PnmlObjects`
 Includes PnmlModel, PnmlNet, Page, Place, Transition, Arc
 
 Only Tool parsers used for `AbstractLabels`.
-Defined (or otherwise claimed) labels will not have AbstractLabels as as content.
+Defined (or otherwise claimed) labels will not have AbstractLabels as content.
 Examples marking, inscription condition, sorttype, declaration
 
 ## `ToolParser` collection
