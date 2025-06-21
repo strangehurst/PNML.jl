@@ -107,46 +107,6 @@ dict_show(io::IO, p::Pair)   = show(io, p)
 dict_show(io::IO, p::Number) = show(io, p)
 dict_show(io::IO, p::Nothing) = print(io, repr(p))
 
-# dict_show(io::IO, v::Vector) = _d_show(io, v, '[', ']')
-# dict_show(io::IO, v::Tuple)  = _d_show(io, v, '(', ')')
-# "Alternate to dict_show. Prints `before`, `after` with ordered collection between"
-# _d_show(io::IO, x::Union{Vector,Tuple}, before, after ) = begin
-#     println("_d_show")
-#     print(io, before)
-#     iio = inc_indent(io)
-#     for (i, e) in enumerate(x)
-#         #! dict_show prints the key here, but vector, tuple do not have keys.
-#         i > 1 && print(io, "\n", indent(io))
-#         dict_show(iio, e) #! this is the value.
-#         i < length(keys(x)) && print(io, ",")
-#         #i < length(x) && print(io, ",\n", indent(io))
-#     end
-#     println(io, after)
-# end
-
-#=
-    Most things are symbol, DictType: AnyElement, PnmlLabel, Term, users of unparsed_tag.
-
-    This is the form of well-behaved XML: forest of single rooted tree whose tag is the symbol.
-
-    DictType is a collection of pairs: tag, value, where value may be a string/number or DictType.
-
-    top-level tag symbol
-    |   key is symbol or string
-    |   |    value is dictionary, string, number
-    |   |    |
-    tag e1 = "string"!
-        e2 = ee1 = tag2 x1 = vx1
-                        x2 = vx2
-                        x2 = vx2
-                        x2 = vx2!
-        e3 = 666!
-        e4 = true!
-        e5 = 3.14 #no ! here
-
-    ! in newline
-=#
-
 function Base.show(io::IO, ::MIME"text/plain", d::DictType)
     show(io, d)
 end
