@@ -157,9 +157,10 @@ decldict(marking::HLMarking) = marking.declarationdicts
 
 """
     (hlm::HLMarking)() -> PnmlMultieset
-Evaluate a [`HLMarking`](@ref) term.
+Evaluate a [`HLMarking`](@ref) term. Is a ground term so no variables.
+Used for initial marking value of a `Place` when creating the `initial_marking`.
 """
-(hlm::HLMarking)() = begin #varsub::NamedTuple=NamedTuple()) = begin
+function (hlm::HLMarking)() #varsub::NamedTuple=NamedTuple())
     #@show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm))
     #if toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm)) isa Tuple
     #println("(hlm::HLMarking) stacktrace");  foreach(println, Base.StackTraces.stacktrace())
@@ -237,6 +238,7 @@ Others have a marking that is a `Number`.
 function default(::Type{<:Marking}, t::PnmlType; ddict)
     Marking(zero(PNML.value_type(PNML.marking_type(t), t)), ddict) #! Will not be a PnmlMultiset.
 end
+
 default(::Type{<:Marking}, ::T; ddict) where {T <: AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
@@ -244,7 +246,3 @@ function default(::Type{<:HLMarking}, ::AbstractHLCore, placetype::SortType; ddi
     el = def_sort_element(placetype)
     HLMarking("default", PNML.Bag(sortref(placetype), el, 0), ddict) # empty multiset, el used for its type
 end
-
-# 2024-08-07 encountered the need to handle a <numberof> as an expression (NamedOpertor)
-# Is a multiset operator. May hold variables in general.
-# Markings restricted to ground terms without variables.
