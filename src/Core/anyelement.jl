@@ -2,64 +2,6 @@
 # AnyElement and DictType
 #--------------------------------------------
 
-#--------------------------------------------
-# """
-# $(TYPEDEF)
-# Tool specific information objects can be attached to nodes and labels,
-# [`AbstractPnmlObject`](@ref)s and [`AbstractLabel`](@ref)s subtypes.
-# """
-# abstract type AbstractPnmlTool end #TODO see ToolInfo
-
-#=      XMLDict notes
-
-mutable struct XMLDictElement <: AbstractDict{Union{String,Symbol},Any}
-
-DictType is used for xml_dict's dict_type argument.
-
-
-r = dict_type()
-attribute a:  r[Symbol(nodename(a))] = nodecontent(a) #! Symbol key, String value (SubString?)
-
-# The empty-string key holds a vector of sub-elements.
-# This is necessary when grouping sub-elements would alter ordering...
-
-for c in eachnode(x)
-    if iselement(c)
-        n = nodename(c) #! String, SubString as key
-        v = xml_dict(c, dict_type; strip_text=strip_text)
-        if haskey(r, "")
-            push!(r[""], dict_type(n => v)) #! Vector of dicts and strings as value
-        elseif haskey(r, n)
-            a = isa(r[n], Array) ? r[n] : Any[r[n]] #! turn scalar into vector
-            push!(a, v)
-            r[n] = a #! Vector value
-        else
-            r[n] = v #! dict value
-        end
-    elseif is_text(c) && haskey(r, "")
-        push!(r[""], nodecontent(c)) #! String value
-    end
-end
-# Collapse leaf-node vectors containing only text...
-if haskey(r, "")
-    v = r[""]
-    if length(v) == 1 && isa(v[1], AbstractString)
-        if strip_text
-            v[1] = strip(v[1])
-        end
-        r[""] = v[1]
-
-        # If "r" contains no other keys, collapse the "" key...
-        if length(r) == 1
-            r = r[""]
-        end
-    end
-
-end
-values: DictType, String, SubString, Vector{Union{DictType, String, SubString}}
-=#
-
-
 "Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `unparsed_tag`."
 const DictType = LittleDict{Union{Symbol,String}, Any #= XDVT is a complex Union =#}
 
