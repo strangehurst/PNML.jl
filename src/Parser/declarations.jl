@@ -212,10 +212,13 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseC
     id = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
     # firstelement throws on nothing. Ignore more than 1.
-    vsort = parse_sort(EzXML.firstelement(node), pntd, id; parse_context)::UserSort
+    vsort = parse_sort(EzXML.firstelement(node), pntd, id; parse_context)
+    @show vsort
     isnothing(vsort) &&
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
-    VariableDeclaration(id, name, vsort, parse_context.ddict)
+    # There is a usersort created for every built-in sort, #todo multisetsorts, productsorts
+    ddict = parse_context.ddict
+    VariableDeclaration(id, name, to_usersort(vsort; ddict)::UserSort, ddict)
 end
 
 """
@@ -399,9 +402,6 @@ to_usersort(::Sorts.DotSort; ddict)  = usersorts(ddict)[:dot]
 to_usersort(::Sorts.NullSort; ddict) = usersorts(ddict)[:null]
 to_usersort(::Sorts.BoolSort; ddict) = usersorts(ddict)[:bool]
 
-function to_usersort(x::AbstractSort; ddict)
-    error("IMPLEMENT to_usersort($(nameof(typeof(x))))")
-end
 
 #   <namedsort id="id2" name="MESSAGE">
 #     <productsort>
@@ -415,12 +415,14 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REF
     sorts = REFID[] # Orderded collection of zero or more Sorts
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
-        if tag === :usersort
-            us = parse_sort(Val(tag), child, pntd, rid; parse_context)::UserSort
-            push!(sorts, PNML.refid(us))
-        else
-            throw(PNML.MalformedException("<productsort> contains unexpected sort $tag"))
-        end
+        # if tag === :usersort
+        us = parse_sort(Val(tag), child, pntd, rid; parse_context)::AbstractSort
+        @show us # @assert Base.isconcretetype(us)
+        push!(sorts, PNML.refid(us))
+        # else
+        #     # There will be built-in sorts
+        #     throw(PNML.MalformedException("<productsort> contains unexpected sort $tag"))
+        # end
     end
     isempty(sorts) && throw(PNML.MalformedException("<productsort> contains no sorts"))
     psort = ProductSort(tuple(sorts...), parse_context.ddict)

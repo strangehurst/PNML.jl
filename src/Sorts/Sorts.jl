@@ -11,7 +11,7 @@ using PNML
 using PNML: DeclDict
 
 import PNML: sortof, sortref, sortelements, sortdefinition, basis
-import PNML: value, term, tag, pid, refid, usersort, namedsort
+import PNML: value, term, tag, pid, refid, usersort, namedsort, to_usersort
 
 export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort

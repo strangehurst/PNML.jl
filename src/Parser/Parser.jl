@@ -40,7 +40,7 @@ using PNML: default
 
 # Methods implemented in this module.
 import PNML: adjacent_place
-import PNML: basis, sortref, sortof, sortelements, sortdefinition
+import PNML: basis, sortref, sortof, sortelements, sortdefinition, to_usersort
 
 include("xmlutils.jl")
 include("parseutils.jl")

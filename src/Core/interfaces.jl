@@ -25,6 +25,12 @@ Return reference id symbol. Multiple objects may hold the same refid value.
 """
 function refid end
 
+"""
+    to_usersort(::AbstractSort; ddict::DeclDict) -> UserSort
+
+From a concrete sort, deduce a UserSort.
+"""
+function to_usersort end
 
 """
     has_name(x) -> Bool
