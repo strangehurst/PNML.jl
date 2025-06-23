@@ -211,6 +211,22 @@ function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
 
+
+###################################################################################
+@matchable struct NamedOperatorEx <: OpExpr
+    refid::REFID # operator(ddict, REFID) returns operator callable.
+end
+
+function toexpr(op::NamedOperatorEx, varsub::NamedTuple, ddict)
+    #@warn "toexpr(op::UserOperatorEx, varsub::NamedTuple)" op varsub operator(ddict, op.refid)
+    Expr(:call, operator, QuoteNode(ddict), QuoteNode(op.refid)) #
+end
+
+function Base.show(io::IO, x::NamedOperatorEx)
+    print(io, "NamedOperatorEx(", x.refid, ")" )
+end
+
+
 ###################################################################################
 """
 Bag: a TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
@@ -779,6 +795,8 @@ end
 `PnmlTupleEx` `TermInterface` expression object wraps an ordered collection of `PnmlExpr` objects.
 There is a related `ProductSort`: an ordered collection of sorts.
 Each tuple element will have the same sort as the corresponding product sort.
+
+NB: ISO 15909 Standard considers Tuple to be an Operator.
 """
 PnmlTupleEx
 
