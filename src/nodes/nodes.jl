@@ -31,7 +31,11 @@ initial_marking(place::Place) = (place.initialMarking)()
 sortref(place::Place) = sortref(place.sorttype)::UserSort
 sortof(place::Place) = sortof(sortref(place))
 
-"Return zero valued PnmlMultiset with same basis and eltype as place's marking."
+"""
+Return zero-valued object with same `basis` and `eltype` as place's marking.
+
+Used in enabling and firing rules to deduce type of `Arc`'s `adjacent_place`.
+"""
 zero_marking(place::Place) = 0 * initial_marking(place)
 
 function Base.show(io::IO, place::Place)
@@ -60,18 +64,21 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     labels::Maybe{Vector{PnmlLabel}}
 
     vars::Set{REFID}
+    "Cache of variable substutions for this transition"
     varsubs::Vector{NamedTuple}
     declarationdicts::DeclDict
 end
 
 nettype(::Transition{T}) where {T <: PnmlType} = T
 decldict(transition::Transition) = transition.declarationdicts
+
 """
     varsubs(transition) -> Vector{NamedTuple}
 
 Access the variable substitutions of a transition.
-Variable substitutions depend of the marking.
-Use transition field to cache value as part of enabling rule.
+
+Variable substitutions depend on the current marking.
+Cache value in transition field as part of enabling rule phase of a Petri net lifecycle.
 """
 function varsubs end
 

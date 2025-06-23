@@ -73,16 +73,13 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     tsort ::Maybe{AbstractSort}= nothing
-    vars = () # Default value, will be replaced by termparer
-    #@show nameof(typeof(termparser)) #! debug
+    vars = () # will be replaced by termparer
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
             term, tsort, vars = termparser(child, pntd; parse_context) #collects variables
-            # @show (term, tsort, vars) #! debug
-            # @show typeof(term)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -191,9 +188,6 @@ NB: Used by PTNets that assume placetype is DotSort().
 function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::AbstractHLCore; parse_context::ParseContext)
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(PNML.sortref(placetype)), pntd; parse_context)::NamedTuple
-    #@warn pntd l #! debug
-    # Marking label content is expected to be a TermInterface expression.
-    # All declarations are expected to have been processed before the first place.
 
     markterm = if isnothing(l.term)
         # Default is an empty multiset whose basis matches placetype.
@@ -329,7 +323,6 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
         inscript = def_insc(netdata(pit), source(pit), target(pit), parse_context.ddict)
         @warn("missing inscription term in <structure>, returning ", inscript)
     end
-    #@show inscript placesort; flush(stdout) #! debug
 
     isa(inscript, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
@@ -398,24 +391,22 @@ that holds an expression evaluating to a boolean value.
 One field of a Condition holds a boolean expression, `BoolExpr`.
 Another field holds information on variables in the expression.
 """
-function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) # Non-HL
-    l = parse_label_content(node, parse_condition_term, pntd; parse_context) #! also return vars tuple
-    #@show condlabel; flush(stdout) #! debug
-    #@warn("parse_condition label = $(condlabel)")
-
+function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+    l = parse_label_content(node, parse_condition_term, pntd; parse_context)
     isnothing(l.term) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
-    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools, l.vars, parse_context.ddict) #! term is expession
+    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools, l.vars, parse_context.ddict)
 end
 
 """
     parse_condition_term(::XMLNode, ::PnmlType; decldict) -> PnmlExpr, UserSort
 
-Used as a `termparser` by [`parse_label_content`](@ref) for `Condition` label of a `Transition`; will have a structure element containing a term.
+Used as `termparser` by [`parse_label_content`](@ref) for `Condition` label of a `Transition`;
+will have a structure element containing a term.
 """
 function parse_condition_term(cnode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
-        return parse_term(EzXML.firstelement(cnode), pntd; vars=(), parse_context) # expression, usersort, vars
+        return parse_term(EzXML.firstelement(cnode), pntd; vars=(), parse_context)
     end
     throw(ArgumentError("missing condition term in <structure>"))
 end

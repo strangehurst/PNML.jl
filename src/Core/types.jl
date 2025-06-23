@@ -16,7 +16,7 @@ $(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 
-Expected interfce is for every concrete object to have fields:
+Expected interface is for every concrete object to have fields:
     - id
     - namelabel
     - graphics
@@ -140,10 +140,11 @@ refid(r::ReferenceNode) = r.ref
 $(TYPEDEF)
 Terms are part of the multi-sorted algebra that is part of a High-Level Petri Net.
 
-An abstract type in the pnml XML specification, concrete `Term`s are variables and operators
-found within the <structure> element of a label.
+Concrete terms are `Variable` and `Operator` found within the <structure> element of a label.
+They are parsed into `PnmlExpr` as `TermInterface` expressions thar are evaluated during
+the enabling and firing rule.
 
-Notably, a `Term` is not a PnmlLabel (or a PNML Label).
+Notably, a `Term` is not a `PnmlLabel` (or a PNML Label).
 
 # References
 See also [`Declaration`](@ref), [`Labels.SortType`](@ref), [`AbstractDeclaration`](@ref).

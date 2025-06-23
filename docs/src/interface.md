@@ -388,7 +388,7 @@ methods(PNML.PNet.outs)  # hide
 
 ## Labels - `Annotation` and `HLAnnotation`
 
-Both have `Graphics` and `ToolInfo`.
+Both (all labels) have `Graphics` and `ToolInfo`.
 [`Labels.HLAnnotation`](@ref) adds optional <text>, <structure>.
 
 ### text

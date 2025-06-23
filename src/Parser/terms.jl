@@ -1,40 +1,37 @@
 
 # See `TermInterface.jl`, `Metatheory.jl`
 """
-    parse_term(::XMLNode, ::PnmlType; ddict) -> (PnmlExpr, sort, vars)
-    parse_term(::Val{:tag}::XMLNode, ::PnmlType; ddict) -> (PnmlExpr, sort, vars)
+    parse_term(node::XMLNode, ::PnmlType; ddict) -> (PnmlExpr, sort, vars)
+    parse_term(::Val{:tag}, node::XMLNode, ::PnmlType; ddict) -> (PnmlExpr, sort, vars)
 
-There will be no XML node `<term>`. Instead it is the interpertation of the child of a
-`<structure>`, `<subterm>` or `<def>` element with a `nodename` of `tag`.
-
-The Relax NG Schema contains the concept of an abstact "Term".
-Concrete term kinds are `Variable` and `Operator`.
+`node` is a child of a `<structure>`, `<subterm>` or `<def>` element
+with a `nodename` of `tag`.
 
 All terms have a sort, #TODO ... document this XXX
 
 Will be using `TermInterface.jl` to build an expression tree (AST) that can contain:
 operators, constants (as 0-arity operators), and variables.
 
-AST are evaluated for place initial marking vector, enabling rule and firing rule
+AST expressions are evaluated for:
+    - place initial marking vector,
+    - enabling rule and
+    - firing rule
 where condition and inscription expressions may contain non-ground terms (using variables).
 """
 function parse_term(node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     tag = Symbol(EzXML.nodename(node))
     #printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout) #! debug
     ttup = if tag === :namedoperator
-        # build & return an Operator Expression that has a vector of inputs.
-        parse_operator_term(tag, node, pntd; vars, parse_context)
+        error("namedoperator is a declarationnot a term!")
+        #parse_operator_term(tag, node, pntd; vars, parse_context) # build expression
     else
         # Non-ground terms have arguments (variables that are bound to a marking vector value).
         # Collect varible REFIDs if found. length(vars) == 0 means is a ground term.
         parse_term(Val(tag), node, pntd; vars, parse_context)
     end
-    # ttup is a tuple(expression||literal, sort, vars)
+    # ttup is a tuple(expression, sort, vars) like all parse_term methods.
     # Ensure that there is a `toexpr` method. #! DEBUG only?
-    #!@assert which(PNML.toexpr, (typeof(ttup[1]), NamedTuple; Any)) isa Method
-
-    #! XXX are parse_term, parse_operator_term type-stable XXX
-    #! YES, if they are PnmlExpr! What if they are literals?
+    @assert which(PNML.toexpr, (typeof(ttup[1]), NamedTuple, DeclDict)) isa Method
     return ttup
 end
 
@@ -54,50 +51,101 @@ function subterms(node, pntd; vars, parse_context::ParseContext)
     end
     return sts, vars
 end
+#=
+    ePNK-master/pnml-examples/org.pnml.tools.epnk.examples_1.2.0/hlpng/technical
 
-"""
-$(TYPEDSIGNATURES)
+            <namedoperator id="id3" name="sum">
+              <parameter>
+                <variabledecl id="id4" name="x">
+                  <integer/>
+                </variabledecl>
+                <variabledecl id="id5" name="y">
+                  <integer/>
+                </variabledecl>
+              </parameter>
+              <def>
+                <addition>
+                  <subterm>
+                    <variable refvariable="id4"/>
+                  </subterm>
+                  <subterm>
+                    <variable refvariable="id5"/>
+                  </subterm>
+                </addition>
+              </def>
+            </namedoperator>
 
-Build an [`Operator`](@ref) Functor from the XML tree at `node`.
-"""
-function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext) #! ?User/Tested?
-    printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
-    @assert tag === :namedoperator
-    func = PNML.pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
-    # maketerm() constructs
-    # - Expr
-    # - object with toexpr() that will make a Expr
-    #   PnmlExpr that has a vector f arguments
-    interms = Any[] # Will be creating an expression.
-    insorts = UserSort[] # warapped REFID of sort declaration
+            <namedoperator id="id6" name="g">
+              <parameter/>
+              <def>
+                <numberconstant value="1">
+                  <positive/>
+                </numberconstant>
+              </def>
+            </namedoperator>
+=#
 
-    # Extract the input term and sort from each <subterm>
-    for child in EzXML.eachelement(node)
-        check_nodename(child, "subterm")
-        subterm = EzXML.firstelement(child) # this is the unwrapped subterm
+# """
+# $(TYPEDSIGNATURES)
 
-        (t, s, vars) = parse_term(subterm, pntd; vars, parse_context) # term and its user sort
+# SEE parse_namedoperator
 
-        # returns an AST #todo expand]
-        push!(interms, t) #! A PnmlTerm to later be toexpr'ed then eval'ed.
-        push!(insorts, s) #~ sort may be inferred from place, variable, operator output #! defer to eval time?
-    end
-    @assert length(interms) == length(insorts)
-    # for (t,s) in zip(interms,insorts) # Lots of output. Leave this here for debug, bring-up
-    #     @show t s
-    #     println()
-    # end
-    outsort = PNML.pnml_hl_outsort(tag; insorts, parse_context.ddict) #! some sorts need content
+# Build an [`Operator`](@ref) Functor from the XML tree at `node`.
+# NB: NamedOperator is an AbstracrDeclaration, Operator is AbstractTerm.
+# """
+# function parse_operator_term(tag::Symbol, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext) #! ?User/Tested?
+#     printstyled("parse_operator_term: $(repr(tag))\n"; color=:green); #! debug
+#     check_nodename(node, "namedoperator")
 
-    println("parse_operator_term returning $(repr(tag)) $(func)")
-    println("   interms ", interms)
-    println("   insorts ", insorts)
-    println("   outsort ", outsort)
-    println()
-    # maketerm(Expr, :call, [], nothing)
-    # :(func())
-    return (Operator(tag, func, interms, insorts, outsort), outsort, vars, parse_context.ddict)
-end
+#     #func = PNML.pnml_hl_operator(tag) #TODO! #! should be TermInterface to be to_expr'ed
+#     # maketerm() constructs
+#     # - Expr
+#     # - object with toexpr() that will make a Expr
+#     #   PnmlExpr that has a vector f arguments
+#     parms = VariableDecl[]
+#     insorts = UserSort[] # warapped REFID of sort declaration
+
+#     # <parameter> 0 or more variable declaration
+#     # <def> expression using parameters
+#     # Extract the input term and sort from each <subterm>
+#     for child in EzXML.eachelement(node)
+#         tag = EzXML.nodename(child)
+#         if tag == "parameter"
+#             for vdecl in EzXML.eachelement(child)
+#                 # zero or more variable declarations
+#                 vardecl = parse_variabledecl(vdecl, pntd; parse_context)
+#                 PNML.variabledecls(ctx.ddict)[pid(vardecl)] = vardecl
+#                 push!(parms, vardecl)
+#             end
+#         elseif tag == "def"
+#             # one expression, using parameter variables in parms
+#             EzXML.firstelement(child)
+#         else
+#         check_nodename(child, "subterm")
+#         subterm = EzXML.firstelement(child) # this is the unwrapped subterm
+
+#         (t, s, vars) = parse_term(subterm, pntd; vars, parse_context) # term and its user sort
+
+#         # returns an AST #todo expand]
+#         push!(interms, t) #! A PnmlTerm to later be toexpr'ed then eval'ed.
+#         push!(insorts, s) #~ sort may be inferred from place, variable, operator output #! defer to eval time?
+#     end
+#     @assert length(interms) == length(insorts)
+#     # for (t,s) in zip(interms,insorts) # Lots of output. Leave this here for debug, bring-up
+#     #     @show t s
+#     #     println()
+#     # end
+#     outsort = PNML.pnml_hl_outsort(tag; insorts, parse_context.ddict) #! some sorts need content
+
+#     println("parse_operator_term returning $(repr(tag)) $(func)")
+#     println("   interms ", interms)
+#     println("   insorts ", insorts)
+#     println("   outsort ", outsort)
+#     println()
+#     # maketerm(Expr, :call, [], nothing)
+#     # :(func())
+#     return (Operator(tag, func, interms, insorts, outsort), outsort, vars, parse_context.ddict)
+# end
 
 #----------------------------------------------------------------------------------------
 # `<variable refvariable="id5"/>`
@@ -105,11 +153,11 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars, parse
     check_nodename(node, "variable")
     # Expect only a reference to a VariableDeclaration. The 'primer' UML2 uses variableDecl.
     # Corrected to "refvariable" by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
-    var = VariableEx(Symbol(attribute(node, "refvariable")))
-    usort = PNML.sortref(PNML.variable(parse_context.ddict, var.refid))
+    var_ex = VariableEx(Symbol(attribute(node, "refvariable")))
+    usort = PNML.sortref(PNML.variable(parse_context.ddict, var_ex.refid))
     # vars will be the keys of a NamedTuple of substitutions &
     # the keys into the declaration dictionary of variable declarations.
-    return (var, usort, tuple(vars..., var.refid))
+    return (var_ex, usort, tuple(vars..., var_ex.refid))
 end
 
 #----------------------------------------------------------------------------------------

@@ -147,10 +147,10 @@ end
 #TODO this is more general, make a utiity (and use somewhere else)?
 """
     hastag(x, tagvalue::Union{Symbol, String, SubString{String}}) -> Bool
-Test anything with `tag` accessor for equality with `tagvalue`.
+Test anything with a `tag` accessor for equality with `tagvalue`.
 
-# EXAMPLES
-    Iterators.filter(Fix2(hastag, :asymbol), iteratable)
+Usage:
+    `Iterators.filter(Fix2(hastag, :asymbol), iteratable)`
 """
 hastag(l, tagvalue::Union{Symbol, String, SubString{String}}) = tag(l) == tagvalue
 
@@ -164,7 +164,7 @@ function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
     first(labels(iteratable, tag))
 end
 
-"Return `true` if collection `v` contains label with `tagvalue`."
+"Return `true` if collection `iteratable` contains label with `tagvalue`."
 function has_label(iteratable, tag::Union{Symbol, String, SubString{String}})
     !isempty(labels(iteratable, tag))
 end

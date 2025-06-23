@@ -71,8 +71,20 @@ EXAMPLE
 struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::UserSort # user sort -> named sort -> sort object
+    sort::UserSort # Union{UserSort, NTuple{N,UserSort}} # user sort -> named sort -> sort object
     declarationdicts::DeclDict
+
+    #! Sorts other than UserSort may appear.
+    # Example:
+    # <variabledecl id="id12" name="x">
+    #     <productsort>
+    #       <integer/>
+    #       <integer/>
+    #     </productsort>
+    # </variabledecl>
+    #! Sorts serve a similar role as Juia Types.
+    #! Sorts are static, Distinct variabledecls may have the same product sort inlined.
+    #todo use hashes (dictionary?) to deduplicate.
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
     #   (ref::Ref{sortof(vdecl)}(mark), REFID)
