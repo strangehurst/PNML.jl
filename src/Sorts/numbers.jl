@@ -8,6 +8,7 @@ Base.eltype(::Type{<:IntegerSort}) = Int
 (i::IntegerSort)() = 1
 sortelements(::Type{<:IntegerSort}) = Iterators.countfrom(0, 1)
 sortelements(::IntegerSort) = Iterators.countfrom(0, 1)
+refid(::IntegerSort) = :integer
 
 """
 Built-in sort whose `eltype` is `Int`
@@ -16,6 +17,7 @@ Built-in sort whose `eltype` is `Int`
 Base.eltype(::Type{<:NaturalSort}) = Int # Uint ?
 sortelements(::Type{<:NaturalSort}) = Iterators.countfrom(0, 1)
 sortelements(::NaturalSort) = Iterators.countfrom(0, 1)
+refid(::NaturalSort) = :natural
 
 """
 Built-in sort whose `eltype` is `Int`
@@ -24,6 +26,7 @@ Built-in sort whose `eltype` is `Int`
 Base.eltype(::Type{<:PositiveSort}) = Int # Uint ?
 sortelements(::Type{<:PositiveSort}) = Iterators.countfrom(1, 1)
 sortelements(::PositiveSort) = Iterators.countfrom(1, 1)
+refid(::PositiveSort) = :positive
 
 """
 Built-in sort whose `eltype` is `Float64`
@@ -32,6 +35,7 @@ Built-in sort whose `eltype` is `Float64`
 Base.eltype(::Type{<:RealSort}) = Float64
 sortelements(::Type{<:RealSort}) = Iterators.map(x->1.0*x, Iterators.countfrom(0, 1))
 sortelements(::RealSort) = Iterators.map(x->1.0*x, Iterators.countfrom(0, 1))
+refid(::RealSort) = :real
 
 """
 Built-in sort whose `eltype` is `Nothing`
@@ -40,3 +44,4 @@ Built-in sort whose `eltype` is `Nothing`
 Base.eltype(::Type{<:NullSort}) = Nothing
 sortelements(::Type{<:NullSort}) = tuple() # empty
 sortelements(::NullSort) = tuple() # empty
+refid(::NullSort) = :null
