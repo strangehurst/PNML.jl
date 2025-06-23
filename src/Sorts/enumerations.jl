@@ -49,7 +49,7 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
-@auto_hash_equals fields=fec_refs struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
+@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     metadata::M # TODO TermInterface metadata
@@ -66,7 +66,7 @@ tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
     FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{N,M}
 Wraps a tuple of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
 """
-@auto_hash_equals fields=fec_refs struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
+@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
     fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
     metadata::M # TODO TermInterface metadata
@@ -82,7 +82,7 @@ tag(::FiniteEnumerationSort) = :finiteenumeration
     $(TYPEDEF)
     FiniteIntRangeSort(start::T, stop::T; meta) where {T<:Integer} -> Range
 """
-@auto_hash_equals fields=start,stop struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
+@auto_hash_equals fields=start,stop typearg=true struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
     meta::M # TODO TermInterface metadata

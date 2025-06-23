@@ -23,7 +23,7 @@ Then any contents of the sorts are compared semantically.
 equals(a::T, b::T) where {T <: AbstractSort} = equalSorts(a, b) # Are same sort type.
 equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
 
-# Returns true if sorts are semantically  #! should be usersortthe same sort, even in two different objects.
+# Returns true if sorts are semantically  #! should be the same sort, even in two different objects.
 # Ex: two FiniteEnumerations F1 = {1,4,6} and F2 = {1,4,6} or two Integers I1 and I2.
 # Unless they have content, just the types are sufficent.
 # Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
@@ -33,6 +33,7 @@ equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 basis(a::AbstractSort) = sortref(a)::UserSort
 sortof(a::AbstractSort) = identity(a)
 #! sortelements(::AbstractSort) = () # sort that has no elements will lead to errors!
+to_usersort(::Type{T}; ddict) where{T <: AbstractSort} = usersorts(ddict)[refid(T)::Symbol]
 
 """
 Built-in sort whose `eltype` is `Bool`
@@ -82,7 +83,7 @@ $(TYPEDEF)
 
 Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 """
-@auto_hash_equals struct MultisetSort <: AbstractSort
+@auto_hash_equals fields=basis struct MultisetSort <: AbstractSort
     basis::UserSort
     declarationdicts::PNML.DeclDict
 
@@ -112,7 +113,7 @@ An ordered collection of sorts. The elements of the sort are tuples of elements 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProduceSort is the color domain.
 """
-@auto_hash_equals struct ProductSort{N} <: AbstractSort
+@auto_hash_equals fields=ae typearg=true struct ProductSort{N} <: AbstractSort
     ae::NTuple{N,REFID}
     declarationdicts::DeclDict
 end
@@ -123,14 +124,16 @@ isproductsort(::Any) = false
 
 """
     sorts(ps::ProductSort) -> NTuple
-Return sorts that are in the product.
+Return iterator over tuples of elements of sorts in the product.
 """
 sorts(ps::ProductSort) = ps.ae
 
-sortelements(ps::ProductSort) = Iterators.product((sortelements ∘ Fix1(usersort, decldict(ps))).(sorts(ps))...)
+function sortelements(ps::ProductSort) # Iterators.product does tuples
+    Iterators.product((sortelements ∘ Fix1(usersort, decldict(ps))).(sorts(ps))...)
+end
 
 sortof(ps::ProductSort) = begin
-    println("sortof(::ProductSort ", s) #! bringup debug
+    println("sortof(::ProductSort ", ps) #! bringup debug
     if isempty(sorts(ps))
         error("ProductSort is empty")
     else
@@ -139,5 +142,5 @@ sortof(ps::ProductSort) = begin
 end
 
 function Base.show(io::IO, ps::ProductSort)
-    print(io, PNML.indent(io), "MultisetSort(", ps.ae, ")")
+    print(io, PNML.indent(io), "ProductSort(", ps.ae, ")")
 end

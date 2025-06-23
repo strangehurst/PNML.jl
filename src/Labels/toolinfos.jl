@@ -8,7 +8,7 @@ It wraps a iteratable collection (currently vector) of well formed elements
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals struct ToolInfo{T}
+@auto_hash_equals fields=toolname,version,infos typearg=true struct ToolInfo{T}
     toolname::String
     version::String
     infos::Vector{T} # Expect content::Vector{AnyElement}

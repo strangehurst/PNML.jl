@@ -15,7 +15,7 @@ See `Bag` for expression that returns this data structure.
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.
 """
-@auto_hash_equals struct PnmlMultiset{B,T} #! data type, not operator, see Bag, pnmlmultiset()
+@auto_hash_equals fields=mset typearg=true struct PnmlMultiset{B,T} #! data type
     #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
     mset::Multiset{T}
     declarationdicts::DeclDict
