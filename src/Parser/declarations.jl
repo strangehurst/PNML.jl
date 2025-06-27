@@ -161,7 +161,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
             end
         elseif tag == "parameter"
             # Zero or more parameters for operator (arity). Map from id to sort object.
-            #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclrations
+            #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclarations
             #! Is def restricted to just parameters? Can others access parameters?
             for vdecl in EzXML.eachelement(child)
                 push!(parameters, parse_variabledecl(vdecl, pntd; parse_context))
@@ -265,7 +265,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Returns [`UserSort`](@ref) wraping the REFID of a [`NamedSort`](@ref) or [`AbstractSort`](@ref).
+Returns [`UserSort`](@ref) wraping the REFID of a [`NamedSort`](@ref),
+ [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref)
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "usersort")
@@ -411,23 +412,15 @@ to_usersort(::Sorts.BoolSort; ddict) = usersorts(ddict)[:bool]
 #   </namedsort> element
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, rid::REFID=:nothing; parse_context::ParseContext)
     check_nodename(node, "productsort")
-
     sorts = REFID[] # Orderded collection of zero or more Sorts
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
-        # if tag === :usersort
-        us = parse_sort(Val(tag), child, pntd, rid; parse_context)::AbstractSort
-        @show us # @assert Base.isconcretetype(us)
-        push!(sorts, PNML.refid(us))
-        # else
-        #     # There will be built-in sorts
-        #     throw(PNML.MalformedException("<productsort> contains unexpected sort $tag"))
-        # end
+        s = parse_sort(Val(tag), child, pntd, rid; parse_context)::AbstractSort
+        # @show s # @assert Base.isconcretetype(s)
+        push!(sorts, PNML.refid(s)) # requires there to be a REFID
     end
     isempty(sorts) && throw(PNML.MalformedException("<productsort> contains no sorts"))
-    psort = ProductSort(tuple(sorts...), parse_context.ddict)
-    # @warn "parse :productsort" psort; flush(stdout) #! debug
-    return psort
+    return ProductSort(tuple(sorts...), parse_context.ddict)
 end
 
 
@@ -479,12 +472,13 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
         tag = EzXML.nodename(child)
         if tag === "useroperator"
             # PartitionElements refer to the FEConstants of the referenced finite sort.
-            # UserOperator holds an REFID to a FEConstant callable object.
+            # UserOperator here holds an REFID to a FEConstant callable object.
             refid = Symbol(attribute(child, "declaration"))
             PNML.has_feconstant(parse_context.ddict, refid) ||
                 error("refid $refid not found in feconstants") #! move to verify?
             push!(terms, refid)
         else
+            # Are ProductSorts allowed?
             throw(PNML.MalformedException("partitionelement child element unknown: $tag"))
         end
     end
