@@ -51,7 +51,7 @@ abstract type SortDeclaration <: AbstractDeclaration end
 $(TYPEDEF)
 
 [`NamedOperator`](@ref). [`PNML.FEConstant`](@ref), [`PartitionElement`](@ref) and
-[`ArbitraryOperator`](@ref) are all referenced by [`UserOperator`](@ref).
+[`ArbitraryOperator`](@ref) are all referenced by `UserOperator`.
 
 `UserOperator` wraps REFID used to access `DeclDict`.
 """
