@@ -16,7 +16,7 @@ using Logging, LoggingExtras
 
 using PNML
 using PNML: DeclDict
-using PNML: REFID, AnyElement, AbstractTerm, UserOperator, UserSort
+using PNML: REFID, AnyElement, AbstractTerm, UserSort
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
 
@@ -24,7 +24,6 @@ using PNML: namedoperators, arbitraryops, feconstants
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
-import ..Expressions: toexpr
 
 using ..Sorts
 using ..PnmlIDRegistrys
