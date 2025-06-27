@@ -13,12 +13,13 @@ Each keyed by REFID symbols.
     """
     variabledecls::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
+    # built-in sorts live in named sorts.
     namedsorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
     # OperatorDecls
-    # namedoperators are used to access built-in operators
+    # namedoperators are also used to access built-in operators.
     namedoperators::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitraryoperators::Dict{Symbol, Any} = Dict{Symbol, Any}()
     # PartitionElement is an operator, there are other built-in operators
@@ -30,6 +31,7 @@ Each keyed by REFID symbols.
     # SortDeclaration or Operatordeclaration.
     # usersort used to wrap REFID to <: SortDeclaration is well used
     usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
+
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
 
@@ -43,25 +45,25 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
-"Return dictonary of UserSort"
+"Return dictonary of `UserSort`"
 usersorts(dd::DeclDict)      = dd.usersorts
-"Return dictonary of UserOperator"
+"Return dictonary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
-"Return dictonary of VariableDecl"
+"Return dictonary of `VariableDecl`"
 variabledecls(dd::DeclDict)  = dd.variabledecls
-"Return dictonary of NamedSort"
+"Return dictonary of `NamedSort`"
 namedsorts(dd::DeclDict)     = dd.namedsorts
-"Return dictonary of ArbitrarySort"
+"Return dictonary of `ArbitrarySort`"
 arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
-"Return dictonary of PartitionSort"
+"Return dictonary of `PartitionSort`"
 partitionsorts(dd::DeclDict) = dd.partitionsorts
-"Return dictonary of NamedOperator"
+"Return dictonary of `NamedOperator`"
 namedoperators(dd::DeclDict) = dd.namedoperators
-"Return dictonary of ArbitraryOperator"
+"Return dictonary of `ArbitraryOperator`"
 arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
-"Return dictonary of partitionops (PartitionElement)"
+"Return dictonary of partitionops (`PartitionElement`)"
 partitionops(dd::DeclDict)   = dd.partitionops
-"Return dictonary of FEConstant"
+"Return dictonary of `FEConstant`"
 feconstants(dd::DeclDict)    = dd.feconstants
 
 """
