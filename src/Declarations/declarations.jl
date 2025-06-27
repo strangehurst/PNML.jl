@@ -66,12 +66,14 @@ shared with `<variable>` terms in non-ground terms.
 
 EXAMPLE
 
-[`PNML.DeclDict`](@ref) PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
+[`PNML.DeclDict`](@ref)
+
+PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
 struct VariableDeclaration <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::UserSort # Union{UserSort, NTuple{N,UserSort}} # user sort -> named sort -> sort object
+    sort::Sort # user sort -> named sort -> sort object (re builtins)
     declarationdicts::DeclDict
 
     #! Sorts other than UserSort may appear.
@@ -121,7 +123,7 @@ end
 
 decldict(vd::VariableDeclaration) = vd.declarationsdict
 
-sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort
+sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort # Union
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
 refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
 

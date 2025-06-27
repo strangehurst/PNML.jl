@@ -59,7 +59,7 @@ Ground terms have no variables and can be evaluated outside of a transition firi
 """
 struct SortType <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::UserSort # REFID of NamedSort or ArbitrarySort. NOT PartitionSort.
+    sort_::Sort # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
@@ -70,8 +70,8 @@ end
 # I interpret this as: use a UserSort to reference a NamedSort or AbstractSort.
 # Built-in sorts are given names & NamedSorts.
 
-SortType(sort::UserSort, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
-SortType(s::AbstractString, sort::UserSort, ddict) = SortType(s, sort, nothing, nothing, ddict)
+SortType(sort::Sort, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
+SortType(s::AbstractString, sort::Sort, ddict) = SortType(s, sort, nothing, nothing, ddict)
 
 decldict(t::SortType) = t.declarationdicts
 

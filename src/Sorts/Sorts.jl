@@ -1,11 +1,13 @@
 module Sorts
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
-import Base: eltype
-import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
 using NamedTupleTools
-import Multisets: Multisets, Multiset
 using Logging, LoggingExtras
+
+import Base: eltype
+import AutoHashEquals: @auto_hash_equals
+import Multisets: Multisets, Multiset
+import LightSumTypes: @sumtype, sumtype_expr, variant, variantof, allvariants, is_sumtype
 
 using PNML
 using PNML: DeclDict
@@ -17,6 +19,7 @@ export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
+export Sort
 
 
 """
