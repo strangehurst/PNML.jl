@@ -17,6 +17,8 @@ Each keyed by REFID symbols.
     namedsorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    multisetsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    productsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
     # OperatorDecls
     # namedoperators are also used to access built-in operators.
@@ -36,6 +38,7 @@ Each keyed by REFID symbols.
 end
 
 _decldict_fields = (:namedsorts, :arbitrarysorts,
+                    :multisetsorts, :productsorts,
                     :namedoperators, :arbitraryoperators,
                     :variabledecls,
                     :partitionsorts, :partitionops, :feconstants,
@@ -66,6 +69,11 @@ partitionops(dd::DeclDict)   = dd.partitionops
 "Return dictonary of `FEConstant`"
 feconstants(dd::DeclDict)    = dd.feconstants
 
+"Return dictonary of `MultisetSort`"
+multisetsorts(dd::DeclDict)    = dd.multisetsorts
+"Return dictonary of `ProdictSort`"
+productsorts(dd::DeclDict)    = dd.productsorts
+
 """
     declarations(dd::DeclDict) -> Iterator
 
@@ -77,6 +85,10 @@ function declarations(dd::DeclDict)
         values(namedsorts(dd)),
         values(arbitrarysorts(dd)),
         values(partitionsorts(dd)),
+
+        values(multisetsorts(dd)),
+        values(productsorts(dd)),
+
         values(partitionops(dd)),
         values(namedoperators(dd)),
         values(arbitraryops(dd)),
@@ -90,6 +102,10 @@ has_variabledecl(dd::DeclDict, id::Symbol)   = haskey(variabledecls(dd), id)
 has_namedsort(dd::DeclDict, id::Symbol)      = haskey(namedsorts(dd), id)
 has_arbitrarysort(dd::DeclDict, id::Symbol)  = haskey(arbitrarysorts(dd), id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
+
+has_multisetsort(dd::DeclDict, id::Symbol)   = haskey(mutisetsorts(dd), id)
+has_productsort(dd::DeclDict, id::Symbol)    = haskey(productsorts(dd), id)
+
 has_namedop(dd::DeclDict, id::Symbol)        = haskey(namedoperators(dd), id)
 has_arbitraryop(dd::DeclDict, id::Symbol)    = haskey(arbitraryops(dd), id)
 has_partitionop(dd::DeclDict, id::Symbol)    = haskey(partitionops(dd), id)
@@ -105,6 +121,12 @@ namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
 arbitrarysort(dd::DeclDict, id::Symbol)  = arbitrarysorts(dd)[id]
 "Lookup partitionsort with `id` in DeclDict."
 partitionsort(dd::DeclDict, id::Symbol)  = partitionsorts(dd)[id]
+
+"Lookup multisetsort with `id` in DeclDict."
+multisetsort(dd::DeclDict, id::Symbol)  = multisetsorts(dd)[id]
+"Lookup productsort with `id` in DeclDict."
+productsort(dd::DeclDict, id::Symbol)  = productsorts(dd)[id]
+
 "Lookup namedop with `id` in DeclDict."
 namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
 "Lookup arbitraryop with `id` in DeclDict."
@@ -125,7 +147,8 @@ _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryop
 _ops(dd) = Iterators.map(Fix1(getfield, dd), _op_dictionaries())
 
 "Return tuple of sort dictionary fields in the Declaration Dictionaries."
-_sort_dictionaries() = (:namedsorts, :usersorts, :partitionsorts, :arbitrarysorts)
+_sort_dictionaries() = (:namedsorts, :usersorts, :partitionsorts,
+                        :arbitrarysorts, multisetsorts, productsorts)
 "Return iterator over sort dictionaries of Declaration Dictionaries."
 _sorts(dd) = Iterators.map(Fix1(getfield, dd), _sort_dictionaries())
 
@@ -227,7 +250,11 @@ function show_sorts(dd::DeclDict)
 #     println()
 end
 
+"""
+    ParseContext
 
+$(DocStringExtensions.TYPEDFIELDS)
+"""
 @kwdef struct ParseContext
     idregistry::PnmlIDRegistry
     ddict::DeclDict
