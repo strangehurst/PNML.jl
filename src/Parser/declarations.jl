@@ -145,40 +145,63 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
     check_nodename(node, "namedoperator")
     id = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
-
-    def = nothing
+    #^ ePNK uses inline variabledecl, variable in namedoperator declaration
+    #! Must register id of variabledecl before seeing variable: `<parameter>` before `<def>`.
     parameters = VariableDeclaration[]
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "def"
-            # NamedOperators have a def element that is a expression of existing
-            # operators &/or variable parameters that define the operation.
-            # The sortof the operator is the output sort of def.
-            def, _, vars = parse_term(EzXML.firstelement(child), pntd; vars=(), parse_context)
-            if !isempty(vars)
-                @error "named operator has variables" id name def vars
-                #! length(vars) == arity(def)
-            end
-        elseif tag == "parameter"
-            # Zero or more parameters for operator (arity). Map from id to sort object.
-            #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclarations
-            #! Is def restricted to just parameters? Can others access parameters?
-            for vdecl in EzXML.eachelement(child)
-                push!(parameters, parse_variabledecl(vdecl, pntd; parse_context))
-            end
-            # Create the object in declaration that is referenced by VariableEx's REFID.
-        else
-            @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
-                    "with tag ", tag, ", allowed: 'def', 'parameter'")
+    def = nothing
+
+    pnode = firstchild(node, "parameter")
+    if !isnothing(pnode)
+        # Zero or more parameters for operator (arity). Map from id to sort object.
+        for vdecl in EzXML.eachelement(pnode)
+            push!(parameters, parse_variabledecl(vdecl, pntd; parse_context))
         end
     end
-    isnothing(def) &&
+    @show parameters parse_context.idregistry
+
+    dnode = firstchild(node, "def")
+    if !isnothing(dnode)
+        # NamedOperators have a def element that is a expression of existing
+        # operators &/or variable parameters that define the operation.
+        # The sortof the operator is the output sort of def.
+        def, _, vars = parse_term(EzXML.firstelement(dnode), pntd; vars=(), parse_context)
+        if !isempty(vars)
+            @error "named operator has variables" id name def vars
+            #! length(vars) == arity(def)
+        end
+    else
         throw(ArgumentError(string("<namedoperator",
                                     " name=", repr(name),
                                     " id=", repr(id),
                                     "> does not have a <def> element")))
+    end
     @warn "<namedoperator name=$(repr(name)) id=$(repr(id))>" parameters #! debug
     NamedOperator(id, name, parameters, def, parse_context.ddict)
+
+    # for child in EzXML.eachelement(node)
+    #     tag = EzXML.nodename(child)
+    #     if tag == "def"
+    #         # NamedOperators have a def element that is a expression of existing
+    #         # operators &/or variable parameters that define the operation.
+    #         # The sortof the operator is the output sort of def.
+    #         def, _, vars = parse_term(EzXML.firstelement(child), pntd; vars=(), parse_context)
+    #         if !isempty(vars)
+    #             @error "named operator has variables" id name def vars
+    #             #! length(vars) == arity(def)
+    #         end
+    #     elseif tag == "parameter"
+    #         # Zero or more parameters for operator (arity). Map from id to sort object.
+    #         #! Allocate here? What is difference in Declarations and NamedOperator VariableDeclarations
+    #         #! Is def restricted to just parameters? Can others access parameters?
+    #         for vdecl in EzXML.eachelement(child)
+    #             push!(parameters, parse_variabledecl(vdecl, pntd; parse_context))
+    #         end
+    #         # Create the object in declaration that is referenced by VariableEx's REFID.
+    #     else
+    #         @warn string("ignoring child of <namedoperator name=", name,", id=", id,"> ",
+    #                 "with tag ", tag, ", allowed: 'def', 'parameter'")
+    #     end
+    # end
 end
 
 
@@ -218,7 +241,8 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseC
         error("failed to parse sort definition for variabledecl $(repr(id)) $name")
     # There is a usersort created for every built-in sort, #todo multisetsorts, productsorts
     ddict = parse_context.ddict
-    VariableDeclaration(id, name, to_usersort(vsort; ddict)::UserSort, ddict)
+    #!VariableDeclaration(id, name, vsort, ddict)
+    VariableDeclaration(id, name, to_usersort(vsort; ddict)::Sort, ddict)
 end
 
 """
@@ -381,17 +405,25 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, refid::
     check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort"))
 
-    # Expect basis to be a <usersort> wrapping <namedsort>, maybe someday <abstractsort>,
+    # Expect basis to be a <usersort> wrapping <namedsort> for symmetricnet,
     # but not <partition> or <partitionelement>. Definitely not another multiset.
+    # NB: We wrap built-in sorts in a user/named duo.
+    #^ ePNK highlevelnet inlines product sort inside a place `<type><structure><multisetsort>`
+    # maybe someday <arbitrarysort>
 
     basisnode = EzXML.firstelement(node) # Assume basis sort will be first and only child.
-    tag = Symbol(EzXML.nodename(basisnode)) #println("xml tag = $tag") #! debug
-    part_tags = (:partition, :partitionelement) #! XXX look inside usersort definition XXX
-    tag in part_tags &&
+    tag = Symbol(EzXML.nodename(basisnode))
+    invalid_basis = (:partition, :partitionelement, :multisetsort)
+
+    tag in invalid_basis && #! look inside usersort basis definition XXX
         throw(ArgumentError("multisetsort basis $tag not allowed")) #todo test this!
 
     basissort = parse_sort(Val(tag), basisnode, pntd; parse_context)::AbstractSort
-    MultisetSort(to_usersort(basissort; parse_context.ddict)::UserSort, parse_context.ddict)
+
+    #
+    us = to_usersort(basissort; parse_context.ddict)::UserSort
+
+    MultisetSort(us, parse_context.ddict)
 end
 
 to_usersort(x::Sorts.UserSort; ddict) = identity(x)
@@ -402,6 +434,7 @@ to_usersort(::Sorts.RealSort; ddict) = usersorts(ddict)[:real]
 to_usersort(::Sorts.DotSort; ddict)  = usersorts(ddict)[:dot]
 to_usersort(::Sorts.NullSort; ddict) = usersorts(ddict)[:null]
 to_usersort(::Sorts.BoolSort; ddict) = usersorts(ddict)[:bool]
+to_usersort(x::Sorts.AbstractSort; ddict) = identity(x)
 
 
 #   <namedsort id="id2" name="MESSAGE">
