@@ -153,6 +153,8 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars, parse
     check_nodename(node, "variable")
     # Expect only a reference to a VariableDeclaration. The 'primer' UML2 uses variableDecl.
     # Corrected to "refvariable" by Technical Corrigendum 1 to ISO/IEC 15909-2:2011.
+    #^ ePNK uses inline variabledecl, variable  in useroperator `<parameter>`, `<def>`.
+    #! Done inside `<declaration>`
     var_ex = VariableEx(Symbol(attribute(node, "refvariable")))
     usort = PNML.sortref(PNML.variable(parse_context.ddict, var_ex.refid))
     # vars will be the keys of a NamedTuple of substitutions &
@@ -434,7 +436,7 @@ function parse_term(::Val{:subtraction}, node::XMLNode, pntd::PnmlType; vars, pa
     return PNML.Subtraction(sts[1], sts[2]), usersort(parse_context.ddict, :bool), vars #! wrong sort
 end
 
-function parse_term(::Val{:multiplication}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
+function parse_term(::Val{:mult}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
     return PNML.Multiplication(sts[1], sts[2]), usersort(parse_context.ddict, :bool), vars #! wrong sort
@@ -527,6 +529,7 @@ end
 # <structure>
 #   <useroperator declaration="id4"/>
 # </structure>
+# See also `parse_namedoperator`
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     uo = PNML.UserOperatorEx(Symbol(attribute(node, "declaration", "<useroperator> missing declaration refid")))
     usort = PNML.sortref(PNML.operator(parse_context.ddict, uo.refid))
