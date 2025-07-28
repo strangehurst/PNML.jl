@@ -17,104 +17,139 @@ function _subtypes!(out, type::Type)
 end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
+    #println("\nparse_sort $pntd")
     parse_context = PNML.parser_context()::PNML.ParseContext
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        PNML.fill_sort_tag!(parse_context, :X, "X", PositiveSort())
-        sort = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)::UserSort
+    ddict = parse_context.ddict
+    #@show ddict
 
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    PNML.fill_sort_tag!(parse_context, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
+    sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)::UserSortRef
+    #@show ddict #!debug
+    sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
+    @test sort === PositiveSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<dot/>", pntd; parse_context)::DotSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<dot/>", pntd; parse_context)::NamedSortRef
+    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
+    @test sort === DotSort(parse_context.ddict) # not a built-in
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<bool/>", pntd; parse_context)::BoolSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<bool/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
+    @test sort === BoolSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<integer/>", pntd; parse_context)::IntegerSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<integer/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
+    @test sort === IntegerSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<natural/>", pntd; parse_context)::NaturalSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<natural/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
+    @test sort === NaturalSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<positive/>", pntd; parse_context)::PositiveSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<positive/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
+    @test sort === PositiveSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"""<cyclicenumeration>
-                                    <feconstant id="FE0" name="0"/>
-                                    <feconstant id="FE1" name="1"/>
-                                </cyclicenumeration>""", PnmlCoreNet(); parse_context)::CyclicEnumerationSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    #println()
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"""<cyclicenumeration>
+                                <feconstant id="FE0" name="0"/>
+                                <feconstant id="FE1" name="1"/>
+                            </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
+    sort = to_sort(sortref; parse_context.ddict):: CyclicEnumerationSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"""<finiteenumeration>
-                                    <feconstant id="FE0" name="0"/>
-                                    <feconstant id="FE1" name="1"/>
-                            </finiteenumeration>""", pntd; parse_context)::FiniteEnumerationSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"""<finiteenumeration>
+                                <feconstant id="FE0" name="0"/>
+                                <feconstant id="FE1" name="1"/>
+                        </finiteenumeration>""", pntd, :testenum2; parse_context)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd; parse_context)::FiniteIntRangeSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd; parse_context)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)
+    @test sort isa FiniteIntRangeSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"""<productsort>
-                                    <usersort declaration="a_user_sort"/>
-                            </productsort>""", pntd; parse_context)::ProductSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    @test_throws "<productsort> contains no sorts" parse_sort(xml"""<productsort/>""", pntd; parse_context)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"""<productsort>
-                            <usersort declaration="speed"/>
-                            <usersort declaration="distance"/>
-                            </productsort>""", pntd; parse_context)::ProductSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    sortref = parse_sort(xml"""<productsort>
+                                <integer/>
+                                <integer/>
+                        </productsort>""", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::ProductSort #! UserSort |> namedsort |> sortdefinition
+    @test sort isa ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        #! only contains usersort references to a sort declaration wrapping a sort definition
-        #! usersort -> namedsort -> sortdefinition
-        #! Built-in sorts have the obvious usersort, namedsort duo.
-        # PnmlIDRegistrys.reset_reg!(ctx.idregistry)
-        # sort = parse_sort(xml"""<productsort>
-        #                            <usersort declaration="id1"/>
-        #                            <natural/>
-        #                         </productsort>""", pntd)::ProductSort
-        #  @test_logs sprint(show, sort)
-        # @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    PNML.fill_sort_tag!(parse_context, :speed, NamedSort(:speed, "speed", PositiveSort(), ddict))
+    PNML.fill_sort_tag!(parse_context, :distance, NamedSort(:distance, "dictance", NaturalSort(), ddict))
+    sortref= parse_sort(xml"""<productsort>
+                        <usersort declaration="speed"/>
+                        <usersort declaration="distance"/>
+                        </productsort>""", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::ProductSort #! UserSort |> namedsort |> sortdefinition
+    @test sort isa ProductSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-        PNML.fill_sort_tag!(parse_context, :duck, "duck", PositiveSort())
+    #! only contains usersort references to a sort declaration wrapping a sort definition
+    #! usersort -> namedsort -> sortdefinition
+    #! Built-in sorts have the obvious usersort, namedsort duo.
+    # PnmlIDRegistrys.reset_reg!(ctx.idregistry)
+    # sort = parse_sort(xml"""<productsort>
+    #                            <usersort declaration="id1"/>
+    #                            <natural/>
+    #                         </productsort>""", pntd)::ProductSort
+    #  @test_logs sprint(show, sort)
+    # @test_logs eltype(sort)
 
-        sort = parse_sort(xml"""<multisetsort>
-                                    <usersort declaration="duck"/>
-                                </multisetsort>""", pntd; parse_context)::MultisetSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    PNML.fill_sort_tag!(parse_context, :duck, NamedSort(:duck, "duck", PositiveSort(), ddict))
 
-        PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-        sort = parse_sort(xml"""<multisetsort>
-                                    <natural/>
-                                </multisetsort>""", pntd; parse_context)::MultisetSort
-        @test_logs sprint(show, sort)
-        @test_logs eltype(sort)
+    sortref = parse_sort(xml"""<multisetsort>
+                                <usersort declaration="duck"/>
+                            </multisetsort>""", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::MultisetSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    sortref = parse_sort(xml"""<multisetsort>
+                                <natural/>
+                            </multisetsort>""", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::MultisetSort #! UserSort |> namedsort |> sortdefinition
+    @test sort isa MultisetSort
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
 
 end
 
