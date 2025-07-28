@@ -43,7 +43,8 @@ end
 """
 $(TYPEDEF)
 
-See [`Declarations.NamedSort`](@ref) and Declarations.ArbitrarySort`] as concrete subtypes.
+See [`Declarations.NamedSort`](@ref), [`Declarations.PartitionSort`](@ref) and
+[`Declarations.ArbitrarySort`] as concrete subtypes.
 """
 abstract type SortDeclaration <: AbstractDeclaration end
 
@@ -70,10 +71,10 @@ EXAMPLE
 
 PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
-struct VariableDeclaration <: AbstractDeclaration
+struct VariableDeclaration{S <: SortRef} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::Sort # user sort -> named sort -> sort object (re builtins)
+    sort::S # Sort REFID # See user sort -> named sort -> sort object (re builtins)
     declarationdicts::DeclDict
 
     #! Sorts other than UserSort may appear.
@@ -87,6 +88,7 @@ struct VariableDeclaration <: AbstractDeclaration
     #! Sorts serve a similar role as Juia Types.
     #! Sorts are static, Distinct variabledecls may have the same product sort inlined.
     #todo use hashes (dictionary?) to deduplicate.
+end
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
     #   (ref::Ref{sortof(vdecl)}(mark), REFID)
@@ -119,13 +121,12 @@ struct VariableDeclaration <: AbstractDeclaration
     # Will PnmlTuple ever have fields mutated? No, marking vectors are not mutated!
     # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
-end
 
 decldict(vd::VariableDeclaration) = vd.declarationsdict
 
-sortref(vd::VariableDeclaration) = identity(vd.sort)::UserSort # Union
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
+sortref(vd::VariableDeclaration) = vd.sort::SortRef
 refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
 
 function Base.show(io::IO, declare::VariableDeclaration)
     print(io, nameof(typeof(declare)), "(")
@@ -142,14 +143,27 @@ $(TYPEDFIELDS)
 Declaration of a `NamedSort`. Wraps a concrete instance of an `AbstractSort`.
 See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 """
-struct NamedSort{S <: AbstractSort} <: SortDeclaration
+@auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S # An instance of: ArbitrarySort, MultisetSort, ProductSort, BUILT-IN sorts!
+    def::S  #! 2025-07-21 replace with S <: SortRef
+    # An instance of: ArbitrarySort, MultisetSort, ProductSort, or BUILT-IN sort!
     declarationdicts::DeclDict
+
+    function NamedSort(id_::Symbol, name_, def_::AbstractSort, dd::DeclDict)
+        if isa(def_, NamedSort)
+            error("NamedSort wraps NamedSort: $(repr(id_)) $(repr(name_)) $(repr(def_))") #|> throw
+            yield()
+        end
+        new{typeof(def_)}(id_, name_, def_, dd)
+    end
 end
 
-sortdefinition(namedsort::NamedSort) = namedsort.def # Instance of concrete sort.
+function sortdefinition(namedsort::NamedSort)
+     namedsort.def # Instance of concrete sort. #! 2025-07-21 SortRef
+end
+
+sortelements(namedsort::NamedSort) = sortelements(sortdefinition(namedsort))
 
 Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
 
@@ -166,7 +180,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-See [`UserOperator`](@ref)
+See `UserOperator`.
 
 Vector of `VariableDeclaration` for parameters (ordered),
 and duck-typed `AbstractTerm` for its body.
@@ -175,7 +189,7 @@ struct NamedOperator{T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO XXX
-    def::T # operator or variable term (with inferred sort) #TODO! XXX how to infer ===
+    def::T # expression  terms (with inferred output sort) #TODO! XXX how to infer from expression ===
     declarationdicts::DeclDict
 end
 
@@ -185,8 +199,8 @@ NamedOperator(id::Symbol, str; ddict) = NamedOperator(id, str, VariableDeclarati
 decldict(no::NamedOperator) = no.declarationdicts
 operator(ddict, no::NamedOperator) = operator(ddict, no.def)
 parameters(no::NamedOperator) = no.parameter
-sortref(no::NamedOperator) = sortref(operators(decldict(no))[no.def])::UserSort # of the wrapped operator
-sortof(no::NamedOperator) = sortdefinition(namedsort(decldict(no), sortref(no)))
+#! XXX sortref(no::NamedOperator) = sortref(operators(decldict(no))[no.def])::UserSort # of the wrapped operator
+#! XXX sortof(no::NamedOperator) = sortdefinition(namedsort(decldict(no), sortref(no)))
 
 function Base.show(io::IO, op::NamedOperator)
     print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ",

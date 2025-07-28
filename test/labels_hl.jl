@@ -17,7 +17,7 @@ using XMLDict: XMLDict
     """
     typ = PNML.Parser.parse_sorttype(n1, pntd; parse_context=ctx)::SortType
     @test text(typ) == "N2"
-    @test PNML.sortref(typ) isa PNML.UserSort # wrapping DotSort
+    @test PNML.sortref(typ) isa PNML.SortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort(ctx.ddict) #! does the name of a sort affect equal Sorts?
     @test PNML.has_graphics(typ) == false
     @test PNML.has_labels(typ) == false
@@ -45,7 +45,7 @@ end
         ctx = PNML.parser_context()
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("XXX", PNML.usersort(ctx.ddict, :dot), ctx.ddict)
+        placetype = SortType("XXX", PNML.UserSortRef(:dot), ctx.ddict)
 
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         #@show mark
@@ -60,7 +60,7 @@ end
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
         @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
-        #@show PNML.toexpr(term(mark), NamedTuple(), ddict)
+        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
         @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa PNML.PnmlMultiset
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
@@ -116,7 +116,7 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("dot sorttype", PNML.usersort(ctx.ddict, :dot), ctx.ddict)
+        placetype = SortType("dot sorttype", PNML.UserSortRef(:dot), ctx.ddict)
         mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         #TODO add tests
     end
@@ -136,15 +136,16 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("positive sorttype", PNML.usersort(ctx.ddict, :positive), ctx.ddict)
+        placetype = SortType("positive sorttype", PNML.UserSortRef(:positive), ctx.ddict)
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
-        val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any,<:Any}
+        val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any}
         # @show PNML.basis(val) # isa UserSort
         #@show val NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()
         #@show PNML.usersort(ctx.ddict, :positive)
-        @test PNML.multiplicity(val, NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()) == 1
-        @test PNML.sortof(PNML.basis(val)::UserSort) === PNML.PositiveSort()
-        @test NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)() in multiset(val)
+        @test PNML.multiplicity(val, NumberConstant(8, UserSortRef(:positive), ctx.ddict)()) == 1
+        @show PNML.Parser.to_sort(PNML.basis(val); ctx.ddict)
+        @test PNML.Parser.to_sort(PNML.basis(val); ctx.ddict) === PNML.UserSort(:positive, ctx.ddict)
+        @test NumberConstant(8, UserSortRef(:positive), ctx.ddict)() in multiset(val)
      end
 
     # This is the same as when the element is omitted.
@@ -154,7 +155,7 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("testdot", PNML.usersort(ctx.ddict, :dot), ctx.ddict)
+        placetype = SortType("testdot", PNML.UserSortRef(:dot), ctx.ddict)
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
     end
 

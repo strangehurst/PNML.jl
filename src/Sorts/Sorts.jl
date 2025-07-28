@@ -3,23 +3,27 @@ using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
 using Logging, LoggingExtras
+using Moshi.Match: @match
 
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 import Multisets: Multisets, Multiset
-import LightSumTypes: @sumtype, sumtype_expr, variant, variantof, allvariants, is_sumtype
 
 using PNML
 using PNML: DeclDict
+using PNML: multisetsorts, productsorts
+using PNML: AbstractSort
 
 import PNML: sortof, sortref, sortelements, sortdefinition, basis
-import PNML: value, term, tag, pid, refid, usersort, namedsort, to_usersort
+import PNML: value, term, tag, pid, refid, usersort, namedsort
+import PNML: fill_sort_tag!
 
 export AbstractSort, UserSort, MultisetSort, ProductSort
-export DotSort,  BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
+export DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
 export Sort
+export make_sortref
 
 
 """
@@ -51,7 +55,6 @@ Notes:
 - We use sorts even for non-high-level nets.
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
-abstract type AbstractSort end
 
 include("sorts.jl")
 include("dots.jl")
@@ -59,5 +62,38 @@ include("enumerations.jl")
 include("lists.jl")
 include("numbers.jl")
 include("strings.jl")
+
+
+# # These two sorts are not used in variable declarations.
+# # They do not add a name to the contained sorts (or sortrefs).
+# # Add a dictionary accessor argument.
+fill_sort_tag!(ctx, tag, sort::ProductSort) = fill_sort_tag!(ctx, tag, sort, productsorts)::SortRef
+fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, multisetsorts)::SortRef
+
+#
+"""
+    make_sortref(parse_context, dict, sort, seed, id, name) ->  SortRef`
+
+ - `dict` is a method/callable that returns an AbstractDict (in a DeclDict).
+ -  `sort` ia a concrete sort that is to be in `dict`.
+ - `seed` is passed to `gensym` if `id` in `nothing` and no `sort` is already in `dict`.
+ - `id` is a `Symbol` and the string `name` are `nothing` and "" unless there is a wrapper providing such information,
+
+Uses `fill_sort_tag!`.
+
+Return concrete SortRef matching `dict`, wrapping `id`.
+"""
+function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
+    #println("make_sortref $(repr(id)), $name, $dict $sort") #! debug
+    id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
+    if isnothing(id2) # Did not find existing  namedsort
+        if isnothing(id) # no enclosing provided name/id
+            @show id = gensym(seed) # Invent REFID
+        end
+    end
+    # fill_sort_tag! will not overwrite existing, returns SortRef
+    sr = fill_sort_tag!(parse_context, id, sort, dict)::SortRef # make_sortref
+    return sr
+end
 
 end # module Sorts

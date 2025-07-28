@@ -69,17 +69,17 @@ Used in the muti-sorted algebra of High-level nets.
 """
 function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse_context::ParseContext) where {F}
     text::Maybe{Union{String,SubString{String}}} = nothing
-    term::Maybe{Any} = nothing
+    exp::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
-    tsort ::Maybe{AbstractSort}= nothing
+    ref ::Maybe{SortRef}= nothing
     vars = () # will be replaced by termparer
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
             text = parse_text(child, pntd)
         elseif tag == "structure"
-            term, tsort, vars = termparser(child, pntd; parse_context) #collects variables
+            (; exp, ref, vars) = termparser(child, pntd; parse_context) #collects variables
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -88,7 +88,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", termparser, pntd)
         end
     end
-    return (; text, term, sort=tsort, graphics, tools, vars)
+    return (; text, exp, sort=ref, graphics, tools, vars)
 end
 
 """
@@ -101,8 +101,8 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # See if there is a <structure> attached to the label. This is non-standard.
     # Allows use of same mechanism used for high-level nets.
     l = parse_label_content(node, parse_structure, pntd; parse_context)::NamedTuple
-    if !isnothing(l.term) # There was a <structure> tag. Used in the high-level meta-models.
-        @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.term)"
+    if !isnothing(l.exp) # There was a <structure> tag. Used in the high-level meta-models.
+        @warn "$nn <structure> element not used YET by non high-level net $pntd; found $(l.exp)"
     end
     @assert isempty(l.vars) # markings are ground terms
 
@@ -132,7 +132,8 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     # Base.eltype is for collections: what an iterator would return.
 
     # Parse <text> as a `Number` of appropriate type or use apropriate default.
-    pt = eltype(sortref(placetype))
+
+    pt = eltype(sortref(placetype), parse_context.ddict)
     mvt = eltype(PNML.value_type(Marking, typeof(pntd)))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
     value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
@@ -189,13 +190,13 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
     check_nodename(node, "hlinitialMarking")
     l = parse_label_content(node, ParseMarkingTerm(PNML.sortref(placetype)), pntd; parse_context)::NamedTuple
 
-    markterm = if isnothing(l.term)
+    markterm = if isnothing(l.exp)
         # Default is an empty multiset whose basis matches placetype.
         # arg 2 is used to deduce the sort.
         # ProductSorts need to use a tuple of values.
-        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype), 0)
+        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype; parse_context.ddict), 0)
     else
-        l.term
+        l.exp
     end
     @assert isempty(l.vars) # markings are ground terms
     #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
@@ -212,7 +213,7 @@ end
 Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType)
 """
 struct ParseMarkingTerm
-    placetype::UserSort
+    placetype::SortRef
 end
 
 placetype(pmt::ParseMarkingTerm) = pmt.placetype
@@ -223,10 +224,8 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         #println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
         term = EzXML.firstelement(marknode) # ignore any others
 
-        mark, sort, vars = parse_term(term, pntd; vars=(), parse_context) # ParseMarkingTerm
-        !isempty(vars) && @error vars
-        #@show typeof(mark), sort; flush(stdout)
-        @assert mark isa PnmlExpr
+        tj = parse_term(term, pntd; vars=(), parse_context) # ParseMarkingTerm
+        isempty(tj.vars) || error("unexpected variables in $tj")
 
         #! MARK will be a TERM, a symbolic expression using TermInterface, @matchable
         #! that, when evaluated, produces a PnmlMultiset object.
@@ -235,7 +234,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         #@assert sortof(mark) != basis(mark)
         #@assert basis(mark) == sortof(basis(mark))
 
-        # PnmlMultiset (datastructure) vs UserOperator/NamedOperator (term/expression)
+        # PnmlMultiset (datastrstructureucture) vs UserOperator/NamedOperator (term/expression)
         # Here we are parsing a term from XML to a ground term, which must be an operator.
         # Like with sorts, we have useroperator -> namedoperator -> operator.
         # NamedOperators will be joined by ArbitraryOperators for HLPNGs.
@@ -250,8 +249,8 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         # isa(mark, Union{PnmlMultiset,Operator}) ||
         #     error("mark is a $(nameof(typeof(mark))), expected PnmlMultiset or Operator")
 
-        isa(placetype(pmt), UserSort) ||
-            error("placetype is a $(nameof(typeof(placetype(pmt)))), expected UserSort")
+        isa(placetype(pmt), UserSortRef) ||
+            error("placetype expected to be UserSortRef, found $(placetype(pmt))")
 
         # if !equal(sortof(basis(mark)), sortof(placetype(pmt)))
         #     @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
@@ -259,7 +258,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         #         "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
         #         "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
         # end
-        return (mark, sort, vars) # TermInterface, UserSort
+        return tj
     end
     throw(ArgumentError("missing marking term in <structure>"))
 end
@@ -272,8 +271,8 @@ hlinscriptions are expressions.
 function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData, parse_context::ParseContext)
     check_nodename(node, "hlinscription")
-    l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; parse_context)
-    HLInscription(l.text, l.term, l.graphics, l.tools, l.vars, parse_context.ddict)
+    l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; parse_context)::NamedTuple
+    HLInscription(l.text, l.exp, l.graphics, l.tools, l.vars, parse_context.ddict)
 end
 
 """
@@ -309,23 +308,25 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
 
     # Find adjacent place's sorttype using `netdata`.
     adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
-    placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::UserSort
-    vars = () #
+    placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::SortRef
+
     # Variable substitution for a transition affects postset arc inscription,
     # whose expression is used to determine the new marking.
     # Variable substitution covers all variables in a transition. Variables are from inscriptions.
     # A condition expression may use variables from an inscripion.
-    if EzXML.haselement(inscnode)
-        term = EzXML.firstelement(inscnode) # ignore any others
-        inscript, _, vars = parse_term(term, pntd; vars, parse_context)
+    tj = if EzXML.haselement(inscnode)
+        parse_term(EzXML.firstelement(inscnode), pntd; vars=(), parse_context)
     else
         # Default to a multiset whose basis is placetype.
         inscript = def_insc(netdata(pit), source(pit), target(pit), parse_context.ddict)
         @warn("missing inscription term in <structure>, returning ", inscript)
+        TermJunk(inscript, placesort, ())
     end
 
-    isa(inscript, PnmlExpr) ||
+    isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
+    tj.ref == placesort ||
+        error("inscription term sort mismatch: $(tj.sortref) != $placesort")
 
     #! inscript isa PnmlExpr, do these tests during/after firing/eval
     # isa(sortof(inscript), AbstractSort) ||
@@ -336,7 +337,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     #     throw(ArgumentError(string("sort mismatch:",
     #         "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
     #         "\n\t placesort ", placesort)))
-    return (inscript, placesort, vars)
+    return tj
 end
 
 function PNML.adjacent_place(netdata, source::REFID, target::REFID)
@@ -363,7 +364,7 @@ function def_insc(netdata, source,::REFID, target::REFID, parse_context::ParseCo
     # assume exactly one is a place (and the other a transition).
     place = PNML.adjacent_place(netdata, source, target)
     placetype = place.sorttype
-    el = def_sort_element(placetype)
+    el = def_sort_element(placetype; parse_context.ddict)
     inscr = PNML.pnmlmultiset(PNML.sortref(placetype), el, 1; parse_context.ddict)
     #@show inscr
     return inscr
@@ -392,13 +393,13 @@ One field of a Condition holds a boolean expression, `BoolExpr`.
 Another field holds information on variables in the expression.
 """
 function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
-    l = parse_label_content(node, parse_condition_term, pntd; parse_context)
-    isnothing(l.term) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
-    PNML.Labels.Condition(l.text, l.term, l.graphics, l.tools, l.vars, parse_context.ddict)
+    l = parse_label_content(node, parse_condition_term, pntd; parse_context)::NamedTuple
+    isnothing(l.exp) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
+    PNML.Labels.Condition(l.text, l.exp, l.graphics, l.tools, l.vars, parse_context.ddict)
 end
 
 """
-    parse_condition_term(::XMLNode, ::PnmlType; decldict) -> PnmlExpr, UserSort
+    parse_condition_term(::XMLNode, ::PnmlType; decldict) -> PnmlExpr, SortRef, Tuple
 
 Used as `termparser` by [`parse_label_content`](@ref) for `Condition` label of a `Transition`;
 will have a structure element containing a term.
@@ -414,28 +415,33 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Label that defines the "sort" of tokens held by the place and semantics of the marking.
+Annotation Label that defines the "sort" of tokens held by the place and semantics of the marking.
 NB: The "type" of a place from _many-sorted algebra_ is different from
-the Petri Net "type" of a net or "pntd". Neither is directly a julia type.
+the Petri Net "type" of a net or "pntd". Neither is directly a julia type. Nor a pnml sort.
 
-Allow all pntd's places to have a <type> label.
-Non-high-level are expecting a numeric sort: eltype(sort) <: Number.
+We allow all pntd's places to have a <type> label.
+Non-high-level net places are expecting a numeric sort: eltype(sort) <: Number.
 """
 function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "type")
-    l = parse_label_content(node, parse_sorttype_term, pntd; parse_context)
-    @assert isempty(l.vars)
-    # High-level nets are expected to have a sorttype term defined.
+    l = parse_label_content(node, parse_sorttype_term, pntd; parse_context)::NamedTuple
+    @assert isempty(l.vars) # No variables as sort is not a term.
+    # High-level nets are expected to have a sorttype defined.
+    # Possibly sorttype inferred from initial marking value.
 
-    SortType(l.text, l.term, l.graphics, l.tools, parse_context.ddict) # Basic label structure.
+    SortType(l.text, l.exp, l.graphics, l.tools, parse_context.ddict) # Basic label structure.
 end
 
 """
-    parse_sorttype_term(::XMLNode, ::PnmlType; decldict) -> Tuple
+    parse_sorttype_term(::XMLNode, ::PnmlType; decldict) -> PnmlExpr, SortRef, Tuple
 
 The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algebra.
 Because we are sharing the HL implementation with the other meta-models,
-we support it in all nets. The term here is a `UserSort` in all cases.
+we support it in all nets.
+
+The term here is a concrete sort, usually `UserSort`Ref.
+It is possible to have an inlined concrete sort that is anonymous.
+We place all these concrete sorts in the parse_context.ddict and pass around a SortRef.
 
 See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 """
@@ -443,9 +449,10 @@ function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType; parse_context::P
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd; parse_context)::UserSort
-    isa(sorttype, MultisetSort) && error("multiset sort not allowed for place <type>")
-    return (sorttype, sortof(sorttype)::AbstractSort, ()) # Ground term has no variables.
+    sorttype = parse_sort(sortnode, pntd; parse_context)::SortRef
+    isa(sorttype, MultisetSortRef) && error("multiset sort not allowed for place <type>")
+    # We use TermJunk because it is convenient. #! Does it work?
+    return TermJunk(sorttype, sorttype, ()) # Not a term; has no variables.
 end
 
 """

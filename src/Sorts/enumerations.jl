@@ -55,10 +55,9 @@ MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> 
     metadata::M # TODO TermInterface metadata
     declarationdicts::DeclDict
 end
-function CyclicEnumerationSort(fecs)
-    CyclicEnumerationSort(fecs, nothing)
-end
+
 tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
+#!sortdefinition(::CyclicEnumerationSort)
 
 #TODO successor/predecessor methods
 
@@ -73,9 +72,6 @@ Wraps a tuple of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
     declarationdicts::DeclDict
 end
 
-function FiniteEnumerationSort(fe_refs)
-    FiniteEnumerationSort(fe_refs, nothing)
-end
 tag(::FiniteEnumerationSort) = :finiteenumeration
 
 """

@@ -28,7 +28,8 @@ nettype(::Place{T}) where {T <: PnmlType} = T
 
 initial_marking(place::Place) = (place.initialMarking)()
 
-sortref(place::Place) = sortref(place.sorttype)::UserSort
+#!_sortref(dd::DeclDict, p::PNML.Place) = sortref(p)
+sortref(place::Place) = sortref(place.sorttype)::SortRef
 sortof(place::Place) = sortof(sortref(place))
 
 """
@@ -128,7 +129,7 @@ Access inscription label of arc.
 """
 inscription(arc::Arc) = arc.inscription # label
 
-sortref(arc::Arc) = sortref(arc.inscription)::UserSort
+sortref(arc::Arc) = sortref(arc.inscription)::SortRef
 sortof(arc::Arc)  = sortof(sortref(arc))
 decldict(arc::Arc) = arc.declarationdicts
 """

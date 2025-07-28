@@ -6,14 +6,14 @@ Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 """
 struct NumberConstant{T<:Number,} <: AbstractOperator
     value::T
-    sort::UserSort # value isa eltype(sort), verified by parser.
+    sort::SortRef # value isa eltype(sort), verified by parser.
     declarationdicts::DeclDict
     # Constant operators are 0-arity by definition. Parameter vector not used here.
 end
 
 decldict(nc::NumberConstant) = nc.declarationdicts
-sortref(nc::NumberConstant) = identity(nc.sort)::UserSort
-basis(nc::NumberConstant)   = sortref(nc.value)::UserSort
+sortref(nc::NumberConstant) = identity(nc.sort)::SortRef
+basis(nc::NumberConstant)   = sortref(nc.value)::SortRef
 sortof(nc::NumberConstant) = sortdefinition(namedsort(decldict(nc), sortref(nc)))
 
 # others want the value of the value
@@ -26,45 +26,47 @@ value(nc::NumberConstant) = nc.value
 
 Finite enumeration constant.
 
+> these FEConstants are part of the declaration of the FiniteEnumeration sort. On the other hand, each of
+these FEConstants defines a 0-ary operation, i. e. is a declaration of a constant.
+
 # Usage
-    fec = FEConstant(:anID, "somevalue", :sortrefid)
+    fec = FEConstant(:anID, "somevalue", decldict)
     fec() == :anID
     fec.name = "somevalue"
 """
 struct FEConstant <: AbstractOperator
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
-    refid::REFID # of contining partition, enumeration, (and partitionelement?)
+    ref::SortRef # of contining partition, enumeration, (or partitionelement?)
     declarationdicts::DeclDict
 end
 
 decldict(fec::FEConstant) = fec.declarationdicts
-refid(fec::FEConstant) = fec.refid
-sortref(fec::FEConstant) = PNML.usersort(decldict(fec), fec.refid)::UserSort
-Base.eltype(::FEConstant) = Symbol # Use id symbol as the value.
+refid(fec::FEConstant)    = refid(fec.ref)
+sortref(fec::FEConstant)  = fec.ref
+Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is name.
 
 (fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
 (fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use string.
 
-sortof(fec::FEConstant) = begin
-    # Search on REFID of containing sort defintion.
-    # These share behavior in attaching an ID and name to a component or components.
-    # These components have seperate dictionaries in the `DeclDict`.
-    if PNML.has_namedsort(decldict(fec), fec.refid)
-        sortdefinition(namedsort(decldict(fec), fec.refid))::EnumerationSort
-    elseif PNML.has_partitionsort(decldict(fec), fec.refid)
-        sortdefinition(partitionsort(decldict(fec), fec.refid))::PartitionSort
-        # Partitions are over a single EnumerationSort
-    else
-        # partition element?
-        error("could not find a sortof REFID in ", repr(fec))
-    end
-end
+# sortof(fec::FEConstant) = begin
+#     # Search on REFID of containing sort defintion.
+#     # These share behavior in attaching an ID and name to a component or components.
+#     # These components have seperate dictionaries in the `DeclDict`.
+#     if PNML.has_namedsort(decldict(fec), fec.refid)
+#         sortdefinition(namedsort(decldict(fec), fec.refid))::EnumerationSort
+#     elseif PNML.has_partitionsort(decldict(fec), fec.refid)
+#         sortdefinition(partitionsort(decldict(fec), fec.refid))::PartitionSort
+#         # Partitions are over a single EnumerationSort
+#     else
+#         # partition element?
+#         error("could not find a sortof REFID in ", repr(fec))
+#     end
+# end
 
 function Base.show(io::IO, fec::FEConstant)
-    print(io, nameof(typeof(fec)), "(", repr(fec.id), ", ", repr(fec.name), ", ", repr(fec.refid), ")")
+    print(io, nameof(typeof(fec)), "($(repr(fec.id)), $(repr(fec.name)))")
 end
-
 
 """
     $(TYPEDEF)
@@ -72,7 +74,7 @@ Must refer to a value between the start and end of the respective `FiniteIntRang
 """
 struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
     value::T
-    sort::UserSort # wrapping a FiniteIntRangeSort
+    sort::SortRef # wrapping a FiniteIntRangeSort
     declarationdicts::DeclDict
     #TODO! Assert that T is a sort eltype.
 end
@@ -81,7 +83,7 @@ decldict(c::FiniteIntRangeConstant) = c.declarationdicts
 
 # FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
 # We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
-sortref(c::FiniteIntRangeConstant) = identity(c.sort)::UserSort
+sortref(c::FiniteIntRangeConstant) = identity(c.sort)::SortRef
 
 "Special case to ` IntegerSort()`, it is part of the name, innit."
 sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers
@@ -98,7 +100,7 @@ struct DotConstant <: AbstractOperator
     declarationdicts::DeclDict
 end
 decldict(dc::DotConstant) = dc.declarationdicts
-sortref(::DotConstant) = usersort(:dot)::UserSort
+sortref(::DotConstant) = UserSortRef(:dot)
 sortof(::DotConstant) = sortdefinition(namedsort(decldict(dc), :dot))
 (d::DotConstant)() = 1 # true is a number, one
 
@@ -122,7 +124,7 @@ end
 
 decldict(dc::BooleanConstant) = dc.declarationdicts
 tag(::BooleanConstant) = :booleanconstant
-sortref(::BooleanConstant) = usersort(:bool)::UserSort
+sortref(::BooleanConstant) = UserSortRef(:bool)
 sortof(bc::BooleanConstant) = sortdefinition(namedsort(decldict(bc), :bool))
 
 (c::BooleanConstant)() = value(c)

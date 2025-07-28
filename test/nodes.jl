@@ -9,7 +9,7 @@ using PNML, ..TestUtils, JET, XMLDict
     """
     ctx = PNML.parser_context()
 
-    placetype = SortType("XXX", UserSort(:integer, ctx.ddict), nothing, nothing, ctx.ddict)
+    placetype = SortType("XXX", UserSortRef(:integer,), nothing, nothing, ctx.ddict)
 
     n  = parse_place(node, pntd; parse_context=ctx)::Place
     @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; parse_context=ctx)

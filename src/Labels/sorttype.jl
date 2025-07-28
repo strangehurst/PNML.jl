@@ -35,7 +35,7 @@ Should allow for user tuning by setting a preference.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-A places's <type> label wraps a [`UserSort`](@ref) that holds a REFID to the sort of a place,
+A places's <type> label wraps a `UserSortRef` that holds a REFID to the sort of a place,
 hence use of `sorttype`. It is the type (or set) concept of the many-sorted algebra.
 
 For high-level nets there will be a declaration section with a rich language of sorts
@@ -59,7 +59,7 @@ Ground terms have no variables and can be evaluated outside of a transition firi
 """
 struct SortType <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::Sort # NOT PartitionSort.  #! ePNK uses inline sorts.
+    sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
@@ -67,11 +67,9 @@ end
 
 # >The label Type of a place defines the type by referring to some sort;
 # > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
-# I interpret this as: use a UserSort to reference a NamedSort or AbstractSort.
-# Built-in sorts are given names & NamedSorts.
 
-SortType(sort::Sort, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
-SortType(s::AbstractString, sort::Sort, ddict) = SortType(s, sort, nothing, nothing, ddict)
+SortType(sort::SortRef, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
+SortType(s::AbstractString, sort::SortRef, ddict) = SortType(s, sort, nothing, nothing, ddict)
 
 decldict(t::SortType) = t.declarationdicts
 
@@ -91,7 +89,9 @@ Uses include default inscription value and default initial marking value sorts.
 `x` can be anything with a `sortelements(x)` method that returns an iterator with length.
 See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
-function def_sort_element(pt::SortType)
+function def_sort_element(pt::SortType; ddict::DeclDict)
+    println("def_sort_element $pt")
+    sortof(pt) #! debug
     els = PNML.Sorts.sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
     return el
@@ -115,13 +115,12 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return instance of `UserSort` for default `SortType` of a `PNTD`.
+Return instance of `UserSortRef` for default `SortType` of a `PNTD`.
 Useful for non-high-level nets and PTNet.
 See [`PNML.fill_nonhl!`](@ref)
 """
 function default_typeusersort end
-default_typeusersort(pntd::PnmlType, ddict) = default_typeusersort(typeof(pntd), ddict)
-default_typeusersort(::Type{<:PnmlType}, ddict) = UserSort(:integer, ddict)
-default_typeusersort(::Type{<:AbstractContinuousNet}, ddict) = UserSort(:real, ddict)
-default_typeusersort(::Type{<:AbstractHLCore}, ddict) = UserSort(:dot, ddict)
-# todo value types
+default_typeusersort(pntd::PnmlType) = default_typeusersort(typeof(pntd))
+default_typeusersort(::Type{<:PnmlType}) = UserSortRef(:integer)
+default_typeusersort(::Type{<:AbstractContinuousNet}) = UserSortRef(:real)
+default_typeusersort(::Type{<:AbstractHLCore}) = UserSortRef(:dot)

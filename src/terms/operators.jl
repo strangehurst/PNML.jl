@@ -33,8 +33,8 @@ struct Operator <: AbstractOperator
     tag::Symbol
     func::Union{Function, Type} # Apply `func` to `inexprs`:
     inexprs::Vector{AbstractTerm} #! TermInterface expressions some may be variables (not just ground terms).
-    insorts::Vector{UserSort} # typeof(inexprs[i]) == eltype(insorts[i])
-    outsort::UserSort # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
+    insorts::Vector{UserSortRef} # typeof(inexprs[i]) == eltype(insorts[i])
+    outsort::SortRef # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
     metadata::Any
     declarationdicts::DeclDict
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
@@ -46,7 +46,7 @@ Operator(t, f, inex, ins, outs; metadata=nothing, ddict) = Operator(t, f, inex, 
 decldict(op::Operator) = op.declarationdicts
 tag(op::Operator)     = op.tag # PNML XML tag
 inputs(op::Operator)  = op.inexprs #! when should these be eval(toexpr)'ed)
-sortref(op::Operator) = identity(op.outsort)::UserSort
+sortref(op::Operator) = identity(op.outsort)::SortRef # output sort of operator. feconstants sort is enclosing enumeration
 sortof(op::Operator)  = sortdefinition(namedsort(decldict(op), op.outsort)) # also abstractsort, partitionsort
 metadata(op::Operator) = op.metadata
 value(op::Operator)   = op(#= parameters? =#)
@@ -224,21 +224,15 @@ function pnml_hl_operator(tag::Symbol)
 end
 
 """
-    pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}) -> UserSort
+    pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}) -> SortRef
 
 Return sort that operator `tag` returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}, ddict::DeclDict)
-    #=
-    Question? can these ever be built-in sorts? If so, when, why?
-    UserSorts are the expected form. This allows mapping id to AbstractSort via NamedSorts.
-    NamedSorts are used to wrap built-in sorts (as well as give them an name).
-    =#
-
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}, ddict::DeclDict)
     if isbooleanoperator(tag) # 0-arity function is a constant
-        usersort(ddict, :bool) # BoolSort()
+        UserSortRef(:bool) # BoolSort()
     elseif isintegeroperator(tag) # 0-arity function is a constant
-        usersort(ddict, :integer) # IntegerSort()
+        UserSortRef(:integer) # IntegerSort()
     elseif ismultisetoperator(tag)
         if tag in (:add,)
             length(insorts) >= 2 ||
@@ -252,11 +246,11 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}, ddict::DeclDict
             length(insorts) == 1 || @error "pnml_hl_outsort length(insorts) != 1" tag insorts
             first(insorts)
         elseif tag === :cardnality
-            usersorts(ddict)[:natural] # NaturalSort()
+            UserSortRef(:natural) # NaturalSort()
         elseif tag === :cardnalitiyof
-            usersorts(ddict)[:natural] # NaturalSort()
+            UserSortRef(:natural) # NaturalSort()
         elseif tag === :contains
-            usersorts(ddict)[:bool] # BoolSort()
+            uUserSortRef(:bool) # BoolSort()
         else
             error("$tag not a known multiset operator")
         end
@@ -277,14 +271,14 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSort}, ddict::DeclDict
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         first(insorts)
     elseif tag === :numberconstant
-        usersort(ddict, :integer)
+        UserSortRef(:integer)
     elseif tag === :dotconstant
-        usersort(ddict, :dot)
+        UserSortRef(:dot)
     elseif tag === :booleanconstant
-        usersort(ddict, :bool)
+        UserSortRef(:bool)
     else
          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
-         usersort(ddict, :null)
+         UserSortRef(:null)
     end
 end
 

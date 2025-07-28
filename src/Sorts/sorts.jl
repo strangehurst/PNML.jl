@@ -1,5 +1,3 @@
-#! Base.eltype(::Type{<:AbstractSort}) = Int
-
 """
 Tuple of sort IDs that are considered builtin.
 There will be a version defined for each in the `DeclDict`.
@@ -30,10 +28,8 @@ equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
 # Called when both a and b are the same concrete type.
 equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
-basis(a::AbstractSort) = sortref(a)::UserSort
+basis(a::AbstractSort) = sortref(a)::SortRef
 sortof(a::AbstractSort) = identity(a)
-#! sortelements(::AbstractSort) = () # sort that has no elements will lead to errors!
-to_usersort(::Type{T}; ddict) where{T <: AbstractSort} = usersorts(ddict)[refid(T)::Symbol]
 
 """
 Built-in sort whose `eltype` is `Bool`
@@ -58,45 +54,49 @@ Also [`PNML.Declarations.ArbitrarySort`](@ref), [`PNML.Declarations.PartitionSor
 """
 @auto_hash_equals fields=declaration struct UserSort <: AbstractSort
     declaration::REFID #TODO validate REFID in `DeclDict`
-
-    # `<productsort>` defines a tuple of sorts.
-    # Related to PNML `<tuple>` operator) that returns a Julia `tuple` of elements of sorts.
-    # `<variabledecl` links a sort with a name & REFID. `<variable` accesses by REFID.
-
-    #? todo is the name the unique identifier of a variable?
-
-    # ePNK uses `<namedoperator>` `<parameter>` `<variabledecl` to map the ordered arguments
-    # to the expression variables in `<def>`
-    # and for `<place><type>` label `<structure>`.
-
-    #! Can also be ProductSort, MultisetSort. ePNK uses inline sorts.
-
-    #! Sorts can be inline in a variabledecl as part of useroperator, sorttype (anywhere else?)
-    #! They will be concrete types.
-    #! no dynamic behavior re embedded sorts during enabling/firing rules. (treat as constant)
-    #! cache any values that need calculating
-    #! want to use REFIDs to avoid the need to define Types.
-
-    #^ productsort is a tuple of 0 or more sorts
-    #^ may nest productsort in a productsort (not true for multisetsort)
-    #^ see also multisetsort that has a basis sort (that can be a productsort)
-
-    #~ We create user/named duos for each built-in sort.
-
     declarationdicts::DeclDict
 end
+
+# `<productsort>` defines a tuple of sorts.
+# Related to PNML `<tuple>` operator) that returns a Julia `tuple` of elements of sorts.
+# `<variabledecl` links a sort with a name & REFID. `<variable` accesses by REFID.
+
+#? todo is the name the unique identifier of a variable?
+
+# ePNK uses `<namedoperator>` `<parameter>` `<variabledecl` to map the ordered arguments
+# to the expression variables in `<def>`
+# and for `<place><type>` label `<structure>`.
+
+#! Can also be ProductSort, MultisetSort. ePNK uses inline sorts.
+
+#! Sorts can be inline in a variabledecl as part of useroperator, sorttype (anywhere else?)
+#! They will be concrete types.
+#! no dynamic behavior re embedded sorts during enabling/firing rules. (treat as constant)
+#! cache any values that need calculating
+#! want to use REFIDs to avoid the need to define Types.
+
+#^ productsort is a tuple of 0 or more sorts
+#^ may nest productsort in a productsort (not true for multisetsort)
+#^ see also multisetsort that has a basis sort (that can be a productsort)
+
+#~ We create user/named duos for each built-in sort.
 
 refid(us::UserSort) = us.declaration
 decldict(us::UserSort) = us.declarationdicts
 
 "Get NamedSort from UserSort REFID"
-namedsort(us::UserSort) = namedsort(decldict(us), refid(us)) # usersort -> namedsort
-sortref(us::UserSort) = identity(us)::UserSort
+namedsort(us::UserSort) = namedsort(decldict(us), refid(us))::PNML.Declarations.NamedSort #todo partitionsort, arbitrarysort
+sortref(us::UserSort) = identity(us)::SortRef
 sortof(us::UserSort) = sortdefinition(namedsort(us)) #^ ArbitrarySort, PartitionSort, ProductSort
 Base.eltype(us::UserSort) = eltype(sortof(us))
 
 # Forward operations to the NamedSort matching the declaration REFID.
-sortelements(us::UserSort) = sortelements(sortdefinition(namedsort(us)))
+function sortelements(us::UserSort)
+    ns = namedsort(us) #todo can be partitionsort, arbitrarysort sort declaration.
+    sortelements(ns)
+end
+
+
 name(us::UserSort) = name(namedsort(us))
 
 function Base.show(io::IO, us::UserSort)
@@ -111,10 +111,10 @@ $(TYPEDEF)
 Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals fields=basis struct MultisetSort <: AbstractSort
-    basis::UserSort
+    basis::SortRef
     declarationdicts::PNML.DeclDict
 
-    function MultisetSort(b::UserSort, ddict)
+    function MultisetSort(b::SortRef, ddict)
         if isa(sortdefinition(namedsort(ddict, refid(b))), MultisetSort)
             throw(PNML.MalformedException("MultisetSort basis cannot be MultisetSort"))
         else
@@ -124,8 +124,8 @@ Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 end
 
 decldict(ms::MultisetSort) = ms.declarationdicts
-sortref(ms::MultisetSort) = identity(ms.basis)::UserSort # 2024-10-09 make be a usersort
-sortof(ms::MultisetSort) = sortdefinition(namedsort(decldict(ms), basis(ms)::UserSort)) #TODO abstract
+sortref(ms::MultisetSort) = identity(ms.basis)::SortRef # 2025-06-28 make be a SortRef
+sortof(ms::MultisetSort) = sortdefinition(namedsort(decldict(ms), basis(ms)::SortRef)) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -140,8 +140,8 @@ An ordered collection of sorts. The elements of the sort are tuples of elements 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProduceSort is the color domain.
 """
-@auto_hash_equals fields=ae typearg=true struct ProductSort{N} <: AbstractSort
-    ae::NTuple{N,REFID}
+@auto_hash_equals fields=ae typearg=true cache=true struct ProductSort{N} <: AbstractSort
+    ae::NTuple{N,REFID} #! todo SortRef
     declarationdicts::DeclDict
 end
 
@@ -156,10 +156,14 @@ Return iterator over tuples of elements of sorts in the product.
 sorts(ps::ProductSort) = ps.ae
 
 function sortelements(ps::ProductSort) # Iterators.product does tuples
-    Iterators.product((sortelements ∘ Fix1(usersort, decldict(ps))).(sorts(ps))...)
+    #!@show sorts(ps)
+    # for s in sorts(ps)
+    #     @show sortelements(namedsort(decldict(ps), s))
+    # end
+    Iterators.product((sortelements ∘ Fix1(namedsort, decldict(ps))).(sorts(ps))...)
 end
 
-sortof(ps::ProductSort) = begin
+function sortof(ps::ProductSort)
     println("sortof(::ProductSort ", ps) #! bringup debug
     if isempty(sorts(ps))
         error("ProductSort is empty")

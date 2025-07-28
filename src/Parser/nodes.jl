@@ -58,7 +58,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_conte
             parse_sorttype(typenode, pntd; parse_context)
         else
             SortType("default",
-                        Labels.default_typeusersort(pntd, parse_context.ddict)::UserSort,
+                        Labels.default_typeusersort(pntd)::SortRef,
                         nothing, nothing, parse_context.ddict)
         end
     end
@@ -91,6 +91,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_conte
 
     if isnothing(mark) # Use  additive identity of proper sort.
          mark = if ishighlevel(pntd)
+            #!@show pntd sorttype parse_context.ddict
             default(HLMarking, pntd, sorttype; parse_context.ddict)
         else
             default(Marking, pntd; parse_context.ddict)
@@ -100,7 +101,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_conte
     if isnothing(sorttype) # Infer sortype of place from mark?
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
         @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
-        sorttype = SortType("default", basis(mark)::UserSort, nothing, nothing, decldict(mark))
+        sorttype = SortType("default", basis(mark)::SortRef, nothing, nothing, decldict(mark))
     end
 
     #! These are TermInterface expressions. Test elsewhere, after eval.
@@ -198,7 +199,8 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
             default(HLInscription, pntd,
-                SortType("default", UserSort(:dot, parse_context.ddict), parse_context.ddict); parse_context.ddict)
+                    SortType("default", UserSortRef(:dot), parse_context.ddict);
+                    parse_context.ddict)
         else
             default(Inscription, pntd; parse_context.ddict)
         end

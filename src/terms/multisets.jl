@@ -1,10 +1,9 @@
 """
-    pnmlmultiset(basis::UserSort, x::T, multi::Int=1) -> PnmlMultiset{basis,T}
+    pnmlmultiset(basis::SortRef, x::T, multi::Int=1) -> PnmlMultiset{T}
 
 Construct as a multiset with one element, `x`, with default multiplicity of 1.
 
-PnmlMultiset wraps a Multisets.Multiset{T} and has type parameters
-B, a tuple of NamedSort REFIDs (first is the sort), and a matching sort element of type `T`.
+PnmlMultiset wraps a Multisets.Multiset{T} where `T` is the sort element type.
 
 Some [`Operators`](@ref)` and [`Variables`](@ref) create/use a multiset.
 Thre are constants (and 0-arity operators) defined that must be multisets
@@ -15,13 +14,13 @@ See `Bag` for expression that returns this data structure.
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.
 """
-@auto_hash_equals fields=mset typearg=true struct PnmlMultiset{B,T} #! data type
-    #basis::UserSort # REFID indirection #^ !!!! MOVED TO TYPE DOMAIN !!!!
+@auto_hash_equals fields=mset typearg=true struct PnmlMultiset{T} #! data type
+    basis_ref::SortRef # REFID indirection
     mset::Multiset{T}
     declarationdicts::DeclDict
 
-    function PnmlMultiset{B,T}(m::Multiset{T}, dd) where {B,T}
-        new{B,T}(m, dd) #todo assert B and T match.
+    function PnmlMultiset{T}(b::SortRef, m::Multiset{T}, dd) where {T}
+        new{T}(b, m, dd) #todo assert basis_ref and T match.
     end
 end
 
@@ -54,28 +53,31 @@ Base.iterate(ms::PnmlMultiset) = iterate(multiset(ms))
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
 """
-    basis(ms::PnmlMultiset) -> UserSort
+    basis(ms::PnmlMultiset) -> AbstractSort
 
-Multiset basis (B type parameter) is a REFID to a UserSort that references a NamedSort.
+Multiset basis sort is accessed through a SortRef that holds an `REFID` index into `decldict`,
+can be used to
+(B type parameter) is a REFID to a UserSort that references a NamedSort.
 Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
 MultisetSorts not allowed here. Nor loops in sort references.
 """
-basis(ms::PnmlMultiset{B,T}) where {B,T} = UserSort(first(B), decldict(ms)) # tuple(REFID) in type domain
+basis(ms::PnmlMultiset) = ms.basis_ref
 
-Base.eltype(::Type{PnmlMultiset{B,T}}) where {B,T} = T
+Base.eltype(::Type{PnmlMultiset{T}}) where {T} = T
 
 # Return empty multiset with matching basis sort, element type.
-Base.zero(::PnmlMultiset{B, T}) where {B,T} = PnmlMultiset{B,T}(Multiset{T}()) #^ empty multiset
+Base.zero(::PnmlMultiset{T}) where {T} = PnmlMultiset{T}(Multiset{T}()) #^ empty multiset
 
 # Choose an arbitrary value (probably 0) to have multiplicity of 1.
-Base.one(::Type{PnmlMultiset{B,T}}) where {B,T} = begin
-    o = PnmlMultiset{B,T}(Multiset{T}(first(sortelements(B[1]))))  #^ singleton multiset
+#!function Base.one(::Type{PnmlMultiset{T}}) where {T} #^ singleton multiset
+function Base.one(m::PnmlMultiset{T}) where {T} #^ singleton multiset
+    o = PnmlMultiset{T}(Multiset{T}(first(sortelements(basis(m)))))
     @assert issingletonmultiset(o)
     return o
 end
 
-sortref(ms::PnmlMultiset) = basis(ms)::UserSort # definition of basis sort
-sortof(ms::PnmlMultiset)  = sortof(basis(ms)::UserSort) # definition of basis sort
+sortref(ms::PnmlMultiset) = basis(ms)::SortRef
+sortof(ms::PnmlMultiset)  = sortof(basis(ms)) # definition of basis sort
 """
     sortelements(ms::PnmlMultiset) -> iterator
 
@@ -89,63 +91,65 @@ sortelements(ms::PnmlMultiset) = sortelements(basis(ms)::UserSort) # basis eleme
 """
 `A+B` for PnmlMultisets is the disjoint union of enclosed multiset.
 """
-function (+)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (+)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) + multiset(b), decldict(a))
+    PnmlMultiset{T}(basis(a), multiset(a) + multiset(b), decldict(a))
 end
 
  """
 `A-B` for PnmlMultisets is the disjoint union of enclosed multiset.
 """
-function (-)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (-)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) - multiset(b), decldict(a))
+    PnmlMultiset{T}(basis(a), multiset(a) - multiset(b), decldict(a))
 end
 
 """
 `A*B` for PnmlMultisets is forwarded to `Multiset`.
 """
-function Base.:*(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function Base.:*(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
-    PnmlMultiset{B,T}(multiset(a) * multiset(b), decldict(a))
+    PnmlMultiset{T}(basis(a), multiset(a) * multiset(b), decldict(a))
 end
 
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
-function Base.:*(n::Number, b::PnmlMultiset{B,T}) where {B,T}
-    PnmlMultiset{B,T}(convert(Int, n) * multiset(b), decldict(b))
+function Base.:*(n::Number, a::PnmlMultiset{T}) where {T}
+    PnmlMultiset{T}(basis(a), convert(Int, n) * multiset(a), decldict(a))
 end
 
-function Base.:*(b::PnmlMultiset{B,T}, n::Number) where {B,T}
-    PnmlMultiset{B,T}(convert(Int, n) * multiset(b), decldict(a))
+function Base.:*(a::PnmlMultiset{T}, n::Number) where {T}
+    PnmlMultiset{T}(basis(a), convert(Int, n) * multiset(a), decldict(a))
 end
 
 """
 `A<B` for PnmlMultisets is forwarded `Multiset`.
 """
-function (<)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (<)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
     multiset(a) < multiset(b)
 end
+
 """
 `A>B` for PnmlMultisets is forwarded `Multiset`.
 """
-function (>)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (>)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
     multiset(a) > multiset(b)
 end
 """
 `A<=B` for PnmlMultisets is forwarded `Multiset`.
 """
-function (<=)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (<=)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
     multiset(a) <= multiset(b)
 end
+
 """
 `A>=B` for PnmlMultisets is forwarded `Multiset`.
 """
-function (>=)(a::PnmlMultiset{B,T}, b::PnmlMultiset{B,T}) where {B,T}
+function (>=)(a::PnmlMultiset{T}, b::PnmlMultiset{T}) where {T}
     @assert basis(a) == basis(b)
     multiset(a) >= multiset(b)
 end
@@ -156,14 +160,14 @@ end
 
 
 """
-    pnmlmultiset(basis::UserSort, x, multi::Int=1; ddict) -> PnmlMultiset
-    pnmlmultiset(basis::UserSort, x::Multisets.Multiset; ddict) -> PnmlMultiset
-    pnmlmultiset(basis::UserSort; ddict) -> PnmlMultiset
+    pnmlmultiset(basis::SortRef, x, multi::Int=1; ddict) -> PnmlMultiset
+    pnmlmultiset(basis::SortRef, x::Multisets.Multiset; ddict) -> PnmlMultiset
+    pnmlmultiset(basis::SortRef; ddict) -> PnmlMultiset
 
 Constructs a [`PnmlMultiset`](@ref) containing a multiset and a sort from either
-  - a usersort, one element and a multiplicity, default = 1, denoted "1'x",
-  - a usersort and `Multiset`
-  - or just a sort (not usersort or multisetsort), uses all sortelements(sort), each with multiplicity = 1.
+  - a sortref, one element and a multiplicity, default = 1, denoted "1'x",
+  - a sortref and `Multiset`
+  - or just a sortref (not a multisetsort), uses all sortelements, each with multiplicity 1.
 
 Are mapping to Multisets.jl implementation:
 Create empty Multiset{T}() then fill.
@@ -183,12 +187,12 @@ Expect to be called from a `@matchable` `Terminterface`, thusly:
 function pnmlmultiset end
 
 # Constructor call
-function pnmlmultiset(basis::UserSort, ms::Multiset; ddict::DeclDict)
-    PnmlMultiset{(refid(basis),), eltype(ms), DeclDict}(ms, ddict)
+function pnmlmultiset(basis::SortRef, ms::Multiset; ddict::DeclDict)
+    PnmlMultiset{eltype(ms)}(basis, ms, ddict)
 end
 
 # Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
-function pnmlmultiset(basis::UserSort, element, multi::Int=1; ddict::DeclDict)
+function pnmlmultiset(basis::SortRef, element, multi::Int=1; ddict::DeclDict)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
     # Should we test `issingletonmultiset` here?
@@ -203,22 +207,22 @@ function pnmlmultiset(basis::UserSort, element, multi::Int=1; ddict::DeclDict)
     # end
     M = Multiset{typeof(element)}()
     M[element] = multi
-    PnmlMultiset{(refid(basis),), eltype(M)}(M, ddict)
+    PnmlMultiset{eltype(M)}(basis, M, ddict)
 end
 
 # For <all> only the basis is needed.
-function pnmlmultiset(basis::AbstractSort, ::Nothing, ::Nothing; ddict::DeclDict)
-    #println("pnmlmultiset: basis = ", repr(basis), ", ", repr(sortof(basis)), ", ", eltype(basis))
-    if isa(basis, MultisetSort) # use EqualSorts? us::UserSort
-        throw(ArgumentError("Cannot be a MultisetSort: basis = $(repr(basis))"))
+function pnmlmultiset(basis::SortRef, ::Nothing, ::Nothing; ddict::DeclDict)
+    if isa(basis, MultisetSortRef)
+        throw(ArgumentError("Cannot have MultisetSort basis of $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
     #@show basis eltype(basis) #! debug
-    M = Multiset{eltype(basis)}()
+    M = Multiset{eltype(basis, ddict)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
-    for e in sortelements(basis) # iterator over one instance of each element of the set/sort
+    sort = PNML.Parser.to_sort(basis; ddict)
+    for e in sortelements(sort) # iterator over elements
         #@show M e; flush(stdout) #! debug
         push!(M, e)
     end
-    PnmlMultiset{(refid(basis),), eltype(M)}(M, ddict)
+    PnmlMultiset{eltype(M)}(basis, M, ddict)
 end

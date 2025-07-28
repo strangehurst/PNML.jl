@@ -18,7 +18,7 @@ decldict(inscription::Inscription) = inscription.declarationdicts
 term(i::Inscription) = i.term # TODO when is the optimized away ()
 (i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub, decldict(i)))::Number
 
-sortref(i::Inscription) = _sortref(decldict(i), term(i))::UserSort
+sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
 sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::NumberSort
 
 # What variables are in the expression.
@@ -66,7 +66,7 @@ decldict(hli::HLInscription) = hli.declarationdicts
 (hli::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hli), varsub, decldict(hli)))
 
 term(hli::HLInscription) = hli.term
-sortref(hli::HLInscription) = _sortref(decldict(hli), term(hli))::UserSort
+sortref(hli::HLInscription) = _sortref(decldict(hli), term(hli))::SortRef
 sortof(hli::HLInscription) = sortdefinition(namedsort(decldict(hli), sortref(hli)))::PnmlMultiset #TODO other sorts
 
 variables(i::HLInscription) = i.vars
@@ -114,25 +114,21 @@ PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:Pnm
 
 PNML.value_type(::Type{Inscription}, ::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
 PNML.value_type(::Type{Inscription}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
-#
-# PnmlMultiset{B,T}
-#~ basis B is a tupple holding REFID of a UserSort, used to index into other data structures.
-#~ T is the Multiset type parameter, Keep B and T in sync!
-PNML.value_type(::Type{HLInscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-PNML.value_type(::Type{HLInscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
+PNML.value_type(::Type{HLInscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{HLInscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
 
 function default(::Type{<:Inscription}, pntd::PnmlType; ddict::DeclDict)
-    Inscription(PNML.NumberEx(usersort(ddict, :natural), one(Int)), nothing, nothing, ddict)
+    Inscription(PNML.NumberEx(UserSortRef(:natural), one(Int)), nothing, nothing, ddict)
 end
 function default(::Type{<:Inscription}, pntd::AbstractContinuousNet; ddict::DeclDict)
-    Inscription(PNML.NumberEx(usersort(ddict, :real), one(Float64)), nothing, nothing, ddict)
+    Inscription(PNML.NumberEx(UserSortRef(:real), one(Float64)), nothing, nothing, ddict)
 end
 function default(::Type{<:Inscription}, pntd::AbstractHLCore; ddict::DeclDict)
     error("No default Inscription method for AbstractHLCore, did you mean HLInscription?")
 end
 
 function default(::Type{<:HLInscription}, ::AbstractHLCore, placetype::SortType; ddict)
-    basis = sortref(placetype)::UserSort
-    el = def_sort_element(placetype)
+    basis = sortref(placetype)::SortRef
+    el = def_sort_element(placetype; ddict)
     HLInscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
 end

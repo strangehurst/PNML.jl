@@ -42,7 +42,7 @@ end
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
 
     i = if ishighlevel(pntd)
-        placetype = SortType("default_inscription", UserSort(:dot, ctx.ddict), nothing, nothing, ctx.ddict)
+        placetype = SortType("default_inscription", UserSortRef(:dot), nothing, nothing, ctx.ddict)
         Labels.default(HLInscription, pntd, placetype; ctx.ddict)
     else
         Labels.default(Inscription, pntd; ctx.ddict)
@@ -52,7 +52,7 @@ end
 
 #println()
 @testset "default_typeusersort($pntd)" for pntd in PnmlTypes.all_nettypes()
-    t = Labels.default_typeusersort(pntd, ctx.ddict)::UserSort
+    t = Labels.default_typeusersort(pntd)::SortRef
 end
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)

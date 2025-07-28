@@ -247,3 +247,55 @@ value_type(::Type{T}, pntd::PnmlType) where {T <: AbstractLabel}= value_type(T, 
 # construct postset marking updates.
 # """
 # const SubstitutionDict = OrderedDict{REFID, Multiset}
+
+"""
+    AbstractSort
+"""
+abstract type AbstractSort end
+
+
+"""
+    SortRef
+
+Reference concrete sort (<:AbstractSort (or following that informal interface))
+using a `REFID` `Symbol` that indexes one of the dictionaries
+in the network's declaration dictionary (`DeclDict`).
+
+The `REFID` will be in the network's `PnmlIDRegistry`.
+
+Note the similarity to `UserSort` and `<usersort declaration="id" />`
+
+We use the `UserSort` -> `NamedSort` -> `ConcreteSort` to add a name and REFID to built-in
+sorts, thus making them accessable. This extends this decoupling (symbols instead of sorts)
+to anonymous sorts that are inlined.
+"""
+abstract type SortRef end
+
+function refid(s::SortRef)
+    @assert s.refid !== :nothing
+    s.refid
+end
+
+struct UserSortRef <: SortRef
+    refid::REFID
+end
+
+struct NamedSortRef <: SortRef
+    refid::REFID
+end
+
+struct PartitionSortRef <: SortRef
+    refid::REFID
+end
+
+struct ProductSortRef <: SortRef
+    refid::REFID
+end
+
+struct MultisetSortRef <: SortRef
+    refid::REFID
+end
+
+struct ArbitrarySortRef <: SortRef
+    refid::REFID
+end

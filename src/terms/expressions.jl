@@ -18,6 +18,7 @@ export toexpr
 export PnmlExpr, BoolExpr, OpExpr # abstract types
 # concrete types
 export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
+export DotConstantEx
 export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
 export And, Not, Imply, Equality, Inequality, Successor, Predecessor
 export PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -123,60 +124,6 @@ function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
     a.head == b.head && a.args == b.args && a.foo == b.foo #! is this corrct XXX
 end
 
-# TermInterface operators are s-expressions: first is function, rest are arguments.
-# @matchable u>ses the struct name as head, making maketerm into a constructor call.
-
-# from SymUtils.toexpr: Expr(:call, toexpr(op, st), map(x->toexpr(x, st), args)...)
-# `st` is extra to the TermInterface operation and arguments.
-
-#=
-@matchable structs need a `maketerm`
-After possible term rewriting there will be a recusive `toexpr` followed by `eval`.
-This term (the @matchable) may not be at the root of the expression tree.
-
-Selected abstracted expressions from pnml example files.
-
-#^ Markings are ground terms (no variables).
-#^ These expressions set the initial state of the net marking.
-# What can a pnml tuple hold? The ISO Standard seems to think it is obvious (and don't say).
-# The RelaxNG Schema says <tuple> is a generic operator with >= 0 inputs and and 1 output.
-# Usage suggests anything a marking may hold (is used as initial marking).
-# A Tuple is an element of a ProductSort.
-# Element Forms: useroperator, variable, expression.
-
-
-initialMarking <- :all
-initialMarking <- :tuple (:all,:all)
-initialMarking <- :add subterms
-initialMarking <- :numberof :numberconstant usersort #! explain sort
-initialMarking <- :add :add :numbeof :numberconstant :tuple (:userop,:userop) :numbeof :numberconstant :tuple (:userop,:userop) :numbeof :numberconstant :tuple (:userop,:userop)
-initialMarking <- :userop
-initialMarking <- :numberof :numberconstant :variable #! is this correct?
-initialMarking <- :tuple (:finiteintrangeconstant, :finiteintrangeconstant, :userop)
-
-#^ Does a ground term make sense for either a condition or inscription expression?
-#^ Yes. Inscriptions may set target marking to a constant value. Default values run to constants.
-#^ Conditions set to constant true by default.
-#~ These must be BoolExprs
-condition <- :inequality :variable :variable
-condition <- :or :equality :variable :userop :equality variable :userop
-condition <- :or :equality :variable :variable :gtp :partelementof :variable :partelementof :variable
-condition <- :and :gt :variable :numberconstant :gt :variable :numberconstant
-
-#^ Expression that evaluates to either a tuple or a pnmlmultiset.
-#^ Used to set a place's marking when a transition is fired. Remove from source, add to target.
-inscription <- :tuple :variable :variable :userop
-inscription <- :tuple :variable :finiteintrangeconstant :userop
-inscription <- :numberof :numberconstant :tuple (:variable, :variable)
-inscription <- :numberof :numberconstant :stringconstant
-inscription <- :numberof :numberconstant :stringconcatenation :variable :variable
-inscription <- :numberof :numberconstant :addition :variable :numberconstant
-inscription <- :subtract :userop :numberconstant :tuple (:variable, :variable)
-inscription <- :userop :variable :numberconstant
-inscription <- :numberof :numberconstant :mult :variable :variable
-=#
-
-
 ###################################################################################
 # expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
@@ -184,8 +131,11 @@ inscription <- :numberof :numberconstant :mult :variable :variable
 end
 
 function toexpr(op::VariableEx, varsub::NamedTuple, ddict)
+    # `op` holds `refid`, an index into a `DeclDict` operator dictionary.
+    # `varsub`
     vsub = varsub[op.refid]
     if vsub isa Symbol
+        #
         Expr(:call, feconstant, QuoteNode(ddict), QuoteNode(vsub))
     else
         :($(vsub))
@@ -218,7 +168,7 @@ end
 end
 
 function toexpr(op::NamedOperatorEx, varsub::NamedTuple, ddict)
-    #@warn "toexpr(op::UserOperatorEx, varsub::NamedTuple)" op varsub operator(ddict, op.refid)
+    #
     Expr(:call, operator, QuoteNode(ddict), QuoteNode(op.refid)) #
 end
 
@@ -236,7 +186,7 @@ See [`PNML.Operator`](@ref) for another TermInterface operator.
 """
 Bag # Need to avoid @matchable to have docstring
 @matchable struct Bag <: PnmlExpr
-    basis::UserSort # Wraps a sort REFID.
+    basis::SortRef # Wraps a sort REFID.
     element::Any # ground term expression
     multi::Any # multiplicity expression of element in a multiset
     Bag(b, x, m) = begin
@@ -276,16 +226,12 @@ end
 """
 NumberEx # Need to avoid @matchable to have docstring
 @matchable struct NumberEx{T<:Number} <: PnmlExpr
-    basis::UserSort # Wraps a sort REFID.
+    basis::SortRef # Wraps a sort REFID.
     element::T #
-    # function NumberEx(b::UserSort, e::T) where {T<:Number}
-    #     eltype(b) == typeof(e) || #! run-time dispatch
-    #         throw(ArgumentError("eltype of basis = $(eltype(b)) is NOT a $e::$T"))
-    #     new{T}(b, e)
-    # end
 end
 
 basis(x::NumberEx) = x.basis
+
 toexpr(b::NumberEx{T}, var::NamedTuple, ddict) where {T<:Number} = b.element
 
 function Base.show(io::IO, x::NumberEx)
@@ -302,7 +248,8 @@ BooleanEx # Need to avoid @matchable to have docstring
     element::BooleanConstant
 end
 
-basis(::BooleanEx, ddict::DeclDict) = usersort(ddict, :bool) # is constant
+basis(::BooleanEx, ddict::DeclDict) = UserSortRef(:bool)
+
 function toexpr(b::BooleanEx, var::NamedTuple, ddict)
     if b.element isa BooleanConstant
         QuoteNode(PNML.Labels.value(b.element))
@@ -313,6 +260,25 @@ end
 
 function Base.show(io::IO, x::BooleanEx)
     print(io, "BooleanEx(", x.element,")")
+end
+
+"""
+    DotConstantEx
+
+TermInterface expression for a DotSort element.
+"""
+DotConstantEx # Need to avoid @matchable to have docstring
+@matchable struct DotConstantEx <: PnmlExpr
+end
+
+basis(::DotConstantEx, ddict::DeclDict) = UserSortRef(:dot)
+
+function toexpr(b::DotConstantEx, var::NamedTuple, ddict)
+    QuoteNode(PNML.DotConstant(ddict))
+end
+
+function Base.show(io::IO, x::DotConstantEx)
+    print(io, "DotConstantEx()")
 end
 
 ###################################################################################
@@ -360,7 +326,7 @@ end
 end
 
 function toexpr(op::ScalarProduct, var::NamedTuple, ddict)
-    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::UserSort,
+    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::SortRef,
         Expr(:call, :(*), toexpr(op.n, var, ddict), toexpr(op.bag, var, ddict)))
 end
 
@@ -870,87 +836,6 @@ struct LiteralExpr
     ex
 end
 toexpr(exp::LiteralExpr, varsub::NamedTuple, ddict) = recurse_expr(exp.ex, varsub, ddict)
-
-#= Example Uses
-
-function _make_sparse_array(arr, similarto, cse)
-    if arr isa Union{SubArray, Base.ReshapedArray, LinearAlgebra.Transpose}
-        LiteralExpr(quote
-            $Setfield.@set $(nzmap(x->true, arr)).parent =
-                $(_make_array(parent(arr), typeof(parent(arr)), cse))
-            end)
-    else
-        LiteralExpr(quote
-                        let __reference = copy($(nzmap(x->true, arr)))
-                            $Setfield.@set __reference.nzval =
-                            $(_make_array(arr.nzval, Vector{symtype(eltype(arr))}, cse))
-                        end
-                    end)
-    end
-end
-#---------------
-for j in jj
-    push!(exprs, _set_array(LiteralExpr(:($out[$j])), nothing, rhss[j], checkbounds, skipzeros, cse))
-end
-LiteralExpr(quote
-                $(exprs...)
-            end)
-
-
-#---------------
-op_body = :(let $outsym = zeros(Float64, map(length, ($(shape(op)...),)))
-            $body
-        $outsym
-    end) |> LiteralExpr
-
-#---------------
-
-=#
-
-# SymbolicUtils substitute.jl
-
-# """
-#     substitute(expr, dict; fold=true)
-
-# substitute any subexpression that matches a key in `dict` with
-# the corresponding value. If `fold=false`,
-# expressions which can be evaluated won't be evaluated.
-
-# ```julia
-# julia> substitute(1+sqrt(y), Dict(y => 2), fold=true)
-# 2.414213562373095
-# julia> substitute(1+sqrt(y), Dict(y => 2), fold=false)
-# 1 + sqrt(2)
-# ```
-# """
-# function substitute(expr, dict; fold=true)
-#     haskey(dict, expr) && return dict[expr] #~ Substitute
-
-#     if iscall(expr)
-#         #~ Always susbtitute operation and arguments.
-#         op = substitute(operation(expr), dict; fold=fold)
-#         if fold
-#             canfold = !(op isa Symbolic) #! what is Symbolic to US?
-#             args = map(arguments(expr)) do x
-#                 x′ = substitute(x, dict; fold=fold)
-#                 canfold = canfold && !(x′ isa Symbolic) #! found Symbolic arg in tree.
-#                 x′ #! to return substituted argument
-#             end
-#             canfold && return op(args...) #~ When no Symbolic in the expression tree, fold
-#             args #! why is this here (to help compiler?)
-#         else
-#             args = map(x->substitute(x, dict; fold=fold), arguments(expr))
-#         end
-
-#         #~ Rewrite term after substitutions
-#         maketerm(typeof(expr),
-#                  op,
-#                  args,
-#                  metadata(expr))
-#     else
-#         expr #~ not a call
-#     end
-# end
 
 """
     substitute(expr, dict)

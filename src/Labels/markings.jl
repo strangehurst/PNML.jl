@@ -18,7 +18,7 @@ end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
 function Marking(m::Number, ddict::DeclDict)
-    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::UserSort, m), ddict)
+    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::SortRef, m), ddict)
 end
 Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, ddict)
 
@@ -55,17 +55,18 @@ and the condition is a boolean expression (default true).
 
 # We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
 # These have basis == sortref.
-basis(m::Marking)   = sortref(term(m))::UserSort
-sortref(m::Marking) = _sortref(decldict(m), term(m))::UserSort
-sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort #sortdefinition(namedsorts(decldict(m))[sortref(m)])::NumberSort
+basis(m::Marking)   = sortref(term(m))::SortRef
+sortref(m::Marking) = _sortref(decldict(m), term(m))::SortRef
+sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
 
 # These are some <:Number that have sorts (usersort, namedsort duos).
-_sortref(dd::DeclDict, ::Type{<:Int64})   = usersorts(dd)[:integer]
-_sortref(dd::DeclDict, ::Type{<:Integer}) = usersorts(dd)[:integer]
-_sortref(dd::DeclDict, ::Type{<:Float64}) = usersorts(dd)[:real]
-_sortref(dd::DeclDict, ::Int64)   = usersorts(dd)[:integer]
-_sortref(dd::DeclDict, ::Integer) = usersorts(dd)[:integer]
-_sortref(dd::DeclDict, ::Float64) = usersorts(dd)[:real]
+_sortref(dd::DeclDict, ::Type{<:Int64})   = UserSortRef(:integer)
+_sortref(dd::DeclDict, ::Type{<:Integer}) = UserSortRef(:integer)
+_sortref(dd::DeclDict, ::Type{<:Float64}) = UserSortRef(:real)
+_sortref(dd::DeclDict, ::Int64)   = UserSortRef(:integer)
+_sortref(dd::DeclDict, ::Integer) = UserSortRef(:integer)
+_sortref(dd::DeclDict, ::Float64) = UserSortRef(:real)
+
 _sortref(dd::DeclDict, x::Any) = sortref(x)
 
 _sortof(dd::DeclDict, ::Type{<:Int64})   = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
@@ -116,8 +117,8 @@ Implement the Sort interface.
 
 ```julia
 ; setup=:(using PNML; using PNML: HLMarking, NaturalSort, ddict)
-julia> m = HLMarking(PNML.pnmlmultiset(usersort(integer), 1; ddict))
-HLMarking(Bag(usersort(ddict, :integer), 1))
+julia> m = HLMarking(PNML.pnmlmultiset(UserSortRef(:integer), 1; ddict))
+HLMarking(Bag(UserSortRef(:integer), 1))
 
 julia> m()
 1
@@ -169,8 +170,8 @@ function (hlm::HLMarking)() #varsub::NamedTuple=NamedTuple())
 end
 
 # Sort interface
-basis(marking::HLMarking) = basis(term(marking), decldict(marking))::UserSort
-sortref(marking::HLMarking) = _sortref(decldict(marking), term(marking))::UserSort
+basis(marking::HLMarking) = basis(term(marking), decldict(marking))::SortRef
+sortref(marking::HLMarking) = _sortref(decldict(marking), term(marking))::SortRef
 sortof(m::HLMarking) = sortdefinition(namedsort(decldict(m), sortref(m)))::AbstractSort
 
 function Base.show(io::IO, hlm::HLMarking)
@@ -198,8 +199,8 @@ PNML.value_type(::Type{Marking}, ::Type{<:PnmlType}) = eltype(NaturalSort) #::In
 PNML.value_type(::Type{Marking}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-PNML.value_type(::Type{HLMarking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any, <:Any}
-PNML.value_type(::Type{HLMarking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{(:dot,), PNML.DotConstant}
+PNML.value_type(::Type{HLMarking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{HLMarking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
 
 
 #~ Note the close relation of marking value_type to inscription value_type.
@@ -243,6 +244,6 @@ default(::Type{<:Marking}, ::T; ddict) where {T <: AbstractHLCore} =
     error("No default_marking method for $T, did you mean default_hlmarking?")
 
 function default(::Type{<:HLMarking}, ::AbstractHLCore, placetype::SortType; ddict)
-    el = def_sort_element(placetype)
+    el = def_sort_element(placetype; ddict)
     HLMarking("default", PNML.Bag(sortref(placetype), el, 0), ddict) # empty multiset, el used for its type
 end
