@@ -89,6 +89,9 @@ import EzXML
 import XMLDict
 import Multisets: Multisets, Multiset
 #~import StyledStrings
+import Moshi
+using Moshi.Match: @match
+using Moshi.Data: @data
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface
@@ -103,10 +106,12 @@ using DocStringExtensions
 # EXPORTS
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export REFID
+export REFID, SortRef
+export UserSortRef
+export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
-
 export @xml_str, xmlroot
+
 public pnmlmodel
 public PnmlException, MissingIDException, MalformedException
 public usersort, namedsort
@@ -141,13 +146,41 @@ include("Core/labelparser.jl")
 
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
+"""
+    ParseContext
+
+$(DocStringExtensions.TYPEDFIELDS)
+"""
+@kwdef struct ParseContext
+    idregistry::PnmlIDRegistry = PnmlIDRegistry() # empty
+    ddict::DeclDict = DeclDict() # empty
+    labelparser::Vector{LabelParser} = LabelParser[] # empty
+    toolparser::Vector{ToolParser} = ToolParser[] # empty
+end
+
 # parse context has id registry and DeclDict
 
 # Parts of Labels and Nodes.
 
 include("terms/tuples.jl")
+
+include("Core/parse_context.jl")
+
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
+using .Sorts: MultisetSort
+using .Sorts: AbstractSort, UserSort, MultisetSort, ProductSort
+using .Sorts: DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
+using .Sorts: EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
+using .Sorts: ListSort, StringSort
+
+
+include("Declarations/Declarations.jl")
+using .Declarations
+using .Declarations: SortDeclaration, NamedSort, ArbitrarySort, PartitionSort
+using .Declarations: OperatorDeclaration, NamedOperator, ArbitraryOperator, PartitionElement
+using .Declarations: VariableDeclaration
+
 
 include("terms/multisets.jl") # uses UserSort declaration
 include("terms/constterm.jl")
@@ -165,9 +198,9 @@ include("Core/rewrite.jl")
 # 2024-07-22 moved forward, holds Any rather than node types.
 include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
 
-include("Declarations/Declarations.jl")
-using .Declarations
-import .Declarations: NamedSort, SortDeclaration
+# include("Declarations/Declarations.jl")
+# using .Declarations
+# import .Declarations: NamedSort, SortDeclaration
 
 # Declarations are inside a <declaration> Label.
 # NamedSort declaration wraps (ID, name, <:AbstractSort).
@@ -211,7 +244,6 @@ include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 # PARSE
 include("Parser/Parser.jl")
 using .Parser
-
 # API Facade:
 include("PNet/PNet.jl")
 using .PNet
