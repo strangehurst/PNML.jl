@@ -17,6 +17,7 @@ using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
+using Moshi.Match: @match
 
 using PNML
 using ..Expressions
@@ -24,6 +25,7 @@ using ..PnmlIDRegistrys
 using ..PnmlTypes
 using ..Labels
 using ..Sorts
+using ..Sorts: make_sortref
 using ..Declarations
 
 using PNML: Maybe, CONFIG, AnyElement
@@ -32,15 +34,18 @@ using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
+using PNML: UserSort
 using PNML: Context
 using PNML: usersort, usersorts, pid
+using PNML: multisetsorts
 using PNML: ParseContext, parser_context, ToolParser, LabelParser
 using PNML: inscription_type, marking_type, transition_type
-using PNML: default
+using PNML: default, fill_sort_tag!
 
 # Methods implemented in this module.
 import PNML: adjacent_place
-import PNML: basis, sortref, sortof, sortelements, sortdefinition, to_usersort
+import PNML: basis, sortref, sortof, sortelements, sortdefinition
+import PNML: refid
 
 include("xmlutils.jl")
 include("parseutils.jl")

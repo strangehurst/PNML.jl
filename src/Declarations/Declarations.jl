@@ -19,11 +19,13 @@ using PNML: DeclDict
 using PNML: REFID, AnyElement, AbstractTerm, UserSort
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
+using PNML: multisetsorts
 
 # Extend PNML core #TODO what interfaces?
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
+import PNML: fill_sort_tag!
 
 using ..Sorts
 using ..PnmlIDRegistrys
@@ -31,5 +33,14 @@ using ..PnmlIDRegistrys
 include("declarations.jl")
 include("partitions.jl")
 include("arbitrarydeclarations.jl")
+
+# Default is concrete AbstractSort subtype to be wrapped in a NamedSort.
+fill_sort_tag!(ctx, tag, sort::AbstractSort) =
+    fill_sort_tag!(ctx, tag, NamedSort(tag, string(tag), sort, ctx.ddict))
+
+# # These 3 are Declarations of sorts, not AbstractSorts!t = @match nameof(typeof(sort)) begin
+fill_sort_tag!(ctx, tag, sort::NamedSort) = fill_sort_tag!(ctx, tag, sort, PNML.namedsorts)::SortRef
+fill_sort_tag!(ctx, tag, sort::PartitionSort) = fill_sort_tag!(ctx, tag, sort, PNML.partitionsorts)::SortRef
+fill_sort_tag!(ctx, tag, sort::ArbitrarySort) = fill_sort_tag!(ctx, tag, sort, PNML.arbitrarysorts)::SortRef
 
 end # module Declarations

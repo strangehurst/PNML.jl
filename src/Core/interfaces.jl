@@ -26,13 +26,6 @@ Return reference id symbol. Multiple objects may hold the same refid value.
 function refid end
 
 """
-    to_usersort(::AbstractSort; ddict::DeclDict) -> UserSort
-
-From a concrete sort, deduce a UserSort.
-"""
-function to_usersort end
-
-"""
     has_name(x) -> Bool
 
 Return true if there is a name.
@@ -400,9 +393,9 @@ We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for 
 function sortof end
 
 """
-    sortref(x) -> UserSort
+    sortref(x) -> SortRef
 
-Return a REFID wrapped in a [`UserSort`](@ref).
+Return a REFID wrapped in a [`SortRef`](@ref).
 
 Things that have a sortref include:
 Place, Arc, Inscription, HLInscription, Marking, HLMarking,
@@ -430,9 +423,9 @@ with the ID symbol used as the dictionary key.
 function sortdefinition end
 
 """
-    basis(x, ddict) -> UserSort
+    basis(x, ddict) -> SortRef
 
-Return UserSort referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
+Return SortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
 `MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
 Place marking & sorttype, arc inscriptions have a `basis`.
 """
@@ -470,3 +463,8 @@ function decldict end
 "Version of tool for this tool specific information element and its parser."
 """
 function version end
+
+"Fill and return a `ParserContext` object."
+function parser_context end
+
+function fill_sort_tag! end
