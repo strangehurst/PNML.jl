@@ -13,10 +13,11 @@ Each keyed by REFID symbols.
     """
     variabledecls::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
-    # built-in sorts live in named sorts.
+    # Built-in sorts live in named sorts. A sort declaration.
     namedsorts::Dict{Symbol, Any}     = Dict{Symbol, Any}()
     arbitrarysorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     partitionsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
+
     multisetsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
     productsorts::Dict{Symbol, Any} = Dict{Symbol, Any}()
 
@@ -31,7 +32,10 @@ Each keyed by REFID symbols.
 
     # Use an REFID symbol as a network-level "global" to reference
     # SortDeclaration or Operatordeclaration.
+
     # usersort used to wrap REFID to <: SortDeclaration is well used
+    #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
+    #! UserSorts will appear in the input XML
     usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
 
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
@@ -48,30 +52,30 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
-"Return dictonary of `UserSort`"
+"Return dictionary of `UserSort`"
 usersorts(dd::DeclDict)      = dd.usersorts
-"Return dictonary of `UserOperator`"
+"Return dictionary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
-"Return dictonary of `VariableDecl`"
+"Return dictionary of `VariableDecl`"
 variabledecls(dd::DeclDict)  = dd.variabledecls
-"Return dictonary of `NamedSort`"
+"Return dictionary of `NamedSort`"
 namedsorts(dd::DeclDict)     = dd.namedsorts
-"Return dictonary of `ArbitrarySort`"
+"Return dictionary of `ArbitrarySort`"
 arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
-"Return dictonary of `PartitionSort`"
+"Return dictionary of `PartitionSort`"
 partitionsorts(dd::DeclDict) = dd.partitionsorts
-"Return dictonary of `NamedOperator`"
+"Return dictionary of `NamedOperator`"
 namedoperators(dd::DeclDict) = dd.namedoperators
-"Return dictonary of `ArbitraryOperator`"
+"Return dictionary of `ArbitraryOperator`"
 arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
-"Return dictonary of partitionops (`PartitionElement`)"
+"Return dictionary of partitionops (`PartitionElement`)"
 partitionops(dd::DeclDict)   = dd.partitionops
-"Return dictonary of `FEConstant`"
+"Return dictionary of `FEConstant`"
 feconstants(dd::DeclDict)    = dd.feconstants
 
-"Return dictonary of `MultisetSort`"
+"Return dictionary of `MultisetSort`"
 multisetsorts(dd::DeclDict)    = dd.multisetsorts
-"Return dictonary of `ProdictSort`"
+"Return dictionary of `ProdictSort`"
 productsorts(dd::DeclDict)    = dd.productsorts
 
 """
@@ -82,10 +86,10 @@ Return an iterator over all the declaration dictionaries' values.
 function declarations(dd::DeclDict)
     Iterators.flatten([
         values(variabledecls(dd)),
+
         values(namedsorts(dd)),
         values(arbitrarysorts(dd)),
         values(partitionsorts(dd)),
-
         values(multisetsorts(dd)),
         values(productsorts(dd)),
 
@@ -93,28 +97,42 @@ function declarations(dd::DeclDict)
         values(namedoperators(dd)),
         values(arbitraryops(dd)),
         values(feconstants(dd)),
+
         values(usersorts(dd)),
         values(useroperators(dd)),
     ])
 end
 
-has_variabledecl(dd::DeclDict, id::Symbol)   = haskey(variabledecls(dd), id)
-has_namedsort(dd::DeclDict, id::Symbol)      = haskey(namedsorts(dd), id)
-has_arbitrarysort(dd::DeclDict, id::Symbol)  = haskey(arbitrarysorts(dd), id)
-has_partitionsort(dd::DeclDict, id::Symbol)  = haskey(partitionsorts(dd), id)
+"""
+    has_key(dd::DeclDict, dict, key::Symbol) -> Bool
+Where `dict` is the access method for a dictionary in `DeclDict`.
+"""
+has_key(dd::DeclDict, dict, key::Symbol)   = haskey(dict(dd),key)
 
-has_multisetsort(dd::DeclDict, id::Symbol)   = haskey(mutisetsorts(dd), id)
-has_productsort(dd::DeclDict, id::Symbol)    = haskey(productsorts(dd), id)
+has_variabledecl(dd::DeclDict, id::Symbol)   = has_key(dd, variabledecls, id)
+has_namedsort(dd::DeclDict, id::Symbol)      = has_key(dd, namedsorts, id)
+has_arbitrarysort(dd::DeclDict, id::Symbol)  = has_key(dd, arbitrarysorts, id)
+has_partitionsort(dd::DeclDict, id::Symbol)  = has_key(dd, partitionsorts, id)
 
-has_namedop(dd::DeclDict, id::Symbol)        = haskey(namedoperators(dd), id)
-has_arbitraryop(dd::DeclDict, id::Symbol)    = haskey(arbitraryops(dd), id)
-has_partitionop(dd::DeclDict, id::Symbol)    = haskey(partitionops(dd), id)
-has_feconstant(dd::DeclDict, id::Symbol)     = haskey(feconstants(dd), id)
-has_usersort(dd::DeclDict, id::Symbol)       = haskey(usersorts(dd), id)
-has_useroperator(dd::DeclDict, id::Symbol)   = haskey(usersorts(dd), id)
+has_multisetsort(dd::DeclDict, id::Symbol)   = has_key(dd, mutisetsorts, id)
+has_productsort(dd::DeclDict, id::Symbol)    = has_key(dd, productsorts, id)
+
+has_namedop(dd::DeclDict, id::Symbol)        = has_key(dd, namedoperators, id)
+has_arbitraryop(dd::DeclDict, id::Symbol)    = has_key(dd, arbitraryops, id)
+has_partitionop(dd::DeclDict, id::Symbol)    = has_key(dd, partitionops, id)
+has_feconstant(dd::DeclDict, id::Symbol)     = has_key(dd, feconstants, id)
+has_usersort(dd::DeclDict, id::Symbol)       = has_key(dd, usersorts, id)
+has_useroperator(dd::DeclDict, id::Symbol)   = has_key(dd, useroperators, id)
 
 "Lookup variable with `id` in DeclDict."
-variable(dd::DeclDict, id::Symbol)       = variabledecls(dd)[id]
+function variable(dd::DeclDict, id::Symbol)
+    if has_variabledecl(dd, id)
+        return @inbounds variabledecls(dd)[id]
+    else
+        error("no varibledecl[$id] found! DeclDict = $(repr(dd))")
+    end
+end
+
 "Lookup namedsort with `id` in DeclDict."
 namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
 "Lookup arbitrarysort with `id` in DeclDict."
@@ -125,7 +143,7 @@ partitionsort(dd::DeclDict, id::Symbol)  = partitionsorts(dd)[id]
 "Lookup multisetsort with `id` in DeclDict."
 multisetsort(dd::DeclDict, id::Symbol)  = multisetsorts(dd)[id]
 "Lookup productsort with `id` in DeclDict."
-productsort(dd::DeclDict, id::Symbol)  = productsorts(dd)[id]
+productsort(dd::DeclDict, id::Symbol)   = productsorts(dd)[id]
 
 "Lookup namedop with `id` in DeclDict."
 namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
@@ -171,11 +189,12 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
 Return operator TermInterface expression for `id`.
     `toexpr(::OpExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
-"Operator Declarations" include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
+Operator Declarations include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
 with types `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
 These define operators of different types that are placed into separate dictionaries.
 
 #! CORRECT AbstractOperator type hierarchy that has `Operator` as concrete type.
+
 #! AbstractDeclarations and AbstractTerms are "parallel" hierarchies in the UML,
 #! with AbstractTerms divided into AbstractOperators and AbstractVariables.
 
@@ -206,7 +225,7 @@ With output sort to match `OperatorDeclaration` .
 """
 function operator(dd::DeclDict, opid::Symbol)
     #println("operator($id)")
-    for dict in _ops(dd)
+    for dict in _ops(dd) # Look through all the dictionaries.
         if haskey(dict, opid)
             #@show dict[opid]
             return dict[opid] #! not type stable because each dict holds different type.
@@ -250,72 +269,18 @@ function show_sorts(dd::DeclDict)
 #     println()
 end
 
-"""
-    ParseContext
+#! 2025-07-16 JDH moved ParseContext
+# Add the dictionary accessor argument after sorts are dispatchable.
 
-$(DocStringExtensions.TYPEDFIELDS)
-"""
-@kwdef struct ParseContext
-    idregistry::PnmlIDRegistry
-    ddict::DeclDict
-    labelparser::Vector{LabelParser} = LabelParser[]
-    toolparser::Vector{ToolParser} = ToolParser[]
-end
-
-function parser_context()
-    dd = DeclDict() # empty
-    idreg = PnmlIDRegistry()
-    fill_nonhl!(ParseContext(; idregistry=idreg, ddict=dd))# Fill and return.
-end
-
-
-"""
-    fill_nonhl!(ctx::ParseContext; idreg::PnmlIDRegistry) -> DeclDict
-
-Fill a DeclDict with defaults and values needed by non-high-level networks.
-
-    NamedSort(:integer, "Integer", IntegerSort())
-    NamedSort(:natural, "Natural", NaturalSort())
-    NamedSort(:positive, "Positive", PositiveSort())
-    NamedSort(:real, "Real", RealSort())
-    NamedSort(:dot, "Dot", DotSort())
-    NamedSort(:bool, "Bool", BoolSort())
-
-    UserSort(:integer, ddict)
-    UserSort(:natural, ddict))
-    UserSort(:positive, ddict))
-    UserSort(:real, ddict))
-    UserSort(:dot, ddict))
-    UserSort(:bool, ddict))
-"""
-function fill_nonhl!(ctx::ParseContext)
-    for (tag, name, sort) in ((:integer, "Integer", Sorts.IntegerSort()),
-                              (:natural, "Natural", Sorts.NaturalSort()),
-                              (:positive, "Positive", Sorts.PositiveSort()),
-                              (:real, "Real", Sorts.RealSort()),
-                              (:dot, "Dot", Sorts.DotSort(ctx.ddict)), #users can override
-                              (:bool, "Bool", Sorts.BoolSort()),
-                              (:null, "Null", Sorts.NullSort()),
-                              )
-        #TODO Add list, strings, arbitrarysorts other built-ins.
-        fill_sort_tag!(ctx, tag, name, sort)
+"Look for matching value in dictionary, return key or nothing."
+function find_valuekey(d::AbstractDict, x, func=identity)
+    id = nothing
+    for (k,v) in pairs(skipmissing(d))
+        if func(v) == x # Apply `func` to each value, looking for a match.
+            id = k
+            @warn "found existing $id" x
+            break
+        end
     end
-    return ctx
-end
-
-"""
-    fill_sort_tag!(ctx::ParseContext, tag::Symbol, name, sort)
-
-If not already in the declarations dictionary, create and add a namedsort, usersort duo for `tag`.
-"""
-function fill_sort_tag!(ctx::ParseContext, tag::Symbol, name, sort)
-    if !has_namedsort(ctx.ddict, tag) # Do not overwrite existing content.
-        !isregistered(ctx.idregistry, tag) && register_id!(ctx.idregistry, tag)
-        namedsorts(ctx.ddict)[tag] = NamedSort(tag, name, sort, ctx.ddict)
-    end
-
-    if !has_usersort(ctx.ddict, tag) # Do not overwrite existing content.
-        # DO NOT register REFID! ID owned by NamedSort.
-        usersorts(ctx.ddict)[tag] = UserSort(tag, ctx.ddict)
-    end
+    return id#  Key of matched value or nothing.
 end
