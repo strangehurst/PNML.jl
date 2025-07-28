@@ -64,7 +64,7 @@ end
 Use `args`, a dictionary of variable substitutions into the expression to return a Bool.
 """
 (c::Condition)(varsub::NamedTuple=NamedTuple()) = begin
-    # `varsub` a Dict mapping a variable REFID symbol to an element of the basis sort of marking multiset.
+    # `varsub` maps a variable REFID symbol to an element of the basis sort of marking multiset.
     # It will be a "consistent substitution"
     # Markings are ground terms, can be fully evaluated here. In fact, here we are operating
     # on a marking vector. This vector starts with the initial_marking expression's value.

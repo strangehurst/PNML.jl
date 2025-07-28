@@ -9,9 +9,9 @@ const varsub = NamedTuple()
 
 @testset "multiset add $pntd" begin
     # When will it be noticed that `:pro` is not a valid REFID?
-    b1 = PNML.Bag(UserSort(:pro, ddict), 1, PNML.NumberEx(UserSort(:natural, ddict), 1))
-    b2 = PNML.Bag(UserSort(:pro, ddict), 2, PNML.NumberEx(UserSort(:natural, ddict), 1))
-    b3 = PNML.Bag(UserSort(:pro, ddict), 3, PNML.NumberEx(UserSort(:natural, ddict), 2))
+    b1 = PNML.Bag(UserSortRef(:pro), 1, PNML.NumberEx(UserSortRef(:natural), 1))
+    b2 = PNML.Bag(UserSortRef(:pro), 2, PNML.NumberEx(UserSortRef(:natural), 1))
+    b3 = PNML.Bag(UserSortRef(:pro), 3, PNML.NumberEx(UserSortRef(:natural), 2))
     #@show b1 b2
 
     a = PNML.Add([b1, b2, b3])

@@ -247,12 +247,12 @@ end
     @test PNML.value_type(PNML.condition_type(pntd), typeof(pntd)) <: Bool
     @test PNML.inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
     if ishighlevel(pntd)
-        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: PnmlMultiset{<:Any, <:Any}
+        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: PnmlMultiset{<:Any}
     else
         @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: Number
     end
     @test PNML.marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
-    @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any, <:Any}}
+    @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
 
     @test PNML.page_type(pntd) <: PNML.Page
     @test PNML.refplace_type(pntd) <: PNML.RefPlace

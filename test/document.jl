@@ -44,7 +44,7 @@ end
     @test_logs(match_mode=:all, pnmlmodel(emptypage) )
 
     @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
-    @test_call target_modules=target_modules pnmlmodel(emptypage)
+    @test_call broken=false target_modules=target_modules pnmlmodel(emptypage)
     #TODO ===============================================
     # Create a tuple of ID Registries of the same shape as the nets of the model.
     #TODO ===============================================

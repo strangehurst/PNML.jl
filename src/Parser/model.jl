@@ -21,6 +21,8 @@ function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool=false, default_ns:
     end
 end
 
+
+
 """
 $(TYPEDSIGNATURES)
 

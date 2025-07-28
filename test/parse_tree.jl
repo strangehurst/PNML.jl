@@ -97,7 +97,7 @@ println("-----------------------------------------\n")
     @test PNML.nrefplaces(net) == 0
     @test isempty(PNML.refplaces(net))
 
-    @test_call target_modules=target_modules pnmlmodel(testfile)
+    @test_call broken=false target_modules=target_modules pnmlmodel(testfile)
     @test_call nets(model)
 
     @test !isempty(repr(PNML.netdata(net)))

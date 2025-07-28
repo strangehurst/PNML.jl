@@ -39,7 +39,7 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
                 #project_toml_formatting=true,
 
                 piracies=false,
-                #persistent_tasks=false, # Metatheory ale/3.0 is not in registry
+                persistent_tasks=false, # Metatheory ale/3.0 is not in registry
             )
         end
     end

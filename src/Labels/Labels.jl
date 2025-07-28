@@ -17,6 +17,7 @@ using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm
 using PNML: usersort, namedsort, usersorts, namedsorts
 using PNML: labelof, ToolParser, LabelParser, ParseContext
+using PNML: multisetsorts
 
 import PNML: name
 import PNML: value_type

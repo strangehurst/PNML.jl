@@ -91,8 +91,7 @@ $(TYPEDFIELDS)
 Partition sort declaration is a finite enumeration that is partitioned into sub-ranges of enumerations.
 Is the sort at the partition or the element level (1 sort or many sorts?)
 
-Like [`NamedSort`](@ref), will add an `id` and `name` to a sort, however,
-it used indirection via a `UserSort`.
+Like [`NamedSort`](@ref), will add an `id` and `name` to a sort, and is used via `UserSort`.
 """
 struct PartitionSort <: SortDeclaration
     id::Symbol

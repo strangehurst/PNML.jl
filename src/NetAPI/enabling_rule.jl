@@ -173,7 +173,6 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
                     vtup = tuple(values(bvs)...) # Tuple of Multisets{PnmlMultiset}
                     # If an element is a PnmlMultiset it probably is a singleton. Treat as literal value.
                     sub1 = tuple((keys.(vtup))...) # substitutions
-                    #!vsubiter = Iterators.product(tuple(collect(keys.(values(bvs)))...))
                     vsubiter = Iterators.product(sub1...)
                     foreach(vsubiter) do  params
                         # Is params a tuple
