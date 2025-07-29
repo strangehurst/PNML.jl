@@ -3,9 +3,9 @@
 
 `parse_term` returns a triple of: PnmlExpr, SortRef, NTuple{N,REFID}
 """
-struct TermJunk{N}
+struct TermJunk{N, R <: SortRef}
     exp::Union{PnmlExpr,SortRef}
-    ref::SortRef
+    ref::R
     vars::NTuple{N,REFID}
 end
 
