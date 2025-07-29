@@ -45,7 +45,7 @@ str1 = """
      for accessor in [PNML.pid,
                      PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
                      PNML.reftransition_idset, PNML.refplace_idset]
-        @show accessor
+        #@show accessor
         @test accessor(PNet.pnmlnet(simp1)) == accessor(PNet.pnmlnet(simp)) # These 2 are expected to match.
     end
 

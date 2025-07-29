@@ -23,9 +23,11 @@ We allow repeated declaration (without the s) here.
 All fill the same `DeclDict`. See [`fill_decl_dict!`](@ref)
 """
 function parse_declaration! end
+
 function parse_declaration!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
     parse_declaration!(ctx, [node], pntd)
 end
+
 function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::PnmlType)
     #println("\nparse_declaration")
 
@@ -141,7 +143,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     #@show nameddef
     sort = to_sort(nameddef; ddict)
     if isa(sort, NamedSort)
-        @error "nameddef isa NamedSortRef" refid(nameddef)
+        #@error "nameddef isa NamedSortRef" refid(nameddef)
         sort = sortdefinition(sort)
     end
 
@@ -366,10 +368,11 @@ end
 
 # Built-ins sorts
 # ! 2025-07-21 SortRef refactor, make these return a direct UserSortRef.
-#! the insertion into decldict in done in `fill_sort_tag!` vi `fill_nonhl!`
-#! as initial part of `PnmlNet` parsing. where all built-in sorts materialize.
-#! Followed by parsing all declarations. Then the net.
-#!
+#! The insertion into decldict in done in `fill_sort_tag!` from `fill_nonhl!`
+#! as initial part of `PnmlNet` parsing.
+#! Followed by parsing all declarations where `parse_sort is used`.
+#! Then the net where terms use sorts.
+
 function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
     UserSortRef(:bool)
 end
@@ -552,8 +555,9 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
-            #! Can be inline sort?
-            psort = parse_usersort(child, pntd; parse_context)::UserSort #? sortof isa EnumerationSort
+            #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
+            # The only non-partitionelement child possible,
+            psort = parse_usersort(child, pntd; parse_context)#::NamedSortRef #? sortof isa EnumerationSort
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
             parse_partitionelement!(elements, child, id; parse_context) # pass REFID to partition
         else

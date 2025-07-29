@@ -90,8 +90,8 @@ Uses include default inscription value and default initial marking value sorts.
 See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element(pt::SortType; ddict::DeclDict)
-    println("def_sort_element $pt")
-    sortof(pt) #! debug
+    #println("def_sort_element $pt")
+    #sortof(pt) #! debug
     els = PNML.Sorts.sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
     return el

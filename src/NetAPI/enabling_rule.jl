@@ -220,7 +220,7 @@ Return `true` if no variables are present or all variables have at least 1 subst
 """
 function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
-        #! variable sorts are never PnmlTuples. Just one sort. UserSort wraps REFID.
+        #! variable sorts are never PnmlTuples. Just one sort.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
         var_refid = refid(sortref(variable(ddict, v)))
 

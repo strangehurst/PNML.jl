@@ -143,7 +143,7 @@ end
         #@show val NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()
         #@show PNML.usersort(ctx.ddict, :positive)
         @test PNML.multiplicity(val, NumberConstant(8, UserSortRef(:positive), ctx.ddict)()) == 1
-        @show PNML.Parser.to_sort(PNML.basis(val); ctx.ddict)
+        #@show PNML.Parser.to_sort(PNML.basis(val); ctx.ddict)
         @test PNML.Parser.to_sort(PNML.basis(val); ctx.ddict) === PNML.UserSort(:positive, ctx.ddict)
         @test NumberConstant(8, UserSortRef(:positive), ctx.ddict)() in multiset(val)
      end

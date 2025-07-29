@@ -231,6 +231,7 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_co
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
     basis = parse_usersort(child, pntd; parse_context)::UserSort # Can there be anything else?
+    #! ePNK uses <integer/>. Could be inlined productsort.
     x = first(PNML.sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
     return TermJunk(PNML.Bag(UserSortRef(refid(basis)), x, 0), basis, vars)

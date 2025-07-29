@@ -91,12 +91,12 @@ $(TYPEDFIELDS)
 Partition sort declaration is a finite enumeration that is partitioned into sub-ranges of enumerations.
 Is the sort at the partition or the element level (1 sort or many sorts?)
 
-Like [`NamedSort`](@ref), will add an `id` and `name` to a sort, and is used via `UserSort`.
+Like [`NamedSort`](@ref), will add an `id` and `name` to a sort, and is accessed by `UserSort`.
 """
 struct PartitionSort <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
-    def::REFID # Like a UserSort, REFID refers to a sort declaration (NamedSort) that wraps an EnumerationSort (FiniteEnumeration, CyclicEnumeration, FiniteIntRange)
+    def::REFID # Like a UserSort, refers to a sort declaration (NamedSort) that wraps an EnumerationSort (FiniteEnumeration, CyclicEnumeration)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
     declarationdicts::DeclDict
 

@@ -9,21 +9,20 @@ println("-----------------------------------------\n"); flush(stdout)
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
     model = pnmlmodel(fname)::PnmlModel
-    # println("model = ", model) #! debug
+    #println("model = ", model) #! debug
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
-    println(); flush(stdout)
 end
 
 #
 # copied from pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle
 #
-datapath = "data/XMLTestFilesRepository/Oracle"
+oracle = "data/XMLTestFilesRepository/Oracle"
 
 println("-----------------------------------------")
 println("full_coremodel.xml")
 println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, datapath, "full_coremodel.xml")
+@testset let fname=joinpath(@__DIR__, oracle, "full_coremodel.xml")
     model = pnmlmodel(fname)::PnmlModel
     #println("model = ", model) #! debug
 end
@@ -31,7 +30,7 @@ end
 println("-----------------------------------------")
 println("full_ptnet.xml")
 println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, datapath, "full_ptnet.xml")
+@testset let fname=joinpath(@__DIR__, oracle, "full_ptnet.xml")
     model = pnmlmodel(fname)::PnmlModel
     #println("model = ", model) #! debug
 end
@@ -39,7 +38,7 @@ end
 println("-----------------------------------------")
 println("full_sn.xml") # modified
 println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, datapath, "full_sn.xml")
+@testset let fname=joinpath(@__DIR__, oracle, "full_sn.xml")
     model = pnmlmodel(fname)::PnmlModel
     #println("model = ", model) #! debug
 end
@@ -47,18 +46,17 @@ end
 println("-----------------------------------------")
 println("full_hlpn.xml") # modified
 println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, datapath, "full_hlpn.xml")
+@testset let fname=joinpath(@__DIR__, oracle, "full_hlpn.xml")
     model = pnmlmodel(fname)::PnmlModel
-    println("model = ", model) #! debug
+    #println("model = ", model) #! debug
 end
 
-# println("-----------------------------------------")
-# println("test19.pnml") # modified
-# println("-----------------------------------------\n")
-# @testset let fname=joinpath(@__DIR__, "data/ePNK", "test19.pnml")
-#     model = pnmlmodel(fname)::PnmlModel
-#     println("model = ", model) #! debug
-# end
-
+println("-----------------------------------------")
+println("test19.pnml") # modified
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, "data/ePNK", "test19.pnml")
+    # model = pnmlmodel(fname)::PnmlModel
+    # println("model = ", model) #! debug
+end
 
 println(); flush(stdout)

@@ -199,8 +199,6 @@ NamedOperator(id::Symbol, str; ddict) = NamedOperator(id, str, VariableDeclarati
 decldict(no::NamedOperator) = no.declarationdicts
 operator(ddict, no::NamedOperator) = operator(ddict, no.def)
 parameters(no::NamedOperator) = no.parameter
-#! XXX sortref(no::NamedOperator) = sortref(operators(decldict(no))[no.def])::UserSort # of the wrapped operator
-#! XXX sortof(no::NamedOperator) = sortdefinition(namedsort(decldict(no), sortref(no)))
 
 function Base.show(io::IO, op::NamedOperator)
     print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ",

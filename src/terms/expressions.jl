@@ -56,7 +56,7 @@ toexpr(x::T, ::NamedTuple, ddict) where {T <: Number} = identity(x) #! literal
 #toexpr(x::Number, ::NamedTuple, ::Any) = QuoteNode(x) #! literal
 toexpr(s::Symbol, ::NamedTuple, ddict) = QuoteNode(s)
 function toexpr(t::Tuple, vsub::NamedTuple, ddict)
-    @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
+    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
     return t
 end
 
