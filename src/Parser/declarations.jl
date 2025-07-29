@@ -318,12 +318,22 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Returns [`UserSort`](@ref) wraping the REFID of a
-[`NamedSort`](@ref), [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref)
+Returns concrete [`SortRef`](@ref) wraping the REFID of a
+[`NamedSort`](@ref), [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref).
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "usersort")
-    UserSort(Symbol(attribute(node, "declaration")), parse_context.ddict) #todo UserSortRef
+    #UserSort(Symbol(attribute(node, "declaration")), parse_context.ddict) #todo UserSortRef
+    id = Symbol(attribute(node, "declaration"))
+    if PNML.has_namedsort(parse_context.ddict, id)
+        NamedSortRef(id)
+    elseif PNML.has_partitionsort(parse_context.ddict, id)
+        PartitionSortRef(id)
+    elseif PNML.arbitrarysort(parse_context.ddict, id)
+        ArbitrarySortRef(id)
+    else
+        error("Did not find sort declaration for $(repr(id))")
+    end
 end
 
 "Tag names of sort XML elements."
@@ -550,14 +560,14 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     id = register_idof!(parse_context.idregistry, node)
     nameval = attribute(node, "name")
     #@warn "partition $(repr(id)) $nameval"; flush(stdout);  #! debug
-    psort::Maybe{UserSort} = nothing
+    psort::Maybe{NamedSortRef} = nothing
     elements = PartitionElement[] # References into psort that form a equivalance class.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
             #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
             # The only non-partitionelement child possible,
-            psort = parse_usersort(child, pntd; parse_context)#::NamedSortRef #? sortof isa EnumerationSort
+            psort = parse_usersort(child, pntd; parse_context)::NamedSortRef #? sortof isa EnumerationSort
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
             parse_partitionelement!(elements, child, id; parse_context) # pass REFID to partition
         else
@@ -574,9 +584,8 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                 "id = ", repr(id), ", name = ", repr(nameval), ", sort = ", repr(psort))
 
     #~verify_partition(sort, elements)
-    #todo use UserSortRef(psort.declaration)
-    ps = PNML.PartitionSort(id, nameval, psort.declaration, elements, parse_context.ddict) # A Declaraion named Sort!
-    return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", id, nameval) #! refactor
+    ps = PNML.PartitionSort(id, nameval, refid(psort), elements, parse_context.ddict) # A Declaraion named Sort!
+    return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", id, nameval)::PartitionSortRef
 end
 
 """
