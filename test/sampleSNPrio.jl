@@ -9,6 +9,7 @@ println("-----------------------------------------\n"); flush(stdout)
 @testset let fname=joinpath(@__DIR__, "data", "sampleSNPrio.pnml")
     #false &&
     model = pnmlmodel(fname)::PnmlModel
+    @show summary(first(PNML.nets(model)))
     #println("model = ", model) #! debug
     #@test PNML.verify(net; verbose=true)
     #TODO apply metagraph tools
@@ -24,6 +25,7 @@ println("full_coremodel.xml")
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, oracle, "full_coremodel.xml")
     model = pnmlmodel(fname)::PnmlModel
+    @show summary(first(PNML.nets(model)))
     #println("model = ", model) #! debug
 end
 
@@ -32,7 +34,8 @@ println("full_ptnet.xml")
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, oracle, "full_ptnet.xml")
     model = pnmlmodel(fname)::PnmlModel
-    #println("model = ", model) #! debug
+    @show summary(first(PNML.nets(model)))
+   #println("model = ", model) #! debug
 end
 
 println("-----------------------------------------")
@@ -40,6 +43,7 @@ println("full_sn.xml") # modified
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, oracle, "full_sn.xml")
     model = pnmlmodel(fname)::PnmlModel
+    @show summary(first(PNML.nets(model)))
     #println("model = ", model) #! debug
 end
 
