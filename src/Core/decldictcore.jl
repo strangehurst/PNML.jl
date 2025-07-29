@@ -125,7 +125,7 @@ has_usersort(dd::DeclDict, id::Symbol)       = has_key(dd, usersorts, id)
 has_useroperator(dd::DeclDict, id::Symbol)   = has_key(dd, useroperators, id)
 
 "Lookup variable with `id` in DeclDict."
-function variable(dd::DeclDict, id::Symbol)
+function variabledecl(dd::DeclDict, id::Symbol)
     if has_variabledecl(dd, id)
         return @inbounds variabledecls(dd)[id]
     else

@@ -164,7 +164,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars, parse
     #^ ePNK uses inline variabledecl, variable in useroperator `<parameter>`, `<def>`.
     #^ Done inside `<declaration>`
     var_ex = VariableEx(Symbol(attribute(node, "refvariable")))
-    usort = PNML.sortref(PNML.variable(parse_context.ddict, var_ex.refid))
+    usort = PNML.sortref(PNML.variabledecl(parse_context.ddict, var_ex.refid))
     # vars will be the keys of a NamedTuple of substitutions &
     # the keys into the declaration dictionary of variable declarations.
     return TermJunk(var_ex, usort, tuple(vars..., var_ex.refid))
@@ -528,7 +528,7 @@ end
 "Return sort REFID of PnmlExpr."
 function deduce_sort end
 function deduce_sort(s::PNML.VariableEx; ddict)
-    PNML.refid(PNML.variable(ddict, s.refid))
+    PNML.refid(PNML.variabledecl(ddict, s.refid))
 end
 function deduce_sort(s::PNML.UserOperatorEx; ddict)
     PNML.refid(PNML.feconstant(ddict, s.refid)) #todo or other constant

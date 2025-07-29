@@ -222,7 +222,7 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
         #! variable sorts are never PnmlTuples. Just one sort.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
-        var_refid = refid(sortref(variable(ddict, v)))
+        var_refid = refid(sortref(variabledel(ddict, v)))
 
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
@@ -231,8 +231,8 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
                     error("none of tuple are equal sorts of $var_refid: ",
                             Sorts.sorts(sortof(placesort)))
         else
-            placesort !== sortref(variable(ddict, v)) &&
-                error("not equal sorts ($placesort, $(sortref(variable(ddict, v))))")
+            placesort !== sortref(variabledecl(ddict, v)) &&
+                error("not equal sorts ($placesort, $(sortref(variabledecl(ddict, v))))")
         end
 
         for (el,mu) in pairs(multiset(mark))
