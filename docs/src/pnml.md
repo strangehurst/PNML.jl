@@ -28,10 +28,6 @@ using InteractiveUtils; # hide
 versioninfo()
 ```
 
-## www.pnml.org
-
-In this section 'PNML' refers to the markup language, its specification and schemas, not this software.
-
 <http://www.pnml.org>
   - has publications and tutorials covering PNML at various points in its evolution.
   - has links to a series of ISO/IEC 15909 standards relating to PNML.
@@ -48,6 +44,8 @@ The people behind PNML, and as stated in _15909-2_, are of the Model Driven Soft
 
 See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://www.pnml.org/papers/pnnl76.pdf)(pdf) for more details. The rest of this page will hopefully make more sense if you are familiar with the primer's contents. Use the RelaxNG Schema as definitive like the 'primer' counsels.
 
+See [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf) for concepts relevant to *ISO/IEC 15909-3*.
+
 Note that the pnml XML file is the working intermediate representation of a suite of tools that use
 RelaxNG and Schematron for validation of the interchange file's content.
 
@@ -59,18 +57,17 @@ Petri Net Markup Language files (pnml) are intended to be validated against a pn
 For interchange of pnml between tools it should be enough to support the same pntd schema.
 
 Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. And some http://www.pnml.org files address these extensions.
+Including [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf).
+
 
 It is possible to create a non-standard pntd. And more will be standardized, either
 formally or informally. Non-standard mostly means that the interchangibility is restricted.
 
-Since validation is not a goal of PNML.jl, non-standard pntds can be used for the
-URI of an XML `net` tag's `type` attribute. Notably `pnmlcore` and `nonstandard`
-are mapped to [`PnmlCoreNet`](@ref).
+Since validation is not a goal of PNML.jl the uri is treated as a string.
+So non-standard pntds can be used for the URI of an XML `net` tag's `type` attribute.
+Notably `pnmlcore` and `nonstandard` are mapped to [`PnmlCoreNet`](@ref).
 
 `PnmlCoreNet` is the minimum level of meaning that any pnml file can hold.
-PNML.jl should be able to create a valid intermediate representation using `PnmlCoreNet`
-since all the higher-level meaning is expressed as pnml labels, restrictions,
-and required XML tag names.
 
 Further parsing of labels is specialized upon subtypes of [`PNML.AbstractPetriNet`](@ref).
 See [Traits](@ref) for more details.
@@ -96,127 +93,6 @@ PNML intermediate representration.
 Of some note it that PNML.jl extends PNML. These, non-standard pntd do not
 (yet) have a schema written. See [`ContinuousNet`](@ref).
 
-## PNTD Maps
-
-Defaut PNTD to Symbol map (URI string to pntd symbol):
-```@example
-using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
-```
-
-PnmlType map (pntd symbol to singleton):
-```@example
-using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
-```
-
-## Handling Labels
-
-The implementation of Labels supports _annotation_ and _attribute_ format labels.
-
-### Annotation Labels
-
-_annotation_ format labels are expected to have either a <text> element,
-a <structure> element or both. Often the <text> is a human-readable representation
-of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
-
-For `PTNet` (and `pnmlcore`) only the `Name` label with a <text> element
-(and no <structure> element) is defined by the specification.
-
-Labels defined in High-Level pntds, specifically 'Symmetric Nets',
-"require" all meaning to reside in the <structure>.
-
-### Attribute Labels
-
-_attribute_ format labels are present in the UML model of pnml.
-They differ from _annotation_ by omitting the `Graphics` element,
-but retain the `ToolInfo` element. Unless an optimization is identified,
-both _attribute_ and _annotation_ will share the same implementation.
-
-A standard-conforming pnml model would not have any `Graphics` element
-so that field would be `nothing`.
-
-
-## High-level Petri Net Concepts
-
-Based on a draft version of _ISO/IEC 15909-1:2004 High-level Petri nets - Part 1:
-Concepts, definitions and graphical notation._
-
-Useful for setting the ontology.
-
-Arc inscriptions are expressions that are evaluated.
-
-Place markings are multisets of tokens of a sort/type.
-
-Transition conditions are boolean expressions that are evaluated.
-Used to determine if transition is enabled.
-
-Expressions in _pnml_ can be many-sorted algebras.
-Declaration, Term, Sort, Multiset, Variable, are among the concepts
-used to define expressions.
-
-
-### Terms
-
-Terms have *sort*s: the sort of the variable or the output sort of the operator.
-
-Terms can be buit from built-in *operator*s and *sort*s, and user-defined *variable*s.
-These are defined in *variable declaration*s, a kind of *annotation* label attached to *page*s and *net*s.
-
-A *transition* can have a *condition*, a term of *sort* boolean,
-which imposes restrictions on when the transition may fire.
-
-### Sorts
-
-*named sort*s are constructed from existing *sort*s and given a new name.
-
-*arbitrary sort* is not defined in core, is not allowed in *Symmetric Nets*.
-HLPNG adds *arbitrary declarations*, sorts of *lists*, *strings*, *integers* to *Symmetric Nets*.
-
-The sort of a term is the sort of the *variable* or the output sort of the *operator*.
-
-### Operators
-
-An *operator* can be:
-built-in constant, built-in operator, multiset operator or tuple operator.
-
-User-defined operators, or *named operator*s are abbreviations, built from
-existing *operator*s and parameter variables.
-
-There will be arbitrary operator declarations for High-Level Petri Net Graphs,
-but not for Symmetric Nets.
-
-Operators have a sequence of input sorts and a single output sort.
-
-### Variables
-
-__TBD__
-
-## Notes on Petri Nets
-
-### Multiset Rewriting Systems
-
-I. Cervesato: [Petri Nets as Multiset Rewriting Systems in a Linear Framework](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=d5e629e53d831d63d04ac1520e7f7774273488b8)
-
-This addresses Place Transition Nets. High-level Petri nets explictily use multisets.
-
-> factor out the multiplicity of the elements of the underlying set. This is achieved by first defining the notion of singleton multisets and then by writing arbitrary multisets as linear combination of singleton multisets.
-
-> a rewrite rule can be viewed as a singleton multiset
-
-> Petri nets are meant to represent evolving systems. To represent this dynamic flavor, we will rely on the notion of multiset rewriting systems.
-
-## Continuous, Open and Other Petri Nets
-
-Allow marking, inscription, conditions to be floating point even when specification
-wants an integer. This allows continuous nets.
-
-See [Petri.jl](https://github.com/mehalter/Petri.jl)
-and [AlgebraicPetri.jl](https://github.com/AlgebraicJulia/AlgebraicPetri.jl)
-for some continuous Petri Net use-cases.
-
-TODO: Hybrid nets combining floating point/continuous and integer/discrete
-inscription/marking.
-
-
 ## References
 
 [www.pnml.org](https://www.pnml.org/)
@@ -233,6 +109,9 @@ ISO *High-level Petri nets* Specification in multiple parts:
 
 [Towards a Standard for Modular Petri Nets:A Formalisation](https://portail.lipn.univ-paris13.fr/portail/plugins/publications/fichiers/EK-LP-ATPN09.pdf) expounds on structuring mechanism in 15909-3.
 From Proc. 30th Int. Conf. Application and Theory of Petri Nets (PetriNets’2009), Paris, France, June 2009, volume 5606 of Lecture Notes in Computer Science. Springer, 2009.
+
+[Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf)
+L.M. Hillah and F. Kordon and C. Lakos and L. Petrucci, Transactions on Petri Nets and Other Models of Concurrency, Springer 2012, LNCS 7400 (VI), pp.46-70
 
 [_nLab_](https://ncatlab.org/nlab/) a wiki for collaborative work on Mathematics, Physics, and Philosophy:
    - [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
