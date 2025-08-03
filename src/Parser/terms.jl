@@ -37,7 +37,7 @@ function parse_term(node::XMLNode, pntd::PnmlType; vars, parse_context::ParseCon
     # ttup is (expression, sortref, vars) like all parse_term methods.
     # Ensure that there is a `toexpr` method. #! DEBUG only?
     if !isa(which(PNML.toexpr, (typeof(ttup.exp), NamedTuple, DeclDict)), Method)
-        error("No `toexpr` method for ttup; $(ttup)")
+        error("No `toexpr` method for expressin; $(ttup)")
     end
     return ttup
 end
@@ -52,9 +52,9 @@ function subterms(node, pntd; vars, parse_context::ParseContext)
     sts = Vector{Any}()
     for subterm in EzXML.eachelement(node)
         stnode, tag = unwrap_subterm(subterm)
-        tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)
+        tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
         isnothing(tj) && throw(PNML.MalformedException("subterm is nothing"))
-        (; vars) = tj # accumulate variables
+        vars = tj.vars #! TEST THIS accumulate variables
         push!(sts, tj.exp)
     end
     return sts, vars
@@ -339,7 +339,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
         stnode, tag = unwrap_subterm(st)
         if tag == :numberconstant && isnothing(multiplicity)
             tj1 = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
-            multiplicity= tj1.exp
+            multiplicity = tj1.exp
             vars = tj1.vars
             # RealSort as first numberconstant might confuse `Multiset.jl`.
             # Negative integers will cause problems. Don't do that either.

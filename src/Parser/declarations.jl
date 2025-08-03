@@ -79,7 +79,7 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
             PNML.namedsorts(ctx.ddict)[pid(ns)] = ns # fill_decl_dict! namedsort
             PNML.usersorts(ctx.ddict)[pid(ns)] = UserSort(pid(ns), ctx.ddict) # fill_decl_dict!
         elseif tag == "namedoperator"
-            no = parse_namedoperator(child, pntd; parse_context=ctx)
+            no = parse_namedoperator(child, pntd; parse_context=ctx) #::NamedOperator
             PNML.namedoperators(ctx.ddict)[pid(no)] = no # fill_decl_dict! namedoperator
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd; parse_context=ctx)
