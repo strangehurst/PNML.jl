@@ -245,12 +245,12 @@ end
 #------------------------------------------------------------------------------
 # Construct Types
 #------------------------------------------------------------------------------
-pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
-                                                      place_type(T),
-                                                      transition_type(T),
-                                                      arc_type(T),
-                                                      refplace_type(T),
-                                                      reftransition_type(T)}
+# pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
+#                                                       place_type(T),
+#                                                       transition_type(T),
+#                                                       arc_type(T),
+#                                                       refplace_type(T),
+#                                                       reftransition_type(T)}
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T,
                                                 place_type(T),
