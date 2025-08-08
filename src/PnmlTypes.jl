@@ -126,7 +126,7 @@ just the schema file name, or a placeholder for a future schema.
 For readability, the 'pntd symbol' should match the name used in the URI
 with inconvinient characters removed or replaced. For example, '-' is replaced by '_'.
 """
-const default_pntd_map =
+const pntd_map =
     Dict{String, Symbol}(
             "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
             "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
@@ -200,7 +200,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Map string `s` to a pntd symbol using [`default_pntd_map`](@ref).
+Map string `s` to a pntd symbol using [`pntd_map`](@ref).
 Any unknown `s` is mapped to `:pnmlcore`.
 Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmltype_map`](@ref).
 
@@ -211,7 +211,7 @@ julia> PNML.PnmlTypes.pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
+pntd_symbol(s::AbstractString) = get(pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
 
 """
     pnmltype(pntd::T) -> PnmlType
@@ -221,7 +221,7 @@ pntd_symbol(s::AbstractString) = get(default_pntd_map::Dict{String, Symbol}, s, 
 Map either a text string or a symbol to a dispatch type singlton.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
-The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.default_pntd_map`](@ref)
+The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.pntd_map`](@ref)
 are both assumed to be correct here.
 
 Unknown or empty `uri` will map to symbol `:pnmlcore`.

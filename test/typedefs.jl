@@ -27,7 +27,7 @@ using PNML, ..TestUtils, JET
 end
 
 @testset "pnmltype" begin
-    #@test_call PNML.PnmlTypes.default_pntd_map()
+    #@test_call PNML.PnmlTypes.pntd_map()
     @test_call PnmlTypes.pnmltype(PnmlCoreNet())
     @test_call PnmlTypes.pnmltype("pnmlcore")
     @test_call PnmlTypes.pnmltype(:pnmlcore)
