@@ -1,8 +1,8 @@
 # Mathematical Semantics
 
-__ISO High-level Petri nets Specification__  parts 1 and 3 describe the sematics using math notation and part 2 provides the syntax using XML, UML2 and RelaxNG Schema.
+__ISO 15909 High-level Petri nets Standard__  parts 1 and 3 describe the sematics using math notation and part 2 provides the syntax using XML, UML2 and RelaxNG Schema.
 
-Here we pick out bits for exposition.  Recommend using the specification for completeness.
+Here we pick out bits for exposition.  Recommend using the standard for completeness.
 
 ## Color Functions
 

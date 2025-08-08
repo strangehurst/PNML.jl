@@ -203,8 +203,8 @@ is a callable returning a `FEConstant` literal.
 
     `toexpr(::FEConstantEx, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
-The FEConstant operators defined by the declaration do not have a distinct type name in the specification.
-Note that a FEConstant's value in the specification is its identity.
+The FEConstant operators defined by the declaration do not have a distinct type name in the standard.
+Note that a FEConstant's value in the standard is its identity.
 We could use `objectid(::FEConstant)`, `REFID` or `name` for output value.
 Output sort of op is FEConstant.
 

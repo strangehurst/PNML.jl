@@ -8,7 +8,7 @@ Varies by PNTD. Possibilitie include:
   - inscription: return one(`Int`), one(`Float64`), or singleton multiset of same sort as adjacent place's sorttype with value of first(elements(sort)).
   - condition: return `true`, or `BooleanConstant(true)`
 
-The _ISO/IEC 15909-2_ specification and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to also allow continuous values to support nonstandard continuous and hybrid valued Petri Nets. Makes generating default values more interesting.
+The _ISO/IEC 15909-2_ standard and the RelaxNG Schemas state 'natural numbers' and 'non-zero natural numbers'. I choose to also allow continuous values to support nonstandard continuous and hybrid valued Petri Nets. Makes generating default values more interesting.
 
 Determine type of `Number` to parse with [`number_value`](@ref) by using [`value_type`](@ref).
 

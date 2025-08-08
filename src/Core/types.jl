@@ -212,7 +212,7 @@ abstract type AbstractOperator <: AbstractTerm end
 # The part that needs to know Type details is defined elsewhere. :)
 #---------------------------------------------------------------------------
 
-pnmlnet_type(pntd::PnmlType)       = pnmlnet_type(typeof(pntd))
+# pnmlnet_type(pntd::PnmlType)       = pnmlnet_type(typeof(pntd))
 page_type(pntd::PnmlType)          = page_type(typeof(pntd))
 
 place_type(pntd::PnmlType)         = place_type(typeof(pntd))

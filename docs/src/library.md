@@ -42,3 +42,9 @@ Modules = [PNML.PNet]
 ```@autodocs
 Modules = [PNML.Expressions]
 ```
+
+
+## Index
+```@index
+Modules = [PNML, PNML.PnmlTypes, PNML.PnmlIDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser, PNML.PNet, PNML.Expressions]
+```

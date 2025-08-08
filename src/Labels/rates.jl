@@ -6,7 +6,7 @@
 # We handle such labels by using the `anyelement` mechansim that fills a DictType.
 #
 # Rates were the first use of this mechanim.
-# NB: Part 3 of the specification has words about extensions. We should look someday.
+# NB: Part 3 of the standard has words about extensions. We should look someday.
 
 """
 $(TYPEDEF)

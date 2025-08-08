@@ -11,7 +11,7 @@ The tags of the XML are used as keys and names as much as possible.
 What is accepted as values is ~~often~~ a superset of what a given pntd schema specifies.
 This can be thought of as duck-typing. Conforming to the pntd is not the role of the IR.
 
-The pnml specification has layers. This package has layers: `PnmlNet`, `AbstractPetriNet`
+The pnml standard has layers. This package has layers: `PnmlNet`, `AbstractPetriNet`
 
 The core layer is useful and extendable. The standard defines extensions of the core,
 called meta-models, for

@@ -98,7 +98,7 @@ end
 $(TYPEDSIGNATURES)
 
 Return [`Coordinate`](@ref PnmlGraphics.Coordinate).
-Specification seems to only use integers, we also allow real numbers.
+Sandard seems to only use integers, we also allow real numbers.
 """
 function parse_graphics_coordinate(node, pntd)
     nn = EzXML.nodename(node)

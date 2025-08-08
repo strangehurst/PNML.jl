@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 Collect each of the `PnmlNodes`s & `Arc`s of a Petri Net Graph into one collection.
 Accessed via pnml ID key or iterate over values of an `OrderedDict`.
 
-In the 'pnml' specification there is a `Page` structure that can be removed by `flatten_pages!`,
+In the 'pnml' standard there is a `Page` structure that can be removed by `flatten_pages!`,
 removing some display-related information, leaving a functional Petri Net Graph as described
 in this structure. It is intended to be a per-`PnmlNet` database that is mutated as each page
 is parsed.

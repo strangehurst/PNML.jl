@@ -31,7 +31,7 @@ $(TYPEDEF)
 Part of the high-level pnml many-sorted algebra. See  [`PNML.Labels.SortType`](@ref).
 
 NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
-The pnml specification sometimes uses overlapping language.
+The pnml standard sometimes uses overlapping language.
 
 From the 'primer': built-in sorts of Symmetric Nets are the following:
 booleans, integerrange, finite enumerations, cyclic enumerations, permutations, dots and partitions.

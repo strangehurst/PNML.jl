@@ -9,13 +9,13 @@ The rest of the examples, especially MCC, only contain usersorts.
 
 Some built-in sorts are atoms, examples: </dot>, <natural>.
 These are represented by an empty xml element, but not necessarily of the form </dot>.
-Lists are not atoms and are not supported by symmetric nets in the specification.
+Lists are not atoms and are not supported by symmetric nets in the standard.
 #~That kind of restriction to HLPNGs makes Symmetric Nets more tractable.
 Note that <productsorts> are not atoms and are required by symmetric nets.
 
 And note that PTNets are HLPNGs restricted even further: place type must be </dot>.
 
-One place in specification says:
+One place in standard says:
 > built-in sorts of Symmetric Nets are...: Bool, range of integers, finite enumerations, cyclic enumerations and dots.
 by which they mean in addition to PNML core and HL core layers (a.k.a. meta-models) definitions.
 That pulls in </integer>, et al.
@@ -48,7 +48,7 @@ this sort defines the type of the place.
 
 > By the fixed interpretation of sorts, this implicitly refers to a set, which is the type of that place.
 
-"refers to set" excludes multiset (as stated elsewhere in specification)
+"refers to set" excludes multiset (as stated elsewhere in standard)
 
 this is a sort, not a term, so no variables or operators.
 

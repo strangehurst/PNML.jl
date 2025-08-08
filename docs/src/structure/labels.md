@@ -80,13 +80,20 @@ PetriNet -- Core
 
 Defaut PNTD to Symbol map (URI string to pntd symbol):
 ```@example
-using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.default_pntd_map)))) #hide
+using PNML; foreach(println, sort(collect(pairs(PNML.PnmlTypes.pntd_map)))) #hide
+```
+```@docs; canonical=false
+PNML.PnmlTypes.pntd_map
 ```
 
 PnmlType map (pntd symbol to singleton):
 ```@example
 using PNML; foreach(println, pairs(PNML.PnmlTypes.pnmltype_map)) #hide
 ```
+```@docs; canonical=false
+PNML.PnmlTypes.pnmltype_map
+```
+
 
 ## Handling Labels
 
@@ -99,7 +106,7 @@ a <structure> element or both. Often the <text> is a human-readable representati
 of of the <structure> element. `Graphics` and `ToolInfo` elements may be present.
 
 For `PTNet` (and `pnmlcore`) only the `Name` label with a <text> element
-(and no <structure> element) is defined by the specification.
+(and no <structure> element) is defined by the standard.
 
 Labels defined in High-Level pntds, specifically 'Symmetric Nets',
 "require" all meaning to reside in the <structure>.
@@ -186,7 +193,7 @@ This addresses Place Transition Nets. High-level Petri nets explictily use multi
 
 ## Continuous, Open and Other Petri Nets
 
-Allow marking, inscription, conditions to be floating point even when specification
+Allow marking, inscription, conditions to be floating point even when standard
 wants an integer. This allows continuous nets.
 
 See [Petri.jl](https://github.com/mehalter/Petri.jl)

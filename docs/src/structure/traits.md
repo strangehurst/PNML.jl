@@ -1,6 +1,14 @@
 ```@meta
 CurrentModule = PNML
 ```
+
+```@setup types
+using  PNML, InteractiveUtils, Markdown
+list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
+    println(rpad(pntd, 15), " -> ", f(pntd))
+end
+```
+
 # Traits
 
 Some of the traits used are based on the pntd.
@@ -13,13 +21,6 @@ Each supported pntd has a singleton subtype of PnmlType.
 
 Default place markings and arc inscriptions are different for the three.
 
-
-```@setup types
-using  PNML, InteractiveUtils, Markdown
-list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
-    println(rpad(pntd, 15), " -> ", f(pntd))
-end
-```
 # isdiscrete
 ```@example types
 list_type(PNML.isdiscrete)

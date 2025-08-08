@@ -2,10 +2,26 @@
 CurrentModule = PNML
 ```
 
-```@contents
-Pages = ["interface.md"]
-Depth = 5
+```@setup methods
+using AbstractTrees, PNML, InteractiveUtils, Markdown
 ```
+
+```@setup methods
+using AbstractTrees, PNML, InteractiveUtils, Markdown
+```
+
+```@setup types
+using  PNML, InteractiveUtils, Markdown
+list_type(f) = for pntd in values(PNML.PnmlTypes.pnmltype_map)
+    println(rpad(pntd, 15), " -> ", f(pntd))
+end
+```
+
+```@setup fields
+using  PNML, InteractiveUtils, Markdown
+list_fields(f) = foreach(println, fieldnames(f))
+```
+
 # Interface
 
 !!! warning
@@ -18,12 +34,13 @@ The intermediate representation is used to implement networks expressed in a pnm
 
 We start a description of the net IR here.
 
-## DictType
+## Dict Type
 
-Used by:
+[`DictType`](@ref) used by:
   * [`AnyElement`](@ref)
   * [`Labels.PnmlLabel`](@ref)
   * [`Labels.SortType`](@ref)
+  * [`Parser.unparsed_tag`](@ref)
 
 ## Top Level: Model, Net, Page
 
@@ -49,11 +66,8 @@ TODO: Need way to parse <toolspecific> that is flexible/extendable.
 Parse pnml for input, worry about writing back out and interchange later (future extensions).
 Another future extension may be to use pages for distributed computing.
 
-The pnml specification permits that multiple pages to be flattened
-(by [`flatten_pages!`](@ref)) to a single `Page` before use.
-Using them unflattened is not supposed to be impossible,
-but is not the arena or the initial use cases (in no paticular order):
-adapting to use graph tools, agent based modeling, sciml, etc.
+The pnml standard permits that multiple pages canto be flattened
+(by [`flatten_pages!`](@ref)) to a single `Page` before use. We do that.
 
 [`AbstractPetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
 Note the **Pnml** to **Petri**.
@@ -106,7 +120,7 @@ interchangable with other tools.
 [VANESA](https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8)
 
 See [`rate_value`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
-Implements a continuous petri net as part of the first working use-case.
+Implements a stochastic petri net as part of the first working use-case.
 Demonstrates the expressiveness of pnml.
 
 ## Petri Net Graphs and Networks
@@ -114,34 +128,29 @@ Demonstrates the expressiveness of pnml.
 There are 3 top-level forms:
   - [`AbstractPetriNet`](@ref) subtypes wraping a single `PnmlNet`.
   - [`PnmlNet`](@ref)  maybe multiple pages.
-  - [`Page`](@ref) when the only page of the only net in a Abstractpetrinet.
+  - [`Page`](@ref) as the only page of the only net in a Abstractpetrinet.
 
 The simplest arrangement is a pnml model with a single <net> element having
-a single page. Any <net> may be flatten to a single page.
+a single <page>. Any <net> may be flatten to a single page.
 
 The initial `AbstractPetriNet` subtypes are built using the assumption that
 multiple pages will be flattened to a single page.
 
-```@setup methods
-using AbstractTrees, PNML, InteractiveUtils, Markdown
-```
-
 ## Simple Interface Methods
 
-### pid - get PNML ID symbol
+What makes a method simple? No other arguments besides the object it operates upon.
 
-Objects within a pnml graph have unique identifiers,
+### pid(x) - get PNML ID symbol
+
+Many things within a pnml net have unique identifiers,
 which are used for referring to the object.
-This includes:
-[`AbstractPnmlObject`](@ref) subtypes,
-[`PnmlNet`](@ref).
 
 [`PNML.pid`](@ref)
 ```@example methods
 methods(PNML.pid) # hide
 ```
 
-### name - get name
+### name(x) - get name
 
 `AbstractPnmlObject`s and `PnmlNet`s have a name label.
 [`PNML.Labels.Declaration`](@ref)s have a name attribute.
@@ -152,14 +161,14 @@ methods(PNML.pid) # hide
 methods(PNML.name) # hide
 ```
 
-### tag - access XML tag symbol
+### tag(x) - access XML tag symbol
 
 [`PNML.tag`](@ref)
 ```@example methods
 methods(PNML.tag) # hide
 ```
 
-### nettype - return PnmlType identifying PNTD
+### nettype(x) - return PnmlType identifying PNTD
 
 [`PNML.nettype`](@ref)
 ```@example methods
@@ -168,7 +177,8 @@ methods(PNML.nettype) # hide
 
 ## Nodes of Petri Net Graph
 
-Return vector of nodes.
+Return vector of nodes.  Assumes flattened net so that the `PnmlNet` and `Page`
+refer to the same net-level `AbstractDict` data structure.
 
 ### places
 [`PNML.places`](@ref)
@@ -261,7 +271,7 @@ Better to iterate than allocate. Using a set abstraction that iterates consisten
 |:-------------|:-----------------------------|:-------------------------------------|
 | PnmlNet      | `keys(placedict(net))`       | Iterates [`PnmlNetData`](@ref) OrderedDict keys |
 | Page         | `place_idset(netsets(page))` | Iterates [`PnmlNetKeys`](@ref) OrderedSet |
-| PnmlNetKeys  | `OrderedSet` |
+| PnmlNetKeys  | `OrderedSet` | Iterates [`PnmlNetKeys`](@ref) OrderedSet |
 
 Both iterate over REFIDs that are indices into PnmlNetData.,
 To access a `Place` in the `PnmlNetData` use `place(refid)`.
@@ -388,7 +398,7 @@ methods(PNML.PNet.outs)  # hide
 
 ## Labels - `Annotation` and `HLAnnotation`
 
-Both (all labels) have `Graphics` and `ToolInfo`.
+Both kinds (all labels) have `Graphics` and `ToolInfo`.
 [`Labels.HLAnnotation`](@ref) adds optional <text>, <structure>.
 
 ### text
@@ -434,50 +444,135 @@ methods(PNML.Labels.has_toolinfo) # hide
 methods(PNML.Labels.get_toolinfo) # hide
 ```
 
-## PnmlType traits
 
-See PnmlTypes for details of the singleton types used.
+## Type Lookup
 
-  - [`pnmlnet_type`](@ref)
-```@example methods
-methods(PNML.pnmlnet_type) # hide
+Petri Net Graph Object Types are parameterized by [Label Types](@ref).
+What labels are "allowed" (syntax vs. semantics vs. schema vs. standard)
+is parameterized on the PNTD (Petri Net Type Definition).
+
+See [`PnmlNet`](@ref)s & [`AbstractPnmlObject`](@ref)s, and
+ [`PnmlTypes`](@ref) for details of the singleton types used.
+
+
+#### page\_type(pntd)
+
+```@docs; canonical=false
+PNML.page_type
 ```
-  - [`page_type`](@ref)
+```@example types
+list_type(PNML.page_type) # hide
+```
 ```@example methods
 methods(PNML.page_type) # hide
 ```
-  - [`marking_type`](@ref)
-```@example methods
-methods(PNML.marking_type) # hide
+
+#### place\_type(pntd)
+
+```@docs; canonical=false
+PNML.place_type
 ```
-  - [`inscription_type`](@ref)
-```@example methods
-methods(PNML.inscription_type) # hide
+```@example types
+list_type(PNML.place_type) # hide
 ```
-  - [`condition_type`](@ref)
-```@example methods
-methods(PNML.condition_type) # hide
-```
-  - [`place_type`](@ref)
 ```@example methods
 methods(PNML.place_type) # hide
 ```
-  - [`transition_type`](@ref)
+
+#### transition\_type(pntd)
+
+```@docs; canonical=false
+PNML.transition_type
+```
+```@example types
+list_type(PNML.transition_type) # hide
+```
 ```@example methods
 methods(PNML.transition_type) # hide
 ```
-  - [`arc_type`](@ref)
+
+#### arc\_type(pntd)
+
+```@docs; canonical=false
+PNML.arc_type
+```
+```@example types
+list_type(PNML.arc_type) # hide
+```
 ```@example methods
 methods(PNML.arc_type) # hide
 ```
-  - [`refplace_type`](@ref)
+
+### Label Types
+
+[AbstractLabel](@ref)s are parameterized by [Value Types](@ref).
+
+
+#### marking\_type(pntd)
+
+```@docs; canonical=false
+PNML.marking_type
+```
+```@example types
+list_type(PNML.marking_type) # hide
+```
+```@example methods
+methods(PNML.marking_type) # hide
+```
+
+#### condition\_type(pntd)
+
+```@docs; canonical=false
+PNML.condition_type
+```
+```@example types
+list_type(PNML.condition_type) # hide
+```
+```@example methods
+methods(PNML.condition_type) # hide
+```
+
+#### inscription\_type(pntd)
+
+```@docs; canonical=false
+PNML.inscription_type
+```
+```@example types
+list_type(PNML.inscription_type) # hide
+```
+```@example methods
+methods(PNML.inscription_type) # hide
+```
+
+#### refplace\_type(pntd)
+
+```@docs; canonical=false
+PNML.refplace_type
+```
+  ```@example types
+list_type(PNML.refplace_type) # hide
+```
 ```@example methods
 methods(PNML.refplace_type) # hide
 ```
-  - [`reftransition_type`](@ref)
+
+#### reftransition\_type(pntd)
+
+```@docs; canonical=false
+PNML.reftransition_type
+```
+```@example types
+list_type(PNML.reftransition_type) # hide
+```
 ```@example methods
 methods(PNML.reftransition_type) # hide
 ```
+
+### Value Types
+
+TBD
+
+
 
 !!! info "parse_sorttype is different"
     [`Parser.parse_sorttype`](@ref) is used to parse an XML <type> element.

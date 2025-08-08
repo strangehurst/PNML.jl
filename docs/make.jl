@@ -6,6 +6,9 @@ the_repo() =  if isempty(get(ENV, "DOCUMENTER_KEY", ""))
 else
     "/home/jeff/Jules/PNML"
 end
+
+DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
+
 #println("Build documentation, repo = $(to_repo())")
 mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/physics"]),
                            :tex => Dict("inlineMath" => [["\$", "\$"],
@@ -19,24 +22,26 @@ mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/physics"]),
 
 
 pages=[
-    "Petri Net Markup Language" => "pnml.md",
+    "Petri Net Markup Language" => "index.md",
     "Status"                    => "status.md",
-    "Layers of Abstraction"     => "layers.md",
-    "Labels"                    => "labels.md",
-    #"Subpackages" => "subpackages.md",
-    #"Intermediate Representation" => "IR.md",
-    "Type Hierarchies"          => "type_hierarchies.md",
-    "Interfaces"                => "interface.md",
-    "Math"                      => "mathematics.md",
-    "Default Values"            => "defaults.md",
-    #"Evaluate"                  => "evaluate.md",
-    "Parser"                    => "parser.md",
+    "Structure" => [
+        "Intermediate Representation" => "structure/layers.md",
+        "Petri Net Type Definition" => "structure/pntd.md",
+        "Labels"                    => "structure/labels.md",
+        "Traits"                    => "structure/traits.md",
+        "Type Hierarchies"          => "structure/type_hierarchies.md",
+        "Interfaces"                => "structure/interface.md",
+        "Math"                      => "structure/mathematics.md",
+        "Default Values"            => "structure/defaults.md",
+        "Parser"                    => "structure/parser.md",
+        "Enabling & Firing Rules"   => "structure/enabling_firing.md",
+    ],
     "Examples"                  => "examples.md",
     "Docstrings"                => "library.md",
-    "Index"                     => "index.md",
     "acknowledgments.md",
 ]
 #todo include("pages.jl")
+
 
 ################################################################################
 # Building HTML documentation with Documenter

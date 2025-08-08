@@ -22,7 +22,7 @@ There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
-It is a nonstandard extension to the ISO specification.
+It is a nonstandard extension to the ISO standard.
 
 [`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
 `HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.HLPetriNet`](@ref)).
@@ -96,7 +96,7 @@ Some 'other labels' can be accessed using: [`rate_value`](@ref), [`delay_value`]
 | Priority      | Transition | Firing order of enabled transitions.                |
 | Weight        | Transition | Firing tiebreaker.                                  |
 
-Note that *Rate*, *Priority* and *Weight* are not part of base specification.
+Note that *Rate*, *Priority* and *Weight* are not part of base standard.
 See [Unclaimed Labels](@ref)
 
 ```@example type
@@ -119,7 +119,7 @@ type_tree(PNML.PnmlException) # hide
 
 # Many-sorted Algebra Concepts
 
-The PNML Specification builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
+The PNML Standard builds the High-level Petri Net Graph as a layer using a Core layer (PnmlCore). The main feature of the HL layer (HLCore) is to require all annotation labels to have <text> and <structure> elements. All meaning is required to reside in a single child of <structure>. With the <text> for human/documentation use.
 
 Implemented so that it is mostly part of the PnmlCore implementation.
 At which level, both <text> and <structure> are optional.

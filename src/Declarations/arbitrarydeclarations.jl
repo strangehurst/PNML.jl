@@ -3,7 +3,7 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Arbitrary sorts that can be used for constructing terms are reserved for/supported by `HLPNG` in the pnml specification.
+Arbitrary sorts that can be used for constructing terms are reserved for/supported by `HLPNG` in the pnml standard.
 
 > ...arbitrary sorts and operators do not come with a definition of the sort or operation; they just introduce a new symbol.
 

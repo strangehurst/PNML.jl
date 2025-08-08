@@ -167,7 +167,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # Place any/all declarations in net-level DeclDict.
     # It is like we are flattening only the declarations.
     # Only the first <declaration> label's text and graphics will be preserved.
-    # Though what use graphics could add escapes me (and the specification).
+    # Though what use graphics could add escapes me (and the standard).
     decls = alldecendents(node, "declaration") # There may be none.
 
     # If there are multiple `<declaration>`s parsed the will share the DeclDict.
@@ -206,7 +206,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
             net.labels = add_label(net.labels, child, pntd, parse_context) # Net unclaimed label.
-            # The specification allows meta-models defined upon the core to define
+            # The standard allows meta-models defined upon the core to define
             # additional labels that conform to the Schema.
             # We use XMLDict as the parser for unclaimed labels (and anynet).
             #TODO mechanism for allowing new meta-models to provide specialized parsers

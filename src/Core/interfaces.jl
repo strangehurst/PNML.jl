@@ -291,53 +291,38 @@ Return reference transition matching `id`.
 """
 function reftransition end
 
-#--------------------------------------------
-#
-#--------------------------------------------
 """
-$(TYPEDSIGNATURES)
-"""
-function pnmlnet_type end
-
-"""
-$(TYPEDSIGNATURES)
-Type of Page.
+    page_type(x) -> Type(<:Page)
 """
 function page_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of Place.
+    place_type(x) -> Type(<:Place)
 """
 function place_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of TYransition.
+    transition_type(x) -> Type(<:Transition)
 """
 function transition_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of Arc.
+    arc_type(pntd) -> Type(<:Arc)
 """
 function arc_type end
 
 """
-$(TYPEDSIGNATURES)
-Tyoe of RefPlace.
+    refplace_type(x) -> Type(<:RefPlace)
 """
 function refplace_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of RefTransition.
+    reftransition_type(x) -> Type(<:RefTransition)
 """
 function reftransition_type end
 
 """
-$(TYPEDSIGNATURES)
-Type of `Condition`.
+    condition_type(x) -> Type(<:Condition)
 """
 function condition_type end
 
@@ -356,17 +341,17 @@ function term end
 
 
 """
-    inscription_type(pntd) -> Inscription
+    inscription_type(x) -> Type(<:Inscription)
 """
 function inscription_type end
 
 """
-    marking_type(pntd) -> Marking
+    marking_type(x) -> Type(<:Marking)
 """
 function marking_type end
 
 """
-$(TYPEDSIGNATURES)
+    coordinate_type(x) -> Type(Coordinate)
 """
 function coordinate_type end
 

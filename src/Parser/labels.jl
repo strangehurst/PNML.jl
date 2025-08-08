@@ -302,7 +302,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     isa(source(pit), Symbol) ||
         error("source is a $(nameof(typeof(target(pit)))), expected Symbol")
 
-    # The core PNML specification allows arcs from place to place, and transition to transition.
+    # The core PNML standard allows arcs from place to place, and transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
 
@@ -359,7 +359,7 @@ end
 
 # default inscription with sort of adjacent place
 function def_insc(netdata, source,::REFID, target::REFID, parse_context::ParseContext)
-    # Core PNML specification allows arcs from place to place & transition to transition.
+    # Core PNML standard allows arcs from place to place & transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
     place = PNML.adjacent_place(netdata, source, target)
