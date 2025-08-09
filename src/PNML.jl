@@ -88,10 +88,8 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
 import Multisets: Multisets, Multiset
-#~import StyledStrings
-import Moshi
-using Moshi.Match: @match
-using Moshi.Data: @data
+import Moshi.Match: @match
+import Moshi.Data: @data
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface

@@ -1,7 +1,7 @@
 name = "experiments"
 uuid = "9fc845e6-562d-4608-8fa7-d07eea680ea8"
-authors = ["Jeff <strangehurst@gmail.com>"]
 version = "0.1.0"
+authors = ["Jeff <strangehurst@gmail.com>"]
 
 [deps]
 Metatheory = "e9d8d322-4543-424a-9be4-0cc815abe26c"
@@ -9,6 +9,9 @@ ScopedValues = "7e506255-f358-4e82-b7e4-beb19740aa63"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
+
+[sources]
+Metatheory = {rev = "ale/3.0", url = "https://github.com/JuliaSymbolics/Metatheory.jl.git"}
 
 [compat]
 Metatheory = "2, 3"

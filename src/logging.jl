@@ -1,3 +1,4 @@
+using SciMLLogging
 using Logging
 
 # function add_datetime_logger(logger)
