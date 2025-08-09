@@ -173,3 +173,29 @@ an "extension of P/T nets" used by MCC:
 
 
  "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"
+
+
+C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95, doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
+
+[Contexts.jl](https://github.com/cgutsche/Contexts.jl) is not registered.
+May not run as I cannot (as of 2025-08-08) find the file "PetriNetTypeDef.jl".
+They just did a "Big Change" last week. No obvious input file format detected in the code.
+
+[DistributedWorkflows.jl](https://github.com/FiroozehDastur/DistributedWorkflows.jl)
+Does not use a Petri net input file. Constructs one internally?
+Uses [GPI-Space](https://www.gpi-space.de) where Petri nets are represented in a
+XML format called XPNET that embedds C++ code fragments.
+
+[BioSimulator.jl](https://github.com/alanderos91/BioSimulator.jl) uses a simple internal
+species-reaction Petri net.
+
+[Dialectica Petri nets](https://arxiv.org/pdf/2105.12801)  Finally we would like to investigate whether we could
+code our nets using Catlab https://github.com/AlgebraicJulia/Catlab.jl.
+[Linear Logic Flavoured Composition of Petri Nets](https://golem.ph.utexas.edu/category/2020/07/linear_logic_flavoured_composi.html).
+
+[Snoopy](https://www-dssz.informatik.tu-cottbus.de/DSSZ/Software/Snoopy#imexport)
+   - PNML ⇒ QPN, QPNc
+   - PNML support, except export of QPNc in Snoopy to High-Level Petri Nets in PNML (upcomming)
+   - place/transition Petri net - QPN
+   - colored qualitative Petri net - QPNc
+   - extended Petri net (read / inhibitor / equal / reset / marking-dependent arcs) - XPN
