@@ -1,24 +1,3 @@
-#=
-using PNML, EzXML, JET, AbstractTrees, PrettyTables
-using PNML:
-    Maybe, tag, labels, firstpage, first_net, nettype,
-    PnmlNet, Page, pages, pid,
-    arc, arcs, place, places, transition, transitions,
-    refplace, refplaces, reftransition, reftransitions,
-    place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,
-    flatten_pages!, nets,
-    place_type, transition_type, arc_type, refplace_type, reftransition_type,
-    initial_markings,
-    arc_type, place_type, transition_type,
-    condition_type, condition_value_type,
-    sort_type,
-    inscription_type, inscription_value_type,
-    marking_type, marking_value_type, page_type, refplace_type, reftransition_type,
-    rate_value_type,
-    default_inscription,
-    default_marking,
-    default_condition,
-=#
 using Printf
 
 function showme(net) #TODO iterate on nets
