@@ -4,6 +4,7 @@ using DocStringExtensions
 using NamedTupleTools
 using Logging, LoggingExtras
 using Moshi.Match: @match
+using SciMLLogging: @SciMLMessage
 
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals

@@ -1,9 +1,10 @@
 module Labels
-using Base.ScopedValues
+
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
 using Logging, LoggingExtras
+using SciMLLogging: @SciMLMessage
 
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals

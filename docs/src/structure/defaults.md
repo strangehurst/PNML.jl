@@ -56,7 +56,6 @@ methods(PNML.Labels.default) # hide
 ## Examples
 ```@meta
 DocTestSetup = quote
-    using Base.ScopedValues
     using PNML
     using PNML.Labels: Condition, default
     using PNML: SortType, UserSort, IntegerSort, DotSort,

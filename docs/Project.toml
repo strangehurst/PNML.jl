@@ -8,6 +8,7 @@ Metatheory = "e9d8d322-4543-424a-9be4-0cc815abe26c"
 NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+SciMLLogging = "a6db7da4-7206-11f0-1eab-35f2a5dbe1d1"
 
 [sources]
 Metatheory = {rev = "ale/3.0", url = "https://github.com/JuliaSymbolics/Metatheory.jl.git"}

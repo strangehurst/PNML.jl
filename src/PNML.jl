@@ -59,11 +59,8 @@ Base.@kwdef mutable struct PnmlConfig
     warn_on_unimplemented::Bool = false
 end
 
-using Base.ScopedValues
-
-# Make the global `CONFIG` a `ScopedValue`.
 "See [`PnmlConfig`](@ref) for default values."
-const CONFIG = ScopedValue(PnmlConfig()) # = PnmlConfig()
+const CONFIG = Ref(PnmlConfig())
 
 include("preferences.jl")
 
@@ -77,7 +74,7 @@ end
 
 import AutoHashEquals: @auto_hash_equals
 import Base: eltype, keys
-import Base: *, (+), (-), (<), (>),(>=), (<=), zero, length, iterate
+import Base: *, +, -, <, >,>=, <=, zero, length, iterate
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
@@ -90,6 +87,7 @@ import XMLDict
 import Multisets: Multisets, Multiset
 import Moshi.Match: @match
 import Moshi.Data: @data
+import SciMLPublic: @public
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface
@@ -110,18 +108,17 @@ export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, Arbitrar
 export decldict
 export @xml_str, xmlroot
 
-public pnmlmodel
-public PnmlException, MissingIDException, MalformedException
-public usersort, namedsort
-public labelof
+@public pnmlmodel
+@public PnmlException, MissingIDException, MalformedException
+@public usersort, namedsort
+@public labelof
 
 Multisets.set_key_value_show()
 
 include("logging.jl")
-pnml_logger = Ref(logger_for_pnml(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
+pnml_logger = Ref(logger_for_pnml) #(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
 
-#global_logger(pnml_logger[])
-#@info """global logger\n$(current_logger())"""
+global_logger(pnml_logger[])
 
 include("PnmlTypes.jl")
 using .PnmlTypes
@@ -141,7 +138,7 @@ include("Core/types.jl") # Abstract Types with docstrings.
 
 include("Core/toolparser.jl")
 include("Core/labelparser.jl")
-
+verbose
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
 """

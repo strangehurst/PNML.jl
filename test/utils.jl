@@ -1,8 +1,10 @@
 using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
+using SciMLLogging: SciMLLogging, @SciMLMessage
 import EzXML
 
 @testset "CONFIG" begin
     @show PNML.CONFIG[]
+    #@SciMLMessage  repr(PNML.CONFIG[]) PNML.verbose :information :options
 end
 
 @testset "ExXML" begin

@@ -11,13 +11,14 @@ import EzXML
 import XMLDict
 import Multisets: Multisets, Multiset
 
-using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
 using Moshi.Match: @match
+using SciMLLogging: @SciMLMessage
+using SciMLPublic: @public
 
 using PNML
 using ..Expressions
@@ -63,6 +64,6 @@ include("toolspecific.jl")
 export XMLNode, xmlroot, @xml_str
 export pnmlmodel
 
-public deduce_sort
+@public deduce_sort
 
 end

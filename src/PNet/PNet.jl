@@ -1,12 +1,12 @@
 module PNet
 
-using Base.ScopedValues
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
 using LabelledArrays #Todo beware namespace pollution
+using SciMLLogging: @SciMLMessage
 
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import Base: eltype

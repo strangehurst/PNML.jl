@@ -4,9 +4,10 @@ Petri Net Markup Language identifier registry.
 module PnmlIDRegistrys
 using Preferences
 using DocStringExtensions
+import SciMLPublic: @public
 
 export PnmlIDRegistry, register_id!, isregistered
-public reset_reg!
+@public reset_reg!
 using Base: Base.IdSet
 import Base: eltype
 
