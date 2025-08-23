@@ -72,55 +72,6 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 # # TODO Adopt a forwarder?
 # # ! TODO SEE if there is a need for much forwarding.
 # #------------------------------------------------------------------------------------------
-# name(petrinet::AbstractPetriNet)           = PNML.name(pnmlnet(petrinet))
-# places(petrinet::AbstractPetriNet)         = PNML.places(pnmlnet(petrinet))
-# transitions(petrinet::AbstractPetriNet)    = PNML.transitions(pnmlnet(petrinet))
-# arcs(petrinet::AbstractPetriNet)           = PNML.arcs(pnmlnet(petrinet))
-# refplaces(petrinet::AbstractPetriNet)      = PNML.refPlaces(pnmlnet(petrinet))
-# reftransitions(petrinet::AbstractPetriNet) = PNML.refTransitions(pnmlnet(petrinet))
-
-# npages(pn::AbstractPetriNet)          = PNML.npages(pnmlnet(pn))
-# nplaces(pn::AbstractPetriNet)         = PNML.nplaces(pnmlnet(pn))
-# ntransitions(pn::AbstractPetriNet)    = PNML.ntransitions(pnmlnet(pn))
-# narcs(pn::AbstractPetriNet)           = PNML.narcs(pnmlnet(pn))
-# nrefplaces(pn::AbstractPetriNet)      = PNML.nrefplaces(pnmlnet(pn))
-# nreftransitions(pn::AbstractPetriNet) = PNML.nreftransitions(pnmlnet(pn))
-
-# #------------------------------------------------------------------
-# "Return pnmlnet's place_idset"
-# place_idset(petrinet::AbstractPetriNet)           = PNML.place_idset(pnmlnet(petrinet))
-# has_place(petrinet::AbstractPetriNet, id::Symbol) = PNML.has_place(pnmlnet(petrinet), id)
-# place(petrinet::AbstractPetriNet, id::Symbol)     = PNML.place(pnmlnet(petrinet), id)
-
-# initial_marking(petrinet::AbstractPetriNet, id::Symbol) = PNML.initial_marking(pnmlnet(petrinet), id)
-
-# #------------------------------------------------------------------
-# transition_idset(petrinet::AbstractPetriNet)           = PNML.transition_idset(pnmlnet(petrinet))
-# has_transition(petrinet::AbstractPetriNet, id::Symbol) = PNML.has_transition(pnmlnet(petrinet), id)
-# transition(petrinet::AbstractPetriNet, id::Symbol)     = PNML.transition(pnmlnet(petrinet), id)
-
-# condition(petrinet::AbstractPetriNet, id::Symbol)      = PNML.condition(pnmlnet(petrinet), id)
-
-# #------------------------------------------------------------------
-# arc_idset(petrinet::AbstractPetriNet)            = PNML.arc_idset(pnmlnet(petrinet))
-# has_arc(petrinet::AbstractPetriNet, id::Symbol)  = PNML.has_arc(pnmlnet(petrinet), id)
-# arc(petrinet::AbstractPetriNet, id::Symbol)      = PNML.arc(pnmlnet(petrinet), id)
-
-# all_arcs(petrinet::AbstractPetriNet, id::Symbol) = PNML.all_arcs(pnmlnet(petrinet), id)
-# src_arcs(petrinet::AbstractPetriNet, id::Symbol) = PNML.src_arcs(pnmlnet(petrinet), id)
-# tgt_arcs(petrinet::AbstractPetriNet, id::Symbol) = tPNML.gt_arcs(pnmlnet(petrinet), id)
-
-# "Forward inscription lookup to `pnmlnet`"
-# inscription(petrinet::AbstractPetriNet, arc_id::Symbol) = PNML.inscription(pnmlnet(petrinet), arc_id)
-
-# #------------------------------------------------------------------
-# refplace_idset(petrinet::AbstractPetriNet)            = PNML.refplace_idset(pnmlnet(petrinet))
-# has_refplace(petrinet::AbstractPetriNet, id::Symbol)  = PNML.has_refplace(pnmlnet(petrinet), id)
-# refplace(petrinet::AbstractPetriNet, id::Symbol)      = PNML.refplace(pnmlnet(petrinet), id)
-
-# reftransition_idset(petrinet::AbstractPetriNet)       = PNML.reftransition_idset(pnmlnet(petrinet))
-# has_reftransition(petrinet::AbstractPetriNet, id::Symbol) = PNML.has_reftransition(pnmlnet(petrinet), id)
-# reftransition(petrinet::AbstractPetriNet, id::Symbol) = PNML.reftransition(pnmlnet(petrinet), id)
 
 
 #####################################################################################
@@ -128,38 +79,36 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 #####################################################################################
 
 """
-    inscriptions(petrinet::AbstractPetriNet) -> LVector[pid(arc) => inscription(arc)]
+    inscriptions(petrinet::AbstractPetriNet) -> [pid(arc) => inscription(arc)]
 """
 function inscriptions end #TODO! non-ground terms
-inscriptions(petrinet::AbstractPetriNet) = LVector(; collect(PNML.inscriptions(pnmlnet(petrinet)))...)
+inscriptions(petrinet::AbstractPetriNet) = PNML.inscriptions(pnmlnet(petrinet))
 
 function conditions end #TODO! non-ground terms
-conditions(petrinet::AbstractPetriNet)  = LVector(; collect(conditions(pnmlnet(petrinet)))...)
+conditions(petrinet::AbstractPetriNet)  = conditions(pnmlnet(petrinet))
 
 
 
 """
-    rates(petrinet::AbstractPetriNet) -> LVector[id(transition) => rate_value(transition)]
+    rates(petrinet::AbstractPetriNet) -> [id(transition) => rate_value(transition)]
 
-Return a transition-id labelled vector of rate values.
+Return a vector of transition_id=>rate_value.
 
 We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
 """
-function rates(petrinet::AbstractPetriNet) #TODO move "lvector tools" section
-    net = pnmlnet(petrinet)
-    LVector((;[tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]...))
+function rates end
+rates(petrinet::AbstractPetriNet) = rates( pnmlnet(petrinet))
+function rates(net::PnmlNet)
+    [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
 end
 # rate label implements the PnmlLabel interface.
 # Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
 # Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
-    initial_markings(petrinet) -> LVector{value_type(marking)}
+    initial_markings(petrinet) -> Tuple{Pair{id(place),value_type(marking(place))}
 
-LVector labelled with place id and holding initial marking's value.
-Used to create a vector of place markings indexed by place ID.
-
-#TODO refactor from LVector to tuples of pairs.
+Tuple of Pair(place_id, initial_marking value).
 
 High-level P/T Nets use cardinality of its multiset place marking value.
 Really, the implementation should be the same as for PTNet.
@@ -171,18 +120,21 @@ function initial_markings end #TODO move "lvector tools" section
 initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet))
 
 function initial_markings(net::PnmlNet)
-    LVector((;[id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...))
+    #^ AlgebraicJulia uses vector of pairs not LVector
+    #! LVector((;[id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...))
+    #![id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]
+    [initial_marking(p)::Number for p in PNML.places(net)]
 end
 
 # PT_HLPNG multisets of dotconstants map well to integer via cardinality.
 function initial_markings(net::PnmlNet{PT_HLPNG})
-    LVector((;[id => PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for (id,p) in pairs(PNML.placedict(net))]...))
+    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
 end
 
-#! Other HL need it to be treated as multiset, not simple numbers!
+#! Other HL nets need it to be treated as multiset, not simple numbers!
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
     # Evaluate the ground term expression into a multiset.
-    LVector((;[id => initial_marking(p)::PnmlMultiset for (id,p) in pairs(PNML.placedict(net))]...))
+    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
 end
 
 #####################################################################################

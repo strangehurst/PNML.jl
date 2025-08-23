@@ -9,31 +9,47 @@ Values are inscriptions of the arc.
 # keys are transition ids
 # values are tuple of input, output labeled vectors,
 # label is source or target place id - inscription (integer?)
-
-```julia
-tfun = LVector(
-    birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
-    predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
-    death=(LVector(wolves=1.0), LVector()),
-)
-
-Vector{Tuple{Dict{Symbol, Number},Dict{Symbol, Number}}
-
-Δ = 3-element LabelledArrays.LArray{Tuple{LabelledArrays.LArray{Float64, 1, Vector{Float64}},
-                                          LabelledArrays.LArray{T, 1, D} where {T, D<:AbstractVector{T}}},
-                                    1,
-                 Vector{Tuple{LabelledArrays.LArray{Float64, 1, Vector{Float64}},
-                              LabelledArrays.LArray{T, 1, D}  where {T, D<:AbstractVector{T}}}},
-(:birth, :predation, :death)}:
-
-[tid => ([src=>inscription], [tgt=>inscription])]
-```
 """
 function transition_function end
 
 transition_function(petrinet::AbstractPetriNet) = transition_function(pnmlnet(petrinet))
 transition_function(net::PnmlNet) =
-    LVector((;[tid => in_out(net, tid) for tid in PNML.transition_idset(net)]...))
+    [tid => in_out(net, tid) for tid in PNML.transition_idset(net)]
+
+"""
+    labeled_places(net::PnmlNet)
+
+Return Vector of place_id=>marking_value.
+"""
+function labeled_places end
+
+labeled_places(petrinet::AbstractPetriNet) = labeled_places(pnmlnet(petrinet))
+
+function labeled_places(net::PnmlNet, markings=initial_markings(net))
+    # create vector place_id=>marking_value
+    # initial_markings(net) becomes vector of marking_value
+    [k=>v for (k,v) in zip(map(pid, PNML.places(net)), markings)]
+end
+
+
+"""
+    labeled_transitions((net::PnmlNet)) -> `(t_name=>t_rate)=>((input_states)=>(output_states))`
+
+Iterates over transitions producing a pair for each tansition :=
+    `Pair{Pair{Symbol,Number}, Pair{Tuple,Tuple}}`
+where the Symbol is the transition ID, Number is the rate value and the Tuples are place IDs.
+"""
+function labeled_transitions end
+
+labeled_transitions(petrinet::AbstractPetriNet) = labeled_transitions(pnmlnet(petrinet))
+
+function labeled_transitions(net::PnmlNet)
+    Iterators.map(PNML.transitions(net)) do tr
+        in_states = tuple(PNML.preset(net, pid(tr))...) # states are places
+        out_states = tuple(PNML.postset(net, pid(tr))...)
+        Pair(pid(tr)=>PNML.rate_value(tr), in_states=>out_states)
+    end
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -43,9 +59,9 @@ value of arc inscription's value for use as a transition function.
 #TODO When do these get called "pre" and "post"?
 """
 function in_out end
-in_out(net::PnmlNet, transition_id) = (ins(net, transition_id), outs(net, transition_id))
-# Look in the PnmlNet
 in_out(petrinet::AbstractPetriNet, transition_id) = in_out(pnmlnet(petrinet), transition_id)
+in_out(net::PnmlNet, transition_id) = (in_inscriptions(net, transition_id),
+                                       out_inscriptions(net, transition_id))
 
 """
     ins(net, transition_id) -> LVector
@@ -86,4 +102,24 @@ function out_inscriptions(net::PnmlNet, transitionid)
         a = PNML.arc(net, transitionid, placeid)
         PNML.target(a) => PNML.inscription(a)(NamedTuple())
     end
+end
+
+#! FROM AlgebraicPetri.jl uses whole grained petri nets
+"""
+    TransitionMatrices
+
+This data structure stores the transition matrix of an Petri net object.
+This is primarily used for constructing the vectorfield representation of the
+Petri net.
+
+These are matrices of inscription `value_type`
+"""
+struct TransitionMatrices{T<:Number} #Int except for ContinuousNet where it is Float64
+    input::Matrix{T}
+    output::Matrix{T}
+end
+function TransitionMatrices(p::PnmlNet)
+    input  = input_matrix(p)
+    output = output_matrix(p)
+    TransitionMatrices(input, output)
 end

@@ -106,14 +106,7 @@ str1 = """
 
     # PetriNet-only methods.
     @testset "initialMarking" begin
-        u1 = @inferred LArray initial_markings(simp)
-        #!u2 = @inferred LArray initial_markings(simp.net)
-        #!u3 = @inferred LArray initial_markings(first(pages(simp.net)))
-
-        #@test u1 == u2
-        #@test u1 == u3
-        #@test typeof(u1) == typeof(u2)
-        #@test typeof(u1) == typeof(u3)
+        u1 = @inferred Vector initial_markings(simp)
     end
 end
 
@@ -162,9 +155,10 @@ end
     simp = @inferred PNML.SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
     β = PNML.PNet.rates(simp)
-    #@show β
-    @test β == LVector(birth=0.3)
+    @show β
+    @test β == [:birth=>0.3]
 end
+
 
 @testset "lotka-volterra" begin
     str3 = """<?xml version="1.0"?>
@@ -190,42 +184,77 @@ end
     net1 = first(nets(model));          #@show typeof(net1)
     simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
 
-    S = @inferred collect(PNML.place_idset(simp.net)) # [:rabbits, :wolves]
-    T = @inferred collect(PNML.transition_idset(simp.net))
-    @show m₀ = PNML.initial_markings(simp.net) #::LVector
-    @show PNML.input_matrix(simp.net, m₀) # needs marking
-    @show PNML.output_matrix(simp.net, m₀)
+    @show S = @inferred collect(PNML.place_idset(simp.net)) # [:rabbits, :wolves]
+    @show T = @inferred collect(PNML.transition_idset(simp.net))
+    @show m₀ = PNML.initial_markings(simp.net)
+    @show input = PNML.input_matrix(simp.net)
+    @show PNML.output_matrix(simp.net)
+    @show dt = PNML.incidence_matrix(simp.net)
+
+    @show PNML.enabled(simp.net, m₀)
+
     #@show PNML.conditions(simp.net)
     #@show PNML.inscriptions(simp.net)
-    println("all arcs = ", collect(PNML.all_arcs(simp.net, :wolves)))
-    println("src arcs = ", collect(PNML.src_arcs(simp.net, :wolves)))
-    println("tgt arcs = ", collect(PNML.tgt_arcs(simp.net, :wolves)))
+    println("all arcs :wolves = ", collect(PNML.all_arcs(simp.net, :wolves)))
+    println("src arcs :wolves = ", collect(PNML.src_arcs(simp.net, :wolves)))
+    println("tgt arcs :wolves = ", collect(PNML.tgt_arcs(simp.net, :wolves)))
 
-    # keys are transition ids
-    # values are input, output vectors of "tuples" place id -> inscription of arc
-    Δ = PNML.PNet.transition_function(simp.net)#,T)
-    @show S T Δ
+    # # keys are transition ids
+    # # values are input, output vectors of "tuples" place id -> inscription of arc
+    # Δ = PNML.PNet.transition_function(simp.net)#,T)
+    # @show Δ
+    # println()
 
-    # Expected result
-    expected_transition_function = LVector(
-        birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
-        predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
-        death=(LVector(wolves=1.0), LVector()),
-    )
+    # # Expected result
+    # expected_transition_function = LVector(
+    #     birth=(LVector(rabbits=1.0), LVector(rabbits=2.0)),
+    #     predation=(LVector(wolves=1.0, rabbits=1.0), LVector(wolves=2.0)),
+    #     death=(LVector(wolves=1.0), LVector()),
+    # )
 
-    #@test typeof(Δ)   <: typeof(expected_transition_function)
-    @show Δ.birth     == expected_transition_function.birth
-    @show Δ.predation == expected_transition_function.predation
-    @show Δ.death     == expected_transition_function.death
+    # @test Δ.birth     == expected_transition_function.birth
+    # @test Δ.predation == expected_transition_function.predation
+    # @test Δ.death     == expected_transition_function.death
 
-    uX = LVector(wolves=10.0, rabbits=100.0) # initialMarking
+    expected_u0 = [10.0, 100.0] # initialMarking
     @show u0 = PNML.initial_markings(simp.net)
-    @test u0 == uX
+    @test u0 == expected_u0
 
-    βx = LVector(birth=0.3, predation=0.015, death=0.7); # transition rate
+    expected_β = [:birth=>0.3, :predation=>0.015, :death=>0.7] # transition rate
     β = PNet.rates(simp)
     @show β
-    @test β == βx
+    @test β == expected_β
+
+    println()
+    let net = simp.net
+        @show du = map(last, PNML.initial_markings(simp.net))
+        #map(last, collect(du))
+        @show valtype(du)
+        @show rates = zeros(valtype(du), ntransitions(net)) # φ in paper
+        # φ = [βₜ Σ\_(s∈r(t)) uₛ for t in preset(net, transition_id)]
+        # r : T → N^S is preset(net, transition_id)
+        # p : S → N^T is preset(net, place_id)
+        # r^-1 : S → N^T is preset(net, place_id)
+
+        for (i, t) in enumerate(transitions(net))
+            @show PNML.rate_value(t)
+            @show [pid(p) for (j,p) in enumerate(places(net))]
+            @show collect(PNML.preset(net, pid(t)))
+            @show collect(PNML.postset(net, pid(t)))
+            for (j,p) in enumerate(places(net))
+                @show collect(PNML.preset(net, pid(p)))
+                @show collect(PNML.postset(net, pid(p)))
+            end
+            @show [pid(p) for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t))]
+            rates[i] = PNML.rate_value(t) * prod(initial_marking(p) ^ input[i, j]
+                for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t)))
+        end
+        @show rates
+        for j in 1:nplaces(net)
+            du[j] = sum(rates[i] * dt[i, j] for i in 1:ntransitions(net); init=0.0)
+        end
+        @show du
+    end
 end
 
 using Graphs, MetaGraphsNext
@@ -235,8 +264,8 @@ const core_types = ("pnmlcore","ptnet",)
 @warn "hl nets do not currently do linear algebra! 'fire' will error."
 const hl_types = ("pt_hlpng",) # ("hlcore","symmetric") #,"pt_hlpng","hlnet",)
 const ex_types = ("continuous",)
+
 @testset "extract a graph $pntd" for pntd in tuple(core_types..., hl_types..., ex_types...)
-    # println("\n#-------\n# extract a graph $pntd \n#-------"); flush(stdout) #! debug
     if pntd in hl_types
         marking = """
         <hlinitialMarking>
@@ -304,18 +333,12 @@ const ex_types = ("continuous",)
         </net>
     </pnml>
     """
-    #@show str3
     anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
-    #println("==================================")
-    #@show anet
     mg = PNML.metagraph(anet.net)
 
-    flush(stdout)
-
     m₀ = PNML.initial_markings(anet.net) #::LVector
-    C  = PNML.incidence_matrix(anet.net, m₀) # Matrix of PnmlMultiset
+    C  = PNML.incidence_matrix(anet.net) # Matrix of PnmlMultiset
     e  = PNML.enabled(anet.net, m₀)
-    #println("==================================")
 
     @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]

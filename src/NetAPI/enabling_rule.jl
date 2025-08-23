@@ -101,18 +101,47 @@ Update tr.vars Set and tr.varsubs NamedTuple.
 """
 function enabled end
 
-# AlgebraicJulia want(s,ed) LabelledPetriNet constructed with
-# with Varargs pairs of transition_name=>((input_states)=>(output_states))
-# example LabelledPetriNet([:S, :I, :R], :inf=>((:S,:I)=>(:I,:I)), :rec=>(:I=>:R))
-
-function enabled(net::PnmlNet, marking)
+function enabled(net::PnmlNet, marking) #!::Vararg{Union{Pair,Tuple}})
     varsub = NamedTuple() # There are no varibles possible here.
-    Bool[all(p -> marking[p] >= inscription(arc(net,p,t))(varsub),
-                                        PNML.preset(net, t)) for t in transition_idset(net)]
+    @show marking # vector or tuple with element per place
+    #@show placeid = map(first, collect(marking))
+    #@show mark_value = map(last, collect(marking))
+    @show d = Dict(labeled_places(net, marking))
+    # @show transition_idset(net)
+    # for t  in transition_idset(net)
+    #     @show tuple(PNML.preset(net, t)...)
+    # end
+    # states = map(first, collect(marking))
+
+    println()
+    evector = Bool[]
+    for tr in transitions(net)
+        trid = pid(tr)
+        enabled = true # Assume all transitions possible.
+        #@show tuple(PNML.preset(net, trid)...)
+        #@show [arc(net, p, trid) for p in PNML.preset(net, trid)]
+        #println()
+        #@show [p for p in PNML.preset(net, trid)]
+        #@show [inscription(arc(net, p, trid)) for p in PNML.preset(net, trid)]
+        #println()
+        #@show [PNML.preset(net, trid)...]
+        #@show [d[p] for p in PNML.preset(net, trid)]
+        #println()
+
+        e = all(d[p] >= inscription(arc(net,p,trid))(varsub) for p in PNML.preset(net, trid))
+        push!(evector, e)
+        #println()
+    end
+    #println()
+    @show evector
+    return evector
+    # Bool[all(p -> d[p] >= inscription(arc(net,p,t))(varsub),
+    #                                     PNML.preset(net, t)) for t in transition_idset(net)]
 end
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     evector = Bool[]
+    @show mark_dict = Dict(labeled_places(net, marking))
     for tr in transitions(net)
         trid = pid(tr)
         enabled = true # Assume all transitions possible.
@@ -131,7 +160,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
         # Get transition variable substitution from preset arcs.
         for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
             placeid   = source(ar) # adjacent place
-            mark      = unwrap_pmset(marking[placeid]) #! Possibly extract a singlton.
+            @show mark      = unwrap_pmset(mark_dict[placeid]) #! Possibly extract a singlton.
             arc_vars  = Multiset(Labels.variables(inscription(ar))...) # Count variables.
             #! No-variable arcs must still be tested for place marking >= inscription & condition.
             isempty(arc_vars) ||
@@ -154,13 +183,13 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
             #! 2st stage of enabling rule has succeded. (place marking >= inscription)
             for arc in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
                 placeid   = source(arc) # adjacent place
-                mark      = marking[placeid]
+                @show mark      = mark_dict[placeid]
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
                 # Condition evaluates to `true`
                 if isempty(tr.vars) # 0-ary operators
                     # This includes the non-HL net types that do not have variables.
-                    inscription_val = _cvt_inscription_value(pntd(net), arc,
+                    @show inscription_val = _cvt_inscription_value(pntd(net), arc,
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
