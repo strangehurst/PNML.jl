@@ -27,8 +27,10 @@ using ..Declarations
 import PNML: initial_marking, PnmlMultiset, pid
 import PNML: metagraph
 import PNML: ToolParser, LabelParser
+import PNML: input_matrix, output_matrix
 
-export AbstractPetriNet, SimpleNet, initial_markings
+export AbstractPetriNet, SimpleNet, initial_markings, input_matrix, output_matrix
+export transition_function, rates, pnmlnet, labeled_places, labeled_transitions
 
 include("petrinet.jl")
 include("transition_function.jl")

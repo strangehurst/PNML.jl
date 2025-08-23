@@ -128,22 +128,15 @@ end
 ########################################################################################
 # firing rule
 ########################################################################################
-"""
-    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-
-Create and return a matrix ntransitions x nplaces.
-"""
-function input_matrix end
-function input_matrix(net::PnmlNet, marking)
+function input_matrix(net::PnmlNet)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
     ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), pntd(net))
     imatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
-    return input_matrix!(imatrix, net, marking) # Dispatch on net type.
+    return input_matrix!(imatrix, net) # Dispatch on net type.
 end
 
 #! Default `<:Number`
-function input_matrix!(imatrix, net::PnmlNet, marking)
+function input_matrix!(imatrix, net::PnmlNet)
     varsub = NamedTuple() # PT_HLPNG  is only supported High-level net here
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(PNML.place_idset(net))
@@ -155,20 +148,13 @@ function input_matrix!(imatrix, net::PnmlNet, marking)
 return imatrix
 end
 
-"""
-    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-
-Create and return a matrix ntransitions x nplaces.
-"""
-function output_matrix end
-function output_matrix(net::PnmlNet, marking)
+function output_matrix(net::PnmlNet)
     ivt = pntd(net) isa PT_HLPNG ? Int : value_type(inscription_type(pntd(net)), pntd(net))
     omatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
-    return output_matrix!(omatrix, net, marking) # Dispatch on net type.
+    return output_matrix!(omatrix, net) # Dispatch on net type.
 end
 
-function output_matrix!(omatrix, net::PnmlNet, marking)
+function output_matrix!(omatrix, net::PnmlNet)
     varsub = NamedTuple()
     for (t, transition_id) in enumerate(transition_idset(net))
         for (p, place_id) in enumerate(PNML.place_idset(net))
@@ -181,7 +167,7 @@ return omatrix
 end
 
 """
-    incidence_matrix(petrinet, marking) -> LArray
+    incidence_matrix(petrinet) -> LArray
 
 When token identity is collective, marking and inscription values are Numbers and matrix
 `C[arc(transition,place)] = inscription(arc(transition,place)) - inscription(arc(place,transition))`
@@ -193,25 +179,8 @@ Symmetric nets are restricted, and thus easier to deal with and reason about.
 """
 function incidence_matrix end
 
-# There will be
-function incidence_matrix(net::PnmlNet, marking) #{<:AbstractHLCore}, marking)
-    varsub = NamedTuple() #^ Here we support only PT_HLPNG
-    #! TODO use traits
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), typeof(pntd(net)))
-    C = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
-    for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id)  in enumerate(PNML.place_idset(net))
-            def = zero_marking(place(net, place_id)) # Match adjacent place sort.
-
-            tp_arc = arc(net, transition_id, place_id)
-            l = _cvt_inscription_value(pntd(net), tp_arc, def, varsub)::Number
-            pt_arc  = arc(net, place_id, transition_id)
-            r = _cvt_inscription_value(pntd(net), pt_arc, def, varsub)::Number
-
-            C[t, p] = l - r
-        end
-    end
-    return C
+function incidence_matrix(net::PnmlNet)
+    return output_matrix(net::PnmlNet) - input_matrix(net::PnmlNet)
 end
 
 # Vector{NamedTuple} cached in transition field.

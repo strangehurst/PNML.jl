@@ -453,3 +453,19 @@ function version end
 function parser_context end
 
 function fill_sort_tag! end
+
+"""
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+
+Create and return a matrix ntransitions x nplaces.
+"""
+function input_matrix end
+
+"""
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+
+Create and return a matrix ntransitions x nplaces.
+"""
+function output_matrix end

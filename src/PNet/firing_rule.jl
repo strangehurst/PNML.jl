@@ -11,9 +11,9 @@ find a transition with all input place marking >= arc inscription
         add tokens to outputs
 =#
 
-input_matrix(petrinet::AbstractPetriNet, marking) = input_matrix(pnmlnet(petrinet), marking)
-output_matrix(petrinet::AbstractPetriNet, marking) = output_matrix(pnmlnet(petrinet), marking)
-incidence_matrix(petrinet::AbstractPetriNet, marking) = incidence_matrix(pnmlnet(petrinet), marking)
+input_matrix(petrinet::AbstractPetriNet) = input_matrix(pnmlnet(petrinet))
+output_matrix(petrinet::AbstractPetriNet) = output_matrix(pnmlnet(petrinet))
+incidence_matrix(petrinet::AbstractPetriNet) = incidence_matrix(pnmlnet(petrinet))
 
 enabled(petrinet::AbstractPetriNet, marking) = enabled(pnmlnet(petrinet), marking)
 
