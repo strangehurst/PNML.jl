@@ -133,7 +133,8 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             bt = Base.catch_backtrace()
 
             println("\n\nCAUGHT EXCEPTION:", sprint(showerror, e, bt)) # full backtrace to file
-            @info "CAUGHT EXCEPTION: $(sprint(showerror,e))"
+            @SciMLMessage("CAUGHT EXCEPTION: $(sprint(showerror,e))", PNML.verbose, :information, :options)
+
             #! Ignore first ^C, it serves to end processing of a single file.
             #! The "second" (is there a window of opurtunity?) should end the loop processing files.
             # e isa InterruptException && rethrow()
