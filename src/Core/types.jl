@@ -232,7 +232,7 @@ coordinate_type(pntd::PnmlType)    = coordinate_type(typeof(pntd))
 Return the Type of a label's value.
 """
 function value_type end
-value_type(::Type{T}, pntd::PnmlType) where {T <: AbstractLabel}= value_type(T, typeof(pntd))
+value_type(::Type{T}, pntd::PnmlType) where {T <: AbstractLabel} = value_type(T, typeof(pntd))
 
 ####################################################################
 # """

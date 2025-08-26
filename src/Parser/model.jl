@@ -122,7 +122,7 @@ function parse_net(node::XMLNode;
     #~ Evaluate expressions to create a mutable vector of markings.
     #todo API for using ToolInfo in expressions?
     #^ Marking vector is used in enabling and firing rules.
-    m₀ = PNML.PNet.initial_markings(net)
+    #m₀ = PNML.PNet.initial_markings(net)
 
     # ?Rewrite inscription and condition terms with variable substitution.
 
@@ -180,7 +180,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 
     PNML.Labels.validate_toolinfos(tools)
 
-    # Create empty net.
+    # Create empty net (with declarations, net-level toolinfos parsed).
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
                     page_set=PNML.page_idset(netsets), #! Not sorted!
@@ -189,11 +189,13 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
                     parse_context.idregistry
                     )
 
+    #! TODO add Ref(net) to parse_context
+
     # Fill the pagedict, netsets, netdata by depth first traversal of pages.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag in ["declaration", "name", "toolspecific"]
-            #println("net already parsed ", tag) #! debug
+            # println("net already parsed ", tag) #! debug
         elseif tag == "page"
             # All graph node content resides in page node trees.
             # Threre is always at least one page. A forest of multiple page trees is allowd.
@@ -235,7 +237,8 @@ Place `Page` in `pagedict` using id as the key.
 """
 function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
-    netsets = PnmlNetKeys() # Allocate per-page data.
+    # Allocate per-page data structures.
+    netsets = PnmlNetKeys()
     # Track which objects belong to this page.
     place_set      = PNML.place_idset(netsets)
     transition_set = PNML.transition_idset(netsets)
@@ -245,27 +248,10 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
 
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
-    # no tools for model
     labels::Maybe{Vector{PnmlLabel}}= nothing
     tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
 
     PNML.Labels.validate_toolinfos(tools)
-
-    # for p in allchildren(node, "place")
-    #     parse_place!(place_set, netdata, p, pntd; parse_context)
-    # end
-    # for rp in allchildren(node, "referencePlace")
-    #     parse_refPlace!(rp_set, netdata, rp, pntd; parse_context)
-    # end
-    # for t in allchildren(node, "transition")
-    #     parse_transition!(transition_set, netdata, t, pntd; parse_context)
-    # end
-    # for rt in allchildren(node, "referenceTransition")
-    #     parse_refTransition!(rt_set, netdata, rt, pntd; parse_context)
-    # end
-    # for a in allchildren(node, "arc")
-    #     parse_arc!(arc_set, netdata, a, pntd; parse_context)
-    # end
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)

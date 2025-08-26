@@ -355,7 +355,7 @@ methods(PNML.deref_transition)  # hide
 ```@example methods
 methods(PNML.initial_marking)  # hide
 ```
-### initial_markings - return LVector of marking values labeled by place id
+### initial_markings - return Vector of pairs
 [`initial_markings`](@ref)
 ```@example methods
 methods(PNML.initial_markings)  # hide

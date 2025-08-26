@@ -340,7 +340,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     return tj
 end
 
-function PNML.adjacent_place(netdata, source::REFID, target::REFID)
+function PNML.adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID)
     # Meta-model constraint for Petri nets is that arcs must be between place and transition.
     #
     if haskey(PNML.placedict(netdata), source)

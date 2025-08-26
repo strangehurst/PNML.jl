@@ -47,10 +47,6 @@ See also [`Inscription`](@ref) for non-high-level net inscriptions.
 
 `HLInscription(t::PnmlExpr)()` is a functor evaluating the expression and
 returns a value of the `eltype` of sort of inscription.
-
-# Examples
-    ins() isa eltype(sortof(ins))
-
 """
 struct HLInscription{T <: PnmlExpr, N} <: HLAnnotation
     text::Maybe{String}

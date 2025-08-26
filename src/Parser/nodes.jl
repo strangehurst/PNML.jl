@@ -196,6 +196,8 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
         end
     end
 
+    #TODO Does creating default values win over Maybe? for inscriptions?
+    #TODO There will be net meta-models that assume all inscriptions are 1 and omit the label.
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
             default(HLInscription, pntd,
