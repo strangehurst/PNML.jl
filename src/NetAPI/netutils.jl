@@ -1,6 +1,7 @@
 # PnmlNet Utilities.
 
-adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), source(a), target(a))
+adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), a)
+adjacent_place(netdata::PnmlNetData, a::Arc) = adjacent_place(netdata, source(a), target(a))
 
 #-----------------------------------------------------------------
 # Given x ∈ S ∪ T
@@ -17,7 +18,7 @@ Iterate ids of input (arc's source) for output transition or place `id`.
 See [`PNet.in_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
 """
 preset(net::PnmlNet, id::Symbol) = begin
-    Iterators.map(x -> source(arcdict(net)[x]), tgt_arcs(net, id))
+    Iterators.map(arcid -> source(arcdict(net)[arcid]), tgt_arcs(net, id))
 end
 
 # ISO 15909-1:2019 Concept 5 postcondition of a transition, postset or t•
@@ -29,7 +30,7 @@ Iterate ids of output (arc's target) for source transition or place `id`.
 See [`PNet.out_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
 """
 postset(net::PnmlNet , id::Symbol) = begin
-    Iterators.map(x -> target(arcdict(net)[x]), src_arcs(net, id))
+    Iterators.map(arcid -> target(arcdict(net)[arcid]), src_arcs(net, id))
 end
 
 
