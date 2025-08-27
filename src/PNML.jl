@@ -108,10 +108,10 @@ export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, Arbitrar
 export decldict
 export @xml_str, xmlroot
 
-@public pnmlmodel
+@public pnmlmodel, pnmlnet
 @public PnmlException, MissingIDException, MalformedException
 @public usersort, namedsort
-@public labelof
+@public labelof, transition_function, rates
 
 Multisets.set_key_value_show()
 
