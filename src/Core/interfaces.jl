@@ -426,8 +426,8 @@ function sortelements end
 
 
 """
-    adjacent_place(net::PnmlNet, id::Arc) -> Place
-    adjacent_place(netdata, source,::Symbol target::Symbol) -> Place
+    adjacent_place(net::PnmlNet, arc::Arc) -> Place
+    adjacent_place(netdata::PnmlNetData, source,::Symbol target::Symbol) -> Place
 
 Adjacent place of an arc is either the `source` or `target`.
 """
