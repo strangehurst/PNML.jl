@@ -43,42 +43,14 @@ function lotka(s::AbstractString=str)
     net = pnmlnet(snet)
 
     # **Step 1:** Define the states and transitions of the Petri Net
-    #
-    # Here we have 2 states, wolves and rabbits, and transitions to
-    # model predation between the two species in the system
 
-    #@show S = PNML.place_idset(net) # [:rabbits, :wolves]
-
-    # @show Δ = PNML.transition_function(net)
-    # keys are transition ids,
-    # values are tuple of input, output vectors
-    #       with keys of place id and values of inscription value .
-
-    #LVector(
-    #       birth=(LVector(rabbits=1), LVector(rabbits=2)),
-    #       predation=(LVector(wolves=1, rabbits=1), LVector(wolves=2)),
-    #       death=(LVector(wolves=1), LVector()),
-    #     )
-
-
-    # AlgebraicJulia wants LabelledPetriNet constructed with
-    # with Varargs pairs of transition_name=>((input_states)=>(output_states))
-
-    # LabelledReactionNet{Float64, Float64}([:S=>10,:I=>1,:R=>0], (:inf=>0.5)=>((:S,:I)=>(:I,:I)), (:rec=>0.1)=>(:I=>:R))
-    #
-    # vector of pairs place_id => marking_value
-    #
-    # Varargs pairs of (transition_name=>rate_value)=>((input_place_id tuple)=>(output_s_place_id tuple))
-    #
-    # Because AbstractPetri is based on whole-grain Petri nets
-    # it is assumed inscription valued are 1.
-
-    @show lp = collect(PNML.labeled_places(net))
-    @show lt = collect(PNML.labeled_transitions(net))
-    println()
+    lp = collect(PNML.labeled_places(net))
+    lt = collect(PNML.labeled_transitions(net))
+    ct = collect(PNML.counted_transitions(net))
 
     state_dict(n) = Dict(s => i for (i, s) in enumerate(n))
 
+    # Whole-grained Petri net requires all inscriptions === 1.
     p = AlgebraicPetri.LabelledReactionNet{Float64,Float64}()
 
     let n = lp
@@ -89,24 +61,28 @@ function lotka(s::AbstractString=str)
 
         AlgebraicPetri.add_species!(p, length(states), concentration=concentrations, sname=states)
 
-        println()
         for (i, ((name, rate), (ins, outs))) in enumerate(lt)
             println("$i:  (($name, $rate), ($ins, $outs)))", )
             i = AlgebraicPetri.add_transition!(p, rate=rate, tname=name)
-            AlgebraicPetri.add_inputs!(p, length(ins), repeat([i], length(ins)), map(x -> state_idx[x], collect(ins)))
-            AlgebraicPetri.add_outputs!(p, length(outs), repeat([i], length(outs)), map(x -> state_idx[x], collect(outs)))
+
+            # preset Iterators.map(x -> source(arcdict(net)[x]), tgt_arcs(net, id))
+            # preset Iterators.map(arcid -> source(arcdict(net)[arcid]), tgt_arcs(net, id))
+
+            # postset Iterators.map(x -> target(arcdict(net)[x]), src_arcs(net, id))
+
+            AlgebraicPetri.add_inputs!(p, length(ins),
+                repeat([i], length(ins)), map(x -> state_idx[x], collect(ins)))
+            AlgebraicPetri.add_outputs!(p, length(outs),
+                repeat([i], length(outs)), map(x -> state_idx[x], collect(outs)))
         end
-        println()
     end
-    println("---")
     #! lotka = Petri.Model(S, Δ)
     #! display(Petri.Graph(lotka))
-    @show lotka = p #AlgebraicPetri.LabelledReactionNet{Float64, Float64}(lp, lt...)
-                        #PNML.labeled_places(net), PNML.labeled_transitions(net)...)
-
-   display(to_graphviz(lotka))
+    return p
+    #display(to_graphviz(lotka(str)))
 end
-function stuff()
+
+function stuff(lotka)
     # display_uwd(ex) = to_graphviz(ex, box_labels=:name, junction_labels=:variable, edge_attrs=Dict(:len=>".75"));
     # display_uwd(lotka)
     println("---")
