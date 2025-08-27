@@ -13,6 +13,12 @@ const REFID = Symbol
 #--------------------------------------------------------------------------------------
 """
 $(TYPEDEF)
+"""
+abstract type AbstractPnmlNet end
+
+
+"""
+$(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 

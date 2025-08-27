@@ -202,7 +202,9 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             # Note that one can always flatten a multi-page PnmlNet to a single page
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
-            parse_page!(pagedict, netdata, netsets, child, pntd; parse_context) #
+            parse_page!(net, pagedict, netdata, netsets, child, pntd; parse_context) #
+
+
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: 'graphics'"
         else
@@ -220,22 +222,22 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 end
 
 "Call `parse_page!`, add page to dictionary and id set"
-function parse_page!(pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_page!(net::PnmlNet, pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
     pageid = register_idof!(parse_context.idregistry, node)
     push!(PNML.page_idset(netsets), pageid) # Record id before decending.
-    pg = _parse_page!(pagedict, netdata, node, pntd, pageid; parse_context)
+    pg = _parse_page!(net, pagedict, netdata, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
     pagedict[pageid] = pg
     return pagedict
 end
 
 """
-    _parse_page!(pagedict, netdata, node, pntd; ddict) -> Page
+    _parse_page!(net, pagedict, netdata, node, pntd; ddict) -> Page
 
 Place `Page` in `pagedict` using id as the key.
 """
-function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
+function _parse_page!(net::PnmlNet, pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     # Allocate per-page data structures.
     netsets = PnmlNetKeys()
@@ -269,7 +271,7 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
         #             "referencePlace", "referenceTransition", "toolspecific"]
         #     # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage
-            parse_page!(pagedict, netdata, netsets, child, pntd; parse_context)
+            parse_page!(net, pagedict, netdata, netsets, child, pntd; parse_context)
         elseif tag == "name"
             namelabel = parse_name(child, pntd; parse_context)
         elseif tag == "graphics"
@@ -280,10 +282,10 @@ function _parse_page!(pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
         end
     end
 
-    return Page(pntd, pageid, namelabel, graphics, tools, labels,
-                pagedict, # shared by net and all pages.
-                netdata,  # shared by net and all pages.
-                netsets,  # OrderedSet of ids "owned" by this page.
+    # TODO add net
+    return Page(; net=Ref(net), pntd=pntd, id=pageid,
+                namelabel=namelabel, graphics=graphics, tools=tools, labels=labels,
+                netsets=netsets,  # OrderedSet of ids "owned" by this page.
                 )
 end
 

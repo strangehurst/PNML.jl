@@ -4,21 +4,22 @@ $(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
 """
-@kwdef mutable struct PnmlNet{PNTD<:PnmlType, P, T, A, RP, RT}
+@kwdef mutable struct PnmlNet{PNTD<:PnmlType} <: AbstractPnmlNet
     type::PNTD
     id::Symbol
-    pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # Shared by pages, holds all pages.
+    pagedict::OrderedDict{Symbol, Page{PNTD}} # Shared by pages, holds all pages.
     netdata::PnmlNetData # Shared by pages, holds all places, transitions, arcs, refs
     page_set::OrderedSet{Symbol} # Unordered keys of pages in pagedict owned by this net.
-    # Top-level of a tree of Page ID keys into pagedict.
+    # Top-level of a tree of Page ID keys.
 
-    declaration::Declaration # Label with optional `Text` `Graphics`, `ToolInfo`.
+    declaration::Declaration # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
+
     namelabel::Maybe{Name} = nothing
     # no graphics for net
     tools::Maybe{Vector{ToolInfo}} = nothing
-    labels::Vector{PnmlLabel} = PnmlLabel[] #
+    labels::Vector{PnmlLabel} = PnmlLabel[] # empty by default
     idregistry::PnmlIDRegistry
 end
 
@@ -252,12 +253,12 @@ end
 #                                                       refplace_type(T),
 #                                                       reftransition_type(T)}
 
-page_type(::Type{T}) where {T<:PnmlType} = Page{T,
-                                                place_type(T),
-                                                transition_type(T),
-                                                arc_type(T),
-                                                refplace_type(T),
-                                                reftransition_type(T)}
+page_type(::Type{T}) where {T<:PnmlType} = Page{T}
+                                                # place_type(T),
+                                                # transition_type(T),
+                                                # arc_type(T),
+                                                # refplace_type(T),
+                                                # reftransition_type(T)}
 
 place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
@@ -265,12 +266,12 @@ arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
 
-page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T,
-                                                   place_type(T),
-                                                   transition_type(T),
-                                                   arc_type(T),
-                                                   refplace_type(T),
-                                                   reftransition_type(T)}
+page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T}
+                                                #    place_type(T),
+                                                #    transition_type(T),
+                                                #    arc_type(T),
+                                                #    refplace_type(T),
+                                                #    reftransition_type(T)}
 
 place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
