@@ -72,13 +72,12 @@ pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not
 netsets hold pnml IDs "owned"
 """
 function append_page!(lpage::Page, rpage::Page;
-            # Moved declarations to per-net DeclDict 2024-03-22.
             keys = (:tools, :labels), # non-idset and non-dict fields of page to merge
             idsets = (place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,),
             verbose::Bool = CONFIG[].verbose            )
 
     for k in keys
-        _update_maybe!(getproperty(lpage, k), getproperty(rpage, k))
+        _update_maybe!(lpage, rpage, k)
     end
 
     for s in idsets # except for page_idset
@@ -100,23 +99,16 @@ end
 # Implemented by testing lhs.key for nothing. This works because anything else is assumed
 # to be appendable.
 function _update_maybe!(l, r, key::Symbol)
-    if !isnothing(getproperty(r, key))
-        if isnothing(getproperty(l, key))
-            setproperty!(l, key, getproperty(r, key))
-        else
-            append!(getproperty(l, key), getproperty(r, key))
-        end
-    end
-end
-
-# See above.
-function _update_maybe!(l, r)
-    if !isnothing(r)
-        if isnothing(l)
-            l = r
-        else
-            append!(l, r)
-        end
+    rval =  getproperty(r, key)
+    isnothing(rval) && return
+    lval =  getproperty(l, key)
+    #@show typeof(lval) typeof(rval) #! debug
+    if isnothing(lval)
+        lval = rval # setproperty!(l, key, rval)
+    else
+        #@show lval rval #!debug
+        @assert lval isa AbstractVector && rval isa AbstractVector # for Jet
+        append!(lval, rval)
     end
 end
 
