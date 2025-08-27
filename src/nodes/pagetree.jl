@@ -34,7 +34,7 @@ function pagetree(n::Union{PnmlNet, Page}, inc = 0)
     println()
     for sp in page_idset(n)
         if haskey(pagedict(n), sp)
-            pagetree(n.pagedict[sp], inc+1)
+            pagetree(pagedict(n)[sp], inc+1)
         else
             msg = lazy"""id $sp not in page collection with keys: $((collect ∘ keys ∘ pagedict)(n))"""
             throw(ArgumentError(msg))
