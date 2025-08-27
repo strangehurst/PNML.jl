@@ -191,6 +191,11 @@ end
     @show PNML.output_matrix(simp.net)
     @show dt = PNML.incidence_matrix(simp.net)
 
+    @show lp = collect(PNML.labeled_places(net1))
+    @show lt = collect(PNML.labeled_transitions(net1))
+    @show t = collect(PNML.counted_transitions(net1))
+
+
     @show PNML.enabled(simp.net, m₀)
 
     #@show PNML.conditions(simp.net)
@@ -237,7 +242,7 @@ end
         # r^-1 : S → N^T is preset(net, place_id)
 
         for (i, t) in enumerate(transitions(net))
-            @show PNML.rate_value(t)
+            @show PNML.rate_value(t, PNML.pntd(net))
             @show [pid(p) for (j,p) in enumerate(places(net))]
             @show collect(PNML.preset(net, pid(t)))
             @show collect(PNML.postset(net, pid(t)))
@@ -246,7 +251,7 @@ end
                 @show collect(PNML.postset(net, pid(p)))
             end
             @show [pid(p) for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t))]
-            rates[i] = PNML.rate_value(t) * prod(initial_marking(p) ^ input[i, j]
+            rates[i] = PNML.rate_value(t, PNML.pntd(net)) * prod(initial_marking(p) ^ input[i, j]
                 for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t)))
         end
         @show rates

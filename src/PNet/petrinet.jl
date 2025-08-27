@@ -90,16 +90,16 @@ conditions(petrinet::AbstractPetriNet)  = conditions(pnmlnet(petrinet))
 
 
 """
-    rates(petrinet::AbstractPetriNet) -> [id(transition) => rate_value(transition)]
+    rates(petrinet::AbstractPetriNet) -> [id(transition) => rate_value(transition, pntd)]
 
 Return a vector of transition_id=>rate_value.
 
 We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
 """
 function rates end
-rates(petrinet::AbstractPetriNet) = rates( pnmlnet(petrinet))
+rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
 function rates(net::PnmlNet)
-    [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
+    [tid => rate_value(t, pntd(net)) for (tid, t) in pairs(PNML.transitiondict(net))]
 end
 # rate label implements the PnmlLabel interface.
 # Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
