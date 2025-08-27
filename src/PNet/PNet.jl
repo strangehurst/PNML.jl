@@ -16,7 +16,7 @@ import Multisets: Multisets, Multiset
 
 using PNML
 using PNML: Context
-using PNML: DeclDict
+using PNML: DeclDict, pntd
 #using ..PnmlIDRegistrys
 using ..PnmlTypes
 using ..Labels
@@ -28,9 +28,11 @@ import PNML: initial_marking, PnmlMultiset, pid
 import PNML: metagraph
 import PNML: ToolParser, LabelParser
 import PNML: input_matrix, output_matrix
+import PNML: nettype
 
 export AbstractPetriNet, SimpleNet, initial_markings, input_matrix, output_matrix
-export transition_function, rates, pnmlnet, labeled_places, labeled_transitions
+export transition_function, rates, pnmlnet
+export labeled_places, labeled_transitions, counted_transitions
 
 include("petrinet.jl")
 include("transition_function.jl")
