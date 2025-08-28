@@ -103,17 +103,16 @@ function enabled end
 
 function enabled(net::PnmlNet, marking) #!::Vararg{Union{Pair,Tuple}})
     varsub = NamedTuple() # There are no varibles possible here.
-    @show marking # vector or tuple with element per place
+    marking # vector or tuple with element per place
     #@show placeid = map(first, collect(marking))
     #@show mark_value = map(last, collect(marking))
-    @show d = Dict(labeled_places(net, marking))
+    d = Dict(labeled_places(net, marking))
     # @show transition_idset(net)
     # for t  in transition_idset(net)
     #     @show tuple(PNML.preset(net, t)...)
     # end
     # states = map(first, collect(marking))
 
-    println()
     evector = Bool[]
     for tr in transitions(net)
         trid = pid(tr)
@@ -133,7 +132,7 @@ function enabled(net::PnmlNet, marking) #!::Vararg{Union{Pair,Tuple}})
         #println()
     end
     #println()
-    @show evector
+    #@show evector
     return evector
     # Bool[all(p -> d[p] >= inscription(arc(net,p,t))(varsub),
     #                                     PNML.preset(net, t)) for t in transition_idset(net)]
@@ -141,7 +140,7 @@ end
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
     evector = Bool[]
-    @show mark_dict = Dict(labeled_places(net, marking))
+    mark_dict = Dict(labeled_places(net, marking))
     for tr in transitions(net)
         trid = pid(tr)
         enabled = true # Assume all transitions possible.
@@ -160,7 +159,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
         # Get transition variable substitution from preset arcs.
         for ar in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
             placeid   = source(ar) # adjacent place
-            @show mark      = unwrap_pmset(mark_dict[placeid]) #! Possibly extract a singlton.
+            mark      = unwrap_pmset(mark_dict[placeid]) #! Possibly extract a singlton.
             arc_vars  = Multiset(Labels.variables(inscription(ar))...) # Count variables.
             #! No-variable arcs must still be tested for place marking >= inscription & condition.
             isempty(arc_vars) ||
@@ -183,13 +182,13 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
             #! 2st stage of enabling rule has succeded. (place marking >= inscription)
             for arc in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
                 placeid   = source(arc) # adjacent place
-                @show mark      = mark_dict[placeid]
+                mark      = mark_dict[placeid]
 
                 # Inscription evaluates to multiset element of sufficent multiplicity.
                 # Condition evaluates to `true`
                 if isempty(tr.vars) # 0-ary operators
                     # This includes the non-HL net types that do not have variables.
-                    @show inscription_val = _cvt_inscription_value(pntd(net), arc,
+                    inscription_val = _cvt_inscription_value(pntd(net), arc,
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number

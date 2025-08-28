@@ -191,9 +191,9 @@ end
     @show PNML.output_matrix(simp.net)
     @show dt = PNML.incidence_matrix(simp.net)
 
-    @show lp = collect(PNML.labeled_places(net1))
-    @show lt = collect(PNML.labeled_transitions(net1))
-    @show t = collect(PNML.counted_transitions(net1))
+    #@show lp = collect(PNML.labeled_places(net1))
+    #@show lt = collect(PNML.labeled_transitions(net1))
+    #@show t = collect(PNML.counted_transitions(net1))
 
 
     @show PNML.enabled(simp.net, m₀)
@@ -230,7 +230,6 @@ end
     @show β
     @test β == expected_β
 
-    println()
     let net = simp.net
         @show du = map(last, PNML.initial_markings(simp.net))
         #map(last, collect(du))

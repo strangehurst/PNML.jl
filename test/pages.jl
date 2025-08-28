@@ -3,6 +3,10 @@ using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset
 
 function verify_sets(net::PnmlNet)
     println("\nverify sets and structure ++++++++++++++++++++++")
+    # @show net
+    # @show keys(pagedict(net))
+    # @show page_idset(net)  page_idset(firstpage(net))
+
     @test page_idset(net) isa AbstractSet
     @test page_idset(firstpage(net)) isa AbstractSet
     @test !isempty(setdiff(page_idset(net), page_idset(firstpage(net))))
@@ -88,7 +92,9 @@ model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
         </net>
     </pnml>
 """)
-net = first(nets(model)) # The nets of a model not inferrable.
+
+net = first(nets(model))
+
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
 @test startswith(sprint(show, model), "PnmlModel")

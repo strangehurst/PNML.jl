@@ -52,6 +52,7 @@ println("full_hlpn.xml") # modified
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, oracle, "full_hlpn.xml")
     model = pnmlmodel(fname)::PnmlModel
+    @show summary(first(PNML.nets(model)))
     #println("model = ", model) #! debug
 end
 
@@ -62,5 +63,3 @@ println("-----------------------------------------\n")
     # model = pnmlmodel(fname)::PnmlModel
     # println("model = ", model) #! debug
 end
-
-println(); flush(stdout)

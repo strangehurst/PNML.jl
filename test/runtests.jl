@@ -71,6 +71,8 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
+    end
+    if select(("ALL", "CORE2", "FLAT"), ("!CORE2", "!FLAT"))
         @safetestset "flatten"      begin include("flatten.jl") end
     end
 

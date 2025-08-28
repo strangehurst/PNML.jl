@@ -20,7 +20,6 @@ const varsub = NamedTuple()
                  eval(PNML.toexpr(b2, varsub, ddict)) +
                  eval(PNML.toexpr(b3, varsub, ddict))
 end
-println()
 
 @testset "multiset and $pntd" begin
     b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
@@ -36,7 +35,6 @@ println()
                  eval(PNML.toexpr(b3, varsub, ddict)) &
                  eval(PNML.toexpr(b3, varsub, ddict))
 end
-println()
 
 @testset "multiset or $pntd" begin
     b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
@@ -52,7 +50,6 @@ println()
                  eval(PNML.toexpr(b3, varsub, ddict)) |
                  eval(PNML.toexpr(b3, varsub, ddict))
 end
-println()
 
 @testset "boolean not $pntd" begin
     b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))

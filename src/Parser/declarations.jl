@@ -186,7 +186,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
             push!(parameters, vardecl)
         end
     end
-    @show parameters parse_context.idregistry #! debug
+    # @show parameters parse_context.idregistry #! debug
 
     dnode = firstchild(node, "def")
     # NamedOperators have a def element that is a expression of existing
