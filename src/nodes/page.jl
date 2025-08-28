@@ -16,21 +16,10 @@ See [`PnmlNet`](@ref)
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
-    # Note: pagedict and netdata do not overlap.
-    #pagedict::OrderedDict{Symbol, Page{PNTD, P, T, A, RP, RT}} # All pages. Shared by net and its pages.
-    #netdata::PnmlNetData # All Places, Arcs, etc. Shared by net and its pages.
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
     # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.
     # There could be >1 nets. `netdata` is ordered, `netsets` are unordered.
 end
-
-# Page(net, pntd, i, nam, c, nsets) =
-#     Page{typeof(pntd), #! ? typeof ?
-#          place_type(pntd),
-#          transition_type(pntd),
-#          arc_type(pntd),
-#          refplace_type(pntd),
-#          reftransition_type(pntd)}(net, pntd, i, nam, c, nsets)
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 

@@ -147,7 +147,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
     netdata = PnmlNetData()
-    netsets = PnmlNetKeys()
+    netsets = PnmlNetKeys() #
     PNML.tunesize!(netdata)
     PNML.tunesize!(netsets)
 
@@ -179,11 +179,12 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
 
     PNML.Labels.validate_toolinfos(tools)
-
+    # Net tracks the pages it owns directly, Pages use netkeys to track subpages
+    # so top-level netleys will not use the other sets in netkeys.
     # Create empty net (with declarations, net-level toolinfos parsed).
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
-                    page_set=PNML.page_idset(netsets), #! Not sorted!
+                    page_set=PNML.page_idset(netsets),
                     declaration, # Label, Wraps DeclDict.
                     namelabel, tools,
                     parse_context.idregistry
@@ -191,7 +192,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 
     #! TODO add Ref(net) to parse_context
 
-    # Fill the pagedict, netsets, netdata by depth first traversal of pages.
+    # Fill the pagedict, netdata by depth first traversal of pages.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag in ["declaration", "name", "toolspecific"]
@@ -202,7 +203,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             # Note that one can always flatten a multi-page PnmlNet to a single page
             # and have the same graph with all the non-graphics labels preserved.
             # Un-flattened is not well tested!
-            parse_page!(net, pagedict, netdata, netsets, child, pntd; parse_context) #
+            parse_page!(net, netsets, child, pntd; parse_context) #
 
 
         elseif tag == "graphics"
@@ -221,26 +222,31 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     return net
 end
 
-"Call `parse_page!`, add page to dictionary and id set"
-function parse_page!(net::PnmlNet, pagedict, netdata, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+"""
+    parse_page!(net,netsets, node, pntd; context) -> Nothing
+
+Call `_parse_page!` to create a page with its own `netsets`.
+Add this page to parent's `page_idset(netsets)` and `pagedist(net)`.
+"""
+function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
     pageid = register_idof!(parse_context.idregistry, node)
     push!(PNML.page_idset(netsets), pageid) # Record id before decending.
-    pg = _parse_page!(net, pagedict, netdata, node, pntd, pageid; parse_context)
+    pg = _parse_page!(net, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
-    pagedict[pageid] = pg
-    return pagedict
+    pagedict(net)[pageid] = pg
+    return nothing
 end
 
 """
-    _parse_page!(net, pagedict, netdata, node, pntd; ddict) -> Page
+    _parse_page!(net, node, pntd; ddict) -> Page
 
 Place `Page` in `pagedict` using id as the key.
 """
-function _parse_page!(net::PnmlNet, pagedict, netdata, node::XMLNode, pntd::T, pageid::Symbol;
+function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     # Allocate per-page data structures.
-    netsets = PnmlNetKeys()
+    netsets = PnmlNetKeys() # Per-page data structure
     # Track which objects belong to this page.
     place_set      = PNML.place_idset(netsets)
     transition_set = PNML.transition_idset(netsets)
@@ -258,20 +264,20 @@ function _parse_page!(net::PnmlNet, pagedict, netdata, node::XMLNode, pntd::T, p
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "place"
-            parse_place!(place_set, netdata, child, pntd; parse_context)
+            parse_place!(place_set, netdata(net), child, pntd; parse_context)
         elseif tag == "referencePlace"
-            parse_refPlace!(rp_set, netdata, child, pntd; parse_context)
+            parse_refPlace!(rp_set, netdata(net), child, pntd; parse_context)
         elseif tag == "transition"
-            parse_transition!(transition_set, netdata, child, pntd; parse_context)
+            parse_transition!(transition_set, netdata(net), child, pntd; parse_context)
         elseif tag == "referenceTransition"
-            parse_refTransition!(rt_set, netdata, child, pntd; parse_context)
+            parse_refTransition!(rt_set, netdata(net), child, pntd; parse_context)
         elseif tag == "arc"
-            parse_arc!(arc_set, netdata, child, pntd; parse_context)
+            parse_arc!(arc_set, netdata(net), child, pntd; parse_context)
         # if tag in ["declaration", "place", "transition", "arc",
         #             "referencePlace", "referenceTransition", "toolspecific"]
         #     # NOOP println("already parsed ", tag)
-        elseif tag == "page" # Subpage
-            parse_page!(net, pagedict, netdata, netsets, child, pntd; parse_context)
+        elseif tag == "page" # Subpage uses different netsets
+            parse_page!(net, netsets, child, pntd; parse_context)
         elseif tag == "name"
             namelabel = parse_name(child, pntd; parse_context)
         elseif tag == "graphics"
