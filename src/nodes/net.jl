@@ -9,8 +9,10 @@ One Petri Net of a PNML model.
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD}} # Shared by pages, holds all pages.
     netdata::PnmlNetData # Shared by pages, holds all places, transitions, arcs, refs
-    page_set::OrderedSet{Symbol} # Unordered keys of pages in pagedict owned by this net.
-    # Top-level of a tree of Page ID keys.
+
+    # Note: `PnmlNet` only has `page_set` not `netsets` as it only contains pages.
+    # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
+    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
 
     declaration::Declaration # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
@@ -34,7 +36,7 @@ decldict(net::PnmlNet) = decldict(net.declaration)
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(n::PnmlNet) = n.pagedict # Will be ordered.
-page_idset(n::PnmlNet) = n.page_set #! Not ordered! Dictionaries in netdata ARE ordered.
+page_idset(n::PnmlNet) = n.page_set
 
 netdata(n::PnmlNet) = n.netdata
 
@@ -208,6 +210,7 @@ function Base.show(io::IO, net::PnmlNet)
     print(repr(nettype(net)), ", ")
     iio = inc_indent(io)
     println(io)
+
     print(io, "Pages = ", repr(page_idset(net)))
     for page in values(pagedict(net))
         print(iio, '\n', indent(iio)); show(iio, page)
@@ -246,19 +249,8 @@ end
 #------------------------------------------------------------------------------
 # Construct Types
 #------------------------------------------------------------------------------
-# pnmlnet_type(::Type{T}) where {T<:PnmlType} = PnmlNet{T,
-#                                                       place_type(T),
-#                                                       transition_type(T),
-#                                                       arc_type(T),
-#                                                       refplace_type(T),
-#                                                       reftransition_type(T)}
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T}
-                                                # place_type(T),
-                                                # transition_type(T),
-                                                # arc_type(T),
-                                                # refplace_type(T),
-                                                # reftransition_type(T)}
 
 place_type(::Type{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
@@ -267,11 +259,6 @@ refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
 
 page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T}
-                                                #    place_type(T),
-                                                #    transition_type(T),
-                                                #    arc_type(T),
-                                                #    refplace_type(T),
-                                                #    reftransition_type(T)}
 
 place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place{T, marking_type(T)}
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition{T, condition_type(T)}
