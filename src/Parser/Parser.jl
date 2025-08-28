@@ -44,11 +44,12 @@ using PNML: inscription_type, marking_type, transition_type
 using PNML: default, fill_sort_tag!
 using PNML: usersort, namedsort, usersorts, namedsorts, multisetsorts, multisetsorts
 using PNML: partitionsort, partitionsorts
+using PNML: pagedict
 
 # Methods implemented in this module.
 import PNML: adjacent_place
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
-import PNML: refid
+import PNML: refid, netdata
 
 include("xmlutils.jl")
 include("parseutils.jl")

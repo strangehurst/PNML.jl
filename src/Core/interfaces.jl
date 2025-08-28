@@ -100,6 +100,14 @@ Maintains order (insertion order).
 """
 function pages end
 
+"""
+    netdata(x) -> PnmlNetData
+
+Access PnmlNet-level data structure.
+"""
+function netdata end
+
+
 #--------------------------------------------
 # PLACES & MARKINGS
 #--------------------------------------------
