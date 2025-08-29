@@ -1,17 +1,17 @@
 # parse nodes of graph
 "Fill place_set, place_dict."
 function parse_place!(place_set, netdata, child, pntd; parse_context::ParseContext)
-    pl = parse_place(child, pntd; parse_context)::valtype(netdata.place_dict)
+    pl = parse_place(child, pntd; parse_context)::valtype(PNML.placedict(netdata))
     push!(place_set, pid(pl))
-    netdata.place_dict[pid(pl)] = pl
+    PNML.placedict(netdata)[pid(pl)] = pl
     return place_set
 end
 
 "Fill transition_set, transition_dict."
 function parse_transition!(transition_set, netdata, child, pntd; parse_context::ParseContext)
-    tr = parse_transition(child, pntd; parse_context)::valtype(netdata.transition_dict)
+    tr = parse_transition(child, pntd; parse_context)::valtype(PNML.transitiondict(netdata))
     push!(transition_set, pid(tr))
-    netdata.transition_dict[pid(tr)] = tr
+    PNML.transitiondict(netdata)[pid(tr)] = tr
     return transition_set
 end
 
@@ -21,23 +21,23 @@ function parse_arc!(arc_set, netdata, child, pntd; parse_context::ParseContext)
     a isa valtype(PNML.arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_set, pid(a))
-    netdata.arc_dict[pid(a)] = a
+    PNML.arcdict(netdata)[pid(a)] = a
     return arc_set
 end
 
 "Fill refplace_set, refplace_dict."
 function parse_refPlace!(refplace_set, netdata, child, pntd; parse_context::ParseContext)
-    rp = parse_refPlace(child, pntd; parse_context)::valtype(netdata.refplace_dict)
+    rp = parse_refPlace(child, pntd; parse_context)::valtype(PNML.refplacedict(netdata))
     push!(refplace_set, pid(rp))
-    netdata.refplace_dict[pid(rp)] = rp
+    PNML.refplacedict(netdata)[pid(rp)] = rp
     return refplace_set
 end
 
 "Fill reftransition_set, reftransition_dict."
 function parse_refTransition!(reftransition_set, netdata, child, pntd; parse_context::ParseContext)
-    rt = parse_refTransition(child, pntd; parse_context)::valtype(netdata.reftransition_dict)
+    rt = parse_refTransition(child, pntd; parse_context)::valtype(PNML.reftransitiondict(netdata))
     push!(reftransition_set, pid(rt))
-    netdata.reftransition_dict[pid(rt)] = rt
+    PNML.reftransitiondict(netdata)[pid(rt)] = rt
     return reftransition_set
 end
 

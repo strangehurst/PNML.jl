@@ -44,7 +44,8 @@ using PNML: inscription_type, marking_type, transition_type
 using PNML: default, fill_sort_tag!
 using PNML: usersort, namedsort, usersorts, namedsorts, multisetsorts, multisetsorts
 using PNML: partitionsort, partitionsorts
-using PNML: pagedict
+using PNML: pagedict, placedict, transitiondict, arcdict, refplacedict, reftransitiondict
+using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 
 # Methods implemented in this module.
 import PNML: adjacent_place

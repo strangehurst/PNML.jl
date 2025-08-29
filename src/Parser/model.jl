@@ -184,7 +184,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # Create empty net (with declarations, net-level toolinfos parsed).
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
-                    page_set=PNML.page_idset(netsets),
+                    page_set=page_idset(netsets),
                     declaration, # Label, Wraps DeclDict.
                     namelabel, tools,
                     parse_context.idregistry
@@ -231,7 +231,7 @@ Add this page to parent's `page_idset(netsets)` and `pagedist(net)`.
 function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
     pageid = register_idof!(parse_context.idregistry, node)
-    push!(PNML.page_idset(netsets), pageid) # Record id before decending.
+    push!(page_idset(netsets), pageid) # Record id before decending.
     pg = _parse_page!(net, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
     pagedict(net)[pageid] = pg
@@ -248,11 +248,11 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
     # Allocate per-page data structures.
     netsets = PnmlNetKeys() # Per-page data structure
     # Track which objects belong to this page.
-    place_set      = PNML.place_idset(netsets)
-    transition_set = PNML.transition_idset(netsets)
-    arc_set        = PNML.arc_idset(netsets)
-    rp_set         = PNML.refplace_idset(netsets)
-    rt_set         = PNML.reftransition_idset(netsets)
+    place_set      = place_idset(netsets)
+    transition_set = transition_idset(netsets)
+    arc_set        = arc_idset(netsets)
+    rp_set         = refplace_idset(netsets)
+    rt_set         = reftransition_idset(netsets)
 
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -273,9 +273,8 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_refTransition!(rt_set, netdata(net), child, pntd; parse_context)
         elseif tag == "arc"
             parse_arc!(arc_set, netdata(net), child, pntd; parse_context)
-        # if tag in ["declaration", "place", "transition", "arc",
-        #             "referencePlace", "referenceTransition", "toolspecific"]
-        #     # NOOP println("already parsed ", tag)
+        elseif tag in ["declaration", "toolspecific"]
+             # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage uses different netsets
             parse_page!(net, netsets, child, pntd; parse_context)
         elseif tag == "name"

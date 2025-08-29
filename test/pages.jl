@@ -38,7 +38,7 @@ function verify_sets(net::PnmlNet)
         @test pagedict(net) === pagedict(page) # There is only 1 pagedict.
     end
 
-    for pageid in PNML.page_idset(net)
+    for pageid in page_idset(net)
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
 end
