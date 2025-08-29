@@ -34,10 +34,10 @@ function metagraph(net::PnmlNet)
 end
 
 "pnml id symbol mapped to graph vertex code."
-vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(PNML.place_idset(n), PNML.transition_idset(n))))
+vertex_codes(n::PnmlNet)  = Dict(s=>i for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
 
 "graph vertex code mapped to pnml id symbol."
-vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(PNML.place_idset(n), PNML.transition_idset(n))))
+vertex_labels(n::PnmlNet) = Dict(i=>s for (i,s) in enumerate(union(place_idset(n), transition_idset(n))))
 
 "Fill dictionary where keys are pnml ids, values are tuples of vertex code, place or transition."
 function vertex_data!(vdata::Dict{Symbol, Tuple{Int, Union{Place, Transition}}},

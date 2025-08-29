@@ -140,7 +140,7 @@ end
 function input_matrix!(imatrix, net::PnmlNet)
     varsub = NamedTuple() # PT_HLPNG  is only supported High-level net here
     for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id) in enumerate(PNML.place_idset(net))
+        for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id)) # 0 or empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
             imatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
@@ -158,7 +158,7 @@ end
 function output_matrix!(omatrix, net::PnmlNet)
     varsub = NamedTuple()
     for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id) in enumerate(PNML.place_idset(net))
+        for (p, place_id) in enumerate(place_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
             omatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
