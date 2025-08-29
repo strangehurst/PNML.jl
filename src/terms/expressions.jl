@@ -19,8 +19,8 @@ export PnmlExpr, BoolExpr, OpExpr # abstract types
 # concrete types
 export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
 export DotConstantEx
-export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains, Or
-export And, Not, Imply, Equality, Inequality, Successor, Predecessor
+export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
+export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
 export PartitionLessThan, PartitionGreaterThan, PartitionElementOf
 export Addition, Subtraction, Multiplication, Division
 export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
