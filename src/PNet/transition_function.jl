@@ -31,6 +31,9 @@ function labeled_places(net::PnmlNet, markings=initial_markings(net))
     [k=>v for (k,v) in zip(map(pid, PNML.places(net)), markings)]
 end
 
+"""
+    civ(net, arcid) -> _cvt_inscription_value(pntd, arcdict[srcid], z, NamedTuple())
+"""
 function civ(net, arcid)
     a = PNML.arcdict(net)[arcid]
     z = PNML.zero_marking(PNML.adjacent_place(net, a)) # 0 or empty multiset similar to placetype

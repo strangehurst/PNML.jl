@@ -121,8 +121,6 @@ initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet
 
 function initial_markings(net::PnmlNet)
     #^ AlgebraicJulia uses vector of pairs not LVector
-    #! LVector((;[id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]...))
-    #![id => initial_marking(p)::Number for (id,p) in pairs(PNML.placedict(net))]
     [initial_marking(p)::Number for p in PNML.places(net)]
 end
 

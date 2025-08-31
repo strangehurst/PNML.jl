@@ -45,9 +45,9 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_context::ParseContext)
+function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "place")
-    id   = register_idof!(parse_context.idregistry, node)
+    placeid   = register_idof!(parse_context.idregistry, node)
 
     # Place Node Labels
     mark = nothing
@@ -112,7 +112,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; context=nothing, parse_conte
     #                     "\n\t sortof(sorttype) = ", sortof(sorttype)))
     # end
 
-    Place(pntd, id, mark, sorttype, namelabel, graphics, tools, labels, parse_context.ddict)
+    Place(pntd, placeid, mark, sorttype, namelabel, graphics, tools, labels, parse_context.ddict)
 end
 
 """
@@ -120,7 +120,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "transition")
-    id = register_idof!(parse_context.idregistry, node)
+    transitionid = register_idof!(parse_context.idregistry, node)
 
     cond::Maybe{PNML.Labels.Condition} = nothing
 
@@ -146,12 +146,12 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
             # Lookup parser for tag
             #
             any(==(tag), ("rate", "delay")) ||
-                @warn "found unexpected label of <transition> id=$id: $tag"
+                @warn "found unexpected label of <transition> id=$transitionid: $tag"
             labels = add_label(labels, child, pntd, parse_context)
         end
     end
 
-    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, id,
+    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, transitionid,
             something(cond, Labels.default(Labels.Condition, pntd; parse_context.ddict)),
             namelabel, graphics, tools, labels,
             Set{REFID}(),
@@ -227,7 +227,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "referencePlace")
-    id = register_idof!(parse_context.idregistry, node)
+    refp_id = register_idof!(parse_context.idregistry, node)
 
     ref = Symbol(attribute(node, "ref"))
 
@@ -250,7 +250,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
         end
     end
 
-    RefPlace(id, ref, namelabel, graphics, tools, labels, parse_context.ddict)
+    RefPlace(refp_id, ref, namelabel, graphics, tools, labels, parse_context.ddict)
 end
 
 """
@@ -258,7 +258,7 @@ $(TYPEDSIGNATURES)
 """
 function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "referenceTransition")
-    id = register_idof!(parse_context.idregistry, node)
+    reft_id = register_idof!(parse_context.idregistry, node)
 
     ref = Symbol(attribute(node, "ref"))
 
@@ -281,7 +281,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
         end
     end
 
-    RefTransition(id, ref, namelabel, graphics, tools, labels, parse_context.ddict)
+    RefTransition(reft_id, ref, namelabel, graphics, tools, labels, parse_context.ddict)
 end
 
 

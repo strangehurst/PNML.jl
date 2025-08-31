@@ -53,12 +53,12 @@ function alldecendents(node::XMLNode, tag::AbstractString, namespace::AbstractSt
     EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 
-function check_nodename(n::XMLNode, s::AbstractString)
-    if EzXML.nodename(n) != s
-        throw(ArgumentError(string("element name wrong, expected ", s,
-                                   ", got ", EzXML.nodename(n))::String))
+function check_nodename(node::XMLNode, str::AbstractString)
+    if EzXML.nodename(node) != str
+        throw(ArgumentError(string("element name wrong, expected ", str,
+                                   ", got ", EzXML.nodename(node))::String))
     end
-    return s
+    return str
 end
 
 """
@@ -69,7 +69,7 @@ function register_idof!(registry::PnmlIDRegistry, node::XMLNode)
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     id = Symbol(@inbounds(node["id"]))
     if isregistered(registry, id)
-        @error "trying to register existing id $id in registry $(objectid(registry))" idregistry
+        @error "trying to register existing PNML id $id in " idregistry
     end
     return register_id!(registry, id)
 end

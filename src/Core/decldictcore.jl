@@ -282,5 +282,5 @@ function find_valuekey(d::AbstractDict, x, func=identity)
             break
         end
     end
-    return id#  Key of matched value or nothing.
+    return id #  Key of matched value or nothing.
 end

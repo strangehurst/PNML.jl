@@ -575,17 +575,17 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
         sort = Sorts.FiniteIntRangeSort(startval, stopval)
         #^ See if duo exists: a namedsort has a sortdefinition == sort
-        id = find_valuekey(namedsorts(parse_context.ddict), sort, sortdefinition)
-        if isnothing(id) # Did not find sort, will instantiate in parse_context.decldict
-            id = Symbol(sorttag,    "_", startstr, "_", stopstr)
+        sortid = find_valuekey(namedsorts(parse_context.ddict), sort, sortdefinition)
+        if isnothing(sortid) # Did not find sort, will instantiate in parse_context.decldict
+            sortid = Symbol(sorttag,    "_", startstr, "_", stopstr)
             #println("fill_sort_tag ",  repr(id), ", ", sort) #! debug
-            sref = fill_sort_tag!(parse_context, id,
-                NamedSort(id, string(id), sort, parse_context.ddict)) # finiteintrangeconstant
+            sref = fill_sort_tag!(parse_context, sortid,
+                NamedSort(sortid, string(id), sort, parse_context.ddict)) # finiteintrangeconstant
             usersorts(parse_context.ddict)[tag] = UserSort(sref, parse_context.ddict) # finiteintrangeconstant
         end
 
         fic = FiniteIntRangeConstant(value, UserSortRef(id), parse_context.ddict)
-        return TermJunk(fic, UserSortRef(id), vars)
+        return TermJunk(fic, UserSortRef(sortid), vars)
         #
     end
     throw(PNML.MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
