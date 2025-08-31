@@ -12,18 +12,13 @@ is parsed.
 
 See [`PnmlNetKeys`](@ref) for page-level pnml ID of "owners" net data.
 """
-struct PnmlNetData
-    place_dict::OrderedDict{Symbol, Any}
-    transition_dict::OrderedDict{Symbol, Any}
-    arc_dict::OrderedDict{Symbol, Any}
-    refplace_dict::OrderedDict{Symbol, Any}
-    reftransition_dict::OrderedDict{Symbol, Any}
+@kwdef struct PnmlNetData
+    place_dict::OrderedDict{Symbol, Any} = OrderedDict{Symbol, Any}()
+    transition_dict::OrderedDict{Symbol, Any} = OrderedDict{Symbol, Any}()
+    arc_dict::OrderedDict{Symbol, Any} = OrderedDict{Symbol, Any}()
+    refplace_dict::OrderedDict{Symbol, Any} = OrderedDict{Symbol, Any}()
+    reftransition_dict::OrderedDict{Symbol, Any} = OrderedDict{Symbol, Any}()
 end
-PnmlNetData() = PnmlNetData(OrderedDict{Symbol, Any}(),
-                            OrderedDict{Symbol, Any}(),
-                            OrderedDict{Symbol, Any}(),
-                            OrderedDict{Symbol, Any}(),
-                            OrderedDict{Symbol, Any}())
 
 placedict(d::PnmlNetData)         = d.place_dict
 transitiondict(d::PnmlNetData)    = d.transition_dict

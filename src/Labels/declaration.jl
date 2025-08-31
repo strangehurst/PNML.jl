@@ -12,7 +12,7 @@ being labels, it is allowed.
 """
 @kwdef struct Declaration <: Annotation
     text::Maybe{String} = nothing
-    ddict::DeclDict # Wraps the one true data store for net.
+    ddict::DeclDict = DeclDict() # Wraps the one true data store for net.
     graphics::Maybe{Graphics} = nothing
     tools::Maybe{Vector{ToolInfo}} = nothing
 end

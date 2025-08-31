@@ -8,13 +8,13 @@ One Petri Net of a PNML model.
     type::PNTD
     id::Symbol
     pagedict::OrderedDict{Symbol, Page{PNTD}} # Shared by pages, holds all pages.
-    netdata::PnmlNetData # Shared by pages, holds all places, transitions, arcs, refs
+    netdata::PnmlNetData = PnmlNetData() # Shared by pages, holds all places, transitions, arcs, refs
 
     # Note: `PnmlNet` only has `page_set` not `netsets` as it only contains pages.
     # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
     page_set::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
 
-    declaration::Declaration # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
+    declaration::Declaration = Declaration() # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
 
@@ -22,8 +22,11 @@ One Petri Net of a PNML model.
     # no graphics for net
     tools::Maybe{Vector{ToolInfo}} = nothing
     labels::Vector{PnmlLabel} = PnmlLabel[] # empty by default
-    idregistry::PnmlIDRegistry
+    idregistry::PnmlIDRegistry = PnmlIDRegistry()
 end
+
+# Constructor for use in test scaffolding.
+PnmlNet(t::PnmlType, x::Symbol) = PnmlNet(; type=t, id=x, pagedict=OrderedDict{Symbol, Page{typeof(t)}}())
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
@@ -48,7 +51,7 @@ reftransitiondict(n::PnmlNet) = reftransitiondict(netdata(n))
 
 netsets(n::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?"))
 "Return iterator over keys of a dictionary"
-place_idset(n::PnmlNet)         = keys(placedict(n))
+place_idset(n::PnmlNet)         = keys(placedict(n)) #! verify same as PnmlKeySet for flattened page
 transition_idset(n::PnmlNet)    = keys(transitiondict(n))
 arc_idset(n::PnmlNet)           = keys(arcdict(n))
 refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
