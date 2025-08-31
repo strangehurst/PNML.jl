@@ -141,18 +141,6 @@ include("Core/labelparser.jl")
 verbose
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
-"""
-    ParseContext
-
-$(DocStringExtensions.TYPEDFIELDS)
-"""
-@kwdef struct ParseContext
-    idregistry::PnmlIDRegistry = PnmlIDRegistry() # empty
-    ddict::DeclDict = DeclDict() # empty
-    labelparser::Vector{LabelParser} = LabelParser[] # empty
-    toolparser::Vector{ToolParser} = ToolParser[] # empty
-end
-
 # parse context has id registry and DeclDict
 
 # Parts of Labels and Nodes.

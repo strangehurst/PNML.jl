@@ -1,4 +1,14 @@
-#
+"""
+    ParseContext
+
+$(DocStringExtensions.TYPEDFIELDS)
+"""
+@kwdef struct ParseContext
+    idregistry::PnmlIDRegistry = PnmlIDRegistry() # empty
+    ddict::DeclDict = DeclDict() # empty
+    labelparser::Vector{LabelParser} = LabelParser[] # empty
+    toolparser::Vector{ToolParser} = ToolParser[] # empty
+end
 
 "Fill and return a `ParserContext` object."
 function parser_context()
