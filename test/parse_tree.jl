@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, OrderedCollections, AbstractTrees
+using PNML, ..TestUtils, JET, OrderedCollections
 
 const pnmldoc = xml"""<?xml version="1.0"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -137,11 +137,6 @@ end
 #             Base.redirect_stdio(stdout=devnull, stderr=devnull) do
 #             #Base.redirect_stdio(stdout=nothing, stderr=nothing) do #! debug
 #                 #TODO use MetaGraph as base of a validation tool
-#                 println("pagetree"); flush(stdout)
-#                 PNML.pagetree(n)
-#                 println("print_tree")
-#                 AbstractTrees.print_tree(n)
-
 #                 println("vertex_codes")
 #                 @show vc = PNML.vertex_codes(n)
 #                 @show vl = PNML.vertex_labels(n)

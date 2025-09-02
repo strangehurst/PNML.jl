@@ -3,11 +3,11 @@ CurrentModule = PNML
 ```
 
 ```@setup methods
-using AbstractTrees, PNML, InteractiveUtils, Markdown
+using PNML, InteractiveUtils, Markdown
 ```
 
 ```@setup methods
-using AbstractTrees, PNML, InteractiveUtils, Markdown
+using PNML, InteractiveUtils, Markdown
 ```
 
 ```@setup types

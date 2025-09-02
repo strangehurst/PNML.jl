@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, OrderedCollections, AbstractTrees
+using PNML, ..TestUtils, JET, OrderedCollections
 #
 # Read a SymmetricNet with partitions & tuples from pnmlframework test file.
 # NB: This model is from part 2 of the ISO 15909 standard as informative.

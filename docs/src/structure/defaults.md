@@ -34,7 +34,7 @@ We use the pntd [PnmlType](@ref PNML.PnmlTypes.PnmlType) as a trait to determine
 A consequence is that the default value's type ripples through the type system.
 
 ```@setup methods
-using AbstractTrees, PNML, InteractiveUtils, Markdown
+using PNML, InteractiveUtils, Markdown
 using PNML: Labels.default
 using PNML: SortType, UserSort, IntegerSort, DotSort
 using PNML: PnmlCoreNet, ContinuousNet, HLCoreNet

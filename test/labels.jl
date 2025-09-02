@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, NamedTupleTools, AbstractTrees
+using PNML, ..TestUtils, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())

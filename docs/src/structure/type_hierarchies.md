@@ -5,11 +5,7 @@ CurrentModule = PNML
 Overview of some type hierarchies.
 
 ```@setup type
-using AbstractTrees, PNML, InteractiveUtils, Markdown
-#, GraphRecipes,Plots
-
-AbstractTrees.children(x::Type) = subtypes(x)
-type_tree(t) = println(AbstractTrees.repr_tree(t))
+using PNML, InteractiveUtils, Markdown
 ```
 ## PnmlType - Petri Net Type Definition (PNTD)
 

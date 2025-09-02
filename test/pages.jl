@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, AbstractTrees
+using PNML, ..TestUtils, JET
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 
 function verify_sets(net::PnmlNet)
@@ -185,14 +185,6 @@ end
     expected_t = [:t1, :t2, :t3, :t31]
     expected_rt = [] # removed by flatten
     expected_rp = [] # removed by flatten
-
-
-    noisy && println()
-    #@show (collect ∘ values ∘ page_idset)(net)
-    noisy && AbstractTrees.print_tree(net)
-    noisy && println()
-    noisy && PNML.pagetree(net)
-    noisy && println()
 
     @test isempty(setdiff(arc_idset(net), expected_a))
     @test isempty(setdiff(arc_idset(firstpage(net)), expected_a))

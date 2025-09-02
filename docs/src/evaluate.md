@@ -11,7 +11,7 @@ Things that are functors:
   - Term: return a sort's value type **TBD**
 
 ```@setup methods
-using AbstractTrees, PNML, InteractiveUtils, Markdown
+using PNML, InteractiveUtils, Markdown
 ```
 
 ## Examples

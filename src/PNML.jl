@@ -213,7 +213,6 @@ using .Labels
 include("nodes/nodes.jl") # Concrete place, transition, arc.
 include("nodes/page.jl") # Contains nodes.
 include("nodes/net.jl") # PnmlNet
-include("nodes/pagetree.jl") # AbstractTree used to print a PnmlNet.
 include("nodes/model.jl") # Holds multiple PnmlNets.
 
 include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.
