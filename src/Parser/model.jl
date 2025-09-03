@@ -143,12 +143,14 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     pgtype = PNML.page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
-    # The type information is used by PnmlNet.
-    #-------------------------------------------------------------------------
     pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
-    netdata = PnmlNetData()
-    netsets = PnmlNetKeys() #
+    netdata = PnmlNetData() # holds all place, transition, arc
     PNML.tunesize!(netdata)
+
+    # Pretend a net is a psudo-page so that we can record child pages.
+    # Net tracks the pages it owns directly, Pages use netkeys to track subpages
+    # so top-level netkeys will not use the other sets in netkeys.
+    netsets = PnmlNetKeys() #
     PNML.tunesize!(netsets)
 
     @assert isregistered(parse_context.idregistry, netid)
@@ -162,9 +164,8 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # Declarations present in the input file will overwrite these.
     #! PNML.fill_nonhl!(dd) done in `decldict(idreg)`
 
-    # Parse *ALL* Declarations here (assuming this the tree root),
-    # this includes any Declarations attached to Pages.
-    # Place any/all declarations in net-level DeclDict.
+    # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
+    # Place any/all declarations in single net-level DeclDict.
     # It is like we are flattening only the declarations.
     # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the standard).
@@ -177,48 +178,43 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
 
     # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
     tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
-
     PNML.Labels.validate_toolinfos(tools)
-    # Net tracks the pages it owns directly, Pages use netkeys to track subpages
-    # so top-level netleys will not use the other sets in netkeys.
-    # Create empty net (with declarations, net-level toolinfos parsed).
+
+    #--------------------------------------------------------------------
+    # Create net with declarations and net-level toolinfos parsed.
+    # Will have empty `pagedict`, `netdata`, `page_set` and `idregistry`.
+    #--------------------------------------------------------------------
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
                     page_set=page_idset(netsets),
-                    declaration, # Label, Wraps DeclDict.
+                    declaration, # Label, Wraps same DeclDict as parse_context.ddict.
                     namelabel, tools,
                     parse_context.idregistry
                     )
 
     #! TODO add Ref(net) to parse_context
 
-    # Fill the pagedict, netdata by depth first traversal of pages.
+    #--------------------------------------------------------------------
+    # Fill the `pagedict`, `netdata` and `idregistry` by depth first traversal of pages.
+    #--------------------------------------------------------------------
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
-        if tag in ["declaration", "name", "toolspecific"]
-            # println("net already parsed ", tag) #! debug
-        elseif tag == "page"
-            # All graph node content resides in page node trees.
+        if tag == "page"
             # Threre is always at least one page. A forest of multiple page trees is allowd.
-            # Note that one can always flatten a multi-page PnmlNet to a single page
-            # and have the same graph with all the non-graphics labels preserved.
-            # Un-flattened is not well tested!
-            parse_page!(net, netsets, child, pntd; parse_context) #
-
-
+            parse_page!(net, netsets, child, pntd; parse_context)
+        elseif tag in ["declaration", "name", "toolspecific"]
+            # println("NOOP: net already parsed ", tag)
         elseif tag == "graphics"
-            @warn "ignoring unexpected child of <net>: 'graphics'"
+            @warn "ignoring unexpected child of <net>: <graphics>"
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
             net.labels = add_label(net.labels, child, pntd, parse_context) # Net unclaimed label.
-            # The standard allows meta-models defined upon the core to define
-            # additional labels that conform to the Schema.
-            # We use XMLDict as the parser for unclaimed labels (and anynet).
             #TODO mechanism for allowing new meta-models to provide specialized parsers
             #TODO When method `parse_unclaimed_label(Val(tag), child, pntd)` is defined,
             #TODO still need to be able to find the label to use it.
         end
     end
+
     return net
 end
 
@@ -226,11 +222,11 @@ end
     parse_page!(net,netsets, node, pntd; context) -> Nothing
 
 Call `_parse_page!` to create a page with its own `netsets`.
-Add this page to parent's `page_idset(netsets)` and `pagedist(net)`.
+Add this page to parent's `page_idset(netsets)` and `pagedict(net)`.
 """
 function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
-    pageid = register_idof!(parse_context.idregistry, node)
+    pageid = register_idof!(PNML.registry_of(net), node)
     push!(page_idset(netsets), pageid) # Record id before decending.
     pg = _parse_page!(net, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
@@ -246,17 +242,10 @@ Place `Page` in `pagedict` using id as the key.
 function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     # Allocate per-page data structures.
-    netsets = PnmlNetKeys() # Per-page data structure
-    # Track which objects belong to this page.
-    place_set      = place_idset(netsets)
-    transition_set = transition_idset(netsets)
-    arc_set        = arc_idset(netsets)
-    rp_set         = refplace_idset(netsets)
-    rt_set         = reftransition_idset(netsets)
-
+    netsets = PnmlNetKeys() # Track which objects belong to this page.
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
-    labels::Maybe{Vector{PnmlLabel}}= nothing
+    labels::Maybe{Vector{PnmlLabel}} = nothing
     tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
 
     PNML.Labels.validate_toolinfos(tools)
@@ -264,15 +253,15 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "place"
-            parse_place!(place_set, netdata(net), child, pntd; parse_context)
+            parse_place!(netsets, netdata(net), child, pntd; parse_context)
         elseif tag == "referencePlace"
-            parse_refPlace!(rp_set, netdata(net), child, pntd; parse_context)
+            parse_refPlace!(netsets, netdata(net), child, pntd; parse_context)
         elseif tag == "transition"
-            parse_transition!(transition_set, netdata(net), child, pntd; parse_context)
+            parse_transition!(netsets, netdata(net), child, pntd; parse_context)
         elseif tag == "referenceTransition"
-            parse_refTransition!(rt_set, netdata(net), child, pntd; parse_context)
+            parse_refTransition!(netsets, netdata(net), child, pntd; parse_context)
         elseif tag == "arc"
-            parse_arc!(arc_set, netdata(net), child, pntd; parse_context)
+            parse_arc!(netsets, netdata(net), child, pntd; parse_context)
         elseif tag in ["declaration", "toolspecific"]
              # NOOP println("already parsed ", tag)
         elseif tag == "page" # Subpage uses different netsets
@@ -288,12 +277,9 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
     end
 
     # TODO add net
-    return Page(; net=Ref(net), pntd=pntd, id=pageid,
-                namelabel=namelabel, graphics=graphics, tools=tools, labels=labels,
-                netsets=netsets,  # OrderedSet of ids "owned" by this page.
-                )
+    return Page{T}(; net=Ref(net), pntd=pntd, id=pageid, namelabel=namelabel,
+                graphics=graphics, tools=tools, labels=labels, netsets=netsets)
 end
-
 
 """
     find_toolinfos!(tools, node, pntd, parse_context::ParseContext) -> tools
@@ -307,5 +293,3 @@ function find_toolinfos!(tools, node, pntd, parse_context::ParseContext)
     end
     return tools
 end
-
-# Reminder: set is per-Page, dict is per-Net

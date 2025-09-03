@@ -9,7 +9,7 @@ There must be at least 1 Page for a valid pnml model.
 See [`PnmlNet`](@ref)
 """
 @kwdef mutable struct Page{PNTD <: PnmlType} <: AbstractPnmlObject
-    net::RefValue{<:AbstractPnmlNet} #todo net::PnmlNet ==> pagedict netdata decldict
+    net::RefValue{<:AbstractPnmlNet} # PnmlNet{PNTD} #todo net::PnmlNet ==> pagedict netdata decldict
     pntd::PNTD
     id::Symbol
     namelabel::Maybe{Name} = nothing
@@ -23,19 +23,18 @@ end
 
 nettype(::Page{T}) where {T<:PnmlType} = T
 
-net(p::Page) = p.net[]
-pagedict(p::Page) = pagedict(net(p))
-netdata(p::Page)  = netdata(net(p))
-netsets(p::Page)  = p.netsets
+net(page::Page) = page.net[]
+pagedict(page::Page) = pagedict(net(page))
+netdata(page::Page)  = netdata(net(page))
+netsets(page::Page)  = page.netsets
 
-placedict(p::Page)         = placedict(netdata(p))
-transitiondict(p::Page)    = transitiondict(netdata(p))
-arcdict(p::Page)           = arcdict(netdata(p))
-refplacedict(p::Page)      = refplacedict(netdata(p))
-reftransitiondict(p::Page) = reftransitiondict(netdata(p))
+placedict(page::Page)         = placedict(netdata(page))
+transitiondict(page::Page)    = transitiondict(netdata(page))
+arcdict(page::Page)           = arcdict(netdata(page))
+refplacedict(page::Page)      = refplacedict(netdata(page))
+reftransitiondict(page::Page) = reftransitiondict(netdata(page))
 
 #! Do not expect the page api to see much use, so it is likely not very efficient.
-#! Also does not decend pagetree. And otherwise limited functionality.
 pages(page::Page)       = Iterators.filter(v -> in(pid(v), page_idset(page)), values(pagedict(page)))
 places(page::Page)      = Iterators.filter(v -> in(pid(v), place_idset(page)), values(placedict(page)))
 transitions(page::Page) = Iterators.filter(v -> in(pid(v), transition_idset(page)), values(transitiondict(page)))

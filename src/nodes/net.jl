@@ -38,32 +38,33 @@ registry_of(net::PnmlNet) = net.idregistry
 decldict(net::PnmlNet) = decldict(net.declaration)
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
-pagedict(n::PnmlNet) = n.pagedict # Will be ordered.
-page_idset(n::PnmlNet) = n.page_set
+pagedict(net::PnmlNet) = net.pagedict # Will be ordered.
+page_idset(net::PnmlNet) = net.page_set
 
-netdata(n::PnmlNet) = n.netdata
+netdata(net::PnmlNet) = net.netdata
 
-placedict(n::PnmlNet)         = placedict(netdata(n))
-transitiondict(n::PnmlNet)    = transitiondict(netdata(n))
-arcdict(n::PnmlNet)           = arcdict(netdata(n))
-refplacedict(n::PnmlNet)      = refplacedict(netdata(n))
-reftransitiondict(n::PnmlNet) = reftransitiondict(netdata(n))
+placedict(net::PnmlNet)         = placedict(netdata(net))
+transitiondict(net::PnmlNet)    = transitiondict(netdata(net))
+arcdict(net::PnmlNet)           = arcdict(netdata(net))
+refplacedict(net::PnmlNet)      = refplacedict(netdata(net))
+reftransitiondict(net::PnmlNet) = reftransitiondict(netdata(net))
 
-netsets(n::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(n)) does not have a PnmlKeySet, did you mean `netdata`?"))
-"Return iterator over keys of a dictionary"
-place_idset(n::PnmlNet)         = keys(placedict(n)) #! verify same as PnmlKeySet for flattened page
-transition_idset(n::PnmlNet)    = keys(transitiondict(n))
-arc_idset(n::PnmlNet)           = keys(arcdict(n))
-refplace_idset(n::PnmlNet)      = keys(refplacedict(n))
-reftransition_idset(n::PnmlNet) = keys(reftransitiondict(n))
+netsets(net::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(net)) does not have a PnmlKeySet, did you mean `netdata`?"))
 
-npages(n::PnmlNet)          = length(pagedict(n))
-nplaces(n::PnmlNet)         = length(placedict(n))
-ntransitions(n::PnmlNet)    = length(transitiondict(n))
-narcs(n::PnmlNet)           = length(arcdict(n))
-nrefplaces(n::PnmlNet)      = length(refplacedict(n))
-nreftransitions(n::PnmlNet) = length(reftransitiondict(n))
-ndeclarations(n::PnmlNet)   = length(decldict(n))
+#"Return iterator over keys of a dictionary" #! verify same as PnmlKeySet for flattened page
+place_idset(net::PnmlNet)         = keys(placedict(net))
+transition_idset(net::PnmlNet)    = keys(transitiondict(net))
+arc_idset(net::PnmlNet)           = keys(arcdict(net))
+refplace_idset(net::PnmlNet)      = keys(refplacedict(net))
+reftransition_idset(net::PnmlNet) = keys(reftransitiondict(net))
+
+npages(net::PnmlNet)          = length(pagedict(net))
+nplaces(net::PnmlNet)         = length(placedict(net))
+ntransitions(net::PnmlNet)    = length(transitiondict(net))
+narcs(net::PnmlNet)           = length(arcdict(net))
+nrefplaces(net::PnmlNet)      = length(refplacedict(net))
+nreftransitions(net::PnmlNet) = length(reftransitiondict(net))
+ndeclarations(net::PnmlNet)   = length(decldict(net))
 
 """
     allpages(net::PnmlNet|dict::OrderedDict) -> Iterator
