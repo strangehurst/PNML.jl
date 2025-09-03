@@ -104,35 +104,14 @@ function enabled end
 function enabled(net::PnmlNet, marking) #!::Vararg{Union{Pair,Tuple}})
     varsub = NamedTuple() # There are no varibles possible here.
     marking # vector or tuple with element per place
-    #@show placeid = map(first, collect(marking))
-    #@show mark_value = map(last, collect(marking))
     d = Dict(labeled_places(net, marking))
-    # @show transition_idset(net)
-    # for t  in transition_idset(net)
-    #     @show tuple(PNML.preset(net, t)...)
-    # end
-    # states = map(first, collect(marking))
-
     evector = Bool[]
     for tr in transitions(net)
         trid = pid(tr)
         enabled = true # Assume all transitions possible.
-        #@show tuple(PNML.preset(net, trid)...)
-        #@show [arc(net, p, trid) for p in PNML.preset(net, trid)]
-        #println()
-        #@show [p for p in PNML.preset(net, trid)]
-        #@show [inscription(arc(net, p, trid)) for p in PNML.preset(net, trid)]
-        #println()
-        #@show [PNML.preset(net, trid)...]
-        #@show [d[p] for p in PNML.preset(net, trid)]
-        #println()
-
         e = all(d[p] >= inscription(arc(net,p,trid))(varsub) for p in PNML.preset(net, trid))
         push!(evector, e)
-        #println()
     end
-    #println()
-    #@show evector
     return evector
     # Bool[all(p -> d[p] >= inscription(arc(net,p,t))(varsub),
     #                                     PNML.preset(net, t)) for t in transition_idset(net)]
