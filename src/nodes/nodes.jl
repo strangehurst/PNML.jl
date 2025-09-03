@@ -21,9 +21,11 @@ mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
+pntd(p::Place) = p.pntd
 nettype(::Place{T}) where {T <: PnmlType} = T
 
 initial_marking(place::Place) = (place.initialMarking)()
@@ -67,9 +69,11 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     vars::Set{REFID}
     "Cache of variable substutions for this transition"
     varsubs::Vector{NamedTuple}
+    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
+pntd(t::Transition) = t.pntd
 nettype(::Transition{T}) where {T <: PnmlType} = T
 decldict(transition::Transition) = transition.declarationdicts
 
@@ -116,18 +120,21 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
-Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
-    Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
+# Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
+#     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 """
     inscription(arc::Arc) -> Union{Inscription,HLInscription}
-
+j'
 Access inscription label of arc.
 """
-inscription(arc::Arc) = arc.inscription # label
+function inscription(arc::Arc)
+    arc.inscription # label
+end
 
 sortref(arc::Arc) = sortref(arc.inscription)::SortRef
 sortof(arc::Arc)  = sortof(sortref(arc))
@@ -170,6 +177,7 @@ struct RefPlace <: ReferenceNode
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
@@ -187,6 +195,7 @@ struct RefTransition <: ReferenceNode
     graphics::Maybe{Graphics}
     tools::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
+    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
