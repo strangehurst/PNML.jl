@@ -272,21 +272,12 @@ end
 # Notably, this differs from `:numberof` by both arguments being variables, NOT ground terms.
 # As well as the 2nd being a multiset rather than a sort.
 function parse_term(::Val{:scalarproduct}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    scalar = nothing
-    bag = nothing # Bag
-
     stnode, tag = unwrap_subterm(EzXML.firstelement(node))
     tj1 = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk # scalar
-    #@assert scalar isa Integer expression # Real as scalar might confuse `Multiset.jl`.
 
     stnode, tag = unwrap_subterm(EzXML.nextelement(st))
     tj2 = parse_term(Val(tag), stnode, pntd; tj1.vars, parse_context)::TermJunk # bag
 
-    # isa(bag, Bag) &&
-    #     throw(ArgumentError("<scalarproduct> operates on Bag<:PnmlExpr, found $(nameof(typeof(bag)))"))
-
-    # isnothing(scalar) && throw(ArgumentError("Missing scalarproduct scalar subterm."))
-    # isnothing(bag) && throw(ArgumentError("Missing scalarproduct multiset subterm."))
     return TermJunk(PNML.ScalarProduct(tj1.exp, tj2.exp), basis(tj2.exp), tj2.vars)
 end
 
@@ -349,8 +340,6 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
             instance = tj2.exp # may be a bag
             isort = tj2.ref
             vars = tj2.vars
-            # isa(instance, Bag) &&
-            #     throw(ArgumentError("numberof's basis cannot be Bag expression, found $tj2"))
         end
     end
     isnothing(multiplicity) &&
@@ -404,14 +393,12 @@ end
 function parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    #@assert equalS(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return TermJunk(PNML.Equality(sts[1], sts[2]), UserSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    #@assert equal(sts[1], sts[2]) #! sts is expressions, check after eval'ed.
     return TermJunk(PNML.Inequality(sts[1], sts[2]), UserSortRef(:bool), vars)
 end
 
@@ -578,7 +565,6 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
         sortid = find_valuekey(namedsorts(parse_context.ddict), sort, sortdefinition)
         if isnothing(sortid) # Did not find sort, will instantiate in parse_context.decldict
             sortid = Symbol(sorttag,    "_", startstr, "_", stopstr)
-            #println("fill_sort_tag ",  repr(id), ", ", sort) #! debug
             sref = fill_sort_tag!(parse_context, sortid,
                 NamedSort(sortid, string(id), sort, parse_context.ddict)) # finiteintrangeconstant
             usersorts(parse_context.ddict)[tag] = UserSort(sref, parse_context.ddict) # finiteintrangeconstant

@@ -137,10 +137,6 @@ struct HLMarking{T<:PnmlExpr} <: HLAnnotation
     # The expression AST rooted at `term` wrapped in a `<structure>` in the XML stream.
     # Markings are ground terms, so no variables.
 
-    # equal(sortof(basis(markterm)), sortof(placetype)) ||
-    #     @error(string("HL marking sort mismatch,",
-    #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
-    #
     # Difference between Marking and HLMarking is the expression.
     # One is a number the other a term.
 

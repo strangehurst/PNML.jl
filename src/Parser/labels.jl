@@ -199,11 +199,6 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         l.exp
     end
     @assert isempty(l.vars) # markings are ground terms
-    #! Expect a `PnmlExpr` @matchable, do the checks elsewhere TBD
-    # equal(sortof(basis(markterm)), sortof(placetype)) ||
-    #     @error(string("HL marking sort mismatch,",
-    #         "\n\t sortof(basis(markterm)) = ", sortof(basis(markterm)),
-    #         "\n\t sortof(placetype) = ", sortof(placetype)))
     HLMarking(l.text, markterm, l.graphics, l.tools, parse_context.ddict)
 end
 
@@ -221,7 +216,6 @@ placetype(pmt::ParseMarkingTerm) = pmt.placetype
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(marknode, "structure")
     if EzXML.haselement(marknode)
-        #println("\n(pmt::ParseMarkingTerm) "); @show placetype(pmt)
         term = EzXML.firstelement(marknode) # ignore any others
 
         tj = parse_term(term, pntd; vars=(), parse_context) # ParseMarkingTerm
@@ -230,10 +224,6 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         #! MARK will be a TERM, a symbolic expression using TermInterface, @matchable
         #! that, when evaluated, produces a PnmlMultiset object.
 
-        #@assert sort == sortof(mark) # sortof multiset is the basis sort
-        #@assert sortof(mark) != basis(mark)
-        #@assert basis(mark) == sortof(basis(mark))
-
         # PnmlMultiset (datastrstructureucture) vs UserOperator/NamedOperator (term/expression)
         # Here we are parsing a term from XML to a ground term, which must be an operator.
         # Like with sorts, we have useroperator -> namedoperator -> operator.
@@ -241,23 +231,10 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         # Operators include built-in operators, multiset operators, tuples
         # Multiset operators must be evaluated to become PnmlMultiset objects.
         # Markings are multisets (a.k.a. bags).
-        #!isa(mark, PnmlMultiset) ||
-        #!ismultisetoperator(tag(mark)) || error("mark is not a multiset operator: $mark))")
-
-        # isa(sortof(mark), UserSort) ||
-        #     error("sortof(mark) is a $(sortof(mark)), expected UserSort")
-        # isa(mark, Union{PnmlMultiset,Operator}) ||
-        #     error("mark is a $(nameof(typeof(mark))), expected PnmlMultiset or Operator")
 
         isa(placetype(pmt), UserSortRef) ||
             error("placetype expected to be UserSortRef, found $(placetype(pmt))")
 
-        # if !equal(sortof(basis(mark)), sortof(placetype(pmt)))
-        #     @show basis(mark) placetype(pmt) sortof(basis(mark)) sortof(placetype(pmt))
-        #     throw(ArgumentError(string("parse marking term sort mismatch:",
-        #         "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
-        #         "\n\t sortof(sorttype) = ", sortof(placetype(pmt)))))
-        # end
         return tj
     end
     throw(ArgumentError("missing marking term in <structure>"))
@@ -295,7 +272,6 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(inscnode, "structure")
-    #println("\n(pmt::ParseInscriptionTerm) ", source(pit), " -> ", target(pit))
 
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
@@ -328,15 +304,6 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     tj.ref == placesort ||
         error("inscription term sort mismatch: $(tj.sortref) != $placesort")
 
-    #! inscript isa PnmlExpr, do these tests during/after firing/eval
-    # isa(sortof(inscript), AbstractSort) ||
-    #     error("sortof(inscript) is a $(nameof(sortof(inscript))), expected AbstractSort")
-    # @assert sort == sortof(inscript) "error $sort != $(sortof(inscript))"
-
-    #  equal(sortof(basis(inscript)), placesort) ||
-    #     throw(ArgumentError(string("sort mismatch:",
-    #         "\n\t sortof(basis(inscription)) ", sortof(basis(inscript)),
-    #         "\n\t placesort ", placesort)))
     return tj
 end
 

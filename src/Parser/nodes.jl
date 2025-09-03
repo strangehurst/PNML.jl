@@ -1,44 +1,44 @@
 # parse nodes of graph
 "Fill place_set, place_dict."
-function parse_place!(place_set, netdata, child, pntd; parse_context::ParseContext)
+function parse_place!(netsets, netdata, child, pntd; parse_context::ParseContext)
     pl = parse_place(child, pntd; parse_context)::valtype(PNML.placedict(netdata))
-    push!(place_set, pid(pl))
+    push!(place_idset(netsets), pid(pl))
     PNML.placedict(netdata)[pid(pl)] = pl
-    return place_set
+    return place_idset(netsets) #place_set
 end
 
 "Fill transition_set, transition_dict."
-function parse_transition!(transition_set, netdata, child, pntd; parse_context::ParseContext)
+function parse_transition!(netsets, netdata, child, pntd; parse_context::ParseContext)
     tr = parse_transition(child, pntd; parse_context)::valtype(PNML.transitiondict(netdata))
-    push!(transition_set, pid(tr))
+    push!(transition_idset(netsets), pid(tr))
     PNML.transitiondict(netdata)[pid(tr)] = tr
-    return transition_set
+    return transition_idset(netsets)
 end
 
 "Fill arc_set, arc_dict."
-function parse_arc!(arc_set, netdata, child, pntd; parse_context::ParseContext)
+function parse_arc!(netsets, netdata, child, pntd; parse_context::ParseContext)
     a = parse_arc(child, pntd; netdata, parse_context)
     a isa valtype(PNML.arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
-    push!(arc_set, pid(a))
+    push!(arc_idset(netsets), pid(a))
     PNML.arcdict(netdata)[pid(a)] = a
-    return arc_set
+    return arc_idset(netsets)
 end
 
 "Fill refplace_set, refplace_dict."
-function parse_refPlace!(refplace_set, netdata, child, pntd; parse_context::ParseContext)
+function parse_refPlace!(netsets, netdata, child, pntd; parse_context::ParseContext)
     rp = parse_refPlace(child, pntd; parse_context)::valtype(PNML.refplacedict(netdata))
-    push!(refplace_set, pid(rp))
+    push!(refplace_idset(netsets), pid(rp))
     PNML.refplacedict(netdata)[pid(rp)] = rp
-    return refplace_set
+    return refplace_idset(netsets)
 end
 
 "Fill reftransition_set, reftransition_dict."
-function parse_refTransition!(reftransition_set, netdata, child, pntd; parse_context::ParseContext)
+function parse_refTransition!(netsets, netdata, child, pntd; parse_context::ParseContext)
     rt = parse_refTransition(child, pntd; parse_context)::valtype(PNML.reftransitiondict(netdata))
-    push!(reftransition_set, pid(rt))
+    push!(reftransition_idset(netsets), pid(rt))
     PNML.reftransitiondict(netdata)[pid(rt)] = rt
-    return reftransition_set
+    return reftransition_idset(netsets)
 end
 
 
@@ -91,7 +91,6 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
 
     if isnothing(mark) # Use  additive identity of proper sort.
          mark = if ishighlevel(pntd)
-            #!@show pntd sorttype parse_context.ddict
             default(HLMarking, pntd, sorttype; parse_context.ddict)
         else
             default(Marking, pntd; parse_context.ddict)
@@ -103,15 +102,6 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::SortRef, nothing, nothing, decldict(mark))
     end
-
-    #! These are TermInterface expressions. Test elsewhere, after eval.
-    # The basis sort of mark label must be the same as the sort of sorttype label.
-    # if !equal(sortof(basis(mark)), sortof(sorttype))
-    #     error(string("place $(repr(id)) of $pntd: sort mismatch,",
-    #                     "\n\t sortof(basis(mark)) = ", sortof(basis(mark)),
-    #                     "\n\t sortof(sorttype) = ", sortof(sorttype)))
-    # end
-
     Place(pntd, placeid, mark, sorttype, namelabel, graphics, tools, labels, parse_context.ddict)
 end
 
