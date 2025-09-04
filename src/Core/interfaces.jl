@@ -74,6 +74,7 @@ Return first label of `x` with a matching `tagvalue`.
 """
 function get_label end
 
+function tools end
 
 #--------------------------------------------
 #--------------------------------------------

@@ -46,6 +46,7 @@ using PNML: usersort, namedsort, usersorts, namedsorts, multisetsorts, multisets
 using PNML: partitionsort, partitionsorts
 using PNML: pagedict, placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
+using PNML: netsets, tools
 
 # Methods implemented in this module.
 import PNML: adjacent_place
