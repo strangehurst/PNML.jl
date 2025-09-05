@@ -91,6 +91,7 @@ Per-page structure of `OrderedSet`s of pnml IDs for each "owned" `Page` and othe
     reftransition_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
     refplace_set::OrderedSet{Symbol} = OrderedSet{Symbol}()
 end
+
 page_idset(s::PnmlNetKeys) = s.page_set
 place_idset(s::PnmlNetKeys) = s.place_set
 transition_idset(s::PnmlNetKeys) = s.transition_set

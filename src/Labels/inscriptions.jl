@@ -8,7 +8,7 @@ Labels an Arc. See also [`HLInscription`](@ref).
 struct Inscription{T<:PnmlExpr} <: Annotation
     term::T #! expression
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
 end
 
@@ -16,7 +16,9 @@ Inscription(ex::PNML.NumberEx, ddict) = Inscription(ex, nothing, nothing, ddict)
 
 decldict(inscription::Inscription) = inscription.declarationdicts
 term(i::Inscription) = i.term # TODO when is the optimized away ()
-(i::Inscription)(varsub::NamedTuple) = eval(toexpr(term(i), varsub, decldict(i)))::Number
+function (i::Inscription)(varsub::NamedTuple)
+    eval(toexpr(term(i), varsub, decldict(i)))::Number
+end
 
 sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
 sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::NumberSort
@@ -33,7 +35,7 @@ function Base.show(io::IO, inscription::Inscription)
     end
     if has_tools(inscription)
         print(io, ", ")
-        show(io, tools(inscription))
+        show(io, toolinfos(inscription))
     end
     print(io, ")")
 end
@@ -52,7 +54,7 @@ struct HLInscription{T <: PnmlExpr, N} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     vars::NTuple{N,REFID}
     declarationdicts::DeclDict
 end
@@ -77,7 +79,7 @@ function Base.show(io::IO, inscription::HLInscription)
     end
     if has_tools(inscription)
         print(io, ", ")
-        show(io, tools(inscription));
+        show(io, toolinfos(inscription));
     end
     print(io, ")")
 end

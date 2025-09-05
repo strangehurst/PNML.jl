@@ -35,7 +35,7 @@ arbitrary sorts and operators
 ... introduce a new symbol without giving a definition
 ... used for constructing terms
 
-Unparsed term ... text, which will not be parsed and interpreted by the tools
+Unparsed term ... text, which will not be parsed and interpreted by the toolinfos
 
 P/T Nets defined as restricted HLPNGs
 - sorts Bool and Dot only.
@@ -58,7 +58,7 @@ High-Level Petri Net Graphs extends Symmetric Nets
 function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
     prop_name === :graphics && return getfield(o, :graphics)::Maybe{Graphics}
-    prop_name === :tools && return getfield(o, :tools)::Maybe{Vector{ToolInfo}}
+    prop_name === :toolspecinfos && return getfield(o, :toolspecinfos)::Maybe{Vector{ToolInfo}}
     prop_name === :declarationdicts && return getfield(o, :declarationdicts)::Maybe{DeclDict}
 
     return getfield(o, prop_name)
@@ -72,8 +72,8 @@ text(::Nothing) = ""
 has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics
 
-has_tools(l::AbstractLabel) = hasproperty(l, :tools) && !isnothing(l.tools)
-tools(l::AbstractLabel) = l.tools
+has_tools(l::AbstractLabel) = hasproperty(l, :toolspecinfos) && !isnothing(l.toolspecinfos)
+toolinfos(l::AbstractLabel) = l.toolspecinfos
 
 has_labels(l::AbstractLabel) = false # Labels DO NOT have sub-labels.
 
@@ -93,7 +93,7 @@ struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
     #TODO validate in constructor: must have text or structure (depends on pntd?)
     #TODO make all labels have text &/or structure?

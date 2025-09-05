@@ -8,7 +8,7 @@ There may be other things evaluating to boolean used to determine transition fir
 including: priority labels, inhibitor arc, place capacity labels, time/delay labels.
 
 # Examples
-
+Vector
 ```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant; using PNML.PnmlIDRegistrys; ctx=PNML.parser_context())
 julia> c = Labels.Condition(false, ctx.ddict)
 Condition("", BooleanEx(BooleanConstant(false)))
@@ -23,13 +23,13 @@ julia> c()
 true
 ```
 """
-@auto_hash_equals fields=text,term,graphics,tools,vars typearg=true struct Condition{T<:PnmlExpr, N} <: Annotation #TODO make LL & HL specializations?
+@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr, N} <: Annotation #TODO make LL & HL specializations?
     text::Maybe{String}
     term::T # duck-typed BoolExpr
     # color function: uses term and args, Built/JITed
-    graphics::Maybe{Graphics} #TODO switch order of graphics, tools everywhere!
-    tools::Maybe{Vector{ToolInfo}}
-    vars::NTuple{N,REFID}
+    graphics::Maybe{Graphics} #TODO switch order of graphics, toolinfos everywhere!
+    toolspecinfos::Maybe{Vector{ToolInfo}}
+    vars::NTuple{N,REFID} #! XXX DOCUMENT ME XXX
     declarationdicts::DeclDict
 end
 

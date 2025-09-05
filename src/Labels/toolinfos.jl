@@ -155,20 +155,20 @@ end
 
 Validate each `ToolInfo` in the iterable `infos` collection.
 
-Note that each info may contain any well-formed XML. That XML for other tools must be ignored.
+Note that each info may contain any well-formed XML. That XML for other toolinfos must be ignored.
 Any info for this tool will have deeper validation implemented.
 """
-function validate_toolinfos(tools)
-    isnothing(tools) && return true
-    for tool in tools
+function validate_toolinfos(toolinfos)
+    isnothing(toolinfos) && return true
+    for tool in toolinfos
         @assert tool isa ToolInfo #todo more tests than this.
     end
     return true
 end
-function list_toolinfos(tools)
-    isnothing(tools) && return true
-    if isnothing(tools)
-        for tool in tools
+function list_toolinfos(toolinfos)
+    isnothing(toolinfos) && return true
+    if isnothing(toolinfos)
+        for tool in toolinfos
             @show tool
         end
     end

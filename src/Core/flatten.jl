@@ -72,7 +72,7 @@ pagedict & netdata (holding the arc and pnml nodes) are per-net data that is not
 netsets hold pnml IDs "owned"
 """
 function append_page!(lpage::Page, rpage::Page;
-            keys = (:tools, :labels), # non-idset and non-dict fields of page to merge
+            keys = (:toolspecinfos, :labels), # non-idset and non-dict fields of page to merge
             idsets = (place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,),
             verbose::Bool = CONFIG[].verbose            )
 

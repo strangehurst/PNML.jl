@@ -18,7 +18,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "name")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -27,7 +27,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd, parse_context) # name label
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # name label
         else
             @warn "ignoring unexpected child of <name>: '$tag'"
         end
@@ -47,7 +47,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
 
     # Since names are for humans and do not need to be unique we will allow empty strings.
     # When the "lint" methods are implemented, they can complain.
-    return Name(text, graphics, tools)
+    return Name(text, graphics, toolspecinfos)
 end
 
 #----------------------------------------------------------
@@ -71,7 +71,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse
     text::Maybe{Union{String,SubString{String}}} = nothing
     exp::Maybe{Any} = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     ref ::Maybe{SortRef}= nothing
     vars = () # will be replaced by termparer
     for child in EzXML.eachelement(node)
@@ -83,12 +83,12 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd, parse_context) # label content termparser
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # label content termparser
         else
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", termparser, pntd)
         end
     end
-    return (; text, exp, sort=ref, graphics, tools, vars)
+    return (; text, exp, sort=ref, graphics, toolspecinfos, vars)
 end
 
 """
@@ -138,7 +138,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
     value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
 
-    Marking(PNML.NumberEx(sortref(placetype), value), l.graphics, l.tools, parse_context.ddict)
+    Marking(PNML.NumberEx(sortref(placetype), value), l.graphics, l.toolspecinfos, parse_context.ddict)
 end
 
 """
@@ -151,7 +151,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
     txt = nothing
     value = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -161,7 +161,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            tools = add_toolinfo(tools, child, pntd, parse_context) # inscription label
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # inscription label
         else
             @warn("ignoring unexpected child of <inscription>: '$tag'")
         end
@@ -174,7 +174,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
 
-    Inscription(PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value), graphics, tools, parse_context.ddict)
+    Inscription(PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value), graphics, toolspecinfos, parse_context.ddict)
 end
 
 """
@@ -199,7 +199,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         l.exp
     end
     @assert isempty(l.vars) # markings are ground terms
-    HLMarking(l.text, markterm, l.graphics, l.tools, parse_context.ddict)
+    HLMarking(l.text, markterm, l.graphics, l.toolspecinfos, parse_context.ddict)
 end
 
 """
@@ -249,7 +249,7 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData, parse_context::ParseContext)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; parse_context)::NamedTuple
-    HLInscription(l.text, l.exp, l.graphics, l.tools, l.vars, parse_context.ddict)
+    HLInscription(l.text, l.exp, l.graphics, l.toolspecinfos, l.vars, parse_context.ddict)
 end
 
 """
@@ -362,7 +362,7 @@ Another field holds information on variables in the expression.
 function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     l = parse_label_content(node, parse_condition_term, pntd; parse_context)::NamedTuple
     isnothing(l.exp) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
-    PNML.Labels.Condition(l.text, l.exp, l.graphics, l.tools, l.vars, parse_context.ddict)
+    PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, l.vars, parse_context.ddict)
 end
 
 """
@@ -396,7 +396,7 @@ function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     # High-level nets are expected to have a sorttype defined.
     # Possibly sorttype inferred from initial marking value.
 
-    SortType(l.text, l.exp, l.graphics, l.tools, parse_context.ddict) # Basic label structure.
+    SortType(l.text, l.exp, l.graphics, l.toolspecinfos, parse_context.ddict) # Basic label structure.
 end
 
 """

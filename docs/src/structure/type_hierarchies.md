@@ -5,7 +5,9 @@ CurrentModule = PNML
 Overview of some type hierarchies.
 
 ```@setup type
-using PNML, InteractiveUtils, Markdown
+using PNML, InteractiveUtils, Markdown, AbstractTrees
+AbstractTrees.children(x::Type) = subtypes(x)
+type_tree(t) = println(AbstractTrees.repr_tree(t))
 ```
 ## PnmlType - Petri Net Type Definition (PNTD)
 
@@ -64,13 +66,13 @@ type_tree(PNML.AbstractPnmlObject) # hide
 
 Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 
-| Name     | Description |
-|:---------|:-----------------------------------|
-| id       | Symbol, see ['REFID](@ref PNML.REFID) |
-| pntd     | <: [`PnmlType`](@ref) identifies the meta-model of a net. |
-| name     | Optional [`Name`](@ref) label. |
-| labels   | Optional [`PnmlLabel`](@ref) collection of unclaimed labels. |
-| tools    | Optional [`ToolInfo`](@ref) collection of tool specific content. |
+| Name      | Description |
+|:----------|:-----------------------------------|
+| id        | Symbol, see ['REFID](@ref PNML.REFID) |
+| pntd      | <: [`PnmlType`](@ref) identifies the meta-model of a net. |
+| name      | Optional [`Name`](@ref) label. |
+| labels    | Optional [`PnmlLabel`](@ref) collection of unclaimed labels. |
+| toolspecinfos | Optional [`ToolInfo`](@ref) collection of tool specific content. |
 
 ## AbstractLabel
 [`AbstractLabel`](@ref)s are attached to `AbstractPnmlObject`s.

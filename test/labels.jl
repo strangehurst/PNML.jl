@@ -18,7 +18,7 @@ end
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
-    @test n.tools === nothing || isempty(n.tools)
+    @test n.toolspecinfos === nothing || isempty(n.toolspecinfos)
 
     n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; parse_context)
     @test n isa PNML.Name
@@ -69,7 +69,7 @@ end # @with
     @test_call mark1()
 
     @test graphics(mark1) === nothing
-    @test tools(mark1) === nothing || isempty(tools(mark1))
+    @test toolinfos(mark1) === nothing || isempty(toolinfos(mark1))
 
     # Floating point
     mark2 = PNML.Marking(3.5, parse_context.ddict)
@@ -80,7 +80,7 @@ end # @with
     @test mark2() ≈ 3.5
     @test_call mark2()
     @test graphics(mark2) === nothing
-    @test tools(mark2) === nothing || isempty(tools(mark2))
+    @test toolinfos(mark2) === nothing || isempty(toolinfos(mark2))
 end
 
 @testset "PT inscription $pntd" for pntd in NON_HL_NETS
@@ -103,7 +103,7 @@ end
     #@show inscript
     #@test_broken inscript() == 12
     #@test graphics(inscript) !== nothing
-    #@test tools(inscript) === nothing || !isempty(tools(inscript))
+    #@test toolinfos(inscript) === nothing || !isempty(toolinfos(inscript))
     #@test_throws MethodError labels(inscript)
 
     #@test occursin("Graphics", sprint(show, inscript))

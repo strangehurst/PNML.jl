@@ -12,7 +12,7 @@ println("-----------------------------------------\n"); flush(stdout)
     @show summary(first(PNML.nets(model)))
     #println("model = ", model) #! debug
     #@test PNML.verify(net; verbose=true)
-    #TODO apply metagraph tools
+    #TODO apply metagraph toolinfos
 end
 
 #

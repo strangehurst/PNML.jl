@@ -17,7 +17,7 @@ Real valued label. An expected use is as a transition rate.
 @kwdef struct Rate{T<:Number} <: Annotation
     value::T # text? PnmlExpr?
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     declarationdicts::DeclDict
 end
 
@@ -25,7 +25,7 @@ Base.eltype(r::Rate) = typeof(value(r))
 value(r::Rate) = r.value
 
 function Base.show(io::IO, r::Rate)
-    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphicd,  ", ", r.tools, ")")
+    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphicd,  ", ", r.toolspecinfos, ")")
 end
 
 "Parse content of `<text>` as a number of `value_type`."

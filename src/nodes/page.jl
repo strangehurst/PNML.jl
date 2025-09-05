@@ -14,7 +14,7 @@ See [`PnmlNet`](@ref)
     id::Symbol
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     labels::Maybe{Vector{PnmlLabel}} = nothing
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
     # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.

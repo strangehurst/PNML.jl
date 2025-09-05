@@ -61,7 +61,7 @@ struct SortType <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
     sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
 end
 
@@ -107,7 +107,7 @@ function Base.show(io::IO, st::SortType)
     end
     if has_tools(st)
         print(io, ", ")
-        show(io, tools(st));
+        show(io, toolinfos(st));
     end
     print(io, ")")
 end

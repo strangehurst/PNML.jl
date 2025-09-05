@@ -164,15 +164,15 @@ end
         @test length(decl) == 14 # nothing in <declarations>
         @test !isempty(decl)
         @test PNML.graphics(decl) === nothing
-        @test PNML.tools(decl) === nothing
+        @test PNML.toolinfos(decl) === nothing
 
         @test_opt PNML.decldict(decl)
         @test_opt PNML.graphics(decl)
-        @test_opt PNML.tools(decl)
+        @test_opt PNML.toolinfos(decl)
 
         @test_call PNML.decldict(decl)
         @test_call PNML.graphics(decl)
-        @test_call PNML.tools(decl)
+        @test_call PNML.toolinfos(decl)
 end
 
 @testset "namedsort declaration $pntd" for pntd in PnmlTypes.core_nettypes()

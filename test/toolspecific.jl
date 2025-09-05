@@ -50,7 +50,7 @@ str5 = (tool="nupn", version="1.1", str = """
 
 str6 = (tool="WoPeD", version="1.0", str = """
 <toolspecific version="1.0" tool="WoPeD">
-    <!-- there are empty toolinfos in the examples -->
+    <!-- there are empty toolspecinfos in the examples -->
 </toolspecific>
 """)
 
@@ -100,8 +100,8 @@ str7 = (tool="WoPeD", version="1.0", str = """
 
     combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
 
-    @test_call tools(combinedplace)
-    placetools = tools(combinedplace)
+    @test_call toolinfos(combinedplace)
+    placetools = toolinfos(combinedplace)
     # @show placetools
     @test length(placetools) == 7
     @test all(t -> isa(t, ToolInfo), placetools)

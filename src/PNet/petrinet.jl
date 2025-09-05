@@ -115,7 +115,7 @@ Really, the implementation should be the same as for PTNet.
 
 Other HL Nets use multisets.
 """
-function initial_markings end #TODO move "lvector tools" section
+function initial_markings end #TODO move "lvector toolinfos" section
 
 initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet))
 
@@ -233,7 +233,7 @@ end
 
 # Method Cascade.
 # First two run the parser and can have addded tool and label plugins as context.
-# tools => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
+# toolinfos => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
 SimpleNet(s::AbstractString; context...)  = SimpleNet(xmlroot(s); context...)
 SimpleNet(node::PNML.XMLNode; context...) = SimpleNet(PNML.Parser.pnmlmodel(node; context...))
 

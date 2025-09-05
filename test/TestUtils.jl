@@ -44,7 +44,7 @@ Multisets.set_key_value_show()
 
 @reexport using PNML.Labels: PnmlLabel, has_label, get_label, Condition
 
-@reexport using PNML: tools
+@reexport using PNML: toolinfos
 
 @reexport using PNML: AbstractDeclaration, Declaration, refid
 @reexport using PNML: PNet.initial_marking, PNet.initial_markings, inscription, condition

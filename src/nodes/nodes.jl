@@ -19,7 +19,7 @@ mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     sorttype::SortType #^ Label with human text/graphics. And a sort.
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
@@ -63,7 +63,7 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     condition::C #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
 
     vars::Set{REFID}
@@ -118,14 +118,11 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     inscription::I #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
 end
-
-# Arc(a::Arc, src::RefValue{Symbol}, tgt::RefValue{Symbol}) =
-#     Arc(a.id, src, tgt, a.inscription, a.namelabel, a.graphics, a.tools, a.labels)
 
 """
     inscription(arc::Arc) -> Union{Inscription,HLInscription}
@@ -175,7 +172,7 @@ struct RefPlace <: ReferenceNode
     ref::Symbol # Place or RefPlace IDREF
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
@@ -193,7 +190,7 @@ struct RefTransition <: ReferenceNode
     ref::Symbol # Transition or RefTransition IDREF
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     labels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict

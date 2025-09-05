@@ -171,24 +171,24 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # Though what use graphics could add escapes me (and the standard).
     decls = alldecendents(node, "declaration") # There may be none.
 
-    # If there are multiple `<declaration>`s parsed the will share the DeclDict.
+    # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     declaration = parse_declaration!(parse_context, decls, pntd)::Declaration
     @assert PNML.decldict(declaration) === parse_context.ddict
     PNML.validate_declarations(PNML.decldict(declaration)) #
 
-    # Collect all the toolinfos at this level (if any exist). Enables use in later parsing.
-    tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
-    PNML.Labels.validate_toolinfos(tools)
+    # Collect all the toolspecinfos at net level (if any exist). Enables use in later parsing.
+    toolspecinfos = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
+    PNML.Labels.validate_toolinfos(toolspecinfos)
 
     #--------------------------------------------------------------------
-    # Create net with declarations and net-level toolinfos parsed.
+    # Create net with declarations and net-level toolspecinfos parsed.
     # Will have empty `pagedict`, `netdata`, `page_set` and `idregistry`.
     #--------------------------------------------------------------------
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict, netdata,
                     page_set=page_idset(netsets),
                     declaration, # Label, Wraps same DeclDict as parse_context.ddict.
-                    namelabel, tools,
+                    namelabel, toolspecinfos,
                     parse_context.idregistry
                     )
 
@@ -235,61 +235,75 @@ function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse
 end
 
 """
-    _parse_page!(net, node, pntd; ddict) -> Page
+    _parse_page!(net, node, pntd, pageid; parse_context) -> Page
 
-Place `Page` in `pagedict` using id as the key.
+Return `Page`. `pageid` already parsed from `node`.
 """
 function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
     # Allocate per-page data structures.
-    netsets = PnmlNetKeys() # Track which objects belong to this page.
-    namelabel::Maybe{Name} = nothing
-    graphics::Maybe{Graphics} = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
-    tools = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
+    #netkeysets = PnmlNetKeys() # Track which objects belong to this page.
+    #namelabel::Maybe{Name} = nothing
+    #graphics::Maybe{Graphics} = nothing
+    #labels::Maybe{Vector{PnmlLabel}} = nothing
 
-    PNML.Labels.validate_toolinfos(tools)
+    #---------------------------------------------------------
+    # Create "empty" page. Will have `net` and `toolinfos` parsed.
+    #---------------------------------------------------------
+
+    page = Page{T}(; net=Ref(net), pntd, id = pageid,
+        netsets = PnmlNetKeys(),
+        toolspecinfos= find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}})
+
+    PNML.Labels.validate_toolinfos(toolinfos(page))
+
+    #---------------------------------------------------------
+    #---------------------------------------------------------
+
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "place"
-            parse_place!(netsets, netdata(net), child, pntd; parse_context)
+            parse_place!(netsets(page), netdata(net), child, pntd; parse_context)
         elseif tag == "referencePlace"
-            parse_refPlace!(netsets, netdata(net), child, pntd; parse_context)
+            parse_refPlace!(netsets(page), netdata(net), child, pntd; parse_context)
         elseif tag == "transition"
-            parse_transition!(netsets, netdata(net), child, pntd; parse_context)
+            parse_transition!(netsets(page), netdata(net), child, pntd; parse_context)
         elseif tag == "referenceTransition"
-            parse_refTransition!(netsets, netdata(net), child, pntd; parse_context)
+            parse_refTransition!(netsets(page), netdata(net), child, pntd; parse_context)
         elseif tag == "arc"
-            parse_arc!(netsets, netdata(net), child, pntd; parse_context)
+            parse_arc!(netsets(page), netdata(net), child, pntd; parse_context)
         elseif tag in ["declaration", "toolspecific"]
              # NOOP println("already parsed ", tag)
-        elseif tag == "page" # Subpage uses different netsets
-            parse_page!(net, netsets, child, pntd; parse_context)
+        elseif tag == "page"
+            # Subpage
+            parse_page!(net, netsets(page), child, pntd; parse_context)
+
         elseif tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
+            page.namelabel = parse_name(child, pntd; parse_context)
         elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
+            page.graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            labels = add_label(labels, child, pntd, parse_context)
+            page.labels = add_label(page.labels, child, pntd, parse_context)
         end
     end
 
-    # TODO add net
-    return Page{T}(; net=Ref(net), pntd=pntd, id=pageid, namelabel=namelabel,
-                graphics=graphics, tools=tools, labels=labels, netsets=netsets)
+    #@show page
+
+    return page #! Page{T}(; net=Ref(net), pntd=pntd, id=pageid, namelabel=namelabel,
+                #!  graphics=graphics, toolinfos=toolinfos, labels=labels, netsets=netsets)
 end
 
 """
-    find_toolinfos!(tools, node, pntd, parse_context::ParseContext) -> tools
+    find_toolinfos!(toolspecinfos, node, pntd, parse_context::ParseContext) -> toolinfos
 
-Calls `add_toolinfo(tools, info, pntd, parse_context)` for each info found.
+Calls `add_toolinfo(toolspecinfos, info, pntd, parse_context)` for each info found.
 See [`Labels.get_toolinfos`](@ref) for accessing `ToolInfo`s.
 """
-function find_toolinfos!(tools, node, pntd, parse_context::ParseContext)
+function find_toolinfos!(toolspecinfos, node, pntd, parse_context::ParseContext)
     for info in allchildren(node, "toolspecific")
-        tools = add_toolinfo(tools, info, pntd, parse_context) # nets and pages
+        toolspecinfos = add_toolinfo(toolspecinfos, info, pntd, parse_context) # nets and pages
     end
-    return tools
+    return toolspecinfos
 end

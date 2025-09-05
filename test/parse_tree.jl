@@ -105,7 +105,7 @@ println("-----------------------------------------\n")
 
     @show summary(PNML.netsets(firstpage(net)))
 
-    #TODO apply metagraph tools
+    #TODO apply metagraph toolinfos
 end
 
 # println("\n-----------------------------------------")

@@ -33,7 +33,7 @@ function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::Pnm
 
     text = nothing
     graphics::Maybe{Graphics} = nothing
-    tools::Maybe{Vector{ToolInfo}}  = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}}  = nothing
     for node in nodes
         check_nodename(node, "declaration")
         for child in EzXML.eachelement(node)
@@ -46,14 +46,14 @@ function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::Pnm
             elseif tag == "graphics"# may overwrite
                 graphics = parse_graphics(child, pntd)
             elseif tag == "toolspecific" # accumulate tool specific
-                tools = add_toolinfo(tools, child, pntd, ctx) # declarations are labels
+                toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, ctx) # declarations are labels
             else
                 @warn "ignoring unexpected child of <declaration>: '$tag'"
             end
         end
     end
 
-    Declaration(; text, ctx.ddict, graphics, tools)
+    Declaration(; text, ctx.ddict, graphics, toolspecinfos)
 end
 
 """

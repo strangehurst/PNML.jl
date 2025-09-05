@@ -27,7 +27,7 @@ Expected interface is for every concrete object to have fields:
     - namelabel
     - graphics
     - labels
-    - tools
+    - toolspecinfos
 """
 abstract type AbstractPnmlObject end
 
@@ -38,7 +38,7 @@ Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@
 Expected interface is for every concrete label to have fields:
     - text
     - graphics
-    - tools
+    - toolspecinfos
     - declarationdicts
 """
 abstract type AbstractLabel end
@@ -64,9 +64,9 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     prop_name === :id   && return getfield(o, :id)::Symbol
 #     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
-    prop_name === :graphics   && return getfield(o, :graphics)::Maybe{Graphics}
-    prop_name === :labels   && return getfield(o, :labels)::Maybe{Vector{PnmlLabel}}
-    prop_name === :tools   && return getfield(o, :tools)::Maybe{Vector{ToolInfo}}
+    prop_name === :graphics  && return getfield(o, :graphics)::Maybe{Graphics}
+    prop_name === :labels    && return getfield(o, :labels)::Maybe{Vector{PnmlLabel}}
+    prop_name === :toolnfos  && return getfield(o, :toolspecinfos)::Maybe{Vector{ToolInfo}}
 
     return getfield(o, prop_name)
 end
@@ -81,12 +81,12 @@ has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(get
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 name(::Nothing) = ""
 
-# labels and tools are vectors: isnothing vs isempty
+# labels and toolspecinfos are vectors: isnothing vs isempty
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
 labels(o::AbstractPnmlObject)     = o.labels
 
-has_tools(o::AbstractPnmlObject) = hasproperty(o, :tools) && !isnothing(o.tools)
-tools(o::AbstractPnmlObject)     = hasproperty(o, :tools) ? o.tools : nothing
+has_tools(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) && !isnothing(o.toolspecinfos)
+toolinfos(o::AbstractPnmlObject)     = hasproperty(o, :toolspecinfos) ? o.toolspecinfos : nothing
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics

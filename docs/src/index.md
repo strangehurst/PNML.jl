@@ -46,7 +46,7 @@ See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://ww
 
 See [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf) for concepts relevant to *ISO/IEC 15909-3*.
 
-Note that the pnml XML file is the working intermediate representation of a suite of tools that use
+Note that the pnml XML file is the working intermediate representation of a suite of toolinfos that use
 RelaxNG and Schematron for validation of the interchange file's content.
 
 ## Interoperability
@@ -54,7 +54,7 @@ RelaxNG and Schematron for validation of the interchange file's content.
 Petri Net Type Definition schema files (pntd) are defined using RELAX-NG XML Schema files (rng).
 Petri Net Markup Language files (pnml) are intended to be validated against a pntd schema.
 
-For interchange of pnml between tools it should be enough to support the same pntd schema.
+For interchange of pnml between toolinfos it should be enough to support the same pntd schema.
 
 Note that ISO released part 3 of the PNML standard covering extensions and structuring mechanisms in 2021. And some http://www.pnml.org files address these extensions.
 Including [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf).
@@ -157,19 +157,19 @@ Rust language.
 
 [Automated Code Optimization with E-Graphs](https://arxiv.org/abs/2112.14714): Alessandro Cheli's Thesis on Metatheory.jl.
 
-[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) a platform for developing Petri net tools based on the PNML transfer format is another Eclipse/Java EMF thing. Implements more complicated PNML than used in MCC. By authors of PNML.
+[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) a platform for developing Petri net toolinfos based on the PNML transfer format is another Eclipse/Java EMF thing. Implements more complicated PNML than used in MCC. By authors of PNML.
 [github](https://github.com/ekkart/ePNK) has the source, documentation, examples.
 
 "The [Model Checking Contest (MCC)](https://mcc.lip6.fr/) has two different parts:
 the Call for Models, which gathers Petri net models proposed by the scientific community,
-and the Call for Tools, which benchmarks verification tools developed within the scientific community."
+and the Call for Tools, which benchmarks verification toolinfos developed within the scientific community."
 Each year new models are added to the contest.
 
 [Nested-Unit Petri Nets (NUPN)](https://mcc.lip6.fr/2025/nupn.php)
 an "extension of P/T nets" used by MCC:
   - existence of units has no effect on the transition firing rules
   - partitions the set of places
-  - if a net is unit-safe, units express linear inequality invariants on reachable markings, and tools may take advantage of such invariants to perform logarithmic reductions in the size of marking encodings.
+  - if a net is unit-safe, units express linear inequality invariants on reachable markings, and toolinfos may take advantage of such invariants to perform logarithmic reductions in the size of marking encodings.
 
 
  "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"

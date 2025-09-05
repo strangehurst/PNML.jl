@@ -11,8 +11,8 @@ Is a functor that returns the `value`.
 struct Marking{T <: PnmlExpr} <: Annotation
     #! HLMarking has text here #todo support for PTNet
     term::T #! expression
-    graphics::Maybe{Graphics} # PTNet uses TokenGraphics in tools rather than graphics.
-    tools::Maybe{Vector{ToolInfo}}
+    graphics::Maybe{Graphics} # PTNet uses TokenGraphics in toolspecinfos rather than graphics.
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
 end
 
@@ -86,7 +86,7 @@ function Base.show(io::IO, ptm::Marking)
     end
     if has_tools(ptm)
         print(io, ", ")
-        show(io, tools(ptm));
+        show(io, toolinfos(ptm));
     end
     print(io, ")")
 end
@@ -141,7 +141,7 @@ struct HLMarking{T<:PnmlExpr} <: HLAnnotation
     # One is a number the other a term.
 
     graphics::Maybe{Graphics}
-    tools::Maybe{Vector{ToolInfo}}
+    toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
 end
 #HLMarking(t::PnmlExpr, ddict) = HLMarking(nothing, t, ddict)
@@ -180,7 +180,7 @@ function Base.show(io::IO, hlm::HLMarking)
     end
     if has_tools(hlm)
         print(io, ", ")
-        show(io, tools(hlm));
+        show(io, toolinfos(hlm));
     end
     print(io, ")")
 end

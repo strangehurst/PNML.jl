@@ -7,7 +7,7 @@ Return the marking vector after firing transition:   marking + incidence * enabl
 
 `marking` values added to product of `incidence'` matrix and firing vector `enabled`.
 """
-function fire(incidence, enabled, m₀) #TODO move "lvector tools" section
+function fire(incidence, enabled, m₀) #TODO move "lvector toolinfos" section
     #println("fire")
     #@show typeof(incidence) enabled typeof(m₀)
     #@show permutedims(incidence) * enabled

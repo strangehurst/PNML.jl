@@ -20,7 +20,7 @@ One Petri Net of a PNML model.
 
     namelabel::Maybe{Name} = nothing
     # no graphics for net
-    tools::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     labels::Vector{PnmlLabel} = PnmlLabel[] # empty by default
     idregistry::PnmlIDRegistry = PnmlIDRegistry()
 end
@@ -80,8 +80,8 @@ pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpage
 "Usually the only interesting page."
 firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 
-has_tools(net::PnmlNet) = !isnothing(net.tools)
-tools(net::PnmlNet)     = net.tools
+has_tools(net::PnmlNet) = !isnothing(net.toolspecinfos)
+toolinfos(net::PnmlNet)     = net.toolspecinfos
 
 has_labels(net::PnmlNet) = !isnothing(net.labels)
 labels(net::PnmlNet)     = net.labels # Vectors are iteratable.
@@ -190,7 +190,7 @@ function verify!(errors, net::PnmlNet;
     end
     # places(net), transitions(net), arcs(net)
     # declarations(net)
-    # tools(net)
+    # toolinfos(net)
     # labels(net)
     return errors
 end
@@ -202,7 +202,7 @@ function Base.summary(net::PnmlNet)
             " type ", nettype(net), ", ",
             npages(net), " pages, ",
             ndeclarations(net), " declarations, ",
-            has_tools(net) ? length(tools(net)) : 0, " tools, ",
+            has_tools(net) ? length(toolinfos(net)) : 0, " toolinfos, ",
             has_labels(net) ? length(labels(net)) : 0, " labels")::String
 end
 
@@ -221,7 +221,7 @@ function Base.show(io::IO, net::PnmlNet)
     end
     println(io)
     println(io, "Declarations = ", repr(decldict(net)))
-    show(io, tools(net)); println(io, ", ")
+    show(io, toolinfos(net)); println(io, ", ")
     show(io, labels(net)); println(io, ", ")
     show(io, nettype(net)); println(io, ")")
 
