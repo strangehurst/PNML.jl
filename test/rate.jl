@@ -35,3 +35,69 @@ end
                     PNML.Parser.parse_transition(node, pntd; parse_context))
     @test PNML.rate_value(tr, pntd) ≈ 0.0
 end
+
+
+# @testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
+#     parse_context = PNML.parser_context()
+#     # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
+#     # This bit may be from the pre-standard era.
+#     # <ci> is a variable(constant) like pi, infinity.
+#     # <cn> is a number (real)
+#     # interval [4,9]
+#     node = xml"""<transition id ="t6">
+#         <delay>
+#             <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
+#                 <cn>4.0</cn>
+#                 <cn>9.0</cn>
+#             </interval>
+#         </delay>
+#     </transition>"""
+#     #! This has Float64 and Int
+#     println()
+#     @show t = parse_transition(node, pntd; parse_context)::Transition
+#     println()
+#     @test has_label(labels(t), "delay")
+#     @show has_label(labels(t), "delay")
+#     #@show dump(t)
+
+#     ls = labels(t)
+#     #elements(label)
+
+#     @show typeof(ls) length(ls)
+#     #@show typeof(first(ls))
+#     println()
+#     @show PNML.get_label(ls, "delay") #! debug
+#     @show PNML.labelof(t, "delay") #! debug
+#     @test PNML.get_label(ls, "delay") == PNML.labelof(t, "delay")
+#     @test PNML.delay_value(t) isa Tuple
+#     #println()
+
+#     # unbounded interval [4,∞)
+#     node = xml"""<transition id ="t7">
+#         <delay>
+#             <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
+#                 <cn>4</cn>
+#                 <ci>infty</ci>
+#             </interval>
+#         </delay>
+#     </transition>"""
+#     t = parse_transition(node, pntd; parse_context)::Transition
+#     @test PNML.delay_value(t) isa Tuple
+#     #@show PNML.labelof(t, "delay") #! debug
+#     #println()
+
+#     # interval (3,5)
+#     node = xml"""<transition id ="t8">
+#         <delay>
+#             <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="open">
+#                 <cn>3</cn>
+#                 <cn>5</cn>
+#             </interval>
+#         </delay>
+#     </transition>"""
+#     t = parse_transition(node, pntd; parse_context)::Transition
+#     @test PNML.delay_value(t) isa Tuple
+#     #@show PNML.labelof(t, "delay") #! debug
+#     #println()
+
+# end

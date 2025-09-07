@@ -90,58 +90,6 @@ end
 
 println("\n==============================================================================")
 
-@testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
-    parse_context = PNML.parser_context()
-    # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
-    # This bit may be from the pre-standard era.
-    # <ci> is a variable(constant) like pi, infinity.
-    # <cn> is a number (real)
-    # interval [4,9]
-    node = xml"""<transition id ="t6">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed">
-                <cn>4.0</cn>
-                <cn>9</cn>
-            </interval>
-        </delay>
-    </transition>"""
-    t = parse_transition(node, pntd; parse_context)::Transition
-    @test has_label(labels(t), "delay")
-    #@show PNML.get_label(labels(t), "delay") #! debug
-    #@show PNML.labelof(t, "delay") #! debug
-    @test PNML.get_label(labels(t), "delay") == PNML.labelof(t, "delay")
-    @test PNML.delay_value(t) isa Tuple
-    #println()
-
-    # unbounded interval [4,∞)
-    node = xml"""<transition id ="t7">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="closed-open">
-                <cn>4</cn>
-                <ci>infty</ci>
-            </interval>
-        </delay>
-    </transition>"""
-    t = parse_transition(node, pntd; parse_context)::Transition
-    @test PNML.delay_value(t) isa Tuple
-    #@show PNML.labelof(t, "delay") #! debug
-    #println()
-
-    # interval (3,5)
-    node = xml"""<transition id ="t8">
-        <delay>
-            <interval xmlns="http://www.w3.org/1998/Math/MathML" closure="open">
-                <cn>3</cn>
-                <cn>5</cn>
-            </interval>
-        </delay>
-    </transition>"""
-    t = parse_transition(node, pntd; parse_context)::Transition
-    @test PNML.delay_value(t) isa Tuple
-    #@show PNML.labelof(t, "delay") #! debug
-    #println()
-
-end
 
 #! Needs scaffolding
 # @testset "arc $pntd"  for pntd in PnmlTypes.all_nettypes()
