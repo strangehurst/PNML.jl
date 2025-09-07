@@ -65,7 +65,7 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 #     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
     prop_name === :graphics  && return getfield(o, :graphics)::Maybe{Graphics}
-    prop_name === :labels    && return getfield(o, :labels)::Maybe{Vector{PnmlLabel}}
+    prop_name === :extralabels && return getfield(o, :extralabels)::Maybe{Vector{PnmlLabel}}
     prop_name === :toolnfos  && return getfield(o, :toolspecinfos)::Maybe{Vector{ToolInfo}}
 
     return getfield(o, prop_name)
@@ -82,11 +82,11 @@ name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 name(::Nothing) = ""
 
 # labels and toolspecinfos are vectors: isnothing vs isempty
-has_labels(o::AbstractPnmlObject) = hasproperty(o, :labels) && !isnothing(o.labels)
-labels(o::AbstractPnmlObject)     = o.labels
+has_labels(o::AbstractPnmlObject) = hasproperty(o, :extralabels) && !isnothing(o.extralabels)
+labels(o::AbstractPnmlObject)     = o.extralabels
 
 has_tools(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) && !isnothing(o.toolspecinfos)
-toolinfos(o::AbstractPnmlObject)     = hasproperty(o, :toolspecinfos) ? o.toolspecinfos : nothing
+toolinfos(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) ? o.toolspecinfos : nothing
 
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics

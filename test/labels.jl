@@ -114,7 +114,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 #@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]
     # reg = PnmlIDRegistry()
-    # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.labels)
+    # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.extralabels)
     # @test_opt PNML.Parser.add_label!(lab, node, pntd)
     # @test_opt(broken=false,
     #             ignored_modules=(JET.AnyFrameModule(EzXML),

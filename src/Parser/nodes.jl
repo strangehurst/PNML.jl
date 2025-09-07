@@ -67,7 +67,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     namelabel::Maybe{Name}           = nothing
     graphics::Maybe{Graphics}        = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}}   = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -85,7 +85,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <place>: $tag"
-            labels = add_label(labels, child, pntd, parse_context)
+            extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
@@ -102,7 +102,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::SortRef, nothing, nothing, decldict(mark))
     end
-    Place(pntd, placeid, mark, sorttype, namelabel, graphics, toolspecinfos, labels, parse_context.ddict)
+    Place(pntd, placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
 """
@@ -117,7 +117,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -135,15 +135,16 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
             #!
             # Lookup parser for tag
             #
-            any(==(tag), ("rate", "delay")) ||
+            any(==(tag), ("rate", "delayx")) ||
                 @warn "found unexpected label of <transition> id=$transitionid: $tag"
-            labels = add_label(labels, child, pntd, parse_context)
+            extralabels = add_label(extralabels, child, pntd, parse_context)
+            #!@show extralabels
         end
     end
 
     Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, transitionid,
             something(cond, Labels.default(Labels.Condition, pntd; parse_context.ddict)),
-            namelabel, graphics, toolspecinfos, labels,
+            namelabel, graphics, toolspecinfos, extralabels,
             Set{REFID}(),
             NamedTuple[], parse_context.ddict)
 end
@@ -164,7 +165,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}}  = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -182,7 +183,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
-            labels = add_label(labels, child, pntd, parse_context)
+            extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
@@ -198,7 +199,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
         end
     end
 
-    Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, labels, parse_context.ddict)
+    Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
 # By specializing arc inscription label parsing we hope to return stable type.
@@ -224,7 +225,7 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -236,11 +237,11 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
-            labels = add_label(labels, child, pntd, parse_context)
+            extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
-    RefPlace(refp_id, ref, namelabel, graphics, toolspecinfos, labels, parse_context.ddict)
+    RefPlace(refp_id, ref, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
 """
@@ -255,7 +256,7 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    labels::Maybe{Vector{PnmlLabel}}= nothing
+    extralabels::Maybe{Vector{PnmlLabel}}= nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
@@ -267,11 +268,11 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
-            labels = add_label(labels, child, pntd, parse_context)
+            extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
-    RefTransition(reft_id, ref, namelabel, graphics, toolspecinfos, labels, parse_context.ddict)
+    RefTransition(reft_id, ref, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
 

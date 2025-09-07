@@ -208,7 +208,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
             @warn "ignoring unexpected child of <net>: <graphics>"
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
-            net.labels = add_label(net.labels, child, pntd, parse_context) # Net unclaimed label.
+            net.extralabels = add_label(net.extralabels, child, pntd, parse_context) # Net unclaimed label.
             #TODO mechanism for allowing new meta-models to provide specialized parsers
             #TODO When method `parse_unclaimed_label(Val(tag), child, pntd)` is defined,
             #TODO still need to be able to find the label to use it.
@@ -245,7 +245,7 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
     #netkeysets = PnmlNetKeys() # Track which objects belong to this page.
     #namelabel::Maybe{Name} = nothing
     #graphics::Maybe{Graphics} = nothing
-    #labels::Maybe{Vector{PnmlLabel}} = nothing
+    #extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     #---------------------------------------------------------
     # Create "empty" page. Will have `net` and `toolinfos` parsed.
@@ -285,7 +285,7 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             page.graphics = parse_graphics(child, pntd)
         else
             CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $tag")
-            page.labels = add_label(page.labels, child, pntd, parse_context)
+            page.extralabels = add_label(page.extralabels, child, pntd, parse_context)
         end
     end
 

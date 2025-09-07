@@ -20,7 +20,7 @@ mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    extralabels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
 end
@@ -64,7 +64,7 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    extralabels::Maybe{Vector{PnmlLabel}}
 
     vars::Set{REFID}
     "Cache of variable substutions for this transition"
@@ -119,7 +119,7 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    extralabels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
 end
@@ -173,7 +173,7 @@ struct RefPlace <: ReferenceNode
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    extralabels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
 end
@@ -191,7 +191,7 @@ struct RefTransition <: ReferenceNode
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    labels::Maybe{Vector{PnmlLabel}}
+    extralabels::Maybe{Vector{PnmlLabel}}
     #todo net::PnmlNet
     declarationdicts::DeclDict
 end
