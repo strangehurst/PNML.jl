@@ -1,8 +1,8 @@
 using SciMLLogging: SciMLLogging, Verbosity, @SciMLMessage
-using Logging
-using LoggingExtras
+# using Logging
+# using LoggingExtras
 
-using PNML
+# using PNML
 
 
 # Define option groups
@@ -61,8 +61,8 @@ end
 
 # Constructor with enable/disable parameter
 PnmlVerbosity(; enable = true, kwargs...) = PnmlVerbosity{enable}(; kwargs...)
-verbose = PnmlVerbosity{true}() # Create enabled verbosity
-silent = PnmlVerbosity{false}() # Create disabled verbosity
+const verbose = PnmlVerbosity{true}() # Create enabled verbosity
+const silent = PnmlVerbosity{false}() # Create disabled verbosity
 
 "Return file path string after creating intermediate directories."
 function logfile(config, filename)
@@ -75,7 +75,7 @@ function logstream(path; kwds...)
     open(path, "a")
 end
 # Create a logger
-logger_for_pnml = SciMLLogging.SciMLLogger(
+const logger_for_pnml = SciMLLogging.SciMLLogger(
     info_repl = true,     # Show info in REPL
     warn_repl = true,     # Show warnings in REPL
     error_repl = true,    # Show errors in REPL
