@@ -62,7 +62,7 @@ end
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = Ref(PnmlConfig())
 
-include("preferences.jl")
+include("preferences.jl") # read_config!, save_config, show
 
 __init__() = read_config!(CONFIG[])
 
@@ -73,8 +73,7 @@ if !haskey(ENV, "COLUMNS")
 end
 
 import AutoHashEquals: @auto_hash_equals
-import Base: eltype, keys
-import Base: *, +, -, <, >,>=, <=, zero, length, iterate
+import Base: eltype, keys, *, +, -, <, >,>=, <=, zero, length, iterate
 import FunctionWrappers
 import Reexport: @reexport
 import DecFP
@@ -88,6 +87,7 @@ import Multisets: Multisets, Multiset
 import Moshi.Match: @match
 import Moshi.Data: @data
 import SciMLPublic: @public
+import LabelledArrays #Todo beware namespace pollution
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface
@@ -95,7 +95,6 @@ using Metatheory
 using Graphs: SimpleDiGraphFromIterator, Edge
 using MetaGraphsNext: MetaGraph
 
-using LabelledArrays #Todo beware namespace pollution
 using NamedTupleTools
 using DocStringExtensions
 
@@ -115,10 +114,9 @@ export @xml_str, xmlroot
 
 Multisets.set_key_value_show()
 
-include("logging.jl")
-pnml_logger = Ref(logger_for_pnml) #(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
-
-global_logger(pnml_logger[])
+include("logging.jl") # SciMLLogging based: `silent`, `verbose`, `logger_for_pnml`
+#! pnml_logger = Ref(logger_for_pnml) #(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
+#! global_logger(pnml_logger[])
 
 include("PnmlTypes.jl")
 using .PnmlTypes
@@ -141,13 +139,11 @@ include("Core/labelparser.jl")
 verbose
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
-# parse context has id registry and DeclDict
-
 # Parts of Labels and Nodes.
 
 include("terms/tuples.jl")
 
-include("Core/parse_context.jl")
+include("Core/parse_context.jl") # parse context has id registry and DeclDict
 
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
@@ -178,16 +174,7 @@ include("terms/operators.jl")
 include("terms/terms.jl") # Variables and AbstractOperators preceed this.
 include("Core/rewrite.jl")
 
-# 2024-07-22 moved forward, holds Any rather than node types.
 include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, arcs.
-
-# include("Declarations/Declarations.jl")
-# using .Declarations
-# import .Declarations: NamedSort, SortDeclaration
-
-# Declarations are inside a <declaration> Label.
-# NamedSort declaration wraps (ID, name, <:AbstractSort).
-# UserSort is not a declaration, but a sort that refers to a declaration by REFID.
 
 #^ Above here are things that appear in  DeclDict contents.
 #^ 2024-07-17 Changed DeclDict to be Any based,
@@ -219,13 +206,13 @@ include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.
 include("NetAPI/enabling_rule.jl")
 include("NetAPI/firing_rule.jl")
 include("NetAPI/metagraph.jl")
-#include("NetAPI/")
 
 include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 
 # PARSE
 include("Parser/Parser.jl")
 using .Parser
+
 # API Facade:
 include("PNet/PNet.jl")
 using .PNet
