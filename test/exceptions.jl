@@ -14,6 +14,7 @@ println("EXCEPTIONS")
         @test_logs showerror(stderr,e2)
     end
 end
+# println("E 1")
 
 @testset "missing namespace $pntd" for pntd in PnmlTypes.core_nettypes()
     @test_logs(match_mode=:any, (:warn, r"missing namespace"),
@@ -24,10 +25,14 @@ end
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
+# println("E 2")
 @testset "malformed $pntd" for pntd in PnmlTypes.core_nettypes()
+    # println("malformed $pntd")
+    # println("-- 1")
     @test_throws("MalformedException: <pnml> does not have any <net> elements",
-        pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml"></pnml>"""))
+        pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml" />"""))
 
+    # println("-- 2")
     @test_throws("MalformedException: attribute tool missing",
         pnmlmodel(xml"""
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -48,6 +53,7 @@ end
     </pnml>
     """))
 
+    # println("-- 3")
     @test_throws("MalformedException: attribute type missing",
         pnmlmodel(xml"""
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -63,10 +69,13 @@ end
 </pnml>
 """))
 
+    # println("-- 4")
     @test_throws("MalformedException: attribute type missing",
-             parse_net(xml"""<net id="4712"> </net>"""; parse_context=PNML.Parser.parser_context()))
+             parse_net(xml"""<net id="4712"> </net>""";
+                        parse_context=PNML.Parser.parser_context()))
 end
 
+# println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()
     #idreg = PnmlIDRegistry()
     #ddict = PNML.decldict(idreg)
@@ -101,6 +110,8 @@ end
             pntd;  parse_context))
 end
 
+# println("E 4")
 @testset "check_nodename" begin
-    @test_throws "ArgumentError: element name wrong, expected bar, got foo" PNML.Parser.check_nodename(xml"<foo></foo>", "bar")
+    @test_throws("ArgumentError: element name wrong, expected bar, got foo",
+        PNML.Parser.check_nodename(xml"<foo></foo>", "bar"))
 end
