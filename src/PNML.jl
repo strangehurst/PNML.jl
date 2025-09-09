@@ -87,14 +87,13 @@ import Multisets: Multisets, Multiset
 import Moshi.Match: @match
 import Moshi.Data: @data
 import SciMLPublic: @public
-import LabelledArrays #Todo beware namespace pollution
+import LabelledArrays
+import Metatheory
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface
-using Metatheory
 using Graphs: SimpleDiGraphFromIterator, Edge
 using MetaGraphsNext: MetaGraph
-
 using NamedTupleTools
 using DocStringExtensions
 
@@ -115,8 +114,6 @@ export @xml_str, xmlroot
 Multisets.set_key_value_show()
 
 include("logging.jl") # SciMLLogging based: `silent`, `verbose`, `logger_for_pnml`
-#! pnml_logger = Ref(logger_for_pnml) #(logfile(CONFIG[])::IOStream, CONFIG[].log_level))
-#! global_logger(pnml_logger[])
 
 include("PnmlTypes.jl")
 using .PnmlTypes

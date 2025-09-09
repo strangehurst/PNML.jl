@@ -1,12 +1,12 @@
 
-#using Metatheory
+using Metatheory: @rule
 #using Metatheory.TermInterface
 
-multiset_alg = @theory p q begin
+multiset_alg = Metatheory.@theory p q begin
     (p::Bool == q::Bool) => (p == q) # evaluated during rewrite
 end
 
-bool_alg = @theory p q begin
+bool_alg = Metatheory.@theory p q begin
     (p::Bool == q::Bool) => (p == q)
     (p::Bool || q::Bool) => (p || q)
     (p::Bool ⟹ q::Bool) => ((p || q) == q)
@@ -15,7 +15,7 @@ bool_alg = @theory p q begin
     (p::BooleanConstant) => p() # evaluated during rewrite
 end
 
-dot = @theory d begin
+dot = Metatheory.@theory d begin
     (d::DotConstant) => d()::Number # singelton multiset should be 1
 end
 
