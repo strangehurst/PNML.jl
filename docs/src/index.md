@@ -46,8 +46,8 @@ See [*A primer on the Petri Net Markup Language and ISO/IEC 15909-2*](https://ww
 
 See [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf) for concepts relevant to *ISO/IEC 15909-3*.
 
-Note that the pnml XML file is the working intermediate representation of a suite of toolinfos that use
-RelaxNG and Schematron for validation of the interchange file's content.
+Note that the pnml XML file is the working intermediate representation of a suite of tools
+that use RelaxNG and Schematron for validation of the interchange file's content.
 
 ## Interoperability
 
@@ -157,25 +157,26 @@ Rust language.
 
 [Automated Code Optimization with E-Graphs](https://arxiv.org/abs/2112.14714): Alessandro Cheli's Thesis on Metatheory.jl.
 
-[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) a platform for developing Petri net toolinfos based on the PNML transfer format is another Eclipse/Java EMF thing. Implements more complicated PNML than used in MCC. By authors of PNML.
+[ePNK](http://www.imm.dtu.dk/~ekki/projects/ePNK/index.shtml) a platform for developing Petri net tools based on the PNML transfer format is another Eclipse/Java EMF thing. Implements more complicated PNML than used in MCC. By some of the creators of PNML.
 [github](https://github.com/ekkart/ePNK) has the source, documentation, examples.
 
 "The [Model Checking Contest (MCC)](https://mcc.lip6.fr/) has two different parts:
 the Call for Models, which gathers Petri net models proposed by the scientific community,
-and the Call for Tools, which benchmarks verification toolinfos developed within the scientific community."
+and the Call for Tools, which benchmarks verification tools developed within the scientific community."
 Each year new models are added to the contest.
 
 [Nested-Unit Petri Nets (NUPN)](https://mcc.lip6.fr/2025/nupn.php)
 an "extension of P/T nets" used by MCC:
   - existence of units has no effect on the transition firing rules
   - partitions the set of places
-  - if a net is unit-safe, units express linear inequality invariants on reachable markings, and toolinfos may take advantage of such invariants to perform logarithmic reductions in the size of marking encodings.
+  - if a net is unit-safe, units express linear inequality invariants on reachable markings, and tools may take advantage of such invariants to perform logarithmic reductions in the size of marking encodings.
 
 
  "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"
 
 
-C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95, doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
+C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95,
+doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
 
 [Contexts.jl](https://github.com/cgutsche/Contexts.jl) is not registered.
 May not run as I cannot (as of 2025-08-08) find the file "PetriNetTypeDef.jl".
