@@ -4,6 +4,16 @@ CurrentModule = PNML
 
 # Parser
 
+## Initial Markings
+
+Parsed into [`PnmlExpr`](@ref) expressions in a `Place`.
+Place/Transition Petri net and Continuous net markings are treated as `<numberconstant>`.
+Allows same machanism to be used for all flavors of nets after parsing.
+
+Marking is a ground term and is used to give a Petri net marking vector an initial value.
+
+
+
 ## Unclaimed Labels
 
 XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`Parser.unparsed_tag`](@ref).

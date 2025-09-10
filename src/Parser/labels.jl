@@ -91,6 +91,38 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType; parse
     return (; text, exp, sort=ref, graphics, toolspecinfos, vars)
 end
 
+
+############################################################################
+# Marking
+############################################################################
+
+# Sorts are sets in Part 1 of the ISO 15909 standard that defines the semantics.
+# Very much mathy, so thinking of sorts as collections is natural.
+# Some of the sets are finite: boolean, enumerations, ranges.
+# Others include integers, natural, and positive numbers (Also floats/reals).
+# Some High-levl Petri nets, in particular Symmetric nets, are restricted to finite sets.
+# We support the possibility of full-fat High-level nets with
+# arbitrary sort and arbitrary operation definitions.
+
+# Part 2 of the standard that defines the syntax of the xml markup language
+# maps these sets to sorts (similar to Type). And adds things.
+# Partitions, Lists,
+
+# Part 3 of the standard is a math and semantics extension covering
+# modules, extensions, more net types. Not reflected in Part 2 as on August 2024.
+# The 2nd edition of Part 1 is contemperoranous with Part 3.
+# Part 2 add some of these features through the www.pnml.org Schema repository.
+
+# `sortelements` is needed to support the <all> operator that forms a multiset out of
+# one of each of the finite sorts elements. This leads to iteration. Thus eltype.
+
+# If there is no appropriate eltype method defined expect
+# `eltype(x) @ Base abstractarray.jl:241` to return Int64.
+
+# Base.eltype is for collections: what an iterator would return.
+
+# Parse <text> as a `Number` of appropriate type or use apropriate default.
+
 """
 $(TYPEDSIGNATURES)
 
@@ -106,39 +138,12 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     end
     @assert isempty(l.vars) # markings are ground terms
 
-    # Sorts are sets in Part 1 of the ISO 15909 standard that defines the semantics.
-    # Very much mathy, so thinking of sorts as collections is natural.
-    # Some of the sets are finite: boolean, enumerations, ranges.
-    # Others include integers, natural, and positive numbers (Also floats/reals).
-    # Some High-levl Petri nets, in particular Symmetric nets, are restricted to finite sets.
-    # We support the possibility of full-fat High-level nets with
-    # arbitrary sort and arbitrary operation definitions.
-
-    # Part 2 of the standard that defines the syntax of the xml markup language
-    # maps these sets to sorts (similar to Type). And adds things.
-    # Partitions, Lists,
-
-    # Part 3 of the standard is a math and semantics extension covering
-    # modules, extensions, more net types. Not reflected in Part 2 as on August 2024.
-    # The 2nd edition of Part 1 is contemperoranous with Part 3.
-    # Part 2 add some of these features through the www.pnml.org Schema repository.
-
-    # `sortelements` is needed to support the <all> operator that forms a multiset out of
-    # one of each of the finite sorts elements. This leads to iteration. Thus eltype.
-
-    # If there is no appropriate eltype method defined expect
-    # `eltype(x) @ Base abstractarray.jl:241` to return Int64.
-
-    # Base.eltype is for collections: what an iterator would return.
-
-    # Parse <text> as a `Number` of appropriate type or use apropriate default.
-
     pt = eltype(sortref(placetype), parse_context.ddict)
     mvt = eltype(PNML.value_type(Marking, typeof(pntd)))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
     value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
-
-    Marking(PNML.NumberEx(sortref(placetype), value), l.graphics, l.toolspecinfos, parse_context.ddict)
+    # We ate the text to make the expression.
+    Marking(PNML.NumberEx(sortref(placetype), value), nothing, l.graphics, l.toolspecinfos, parse_context.ddict)
 end
 
 """
@@ -199,7 +204,7 @@ function parse_hlinitialMarking(node::XMLNode, placetype::SortType, pntd::Abstra
         l.exp
     end
     @assert isempty(l.vars) # markings are ground terms
-    HLMarking(l.text, markterm, l.graphics, l.toolspecinfos, parse_context.ddict)
+    Marking(markterm, l.text, l.graphics, l.toolspecinfos, parse_context.ddict)
 end
 
 """

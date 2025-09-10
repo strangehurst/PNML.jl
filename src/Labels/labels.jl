@@ -85,9 +85,6 @@ $(TYPEDFIELDS)
 
 High-level pnml labels are expected to have <text> and <structure> elements.
 This concrete type is for "unclaimed" labels in a high-level petri net.
-
-Some "claimed" `HLAnnotation` labels are [`Condition`](@ref),
-[`Declaration`](@ref), [`HLMarking`](@ref), [`HLInscription`](@ref).
 """
 struct HLLabel{PNTD} <: HLAnnotation
     text::Maybe{String}
@@ -119,7 +116,8 @@ while `PnmlLabel` is restricted to PNML Labels.
 @auto_hash_equals struct PnmlLabel <: Annotation
     # XMLDict uses symbols for attribute keys and string for elements/children keys.
     tag::Union{Symbol, String, SubString{String}}
-    elements::Any # NB: PNML.XDVT is too complex
+    #!elements::Any # NB: PNML.XDVT is too complex
+    elements::Union{DictType, String, SubString{String}} # is Any better?
     declarationdicts::DeclDict
 end
 
@@ -129,10 +127,12 @@ elements(label::PnmlLabel) = label.elements
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
     print(io, PNML.indent(io), "PnmlLabel[")
     io = PNML.inc_indent(io)
-    for (i,label) in enumerate(labelvector)
+    for (i, label) in enumerate(labelvector)
         i > 1 && print(io, PNML.indent(io))
-        print(io, "(",);
-        show(io, tag(label)); print(io, ", "); dict_show(io, elements(label), 0);
+        print(io, "(", repr(tag(label)), ", ");
+        #!@show elements(label)
+        #!@show typeof(elements(label))
+        PNML.dict_show(io, elements(label));
         print(")")
         i < length(labelvector) && print(io, "\n")
     end

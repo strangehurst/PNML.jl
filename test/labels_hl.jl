@@ -86,7 +86,7 @@ end
     #         PNML.usersorts(ddict)[:uop] = UserSort(:dot)
     #         placetype = SortType("YYY", PNML.usersort(ddict, :uop))
     #         mark = parse_hlinitialMarking(node, placetype, pntd)
-    #         @test mark isa HLMarking
+    #         @test mark isa Marking
     #     end
     # end
 
@@ -199,7 +199,7 @@ end
 
 #     #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
 #     @test mark isa PNML.AbstractLabel
-#     @test mark isa PNML.marking_type(pntd) #HLMarking
+#     @test mark isa PNML.marking_type(pntd)
 #     @test PNML.has_graphics(mark) == true
 #     @test occursin("Graphics", sprint(show, mark))
 #     @test PNML.has_labels(mark) == false

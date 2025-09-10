@@ -249,7 +249,7 @@ end
     else
         @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: Number
     end
-    @test PNML.marking_type(pntd) <: Union{PNML.Marking, PNML.HLMarking}
+    @test PNML.marking_type(pntd) <: PNML.Marking
     @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
 
     @test PNML.page_type(pntd) <: PNML.Page

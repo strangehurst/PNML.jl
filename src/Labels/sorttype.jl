@@ -52,7 +52,7 @@ this sort defines the type of the place.
 
 this is a sort, not a term, so no variables or operators.
 
-> The initial marking function M0 is defined by the label HLMarking of the places.
+> The initial marking function M0 is defined by the label Marking of the places.
 > ... this is a ground term of the corresponding multiset sort.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.

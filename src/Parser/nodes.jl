@@ -91,9 +91,10 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
 
     if isnothing(mark) # Use  additive identity of proper sort.
          mark = if ishighlevel(pntd)
-            default(HLMarking, pntd, sorttype; parse_context.ddict)
+            default(Marking, pntd, sorttype; parse_context.ddict)
         else
-            default(Marking, pntd; parse_context.ddict)
+            dummy = SortType("unused", UserSortRef(:integer), parse_context.ddict)
+            default(Marking, pntd, dummy; parse_context.ddict)
         end
     end
 

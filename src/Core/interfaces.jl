@@ -392,7 +392,7 @@ function sortof end
 Return a REFID wrapped in a [`SortRef`](@ref).
 
 Things that have a sortref include:
-Place, Arc, Inscription, HLInscription, Marking, HLMarking,
+Place, Arc, Inscription, HLInscription, Marking,
 MultisetSort,  SortType,
 NumberConstant, Int64, Integer, Float64,
 FEConstant, FiniteIntRangeConstant, DotConstant, BooleanConstant,

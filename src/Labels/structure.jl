@@ -9,7 +9,7 @@ We implement this to allow use of <structure> tags by other PnmlTypes.
 # Extra
 There are various defined structure ast variants in pnml:
   - Sort Type of a Place [builtin, multi, product, user]
-  - Place HLMarking [variable, operator]
+  - Place Marking [variable, operator]
   - Transition Condition [variable, operator]
   - Arc Inscription [variable, operator]
   - Declarations [sort, variable, operator]

@@ -12,17 +12,16 @@ A "multiset sort over a basis sort is interpreted as
 mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     pntd::PNTD
     id::Symbol
-    initialMarking::M #^ Marking or HLMarking label that evaluates to a Number or PnmlMultiset.
+    initialMarking::M
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
-    sorttype::SortType #^ Label with human text/graphics. And a sort.
+    sorttype::SortType
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::Maybe{Vector{PnmlLabel}}
-    #todo net::PnmlNet
-    declarationdicts::DeclDict
+    declarationdicts::DeclDict   #todo net::PnmlNet
 end
 
 pntd(p::Place) = p.pntd

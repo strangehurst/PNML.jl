@@ -3,14 +3,13 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Number-valued label of [`Place`](@ref).
-See [`PTNet`](@ref), [`ContinuousNet`](@ref), [`HLMarking`](@ref).
 
 Is a functor that returns the `value`.
 ```
 """
 struct Marking{T <: PnmlExpr} <: Annotation
-    #! HLMarking has text here #todo support for PTNet
     term::T #! expression
+    text::Maybe{String} # Supposed to be for human consumption.
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in toolspecinfos rather than graphics.
     toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
@@ -20,7 +19,8 @@ end
 function Marking(m::Number, ddict::DeclDict)
     Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::SortRef, m), ddict)
 end
-Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, ddict)
+Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, nothing, ddict)
+Marking(t::PnmlExpr, s::Maybe{AbstractString}, ddict) = Marking(t, s, nothing, nothing, ddict)
 
 decldict(marking::Marking) = marking.declarationdicts
 term(marking::Marking) = marking.term
@@ -30,34 +30,88 @@ term(marking::Marking) = marking.term
 #TODO add sort trait where simple means has concrete eltype
 # Assume eltype(sortdefinition(marking)) == typeof(value(marking))
 
+# """
+# $(TYPEDEF)
+# $(TYPEDFIELDS)
+
+# Multiset of a sort labeling of a `Place` in a High-level Petri Net Graph.
+# See [`AbstractHLCore`](@ref), [`AbstractTerm`](@ref), [`Marking`](@ref).
+
+# Is a functor that returns the evaluated `value`.
+
+# > ... is a term with some multiset sort denoting a collection of tokens on the corresponding place, which defines its initial marking.
+# NB: The place's sorttype is not a multiset
+
+# > a ground term of the corresponding multiset sort. (does not contain variables)
+
+# > For every sort, the multiset sort over this basis sort is interpreted as
+# > the set of multisets over the type associated with the basis sort.
+
+# Multiset literals ... are defined using Add and NumberOf (multiset operators).
+
+# The term is a expression that will, when evaluated, have a `Sort`.
+# Implement the Sort interface.
+
+# # Examples
+
+# ```julia
+# ; setup=:(using PNML; using PNML: Marking, NaturalSort, ddict)
+# julia> m = Marking(PNML.pnmlmultiset(UserSortRef(:integer), 1; ddict))
+# Marking(Bag(UserSortRef(:integer), 1))
+
+# julia> m()
+# 1
+# ```
+
+# This is where the initial value EXPRESSION is stored.
+# The evaluated value is placed in the marking vector (as the initial value:).
+# Firing rules use arc inscriptions to determine the new value for marking vector.
+
+# NOTE #? Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
+
+# Inscription and condition expressions may contain variables that map to a place's current marking.
+# HL Nets need to evaluate expressions after variable substitution as part of enabling and transition firing rules.
+# The result must be a ground term, and is used to update a marking vector.
+
+# For non-High,level nets, the inscrition expression is a
+# `NumberEx` (`<numberconstant> in HL-speak), default one`)
+# and the condition is a boolean expression (default true).
+# """
 """
 $(TYPEDSIGNATURES)
-Evaluate [`Marking`](@ref) instance by returning the evaluated TermInterface expression.
+Evaluate [`Marking`](@ref) instance by evaluating term expression.
 
-The `Marking` vs. `HLMarking` values differ by handling of token identity.
-Place/Transition Nets (PNet, ContinuousNet) use collective token identity (map to ::Number).
+Place/Transition Nets (PNet, ContinuousNet) use collective token identity (map to `Number`).
 High-level Nets (SymmetricNet, HLPNG) use individual token identity (colored petri nets).
-TODO Cite John Baez for this distinction.
 
 There is a multi-sorted algebra definition mechanism defined for HL Nets.
-HLMarking values are a ground terms of this multi-sorted algebra.
-There are abstract syntax trees defined by PNML.
-We use TermInterface to implement/manipulate the terms.
+HL Net Marking values are a ground terms of this multi-sorted algebra.
 
-Inscription and condition expressions may contain variables that map to a place's tokens.
-HL Nets need to evaluate expressions as part of enabling and transition firing rules.
-The result must be a ground term, and is used to update a marking.
-
-For non-High,level nets, the inscrition TermInterface expression evaluates to a Number
-and the condition is a boolean expression (default true).
+These are used to give the initialize a marking vector that will then be updated by firing a transition.
 """
-(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark))) #~ same for HL? #TODO! Combine
+(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark)))
 
-# We give NHL (non-High-Level) nets a sort interface by mapping from type to sort.
-# These have basis == sortref.
 basis(m::Marking)   = sortref(term(m))::SortRef
 sortref(m::Marking) = _sortref(decldict(m), term(m))::SortRef
 sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
+
+function Base.show(io::IO, ptm::Marking)
+    print(io, PNML.indent(io), "Marking(")
+    show(io, term(ptm))
+    if has_graphics(ptm)
+        print(io, ", ")
+        show(io, graphics(ptm))
+    end
+    if has_tools(ptm)
+        print(io, ", ")
+        show(io, toolinfos(ptm));
+    end
+    print(io, ")")
+end
+
+
+#--------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------
 
 # These are some <:Number that have sorts (usersort, namedsort duos).
 _sortref(dd::DeclDict, ::Type{<:Int64})   = UserSortRef(:integer)
@@ -77,117 +131,9 @@ _sortof(dd::DeclDict, ::Integer) = sortdefinition(namedsorts(dd)[:integer])::Int
 _sortof(dd::DeclDict, ::Float64) = sortdefinition(namedsorts(dd)[:real])::RealSort
 _sortof(dd::DeclDict, x::Any) = sortof(x)
 
-function Base.show(io::IO, ptm::Marking)
-    print(io, PNML.indent(io), "Marking(")
-    show(io, term(ptm))
-    if has_graphics(ptm)
-        print(io, ", ")
-        show(io, graphics(ptm))
-    end
-    if has_tools(ptm)
-        print(io, ", ")
-        show(io, toolinfos(ptm));
-    end
-    print(io, ")")
-end
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Multiset of a sort labeling of a `Place` in a High-level Petri Net Graph.
-See [`AbstractHLCore`](@ref), [`AbstractTerm`](@ref), [`Marking`](@ref).
-
-Is a functor that returns the evaluated `value`.
-
-> ... is a term with some multiset sort denoting a collection of tokens on the corresponding place, which defines its initial marking.
-NB: The place's sorttype is not a multiset
-
-> a ground term of the corresponding multiset sort. (does not contain variables)
-
-> For every sort, the multiset sort over this basis sort is interpreted as
-> the set of multisets over the type associated with the basis sort.
-
-Multiset literals ... are defined using Add and NumberOf (multiset operators).
-
-The term is a expression that will, when evaluated, have a `Sort`.
-Implement the Sort interface.
-
-# Examples
-
-```julia
-; setup=:(using PNML; using PNML: HLMarking, NaturalSort, ddict)
-julia> m = HLMarking(PNML.pnmlmultiset(UserSortRef(:integer), 1; ddict))
-HLMarking(Bag(UserSortRef(:integer), 1))
-
-julia> m()
-1
-```
-"""
-struct HLMarking{T<:PnmlExpr} <: HLAnnotation
-    text::Maybe{String} # Supposed to be for human consumption.
-
-    term::T # SymmetricNet restricts to Bag with basis sort matching place's sorttype.
-    #! This is where the initial value expression is stored.
-    #! The evaluated value is placed in the marking vector (as the initial value:).
-    #! Firing rules use arc inscriptions to determine the new value for marking vector.
-
-    #~ NOTE #? Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
-
-    # The expression AST rooted at `term` wrapped in a `<structure>` in the XML stream.
-    # Markings are ground terms, so no variables.
-
-    # Difference between Marking and HLMarking is the expression.
-    # One is a number the other a term.
-
-    graphics::Maybe{Graphics}
-    toolspecinfos::Maybe{Vector{ToolInfo}}
-    declarationdicts::DeclDict
-end
-#HLMarking(t::PnmlExpr, ddict) = HLMarking(nothing, t, ddict)
-HLMarking(s::Maybe{AbstractString}, t::PnmlExpr, ddict) = HLMarking(s, t, nothing, nothing, ddict)
-
-"term(marking) -> PnmlExpr"
-term(marking::HLMarking) = marking.term
-
-decldict(marking::HLMarking) = marking.declarationdicts
-
-"""
-    (hlm::HLMarking)() -> PnmlMultieset
-Evaluate a [`HLMarking`](@ref) term. Is a ground term so no variables.
-Used for initial marking value of a `Place` when creating the `initial_marking`.
-"""
-function (hlm::HLMarking)() #varsub::NamedTuple=NamedTuple())
-    #@show term(hlm) #toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm))
-    #if toexpr(term(hlm)::PnmlExpr, varsub, decldict(hlm)) isa Tuple
-    #println("(hlm::HLMarking) stacktrace");  foreach(println, Base.StackTraces.stacktrace())
-    #end
-    eval(toexpr(term(hlm)::PnmlExpr, NamedTuple(), decldict(hlm))) # ground term = no variable substitutions.
-end
-
-# Sort interface
-basis(marking::HLMarking) = basis(term(marking), decldict(marking))::SortRef
-sortref(marking::HLMarking) = _sortref(decldict(marking), term(marking))::SortRef
-sortof(m::HLMarking) = sortdefinition(namedsort(decldict(m), sortref(m)))::AbstractSort
-
-function Base.show(io::IO, hlm::HLMarking)
-    print(io, PNML.indent(io), "HLMarking(")
-    show(io, text(hlm)); print(io, ", ")
-    show(io, term(hlm))
-    if has_graphics(hlm)
-        print(io, ", ")
-        show(io, graphics(hlm))
-    end
-    if has_tools(hlm)
-        print(io, ", ")
-        show(io, toolinfos(hlm));
-    end
-    print(io, ")")
-end
-
 #--------------------------------------------------------------------------------------
 PNML.marking_type(::Type{T}) where {T <: PnmlType} = Marking
-PNML.marking_type(::Type{T}) where {T <: AbstractHLCore} = HLMarking
+
 
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
@@ -195,8 +141,8 @@ PNML.value_type(::Type{Marking}, ::Type{<:PnmlType}) = eltype(NaturalSort) #::In
 PNML.value_type(::Type{Marking}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-PNML.value_type(::Type{HLMarking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
-PNML.value_type(::Type{HLMarking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Marking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{Marking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
 
 
 #~ Note the close relation of marking value_type to inscription value_type.
@@ -232,14 +178,11 @@ Return default marking value based on `PnmlType`. Has meaning of empty, as in `z
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default(::Type{<:Marking}, t::PnmlType; ddict)
-    Marking(zero(PNML.value_type(PNML.marking_type(t), t)), ddict) #! Will not be a PnmlMultiset.
+function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
+    Marking(zero(PNML.value_type(PNML.marking_type(pntd), pntd)), ddict) #! Will not be a PnmlMultiset.
 end
 
-default(::Type{<:Marking}, ::T; ddict) where {T <: AbstractHLCore} =
-    error("No default_marking method for $T, did you mean default_hlmarking?")
-
-function default(::Type{<:HLMarking}, ::AbstractHLCore, placetype::SortType; ddict)
+function default(::Type{<:Marking}, pndt::T, placetype::SortType; ddict) where {T <: AbstractHLCore}
     el = def_sort_element(placetype; ddict)
-    HLMarking("default", PNML.Bag(sortref(placetype), el, 0), ddict) # empty multiset, el used for its type
+    Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # empty multiset, el used for its type
 end
