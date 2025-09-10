@@ -1,76 +1,75 @@
+# """
+# $(TYPEDEF)
+# $(TYPEDFIELDS)
+
+# Labels an Arc. See also [`Inscription`](@ref).
+# ```
+# """
+# struct Inscription{T<:PnmlExpr} <: Annotation
+#     term::T #! expression
+#     graphics::Maybe{Graphics}
+#     toolspecinfos::Maybe{Vector{ToolInfo}}
+#     declarationdicts::DeclDict
+# end
+
+# Inscription(ex::PNML.NumberEx, ddict) = Inscription(ex, nothing, nothing, ddict)
+
+# decldict(inscription::Inscription) = inscription.declarationdicts
+# term(i::Inscription) = i.term
+# sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
+# sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::NumberSort
+
+# function (i::Inscription)(varsub::NamedTuple)
+#     eval(toexpr(term(i), varsub, decldict(i)))::Number
+# end
+
+# variables(::Inscription) = () # There are no Variables in non-high-level nets.
+
+# function Base.show(io::IO, inscription::Inscription)
+#     print(io, "Inscription(")
+#     show(io, term(inscription))
+#     if has_graphics(inscription)
+#         print(io, ", ")
+#         show(io, graphics(inscription))
+#     end
+#     if has_tools(inscription)
+#         print(io, ", ")
+#         show(io, toolinfos(inscription))
+#     end
+#     print(io, ")")
+# end
+
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Labels an Arc. See also [`HLInscription`](@ref).
-```
-"""
-struct Inscription{T<:PnmlExpr} <: Annotation
-    term::T #! expression
-    graphics::Maybe{Graphics}
-    toolspecinfos::Maybe{Vector{ToolInfo}}
-    declarationdicts::DeclDict
-end
+Labels an Arc with a expression term .
 
-Inscription(ex::PNML.NumberEx, ddict) = Inscription(ex, nothing, nothing, ddict)
-
-decldict(inscription::Inscription) = inscription.declarationdicts
-term(i::Inscription) = i.term # TODO when is the optimized away ()
-function (i::Inscription)(varsub::NamedTuple)
-    eval(toexpr(term(i), varsub, decldict(i)))::Number
-end
-
-sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
-sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::NumberSort
-
-# What variables are in the expression.
-variables(::Inscription) = () # There are no Variables in non-high-level nets.
-
-function Base.show(io::IO, inscription::Inscription)
-    print(io, "Inscription(")
-    show(io, term(inscription))
-    if has_graphics(inscription)
-        print(io, ", ")
-        show(io, graphics(inscription))
-    end
-    if has_tools(inscription)
-        print(io, ", ")
-        show(io, toolinfos(inscription))
-    end
-    print(io, ")")
-end
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-Labels an Arc with a term in a many-sorted algebra.
-See also [`Inscription`](@ref) for non-high-level net inscriptions.
-
-`HLInscription(t::PnmlExpr)()` is a functor evaluating the expression and
+`Inscription(t::PnmlExpr)()` is a functor evaluating the expression and
 returns a value of the `eltype` of sort of inscription.
 """
-struct HLInscription{T <: PnmlExpr, N} <: HLAnnotation
+struct Inscription{T <: PnmlExpr, N} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    vars::NTuple{N,REFID}
+    vars::NTuple{N,REFID} # default N is zero
     declarationdicts::DeclDict
 end
 
-decldict(hli::HLInscription) = hli.declarationdicts
+decldict(i::Inscription) = i.declarationdicts
+term(i::Inscription) = i.term
+sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
+sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::PnmlMultiset #TODO other sorts
 
-(hli::HLInscription)(varsub::NamedTuple) = eval(toexpr(term(hli), varsub, decldict(hli)))
+function (inscription::Inscription)(varsub::NamedTuple)
+    eval(toexpr(term(inscription), varsub, decldict(inscription)))
+end
 
-term(hli::HLInscription) = hli.term
-sortref(hli::HLInscription) = _sortref(decldict(hli), term(hli))::SortRef
-sortof(hli::HLInscription) = sortdefinition(namedsort(decldict(hli), sortref(hli)))::PnmlMultiset #TODO other sorts
+variables(inscription::Inscription) = inscription.vars
 
-variables(i::HLInscription) = i.vars
-
-function Base.show(io::IO, inscription::HLInscription)
-    print(io, "HLInscription(")
+function Base.show(io::IO, inscription::Inscription)
+    print(io, "Inscription(")
     show(io, text(inscription)); print(io, ", "),
     show(io, term(inscription))
     if has_graphics(inscription)
@@ -103,7 +102,7 @@ end
 # Julia Type is the "fixed" part.
 
 PNML.inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr}
-PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:PnmlExpr}
+PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = Inscription{<:PnmlExpr}
 
 #!============================================================================
 #! inscription value_type must match adjacent place marking value_type
@@ -112,21 +111,17 @@ PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = HLInscription{<:Pnm
 
 PNML.value_type(::Type{Inscription}, ::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
 PNML.value_type(::Type{Inscription}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
-PNML.value_type(::Type{HLInscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
-PNML.value_type(::Type{HLInscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Inscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{Inscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
 
-function default(::Type{<:Inscription}, pntd::PnmlType; ddict::DeclDict)
-    Inscription(PNML.NumberEx(UserSortRef(:natural), one(Int)), nothing, nothing, ddict)
+function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
+    Inscription(nothing, PNML.NumberEx(UserSortRef(:natural), one(Int)), nothing, nothing, (), ddict)
 end
-function default(::Type{<:Inscription}, pntd::AbstractContinuousNet; ddict::DeclDict)
-    Inscription(PNML.NumberEx(UserSortRef(:real), one(Float64)), nothing, nothing, ddict)
+function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType; ddict::DeclDict)
+    Inscription(nothing, PNML.NumberEx(UserSortRef(:real), one(Float64)), nothing, nothing, (), ddict)
 end
-function default(::Type{<:Inscription}, pntd::AbstractHLCore; ddict::DeclDict)
-    error("No default Inscription method for AbstractHLCore, did you mean HLInscription?")
-end
-
-function default(::Type{<:HLInscription}, ::AbstractHLCore, placetype::SortType; ddict)
+function default(::Type{<:Inscription}, ::AbstractHLCore, placetype::SortType; ddict)
     basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype; ddict)
-    HLInscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
+    Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, (), ddict) # non-empty singleton multiset.
 end

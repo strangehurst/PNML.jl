@@ -178,8 +178,8 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         CONFIG[].warn_on_fixup &&
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
-
-    Inscription(PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value), graphics, toolspecinfos, parse_context.ddict)
+    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    Inscription(nothing, term, graphics, toolspecinfos, (),  parse_context.ddict)
 end
 
 """
@@ -254,7 +254,7 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore; netdata::PnmlNetData, parse_context::ParseContext)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; parse_context)::NamedTuple
-    HLInscription(l.text, l.exp, l.graphics, l.toolspecinfos, l.vars, parse_context.ddict)
+    Inscription(l.text, l.exp, l.graphics, l.toolspecinfos, l.vars, parse_context.ddict)
 end
 
 """

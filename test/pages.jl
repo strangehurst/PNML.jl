@@ -243,7 +243,7 @@ end
     @test PNML.transition_type(pntd) <: PNML.Transition
     @test PNML.condition_type(pntd) <: PNML.Labels.Condition
     @test PNML.value_type(PNML.condition_type(pntd), typeof(pntd)) <: Bool
-    @test PNML.inscription_type(pntd) <: Union{PNML.Inscription, PNML.HLInscription}
+    @test PNML.inscription_type(pntd) <: PNML.Inscription
     if ishighlevel(pntd)
         @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: PnmlMultiset{<:Any}
     else

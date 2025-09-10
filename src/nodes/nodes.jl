@@ -110,7 +110,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
+mutable struct Arc{I <: Inscription} <: AbstractPnmlObject
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
@@ -124,7 +124,7 @@ mutable struct Arc{I <: Union{Inscription,HLInscription}} <: AbstractPnmlObject
 end
 
 """
-    inscription(arc::Arc) -> Union{Inscription,HLInscription}
+    inscription(arc::Arc) -> Inscription
 j'
 Access inscription label of arc.
 """

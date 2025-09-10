@@ -58,7 +58,7 @@ include("structure.jl")
 
 export Inscription, Marking
 export Name, PnmlLabel, SortType,  Condition, Declaration
-export HLInscription, HLLabel
+export HLLabel
 export Graphics, PnmlGraphics
 export ToolInfo
 export text, get_label, rate_value, delay_value

@@ -192,11 +192,12 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     #TODO There will be net meta-models that assume all inscriptions are 1 and omit the label.
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
-            default(HLInscription, pntd,
+            default(Inscription, pntd,
                     SortType("default", UserSortRef(:dot), parse_context.ddict);
                     parse_context.ddict)
         else
-            default(Inscription, pntd; parse_context.ddict)
+            dummy = SortType("dummy", UserSortRef(:integer),  parse_context.ddict)
+            default(Inscription, pntd, dummy; parse_context.ddict)
         end
     end
 

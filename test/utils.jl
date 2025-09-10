@@ -45,9 +45,10 @@ end
 
     i = if ishighlevel(pntd)
         placetype = SortType("default_inscription", UserSortRef(:dot), nothing, nothing, ctx.ddict)
-        Labels.default(HLInscription, pntd, placetype; ctx.ddict)
+        Labels.default(Inscription, pntd, placetype; ctx.ddict)
     else
-        Labels.default(Inscription, pntd; ctx.ddict)
+        dummy = SortType("dummy", UserSortRef(:integer), nothing, nothing, ctx.ddict)
+        Labels.default(Inscription, pntd, dummy; ctx.ddict)
     end
     #println("default_i(hl)?nscription($pntd) = ", i)
 end
