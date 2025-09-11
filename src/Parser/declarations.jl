@@ -311,7 +311,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::SortRef; pars
             push!(fec_refs, fecid)
         end
     end
-    return tuple(fec_refs...) #todo NTuple?
+    return fec_refs #todo NTuple?
 end
 
 """

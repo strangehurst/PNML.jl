@@ -12,7 +12,7 @@ struct Inscription{T <: PnmlExpr} <: HLAnnotation
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    vars::Vector{Symbol} #!NTuple{N,REFID} # default N is zero
+    vars::Vector{Symbol}
     declarationdicts::DeclDict
 end
 

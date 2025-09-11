@@ -23,22 +23,22 @@ julia> c()
 true
 ```
 """
-@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr, N} <: Annotation #TODO make LL & HL specializations?
+@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr} <: Annotation #TODO make LL & HL specializations?
     text::Maybe{String}
     term::T # duck-typed BoolExpr
     # color function: uses term and args, Built/JITed
     graphics::Maybe{Graphics} #TODO switch order of graphics, toolinfos everywhere!
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    vars::NTuple{N,REFID} #! XXX DOCUMENT ME XXX
+    vars::Vector{REFID} #! XXX DOCUMENT ME XXX
     declarationdicts::DeclDict
 end
 
 Condition(b::Bool, ddict) = Condition(PNML.BooleanConstant(b, ddict), ddict)
 Condition(c::PNML.BooleanConstant, ddict) = Condition(PNML.BooleanEx(c), ddict)
-Condition(expr::PNML.BooleanEx, ddict) = Condition(nothing, expr, nothing, nothing, (), ddict)
+Condition(expr::PNML.BooleanEx, ddict) = Condition(nothing, expr, nothing, nothing, REFID[], ddict)
 Condition(text::AbstractString, b::Bool, ddict) = Condition(text, PNML.BooleanConstant(b, ddict), ddict)
 Condition(text::AbstractString, c::PNML.BooleanConstant, ddict) = Condition(text, PNML.BooleanEx(c), ddict)
-Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, (), ddict)
+Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, REFID[], ddict)
 
 PNML.condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool

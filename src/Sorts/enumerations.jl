@@ -5,12 +5,12 @@ $(TYPEDEF)
 See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
 Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs and metadata.
 """
-abstract type EnumerationSort{N,M} <: AbstractSort end
+abstract type EnumerationSort{M} <: AbstractSort end
 
 """
-    refs(sort::EnumerationSort) -> NTuple{N,REFID}
+    refs(sort::EnumerationSort) -> Vector{REFID}
 
-Return `NTuple` of `FEConstant` `REFID`s.
+Return `Vector` of `FEConstant` `REFID`s.
 """
 refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 
@@ -49,9 +49,9 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort{N, M} <: EnumerationSort{N,M}
+@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort{M} <: EnumerationSort{M}
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
-    fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
+    fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
     metadata::M # TODO TermInterface metadata
     declarationdicts::DeclDict
 end
@@ -62,11 +62,11 @@ tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
 #TODO successor/predecessor methods
 
 """
-    FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{N,M}
-Wraps a tuple of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
+    FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{M}
+Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort{N, M} <: EnumerationSort{N,M}
-    fec_refs::NTuple{N,REFID} # ordered collection of FEConstant REFIDs
+@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort{M} <: EnumerationSort{M}
+    fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
     metadata::M # TODO TermInterface metadata
     declarationdicts::DeclDict

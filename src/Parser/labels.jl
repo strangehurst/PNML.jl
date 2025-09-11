@@ -367,7 +367,7 @@ Another field holds information on variables in the expression.
 function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     l = parse_label_content(node, parse_condition_term, pntd; parse_context)::NamedTuple
     isnothing(l.exp) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
-    PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, l.vars, parse_context.ddict)
+    PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, REFID[l.vars...], parse_context.ddict)
 end
 
 """

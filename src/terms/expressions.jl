@@ -292,7 +292,7 @@ end
 
 #"Multiset add: Bag × Bag -> PnmlMultiset"
 @matchable struct Add <: PnmlExpr #^ multiset add uses `+` operator.
-    args::Vector{Bag} # >=2 # TODO NTuplex[]
+    args::Vector{Bag} # >=2 =
 end
 
 function toexpr(op::Add, varsub::NamedTuple, ddict)
@@ -381,7 +381,7 @@ end
 
 #& Boolean Operators
 @matchable struct Or <: BoolExpr #^ Uses `any`.
-    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
+    args::Vector{BoolExpr} # >=2
 end
 
 function toexpr(op::Or, vars::NamedTuple, ddict)
@@ -393,7 +393,7 @@ function Base.show(io::IO, x::Or)
 end
 
 @matchable struct And <: BoolExpr #^ Uses `all`.
-    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
+    args::Vector{BoolExpr} # >=2
 end
 
 function toexpr(op::And, vars::NamedTuple, ddict)
@@ -406,7 +406,7 @@ function Base.show(io::IO, x::And)
 end
 
 @matchable struct Not <: BoolExpr #^ Uses `!` operator.
-    args::Vector{BoolExpr} # >=2 # TODO NTuplex[]
+    args::Vector{BoolExpr} # >=2
     #! rhs::Any # BoolExpr #todo handle ordered collection. return and of not.boolean
 end
 
@@ -767,7 +767,7 @@ NB: ISO 15909 Standard considers Tuple to be an Operator.
 PnmlTupleEx
 
 @matchable struct PnmlTupleEx <: PnmlExpr #{N, T<:PnmlExpr}
-    args::Vector{Any} # >=2 # TODO NTuple #x::NTuple{N,T}
+    args::Vector{Any} # >=2
 end
 
 function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
