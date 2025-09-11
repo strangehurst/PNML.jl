@@ -1,2 +1,3 @@
 [deps]
 AlgebraicPetri = "4f99eebe-17bf-4e98-b6a1-2c4f205a959b"
+DynamicalSystems = "61744808-ddfa-5f27-97ff-6e42cc95d634"
