@@ -22,7 +22,7 @@ println("RATE")
     @test_call PNML.rate_value(trans, pntd)
 
     tr = @inferred PNML.rate_value(trans, pntd)
-        @test eltype(tr) == PNML.value_type(Labels.Rate, PNML.nettype(trans))
+    @test eltype(tr) == PNML.value_type(Labels.Rate)
 end
 
 # Ensure not seeing very similar label while getting default.

@@ -23,7 +23,7 @@ julia> c()
 true
 ```
 """
-@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr} <: Annotation #TODO make LL & HL specializations?
+@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr} <: HLAnnotation
     text::Maybe{String}
     term::T # duck-typed BoolExpr
     # color function: uses term and args, Built/JITed

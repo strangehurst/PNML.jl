@@ -56,8 +56,8 @@ include("conditions.jl")
 include("rates.jl")
 include("structure.jl")
 
-export Inscription, Marking
-export Name, PnmlLabel, SortType,  Condition, Declaration
+export Inscription, Marking, Condition
+export Name, PnmlLabel, SortType, Declaration
 export HLLabel
 export Graphics, PnmlGraphics
 export ToolInfo

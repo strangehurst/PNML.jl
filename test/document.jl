@@ -74,7 +74,7 @@ end
 
         for net in modelnets
             @test_opt PNML.pntd(net)
-            ntup = PNML.find_nets(model, net)
+            ntup = PNML.find_nets(model, PNML.pntd(net))
             t = PNML.nettype(net)
             @test PNML.name(net) == string(pid(net)) # true by special construction
             for n in ntup
@@ -82,18 +82,18 @@ end
             end
         end
 
-        @testset "model net $pt" for pt in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
-                                            :hlnet, :symmetric, :continuous]
+        @testset "model net $pntdsym" for pntdsym in [:ptnet, :pnmlcore, :hlcore, :pt_hlpng,
+                                                        :hlnet, :symmetric, :continuous]
 
-            @test_opt pnmltype(pt)
-            #@test_opt  PNML.find_nets(model, pt) #! Why will it be run-time dispatch to iterate?
-            @test_call PNML.find_nets(model, pt)
+            @test_opt pnmltype(pntdsym)
+            #@test_opt  PNML.find_nets(model, pntdsym) #! Why will it be run-time dispatch to iterate?
+            @test_call PNML.find_nets(model, pntdsym)
 
-            for (l,m,r) in zip(PNML.find_nets(model, pt),
-                                PNML.find_nets(model, pnmltype(pt)),
-                                PNML.find_nets(model, string(pt)))
+            for (l,m,r) in zip(PNML.find_nets(model, pntdsym),
+                                PNML.find_nets(model, pnmltype(pntdsym)),
+                                PNML.find_nets(model, string(pntdsym)))
                 @test l === m === r
-                @test l.type === m.type ===  r.type === pnmltype(pt)
+                @test l.type === m.type ===  r.type === pnmltype(pntdsym)
             end
         end
 

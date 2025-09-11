@@ -8,13 +8,12 @@ using TermInterface
 using Metatheory
 
 using PNML
-using PNML: DeclDict
 using PNML: BooleanConstant, FEConstant , feconstant
 using PNML: pnmltuple, pnmlmultiset, operator, partitionsort
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
-using ..Sorts: UserSort
 
 export toexpr
+
 export PnmlExpr, BoolExpr, OpExpr # abstract types
 # concrete types
 export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
@@ -53,7 +52,6 @@ function toexpr end
 
 toexpr(::Nothing, ::NamedTuple, ddict) = nothing
 toexpr(x::T, ::NamedTuple, ddict) where {T <: Number} = identity(x) #! literal
-#toexpr(x::Number, ::NamedTuple, ::Any) = QuoteNode(x) #! literal
 toexpr(s::Symbol, ::NamedTuple, ddict) = QuoteNode(s)
 function toexpr(t::Tuple, vsub::NamedTuple, ddict)
     # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
@@ -61,7 +59,6 @@ function toexpr(t::Tuple, vsub::NamedTuple, ddict)
 end
 
 toexpr(nc::PNML.NumberConstant, ::NamedTuple, ddict) = value(nc)
-#!toexpr(nc::FEConstant, ::NamedTuple) is not defined! Or called!
 toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple, ddict) = value(c)
 toexpr(::PNML.DotConstant, ::NamedTuple, ddict) = PNML.DotConstant(ddict)
 toexpr(c::PNML.BooleanConstant, ::NamedTuple, ddict) = value(c)
@@ -205,7 +202,6 @@ function toexpr(b::Bag, varsub::NamedTuple, ddict)
     #@show b varsub Expr(:parameters, Expr(:kw,:ddict, ddict))
     #^ Warning: b.element can be: `PnmlMultiset`, `pnmltuple`
     #^ tuples are elements of a `ProductSort`pnmltuple
-    #! toexpr(::Symbol, ::@NamedTuple{}, ddict::DeclDict)
     Expr(:call, pnmlmultiset,
         Expr(:parameters, Expr(:kw, :ddict, ddict)), # keyword arguments
         b.basis,
@@ -248,7 +244,7 @@ BooleanEx # Need to avoid @matchable to have docstring
     element::BooleanConstant
 end
 
-basis(::BooleanEx, ddict::DeclDict) = UserSortRef(:bool)
+basis(::BooleanEx) = UserSortRef(:bool)
 
 function toexpr(b::BooleanEx, var::NamedTuple, ddict)
     if b.element isa BooleanConstant
@@ -271,7 +267,7 @@ DotConstantEx # Need to avoid @matchable to have docstring
 @matchable struct DotConstantEx <: PnmlExpr
 end
 
-basis(::DotConstantEx, ddict::DeclDict) = UserSortRef(:dot)
+basis(::DotConstantEx) = UserSortRef(:dot)
 
 function toexpr(b::DotConstantEx, var::NamedTuple, ddict)
     QuoteNode(PNML.DotConstant(ddict))

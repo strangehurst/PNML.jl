@@ -21,7 +21,7 @@ See [`PnmlNet`](@ref)
     # There could be >1 nets. `netdata` is ordered, `netsets` are unordered.
 end
 
-nettype(::Page{T}) where {T<:PnmlType} = T
+nettype(pg::Page) = nettype(net(pg))
 
 net(page::Page) = page.net[]
 pagedict(page::Page) = pagedict(net(page))

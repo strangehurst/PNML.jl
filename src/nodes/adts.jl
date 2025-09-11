@@ -4,8 +4,8 @@ using Moshi.Derive: @derive
 using Moshi.Match:  @dmatch
 
 @data NetNode{PNTD,M,C} begin
-    struct Place{PNTD,M}
-        pntd::PNTD
+    struct Place #{PNTD,M}
+        #pntd::PNTD
         id::Symbol
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
@@ -14,7 +14,7 @@ using Moshi.Match:  @dmatch
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         sorttype::SortType
-        initialMarking::M  #! expression label
+        initialMarking::Marking  #! expression label
     end
 
     struct Arc{PNTD,I}

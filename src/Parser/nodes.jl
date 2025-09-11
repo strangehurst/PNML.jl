@@ -2,6 +2,7 @@
 "Fill place_set, place_dict."
 function parse_place!(netsets, netdata, child, pntd; parse_context::ParseContext)
     pl = parse_place(child, pntd; parse_context)::valtype(PNML.placedict(netdata))
+    @show valtype(PNML.placedict(netdata)) typeof(PNML.placedict(netdata))
     push!(place_idset(netsets), pid(pl))
     PNML.placedict(netdata)[pid(pl)] = pl
     return place_idset(netsets) #place_set
@@ -103,7 +104,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
         sorttype = SortType("default", basis(mark)::SortRef, nothing, nothing, decldict(mark))
     end
-    Place(pntd, placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
 """
@@ -143,7 +144,8 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
         end
     end
 
-    Transition{typeof(pntd), PNML.condition_type(pntd)}(pntd, transitionid,
+    #!Transition{typeof(pntd), PNML.condition_type(pntd)}
+    Transition(transitionid,
             something(cond, Labels.default(Labels.Condition, pntd; parse_context.ddict)),
             namelabel, graphics, toolspecinfos, extralabels,
             Set{REFID}(),

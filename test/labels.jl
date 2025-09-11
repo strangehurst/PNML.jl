@@ -180,7 +180,7 @@ function test_unclaimed(pntd, xmlstring::String)
 
     (t,u) = Parser.unparsed_tag(node) # tag is a string
     l = PnmlLabel(t, u, parse_context.ddict)
-    a = anyelement(node, pntd)
+    a = anyelement(node)
 
     @test u isa PNML.DictType
     @test l isa PnmlLabel
@@ -188,14 +188,14 @@ function test_unclaimed(pntd, xmlstring::String)
 
     @test_opt target_modules=(@__MODULE__,) Parser.unparsed_tag(node)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u,parse_context.ddict)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node, pntd)
+    @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.unparsed_tag(node)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u,parse_context.ddict)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                            JET.AnyFrameModule(XMLDict)) Parser.anyelement(node, pntd)
+                            JET.AnyFrameModule(XMLDict)) Parser.anyelement(node)
 
     nn = Symbol(EzXML.nodename(node))
     @test t == EzXML.nodename(node)

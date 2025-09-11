@@ -9,10 +9,10 @@ M is a "multiset sort denoting a collection of tokens".
 A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
-mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
-    pntd::PNTD
+mutable struct Place  <: AbstractPnmlNode
+    #! pntd::PNTD
     id::Symbol
-    initialMarking::M
+    initialMarking::Marking #! UnionAll
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
@@ -24,8 +24,7 @@ mutable struct Place{PNTD, M}  <: AbstractPnmlNode{PNTD}
     declarationdicts::DeclDict   #todo net::PnmlNet
 end
 
-pntd(p::Place) = p.pntd
-nettype(::Place{T}) where {T <: PnmlType} = T
+#! nettype(::Place) where {T <: PnmlType} = T
 
 initial_marking(place::Place) = (place.initialMarking)()
 
@@ -56,10 +55,10 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
-    pntd::PNTD
+mutable struct Transition  <: AbstractPnmlNode
+    #!pntd::PNTD
     id::Symbol
-    condition::C #! expression label
+    condition::Labels.Condition #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -72,8 +71,7 @@ mutable struct Transition{PNTD, C}  <: AbstractPnmlNode{PNTD}
     declarationdicts::DeclDict
 end
 
-pntd(t::Transition) = t.pntd
-nettype(::Transition{T}) where {T <: PnmlType} = T
+#! nettype(::Transition{T}) where {T <: PnmlType} = T
 decldict(transition::Transition) = transition.declarationdicts
 
 """

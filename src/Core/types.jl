@@ -122,7 +122,7 @@ $(TYPEDEF)
 Petri Net Graph nodes are [`Place`](@ref), [`Transition`](@ref).
 They are the source or target of an [`Arc`](@ref)
 """
-abstract type AbstractPnmlNode{PNTD} <: AbstractPnmlObject end
+abstract type AbstractPnmlNode <: AbstractPnmlObject end
 
 """
 $(TYPEDEF)

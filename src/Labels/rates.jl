@@ -63,6 +63,7 @@ function rate_value(t, pntd::PnmlType;
     end
 end
 
+value_type(::Type{Rate}) = Float64
 value_type(::Type{Rate}, ::Type{<:PnmlType}) = Float64
 
 

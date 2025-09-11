@@ -281,7 +281,7 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType; parse_context::ParseCo
     nn = EzXML.nodename(node)
     unkid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
-    unkncontent = [anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing]
+    unkncontent = [anyelement(x) for x in EzXML.eachelement(node) if x !== nothing]
     @warn("parse unknown declaration: tag = $nn, id = $unkid, name = $name", unkncontent)
     return UnknownDeclaration(unkid, name, nn, unkncontent, parse_context.ddict)
 end

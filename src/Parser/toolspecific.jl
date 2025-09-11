@@ -27,5 +27,5 @@ end
 Return `Vector{AnyElement}` for each well-formed element of a `<toolspecific> `node.`
 """
 function toolspecific_content_fallback(node::XMLNode, pntd::PnmlType)
-    [anyelement(x, pntd) for x in EzXML.eachelement(node) if x !== nothing] # Empty is OK.
+    [anyelement(x) for x in EzXML.eachelement(node) if x !== nothing] # Empty is OK.
 end

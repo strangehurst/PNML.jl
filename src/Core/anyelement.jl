@@ -111,6 +111,5 @@ function Base.show(io::IO, ::MIME"text/plain", d::DictType)
     show(io, d)
 end
 function Base.show(io::IO, d::DictType)
-    #print(io, "show DictType\n")
     dict_show(IOContext(io, :typeinfo => DictType), d)
 end
