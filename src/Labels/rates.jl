@@ -91,37 +91,44 @@ function delay_value(t;
             content_parser::Base.Callable = delay_content_parser,
             default_value = tuple("closed", 0.0, 0.0))
     label = labelof(t, tag)
-    if isnothing(label)
+    d = if isnothing(label)
         default_value
     else
+        @show label valtype
         content_parser(label, valtype)
     end
+    @show d
+    return d
 end
 
 function delay_content_parser(label, value_type)
     (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$tag'")
+    @show value_type
     closure  = PNML._attribute(interval, :closure)
+    @show closure
 
     n = if haskey(interval, "cn") # Expect at least one cn.
         let cn = @inbounds interval["cn"]
             (isnothing(cn) || isempty(cn)) &&
                 throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
-            if cn isa Vector
+            @show x = if cn isa Vector
                 value_type[PNML.number_value(value_type, x) for x in cn]
             else
                 value_type[PNML.number_value(value_type, cn)]
             end
         end
+
     else
         throw(ArgumentError(string("<delay><interval> missing any <cn> element")))
     end
+    @show n
 
     i = if haskey(interval, "ci") # At most one ci named constant.
         let ci = @inbounds interval["ci"]
             (isnothing(ci) || isempty(ci)) &&
                 throw(ArgumentError("<interval> <ci> element is $ci"))
-            if ci isa Vector
+            @show x = if ci isa Vector
                 value_type[_ci(x) for x in ci]
             else
                 value_type[_ci(ci)]
@@ -130,7 +137,9 @@ function delay_content_parser(label, value_type)
     else
         length(n) == 1 && throw(ArgumentError("<interval> <ci> element missing."))
     end
+    @show n
     length(i) > 1 && throw(ArgumentError("<interval> has too many <ci> elements."))
+
     return tuple(closure, n[1], length(n) == 1 ? i[1] : n[2])
 end
 
