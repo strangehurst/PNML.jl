@@ -23,7 +23,6 @@ export AbstractSort, UserSort, MultisetSort, ProductSort
 export DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
-export Sort
 export make_sortref
 
 
@@ -85,7 +84,6 @@ Uses `fill_sort_tag!`.
 Return concrete SortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
-    #println("make_sortref $(repr(id)), $name, $dict $sort") #! debug
     id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
     if isnothing(id2) # Did not find existing  namedsort
         if isnothing(id) # no enclosing provided name/id

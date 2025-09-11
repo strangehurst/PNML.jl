@@ -175,10 +175,3 @@ end
 function Base.show(io::IO, ps::ProductSort)
     print(io, PNML.indent(io), "ProductSort(", ps.ae, ")")
 end
-
-#------------------------------------------------------------------
-"""
-Union of UserSort, ProductSort{N},  MultisetSort.
-"""
-const Sort{N} = Union{UserSort, ProductSort{N},  MultisetSort}
-#TODO PNML.Declarations.ArbitrarySort
