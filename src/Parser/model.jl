@@ -1,8 +1,3 @@
-function parse_excluded(node::XMLNode, _, _)
-    @warn "Attempt to parse excluded tag: $(EzXML.nodename(node))"
-    return nothing
-end
-
 #TODO test pnml_namespace
 
 """
@@ -20,8 +15,6 @@ function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool=false, default_ns:
         return default_ns
     end
 end
-
-
 
 """
 $(TYPEDSIGNATURES)
@@ -49,7 +42,7 @@ function pnmlmodel(node::XMLNode; context...)
             #! parse_context LabelParser[] filled using context
             #! parse_context ToolParser[] filled using context
 
-            # Each net can be different PTND.
+            # Each net can be different PNTD.
             net = parse_net(child; parse_context)::PnmlNet # Fully formed
 
             #TODO Add verification plugin here. Make our verifiers the 1st plugin.
@@ -60,26 +53,6 @@ function pnmlmodel(node::XMLNode; context...)
     end
     length(net_tup) > 0 ||
         throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
-
-
-    #======================================================================================
-    Want as much compiling of PnmlExpr trees as possible.
-    Enabling and firing will use variables to do operations on place markings for high-level nets.
-
-    We should evaluate ground terms here: markings are ground terms (no variables)
-    Variable values are ground terms: used to transfer values between markings.
-
-    PnmlExprs used to build functions of variables.
-
-    Variables on input arcs used to test/access input place marking values.
-    These are multiset elements. The PnmlMultiset basis sort is also the variable's sort.
-    Variables may unpack PnmlTuples which are elements of a ProductSort.
-    So the variable's sort is one of the product's.
-    ProductSorts of the input arcs can be mutated into other ProductSorts (tupls) for output arcs.
-    Variables that appear more than once refer to the same entity.
-    This can result in token splitting/combination/creation.
-
-    ======================================================================================#
 
     PnmlModel(net_tup, namespace)
 end
@@ -147,9 +120,8 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     netdata = PnmlNetData() # holds all place, transition, arc
     PNML.tunesize!(netdata)
 
-    # Pretend a net is a psudo-page so that we can record child pages.
-    # Net tracks the pages it owns directly, Pages use netkeys to track subpages
-    # so top-level netkeys will not use the other sets in netkeys.
+    # Treat net as a psudo-page so that we can record child pages.
+    # Net tracks the pages it owns with netsets, Pages use netkeys to track subpages
     netsets = PnmlNetKeys() #
     PNML.tunesize!(netsets)
 
@@ -222,7 +194,7 @@ end
     parse_page!(net,netsets, node, pntd; context) -> Nothing
 
 Call `_parse_page!` to create a page with its own `netsets`.
-Add this page to parent's `page_idset(netsets)` and `pagedict(net)`.
+Add created page to parent's `page_idset(netsets)` and `pagedict(net)`.
 """
 function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "page")
@@ -241,16 +213,9 @@ Return `Page`. `pageid` already parsed from `node`.
 """
 function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
-    # Allocate per-page data structures.
-    #netkeysets = PnmlNetKeys() # Track which objects belong to this page.
-    #namelabel::Maybe{Name} = nothing
-    #graphics::Maybe{Graphics} = nothing
-    #extralabels::Maybe{Vector{PnmlLabel}} = nothing
-
     #---------------------------------------------------------
-    # Create "empty" page. Will have `net` and `toolinfos` parsed.
+    # Create "empty" page. Will have `toolinfos` parsed.
     #---------------------------------------------------------
-
     page = Page{T}(; net=Ref(net), pntd, id = pageid,
         netsets = PnmlNetKeys(),
         toolspecinfos= find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}})
@@ -258,9 +223,8 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
     PNML.Labels.validate_toolinfos(toolinfos(page))
 
     #---------------------------------------------------------
+    # Fill page with graph nodes.
     #---------------------------------------------------------
-
-
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "place"
@@ -289,10 +253,7 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
         end
     end
 
-    #@show page
-
-    return page #! Page{T}(; net=Ref(net), pntd=pntd, id=pageid, namelabel=namelabel,
-                #!  graphics=graphics, toolinfos=toolinfos, labels=labels, netsets=netsets)
+    return page
 end
 
 """

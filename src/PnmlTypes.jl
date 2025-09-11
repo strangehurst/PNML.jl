@@ -219,11 +219,11 @@ julia> PNML.PnmlTypes.pntd_symbol("foo")
 pntd_symbol(s::AbstractString) = get(pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
 
 """
-    pnmltype(pntd::T) -> PnmlType
+    pnmltype(pntd::PnmlType) -> pnml
     pnmltype(uri::AbstractString) -> PnmlType
     pnmltype(s::Symbol; pnmltype_map=pnmltype_map) -> PnmlType
 
-Map either a text string or a symbol to a dispatch type singlton.
+Map either a text string or a symbol to a dispatch type object.
 
 While that string may be a URI for a pntd, we treat it as a simple string without parsing.
 The [`PnmlTypes.pnmltype_map`](@ref) and [`PnmlTypes.pntd_map`](@ref)
@@ -250,6 +250,7 @@ function pnmltype end
 pnmltype(pntd::PnmlType) = pntd
 pnmltype(uri::AbstractString) = pnmltype(pntd_symbol(uri))
 function pnmltype(s::Symbol)
+
     typemap = pnmltype_map::IdDict{Symbol, PnmlType}
     haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
     @inbounds typemap[s]
@@ -268,21 +269,18 @@ function iscontinuous end
 function ishighlevel end
 
 isdiscrete(pntd::PnmlType) = false
-isdiscrete(::Type{<:PnmlType}) = false
-
 isdiscrete(pntd::AbstractPnmlCore) = true
+isdiscrete(::Type{<:PnmlType}) = false
 isdiscrete(::Type{<:AbstractPnmlCore}) = true
 
 iscontinuous(pntd::PnmlType) = false
-iscontinuous(::Type{<:PnmlType}) = false
-
 iscontinuous(pntd::AbstractContinuousNet) = true
+iscontinuous(::Type{<:PnmlType}) = false
 iscontinuous(::Type{<:AbstractContinuousNet}) = true
 
 ishighlevel(pntd::PnmlType) = false
-ishighlevel(::Type{<:PnmlType}) = false
-
 ishighlevel(pntd::AbstractHLCore) = true
+ishighlevel(::Type{<:PnmlType}) = false
 ishighlevel(::Type{<:AbstractHLCore}) = true
 
 end # module PnmlTypes
