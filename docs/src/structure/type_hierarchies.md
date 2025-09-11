@@ -50,6 +50,7 @@ type_tree(PNML.PnmlTypes.PnmlType) # hide
 Todo: Continuous Petri Net
 
 ## AbstractPetriNet
+
 [`AbstractPetriNet`](@ref) uses the Intermediate Representation's
 [`PnmlNet`](@ref) and `PnmlType` to implement a Petri Net Graph (PNG).
 
@@ -58,11 +59,14 @@ type_tree(PNML.AbstractPetriNet) # hide
 ```
 
 ## AbstractPnmlObject
+
 [`Page`](@ref), [`Arc`](@ref), [`Place`](@ref), [`Transition`](@ref) define the graph of a [`PnmlNet`](@ref).
 
 ```@example type
 type_tree(PNML.AbstractPnmlObject) # hide
 ```
+
+### Structure
 
 Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 
@@ -74,7 +78,31 @@ Fields expected of every subtype of [`AbstractPnmlObject`](@ref):
 | labels    | Optional [`PnmlLabel`](@ref) collection of unclaimed labels. |
 | toolspecinfos | Optional [`ToolInfo`](@ref) collection of tool specific content. |
 
+Note that subtypes may have additional fields. For example, Page has a subpages field.
+
+### ADT
+
+```julia
+using Moshi.Data: @data
+
+@data NetNode{PNTD,} begin
+    Arc
+    Place
+    Transition
+    RefPlace
+    RefTransition
+    Page
+end
+```
+
+
+
+
+
+
+
 ## AbstractLabel
+
 [`AbstractLabel`](@ref)s are attached to `AbstractPnmlObject`s.
 Kinds of label include: marking, inscription, condition and declarations, sort, and ad-hoc.
 Ad-hoc is where we assume any undefined element attached to a `AbstractPnmlObject` instance
@@ -85,10 +113,8 @@ Some 'other labels' can be accessed using: [`rate_value`](@ref), [`delay_value`]
 
 | Full Name     | Node       | Label Description                                   |
 |:--------------|:-----------|:----------------------------------------------------|
-| Marking       | Place      | Value is a number.                                  |
-| Inscription   | Arc        | Value is a number.                                  |
-| HLMarking     | Place      | Value is a ground term.                             |
-| HLInscription | Arc        | Value is a ground term.                             |
+| Marking       | Place      | Value is a number or ground term.                   |
+| Inscription   | Arc        | Value is a number or ground term.                   |
 | Condition     | Transition | Value is a boolean term.                            |
 | Rate          | Transition | Value is a floating point number.                   |
 | Priority      | Transition | Firing order of enabled transitions.                |
