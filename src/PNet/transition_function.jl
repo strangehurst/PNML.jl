@@ -56,7 +56,7 @@ function labeled_transitions(net::PnmlNet)
                     Iterators.map(arcid -> civ(net, arcid), PNML.tgt_arcs(net, pid(tr)))))
         outs = tuple(zip(PNML.postset(net, pid(tr)),
                     Iterators.map(arcid -> civ(net, arcid), PNML.src_arcs(net, pid(tr)))))
-        Pair(pid(tr)=>PNML.rate_value(tr, pntd(net)), ins=>outs)
+        Pair(pid(tr)=>PNML.rate_value(tr), ins=>outs)
     end
 end
 """

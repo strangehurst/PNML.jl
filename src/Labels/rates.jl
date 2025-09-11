@@ -25,7 +25,7 @@ Base.eltype(r::Rate) = typeof(value(r))
 value(r::Rate) = r.value
 
 function Base.show(io::IO, r::Rate)
-    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphicd,  ", ", r.toolspecinfos, ")")
+    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphics,  ", ", r.toolspecinfos, ")")
 end
 
 "Parse content of `<text>` as a number of `value_type`."
@@ -36,7 +36,7 @@ function number_content_parser(label, value_type)
  end
 
 """
-    rate_value(t, pntd) -> Real
+    rate_value(t; <options>) -> Real
 
 Return value of a `Rate` label.  Missing rate labels are defaulted to zero.
 
@@ -44,17 +44,16 @@ Expected label XML: `<rate> <text>0.3</text> </rate>`
 
 # Arguments
     `t` is anything that supports `labelof(t, tag)`.
-    `pntd::PnmlType`
     `tag::String` is the XML element tag, default `"rate"`.
     `value_type::Type{<:Number}` is concrete `Type` used to parse value.
     `content_parser`::Base.Callable with arguments of `labelof(t, tag)` and `value_type`.
     `default_value` = zero(value_type) is returned when `labelof(t, tag)` returns `nothing`.
 """
-function rate_value(t, pntd::PnmlType;
+function rate_value(t;
             tag::String = "rate",
-            valtype::Type{<:Number} = PNML.value_type(Rate, pntd),
+            valtype::Type{<:Number} = PNML.value_type(Rate),
             content_parser::Base.Callable = number_content_parser,
-            default_value = zero(valtype),)
+            default_value = zero(valtype))
     label = labelof(t, tag)
     if isnothing(label)
         default_value
@@ -96,7 +95,7 @@ function delay_value(t;
         default_value
     else
         @show label valtype
-        content_parser(label, valtype)
+        content_parser(label, valtype)::Tuple
     end
     @show d
     return d

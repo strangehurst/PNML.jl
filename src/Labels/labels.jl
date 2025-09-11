@@ -161,7 +161,7 @@ end
 
 "Return label matching `tagvalue`` or `nothing``."
 function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
-    first(labels(iteratable, tag))
+    first(labels(iteratable, tag))::PnmlLabel
 end
 
 "Return `true` if collection `iteratable` contains label with `tagvalue`."
