@@ -83,7 +83,7 @@ end
     @test_throws("MissingIDException: net",
             parse_net(xml"<net type='test'></net>"; parse_context))
 
-    pagedict = OrderedDict{Symbol, PNML.page_type(pntd)}()
+    pagedict = OrderedDict{Symbol, PNML.Page{typeof(pntd)}}()
     netdata = PNML.PnmlNetData()
     netsets = PNML.PnmlNetKeys()
 

@@ -454,43 +454,6 @@ is parameterized on the PNTD (Petri Net Type Definition).
 See [`PnmlNet`](@ref)s & [`AbstractPnmlObject`](@ref)s, and
  [`PnmlTypes`](@ref) for details of the singleton types used.
 
-
-#### page\_type(pntd)
-
-```@docs; canonical=false
-PNML.page_type
-```
-```@example types
-list_type(PNML.page_type) # hide
-```
-```@example methods
-methods(PNML.page_type) # hide
-```
-
-#### transition\_type(pntd)
-
-```@docs; canonical=false
-PNML.transition_type
-```
-```@example types
-list_type(PNML.transition_type) # hide
-```
-```@example methods
-methods(PNML.transition_type) # hide
-```
-
-#### arc\_type(pntd)
-
-```@docs; canonical=false
-PNML.arc_type
-```
-```@example types
-list_type(PNML.arc_type) # hide
-```
-```@example methods
-methods(PNML.arc_type) # hide
-```
-
 ### Value Types
 
 TBD

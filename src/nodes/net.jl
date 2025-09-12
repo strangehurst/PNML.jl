@@ -249,19 +249,3 @@ function Base.show(io::IO, net::PnmlNet)
     end
 
 end
-
-#------------------------------------------------------------------------------
-# Construct Types
-#------------------------------------------------------------------------------
-
-page_type(::Type{T}) where {T<:PnmlType} = Page{T}
-
-transition_type(::Type{T}) where {T<:PnmlType}    = Transition
-arc_type(::Type{T}) where {T<:PnmlType}           = Arc
-reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
-
-page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T}
-
-transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition
-arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc
-reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition

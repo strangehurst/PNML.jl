@@ -113,10 +113,9 @@ attached to the nodes of a petri net graph, including: marking, inscription, con
 Page IDs are appended as the XML tree is descended, followed by node IDs.
 """
 function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_context::ParseContext)
-    pgtype = PNML.page_type(typeof(pntd))
 
     # Create empty data structures to be filled with the parsed pnml XML.
-    pagedict = OrderedDict{Symbol, pgtype}() # Page dictionary not part of PnmlNetData.
+    pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}() # Page dictionary not part of PnmlNetData.
     netdata = PnmlNetData() # holds all place, transition, arc
     PNML.tunesize!(netdata)
 

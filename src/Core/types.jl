@@ -218,13 +218,6 @@ abstract type AbstractOperator <: AbstractTerm end
 # The part that needs to know Type details is defined elsewhere. :)
 #---------------------------------------------------------------------------
 
-# pnmlnet_type(pntd::PnmlType)       = pnmlnet_type(typeof(pntd))
-page_type(pntd::PnmlType)          = page_type(typeof(pntd))
-
-transition_type(pntd::PnmlType)    = transition_type(typeof(pntd))
-arc_type(pntd::PnmlType)           = arc_type(typeof(pntd))
-reftransition_type(pntd::PnmlType) = reftransition_type(typeof(pntd))
-
 coordinate_type(pntd::PnmlType)    = coordinate_type(typeof(pntd))
 
 """

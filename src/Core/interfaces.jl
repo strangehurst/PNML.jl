@@ -301,26 +301,6 @@ Return reference transition matching `id`.
 function reftransition end
 
 """
-    page_type(x) -> Type(<:Page)
-"""
-function page_type end
-
-"""
-    transition_type(x) -> Type(<:Transition)
-"""
-function transition_type end
-
-"""
-    arc_type(pntd) -> Type(<:Arc)
-"""
-function arc_type end
-
-"""
-    reftransition_type(x) -> Type(<:RefTransition)
-"""
-function reftransition_type end
-
-"""
     value(x)
 Return value of x. Can be a wrapped value or a derived value.
 May return an Expr that returns the value when eval'ed.
