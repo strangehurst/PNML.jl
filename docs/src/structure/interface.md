@@ -520,18 +520,6 @@ list_type(PNML.marking_type) # hide
 methods(PNML.marking_type) # hide
 ```
 
-#### condition\_type(pntd)
-
-```@docs; canonical=false
-PNML.condition_type
-```
-```@example types
-list_type(PNML.condition_type) # hide
-```
-```@example methods
-methods(PNML.condition_type) # hide
-```
-
 #### inscription\_type(pntd)
 
 ```@docs; canonical=false

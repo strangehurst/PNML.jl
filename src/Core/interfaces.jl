@@ -331,11 +331,6 @@ function refplace_type end
 function reftransition_type end
 
 """
-    condition_type(x) -> Type(<:Condition)
-"""
-function condition_type end
-
-"""
     value(x)
 Return value of x. Can be a wrapped value or a derived value.
 May return an Expr that returns the value when eval'ed.

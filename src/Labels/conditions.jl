@@ -40,7 +40,6 @@ Condition(text::AbstractString, b::Bool, ddict) = Condition(text, PNML.BooleanCo
 Condition(text::AbstractString, c::PNML.BooleanConstant, ddict) = Condition(text, PNML.BooleanEx(c), ddict)
 Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, REFID[], ddict)
 
-PNML.condition_type(::Type{<:PnmlType}) = Condition
 Base.eltype(::Type{<:Condition}) = Bool
 PNML.value_type(::Type{<:Condition}, ::Type{<: PnmlType}) = eltype(BoolSort)
 

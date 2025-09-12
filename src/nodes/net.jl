@@ -256,20 +256,19 @@ end
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T}
 
-place_type(::Type{T}) where {T<:PnmlType}         = Place #! {T, marking_type(T)}
-transition_type(::Type{T}) where {T<:PnmlType}    = Transition #! {T, condition_type(T)}
-arc_type(::Type{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
+place_type(::Type{T}) where {T<:PnmlType}         = Place
+transition_type(::Type{T}) where {T<:PnmlType}    = Transition
+arc_type(::Type{T}) where {T<:PnmlType}           = Arc
 refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
 
 page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T}
 
-place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place #! {T, marking_type(T)}
-transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition #! {T, condition_type(T)}
-arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc{inscription_type(T)}
+place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place
+transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition
+arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition
 
-condition_type(net::PnmlNet)   = condition_type(nettype(net))
 inscription_type(net::PnmlNet) = inscription_type(nettype(net))
 marking_type(net::PnmlNet)     = marking_type(nettype(net))
