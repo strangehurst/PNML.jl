@@ -467,18 +467,6 @@ list_type(PNML.page_type) # hide
 methods(PNML.page_type) # hide
 ```
 
-#### place\_type(pntd)
-
-```@docs; canonical=false
-PNML.place_type
-```
-```@example types
-list_type(PNML.place_type) # hide
-```
-```@example methods
-methods(PNML.place_type) # hide
-```
-
 #### transition\_type(pntd)
 
 ```@docs; canonical=false

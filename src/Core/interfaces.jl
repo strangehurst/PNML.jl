@@ -306,11 +306,6 @@ function reftransition end
 function page_type end
 
 """
-    place_type(x) -> Type(<:Place)
-"""
-function place_type end
-
-"""
     transition_type(x) -> Type(<:Transition)
 """
 function transition_type end
@@ -319,11 +314,6 @@ function transition_type end
     arc_type(pntd) -> Type(<:Arc)
 """
 function arc_type end
-
-"""
-    refplace_type(x) -> Type(<:RefPlace)
-"""
-function refplace_type end
 
 """
     reftransition_type(x) -> Type(<:RefTransition)

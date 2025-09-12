@@ -256,16 +256,12 @@ end
 
 page_type(::Type{T}) where {T<:PnmlType} = Page{T}
 
-place_type(::Type{T}) where {T<:PnmlType}         = Place
 transition_type(::Type{T}) where {T<:PnmlType}    = Transition
 arc_type(::Type{T}) where {T<:PnmlType}           = Arc
-refplace_type(::Type{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::Type{T}) where {T<:PnmlType} = RefTransition
 
 page_type(::PnmlNet{T}) where {T<:PnmlType} = Page{T}
 
-place_type(::PnmlNet{T}) where {T<:PnmlType}         = Place
 transition_type(::PnmlNet{T}) where {T<:PnmlType}    = Transition
 arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc
-refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition

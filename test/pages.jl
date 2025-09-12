@@ -107,13 +107,11 @@ verify_sets(net)
 
 type_funs = (
     PNML.arc_type,
-    PNML.place_type,
     PNML.transition_type,
     #! PNML.condition_value_type,
     #! PNML.inscription_value_type,
     #! PNML.marking_value_type,
     PNML.page_type,
-    PNML.refplace_type,
     PNML.reftransition_type,
     #! PNML.rate_value_type,
     )
@@ -236,7 +234,6 @@ end
 
 @testset "lookup types $pntd" for pntd in PnmlTypes.all_nettypes()
     @test PNML.arc_type(pntd) <: PNML.Arc
-    @test PNML.place_type(pntd) <: PNML.Place
     @test PNML.transition_type(pntd) <: PNML.Transition
 
     @test PNML.value_type(PNML.Labels.Condition, typeof(pntd)) <: Bool
@@ -248,7 +245,6 @@ end
         @test PNML.value_type(PNML.Marking, pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
 
     @test PNML.page_type(pntd) <: PNML.Page
-    @test PNML.refplace_type(pntd) <: PNML.RefPlace
     @test PNML.reftransition_type(pntd) <: PNML.RefTransition
     @test PNML.value_type(Rate, pntd) <: Float64
 end
