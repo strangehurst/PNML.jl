@@ -24,11 +24,8 @@ mutable struct Place  <: AbstractPnmlNode
     declarationdicts::DeclDict   #todo net::PnmlNet
 end
 
-#! nettype(::Place) where {T <: PnmlType} = T
-
 initial_marking(place::Place) = (place.initialMarking)()
 
-#!_sortref(dd::DeclDict, p::PNML.Place) = sortref(p)
 sortref(place::Place) = sortref(place.sorttype)::SortRef
 sortof(place::Place) = sortof(sortref(place))
 
@@ -67,11 +64,9 @@ mutable struct Transition  <: AbstractPnmlNode
     vars::Set{REFID}
     "Cache of variable substutions for this transition"
     varsubs::Vector{NamedTuple}
-    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
-#! nettype(::Transition{T}) where {T <: PnmlType} = T
 decldict(transition::Transition) = transition.declarationdicts
 
 """
@@ -108,11 +103,11 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{I <: Inscription} <: AbstractPnmlObject
+mutable struct Arc <: AbstractPnmlObject
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
-    inscription::I #! expression label
+    inscription::Inscription #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -171,7 +166,6 @@ struct RefPlace <: ReferenceNode
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::Maybe{Vector{PnmlLabel}}
-    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
@@ -189,7 +183,6 @@ struct RefTransition <: ReferenceNode
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::Maybe{Vector{PnmlLabel}}
-    #todo net::PnmlNet
     declarationdicts::DeclDict
 end
 
