@@ -49,7 +49,7 @@ end
 
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         #@show mark
-        @test mark isa PNML.marking_type(pntd)
+        @test mark isa PNML.Marking
 
         @test PNML.term(mark) isa PNML.Bag
         @test text(mark) == "3`dot"
@@ -199,7 +199,7 @@ end
 
 #     #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
 #     @test mark isa PNML.AbstractLabel
-#     @test mark isa PNML.marking_type(pntd)
+#     @test mark isa PNML.Marking
 #     @test PNML.has_graphics(mark) == true
 #     @test occursin("Graphics", sprint(show, mark))
 #     @test PNML.has_labels(mark) == false

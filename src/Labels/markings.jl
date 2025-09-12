@@ -132,9 +132,6 @@ _sortof(dd::DeclDict, ::Float64) = sortdefinition(namedsorts(dd)[:real])::RealSo
 _sortof(dd::DeclDict, x::Any) = sortof(x)
 
 #--------------------------------------------------------------------------------------
-PNML.marking_type(::Type{T}) where {T <: PnmlType} = Marking
-
-
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
 PNML.value_type(::Type{Marking}, ::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
@@ -179,7 +176,7 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
-    Marking(zero(PNML.value_type(PNML.marking_type(pntd), pntd)), ddict) #! Will not be a PnmlMultiset.
+    Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) #! Will not be a PnmlMultiset.
 end
 
 function default(::Type{<:Marking}, pndt::T, placetype::SortType; ddict) where {T <: AbstractHLCore}

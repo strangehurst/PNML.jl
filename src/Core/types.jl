@@ -227,7 +227,6 @@ arc_type(pntd::PnmlType)           = arc_type(typeof(pntd))
 refplace_type(pntd::PnmlType)      = refplace_type(typeof(pntd))
 reftransition_type(pntd::PnmlType) = reftransition_type(typeof(pntd))
 
-marking_type(pntd::PnmlType)       = marking_type(typeof(pntd))
 coordinate_type(pntd::PnmlType)    = coordinate_type(typeof(pntd))
 
 """

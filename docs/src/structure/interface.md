@@ -503,47 +503,6 @@ list_type(PNML.arc_type) # hide
 methods(PNML.arc_type) # hide
 ```
 
-### Label Types
-
-[AbstractLabel](@ref)s are parameterized by [Value Types](@ref).
-
-
-#### marking\_type(pntd)
-
-```@docs; canonical=false
-PNML.marking_type
-```
-```@example types
-list_type(PNML.marking_type) # hide
-```
-```@example methods
-methods(PNML.marking_type) # hide
-```
-
-#### refplace\_type(pntd)
-
-```@docs; canonical=false
-PNML.refplace_type
-```
-  ```@example types
-list_type(PNML.refplace_type) # hide
-```
-```@example methods
-methods(PNML.refplace_type) # hide
-```
-
-#### reftransition\_type(pntd)
-
-```@docs; canonical=false
-PNML.reftransition_type
-```
-```@example types
-list_type(PNML.reftransition_type) # hide
-```
-```@example methods
-methods(PNML.reftransition_type) # hide
-```
-
 ### Value Types
 
 TBD

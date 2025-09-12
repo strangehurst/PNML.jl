@@ -344,11 +344,6 @@ Return 'PnmlExpr` term of x.
 function term end
 
 """
-    marking_type(x) -> Type(<:Marking)
-"""
-function marking_type end
-
-"""
     coordinate_type(x) -> Type(Coordinate)
 """
 function coordinate_type end

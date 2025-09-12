@@ -111,7 +111,6 @@ type_funs = (
     PNML.transition_type,
     #! PNML.condition_value_type,
     #! PNML.inscription_value_type,
-    PNML.marking_type,
     #! PNML.marking_value_type,
     PNML.page_type,
     PNML.refplace_type,
@@ -246,8 +245,7 @@ end
     else
         @test PNML.value_type(PNML.Inscription, typeof(pntd)) <: Number
     end
-    @test PNML.marking_type(pntd) <: PNML.Marking
-    @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
+        @test PNML.value_type(PNML.Marking, pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
 
     @test PNML.page_type(pntd) <: PNML.Page
     @test PNML.refplace_type(pntd) <: PNML.RefPlace
