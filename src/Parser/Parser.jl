@@ -40,7 +40,7 @@ using PNML: Context
 using PNML: usersort, usersorts, pid
 using PNML: multisetsorts
 using PNML: ParseContext, parser_context, ToolParser, LabelParser
-using PNML: inscription_type, marking_type, transition_type
+using PNML: marking_type, transition_type
 using PNML: default, fill_sort_tag!
 using PNML: usersort, namedsort, usersorts, namedsorts, multisetsorts, multisetsorts
 using PNML: partitionsort, partitionsorts

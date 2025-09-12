@@ -60,9 +60,6 @@ end
 
 # Julia Type is the "fixed" part.
 
-PNML.inscription_type(::Type{T}) where {T<:PnmlType}       = Inscription{<:PnmlExpr}
-PNML.inscription_type(::Type{T}) where {T<:AbstractHLCore} = Inscription{<:PnmlExpr}
-
 #!============================================================================
 #! inscription value_type must match adjacent place marking value_type
 #! with inscription being PositiveSort and marking being NaturalSort.

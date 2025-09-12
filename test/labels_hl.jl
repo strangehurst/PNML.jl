@@ -264,7 +264,6 @@ end
 #             PNML.Parser.parse_hlinscription(n1, pntd)
 
 #     @test typeof(insc) <: PNML.AbstractLabel
-#     @test typeof(insc) <: PNML.inscription_type(pntd)
 #     @test PNML.has_graphics(insc) == true
 #     @test PNML.has_labels(insc) == false # Labels do not have sub-labels.
 

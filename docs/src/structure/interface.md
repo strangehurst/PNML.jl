@@ -520,18 +520,6 @@ list_type(PNML.marking_type) # hide
 methods(PNML.marking_type) # hide
 ```
 
-#### inscription\_type(pntd)
-
-```@docs; canonical=false
-PNML.inscription_type
-```
-```@example types
-list_type(PNML.inscription_type) # hide
-```
-```@example methods
-methods(PNML.inscription_type) # hide
-```
-
 #### refplace\_type(pntd)
 
 ```@docs; canonical=false

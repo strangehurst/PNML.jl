@@ -67,8 +67,7 @@ end
 
 "Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
 function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, def, varsub)
-    val = inscription_value(value_type(PNML.inscription_type(pntd), typeof(pntd)),
-                            a, def, varsub)
+    val = inscription_value(value_type(PNML.Inscription, typeof(pntd)), a, def, varsub)
     return pntd isa PT_HLPNG ? cardinality(val) : val
 end
 
@@ -131,7 +130,7 @@ end
 ########################################################################################
 function input_matrix(net::PnmlNet)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(inscription_type(pntd(net)), pntd(net))
+    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(Inscription, pntd(net))
     imatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return input_matrix!(imatrix, net) # Dispatch on net type.
 end
@@ -150,7 +149,7 @@ return imatrix
 end
 
 function output_matrix(net::PnmlNet)
-    ivt = pntd(net) isa PT_HLPNG ? Int : value_type(inscription_type(pntd(net)), pntd(net))
+    ivt = pntd(net) isa PT_HLPNG ? Int : value_type(Inscription, pntd(net))
     omatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return output_matrix!(omatrix, net) # Dispatch on net type.
 end

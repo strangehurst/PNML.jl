@@ -110,7 +110,6 @@ type_funs = (
     PNML.place_type,
     PNML.transition_type,
     #! PNML.condition_value_type,
-    PNML.inscription_type,
     #! PNML.inscription_value_type,
     PNML.marking_type,
     #! PNML.marking_value_type,
@@ -242,11 +241,10 @@ end
     @test PNML.transition_type(pntd) <: PNML.Transition
 
     @test PNML.value_type(PNML.Labels.Condition, typeof(pntd)) <: Bool
-    @test PNML.inscription_type(pntd) <: PNML.Inscription
     if ishighlevel(pntd)
-        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: PnmlMultiset{<:Any}
+        @test PNML.value_type(PNML.Inscription, typeof(pntd)) <: PnmlMultiset{<:Any}
     else
-        @test PNML.value_type(PNML.inscription_type(pntd), typeof(pntd)) <: Number
+        @test PNML.value_type(PNML.Inscription, typeof(pntd)) <: Number
     end
     @test PNML.marking_type(pntd) <: PNML.Marking
     @test PNML.value_type(PNML.marking_type(pntd), pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}

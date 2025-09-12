@@ -343,12 +343,6 @@ Return 'PnmlExpr` term of x.
 """
 function term end
 
-
-"""
-    inscription_type(x) -> Type(<:Inscription)
-"""
-function inscription_type end
-
 """
     marking_type(x) -> Type(<:Marking)
 """
@@ -459,16 +453,16 @@ function parser_context end
 function fill_sort_tag! end
 
 """
-    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, typeof(net))}
+    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, typeof(net))}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function input_matrix end
 
 """
-    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
-    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(inscription_type(net), typeof(net))}
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, typeof(net))}
+    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, typeof(net))}
 
 Create and return a matrix ntransitions x nplaces.
 """

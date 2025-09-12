@@ -270,5 +270,4 @@ arc_type(::PnmlNet{T}) where {T<:PnmlType}           = Arc
 refplace_type(::PnmlNet{T}) where {T<:PnmlType}      = RefPlace
 reftransition_type(::PnmlNet{T}) where {T<:PnmlType} = RefTransition
 
-inscription_type(net::PnmlNet) = inscription_type(nettype(net))
 marking_type(net::PnmlNet)     = marking_type(nettype(net))
