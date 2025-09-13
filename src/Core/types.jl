@@ -57,8 +57,9 @@ Annotation label that adds <structure>.
 """
 abstract type HLAnnotation <: AbstractLabel end
 
-
-
+#--------------------------------------------------------------------
+# AbstractPnmlObject
+#--------------------------------------------------------------------
 
 function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     prop_name === :id   && return getfield(o, :id)::Symbol
@@ -79,7 +80,6 @@ pid(o::AbstractPnmlObject)        = o.id
 #
 has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
-name(::Nothing) = ""
 
 # labels and toolspecinfos are vectors: isnothing vs isempty
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :extralabels) && !isnothing(o.extralabels)
@@ -103,7 +103,7 @@ function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{S
 end
 
 """
-    labelof(x, sym::Symbol) -> Maybe{PnmlLabel}
+    labelof(x, tag) -> Maybe{PnmlLabel}
 
 `x` is anyting that supports has_label/get_label,
 `tag` is the tag of the xml label element.

@@ -67,7 +67,6 @@ end
 # All Labels are expected to have a `text` field.
 "Return `text` field. All labels are expected to have one that may be `nothing` or an empty string."
 text(l::AbstractLabel) = (hasproperty(l, :text) && !isnothing(l.text)) ? l.text : ""
-text(::Nothing) = ""
 
 has_graphics(l::AbstractLabel) = hasproperty(l, :graphics) && !isnothing(l.graphics)
 graphics(l::AbstractLabel) =  l.graphics
@@ -164,7 +163,7 @@ function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
     first(labels(iteratable, tag))::PnmlLabel
 end
 
-"Return `true` if collection `iteratable` contains label with `tagvalue`."
+"Return `true` if collection `iteratable` contains label with `tag`."
 function has_label(iteratable, tag::Union{Symbol, String, SubString{String}})
     !isempty(labels(iteratable, tag))
 end
