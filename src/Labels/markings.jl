@@ -179,7 +179,7 @@ function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
     Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) #! Will not be a PnmlMultiset.
 end
 
-function default(::Type{<:Marking}, pndt::T, placetype::SortType; ddict) where {T <: AbstractHLCore}
+function default(::Type{<:Marking}, pndt::AbstractHLCore, placetype::SortType; ddict)
     el = def_sort_element(placetype; ddict)
     Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # empty multiset, el used for its type
 end
