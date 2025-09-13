@@ -28,41 +28,11 @@ module PNML
 __precompile__(true)
 using Logging
 using LoggingExtras
-# CONFIG structure copied from Tim Holy's Cthulhu.jl.
-"""
-Configuration with default values that can be overidden by a LocalPreferences.toml.
-# Options
-  - `indent_width::Int`: Indention of nested lines.
-  - `text_element_optional::Bool`: There are pnml files that break the rules & do not have <text> elements.
-  - `warn_on_fixup::Bool`: When an missing value is replaced by a default value, issue a warning.
-  - `warn_on_namespace::Bool`: There are pnml files that break the rules & do not have an xml namespace.
-  - `warn_on_unclaimed::Bool`: Issue warning when PNML label does not have a parser defined. While allowed, there will be code required to do anything useful with the label.
-  - `warn_on_unimplemented::Bool`: Issue warning to highlight something unimplemented. Expect high volume of messages.
-  - `verbose::Bool`: Print information as runs.
-"""
-Base.@kwdef mutable struct PnmlConfig
-    indent_width::Int           = 4
-    text_element_optional::Bool = true
 
-    #app_env::String             = DEV
-    verbose::Bool               = false
-    base_path::String           = "PNML"
-    log_path::String            = "log"
-    log_level::Logging.LogLevel = Logging.Info
-    log_to_file::Bool           = false
-    log_requests::Bool          = true
-    log_date_format::String     = "yyyy-mm-dd HH:MM:SS"
-
-    warn_on_fixup::Bool         = false
-    warn_on_namespace::Bool     = true
-    warn_on_unclaimed::Bool     = false
-    warn_on_unimplemented::Bool = false
-end
+include("preferences.jl") # PnmlConfig, read_config!, save_config, show
 
 "See [`PnmlConfig`](@ref) for default values."
 const CONFIG = Ref(PnmlConfig())
-
-include("preferences.jl") # read_config!, save_config, show
 
 __init__() = read_config!(CONFIG[])
 
