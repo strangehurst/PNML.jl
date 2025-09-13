@@ -103,7 +103,6 @@ include("Core/types.jl") # Abstract Types with docstrings.
 
 include("Core/toolparser.jl")
 include("Core/labelparser.jl")
-verbose
 include("Core/decldictcore.jl") # define things used by Sorts, Declarations
 
 # Parts of Labels and Nodes.
