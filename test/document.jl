@@ -105,6 +105,7 @@ end
         @test PNML.find_net(model, :net3) isa PnmlNet
         @test PNML.find_net(model, :net4) isa PnmlNet
         @test PNML.find_net(model, :net5) isa PnmlNet
+        @test PNML.find_net(model, :XXXX) === nothing
 
         @test_call PNML.find_net(model, :net1)
         @test_opt  PNML.find_net(model, :net1)
