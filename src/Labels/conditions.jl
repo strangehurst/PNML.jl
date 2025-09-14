@@ -41,7 +41,7 @@ Condition(text::AbstractString, c::PNML.BooleanConstant, ddict) = Condition(text
 Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, REFID[], ddict)
 
 Base.eltype(::Type{<:Condition}) = Bool
-PNML.value_type(::Type{<:Condition}, ::Type{<: PnmlType}) = eltype(BoolSort)
+PNML.value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
 
 decldict(c::Condition) = c.declarationdicts
 

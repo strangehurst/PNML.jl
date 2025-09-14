@@ -63,7 +63,7 @@ function rate_value(t;
 end
 
 value_type(::Type{Rate}) = Float64
-value_type(::Type{Rate}, ::Type{<:PnmlType}) = Float64
+value_type(::Type{Rate}, ::PnmlType) = Float64
 
 
 #######################################################################################

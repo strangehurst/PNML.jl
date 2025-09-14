@@ -230,11 +230,11 @@ end
 
 @testset "lookup types $pntd" for pntd in PnmlTypes.all_nettypes()
 
-    @test PNML.value_type(PNML.Labels.Condition, typeof(pntd)) <: Bool
+    @test PNML.value_type(PNML.Labels.Condition, pntd) <: Bool
     if ishighlevel(pntd)
-        @test PNML.value_type(PNML.Inscription, typeof(pntd)) <: PnmlMultiset{<:Any}
+        @test PNML.value_type(PNML.Inscription, pntd) <: PnmlMultiset{<:Any}
     else
-        @test PNML.value_type(PNML.Inscription, typeof(pntd)) <: Number
+        @test PNML.value_type(PNML.Inscription, pntd) <: Number
     end
     @test PNML.value_type(PNML.Marking, pntd) <: Union{Number, PNML.PnmlMultiset{<:Any}}
     @test PNML.value_type(Rate, pntd) <: Float64

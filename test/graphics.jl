@@ -8,6 +8,9 @@ using PNML, ..TestUtils, JET
     @test_opt PNML.Coordinate(1.1, 2.2)
     @test_call PNML.Coordinate(1.1, 2.2)
     #TODO more tests
+
+    @test_opt PNML.value_type(PNML.Coordinate)
+    @test_call PNML.value_type(PNML.Coordinate)
 end
 
 @testset "graphics $pntd" for pntd in PnmlTypes.core_nettypes()
@@ -40,6 +43,10 @@ end
     @test n.positions isa Vector{PNML.Coordinate}
     @test length(n.positions) == 2
     @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
+
+    @test eltype(PNML.Coordinate) == Float32
+    @test PNML.value_type(PNML.Coordinate) == Float32
+    @test PNML.value_type(PNML.Coordinate, pntd) == Float32
 
     @test n.line isa PnmlGraphics.Line
     @test n.line.color == "linecolor"

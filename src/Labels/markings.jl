@@ -134,12 +134,12 @@ _sortof(dd::DeclDict, x::Any) = sortof(x)
 #--------------------------------------------------------------------------------------
 # From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
-PNML.value_type(::Type{Marking}, ::Type{<:PnmlType}) = eltype(NaturalSort) #::Int
-PNML.value_type(::Type{Marking}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
+PNML.value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
+PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-PNML.value_type(::Type{Marking}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
-PNML.value_type(::Type{Marking}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Marking}, ::AbstractHLCore) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{Marking}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
 
 #~ Note the close relation of marking value_type to inscription value_type.

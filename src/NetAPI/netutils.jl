@@ -67,7 +67,7 @@ end
 
 "Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
 function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, def, varsub)
-    val = inscription_value(value_type(PNML.Inscription, typeof(pntd)), a, def, varsub)
+    val = inscription_value(value_type(PNML.Inscription, pntd), a, def, varsub)
     return pntd isa PT_HLPNG ? cardinality(val) : val
 end
 

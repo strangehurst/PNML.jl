@@ -65,10 +65,10 @@ end
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
 
-PNML.value_type(::Type{Inscription}, ::Type{<:PnmlType})              = eltype(PositiveSort) #::Int
-PNML.value_type(::Type{Inscription}, ::Type{<:AbstractContinuousNet}) = eltype(RealSort) #::Float64
-PNML.value_type(::Type{Inscription}, ::Type{<:AbstractHLCore}) = PnmlMultiset{<:Any}
-PNML.value_type(::Type{Inscription}, ::Type{<:PT_HLPNG}) = PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Inscription}, ::PnmlType)              = eltype(PositiveSort) #::Int
+PNML.value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
+PNML.value_type(::Type{Inscription}, ::AbstractHLCore) = PnmlMultiset{<:Any}
+PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
 function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
     Inscription(nothing, PNML.NumberEx(UserSortRef(:natural), one(Int)), nothing, nothing, REFID[], ddict)

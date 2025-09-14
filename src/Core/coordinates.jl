@@ -17,9 +17,10 @@ Coordinate(x::T1, y::T2) where {T1 <: Number, T2 <: Number} =
                        convert(value_type(Coordinate), y))
 
 coordinate_type(::Type{T}) where {T <: PnmlType} = Coordinate
-value_type(::Type{Coordinate}) = Float32
-value_type(::Type{Coordinate}, ::Type{<:PnmlType}) = Float32
+
 Base.eltype(::Type{Coordinate}) = Float32
+value_type(::Type{Coordinate}, ::PnmlType) = eltype(Coordinate)
+value_type(::Type{Coordinate}) = eltype(Coordinate)
 
 x(c::Coordinate) = c.x_
 y(c::Coordinate) = c.y_
