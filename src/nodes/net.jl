@@ -14,7 +14,7 @@ One Petri Net of a PNML model.
     # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
     page_set::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
 
-    declaration::Declaration = Declaration() # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
+    declaration::Declaration # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
 
@@ -22,11 +22,15 @@ One Petri Net of a PNML model.
     # no graphics for net
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::Vector{PnmlLabel} = PnmlLabel[] # empty by default
-    idregistry::PnmlIDRegistry = PnmlIDRegistry()
+    idregistry::PnmlIDRegistry
 end
 
 # Constructor for use in test scaffolding.
-PnmlNet(t::PnmlType, x::Symbol) = PnmlNet(; type=t, id=x, pagedict=OrderedDict{Symbol, Page{typeof(t)}}())
+PnmlNet(t::PnmlType, x::Symbol) = PnmlNet(; type=t, id=x,
+                                    declaration=Declaration(),
+                                    pagedict=OrderedDict{Symbol, Page{typeof(t)}}(),
+                                    idregistry=PnmlIDRegistry(),
+    )
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)

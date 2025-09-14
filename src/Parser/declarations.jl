@@ -53,7 +53,7 @@ function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::Pnm
         end
     end
 
-    Declaration(; text, ctx.ddict, graphics, toolspecinfos)
+    Declaration(; text, ctx.ddict, graphics, toolspecinfos) # context ddict
 end
 
 """
