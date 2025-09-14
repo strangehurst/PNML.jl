@@ -339,6 +339,7 @@ const ex_types = ("continuous",)
     """
     anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
     mg = PNML.metagraph(anet.net)
+    mg2 = PNML.metagraph(anet)
 
     m₀ = PNML.initial_markings(anet.net) #::LVector
     C  = PNML.incidence_matrix(anet.net) # Matrix of PnmlMultiset
