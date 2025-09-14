@@ -115,24 +115,13 @@ end
 
 # These are some <:Number that have sorts (usersort, namedsort duos).
 _sortref(dd::DeclDict, ::Type{<:Int64})   = UserSortRef(:integer)
-_sortref(dd::DeclDict, ::Type{<:Integer}) = UserSortRef(:integer)
 _sortref(dd::DeclDict, ::Type{<:Float64}) = UserSortRef(:real)
 _sortref(dd::DeclDict, ::Int64)   = UserSortRef(:integer)
-_sortref(dd::DeclDict, ::Integer) = UserSortRef(:integer)
 _sortref(dd::DeclDict, ::Float64) = UserSortRef(:real)
 
 _sortref(dd::DeclDict, x::Any) = sortref(x)
 
-_sortof(dd::DeclDict, ::Type{<:Int64})   = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
-_sortof(dd::DeclDict, ::Type{<:Integer}) = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
-_sortof(dd::DeclDict, ::Type{<:Float64}) = sortdefinition(namedsorts(dd)[:real])::RealSort
-_sortof(dd::DeclDict, ::Int64)   = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
-_sortof(dd::DeclDict, ::Integer) = sortdefinition(namedsorts(dd)[:integer])::IntegerSort
-_sortof(dd::DeclDict, ::Float64) = sortdefinition(namedsorts(dd)[:real])::RealSort
-_sortof(dd::DeclDict, x::Any) = sortof(x)
-
 #--------------------------------------------------------------------------------------
-# From John Baez, et al _Categories of Nets_
 # These are networks where the tokens have a collective identities.
 PNML.value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
 PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
