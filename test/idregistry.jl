@@ -10,7 +10,7 @@ using PNML, ..TestUtils, JET, Logging
     @test !isregistered(ctx.idregistry, :p1)
     PNML.register_id!(ctx.idregistry, :p1)
     @test isregistered(ctx.idregistry, :p1)
-    #@show idregistry
+    @test_throws PNML.DuplicateIDException PNML.register_id!(ctx.idregistry, :p1)
 
     @test_opt target_modules=(@__MODULE__,) PnmlIDRegistry()
     @test_call PnmlIDRegistry()

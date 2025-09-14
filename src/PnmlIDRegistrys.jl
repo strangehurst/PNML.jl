@@ -2,14 +2,24 @@
 Petri Net Markup Language identifier registry.
 """
 module PnmlIDRegistrys
+
 using Preferences
+using Base: Base.IdSet
 using DocStringExtensions
 import SciMLPublic: @public
-
-export PnmlIDRegistry, register_id!, isregistered
-@public reset_reg!
-using Base: Base.IdSet
 import Base: eltype
+
+export PnmlIDRegistry, register_id!, isregistered, DuplicateIDException
+@public reset_reg!
+
+
+"""
+$(TYPEDEF)
+$(TYPEDFIELDS)
+"""
+struct DuplicateIDException <: Exception
+    msg::String
+end
 
 """
 Holds a set of PNML ID symbols and, optionally, a lock to allow safe reentrancy.
@@ -25,7 +35,7 @@ function Base.show(io::IO, reg::PnmlIDRegistry)
     print(io, nameof(typeof(reg)), "(", collect(values(reg)), ")")
 end
 
-duplicate_id_action(id::Symbol)  = error("ID already registered: $id")
+duplicate_id_action(id::Symbol)  = throw(DuplicateIDException("ID already registered: $id"))
 
 """
 $(TYPEDSIGNATURES)

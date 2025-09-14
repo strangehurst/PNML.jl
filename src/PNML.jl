@@ -77,7 +77,7 @@ export decldict
 export @xml_str, xmlroot
 
 @public pnmlmodel, pnmlnet
-@public PnmlException, MissingIDException, MalformedException
+@public PnmlException, MissingIDException, DuplicateIDException, MalformedException
 @public usersort, namedsort
 @public labelof, transition_function, rates
 
