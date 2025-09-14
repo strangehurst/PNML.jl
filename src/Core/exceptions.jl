@@ -6,8 +6,6 @@ abstract type PnmlException <: Exception end
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
-
-Use exception to allow dispatch and additional data presentation to user.
 """
 struct MissingIDException <: PnmlException
     msg::String

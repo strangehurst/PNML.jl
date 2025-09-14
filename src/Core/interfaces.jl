@@ -319,19 +319,9 @@ function term end
 function coordinate_type end
 
 """
-    has_sort(x) -> Bool
-
-Predicate testing applicability of `sortof`.
-"""
-has_sort(::Any) = false
-
-
-"""
     sortof(x) -> AbstractSort
 
-Return the sort of an object or type. Any type that supports the PNML sort interface
-is expected to define [`has_sort`](@ref) to be true and a `sortof` method that returns
-a sort instance.
+Return the sort of an object or type.
 
 Often implemented as `sortdefinition(namedsort(ddict, sortref(x)))`
 or other call of `sortdefinition`. Default implementation is `identity`.
@@ -353,6 +343,20 @@ FEConstant, FiniteIntRangeConstant, DotConstant, BooleanConstant,
 PnmlMultiset, Operator, Variable,
 """
 function sortref end
+
+
+@data SortRefx begin
+    UserSortRef(Symbol)
+    NamedSortRef(Symbol)
+    PartitionSortRef(Symbol)
+    ProductSortRef(Symbol)
+    MultisetSortRef(Symbol)
+    ArbitrarySortRef(Symbol)
+end
+
+# @match sr begin
+
+# end
 
 """
     sortdefinition(::SortDeclaration) -> Sort
@@ -418,16 +422,16 @@ function parser_context end
 function fill_sort_tag! end
 
 """
-    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, typeof(net))}
-    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, typeof(net))}
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::PnmlType))}
+    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::PnmlType)}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function input_matrix end
 
 """
-    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, typeof(net))}
-    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, typeof(net))}
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::PnmlType)}
+    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::PnmlType)}
 
 Create and return a matrix ntransitions x nplaces.
 """
