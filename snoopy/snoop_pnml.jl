@@ -4,12 +4,11 @@
 #   julia --startup-file="no" --project=@.
 #   include("snoop_pnml.jl")
 using SnoopCompileCore
-invalidations = @snoopr begin
+invalidations = @snoop_invalidations begin
     using PNML
 
-    tinf = @snoopi_deep begin
-        m = parse_str("""
-        <?xml version="1.0"?>
+    tinf = @snoop_inference begin
+        m = PNML.pnmlmodel(xmlroot("""<?xml version="1.0"?>
             <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                 <net id="net0" type="pnmlcore">
                     <page id="page1">
@@ -48,21 +47,23 @@ invalidations = @snoopr begin
                     </page>
                 </net>
             </pnml>
-        """)
+        """));
     end
 end
 
-using SnoopCompile
+using SnoopCompile, AbstractTrees, PrettyTables
 @show tinf
 
 trees = SnoopCompile.invalidation_trees(invalidations);
 staletrees = precompile_blockers(trees, tinf)
+thinned = filtermod(PNML, trees)
 itrigs = inference_triggers(tinf; exclude_toplevel=false)
 
 #@show first(itrigs)
 
 @show length(trees)
 @show length(staletrees)
+@show length(thinned)
 @show length(itrigs)
 @show length(SnoopCompile.uinvalidated(invalidations)) # show total invalidations
 
@@ -72,11 +73,15 @@ end
 
 println("methinvs")
 methinvs = trees[end];
+
 show(methinvs) # show the most invalidating method
 println()
 
 println("root")
 root = methinvs.backedges[end]
+
+@show length(itrigs)
+report_invalidations(; invalidations, n_rows=0)
 #=
 show(root; maxdepth=10)
 println()
