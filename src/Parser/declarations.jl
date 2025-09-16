@@ -518,7 +518,7 @@ end
 
 Return concrete sort from `ddict` using the `REFID` in `sortref`,
 """
-function to_sort end
+function to_sort end #TODO make part of the ADT
 to_sort(sortref::UserSortRef; ddict::DeclDict)      = PNML.usersorts(ddict)[refid(sortref)]
 to_sort(sortref::NamedSortRef; ddict::DeclDict)     = PNML.namedsorts(ddict)[refid(sortref)]
 to_sort(sortref::ProductSortRef; ddict::DeclDict)   = PNML.productsorts(ddict)[refid(sortref)]
@@ -526,15 +526,13 @@ to_sort(sortref::PartitionSortRef; ddict::DeclDict) = PNML.partition(ddict)[refi
 to_sort(sortref::MultisetSortRef; ddict::DeclDict)  = PNML.multisetsorts(ddict)[refid(sortref)]
 to_sort(sortref::ArbitrarySortRef; ddict::DeclDict) = PNML.arbitrarysorts(ddict)[refid(sortref)]
 
-Base.eltype(s::SortRef, ddict::DeclDict) = eltype(to_sort(s; ddict)) # !!! XXX !!!
-
-
 #   <namedsort id="id2" name="MESSAGE">
 #     <productsort>
 #       <usersort declaration="id1"/>
 #       <natural/>
 #     </productsort>
-#   </namedsort> element
+#   </namedsort>
+
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
     check_nodename(node, "productsort")
     #println("\nparse_sort :productsort} $(repr(id)), $(repr(name))") #! debug
