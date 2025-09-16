@@ -189,7 +189,7 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType; vars,
         throw(PNML.MalformedException("sort not supported for :numberconstant: $sorttag"))
 
     sortref = UserSortRef(sorttag)
-    nv = PNML.number_value(eltype(sortref, parse_context.ddict), value)
+    nv = PNML.number_value(eltype(to_sort(sortref; parse_context.ddict)), value)
     # Bounds check not needed for IntegerSort, RealSort.
     if sorttag === :natural
         nv >= 0 || throw(ArgumentError("not a Natural Number: $nv"))

@@ -138,7 +138,7 @@ function parse_initialMarking(node::XMLNode, placetype::SortType, pntd::PnmlType
     end
     @assert isempty(l.vars) # markings are ground terms
 
-    pt = eltype(sortref(placetype), parse_context.ddict)
+    pt = eltype(to_sort(sortref(placetype); parse_context.ddict))
     mvt = eltype(PNML.value_type(Marking, pntd))
     pt <: mvt || @error("initial marking value type of $pntd must be $mvt, found: $pt")
     value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
