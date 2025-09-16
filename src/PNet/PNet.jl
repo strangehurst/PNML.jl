@@ -5,7 +5,7 @@ using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
-using LabelledArrays #Todo beware namespace pollution
+#!using LabelledArrays #Todo beware namespace pollution
 using SciMLLogging: @SciMLMessage
 
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
@@ -28,10 +28,10 @@ import PNML: initial_marking, PnmlMultiset, pid
 import PNML: metagraph
 import PNML: ToolParser, LabelParser
 import PNML: input_matrix, output_matrix
-import PNML: nettype
+import PNML: nettype, rates
 
 export AbstractPetriNet, SimpleNet, initial_markings, input_matrix, output_matrix
-export transition_function, rates, pnmlnet
+export transition_function, pnmlnet
 export labeled_places, labeled_transitions, counted_transitions
 
 include("petrinet.jl")

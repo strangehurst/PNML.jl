@@ -174,11 +174,27 @@ $(TYPEDSIGNATURES)
 function transition_idset end
 
 """
+    inscriptions(net::PnmlNet) -> Iterator
+
+Iterate over REFID => inscription(arc) pairs of `net`. This is the same order as `arcs`.
+"""
+function inscriptions end
+
+"""
     conditions(net::PnmlNet) -> Iterator
 
 Iterate over REFID => condition(transaction) pairs of `net`. This is the same order as `transactions`.
 """
 function conditions end
+
+"""
+    rates(net::PnmlNet) -> [id(transition) => rate_value(transition)]
+
+Return a vector of transition_id=>rate_value.
+
+We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
+"""
+function rates end
 
 """
 $(TYPEDSIGNATURES)
@@ -354,8 +370,16 @@ function sortref end
     ArbitrarySortRef(Symbol)
 end
 
-# @match sr begin
-
+# function ref_to_sort(sr::SortRefx, ddict)
+#     @match sr begin
+#        UserSortRef(ref) => usersorts(ddict)[ref]
+#        NamedSortRef(ref) => namedsorts(ddict)[ref]
+#        PartitionSortRef(ref) => productsorts(ddict)[ref]
+#        ProductSortRef(ref) => partition(ddict)[ref]
+#        MultisetSortRef(ref) => multisetsorts(ddict)[ref]
+#        ArbitrarySortRef(ref) => arbitrarysorts(ddict)[ref]
+#        _ => error("not expected: $sr") #!eltype(to_sort(s; ddict))
+#     end
 # end
 
 """

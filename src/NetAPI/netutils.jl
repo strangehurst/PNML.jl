@@ -34,19 +34,28 @@ postset(net::PnmlNet , id::Symbol) = begin
 end
 
 
-"""
-    inscriptions(net::PnmlNet) -> Iterator
-
-Iterate over REFID => inscription(arc) pairs of `net`. This is the same order as `arcs`.
-"""
-function inscriptions end
-function inscriptions(net::PnmlNet) #TODO! non-ground terms
+function inscriptions(net::PnmlNet)
     Iterators.map((arc_id, a)->arc_id => inscription(a)(NamedTuple()), pairs(PNML.arcdict(net)))
 end
 
-function conditions(net::PnmlNet) #TODO! non-ground terms
+function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
+    @error "high level needs variable substution"
+end
+
+function conditions(net::PnmlNet) #TODO! non-ground terms for HL
     Iterators.map((tr_id, t)->condition(t)(NamedTuple()), pairs(PNML.transitiondict(net)))
 end
+
+function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
+    @error "high level needs variable substution"
+end
+
+function rates(net::PnmlNet)
+    [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
+end
+# rate label implements the PnmlLabel interface.
+# Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
+# Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
 inscription_value(::Type{T}, a::Arc, def, varsub) -> T

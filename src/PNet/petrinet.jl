@@ -74,36 +74,11 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 # #------------------------------------------------------------------------------------------
 
 
-#####################################################################################
-# Labelled Vectors
-#####################################################################################
+inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
 
-"""
-    inscriptions(petrinet::AbstractPetriNet) -> [pid(arc) => inscription(arc)]
-"""
-function inscriptions end #TODO! non-ground terms
-inscriptions(petrinet::AbstractPetriNet) = PNML.inscriptions(pnmlnet(petrinet))
-
-function conditions end #TODO! non-ground terms
 conditions(petrinet::AbstractPetriNet)  = conditions(pnmlnet(petrinet))
 
-
-
-"""
-    rates(petrinet::AbstractPetriNet) -> [id(transition) => rate_value(transition)]
-
-Return a vector of transition_id=>rate_value.
-
-We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
-"""
-function rates end
 rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
-function rates(net::PnmlNet)
-    [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
-end
-# rate label implements the PnmlLabel interface.
-# Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
-# Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
     initial_markings(petrinet) -> Tuple{Pair{id(place),value_type(marking(place))}
@@ -129,7 +104,7 @@ function initial_markings(net::PnmlNet{PT_HLPNG})
     [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
 end
 
-#! Other HL nets need it to be treated as multiset, not simple numbers!
+#! XXX Other HL nets need it to be treated as multiset, not simple numbers! XXX
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
     # Evaluate the ground term expression into a multiset.
     [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]

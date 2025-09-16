@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, LabelledArrays
+using PNML, ..TestUtils, JET #!, LabelledArrays
 using Test, Logging
 
 testlogger = TestLogger()
@@ -42,7 +42,7 @@ str1 = """
     @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
     @test_call broken=false SimpleNet(model)
 
-     for accessor in [PNML.pid,
+    for accessor in [PNML.pid,
                      PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
                      PNML.reftransition_idset, PNML.refplace_idset]
         #@show accessor
@@ -198,8 +198,6 @@ end
 
     @show PNML.enabled(simp.net, m₀)
 
-    #@show PNML.conditions(simp.net)
-    #@show PNML.inscriptions(simp.net)
     println("all arcs :wolves = ", collect(PNML.all_arcs(simp.net, :wolves)))
     println("src arcs :wolves = ", collect(PNML.src_arcs(simp.net, :wolves)))
     println("tgt arcs :wolves = ", collect(PNML.tgt_arcs(simp.net, :wolves)))
