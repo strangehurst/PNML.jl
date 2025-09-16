@@ -175,12 +175,20 @@ an "extension of P/T nets" used by MCC:
  "[Petri net model using AlgebraicPetri.jl](https://github.com/epirecipes/sir-julia/blob/master/markdown/pn_algebraicpetri/pn_algebraicpetri.md#petri-net-model-using-algebraicpetrijl) Micah Halter, 2021-03-26"
 
 
-C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95,
-doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
+John Baez, Xiaoyan Li, Sophie Libkind, Nathaniel D. Osgood and Eric Redekopp, [A categorical framework for modeling with stock and flow diagrams](https://arxiv.org/pdf/2211.01290), in Mathematics of Public Health: Mathematical Modelling from the Next Generation, eds. Jummy David and Jianhong Wu, Springer, 2023, pp. 175-207.
+
+Libkind, S., Baas, A., Halter, M., Patterson, E., Fairbanks, J.: [An algebraic framework for structured epidemic modeling](https://arxiv.org/abs/2203.16345). Phil. Trans. R. Soc. A.3802021030920210309. (2022).
+
+Patterson, E., Lynch, O., Fairbanks, J.: [Categorical data structures for technical computing](https://arxiv.org/abs/2106.04703). Compositionality 4(2) (2022). DOI 10.32408/compositionality-4-5.
+
+Joachim Kock. [Whole-grain Petri nets and processes](https://arxiv.org/abs/2005.05108)
 
 [Contexts.jl](https://github.com/cgutsche/Contexts.jl) is not registered.
 May not run as I cannot (as of 2025-08-08) find the file "PetriNetTypeDef.jl".
 They just did a "Big Change" last week. No obvious input file format detected in the code.
+
+C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95,
+doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
 
 [DistributedWorkflows.jl](https://github.com/FiroozehDastur/DistributedWorkflows.jl)
 Does not use a Petri net input file. Constructs one internally?
