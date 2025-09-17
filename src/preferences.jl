@@ -20,7 +20,6 @@ Base.@kwdef mutable struct PnmlConfig
     verbose::Bool               = false
     base_path::String           = "PNML"
     log_path::String            = "log"
-    log_level::Logging.LogLevel = Logging.Info
     log_to_file::Bool           = false
     log_requests::Bool          = true
     log_date_format::String     = "yyyy-mm-dd HH:MM:SS"
@@ -32,7 +31,7 @@ Base.@kwdef mutable struct PnmlConfig
 end
 
 """
-    save_config!(config::PnmlConfig=CONFIG[])
+    save_config!(config::PnmlConfig)
 
 Save a configuration to your `LocalPreferences.toml` file using Preferences.jl.
 The saved preferences will be automatically loaded next time you do `using PNML`
@@ -60,7 +59,6 @@ function save_config!(config::PnmlConfig)
 
         "base_path" => config.base_path,
         "log_path" => config.log_path,
-        "log_level" => config.log_level,
         "log_to_file" => config.log_to_file,
         "log_date_format" => config.log_date_format,
         )
@@ -77,7 +75,6 @@ function read_config!(config::PnmlConfig)
 
     config.base_path = @load_preference("base_path", config.base_path)
     config.log_path = @load_preference("log_path",config.log_path)
-    config.log_level = @load_preference("log_level",config.log_level)
     config.log_to_file, = @load_preference("log_to_file",config.log_to_file)
     config.log_date_format = @load_preference("log_date_format",config.log_date_format)
 end
@@ -92,7 +89,6 @@ function Base.show(io::IO, config::PnmlConfig)
     println(io, "warn_on_unimplemented = ", config.warn_on_unimplemented)
     println(io, "base_path             = ", config.base_path)
     println(io, "log_path              = ", config.log_path)
-    println(io, "log_level             = ", config.log_level)
     println(io, "log_to_file           = ", config.log_to_file)
     println(io, "log_date_format       = ", config.log_date_format)
 end

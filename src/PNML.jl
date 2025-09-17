@@ -3,7 +3,7 @@
 PNML.jl reads a pnml model and emits an intermediate representation (IR).
 
 The intermediate representation (IR) represents the XML tree via julia data structures:
-dictionaries, NamedTuples, LabelledArrays, strings, numbers, objects, vectors.
+dictionaries, NamedTuples, strings, numbers, objects, vectors.
 The exact mixture changes as the project continues.
 
 The tags of the XML are used as keys and names as much as possible.
@@ -26,8 +26,6 @@ It is also where other Net constructs can be defined over `PnmlNet`s. Perhaps as
 """
 module PNML
 __precompile__(true)
-using Logging
-using LoggingExtras
 
 include("preferences.jl") # PnmlConfig, read_config!, save_config, show
 
@@ -46,7 +44,6 @@ import AutoHashEquals: @auto_hash_equals
 import Base: eltype, keys, *, +, -, <, >,>=, <=, zero, length, iterate
 import FunctionWrappers
 import Reexport: @reexport
-import DecFP
 import Graphs
 import MetaGraphsNext
 import MacroTools
@@ -57,9 +54,10 @@ import Multisets: Multisets, Multiset
 import Moshi.Match: @match
 import Moshi.Data: @data
 import SciMLPublic: @public
-import LabelledArrays
 import Metatheory
 
+using Logging
+using LoggingExtras
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using TermInterface
 using Graphs: SimpleDiGraphFromIterator, Edge
