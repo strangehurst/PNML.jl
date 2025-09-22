@@ -4,58 +4,30 @@ using SciMLLogging: SciMLLogging, Verbosity, @SciMLMessage
 
 # using PNML
 
+# mutable struct PnmlVerbosityOptions
+#     information::Verbosity.Type
+#     warning::Verbosity.Type
+#     error::Verbosity.Type
 
-# Define option groups
-mutable struct SolverOptions
-    iterations::Verbosity.Type
-    convergence::Verbosity.Type
-
-    function SolverOptions(;
-            iterations = Verbosity.Info(),
-            convergence = Verbosity.Warn()
-    )
-        new(iterations, convergence)
-    end
-end
-
-mutable struct PerformanceOptions
-    timing::Verbosity.Type
-    memory::Verbosity.Type
-
-    function PerformanceOptions(;
-            timing = Verbosity.None(),
-            memory = Verbosity.None()
-    )
-        new(timing, memory)
-    end
-end
-
-mutable struct PnmlVerbosityOptions
-    information::Verbosity.Type
-    warning::Verbosity.Type
-    error::Verbosity.Type
-
-    function PnmlVerbosityOptions(;
-            warning = Verbosity.Warn(),
-            error = Verbosity.Info(),
-            information = Verbosity.Info(),
-    )
-        new(information, warning, error)
-    end
-end
+#     function PnmlVerbosityOptions(;
+#             warning = Verbosity.Warn(),
+#             error = Verbosity.Info(),
+#             information = Verbosity.Info(),
+#     )
+#         new(information, warning, error)
+#     end
+# end
 
 # Main verbosity struct
 struct PnmlVerbosity{T} <: SciMLLogging.AbstractVerbositySpecifier{T}
-    options::PnmlVerbosityOptions
-    solver::SolverOptions
-    performance::PerformanceOptions
+    algorithm_choice::Verbosity.LogLevel
+    iteration_progress::Verbosity.LogLevel
 
     function PnmlVerbosity{T}(;
-            options = PnmlVerbosityOptions(),
-            solver = SolverOptions(),
-            performance = PerformanceOptions()
+            algorithm_choice = Verbosity.Warn(),
+            iteration_progress = Verbosity.Info()
     ) where {T}
-        new{T}(options, solver, performance)
+        new{T}(algorithm_choice, iteration_progress)
     end
 end
 
