@@ -62,11 +62,11 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     if select(("ALL", "HL"), ("!HL",))
         println("# HL #")
         @safetestset "labels_hl"    begin include("labels_hl.jl") end
+        @safetestset "declarations" begin include("declarations.jl") end
     end
 
     if select(("ALL", "CORE2"), ("!CORE2",))
         println("# CORE2 #")
-        @safetestset "declarations" begin include("declarations.jl") end
         @safetestset "nodes"        begin include("nodes.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
@@ -88,6 +88,12 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     if select(("ALL", "NET1"), ("!NET1",))
         println("# NET1 #")
         @safetestset "parse_tree"   begin include("parse_tree.jl") end
+    end
+
+    # Note the omission of ALL. This pnml file is broken!? It should be used for hardening.
+    if select(("TEST1"), ("!TEST1",))
+        println("# TEST1 #")
+        @safetestset "test1"   begin include("test1.jl") end
     end
 
     if select(("ALL", "NET2"), ("!NET2",))
