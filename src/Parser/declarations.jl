@@ -367,8 +367,7 @@ Where `tag` is the XML element tag name for a parser invoked using Val{:tag}.
 
 See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_variabledecl`](@ref).
 """
-function parse_sort(node::XMLNode, pntd::PnmlType,
-        id::Maybe{REFID}=nothing, name::String=""; parse_context::ParseContext)
+function parse_sort(node::XMLNode, pntd::PnmlType, id::Maybe{REFID}=nothing,  name::String=""; parse_context::ParseContext)
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
     #println("\n## parse_sort $id $name tag = $(repr(sorttag))") #! debug
@@ -447,7 +446,7 @@ end
 #  - Index into DeclDict to access concrete sort object
 #       2 or more concrete sort objects (2 entries in dictionary) may be `equalSorts`
 #  -
-#!
+
 
 
 # is a finiteenumeration with additional operators: successor, predecessor
@@ -471,11 +470,34 @@ end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
     check_nodename(node, "finiteintrange")
-    #todo see function parse_term(::Val{:finiteintrangeconstant} for inline sort handling
-    start = parse(Int, attribute(node, "start"))
-    stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
-    firs = FiniteIntRangeSort(start, stop, id, parse_context.ddict)
-    return make_sortref(parse_context, PNML.namedsorts, firs, "finiteintrange", id, name)::NamedSortRef
+
+    # start = parse(Int, attribute(node, "start"))
+    # stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
+    startstr = attribute(node, "start")
+    startval = tryparse(Int, startstr)
+    isnothing(startval) &&
+        throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
+
+    stopstr = attribute(node, "end") # XML Schema uses 'end', we use 'stop'.
+    stopval = tryparse(Int, stopstr)
+    isnothing(stopval) &&
+        throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
+
+    # See function parse_term(::Val{:finiteintrangeconstant} for inline sort use.
+    # Look for `sort` in `namedsorts(ddict)`, else create named/user duo.
+    sorttag = Symbol("FiniteIntRange_",startstr,"_",stopstr)
+    if haskey(namedsorts(parse_context.ddict), sorttag)
+        return NamedSortRef(sorttag)
+    else
+        # Did not find namedsort, will instantiate named,user duo for one.
+        # See fill_nonhl!
+        @show sort = FiniteIntRangeSort(startval, stopval, parse_context.ddict)
+        # fill_sort_tag!(parse_context, sorttag, NamedSort(sorttag, string(sorttag), sort, parse_context.ddict))::NamedSortRef
+        # usersorts(parse_context.ddict)[sorttag] = UserSort(sorttag, parse_context.ddict)
+        # return UserSortRef(sorttag)
+        sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)::NamedSortRef
+        return sref
+    end
 end
 
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)

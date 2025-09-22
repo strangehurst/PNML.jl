@@ -368,13 +368,13 @@ end
 
 function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    @assert length(sts) >= 2
+    length(sts) >= 2 || @warn"or length wrong" sts
     return TermJunk(PNML.Or(sts), UserSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:and}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    @assert length(sts) >= 2
+    length(sts) >= 2 || @warn "and length wrong" sts
     return TermJunk(PNML.And(sts), UserSortRef(:bool), vars)
 end
 
@@ -501,10 +501,11 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
     # VariableEx can lookup sort.
     # UserOperatorEx (constant?) also has enclosng sort.
     # Both hold refid field.
-
-    psorts = tuple((deduce_sort.(sts; parse_context.ddict))...)
+    @show sts tup
+    @show psorts = tuple((deduce_sort.(sts; parse_context.ddict))...)
     for us in PNML.usersorts(parse_context.ddict)
-        if Sorts.isproductsort(us.second) && Sorts.sorts(sortof(us.second)) == psorts
+        if Sorts.isproductsort(us.second) &&
+           (Sorts.sorts(sortof(us.second)) == psorts)
             # println("$psorts => ", us.first) #! debug
             return TermJunk(tup, UserSortRef(us.first), vars)
         end
@@ -514,11 +515,14 @@ end
 
 "Return sort REFID of PnmlExpr."
 function deduce_sort end
-function deduce_sort(s::PNML.VariableEx; ddict)
-    PNML.refid(PNML.variabledecl(ddict, s.refid))
+function deduce_sort(v::PNML.VariableEx; ddict)
+    PNML.refid(PNML.variabledecl(ddict, v.refid))
 end
-function deduce_sort(s::PNML.UserOperatorEx; ddict)
-    PNML.refid(PNML.feconstant(ddict, s.refid)) #todo or other constant
+function deduce_sort(o::PNML.UserOperatorEx; ddict)
+    PNML.refid(PNML.feconstant(ddict, o.refid)) #todo or other constant
+end
+function deduce_sort(b::PNML.Bag; ddict)
+    refid(basis(b))
 end
 
 # <structure>
@@ -534,52 +538,29 @@ end
 
 function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     valuestr = attribute(node, "value")::String
+    value = tryparse(Int, valuestr)
+    isnothing(value) && throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
+
     child = EzXML.firstelement(node) # Child is the sort of value
     isnothing(child) &&
         throw(PNML.MalformedException("<finiteintrangeconstant> missing sort element"))
-    sorttag = Symbol(EzXML.nodename(child))
+
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
-    #TODO move to FiniteIntRangeSort parser? now that inline support and SortRef has arrived!
+
+    sorttag = Symbol(EzXML.nodename(child))
     if sorttag == :finiteintrange
-        startstr = attribute(child, "start")
-        startval = tryparse(Int, startstr)
-        isnothing(startval) &&
-            throw(ArgumentError("start attribute value '$startstr' failed to parse as `Int`"))
-
-        stopstr = attribute(child, "end") # XML Schema uses 'end', we use 'stop'.
-        stopval = tryparse(Int, stopstr)
-        isnothing(stopval) &&
-            throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
-
-        value = tryparse(Int, valuestr)
-        isnothing(value) &&
-            throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
-
-        if !(startval <= value <= stopval)
-            throw(ArgumentError("$value not in range $(startval):$(stopval)"))
-        end
-
-        sort = Sorts.FiniteIntRangeSort(startval, stopval)
-        #^ See if duo exists: a namedsort has a sortdefinition == sort
-        sortid = find_valuekey(namedsorts(parse_context.ddict), sort, sortdefinition)
-        if isnothing(sortid) # Did not find sort, will instantiate in parse_context.decldict
-            sortid = Symbol(sorttag,    "_", startstr, "_", stopstr)
-            sref = fill_sort_tag!(parse_context, sortid,
-                NamedSort(sortid, string(id), sort, parse_context.ddict)) # finiteintrangeconstant
-            usersorts(parse_context.ddict)[tag] = UserSort(sref, parse_context.ddict) # finiteintrangeconstant
-        end
-
-        fic = FiniteIntRangeConstant(value, UserSortRef(id), parse_context.ddict)
-        return TermJunk(fic, UserSortRef(sortid), vars)
-        #
+        usref = parse_sort(Val(sorttag), child, pntd, nothing, ""; parse_context)::NamedSortRef
+     else
+        throw(PNML.MalformedException("expected <finiteintrange>, found $sorttag"))
     end
-    throw(PNML.MalformedException("<finiteintrangeconstant> <finiteintrange> sort expected, found $sorttag"))
-end
 
-# Look for `sort` in `namedsorts(ddict)`, if found use its REFID in `UserSortRef`.
-# Else create a duo using `tag` & `name`.
-function x(ddict, sort, tag, name)
+    fis = namedsort(parse_context.ddict, usref.refid)::FiniteIntRangeSort
+    Sorts.start(fis) <= value <= Sorts.stop(fis) ||
+        throw(ArgumentError("finite integer value $value not in range $(ns)"))
+
+    #PNML.FiniteIntRangeConstant(value, usref, parse_context.ddict),
+    return TermJunk(NumberEx(usref, value), usref, vars)
 end
 
 #====================================================================================#

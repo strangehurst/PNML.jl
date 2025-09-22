@@ -57,7 +57,6 @@ MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> 
 end
 
 tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
-#!sortdefinition(::CyclicEnumerationSort)
 
 #TODO successor/predecessor methods
 
@@ -76,15 +75,13 @@ tag(::FiniteEnumerationSort) = :finiteenumeration
 
 """
     $(TYPEDEF)
-    FiniteIntRangeSort(start::T, stop::T; meta) where {T<:Integer} -> Range
+    FiniteIntRangeSort(start::T, stop::T) where {T<:Integer}
 """
-@auto_hash_equals fields=start,stop typearg=true struct FiniteIntRangeSort{T<:Integer, M} <: AbstractSort
+@auto_hash_equals fields=start,stop typearg=true struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    meta::M # TODO TermInterface metadata
     declarationdicts::DeclDict
 end
-FiniteIntRangeSort(start, stop; meta=nothing) = FiniteIntRangeSort(start, stop, meta)
 
 tag(::FiniteIntRangeSort) = :finiteintrange
 Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
