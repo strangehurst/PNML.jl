@@ -9,9 +9,6 @@ using PNML, ..TestUtils, JET
               <name> <text>page name</text> </name>
               <graphics><offset x="0" y="0"/></graphics>
               <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-              <graphics><offset x="0" y="0"/></graphics>
-              <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-
               <place id="place1">
                 <name> <text>Some place</text> </name>
                 <initialMarking> <text>100</text> </initialMarking>
@@ -29,8 +26,7 @@ using PNML, ..TestUtils, JET
           </net>
         </pnml>
         """
-    model = pnmlmodel(node)
-    @test model isa PnmlModel
+    @test pnmlmodel(node) isa PnmlModel
 end
 
 @testset "pnmlmodel(emptypage)" begin
@@ -42,15 +38,11 @@ end
         </pnml>
     """
     @test_logs(match_mode=:all, pnmlmodel(emptypage) )
-
     @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
     @test_call broken=false target_modules=target_modules pnmlmodel(emptypage)
-    #TODO ===============================================
-    # Create a tuple of ID Registries of the same shape as the nets of the model.
-    #TODO ===============================================
-end
+ end
 
-@testset "multiple net type" begin
+@testset "multiple empty net types" begin
     model = @test_logs(match_mode=:all, pnmlmodel(xml"""
     <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -66,11 +58,10 @@ end
     """))
 
         @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
-        #!@test PNML.regs(model) isa Vector{PnmlIDRegistry}
-        #!@test length(PNML.regs(model)) == length(PNML.nets(model))
 
         modelnets = PNML.nets(model)::Tuple
         @test length(modelnets) == 5
+        @test all(PNML.registry_of(n) isa PnmlIDRegistry for n in modelnets)
 
         for net in modelnets
             @test_opt PNML.pntd(net)
@@ -110,11 +101,3 @@ end
         @test_call PNML.find_net(model, :net1)
         @test_opt  PNML.find_net(model, :net1)
     end
-
-@testset "empty page" begin
-    @test pnmlmodel(xml"""<?xml version="1.0"?>
-        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-            <net id="emptynet" type="pnmlcore"><page id="emptypage"> </page></net>
-        </pnml>
-        """) isa PnmlModel
-end
