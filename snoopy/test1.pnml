@@ -150,7 +150,7 @@
                 <declarations>
                     <!-- Sorts declaration -->
                     <namedsort id="pro" name="Pro">
-                        <finiteintrange start="1" end="10"/>
+                        <finiteintrange start="-1" end="10"/>
                     </namedsort>
                     <!-- Variables declaration -->
                     <variabledecl id="varx" name="x"><usersort declaration="pro"/></variabledecl>
@@ -199,7 +199,7 @@
                                     </subterm>
                                     <subterm>
                                         <finiteintrangeconstant value="1">
-                                            <finiteintrange start="1" end="10"/>
+                                            <finiteintrange start="-1" end="10"/>
                                         </finiteintrangeconstant>
                                     </subterm>
                                 </numberof>
@@ -211,7 +211,7 @@
                                     </subterm>
                                     <subterm>
                                         <finiteintrangeconstant value="2">
-                                            <finiteintrange start="1" end="10"/>
+                                            <finiteintrange start="-1" end="10"/>
                                         </finiteintrangeconstant>
                                     </subterm>
                                 </numberof>
