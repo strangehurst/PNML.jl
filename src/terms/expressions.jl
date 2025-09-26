@@ -26,6 +26,8 @@ export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
 export Concatenation, Append, StringLength, SubstringEx
 export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
 export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+export expr_sortref
+
 
 """
 TermInterface expression types.
@@ -124,7 +126,7 @@ end
 ###################################################################################
 # expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
-    refid::REFID
+    refid::REFID #  Varia
 end
 
 function toexpr(op::VariableEx, varsub::NamedTuple, ddict)
@@ -196,6 +198,7 @@ end
 Bag(b, x) = Bag(b, x, 1) # singleton multiset
 Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis sort.
 
+sortref(b::Bag) = b.basis
 basis(b::Bag) = b.basis
 
 function toexpr(b::Bag, varsub::NamedTuple, ddict)
@@ -778,7 +781,7 @@ function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
     # foreach(Fix2(getproperty, :refid), op.args)
     # Extract tuple of sort REFIDs from expressions.  Map to ProductSort
 
-    # @show psorts = tuple((deduce_sort.(op.args, ddict))...)
+    # @show psorts = tuple((expr_sortref.(op.args, ddict))...)
     # args = if all(Fix2(isa, Symbol), op.args)
     #     map(vexp -> feconstant(vexp.refid), op.args)
 
@@ -795,12 +798,30 @@ function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
     Expr(:call, pnmltuple, toexpr.(args, Ref(varsub), Ref(ddict))...)
 end
 
-#? Would this be a candidate for rewriting?
-_deref_variable(v::Any) = identity(v) # Bet that it is an operator  expression -> FEConstant!
-_deref_variable(vexp::VariableEx) = feconstant(ddict, vexp.refid)
+# #? Would this be a candidate for rewriting?
+# _deref_variable(v::Any) = identity(v) # Bet that it is an operator  expression -> FEConstant!
+# _deref_variable(vexp::VariableEx) = feconstant(ddict, vexp.refid)
 
 function Base.show(io::IO, x::PnmlTupleEx)
-    print(io, "PnmlTupleEx(", x.args, ")" )
+    print(io, "PnmlTuplPNML.eEx(", x.args, ")" )
+end
+
+
+"""
+    expr_sortref(v::PnmlExpr; ddict) -> SortRef
+
+Return SortRef of PnmlExpr.
+"""
+function expr_sortref end
+
+function expr_sortref(v::VariableEx; ddict)
+    sortref(PNML.variabledecl(ddict, v.refid))::SortRef
+end
+function expr_sortref(o::UserOperatorEx; ddict)
+    sortref(PNML.feconstant(ddict, o.refid))::SortRef #todo or other constant/operator
+end
+function expr_sortref(b::Bag; ddict)
+    sortref(b)::SortRef # also basis
 end
 
 

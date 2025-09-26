@@ -98,7 +98,7 @@ println("-----------------------------------------\n")
     @test !isempty(repr(PNML.netdata(net)))
     @test !isempty(repr(PNML.netsets(firstpage(net))))
 
-    @show summary(PNML.netsets(firstpage(net)))
+    summary(stdout, PNML.netsets(firstpage(net)))
 
     #TODO apply metagraph toolinfos
 end

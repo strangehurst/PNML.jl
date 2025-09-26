@@ -502,27 +502,17 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
     # UserOperatorEx (constant?) also has enclosng sort.
     # Both hold refid field.
     @show sts tup
-    @show psorts = tuple((deduce_sort.(sts; parse_context.ddict))...)
-    for us in PNML.usersorts(parse_context.ddict)
-        if Sorts.isproductsort(us.second) &&
-           (Sorts.sorts(sortof(us.second)) == psorts)
-            # println("$psorts => ", us.first) #! debug
-            return TermJunk(tup, UserSortRef(us.first), vars)
+    @show psorts = tuple((expr_sortref.(sts; parse_context.ddict))...)
+
+    for ps in PNML.productsorts(parse_context.ddict)
+        @show ps
+        if Sorts.isproductsort(ps.second) &&
+           (Sorts.sorts(sortof(ps.second)) == psorts)
+            # println("$psorts => ", ps.first) #! debug
+            return TermJunk(tup, ProductSortRef(ps.first), vars)
         end
     end
     error("Did not find productsort sort for $tup")
-end
-
-"Return sort REFID of PnmlExpr."
-function deduce_sort end
-function deduce_sort(v::PNML.VariableEx; ddict)
-    PNML.refid(PNML.variabledecl(ddict, v.refid))
-end
-function deduce_sort(o::PNML.UserOperatorEx; ddict)
-    PNML.refid(PNML.feconstant(ddict, o.refid)) #todo or other constant
-end
-function deduce_sort(b::PNML.Bag; ddict)
-    refid(basis(b))
 end
 
 # <structure>

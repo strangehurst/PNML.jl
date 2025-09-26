@@ -307,7 +307,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
     tj.ref == placesort ||
-        error("inscription term sort mismatch: $(tj.sortref) != $placesort")
+        @error("inscription term sort mismatch: $(tj.ref) != $placesort", tj, adjacentplace)
 
     return tj
 end

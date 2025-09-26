@@ -7,7 +7,7 @@ Built-in sort whose `eltype` is `Int`
 Base.eltype(::Type{<:IntegerSort}) = Int
 (i::IntegerSort)() = 1
 sortelements(::Type{<:IntegerSort}) = Iterators.countfrom(0, 1)
-sortelements(::IntegerSort) = Iterators.countfrom(0, 1)
+sortelements(::IntegerSort) = Iterators.countfrom(0, 1) #! infinite, expected use is first
 refid(::IntegerSort) = :integer
 
 """

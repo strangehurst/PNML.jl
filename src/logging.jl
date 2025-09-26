@@ -4,20 +4,6 @@ using SciMLLogging: SciMLLogging, Verbosity, @SciMLMessage
 
 # using PNML
 
-# mutable struct PnmlVerbosityOptions
-#     information::Verbosity.Type
-#     warning::Verbosity.Type
-#     error::Verbosity.Type
-
-#     function PnmlVerbosityOptions(;
-#             warning = Verbosity.Warn(),
-#             error = Verbosity.Info(),
-#             information = Verbosity.Info(),
-#     )
-#         new(information, warning, error)
-#     end
-# end
-
 # Main verbosity struct
 struct PnmlVerbosity{T} <: SciMLLogging.AbstractVerbositySpecifier{T}
     algorithm_choice::Verbosity.LogLevel

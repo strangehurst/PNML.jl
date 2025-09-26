@@ -49,3 +49,11 @@ function Base.show(io::IO, model::PnmlModel)
         end
     end
 end
+
+#Base.summary(io::IO, pns::PnmlModel) = print(io, summary(pns))
+function Base.summary(io::IO, m::PnmlModel)
+    println("model, namespace = ", namespace(m), ", has ", length(nets(m)), " net(s)")
+    for (i, net) in enumerate(nets(m))
+        println(io, "$i: ", summary(net))
+    end
+end

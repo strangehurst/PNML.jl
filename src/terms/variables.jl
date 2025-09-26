@@ -8,7 +8,7 @@ Example input: <variable refvariable="varx"/>.
 #TODO examples of use, modifying and accessing
 """
 struct Variable <: AbstractVariable
-    refvariable::REFID
+    refvariable::REFID # of VariableDeclaration{SortRef} that gives name and Type
     declarationdicts::DeclDict
 
     function Variable(v::REFID, ddict)

@@ -82,14 +82,15 @@ end
                                 <feconstant id="FE1" name="1"/>
                         </finiteenumeration>""", pntd, :testenum2; parse_context)
 
+    @show sortref
     sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)
-    @test sort isa FiniteIntRangeSort
+    @show sortref
+    sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -102,7 +103,6 @@ end
                                 <integer/>
                         </productsort>""", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::ProductSort #! UserSort |> namedsort |> sortdefinition
-    @test sort isa ProductSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -147,7 +147,6 @@ end
                                 <natural/>
                             </multisetsort>""", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::MultisetSort #! UserSort |> namedsort |> sortdefinition
-    @test sort isa MultisetSort
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 

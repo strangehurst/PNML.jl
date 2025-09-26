@@ -81,13 +81,16 @@ end
 
 #~ We create user/named duos for each built-in sort.
 
-refid(us::UserSort) = us.declaration
+refid(us::UserSort) = us.declaration::Symbol # Of `namedsort`, `partitionsort`, `arbitrarysort`
 decldict(us::UserSort) = us.declarationdicts
 
 "Get NamedSort from UserSort REFID"
 namedsort(us::UserSort) = namedsort(decldict(us), refid(us))::PNML.Declarations.NamedSort #todo partitionsort, arbitrarysort
 sortref(us::UserSort) = identity(us)::SortRef
-sortof(us::UserSort) = sortdefinition(namedsort(us)) #^ ArbitrarySort, PartitionSort, ProductSort
+function sortof(us::UserSort)
+    #@show namedsort(us) #! debug
+    sortdefinition(namedsort(us)) #^ ArbitrarySort, PartitionSort, ProductSort
+end
 Base.eltype(us::UserSort) = eltype(sortof(us))
 
 # Forward operations to the NamedSort matching the declaration REFID.
@@ -164,10 +167,12 @@ function sortelements(ps::ProductSort) # Iterators.product does tuples
 end
 
 function sortof(ps::ProductSort)
-    println("sortof(::ProductSort ", ps) #! bringup debug
+    println("sortof(", repr(ps),")") #! bringup debug
     if isempty(sorts(ps))
         error("ProductSort is empty")
     else
+        @show collect(sorts(ps))
+        @show (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
         (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
     end
 end

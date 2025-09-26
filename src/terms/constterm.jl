@@ -42,12 +42,12 @@ struct FEConstant <: AbstractOperator
 end
 
 decldict(fec::FEConstant) = fec.declarationdicts
-refid(fec::FEConstant)    = refid(fec.ref)
+refid(fec::FEConstant)    = refid(fec.ref)::Symbol
 sortref(fec::FEConstant)  = fec.ref
 Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is name.
 
 (fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
-(fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use string.
+(fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use name string.
 
 # sortof(fec::FEConstant) = begin
 #     # Search on REFID of containing sort defintion.

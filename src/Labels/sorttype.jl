@@ -75,7 +75,7 @@ decldict(t::SortType) = t.declarationdicts
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
-refid(t::SortType) = refid(sortref(t))
+refid(t::SortType) = refid(sortref(t))::Symbol
 sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(decldict(t), refid(t)))
 sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
 

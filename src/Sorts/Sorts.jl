@@ -75,8 +75,8 @@ fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, mu
     make_sortref(parse_context, dict, sort, seed, id, name) ->  SortRef`
 
  - `dict` is a method/callable that returns an AbstractDict (in a DeclDict).
- -  `sort` ia a concrete sort that is to be in `dict`.
- - `seed` is passed to `gensym` if `id` in `nothing` and no `sort` is already in `dict`.
+ - `sort` ia a concrete sort that is to be in `dict`.
+ - `seed` is passed to `gensym` if `id` is `nothing` and no `sort` is already in `dict`.
  - `id` is a `Symbol` and the string `name` are `nothing` and "" unless there is a wrapper providing such information,
 
 Uses `fill_sort_tag!`.
@@ -84,6 +84,7 @@ Uses `fill_sort_tag!`.
 Return concrete SortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
+    @show sort
     id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
     if isnothing(id2) # Did not find existing  namedsort
         if isnothing(id) # no enclosing provided name/id
@@ -91,7 +92,7 @@ function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
         end
     end
     # fill_sort_tag! will not overwrite existing, returns SortRef
-    sr = fill_sort_tag!(parse_context, id, sort, dict)::SortRef # make_sortref
+    sr = fill_sort_tag!(parse_context, id, sort, dict)::SortRef # in make_sortref
     return sr
 end
 
