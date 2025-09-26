@@ -471,8 +471,6 @@ end
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
     check_nodename(node, "finiteintrange")
 
-    # start = parse(Int, attribute(node, "start"))
-    # stop = parse(Int, attribute(node, "end")) # XML Schema uses 'end', we use 'stop'.
     startstr = attribute(node, "start")
     startval = tryparse(Int, startstr)
     isnothing(startval) &&

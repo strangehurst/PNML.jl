@@ -39,7 +39,7 @@ function inscriptions(net::PnmlNet)
 end
 
 function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
-    @error "high level needs variable substution"
+    @error "high level needs variable substitution"
 end
 
 function conditions(net::PnmlNet) #TODO! non-ground terms for HL
@@ -47,7 +47,7 @@ function conditions(net::PnmlNet) #TODO! non-ground terms for HL
 end
 
 function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
-    @error "high level needs variable substution"
+    @error "high level needs variable substitution"
 end
 
 function rates(net::PnmlNet)

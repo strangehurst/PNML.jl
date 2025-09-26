@@ -74,7 +74,7 @@ PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 struct VariableDeclaration{S <: SortRef} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::S # Sort REFID # See user sort -> named sort -> sort object (re builtins)
+    sort::S
     declarationdicts::DeclDict
 
     #! Sorts other than UserSort may appear.
@@ -85,6 +85,7 @@ struct VariableDeclaration{S <: SortRef} <: AbstractDeclaration
     #       <integer/>
     #     </productsort>
     # </variabledecl>
+
     #! Sorts serve a similar role as Juia Types.
     #! Sorts are static, Distinct variabledecls may have the same product sort inlined.
     #todo use hashes (dictionary?) to deduplicate.
@@ -125,8 +126,9 @@ end
 decldict(vd::VariableDeclaration) = vd.declarationsdict
 
 sortref(vd::VariableDeclaration) = vd.sort::SortRef
-refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
+#refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
+#TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
     print(io, nameof(typeof(declare)), "(")
@@ -160,7 +162,7 @@ See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 end
 
 function sortdefinition(namedsort::NamedSort)
-     namedsort.def # Instance of concrete sort. #! 2025-07-21 SortRef
+    namedsort.def # Instance of concrete sort. #! 2025-07-21 SortRef
 end
 
 sortelements(namedsort::NamedSort) = sortelements(sortdefinition(namedsort))
