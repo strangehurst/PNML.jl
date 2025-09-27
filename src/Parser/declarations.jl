@@ -86,7 +86,8 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
             PNML.variabledecls(ctx.ddict)[pid(vardecl)] = vardecl # fill_decl_dict! variabledecl
         elseif tag == "partition" # usersort, partitionsort duo.
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
-            part = parse_partition(child, pntd; parse_context=ctx)::PartitionSortRef
+            part = parse_partition(child, pntd; parse_context=ctx)::AbstractSortRef
+            @assert isa_variant(part, PartitionSortRef)
             #PNML.partitionsorts(ctx.ddict)[refid(part)] = part
             #!@show ctx.ddict
             #PNML.usersorts(ctx.ddict)[pid(part)] = part # fill_decl_dict! partitionsort duo
@@ -135,7 +136,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     ddict = parse_context.ddict
 
     # Sort can be built-in, multiset, product.
-    nameddef = parse_sort(EzXML.firstelement(node), pntd, sortid, name; parse_context)::SortRef
+    nameddef = parse_sort(EzXML.firstelement(node), pntd, sortid, name; parse_context)::AbstractSortRef
     isnothing(nameddef) && error("failed to parse sort definition for namedsort $(repr(sortid)) $name")
 
     #? check for loops?
@@ -146,9 +147,9 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
         sort = sortdefinition(sort)
     end
 
-    NamedSort(sortid, name, sort, ddict) #! 2025-07-21 use SortRef
+    NamedSort(sortid, name, sort, ddict) #! 2025-07-21 use AbstractSortRef
 
-    # SortRef concrete type holds REFID and implicit dictionary of `DeclDict`
+    # AbstractSortRef concrete type holds REFID and implicit dictionary of `DeclDict`
     # `usersorts, and `namedsorts` are some of the dictionaries.
     # Others: `arbitrarysorts`, 'partitionsorts`, `productsorts`, `multisetsorts`.
     # NB: The user/named duo is used for built-in sorts.
@@ -266,7 +267,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseC
     varid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
     # firstelement throws on nothing. Ignore more than 1.
-    vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; parse_context)::SortRef
+    vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; parse_context)::AbstractSortRef
     #println("parse_variabledecl $(repr(varid)) $(repr(name)) $(repr(vsortref))") #! debug
     isnothing(vsortref) &&
         error("failed to parse sort definition for variabledecl $(repr(varid)) $name")
@@ -287,13 +288,13 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType; parse_context::ParseCo
 end
 
 """
-    parse_feconstants(::XMLNode, ::PnmlType, ::REFID; ddict) -> Tuple{<:SortRef}
+    parse_feconstants(::XMLNode, ::PnmlType, ::REFID; ddict) -> Tuple{<:AbstractSortRef}
 
 Place the constants into feconstants(). Return tuple of finite enumeration constant REFIDs.
 
 Access as 0-ary operator indexed by REFID
 """
-function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::SortRef; parse_context::ParseContext)
+function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortRef; parse_context::ParseContext)
     sorttag = EzXML.nodename(node)
     @assert sorttag in ("finiteenumeration", "cyclicenumeration") #? partition also?
     EzXML.haselement(node) || error("$sorttag has no child element")
@@ -317,7 +318,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Returns concrete [`SortRef`](@ref) wraping the REFID of a
+Returns concrete [`AbstractSortRef`](@ref) wraping the REFID of a
 [`NamedSort`](@ref), [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref).
 """
 function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
@@ -371,11 +372,11 @@ function parse_sort(node::XMLNode, pntd::PnmlType, id::Maybe{REFID}=nothing,  na
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
     #println("\n## parse_sort $id $name tag = $(repr(sorttag))") #! debug
-    return parse_sort(Val(sorttag), node, pntd, id, name; parse_context)::SortRef
+    return parse_sort(Val(sorttag), node, pntd, id, name; parse_context)::AbstractSortRef
 end
 
 # Built-ins sorts
-# ! 2025-07-21 SortRef refactor, make these return a direct UserSortRef.
+# ! 2025-07-21 AbstractSortRef refactor, make these return a direct UserSortRef.
 #! The insertion into decldict in done in `fill_sort_tag!` from `fill_nonhl!`
 #! as initial part of `PnmlNet` parsing.
 #! Followed by parsing all declarations where `parse_sort is used`.
@@ -405,9 +406,9 @@ end
 # In the ISO 15909 standard UserSort wraps a REFID to a
 # NamedSort , AbstractSort, or PartitionSort sort declaration.
 #
-# To reduce coupling `SortRef` abstract type is introduced.
+# To reduce coupling `AbstractSortRef` abstract type is introduced.
 #
-# Concrete `SortRef` subtypes hold a REFID
+# Concrete `AbstractSortRef` subtypes hold a REFID
 # and implicitly identify the dictionary in the `DeclDict` that holds the sort.
 
 # We use `NamedSort` declarations to instantiate built-in sorts. The user assumes they
@@ -432,7 +433,7 @@ function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, id, name; p
 end
 
 
-#!##########################################################and SortRef#
+#!##########################################################and AbstractSortRef#
 #! XXX TODO Sorts that are not singletons. Must be wrapped in a NamedSort or Partition.
 #! XXX Invent id/name duo to wrap anonymous inline sorts.
 # Any REFID in the input XML must take precedence.
@@ -450,25 +451,25 @@ end
 
 
 # is a finiteenumeration with additional operators: successor, predecessor
-function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
+function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
     check_nodename(node, "cyclicenumeration")
-    println("cyclicenumeration $(repr(id)), $(repr(name))") #! debug
-    fecs = parse_feconstants(node, pntd, UserSortRef(id); parse_context)
+    println("cyclicenumeration $(repr(parentid)), $(repr(name))") #! debug
+    fecs = parse_feconstants(node, pntd, UserSortRef(parentid); parse_context) # pared
     ces = CyclicEnumerationSort(fecs, nothing, parse_context.ddict)
-    sref = make_sortref(parse_context, PNML.namedsorts, ces, "cyclicenumeration", id, name)::NamedSortRef
+    sref = make_sortref(parse_context, PNML.namedsorts, ces, "cyclicenumeration", parentid, name)
     return sref
 end
 
-function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
+function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
     check_nodename(node, "finiteenumeration")
-    println("finiteenumeration $(repr(id)), $(repr(name))") #! debug
-    fecs = parse_feconstants(node, pntd, UserSortRef(id); parse_context)
+    println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
+    fecs = parse_feconstants(node, pntd, UserSortRef(parentid); parse_context)
     fes = FiniteEnumerationSort(fecs, nothing, parse_context.ddict)
-    sref = make_sortref(parse_context, PNML.namedsorts, fes, "finiteenumeration", id, name)::NamedSortRef
+    sref = make_sortref(parse_context, PNML.namedsorts, fes, "finiteenumeration", parentid, name)
     return sref
 end
 
-function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, id, name; parse_context::ParseContext)
+function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
     check_nodename(node, "finiteintrange")
 
     startstr = attribute(node, "start")
@@ -493,7 +494,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, id, n
         # fill_sort_tag!(parse_context, sorttag, NamedSort(sorttag, string(sorttag), sort, parse_context.ddict))::NamedSortRef
         # usersorts(parse_context.ddict)[sorttag] = UserSort(sorttag, parse_context.ddict)
         # return UserSortRef(sorttag)
-        sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)::NamedSortRef
+        sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
         return sref
     end
 end
@@ -527,24 +528,27 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, id, nam
     tag in invalid_basis && #! look inside usersort basis definition XXX
         throw(ArgumentError("multisetsort basis $tag not allowed")) #todo test this!
 
-    basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; parse_context)::SortRef # of multisetsort
+    basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; parse_context)::AbstractSortRef # of multisetsort
 
     ms = MultisetSort(basissort, parse_context.ddict)
-    return make_sortref(parse_context, PNML.multisetsorts, ms, "multiset", id, name)::MultisetSortRef
+    return make_sortref(parse_context, PNML.multisetsorts, ms, "multiset", id, name)
 end
 
 """
-    to_sort(sortref::SortRef; ddict::DeclDict) -> AbstractSort
+    to_sort(sortref::AbstractSortRef; ddict::DeclDict) -> AbstractSort
 
 Return concrete sort from `ddict` using the `REFID` in `sortref`,
 """
-function to_sort end #TODO make part of the ADT
-to_sort(sortref::UserSortRef; ddict::DeclDict)      = PNML.usersorts(ddict)[refid(sortref)]
-to_sort(sortref::NamedSortRef; ddict::DeclDict)     = PNML.namedsorts(ddict)[refid(sortref)]
-to_sort(sortref::ProductSortRef; ddict::DeclDict)   = PNML.productsorts(ddict)[refid(sortref)]
-to_sort(sortref::PartitionSortRef; ddict::DeclDict) = PNML.partition(ddict)[refid(sortref)]
-to_sort(sortref::MultisetSortRef; ddict::DeclDict)  = PNML.multisetsorts(ddict)[refid(sortref)]
-to_sort(sortref::ArbitrarySortRef; ddict::DeclDict) = PNML.arbitrarysorts(ddict)[refid(sortref)]
+function to_sort(sr::AbstractSortRef; ddict::DeclDict)
+    @match sr begin
+        SortRef.UserSortRef(refid)      => PNML.usersorts(ddict)[refid]
+        SortRef.NamedSortRef(refid)     => PNML.namedsorts(ddict)[refid]
+        SortRef.ProductSortRef(refid)   => PNML.productsorts(ddict)[refid]
+        SortRef.PartitionSortRef(refid) => PNML.partition(ddict)[refid]
+        SortRef.MultisetSortRef(refid)  => PNML.multisetsorts(ddict)[refid]
+        SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysorts(ddict)[refid]
+    end
+end
 
 #   <namedsort id="id2" name="MESSAGE">
 #     <productsort>
@@ -559,13 +563,13 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, id, name
     sorts = REFID[] # Orderded collection of zero or more Sorts
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
-        s = parse_sort(Val(tag), child, pntd, id, name; parse_context)::SortRef #! debug
+        s = parse_sort(Val(tag), child, pntd, id, name; parse_context)::AbstractSortRef #! debug
         push!(sorts, PNML.refid(s)) # requires there to be a REFID #! use SortRef?
     end
     isempty(sorts) && throw(PNML.MalformedException("<productsort> contains no sorts"))
 
     @show ps = ProductSort(tuple(sorts...), parse_context.ddict) #! debug
-    return make_sortref(parse_context, PNML.productsorts, ps, "product", id, name)::ProductSortRef
+    return make_sortref(parse_context, PNML.productsorts, ps, "product", id, name)
 end
 
 
@@ -577,14 +581,14 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     partid = register_idof!(parse_context.idregistry, node)
     nameval = attribute(node, "name")
     #@warn "partition $(repr(id)) $nameval"; flush(stdout);  #! debug
-    psort::Maybe{NamedSortRef} = nothing
+    psort::Maybe{AbstractSortRef} = nothing
     elements = PartitionElement[] # References into psort that form a equivalance class.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
             #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
             # The only non-partitionelement child possible,
-            psort = parse_usersort(child, pntd; parse_context)::NamedSortRef #? sortof isa EnumerationSort
+            psort = parse_usersort(child, pntd; parse_context)
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
             parse_partitionelement!(elements, child, partid; parse_context) # pass REFID to partition
         else
@@ -601,8 +605,8 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                 "id = ", repr(partid), ", name = ", repr(nameval), ", sort = ", repr(psort))
 
     #~verify_partition(sort, elements)
-    ps = PNML.PartitionSort(partid, nameval, refid(psort), elements, parse_context.ddict) # A Declaraion named Sort!
-    return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", partid, nameval)::PartitionSortRef
+    ps = PNML.PartitionSort(partid, nameval, psort, elements, parse_context.ddict) # A Declaraion named Sort!
+    return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", partid, nameval)
 end
 
 """

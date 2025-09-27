@@ -71,7 +71,7 @@ EXAMPLE
 
 PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
-struct VariableDeclaration{S <: SortRef} <: AbstractDeclaration
+struct VariableDeclaration{S <: AbstractSortRef} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::S
@@ -93,9 +93,10 @@ end
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
     #   (ref::Ref{sortof(vdecl)}(mark), REFID)
+    # or ref::Ref{sortof(vdecl)}(mark) => REFID
     # where the sort of the mark matches the VariableDeclaration sort.
 
-    # If the place sorttype is a product sort
+    #! If the place sorttype is a product sort
     #   variable's sort will be one of the product member sorts or same product sort
     #   If part of a product sort,
     #       other variables or multiples of this one must combine to form a multiset element.
@@ -125,8 +126,7 @@ end
 
 decldict(vd::VariableDeclaration) = vd.declarationsdict
 
-sortref(vd::VariableDeclaration) = vd.sort::SortRef
-#refid(vd::VariableDeclaration) = refid(sortref(vd))::Symbol
+sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
@@ -148,7 +148,7 @@ See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 @auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S  #! 2025-07-21 replace with S <: SortRef
+    def::S  #! Remains where the concrete sort lives.
     # An instance of: ArbitrarySort, MultisetSort, ProductSort, or BUILT-IN sort!
     declarationdicts::DeclDict
 
@@ -162,7 +162,7 @@ See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
 end
 
 function sortdefinition(namedsort::NamedSort)
-    namedsort.def # Instance of concrete sort. #! 2025-07-21 SortRef
+    namedsort.def # Instance of concrete sort.
 end
 
 sortelements(namedsort::NamedSort) = sortelements(sortdefinition(namedsort))

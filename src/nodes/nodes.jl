@@ -26,7 +26,7 @@ end
 
 initial_marking(place::Place) = (place.initialMarking)()
 
-sortref(place::Place) = sortref(place.sorttype)::SortRef
+sortref(place::Place) = sortref(place.sorttype)::AbstractSortRef
 
 """
 Return zero-valued object with same `basis` and `eltype` as place's marking.
@@ -124,7 +124,7 @@ function inscription(arc::Arc)
     arc.inscription # label
 end
 
-sortref(arc::Arc) = sortref(arc.inscription)::SortRef
+sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
 
 decldict(arc::Arc) = arc.declarationdicts
 

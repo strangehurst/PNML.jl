@@ -26,10 +26,10 @@ One Petri Net of a PNML model.
 end
 
 # Constructor for use in test scaffolding.
-PnmlNet(t::PnmlType, x::Symbol) = PnmlNet(; type=t, id=x,
-                                    declaration=Declaration(),
-                                    pagedict=OrderedDict{Symbol, Page{typeof(t)}}(),
-                                    idregistry=PnmlIDRegistry(),
+PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =
+    PnmlNet(; type, id, declaration,
+                pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
+                idregistry=PnmlIDRegistry(),
     )
 
 pntd(net::PnmlNet) = net.type

@@ -24,7 +24,7 @@ end
 
     PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_sort_tag!(parse_context, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
-    sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)::UserSortRef
+    sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)
     #@show ddict #!debug
     sort = to_sort(sortref; parse_context.ddict)::UserSort |> namedsort |> sortdefinition
     @test sort === PositiveSort()
@@ -32,7 +32,7 @@ end
     @test_logs eltype(sort)
 
     PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<dot/>", pntd; parse_context)::NamedSortRef
+    sortref = parse_sort(xml"<dot/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === DotSort(parse_context.ddict) # not a built-in
     @test_logs sprint(show, sort)

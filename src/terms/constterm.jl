@@ -4,16 +4,16 @@
 Builtin operator that has arity=0 means the same result every time, a constant.
 Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 """
-struct NumberConstant{T<:Number,} <: AbstractOperator
+struct NumberConstant{T<:Number, S <: AbstractSortRef} <: AbstractOperator
     value::T
-    sort::SortRef # value isa eltype(sort), verified by parser.
+    sort::S # value isa eltype(sort), verified by parser.
     declarationdicts::DeclDict
     # Constant operators are 0-arity by definition. Parameter vector not used here.
 end
 
 decldict(nc::NumberConstant) = nc.declarationdicts
-sortref(nc::NumberConstant) = identity(nc.sort)::SortRef
-basis(nc::NumberConstant)   = sortref(nc.value)::SortRef
+sortref(nc::NumberConstant) = identity(nc.sort)::AbstractSortRef
+basis(nc::NumberConstant)   = sortref(nc.value)::AbstractSortRef
 sortof(nc::NumberConstant) = sortdefinition(namedsort(decldict(nc), sortref(nc)))
 
 # others want the value of the value
@@ -34,10 +34,10 @@ these FEConstants defines a 0-ary operation, i. e. is a declaration of a constan
     fec() == :anID
     fec.name = "somevalue"
 """
-struct FEConstant <: AbstractOperator
+struct FEConstant{S <: AbstractSortRef} <: AbstractOperator
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
-    ref::SortRef # of contining partition, enumeration, (or partitionelement?)
+    ref::S # of contining partition, enumeration, (or partitionelement?)
     declarationdicts::DeclDict
 end
 
@@ -72,9 +72,9 @@ end
     $(TYPEDEF)
 Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
 """
-struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
+struct FiniteIntRangeConstant{T<:Integer, S <: AbstractSortRef} <: AbstractOperator
     value::T
-    sort::SortRef # wrapping a FiniteIntRangeSort
+    sort::S # wrapping a FiniteIntRangeSort
     declarationdicts::DeclDict
     #TODO! Assert that T is a sort eltype.
 end
@@ -83,7 +83,7 @@ decldict(c::FiniteIntRangeConstant) = c.declarationdicts
 
 # FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
 # We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
-sortref(c::FiniteIntRangeConstant) = identity(c.sort)::SortRef
+sortref(c::FiniteIntRangeConstant) = identity(c.sort)::AbstractSortRef
 
 "Special case to ` IntegerSort()`, it is part of the name, innit."
 sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are always integers

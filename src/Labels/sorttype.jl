@@ -57,9 +57,9 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType <: Annotation # Label not limited to high-level dialects.
+struct SortType{S <: AbstractSortRef} <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
+    sort_::S # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     declarationdicts::DeclDict
@@ -68,8 +68,8 @@ end
 # >The label Type of a place defines the type by referring to some sort;
 # > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 
-SortType(sort::SortRef, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
-SortType(s::AbstractString, sort::SortRef, ddict) = SortType(s, sort, nothing, nothing, ddict)
+SortType(sort::AbstractSortRef, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
+SortType(s::AbstractString, sort::AbstractSortRef, ddict) = SortType(s, sort, nothing, nothing, ddict)
 
 decldict(t::SortType) = t.declarationdicts
 

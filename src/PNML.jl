@@ -68,8 +68,8 @@ using DocStringExtensions
 # EXPORTS
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export REFID, SortRef
-export UserSortRef
+export REFID, SortRef, AbstractSortRef
+export UserSortRef # From SortRef ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
 export @xml_str, xmlroot

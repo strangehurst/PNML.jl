@@ -55,7 +55,7 @@ end
 
 #println()
 @testset "default_typeusersort($pntd)" for pntd in PnmlTypes.all_nettypes()
-    t = Labels.default_typeusersort(pntd)::SortRef
+    t = Labels.default_typeusersort(pntd)::AbstractSortRef
 end
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)

@@ -28,7 +28,7 @@ equals(a::AbstractSort, b::AbstractSort) = false # Not the same sort.
 # Called when both a and b are the same concrete type.
 equalSorts(a::AbstractSort, b::AbstractSort) = a == b
 
-basis(a::AbstractSort) = sortref(a)::SortRef
+basis(a::AbstractSort) = sortref(a)::AbstractSortRef
 sortof(a::AbstractSort) = identity(a)
 
 """
@@ -86,7 +86,7 @@ decldict(us::UserSort) = us.declarationdicts
 
 "Get NamedSort from UserSort REFID"
 namedsort(us::UserSort) = namedsort(decldict(us), refid(us))::PNML.Declarations.NamedSort #todo partitionsort, arbitrarysort
-sortref(us::UserSort) = identity(us)::SortRef
+sortref(us::UserSort) = identity(us)::AbstractSortRef
 function sortof(us::UserSort)
     #@show namedsort(us) #! debug
     sortdefinition(namedsort(us)) #^ ArbitrarySort, PartitionSort, ProductSort
@@ -113,22 +113,23 @@ $(TYPEDEF)
 
 Wrap a UserSort. Warning: do not cause recursive multiset Sorts.
 """
-@auto_hash_equals fields=basis struct MultisetSort <: AbstractSort
-    basis::SortRef
+@auto_hash_equals fields=basis struct MultisetSort{S <: AbstractSortRef} <: AbstractSort
+    basis::S
     declarationdicts::PNML.DeclDict
 
-    function MultisetSort(b::SortRef, ddict)
-        if isa(sortdefinition(namedsort(ddict, refid(b))), MultisetSort)
-            throw(PNML.MalformedException("MultisetSort basis cannot be MultisetSort"))
-        else
-            new(b, ddict)
+    function MultisetSort(b::AbstractSortRef, ddict)
+        return @match b begin
+            NamedSortRef(id) => isa(sortdefinition(namedsort(ddict, id)), MultisetSort) &&
+                throw(PNML.MalformedException("basis cannot be MultisetSort, id = $id"))
+            MultisetSortRef(id) => throw(PNML.MalformedException("basis cannot be MultisetSort, id = $id"))
+            _ => new{typeof(b)}(b, ddict)
         end
     end
 end
 
 decldict(ms::MultisetSort) = ms.declarationdicts
-sortref(ms::MultisetSort) = identity(ms.basis)::SortRef # 2025-06-28 make be a SortRef
-sortof(ms::MultisetSort) = sortdefinition(namedsort(decldict(ms), basis(ms)::SortRef)) #TODO abstract
+sortref(ms::MultisetSort) = identity(ms.basis)::AbstractSortRef
+sortof(ms::MultisetSort) = sortdefinition(namedsort(decldict(ms), basis(ms)::AbstractSortRef)) #TODO abstract
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -144,7 +145,7 @@ ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color cla
 Where sorts are the syntax for color classes and ProduceSort is the color domain.
 """
 @auto_hash_equals fields=ae typearg=true cache=true struct ProductSort{N} <: AbstractSort
-    ae::NTuple{N,REFID} #! todo SortRef
+    ae::NTuple{N,REFID} #! todo AbstractSortRef
     declarationdicts::DeclDict
 end
 
@@ -172,7 +173,7 @@ function sortof(ps::ProductSort)
         error("ProductSort is empty")
     else
         @show collect(sorts(ps))
-        @show (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
+        @show map(sortof, sorts(ps)) # map REFIDs to tuple of sorts
         (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
     end
 end

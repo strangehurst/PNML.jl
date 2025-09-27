@@ -17,7 +17,7 @@ using XMLDict: XMLDict
     """
     typ = PNML.Parser.parse_sorttype(n1, pntd; parse_context=ctx)::SortType
     @test text(typ) == "N2"
-    @test PNML.sortref(typ) isa PNML.SortRef # wrapping DotSort
+    @test PNML.sortref(typ) isa PNML.AbstractSortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort(ctx.ddict) #! does the name of a sort affect equal Sorts?
     @test PNML.has_graphics(typ) == false
     @test PNML.has_labels(typ) == false

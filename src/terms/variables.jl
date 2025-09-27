@@ -8,7 +8,7 @@ Example input: <variable refvariable="varx"/>.
 #TODO examples of use, modifying and accessing
 """
 struct Variable <: AbstractVariable
-    refvariable::REFID # of VariableDeclaration{SortRef} that gives name and Type
+    refvariable::REFID # of VariableDeclaration{AbstractSortRef} that gives name and Type
     declarationdicts::DeclDict
 
     function Variable(v::REFID, ddict)
@@ -26,7 +26,7 @@ function (var::Variable)()
 end
 value(v::Variable) = error("not well defined: value($v)") #! XXX FIXME XXX
 
-sortref(v::Variable) = sortref(variabledecl(ddict, refid(v)))::SortRef # Access variabledecl in decldicts
+sortref(v::Variable) = sortref(variabledecl(ddict, refid(v)))::AbstractSortRef # Access variabledecl in decldicts
 sortof(v::Variable)  = sortof(variabledecl(ddict, refid(v)))  # Access variabledecl in decldicts
 
 function Base.show(io::IO, v::Variable)

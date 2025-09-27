@@ -272,15 +272,30 @@ end
 #! 2025-07-16 JDH moved ParseContext
 # Add the dictionary accessor argument after sorts are dispatchable.
 
-"Look for matching value in dictionary, return key or nothing."
+"Look for matching value `x` in dictionary `d`, return key symbol or nothing."
 function find_valuekey(d::AbstractDict, x, func=identity)
     id = nothing
     for (k,v) in pairs(skipmissing(d))
+        #@show k v x
         if func(v) == x # Apply `func` to each value, looking for a match.
             id = k
-            @warn "found existing $id" x
+            @warn("found existing $id for repr($x)")
             break
         end
     end
     return id #  Key of matched value or nothing.
+end
+
+
+
+function ref_to_sort(sr::SortRef.Type, ddict::DeclDict)
+    @match sr begin
+       SortRef.UserSortRef(ref) => usersorts(ddict)[ref]
+       SortRef.NamedSortRef(ref) => namedsorts(ddict)[ref]
+       SortRef.PartitionSortRef(ref) => productsorts(ddict)[ref]
+       SortRef.ProductSortRef(ref) => partition(ddict)[ref]
+       SortRef.MultisetSortRef(ref) => multisetsorts(ddict)[ref]
+       SortRef.ArbitrarySortRef(ref) => arbitrarysorts(ddict)[ref]
+       _ => error("sort ref not expected: $sr") #!eltype(to_sort(s; ddict))
+    end
 end

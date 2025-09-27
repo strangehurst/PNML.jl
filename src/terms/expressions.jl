@@ -184,16 +184,16 @@ a [`PNML.PnmlMultiset`](@ref).
 See [`PNML.Operator`](@ref) for another TermInterface operator.
 """
 Bag # Need to avoid @matchable to have docstring
-@matchable struct Bag <: PnmlExpr
-    basis::SortRef # Wraps a sort REFID.
+@matchable struct Bag{S <: AbstractSortRef} <: PnmlExpr
+    basis::S # Wraps a sort REFID.
     element::Any # ground term expression
     multi::Any # multiplicity expression of element in a multiset
-    Bag(b, x, m) = begin
-        # if x isa PnmlTupleEx
-        #     @error "bag element is tuple" b x m
-        # end
-        new(b, x, m)
-    end
+    # Bag(b, x, m) = begin
+    #     # if x isa PnmlTupleEx
+    #     #     @error "bag element is tuple" b x m
+    #     # end
+    #     new(b, x, m)
+    # end
 end
 Bag(b, x) = Bag(b, x, 1) # singleton multiset
 Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis sort.
@@ -224,8 +224,8 @@ end
     TermInterface expression for a `<numberconstant>`.
 """
 NumberEx # Need to avoid @matchable to have docstring
-@matchable struct NumberEx{T<:Number} <: PnmlExpr
-    basis::SortRef # Wraps a sort REFID.
+@matchable struct NumberEx{T<:Number, S <: AbstractSortRef} <: PnmlExpr
+    basis::S # Wraps a sort REFID.
     element::T #
 end
 
@@ -325,7 +325,7 @@ end
 end
 
 function toexpr(op::ScalarProduct, var::NamedTuple, ddict)
-    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::SortRef,
+    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::AbstractSortRef,
         Expr(:call, :(*), toexpr(op.n, var, ddict), toexpr(op.bag, var, ddict)))
 end
 
@@ -808,20 +808,20 @@ end
 
 
 """
-    expr_sortref(v::PnmlExpr; ddict) -> SortRef
+    expr_sortref(v::PnmlExpr; ddict) -> AbstractSortRef
 
-Return SortRef of PnmlExpr.
+Return concrete AbstractSortRef of PnmlExpr.
 """
 function expr_sortref end
 
 function expr_sortref(v::VariableEx; ddict)
-    sortref(PNML.variabledecl(ddict, v.refid))::SortRef
+    sortref(PNML.variabledecl(ddict, v.refid))::AbstractSortRef
 end
 function expr_sortref(o::UserOperatorEx; ddict)
-    sortref(PNML.feconstant(ddict, o.refid))::SortRef #todo or other constant/operator
+    sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef #todo or other constant/operator
 end
 function expr_sortref(b::Bag; ddict)
-    sortref(b)::SortRef # also basis
+    sortref(b)::AbstractSortRef # also basis
 end
 
 

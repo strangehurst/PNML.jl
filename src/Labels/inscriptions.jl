@@ -18,7 +18,7 @@ end
 
 decldict(i::Inscription) = i.declarationdicts
 term(i::Inscription) = i.term
-sortref(i::Inscription) = _sortref(decldict(i), term(i))::SortRef
+sortref(i::Inscription) = _sortref(decldict(i), term(i))::AbstractSortRef
 sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple)
@@ -77,7 +77,7 @@ function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::
     Inscription(nothing, PNML.NumberEx(UserSortRef(:real), one(Float64)), nothing, nothing, REFID[], ddict)
 end
 function default(::Type{<:Inscription}, ::AbstractHLCore, placetype::SortType; ddict)
-    basis = sortref(placetype)::SortRef
+    basis = sortref(placetype)::AbstractSortRef
     el = def_sort_element(placetype; ddict)
     Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], ddict) # non-empty singleton multiset.
 end

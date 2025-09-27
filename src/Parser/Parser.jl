@@ -16,6 +16,7 @@ using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
+using Moshi.Data: @data, isa_variant
 using Moshi.Match: @match
 using SciMLLogging: @SciMLMessage
 using SciMLPublic: @public

@@ -59,7 +59,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             parse_sorttype(typenode, pntd; parse_context)
         else
             SortType("default",
-                        Labels.default_typeusersort(pntd)::SortRef,
+                        Labels.default_typeusersort(pntd)::AbstractSortRef,
                         nothing, nothing, parse_context.ddict)
         end
     end
@@ -102,7 +102,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     if isnothing(sorttype) # Infer sortype of place from mark?
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
         @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
-        sorttype = SortType("default", basis(mark)::SortRef, nothing, nothing, decldict(mark))
+        sorttype = SortType("default", basis(mark)::AbstractSortRef, nothing, nothing, decldict(mark))
     end
     Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end

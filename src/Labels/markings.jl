@@ -17,7 +17,7 @@ end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
 function Marking(m::Number, ddict::DeclDict)
-    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::SortRef, m), ddict)
+    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::AbstractSortRef, m), ddict)
 end
 Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, nothing, ddict)
 Marking(t::PnmlExpr, s::Maybe{AbstractString}, ddict) = Marking(t, s, nothing, nothing, ddict)
@@ -91,8 +91,8 @@ These are used to give the initialize a marking vector that will then be updated
 """
 (mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark)))
 
-basis(m::Marking)   = sortref(term(m))::SortRef
-sortref(m::Marking) = _sortref(decldict(m), term(m))::SortRef
+basis(m::Marking)   = sortref(term(m))::AbstractSortRef
+sortref(m::Marking) = _sortref(decldict(m), term(m))::AbstractSortRef
 sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
 
 function Base.show(io::IO, ptm::Marking)

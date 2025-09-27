@@ -67,12 +67,12 @@ include("strings.jl")
 # # These two sorts are not used in variable declarations.
 # # They do not add a name to the contained sorts (or sortrefs).
 # # Add a dictionary accessor argument.
-fill_sort_tag!(ctx, tag, sort::ProductSort) = fill_sort_tag!(ctx, tag, sort, productsorts)::SortRef
-fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, multisetsorts)::SortRef
+fill_sort_tag!(ctx, tag, sort::ProductSort) = fill_sort_tag!(ctx, tag, sort, productsorts)::AbstractSortRef
+fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, multisetsorts)::AbstractSortRef
 
 #
 """
-    make_sortref(parse_context, dict, sort, seed, id, name) ->  SortRef`
+    make_sortref(parse_context, dict, sort, seed, id, name) ->  AbstractSortRef`
 
  - `dict` is a method/callable that returns an AbstractDict (in a DeclDict).
  - `sort` ia a concrete sort that is to be in `dict`.
@@ -81,7 +81,7 @@ fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, mu
 
 Uses `fill_sort_tag!`.
 
-Return concrete SortRef matching `dict`, wrapping `id`.
+Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
     @show sort
@@ -91,8 +91,8 @@ function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
             @show id = gensym(seed) # Invent REFID
         end
     end
-    # fill_sort_tag! will not overwrite existing, returns SortRef
-    sr = fill_sort_tag!(parse_context, id, sort, dict)::SortRef # in make_sortref
+    # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
+    sr = fill_sort_tag!(parse_context, id, sort, dict)::AbstractSortRef # in make_sortref
     return sr
 end
 

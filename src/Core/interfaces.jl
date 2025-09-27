@@ -347,9 +347,9 @@ We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for 
 function sortof end
 
 """
-    sortref(x) -> SortRef
+    sortref(x) -> AbstractSortRef
 
-Return a REFID wrapped in a [`SortRef`](@ref).
+Return a REFID wrapped in a [`AbstractSortRef`](@ref).
 
 Things that have a sortref include:
 Place, Arc, Inscription, Marking,
@@ -359,28 +359,6 @@ FEConstant, FiniteIntRangeConstant, DotConstant, BooleanConstant,
 PnmlMultiset, Operator, Variable,
 """
 function sortref end
-
-
-@data SortRefx begin
-    UserSortRef(Symbol)
-    NamedSortRef(Symbol)
-    PartitionSortRef(Symbol)
-    ProductSortRef(Symbol)
-    MultisetSortRef(Symbol)
-    ArbitrarySortRef(Symbol)
-end
-
-# function ref_to_sort(sr::SortRefx, ddict)
-#     @match sr begin
-#        UserSortRef(ref) => usersorts(ddict)[ref]
-#        NamedSortRef(ref) => namedsorts(ddict)[ref]
-#        PartitionSortRef(ref) => productsorts(ddict)[ref]
-#        ProductSortRef(ref) => partition(ddict)[ref]
-#        MultisetSortRef(ref) => multisetsorts(ddict)[ref]
-#        ArbitrarySortRef(ref) => arbitrarysorts(ddict)[ref]
-#        _ => error("not expected: $sr") #!eltype(to_sort(s; ddict))
-#     end
-# end
 
 """
     sortdefinition(::SortDeclaration) -> Sort
@@ -399,9 +377,9 @@ with the ID symbol used as the dictionary key.
 function sortdefinition end
 
 """
-    basis(x, ddict) -> SortRef
+    basis(x, ddict) -> AbstractSortRef
 
-Return SortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
+Return AbstractSortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
 `MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
 Place marking & sorttype, arc inscriptions have a `basis`.
 """

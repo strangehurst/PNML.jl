@@ -50,7 +50,7 @@ end # @with
 
     parse_context = PNML.parser_context()
     placetype = SortType("$pntd initMarking",
-        PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))::SortRef,
+        PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
         nothing, nothing, parse_context.ddict)
 
     # Parse ignoring unexpected child

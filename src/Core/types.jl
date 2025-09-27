@@ -250,9 +250,10 @@ abstract type AbstractSort end
 """
     SortRef
 
-Reference concrete sort (<:AbstractSort (or following that informal interface))
-using a `REFID` `Symbol` that indexes one of the dictionaries
-in the network's declaration dictionary (`DeclDict`).
+SortRef is the name of the Module created by Moshi @data to hold an ADT.
+
+Each variant has a `REFID` `Symbol` that indexes one of the dictionaries
+in the network's declaration dictionary collection (`DeclDict`).
 
 The `REFID` will be in the network's `PnmlIDRegistry`.
 
@@ -262,33 +263,33 @@ We use the `UserSort` -> `NamedSort` -> `ConcreteSort` to add a name and REFID t
 sorts, thus making them accessable. This extends this decoupling (symbols instead of sorts)
 to anonymous sorts that are inlined.
 """
-abstract type SortRef end
+abstract type AbstractSortRef end
+# SortRef is the name of the Module created by the macro.
+@data SortRef <: AbstractSortRef begin
+    struct UserSortRef
+        refid::REFID
+    end
+    struct NamedSortRef
+        refid::REFID
+    end
+    struct PartitionSortRef
+        refid::REFID
+    end
+    struct ProductSortRef
+        refid::REFID
+    end
+    struct MultisetSortRef
+        refid::REFID
+    end
+    struct ArbitrarySortRef
+        refid::REFID
+    end
+end
+# For access to values that SortRef.Type my have.
+using .SortRef: UserSortRef, NamedSortRef, PartitionSortRef,
+                    ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
-function refid(s::SortRef)
+function refid(s::SortRef.Type)
     @assert s.refid !== :nothing
-    s.refid
-end
-
-struct UserSortRef <: SortRef
-    refid::REFID
-end
-
-struct NamedSortRef <: SortRef
-    refid::REFID
-end
-
-struct PartitionSortRef <: SortRef
-    refid::REFID
-end
-
-struct ProductSortRef <: SortRef
-    refid::REFID
-end
-
-struct MultisetSortRef <: SortRef
-    refid::REFID
-end
-
-struct ArbitrarySortRef <: SortRef
-    refid::REFID
+    return s.refid::REFID
 end

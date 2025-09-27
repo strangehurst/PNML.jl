@@ -29,12 +29,12 @@ PNML Operator as Functor
 
 tag maps to func, a functor/function Callable. Its arity is same as length of inexprs and insorts
 """
-struct Operator <: AbstractOperator
+struct Operator{S <: AbstractSortRef} <: AbstractOperator
     tag::Symbol
     func::Union{Function, Type} # Apply `func` to `inexprs`:
     inexprs::Vector{AbstractTerm} #! TermInterface expressions some may be variables (not just ground terms).
     insorts::Vector{UserSortRef} # typeof(inexprs[i]) == eltype(insorts[i])
-    outsort::SortRef # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
+    outsort::S # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
     metadata::Any
     declarationdicts::DeclDict
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
@@ -46,7 +46,7 @@ Operator(t, f, inex, ins, outs; metadata=nothing, ddict) = Operator(t, f, inex, 
 decldict(op::Operator) = op.declarationdicts
 tag(op::Operator)     = op.tag # PNML XML tag
 inputs(op::Operator)  = op.inexprs #! when should these be eval(toexpr)'ed)
-sortref(op::Operator) = identity(op.outsort)::SortRef # output sort of operator. feconstants sort is enclosing enumeration
+sortref(op::Operator) = identity(op.outsort)::AbstractSortRef # output sort of operator. feconstants sort is enclosing enumeration
 sortof(op::Operator)  = sortdefinition(namedsort(decldict(op), op.outsort)) # also abstractsort, partitionsort
 metadata(op::Operator) = op.metadata
 value(op::Operator)   = op(#= parameters? =#)
@@ -224,7 +224,7 @@ function pnml_hl_operator(tag::Symbol)
 end
 
 """
-    pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}) -> SortRef
+    pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}) -> AbstractSortRef
 
 Return sort that operator `tag` returns.
 """

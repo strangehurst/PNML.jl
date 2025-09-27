@@ -93,25 +93,25 @@ Is the sort at the partition or the element level (1 sort or many sorts?)
 
 Like [`NamedSort`](@ref), will add an `id` and `name` to a sort, and is accessed by `UserSort`.
 """
-struct PartitionSort <: SortDeclaration
+struct PartitionSort{S <: AbstractSortRef} <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
-    def::REFID # Like a UserSort, refers to a sort declaration (NamedSort) that wraps an EnumerationSort (FiniteEnumeration, CyclicEnumeration)
+    def::S # Like a NamedSort, refers to a sort (EnumerationSort)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
     declarationdicts::DeclDict
 
-    function PartitionSort(i, n, d, e, dd)
-        # PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
-        # # Look at what is wrapped.
-        # @assert PNML.tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
-        new(i, n, d, e, dd)
-    end
+    # function PartitionSort(i, n, d, e, dd)
+    #     # PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
+    #     # # Look at what is wrapped.
+    #     # @assert PNML.tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
+    #     new(i, n, d, e, dd)
+    # end
 end
 
 decldict(p::PartitionSort) = p.declarationdicts
 
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(decldict(p), p.def))
+sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(decldict(p), refid(p.def)))
 sortelements(p::PartitionSort) = p.elements
 
 # TODO Add Partition/PartitionElement methods here
