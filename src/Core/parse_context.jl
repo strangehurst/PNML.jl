@@ -10,7 +10,11 @@ $(DocStringExtensions.TYPEDFIELDS)
     toolparser::Vector{ToolParser} = ToolParser[] # empty
 end
 
-"Fill and return a `ParserContext` object."
+"""
+    parse_context() -> ParseContext
+
+ Return a `ParserContext` filled with default values.
+ """
 function parser_context()
      fill_nonhl!(ParseContext())
 end
@@ -32,27 +36,20 @@ function fill_nonhl!(ctx::ParseContext)
         #TODO Add list, strings, arbitrarysorts other built-ins.
         fill_sort_tag!(ctx, tag, Declarations.NamedSort(tag, name, sort, ctx.ddict))
         usersorts(ctx.ddict)[tag] = UserSort(tag, ctx.ddict) # fill_nonhl!
-        #! XXX fill a usersort slot? Add dicts for SortRefs?
     end
     return ctx
 end
 
 
-# NamedSort(tag, name, sort, ctx.ddict)
-# PartitionSort(tag, name, SortRef, Vector{PartitionElement}, ctx.ddict)
-# ArbitrarySort(tag, name, symbol, ctx.ddict)
-# ProductSort(SortRef..., , ctx.ddict)
-# MultsetSort(SortRef, ctx.ddict)
-
 """
     fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort) -> fill_sort_tag!(ctx, tag, sort, dict)
-    fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict) -> SortRef
+    fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict) -> AbstractSortRef
 
 If not already in the declarations dictionary `dict`, add `sort` with key of `tag`.
 
 `dict` defaults to `namedsorts` a callable returning a dictionary in the DeclDict.
 
-Register the tag and create and return a `SortRef` holding `tag`.
+Register the tag and create and return an `AbstractSortRef` holding `tag`.
 """
 function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callable)
     # if dict == PNML.namedsorts && isa(sort, NamedSort)
@@ -60,16 +57,12 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
     # end
 
     if !has_key(ctx.ddict, dict, tag) # Do not overwrite existing content.
-        #println("fill_sort_tag!($(repr(tag)), $(typeof(sort)) in $(dict)") #! debug
         !isregistered(ctx.idregistry, tag) && register_id!(ctx.idregistry, tag)
         dict(ctx.ddict)[tag] = sort
     end
 
-    #! 2021-07-21 refactor fill_sort_tag!() to place sorts into dicts, separate namedsorts
-    #! into singleton, enumerations, and all with non-singular types.
-
     # Will ensure `sort` is in `dict`, then do this:
-    return @match dict begin     #! return a SortRef
+    return @match dict begin  #! return a concrete SortRef.Type
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin, in a namedsort
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of usersort, in a namedsort
         PNML.partitionsorts => PartitionSortRef(tag) # declaration
@@ -77,5 +70,5 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
         _ => NamedSortRef(tag)                       # declaration
         # usersort -> namedsort | partitionsort | arbitrary sort
     end
-    #! DO NOT create a UserSort here. Where?
+    #! DO NOT create a UserSort here.
 end
