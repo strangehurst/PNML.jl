@@ -1,17 +1,14 @@
-using SciMLLogging: SciMLLogging, Verbosity, @SciMLMessage
-# using Logging
-# using LoggingExtras
-
-# using PNML
+using SciMLLogging: SciMLLogging, AbstractVerbositySpecifier,
+                    MessageLevel, WarnLevel, InfoLevel, Silent, ErrorLevel
 
 # Main verbosity struct
-struct PnmlVerbosity{T} <: SciMLLogging.AbstractVerbositySpecifier{T}
-    algorithm_choice::Verbosity.LogLevel
-    iteration_progress::Verbosity.LogLevel
+struct PnmlVerbosity{T} <: AbstractVerbositySpecifier{T}
+    algorithm_choice::MessageLevel
+    iteration_progress::MessageLevel
 
     function PnmlVerbosity{T}(;
-            algorithm_choice = Verbosity.Warn(),
-            iteration_progress = Verbosity.Info()
+            algorithm_choice = WarnLevel(),
+            iteration_progress = InfoLevel()
     ) where {T}
         new{T}(algorithm_choice, iteration_progress)
     end
