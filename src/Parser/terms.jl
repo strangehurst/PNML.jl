@@ -220,21 +220,21 @@ end
 function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<all> operator missing sort argument"))
+    # refsort is the basis of a multiset.
+    refsort = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+    #! @assert isfinitesort(refsort) #^ Only expect finite sorts here.
 
-    basis = parse_usersort(child, pntd; parse_context)::AbstractSortRef
-    #! @assert isfinitesort(basis) #^ Only expect finite sorts here.
-
-    return TermJunk(PNML.Bag(basis), basis, vars)
+    return TermJunk(PNML.Bag(refsort), refsort, vars)
 end
 
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
-    basis = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+    refsort = parse_usersort(child, pntd; parse_context)::AbstractSortRef
     #! ePNK uses <integer/>. Could be inlined productsort.
-    x = first(PNML.sortelements(basis)) # So Multiset can do eltype(basis) == typeof(x)
+    x = first(PNML.sortelements(refsort)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
-    return TermJunk(PNML.Bag(basis, x, 0), basis, vars)
+    return TermJunk(PNML.Bag(refsort, x, 0), refsort, vars)
 end
 
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
