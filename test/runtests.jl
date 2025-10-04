@@ -100,6 +100,10 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         println("# NET2 #")
         @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
     end
+    if select(("ALL", "TEST19"), ("!TEST19",))
+        println("# TEST19 #")
+        @safetestset "test19"   begin include("test19.jl") end
+    end
 
      if select(("ALL", "NET3"), ("!NET3",))
         println("# NET3 #")
