@@ -285,6 +285,9 @@ abstract type AbstractSortRef end
         refid::REFID
     end
 end
+
+@derive SortRef[Show,Hash,Eq]
+
 # For access to values that SortRef.Type my have.
 using .SortRef: UserSortRef, NamedSortRef, PartitionSortRef,
                     ProductSortRef, MultisetSortRef, ArbitrarySortRef
