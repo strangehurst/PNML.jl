@@ -296,6 +296,7 @@ struct UserOperator <: AbstractOperator
     declaration::REFID # of a NamedOperator, AbstractOperator.
     declarationdicts::DeclDict
 end
+
 decldict(uo::UserOperator) = uo.declarationdicts
 
 # Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.

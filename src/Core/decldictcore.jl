@@ -33,9 +33,10 @@ Each keyed by REFID symbols.
     # Use an REFID symbol as a network-level "global" to reference
     # SortDeclaration or Operatordeclaration.
 
-    # usersort used to wrap REFID to <: SortDeclaration is well used
+    # usersort wraps REFID, is well used, we create them as part of duos,
+    # though we use the SortRef ADT as implementation.
     #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
-    #! UserSorts will appear in the input XML
+    #! 2025-09-27 moving to Moshi ADT.
     usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
 
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
@@ -75,8 +76,8 @@ feconstants(dd::DeclDict)    = dd.feconstants
 
 "Return dictionary of `MultisetSort`"
 multisetsorts(dd::DeclDict)    = dd.multisetsorts
-"Return dictionary of `ProdictSort`"
-productsorts(dd::DeclDict)    = dd.productsorts
+"Return dictionary of `ProductSort`"
+productsorts(dd::DeclDict)    = dd.productsorts #! put in namedsorts like FiniteItRangeSort
 
 """
     declarations(dd::DeclDict) -> Iterator
@@ -269,7 +270,6 @@ function show_sorts(dd::DeclDict)
 #     println()
 end
 
-#! 2025-07-16 JDH moved ParseContext
 # Add the dictionary accessor argument after sorts are dispatchable.
 
 "Look for matching value `x` in dictionary `d`, return key symbol or nothing."
@@ -296,6 +296,6 @@ function ref_to_sort(sr::SortRef.Type, ddict::DeclDict)
        SortRef.ProductSortRef(ref) => partition(ddict)[ref]
        SortRef.MultisetSortRef(ref) => multisetsorts(ddict)[ref]
        SortRef.ArbitrarySortRef(ref) => arbitrarysorts(ddict)[ref]
-       _ => error("sort ref not expected: $sr") #!eltype(to_sort(s; ddict))
+       _ => error("SortRef not expected: $sr")
     end
 end

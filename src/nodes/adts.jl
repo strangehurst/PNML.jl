@@ -1,7 +1,7 @@
 
 using Moshi.Data:   @data
 using Moshi.Derive: @derive
-using Moshi.Match:  @dmatch
+using Moshi.Match:  @match
 
 @data NetNode{PNTD,M,C} begin
     struct Place #{PNTD,M}

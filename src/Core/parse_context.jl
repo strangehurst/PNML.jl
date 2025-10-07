@@ -56,13 +56,13 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
     #     @error "dict == PNML.namedsorts && isa(sort, NamedSort)" tag dict sort
     # end
 
+    # Ensure `sort` is in `dict`, then return SortRef ADT encoding type:
     if !has_key(ctx.ddict, dict, tag) # Do not overwrite existing content.
         !isregistered(ctx.idregistry, tag) && register_id!(ctx.idregistry, tag)
         dict(ctx.ddict)[tag] = sort
     end
 
-    # Will ensure `sort` is in `dict`, then do this:
-    return @match dict begin  #! return a concrete SortRef.Type
+    return @match dict begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin, in a namedsort
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of usersort, in a namedsort
         PNML.partitionsorts => PartitionSortRef(tag) # declaration
