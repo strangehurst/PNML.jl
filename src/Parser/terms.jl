@@ -30,28 +30,27 @@ where condition and inscription expressions may contain non-ground terms (using 
 """
 function parse_term(node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     tag = Symbol(EzXML.nodename(node))
-    #printstyled("parse_term tag = $tag \n"; color=:bold); flush(stdout) #! debug
     tag === :namedoperator && error("namedoperator is a declaration, not a term!")
-    ttup = parse_term(Val(tag), node, pntd; vars, parse_context)::TermJunk
-    # Collect varible REFIDs if found. length(vars) == 0 means is a ground term.
-    # ttup is (expression, sortref, vars) like all parse_term methods.
+    tjtupel = parse_term(Val(tag), node, pntd; vars, parse_context)::TermJunk
+    # tjtupel is (expression, sortref, vars) like all parse_term methods.
+    # Collect varible REFIDs in `vars`. `length(vars) == 0` means is a ground term.
     # Ensure that there is a `toexpr` method. #! DEBUG only?
-    if !isa(which(PNML.toexpr, (typeof(ttup.exp), NamedTuple, DeclDict)), Method)
-        error("No `toexpr` method for expressin; $(ttup)")
+    if !isa(which(PNML.toexpr, (typeof(tjtupel.exp), NamedTuple, DeclDict)), Method)
+        error("No `toexpr` method for expression in $(tjtupel)")
     end
-    return ttup
+    return tjtupel
 end
 
 """
-    subterms(node, pntd; vars) -> Vector{PnmlExpr}
+    subterms(node, pntd; vars) -> Vector{PnmlExpr}, Tuple{REFID}
 
 Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref) term.
-Collect expressions in a `Vector` and variable REFIDs in a `Tuple`.
+Collect expressions in a `Vector` and accumulate variable REFIDs in a `Tuple`.
 """
 function subterms(node, pntd; vars, parse_context::ParseContext)
     sts = Vector{Any}()
     for subterm in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(subterm)
+        stnode, tag = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
         tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
         isnothing(tj) && throw(PNML.MalformedException("subterm is nothing"))
         vars = tj.vars #! TEST THIS accumulate variables
@@ -491,28 +490,44 @@ function parse_term(::Val{:unparsed}, node::XMLNode, pntd::PnmlType; vars, parse
 end
 
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    #@warn "parse_term(::Val{:tuple}"; flush(stdout); #! debug
     sts, vars = subterms(node, pntd; vars, parse_context)
+    # Expect elements to be an operator or variable (a.k.a. term)
     @assert length(sts) >= 2
-    tup = PNML.PnmlTupleEx(sts)
+    expr_tup = PNML.PnmlTupleEx(sts)
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
 
     # VariableEx can lookup sort.
     # UserOperatorEx (constant?) also has enclosng sort.
     # Both hold refid field.
-    @show sts tup
-    @show psorts = tuple((expr_sortref.(sts; parse_context.ddict))...)
+    @warn "parse_term(::Val{:tuple}" sts expr_tup; flush(stdout); #! debug
+    println()
+    #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
+    #! Part of expression evaluation -- dynamic behavior of a Petri net
+    psort = ProductSort(tuple((expr_sortref.(sts; parse_context.ddict))...), parse_context.ddict)
+    @show psort; println()
 
+    sorttag = string("ProductSort_",
+        join(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict)), "_"))
+    @show sorttag
+
+    # Look for an existing declaration for psort. Return a UserSortRef to it in TermJunk.
     for ps in PNML.productsorts(parse_context.ddict)
-        @show ps
-        if Sorts.isproductsort(ps.second) &&
-           (Sorts.sorts(sortof(ps.second)) == psorts)
-            # println("$psorts => ", ps.first) #! debug
-            return TermJunk(tup, ProductSortRef(ps.first), vars)
+        println("-----")
+        @warn ps
+        @show ps.second
+        isnothing(ps.second) && error("empty product sort")
+
+        if PNML.Sorts.equalSorts(ps.second, psort)
+            println("match ", ps.first) #! debug
+            return TermJunk(expr_tup, ProductSortRef(ps.first), vars)
+        else
+            println("reject ", ps.first) #! debug
         end
+        println("-----")
     end
-    error("Did not find productsort sort for $tup")
+    #!@show parse_context.ddict
+    error("Did not find productsort sort for $expr_tup")
 end
 
 # <structure>
@@ -535,21 +550,19 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
     isnothing(child) &&
         throw(PNML.MalformedException("<finiteintrangeconstant> missing sort element"))
 
+    sorttag = Symbol(EzXML.nodename(child))
+    sorttag == :finiteintrange ||
+        throw(PNML.MalformedException("expected <finiteintrange>, found $sorttag"))
+
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
+    # There will be a UserSort, NamedSort duo created for anonymous sorts.
+    usref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; parse_context)::AbstractSortRef
 
-    sorttag = Symbol(EzXML.nodename(child))
-    if sorttag == :finiteintrange
-        usref = parse_sort(Val(sorttag), child, pntd, nothing, ""; parse_context)::NamedSortRef
-     else
-        throw(PNML.MalformedException("expected <finiteintrange>, found $sorttag"))
-    end
-
-    fis = namedsort(parse_context.ddict, usref.refid)::FiniteIntRangeSort
+    fis = namedsort(parse_context.ddict, refid(usref))::FiniteIntRangeSort
     Sorts.start(fis) <= value <= Sorts.stop(fis) ||
         throw(ArgumentError("finite integer value $value not in range $(ns)"))
 
-    #PNML.FiniteIntRangeConstant(value, usref, parse_context.ddict),
     return TermJunk(NumberEx(usref, value), usref, vars)
 end
 

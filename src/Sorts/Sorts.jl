@@ -83,16 +83,16 @@ Uses `fill_sort_tag!`.
 
 Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 """
-function make_sortref(parse_context, dict::Base.Callable, sort, seed, id, name)
+function make_sortref(parse_context, dict::Base.Callable, sort, seed, sortid, name)
     @show sort
     id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
     if isnothing(id2) # Did not find existing  namedsort
-        if isnothing(id) # no enclosing provided name/id
-            @show id = gensym(seed) # Invent REFID
+        if isnothing(sortid) # no enclosing provided name/id
+            @show sortid = gensym(seed) # Invent REFID
         end
     end
     # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
-    sr = fill_sort_tag!(parse_context, id, sort, dict)::AbstractSortRef # in make_sortref
+    sr = fill_sort_tag!(parse_context, sortid, sort, dict)::AbstractSortRef # in make_sortref
     return sr
 end
 

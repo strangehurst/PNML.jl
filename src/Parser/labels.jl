@@ -218,6 +218,9 @@ end
 
 placetype(pmt::ParseMarkingTerm) = pmt.placetype
 
+
+#! MARK will be a TERM, a symbolic expression that, when evaluated,
+#! produces a PnmlMultiset object. Or a tuple of objects if a ProductSort is used.
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(marknode, "structure")
     isa_variant(placetype(pmt), UserSortRef) ||
@@ -225,21 +228,24 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
     if EzXML.haselement(marknode)
         term = EzXML.firstelement(marknode) # ignore any others
 
+        # Here we are parsing a term from XML to a ground term, which must be an operator.
         tj = parse_term(term, pntd; vars=(), parse_context) # ParseMarkingTerm
+        #~@warn typeof(tj.exp) expr_sortref(tj.exp; parse_context.ddict) tj
+        #~println()
+        if !PNML.Sorts.equalSorts(expr_sortref(tj.exp; parse_context.ddict), placetype(pmt))
+            @error "sortref mismatch" expr_sortref(tj.exp; parse_context.ddict) placetype(pmt)
+        end
         isempty(tj.vars) || error("unexpected variables in $tj")
+        #!println("--")
 
-        #! MARK will be a TERM, a symbolic expression that, when evaluated,
-        #! produces a PnmlMultiset object. Or a tuple of objects if a ProductSort is used.
+        return tj
 
         # PnmlMultiset (datastrstructureucture) vs UserOperator/NamedOperator (term/expression)
-        # Here we are parsing a term from XML to a ground term, which must be an operator.
         # Like with sorts, we have useroperator -> namedoperator -> operator.
         # NamedOperators will be joined by ArbitraryOperators for HLPNGs.
         # Operators include built-in operators, multiset operators, tuples
         # Multiset operators must be evaluated to become PnmlMultiset objects.
         # Markings are multisets (a.k.a. bags).
-
-        return tj
     end
     throw(ArgumentError("missing marking term in <structure>"))
 end
@@ -305,7 +311,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
 
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
-    tj.ref == placesort ||
+    PNML.Sorts.equalSorts(tj.ref, placesort) ||
         @error("inscription term sort mismatch: $(tj.ref) != $placesort", tj, adjacentplace)
 
     return tj
@@ -420,8 +426,8 @@ function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType; parse_context::P
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd; parse_context)::AbstractSortRef
-    isa(sorttype, MultisetSortRef) && error("multiset sort not allowed for place <type>")
+    sorttype = parse_sort(sortnode, pntd, nothing, ""; parse_context)::AbstractSortRef
+    isa_variant(sorttype, MultisetSortRef) && error("multiset sort not allowed for place <type>")
     # We use TermJunk because it is convenient. #! Does it work?
     return TermJunk(sorttype, sorttype, ()) # Not a term; has no variables.
 end

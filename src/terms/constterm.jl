@@ -49,20 +49,17 @@ Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is 
 (fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
 (fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use name string.
 
-# sortof(fec::FEConstant) = begin
-#     # Search on REFID of containing sort defintion.
-#     # These share behavior in attaching an ID and name to a component or components.
-#     # These components have seperate dictionaries in the `DeclDict`.
-#     if PNML.has_namedsort(decldict(fec), fec.refid)
-#         sortdefinition(namedsort(decldict(fec), fec.refid))::EnumerationSort
-#     elseif PNML.has_partitionsort(decldict(fec), fec.refid)
-#         sortdefinition(partitionsort(decldict(fec), fec.refid))::PartitionSort
-#         # Partitions are over a single EnumerationSort
-#     else
-#         # partition element?
-#         error("could not find a sortof REFID in ", repr(fec))
-#     end
-# end
+sortof(fec::FEConstant) = begin
+    @match fec.ref begin
+        NamedSortRef(refid) =>
+            sortdefinition(namedsort(decldict(fec), refid))::EnumerationSort
+        PartitionSortRef(refid) =>
+            sortdefinition(partitionsort(decldict(fec), refid))::PartitionSort
+        # Partitions are over a single EnumerationSort
+        # partition element?
+        _ => error("unsupported SortRef: ", repr(fec))
+    end
+end
 
 function Base.show(io::IO, fec::FEConstant)
     print(io, nameof(typeof(fec)), "($(repr(fec.id)), $(repr(fec.name)))")
@@ -74,7 +71,7 @@ Must refer to a value between the start and end of the respective `FiniteIntRang
 """
 struct FiniteIntRangeConstant{T<:Integer, S <: AbstractSortRef} <: AbstractOperator
     value::T
-    sort::S # wrapping a FiniteIntRangeSort
+    sort::S
     declarationdicts::DeclDict
     #TODO! Assert that T is a sort eltype.
 end

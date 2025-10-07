@@ -121,7 +121,7 @@ sortelements(p::PartitionSort) = p.elements
 
 "Iterator over partition element REFIDs of a `PartitionSort"
 function element_ids(ps::PartitionSort, netid::Symbol)
-    Iterators.map(pid, sortelements(ps))
+    Iterators.map(pid, sortelements(ps))::PartitionSort
 end
 
 "Iterator over partition element names"

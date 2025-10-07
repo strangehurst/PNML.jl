@@ -60,7 +60,8 @@ can be used to find a NamedSort.
 Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
 MultisetSorts not allowed here. Nor loops in sort references.
 """
-basis(ms::PnmlMultiset) = ms.basis_ref::AbstractSortRef
+basis(ms::PnmlMultiset) = sortref(ms)::AbstractSortRef
+sortref(ms::PnmlMultiset) = ms.basis_ref
 
 Base.eltype(::Type{PnmlMultiset{T,S}}) where {T, S <: AbstractSortRef} = T
 
@@ -75,8 +76,6 @@ function Base.one(m::PnmlMultiset{T,S}) where {T, S <: AbstractSortRef} #^ singl
     return o
 end
 
-sortref(ms::PnmlMultiset) = basis(ms)::AbstractSortRef
-sortof(ms::PnmlMultiset)  = sortof(basis(ms)) # definition of basis sort
 """
     sortelements(ms::PnmlMultiset) -> iterator
 
@@ -212,13 +211,14 @@ end
 
 # For <all> only the basis is needed.
 function pnmlmultiset(basis::AbstractSortRef, ::Nothing, ::Nothing; ddict::DeclDict)
-    if isa(basis, MultisetSortRef)
+    if isa_variant(basis, MultisetSortRef)
         throw(ArgumentError("Cannot have MultisetSort basis of $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
     #@show basis eltype(basis) #! debug
     M = Multiset{eltype(basis, ddict)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
+    #TODO ProductSort, PartitionSort
     sort = PNML.Parser.to_sort(basis; ddict)
     for e in sortelements(sort) # iterator over elements
         #@show M e; flush(stdout) #! debug

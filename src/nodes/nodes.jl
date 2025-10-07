@@ -9,14 +9,14 @@ M is a "multiset sort denoting a collection of tokens".
 A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
-mutable struct Place  <: AbstractPnmlNode
+mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     #! pntd::PNTD
     id::Symbol
     initialMarking::Marking #! UnionAll
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
-    sorttype::SortType
+    sorttype::SortType{S}
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -54,7 +54,7 @@ $(TYPEDFIELDS)
 mutable struct Transition  <: AbstractPnmlNode
     #!pntd::PNTD
     id::Symbol
-    condition::Labels.Condition #! expression label
+    condition::Labels.Condition #! boolean expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -102,11 +102,11 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc <: AbstractPnmlObject
+mutable struct Arc{T <: PnmlExpr} <: AbstractPnmlObject
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
-    inscription::Inscription #! expression label
+    inscription::Inscription{T} #! expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}

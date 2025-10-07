@@ -142,40 +142,45 @@ $(TYPEDEF)
 An ordered collection of sorts. The elements of the sort are tuples of elements of each sort.
 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
-Where sorts are the syntax for color classes and ProduceSort is the color domain.
+Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
 @auto_hash_equals fields=ae typearg=true cache=true struct ProductSort{N} <: AbstractSort
-    ae::NTuple{N,REFID} #! todo AbstractSortRef
+    ae::NTuple{N, SortRef.Type} #! AbstractSortRef
     declarationdicts::DeclDict
 end
 
 decldict(ps::ProductSort) = ps.declarationdicts
 isproductsort(::ProductSort) = true
 isproductsort(::Any) = false
+Base.length(ps::ProductSort) = length(sorts(ps))
 
 """
     sorts(ps::ProductSort) -> NTuple
-Return iterator over tuples of elements of sorts in the product.
+Return iterator over `SortRef`s to sorts in the product.
 """
-sorts(ps::ProductSort) = ps.ae
+sorts(ps::ProductSort) = values(ps.ae)
 
-function sortelements(ps::ProductSort) # Iterators.product does tuples
-    #!@show sorts(ps)
-    # for s in sorts(ps)
-    #     @show sortelements(namedsort(decldict(ps), s))
-    # end
-    Iterators.product((sortelements ∘ Fix1(namedsort, decldict(ps))).(sorts(ps))...)
+function sortelements(ref::AbstractSortRef, ddict::DeclDict)
+    sortelements(PNML.Parser.to_sort(ref; ddict))
 end
 
-function sortof(ps::ProductSort)
-    println("sortof(", repr(ps),")") #! bringup debug
-    if isempty(sorts(ps))
-        error("ProductSort is empty")
-    else
-        @show collect(sorts(ps))
-        @show map(sortof, sorts(ps)) # map REFIDs to tuple of sorts
-        (map(sortof, sorts(ps)...),) # map REFIDs to tuple of sorts
+# return tuple = product of elements of each sort of ProductSort
+function sortelements(ps::ProductSort) # Iterators.product does tuples
+    # sortref to sort to sortelements
+    Iterators.product(Fix2(sortelements, decldict(ps)).(sorts(ps))...)
+end
+
+function equalSorts(a::ProductSort, b::ProductSort)
+    if length(a) == length(b) &&
+            all(refid(x) == refid(y) for (x,y) in zip(sorts(a), sorts(b)))
+        return true
     end
+    return false
+end
+
+function equalSorts(a::AbstractSortRef, b::AbstractSortRef)
+    # is ID sufficient or is comparing sort content needed?
+    refid(a) == refid(b)
 end
 
 function Base.show(io::IO, ps::ProductSort)

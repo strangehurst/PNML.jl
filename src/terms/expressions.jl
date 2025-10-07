@@ -36,8 +36,13 @@ abstract type PnmlExpr end
 
 """
 TermInterface boolean expression types.
+
+All boolean expressions have a known sort `:bool`.
 """
 abstract type BoolExpr <: PnmlExpr end
+basis(::BoolExpr) = UserSortRef(:bool)
+sortref(::BoolExpr) = UserSortRef(:bool)
+expr_sortref(b::BoolExpr; ddict) = sortref(b)::AbstractSortRef
 
 """
 TermInterface operator expression types.
@@ -45,18 +50,19 @@ TermInterface operator expression types.
 abstract type OpExpr <: PnmlExpr end
 
 """
-    toexpr(ex::PnmlExpr, varsubs::NamedTuple, ddict) -> Expr
+    toexpr(ex::PnmlExpr, varsubs::NamedTuple{REFID,Any}, ddict) -> Expr
 
-Return `Expr`. Recursivly call `toexpr` on any contained terms.
-`varsubs` used to replace variables with values in expressions.
+Return `Expr`. Call `toexpr` on any contained terms.
+`varsubs` used to replace variables with values in expressions that contain any variable.
 """
 function toexpr end
 
+# Some expressions are ground terms that have no variables.
 toexpr(::Nothing, ::NamedTuple, ddict) = nothing
 toexpr(x::T, ::NamedTuple, ddict) where {T <: Number} = identity(x) #! literal
 toexpr(s::Symbol, ::NamedTuple, ddict) = QuoteNode(s)
 function toexpr(t::Tuple, vsub::NamedTuple, ddict)
-    # @error "toexpr(t::Tuple, vsub::NamedTuple)" t vsub
+    isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
 
@@ -65,6 +71,12 @@ toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple, ddict) = value(c)
 toexpr(::PNML.DotConstant, ::NamedTuple, ddict) = PNML.DotConstant(ddict)
 toexpr(c::PNML.BooleanConstant, ::NamedTuple, ddict) = value(c)
 
+"""
+    expr_sortref(v::PnmlExpr; ddict) -> AbstractSortRef
+
+Return concrete AbstractSortRef of PnmlExpr. Sometimes aliased to `basis`, `sortref`.
+"""
+function expr_sortref end
 
 # TermInterface infrastructure
 ####################################################################################
@@ -99,6 +111,7 @@ recurse_expr(ex::Any, varsub::NamedTuple, ddict) = toexpr(ex, varsub, ddict)
 function TermInterface.maketerm(::Type{<:PnmlExpr}, head, children, metadata = nothing)
   head(children...)
 end
+
 # head and operation are the structure name, i.e. type/constructor
 # children and arguments are the fields of the structure
 # arity is length of fields
@@ -113,7 +126,7 @@ end
 #     end
 # end
 
-# Metatheory.quoted_head: nameof(x) for Union{Function,DataType}), else identity
+# Metatheory.quoted_head: nameof(x) for Union{Function,DataType}), else identity.
 # All @matchable structs are iscall() so use Metatheory.quoted_head #todo cache?
 # The other leg is for things that are not callable.
 # NB: constructors are callable
@@ -134,12 +147,13 @@ function toexpr(op::VariableEx, varsub::NamedTuple, ddict)
     # `varsub`
     vsub = varsub[op.refid]
     if vsub isa Symbol
-        #
         Expr(:call, feconstant, QuoteNode(ddict), QuoteNode(vsub))
     else
         :($(vsub))
     end
 end
+
+expr_sortref(v::VariableEx; ddict) = sortref(PNML.variabledecl(ddict, v.refid))::AbstractSortRef
 
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
@@ -156,6 +170,11 @@ function toexpr(op::UserOperatorEx, varsub::NamedTuple, ddict)
     Expr(:call, operator, QuoteNode(ddict), QuoteNode(op.refid)) #
 end
 
+function expr_sortref(o::UserOperatorEx; ddict)
+    #todo or other constant/operator
+    return @show sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
+end
+
 function Base.show(io::IO, x::UserOperatorEx)
     print(io, "UserOperatorEx(", x.refid, ")" )
 end
@@ -167,8 +186,12 @@ end
 end
 
 function toexpr(op::NamedOperatorEx, varsub::NamedTuple, ddict)
-    #
     Expr(:call, operator, QuoteNode(ddict), QuoteNode(op.refid)) #
+end
+
+function expr_sortref(o::NamedOperatorEx; ddict)
+    #todo or other constant/operator
+    return @show sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
 end
 
 function Base.show(io::IO, x::NamedOperatorEx)
@@ -200,11 +223,12 @@ Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis s
 
 sortref(b::Bag) = b.basis
 basis(b::Bag) = b.basis
+expr_sortref(b::Bag; ddict) = sortref(b)::AbstractSortRef # also basis
 
 function toexpr(b::Bag, varsub::NamedTuple, ddict)
     #@show b varsub Expr(:parameters, Expr(:kw,:ddict, ddict))
     #^ Warning: b.element can be: `PnmlMultiset`, `pnmltuple`
-    #^ tuples are elements of a `ProductSort`pnmltuple
+    #^ tuples are elements of a `ProductSort`
     Expr(:call, pnmlmultiset,
         Expr(:parameters, Expr(:kw, :ddict, ddict)), # keyword arguments
         b.basis,
@@ -229,9 +253,11 @@ NumberEx # Need to avoid @matchable to have docstring
     element::T #
 end
 
-basis(x::NumberEx) = x.basis
-
 toexpr(b::NumberEx{T}, var::NamedTuple, ddict) where {T<:Number} = b.element
+
+basis(x::NumberEx) = x.basis
+sortref(x::NumberEx) = x.basis
+expr_sortref(x::NumberEx; ddict) = basis(x)::AbstractSortRef
 
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
@@ -246,8 +272,6 @@ BooleanEx # Need to avoid @matchable to have docstring
 @matchable struct BooleanEx <: BoolExpr
     element::BooleanConstant
 end
-
-basis(::BooleanEx) = UserSortRef(:bool)
 
 function toexpr(b::BooleanEx, var::NamedTuple, ddict)
     if b.element isa BooleanConstant
@@ -271,6 +295,8 @@ DotConstantEx # Need to avoid @matchable to have docstring
 end
 
 basis(::DotConstantEx) = UserSortRef(:dot)
+sortref(::DotConstantEx) = UserSortRef(:dot)
+expr_sortref(x::DotConstantEx; ddict) = basis(x)::AbstractSortRef
 
 function toexpr(b::DotConstantEx, var::NamedTuple, ddict)
     QuoteNode(PNML.DotConstant(ddict))
@@ -294,6 +320,10 @@ end
     args::Vector{Bag} # >=2 =
 end
 
+basis(a::Add) = basis(first(a.args))
+sortref(a::Add) = sortref(first(a.args))
+expr_sortref(a::Add; ddict) = expr_sortref(first(a.args); ddict)::AbstractSortRef
+
 function toexpr(op::Add, varsub::NamedTuple, ddict)
     @assert length(op.args) >= 2
     # Expr(:call, sum, [eval(toexpr(arg, varsub, ddict)) for arg in op.args])
@@ -310,6 +340,10 @@ end
     rhs::Bag
 end
 
+basis(a::Subtract) = basis(a.lhs)
+sortref(a::Subtract) = sortref(a.lhs)
+expr_sortref(a::Subtract; ddict) = expr_sortref(a.lhs; ddict)::AbstractSortRef
+
 function toexpr(op::Subtract, var::NamedTuple, ddict)
     Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
 end
@@ -323,6 +357,10 @@ end
     n::Any #! Expression evaluating to integer, use Any to allow `Symbolic` someday.
     bag::Bag #! Expression
 end
+
+basis(a::ScalarProduct) = basis(a.bag)
+sortref(a::ScalarProduct) = sortref(a.bag)
+expr_sortref(a::ScalarProduct; ddict) = expr_sortref(a.bag; ddict)::AbstractSortRef
 
 function toexpr(op::ScalarProduct, var::NamedTuple, ddict)
     Expr(:call, PNML.PnmlMultiset, basis(op.bag)::AbstractSortRef,
@@ -339,20 +377,24 @@ end
 #     value::Any #! Expression evaluating to a term
 # end
 
-@matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.
-    arg::Any # multiset expression
+@matchable struct Cardinality{S <: AbstractSortRef} <: PnmlExpr #^ multiset cardinality uses `length`.
+    bag::Bag{S} # multiset expression
 end
 
+basis(::Cardinality) = UserSortRef(:natural)
+sortref(::Cardinality) = UserSortRef(:natural)
+expr_sortref(a::Cardinality; ddict) = sortref(a)::AbstractSortRef
+
 function toexpr(op::Cardinality, var::NamedTuple, ddict)
-    Expr(:call, :cardinality, toexpr(op.arg, var, ddict))
+    Expr(:call, :cardinality, toexpr(op.bag, var, ddict))
 end
 
 function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
 end
 
-@matchable struct CardinalityOf <: PnmlExpr #^ cardinalityof accesses multiset.
-    ms::Any # multiset expression
+@matchable struct CardinalityOf{S <: AbstractSortRef} <: PnmlExpr #^ cardinalityof accesses multiset.
+    ms::Bag{S} # multiset expression
     refid::REFID # element of basis sort
 end
 
@@ -365,13 +407,14 @@ function Base.show(io::IO, x::CardinalityOf)
 end
 
 #"Bag -> Bool"
-@matchable struct Contains{T} <: PnmlExpr #^ multiset contains access multiset.
-    ms::Any # multiset expression
-    refid::Any
+@matchable struct Contains{S <: AbstractSortRef} <: BoolExpr #^ multiset contains access multiset.
+    lhs::Bag{S} # multiset expression
+    rhs::Bag{S} # multiset expression
+
 end
 
 function toexpr(op::Contains, var::NamedTuple, ddict)
-    Expr(:call, :(>), Expr(:call, :multiplicity, toexpr(op.ms, var, ddict), op.refid), 0)
+    Expr(:call, :(>), Expr(:call, :contains, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict)))
 end
 
 function Base.show(io::IO, x::Contains)
@@ -491,11 +534,13 @@ end
 # struct GreaterThanOrEqual{T} <: PnmlExpr #! Use the Integer version.
 
 
-#& Integer in standard # we extend to `Number`, really anything that supports the operator used:)
+#& Integer in standard # we extend to `Number`, really anything that supports the + operator used:)
 @matchable struct Addition <: PnmlExpr #? Use `+` operator.
     lhs::Any
     rhs::Any
 end
+
+expr_sortref(a::Addition; ddict) = expr_sortref(a.lhs; ddict)::AbstractSortRef
 
 function toexpr(op::Addition, var::NamedTuple, ddict)
     Expr(:call, :(+), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
@@ -510,6 +555,8 @@ end
     rhs::Any
 end
 
+expr_sortref(a::Subtraction; ddict) = expr_sortref(a.lhs; ddict)::AbstractSortRef
+
 function toexpr(op::Subtraction, var::NamedTuple, ddict)
     Expr(:call, :(-), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
 end
@@ -523,6 +570,8 @@ end
     rhs::Any
 end
 
+expr_sortref(a::Multiplication; ddict) = expr_sortref(a.lhs; ddict)::AbstractSortRef
+
 function toexpr(op::Multiplication, var::NamedTuple, ddict)
     Expr(:call, :(*), toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
 end
@@ -535,6 +584,8 @@ end
     lhs::Any
     rhs::Any
 end
+
+expr_sortref(a::Division; ddict) = expr_sortref(a.lhs; ddict)::AbstractSortRef
 
 function toexpr(op::Division, var::NamedTuple, ddict)
     Expr(:call, :div, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
@@ -601,6 +652,8 @@ end
     rhs::Any
 end
 
+expr_sortref(a::Modulo; ddict) = sortref(a.lhs)::AbstractSortRef
+
 function toexpr(op::Modulo, var::NamedTuple, ddict)
     Expr(:call, :mod, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
 end
@@ -618,6 +671,8 @@ end
     refs::Vector{REFID} # to FEConstant
     partition::REFID
 end
+
+expr_sortref(a::PartitionElementOp; ddict) = sortref(partitionsort(ddict, a.partition))::AbstractSortRef
 
 toexpr(op::PartitionElementOp, var::NamedTuple, ddict) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
@@ -669,13 +724,15 @@ end
 # 0-arity despite the refpartition
 @matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
-    refpartition::Any # UserSort, REFID
+    refpartition::REFID # UserSort, REFID
 end
+
+expr_sortref(a::PartitionElementOf; ddict) = sortref(partitionsort(ddict, a.refpartition))::AbstractSortRef
 
 function _peo_impl(fec::FEConstant, refpart, ddict)
     #@warn "peo_impl" lhs refpart
     p = partitionsort(ddict, refpart)
-    #findfirst(e -> PNML.Declarations.contains(e, fec()), p.elements)
+    # look for value of fec in findfirst(e -> PNML.Declarations.contains(e, fec()), p.elements)
     findfirst(Fix2(PNML.Declarations.contains, fec()), p.elements)
 end
 
@@ -766,7 +823,23 @@ NB: ISO 15909 Standard considers Tuple to be an Operator.
 PnmlTupleEx
 
 @matchable struct PnmlTupleEx <: PnmlExpr #{N, T<:PnmlExpr}
-    args::Vector{Any} # >=2
+    args::Vector{Any} # >=2 subterms
+end
+
+# <tuple> is an operator.
+# The sort of a tuple is a tuple of its element's sorts (a.k.a ProductSort).
+# Find the ProductSortRef
+function expr_sortref(tup::PnmlTupleEx; ddict)
+    for ps in PNML.productsorts(ddict)
+        @show ps
+        # for (a,b) in zip(tup.args, PNML.Sorts.sorts(ps.second))
+        #     @warn "expr_sortref(tup::PnmlTupleEx; ddict)" sortref(a) b PNML.Sorts.equalSorts(sortref(a), b)
+        # end
+        if all(PNML.Sorts.equalSorts(sortref(a), b) for (a,b) in zip(tup.args, PNML.Sorts.sorts(ps.second)))
+            return ProductSortRef(ps.first)
+        end
+    end
+    error("no productsort for tuple expression $(tup)")
 end
 
 function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
@@ -785,7 +858,6 @@ function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
     # args = if all(Fix2(isa, Symbol), op.args)
     #     map(vexp -> feconstant(vexp.refid), op.args)
 
-
     args = op.args
     # if all(Fix2(isa, VariableEx), op.args)
     #     # toexpr is to QuoteNode holding REFID.
@@ -803,26 +875,9 @@ end
 # _deref_variable(vexp::VariableEx) = feconstant(ddict, vexp.refid)
 
 function Base.show(io::IO, x::PnmlTupleEx)
-    print(io, "PnmlTuplPNML.eEx(", x.args, ")" )
+    print(io, "PnmlTuplEx(", x.args, ")" )
 end
 
-
-"""
-    expr_sortref(v::PnmlExpr; ddict) -> AbstractSortRef
-
-Return concrete AbstractSortRef of PnmlExpr.
-"""
-function expr_sortref end
-
-function expr_sortref(v::VariableEx; ddict)
-    sortref(PNML.variabledecl(ddict, v.refid))::AbstractSortRef
-end
-function expr_sortref(o::UserOperatorEx; ddict)
-    sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef #todo or other constant/operator
-end
-function expr_sortref(b::Bag; ddict)
-    sortref(b)::AbstractSortRef # also basis
-end
 
 
 ##########################################################################################

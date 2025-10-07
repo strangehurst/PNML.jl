@@ -5,7 +5,7 @@ $(TYPEDEF)
 See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
 Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs and metadata.
 """
-abstract type EnumerationSort{M} <: AbstractSort end
+abstract type EnumerationSort <: AbstractSort end
 
 """
     refs(sort::EnumerationSort) -> Vector{REFID}
@@ -30,8 +30,8 @@ Base.eltype(::EnumerationSort) = REFID
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
     io = PNML.inc_indent(io)
-    for (i, fec_ref) in enumerate(refs(esort))
-        print(io, '\n', PNML.indent(io), fec_ref);
+    for (i, finite_enum_const_refid) in enumerate(refs(esort))
+        print(io, '\n', PNML.indent(io), finite_enum_const_refid);
         i < length(esort) && print(io, ",")
     end
     print(io, "])")
@@ -49,10 +49,9 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort{M} <: EnumerationSort{M}
+@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort <: EnumerationSort
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
-    metadata::M # TODO TermInterface metadata
     declarationdicts::DeclDict
 end
 
@@ -64,10 +63,9 @@ tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
     FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{M}
 Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort{M} <: EnumerationSort{M}
+@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort <: EnumerationSort
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
-    metadata::M # TODO TermInterface metadata
     declarationdicts::DeclDict
 end
 
