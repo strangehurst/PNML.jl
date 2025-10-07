@@ -66,5 +66,6 @@ include("toolspecific.jl")
 
 export XMLNode, xmlroot, @xml_str
 export pnmlmodel
+@public to_sort
 
 end
