@@ -17,7 +17,7 @@ using SciMLLogging: @SciMLMessage
 
 using PNML
 using PNML: DeclDict
-using PNML: REFID, AnyElement, AbstractTerm, UserSort
+using PNML: REFID, AnyElement, AbstractTerm
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
 using PNML: multisetsorts

@@ -35,7 +35,6 @@ function fill_nonhl!(ctx::ParseContext)
                               )
         #TODO Add list, strings, arbitrarysorts other built-ins.
         fill_sort_tag!(ctx, tag, Declarations.NamedSort(tag, name, sort, ctx.ddict))
-        usersorts(ctx.ddict)[tag] = UserSort(tag, ctx.ddict) # fill_nonhl!
     end
     return ctx
 end
@@ -55,13 +54,13 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
     # if dict == PNML.namedsorts && isa(sort, NamedSort)
     #     @error "dict == PNML.namedsorts && isa(sort, NamedSort)" tag dict sort
     # end
-
+    #!println("fill_sort_tag! ", tag)
     # Ensure `sort` is in `dict`, then return SortRef ADT encoding type:
     if !has_key(ctx.ddict, dict, tag) # Do not overwrite existing content.
         !isregistered(ctx.idregistry, tag) && register_id!(ctx.idregistry, tag)
         dict(ctx.ddict)[tag] = sort
     end
-
+    #!@show sort dict
     return @match dict begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin, in a namedsort
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of usersort, in a namedsort
@@ -70,5 +69,4 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
         _ => NamedSortRef(tag)                       # declaration
         # usersort -> namedsort | partitionsort | arbitrary sort
     end
-    #! DO NOT create a UserSort here.
 end

@@ -39,7 +39,10 @@ A places's <type> label wraps a `UserSortRef` that holds a REFID to the sort of 
 hence use of `sorttype`. It is the type (or set) concept of the many-sorted algebra.
 
 For high-level nets there will be a declaration section with a rich language of sorts
-using [`UserSort`](@ref) & [`PNML.Declarations.NamedSort`](@ref) defined in the xml input.
+using `UserSortFRef`, [`NamedSort`](@ref PNML.Declarations.NamedSort),
+[`PartitionSort`](@ref PNML.Declarations.PartitionSort) or
+[`ArbitrarySort`](@ref PNML.Declarations.ArbitrarySort)
+defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
 
@@ -115,12 +118,14 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return instance of `UserSortRef` for default `SortType` of a `PNTD`.
+Return  `SortRef` for default `SortType` of a `PNTD`.
 Useful for non-high-level nets and PTNet.
 See [`PNML.fill_nonhl!`](@ref)
 """
-function default_typeusersort end
-default_typeusersort(pntd::PnmlType) = default_typeusersort(typeof(pntd))
-default_typeusersort(::Type{<:PnmlType}) = UserSortRef(:integer)
-default_typeusersort(::Type{<:AbstractContinuousNet}) = UserSortRef(:real)
-default_typeusersort(::Type{<:AbstractHLCore}) = UserSortRef(:dot)
+function default_typesort end
+default_typesort(pntd::PnmlType) = default_typesort(typeof(pntd))
+default_typesort(::Type{<:PnmlType}) = NamedSortRef(:integer)
+default_typesort(::Type{<:AbstractContinuousNet}) = NamedSortRef(:real)
+# High-level nets are expected to provide a useful value. PT_HLPNG uses them minimum: 'dot'.
+# We provide an implementation of 'dot', so this is a safe assumption.
+default_typesort(::Type{<:AbstractHLCore}) = NamedSortRef(:dot)

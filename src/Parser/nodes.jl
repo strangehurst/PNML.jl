@@ -59,7 +59,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             parse_sorttype(typenode, pntd; parse_context)
         else
             SortType("default",
-                        Labels.default_typeusersort(pntd)::AbstractSortRef,
+                        Labels.default_typesort(pntd)::AbstractSortRef,
                         nothing, nothing, parse_context.ddict)
         end
     end
@@ -94,7 +94,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
          mark = if ishighlevel(pntd)
             default(Marking, pntd, sorttype; parse_context.ddict)
         else
-            dummy = SortType("unused", UserSortRef(:integer), parse_context.ddict)
+            dummy = SortType("unused", NamedSortRef(:integer), parse_context.ddict)
             default(Marking, pntd, dummy; parse_context.ddict)
         end
     end
@@ -194,10 +194,10 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     if isnothing(inscription)
         inscription = if ishighlevel(pntd)
             default(Inscription, pntd,
-                    SortType("default", UserSortRef(:dot), parse_context.ddict);
+                    SortType("default", NamedSortRef(:dot), parse_context.ddict);
                     parse_context.ddict)
         else
-            dummy = SortType("dummy", UserSortRef(:integer),  parse_context.ddict)
+            dummy = SortType("dummy", NamedSortRef(:integer),  parse_context.ddict)
             default(Inscription, pntd, dummy; parse_context.ddict)
         end
     end

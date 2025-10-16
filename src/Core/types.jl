@@ -257,9 +257,9 @@ in the network's declaration dictionary collection (`DeclDict`).
 
 The `REFID` will be in the network's `PnmlIDRegistry`.
 
-Note the similarity to `UserSort` and `<usersort declaration="id" />`
+`UserSortRef` is created from `<usersort declaration="id" />`.
 
-We use the `UserSort` -> `NamedSort` -> `ConcreteSort` to add a name and REFID to built-in
+We use `NamedSortRef` -> `ConcreteSort` to add a name and REFID to built-in
 sorts, thus making them accessable. This extends this decoupling (symbols instead of sorts)
 to anonymous sorts that are inlined.
 """
@@ -267,7 +267,7 @@ abstract type AbstractSortRef end
 # SortRef is the name of the Module created by the macro.
 @data SortRef <: AbstractSortRef begin
     struct UserSortRef
-        refid::REFID
+        refid::REFID # Indirection to NamedSortRef, PartitionSortRef or ArbitrarySortRef
     end
     struct NamedSortRef
         refid::REFID

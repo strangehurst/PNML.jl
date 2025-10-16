@@ -39,8 +39,8 @@ Multisets.set_key_value_show()
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_tokengraphics, parse_toolspecific,
     parse_initialMarking, parse_inscription, parse_sort, parse_declaration!,
-    parse_hlinitialMarking, parse_hlinscription,
-    to_sort
+    parse_hlinitialMarking, parse_hlinscription
+@reexport using PNML.Parser: to_sort
 
 @reexport using PNML.Labels: PnmlLabel, has_label, get_label, Condition
 
@@ -49,7 +49,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: AbstractDeclaration, Declaration, refid
 @reexport using PNML: PNet.initial_marking, PNet.initial_markings, inscription, condition
 
-@reexport using PNML: AbstractSort, SortType, UserSort, NamedSort, BoolSort, DotSort,
+@reexport using PNML: AbstractSort, SortType, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort, ListSort, StringSort,

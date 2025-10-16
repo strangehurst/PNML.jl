@@ -4,6 +4,7 @@ using DocStringExtensions
 using NamedTupleTools
 using Logging, LoggingExtras
 using Moshi.Match: @match
+using Moshi.Data: isa_variant, variant_type
 using SciMLLogging: @SciMLMessage
 
 import Base: eltype
@@ -16,10 +17,10 @@ using PNML: multisetsorts, productsorts
 using PNML: AbstractSort
 
 import PNML: sortof, sortref, sortelements, sortdefinition, basis
-import PNML: value, term, tag, pid, refid, usersort, namedsort
+import PNML: value, term, tag, pid, refid, namedsort, namedsorts
 import PNML: fill_sort_tag!
 
-export AbstractSort, UserSort, MultisetSort, ProductSort
+export AbstractSort, MultisetSort, ProductSort
 export DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
@@ -50,7 +51,7 @@ concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
 Notes:
 - `NamedSort` is a Declarations.SortDeclaration
 [`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
-- `UserSort` holds the id symbol of a `NamedSort`.
+- `SortRef` holds the id symbol of a concrete sort.
 - Here 'type' means a 'term' from the many-sorted algebra.
 - We use sorts even for non-high-level nets.
 - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
@@ -83,17 +84,16 @@ Uses `fill_sort_tag!`.
 
 Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 """
-function make_sortref(parse_context, dict::Base.Callable, sort, seed, sortid, name)
-    @show sort
+function make_sortref(parse_context, dict::Base.Callable, sort, seed, sortid, name=nothing)
+    #!@show sort dict seed sortid
     id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
-    if isnothing(id2) # Did not find existing  namedsort
+    if isnothing(id2) # Did not find existing
         if isnothing(sortid) # no enclosing provided name/id
             @show sortid = gensym(seed) # Invent REFID
         end
     end
     # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
-    sr = fill_sort_tag!(parse_context, sortid, sort, dict)::AbstractSortRef # in make_sortref
-    return sr
+    return fill_sort_tag!(parse_context, sortid, sort, dict)::AbstractSortRef # in make_sortref
 end
 
 end # module Sorts

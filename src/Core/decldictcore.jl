@@ -37,7 +37,8 @@ Each keyed by REFID symbols.
     # though we use the SortRef ADT as implementation.
     #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
     #! 2025-09-27 moving to Moshi ADT.
-    usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
+    #! 2025-10-12 Remove UserSort. Use NamedSortRef where proper, UserSortRef when needed.
+    #usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
 
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
@@ -47,14 +48,14 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
                     :namedoperators, :arbitraryoperators,
                     :variabledecls,
                     :partitionsorts, :partitionops, :feconstants,
-                    :usersorts, :useroperators)
+                    :useroperators)
 
 # Explicit propeties allows ignoring metadata.
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
-"Return dictionary of `UserSort`"
-usersorts(dd::DeclDict)      = dd.usersorts
+# "Return dictionary of `UserSort`"
+# usersorts(dd::DeclDict)      = dd.usersorts
 "Return dictionary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
 "Return dictionary of `VariableDecl`"
@@ -99,7 +100,7 @@ function declarations(dd::DeclDict)
         values(arbitraryops(dd)),
         values(feconstants(dd)),
 
-        values(usersorts(dd)),
+        #values(usersorts(dd)),
         values(useroperators(dd)),
     ])
 end
@@ -122,7 +123,7 @@ has_namedop(dd::DeclDict, id::Symbol)        = has_key(dd, namedoperators, id)
 has_arbitraryop(dd::DeclDict, id::Symbol)    = has_key(dd, arbitraryops, id)
 has_partitionop(dd::DeclDict, id::Symbol)    = has_key(dd, partitionops, id)
 has_feconstant(dd::DeclDict, id::Symbol)     = has_key(dd, feconstants, id)
-has_usersort(dd::DeclDict, id::Symbol)       = has_key(dd, usersorts, id)
+#has_usersort(dd::DeclDict, id::Symbol)       = has_key(dd, usersorts, id)
 has_useroperator(dd::DeclDict, id::Symbol)   = has_key(dd, useroperators, id)
 
 "Lookup variable with `id` in DeclDict."
@@ -154,8 +155,8 @@ arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryoperators(dd)[id]
 partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
 "Lookup feconstant with `id` in DeclDict."
 feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
-"Lookup usersort with `id` in DeclDict."
-usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
+#"Lookup usersort with `id` in DeclDict."
+#usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
 "Lookup useroperator with `id` in DeclDict."
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
@@ -166,7 +167,7 @@ _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryop
 _ops(dd) = Iterators.map(Fix1(getfield, dd), _op_dictionaries())
 
 "Return tuple of sort dictionary fields in the Declaration Dictionaries."
-_sort_dictionaries() = (:namedsorts, :usersorts, :partitionsorts,
+_sort_dictionaries() = (:namedsorts, :partitionsorts,
                         :arbitrarysorts, multisetsorts, productsorts)
 "Return iterator over sort dictionaries of Declaration Dictionaries."
 _sorts(dd) = Iterators.map(Fix1(getfield, dd), _sort_dictionaries())
@@ -284,18 +285,4 @@ function find_valuekey(d::AbstractDict, x, func=identity)
         end
     end
     return id #  Key of matched value or nothing.
-end
-
-
-
-function ref_to_sort(sr::SortRef.Type, ddict::DeclDict)
-    @match sr begin
-       SortRef.UserSortRef(ref) => usersorts(ddict)[ref]
-       SortRef.NamedSortRef(ref) => namedsorts(ddict)[ref]
-       SortRef.PartitionSortRef(ref) => productsorts(ddict)[ref]
-       SortRef.ProductSortRef(ref) => partition(ddict)[ref]
-       SortRef.MultisetSortRef(ref) => multisetsorts(ddict)[ref]
-       SortRef.ArbitrarySortRef(ref) => arbitrarysorts(ddict)[ref]
-       _ => error("SortRef not expected: $sr")
-    end
 end

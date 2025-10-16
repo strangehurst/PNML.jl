@@ -77,12 +77,12 @@ export @xml_str, xmlroot
 
 @public pnmlmodel, pnmlnet
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
-@public usersort, namedsort
+@public namedsort
 @public labelof, transition_function, rates
 
 Multisets.set_key_value_show()
 
-include("logging.jl") # SciMLLogging based: `silent`, `verbose`, `logger_for_pnml`
+#include("logging.jl") # SciMLLogging based: `silent`, `verbose`, `logger_for_pnml`
 
 include("PnmlTypes.jl")
 using .PnmlTypes
@@ -113,7 +113,7 @@ include("Core/parse_context.jl") # parse context has id registry and DeclDict
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
 using .Sorts: MultisetSort
-using .Sorts: AbstractSort, UserSort, MultisetSort, ProductSort
+using .Sorts: AbstractSort, MultisetSort, ProductSort
 using .Sorts: DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, RealSort
 using .Sorts: EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 using .Sorts: ListSort, StringSort
@@ -126,7 +126,7 @@ using .Declarations: OperatorDeclaration, NamedOperator, ArbitraryOperator, Part
 using .Declarations: VariableDeclaration
 
 
-include("terms/multisets.jl") # uses UserSort declaration
+include("terms/multisets.jl")
 include("terms/constterm.jl")
 include("terms/variables.jl")
 

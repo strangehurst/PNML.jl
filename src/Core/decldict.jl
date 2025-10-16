@@ -9,12 +9,12 @@ function Base.show(io::IO, dd::DeclDict)
     io = inc_indent(io)
     iio = inc_indent(io)
 
-    print(io,  indent(io), "UserSort[")
-    print(iio, keys(usersorts(dd)))
-    # for (k,v) in pairs(usersorts(dd))
-    #     print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
-    # end
-    println(io, "]")
+    # print(io,  indent(io), "UserSort[")
+    # print(iio, keys(usersorts(dd)))
+    # # for (k,v) in pairs(usersorts(dd))
+    # #     print(iio, '\n', indent(iio)); show(io, k); print(io, " => ", v)
+    # # end
+    # println(io, "]")
 
     print(io, indent(io), "NamedSort[")
     print(iio, keys(namedsorts(dd)))
@@ -26,6 +26,10 @@ function Base.show(io::IO, dd::DeclDict)
 
     print(io,  indent(io), "VariableDeclaration[")
     print(iio, keys(variabledecls(dd)))
+    println(io, "]")
+
+    print(io,  indent(io), "MultisetSort[")
+    print(iio, keys(multisetsorts(dd)))
     println(io, "]")
 
     print(io,  indent(io), "ProductSort[")

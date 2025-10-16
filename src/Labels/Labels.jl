@@ -16,7 +16,7 @@ using PNML: Maybe, nettype, AnyElement
 using PNML: AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm
-using PNML: usersort, namedsort, usersorts, namedsorts, multisetsorts, multisetsorts
+using PNML: namedsort, namedsorts, multisetsorts, multisetsorts
 using PNML: labelof, ToolParser, LabelParser, ParseContext
 
 import PNML: name

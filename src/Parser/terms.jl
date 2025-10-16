@@ -187,7 +187,7 @@ function parse_term(::Val{:numberconstant}, node::XMLNode, pntd::PnmlType; vars,
     sorttag in (:integer, :natural, :positive, :real) ||
         throw(PNML.MalformedException("sort not supported for :numberconstant: $sorttag"))
 
-    sortref = UserSortRef(sorttag)
+    sortref = NamedSortRef(sorttag)
     nv = PNML.number_value(eltype(to_sort(sortref; parse_context.ddict)), value)
     # Bounds check not needed for IntegerSort, RealSort.
     if sorttag === :natural
@@ -201,7 +201,7 @@ end
 
 # Dot is the high-level concept of an integer 1.
 function parse_term(::Val{:dotconstant}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    return TermJunk(PNML.DotConstantEx(), UserSortRef(:dot), vars)
+    return TermJunk(PNML.DotConstantEx(), NamedSortRef(:dot), vars)
 end
 
 
@@ -221,6 +221,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     isnothing(child) && throw(PNML.MalformedException("<all> operator missing sort argument"))
     # refsort is the basis of a multiset.
     refsort = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+    @assert isa_variant(refsort, NamedSortRef)
     #! @assert isfinitesort(refsort) #^ Only expect finite sorts here.
 
     return TermJunk(PNML.Bag(refsort), refsort, vars)
@@ -230,6 +231,7 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_co
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
     refsort = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+    @assert isa_variant(refsort, NamedSortRef)
     #! ePNK uses <integer/>. Could be inlined productsort.
     x = first(PNML.sortelements(refsort)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
@@ -335,6 +337,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
             # Negative integers will cause problems. Don't do that either.
         else
             # If 2 numberconstants, first is `multiplicity`, this is `instance`.
+            EzXML.nodename(stnode)
             tj2 = parse_term(stnode, pntd; vars, parse_context)::TermJunk
             instance = tj2.exp # may be a bag
             isort = tj2.ref
@@ -349,6 +352,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
     #todo Note how the multiplicity PnmlExpr here is a constant. Evaluate it here?
     # Return of a sort is required because the sort may not be deducable from the expression,
     # Consider NaturalSort vs PositiveSort.
+    @show isort instance multiplicity PNML.Bag(isort, instance, multiplicity)::PnmlExpr
     return TermJunk(PNML.Bag(isort, instance, multiplicity)::PnmlExpr, isort, vars)
 end
 
@@ -358,7 +362,7 @@ function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType; vars, pa
     isnothing(stnode) && throw(PNML.MalformedException("<cardinality> missing argument subterm"))
     (; exp, vars) = parse_term(stnode, pntd; vars, parse_context)::TermJunk
 
-    return TermJunk(PNML.Cardinality(exp)::PnmlExpr, UserSortRef(:natural), vars)
+    return TermJunk(PNML.Cardinality(exp)::PnmlExpr, NamedSortRef(:natural), vars)
 end
 
 #^#########################################################################
@@ -368,37 +372,37 @@ end
 function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     length(sts) >= 2 || @warn"or length wrong" sts
-    return TermJunk(PNML.Or(sts), UserSortRef(:bool), vars)
+    return TermJunk(PNML.Or(sts), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:and}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     length(sts) >= 2 || @warn "and length wrong" sts
-    return TermJunk(PNML.And(sts), UserSortRef(:bool), vars)
+    return TermJunk(PNML.And(sts), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:not}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) >= 1 # OCL says 1, framework code wants >= 1
-    return TermJunk(PNML.Not(sts), UserSortRef(:bool), vars)
+    return TermJunk(PNML.Not(sts), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:imply}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Imply(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.Imply(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:equality}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Equality(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.Equality(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:inequality}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Inequality(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.Inequality(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 #&#########################################################################
@@ -408,13 +412,13 @@ end
 function parse_term(::Val{:successor}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 1
-    return TermJunk(PNML.Successor(sts[1]), UserSortRef(:bool), vars) #! wrong sort
+    return TermJunk(PNML.Successor(sts[1]), NamedSortRef(:bool), vars) #! wrong sort
 end
 
 function parse_term(::Val{:predecessor}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 1
-    return TermJunk(PNML.Predecessor(sts[1]), UserSortRef(:bool), vars) #! wrong sort
+    return TermJunk(PNML.Predecessor(sts[1]), NamedSortRef(:bool), vars) #! wrong sort
 end
 
 #& FiniteIntRange Operators work on integrs so use that implementation for
@@ -423,55 +427,55 @@ end
 function parse_term(::Val{:addition}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Addition(sts[1], sts[2]), UserSortRef(:bool), vars )#! wrong sort
+    return TermJunk(PNML.Addition(sts[1], sts[2]), NamedSortRef(:bool), vars )#! wrong sort
 end
 
 function parse_term(::Val{:subtraction}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Subtraction(sts[1], sts[2]), UserSortRef(:bool), vars )#! wrong sort
+    return TermJunk(PNML.Subtraction(sts[1], sts[2]), NamedSortRef(:bool), vars )#! wrong sort
 end
 
 function parse_term(::Val{:mult}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Multiplication(sts[1], sts[2]), UserSortRef(:bool), vars) #! wrong sort
+    return TermJunk(PNML.Multiplication(sts[1], sts[2]), NamedSortRef(:bool), vars) #! wrong sort
 end
 
 function parse_term(::Val{:division}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Division(sts[1], sts[2]), UserSortRef(:bool), vars) #! wrong sort
+    return TermJunk(PNML.Division(sts[1], sts[2]), NamedSortRef(:bool), vars) #! wrong sort
 end
 
 function parse_term(::Val{:greaterthan}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.GreaterThan(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.GreaterThan(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:lessthan}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.LessThan(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.LessThan(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:lessthanorequal}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.LessThanOrEqual(sts[1], sts[2]), UserSortRef(:bool), vars)
+    return TermJunk(PNML.LessThanOrEqual(sts[1], sts[2]), NamedSortRef(:bool), vars)
 end
 
 function parse_term(::Val{:greaterthanorequal}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.GreaterThanOrEqual(sts[1], sts[2]), UserSortRef(:bool),vars)
+    return TermJunk(PNML.GreaterThanOrEqual(sts[1], sts[2]), NamedSortRef(:bool),vars)
 end
 
 function parse_term(::Val{:modulo}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
-    return TermJunk(PNML.Modulo(sts[1], sts[2]), UserSortRef(:bool), vars )#! wrong sort
+    return TermJunk(PNML.Modulo(sts[1], sts[2]), NamedSortRef(:bool), vars )#! wrong sort
 end
 
 
@@ -500,34 +504,39 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
     # VariableEx can lookup sort.
     # UserOperatorEx (constant?) also has enclosng sort.
     # Both hold refid field.
-    @warn "parse_term(::Val{:tuple}" sts expr_tup; flush(stdout); #! debug
-    println()
+
     #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
     #! Part of expression evaluation -- dynamic behavior of a Petri net
     psort = ProductSort(tuple((expr_sortref.(sts; parse_context.ddict))...), parse_context.ddict)
-    @show psort; println()
+    #!  psort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict))), parse_context.ddict)
 
-    sorttag = string("ProductSort_",
-        join(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict)), "_"))
-    @show sorttag
+    @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
 
-    # Look for an existing declaration for psort. Return a UserSortRef to it in TermJunk.
-    for ps in PNML.productsorts(parse_context.ddict)
-        println("-----")
-        @warn ps
-        @show ps.second
-        isnothing(ps.second) && error("empty product sort")
-
-        if PNML.Sorts.equalSorts(ps.second, psort)
-            println("match ", ps.first) #! debug
-            return TermJunk(expr_tup, ProductSortRef(ps.first), vars)
-        else
-            println("reject ", ps.first) #! debug
+    # Look for an existing declaration for psort. Return a NamedSortRef to it in TermJunk.
+    # Find matching sort
+    sorttag = nothing
+    for (id,ps) in pairs(productsorts(parse_context.ddict))
+        if PNML.Sorts.equalSorts(ps, psort)
+            #@error "Found product sort $id while looking for $psort" productsorts(parse_context.ddict)
+            sorttag = id
         end
-        println("-----")
     end
-    #!@show parse_context.ddict
-    error("Did not find productsort sort for $expr_tup")
+    sortref = if isnothing(sorttag)
+        sorttag = string("ProductSort_",
+            join(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict)), "_")) |> Symbol
+
+        # add to productsorts
+        fill_sort_tag!(parse_context, sorttag, psort)
+        #@assert productsorts(parse_context.ddict)[sorttag] = psort
+
+        # make a user/named sort duo
+        namedsorts(parse_context.ddict)[sorttag] = NamedSort(sorttag, string(sorttag), psort, parse_context.ddict)
+        make_sortref(parse_context, productsorts, psort, "product", sorttag, "")
+    else
+        ProductSortRef(sorttag)
+    end
+    @assert isa_variant(sortref, ProductSortRef)
+    return TermJunk(expr_tup, sortref, ())
 end
 
 # <structure>
@@ -556,9 +565,10 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
-    # There will be a UserSort, NamedSort duo created for anonymous sorts.
     usref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; parse_context)::AbstractSortRef
 
+    # Differs from <tuple> in that here we have a sort definintion, while <tuple>
+    # must deduce the sort by examining the product's sorts.
     fis = namedsort(parse_context.ddict, refid(usref))::FiniteIntRangeSort
     Sorts.start(fis) <= value <= Sorts.stop(fis) ||
         throw(ArgumentError("finite integer value $value not in range $(ns)"))
@@ -579,7 +589,7 @@ function parse_term(::Val{:partitionelementof}, node::XMLNode, pntd::PnmlType; v
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 1
     peo = PNML.PartitionElementOf(first(sts), refpartition)
-    return TermJunk(peo, UserSortRef(refpartition), vars) # UserSort duos used for all sort declarations.
+    return TermJunk(peo, PartitionSortRef(refpartition), vars)
 end
 
 """
@@ -593,5 +603,5 @@ function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     pe = PNML.PartitionGreaterThan(sts...) #! We have PnmlExpr elements at this point.
     #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
     @assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
-    return TermJunk(pe, UserSortRef(first(sts).refpartition), vars) #todo! when can we map to partition
+    return TermJunk(pe, PartitionSortRef(first(sts).refpartition), vars) #todo! when can we map to partition
 end

@@ -36,7 +36,7 @@ A consequence is that the default value's type ripples through the type system.
 ```@setup methods
 using PNML, InteractiveUtils, Markdown
 using PNML: Labels.default
-using PNML: SortType, UserSort, IntegerSort, DotSort
+using PNML: SortType, IntegerSort, DotSort
 using PNML: PnmlCoreNet, ContinuousNet, HLCoreNet
 using PNML: NumberConstant, DotConstant
 
@@ -58,7 +58,7 @@ methods(PNML.Labels.default) # hide
 DocTestSetup = quote
     using PNML
     using PNML.Labels: Condition, default
-    using PNML: SortType, UserSort, IntegerSort, DotSort,
+    using PNML: SortType, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
     using PNML.PnmlIDRegistrys

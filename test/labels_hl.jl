@@ -7,7 +7,6 @@ using XMLDict: XMLDict
     # Add usersort, namedsort duo as test context.
     ctx = PNML.parser_context()
     PNML.namedsorts(ctx.ddict)[:N2] = PNML.NamedSort(:N2, "N2", DotSort(ctx.ddict), ctx.ddict)
-    PNML.usersorts(ctx.ddict)[:N2]  = PNML.UserSort(:N2, ctx.ddict)
 
     n1 = xml"""
 <type>
@@ -45,7 +44,7 @@ end
         ctx = PNML.parser_context()
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("XXX", PNML.UserSortRef(:dot), ctx.ddict)
+        placetype = SortType("XXX", PNML.NamedSortRef(:dot), ctx.ddict)
 
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         #@show mark
@@ -54,9 +53,6 @@ end
         @test PNML.term(mark) isa PNML.Bag
         @test text(mark) == "3`dot"
         #println(); flush(stdout)
-        #@show UserSort(:dot) DotConstant
-        #@show PNML.pnmlmultiset(UserSort(:dot, ddict), DotConstant(ddict); ddict)
-        #PnmlMultiset{(:dot,), DotConstant}(DotConstant(ddict))
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
         @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
@@ -83,7 +79,6 @@ end
     #     """
     #     @with PNML.idregistry => PnmlIDRegistry() begin
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
-    #         PNML.usersorts(ddict)[:uop] = UserSort(:dot)
     #         placetype = SortType("YYY", PNML.usersort(ddict, :uop))
     #         mark = parse_hlinitialMarking(node, placetype, pntd)
     #         @test mark isa Marking
@@ -116,7 +111,7 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("dot sorttype", PNML.UserSortRef(:dot), ctx.ddict)
+        placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), ctx.ddict)
         mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         #TODO add tests
     end
@@ -136,16 +131,14 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("positive sorttype", PNML.UserSortRef(:positive), ctx.ddict)
+        placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), ctx.ddict)
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
         val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any}
-        # @show PNML.basis(val) # isa UserSort
         #@show val NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()
         #@show PNML.usersort(ctx.ddict, :positive)
-        @test PNML.multiplicity(val, NumberConstant(8, UserSortRef(:positive), ctx.ddict)()) == 1
+        @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive), ctx.ddict)()) == 1
         #@show PNML.Parser.to_sort(PNML.basis(val); ctx.ddict)
-        @test PNML.Parser.to_sort(PNML.basis(val); ctx.ddict) === PNML.UserSort(:positive, ctx.ddict)
-        @test NumberConstant(8, UserSortRef(:positive), ctx.ddict)() in multiset(val)
+        @test NumberConstant(8, NamedSortRef(:positive), ctx.ddict)() in multiset(val)
      end
 
     # This is the same as when the element is omitted.
@@ -155,7 +148,7 @@ end
         </hlinitialMarking>
         """
         ctx = PNML.parser_context()
-        placetype = SortType("testdot", PNML.UserSortRef(:dot), ctx.ddict)
+        placetype = SortType("testdot", PNML.NamedSortRef(:dot), ctx.ddict)
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
     end
 
@@ -192,8 +185,6 @@ end
 #     dd.namedsorts[:dot] = NamedSort(:dot, "Dot", DotSort())
 #     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort())
 #     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort())
-
-#     @show placetype = SortType("XXX", ProductSort(UserSort[UserSort(:dot),UserSort(:dot)]))
 
 #     mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
 
@@ -256,7 +247,6 @@ end
 #     """
 #     dd.variabledecls[:x] = PNML.VariableDeclaration(:x, "", DotSort())
 #     dd.variabledecls[:v] = PNML.VariableDeclaration(:v, "", DotSort())
-#     @show placetype = SortType("XXX", UserSort(:dot))
 
 
 #     insc = @test_logs(match_mode=:all,

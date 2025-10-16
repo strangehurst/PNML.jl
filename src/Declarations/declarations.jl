@@ -77,7 +77,7 @@ struct VariableDeclaration{S <: AbstractSortRef} <: AbstractDeclaration
     sort::S
     declarationdicts::DeclDict
 
-    #! Sorts other than UserSort may appear.
+    #! Inline Sorts allowed, also <usersort> indirection.
     # Example:
     # <variabledecl id="id12" name="x">
     #     <productsort>
@@ -134,7 +134,7 @@ function Base.show(io::IO, declare::VariableDeclaration)
     print(io, nameof(typeof(declare)), "(")
     show(io, pid(declare)); print(io, ", ")
     show(io, name(declare)); print(io, ", ")
-    show(io, refid(declare))
+    show(io, refid(declare.sort))
     print(io, ")")
 end
 
@@ -142,13 +142,13 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Declaration of a `NamedSort`. Wraps a concrete instance of an `AbstractSort`.
-See [`MultisetSort`](@ref), [`ProductSort`](@ref), [`UserSort`](@ref).
+Declaration of a `NamedSort`. Wraps a concrete instance of a built-in `AbstractSort`.
+See [`MultisetSort`](@ref), [`ProductSort`](@ref).
 """
 @auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    def::S  #! Remains where the concrete sort lives.
+    def::S  #! This remains where the concrete sort lives.
     # An instance of: ArbitrarySort, MultisetSort, ProductSort, or BUILT-IN sort!
     declarationdicts::DeclDict
 

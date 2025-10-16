@@ -56,8 +56,8 @@ term(marking::Marking) = marking.term
 
 # ```julia
 # ; setup=:(using PNML; using PNML: Marking, NaturalSort, ddict)
-# julia> m = Marking(PNML.pnmlmultiset(UserSortRef(:integer), 1; ddict))
-# Marking(Bag(UserSortRef(:integer), 1))
+# julia> m = Marking(PNML.pnmlmultiset(NamedSortRef(:integer), 1; ddict))
+# Marking(Bag(NamedSortRef(:integer), 1))
 
 # julia> m()
 # 1
@@ -113,11 +113,11 @@ end
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
 
-# These are some <:Number that have sorts (usersort, namedsort duos).
-_sortref(dd::DeclDict, ::Type{<:Int64})   = UserSortRef(:integer)
-_sortref(dd::DeclDict, ::Type{<:Float64}) = UserSortRef(:real)
-_sortref(dd::DeclDict, ::Int64)   = UserSortRef(:integer)
-_sortref(dd::DeclDict, ::Float64) = UserSortRef(:real)
+# These are some <:Number that have namedsorts.
+_sortref(dd::DeclDict, ::Type{<:Int64})   = NamedSortRef(:integer)
+_sortref(dd::DeclDict, ::Type{<:Float64}) = NamedSortRef(:real)
+_sortref(dd::DeclDict, ::Int64)   = NamedSortRef(:integer)
+_sortref(dd::DeclDict, ::Float64) = NamedSortRef(:real)
 
 _sortref(dd::DeclDict, x::Any) = sortref(x)
 

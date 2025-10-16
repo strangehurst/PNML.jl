@@ -8,7 +8,7 @@ using TermInterface
 using Metatheory
 
 using PNML
-using PNML: BooleanConstant, FEConstant , feconstant
+using PNML: BooleanConstant, FEConstant , feconstant, ProductSort
 using PNML: pnmltuple, pnmlmultiset, operator, partitionsort
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
@@ -172,7 +172,7 @@ end
 
 function expr_sortref(o::UserOperatorEx; ddict)
     #todo or other constant/operator
-    return @show sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
+    return sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
 end
 
 function Base.show(io::IO, x::UserOperatorEx)
@@ -191,7 +191,7 @@ end
 
 function expr_sortref(o::NamedOperatorEx; ddict)
     #todo or other constant/operator
-    return @show sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
+    return sortref(PNML.feconstant(ddict, o.refid))::AbstractSortRef
 end
 
 function Base.show(io::IO, x::NamedOperatorEx)
@@ -724,7 +724,7 @@ end
 # 0-arity despite the refpartition
 @matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
-    refpartition::REFID # UserSort, REFID
+    refpartition::REFID # TODO! SortRef
 end
 
 expr_sortref(a::PartitionElementOf; ddict) = sortref(partitionsort(ddict, a.refpartition))::AbstractSortRef
@@ -830,13 +830,11 @@ end
 # The sort of a tuple is a tuple of its element's sorts (a.k.a ProductSort).
 # Find the ProductSortRef
 function expr_sortref(tup::PnmlTupleEx; ddict)
-    for ps in PNML.productsorts(ddict)
-        @show ps
-        # for (a,b) in zip(tup.args, PNML.Sorts.sorts(ps.second))
-        #     @warn "expr_sortref(tup::PnmlTupleEx; ddict)" sortref(a) b PNML.Sorts.equalSorts(sortref(a), b)
-        # end
-        if all(PNML.Sorts.equalSorts(sortref(a), b) for (a,b) in zip(tup.args, PNML.Sorts.sorts(ps.second)))
-            return ProductSortRef(ps.first)
+    exsort = ProductSort(tuple(expr_sortref.(tup.args; ddict)...), ddict)
+    for (sortid,ps) in pairs(PNML.productsorts(ddict))
+        #!@show ps
+        if length(exsort) == length(ps) && PNML.Sorts.equalSorts(exsort, ps)
+            return ProductSortRef(sortid)
         end
     end
     error("no productsort for tuple expression $(tup)")

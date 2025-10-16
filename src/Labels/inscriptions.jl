@@ -71,10 +71,10 @@ PNML.value_type(::Type{Inscription}, ::AbstractHLCore) = PnmlMultiset{<:Any}
 PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
 function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
-    Inscription(nothing, PNML.NumberEx(UserSortRef(:natural), one(Int)), nothing, nothing, REFID[], ddict)
+    Inscription(nothing, PNML.NumberEx(NamedSortRef(:natural), one(Int)), nothing, nothing, REFID[], ddict)
 end
 function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType; ddict::DeclDict)
-    Inscription(nothing, PNML.NumberEx(UserSortRef(:real), one(Float64)), nothing, nothing, REFID[], ddict)
+    Inscription(nothing, PNML.NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], ddict)
 end
 function default(::Type{<:Inscription}, ::AbstractHLCore, placetype::SortType; ddict)
     basis = sortref(placetype)::AbstractSortRef
