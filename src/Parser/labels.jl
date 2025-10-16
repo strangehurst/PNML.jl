@@ -187,7 +187,6 @@ $(TYPEDSIGNATURES)
 
 High-level initial marking labels are expected to have a <structure> child containing a ground term.
 Sort of marking term must be the same as `placetype`, the places SortType.
-Will be a `UserSort` that holds the ID of a sort declaration.
 
 NB: Used by PTNets that assume placetype is DotSort().
 """
@@ -223,8 +222,9 @@ placetype(pmt::ParseMarkingTerm) = pmt.placetype
 #! produces a PnmlMultiset object. Or a tuple of objects if a ProductSort is used.
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(marknode, "structure")
-    isa_variant(placetype(pmt), UserSortRef) ||
-        error("placetype expected to be UserSortRef, found $(placetype(pmt))")
+    #todo partitionsort, abstractsort
+    isa_variant(placetype(pmt), NamedSortRef) ||
+        error("placetype expected to be NamedSortRef, found $(placetype(pmt))")
     if EzXML.haselement(marknode)
         term = EzXML.firstelement(marknode) # ignore any others
 
@@ -232,8 +232,13 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; parse_contex
         tj = parse_term(term, pntd; vars=(), parse_context) # ParseMarkingTerm
         #~@warn typeof(tj.exp) expr_sortref(tj.exp; parse_context.ddict) tj
         #~println()
-        if !PNML.Sorts.equalSorts(expr_sortref(tj.exp; parse_context.ddict), placetype(pmt))
-            @error "sortref mismatch" expr_sortref(tj.exp; parse_context.ddict) placetype(pmt)
+        if PNML.Sorts.equalSorts(expr_sortref(tj.exp; parse_context.ddict), placetype(pmt); parse_context.ddict)
+            #@warn "sortref match" expr_sortref(tj.exp; parse_context.ddict) placetype(pmt)
+        else
+            @error("sortref mismatch", tj,
+                    expr_sortref(tj.exp; parse_context.ddict),
+                    placetype(pmt),
+                    parse_context.ddict)
         end
         isempty(tj.vars) || error("unexpected variables in $tj")
         #!println("--")
@@ -282,7 +287,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(inscnode, "structure")
-
+    println("\nParseInscriptionTerm ", pit)
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
     isa(source(pit), Symbol) ||
@@ -293,15 +298,17 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     # assume exactly one is a place (and the other a transition).
 
     # Find adjacent place's sorttype using `netdata`.
-    adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
-    placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::AbstractSortRef
+    @show adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
+    @show placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::AbstractSortRef
 
     # Variable substitution for a transition affects postset arc inscription,
     # whose expression is used to determine the new marking.
     # Variable substitution covers all variables in a transition. Variables are from inscriptions.
     # A condition expression may use variables from an inscripion.
     tj = if EzXML.haselement(inscnode)
-        parse_term(EzXML.firstelement(inscnode), pntd; vars=(), parse_context)
+        termnode = EzXML.firstelement(inscnode)
+        @show EzXML.nodename(termnode)
+        parse_term(termnode, pntd; vars=(), parse_context)
     else
         # Default to a multiset whose basis is placetype.
         inscript = def_insc(netdata(pit), source(pit), target(pit), parse_context.ddict)
@@ -311,7 +318,13 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
 
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
-    PNML.Sorts.equalSorts(tj.ref, placesort) ||
+
+    @show tj target(pit) source(pit)
+    if isempty(tj.vars)
+        foreach(println, PNML.variabledecls(parse_context.ddict))
+        println()
+    end
+    PNML.Sorts.equalSorts(tj.ref, placesort; parse_context.ddict) ||
         @error("inscription term sort mismatch: $(tj.ref) != $placesort", tj, adjacentplace)
 
     return tj
@@ -416,7 +429,7 @@ The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algeb
 Because we are sharing the HL implementation with the other meta-models,
 we support it in all nets.
 
-The term here is a concrete sort, usually `UserSort`Ref.
+The term here is a concrete sort.
 It is possible to have an inlined concrete sort that is anonymous.
 We place all these concrete sorts in the parse_context.ddict and pass around a AbstractSortRef.
 
