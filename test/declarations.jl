@@ -154,7 +154,7 @@ end
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
-        @show decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
+        decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
                 <structure><declarations></declarations></structure>
             </declaration>""", pntd)::Declaration
 

@@ -12,7 +12,7 @@ import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 
 using PNML
-using PNML: Maybe, nettype, AnyElement
+using PNML: Maybe, nettype, AnyElement, D
 using PNML: AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm

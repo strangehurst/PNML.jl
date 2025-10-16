@@ -362,6 +362,7 @@ function sortref end
 
 """
     sortdefinition(::SortDeclaration) -> Sort
+    sortdefinition(::AbstractDeclaration) -> Sort
 
 Return concrete sort attached to a sort declaration object.
 

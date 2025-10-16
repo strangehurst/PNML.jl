@@ -34,6 +34,8 @@ const CONFIG = Ref(PnmlConfig())
 
 __init__() = read_config!(CONFIG[])
 
+#CONFIG[].verbose = true
+const D = CONFIG[].verbose
 
 # Width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -73,7 +75,7 @@ export REFID, SortRef, AbstractSortRef
 export UserSortRef # From SortRef ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
-export @xml_str, xmlroot
+export @xml_str, xmlroot, D
 
 @public pnmlmodel, pnmlnet
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException

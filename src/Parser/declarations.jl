@@ -134,7 +134,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     isnothing(child) && error("no sort definition element for namedsort $(repr(sortid)) $name")
     ddict = parse_context.ddict
 
-    @info "parse_namedsort $sortid $name"
+    D[] && @info "parse_namedsort $sortid $name"
     # Sort can be built-in, multiset, product.
     def = parse_sort(EzXML.firstelement(node), pntd, sortid, name; parse_context)::AbstractSortRef
     isnothing(def) &&
@@ -167,7 +167,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
     check_nodename(node, "namedoperator")
     nopid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
-    println("parse_namedoperator $(repr(nopid)) $(repr(name))") #! debug
+    D[] && println("parse_namedoperator $(repr(nopid)) $(repr(name))") #! debug
 
     #^ ePNK uses inline variabledecl, variable in namedoperator declaration
     #! Must register id of variabledecl before seeing variable: `<parameter>` before `<def>`.
@@ -181,7 +181,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
             push!(parameters, vardecl)
         end
     end
-    @show parameters #! debug, empty vector allowed
+    D[] && @show parameters #! debug, empty vector allowed
 
     def = nothing
     dnode = firstchild(node, "def")
@@ -238,7 +238,7 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseC
     check_nodename(node, "variabledecl")
     varid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
-    println("parse_variabledecl $(repr(varid)) $(repr(name))") #! debug
+    D[] && println("parse_variabledecl $(repr(varid)) $(repr(name))") #! debug
 
     # firstelement throws on nothing. Ignore more than 1.
     vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; parse_context)::AbstractSortRef
@@ -342,7 +342,7 @@ function parse_sort(node::XMLNode, pntd::PnmlType, sortid::Maybe{REFID}=nothing,
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
     # !isnothing(sortid) || !isempty(name) &&
-    println("## parse_sort $sorttag id=$sortid name=$name tag=$(repr(sorttag))") #! debug
+    D[] && println("## parse_sort $sorttag id=$sortid name=$name tag=$(repr(sorttag))") #! debug
     return parse_sort(Val(sorttag), node, pntd, sortid, name; parse_context)::AbstractSortRef
 end
 
@@ -410,7 +410,7 @@ end
 # is a finiteenumeration with additional operators: successor, predecessor
 function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
     check_nodename(node, "cyclicenumeration")
-    println("cyclicenumeration $(repr(parentid)), $(repr(name))") #! debug
+    D[] && println("cyclicenumeration $(repr(parentid)), $(repr(name))") #! debug
     fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); parse_context) # pared
     ces = CyclicEnumerationSort(fecs, parse_context.ddict)
     sref = make_sortref(parse_context, PNML.namedsorts, ces, "cyclicenumeration", parentid, name)
@@ -419,7 +419,7 @@ end
 
 function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
     check_nodename(node, "finiteenumeration")
-    println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
+    D[] && println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
     fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); parse_context)
     fes = FiniteEnumerationSort(fecs, parse_context.ddict)
     sref = make_sortref(parse_context, PNML.namedsorts, fes, "finiteenumeration", parentid, name)
@@ -447,7 +447,8 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, paren
     else
         # Did not find namedsort, will instantiate named,user duo for one. See fill_nonhl!
         sort = FiniteIntRangeSort(startval, stopval, parse_context.ddict)
-        @show sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
+        sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
+        D[] && @show sref
         @assert isa_variant(sref, NamedSortRef)
         return sref
     end
@@ -466,7 +467,7 @@ end
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, name; parse_context::ParseContext)
     check_nodename(node, "productsort")
 
-    println("parse_sort :productsort $(repr(sortid)) $(repr(name))") #! debug
+    D[] && println("parse_sort :productsort $(repr(sortid)) $(repr(name))") #! debug
     isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is $(repr(sortid))") #! debug
 
     sorts = [] # Orderded collection of zero or more Sorts in ISO 15909 Standard.
@@ -523,7 +524,7 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, sortid,
         throw(ArgumentError("multisetsort basis $tag not allowed")) #todo test this!
     basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; parse_context)::AbstractSortRef # of multisetsort
     @assert isa_variant(basissort, NamedSortRef)
-    @warn "parse_sort(::Val{:multisetsort}" basissort sortdefinition(to_sort(basissort; parse_context.ddict))
+    D[] && @warn "parse_sort(::Val{:multisetsort}" basissort sortdefinition(to_sort(basissort; parse_context.ddict))
     #!isnothing(sortid) && @error "inlined multiset" parse_context.ddict
     ms = MultisetSort(basissort, parse_context.ddict)
     return make_sortref(parse_context, PNML.multisetsorts, ms, "multiset", sortid, name)

@@ -287,7 +287,7 @@ netdata(pit::ParseInscriptionTerm) = pit.netdata
 
 function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(inscnode, "structure")
-    println("\nParseInscriptionTerm ", pit)
+    D[] && println("\nParseInscriptionTerm ", pit)
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
     isa(source(pit), Symbol) ||
@@ -298,16 +298,16 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     # assume exactly one is a place (and the other a transition).
 
     # Find adjacent place's sorttype using `netdata`.
-    @show adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
-    @show placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::AbstractSortRef
-
+    adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
+    placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::AbstractSortRef
+    D[] && @show adjacentplace placesort
     # Variable substitution for a transition affects postset arc inscription,
     # whose expression is used to determine the new marking.
     # Variable substitution covers all variables in a transition. Variables are from inscriptions.
     # A condition expression may use variables from an inscripion.
     tj = if EzXML.haselement(inscnode)
         termnode = EzXML.firstelement(inscnode)
-        @show EzXML.nodename(termnode)
+        D[] && @show EzXML.nodename(termnode)
         parse_term(termnode, pntd; vars=(), parse_context)
     else
         # Default to a multiset whose basis is placetype.
@@ -319,10 +319,10 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(inscript))), expected PnmlExpr")
 
-    @show tj target(pit) source(pit)
+    D[] && @show tj target(pit) source(pit)
     if isempty(tj.vars)
-        foreach(println, PNML.variabledecls(parse_context.ddict))
-        println()
+        D[] && foreach(println, PNML.variabledecls(parse_context.ddict))
+        D[] && println()
     end
     PNML.Sorts.equalSorts(tj.ref, placesort; parse_context.ddict) ||
         @error("inscription term sort mismatch: $(tj.ref) != $placesort", tj, adjacentplace)
