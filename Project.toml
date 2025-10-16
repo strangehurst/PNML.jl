@@ -1,7 +1,7 @@
 name = "PNML"
 uuid = "1f34f301-fe8c-4464-8328-ff2334f05424"
 authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
-version = "0.0.24"
+version = "0.0.25"
 
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
