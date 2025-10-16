@@ -62,9 +62,16 @@ println("-----------------------------------------\n")
 end
 
 println("-----------------------------------------")
+println("SharedMemory.pnml")
+println("-----------------------------------------\n")
+@testset let fname=joinpath(@__DIR__, "data", "SharedMemory.pnml")
+    model = pnmlmodel(fname)::PnmlModel
+    summary(stdout, model)
+end
+println("-----------------------------------------")
 println("SharedMemory-Hlpn.pnml") # modified
 println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "data", "SharedMemory-Hlpn.pnml")
     model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model) #first(PNML.nets(model)))
+    summary(stdout, model)
 end

@@ -14,8 +14,9 @@ include("TestUtils.jl")
 using .TestUtils
 
 "Return true if `ARGS` is empty or one of `y`  and none of `n` is found in `ARGS`."
-select(y, n::Tuple=()) = isempty(ARGS) ? true : (any(∈(ARGS), y) && !any(∈(ARGS), n))
+select(y::Tuple, n::Tuple=()) = isempty(ARGS) ? true : (any(∈(ARGS), y) && !any(∈(ARGS), n))
 select(y, n) = select(y, tuple(n))
+select(y::AbstractString) = select(tuple(y))
 
 const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
 @show FAILFAST
@@ -91,7 +92,7 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     end
 
     # Note the omission of ALL. This pnml file is broken!? It should be used for hardening.
-    if select(("TEST1"), ("!TEST1",))
+    if select(("TEST1",), ("!TEST1",))
         println("# TEST1 #")
         @safetestset "test1"   begin include("test1.jl") end
     end
@@ -100,7 +101,7 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         println("# NET2 #")
         @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
     end
-    if select(("ALL", "TEST19"), ("!TEST19",))
+    if select(("TEST19",), ("!TEST19",)) #! Not part of ALL
         println("# TEST19 #")
         @safetestset "test19"   begin include("test19.jl") end
     end
