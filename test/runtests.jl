@@ -13,8 +13,9 @@ end
 include("TestUtils.jl")
 using .TestUtils
 
+isempty(ARGS) && push!(ARGS, "ALL")
 "Return true if `ARGS` is empty or one of `y`  and none of `n` is found in `ARGS`."
-select(y::Tuple, n::Tuple=()) = isempty(ARGS) ? true : (any(∈(ARGS), y) && !any(∈(ARGS), n))
+select(y::Tuple, n::Tuple=()) = any(∈(ARGS), y) && !any(∈(ARGS), n)
 select(y, n) = select(y, tuple(n))
 select(y::AbstractString) = select(tuple(y))
 
