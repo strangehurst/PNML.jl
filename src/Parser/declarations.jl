@@ -537,16 +537,24 @@ Return concrete sort from `ddict` using the `REFID` in `sortref`,
 """
 function to_sort(sr::AbstractSortRef; ddict::DeclDict)
     #@show sr
-    s = @match sr begin
-        #&SortRef.UserSortRef(refid)      => # namedsort partitionsort arbitrarysort #todo demux here?
-        # NamdSort, PatritionSort, ArbitrarySort are declarations
-        SortRef.NamedSortRef(refid)     => PNML.namedsorts(ddict)[refid] # todo unwrap namedsort
-        SortRef.ProductSortRef(refid)   => PNML.productsorts(ddict)[refid] #! named sort
-        SortRef.MultisetSortRef(refid)  => PNML.multisetsorts(ddict)[refid] #! named sort
-        SortRef.PartitionSortRef(refid) => PNML.partition(ddict)[refid]
-        SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysorts(ddict)[refid]
-        _ => error("to_sort SortRef not expected: $sr")
-    end
+    is_data_type(sr) || error("!isdata_type($sr)")
+    # NamedSort, PatritionSort, ArbitrarySort are declarations
+    isa_variant(sr, SortRef.NamedSortRef) && return PNML.namedsort(ddict, refid(sr)) # todo unwrap namedsort
+    isa_variant(sr, SortRef.ProductSortRef) && return PNML.productsort(ddict, refid(sr)) #! named sort
+    isa_variant(sr, SortRef.MultisetSortRef) && return PNML.multisetsort(ddict, refid(sr)) #! named sort
+    isa_variant(sr, SortRef.PartitionSortRef) && return PNML.partition(ddict, refid(sr))
+    isa_variant(sr, SortRef.ArbitrarySortRef) && return PNML.arbitrarysort(ddict, refid(sr))
+    error("not isa_variant $(repr(sr))")
+
+    # s = @match sr begin
+    #     # NamedSort, PatritionSort, ArbitrarySort are declarations
+    #     SortRef.NamedSortRef(refid)     => PNML.namedsort(ddict, refid) # todo unwrap namedsort
+    #     SortRef.ProductSortRef(refid)   => PNML.productsort(ddict, refid) #! named sort
+    #     SortRef.MultisetSortRef(refid)  => PNML.multisetsort(ddict, refid) #! named sort
+    #     SortRef.PartitionSortRef(refid) => PNML.partition(ddict, refid)
+    #     SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysort(ddict, refid)
+    #     _ => error("to_sort SortRef not expected: $sr")
+    # end
     return s
 end
 to_sort(s::AbstractSort; ddict::DeclDict) = s
