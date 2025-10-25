@@ -54,7 +54,7 @@ function print_decl_keys(io::IO, name::AbstractString, dict)
     iio = inc_indent(io)
     for (i,k) in enumerate(keys(dict))
         show(io, k); print(io, ", ")
-        if (i < length(dict)) && (i % 25 == 0)
+        if (i < length(dict)) && (i % 15 == 0)
             print(iio, '\n', indent(iio))
         end
     end
@@ -62,7 +62,7 @@ function print_decl_keys(io::IO, name::AbstractString, dict)
 end
 
 function Base.show(io::IO, pnd::PnmlNetData)
-    print(io, nameof(typeof(pnd)), "(",)
+    println(io, nameof(typeof(pnd)), "(",)
     #!show(io, pnd.pntd); println(io, ", ")
     io = inc_indent(io)
     for (tag, dict) in (("places", placedict),
@@ -137,7 +137,7 @@ function Base.show(io::IO, pns::PnmlNetKeys)
         iio = inc_indent(io)
         for (i,k) in enumerate(values(idset(pns)))
             print(io, repr(k), ", ")
-            if (i < length(idset(pns))) && (i % 25 == 0)
+            if (i < length(idset(pns))) && (i % 15 == 0)
                 print(iio, '\n', indent(iio))
             end
         end
