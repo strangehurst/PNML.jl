@@ -46,7 +46,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("XXX", PNML.NamedSortRef(:dot), ctx.ddict)
 
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
+        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, placeid=:bogusid)
         #@show mark
         @test mark isa PNML.Marking
 
@@ -149,7 +149,7 @@ end
         """
         ctx = PNML.parser_context()
         placetype = SortType("testdot", PNML.NamedSortRef(:dot), ctx.ddict)
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
+        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
     end
 
     #println()

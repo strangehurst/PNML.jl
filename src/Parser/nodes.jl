@@ -54,30 +54,35 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     mark = nothing
 
     # Get sorttype to use in parsing marking.
-    sorttype = let typenode = firstchild(node, "type")
-        if !isnothing(typenode)
-            parse_sorttype(typenode, pntd; parse_context)
+    sorttype::Maybe{SortType} = let typenode = firstchild(node, "type")
+        if isnothing(typenode) # Deduce sort type of place if possible.
+            if isa(pntd, AbstractHLCore) && !isa(pntd, PT_HLPNG)
+                @info "$pntd parse_place $placeid default typesort = nothing"
+                nothing
+            else
+                #!println()
+                dts = Labels.default_typesort(pntd)
+                #!@error "$pntd parse_place $placeid default typesort = $dts"
+                SortType("default", dts, parse_context.ddict)
+            end
         else
-            SortType("default",
-                        Labels.default_typesort(pntd)::AbstractSortRef,
-                        nothing, nothing, parse_context.ddict)
+            parse_sorttype(typenode, pntd; parse_context)
         end
     end
     #TODO capacity label
 
     namelabel::Maybe{Name}           = nothing
     graphics::Maybe{Graphics}        = nothing
-    toolspecinfos::Maybe{Vector{ToolInfo}}   = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::Maybe{Vector{PnmlLabel}} = nothing
 
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "initialMarking" || tag == "hlinitialMarking"
-            #! Maybe sorttype is infered from marking?
-            mark = _parse_marking(child, sorttype, pntd; parse_context)
+            isnothing(sorttype) && @warn "$pntd parse_place of $placeid sorttype is nothing"
+            mark = _parse_marking(child, sorttype, pntd; parse_context, placeid)
         elseif tag == "type"
             # we already handled this
-
         elseif tag == "name"
             namelabel = parse_name(child, pntd; parse_context)
         elseif tag == "graphics"
@@ -85,24 +90,30 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         elseif tag == "toolspecific"
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <place>: $tag"
+            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_place $placeid found unexpected label of <place>: $tag"
             extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
-    if isnothing(mark) # Use  additive identity of proper sort.
-         mark = if ishighlevel(pntd)
-            default(Marking, pntd, sorttype; parse_context.ddict)
+    if isnothing(mark) # Use additive identity of proper sort.
+        default_sorttype = if ishighlevel(pntd)
+            if isnothing(sorttype)
+                #D[] &&
+                @warn "$pntd place $placeid has neither a mark nor sorttype, use :dot"
+                SortType("dummy", NamedSortRef(:dot), parse_context.ddict)
+            else
+                sorttype
+            end
         else
-            dummy = SortType("unused", NamedSortRef(:integer), parse_context.ddict)
-            default(Marking, pntd, dummy; parse_context.ddict)
+            SortType("dummy", NamedSortRef(:natural), parse_context.ddict)
         end
+        mark = default(Marking, pntd, default_sorttype; parse_context.ddict)
     end
 
-    if isnothing(sorttype) # Infer sortype of place from mark?
+    if isnothing(sorttype) # Infer sortype of place from mark
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
-        @error("infer sorttype", PNML.value(mark), sortof(mark), basis(mark))
-        sorttype = SortType("default", basis(mark)::AbstractSortRef, nothing, nothing, decldict(mark))
+        D[] && @warn("$pntd parse_place $(repr(placeid)) infer sorttype", mark)
+        sorttype = SortType("default", basis(mark)::AbstractSortRef, decldict(mark))
     end
     Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
@@ -137,7 +148,7 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
             #!
             # Lookup parser for tag
             #
-            any(==(tag), ("rate", "delayx")) ||
+            any(==(tag), ("rate", "delay")) ||
                 @warn "found unexpected label of <transition> id=$transitionid: $tag"
             extralabels = add_label(extralabels, child, pntd, parse_context)
             #!@show extralabels
@@ -192,14 +203,24 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     #TODO Does creating default values win over Maybe? for inscriptions?
     #TODO There will be net meta-models that assume all inscriptions are 1 and omit the label.
     if isnothing(inscription)
-        inscription = if ishighlevel(pntd)
-            default(Inscription, pntd,
-                    SortType("default", NamedSortRef(:dot), parse_context.ddict);
-                    parse_context.ddict)
+        dummy = if ishighlevel(pntd)
+            if pntd isa PT_HLPNG
+                SortType("dummy", NamedSortRef(:dot),  parse_context.ddict)
+            else
+                #D[] &&
+                @warn "$pntd inscription not provided for arc $arcid ($source -> $target)."
+                # Use the adjacent place's sorttype.
+                # Note that the adjacent place may have not been parsed yet.
+                # We are using REFIDs to access them in a store.
+                # This (an inscription) is an expression for a ground term.
+                # Default should be one of the adjacent place sorttype.
+                #todo? Make expression that creates/caches default expresson when evaluated?
+                SortType("dummy", NamedSortRef(:dot),  parse_context.ddict)
+           end
         else
-            dummy = SortType("dummy", NamedSortRef(:integer),  parse_context.ddict)
-            default(Inscription, pntd, dummy; parse_context.ddict)
+            SortType("dummy", NamedSortRef(:positive),  parse_context.ddict)
         end
+        inscription = default(Inscription, pntd, dummy; parse_context.ddict)
     end
 
     Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
@@ -280,8 +301,8 @@ end
 
 
 # Call marking parser specialized on the pntd.
-_parse_marking(node::XMLNode, placetype, pntd::T; parse_context) where {T<:PnmlType} =
-    parse_initialMarking(node, placetype, pntd; parse_context)
+_parse_marking(node::XMLNode, placetype, pntd::T; parse_context, placeid) where {T<:PnmlType} =
+    parse_initialMarking(node, placetype, pntd; parse_context, placeid)
 
-_parse_marking(node::XMLNode, placetype, pntd::T; parse_context) where {T<:AbstractHLCore} =
-    parse_hlinitialMarking(node, placetype, pntd; parse_context)
+_parse_marking(node::XMLNode, placetype, pntd::T; parse_context, placeid) where {T<:AbstractHLCore} =
+    parse_hlinitialMarking(node, placetype, pntd; parse_context, placeid)
