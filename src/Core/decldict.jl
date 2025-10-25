@@ -25,7 +25,7 @@ function Base.show(io::IO, dd::DeclDict)
     println(io, "]")
 
     print(io,  indent(io), "VariableDeclaration[")
-    print(iio, keys(variabledecls(dd)))
+    print(iio, values(variabledecls(dd)))
     println(io, "]")
 
     print(io,  indent(io), "MultisetSort[")
@@ -45,7 +45,7 @@ function Base.show(io::IO, dd::DeclDict)
     println(io, "]")
 
     print(io,  indent(io), "FEConstant[")
-    print(iio, keys(feconstants(dd)))
+    print(iio, values(feconstants(dd)))
     println(io, "]")
 
     print(io, ")")
