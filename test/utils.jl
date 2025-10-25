@@ -40,23 +40,31 @@ ctx = PNML.parser_context()
     # println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
+
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
 
     i = if ishighlevel(pntd)
+        #
         placetype = SortType("default_inscription", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
         Labels.default(Inscription, pntd, placetype; ctx.ddict)
-    else
-        dummy = SortType("dummy", NamedSortRef(:integer), nothing, nothing, ctx.ddict)
+    elseif iscontinuous(pntd)
+        dummy = SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
         Labels.default(Inscription, pntd, dummy; ctx.ddict)
+    elseif isdiscrete(pntd)
+        dummy = SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
+        Labels.default(Inscription, pntd, dummy; ctx.ddict)
+    else
+        error("pntd not known")
     end
-    #println("default_i(hl)?nscription($pntd) = ", i)
+    println("default(Inscription($pntd) = ", i)
 end
 
 #println()
 @testset "default_typesort($pntd)" for pntd in PnmlTypes.all_nettypes()
     t = Labels.default_typesort(pntd)::AbstractSortRef
 end
+
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)
     #println("value_type(Rate, $pntd) = ", r)
