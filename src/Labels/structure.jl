@@ -17,11 +17,12 @@ There are various defined structure ast variants in pnml:
 These should all have dedicated parsers and objects as *claimed labels*.
 Here we provide a fallback for *unclaimed tags*.
 """
-struct Structure
+struct Structure{T}
     tag::Symbol
-    el::Any # PNML.XDVT is too complex
+    el::T # PNML.XDVT is too complex
+    ddict::PNML.DeclDict
 end
-Structure(s::AbstractString, e) = Structure(Symbol(s), e)
+Structure(s::AbstractString, e; ddict) = Structure(Symbol(s), e, ddict)
 
 tag(s::Structure) = s.tag
 sortelements(s::Structure) = s.el # label elements
