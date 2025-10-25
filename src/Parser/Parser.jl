@@ -16,7 +16,7 @@ using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
-using Moshi.Data: @data, isa_variant
+using Moshi.Data: @data, isa_variant, is_data_type
 using Moshi.Match: @match
 using SciMLLogging: @SciMLMessage
 using SciMLPublic: @public
@@ -47,6 +47,7 @@ using PNML: partitionsort, partitionsorts
 using PNML: pagedict, placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 using PNML: netsets, toolinfos
+using PNML: NamedSortRef, PartitionSortRef, ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
 # Methods implemented in this module.
 import PNML: adjacent_place
