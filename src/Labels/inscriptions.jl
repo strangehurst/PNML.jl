@@ -65,19 +65,40 @@ end
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
 
-PNML.value_type(::Type{Inscription}, ::PnmlType)              = eltype(PositiveSort) #::Int
+PNML.value_type(::Type{Inscription}, ::PnmlType) = eltype(PositiveSort) #::Int
 PNML.value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
-PNML.value_type(::Type{Inscription}, ::AbstractHLCore) = PnmlMultiset{<:Any}
 PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
-function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
-    Inscription(nothing, PNML.NumberEx(NamedSortRef(:natural), one(Int)), nothing, nothing, REFID[], ddict)
+function PNML.value_type(::Type{Inscription}, pntd::AbstractHLCore)
+    error("value_type(::Type{Inscription}, $pntd) undefined.")
+    # Base.show_backtrace(stdout, stacktrace())
+    # PnmlMultiset{<:Any}
 end
+
+function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
+    #@info "$pntd default Inscription $placetype = NamedSortRef(:positive)"
+    if refid(placetype) !== :positive
+        println()
+        @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
+        Base.show_backtrace(stdout, stacktrace())
+    end
+    Inscription(nothing, PNML.NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], ddict)
+end
+
 function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType; ddict::DeclDict)
+    #@info "$pntd default Inscription $placetype = NamedSortRef(:real)" # positive real?
+    if refid(placetype) !== :real
+        println()
+        @error "$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :real"
+        Base.show_backtrace(stdout, stacktrace())
+    end
     Inscription(nothing, PNML.NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], ddict)
 end
-function default(::Type{<:Inscription}, ::AbstractHLCore, placetype::SortType; ddict)
+
+# See def_insc
+function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType; ddict)
     basis = sortref(placetype)::AbstractSortRef
     el = def_sort_element(placetype; ddict)
+    D()&& @info "$pntd default Inscription $placetype = Bag($basis, $el, 1)"
     Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], ddict) # non-empty singleton multiset.
 end
