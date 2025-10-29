@@ -56,13 +56,13 @@ function parse_graphics(node, pntd)
             args[:dimension] = parse_graphics_coordinate(child, pntd)
         elseif tag == "fill"
             args[:fill] = parse_graphics_fill(child, pntd)
-        elseif tag ==    "font"
+        elseif tag == "font"
             args[:font] = parse_graphics_font(child, pntd)
-        elseif tag ==     "line"
+        elseif tag == "line"
             args[:line] = parse_graphics_line(child, pntd)
-        elseif tag ==     "offset"
+        elseif tag == "offset"
             args[:offset] = parse_graphics_coordinate(child, pntd)
-        elseif tag ==     "position"
+        elseif tag == "position"
             push!(_positions, parse_graphics_coordinate(child, pntd))
         else
             @warn "ignoring unexpected child of <graphics>: '$tag'"
@@ -75,7 +75,9 @@ end
 "Add XMLNode attribute, value pair to dictionary."
 function kw!(args::AbstractDict, node::XMLNode, key::AbstractString)
     sym = Symbol(replace(key, "-" => "_")) # make proper identifier for readibility
-    EzXML.haskey(node, key) && (args[sym] = node[key])
+    if EzXML.haskey(node, key)
+        args[sym] = node[key]
+    end
 end
 
 """
