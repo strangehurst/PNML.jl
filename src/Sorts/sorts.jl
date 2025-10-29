@@ -101,6 +101,11 @@ Return iterator over `SortRef`s to sorts in the product.
 """
 sorts(ps::ProductSort) = values(ps.ae)
 
+function sorts(psr::AbstractSortRef, ddict::DeclDict)
+    ps = PNML.productsort(ddict, refid(psr))::ProductSort
+    sorts(ps)
+end
+
 function sortelements(ref::AbstractSortRef, ddict::DeclDict)
     sortelements(PNML.Parser.to_sort(ref; ddict))
 end
