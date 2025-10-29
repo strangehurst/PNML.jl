@@ -93,10 +93,9 @@ Uses include default inscription value and default initial marking value sorts.
 See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
 function def_sort_element(pt::SortType; ddict::DeclDict)
-    #println("def_sort_element $pt")
-    #sortof(pt) #! debug
     els = PNML.Sorts.sortelements(pt) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
+    D()&& @warn "def_sort_element($pt) = $(repr(el)) from $(typeof(els))"
     return el
 end
 
@@ -118,14 +117,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return  `SortRef` for default `SortType` of a `PNTD`.
-Useful for non-high-level nets and PTNet.
-See [`PNML.fill_nonhl!`](@ref)
+Return `SortRef` for default `SortType` of a `PNTD`.
 """
 function default_typesort end
-default_typesort(pntd::PnmlType) = default_typesort(typeof(pntd))
-default_typesort(::Type{<:PnmlType}) = NamedSortRef(:integer)
-default_typesort(::Type{<:AbstractContinuousNet}) = NamedSortRef(:real)
-# High-level nets are expected to provide a useful value. PT_HLPNG uses them minimum: 'dot'.
+
+default_typesort(::PnmlType) = NamedSortRef(:natural)
+default_typesort(::AbstractContinuousNet) = NamedSortRef(:real)
+# High-level nets are expected to provide a useful value. PT_HLPNG uses the minimum: 'dot'.
 # We provide an implementation of 'dot', so this is a safe assumption.
-default_typesort(::Type{<:AbstractHLCore}) = NamedSortRef(:dot)
+default_typesort(::PT_HLPNG) = NamedSortRef(:dot)
+function default_typesort(pntd::AbstractHLCore)
+    error("default_typesort($pntd) is not defined, you should provide a place type in the XML")
+end
