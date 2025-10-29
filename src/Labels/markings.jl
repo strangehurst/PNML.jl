@@ -113,10 +113,20 @@ end
 #--------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------
 
+"""
+    _sortref(dd::DeclDict, x) -> SortRef
+
+When x isa Number, map to a NamedSortRef. Otherwise pass to sortref.
+Note the `DeclDict` parameter is currently unused.
+"""
+function _sortref end
+
 # These are some <:Number that have namedsorts.
 _sortref(dd::DeclDict, ::Type{<:Int64})   = NamedSortRef(:integer)
+_sortref(dd::DeclDict, ::Type{<:UInt64})  = NamedSortRef(:natural)
 _sortref(dd::DeclDict, ::Type{<:Float64}) = NamedSortRef(:real)
 _sortref(dd::DeclDict, ::Int64)   = NamedSortRef(:integer)
+_sortref(dd::DeclDict, ::UInt64)  = NamedSortRef(:naturall)
 _sortref(dd::DeclDict, ::Float64) = NamedSortRef(:real)
 
 _sortref(dd::DeclDict, x::Any) = sortref(x)
@@ -127,7 +137,12 @@ PNML.value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
 PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-PNML.value_type(::Type{Marking}, ::AbstractHLCore) = PnmlMultiset{<:Any}
+function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
+    error("value_type(::Type{Marking}, $pntd) undefined.")
+    # Base.show_backtrace(stdout, stacktrace())
+    # PnmlMultiset{<:Any}
+end
+
 PNML.value_type(::Type{Marking}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
 
@@ -165,10 +180,12 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
+    D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
     Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) #! Will not be a PnmlMultiset.
 end
 
-function default(::Type{<:Marking}, pndt::AbstractHLCore, placetype::SortType; ddict)
+function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType; ddict)
     el = def_sort_element(placetype; ddict)
+    D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
     Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # empty multiset, el used for its type
 end
