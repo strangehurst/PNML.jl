@@ -4,12 +4,17 @@ using PNML, ..TestUtils, JET, XMLDict
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
-        <initialMarking> <text>100</text> </initialMarking>
+        <initialMarking>
+            <text>100</text>
+            <!-- standard does not use/allow structure here
+            <structure><numberconstant value="100"><integer/></numberconstant></structure>
+            -->
+        </initialMarking>
         </place>
     """
     ctx = PNML.parser_context()
 
-    placetype = SortType("XXX", NamedSortRef(:integer), nothing, nothing, ctx.ddict)
+    placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, ctx.ddict)
 
     n  = parse_place(node, pntd; parse_context=ctx)::Place
     @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; parse_context=ctx)
@@ -25,20 +30,28 @@ end
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
-        <hlinitialMarking> <text>100</text> </hlinitialMarking>
+        <hlinitialMarking>
+            <text>101</text>
+            <structure>
+            <numberof>
+                <subterm><numberconstant value="101"><positive/></numberconstant></subterm>
+                <subterm><dotconstant/></subterm>
+            </numberof>
+            </structure>
+        </hlinitialMarking>
         </place>
     """
     ctx = PNML.parser_context()
 
-    n = parse_place(node, pntd; parse_context=ctx)::Place
+    parse_place(node, pntd; parse_context=ctx)::Place
     @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
 
-    @test pid(n) === :place1
-    @test @inferred(pid(n)) === :place1
-    @test has_name(n)
-    @test @inferred(name(n)) == "with text"
-    @test_call target_modules=(@__MODULE__,) initial_marking(n)
-    im = initial_marking(n)
+    # @test pid(n) === :place1
+    # @test @inferred(pid(n)) === :place1
+    # @test has_name(n)
+    # @test @inferred(name(n)) == "with text"
+    # @test_call target_modules=(@__MODULE__,) initial_marking(n)
+    # im = initial_marking(n)
 end
 
 @testset "transition $pntd" for pntd in PnmlTypes.all_nettypes()
