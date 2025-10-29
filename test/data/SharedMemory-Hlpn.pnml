@@ -1,183 +1,182 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-   <net id="cs1" type="http://www.pnml.org/version-2009/grammar/highlevelnet">
-      <name>
-	 <text>Shared Memory</text>
-      </name>
-      <declaration>
-	 <text>
-	    Shared_mem_multi_p by Denis Poitrenaud, and revised by Fabrice Kordon v 1.0
-	 </text>
-	 <structure>
-	    <declarations>
-	  <!-- Sorts declaration -->
-	  <namedsort id="dot" name="Dot">
-	     <dot/>
-	  </namedsort>
-	  <namedsort id="pro" name="P">
-	     <finiteintrange start="1" end="10"/>
-	  </namedsort>
-	  <namedsort id="pp" name="PxP">
-	     <productsort>
-		<usersort declaration="pro"/>
-		<usersort declaration="pro"/>
-	     </productsort>
-	  </namedsort>
-	  <!-- Variables declaration -->
-	  <variabledecl id="varx" name="x">
-	     <usersort declaration="pro"/>
-	  </variabledecl>
-	  <variabledecl id="vary" name="y">
-	     <usersort declaration="pro"/>
-	  </variabledecl>
-	  <variabledecl id="varm" name="m">
-	     <usersort declaration="pro"/>
-	  </variabledecl>
-	    </declarations>
-	 </structure>
-      </declaration>
-      <!-- The net graph -->
-      <page id="page1">
-	 <place id="pOwn">
-	    <graphics>
-	       <position x="35" y="35"/>
-	    </graphics>
-	    <name>
-	       <text>OwnMemAcc</text>
-	    </name>
-	    <type>
-	       <structure>
-		  <usersort declaration="pro"/>
-	       </structure>
-	    </type>
-	 </place>			
-	 <place id="pActive">
-	    <graphics>
-	       <position x="35" y="70"/>
-	    </graphics>
-	    <name>
-	       <text>Active</text>
-	    </name>
-	    <type>
-	       <structure>
-		  <usersort declaration="pro"/>
-	       </structure>
-	    </type>
-	    <hlinitialMarking>
-	       <structure>
-		  <add>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="1">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="2">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="3">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="1">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="4">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="5">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="6">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="7">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
-		     <subterm>
-			<numberof>
-			   <subterm>
-			      <numberconstant value="1">
-				 <natural/>
-			      </numberconstant>
-			   </subterm>
-			   <subterm>
-			      <finiteintrangeconstant value="8">
-				 <finiteintrange start="1" end="10"/>
-			      </finiteintrangeconstant>
-			   </subterm>
-			</numberof>
-		     </subterm>
+	<net id="cs1" type="http://www.pnml.org/version-2009/grammar/highlevelnet">
+		<name>
+			<text>Shared Memory</text>
+		</name>
+		<declaration>
+			<text>
+				Shared_mem_multi_p by Denis Poitrenaud, and revised by Fabrice Kordon v 1.0
+			</text>
+			<structure>
+				<declarations>
+					<!-- Sorts declaration -->
+					<namedsort id="dot" name="Dot">
+						<dot/>
+					</namedsort>
+					<namedsort id="pro" name="P">
+						<finiteintrange start="1" end="10"/>
+					</namedsort>
+					<namedsort id="pp" name="PxP">
+						<productsort>
+							<usersort declaration="pro"/>
+							<usersort declaration="pro"/>
+						</productsort>
+					</namedsort>
+					<!-- Variables declaration -->
+					<variabledecl id="varx" name="x">
+						<usersort declaration="pro"/>
+					</variabledecl>
+					<variabledecl id="vary" name="y">
+						<usersort declaration="pro"/>
+					</variabledecl>
+					<variabledecl id="varm" name="m">
+						<usersort declaration="pro"/>
+					</variabledecl>
+				</declarations>
+			</structure>
+		</declaration>
+		<!-- The net graph -->
+		<page id="page1">
+			<place id="pOwn">
+				<graphics>
+					<position x="35" y="35"/>
+				</graphics>
+				<name>
+					<text>OwnMemAcc</text>
+				</name>
+				<type>
+					<structure>
+						<usersort declaration="pro"/>
+					</structure>
+				</type>
+			</place>			
+			<place id="pActive">
+				<graphics>
+					<position x="35" y="70"/>
+				</graphics>
+				<name>
+					<text>Active</text>
+				</name>
+				<type>
+					<structure>
+						<usersort declaration="pro"/>
+					</structure>
+				</type>
+				<hlinitialMarking>
+					<structure>
+						<add>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="1">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="2">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="3">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="1">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="4">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="5">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="6">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="7">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
+							<subterm>
+								<numberof>
+									<subterm>
+										<numberconstant value="1">
+											<natural/>
+										</numberconstant>
+									</subterm>
+									<subterm>
+										<finiteintrangeconstant value="8">
+											<finiteintrange start="1" end="10"/>
+										</finiteintrangeconstant>
+									</subterm>
+								</numberof>
+							</subterm>
 							<subterm>
 								<numberof>
 									<subterm>

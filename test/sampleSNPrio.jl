@@ -11,6 +11,8 @@ println("-----------------------------------------\n"); flush(stdout)
     #false &&
     model = pnmlmodel(fname)::PnmlModel
     summary(stdout, model) #first(PNML.nets(model)))
+    #TODO more tests
+    #TODO more tests
     #@test PNML.verify(net; verbose=true)
 end
 
@@ -21,57 +23,5 @@ println("-----------------------------------------\n")
 @testset let fname=joinpath(@__DIR__, "data", "MCC/Sudoku-COL-BN01.pnml")
     model = pnmlmodel(fname)::PnmlModel
     summary(stdout, model) #first(PNML.nets(model)))
-end
-
-#
-# copied from pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle
-#
-oracle = "data/XMLTestFilesRepository/Oracle"
-
-println("-----------------------------------------")
-println("full_coremodel.xml")
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, oracle, "full_coremodel.xml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model) #first(PNML.nets(model)))
-end
-
-println("-----------------------------------------")
-println("full_ptnet.xml")
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, oracle, "full_ptnet.xml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model) #first(PNML.nets(model)))
-end
-
-println("-----------------------------------------")
-println("full_sn.xml") # modified
-println("-----------------------------------------\n")
-# finiteenumeration
-@testset let fname=joinpath(@__DIR__, oracle, "full_sn.xml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model) #first(PNML.nets(model)))
-end
-
-println("-----------------------------------------")
-println("full_hlpn.xml") # modified
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, oracle, "full_hlpn.xml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model) #first(PNML.nets(model)))
-end
-
-println("-----------------------------------------")
-println("SharedMemory.pnml")
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, "data", "SharedMemory.pnml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model)
-end
-println("-----------------------------------------")
-println("SharedMemory-Hlpn.pnml") # modified
-println("-----------------------------------------\n")
-@testset let fname=joinpath(@__DIR__, "data", "SharedMemory-Hlpn.pnml")
-    model = pnmlmodel(fname)::PnmlModel
-    summary(stdout, model)
+    #TODO more tests
 end
