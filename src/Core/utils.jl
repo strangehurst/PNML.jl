@@ -24,3 +24,6 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
     isnothing(x) && throw(ArgumentError(lazy"cannot parse '$s' as $T"))
     return x
 end
+
+sortref(::Int64) = NamedSortRef(:integer)
+sortref(::UInt64) = NamedSortRef(:natural)
