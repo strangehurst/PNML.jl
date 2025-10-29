@@ -40,8 +40,8 @@ TermInterface boolean expression types.
 All boolean expressions have a known sort `:bool`.
 """
 abstract type BoolExpr <: PnmlExpr end
-basis(::BoolExpr) = UserSortRef(:bool)
-sortref(::BoolExpr) = UserSortRef(:bool)
+basis(::BoolExpr) = NamedSortRef(:bool)
+sortref(::BoolExpr) = NamedSortRef(:bool)
 expr_sortref(b::BoolExpr; ddict) = sortref(b)::AbstractSortRef
 
 """
