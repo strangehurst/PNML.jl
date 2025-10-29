@@ -31,14 +31,17 @@ where condition and inscription expressions may contain non-ground terms (using 
 function parse_term(node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     tag = Symbol(EzXML.nodename(node))
     tag === :namedoperator && error("namedoperator is a declaration, not a term!")
-    tjtupel = parse_term(Val(tag), node, pntd; vars, parse_context)::TermJunk
+    tjtuple = parse_term(Val(tag), node, pntd; vars, parse_context)::TermJunk
     # tjtupel is (expression, sortref, vars) like all parse_term methods.
     # Collect varible REFIDs in `vars`. `length(vars) == 0` means is a ground term.
     # Ensure that there is a `toexpr` method. #! DEBUG only?
-    if !isa(which(PNML.toexpr, (typeof(tjtupel.exp), NamedTuple, DeclDict)), Method)
-        error("No `toexpr` method for expression in $(tjtupel)")
+    if !isa(which(PNML.toexpr, (typeof(tjtuple.exp), NamedTuple, DeclDict)), Method)
+        error("No `toexpr` method for expression in $(tjtuple)")
     end
-    return tjtupel
+    if tjtuple.exp isa Number
+        @info "TermJunk expression is a Number $(tjtuple)"
+    end
+    return tjtuple
 end
 
 """
@@ -352,7 +355,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
     #todo Note how the multiplicity PnmlExpr here is a constant. Evaluate it here?
     # Return of a sort is required because the sort may not be deducable from the expression,
     # Consider NaturalSort vs PositiveSort.
-    D[] && @show isort instance multiplicity PNML.Bag(isort, instance, multiplicity)::PnmlExpr
+    # D()&& @show  isort instance multiplicity PNML.Bag(isort, instance, multiplicity)::PnmlExpr
     return TermJunk(PNML.Bag(isort, instance, multiplicity)::PnmlExpr, isort, vars)
 end
 
@@ -510,7 +513,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
     psort = ProductSort(tuple((expr_sortref.(sts; parse_context.ddict))...), parse_context.ddict)
     #!  psort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict))), parse_context.ddict)
 
-    D[] && @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
+    #D()&& @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
 
     # Look for an existing declaration for psort. Return a NamedSortRef to it in TermJunk.
     # Find matching sort
@@ -596,7 +599,7 @@ end
     `<gtp>` Partition element greater than.
 """
 function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    D[] && @warn "parse_term(::Val{:gtp}"; flush(stdout); #! debug
+    D()&& @warn "parse_term(::Val{:gtp}"; flush(stdout); #! debug
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
     #@show sts # PartitionElementOps

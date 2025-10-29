@@ -54,6 +54,7 @@ term(c::Condition) = c.term #todo! pnml variables
 variables(c::Condition) = c.vars
 
 function default(::Type{<:Condition}, ::PnmlType; ddict::DeclDict)
+    #@info "default Condition"
     Condition(PNML.BooleanEx(PNML.BooleanConstant(true, ddict)), ddict)
 end
 

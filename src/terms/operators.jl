@@ -229,7 +229,7 @@ end
 Return sort that operator `tag` returns.
 """
 function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}, ddict::DeclDict)
-    if isbooleanoperator(tag) # 0-arity function is a constant
+    outref = if isbooleanoperator(tag) # 0-arity function is a constant
         UserSortRef(:bool) # BoolSort()
     elseif isintegeroperator(tag) # 0-arity function is a constant
         UserSortRef(:integer) # IntegerSort()
@@ -280,6 +280,7 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}, ddict::DeclD
          @error "$tag is not a known to pnml_hl_outsort, return NullSort()"
          UserSortRef(:null)
     end
+    @warn outref
 end
 
 #===============================================================#
