@@ -100,7 +100,12 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
 
     if select(("ALL", "NET2"), ("!NET2",))
         println("# NET2 #")
-        @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
+        select(("ALL", "sampleSNPrio",), ("!sampleSNPrio",)) &&
+            @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
+        select(("ALL",  "fulls",), ("!fulls",)) &&
+            @safetestset "fulls"          begin include("fulls.jl") end
+        select(("ALL", "sharedmemory",), ("!sharedmemory",)) &&
+            @safetestset "sharedmemory"   begin include("sharedmemory.jl") end
     end
     if select(("TEST19",), ("!TEST19",)) #! Not part of ALL
         println("# TEST19 #")
