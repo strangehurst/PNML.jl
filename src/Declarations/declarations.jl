@@ -134,7 +134,7 @@ function Base.show(io::IO, declare::VariableDeclaration)
     print(io, nameof(typeof(declare)), "(")
     show(io, pid(declare)); print(io, ", ")
     show(io, name(declare)); print(io, ", ")
-    show(io, refid(declare.sort))
+    show(io, sortref(declare))
     print(io, ")")
 end
 
