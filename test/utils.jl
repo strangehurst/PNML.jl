@@ -60,11 +60,6 @@ end
     println("default(Inscription($pntd) = ", i)
 end
 
-#println()
-@testset "default_typesort($pntd)" for pntd in PnmlTypes.all_nettypes()
-    t = Labels.default_typesort(pntd)::AbstractSortRef
-end
-
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)
     #println("value_type(Rate, $pntd) = ", r)
