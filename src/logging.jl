@@ -1,10 +1,10 @@
 using SciMLLogging: SciMLLogging, AbstractVerbositySpecifier,
-                    MessageLevel, WarnLevel, InfoLevel, Silent, ErrorLevel
+                    AbstractMessageLevel, WarnLevel, InfoLevel, Silent, ErrorLevel
 
 # Main verbosity struct
 struct PnmlVerbosity{T} <: AbstractVerbositySpecifier{T}
-    algorithm_choice::MessageLevel
-    iteration_progress::MessageLevel
+    algorithm_choice::AbstractMessageLevel
+    iteration_progress::AbstractMessageLevel
 
     function PnmlVerbosity{T}(;
             algorithm_choice = WarnLevel(),
