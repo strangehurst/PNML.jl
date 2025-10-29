@@ -49,12 +49,15 @@ end # @with
     #println(str)
 
     parse_context = PNML.parser_context()
+    @show PNML.value_type(PNML.Marking, pntd)
+    @show PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))
+
     placetype = SortType("$pntd initMarking",
         PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
         nothing, nothing, parse_context.ddict)
 
     # Parse ignoring unexpected child
-    mark = @test_logs((:warn, r"^ignoring unexpected child"),
+    mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
                 parse_initialMarking(node, placetype, pntd; parse_context)::PNML.Marking)
     #@test typeof(value(mark)) <: Union{Int,Float64}
     @test mark()::Union{Int,Float64} == 123
@@ -96,8 +99,9 @@ end
         </unknown>
     </inscription>"""
     parse_context = PNML.parser_context()
-    inscript = @test_logs((:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                        parse_inscription(n1, :nothing, :nothing, pntd; parse_context))
+    inscript = @test_logs(match_mode=:any,
+                    (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
+                    parse_inscription(n1, :nothing, :nothing, pntd; parse_context))
     @test inscript isa PNML.Inscription
     #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
     #@show inscript
