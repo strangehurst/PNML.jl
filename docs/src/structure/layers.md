@@ -22,7 +22,7 @@ list_fields(f) = foreach(println, fieldnames(f))
 	While we parse graphics XML into "containers of strings" and [`Coordinate`](@ref)s
 	no further use is implemented or planned. And no discussion of use is present.
 
-# Core Layer
+## Core Layer
 
 An intermediate representation (IR) of the XML model usable to form networks.
 Many different flavors of Petri Nets are expected to be implemented using the IR.
@@ -61,7 +61,7 @@ PnmlModel
 
 Concepts from High-Level Petri Nets will be present in the Core layer.
 
-# Declaration Dictionaries
+## Declaration Dictionaries
 
 The XML file format allows declarations to be declared in <net> and <page> elements.
 
@@ -75,7 +75,7 @@ Allows using `DeclDict` while parsing.
 DeclDict
 ```
 
-# Net Data Dictionaries
+## Net Data Dictionaries
 
 This is where the graph node storage resides.
 
@@ -93,7 +93,7 @@ The `PnmlNetData` dictionaries maintain insertion order.
 Each graph node may have labels attached.
 What labels depends on the [`PnmlTypes`](@ref)
 
-# ID Sets
+## ID Sets
 
 [`PnmlNetKeys`](@ref) contains ordered sets of REFID symbols.
 
@@ -109,3 +109,7 @@ Testing of non-flattened nets is very minimal.
 
 !!! warning
     After `flatten_pages!` the `PnmlNetKeys` of the only remaining page are assumed to be the same as the `keys` of corresponding `PnmlNetData` dictionary.
+
+## Diagram of memory footprint
+
+![alternative text](data_layout.png)
