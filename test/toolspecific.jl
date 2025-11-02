@@ -72,7 +72,7 @@ str7 = (tool="WoPeD", version="1.0", str = """
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
     ctx = PNML.parser_context()
-    tooli = parse_toolspecific(xmlroot(s.str), PnmlCoreNet(); parse_context=ctx)
+    tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); parse_context=ctx)
     # @show tooli
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
@@ -86,7 +86,7 @@ str7 = (tool="WoPeD", version="1.0", str = """
 
     @test_call broken=false get_toolinfo([tooli], s.tool, s.version)
 
-    n::XMLNode = xmlroot("""<place id="place0">
+    n::XMLNode = xmlnode("""<place id="place0">
         $(str1.str)
         $(str2.str)
         $(str3.str)

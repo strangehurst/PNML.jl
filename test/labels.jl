@@ -34,7 +34,7 @@ end # @with
 #------------------------------------------------
 #------------------------------------------------
 @testset "PT initMarking $pntd" for pntd in NON_HL_NETS
-    node = xmlroot("""
+    node = xmlnode("""
     <initialMarking>
         <text> $(iscontinuous(pntd) ? "123.0" : "123") </text>
         <toolspecific tool="org.pnml.tool" version="1.0">
@@ -140,7 +140,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
         x = i < 3 ? 1 : 2 # make 2 different tagnames
 
         lab = PNML.Parser.add_label!(lab,
-                xmlroot("<test$x> $i </test$x>"), pntd, parse_context)
+                xmlnode("<test$x> $i </test$x>"), pntd, parse_context)
         @test lab isa Vector{PnmlLabel}
         @test length(lab) == i
     end
@@ -178,7 +178,7 @@ end
 
 function test_unclaimed(pntd, xmlstring::String)
     parse_context = PNML.parser_context()
-    node = xmlroot(xmlstring)::XMLNode
+    node = xmlnode(xmlstring)::XMLNode
     reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = PnmlIDRegistry()
 

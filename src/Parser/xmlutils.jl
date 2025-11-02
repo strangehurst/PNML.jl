@@ -9,10 +9,10 @@ Parse string into EzXML node.
 
 $(TYPEDSIGNATURES)
 
-See [`xmlroot`](@ref).
+See [`xmlnode`](@ref).
 """
 macro xml_str(s)
-    :(xmlroot($s))
+    :(xmlnode($s))
 end
 
 """
@@ -20,7 +20,7 @@ $(TYPEDSIGNATURES)
 
 Parse string `s` into EzXML node.
 """
-xmlroot(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
+xmlnode(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
 
 #~ How expensive are these XPath queries?
 

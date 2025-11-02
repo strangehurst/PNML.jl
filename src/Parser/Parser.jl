@@ -65,7 +65,7 @@ include("declarations.jl")
 include("terms.jl")
 include("toolspecific.jl")
 
-export XMLNode, xmlroot, @xml_str
+export XMLNode, xmlnode, @xml_str
 export pnmlmodel
 @public to_sort
 

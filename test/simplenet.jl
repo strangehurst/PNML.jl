@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET #!, LabelledArrays
+using PNML, ..TestUtils, JET
 using Test, Logging
 
 testlogger = TestLogger()
@@ -29,8 +29,8 @@ str1 = """
 """
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=target_modules pnmlmodel(xmlroot(str1))
-    model = pnmlmodel(xmlroot(str1))::PnmlModel #
+    @test_call target_modules=target_modules pnmlmodel(xmlnode(str1))
+    model = pnmlmodel(xmlnode(str1))::PnmlModel #
     net0 = @inferred PnmlNet first(nets(model))
 
     simp1 = @inferred SimpleNet SimpleNet(model)
@@ -48,7 +48,7 @@ str1 = """
         #@show accessor
         @test accessor(PNet.pnmlnet(simp1)) == accessor(PNet.pnmlnet(simp)) # These 2 are expected to match.
     end
-
+ #!, LabelledArrays
     @testset "inferred" begin
         # First @inferred failure throws exception ending testset.
         @test firstpage(simp.net) === first(pages(simp.net))
@@ -72,7 +72,7 @@ str1 = """
     @test simp.net isa PnmlNet
     @test simp isa PNML.AbstractPetriNet
 
-    for top in [first(pages(simp.net)), simp.net] #!, simp]
+    for top in [first(pages(simp.net)), simp.net]
 
         @test_call target_modules=target_modules places(top)
         for placeid in PNML.place_idset(top)
@@ -180,7 +180,7 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel pnmlmodel(xmlroot(str3))
+    model = @inferred PNML.PnmlModel pnmlmodel(xmlnode(str3))
     net1 = first(nets(model));          #@show typeof(net1)
     simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
 
@@ -335,7 +335,7 @@ const ex_types = ("continuous",)
         </net>
     </pnml>
     """
-    anet = PNML.SimpleNet(xmlroot(str3))::PNML.AbstractPetriNet
+    anet = PNML.SimpleNet(xmlnode(str3))::PNML.AbstractPetriNet
     mg = PNML.metagraph(anet.net)
     mg2 = PNML.metagraph(anet)
 

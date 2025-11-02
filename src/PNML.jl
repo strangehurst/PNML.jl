@@ -34,7 +34,7 @@ const CONFIG = Ref(PnmlConfig())
 
 __init__() = read_config!(CONFIG[])
 
-D()= CONFIG[].verbose # Guard for bring-up/debug noise.
+D() = CONFIG[].verbose # Guard for bring-up/debug noise.
 
 # Width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -74,7 +74,7 @@ export REFID, SortRef, AbstractSortRef
 export UserSortRef # From SortRef ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
-export @xml_str, xmlroot, D
+export @xml_str, xmlnode, D
 
 @public pnmlmodel, pnmlnet
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
@@ -146,8 +146,6 @@ include("Core/pnmlnetdata.jl") # Used by page, net; holds places, transitions, a
 #^ 2024-07-17 Changed DeclDict to be Any based,
 #^ with the hope that the accessor methods provide type inferrability.
 include("Core/decldict.jl") # Just contains show(). See decldictcore.jl.
-
-#! 2025-04-09 move toolinfo and graphic to Labels
 
 # Labels
 include("Labels/Labels.jl")

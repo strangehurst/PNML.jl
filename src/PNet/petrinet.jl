@@ -140,7 +140,13 @@ end
 #-----------------------------------------------------------------
 
 """
-Wrap a single pnml net. Presumes that the net does not need to be flattened
+    HLPetriNet(ctx::Context, str::AbstractString)
+    HLPetriNet(ctx::Context, model::PnmlModel)
+
+Construct Petri net from the first network in model.
+Construct model from string of valid pnml XML and possible LabelParser & ToolParser vectors.
+
+HLPetriNet wraps a single PnmlNet. Presumes that the net does not need to be flattened
 as all content is in first page.
 
 $(TYPEDEF)
@@ -149,13 +155,17 @@ $(TYPEDFIELDS)
 # Details
 
 """
-struct HLPetriNet{PNTD} <: AbstractPetriNet{PNTD}
-    ctx::Context
+struct HLPetriNet{C, PNTD<:PnmlType} <: AbstractPetriNet{PNTD}
+    ctx::C
     net::PnmlNet{PNTD}
 end
-"Construct from string of valid pnml XML, using the first network in model."
-HLPetriNet(ctx::Context, str::AbstractString) = HLPetriNet(ctx, pnmlmodel(ctx, xmlroot(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
-HLPetriNet(ctx::Context, model::PnmlModel)    = HLPetriNet(ctx, first(nets(model)))
+
+function HLPetriNet(ctx, str::AbstractString)
+    HLPetriNet(ctx, pnmlmodel(ctx, xmlnode(str);
+                                tp_vec=ToolParser[],
+                                lp_vec=LabelParser[]))
+end
+HLPetriNet(ctx, model::PnmlModel) = HLPetriNet(ctx, first(nets(model)))
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -209,7 +219,7 @@ end
 # Method Cascade.
 # First two run the parser and can have addded tool and label plugins as context.
 # toolinfos => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
-SimpleNet(s::AbstractString; context...)  = SimpleNet(xmlroot(s); context...)
+SimpleNet(s::AbstractString; context...)  = SimpleNet(xmlnode(s); context...)
 SimpleNet(node::PNML.XMLNode; context...) = SimpleNet(PNML.Parser.pnmlmodel(node; context...))
 
 # These two use the flattened 1st net of the PnmlModel.

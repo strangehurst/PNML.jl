@@ -13,7 +13,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.PnmlTypes
 @reexport using PNML.PnmlGraphics
 @reexport using PNML.PNet
-@reexport using PNML: Maybe, DeclDict, XMLNode, xmlroot, @xml_str
+@reexport using PNML: Maybe, DeclDict, XMLNode, xmlnode, @xml_str
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, has_name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
