@@ -34,36 +34,30 @@ end
 
 ctx = PNML.parser_context()
 
-@testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()#ishighlevel)
+@testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
     c = Labels.default(Labels.Condition, pntd; ctx.ddict)::Labels.Condition
-    #! TestUtils & Base export Condition
-    # println("default(Condition, $pntd; decldict(idreg), $pntd) = ", repr(c), " c() = ", repr(c()))
     @test c() == true
 end
 
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
-
-    i = if ishighlevel(pntd)
-        #
-        placetype = SortType("default_inscription", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
-        Labels.default(Inscription, pntd, placetype; ctx.ddict)
+    placetype = if ishighlevel(pntd)
+        SortType("dummy", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
     elseif iscontinuous(pntd)
-        dummy = SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
-        Labels.default(Inscription, pntd, dummy; ctx.ddict)
+        SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
     elseif isdiscrete(pntd)
-        dummy = SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
-        Labels.default(Inscription, pntd, dummy; ctx.ddict)
+        SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
     else
         error("pntd not known")
     end
+    i = Labels.default(Inscription, pntd, placetype; ctx.ddict)
     println("default(Inscription($pntd) = ", i)
 end
 
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
     r = PNML.value_type(Rate, pntd)
     #println("value_type(Rate, $pntd) = ", r)
-    @test r == eltype(RealSort)
+    @test r == eltype(RealSort) == Float64
 end
 
 #println()
@@ -74,6 +68,18 @@ end
     @test isempty(PNML.arcdict(pnd))
     @test isempty(PNML.refplacedict(pnd))
     @test isempty(PNML.reftransitiondict(pnd))
+
+    @test nplaces(pnd) == 0
+    @test ntransitions(pnd) == 0
+    @test narcs(pnd) == 0
+    @test nreftransitions(pnd) == 0
+    @test nrefplaces(pnd) == 0
+
+    @test valtype(PNML.placedict(pnd)) isa DataType
+    @test valtype(PNML.transitiondict(pnd)) isa DataType
+    @test valtype(PNML.arcdict(pnd)) isa DataType
+    @test valtype(PNML.refplacedict(pnd)) isa DataType
+    @test valtype(PNML.reftransitiondict(pnd)) isa DataType
 end
 #println()
 @testset "predicates for $pntd" for pntd in PnmlTypes.all_nettypes()

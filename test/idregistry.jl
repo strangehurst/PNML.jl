@@ -5,12 +5,16 @@ using PNML, ..TestUtils, JET, Logging
     PnmlIDRegistrys.reset_reg!(ctx.idregistry)
     register_id!(ctx.idregistry, :p1)
     @test @inferred(isregistered(ctx.idregistry, :p1)) == true
-    @test isregistered(ctx.idregistry, :p1)
+    @test !isempty(ctx.idregistry)
+    @test length(ctx.idregistry) > 0
+    @test !isempty(values(ctx.idregistry))
+
     PnmlIDRegistrys.reset_reg!(ctx.idregistry)
     @test !isregistered(ctx.idregistry, :p1)
-    PNML.register_id!(ctx.idregistry, :p1)
+    register_id!(ctx.idregistry, :p1)
     @test isregistered(ctx.idregistry, :p1)
     @test_throws PNML.DuplicateIDException PNML.register_id!(ctx.idregistry, :p1)
+    @test isregistered(ctx.idregistry, :p1) # still registered
 
     @test_opt target_modules=(@__MODULE__,) PnmlIDRegistry()
     @test_call PnmlIDRegistry()
@@ -21,4 +25,6 @@ using PNML, ..TestUtils, JET, Logging
     @test_call register_id!(ctx.idregistry, :p)
     @test_call !isregistered(ctx.idregistry, :p1)
     @test_call PnmlIDRegistrys.reset_reg!(ctx.idregistry, )
+
+    @test !isempty(sprint(show, ctx.idregistry))
 end

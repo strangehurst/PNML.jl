@@ -196,8 +196,15 @@ end
                         <feconstant id="CINFORMI1" name="1"/>
                     </cyclicenumeration>
                 </namedsort>
+                <!-- namedoperator -->
+                <!-- arbitrarysort, arbitraryoperator -->
             </declarations>
         </structure>
+        <graphics>	<position x="11" y="22" /> </graphics>
+        <toolspecific tool="sometool" version="6.6">
+            <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
+        </toolspecific>
+        <unknownchild />
     </declaration>
     """
 

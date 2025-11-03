@@ -115,7 +115,7 @@ println("\n=====================================================================
 #         """<inscription> <text>6</text> </inscription>"""
 #     end
 
-#     node = xml"""
+#     node = xmlnode("""
 #       <arc source="transition1" target="place1" id="arc1">
 #         <name> <text>Some arc</text> </name>
 #         $insc_xml
@@ -124,24 +124,23 @@ println("\n=====================================================================
 #             <text>content text</text>
 #         </unknown>
 #       </arc>
-#     """
+#     """)
 #     PNML.CONFIG[].warn_on_unclaimed = true
+#     parse_context = PNML.Parser.parser_context()
 #     if ishighlevel(pntd)
 #         @test_throws("ArgumentError: missing inscription term in <structure>",
-#                     parse_arc(node, pntd), netdata=PNML.PnmlNetData()))
+#                     parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context))
 #     else
-#         a1 = @test_logs(match_mode=:any,
+#         a = @test_logs(match_mode=:any,
 #                 (:warn, "found unexpected child of <arc>: unknown"),
-#                 parse_arc(node, pntd), netdata=PNML.PnmlNetData()))
-#         a2 = Arc(a1, Ref(:newsrc), Ref(:newtarget))
-#         @testset "a1,a2" for a in [a1, a2]
-#             @test typeof(a) <: Arc
-#             @test pid(a) === :arc1
-#             @test has_name(a)
-#             @test name(a) == "Some arc"
-#             @test_call  inscription(a)
-#             @test inscription(a) == 6
-#         end
+#                 parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context))
+
+#         @test typeof(a) <: Arc
+#         @test pid(a) === :arc1
+#         @test has_name(a)
+#         @test name(a) == "Some arc"
+#         @test_call  inscription(a)
+#         @test inscription(a)(NamedTuple()) == 6
 #     end
 # end
 
