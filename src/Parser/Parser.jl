@@ -52,7 +52,7 @@ using PNML: NamedSortRef, PartitionSortRef, ProductSortRef, MultisetSortRef, Arb
 # Methods implemented in this module.
 import PNML: adjacent_place
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
-import PNML: refid, netdata
+import PNML: refid, netdata, tag
 
 include("xmlutils.jl")
 include("parseutils.jl")

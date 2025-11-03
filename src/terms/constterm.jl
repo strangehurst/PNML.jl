@@ -98,7 +98,7 @@ struct DotConstant <: AbstractOperator
 end
 decldict(dc::DotConstant) = dc.declarationdicts
 sortref(::DotConstant) = UserSortRef(:dot)
-sortof(::DotConstant) = sortdefinition(namedsort(decldict(dc), :dot))
+sortof(dc::DotConstant) = sortdefinition(namedsort(decldict(dc), :dot))
 (d::DotConstant)() = 1 # true is a number, one
 
 function Base.show(io::IO, c::DotConstant)

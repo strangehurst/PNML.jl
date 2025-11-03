@@ -86,7 +86,8 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
             CONFIG[].warn_on_unclaimed && @warn "$pntd parse_place $placeid found unexpected label of <place>: $tag"
-            extralabels = add_label(extralabels, child, pntd, parse_context)
+            unexpected_label!(extralabels, child, tag, pntd, parse_context)
+            #extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
@@ -194,7 +195,8 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
-            extralabels = add_label(extralabels, child, pntd, parse_context)
+            unexpected_label!(extralabels, child, tag, pntd, parse_context)
+            #extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
@@ -264,7 +266,8 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
-            extralabels = add_label(extralabels, child, pntd, parse_context)
+            unexpected_label!(extralabels, child, tag, pntd, parse_context)
+            #extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 
@@ -296,7 +299,8 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
             CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
-            extralabels = add_label(extralabels, child, pntd, parse_context)
+            unexpected_label!(extralabels, child, tag, pntd, parse_context)
+            #extralabels = add_label(extralabels, child, pntd, parse_context)
         end
     end
 

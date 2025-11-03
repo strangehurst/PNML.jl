@@ -4,7 +4,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Maps a `Symbol` to a parser callable for a `<labeltag>` tag's well-formed contents.
-The parser will be called as func(node, pntd) and return
+The parser will be called as func(node, pntd) and return a label object.
 """
 @auto_hash_equals struct LabelParser
     tag::Symbol
@@ -12,7 +12,7 @@ The parser will be called as func(node, pntd) and return
 end
 
 "Name of xml tag."
-PNML.tag(lp::LabelParser) = lp.tag
+tag(lp::LabelParser) = lp.tag
 
 "Callable."
 func(lp::LabelParser) = lp.func
