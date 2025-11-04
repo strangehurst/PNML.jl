@@ -40,7 +40,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[
 
         deref!(net; trim, verbose)
     end
-    return nothing # net
+    return net
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
