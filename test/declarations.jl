@@ -66,6 +66,13 @@ end
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
+    PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<real/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
+    @test sort === RealSort()
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+
     #println()
     PnmlIDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"""<cyclicenumeration>
@@ -149,6 +156,8 @@ end
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
+    #TODO PartitionSort
+    #TODO ArbitrarySort
 end
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
