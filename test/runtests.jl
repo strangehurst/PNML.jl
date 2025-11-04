@@ -93,18 +93,18 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     end
 
     # Note the omission of ALL. This pnml file is broken!? It should be used for hardening.
-    if select(("TEST1",), ("!TEST1",))
+    if select(("ALL", "TEST1",), ("!TEST1",))
         println("# TEST1 #")
         @safetestset "test1"   begin include("test1.jl") end
     end
 
     if select(("ALL", "NET2"), ("!NET2",))
         println("# NET2 #")
-        select(("ALL", "sampleSNPrio",), ("!sampleSNPrio",)) &&
+        select(("ALL", "NET2", "sampleSNPrio",), ("!sampleSNPrio",)) &&
             @safetestset "sampleSNPrio"   begin include("sampleSNPrio.jl") end
-        select(("ALL",  "fulls",), ("!fulls",)) &&
+        select(("ALL", "NET2", "fulls",), ("!fulls",)) &&
             @safetestset "fulls"          begin include("fulls.jl") end
-        select(("ALL", "sharedmemory",), ("!sharedmemory",)) &&
+        select(("ALL", "NET2", "sharedmemory",), ("!sharedmemory",)) &&
             @safetestset "sharedmemory"   begin include("sharedmemory.jl") end
     end
     if select(("TEST19",), ("!TEST19",)) #! Not part of ALL
