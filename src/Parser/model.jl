@@ -133,6 +133,7 @@ Page IDs are appended as the XML tree is descended, followed by node IDs.
 """
 function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_context::ParseContext)
 
+    D()&& println("\n## parse_net ", netid)
     # Create empty data structures to be filled with the parsed pnml XML.
     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}() # Page dictionary not part of PnmlNetData.
     netdata = PnmlNetData() # holds all place, transition, arc
@@ -247,6 +248,7 @@ Return `Page`. `pageid` already parsed from `node`.
 """
 function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
             parse_context::ParseContext) where {T<:PnmlType}
+    D()&& println("## parse_page ", pageid)
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.
     #---------------------------------------------------------
