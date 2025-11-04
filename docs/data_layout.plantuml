@@ -1,0 +1,37 @@
+@startuml
+skinparam BackgroundColor transparent
+skinparam componentStyle rectangle
+
+title "PNML.jl Data Layout"
+
+    component Storage {
+        component [DeclDict] {
+            component variabledecls
+            component namedsorts
+            component arbitrarysorts
+            component partitionsorts
+            component namedoperators
+            component arbitraryoperators
+            component partitionops
+            component feconstants
+            component usersorts
+            component useroperators
+        }
+        component [NetKeys] {
+            component page_set
+            component place_set
+            component transition_set
+            component arc_set
+            component reftransition_set
+            component refplace_set
+        }
+        component [NetData] {
+            component place_dict
+            component transition_dict
+            component arc_dict
+            component refplace_dict
+            component reftransition_dict
+        }
+    }
+    [XDVT]
+}

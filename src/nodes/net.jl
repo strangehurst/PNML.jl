@@ -201,8 +201,8 @@ end
 
 #------------------------------------------------------------------------------
 function Base.summary(net::PnmlNet)
-    string(typeof(net), " id ", pid(net),
-            " name '", has_name(net) ? name(net) : "", ", ",
+    string(typeof(net), " id ", repr(pid(net)),
+            " name '", has_name(net) ? name(net) : "", "', ",
             " type ", nettype(net), ", ",
             npages(net), " pages, ",
             ndeclarations(net), " declarations, ",
