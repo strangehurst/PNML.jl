@@ -26,7 +26,7 @@ end
     #TODO add parse_graphics
     #TODO add toolinfo
 
-end # @with
+end
 
 #------------------------------------------------
 #------------------------------------------------
@@ -101,7 +101,8 @@ end
     parse_context = PNML.parser_context()
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                    parse_inscription(n1, :nothing, :nothing, pntd; parse_context))
+                    parse_inscription(n1, :nothing, :nothing, pntd;
+                    netdata=PnmlNetData(), parse_context))
     @test inscript isa PNML.Inscription
     #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
     #@show inscript
@@ -118,7 +119,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 #@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]
     # reg = PnmlIDRegistry()
-    # @show pff(PNML.Parser.add_label!) pff(PNML.unparsed_tag) pff(PNML.extralabels)
+    # @show pff(PNML.Parser.add_label!) pff(PNML.xmldict) pff(PNML.extralabels)
     # @test_opt PNML.Parser.add_label!(lab, node, pntd)
     # @test_opt(broken=false,
     #             ignored_modules=(JET.AnyFrameModule(EzXML),
@@ -182,7 +183,7 @@ function test_unclaimed(pntd, xmlstring::String)
     reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = PnmlIDRegistry()
 
-    (t,u) = Parser.unparsed_tag(node) # tag is a string
+    (t,u) = Parser.xmldict(node) # tag is a string
     l = PnmlLabel(t, u, parse_context.ddict)
     a = anyelement(node)
 
@@ -190,12 +191,12 @@ function test_unclaimed(pntd, xmlstring::String)
     @test l isa PnmlLabel
     @test a isa AnyElement
 
-    @test_opt target_modules=(@__MODULE__,) Parser.unparsed_tag(node)
+    @test_opt target_modules=(@__MODULE__,) Parser.xmldict(node)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u,parse_context.ddict)
     @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                            JET.AnyFrameModule(XMLDict)) Parser.unparsed_tag(node)
+                            JET.AnyFrameModule(XMLDict)) Parser.xmldict(node)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u,parse_context.ddict)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),

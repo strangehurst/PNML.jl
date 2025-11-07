@@ -17,7 +17,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, has_name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
-    DictType, AnyElement, Parser.anyelement, Parser.unparsed_tag,
+    DictType, AnyElement, Parser.anyelement, Parser.xmldict,
     multiset
 @reexport using PNML: toexpr, PnmlExpr
 
@@ -84,7 +84,7 @@ function pff(@nospecialize(ft))
         ft === Base.string ||
         ft === Base.print ||
         ft === Base.println ||
-        ft === PNML.Parser.unparsed_tag ||
+        ft === PNML.Parser.xmldict ||
         ft === PNML.Parser.add_label! ||
         ft === XMLDict.xml_dict ||
         false

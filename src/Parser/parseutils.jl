@@ -2,7 +2,7 @@
 # LABELS
 #--------------------------------------------------------------------
 #! Extension point. user supplied parser -> Annotation.
-# Could do conversion from unparsed_tag.
+# Could do conversion from xmldict.
 #! 2 collections, one for PnmlLabels other for other Annotations?
 
 """
@@ -14,8 +14,8 @@ See [`AbstractPnmlObject`](@ref) for those XML entities that have labels.
 Any "unknown" XML is presumed to be a label.
 """
 function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, ctx::ParseContext)
-    # `unparsed_tag` returns a ordered collection of `AnyElement`.
-    return push!(v, PnmlLabel(unparsed_tag(node)..., ctx.ddict))
+    # `xmldict` returns a ordered collection of `AnyElement`.
+    return push!(v, PnmlLabel(xmldict(node)..., ctx.ddict))
 end
 
 """

@@ -2,7 +2,7 @@
 # AnyElement and DictType
 #--------------------------------------------
 
-"Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `unparsed_tag`."
+"Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `xmldict`."
 const DictType = LittleDict{Union{Symbol,String}, Any #= XDVT is a complex Union =#}
 
 "`XMLDict.xml_dict` XMLDict Value Type is value or Vector of values from ."

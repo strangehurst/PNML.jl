@@ -271,13 +271,10 @@ function show_sorts(dd::DeclDict)
 #     println()
 end
 
-# Add the dictionary accessor argument after sorts are dispatchable.
-
 "Look for matching value `x` in dictionary `d`, return key symbol or nothing."
 function find_valuekey(d::AbstractDict, x, func=identity)
     id = nothing
     for (k,v) in pairs(skipmissing(d))
-        #@show k v x
         if func(v) == x # Apply `func` to each value, looking for a match.
             id = k
             @warn("found existing $id for repr($x)")

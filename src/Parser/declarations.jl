@@ -5,7 +5,7 @@ The common usage is that 'label' usually be read as annotation-label.
 Attribute-labels do not have associated graphics elements. Since <graphics> are
 optional for annotation-labels they share the same implementation.
 
-Unknown tags get parsed by `unparsed_tag`.
+Unknown tags get parsed by `xmldict`.
 =#
 
 
@@ -309,7 +309,7 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     elseif PNML.has_arbitrarysort(parse_context.ddict, declid)
         ArbitrarySortRef(declid)
     else
-        error("Did not find sort declaration for $(repr(declid))")
+        error("Did not find sort declaration for $(repr(declid)) in $(repr(parse_context.ddict))")
     end
 end
 
@@ -482,15 +482,15 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
 
     psort = ProductSort(tuple(sorts...), parse_context.ddict)
 
-    # See if there exists a matching sort.
+    # See if there exists a matching sort. #! debug?
     for (id,ps) in pairs(productsorts(parse_context.ddict))
         if PNML.Sorts.equalSorts(ps, psort)
             @info "Found product sort $id while looking for $psort for sortid=$sortid name=$name" productsorts(parse_context.ddict)
          end
     end
 
-    # add to productsorts
-    fill_sort_tag!(parse_context, sortid, psort)
+
+    fill_sort_tag!(parse_context, sortid, psort) # add to productsorts without a sortref
     return make_sortref(parse_context, namedsorts, psort, "product", sortid, name)
 end
 
@@ -591,7 +591,9 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                 "id = ", repr(partid), ", name = ", repr(nameval), ", sort = ", repr(psort))
 
     #~verify_partition(sort, elements)
+
     ps = PNML.PartitionSort(partid, nameval, psort, elements, parse_context.ddict) # A Declaraion named Sort!
+    # Do partitionsorts have a nameedsort?
     return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", partid, "")
 end
 
