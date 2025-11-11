@@ -13,19 +13,30 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Real valued label. An expected use is as a transition rate.
+Expected XML: `<rate> <text>0.3</text> </rate>`
 """
-@kwdef struct Rate{T<:Number} <: Annotation
-    value::T # text? PnmlExpr?
+@kwdef struct Rate{T<:PnmlExpr} <: Annotation
+    #todo text
+    term::T
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     declarationdicts::DeclDict
 end
 
-Base.eltype(r::Rate) = typeof(value(r))
-value(r::Rate) = r.value
+decldict(i::Rate) = i.declarationdicts
+term(i::Rate) = i.term
+sortref(i::Rate) = _sortref(decldict(i), term(i))::AbstractSortRef
+sortof(i::Rate) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
+
+function (rate::Rate)(varsub::NamedTuple=NamedTuple())
+    eval(toexpr(term(rate), varsub, decldict(rate)))::value_type(Rate)
+end
+
+Base.eltype(::Rate) = value_type(Rate)
+value(r::Rate) = r()
 
 function Base.show(io::IO, r::Rate)
-    print(io, nameof(typeof(r)), "(", r.value, ", ", r,graphics,  ", ", r.toolspecinfos, ")")
+    print(io, "Rate(", r.term, ", ", repr(r.graphics),  ", ", repr(r.toolspecinfos), ")")
 end
 
 "Parse content of `<text>` as a number of `value_type`."
@@ -36,7 +47,7 @@ function number_content_parser(label, value_type)
  end
 
 """
-    rate_value(t; <options>) -> Real
+    rate_value(t) -> Real
 
 Return value of a `Rate` label.  Missing rate labels are defaulted to zero.
 
@@ -44,21 +55,13 @@ Expected label XML: `<rate> <text>0.3</text> </rate>`
 
 # Arguments
     `t` is anything that supports `labelof(t, tag)`.
-    `tag::String` is the XML element tag, default `"rate"`.
-    `value_type::Type{<:Number}` is concrete `Type` used to parse value.
-    `content_parser`::Base.Callable with arguments of `labelof(t, tag)` and `value_type`.
-    `default_value` = zero(value_type) is returned when `labelof(t, tag)` returns `nothing`.
 """
-function rate_value(t;
-            tag::String = "rate",
-            valtype::Type{<:Number} = PNML.value_type(Rate),
-            content_parser::Base.Callable = number_content_parser,
-            default_value = zero(valtype))
-    label = labelof(t, tag)
+function rate_value(t)
+    label = labelof(t, :rate)
     if isnothing(label)
-        default_value
+        zero(value_type(Rate))
     else
-        content_parser(label, valtype)
+        value(label)::value_type(Rate)
     end
 end
 

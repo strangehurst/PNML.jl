@@ -14,7 +14,7 @@ using XMLDict: XMLDict
     <structure> <usersort declaration="N2"/> </structure>
 </type>
     """
-    typ = PNML.Parser.parse_sorttype(n1, pntd; parse_context=ctx)::SortType
+    typ = PNML.Parser.parse_sorttype(n1, pntd; parse_context=ctx, parentid=:foobar)::SortType
     @test text(typ) == "N2"
     @test PNML.sortref(typ) isa PNML.AbstractSortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort(ctx.ddict) #! does the name of a sort affect equal Sorts?
@@ -46,7 +46,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("XXX", PNML.NamedSortRef(:dot), ctx.ddict)
 
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, placeid=:bogusid)
+        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
         #@show mark
         @test mark isa PNML.Marking
 
@@ -112,7 +112,7 @@ end
         """
         ctx = PNML.parser_context()
         placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), ctx.ddict)
-        mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
+        mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:tmp)
         #TODO add tests
     end
     # The constant eight.
@@ -132,7 +132,7 @@ end
         """
         ctx = PNML.parser_context()
         placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), ctx.ddict)
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
+        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:xxx)
         val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any}
         #@show val NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()
         #@show PNML.usersort(ctx.ddict, :positive)
@@ -149,7 +149,7 @@ end
         """
         ctx = PNML.parser_context()
         placetype = SortType("testdot", PNML.NamedSortRef(:dot), ctx.ddict)
-        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx)
+        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:xxx)
     end
 
     #println()

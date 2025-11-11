@@ -14,7 +14,7 @@ $(TYPEDSIGNATURES)
 Return [`Name`](@ref) label holding `<text>` value.
 With optional `<toolspecific>` & `<graphics>` information.
 """
-function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
     check_nodename(node, "name")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -29,7 +29,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         elseif tag == "toolspecific"
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # name label
         else
-            @warn "ignoring unexpected child of <name>: '$tag'"
+            @warn "$(repr(parentid)) ignoring unexpected child of <name>: '$tag'"
         end
     end
 
@@ -136,7 +136,7 @@ $(TYPEDSIGNATURES)
 Non-high-level `PnmlType` initial marking parser. Most things are assumed to be Numbers.
 """
 function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::PnmlType;
-                            parse_context::ParseContext, placeid::Symbol=:nothing)
+                            parse_context::ParseContext, parentid::Symbol)
     nn = check_nodename(node, "initialMarking")
     isnothing(placetype) && error("parse_initialMarking expects placetype to be not-nothing")
     # See if there is a <structure> attached to the label. This is non-standard.
@@ -144,10 +144,10 @@ function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::P
     # to the label apply the `parse_structure` `termparser`.
     l = parse_label_content(node, parse_structure, pntd; parse_context)::NamedTuple
     if !isnothing(l.exp) # There was a <structure> tag. It is now an expression.
-        @warn "$nn place $placeid <structure> element in $pntd net; parsed as $(l.exp)"
+        @warn "$nn place $parentid <structure> element in $pntd net; parsed as $(l.exp)"
     end
     if isnothing(l.text) # Expected for non-HL values if there is an <initialMarking>.
-        @warn "$nn place $placeid <text> element expected for $pntd net"
+        @warn "$nn place $parentid <text> element expected for $pntd net"
     end
     @assert isempty(l.vars) # All markings are ground terms.
 
@@ -165,7 +165,9 @@ $(TYPEDSIGNATURES)
 Ignore the source & target IDREF symbols.
 """
 function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
-                            parse_context::ParseContext, arcid::Symbol=:nothing)
+                            netdata::PnmlNetData,
+                            parse_context::ParseContext,
+                            parentid::Symbol)
     @assert !(pntd isa AbstractHLCore)
     check_nodename(node, "inscription")
     txt = nothing
@@ -205,24 +207,26 @@ Sort of marking term must be the same as `placetype`, the places SortType.
 
 NB: Used by PTNets that assume placetype is DotSort().
 """
-function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}, pntd::AbstractHLCore;
-            parse_context::ParseContext, placeid::Symbol=:nothing)
+function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
+            pntd::AbstractHLCore;
+            parse_context::ParseContext,
+            parentid::Symbol)
     check_nodename(node, "hlinitialMarking")
-    #! non-PT_HLPNG-HL nets are expected to always have a marking.
-    #! And that marking is used to deduce the sorttype.
+    #! non-PT_HLPNG High Level nets are expected to always have a marking.
+    #! And that marking may be used to deduce the sorttype.
     defsort = isnothing(default_sorttype) ? nothing : sortref(default_sorttype)
+
     l = parse_label_content(node, ParseMarkingTerm(defsort), pntd; parse_context)::NamedTuple
     placetype = l.sort
     isnothing(l.exp) &&
         error("Missing expression for $pntd net")
 
-
     if isa_variant(placetype, NamedSortRef) ||
         (isa_variant(placetype, ProductSortRef) &&
             all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, parse_context.ddict)))
-        # D()&& @warn "$pntd place $(repr(placeid)) placetype is a product sort of named sorts"
+        # D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
     else
-        @error("$pntd placetype of $(repr(placeid)) expected to be NamedSortRef" *
+        @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
                 " or product of named sorts, found $(placetype)")
         if isa_variant(placetype, ProductSortRef)
             foreach(println, Sorts.sorts(placetype, parse_context.ddict))
@@ -232,12 +236,12 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
         if !isa_variant(sortref(default_sorttype), NamedSortRef)
-            error("$pntd default_sorttype of $(repr(placeid)) expected to be NamedSortRef" *
+            error("$pntd default_sorttype of $(repr(parentid)) expected to be NamedSortRef" *
                     ", found $(default_sorttype)")
         end
         if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype; parse_context.ddict)
             println()
-            @error("$pntd parse_hlinitialMarking of $placeid sortref mismatch: $default_sorttype != $placetype",
+            @error("$pntd parse_hlinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l, parse_context.ddict)
             Base.show_backtrace(stdout, stacktrace())
             println()
@@ -300,7 +304,10 @@ $(TYPEDSIGNATURES)
 hlinscriptions are expressions.
 """
 function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
-                             pntd::AbstractHLCore; netdata::PnmlNetData, parse_context::ParseContext, arcid::Symbol=:nothing)
+                             pntd::AbstractHLCore;
+                             netdata::PnmlNetData,
+                             parse_context::ParseContext,
+                             parentid::Symbol)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target, netdata), pntd; parse_context)::NamedTuple
     Inscription(l.text, l.exp, l.graphics, l.toolspecinfos, REFID[l.vars...], parse_context.ddict)
@@ -421,9 +428,10 @@ that holds an expression evaluating to a boolean value.
 One field of a Condition holds a boolean expression, `BoolExpr`.
 Another field holds information on variables in the expression.
 """
-function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
     l = parse_label_content(node, parse_condition_term, pntd; parse_context)::NamedTuple
-    isnothing(l.exp) && throw(PNML.MalformedException("missing condition term in $(repr(l))"))
+    isnothing(l.exp) &&
+        throw(PNML.MalformedException("$(repr(parentid)) missing condition term in $(repr(l))"))
     PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, REFID[l.vars...], parse_context.ddict)
 end
 
@@ -451,7 +459,7 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type. Nor a
 We allow all pntd's places to have a <type> label.
 Non-high-level net places are expecting a numeric sort: eltype(sort) <: Number.
 """
-function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_sorttype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd; parse_context)::NamedTuple
     @assert isempty(l.vars) # No variables as sort is not a term.
@@ -493,12 +501,46 @@ A "claimed" label usually elids the <structure> level (does not call this method
 """
 function parse_structure(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "structure")
-    @warn "parse_structure is not a well defined thing, $pntd" unparsed_tag(node) parse_context.ddict
-    @show (nname, d) = unparsed_tag(node)
+    @warn "parse_structure is not a well defined thing, $pntd" xmldict(node) parse_context.ddict
+    @show (nname, d) = xmldict(node)
     # tuple(EzXML.nodename(node), xd::Union{DictType, String, SubString{String}})
     #PNML.Labels.Structure(nname, d; parse_context.ddict) #TODO anyelement
     error("parse_structure not any good, man")
 end
 
+# <rate> label something like <inscription> or <initialMarking>
+# See parse_inscription or parse_initialMarking
+function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
+    check_nodename(node, "rate")
+    #@warn "parse_rate of $(repr(parentid))"
+    txt = nothing
+    value = nothing
+    graphics::Maybe{Graphics} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            txt = string(strip(EzXML.nodecontent(child)))
+            value = PNML.number_value(PNML.value_type(Rate, pntd), txt)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # inscription label
+        else
+            @warn("ignoring unexpected child of <rate>: '$tag'")
+        end
+    end
+
+    # Treat missing value as if the <rate> element was absent.
+    if isnothing(value)
+        value = one(PNML.value_type(Rate, pntd))
+        CONFIG[].warn_on_fixup &&
+            @warn("$(repr(parentid)) has missing or unparsable <rate> value '$txt' replaced with $value")
+    end
+
+    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    return Rate(term, graphics, toolspecinfos, parse_context.ddict)
+end
 
 #! 2025-06-04 removed parse_label

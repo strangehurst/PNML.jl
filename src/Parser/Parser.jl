@@ -30,7 +30,7 @@ using ..Sorts
 using ..Sorts: make_sortref
 using ..Declarations
 
-using PNML: Maybe, CONFIG, AnyElement, D
+using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D
 using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys
