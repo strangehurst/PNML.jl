@@ -40,7 +40,7 @@ We start a description of the net IR here.
   * [`AnyElement`](@ref)
   * [`Labels.PnmlLabel`](@ref)
   * [`Labels.SortType`](@ref)
-  * [`Parser.unparsed_tag`](@ref)
+  * [`Parser.xmldict`](@ref)
 
 ## Top Level: Model, Net, Page
 

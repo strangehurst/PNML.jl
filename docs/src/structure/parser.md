@@ -16,7 +16,7 @@ Marking is a ground term and is used to give a Petri net marking vector an initi
 
 ## Unclaimed Labels
 
-XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`Parser.unparsed_tag`](@ref).
+XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`Parser.xmldict`](@ref).
 
 See [`AnyElement`](@ref), [`Parser.anyelement`](@ref), [`PnmlLabel`](@ref)
 
