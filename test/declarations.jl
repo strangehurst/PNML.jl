@@ -2,6 +2,10 @@ using PNML, ..TestUtils, JET
 using InteractiveUtils
 using Printf
 
+#!
+#! TODO add tests for variable declarations
+#!
+
 function _subtypes(type::Type)
     out = Any[]
     _subtypes!(out, type)

@@ -534,7 +534,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
 
         # make a user/named sort duo
         namedsorts(parse_context.ddict)[sorttag] = NamedSort(sorttag, string(sorttag), psort, parse_context.ddict)
-        make_sortref(parse_context, productsorts, psort, "product", sorttag, "")
+        make_sortref(parse_context, productsorts, psort, "product", sorttag, "") #! is above fill_sort_tag! redundant?
     else
         ProductSortRef(sorttag)
     end

@@ -3,16 +3,17 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Maps a `Symbol` to a parser callable for a `<labeltag>` tag's well-formed contents.
+Maps a `Symbol` to a callable for parsing an XML label `<tag>`'s well-formed contents.
 The parser will be called as func(node, pntd) and return a label object.
+
+See [`fill_labelp!`](@ref) for some built-in label parsers.
 """
 @auto_hash_equals struct LabelParser
     tag::Symbol
     func::Base.Callable
 end
 
-"Name of xml tag."
 tag(lp::LabelParser) = lp.tag
 
-"Callable."
+"LabelParser Callable."
 func(lp::LabelParser) = lp.func

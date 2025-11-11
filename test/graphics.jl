@@ -16,16 +16,16 @@ end
 @testset "graphics $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
     <graphics>
-     <offset x="1.0" y="2.0" />
-     <line  color="linecolor" shape="line" style="solid" width="1.0"/>
-     <position  x="1.0" y="2" />
-     <position  x="3.0" y="4" />
-     <dimension x="5.0" y="6" />
-     <offset    x="7.0" y="8" /><!-- override first offset -->
-     <fill  color="fillcolor" gradient-color="none" gradient-rotation="horizontal"/>
-     <font align="center" family="Dialog" rotation="0.0"  size="11.5"
-           style="normal" weight="normal" />
-    <unexpected/>
+        <offset x="1.0" y="2.0" />
+        <line  color="linecolor" shape="line" style="solid" width="1.0"/>
+        <position  x="1.0" y="2" />
+        <position  x="3.0" y="4" />
+        <dimension x="5.0" y="6" />
+        <offset    x="7.0" y="8" /><!-- override first offset -->
+        <fill  color="fillcolor" gradient-color="none" gradient-rotation="horizontal"/>
+        <font align="center" family="Dialog" rotation="0.0"  size="11.5"
+            style="normal" weight="normal" />
+        <unexpected/>
     </graphics>
     """
     n = @test_logs(

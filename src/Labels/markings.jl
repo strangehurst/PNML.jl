@@ -2,7 +2,7 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Number-valued label of [`Place`](@ref).
+Label of [`Place`](@ref).
 
 Is a functor that returns the `value`.
 ```

@@ -87,9 +87,9 @@ Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 function make_sortref(parse_context, dict::Base.Callable, sort, seed, sortid, name=nothing)
     #!@show sort dict seed sortid
     id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
-    if isnothing(id2) # Did not find existing
-        if isnothing(sortid) # no enclosing provided name/id
-            @show sortid = gensym(seed) # Invent REFID
+    if isnothing(id2) # Did not find existing ...
+        if isnothing(sortid) # and no enclosing provided name/id ...
+            @show sortid = gensym(seed) # so invent one.
         end
     end
     # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
