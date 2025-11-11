@@ -6,28 +6,18 @@
 #! 2 collections, one for PnmlLabels other for other Annotations?
 
 """
-    add_label!(collection, node, pntd) -> collection
+    add_label!(collection, node, pntd) -> nothing
 
 Parse and add [`PnmlLabel`](@ref) to collection, return collection.
 
 See [`AbstractPnmlObject`](@ref) for those XML entities that have labels.
 Any "unknown" XML is presumed to be a label.
 """
-function add_label!(v::Vector{PnmlLabel}, node::XMLNode, pntd, ctx::ParseContext)
+function add_label!(v::AbstractDict{Symbol,Any}, node::XMLNode, pntd, ctx::ParseContext)
     # `xmldict` returns a ordered collection of `AnyElement`.
-    return push!(v, PnmlLabel(xmldict(node)..., ctx.ddict))
+    v[Symbol(EzXML.nodename(node))] = PnmlLabel(xmldict(node)..., ctx.ddict)
+    return nothing
 end
-
-"""
-    add_label(infos::Maybe{collection}, node::XMLNode, pntd, parse_context) -> collection
-
-Allocate storage for collection on first use. Then parse and add a label.
-"""
-function add_label(v::Maybe{Vector{PnmlLabel}}, node::XMLNode, pntd, ctx::ParseContext)
-    labels = isnothing(v) ? PnmlLabel[] : v
-    return add_label!(labels, node, pntd, ctx)
-end
-
 
 #---------------------------------------------------------------------
 # TOOLINFO

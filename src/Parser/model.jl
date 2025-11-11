@@ -216,7 +216,7 @@ end
 """
     unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid)
 
-Apply a context labelparser to child if one matches nodename, otherwise call [`add_label`](@ref).
+Apply a context labelparser to child if one matches nodename, otherwise call [`add_label!`](@ref).
 """
 function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbol, pntd; parse_context, parentid::Symbol)
     #println("unexpected_label! $tag")
