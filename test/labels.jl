@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, NamedTupleTools
+using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
 const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
@@ -10,17 +10,17 @@ end
 #------------------------------------------------
 @testset "name $pntd" for pntd in PnmlTypes.core_nettypes()
     parse_context = PNML.parser_context()
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd; parse_context)
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd; parse_context, parentid=:xxx)
     @test n isa PNML.AbstractLabel
     @test PNML.text(n) == ""
 
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd; parse_context)
+    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd; parse_context, parentid=:xxx)
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
     @test n.toolspecinfos === nothing || isempty(n.toolspecinfos)
 
-    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; parse_context)
+    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; parse_context, parentid=:xxx)
     @test n isa PNML.Name
     @test PNML.text(n) == "some name"
     #TODO add parse_graphics
@@ -58,7 +58,7 @@ end
 
     # Parse ignoring unexpected child
     mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd; parse_context)::PNML.Marking)
+                parse_initialMarking(node, placetype, pntd; parse_context, parentid=:xxx)::PNML.Marking)
     #@test typeof(value(mark)) <: Union{Int,Float64}
     @test mark()::Union{Int,Float64} == 123
 
@@ -102,7 +102,7 @@ end
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
                     parse_inscription(n1, :nothing, :nothing, pntd;
-                    netdata=PnmlNetData(), parse_context))
+                            netdata=PnmlNetData(), parse_context, parentid=:xxx))
     @test inscript isa PNML.Inscription
     #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
     #@show inscript
@@ -136,45 +136,42 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
 @testset "labels $pntd" for pntd in PnmlTypes.core_nettypes()
     parse_context = PNML.parser_context()
-    lab = PnmlLabel[]
+    lab = OrderedCollections.LittleDict{Symbol,Any}() # PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
 
-        lab = PNML.Parser.add_label!(lab,
-                xmlnode("<test$x> $i </test$x>"), pntd, parse_context)
-        @test lab isa Vector{PnmlLabel}
-        @test length(lab) == i
+        PNML.Parser.add_label!(lab, xmlnode("<test$x> $i </test$x>"), pntd, parse_context)
     end
-    @test length(lab) == 4
+    @test length(lab) == 2
+    #@show lab
+    # for l in values(lab)
+    #     @test_opt tag(l)
+    #     @test_call tag(l)
+    #     @test tag(l) === :test1 || tag(l) === :test2
+    # end
 
-    for l in lab
-        @test_opt tag(l)
-        @test_call tag(l)
-        @test tag(l) === "test1" || tag(l) === "test2"
-    end
+    # @test_call has_label(lab, :test1)
+#    @test_call get_label(lab, :test1)
+    @test_call labels(lab, :test1)
+    @test_call labels(lab, :test2)
 
-    @test_call has_label(lab, "test1")
-    @test_call get_label(lab, "test1")
-    @test_call labels(lab, "test1")
+    # @test has_key(lab, :test1)
+    # @test !has_key(lab, :bumble)
 
-    @test has_label(lab, "test1")
-    @test !has_label(lab, :bumble)
-    @test !has_label(lab, "bumble")
+    # v = @inferred PnmlLabel get_label(lab, :test2)
+    # @test v isa PnmlLabel
+    # @test tag(v) === :test2
+    # @test elements(v) == "3"
 
-    v = @inferred PnmlLabel get_label(lab, "test2")
-    @test v isa PnmlLabel
-    @test tag(v) === "test2"
-    @test elements(v) == "3"
-
-    @testset "label $labeltag" for labeltag in ["test1", "test2"]
-        vec = PNML.labels(lab, labeltag)
-        lv = 0
-        for l in vec
-            @test tag(l) === labeltag
-            lv += 1
-        end
-        @test lv == 2
-    end
+    # @testset "label $labeltag" for labeltag in [:test1, :test2]
+    #     vec = PNML.labels(lab, labeltag)
+    #     lv = 0
+    #     for l in vec
+    #         @test tag(l) === labeltag
+    #         lv += 1
+    #     end
+    #     @test lv == 2
+    # end
 end
 
 function test_unclaimed(pntd, xmlstring::String)

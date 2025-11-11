@@ -10,7 +10,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         sorttype::SortType
@@ -22,7 +22,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         source::RefValue{Symbol} # REFID
@@ -36,7 +36,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         condition::C #! expression label
@@ -49,7 +49,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         ref::Symbol # Place or RefPlace REFID
@@ -60,7 +60,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         ref::Symbol # Transition or RefTransition REFID
@@ -72,7 +72,7 @@ using Moshi.Match:  @match
         namelabel::Maybe{Name} = nothing
         graphics::Maybe{Graphics} = nothing
         toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-        extralabels::Maybe{Vector{PnmlLabel}} = nothing
+        extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
         net::RefValue{<:AbstractPnmlNet} # for pagedict netdata decldict
 
         netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict.

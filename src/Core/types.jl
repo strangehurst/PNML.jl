@@ -66,7 +66,7 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 #     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
     prop_name === :graphics  && return getfield(o, :graphics)::Maybe{Graphics}
-    prop_name === :extralabels && return getfield(o, :extralabels)::Maybe{Vector{PnmlLabel}}
+    prop_name === :extralabels && return getfield(o, :extralabels)::LittleDict{Symbol,Any}
     prop_name === :toolnfos  && return getfield(o, :toolspecinfos)::Maybe{Vector{ToolInfo}}
 
     return getfield(o, prop_name)
@@ -93,25 +93,25 @@ graphics(o::AbstractPnmlObject)     = o.graphics
 
 # Jet once needed a hint about `o`.
 function has_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
-    (isnothing(o) && error("o is nothing")) ||
-        (has_labels(o) && has_label(labels(o), tag))
+    isnothing(o) && error("o is nothing")
+    return has_labels(o) && haskey(labels(o), tag)
 end
 
 function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
-    (isnothing(o) && error("o is nothing")) ||
-        (has_labels(o) && get_label(labels(o), tag))
+    isnothing(o) && error("o is nothing")
+    return has_labels(o) ? labels(o)[tag] : nothing
 end
 
 """
-    labelof(x, tag) -> Maybe{PnmlLabel}
+    labelof(x, tag) -> Maybe{AbstractLabel}
 
 `x` is anyting that supports has_label/get_label,
 `tag` is the tag of the xml label element.
 """
 function labelof(x, tag::Union{Symbol, String, SubString{String}})
     if has_labels(x)
-        l = labels(x)
-        return has_label(l, tag) ? @inbounds(get_label(l, tag))::PnmlLabel : nothing
+        l = labels(x)::AbstractDict
+        return haskey(l, tag) ? @inbounds(l[tag]) : nothing
     end
     return nothing
 end

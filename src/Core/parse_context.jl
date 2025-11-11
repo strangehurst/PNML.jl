@@ -6,7 +6,7 @@ $(DocStringExtensions.TYPEDFIELDS)
 @kwdef struct ParseContext
     idregistry::PnmlIDRegistry = PnmlIDRegistry() # empty
     ddict::DeclDict = DeclDict() # empty
-    labelparser::Vector{LabelParser} = LabelParser[] # empty
+    labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
     toolparser::Vector{ToolParser} = ToolParser[] # empty
 end
 
@@ -16,11 +16,12 @@ end
  Return a `ParserContext` filled with default values.
  """
 function parser_context()
-     fill_nonhl!(ParseContext())
+     ctx = fill_nonhl!(ParseContext())
+     fill_labelp!(ctx) # Built-in label parsers
 end
 
 """
-    fill_nonhl!(ctx::ParseContext; idreg::PnmlIDRegistry) -> DeclDict
+    fill_nonhl!(ctx::ParseContext) -> DeclDict
 
 Fill a DeclDict with built-ins and defaults (that may be redefined).
 """
@@ -51,9 +52,6 @@ If not already in the declarations dictionary `dict`, add `sort` with key of `ta
 Register the tag and create and return an `AbstractSortRef` holding `tag`.
 """
 function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callable)
-    # if dict == PNML.namedsorts && isa(sort, NamedSort)
-    #     @error "dict == PNML.namedsorts && isa(sort, NamedSort)" tag dict sort
-    # end
     #!println("fill_sort_tag! ", tag)
     # Ensure `sort` is in `dict`, then return SortRef ADT encoding type:
     if !has_key(ctx.ddict, dict, tag) # Do not overwrite existing content.
@@ -69,4 +67,27 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
         _ => NamedSortRef(tag)                       # declaration
         # usersort -> namedsort | partitionsort | arbitrary sort
     end
+end
+
+"""
+    fill_labelp!(ctx::ParseContext) -> ParseContext
+
+Fill context with the base built-in label parsers. Useful in test stubs.
+
+"""
+function fill_labelp!(ctx::ParseContext)
+    ctx.labelparser[:initialMarking]   = Parser.parse_initialMarking
+    ctx.labelparser[:hlinitialMarking] = Parser.parse_hlinitialMarking
+    ctx.labelparser[:inscription]      = Parser.parse_inscription
+    ctx.labelparser[:hlinscription]    = Parser.parse_hlinscription
+    ctx.labelparser[:condition]        = Parser.parse_condition
+    ctx.labelparser[:graphics]         = Parser.parse_graphics
+    #ctx.labelparser[:declaration]      = Parser.parse_declaration
+    ctx.labelparser[:name]             = Parser.parse_name
+    ctx.labelparser[:type]             = Parser.parse_sorttype
+
+    # Non-standard extensions
+    ctx.labelparser[:rate] = Parser.parse_rate
+    #ctx.labelparser[:xxx] = Parser.parse_xxx
+    return ctx
 end

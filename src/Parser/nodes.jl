@@ -61,7 +61,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
                 SortType("default", Labels.default_typesort(pntd), parse_context.ddict)
             end
         else
-            parse_sorttype(typenode, pntd; parse_context)
+            parse_sorttype(typenode, pntd; parse_context, parentid=placeid)
         end
     end
     #TODO capacity label
@@ -69,25 +69,25 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     namelabel::Maybe{Name}           = nothing
     graphics::Maybe{Graphics}        = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
 
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "initialMarking" || tag == "hlinitialMarking"
+        tag = Symbol(EzXML.nodename(child))
+        if tag == :initialMarking || tag == :hlinitialMarking
             isnothing(sorttype) && @warn "$pntd parse_place $placeid sorttype is nothing"
-            mark = _parse_marking(child, sorttype, pntd; parse_context, placeid)
-        elseif tag == "type"
+            #! @show parse_context.labelparser
+            mark = parse_context.labelparser[tag](child, sorttype, pntd; parse_context, parentid=placeid)
+        elseif tag == :type
             # we already handled this
-        elseif tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
+        elseif tag == :name
+            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=placeid)
+        elseif tag == :graphics
+            graphics = parse_context.labelparser[tag](child, pntd)
+        elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
-            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_place $placeid found unexpected label of <place>: $tag"
-            unexpected_label!(extralabels, child, tag, pntd, parse_context)
-            #extralabels = add_label(extralabels, child, pntd, parse_context)
+            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_place $(repr(placeid)) found unexpected label $(repr(tag))"
+            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=placeid)
         end
     end
 
@@ -127,28 +127,23 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
 
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "condition"
-            cond = parse_condition(child, pntd; parse_context)
-        elseif tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
+        tag = Symbol(EzXML.nodename(child))
+        if tag == :condition
+            cond = parse_context.labelparser[tag](child, pntd; parse_context, parentid=transitionid)
+        elseif tag == :name
+            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=transitionid)
+        elseif tag == :graphics
+            graphics = parse_context.labelparser[tag](child, pntd)
+        elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            #! Create extension point here!
-            #! `parse_contex` will have a list of possible `LabelParser`s.
-            #!
-            # Lookup parser for tag
-            #
-            any(==(tag), ("rate", "delay")) ||
-                @warn "found unexpected label of <transition> id=$transitionid: $tag"
-            extralabels = add_label(extralabels, child, pntd, parse_context)
-            #!@show extralabels
+            #any(==(tag), (:rate, :delay)) ||
+            CONFIG[].warn_on_unclaimed &&
+                @warn "$pntd parse_transition $(repr(transitionid)) found unexpected label $(repr(tag))"
+            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=transitionid)
         end
     end
 
@@ -175,28 +170,27 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}}  = nothing
-    extralabels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
 
     D()&& println("## parse_arc $(repr(arcid)) source $(repr(source)) target $(repr(target))")
 
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "inscription" || tag == "hlinscription"
+        tag = Symbol(EzXML.nodename(child))
+        if tag == :inscription || tag == :hlinscription
             # Input arc inscription and source's marking/placesort must have equal Sorts.
             # Output arc inscription and target's marking/placesort must have equal Sorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
-            inscription = _parse_inscription(child, source, target, pntd; netdata, parse_context)
-        elseif tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
+            inscription = parse_context.labelparser[tag](child, source, target, pntd; netdata, parse_context, parentid=arcid)
+        elseif tag == :name
+            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=arcid)
+        elseif tag == :graphics
+            graphics = parse_context.labelparser[tag](child, pntd)
+        elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
         else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <arc>: $tag"
-            unexpected_label!(extralabels, child, tag, pntd, parse_context)
-            #extralabels = add_label(extralabels, child, pntd, parse_context)
+            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_arc $(repr(arcid)) found unexpected label $(repr(tag))"
+            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=arcid)
         end
     end
 
@@ -230,17 +224,6 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
 
-# By specializing arc inscription label parsing we hope to return stable type.
-function _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
-                    netdata, parse_context::ParseContext)
-    parse_inscription(node, source, target, pntd; parse_context) #! , netdata)
-end
-function _parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::T;
-                    netdata, parse_context) where {T<:AbstractHLCore}
-    parse_hlinscription(node, source, target, pntd; netdata, parse_context)
-    # `netdata` used to find adjacent place's sorttype.
-end
-
 """
 $(TYPEDSIGNATURES)
 """
@@ -254,20 +237,19 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::Maybe{Vector{PnmlLabel}} = nothing
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
 
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
+        tag = Symbol(EzXML.nodename(child))
+        if tag == :name
+            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=refp_id)
+        elseif tag == :graphics
+            graphics =  parse_context.labelparser[tag](child, pntd)
+        elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referencePlace>: $tag"
-            unexpected_label!(extralabels, child, tag, pntd, parse_context)
-            #extralabels = add_label(extralabels, child, pntd, parse_context)
+            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_refPlace $(repr(refp_id)) found unexpected label $(repr(tag))"
+            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=refp_id)
         end
     end
 
@@ -287,35 +269,21 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::Maybe{Vector{PnmlLabel}}= nothing
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
 
     for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "name"
-            namelabel = parse_name(child, pntd; parse_context)
-        elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
-        elseif tag == "toolspecific"
+        tag = Symbol(EzXML.nodename(child))
+        if tag == :name
+            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=reft_id)
+        elseif tag == :graphics
+            graphics = parse_context.labelparser[tag](child, pntd)
+        elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected child of <referenceTransition>: $tag"
-            unexpected_label!(extralabels, child, tag, pntd, parse_context)
-            #extralabels = add_label(extralabels, child, pntd, parse_context)
+            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_refTransition $(repr(reft_id)) found unexpected label $(repr(tag))"
+            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=reft_id)
         end
     end
 
     RefTransition(reft_id, ref, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
 end
-
-
-# Call marking parser specialized on the pntd.
-_parse_marking(node::XMLNode, placetype, pntd::PnmlType; parse_context, placeid) =
-    parse_initialMarking(node, placetype, pntd; parse_context, placeid)
-
-_parse_marking(node::XMLNode, placetype, pntd::AbstractHLCore; parse_context, placeid) =
-    parse_hlinitialMarking(node, placetype, pntd; parse_context, placeid)
-# _parse_marking(node::XMLNode, placetype, pntd::T; parse_context, placeid) where {T<:PnmlType} =
-#     parse_initialMarking(node, placetype, pntd; parse_context, placeid)
-
-# _parse_marking(node::XMLNode, placetype, pntd::T; parse_context, placeid) where {T<:AbstractHLCore} =
-#     parse_hlinitialMarking(node, placetype, pntd; parse_context, placeid)

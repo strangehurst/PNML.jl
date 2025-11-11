@@ -21,7 +21,7 @@ One Petri Net of a PNML model.
     namelabel::Maybe{Name} = nothing
     # no graphics for net
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::Vector{PnmlLabel} = PnmlLabel[] # empty by default
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}() # empty by default
     idregistry::PnmlIDRegistry
 end
 
@@ -88,7 +88,7 @@ has_tools(net::PnmlNet) = !isnothing(net.toolspecinfos)
 toolinfos(net::PnmlNet)     = net.toolspecinfos
 
 has_labels(net::PnmlNet) = !isnothing(net.extralabels)
-labels(net::PnmlNet)     = net.extralabels # Vectors are iteratable.
+labels(net::PnmlNet)     = net.extralabels
 
 has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
 name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""
