@@ -88,6 +88,7 @@ function fill_labelp!(ctx::ParseContext)
 
     # Non-standard extensions
     ctx.labelparser[:rate] = Parser.parse_rate
+    ctx.labelparser[:priority] = Parser.parse_priority
     #ctx.labelparser[:xxx] = Parser.parse_xxx
     return ctx
 end

@@ -121,6 +121,7 @@ while `PnmlLabel` is restricted to PNML Labels.
 end
 
 tag(label::PnmlLabel) = label.tag
+tag(p::Pair{Symbol, PnmlLabel}) = p.first
 elements(label::PnmlLabel) = label.elements
 
 function Base.show(io::IO, labelvector::Vector{PnmlLabel})
@@ -158,9 +159,9 @@ function labels(iteratable, tag::Union{Symbol, String, SubString{String}})
     Iterators.filter(Fix2(hastag, tag), iteratable)
 end
 
-"Return label matching `tagvalue`` or `nothing``."
+"Return label matching `tag`` or `nothing``."
 function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
-    first(labels(iteratable, tag))::PnmlLabel
+    first(labels(iteratable, tag)).second::PnmlLabel
 end
 
 "Return `true` if collection `iteratable` contains label with `tag`."

@@ -1,27 +1,22 @@
-# Some labels are not part of the Specicication.
-# It defines meta-models on top of a core label mechanism.
-# The only label defined in the core model is `Name`.
-# Meta-models define labels, including: marking, inscription, condition, declaration.
-# New, unknown, differemt labels may belong to a different meta-model.
-# We handle such labels by using the `anyelement` mechansim that fills a DictType.
-#
-# Rates were the first use of this mechanim.
-# NB: Part 3 of the standard has words about extensions. We should look someday.
-
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Real valued label. An expected use is as a transition rate.
-Expected XML: `<rate> <text>0.3</text> </rate>`
+Expected XML: `<rate> <text>0.3</text> </rate>`.
 """
 @kwdef struct Rate{T<:PnmlExpr} <: Annotation
     #todo text
-    term::T
+    term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     declarationdicts::DeclDict
 end
+
+value_type(::Type{Rate}) = Float64
+value_type(::Type{Rate}, ::PnmlType) = Float64
+
+Base.eltype(::Rate) = value_type(Rate)
 
 decldict(i::Rate) = i.declarationdicts
 term(i::Rate) = i.term
@@ -32,19 +27,11 @@ function (rate::Rate)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(rate), varsub, decldict(rate)))::value_type(Rate)
 end
 
-Base.eltype(::Rate) = value_type(Rate)
 value(r::Rate) = r()
 
 function Base.show(io::IO, r::Rate)
     print(io, "Rate(", r.term, ", ", repr(r.graphics),  ", ", repr(r.toolspecinfos), ")")
 end
-
-"Parse content of `<text>` as a number of `value_type`."
-function number_content_parser(label, value_type)
-    #@show label value_type #! debug
-    str = PNML.text_content(elements(label))
-    PNML.number_value(value_type, str)::Number
- end
 
 """
     rate_value(t) -> Real
@@ -57,100 +44,5 @@ Expected label XML: `<rate> <text>0.3</text> </rate>`
     `t` is anything that supports `labelof(t, tag)`.
 """
 function rate_value(t)
-    label = labelof(t, :rate)
-    if isnothing(label)
-        zero(value_type(Rate))
-    else
-        value(label)::value_type(Rate)
-    end
-end
-
-value_type(::Type{Rate}) = Float64
-value_type(::Type{Rate}, ::PnmlType) = Float64
-
-
-#######################################################################################
-#^#####################################################################################
-#######################################################################################
-
-"""
-$(TYPEDSIGNATURES)
-
-Return delay label value as interval tuple: ("closure-string", left, right)
-Missing delay labels default to ("closed", 0.0, 0.0) a.k.a. zero.
-
-All net types may have a delay value type. Expected label XML: see MathML.
-Only non-negative.
-
-Supports
-  - ("closed-open", 0.0, ∞)  -> [0.0, ∞)
-  - ("open-closed", 2.0, 6.0 -> (2.0, 6.0]
-  - ("open", 2.0, 6.0)       -> (2.0, 6.0)
-  - ("closed", 2.0, 6.0)     -> [2.0, 6.0]
-"""
-function delay_value(t;
-            tag::String = "delay",
-            valtype::Type{<:Number} = Float64,
-            content_parser::Base.Callable = delay_content_parser,
-            default_value = tuple("closed", 0.0, 0.0))
-    label = labelof(t, tag)
-    d = if isnothing(label)
-        default_value
-    else
-        D()&& @show label valtype
-        content_parser(label, valtype)::Tuple
-    end
-    D()&& @show d
-    return d
-end
-
-function delay_content_parser(label, value_type)
-    (tag, interval) = first(elements(label))
-    tag == "interval" || error("expected 'interval', found '$tag'")
-    D()&& @show value_type
-    closure  = PNML._attribute(interval, :closure)
-    D()&& @show closure
-
-    n = if haskey(interval, "cn") # Expect at least one cn.
-        let cn = @inbounds interval["cn"]
-            (isnothing(cn) || isempty(cn)) &&
-                throw(ArgumentError(string("<delay><interval> <cn> element is ", cn)))
-            x = if cn isa Vector
-                value_type[PNML.number_value(value_type, x) for x in cn]
-            else
-                value_type[PNML.number_value(value_type, cn)]
-            end
-            D()&& @show x
-        end
-
-    else
-        throw(ArgumentError(string("<delay><interval> missing any <cn> element")))
-    end
-    D()&& @show n
-
-    i = if haskey(interval, "ci") # At most one ci named constant.
-        let ci = @inbounds interval["ci"]
-            (isnothing(ci) || isempty(ci)) &&
-                throw(ArgumentError("<interval> <ci> element is $ci"))
-            x = if ci isa Vector
-                value_type[_ci(x) for x in ci]
-            else
-                value_type[_ci(ci)]
-            end
-        end
-    else
-        length(n) == 1 && throw(ArgumentError("<interval> <ci> element missing."))
-    end
-    D()&& @show n
-    length(i) > 1 && throw(ArgumentError("<interval> has too many <ci> elements."))
-
-    return tuple(closure, n[1], length(n) == 1 ? i[1] : n[2])
-end
-
-function _ci(i)
-    if i == "infin" || i == "infty"
-        return Inf
-    else
-        error("may only contain infin|infty, found: $ci")
-    end
+    label_value(t, :rate, value_type(Rate), zero)::value_type(Rate)
 end

@@ -226,7 +226,7 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
             parse_context.labelparser[tag](child, pntd; parse_context, parentid)
     else
         l = PnmlLabel(xmldict(child)..., parse_context.ddict)
-        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l
+        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))"
         extralabels[tag] = l
     end
     return nothing

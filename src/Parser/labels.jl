@@ -543,4 +543,38 @@ function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, 
     return Rate(term, graphics, toolspecinfos, parse_context.ddict)
 end
 
+
+function parse_priority(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
+    check_nodename(node, "priority")
+    #@warn "parse_priority of $(repr(parentid))"
+    txt = nothing
+    value = nothing
+    graphics::Maybe{Graphics} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            txt = string(strip(EzXML.nodecontent(child)))
+            value = PNML.number_value(PNML.value_type(Priority, pntd), txt)
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # inscription label
+        else
+            @warn("ignoring unexpected child of <priority>: '$tag'")
+        end
+    end
+
+    # Treat missing value as if the <rate> element was absent.
+    if isnothing(value)
+        value = one(PNML.value_type(Priority, pntd))
+        CONFIG[].warn_on_fixup &&
+            @warn("$(repr(parentid)) has missing or unparsable <priority> value '$txt' replaced with $value")
+    end
+
+    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    return Priority(term, graphics, toolspecinfos, parse_context.ddict)
+end
+
 #! 2025-06-04 removed parse_label

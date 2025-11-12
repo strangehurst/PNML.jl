@@ -202,7 +202,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
                 SortType("dummy PT_HLPNG", NamedSortRef(:dot),  parse_context.ddict)
             else
                 #D()&&r),  par
-                @error "$pntd inscription not provided for arc $arcid ($source -> $target), will use :dot."
+                @error "$pntd inscription not provided for arc $(repr(arcid)) ($(repr(source)) -> $(repr(target))), will use :dot."
                 D()&& Base.show_backtrace(stdout, stacktrace())
 
                 #TODO XXX Use the adjacent place's sorttype.

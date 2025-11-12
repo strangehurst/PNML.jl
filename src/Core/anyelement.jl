@@ -90,15 +90,21 @@ Internal helper for things that contain `DictType`.
 function dict_show end
 
 # Called by show AnyElement
-dict_show(io::IO, d::DictType) = begin
+function dict_show(io::IO, d::DictType)
     iio = inc_indent(io)
     for (i, kv) in enumerate(pairs(d))
         i > 1 && print(iio, indent(iio))
-        print(iio, "d[$(repr(kv.first))] = ") #! Differs from `_d_show` here.
-        dict_show(iio, kv.second)            #! And here.
+        print(iio, "d[$(repr(kv.first))] = ") #! a Pair
+        dict_show(iio, kv.second)
         length(keys(d)) > 1 && i < length(keys(d)) && println(io)
     end
     #print(io, ")") # after
+end
+function dict_show(io::IO, d::Vector)
+    iio = inc_indent(io)
+    for el in d
+        dict_show(iio, el)
+    end
 end
 
 dict_show(io::IO, s::SubString{String}) = show(io, s)
@@ -111,5 +117,5 @@ function Base.show(io::IO, ::MIME"text/plain", d::DictType)
     show(io, d)
 end
 function Base.show(io::IO, d::DictType)
-    dict_show(IOContext(io, :typeinfo => DictType), d)
+    dict_show(io, d)
 end
