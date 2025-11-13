@@ -102,9 +102,12 @@ function dict_show(io::IO, d::DictType)
 end
 function dict_show(io::IO, d::Vector)
     iio = inc_indent(io)
-    for el in d
+    print(iio, "[")
+    for (i,el) in enumerate(d)
         dict_show(iio, el)
+        length(keys(d)) > 1 && i < length(keys(d)) && print(iio, ", ")
     end
+    print(iio, "]")
 end
 
 dict_show(io::IO, s::SubString{String}) = show(io, s)
