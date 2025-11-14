@@ -140,7 +140,6 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            #any(==(tag), (:rate, :delay)) ||
             CONFIG[].warn_on_unclaimed &&
                 @warn "$pntd parse_transition $(repr(transitionid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=transitionid)

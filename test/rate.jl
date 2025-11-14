@@ -96,7 +96,7 @@ println("DELAY")
     #@show PNML.get_label(ls, :delay) #! debug
     #@show PNML.labelof(t, :delay) #! debug
     @test PNML.get_label(ls, :delay) == PNML.labelof(t, :delay)
-    @test PNML.delay_value(t) isa Tuple
+    @test PNML.delay_value(t)::Tuple == ("closed", 4.0, 9.0)
     #println()
 
     # unbounded interval [4,∞)
@@ -109,8 +109,8 @@ println("DELAY")
         </delay>
     </transition>"""
     t = parse_transition(node, pntd; parse_context)::Transition
-    @test PNML.delay_value(t) isa Tuple
-    #@show PNML.labelof(t, "delay") #! debug
+    @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
+    @test PNML.delay_value(t)::Tuple == ("closed-open", 4.0, Base.Inf)
     #println()
 
     # interval (3,5)
@@ -123,8 +123,9 @@ println("DELAY")
         </delay>
     </transition>"""
     t = parse_transition(node, pntd; parse_context)::Transition
-    @test PNML.delay_value(t) isa Tuple
-    #@show PNML.labelof(t, "delay") #! debug
+    @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
+    #@show PNML.delay_value(t)::Tuple
+    @test PNML.delay_value(t)::Tuple == ("open", 3.0, 5.0)
     #println()
 
 end
