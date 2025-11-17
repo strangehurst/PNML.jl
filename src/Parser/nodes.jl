@@ -233,7 +233,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
 
     # Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
     Arc(; id=arcid, source=Ref(source), target=Ref(target),
-        inscription, arctype=arc_type_label, namelabel, graphics, toolspecinfos, extralabels,
+        inscription, arctypelabel=arc_type_label, namelabel, graphics, toolspecinfos, extralabels,
         declarationdicts=parse_context.ddict)
 end
 

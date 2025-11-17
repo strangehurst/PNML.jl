@@ -17,4 +17,4 @@ end
 #     ArcType(t, ae, g, i)
 # end
 
-arctype(at::ArcType) = at.earctypenum
+arctype(at::ArcType) = at.arctype

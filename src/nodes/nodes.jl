@@ -107,7 +107,7 @@ $(TYPEDFIELDS)
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
     inscription::Inscription{T} #! expression label
-    arctype::ArcType
+    arctypelabel::ArcType
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -126,13 +126,28 @@ function inscription(arc::Arc)
 end
 
 """
-    arctype(arc::Arc) -> ArcType
+    arctypelabel(arc::Arc) -> ArcType
 
 Access arctype label of arc.
 """
-function arctype(arc::Arc)
-    arc.arctype # label
+function arctypelabel(arc::Arc)
+    arc.arctypelabel # label
 end
+
+isnormal(arc::Arc)    = isnormal(arctypelabel(arc))
+isinhibitor(arc::Arc) = isinhibitor(arctypelabel(arc))
+isread(arc::Arc)      = isread(arctypelabel(arc))
+isreset(arc::Arc)     = isreset(arctypelabel(arc))
+
+isnormal(label::ArcType)    = isnormal(arctype(label))
+isinhibitor(label::ArcType) = isinhibitor(arctype(label))
+isread(label::ArcType)      = isread(arctype(label))
+isreset(label::ArcType)     = isreset(arctype(label))
+
+isnormal(e::AbstractArcEnum)    = isa_variant(e, ArcT.normal)
+isinhibitor(e::AbstractArcEnum) = isa_variant(e, ArcT.inhibitor)
+isread(e::AbstractArcEnum)      = isa_variant(e, ArcT.read)
+isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
 
 sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
 
@@ -158,7 +173,7 @@ function Base.show(io::IO, arc::Arc)
           ", ", repr(source(arc)),
           ", ", repr(target(arc)),
           ", ", repr(inscription(arc)),
-          ", ", repr(arctype(arc)))
+          ", ", repr(arctypelabel(arc)))
     print(io, ")")
 end
 

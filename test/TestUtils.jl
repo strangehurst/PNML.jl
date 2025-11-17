@@ -2,6 +2,8 @@
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
 Multisets.set_key_value_show()
+@reexport import Moshi.Match: @match
+@reexport import Moshi.Data: @data, isa_variant, is_data_type, variant_type
 
 @reexport using PNML
 @reexport using PNML.Sorts

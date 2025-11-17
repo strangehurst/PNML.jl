@@ -259,6 +259,14 @@ See also [`all_arcs`](@ref), [`src_arcs`](@ref).
 """
 function tgt_arcs end
 
+function arctype end
+
+function isnormal end
+function isinhibitor end
+function isread end
+function isreset end
+
+
 """
 $(TYPEDSIGNATURES)
 Return incription value of `arc`.

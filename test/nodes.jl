@@ -101,11 +101,12 @@ end
     @test condition(t)() === true
 end
 
+using PNML: isnormal, isinhibitor, isread, isreset
 println("\n==============================================================================")
 @testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
     pntd = PnmlCoreNet()
 
-    str = """<arc source="transition1" target="place1" id="arc1">
+    str = """<arc source="t1" target="p1" id="a1">
         <arctype>
             <text> $arct </text>
         </arctype>
@@ -116,8 +117,22 @@ println("\n=====================================================================
     parse_context = PNML.Parser.parser_context()
 
     a = parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc
-    @show a
-    @test pid(a) === :arc1
+    atl = PNML.arctypelabel(a)
+    arct = PNML.Labels.arctype(atl)
+
+    # @show isnormal(a), isinhibitor(a), isread(a), isreset(a)
+    # @show isnormal(atl), isinhibitor(atl), isread(atl), isreset(atl)
+    # @show isnormal(arct), isinhibitor(arct), isread(arct), isreset(arct)
+
+    @test length(Base.findall([isnormal(a), isinhibitor(a), isread(a), isreset(a)])) == 1
+    @test length(Base.findall([isnormal(atl), isinhibitor(atl), isread(atl), isreset(atl)])) == 1
+    @test length(Base.findall([isnormal(arct), isinhibitor(arct), isread(arct), isreset(arct)])) == 1
+
+    @test isnormal(a) == isnormal(atl) == isnormal(arct)
+    @test isinhibitor(a) == isinhibitor(atl) ==isinhibitor(arct)
+    @test isread(a) == isread(atl) == isread(arct)
+
+    @test pid(a) === :a1
     @test !has_name(a)
     @test inscription(a)(NamedTuple()) == 1
     println()

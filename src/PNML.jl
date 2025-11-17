@@ -53,7 +53,7 @@ import EzXML
 import XMLDict
 import Multisets: Multisets, Multiset
 import Moshi.Match: @match
-import Moshi.Data: @data
+import Moshi.Data: @data, isa_variant, is_data_type, variant_type
 import Moshi.Derive: @derive
 import SciMLPublic: @public
 import Metatheory
