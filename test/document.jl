@@ -59,6 +59,10 @@ end
 
         @test PNML.namespace(model) == "http://www.pnml.org/version-2009/grammar/pnml"
 
+        Base.redirect_stdio(stdout=devnull, stderr=devnull) do
+            @show model
+        end
+
         modelnets = PNML.nets(model)::Tuple
         @test length(modelnets) == 5
         @test all(PNML.registry_of(n) isa PnmlIDRegistry for n in modelnets)
