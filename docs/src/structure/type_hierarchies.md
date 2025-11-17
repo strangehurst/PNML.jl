@@ -184,10 +184,3 @@ do not depend on the current marking of the net.
 ```@example type
 type_tree(PNML.PnmlExpr) # hide
 ```
-
-##  AbstractPetriNet
-__Note__ [`AbstractPetriNet`](@ref) is a facade for [`PnmlNet`](@ref).
-There may be other facades. For example stock flow nets.
-```@example type
-type_tree(PNML.AbstractPetriNet) # hide
-```
