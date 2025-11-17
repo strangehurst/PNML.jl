@@ -102,7 +102,26 @@ end
 end
 
 println("\n==============================================================================")
+@testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
+    pntd = PnmlCoreNet()
 
+    str = """<arc source="transition1" target="place1" id="arc1">
+        <arctype>
+            <text> $arct </text>
+        </arctype>
+      </arc>"""
+    #@show str
+    node = xmlnode(str)
+    PNML.CONFIG[].warn_on_unclaimed = true
+    parse_context = PNML.Parser.parser_context()
+
+    a = parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc
+    @show a
+    @test pid(a) === :arc1
+    @test !has_name(a)
+    @test inscription(a)(NamedTuple()) == 1
+    println()
+end
 
 #! Needs scaffolding
 # @testset "arc $pntd"  for pntd in PnmlTypes.all_nettypes()

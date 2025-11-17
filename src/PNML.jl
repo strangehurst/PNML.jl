@@ -70,7 +70,7 @@ using DocStringExtensions
 # EXPORTS
 
 export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
-export REFID, SortRef, AbstractSortRef
+export REFID, SortRef, AbstractSortRef, ArcT, AbstractArcEnum
 export UserSortRef # From SortRef ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict

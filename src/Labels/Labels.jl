@@ -5,6 +5,7 @@ using DocStringExtensions
 using NamedTupleTools
 using Logging, LoggingExtras
 using SciMLLogging: @SciMLMessage
+using Moshi.Data: @data, isa_variant, is_data_type
 
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
@@ -53,6 +54,7 @@ include("sorttype.jl")
 include("inscriptions.jl")
 include("markings.jl")
 include("conditions.jl")
+include("arctypes.jl")
 include("rates.jl")
 include("delays.jl")
 include("priorities.jl")
@@ -89,7 +91,7 @@ export ToolInfo
 export text, get_label, label_value, rate_value, priority_value, delay_value
 export def_sort_element
 export ToolParser
-
+export ArcType, ArcT
 export Rate, Priority
 export default
 

@@ -86,8 +86,9 @@ function fill_labelp!(ctx::ParseContext)
     ctx.labelparser[:name]             = Parser.parse_name
     ctx.labelparser[:type]             = Parser.parse_sorttype
 
-    # Non-standard extensions
-    ctx.labelparser[:rate] = Parser.parse_rate
+
+    ctx.labelparser[:arctype]  = Parser.parse_arctype
+    ctx.labelparser[:rate]     = Parser.parse_rate
     ctx.labelparser[:priority] = Parser.parse_priority
     #ctx.labelparser[:xxx] = Parser.parse_xxx
     return ctx

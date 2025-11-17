@@ -102,11 +102,12 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Arc{T <: PnmlExpr} <: AbstractPnmlNode #Object
+@kwdef mutable struct Arc{T <: PnmlExpr} <: AbstractPnmlNode #Object
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
     inscription::Inscription{T} #! expression label
+    arctype::ArcType
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -117,11 +118,20 @@ end
 
 """
     inscription(arc::Arc) -> Inscription
-j'
+
 Access inscription label of arc.
 """
 function inscription(arc::Arc)
     arc.inscription # label
+end
+
+"""
+    arctype(arc::Arc) -> ArcType
+
+Access arctype label of arc.
+"""
+function arctype(arc::Arc)
+    arc.arctype # label
 end
 
 sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
@@ -147,8 +157,8 @@ function Base.show(io::IO, arc::Arc)
           ", ", repr(name(arc)),
           ", ", repr(source(arc)),
           ", ", repr(target(arc)),
-          ", ")
-    show(io, inscription(arc))
+          ", ", repr(inscription(arc)),
+          ", ", repr(arctype(arc)))
     print(io, ")")
 end
 

@@ -170,6 +170,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}}  = nothing
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
+    arc_type_label::Maybe{ArcType} = nothing
 
     D()&& println("## parse_arc $(repr(arcid)) source $(repr(source)) target $(repr(target))")
 
@@ -180,15 +181,21 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
             # Output arc inscription and target's marking/placesort must have equal Sorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
-            inscription = parse_context.labelparser[tag](child, source, target, pntd; netdata, parse_context, parentid=arcid)
+            inscription = parse_context.labelparser[tag](child, source, target, pntd;
+                            netdata, parse_context, parentid=arcid)
         elseif tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=arcid)
+            namelabel = parse_context.labelparser[tag](child, pntd;
+                            parse_context, parentid=arcid)
+        elseif tag == :arctype
+            arc_type_label = parse_context.labelparser[tag](child, pntd;
+                                parse_context, parentid=arcid)
         elseif tag == :graphics
             graphics = parse_context.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
         else
-            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_arc $(repr(arcid)) found unexpected label $(repr(tag))"
+            CONFIG[].warn_on_unclaimed &&
+            @warn "$pntd parse_arc $(repr(arcid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=arcid)
         end
     end
@@ -220,7 +227,14 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
         inscription = default(Inscription, pntd, dummy_placetype; parse_context.ddict)
     end
 
-    Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    if isnothing(arc_type_label)
+        arc_type_label = ArcType(; arctype=Labels.ArcT.normal())
+    end
+
+    # Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    Arc(; id=arcid, source=Ref(source), target=Ref(target),
+        inscription, arctype=arc_type_label, namelabel, graphics, toolspecinfos, extralabels,
+        declarationdicts=parse_context.ddict)
 end
 
 """

@@ -50,6 +50,50 @@ function parse_name(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, 
     return Name(text, graphics, toolspecinfos)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return [`ArcType`](@ref) label holding `<text>` value.
+With optional `<toolspecific>` & `<graphics>` information.
+"""
+function parse_arctype(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
+    check_nodename(node, "arctype")
+    text::Maybe{String} = nothing
+    graphics::Maybe{Graphics} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
+
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "text"
+            text = string(strip(EzXML.nodecontent(child)))::String
+        elseif tag == "graphics"
+            graphics = parse_graphics(child, pntd)
+        elseif tag == "toolspecific"
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # name label
+        else
+            @warn "$(repr(parentid)) ignoring unexpected child of <arctype>: '$tag'"
+        end
+    end
+
+    # There are pnml files that break the rules & do not have a text element here.
+    # Attempt to harvest content of <name> element instead of the child <text> element.
+    if isnothing(text)
+        emsg = "<arctype> missing <text> element."
+        throw(ArgumentError(emsg))
+    end
+
+    #@show text
+    arctype = @match text begin
+        "inhibitor" => ArcT.inhibitor()
+        "read" => ArcT.read()
+        "reset" => ArcT.reset()
+        _ => ArcT.normal()
+    end
+    #@show arctype
+    return ArcType(; text, arctype, graphics, toolspecinfos)
+end
+
+
 #----------------------------------------------------------
 #
 # PNML annotation-label XML element parsers.

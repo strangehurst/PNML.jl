@@ -264,6 +264,7 @@ sorts, thus making them accessable. This extends this decoupling (symbols instea
 to anonymous sorts that are inlined.
 """
 abstract type AbstractSortRef end
+
 # SortRef is the name of the Module created by the macro.
 @data SortRef <: AbstractSortRef begin
     struct UserSortRef
@@ -296,3 +297,14 @@ function refid(s::SortRef.Type)
     @assert s.refid !== :nothing
     return s.refid::REFID
 end
+
+abstract type AbstractArcEnum end
+
+# ArcT is the name of the Module created by the macro.
+@data ArcT <: AbstractArcEnum begin
+    normal
+    inhibitor
+    read
+    reset
+end
+@derive ArcT[Show,Hash,Eq]
