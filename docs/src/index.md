@@ -107,11 +107,24 @@ ISO *High-level Petri nets* Standard in multiple parts:
 - [*ISO/IEC 15909-2:2011/Cor 1:2013 — Part 2: Transfer format — TECHNICAL CORRIGENDUM 1*](https://www.iso.org/en/contents/data/standard/06/28/62800.html)
 - [*ISO/IEC 15909-3:2021 — Part 3: Extensions and structuring mechanisms*](https://www.iso.org/en/contents/data/standard/08/15/81504.html)
 
-[Towards a Standard for Modular Petri Nets:A Formalisation](https://portail.lipn.univ-paris13.fr/portail/plugins/publications/fichiers/EK-LP-ATPN09.pdf) expounds on structuring mechanism in 15909-3.
+[Towards a Standard for Modular Petri Nets:A Formalisation](https://portail.lipn.univ-paris13.fr/portail/plugins/publications/fichiers/EK-LP-ATPN09.pdf)
+expounds on structuring mechanism (modules and sort generators) in 15909-3.
+Might need to consult this to understand ISO 15909-3.
 From Proc. 30th Int. Conf. Application and Theory of Petri Nets (PetriNets’2009), Paris, France, June 2009, volume 5606 of Lecture Notes in Computer Science. Springer, 2009.
 
 [Extending PNML Scope: a Framework to Combine Petri Nets Types](https://www.pnml.org/papers/topnoc-2012.pdf)
-L.M. Hillah and F. Kordon and C. Lakos and L. Petrucci, Transactions on Petri Nets and Other Models of Concurrency, Springer 2012, LNCS 7400 (VI), pp.46-70
+L.M. Hillah and F. Kordon and C. Lakos and L. Petrucci, Transactions on Petri Nets and Other Models of Concurrency, Springer 2012, LNCS 7400 (VI), pp.46-70.
+Includes bits of UML2 for 2nd edition of ISO 15909-1 and 15909-3: priority nets, time nets (TPN), special arcs.
+Does not address FIFO Places, or structure/modules from part 3.
+Someday a 2nd edition of ISO 15909-2 will subsume this work and cover FIFO places and modular nets.
+
+
+[Operational PNML (OPNML)](http://gres.uninova.pt/opnml/index.html) Operational is an extension to PNML.
+[Operational PNML: Towards a PNML Support for Model Construction and Modification](https://www.academia.edu/4943280/)
+Gomes, Luis, and Joao Paulo Barros. Operational PNML: Towards a PNML Support for Model Construction and Modification. 2004.
+Does not seem to still be available. http://gres.uninova.pt/opnml/index.html does not have any live links.
+Does not have ISO 15909 as a reference.
+Has references to papers from pre-ISO 15909 covering modular Petri nets.
 
 [_nLab_](https://ncatlab.org/nlab/) a wiki for collaborative work on Mathematics, Physics, and Philosophy:
    - [multisorted algebraic theories](https://ncatlab.org/nlab/show/algebraic+theory#multisorted_algebraic_theories)
@@ -183,12 +196,9 @@ Patterson, E., Lynch, O., Fairbanks, J.: [Categorical data structures for techni
 
 Joachim Kock. [Whole-grain Petri nets and processes](https://arxiv.org/abs/2005.05108)
 
-[Contexts.jl](https://github.com/cgutsche/Contexts.jl) is not registered.
-May not run as I cannot (as of 2025-08-08) find the file "PetriNetTypeDef.jl".
-They just did a "Big Change" last week. No obvious input file format detected in the code.
-
+[Contexts.jl](https://cgutsche.github.io/Contexts.jl/dev/) is not registered.
 C. Gutsche, S. Götz, V. Prokopets and U. Aßmann, "Context-Role Oriented Programming in Julia: Advancing Swarm Programming," 2025 IEEE/ACM 20th Symposium on Software Engineering for Adaptive and Self-Managing Systems (SEAMS), Ottawa, ON, Canada, 2025, pp. 85-95,
-doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia},
+doi: 10.1109/SEAMS66627.2025.00017. keywords: {Performance evaluation;Surveillance;Collaboration;Programming;Software;Hardware;Multi-robot systems;Drones;Software engineering;Software development management;Roles;Teams;Contexts;Swarms;Drones;SelfAdaptive Systems;Julia}. Does not use an input file.
 
 [DistributedWorkflows.jl](https://github.com/FiroozehDastur/DistributedWorkflows.jl)
 Does not use a Petri net input file. Constructs one internally?
