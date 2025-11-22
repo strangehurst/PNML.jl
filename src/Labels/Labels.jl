@@ -65,24 +65,17 @@ include("structure.jl")
     label_value(n::AbstractPnmlNode, tag::Symbol, type) -> x::type
 
 If there is a label `tag` in `n.extralabels`, return its value,
-else return a default vale of the correct Type.
+else return a default value of the correct Type `type`.
 """
 function label_value(n::AbstractPnmlNode, tag::Symbol, type, default)
     label = labelof(n, tag)
     if isnothing(label)
         default(type)
     else
-        @show label
+        #@show label
         value(label)::type
     end
 end
-
-# "Parse content of `<text>` as a number of `value_type`."
-# function number_content_parser(label, value_type)
-#     #@show label value_type #! debug
-#     str = PNML.text_content(elements(label)) #! xmldict format
-#     PNML.number_value(value_type, str)::Number
-#  end
 
 export Inscription, Marking, Condition
 export Name, PnmlLabel, SortType, Declaration

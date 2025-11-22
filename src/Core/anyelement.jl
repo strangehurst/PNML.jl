@@ -94,12 +94,12 @@ function dict_show(io::IO, d::DictType)
     iio = inc_indent(io)
     for (i, kv) in enumerate(pairs(d))
         i > 1 && print(iio, indent(iio))
-        print(iio, "d[$(repr(kv.first))] = ") #! a Pair
+        print(iio, "d[$(repr(kv.first))] = ")
         dict_show(iio, kv.second)
         length(keys(d)) > 1 && i < length(keys(d)) && println(io)
     end
-    #print(io, ")") # after
 end
+
 function dict_show(io::IO, d::Vector)
     iio = inc_indent(io)
     print(iio, "[")
@@ -119,6 +119,7 @@ dict_show(io::IO, p::Nothing) = print(io, repr(p))
 function Base.show(io::IO, ::MIME"text/plain", d::DictType)
     show(io, d)
 end
+
 function Base.show(io::IO, d::DictType)
     dict_show(io, d)
 end

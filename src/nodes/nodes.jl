@@ -10,9 +10,9 @@ A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
 mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
-    #! pntd::PNTD
     id::Symbol
-    initialMarking::Marking #! UnionAll
+    initialMarking::Marking #! Expression as value. Used to create marking vector.
+
     # For each place, a sort defines the type of the marking tokens on this place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
@@ -21,7 +21,8 @@ mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
-    declarationdicts::DeclDict   #todo net::PnmlNet
+    declarationdicts::DeclDict
+    #todo net::PnmlNet
 end
 
 initial_marking(place::Place) = (place.initialMarking)()
@@ -44,7 +45,15 @@ function Base.show(io::IO, place::Place)
     print(io, ")")
 end
 
-#-------------------
+#----------------------------------------------------------------------------
+#----------------------------------------------------------------------------
+#----------------------------------------------------------------------------
+
+    # Use <fifoinitialMarking><structure><makelist> expression for initial queue contents.
+    # DataStructures.Queue{sorttype} will be an element in the marking vector.
+    #? Do we segregate  FIFO from HL markings by a new xml tag?
+
+#----------------------------------------------------------------------------
 """
 Transition node of a Petri Net Markup Language graph.
 
@@ -52,7 +61,6 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 mutable struct Transition  <: AbstractPnmlNode
-    #!pntd::PNTD
     id::Symbol
     condition::Labels.Condition #! boolean expression label
     namelabel::Maybe{Name}
@@ -61,7 +69,7 @@ mutable struct Transition  <: AbstractPnmlNode
     extralabels::LittleDict{Symbol,Any}
 
     vars::Set{REFID}
-    "Cache of variable substutions for this transition"
+    "Cache of variable substitutons for this transition"
     varsubs::Vector{NamedTuple}
     declarationdicts::DeclDict
 end
@@ -85,9 +93,7 @@ varsubs(transition::Transition) = transition.varsubs
 
 Return condition label.
 """
-condition(transition::Transition) = begin
-    transition.condition
-end
+condition(transition::Transition) = transition.condition
 
 function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
@@ -125,6 +131,9 @@ function inscription(arc::Arc)
     arc.inscription # label
 end
 
+#TODO ====================================================================
+#TODO Move extensions/enhancements to ISO 150909-1:2004 (1st ED.) to own file.
+
 """
     arctypelabel(arc::Arc) -> ArcType
 
@@ -148,6 +157,7 @@ isnormal(e::AbstractArcEnum)    = isa_variant(e, ArcT.normal)
 isinhibitor(e::AbstractArcEnum) = isa_variant(e, ArcT.inhibitor)
 isread(e::AbstractArcEnum)      = isa_variant(e, ArcT.read)
 isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
+
 
 sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
 
@@ -186,7 +196,7 @@ $(TYPEDFIELDS)
 """
 struct RefPlace <: ReferenceNode
     id::Symbol
-    ref::Symbol # Place or RefPlace IDREF
+    ref::Symbol # Place or RefPlace
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}

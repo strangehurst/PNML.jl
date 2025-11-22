@@ -75,8 +75,6 @@ function parse_arctype(node::XMLNode, pntd::PnmlType; parse_context::ParseContex
         end
     end
 
-    # There are pnml files that break the rules & do not have a text element here.
-    # Attempt to harvest content of <name> element instead of the child <text> element.
     if isnothing(text)
         emsg = "<arctype> missing <text> element."
         throw(ArgumentError(emsg))
@@ -99,6 +97,7 @@ end
 # PNML annotation-label XML element parsers.
 #
 #----------------------------------------------------------
+
 """
     parse_label_content(node::XMLNode, termparser, pntd; decldict) -> NamedTuple
 
@@ -161,7 +160,7 @@ end
 
 # Part 3 of the standard is a math and semantics extension covering
 # modules, extensions, more net types. Not reflected in Part 2 as on August 2024.
-# The 2nd edition of Part 1 is contemperoranous with Part 3.
+# The 2nd edition of Part 1 is contemporaneous with Part 3.
 # Part 2 add some of these features through the www.pnml.org Schema repository.
 
 # `sortelements` is needed to support the <all> operator that forms a multiset out of
@@ -178,6 +177,7 @@ end
 $(TYPEDSIGNATURES)
 
 Non-high-level `PnmlType` initial marking parser. Most things are assumed to be Numbers.
+See also ['parse_hlinitialMarking'](@ref), ['parse_fifoinitialMarking'](@ref).
 """
 function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::PnmlType;
                             parse_context::ParseContext, parentid::Symbol)
@@ -268,7 +268,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     if isa_variant(placetype, NamedSortRef) ||
         (isa_variant(placetype, ProductSortRef) &&
             all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, parse_context.ddict)))
-        # D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
+        #NOOP# D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
     else
         @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
                 " or product of named sorts, found $(placetype)")
@@ -280,12 +280,13 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
         if !isa_variant(sortref(default_sorttype), NamedSortRef)
-            error("$pntd default_sorttype of $(repr(parentid)) expected to be NamedSortRef" *
-                    ", found $(default_sorttype)")
+            error("$pntd default_sorttype of $(repr(parentid)) " *
+                    "expected to be NamedSortRef, found $(default_sorttype)")
         end
         if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype; parse_context.ddict)
             println()
-            @error("$pntd parse_hlinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
+            @error("$pntd parse_hlinitialMarking of $(repr(parentid)) " *
+                    "sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l, parse_context.ddict)
             Base.show_backtrace(stdout, stacktrace())
             println()
@@ -487,7 +488,7 @@ end
 
 function PNML.adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID)
     # Meta-model constraint for Petri nets is that arcs must be between place and transition.
-    #
+
     if haskey(PNML.placedict(netdata), source)
         haskey(PNML.transitiondict(netdata), target) ||
             error("adjacent source plece $source does not have transition target $target")
@@ -510,7 +511,7 @@ function def_insc(netdata, source,::REFID, target::REFID, parse_context::ParseCo
     place = PNML.adjacent_place(netdata, source, target)
     placetype = place.sorttype
     el = def_sort_element(placetype; parse_context.ddict)
-    @info "def_insc $source $target pnmlmultiset $placetype $el"
+    @info "def_insc $(repr(source)) $(repr(target)) pnmlmultiset $placetype $el"
     inscr = PNML.pnmlmultiset(PNML.sortref(placetype), el, 1; parse_context.ddict)::PnmlMultiset
     #@show inscr
     return inscr
@@ -618,8 +619,6 @@ function parse_structure(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     error("parse_structure not any good, man")
 end
 
-# <rate> label something like <inscription> or <initialMarking>
-# See parse_inscription or parse_initialMarking
 function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)
     check_nodename(node, "rate")
     #@warn "parse_rate of $(repr(parentid))"
@@ -646,7 +645,8 @@ function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, 
     if isnothing(value)
         value = one(PNML.value_type(Rate, pntd))
         CONFIG[].warn_on_fixup &&
-            @warn("$(repr(parentid)) has missing or unparsable <rate> value '$txt' replaced with $value")
+            @warn("$(repr(parentid)) has missing or unparsable <rate> value '$txt' " *
+                        "replaced with $value")
     end
 
     term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
@@ -676,15 +676,14 @@ function parse_priority(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
         end
     end
 
-    # Treat missing value as if the <rate> element was absent.
+    # Treat missing value as if the element was absent.
     if isnothing(value)
         value = one(PNML.value_type(Priority, pntd))
         CONFIG[].warn_on_fixup &&
-            @warn("$(repr(parentid)) has missing or unparsable <priority> value '$txt' replaced with $value")
+            @warn("$(repr(parentid)) has missing or unparsable <priority> value '$txt' " *
+                        "replaced with $value")
     end
 
     term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
     return Priority(term, graphics, toolspecinfos, parse_context.ddict)
 end
-
-#! 2025-06-04 removed parse_label
