@@ -78,6 +78,7 @@ Fill context with the base built-in label parsers. Useful in test stubs.
 function fill_labelp!(ctx::ParseContext)
     ctx.labelparser[:initialMarking]   = Parser.parse_initialMarking
     ctx.labelparser[:hlinitialMarking] = Parser.parse_hlinitialMarking
+    ctx.labelparser[:fifoinitialMarking] = Parser.parse_fifoinitialMarking
     ctx.labelparser[:inscription]      = Parser.parse_inscription
     ctx.labelparser[:hlinscription]    = Parser.parse_hlinscription
     ctx.labelparser[:condition]        = Parser.parse_condition

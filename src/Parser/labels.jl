@@ -299,7 +299,73 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
         l.exp
     end
     Marking(markexp, l.text, l.graphics, l.toolspecinfos, parse_context.ddict)
-end
+end # parse_hlinitialMarking
+
+
+
+"""
+$(TYPEDSIGNATURES)
+
+FIFO initial marking labels are expected to have a <structure> child containing ground terms.
+Sort of marking term must be the same as `placetype`, the place's SortType.
+
+NB: Will coexist with hlinitialMarkings.
+"""
+function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
+            pntd::AbstractHLCore;
+            parse_context::ParseContext,
+            parentid::Symbol)
+    check_nodename(node, "fifoinitialMarking")
+    #! non-PT_HLPNG High Level nets are expected to always have a marking.
+    #! And that marking may be used to deduce the sorttype.
+    defsort = isnothing(default_sorttype) ? nothing : sortref(default_sorttype)
+
+    l = parse_label_content(node, ParseMarkingTerm(defsort), pntd; parse_context)::NamedTuple
+    placetype = l.sort
+    isnothing(l.exp) &&
+        error("Missing expression for $pntd net")
+    @show l.exp
+
+    if isa_variant(placetype, NamedSortRef) ||
+        (isa_variant(placetype, ProductSortRef) &&
+            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, parse_context.ddict)))
+        # D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
+    else
+        @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
+                " or product of named sorts, found $(placetype)")
+        if isa_variant(placetype, ProductSortRef)
+            foreach(println, Sorts.sorts(placetype, parse_context.ddict))
+        end
+    end
+
+    #^ Do an equalSorts default_sorttype if !nothing.
+    if !isnothing(default_sorttype)
+        if !isa_variant(sortref(default_sorttype), NamedSortRef)
+            error("$pntd default_sorttype of $(repr(parentid)) expected to be NamedSortRef" *
+                    ", found $(default_sorttype)")
+        end
+        if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype; parse_context.ddict)
+            println()
+            @error("$pntd parse_fifoinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
+                    default_sorttype, placetype, l, parse_context.ddict)
+            Base.show_backtrace(stdout, stacktrace())
+            println()
+        end
+    end
+
+    markexp = if isnothing(l.exp)
+        # Default is an empty queue whose eltype matches placetype.
+        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype; parse_context.ddict), 0)
+    else
+        l.exp
+    end
+    Marking(markexp, l.text, l.graphics, l.toolspecinfos, parse_context.ddict)
+end # parse_fifoinitialMarking
+
+
+
+
+
 
 """
     ParseMarkingTerm(defsort) -> Functor

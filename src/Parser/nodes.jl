@@ -64,7 +64,6 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             parse_sorttype(typenode, pntd; parse_context, parentid=placeid)
         end
     end
-    #TODO capacity label
 
     namelabel::Maybe{Name}           = nothing
     graphics::Maybe{Graphics}        = nothing
@@ -73,9 +72,8 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
 
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
-        if tag == :initialMarking || tag == :hlinitialMarking
+        if tag == :initialMarking || tag == :hlinitialMarking tag == :fifoinitialMarking
             isnothing(sorttype) && @warn "$pntd parse_place $placeid sorttype is nothing"
-            #! @show parse_context.labelparser
             mark = parse_context.labelparser[tag](child, sorttype, pntd; parse_context, parentid=placeid)
         elseif tag == :type
             # we already handled this

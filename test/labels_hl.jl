@@ -155,6 +155,51 @@ end
     #println()
 end
 
+@testset "FIFO initMarking" begin
+
+     @testset "FIFO $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+        #println("\n3`dot $pntd")
+        node = xml"""
+        <fifoinitialMarking>
+            <text>FIFO(dot)</text>
+            <structure>
+                <makelist>
+                    <dot/>
+                    <subterm><dotconstant/></subterm>
+                    <subterm><dotconstant/></subterm>
+                    <subterm><dotconstant/></subterm>
+                </makelist>
+            </structure>
+        </fifoinitialMarking>
+        """
+        # numberof is an operator: natural number, element of a sort -> multiset
+        # subterms are in an ordered collection, first is a number, second an element of a sort
+        # This is a high-level integer, use the first part of this pair in contexts that want numbers.
+        ctx = PNML.parser_context()
+
+        # Marking is a multiset in high-level nets with sort matching placetype, :dot.
+        placetype = SortType("FIFO", PNML.NamedSortRef(:dot), ctx.ddict)
+
+        mark = parse_fifoinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
+        @show mark
+        @test mark isa PNML.Marking
+
+        #@test PNML.term(mark) isa PNML.Bag
+        #@test text(mark) == "3`dot"
+        #println(); flush(stdout)
+
+        @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
+        @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
+        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
+        @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa Vector{PNML.DotConstant}
+        # @test arity(markterm) == 2
+        # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
+        # @test inputs(markterm)[2] == DotConstant(ddict)
+    end
+end # fifoinitialMarking
+
+
+
 
 
 

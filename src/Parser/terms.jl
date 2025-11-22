@@ -53,14 +53,21 @@ Collect expressions in a `Vector` and accumulate variable REFIDs in a `Tuple`.
 function subterms(node, pntd; vars, parse_context::ParseContext)
     sts = Vector{Any}()
     for subterm in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
-        tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
-        isnothing(tj) && throw(PNML.MalformedException("subterm is nothing"))
-        vars = tj.vars #! TEST THIS accumulate variables
-        push!(sts, tj.exp)
+        if EzXML.nodename(subterm) == "subterm"
+            stnode, tag = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
+            tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
+            isnothing(tj) && throw(PNML.MalformedException("subterm is nothing"))
+            vars = tj.vars
+            push!(sts, tj.exp)
+        else
+            println("not a subterm ", EzXML.nodename(node))
+            Base.show_backtrace(stdout, stacktrace())
+        end
     end
     return sts, vars
 end
+
+
 #=
     ePNK-master/pnml-examples/org.pnml.tools.epnk.examples_1.2.0/hlpng/technical
 
@@ -558,7 +565,8 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
     value = tryparse(Int, valuestr)
     isnothing(value) && throw(ArgumentError("value '$valuestr' failed to parse as `Int`"))
 
-    child = EzXML.firstelement(node) # Child is the sort of value
+    # Only element is the sort of `value`.
+    child = EzXML.firstelement(node)
     isnothing(child) &&
         throw(PNML.MalformedException("<finiteintrangeconstant> missing sort element"))
 
@@ -599,7 +607,6 @@ end
     `<gtp>` Partition element greater than.
 """
 function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    D()&& @warn "parse_term(::Val{:gtp}"; flush(stdout); #! debug
     sts, vars = subterms(node, pntd; vars, parse_context)
     @assert length(sts) == 2
     #@show sts # PartitionElementOps
@@ -607,4 +614,41 @@ function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
     @assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
     return TermJunk(pe, PartitionSortRef(first(sts).refpartition), vars) #todo! when can we map to partition
+end
+
+"""
+    `<makelist>` Make a List
+"""
+function parse_term(::Val{:makelist}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
+    #D()&&
+    @warn "parse_term(::Val{:makelist}"; flush(stdout); #! debug
+
+    # One child will be a sort.
+    # All other children will be subterms.
+
+    sts = Vector{Any}()
+    sortref = nothing
+    for child in EzXML.eachelement(node)
+        if EzXML.nodename(child) == "subterm"
+            stnode, tag = unwrap_subterm(child) # Used to dispatch on `Val(tag)`.
+            tj = parse_term(Val(tag), stnode, pntd; vars, parse_context)::TermJunk
+            isnothing(tj) && throw(PNML.MalformedException("subterm is nothing"))
+            vars = tj.vars
+            push!(sts, tj.exp)
+        else
+            sortref = parse_sort(child, pntd; parse_context)
+        end
+    end
+
+    if isnothing(sortref)
+        # deduce sort from first(sts)
+    end
+    @show sortref
+    #sts, vars = subterms(node, pntd; vars, parse_context)
+    @show sts vars
+
+    lex = PNML.ListEx(sortref, sts) #! We have PnmlExpr elements at this point.
+    #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
+    #@assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
+    return TermJunk(lex, sortref, vars) #todo! when can we map to partition
 end

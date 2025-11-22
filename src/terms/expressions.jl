@@ -25,7 +25,7 @@ export Addition, Subtraction, Multiplication, Division
 export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
 export Concatenation, Append, StringLength, SubstringEx
 export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
-export ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+export ListEx, ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
 export expr_sortref
 
 
@@ -52,8 +52,8 @@ abstract type OpExpr <: PnmlExpr end
 """
     toexpr(ex::PnmlExpr, varsubs::NamedTuple{REFID,Any}, ddict) -> Expr
 
-Return `Expr`. Call `toexpr` on any contained terms.
-`varsubs` used to replace variables with values in expressions that contain any variable.
+Return `Expr` constructed from `ex`. Call `toexpr` on any contained terms.
+`varsubs` used to replace variables in expressions.
 """
 function toexpr end
 
@@ -423,7 +423,7 @@ end
 
 #& Boolean Operators
 @matchable struct Or <: BoolExpr #^ Uses `any`.
-    args::Vector{BoolExpr} # >=2
+    args::Vector{BoolExpr} # >=2 in ISO 15909, but some =1 exist.
 end
 
 function toexpr(op::Or, vars::NamedTuple, ddict)
@@ -794,7 +794,28 @@ end
     # use ?
 end
 
+
+#&=========================================================================================
 #& Lists
+
+#
+@matchable struct ListEx{T <: AbstractSortRef} <: PnmlExpr
+    basis::T
+    els::Vector{Any} #
+end
+
+function toexpr(op::ListEx, varsub::NamedTuple, ddict)
+    #@warn "toexpr ListEx" op varsub
+    els = [eval(toexpr(arg, varsub, ddict)) for arg in op.els]
+    Expr(:vect, els...)
+end
+
+function Base.show(io::IO, x::ListEx)
+    print(io, "ListEx(", x.basis, ", ", x.els, ")" )
+end
+
+
+
 @matchable struct ListLength <: PnmlExpr
 end
 

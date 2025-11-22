@@ -1,20 +1,16 @@
 """
 $(TYPEDEF)
 """
-@auto_hash_equals struct ListSort <: AbstractSort
-    #
-    ae::Vector{AbstractSort} #~ ABSTRACT
+@auto_hash_equals struct ListSort{T<:AbstractSortRef} <: AbstractSort
+    basis::T
     declarationdicts::DeclDict
 end
-ListSort() = ListSort(IntegerSort[])
-#! equal(a::ListSort, b::ListSort) = a.ae == b.ae
+
+#    basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; parse_context)::AbstractSortRef # of multisetsort
+
+
+equal(a::ListSort, b::ListSort) = a.basis == b.basis
 
 function Base.show(io::IO, s::ListSort)
-    print(io, "ListSort([")
-    io = PNML.inc_indent(io)
-    for  (i, c) in enumerate(s.ae)
-        print(io, '\n', PNML.indent(io)); show(io, c);
-        i < length(s.ae) && print(io, ",")
-    end
-    print(io, "])")
+    print(io, "ListSort(", basis, ")")
 end

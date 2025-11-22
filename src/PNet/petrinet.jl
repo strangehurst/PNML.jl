@@ -108,7 +108,9 @@ end
 function initial_markings(net::PnmlNet{<:AbstractHLCore})
     # Evaluate the ground term expression into a multiset.
     [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
+    #! FIFO places use queues, will co-exist with multisets from regular HL places.
 end
+
 
 #####################################################################################
 #
