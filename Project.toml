@@ -1,11 +1,12 @@
 name = "PNML"
 uuid = "1f34f301-fe8c-4464-8328-ff2334f05424"
-authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
 version = "0.0.27"
+authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
 
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 FunctionWrappers = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
@@ -30,6 +31,7 @@ XMLDict = "228000da-037f-5747-90a9-8195ccbf91a5"
 [compat]
 AutoHashEquals = "1, 2"
 Compat = "4.18.0"
+DataStructures = "0.19.3"
 DocStringExtensions = "0.9"
 EzXML = "1"
 FunctionWrappers = "1"
