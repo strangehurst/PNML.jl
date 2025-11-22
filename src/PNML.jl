@@ -48,6 +48,7 @@ import Reexport: @reexport
 import Graphs
 import MetaGraphsNext
 import MacroTools
+import DataStructures
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
