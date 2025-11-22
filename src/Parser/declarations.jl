@@ -313,13 +313,6 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     end
 end
 
-"Tag names of sort XML elements."
-const sort_ids = (:usersort, :dot, :bool, :integer, :natural, :positive, :real,
-                  :multisetsort, :productsort, # have sortref as content
-                  :cyclicenumeration, :finiteenumeration, :finiteintrange,
-                  :partition, # over a :finiteenumeration or :cyclicenumeration
-                  :list, :strings,
-                  )
 #=
 Some sorts are anonymous (have no id) in the XML.
 NB: sort equality is structural (`==` not `===`).
