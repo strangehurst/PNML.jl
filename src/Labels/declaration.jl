@@ -29,3 +29,10 @@ function Base.show(io::IO, d::Declaration)
     show(io, decldict(d))
     print(io, ")")
 end
+
+function verify!(errors, page::Declaration, verbose::Bool , idreg::PNML.PnmlIDRegistry)
+
+    # TODO
+
+     return nothing
+end

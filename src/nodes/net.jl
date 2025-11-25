@@ -46,14 +46,13 @@ pagedict(net::PnmlNet) = net.pagedict # Will be ordered.
 page_idset(net::PnmlNet) = net.page_set
 
 netdata(net::PnmlNet) = net.netdata
+netsets(net::PnmlNet) = throw(ArgumentError("PnmlNet $(pid(net)) does not have a PnmlKeySet, did you mean `netdata`?"))
 
 placedict(net::PnmlNet)         = placedict(netdata(net))
 transitiondict(net::PnmlNet)    = transitiondict(netdata(net))
 arcdict(net::PnmlNet)           = arcdict(netdata(net))
 refplacedict(net::PnmlNet)      = refplacedict(netdata(net))
 reftransitiondict(net::PnmlNet) = reftransitiondict(netdata(net))
-
-netsets(net::PnmlNet)  = throw(ArgumentError("PnmlNet $(pid(net)) does not have a PnmlKeySet, did you mean `netdata`?"))
 
 #"Return iterator over keys of a dictionary" #! verify same as PnmlKeySet for flattened page
 place_idset(net::PnmlNet)         = keys(placedict(net))
@@ -141,63 +140,57 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
-function verify(net::PnmlNet;
-                verbose::Bool = CONFIG[].verbose)
-    #verbose && println("verify PnmlNet $(pid(net))"); flush(stdout)
+function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
+    verbose &&
+        println("## verify PnmlNet $(pid(net))"); flush(stdout)
     errors = String[]
-
-    verify!(errors, net; verbose, idreg=registry_of(net))
-
-    isempty(errors) ||
-        error("verify(net) error(s): ", join(errors, ",\n "))
+    verify!(errors, net, verbose, registry_of(net))
+    isempty(errors) || error("verify(net) $(pid(net)) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors, net::PnmlNet;
-                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
-    # Are the things with PNML IDs in the PnmlIDRegistry?
-    !isregistered(idreg, pid(net)) &&
-         push!(errors, string("net id ", repr(pid(net)), " not registered")::String)
+function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::PnmlIDRegistry)
+    # pagedict
+    # netdata
+    # page_set
+    # toolspecifics
+    # extralabels
 
-    for pg in pages(net)
-        !isregistered(idreg, pid(pg)) &&
-        push!(errors, string("pages() page id ", repr(pid(pg)), " not registered")::String)
-    end
-    for pg in allpages(net)
-        !isregistered(idreg, pid(pg)) &&
-            push!(errors, string("allpages() page id ", repr(pid(pg)), " not registered")::String)
-    end
-    for pl in places(net)
-        !isregistered(idreg, pid(pl)) &&
-            push!(errors, string("place id ", repr(pid(pl)), " not registered")::String)
-    end
-    for tr in transitions(net)
-        !isregistered(idreg, pid(tr)) &&
-            push!(errors, string("transition id ", repr(pid(tr)), " not registered")::String)
-    end
-    for ar in arcs(net)
-        !isregistered(idreg, pid(ar)) &&
-            push!(errors, string("arc id ", repr(pid(ar)), " not registered")::String)
-    end
-    for rp in refplaces(net)
-        !isregistered(idreg, pid(rp)) &&
-            push!(errors, string("refPlace id ", repr(pid(rp)), " not registered")::String)
-    end
-    for rt in reftransitions(net)
-        !isregistered(idreg, pid(rt)) &&
-            push!(errors, string("refTranition id ", repr(pid(rt)), " not registered")::String)
-    end
+    # Are the things with PNML IDs in the PnmlIDRegistry?
+    verify_id!(errors, "net id", (net,), idreg)
+    verify_id!(errors, "pages id", pages(net), idreg)
+    verify_id!(errors, "allpages id", allpages(net), idreg)
+    verify_id!(errors, "places id", places(net), idreg)
+    verify_id!(errors, "transition id", transitions(net), idreg)
+    verify_id!(errors, "arcs id", arcs(net), idreg)
+    verify_id!(errors, "refplaces id", refplaces(net), idreg)
+    verify_id!(errors, "reftransitions id", reftransitions(net), idreg)
 
     # Call net object's verify method.
-    for pg in allpages(net)
-        verify!(errors, pg; verbose, idreg) #TODO collect diagnostics, or die?
-    end
-    # places(net), transitions(net), arcs(net)
-    # declarations(net)
-    # toolinfos(net)
-    # labels(net)
+    verify!(errors, decldict(net), verbose, idreg)
+    foreach(x -> verify!(errors, x, verbose, idreg), allpages(net))
+    # foreach(x -> verify!(errors, x, verbose, idreg), places(net))
+    # foreach(x -> verify!(errors, x, verbose, idreg), transitions(net))
+    # foreach(x -> verify!(errors, x, verbose, idreg), arcs(net))
+    # foreach(x -> verify!(errors, x, verbose, idreg), toolinfos(net))
+    # foreach(x -> verify!(errors, x, verbose, idreg), extralabels(net))
+
     return errors
 end
+
+"""
+    verify_id!(errors::Vector{String}, str, iteratable, idreg::PnmlIDRegistry) -> Vector{String}
+
+Iterate over `iteratable` testing that `pid` is registered in `idreg`.
+`str` used in message appended to `errors` vector.
+"""
+function verify_id!(errors::Vector{String}, str::AbstractString, iteratable, idreg::PnmlIDRegistry)
+    for x in iteratable
+        !isregistered(idreg, pid(x)) &&
+            push!(errors, string(str, " ", repr(pid(x)), " not registered")::String)
+    end
+end
+
 
 #------------------------------------------------------------------------------
 function Base.summary(net::PnmlNet)

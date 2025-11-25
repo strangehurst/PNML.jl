@@ -108,11 +108,14 @@ function parse_net(node::XMLNode;
         end
     end
 
+    #----------------------------------------------------------------
     # Now we know the PNTD and can parse a net.
+    #----------------------------------------------------------------
     net = parse_net_1!(node, pntd, netid; parse_context)
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
     #~ --------------------------------------------------------------
+    PNML.verify(net; verbose=true)
 
     # Ground terms used to set initial markings can be rewritten and evaluated here.
     # 0-arity operator means empty variable substitution, i.e. constant.
@@ -160,7 +163,6 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # We use the declarations toolkit for non-high-level nets,
     # and assume a minimum function for high-level nets.
     # Declarations present in the input file will overwrite these.
-    #! PNML.fill_nonhl!(dd) done in `decldict(idreg)`
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.
@@ -172,7 +174,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     declaration = parse_declaration!(parse_context, decls, pntd)::Declaration
     @assert PNML.decldict(declaration) === parse_context.ddict
-    PNML.validate_declarations(PNML.decldict(declaration)) #
+    PNML.verify(PNML.decldict(declaration); idreg=parse_context.idregistry) #
 
     # Collect all the toolspecinfos at net level (if any exist). Enables use in later parsing.
     toolspecinfos = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
@@ -245,7 +247,7 @@ function parse_page!(net::PnmlNet, netsets, node::XMLNode, pntd::PnmlType; parse
     pg = _parse_page!(net, node, pntd, pageid; parse_context)
     @assert pageid === pid(pg)
     pagedict(net)[pageid] = pg
-    return nothing
+    return nothing #? return net?
 end
 
 """

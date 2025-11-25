@@ -80,17 +80,18 @@ function Base.show(io::IO, page::Page)
     print(io, ")")
 end
 
-function verify(page::Page;
-                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
+function verify(page::Page; verbose::Bool, idreg::PnmlIDRegistry)
     #verbose && println("verify Page $(pid(page))"); flush(stdout)
     errors = String[]
-    verify!(errors, page; verbose, idreg)
+    verify!(errors, page, verbose, idreg)
     isempty(errors) ||
-      error("verify(page) error(s): ", join(errors, ",\n "))
+        error("verify(page) error(s):\n ", join(errors, ",\n "))
     return true
 end
-function verify!(errors, page::Page;
-                verbose::Bool = CONFIG[].verbose, idreg::PnmlIDRegistry)
+
+function verify!(errors, page::Page, verbose::Bool , idreg::PnmlIDRegistry)
+     !isregistered(idreg, pid(page)) &&
+            push!(errors, string("page ", repr(pid(page)), " not registered")::String)
 
     # TODO
 

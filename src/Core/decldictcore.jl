@@ -237,9 +237,17 @@ function operator(dd::DeclDict, opid::Symbol)
 end
 
 """
-    validate_declarations(dd::DeclDict) -> Bool
+    verify(dd::DeclDict; verbose::Bool, idreg::PnmlIDRegistry) -> Bool
 """
-function validate_declarations(dd::DeclDict)
+function verify(dd::DeclDict; verbose::Bool=CONFIG[].verbose, idreg::PnmlIDRegistry)
+    #verbose && println("verify Page $(pid(page))"); flush(stdout)
+    errors = String[]
+    verify!(errors, dd, verbose, idreg)
+    isempty(errors) ||
+        error("verify(page) error(s):\n ", join(errors, ",\n "))
+    return true
+end
+
     # println("validate declarations")
     # show_sorts(dd)
     # @show _op_dictionaries()
@@ -258,8 +266,13 @@ function validate_declarations(dd::DeclDict)
     #     @show operator(opid)(NamedTuple()) # operators take parameters
     # end
     # println("-----------------------------------------")
-    return true
+
+
+function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool , idreg::PnmlIDRegistry)
+    # TODO
+    return nothing
 end
+
 
 function show_sorts(dd::DeclDict)
     # println("show_sorts")
