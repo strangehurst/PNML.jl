@@ -17,7 +17,7 @@ import Multisets: Multisets, Multiset
 using PNML
 using PNML: Context
 using PNML: DeclDict, pntd
-#using ..PnmlIDRegistrys
+#using ..IDRegistrys
 using ..PnmlTypes
 using ..Labels
 using ..Sorts

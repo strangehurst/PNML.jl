@@ -89,8 +89,8 @@ Multisets.set_key_value_show()
 include("PnmlTypes.jl")
 using .PnmlTypes
 
-include("PnmlIDRegistrys.jl")
-using .PnmlIDRegistrys
+include("IDRegistrys.jl")
+using .IDRegistrys
 
 include("Core/exceptions.jl")
 include("Core/utils.jl")
@@ -164,7 +164,7 @@ using .Labels
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
 include("nodes/page.jl") # Contains nodes.
-include("nodes/net.jl") # PnmlNet
+include("nodes/net.jl") # PnmlNet holds pages
 include("nodes/model.jl") # Holds multiple PnmlNets.
 
 include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.

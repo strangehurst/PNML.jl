@@ -65,7 +65,7 @@ end
 
         modelnets = PNML.nets(model)::Tuple
         @test length(modelnets) == 5
-        @test all(PNML.registry_of(n) isa PnmlIDRegistry for n in modelnets)
+        @test all(PNML.registry_of(n) isa IDRegistry for n in modelnets)
 
         for net in modelnets
             @test_opt PNML.pntd(net)

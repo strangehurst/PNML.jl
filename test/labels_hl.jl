@@ -77,7 +77,7 @@ end
     #         </structure>
     #     </hlinitialMarking>
     #     """
-    #     @with PNML.idregistry => PnmlIDRegistry() begin
+    #     @with PNML.idregistry => IDRegistry() begin
     #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
     #         placetype = SortType("YYY", PNML.usersort(ddict, :uop))
     #         mark = parse_hlinitialMarking(node, placetype, pntd)

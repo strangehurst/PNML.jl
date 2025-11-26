@@ -63,9 +63,9 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Return registered symbol from id attribute of node. See [`PnmlIDRegistry`](@ref).
+Return registered symbol from id attribute of node. See [`IDRegistry`](@ref).
 """
-function register_idof!(registry::PnmlIDRegistry, node::XMLNode)
+function register_idof!(registry::IDRegistry, node::XMLNode)
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     return register_id!(registry, Symbol(@inbounds(node["id"])))
 end

@@ -23,7 +23,7 @@ using SciMLPublic: @public
 
 using PNML
 using ..Expressions
-using ..PnmlIDRegistrys
+using ..IDRegistrys
 using ..PnmlTypes
 using ..Labels
 using ..Sorts

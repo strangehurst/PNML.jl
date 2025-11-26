@@ -29,7 +29,7 @@ import PNML: pid, refid # PNML ID
 import PNML: fill_sort_tag!
 
 using ..Sorts
-using ..PnmlIDRegistrys
+using ..IDRegistrys
 
 include("declarations.jl")
 include("partitions.jl")

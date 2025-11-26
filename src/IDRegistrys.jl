@@ -1,7 +1,7 @@
 """
 Petri Net Markup Language identifier registry.
 """
-module PnmlIDRegistrys
+module IDRegistrys
 
 using Preferences
 using Base: Base.IdSet
@@ -9,7 +9,7 @@ using DocStringExtensions
 import SciMLPublic: @public
 import Base: eltype
 
-export PnmlIDRegistry, register_id!, isregistered, DuplicateIDException
+export IDRegistry, register_id!, isregistered, DuplicateIDException
 @public reset_reg!
 
 
@@ -26,12 +26,12 @@ Holds a set of PNML ID symbols and, optionally, a lock to allow safe reentrancy.
 
 $(TYPEDEF)
 """
-@kwdef struct PnmlIDRegistry
+@kwdef struct IDRegistry
     idset::IdSet{Symbol} = IdSet{Symbol}()
     lk::ReentrantLock = ReentrantLock()
 end
 
-function Base.show(io::IO, reg::PnmlIDRegistry)
+function Base.show(io::IO, reg::IDRegistry)
     print(io, nameof(typeof(reg)), "(", collect(values(reg)), ")")
 end
 
@@ -42,7 +42,7 @@ $(TYPEDSIGNATURES)
 
 Register `id` symbol and return the symbol.
 """
-function register_id!(registry::PnmlIDRegistry, id::Symbol)
+function register_id!(registry::IDRegistry, id::Symbol)
     @lock registry.lk _reg!(registry, id)
     return id
 end
@@ -58,7 +58,7 @@ $(TYPEDSIGNATURES)
 
 Return `true` if `id` is registered in `registry`.
 """
-function isregistered(registry::PnmlIDRegistry, id::Symbol)
+function isregistered(registry::IDRegistry, id::Symbol)
     @lock registry.lk id ∈ registry.idset
 end
 
@@ -67,22 +67,22 @@ $(TYPEDSIGNATURES)
 
 Empty the set of id symbols. Use case is unit tests.
 """
-function reset_reg!(registry::PnmlIDRegistry)
-    #println("reset PnmlIDRegistry ", objectid(registry)) #! debug
+function reset_reg!(registry::IDRegistry)
+    #println("reset IDRegistry ", objectid(registry)) #! debug
     @lock registry.lk empty!(registry.idset)
     return registry
 end
 
-function Base.isempty(registry::PnmlIDRegistry)
+function Base.isempty(registry::IDRegistry)
     @lock registry.lk isempty(registry.idset)::Bool
 end
 
-function Base.length(registry::PnmlIDRegistry)
+function Base.length(registry::IDRegistry)
     @lock registry.lk length(registry.idset)
 end
 
-function Base.values(registry::PnmlIDRegistry)
+function Base.values(registry::IDRegistry)
     @lock registry.lk values(registry.idset)
 end
 
-end # module PnmlIDRegistrys
+end # module IDRegistrys

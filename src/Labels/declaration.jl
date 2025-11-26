@@ -30,7 +30,7 @@ function Base.show(io::IO, d::Declaration)
     print(io, ")")
 end
 
-function verify!(errors, page::Declaration, verbose::Bool , idreg::PNML.PnmlIDRegistry)
+function verify!(errors, page::Declaration, verbose::Bool , idreg::PNML.IDRegistry)
 
     # TODO
 

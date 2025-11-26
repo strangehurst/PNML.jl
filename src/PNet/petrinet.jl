@@ -67,16 +67,16 @@ nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
 pid(petrinet::AbstractPetriNet)     = PNML.pid(pnmlnet(petrinet))
 pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 
-# #------------------------------------------------------------------------------------------
-# # Forward MANY THINGS to the IR implementation pnmlnet.
-# # TODO Adopt a forwarder?
-# # ! TODO SEE if there is a need for much forwarding.
-# #------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------
+# Forward MANY THINGS to the IR implementation pnmlnet.
+# TODO Adopt a forwarder?
+# ! TODO SEE if there is a need for much forwarding.
+#------------------------------------------------------------------------------------------
 
 
 inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
 
-conditions(petrinet::AbstractPetriNet)  = conditions(pnmlnet(petrinet))
+conditions(petrinet::AbstractPetriNet) = conditions(pnmlnet(petrinet))
 
 rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
 

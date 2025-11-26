@@ -22,14 +22,14 @@ One Petri Net of a PNML model.
     # no graphics for net
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}() # empty by default
-    idregistry::PnmlIDRegistry
+    idregistry::IDRegistry
 end
 
 # Constructor for use in test scaffolding.
 PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =
     PnmlNet(; type, id, declaration,
                 pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
-                idregistry=PnmlIDRegistry(),
+                idregistry=IDRegistry(),
     )
 
 pntd(net::PnmlNet) = net.type
@@ -37,7 +37,7 @@ nettype(net::PnmlNet) = typeof(net.type)
 
 pid(net::PnmlNet) = net.id
 
-"Return PnmlIDRegistry of a PnmlNet."
+"Return IDRegistry of a PnmlNet."
 registry_of(net::PnmlNet) = net.idregistry
 decldict(net::PnmlNet) = decldict(net.declaration)
 
@@ -112,7 +112,8 @@ arc(net::PnmlNet, id::Symbol)      = arcdict((net))[id]
 has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict((net)), id)
 
 """
-Return `Arc` from 's' to 't' or `nothing`. Useful for graphs where arcs are represented by a tuple(source,target).
+Return `Arc` from 's' to 't' or `nothing`.
+Useful for graphs where arcs are represented by a tuple or pair (source,target).
 """
 arc(net, s::Symbol, t::Symbol) = begin
     x = Iterators.filter(a -> source(a) === s && target(a) === t, arcs(net))
@@ -121,11 +122,14 @@ end
 
 # Iterate IDs of arcs that have given source or target.values(arcdict((net)))
 all_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid, Iterators.filter(a -> (source(a) === id || target(a) === id), values(arcdict(net))))
+    Iterators.map(pid,
+        Iterators.filter(a -> (source(a) === id || target(a) === id), values(arcdict(net))))
 src_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid, Iterators.filter(a -> (source(a) === id), values(arcdict(net))))
+    Iterators.map(pid,
+        Iterators.filter(a -> (source(a) === id), values(arcdict(net))))
 tgt_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid, Iterators.filter(a -> (target(a) === id), values(arcdict(net))))
+    Iterators.map(pid,
+        Iterators.filter(a -> (target(a) === id), values(arcdict(net))))
 
 "Forward `inscription` to `arcdict`"
 inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
@@ -142,21 +146,21 @@ Error if any diagnostic messages are collected. Especially intended to detect se
 """
 function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
     verbose &&
-        println("## verify PnmlNet $(pid(net))"); flush(stdout)
+        println("## verify $(typeof(net)) $(pid(net))"); flush(stdout)
     errors = String[]
     verify!(errors, net, verbose, registry_of(net))
     isempty(errors) || error("verify(net) $(pid(net)) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::PnmlIDRegistry)
+function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDRegistry)
     # pagedict
     # netdata
     # page_set
     # toolspecifics
     # extralabels
 
-    # Are the things with PNML IDs in the PnmlIDRegistry?
+    # Are the things with PNML IDs in the IDRegistry?
     verify_id!(errors, "net id", (net,), idreg)
     verify_id!(errors, "pages id", pages(net), idreg)
     verify_id!(errors, "allpages id", allpages(net), idreg)
@@ -179,13 +183,13 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::Pnm
 end
 
 """
-    verify_id!(errors::Vector{String}, str, iteratable, idreg::PnmlIDRegistry) -> Vector{String}
+    verify_id!(errors::Vector{String}, str, iterable, idreg::IDRegistry) -> Vector{String}
 
-Iterate over `iteratable` testing that `pid` is registered in `idreg`.
+Iterate over `iterable` testing that `pid` is registered in `idreg`.
 `str` used in message appended to `errors` vector.
 """
-function verify_id!(errors::Vector{String}, str::AbstractString, iteratable, idreg::PnmlIDRegistry)
-    for x in iteratable
+function verify_id!(errors::Vector{String}, str::AbstractString, iterable, idreg::IDRegistry)
+    for x in iterable
         !isregistered(idreg, pid(x)) &&
             push!(errors, string(str, " ", repr(pid(x)), " not registered")::String)
     end
@@ -244,5 +248,4 @@ function Base.show(io::IO, net::PnmlNet)
     map(reftransitions(net)) do rt
         show(io, rt); println(io)
     end
-
 end

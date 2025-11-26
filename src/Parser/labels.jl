@@ -177,7 +177,7 @@ end
 $(TYPEDSIGNATURES)
 
 Non-high-level `PnmlType` initial marking parser. Most things are assumed to be Numbers.
-See also ['parse_hlinitialMarking'](@ref), ['parse_fifoinitialMarking'](@ref).
+See also [`parse_hlinitialMarking`](@ref), [`parse_fifoinitialMarking`](@ref).
 """
 function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::PnmlType;
                             parse_context::ParseContext, parentid::Symbol)
@@ -250,6 +250,7 @@ High-level initial marking labels are expected to have a <structure> child conta
 Sort of marking term must be the same as `placetype`, the places SortType.
 
 NB: Used by PTNets that assume placetype is DotSort().
+See also [`parse_initialMarking`](@ref), [`parse_fifoinitialMarking`](@ref).
 """
 function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
             pntd::AbstractHLCore;
@@ -311,6 +312,7 @@ FIFO initial marking labels are expected to have a <structure> child containing 
 Sort of marking term must be the same as `placetype`, the place's SortType.
 
 NB: Will coexist with hlinitialMarkings.
+See also [`parse_initialMarking`](@ref), [`parse_hlinitialMarking`](@ref).
 """
 function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
             pntd::AbstractHLCore;

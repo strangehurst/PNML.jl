@@ -255,7 +255,7 @@ SortRef is the name of the Module created by Moshi @data to hold an ADT.
 Each variant has a `REFID` `Symbol` that indexes one of the dictionaries
 in the network's declaration dictionary collection (`DeclDict`).
 
-The `REFID` will be in the network's `PnmlIDRegistry`.
+The `REFID` will be in the network's `IDRegistry`.
 
 `UserSortRef` is created from `<usersort declaration="id" />`.
 

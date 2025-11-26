@@ -61,7 +61,7 @@ DocTestSetup = quote
     using PNML: SortType, IntegerSort, DotSort,
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
-    using PNML.PnmlIDRegistrys
+    using PNML.IDRegistrys
     ctx = PNML.parser_context()
  end
 ```

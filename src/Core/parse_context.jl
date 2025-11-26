@@ -4,7 +4,7 @@
 $(DocStringExtensions.TYPEDFIELDS)
 """
 @kwdef struct ParseContext
-    idregistry::PnmlIDRegistry = PnmlIDRegistry() # empty
+    idregistry::IDRegistry = IDRegistry() # empty
     ddict::DeclDict = DeclDict() # empty
     labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
     toolparser::Vector{ToolParser} = ToolParser[] # empty

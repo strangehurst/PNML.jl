@@ -118,7 +118,7 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
 #@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]
-    # reg = PnmlIDRegistry()
+    # reg = IDRegistry()
     # @show pff(PNML.Parser.add_label!) pff(PNML.xmldict) pff(PNML.extralabels)
     # @test_opt PNML.Parser.add_label!(lab, node, pntd)
     # @test_opt(broken=false,
@@ -177,8 +177,8 @@ end
 function test_unclaimed(pntd, xmlstring::String)
     parse_context = PNML.parser_context()
     node = xmlnode(xmlstring)::XMLNode
-    reg1 = PnmlIDRegistry()# 2 registries to ensure any ids do not collide.
-    reg2 = PnmlIDRegistry()
+    reg1 = IDRegistry()# 2 registries to ensure any ids do not collide.
+    reg2 = IDRegistry()
 
     (t,u) = Parser.xmldict(node) # tag is a string
     l = PnmlLabel(t, u, parse_context.ddict)

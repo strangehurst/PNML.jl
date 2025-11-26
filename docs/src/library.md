@@ -10,9 +10,9 @@ Modules = [PNML]
 ```@autodocs
 Modules = [PNML.PnmlTypes]
 ```
-## PNML.PnmlIDRegistrys
+## PNML.IDRegistrys
 ```@autodocs
-Modules = [PNML.PnmlIDRegistrys]
+Modules = [PNML.IDRegistrys]
 ```
 ## PNML.Sorts
 ```@autodocs
@@ -46,5 +46,5 @@ Modules = [PNML.Expressions]
 
 ## Index
 ```@index
-Modules = [PNML, PNML.PnmlTypes, PNML.PnmlIDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser, PNML.PNet, PNML.Expressions]
+Modules = [PNML, PNML.PnmlTypes, PNML.IDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser, PNML.PNet, PNML.Expressions]
 ```

@@ -77,7 +77,7 @@ end
 
 # println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()
-    #idreg = PnmlIDRegistry()
+    #idreg = IDRegistry()
     #ddict = PNML.decldict(idreg)
     parse_context = PNML.Parser.parser_context()
     @test_throws("MissingIDException: net",

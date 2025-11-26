@@ -237,10 +237,10 @@ function operator(dd::DeclDict, opid::Symbol)
 end
 
 """
-    verify(dd::DeclDict; verbose::Bool, idreg::PnmlIDRegistry) -> Bool
+    verify(dd::DeclDict; verbose::Bool, idreg::IDRegistry) -> Bool
 """
-function verify(dd::DeclDict; verbose::Bool=CONFIG[].verbose, idreg::PnmlIDRegistry)
-    #verbose && println("verify Page $(pid(page))"); flush(stdout)
+function verify(dd::DeclDict; verbose::Bool=CONFIG[].verbose, idreg::IDRegistry)
+    verbose && println("## verify $(typeof(dd))"); flush(stdout)
     errors = String[]
     verify!(errors, dd, verbose, idreg)
     isempty(errors) ||
@@ -268,7 +268,7 @@ end
     # println("-----------------------------------------")
 
 
-function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool , idreg::PnmlIDRegistry)
+function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool , idreg::IDRegistry)
     # TODO
     return nothing
 end

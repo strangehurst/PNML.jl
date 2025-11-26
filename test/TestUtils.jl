@@ -11,7 +11,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.Labels: TokenGraphics, has_toolinfo, get_toolinfo, version
 @reexport using PNML.Parser
 @reexport using PNML.Declarations
-@reexport using PNML.PnmlIDRegistrys
+@reexport using PNML.IDRegistrys
 @reexport using PNML.PnmlTypes
 @reexport using PNML.PnmlGraphics
 @reexport using PNML.PNet
@@ -77,7 +77,7 @@ const testshow = devnull # nothing turns off redirection
 
 "Ignore some dynamically-designed functions."
 function pff(@nospecialize(ft))
-    #if ft === typeof(PnmlIDRegistrys.register_id!) ||
+    #if ft === typeof(IDRegistrys.register_id!) ||
     if  ft === Preferences.load_preference ||
         ft === EzXML.nodename ||
         ft === EzXML.namespace ||
