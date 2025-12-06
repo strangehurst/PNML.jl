@@ -11,7 +11,7 @@ using Metatheory: @matchable
 
 using PNML
 using PNML: BooleanConstant, FEConstant , feconstant, ProductSort
-using PNML: pnmltuple, pnmlmultiset, operator, partitionsort
+using PNML: pnmlmultiset, operator, partitionsort
 import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
 export toexpr
@@ -888,7 +888,7 @@ function toexpr(op::PnmlTupleEx, varsub::NamedTuple, ddict)
     # end
     # @show args
     # PnmlTuple{psorts}(x...)
-    Expr(:call, pnmltuple, toexpr.(args, Ref(varsub), Ref(ddict))...)
+    Expr(:call, tuple, toexpr.(args, Ref(varsub), Ref(ddict))...)
 end
 
 # #? Would this be a candidate for rewriting?

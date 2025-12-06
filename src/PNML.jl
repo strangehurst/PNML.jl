@@ -108,8 +108,6 @@ include("Core/decldictcore.jl") # define structure filled by Sorts, Declarations
 
 # Parts of Labels and Nodes.
 
-include("terms/tuples.jl")
-
 include("Core/parse_context.jl") # parse context has id registry and DeclDict
 
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
