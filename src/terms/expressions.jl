@@ -5,7 +5,9 @@ module Expressions
 
 using Base: Fix2
 using TermInterface
-using Metatheory
+
+import Metatheory
+using Metatheory: @matchable
 
 using PNML
 using PNML: BooleanConstant, FEConstant , feconstant, ProductSort
