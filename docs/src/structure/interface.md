@@ -433,11 +433,6 @@ methods(PNML.get_label) # hide
 
 ## ToolInfo
 
-### has_toolinfo - does a specific toolinfo exist
-[`PNML.Labels.has_toolinfo`](@ref)
-```@example methods
-methods(PNML.Labels.has_toolinfo) # hide
-```
 ### get_toolinfo - get a specific toolinfo exist
 [`PNML.Labels.get_toolinfo`](@ref)
 ```@example methods
