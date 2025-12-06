@@ -31,7 +31,7 @@ struct UnknownDeclaration  <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     nodename::Union{String,SubString{String}}
-    content::Vector{AnyElement}
+    content::AnyElement
     declarationdicts::DeclDict
 end
 

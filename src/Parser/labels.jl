@@ -615,7 +615,6 @@ A "claimed" label usually elids the <structure> level (does not call this method
 function parse_structure(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "structure")
     @warn "parse_structure is not a well defined thing, $pntd" xmldict(node) parse_context.ddict
-    @show (nname, d) = xmldict(node)
     # tuple(EzXML.nodename(node), xd::Union{DictType, String, SubString{String}})
     #PNML.Labels.Structure(nname, d; parse_context.ddict) #TODO anyelement
     error("parse_structure not any good, man")

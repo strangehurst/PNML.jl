@@ -139,8 +139,9 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     lab = OrderedCollections.LittleDict{Symbol,Any}() # PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
-
-        PNML.Parser.add_label!(lab, xmlnode("<test$x> $i </test$x>"), pntd, parse_context)
+        str = "<test$x> $i </test$x>"
+        PNML.Parser.add_label!(lab, xmlnode(str), pntd, parse_context)
+        #@show lab
     end
     @test length(lab) == 2
     #@show lab
@@ -174,39 +175,40 @@ FF(@nospecialize f) = f !== EZXML.throw_xml_error;
     # end
 end
 
+"Return PnmlLabel, AnyElement"
 function test_unclaimed(pntd, xmlstring::String)
     parse_context = PNML.parser_context()
     node = xmlnode(xmlstring)::XMLNode
     reg1 = IDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = IDRegistry()
 
-    (t,u) = Parser.xmldict(node) # tag is a string
-    l = PnmlLabel(t, u, parse_context.ddict)
-    a = anyelement(node)
+    nodeid = Symbol(EzXML.nodename(node))
+    u = Parser.xmldict(node) # tag is a string
+    l = PnmlLabel(nodeid, u, parse_context.ddict)
+    a = anyelement(nodeid, node)
 
     @test u isa PNML.DictType
     @test l isa PnmlLabel
     @test a isa AnyElement
 
     @test_opt target_modules=(@__MODULE__,) Parser.xmldict(node)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(t,u,parse_context.ddict)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(node)
+    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(nodeid,u,parse_context.ddict)
+    @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(nodeid, node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.xmldict(node)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                            JET.AnyFrameModule(XMLDict)) PnmlLabel(t,u,parse_context.ddict)
+                            JET.AnyFrameModule(XMLDict)) PnmlLabel(nodeid,u,parse_context.ddict)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                            JET.AnyFrameModule(XMLDict)) Parser.anyelement(node)
+                            JET.AnyFrameModule(XMLDict)) Parser.anyelement(nodeid, node)
 
     nn = Symbol(EzXML.nodename(node))
-    @test t == EzXML.nodename(node)
     @test tag(l) isa Symbol && tag(l) === nn || tag(l) == string(nn)
     @test tag(a) isa Symbol && tag(a) === nn || tag(a) == string(nn)
 
     @test u isa DictType
     @test l.elements isa DictType
-    @test a.elements isa DictType
+    @test a.elements isa LittleDict
     #! unclaimed id is not registered
     x = get(u, :id, nothing)
     !isnothing(x) &&
@@ -277,11 +279,11 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(expected..., parse_context.ddict)
+        expected_label = PnmlLabel(Symbol(expected.first), expected.second, parse_context.ddict)
         @test tag(lab) == tag(expected_label)
         @test length(elements(lab)) == length(elements(expected_label))
         # TODO recursive compare
-        expected_any = AnyElement(expected...)
+        expected_any = AnyElement(Symbol(expected.first), expected.second)
         @test tag(anye) == tag(expected_any)
         @test length(elements(anye)) == length(elements(expected_any))
         # TODO recursive compare

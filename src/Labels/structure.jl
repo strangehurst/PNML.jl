@@ -19,7 +19,7 @@ Here we provide a fallback for *unclaimed tags*.
 """
 struct Structure{T}
     tag::Symbol
-    el::T # PNML.XDVT is too complex
+    el::T
     ddict::PNML.DeclDict
 end
 Structure(s::AbstractString, e; ddict) = Structure(Symbol(s), e, ddict)

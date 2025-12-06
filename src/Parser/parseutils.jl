@@ -6,7 +6,7 @@
 #! 2 collections, one for PnmlLabels other for other Annotations?
 
 """
-    add_label!(collection, node, pntd) -> nothing
+    add_label!(collection, node, pntd) -> AbstractDict
 
 Parse and add [`PnmlLabel`](@ref) to collection, return collection.
 
@@ -14,9 +14,10 @@ See [`AbstractPnmlObject`](@ref) for those XML entities that have labels.
 Any "unknown" XML is presumed to be a label.
 """
 function add_label!(v::AbstractDict{Symbol,Any}, node::XMLNode, pntd, ctx::ParseContext)
-    # `xmldict` returns a ordered collection of `AnyElement`.
-    v[Symbol(EzXML.nodename(node))] = PnmlLabel(xmldict(node)..., ctx.ddict)
-    return nothing
+    xd = xmldict(node)
+    tag = Symbol(EzXML.nodename(node))
+    v[tag] = PnmlLabel(tag, xd, ctx.ddict)
+    return v
 end
 
 #---------------------------------------------------------------------

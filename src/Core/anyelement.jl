@@ -3,9 +3,12 @@
 #--------------------------------------------
 
 "Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `xmldict`."
-const DictType = LittleDict{Union{Symbol,String}, Any #= XDVT is a complex Union =#}
+const DictType = LittleDict{Union{Symbol,String}, Any}
 
-"`XMLDict.xml_dict` XMLDict Value Type is value or Vector of values from ."
+"""
+    XMLDict Value Type, what `XMLDict.xml_dict` returns.
+    Note that there may be Arrays holding repeated tags's values in the dictionary.
+"""
 const XDVT = Union{DictType, String, SubString, Vector{Union{DictType,String,SubString}}}
 
 tag(d::DictType) = first(keys(d)) # String or Symbol
@@ -44,7 +47,8 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Hold well-formed XML. See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
+Hold AbstractDict holding zero or more well-formed XML elments.
+See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 
 Creates a tree where the root is `tag`,
 leaf node values are `Union{String, SubString{String}}`, and
@@ -53,9 +57,16 @@ interior nodes values are `Union{DictType, Vector{DictType}}`
 See [`DictType`](@ref).
 """
 @auto_hash_equals struct AnyElement
-    # XMLDict uses symbols for attribute keys and string for elements/children keys.
-    tag::Union{Symbol, String, SubString{String}}
-    elements::Union{DictType, String, SubString{String}} # is Any better?
+    # Tag of node enclosing the
+    tag::Symbol
+    # LittleDict{Union{Symbol,String}, Any}  returned by `xmldict`.
+    # We hope/promise the following is the Type of ALL values in dictionary.
+    elements::LittleDict{Union{Symbol,String},
+                         Union{DictType, String, SubString{String}, Vector{Any}}}
+end
+
+function Base.convert(::Type{Vector{Union{DictType, String, SubString{String}}}}, x::Vector{Any})
+    x::Vector{Union{DictType, String, SubString{String}}}
 end
 
 tag(a::AnyElement) = a.tag
@@ -74,8 +85,7 @@ end
 
 function Base.show(io::IO, ae::AnyElement)
     print(io, "AnyElement(", repr(tag(ae)), ", ")
-    #length(elements(ae))  > 1 && println(io)
-    dict_show(inc_indent(io), elements(ae)) # what XMLDict produced
+    print(inc_indent(io), elements(ae)) # what XMLDict produced
     print(io, ")")
 end
 
@@ -112,9 +122,9 @@ end
 
 dict_show(io::IO, s::SubString{String}) = show(io, s)
 dict_show(io::IO, s::AbstractString)    = show(io, s)
-dict_show(io::IO, p::Pair)   = show(io, p)
-dict_show(io::IO, p::Number) = show(io, p)
-dict_show(io::IO, p::Nothing) = print(io, repr(p))
+# dict_show(io::IO, p::Pair)   = show(io, p)
+# dict_show(io::IO, p::Number) = show(io, p)
+# dict_show(io::IO, p::Nothing) = print(io, repr(p))
 
 function Base.show(io::IO, ::MIME"text/plain", d::DictType)
     show(io, d)

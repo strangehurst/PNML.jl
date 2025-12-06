@@ -115,8 +115,7 @@ while `PnmlLabel` is restricted to PNML Labels.
 @auto_hash_equals struct PnmlLabel <: Annotation
     # XMLDict uses symbols for attribute keys and string for elements/children keys.
     tag::Union{Symbol, String, SubString{String}}
-    #!elements::Any # NB: PNML.XDVT is too complex
-    elements::Union{DictType, String, SubString{String}} # is Any better?
+    elements::Union{DictType, String, SubString{String}, Vector{Any}} # is Any better?
     declarationdicts::DeclDict
 end
 
