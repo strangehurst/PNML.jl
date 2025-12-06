@@ -84,7 +84,8 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
-            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_place $(repr(placeid)) found unexpected label $(repr(tag))"
+            CONFIG[].warn_on_unclaimed &&
+                @warn "$pntd parse_place $(repr(placeid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=placeid)
         end
     end
@@ -93,7 +94,8 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         default_sorttype = if ishighlevel(pntd)
             if isnothing(sorttype)
                 #D()&&
-                @error("$pntd place $placeid has neither a mark nor sorttype, use :dot even if it is WRONG")
+                @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
+                            "use :dot even if it is WRONG")
                 SortType("dummy", NamedSortRef(:dot), parse_context.ddict)
             else
                 sorttype
@@ -106,7 +108,7 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
 
     if isnothing(sorttype) # Infer sortype of place from mark
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
-        D()&& @warn("$pntd parse_place $(repr(placeid)) infer sorttype", mark)
+        D()&& @warn("$pntd parse_place $(repr(placeid)) infer sorttype ", mark)
         sorttype = SortType("default", basis(mark)::AbstractSortRef, decldict(mark))
     end
     Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
@@ -229,9 +231,9 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
         arc_type_label = ArcType(; arctype=Labels.ArcT.normal())
     end
 
-    # Arc(arcid, Ref(source), Ref(target), inscription, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
     Arc(; id=arcid, source=Ref(source), target=Ref(target),
-        inscription, arctypelabel=arc_type_label, namelabel, graphics, toolspecinfos, extralabels,
+        inscription, arctypelabel=arc_type_label, namelabel, graphics,
+        toolspecinfos, extralabels,
         declarationdicts=parse_context.ddict)
 end
 
@@ -259,7 +261,8 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_refPlace $(repr(refp_id)) found unexpected label $(repr(tag))"
+            CONFIG[].warn_on_unclaimed &&
+                @warn "$pntd parse_refPlace $(repr(refp_id)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=refp_id)
         end
     end
@@ -291,7 +294,8 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed && @warn "$pntd parse_refTransition $(repr(reft_id)) found unexpected label $(repr(tag))"
+            CONFIG[].warn_on_unclaimed &&
+                @warn "$pntd parse_refTransition $(repr(reft_id)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=reft_id)
         end
     end

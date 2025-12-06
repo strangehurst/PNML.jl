@@ -13,7 +13,7 @@ mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     id::Symbol
     initialMarking::Marking #! Expression as value. Used to create marking vector.
 
-    # For each place, a sort defines the type of the marking tokens on this place (sorttype).
+    # For each place, a sort defines the type of the marking tokens of the place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
     sorttype::SortType{S}
@@ -22,10 +22,11 @@ mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
     declarationdicts::DeclDict
-    #todo net::PnmlNet
+    #todo net::PnmlNet{PNTD}
 end
 
 initial_marking(place::Place) = (place.initialMarking)()
+#net(place::Place) = place.net
 
 sortref(place::Place) = sortref(place.sorttype)::AbstractSortRef
 
@@ -62,7 +63,7 @@ $(TYPEDFIELDS)
 """
 mutable struct Transition  <: AbstractPnmlNode
     id::Symbol
-    condition::Labels.Condition #! boolean expression label
+    condition::Labels.Condition #! booleran expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -96,7 +97,7 @@ Return condition label.
 condition(transition::Transition) = transition.condition
 
 function Base.show(io::IO, trans::Transition)
-    print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ",  repr(name(trans)), ", ")
+    print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ", repr(name(trans)), ", ")
     show(io, term(condition(trans)))
     print(io, ")")
 end
@@ -191,7 +192,7 @@ end
 """
 Reference Place node of a Petri Net Markup Language graph. For connections between pages.
 
-$(TYPEDEF)
+$(TYPEDEF)r
 $(TYPEDFIELDS)
 """
 struct RefPlace <: ReferenceNode

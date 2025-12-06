@@ -381,7 +381,7 @@ end
 
 function parse_term(::Val{:or}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
     sts, vars = subterms(node, pntd; vars, parse_context)
-    length(sts) >= 2 || @warn"or length wrong" sts
+    length(sts) >= 1 || @warn"or length wrong" sts # standard says 2, real world has 1
     return TermJunk(PNML.Or(sts), NamedSortRef(:bool), vars)
 end
 
