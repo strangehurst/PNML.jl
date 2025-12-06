@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!-- PNML.jl test file; Jeff Hurst -->
 <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
 
     <net id="net1" type="pnmlcore">
@@ -104,24 +105,6 @@
             <arc id="n2a7" source="n2t3" target="n2p4"></arc>
             <arc id="n2a4" source="n2p4" target="n2t4"></arc>
             <arc id="n2a8" source="n2t4" target="n2p1"></arc>
-            <referencePlace id="rp2x" ref="p2">
-                <name>
-                    <text>referencePlace name</text>
-                    <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="refplacenametool" version="1.0"><atool x="0"/></toolspecific>
-                </name>
-                <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="refplacetool" version="1.0"><atool x="0"/></toolspecific>
-            </referencePlace>
-            <referenceTransition id="rt11x" ref="t11">
-                <name>
-                    <text>referenceTransition name</text>
-                    <graphics><offset x="0" y="0"/></graphics>
-                    <toolspecific tool="reftranstool" version="1.0"><atool x="0"/></toolspecific>
-                </name>
-                <graphics><position x="100" y="100"/></graphics>
-                <toolspecific tool="reftranstool" version="1.0"><atool x="0"/></toolspecific>
-            </referenceTransition>
         </page>
     </net>
 
