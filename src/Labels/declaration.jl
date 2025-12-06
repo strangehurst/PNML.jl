@@ -34,5 +34,5 @@ function verify!(errors, page::Declaration, verbose::Bool , idreg::PNML.IDRegist
 
     # TODO
 
-     return nothing
+     return errors
 end

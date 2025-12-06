@@ -23,7 +23,7 @@ println("-----------------------------------------\n")
         println(summary(n))
         @test PNML.verify(n; verbose=false)
         PNML.flatten_pages!(n; verbose=false)
-        @test PNML.verify(n; verbose=true)
+        @test PNML.verify(n; verbose=false)
         #Base.redirect_stdio(stdout=devnull, stderr=devnull) do
         Base.redirect_stdio(stdout=nothing, stderr=nothing) do #! debug
             #TODO use MetaGraph as base of a validation tool

@@ -144,7 +144,7 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
-function verify(net::PnmlNet; verbose::Bool = CONFIG[].verbose)
+function verify(net::PnmlNet; verbose::Bool)
     verbose &&
         println("## verify $(typeof(net)) $(pid(net))"); flush(stdout)
     errors = String[]
@@ -170,15 +170,31 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
     verify_id!(errors, "refplaces id", refplaces(net), idreg)
     verify_id!(errors, "reftransitions id", reftransitions(net), idreg)
 
-    # Call net object's verify method.
     verify!(errors, decldict(net), verbose, idreg)
+
+    # Call net object's verify method.
     foreach(x -> verify!(errors, x, verbose, idreg), allpages(net))
-    # foreach(x -> verify!(errors, x, verbose, idreg), places(net))
-    # foreach(x -> verify!(errors, x, verbose, idreg), transitions(net))
-    # foreach(x -> verify!(errors, x, verbose, idreg), arcs(net))
-    # foreach(x -> verify!(errors, x, verbose, idreg), toolinfos(net))
+    foreach(x -> verify!(errors, x, verbose, idreg), places(net))
+    foreach(x -> verify!(errors, x, verbose, idreg), transitions(net))
+    foreach(x -> verify!(errors, x, verbose, idreg), arcs(net))
+    foreach(x -> verify!(errors, x, verbose, idreg), refplaces(net))
+    foreach(x -> verify!(errors, x, verbose, idreg), reftransitions(net))
+
+    !isnothing(toolinfos(net)) &&
+        foreach(x -> verify!(errors, x, verbose, idreg), toolinfos(net))
     # foreach(x -> verify!(errors, x, verbose, idreg), extralabels(net))
 
+    if npages(net) == 1
+        @assert npages(net) == length(page_idset(net))
+        nrefplaces(net) == 0 ||
+            push!(errors, "npages==1 && refplacedict not empty")
+        isempty(refplace_idset(net)) ||
+            push!(errors, "npages==1 && refplace_idset not empty")
+        nreftransitions(net) == 0 ||
+            push!(errors, "npages==1 && reftransitiondict not empty")
+        isempty(reftransition_idset(net)) ||
+            push!(errors, "npages==1 && reftransition_idset not empty")
+    end
     return errors
 end
 

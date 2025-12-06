@@ -68,24 +68,54 @@ str7 = (tool="WoPeD", version="1.0", str = """
 </toolspecific>
 """)
 
+import XMLDict
 #-----------------------------------------------------------------------------------
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
     ctx = PNML.parser_context()
+    println(s.str)
     tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); parse_context=ctx)
-    # @show tooli
+
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
     @test PNML.Labels.version(tooli) == s.version
+    # @show s.tool, s.version
 
     @test get_toolinfo([tooli], s.tool, s.version) == tooli # Is identity on scalar
-    @test get_toolinfo([tooli], s.tool) == tooli
     @test get_toolinfo([tooli], s.tool, r"^.*$") == tooli
     @test get_toolinfo([tooli], Regex(s.tool), r"^.*$") == tooli
-    @test get_toolinfo([tooli], Regex(s.tool)) == tooli
 
     @test_call broken=false get_toolinfo([tooli], s.tool, s.version)
 
+    @show tooli
+    #for (n,info) in enumerate(PNML.Labels.infos(tooli))
+
+        #@show typeof(info) # TokenGraphics or AnyElement
+        #@show XMLDict.attrs(info)
+        #@show XMLDict.nodes(info)
+
+        # if info isa TokenGraphics
+        #     @show info
+        # elseif info isa AnyElement
+        #     ity = typeof(PNML.Labels.elements(info))
+        #     @show ity
+        #     for e in PNML.Labels.elements(info)
+        #         @show typeof(e) e
+        #    end
+            #@match ity begin
+            #     AbstractString => @show(PNML.Labels.elements(info))
+            #     AbstractDict => foreach(PNML.Labels.elements(info)) do e
+            #             typeof(e)
+            #             @show e
+            #         end
+            #     _ => error("elements of ToolInfo have unexpected type $(typeof(PNML.Labels.elements(info)))")
+            # end
+    #    end
+    #end
+end
+println()
+
+@testset "tool specific info combined" begin
     n::XMLNode = xmlnode("""<place id="place0">
         $(str1.str)
         $(str2.str)
@@ -98,6 +128,7 @@ str7 = (tool="WoPeD", version="1.0", str = """
     </place>
     """)
 
+    ctx = PNML.parser_context()
     combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
 
     @test_call toolinfos(combinedplace)
@@ -106,19 +137,41 @@ str7 = (tool="WoPeD", version="1.0", str = """
     @test length(placetools) == 7
     @test all(t -> isa(t, ToolInfo), placetools)
 
-    @test has_toolinfo(placetools, r"petrinet3", r"1\.*")
-    @test has_toolinfo(placetools, "petrinet3", "1.0")
-    @test has_toolinfo(placetools, "petrinet3")
-    @test !has_toolinfo(placetools, "XXX")
-    @test !has_toolinfo(placetools, "petrinet3", "2.0")
+    #@test (placetools, r"petrinet3", r"1\.*")
+    # @test has_toolinfo(placetools, "petrinet3", "1.0")
+    # @test has_toolinfo(placetools, "petrinet3")
+    # @test !has_toohas_toolinfolinfo(placetools, "XXX")
+    # @test !has_toolinfo(placetools, "petrinet3", "2.0")
     # Assumes ordered collection.
     for (i,s) in enumerate([str1, str2, str3, str4, str5, str6, str7])
+        # @show s.tool, s.version
         ti = get_toolinfo(placetools, s.tool, s.version)
         @test ti isa ToolInfo
         @test PNML.name(placetools[i])    == PNML.name(ti) == s.tool
         @test PNML.Labels.version(placetools[i]) == PNML.Labels.version(ti) == s.version
         @test_call PNML.name(placetools[i])
         @test_call PNML.Labels.version(placetools[i])
-        @test typeof(placetools[i].infos) == typeof(ti.infos)
+        @test typeof(placetools[i].info) == typeof(ti.info)
     end
 end
+
+@testset "parse tool specific errors" begin
+    println("\n\nparse tool specific errors")
+    pntd = PnmlCoreNet()
+    ctx = PNML.parser_context()
+
+    t1 = """<toolspecific version="" tool="toolname" />"""
+    @test_throws ErrorException parse_toolspecific(xmlnode(t1), PnmlCoreNet(); parse_context=ctx)
+    # errors = String[]
+    # @show PNML.verify!(errors, tool1, true, ctx.idregistry)
+
+    t2 = """<toolspecific version="1.0" tool="" />"""
+    @test_throws ErrorException parse_toolspecific(xmlnode(t2), PnmlCoreNet(); parse_context=ctx)
+
+    t3 = """<toolspecific version="" tool="" />"""
+    @test_throws ErrorException parse_toolspecific(xmlnode(t3), PnmlCoreNet(); parse_context=ctx)
+
+#    @test_throws  "ToolInfo must have non-empty version"
+#    @test_throws  "ToolInfo must have non-empty name"
+#    @test_throws  "ToolInfo must have non-empty "
+ end

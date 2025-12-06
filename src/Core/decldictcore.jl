@@ -191,8 +191,10 @@ _get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id)
 Return operator TermInterface expression for `id`.
     `toexpr(::OpExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
-Operator Declarations include: :namedoperator, :feconstant, :partitionelement, :arbitraryoperator
-with types `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
+Operator Declarations include:
+:namedoperator, :feconstant, :partitionelement, :arbitraryoperator
+with types
+`NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
 These define operators of different types that are placed into separate dictionaries.
 
 #! CORRECT AbstractOperator type hierarchy that has `Operator` as concrete type.
@@ -200,8 +202,8 @@ These define operators of different types that are placed into separate dictiona
 #! AbstractDeclarations and AbstractTerms are "parallel" hierarchies in the UML,
 #! with AbstractTerms divided into AbstractOperators and AbstractVariables.
 
-useroperator(REFID) is used to locate the operator definition, when it is found in `feconstants()`,
-is a callable returning a `FEConstant` literal.
+useroperator(REFID) is used to locate the operator definition,
+when it is found in `feconstants()`, is a callable returning a `FEConstant` literal.
 
     `toexpr(::FEConstantEx, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
@@ -239,8 +241,7 @@ end
 """
     verify(dd::DeclDict; verbose::Bool, idreg::IDRegistry) -> Bool
 """
-function verify(dd::DeclDict; verbose::Bool=CONFIG[].verbose, idreg::IDRegistry)
-    verbose && println("## verify $(typeof(dd))"); flush(stdout)
+function verify(dd::DeclDict; verbose::Bool, idreg::IDRegistry)
     errors = String[]
     verify!(errors, dd, verbose, idreg)
     isempty(errors) ||
@@ -248,29 +249,23 @@ function verify(dd::DeclDict; verbose::Bool=CONFIG[].verbose, idreg::IDRegistry)
     return true
 end
 
-    # println("validate declarations")
-    # show_sorts(dd)
-    # @show _op_dictionaries()
-    # println()
-    # @show all(Fix1(hasfield, typeof(dd)), _op_dictionaries())
-    # foreach(_op_dictionaries()) do opd
-    #     println("opd = ", opd, ", length = ", length(getfield(dd, opd)))
-    #     foreach(println, getfield(dd, opd))
-    # end
-    # #@show collect(_ops(dd))
-    # println()
-    # @show collect(operators(dd))
-    # println()
-    # for opid in operators(dd)
-    #     @show operator(opid)
-    #     @show operator(opid)(NamedTuple()) # operators take parameters
-    # end
-    # println("-----------------------------------------")
-
-
-function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool , idreg::IDRegistry)
-    # TODO
-    return nothing
+function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, idreg::IDRegistry)
+    verbose && println("## verify $(typeof(dd))")
+    for k in Iterators.flatten([keys(variabledecls(dd)),
+                            keys(namedsorts(dd)),
+                            keys(arbitrarysorts(dd)),
+                            keys(partitionsorts(dd)),
+                            keys(multisetsorts(dd)),
+                            keys(productsorts(dd)),
+                            keys(partitionops(dd)),
+                            keys(namedoperators(dd)),
+                            keys(arbitraryops(dd)),
+                            keys(feconstants(dd)),
+                            keys(useroperators(dd))])
+        isregistered(idreg, k) ||
+            push!(errors, string("unregisrered id $(repr(k))"))
+    end
+    return errors
 end
 
 

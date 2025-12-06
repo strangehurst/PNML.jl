@@ -2,13 +2,15 @@
 module TestUtils
 using EzXML, Preferences, XMLDict, Reexport, Multisets
 Multisets.set_key_value_show()
+
+@reexport import Moshi
 @reexport import Moshi.Match: @match
 @reexport import Moshi.Data: @data, isa_variant, is_data_type, variant_type
 
 @reexport using PNML
 @reexport using PNML.Sorts
 @reexport using PNML.Labels
-@reexport using PNML.Labels: TokenGraphics, has_toolinfo, get_toolinfo, version
+@reexport using PNML.Labels: TokenGraphics, get_toolinfo, version
 @reexport using PNML.Parser
 @reexport using PNML.Declarations
 @reexport using PNML.IDRegistrys

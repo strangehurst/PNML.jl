@@ -68,7 +68,7 @@ println("-----------------------------------------\n")
 
     net = first(netvec)::PnmlNet{<:SymmetricNet}
 
-    @test PNML.verify(net; verbose=true)
+    @test PNML.verify(net; verbose=false)
 
     @test pages(net) isa Base.Iterators.Filter
     @test only(allpages(net)) == only(pages(net))

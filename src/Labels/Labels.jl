@@ -24,7 +24,7 @@ import PNML: name
 import PNML: value_type
 import PNML: value, term, graphics, toolinfos, refid, tag, elements
 import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations, decldict
-import PNML:  arctype, isnormal, isinhibitor, isread, isreset
+import PNML:  arctype, isnormal, isinhibitor, isread, isreset, verify!
 
 using ..PnmlTypes # PNML PNTD
 

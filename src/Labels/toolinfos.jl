@@ -4,14 +4,14 @@ $(TYPEDFIELDS)
 
 Holds a <toolspecific> tag.
 
-It wraps a iteratable collection (currently vector) of well formed elements
+It wraps an AbstractDict representing well formed XML.
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals fields=toolname,version,infos typearg=true struct ToolInfo{T}
+@auto_hash_equals fields=toolname,version,info typearg=true struct ToolInfo
     toolname::String
     version::String
-    infos::Vector{T} # Expect content::Vector{AnyElement}
+    info::AnyElement
     declarationdicts::DeclDict
 end
 
@@ -21,7 +21,7 @@ PNML.name(ti::ToolInfo) = ti.toolname
 version(ti::ToolInfo) = ti.version
 
 "Content of a ToolInfo."
-infos(ti::ToolInfo{T}) where T  = ti.infos
+info(ti::ToolInfo)   = ti.info
 
 function Base.show(io::IO, toolvector::Vector{ToolInfo})
     print(io, "ToolInfo[")
@@ -36,18 +36,27 @@ end
 
 function Base.show(io::IO, ti::ToolInfo)
     print(io, "ToolInfo(", PNML.name(ti), ", ", version(ti), ", [")
-    if length(infos(ti)) == 1
-        show(io, first(infos(ti)))
-    elseif length(infos(ti)) > 1
-        println(io)
-        io = PNML.inc_indent(io)
-        for (n,info) in enumerate(infos(ti))
-            print(io, PNML.indent(io))
-            show(io, info)
-            length(infos(ti)) > 1 && n < length(infos(ti)) && println(io)
-        end
-    end
-    print(io, "])")
+    show(io, info(ti))
+    print(io, ")")
+end
+
+function verify!(errors, v::Vector{T}, verbose::Bool , idreg::PNML.IDRegistry) where T
+    verbose && println("## verify $(typeof(v))");
+    foreach(t -> verify!(errors, t, verbose, idreg),  v)
+    return errors
+end
+
+function verify!(errors, t::ToolInfo, verbose::Bool , idreg::PNML.IDRegistry)
+    verbose && println("## verify $(typeof(t)) $(repr(name(t))) $(repr(version(t)))");
+    isempty(name(t)) &&
+        push!(errors, string("ToolInfo must have non-empty name")::String)
+    isempty(version(t)) &&
+        push!(errors, string("ToolInfo must have non-empty version")::String)
+
+    info(t) isa AnyElement ||
+        push!(errors, string("ToolInfo $(repr(name(t))) $(repr(version(t))) ",
+                    "info $n is not a AnyElement")::String)
+    return errors
 end
 
 ###############################################################################
@@ -74,64 +83,60 @@ end
 
 ###############################################################################
 
+# """
+# has_toolinfo(infos, toolname[, version]) -> Bool
+
+# Does any toolinfo in iteratable collection `infos` have a matching `toolname`,
+# and a matching `version` (if it is provided).
+# `toolname` and `version` will be turned into `Regex`s
+# to match against each item in the `infos` collection.
+# """
+# function has_toolinfo end
+
+# function has_toolinfo(infos, toolname::AbstractString, version::AbstractString)
+#     has_toolinfo(infos, Regex(toolname), Regex(version))
+# end
+
+# function has_toolinfo(infos, toolname::Regex, version::Regex)
+#     has_toolinfo(infos, toolname, version)
+# end
+
 """
-has_toolinfo(infos, toolname[, version]) -> Bool
+    get_toolinfos(infos, toolname[, version]) -> Maybe{ToolInfo}
 
-Does any toolinfo in iteratable collection `infos` have a matching `toolname`,
-and a matching `version` (if it is provided).
-`toolname` and `version` will be turned into `Regex`s
-to match against each item in the `infos` collection.
+Return first toolinfo in iteratable collection `infos` having a matching toolname and version.
 """
-function has_toolinfo end
-
-function has_toolinfo(infos, toolname)
-    has_toolinfo(infos, Regex(toolname))
-end
-
-function has_toolinfo(infos, toolname, version)
-    has_toolinfo(infos, Regex(toolname), Regex(version))
-end
-
-function has_toolinfo(infos, namerex::Regex, versionrex::Regex=r"^.*$")
-    isnothing(infos) ? false :
-    isempty(infos) ? false :
-    any(ti -> _match(ti, namerex, versionrex), infos)
-    #any(Iterators.filter(ti -> _match(ti, namerex, versionrex), infos))
-end
+function get_toolinfos end
 
 """
     get_toolinfo(infos, toolname[, version]) -> Maybe{ToolInfo}
 
-Return first toolinfo in iteratable collection `infos` having a matching toolname and version.
-See [`has_toolinfo`](@ref).
+Call `get_toolinfos`.
 """
-function get_toolinfo end
+get_toolinfo(infos, name, version) = first(get_toolinfos(infos, name, version))
 
-# Collections
-get_toolinfo(infos, name::AbstractString) = get_toolinfo(infos, Regex(name))
-function  get_toolinfo(infos, name::AbstractString, version::AbstractString)
-    get_toolinfo(infos, Regex(name), Regex(version))
+function get_toolinfos(infos, name::AbstractString, version::AbstractString)
+    get_toolinfos(infos, Regex(name), Regex(version))
 end
-function get_toolinfo(infos, name::AbstractString, versionrex::Regex)
-    get_toolinfo(infos, Regex(name), versionrex)
-end
-function get_toolinfo(infos, namerex::Regex, versionrex::Regex = r"^.*$")
-    isempty(infos) && return nothing
-    infos = get_toolinfos(infos, namerex, r"^.*$") # filter by toolname regex
-    isempty(infos) ? nothing : first(get_toolinfos(infos, namerex, versionrex))
+
+function get_toolinfos(infos, name::AbstractString, versionrex::Regex)
+    get_toolinfos(infos, Regex(name), versionrex)
 end
 
 """
     get_toolinfos(infos, toolname::Regex, version::Regex) -> Iterator
 
-`infos` may be a collection of `ToolInfo` or `ToolParser`.
+`infos` may be a `ToolInfo` or collection of `ToolParser`, both have  a name and version.
 Return iterator over `infos` matching toolname and version regular expressions.
-Default version regex matches anything, returning all infos for a tool or all parsers for a tool.
 """
-function get_toolinfos(infos, namerex::Regex, versionrex::Regex = r"^.*$")
-    #!@show infos namerex versionrex
+function get_toolinfos(info, namerex::Regex, versionrex::Regex)
+    _match(info, namerex, versionrex)
+end
+
+function get_toolinfos(infos::Vector, namerex::Regex, versionrex::Regex)
     Iterators.filter(ti -> _match(ti, namerex, versionrex), infos)
 end
+
 
 """
     _match(tx, namerex::Regex, versionrex::Regex) -> Bool
@@ -155,8 +160,7 @@ end
 
 Validate each `ToolInfo` in the iterable `infos` collection.
 
-Note that each info may contain any well-formed XML. That XML for other toolinfos must be ignored.
-Any info for this tool will have deeper validation implemented.
+Note that each info will contain an `AbstractDict` representing well-formed XML.
 """
 function validate_toolinfos(toolinfos)
     isnothing(toolinfos) && return true

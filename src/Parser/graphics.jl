@@ -22,12 +22,12 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
 end
 
 """
-$(TYPEDSIGNATURES)
+    tokengraphics_content(node::XMLNode, pntd::PnmlType) -> Vector{TokenGraphics}
 
-Parse ToolInfo content.
+Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
 """
 function tokengraphics_content(node, pntd)
-[PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
+    [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
 end
 
 """

@@ -5,7 +5,9 @@ $(TYPEDSIGNATURES)
 
 Return namespace of `node` or default value [`pnml_ns`](@ref) with warning (or error).
 """
-function pnml_namespace(node::XMLNode; missing_ns_fatal::Bool=false, default_ns::String=pnml_ns)
+function pnml_namespace(node::XMLNode;
+                        missing_ns_fatal::Bool=false,
+                        default_ns::String=pnml_ns)
     if EzXML.hasnamespace(node)
         return EzXML.namespace(node)
     else
@@ -115,7 +117,7 @@ function parse_net(node::XMLNode;
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
     #~ --------------------------------------------------------------
-    PNML.verify(net; verbose=true)
+    PNML.verify(net; verbose=CONFIG[].verbose)
 
     # Ground terms used to set initial markings can be rewritten and evaluated here.
     # 0-arity operator means empty variable substitution, i.e. constant.
@@ -135,14 +137,15 @@ function parse_net(node::XMLNode;
 end
 
 """
-Parse PNML <net> with a defined PnmlType used to set the expected behavior of labels
-attached to the nodes of a petri net graph, including: marking, inscription, condition and sorttype.
+    parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_context::ParseContext) -> PnmlNet
 
-Page IDs are appended as the XML tree is descended, followed by node IDs.
+Parse PNML `<net>` with a defined PnmlType.
+
+Construct data structures that are filled during decend of the nets's XML tree.
 """
 function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_context::ParseContext)
+    D()&& println("\n## parse_net ", netid, " of type ", pntd)
 
-    D()&& println("\n## parse_net ", netid)
     # Create empty data structures to be filled with the parsed pnml XML.
     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}() # Page dictionary not part of PnmlNetData.
     netdata = PnmlNetData() # holds all place, transition, arc
@@ -174,7 +177,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     declaration = parse_declaration!(parse_context, decls, pntd)::Declaration
     @assert PNML.decldict(declaration) === parse_context.ddict
-    PNML.verify(PNML.decldict(declaration); idreg=parse_context.idregistry) #
+    #PNML.verify(PNML.decldict(declaration); idreg=parse_context.idregistry, verbose=true) #
 
     # Collect all the toolspecinfos at net level (if any exist). Enables use in later parsing.
     toolspecinfos = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
@@ -227,8 +230,9 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
         extralabels[tag] =
             parse_context.labelparser[tag](child, pntd; parse_context, parentid)
     else
-        l = PnmlLabel(xmldict(child)..., parse_context.ddict)
-        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))"
+        xd = xmldict(child)
+        l = PnmlLabel(tag, xd, parse_context.ddict)
+        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l
         extralabels[tag] = l
     end
     return nothing

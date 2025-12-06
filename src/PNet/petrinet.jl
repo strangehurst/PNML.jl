@@ -14,7 +14,7 @@ Tool Info Parsers: from an `(XLNode, PnmlType)` parse well-formed XML into a `To
     When a `<toolspecific>` tag is found only registered parsers are used (first match?).
     The registered parsers return a PNML object that may be different from AnyElement. #TODO
     Users find the `ToolInfo` from toolname, version regular expression matches.
-    Users are expected to know how to deal with the `ToolInfo{T}}` type parameter.
+    Users are expected to know how to deal with the `ToolInfo` type parameter.
     We can define infrastructure for these parsers. #TODO API
     #todo! add NUPN API see https://mcc.lip6.fr/2025/nupn.php
 

@@ -81,7 +81,6 @@ function Base.show(io::IO, page::Page)
 end
 
 function verify(page::Page; verbose::Bool, idreg::IDRegistry)
-    #verbose && println("verify Page $(pid(page))"); flush(stdout)
     errors = String[]
     verify!(errors, page, verbose, idreg)
     isempty(errors) ||
@@ -90,10 +89,11 @@ function verify(page::Page; verbose::Bool, idreg::IDRegistry)
 end
 
 function verify!(errors, page::Page, verbose::Bool , idreg::IDRegistry)
-     !isregistered(idreg, pid(page)) &&
-            push!(errors, string("page ", repr(pid(page)), " not registered")::String)
+    verbose && println("## verify $(typeof(page)) $(pid(page))");
+    !isregistered(idreg, pid(page)) &&
+        push!(errors, string("page ", repr(pid(page)), " not registered")::String)
 
     # TODO
 
-     return nothing
+     return errors
 end

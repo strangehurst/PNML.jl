@@ -46,6 +46,16 @@ function Base.show(io::IO, place::Place)
     print(io, ")")
 end
 
+function verify!(errors, p::Place, verbose::Bool , idreg::IDRegistry)
+    verbose && println("## verify Place{$(sortref(p))} $(pid(p))");
+    !isregistered(idreg, pid(p)) &&
+        push!(errors, string("place ", repr(pid(p)), " not registered")::String)
+
+    # TODO
+
+     return errors
+end
+
 #----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
@@ -100,6 +110,16 @@ function Base.show(io::IO, trans::Transition)
     print(io, nameof(typeof(trans)), "(", repr(pid(trans)), ", ", repr(name(trans)), ", ")
     show(io, term(condition(trans)))
     print(io, ")")
+end
+
+function verify!(errors, t::Transition, verbose::Bool , idreg::IDRegistry)
+    verbose && println("## verify Transition $(pid(t))");
+    !isregistered(idreg, pid(t)) &&
+        push!(errors, string("transition ", repr(pid(t)), " not registered")::String)
+
+    # TODO
+
+     return errors
 end
 
 #-------------------
@@ -188,6 +208,16 @@ function Base.show(io::IO, arc::Arc)
     print(io, ")")
 end
 
+function verify!(errors, a::Arc, verbose::Bool , idreg::IDRegistry)
+    verbose && println("## verify Transition $(pid(a))");
+    !isregistered(idreg, pid(a)) &&
+        push!(errors, string("arc ", repr(pid(a)), " not registered")::String)
+
+    # TODO
+
+     return errors
+end
+
 #-------------------
 """
 Reference Place node of a Petri Net Markup Language graph. For connections between pages.
@@ -224,4 +254,13 @@ end
 
 function Base.show(io::IO, r::ReferenceNode)
     print(io, nameof(typeof(r)), "(", repr(pid(r)), ",  ", repr(refid(r)), ")")
+end
+function verify!(errors, r::ReferenceNode, verbose::Bool , idreg::IDRegistry)
+    verbose && println("## verify $(typeof(r)) $(pid(r))");
+    !isregistered(idreg, pid(r)) &&
+        push!(errors, string("arc ", repr(pid(r)), " not registered")::String)
+
+    # TODO
+
+     return errors
 end

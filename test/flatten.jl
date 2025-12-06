@@ -53,7 +53,7 @@ println("FLATTEN")
     @test target(arc(net, :a22)) === :p3
     @test source(arc(net, :a23)) === :t3
 
-    @test PNML.post_flatten_verify(net; verbose=true)
+    @test PNML.post_flatten_verify(net; verbose=true)===nothing
     #@show PNML.vertex_codes(net)
     #@show PNML.vertex_labels(net)
 end

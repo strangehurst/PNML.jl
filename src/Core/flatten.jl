@@ -50,7 +50,8 @@ function post_flatten_verify(net::PnmlNet;
     verbose && @info "post_flatten_verify"
     errors = String[]
 
-    npages(net) == 1 || push!(errors, "wrong pagedict length: expected 1 found $(npages(net)))")
+    npages(net) == 1 ||
+        push!(errors, "wrong pagedict length: expected 1 found $(npages(net)))")
     @assert npages(net) == length(page_idset(net))
 
     nrefplaces(net) == 0 || push!(errors, "refplacedict not empty")
@@ -61,7 +62,7 @@ function post_flatten_verify(net::PnmlNet;
 
     isempty(errors) ||
         error("net $(pid(net)) post flatten errors: ", join(errors, ",\n "))
-    return true
+    return nothing
 end
 
 """
