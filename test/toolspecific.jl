@@ -73,13 +73,12 @@ import XMLDict
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
     ctx = PNML.parser_context()
-    println(s.str)
+    # println(s.str)
     tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); parse_context=ctx)
 
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
     @test PNML.Labels.version(tooli) == s.version
-    # @show s.tool, s.version
 
     @test get_toolinfo([tooli], s.tool, s.version) == tooli # Is identity on scalar
     @test get_toolinfo([tooli], s.tool, r"^.*$") == tooli
@@ -87,31 +86,7 @@ import XMLDict
 
     @test_call broken=false get_toolinfo([tooli], s.tool, s.version)
 
-    @show tooli
-    #for (n,info) in enumerate(PNML.Labels.infos(tooli))
-
-        #@show typeof(info) # TokenGraphics or AnyElement
-        #@show XMLDict.attrs(info)
-        #@show XMLDict.nodes(info)
-
-        # if info isa TokenGraphics
-        #     @show info
-        # elseif info isa AnyElement
-        #     ity = typeof(PNML.Labels.elements(info))
-        #     @show ity
-        #     for e in PNML.Labels.elements(info)
-        #         @show typeof(e) e
-        #    end
-            #@match ity begin
-            #     AbstractString => @show(PNML.Labels.elements(info))
-            #     AbstractDict => foreach(PNML.Labels.elements(info)) do e
-            #             typeof(e)
-            #             @show e
-            #         end
-            #     _ => error("elements of ToolInfo have unexpected type $(typeof(PNML.Labels.elements(info)))")
-            # end
-    #    end
-    #end
+    # @show tooli
 end
 println()
 
