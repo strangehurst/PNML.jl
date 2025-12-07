@@ -327,7 +327,7 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
     placetype = l.sort
     isnothing(l.exp) &&
         error("Missing expression for $pntd net")
-    @show l.exp
+    #@show l.exp
 
     if isa_variant(placetype, NamedSortRef) ||
         (isa_variant(placetype, ProductSortRef) &&

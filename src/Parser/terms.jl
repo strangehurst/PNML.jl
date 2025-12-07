@@ -620,8 +620,7 @@ end
     `<makelist>` Make a List
 """
 function parse_term(::Val{:makelist}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
-    #D()&&
-    @warn "parse_term(::Val{:makelist}"; flush(stdout); #! debug
+    D()&& @warn "parse_term(::Val{:makelist}"; flush(stdout); #! debug
 
     # One child will be a sort.
     # All other children will be subterms.
@@ -643,9 +642,9 @@ function parse_term(::Val{:makelist}, node::XMLNode, pntd::PnmlType; vars, parse
     if isnothing(sortref)
         # deduce sort from first(sts)
     end
-    @show sortref
+    #@show sortref
     #sts, vars = subterms(node, pntd; vars, parse_context)
-    @show sts vars
+    #@show sts vars
 
     lex = PNML.ListEx(sortref, sts) #! We have PnmlExpr elements at this point.
     #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)

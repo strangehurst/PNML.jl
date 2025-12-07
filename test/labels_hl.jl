@@ -181,7 +181,7 @@ end
         placetype = SortType("FIFO", PNML.NamedSortRef(:dot), ctx.ddict)
 
         mark = parse_fifoinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
-        @show mark
+        #@show mark
         @test mark isa PNML.Marking
 
         #@test PNML.term(mark) isa PNML.Bag
