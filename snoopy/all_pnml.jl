@@ -1,15 +1,19 @@
-#julia -e 'include("all_pnml.jl"); testpn()'
-#julia -e 'include("all_pnml.jl"); testpn("MCC")'
-#julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
-#julia -t1 --project=.snoopy  -e 'include("all_pnml.jl"); testpn("")' 2>&1 | tee  /tmp/testpn.txt
-#julia -t1 --project=.snoopy  -e 'include("snoopy/all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
-# julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle")'
-# julia -e 'include("all_pnml.jl"); testpn(topdir="/home/jeff/PetriNet/PNML/ePNK-pnml-examples/org.pnml.tools.epnk.examples_1.2.0")'
+#julia -e 'include("all_pnml.jl"); testtree()'
+#julia -e 'include("all_pnml.jl"); testtree("MCC")'
+#julia -e 'include("all_pnml.jl"); testtree(topdir="/home/jeff/Projects/Resources/PetriNet/ePNK", dir="pnml-examples")'
+#julia --project=.snoopy  -e 'include("all_pnml.jl"); testtree("")' 2>&1 | tee  /tmp/testpn.txt
+# julia -e 'include("all_pnml.jl"); testtree(topdir="/home/jeff/PetriNet/PNML/pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle")'
+# julia -e 'include("all_pnml.jl"); testtree(topdir="/home/jeff/PetriNet/PNML/ePNK-pnml-examples/org.pnml.tools.epnk.examples_1.2.0")'
 
-using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext
-using LoggingExtras
+# julia --project=@.  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/test-files.list")'
+# julia --project=@.  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/testf2.list"; topdir="/home/jeff/Jules/PNML")'
+
+using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext, LoggingExtras
 using PNML
 using PNML: pid, narcs, nplaces, ntransitions, PNet.pnmlnet
+
+const DEFAULT_TOP_DIR = "/home/jeff/PetriNet/PNML-files" # prefix to each file in list.
+const DEFAULT_OUTDIR = "/home/jeff/Jules/testpmnl"
 
 # Use default display width for printing.
 if !haskey(ENV, "COLUMNS")
@@ -21,8 +25,8 @@ pnml_files(files) = filter(files) do f
 end
 
 function testfile(file::AbstractString = "test-files.list";
-                  topdir = "/home/jeff/PetriNet/PNML", # prefix to each file in list.
-                  outdir = "/home/jeff/Jules/testpmnl")
+                  topdir = DEFAULT_TOP_DIR,
+                  outdir = DEFAULT_OUTDIR)
     opened = open(file)
     tests = filter(l -> !isempty(l) && !contains(l, r"^\s*#"), readlines(opened))
     #tests = map(i->joinpath(topdir,i),
@@ -32,9 +36,9 @@ function testfile(file::AbstractString = "test-files.list";
     _testpn(tests; topdir, outdir)
 end
 
-function testpn(dir = "";
-                topdir = "/home/jeff/PetriNet/PNML",
-                outdir = "/home/jeff/Jules/testpmnl")
+function testtree(dir = "";
+                topdir = DEFAULT_TOP_DIR,
+                outdir = DEFAULT_OUTDIR)
 
     srcdir = isempty(dir) ? topdir : joinpath(topdir, dir)
     tests = String[] # Construct list of test files.
@@ -51,8 +55,8 @@ end
 
 
 function _testpn(tests::Vector{String} = String[];
-                topdir = "/home/jeff/PetriNet/PNML",
-                outdir = "/home/jeff/Jules/testpmnl")
+                topdir = DEFAULT_TOP_DIR,
+                outdir = DEFAULT_OUTDIR)
 
     outdir = joinpath(outdir, Dates.format(now(), dateformat"yyyymmddHHMM"))
     mkpath(outdir)
@@ -72,7 +76,9 @@ function _testpn(tests::Vector{String} = String[];
         @time for (i,test) in enumerate(tests)
             # RUN THE TEST
             print(i, " of ", length(tests), ": ")
+            #----------------------------------------------------------
             per_file!(df, joinpath(outdir, string(test, ".txt")), test)
+
             GC.gc()
         end
     end
@@ -104,7 +110,9 @@ end
 
 #-------------------------------------------------------------------------------------------
 # `filename` is relative to the cwd. `outdir` is absolute or relative
-function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_net=exersize_netA)
+function per_file!(df,
+                   outfile::AbstractString,
+                   testf::AbstractString; exersize_net=exersize_netA)
     #@show outfile testf pwd()
 
     isfile(outfile) && error("overwriting $outfile")
@@ -133,10 +141,10 @@ function per_file!(df, outfile::AbstractString, testf::AbstractString; exersize_
             bt = Base.catch_backtrace()
 
             println("\n\nCAUGHT EXCEPTION:", sprint(showerror, e, bt)) # full backtrace to file
-            @SciMLMessage("CAUGHT EXCEPTION: $(sprint(showerror,e))", PNML.verbose, :information, :options)
+            # @SciMLMessage("CAUGHT EXCEPTION: $(sprint(showerror,e))", PNML.verbose, :information, :options)
 
             #! Ignore first ^C, it serves to end processing of a single file.
-            #! The "second" (is there a window of opurtunity?) should end the loop processing files.
+            #! The "second" (is there a window of opourtunity?) should end the loop processing files.
             # e isa InterruptException && rethrow()
             # end
         end # try
@@ -168,10 +176,12 @@ function exersize_netA(model)
     @show labels =  collect(MetaGraphsNext.labels(mg))
     @show elabels = collect(MetaGraphsNext.edge_labels(mg))
     println("-----")
-    #C = PNML.incidence_matrix(anet)
-    #@showtime C  = PNML.incidence_matrix(anet)
-    @showtime m₀ = PNML.initial_markings(anet.net) #!
-    @showtime i  = PNML.incidence_matrix(anet.net, m₀)
-    @showtime e  = PNML.enabled(anet.net, m₀)
+    if PNML.ishighlevel(PNML.nettype(pnmlnet(anet)))
+        @warn "High-level enabling/firing not yet done!"
+    else
+        @showtime m₀ = PNML.initial_markings(anet.net) #!
+        @showtime i  = PNML.incidence_matrix(anet.net, m₀)
+        @showtime e  = PNML.enabled(anet.net, m₀)
+    end
     println("-----")
 end
