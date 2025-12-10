@@ -1,4 +1,4 @@
-using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict
+using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict, OrderedCollections
 using SciMLLogging: SciMLLogging, @SciMLMessage
 import EzXML
 
@@ -80,6 +80,9 @@ end
     @test valtype(PNML.arcdict(pnd)) isa DataType
     @test valtype(PNML.refplacedict(pnd)) isa DataType
     @test valtype(PNML.reftransitiondict(pnd)) isa DataType
+
+    od = OrderedDict{Symbol,Symbol}()
+    @test valtype(od) isa DataType
 end
 #println()
 @testset "predicates for $pntd" for pntd in PnmlTypes.all_nettypes()
