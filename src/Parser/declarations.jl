@@ -314,6 +314,19 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Returns concrete [`AbstractSortRef`](@ref) wraping the REFID of a [`ArbitrarySort`](@ref).
+"""
+function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+    check_nodename(node, "arbitrarysort")
+    arbid = register_idof!(parse_context.idregistry, node)
+    name = attribute(node, "name")
+    @warn("parse unparse_arbitrarysort: id = $arbid, name = $name")
+    return ArbitrarySort(arbid, name, parse_context.ddict)
+end
+
 #=
 Some sorts are anonymous (have no id) in the XML.
 NB: sort equality is structural (`==` not `===`).

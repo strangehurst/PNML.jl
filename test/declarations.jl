@@ -146,22 +146,25 @@ end
     sortref = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
                             </multisetsort>""", pntd; parse_context)
-    #@show parse_context.ddict
     sort = to_sort(sortref; parse_context.ddict)#::MultisetSort
+    PNML.fill_sort_tag!(parse_context, :amultiset, sort) #~ test of method needed here
+    #@show parse_context.ddict
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
+
+    #TODO ArbitrarySort
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    sortref = parse_sort(xml"""<multisetsort>
-                                <natural/>
-                            </multisetsort>""", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::MultisetSort
+    #@show sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
+    PNML.fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
+    #@show parse_context.ddict
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
+
+
     #TODO PartitionSort
-    #TODO ArbitrarySort
 end
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()

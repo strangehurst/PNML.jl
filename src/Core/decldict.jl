@@ -44,6 +44,14 @@ function Base.show(io::IO, dd::DeclDict)
     print(iio, keys(partitionops(dd)))
     println(io, "]")
 
+    print(io,  indent(io), "ArbitrarySort[")
+    print(iio, keys(arbitrarysorts(dd)))
+    println(io, "]")
+
+    print(io,  indent(io), "ArbitraryOperator[")
+    print(iio, keys(arbitraryops(dd)))
+    println(io, "]")
+
     print(io,  indent(io), "FEConstant[")
     print(iio, values(feconstants(dd)))
     println(io, "]")

@@ -39,7 +39,7 @@ include("arbitrarydeclarations.jl")
 fill_sort_tag!(ctx, tag, sort::AbstractSort) =
     fill_sort_tag!(ctx, tag, NamedSort(tag, string(tag), sort, ctx.ddict))::AbstractSortRef
 
-# # These 3 are Declarations of sorts, not AbstractSorts!t = @match nameof(typeof(sort)) begin
+# # These 3 are Declarations of sorts, not AbstractSorts!
 fill_sort_tag!(ctx, tag, sort::NamedSort) = fill_sort_tag!(ctx, tag, sort, PNML.namedsorts)::AbstractSortRef
 fill_sort_tag!(ctx, tag, sort::PartitionSort) = fill_sort_tag!(ctx, tag, sort, PNML.partitionsorts)::AbstractSortRef
 fill_sort_tag!(ctx, tag, sort::ArbitrarySort) = fill_sort_tag!(ctx, tag, sort, PNML.arbitrarysorts)::AbstractSortRef

@@ -12,7 +12,6 @@ Like `ArbitraryOperator`, does not have an associated algebra, not usable by `Sy
 struct ArbitrarySort <: SortDeclaration
     id::Symbol # TODO NamedSort?
     name::Union{String,SubString{String}}
-    body::Symbol #! Are id and declaration redundent?
     declarationdicts::DeclDict
 end
 
@@ -21,7 +20,7 @@ function ArbitrarySort()
 end
 
 function Base.show(io::IO, s::ArbitrarySort)
-    print(io, nameof(typeof(s)), "(", repr(id), ", ", repr(name), ", ", repr(body), ")")
+    print(io, nameof(typeof(s)), "(", repr(pid(s)), ", ", repr(name(s)), ")")
 end
 
 """
@@ -40,5 +39,5 @@ struct ArbitraryOperator <: OperatorDeclaration
 end
 
 function Base.show(io::IO, op::ArbitraryOperator)
-    print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ", repr(declaration), ")")
+    print(io, nameof(typeof(op)), "(", repr(pid(op)), ", ", repr(name(op)), ", ", repr(op.declaration), ")")
 end
