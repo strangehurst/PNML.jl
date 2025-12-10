@@ -9,7 +9,6 @@ function metagraph(net::PnmlNet)
                   " nplaces = ", nplaces(net),
                   " ntransitions = ", ntransitions(net))
         throw(ArgumentError(msg))
-        return nothing
     end
 
     # map pnml id symbol to vertex code.
