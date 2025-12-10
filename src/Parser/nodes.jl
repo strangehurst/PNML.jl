@@ -220,9 +220,9 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
                 SortType("dummy HIGHLEVEL", NamedSortRef(:dot),  parse_context.ddict)
            end
         elseif iscontinuous(pntd)
-            SortType("dummy CONTINUOUS", NamedSortRef(:real),  parse_context.ddict)
+            SortType("dummy CONTINUOUS", NamedSortRef(:real), parse_context.ddict)
         elseif isdiscrete(pntd)
-            SortType("dummy DISCRETE", NamedSortRef(:positive),  parse_context.ddict)
+            SortType("dummy DISCRETE", NamedSortRef(:positive), parse_context.ddict)
         end
         inscription = default(Inscription, pntd, dummy_placetype; parse_context.ddict)
     end
