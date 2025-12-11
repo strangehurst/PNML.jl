@@ -72,6 +72,7 @@ end
     @test name(n) == "Some transition"
     #@show condition(n)()
     @test condition(n)() isa Bool
+    @show PNML.Labels.variables(condition(n))
 
     @test varsubs(n) isa Vector{NamedTuple}
     @test isempty(varsubs(n))
