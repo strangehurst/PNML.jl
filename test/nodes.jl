@@ -73,6 +73,9 @@ end
     #@show condition(n)()
     @test condition(n)() isa Bool
 
+    @test varsubs(n) isa Vector{NamedTuple}
+    @test isempty(varsubs(n))
+
     node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
     @test_throws PNML.MalformedException parse_transition(node, pntd; parse_context)
 
