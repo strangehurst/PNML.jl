@@ -26,4 +26,8 @@ function number_value(::Type{T}, s::AbstractString)::T where {T <: Number}
 end
 
 sortref(::Int64) = NamedSortRef(:integer)
+sortref(::UInt8) = NamedSortRef(:natural)
+sortref(::UInt16) = NamedSortRef(:natural)
+sortref(::UInt32) = NamedSortRef(:natural)
 sortref(::UInt64) = NamedSortRef(:natural)
+sortref(::Float64) = NamedSortRef(:real)

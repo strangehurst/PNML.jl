@@ -107,3 +107,12 @@ end
     @test typemap[:newpntd] === PnmlCoreNet()
     @show typemap
 end
+
+@testset "sortref" begin
+    @test sortref(1) == NamedSortRef(:integer)
+    @test sortref(0x1) == NamedSortRef(:natural)
+    @test sortref(0x1234) == NamedSortRef(:natural)
+    @test sortref(0x12345678) == NamedSortRef(:natural)
+    @test sortref(0x1234567812345678) == NamedSortRef(:natural)
+    @test sortref(1.0) == NamedSortRef(:real)
+end
