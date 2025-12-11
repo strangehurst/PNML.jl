@@ -36,8 +36,6 @@ end
 Condition(b::Bool, ddict) = Condition(PNML.BooleanConstant(b, ddict), ddict)
 Condition(c::PNML.BooleanConstant, ddict) = Condition(PNML.BooleanEx(c), ddict)
 Condition(expr::PNML.BooleanEx, ddict) = Condition(nothing, expr, nothing, nothing, REFID[], ddict)
-Condition(text::AbstractString, b::Bool, ddict) = Condition(text, PNML.BooleanConstant(b, ddict), ddict)
-Condition(text::AbstractString, c::PNML.BooleanConstant, ddict) = Condition(text, PNML.BooleanEx(c), ddict)
 Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, REFID[], ddict)
 
 Base.eltype(::Type{<:Condition}) = Bool
