@@ -83,7 +83,8 @@ end
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
                             </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
-    sort = to_sort(sortref; parse_context.ddict):: CyclicEnumerationSort
+    sort = to_sort(sortref; parse_context.ddict)::CyclicEnumerationSort
+    @test tag(sort) === :cyclicenumeration
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -94,6 +95,7 @@ end
                         </finiteenumeration>""", pntd, :testenum2; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
+    @test tag(sort) === :finiteenumeration
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -101,6 +103,7 @@ end
     sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
+    @test tag(sort) === :finiteintrange
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
