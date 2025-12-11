@@ -6,4 +6,4 @@ $(TYPEDEF)
     declarationdicts::DeclDict
 end
 Base.eltype(::Type{<:StringSort}) = String
-sortelements(::StringSort) = tuple("")
+sortelements(::StringSort) = tuple("") # default element is empty string

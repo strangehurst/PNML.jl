@@ -505,13 +505,13 @@ end
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
     @error("IMPLEMENT ME: :list")
     #make_sort!(dict, :list, "List",
-    ListSort()
+    ListSort(parse_context.ddict)
 end
 
-function parse_sort(::Val{:strings}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
-    @error("IMPLEMENT ME: :string")
-    #make_sort!(ddict, :strings, "Strings",
-    StringSort()
+function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
+    ss = StringSort(parse_context.ddict)
+    sref = make_sortref(parse_context, PNML.namedsorts, ss, "string", parentid, name)
+    return sref
 end
 
 function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, sortid, name; parse_context::ParseContext)

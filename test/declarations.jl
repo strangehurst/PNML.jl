@@ -152,7 +152,7 @@ end
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
-    #TODO ArbitrarySort
+    #^ ArbitrarySort
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
@@ -162,8 +162,16 @@ end
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
+    #^ String
 
-
+    IDRegistrys.reset_reg!(parse_context.idregistry)
+    sortref = parse_sort(xml"<string/>", pntd; parse_context)
+    sort = to_sort(sortref; parse_context.ddict)::StringSort
+    @test sort isa StringSort
+    @show PNML.sortelements(sort) eltype(sort)
+    @test_logs sprint(show, sort)
+    @test_logs eltype(sort)
+    @test first(PNML.sortelements(sort)) == ""
     #TODO PartitionSort
 end
 
