@@ -84,8 +84,6 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
         else
-            CONFIG[].warn_on_unclaimed &&
-                @warn "$pntd parse_place $(repr(placeid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=placeid)
         end
     end
@@ -140,8 +138,6 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            # CONFIG[].warn_on_unclaimed &&
-            #     @warn "$pntd parse_transition $(repr(transitionid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=transitionid)
         end
     end
@@ -194,8 +190,6 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
         else
-            CONFIG[].warn_on_unclaimed &&
-            @warn "$pntd parse_arc $(repr(arcid)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=arcid)
         end
     end
@@ -261,8 +255,6 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed &&
-                @warn "$pntd parse_refPlace $(repr(refp_id)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=refp_id)
         end
     end
@@ -294,8 +286,6 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
         else
-            CONFIG[].warn_on_unclaimed &&
-                @warn "$pntd parse_refTransition $(repr(reft_id)) found unexpected label $(repr(tag))"
             unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=reft_id)
         end
     end

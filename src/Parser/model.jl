@@ -210,7 +210,6 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: <graphics>"
         else
-            CONFIG[].warn_on_unclaimed && @warn "found unexpected label of <net> id=$netid: $tag"
             unexpected_label!(net.extralabels, child, tag, pntd; parse_context, parentid=netid) # net
         end
     end
@@ -232,6 +231,7 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
     else
         xd = xmldict(child)
         l = PnmlLabel(tag, xd, parse_context.ddict)
+        #CONFIG[].warn_on_unclaimed &&
         @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l
         extralabels[tag] = l
     end
@@ -297,7 +297,6 @@ function _parse_page!(net::PnmlNet{T}, node::XMLNode, pntd::T, pageid::Symbol;
         elseif nname == :graphics
             page.graphics = parse_context.labelparser[nname](child, pntd)
         else
-            CONFIG[].warn_on_unclaimed && @warn("found unexpected label of <page>: $nname")
             unexpected_label!(page.extralabels, child, nname, pntd; parse_context, parentid=pageid)
         end
     end
