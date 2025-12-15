@@ -38,7 +38,7 @@ Multisets.set_key_value_show()
     RefTransition, reftransition, reftransitions, nreftransitions,
     Arc, arc, arcs, narcs, source, target, has_arc
 
-@reexport using PNML: labels, varsubs
+@reexport using PNML: has_labels, labels, varsubs
 
 @reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
