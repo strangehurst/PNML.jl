@@ -50,8 +50,8 @@ end
     else
         error("pntd not known")
     end
-    i = Labels.default(Inscription, pntd, placetype; ctx.ddict)
-    println("default(Inscription($pntd) = ", i)
+    i = @inferred Inscription Labels.default(Inscription, pntd, placetype; ctx.ddict)
+    #println("default(Inscription($pntd) = ", i)
 end
 
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()

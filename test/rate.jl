@@ -8,10 +8,10 @@ println("RATE")
             pntd; parse_context)
     #@show lab = PNML.labels(trans)
 
-    @test PNML.has_labels(trans) === true
-    @test PNML.has_label(trans, :rate) === true
-    @test PNML.get_label(trans, :rate) === PNML.labels(trans)[:rate]
-    @test PNML.get_label(trans, :rate) !== nothing
+    @test has_labels(trans) === true
+    @test has_label(trans, :rate) === true
+    @test get_label(trans, :rate) === labels(trans)[:rate]
+    @test get_label(trans, :rate) !== nothing
     #@show trans
     @test PNML.rate_value(trans) ≈ 0.3
 
@@ -65,6 +65,7 @@ end
 
 println("DELAY")
 @testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
+    #println("delay label $pntd")
     parse_context = PNML.parser_context()
     # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
     # This bit may be from the pre-standard era.
@@ -80,24 +81,20 @@ println("DELAY")
         </delay>
     </transition>"""
     #! This has Float64 and Int
-    #println()
-    t = parse_transition(node, pntd; parse_context)::Transition
-    #println()
-    @test has_label(labels(t), :delay)
-    #@show has_label(labels(t), :delay)
-    #@show dump(t)
+    t = @test_logs((:info, "add PnmlLabel :delay to :t6"),
+        parse_transition(node, pntd; parse_context)::Transition)
+    @test has_labels(t) == true
+    @test has_label(labels(t), :delay) == true
 
-    ls = labels(t)
-    #elements(label)
-
-    #@show typeof(ls) length(ls)
-    #@show typeof(first(ls))
-    #println()
-    #@show PNML.get_label(ls, :delay) #! debug
-    #@show PNML.labelof(t, :delay) #! debug
-    @test PNML.get_label(ls, :delay) == PNML.labelof(t, :delay)
+    @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
     @test PNML.delay_value(t)::Tuple == ("closed", 4.0, 9.0)
-    #println()
+
+    del = PNML.labelof(t, :delay)
+    #@show elements(del)["interval"]
+    #! XXX where did xmlns dissappear
+    #@test elements(del)["interval"][:xmlns] == "http://www.w3.org/1998/Math/MathML"
+    @test elements(del)["interval"][:closure] == "closed"
+    @test elements(del)["interval"]["cn"] == ["4.0", "9.0"]
 
     # unbounded interval [4,∞)
     node = xml"""<transition id ="t7">
@@ -108,10 +105,17 @@ println("DELAY")
             </interval>
         </delay>
     </transition>"""
-    t = parse_transition(node, pntd; parse_context)::Transition
+    t = @test_logs((:info, "add PnmlLabel :delay to :t7"),
+        parse_transition(node, pntd; parse_context)::Transition)
     @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
-    @test PNML.delay_value(t)::Tuple == ("closed-open", 4.0, Base.Inf)
-    #println()
+    @test PNML.delay_value(t)::Tuple == ("closed-open", 4, Base.Inf)
+
+    del = PNML.labelof(t, :delay)
+    #@show elements(del)["interval"]
+    @test elements(del)["interval"][:closure] == "closed-open"
+    @test elements(del)["interval"]["cn"] == "4"
+    @test elements(del)["interval"]["ci"] == "infty"
+
 
     # interval (3,5)
     node = xml"""<transition id ="t8">
@@ -122,10 +126,15 @@ println("DELAY")
             </interval>
         </delay>
     </transition>"""
-    t = parse_transition(node, pntd; parse_context)::Transition
+    t = @test_logs((:info, "add PnmlLabel :delay to :t8"),
+        parse_transition(node, pntd; parse_context)::Transition)
     @test PNML.get_label(labels(t), :delay) == PNML.labelof(t, :delay)
     #@show PNML.delay_value(t)::Tuple
-    @test PNML.delay_value(t)::Tuple == ("open", 3.0, 5.0)
-    #println()
+    @test PNML.delay_value(t)::Tuple == ("open", 3.0, 5.0) #! why float
+
+    del = PNML.labelof(t, :delay)
+    #@show elements(del)["interval"]
+    @test elements(del)["interval"][:closure] == "open"
+    @test elements(del)["interval"]["cn"] == ["3", "5"]
 
 end

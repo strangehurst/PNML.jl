@@ -73,7 +73,7 @@ end
 end
 
 @testset "pnml traits $pntd" for pntd in PnmlTypes.all_nettypes()
-    println("pnml traits $pntd: ", [isdiscrete(pntd), iscontinuous(pntd), ishighlevel(pntd)])
+    #println("pnml traits $pntd: ", [isdiscrete(pntd), iscontinuous(pntd), ishighlevel(pntd)])
     t = typeof(pntd)
     @test isdiscrete(pntd) isa Bool
     @test iscontinuous(pntd) isa Bool

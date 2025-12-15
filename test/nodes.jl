@@ -1,5 +1,9 @@
 using PNML, ..TestUtils, JET, XMLDict
 
+#---------------------------------------------
+# PLACE
+#---------------------------------------------
+
 @testset "place $pntd" for pntd in PnmlTypes.all_nettypes(!ishighlevel)
     node = xml"""
         <place id="place1">
@@ -23,13 +27,15 @@ using PNML, ..TestUtils, JET, XMLDict
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test_call initial_marking(n)
-    @test initial_marking(n) == 100
+    #@show pntd, initial_marking(n)
+    @test initial_marking(n)::Number == 100
 end
 
 @testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
+        <type><structure><dot/></structure></type>
         <hlinitialMarking>
             <text>101</text>
             <structure>
@@ -43,16 +49,58 @@ end
     """
     ctx = PNML.parser_context()
 
-    parse_place(node, pntd; parse_context=ctx)::Place
+    n = parse_place(node, pntd; parse_context=ctx)::Place
     @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
 
-    # @test pid(n) === :place1
-    # @test @inferred(pid(n)) === :place1
-    # @test has_name(n)
-    # @test @inferred(name(n)) == "with text"
-    # @test_call target_modules=(@__MODULE__,) initial_marking(n)
-    # im = initial_marking(n)
+    @test @inferred(pid(n)) === :place1
+    @test has_name(n)
+    @test @inferred(name(n)) == "with text"
+    @test_call target_modules=(@__MODULE__,) initial_marking(n)
+    #@show pntd, initial_marking(n)
+    @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101
 end
+
+@testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+    node = xml"""
+        <place id="place1">
+        <type><structure><dot/></structure></type>
+        <hlinitialMarking>
+            <text>101</text>
+            <structure>
+            <numberof>
+                <subterm><numberconstant value="101"><positive/></numberconstant></subterm>
+                <subterm><dotconstant/></subterm>
+            </numberof>
+            </structure>
+        </hlinitialMarking>
+        <somelabel1 a="text">
+            <another b="more" />
+        </somelabel1>
+        <somelabel2 c="value" />
+        </place>
+    """
+    ctx = PNML.parser_context()
+    n = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
+                   (:info, "add PnmlLabel :somelabel2 to :place1"),
+                    parse_place(node, pntd; parse_context=ctx)::Place)
+    @test pid(n) === :place1
+    @test has_name(n) == false
+    @test PNML.has_labels(n) == true
+    #@show labels(n)
+    #@show keys(labels(n))
+    #@show labels(n)[:somelabel1]
+    #@show labels(n)[:somelabel2]
+    #@show elements(labels(n)[:somelabel1])
+    @test elements(labels(n)[:somelabel1])[:a] == "text"
+    @test elements(labels(n)[:somelabel1])["another"][:b] == "more"
+    #@show elements(labels(n)[:somelabel2])
+    @test elements(labels(n)[:somelabel2])[:c] == "value"
+end
+
+
+#---------------------------------------------
+# TRANSITION
+#---------------------------------------------
 
 @testset "transition $pntd" for pntd in PnmlTypes.all_nettypes()
     node = xml"""
@@ -72,7 +120,7 @@ end
     @test name(n) == "Some transition"
     #@show condition(n)()
     @test condition(n)() isa Bool
-    @show PNML.Labels.variables(condition(n))
+    @test isempty(PNML.Labels.variables(condition(n))::Vector{Symbol})
 
     @test varsubs(n) isa Vector{NamedTuple}
     @test isempty(varsubs(n))
@@ -105,8 +153,31 @@ end
     @test condition(t)() === true
 end
 
+@testset "transition unknown label $pntd" for pntd in PnmlTypes.all_nettypes()
+    node = xml"""
+      <transition id="transition1">
+        <name> <text>Some transition</text> </name>
+        <condition> <text>always true</text>
+                    <structure><booleanconstant value="true"/></structure>
+        </condition>
+        <somelabel2 c="value" />
+     </transition>
+    """
+    parse_context = PNML.parser_context()
+
+   n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
+                parse_transition(node, PnmlCoreNet(); parse_context)::Transition)
+    @test pid(n) === :transition1
+    @test PNML.has_labels(n) == true
+    @test elements(labels(n)[:somelabel2])[:c] == "value"
+end
+
+#---------------------------------------------
+# ARC
+#---------------------------------------------
+
 using PNML: isnormal, isinhibitor, isread, isreset
-println("\n==============================================================================")
+
 @testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
     pntd = PnmlCoreNet()
 
@@ -124,10 +195,6 @@ println("\n=====================================================================
     atl = PNML.arctypelabel(a)
     arct = PNML.Labels.arctype(atl)
 
-    # @show isnormal(a), isinhibitor(a), isread(a), isreset(a)
-    # @show isnormal(atl), isinhibitor(atl), isread(atl), isreset(atl)
-    # @show isnormal(arct), isinhibitor(arct), isread(arct), isreset(arct)
-
     @test length(Base.findall([isnormal(a), isinhibitor(a), isread(a), isreset(a)])) == 1
     @test length(Base.findall([isnormal(atl), isinhibitor(atl), isread(atl), isreset(atl)])) == 1
     @test length(Base.findall([isnormal(arct), isinhibitor(arct), isread(arct), isreset(arct)])) == 1
@@ -139,7 +206,6 @@ println("\n=====================================================================
     @test pid(a) === :a1
     @test !has_name(a)
     @test inscription(a)(NamedTuple()) == 1
-    println()
 end
 
 #! Needs scaffolding
@@ -182,6 +248,10 @@ end
 #     end
 # end
 
+#---------------------------------------------
+# REFERENCE TRANSITION
+#---------------------------------------------
+
 @testset "ref Trans $pntd" for pntd in PnmlTypes.all_nettypes()
     node = xml"""
     <referenceTransition id="rt1" ref="t1">
@@ -198,28 +268,62 @@ end
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
 end
 
+@testset "ref Trans unknown label $pntd" for pntd in PnmlTypes.all_nettypes()
+    node = xml"""
+    <referenceTransition id="rt1" ref="t1">
+        <name> <text>refTrans name</text> </name>
+        <graphics><offset x="0" y="0"/></graphics>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <somelabel2 c="value" />
+    </referenceTransition>
+    """
+    parse_context = PNML.parser_context()
+
+    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
+            parse_refTransition(node, pntd; parse_context)::RefTransition)
+    @test pid(n) === :rt1
+    @test PNML.refid(n) === :t1
+    @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
+    @test PNML.has_labels(n) == true
+    @test elements(labels(n)[:somelabel2])[:c] == "value"
+end
+
+#---------------------------------------------
+# REFERENCE PLACE
+#---------------------------------------------
+
 @testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
-    n1 = (node = xml"""
-    <referencePlace id="rp2" ref="rp1">
+    node = xml"""
+    <referencePlace id="rp1" ref="p1">
         <name>
             <text>refPlace name</text>
         </name>
         <graphics><offset x="0" y="0"/></graphics>
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
-    </referencePlace>""", id="rp2", ref="rp1" )
+    </referencePlace>"""
 
-    n2 = (node = xml"""
-    <referencePlace id="rp1" ref="Sync1">
-        <graphics>
-          <position x="734.5" y="41.5"/>
-          <dimension x="40.0" y="40.0"/>
-        </graphics>
-    </referencePlace>""", id="rp1", ref="Sync1")
+    parse_context = PNML.parser_context()
+    n = parse_refPlace(node, pntd; parse_context)::RefPlace
+    @test pid(n) === :rp1
+    @test PNML.refid(n) === :p1
+end
 
-    @testset "referencePlaces" for s in [n1, n2]
-        parse_context = PNML.parser_context()
-        n = parse_refPlace(s.node, pntd; parse_context)::RefPlace
-        @test pid(n) === Symbol(s.id)
-        @test PNML.refid(n) === Symbol(s.ref)
-    end
+@testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
+    node = xml"""
+    <referencePlace id="rp1" ref="p1">
+        <name>
+            <text>refPlace name</text>
+        </name>
+        <graphics><offset x="0" y="0"/></graphics>
+        <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
+        <somelabel2 c="value" />
+    </referencePlace>"""
+
+    parse_context = PNML.parser_context()
+    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
+            parse_refPlace(node, pntd; parse_context)::RefPlace)
+    @test pid(n) === :rp1
+    @test PNML.refid(n) === :p1
+    @test PNML.has_labels(n) == true
+    @test elements(labels(n)[:somelabel2])[:c] == "value"
 end
