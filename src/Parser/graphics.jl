@@ -21,14 +21,14 @@ function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     Labels.TokenGraphics(tpos)
 end
 
-"""
-    tokengraphics_content(node::XMLNode, pntd::PnmlType) -> Vector{TokenGraphics}
+# """
+#     tokengraphics_content(node::XMLNode, pntd::PnmlType) -> Vector{TokenGraphics}
 
-Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
-"""
-function tokengraphics_content(node, pntd)
-    [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
-end
+# Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
+# """
+# function tokengraphics_content(node, pntd)
+#     [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
+# end
 
 """
 $(TYPEDSIGNATURES)
