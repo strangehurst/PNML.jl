@@ -180,7 +180,7 @@ isread(e::AbstractArcEnum)      = isa_variant(e, ArcT.read)
 isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
 
 
-sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
+#!sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
 
 decldict(arc::Arc) = arc.declarationdicts
 

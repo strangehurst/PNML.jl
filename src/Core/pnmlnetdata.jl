@@ -32,7 +32,7 @@ narcs(d::PnmlNetData)           = length(arcdict(d))
 nrefplaces(d::PnmlNetData)      = length(refplacedict(d))
 nreftransitions(d::PnmlNetData) = length(reftransitiondict(d))
 
-valtype(d::OrderedDict{Symbol,T}) where T = T
+#!valtype(d::OrderedDict{Symbol,T}) where T = T
 
 function tunesize!(d::PnmlNetData;
                     nplace::Int = 32, #TODO Make these prefrences.
