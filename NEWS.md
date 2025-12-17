@@ -1,5 +1,25 @@
 # News
 
+Still under active development! These are some of the highlights.
+
+Version 0.0.28 2025-12-05
+  - Introduce FIFO place intitial marking values labels.
+
+Version 0.0.27 2025-11-17
+  - Introduce Arc type labels. No use YET of the label.
+
+Version 0.0.25 2025-10-16
+  - SortRef ADT
+
+Version 0.0.23 2025-08-29
+  - Begin AlgebraicPetri compatibility
+
+Version 0.0.22 2025-07-27
+  - Moshi for ADTs
+
+Version 0.0.21 2025-06-14
+  - Introduce LabelParser, ToolParser
+
 Version 0.0.19 2025-05-12
   - Introduce Context
   - Start ToolParser, LabelParse inteface exploration
