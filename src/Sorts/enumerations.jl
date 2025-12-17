@@ -55,7 +55,7 @@ MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> 
     declarationdicts::DeclDict
 end
 
-tag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
+#!xtag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
 
 #TODO successor/predecessor methods
 
@@ -69,7 +69,7 @@ Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
     declarationdicts::DeclDict
 end
 
-tag(::FiniteEnumerationSort) = :finiteenumeration
+#!xtag(::FiniteEnumerationSort) = :finiteenumeration
 
 """
     $(TYPEDEF)
@@ -81,7 +81,7 @@ tag(::FiniteEnumerationSort) = :finiteenumeration
     declarationdicts::DeclDict
 end
 
-tag(::FiniteIntRangeSort) = :finiteintrange
+#!xtag(::FiniteIntRangeSort) = :finiteintrange
 Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop

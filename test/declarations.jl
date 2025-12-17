@@ -84,7 +84,7 @@ end
                                 <feconstant id="FE1" name="1"/>
                             </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::CyclicEnumerationSort
-    @test tag(sort) === :cyclicenumeration
+    #!@test PNML.Sorts.xtag(sort) === :cyclicenumeration
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -95,7 +95,7 @@ end
                         </finiteenumeration>""", pntd, :testenum2; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
-    @test tag(sort) === :finiteenumeration
+    #!@test PNML.Sorts.xtag(sort) === :finiteenumeration
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -103,7 +103,7 @@ end
     sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
-    @test tag(sort) === :finiteintrange
+    #!@test PNML.Sorts.xtag(sort) === :finiteintrange
     @test_logs sprint(show, sort)
     @test_logs eltype(sort)
 
@@ -181,6 +181,10 @@ end
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
+        # decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
+        #         parse_declaration!(ctx, xml"""<declaration key="test empty">
+        #         <structure><declarations></declarations></structure>
+        #     </declaration>""", pntd)::Declaration)
         decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
                 <structure><declarations></declarations></structure>
             </declaration>""", pntd)::Declaration
@@ -238,11 +242,9 @@ end
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
         base_decl_length = length(PNML.namedsorts(ctx.ddict))
-        decl = parse_declaration!(ctx, node, pntd)::PNML.Declaration # Add 3 declarations.
-
-        #@show decl PNML.parse_context.idregistry
+        decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
+            parse_declaration!(ctx, node, pntd)::PNML.Declaration) # Add 3 declarations.
         @test length(PNML.namedsorts(ctx.ddict)) == base_decl_length + 3
-        #println()
 
         for nsort in values(PNML.namedsorts(ctx.ddict))
             # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
