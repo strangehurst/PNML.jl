@@ -41,6 +41,7 @@ function delay_content_parser(label, value_type)
     (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$(repr(tag))'")
     D()&& @show value_type
+    #xmlns = PNML._attribute(interval, :xmlns)
     closure = PNML._attribute(interval, :closure)
     D()&& @show closure
 
