@@ -11,15 +11,15 @@ println("-----------------------------------------"); flush(stdout)
     #false &&
     model = pnmlmodel(fname)::PnmlModel
     summary(stdout, model) #first(PNML.nets(model)))
-    n = first(PNML.nets(model))
-    @show vc = PNML.vertex_codes(n)
-    @show vl = PNML.vertex_labels(n)
+    n = first(PNML.nets(model))::PnmlNet
+    @test PNML.vertex_codes(n) isa AbstractDict
+    @test PNML.vertex_labels(n) isa AbstractDict
     if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
         @test_throws ArgumentError PNML.metagraph(n)
     else
-        @show PNML.metagraph(n)
+        @test contains(sprint(show, PNML.metagraph(n)),
+            "Meta graph based on a Graphs.SimpleGraphs.SimpleDiGraph{Int64}")
     end
-   #TODO more tests
     #TODO more tests
     #@test PNML.verify(net; verbose=true)
 end
@@ -31,13 +31,14 @@ println("-----------------------------------------")
 @testset let fname=joinpath(@__DIR__, "data", "MCC/Sudoku-COL-BN01.pnml")
     model = pnmlmodel(fname)::PnmlModel
     summary(stdout, model) #first(PNML.nets(model)))
-    n = first(PNML.nets(model))
-    @show vc = PNML.vertex_codes(n)
-    @show vl = PNML.vertex_labels(n)
+    n = first(PNML.nets(model))::PnmlNet
+    @test PNML.vertex_codes(n) isa AbstractDict
+    @test PNML.vertex_labels(n) isa AbstractDict
     if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
         @test_throws ArgumentError PNML.metagraph(n)
     else
-        @show PNML.metagraph(n)
+        @test contains(sprint(show, PNML.metagraph(n)),
+            "Meta graph based on a Graphs.SimpleGraphs.SimpleDiGraph{Int64}")
     end
     #TODO more tests
 end

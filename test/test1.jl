@@ -16,7 +16,8 @@ println("-----------------------------------------\n")
 #     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
 #     #!@test startswith(repr(model), "PnmlModel")
 
-    @show map(pid, PNML.nets(model));
+    @test map(pid, PNML.nets(model)) == (:net1,:net2,:net3,:net4,:net5,:net6,
+                                            :net7,:net8,:net9,:net10,:net11);
 
     for n in PNML.nets(model)
         println("-----------------------------------------")
@@ -27,21 +28,20 @@ println("-----------------------------------------\n")
         #Base.redirect_stdio(stdout=devnull, stderr=devnull) do
         Base.redirect_stdio(stdout=nothing, stderr=nothing) do #! debug
             #TODO use MetaGraph as base of a validation tool
-            @show vc = PNML.vertex_codes(n)
-            @show vl = PNML.vertex_labels(n)
+            vc = PNML.vertex_codes(n)::AbstractDict
+            vl = PNML.vertex_labels(n)::AbstractDict
             for a in arcs(n)
-                println(repr(a)," \t Edge ",
+                println("Edge ",
                     vc[PNML.source(a)], " -> ",  vc[PNML.target(a)], " or ",
                     vl[vc[PNML.source(a)]], " -> ",  vl[vc[PNML.target(a)]],
                     )
             end
-            println("-----------------------------------------")
             if !(narcs(n) > 0 && nplaces(n) > 0 && ntransitions(n) > 0)
                 @test_throws ArgumentError PNML.metagraph(n)
             else
-                @show PNML.metagraph(n)
+                @test contains(sprint(show, PNML.metagraph(n)),
+                    "Meta graph based on a Graphs.SimpleGraphs.SimpleDiGraph{Int64}")
             end
         end
     end
-    println("\n-----------------------------------------")
 end
