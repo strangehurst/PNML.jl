@@ -85,17 +85,11 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @safetestset "pnmlexpr"     begin include("pnmlexpr.jl") end
     end
 
-    if select(("ALL", "NET"), ("!NET",))
-        println("# NET #")
-        @safetestset "document"     begin include("document.jl") end
-    end
-
     if select(("ALL", "NET1"), ("!NET1",))
         println("# NET1 #")
-        @safetestset "parse_tree"   begin include("parse_tree.jl") end
+        @safetestset "pnmlmodel"     begin include("pnmlmodel.jl") end
     end
 
-    # Note the omission of ALL. This pnml file is broken!? It should be used for hardening.
     if select(("ALL", "TEST1",), ("!TEST1",))
         println("# TEST1 #")
         @safetestset "test1"   begin include("test1.jl") end
