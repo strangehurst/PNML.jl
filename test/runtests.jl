@@ -64,12 +64,15 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
     if select(("ALL", "HL"), ("!HL",))
         println("# HL #")
         @safetestset "labels_hl"    begin include("labels_hl.jl") end
+        @safetestset "sorts"        begin include("sorts.jl") end
         @safetestset "declarations" begin include("declarations.jl") end
     end
 
     if select(("ALL", "CORE2"), ("!CORE2",))
         println("# CORE2 #")
-        @safetestset "nodes"        begin include("nodes.jl") end
+        @safetestset "places"       begin include("places.jl") end
+        @safetestset "transitions"  begin include("transitions.jl") end
+        @safetestset "arcs"         begin include("arcs.jl") end
         @safetestset "pages"        begin include("pages.jl") end
         @safetestset "exceptions"   begin include("exceptions.jl") end
     end

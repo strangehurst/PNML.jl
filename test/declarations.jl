@@ -6,178 +6,6 @@ using Printf
 #! TODO add tests for variable declarations
 #!
 
-function _subtypes(type::Type)
-    out = Any[]
-    _subtypes!(out, type)
-end
-
-function _subtypes!(out, type::Type)
-    if !isabstracttype(type)
-        push!(out, type)
-    else
-        foreach(Base.Fix1(_subtypes!, out), subtypes(type))
-    end
-    return out
-end
-
-@testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
-    #println("\nparse_sort $pntd")
-    parse_context = PNML.parser_context()::PNML.ParseContext
-    ddict = parse_context.ddict
-    #@show ddict
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_sort_tag!(parse_context, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
-    sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)
-    #@show ddict #!debug
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === PositiveSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<dot/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === DotSort(parse_context.ddict) # not a built-in
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<bool/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === BoolSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<integer/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === IntegerSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<natural/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === NaturalSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<positive/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === PositiveSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<real/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === RealSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    #println()
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"""<cyclicenumeration>
-                                <feconstant id="FE0" name="0"/>
-                                <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::CyclicEnumerationSort
-    #!@test PNML.Sorts.xtag(sort) === :cyclicenumeration
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"""<finiteenumeration>
-                                <feconstant id="FE0" name="0"/>
-                                <feconstant id="FE1" name="1"/>
-                        </finiteenumeration>""", pntd, :testenum2; parse_context)
-
-    sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
-    #!@test PNML.Sorts.xtag(sort) === :finiteenumeration
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
-
-    sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
-    #!@test PNML.Sorts.xtag(sort) === :finiteintrange
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    # productsort is expected to be enclosed in a namedsort
-    @test_logs(match_mode=:any, (:warn, r"^ISO 15909 Standard allows.*"),
-               parse_sort(xml"""<productsort/>""", pntd, :emptyproduct, "emptyproduct"; parse_context))
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    sortref = parse_sort(xml"""<productsort>
-                                <integer/>
-                                <integer/>
-                        </productsort>""", pntd, :redundant, "redundant"; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::ProductSort
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    PNML.fill_sort_tag!(parse_context, :speed, NamedSort(:speed, "speed", PositiveSort(), ddict))
-    PNML.fill_sort_tag!(parse_context, :distance, NamedSort(:distance, "dictance", NaturalSort(), ddict))
-    sortref= parse_sort(xml"""<productsort>
-                        <usersort declaration="speed"/>
-                        <usersort declaration="distance"/>
-                        </productsort>""", pntd, :someproduct, "someproduct"; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::ProductSort
-    @test sort isa ProductSort
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    # IDRegistrys.reset_reg!(ctx.idregistry)
-    # sort = parse_sort(xml"""<productsort>
-    #                            <usersort declaration="id1"/>
-    #                            <natural/>
-    #                         </productsort>""", pntd)::ProductSort
-    #  @test_logs sprint(show, sort)
-    # @test_logs eltype(sort)
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    PNML.fill_sort_tag!(parse_context, :duck, NamedSort(:duck, "duck", PositiveSort(), ddict))
-
-    sortref = parse_sort(xml"""<multisetsort>
-                                <usersort declaration="duck"/>
-                            </multisetsort>""", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)#::MultisetSort
-    PNML.fill_sort_tag!(parse_context, :amultiset, sort) #~ test of method needed here
-    #@show parse_context.ddict
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    #^ ArbitrarySort
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    #@show sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
-    PNML.fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
-    #@show parse_context.ddict
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-
-    #^ String
-
-    IDRegistrys.reset_reg!(parse_context.idregistry)
-    sortref = parse_sort(xml"<string/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::StringSort
-    @test sort isa StringSort
-    @show PNML.sortelements(sort) eltype(sort)
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
-    @test first(PNML.sortelements(sort)) == ""
-    #TODO PartitionSort
-end
-
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
@@ -247,9 +75,6 @@ end
         @test length(PNML.namedsorts(ctx.ddict)) == base_decl_length + 3
 
         for nsort in values(PNML.namedsorts(ctx.ddict))
-            # NamedSorts are declarations. They give an identity to a built-in (or arbitrary)
-            # by wraping an ID of a declared sort.
-            # named sort -> cyclic enumeration -> fe constant
             #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
             #@show nsort pid(nsort)
             @test isregistered(ctx.idregistry, pid(nsort))
@@ -267,7 +92,6 @@ end
             #     @test fec.id isa Symbol
             #     @test fec.name isa AbstractString
             #     @test isregistered(fec.id)
-
             #     @test endswith(string(fec.id), fec.name)
             # end
         end
@@ -300,7 +124,7 @@ end
                         <useroperator declaration="b1"/>
                         <useroperator declaration="b2"/>
                         <useroperator declaration="b3"/>
-                    </partitionelement>
+                    </partitionelement>tokenposition
                 </partition>
                 <partition id="P2" name="P2">
                     <usersort declaration="pluck2"/>
@@ -323,31 +147,48 @@ end
     """
 
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
-        decl = parse_declaration!(ctx, node, pntd)
-        @test typeof(decl) <: Declaration
+    decl = parse_declaration!(ctx, node, pntd)
+    @test typeof(decl) <: Declaration
 
-        # Examine 3 partition sorts
-        for psort in values(PNML.partitionsorts(decldict(decl)))
-            # named partition -> partition element -> fe constant
-            @test typeof(psort) <: PartitionSort # is a declaration
+    # Examine 3 partition sorts
+    for psort in values(PNML.partitionsorts(decldict(decl)))
+        # named partition -> partition element -> fe constant
+        @test typeof(psort) <: PartitionSort # is a declaration
 
-            @test PNML.isregistered(ctx.idregistry, pid(psort))
-            @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-            #@show psort
-            partname = PNML.name(psort)
-            partsort = PNML.Declarations.sortdefinition(psort)
-            part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+        @test PNML.isregistered(ctx.idregistry, pid(psort))
+        @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
+        #@show psort
+        partname = PNML.name(psort)
+        partsort = PNML.Declarations.sortdefinition(psort)
+        part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
-            for element in part_elements
-                @test PNML.isregistered(ctx.idregistry, pid(element))
-            end
+        for element in part_elements
+            @test PNML.isregistered(ctx.idregistry, pid(element))
         end
+    end
 end
 
 const nonsimple_sorts = (MultisetSort, ProductSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
 
-_sorts() = _subtypes(AbstractSort)
+
+# function _subtypes(type::Type)
+#     out = Any[]
+#     _subtypes!(out, type)
+# end
+
+function _subtypes!(out, type::Type)
+    if !isabstracttype(type)
+        push!(out, type)
+    else
+        foreach(Base.Fix1(_subtypes!, out), subtypes(type))
+    end
+    return out
+end
+function _sorts()
+    out = Any[]
+    _subtypes!(out, AbstractSort)
+end
 
 @testset "equal sorts" begin
     println("============================")
