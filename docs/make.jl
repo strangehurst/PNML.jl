@@ -36,9 +36,9 @@ pages=[
         "Parser"                    => "structure/parser.md",
         "Enabling & Firing Rules"   => "structure/enabling_firing.md",
     ],
-    "Examples"                  => "examples.md",
+    #"Examples"                  => "examples.md",
     "Docstrings"                => "library.md",
-    "acknowledgments.md",
+    #"acknowledgments.md",
 ]
 #todo include("pages.jl")
 
