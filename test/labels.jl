@@ -1,118 +1,17 @@
 using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
-const NON_HL_NETS = tuple(PnmlCoreNet(), ContinuousNet())
 
 @testset "text $pntd" for pntd in PnmlTypes.core_nettypes()
     @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
 #------------------------------------------------
-@testset "name $pntd" for pntd in PnmlTypes.core_nettypes()
-    parse_context = PNML.parser_context()
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name></name>", pntd; parse_context, parentid=:xxx)
-    @test n isa PNML.AbstractLabel
-    @test PNML.text(n) == ""
-
-    n = @test_logs (:warn, r"^<name> missing <text>") PNML.Parser.parse_name(xml"<name>stuff</name>", pntd; parse_context, parentid=:xxx)
-    @test PNML.text(n) == "stuff"
-
-    @test n.graphics === nothing
-    @test n.toolspecinfos === nothing || isempty(n.toolspecinfos)
-
-    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; parse_context, parentid=:xxx)
-    @test n isa PNML.Name
-    @test PNML.text(n) == "some name"
-    #TODO add parse_graphics
-    #TODO add toolinfo
-
-end
 
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
 #------------------------------------------------
-#------------------------------------------------
-@testset "PT initMarking $pntd" for pntd in NON_HL_NETS
-    node = xmlnode("""
-    <initialMarking>
-        <text> $(iscontinuous(pntd) ? "123.0" : "123") </text>
-        <toolspecific tool="org.pnml.tool" version="1.0">
-            <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
-        </toolspecific>
-        <unknown id="unkn">
-            <name> <text>unknown label</text> </name>
-            <text>content text</text>
-        </unknown>
-    </initialMarking>
-    """)
-    #println(str)
-
-    parse_context = PNML.parser_context()
-    @show PNML.value_type(PNML.Marking, pntd)
-    @show PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))
-
-    placetype = SortType("$pntd initMarking",
-        PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
-        nothing, nothing, parse_context.ddict)
-
-    # Parse ignoring unexpected child
-    mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd; parse_context, parentid=:xxx)::PNML.Marking)
-    #@test typeof(value(mark)) <: Union{Int,Float64}
-    @test mark()::Union{Int,Float64} == 123
-
-    # Integer
-    mark1 = PNML.Marking(23, parse_context.ddict)
-    @test_opt broken=false PNML.Marking(23, parse_context.ddict)
-    @test_call PNML.Marking(23, parse_context.ddict)
-    @test typeof(mark1()) == typeof(23)
-    @test mark1() == 23
-    @test_opt broken=false mark1()
-    @test_call mark1()
-
-    @test graphics(mark1) === nothing
-    @test toolinfos(mark1) === nothing || isempty(toolinfos(mark1))
-
-    # Floating point
-    mark2 = PNML.Marking(3.5, parse_context.ddict)
-    #@show mark2 mark2()
-    @test_opt broken=false PNML.Marking(3.5, parse_context.ddict)
-    @test_call PNML.Marking(3.5, parse_context.ddict)
-    @test typeof(mark2()) == typeof(3.5)
-    @test mark2() ≈ 3.5
-    @test_call mark2()
-    @test graphics(mark2) === nothing
-    @test toolinfos(mark2) === nothing || isempty(toolinfos(mark2))
-end
-
-@testset "PT inscription $pntd" for pntd in NON_HL_NETS
-    n1 = xml"""<inscription>
-        <text> 12 </text>
-        <graphics><offset x="0" y="0"/></graphics>
-        <toolspecific tool="org.pnml.tool" version="1.0">
-            <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
-        </toolspecific>
-        <unknown id="unkn">
-            <name> <text>unknown label</text> </name>
-            <text>unknown content text</text>
-        </unknown>
-    </inscription>"""
-    parse_context = PNML.parser_context()
-    inscript = @test_logs(match_mode=:any,
-                    (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                    parse_inscription(n1, :nothing, :nothing, pntd;
-                            netdata=PnmlNetData(), parse_context, parentid=:xxx))
-    @test inscript isa PNML.Inscription
-    #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
-    #@show inscript
-    #@test_broken inscript() == 12
-    #@test graphics(inscript) !== nothing
-    #@test toolinfos(inscript) === nothing || !isempty(toolinfos(inscript))
-    #@test_throws MethodError labels(inscript)
-
-    #@test occursin("Graphics", sprint(show, inscript))
-end
 
 FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 

@@ -59,11 +59,14 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @safetestset "graphics"     begin include("graphics.jl") end
         @safetestset "toolspecific" begin include("toolspecific.jl") end
         @safetestset "labels"       begin include("labels.jl") end
-    end
-
-    if select(("ALL", "HL"), ("!HL",))
-        println("# HL #")
         @safetestset "labels_hl"    begin include("labels_hl.jl") end
+
+        @safetestset "initialMarkings" begin include("initialMarkings.jl") end
+        @safetestset "inscriptions"    begin include("inscriptions.jl") end
+        @safetestset "conditions"      begin include("conditions.jl") end
+        @safetestset "namelabel"       begin include("namelabel.jl") end
+        @safetestset "sorttype"        begin include("sorttype.jl") end
+
         @safetestset "sorts"        begin include("sorts.jl") end
         @safetestset "declarations" begin include("declarations.jl") end
     end

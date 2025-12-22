@@ -154,14 +154,13 @@ end
     end
 end
 
-# Read a SymmetricNet from www.pnml.com examples or MCC
 println("\n-----------------------------------------")
 println("AirplaneLD-col-0010.pnml")
-println("-----------------------------------------\n")
+println("-----------------------------------------")
 @testset let testfile=joinpath(@__DIR__, "data", "AirplaneLD-col-0010.pnml")
-    println(testfile); flush(stdout)
-    model = pnmlmodel(testfile)::PnmlModel
-    #!model = @test_logs(match_mode=:all, pnmlmodel(testfile))
+    #println(testfile); flush(stdout)
+    #model = pnmlmodel(testfile)::PnmlModel
+    model = @test_logs(match_mode=:all, pnmlmodel(testfile))
 
     netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
     @test length(netvec) == 1
