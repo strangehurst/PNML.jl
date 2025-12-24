@@ -60,6 +60,7 @@ include("rates.jl")
 include("delays.jl")
 include("priorities.jl")
 include("structure.jl")
+include("times.jl")
 
 """
     label_value(n::AbstractPnmlNode, tag::Symbol, type) -> x::type
