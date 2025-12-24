@@ -6,14 +6,8 @@ using XMLDict: XMLDict
     @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
-#------------------------------------------------
 
-#------------------------------------------------
-#------------------------------------------------
-#------------------------------------------------
-#------------------------------------------------
 
-FF(@nospecialize f) = f !== EZXML.throw_xml_error;
 
 #@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]

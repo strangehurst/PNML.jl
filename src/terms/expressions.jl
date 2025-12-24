@@ -236,7 +236,6 @@ function toexpr(b::Bag, varsub::NamedTuple, ddict)
         b.basis,
         toexpr(b.element, varsub, ddict),
         toexpr(b.multi, varsub, ddict))
-
 end
 
 function Base.show(io::IO, x::Bag)

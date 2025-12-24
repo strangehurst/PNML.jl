@@ -4,7 +4,7 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 
 Real valued label. An expected use is as a static transition Priority.
-Expected XML: `<Priority> <text>0.3</text> </Priority>`.
+Expected XML: `<priority> <text>0.3</text> </priority>`.
 
 Dynamic priority is a function with arguments of net marking and transition.
 """
