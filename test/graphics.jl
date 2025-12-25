@@ -75,39 +75,40 @@ end
     @test_throws r"^ArgumentError" PNML.Parser.parse_graphics_coordinate(node, pntd)
 end
 
-@testset "tokengraphics $pntd" for pntd in PnmlTypes.core_nettypes()
-    node0 = xml"""<tokengraphics></tokengraphics>"""
-    n = @test_logs(match_mode=:all,
-        (:warn,"tokengraphics does not have any <tokenposition> elements"),
-        parse_tokengraphics(node0, pntd))
-    @test n isa TokenGraphics
-    @test length(n.positions) == 0
+# part of toolinfo
+# @testset "tokengraphics $pntd" for pntd in PnmlTypes.core_nettypes()
+#     node0 = xml"""<tokengraphics></tokengraphics>"""
+#     n = @test_logs(match_mode=:all,
+#         (:warn,"tokengraphics does not have any <tokenposition> elements"),
+#         parse_tokengraphics(node0, pntd))
+#     @test n isa TokenGraphics
+#     @test length(n.positions) == 0
 
-    node1 = xml"""<tokengraphics>
-                <tokenposition x="-9" y="-2"/>
-                <unexpected/>
-            </tokengraphics>"""
-    n = @test_logs(match_mode=:all,
-        (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
-        parse_tokengraphics(node1, pntd))
-    @test n isa TokenGraphics
-    @test length(n.positions) == 1
+#     node1 = xml"""<tokengraphics>
+#                 <tokenposition x="-9" y="-2"/>
+#                 <unexpected/>
+#             </tokengraphics>"""
+#     n = @test_logs(match_mode=:all,
+#         (:warn, "ignoring unexpected child of <tokengraphics>: 'unexpected'"),
+#         parse_tokengraphics(node1, pntd))
+#     @test n isa TokenGraphics
+#     @test length(n.positions) == 1
 
-    node2 = xml"""<tokengraphics>
-                <tokenposition x="-9" y="-2"/>
-                <tokenposition x="2"  y="3"/>
-            </tokengraphics>"""
-    n = parse_tokengraphics(node2, pntd)
-    @test n isa TokenGraphics
-    @test length(n.positions) == 2
+#     node2 = xml"""<tokengraphics>
+#                 <tokenposition x="-9" y="-2"/>
+#                 <tokenposition x="2"  y="3"/>
+#             </tokengraphics>"""
+#     n = parse_tokengraphics(node2, pntd)
+#     @test n isa TokenGraphics
+#     @test length(n.positions) == 2
 
-    node3 = xml"""<tokengraphics>
-                    <tokenposition x="-9.0" y="-2"/>
-                    <tokenposition x="2.0"  y="3"/>
-                    <tokenposition x="-2" y="2"/>
-            </tokengraphics>"""
-    n = parse_tokengraphics(node3, pntd)
-    @test n isa TokenGraphics
-    @test length(n.positions) == 3
-    #TODO test ordering
-end
+#     node3 = xml"""<tokengraphics>
+#                     <tokenposition x="-9.0" y="-2"/>
+#                     <tokenposition x="2.0"  y="3"/>
+#                     <tokenposition x="-2" y="2"/>
+#             </tokengraphics>"""
+#     n = parse_tokengraphics(node3, pntd)
+#     @test n isa TokenGraphics
+#     @test length(n.positions) == 3
+#     #TODO test ordering
+# end
