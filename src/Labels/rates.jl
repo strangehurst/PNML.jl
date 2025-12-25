@@ -21,7 +21,8 @@ Base.eltype(::Rate) = value_type(Rate)
 decldict(i::Rate) = i.declarationdicts
 term(i::Rate) = i.term
 sortref(i::Rate) = _sortref(decldict(i), term(i))::AbstractSortRef
-sortof(i::Rate) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
+
+sortof(i::Rate) = sortdefinition(namedsort(decldict(i), refid(sortref(i))))
 
 function (rate::Rate)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(rate), varsub, decldict(rate)))::value_type(Rate)
