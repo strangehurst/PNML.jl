@@ -87,7 +87,6 @@ end
         #println(); flush(stdout)
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
         #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
         @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa PNML.PnmlMultiset
         # @test arity(markterm) == 2
@@ -221,7 +220,6 @@ end
         #println(); flush(stdout)
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        @test PNML.has_labels(mark) == false # Labels do not themselves have `Labels`, but you may ask.
         #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
         @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa Vector{PNML.DotConstant}
         # @test arity(markterm) == 2
@@ -265,7 +263,6 @@ end # fifoinitialMarking
 #     @test mark isa PNML.Marking
 #     @test PNML.has_graphics(mark) == true
 #     @test occursin("Graphics", sprint(show, mark))
-#     @test PNML.has_labels(mark) == false
 
 #     # Following HL text,structure label pattern where structure is a `Term`.
 #     @test text(mark) == "<All,All>"

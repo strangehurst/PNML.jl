@@ -18,6 +18,5 @@ using XMLDict: XMLDict
     @test PNML.sortref(typ) isa PNML.AbstractSortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort(ctx.ddict) #! does the name of a sort affect equal Sorts?
     @test PNML.has_graphics(typ) == false
-    @test PNML.has_labels(typ) == false
     @test !occursin("Graphics", sprint(show, typ))
 end

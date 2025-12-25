@@ -59,7 +59,6 @@ end
 
 #     @test typeof(insc) <: PNML.AbstractLabel
 #     @test PNML.has_graphics(insc) == true
-#     @test PNML.has_labels(insc) == false # Labels do not have sub-labels.
 
 #     @test text(insc) isa Union{Nothing,AbstractString}
 #     @test text(insc) == "<x,v>"

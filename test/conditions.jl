@@ -45,6 +45,5 @@ using XMLDict: XMLDict
 #         # @test value(cond) isa PNML.Operator
 #         # @test tag(value(cond)) == :or
 #         @test PNML.has_graphics(cond) == true
-#         @test PNML.has_labels(cond) == false
 #     end
 # end
