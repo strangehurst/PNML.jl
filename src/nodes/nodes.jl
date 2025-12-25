@@ -9,7 +9,7 @@ M is a "multiset sort denoting a collection of tokens".
 A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
-mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
+@kwdef mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     id::Symbol
     initialMarking::Marking #! Expression as value. Used to create marking vector.
 
@@ -17,11 +17,11 @@ mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
     # The inscription of an arc to or from a place defines which tokens are added or removed
     # when the corresponding transition fires. These tokens must also be of sorttype.
     sorttype::SortType{S}
-    namelabel::Maybe{Name}
-    graphics::Maybe{Graphics}
-    toolspecinfos::Maybe{Vector{ToolInfo}}
-    extralabels::LittleDict{Symbol,Any}
-    declarationdicts::DeclDict
+    namelabel::Maybe{Name} = nothing
+    graphics::Maybe{Graphics} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
+    extralabels::LittleDict{Symbol,Any} = nothing
+    declarationdicts::DeclDict = DeclDict()
     #todo net::PnmlNet{PNTD}
 end
 
