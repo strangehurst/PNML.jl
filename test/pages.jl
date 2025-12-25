@@ -33,6 +33,7 @@ function verify_sets(net::PnmlNet)
     @test !isempty(setdiff(reftransition_idset(net), reftransition_idset(firstpage(net))))
 
     @test netdata(net) === netdata(firstpage(net))
+    @test_throws ArgumentError PNML.netsets(net)
     for page in pages(net)
         @test netdata(net) === netdata(page)   # There is only 1 netdata.
         @test pagedict(net) === pagedict(page) # There is only 1 pagedict.
@@ -238,4 +239,8 @@ end
     end
     @test PNML.value_type(PNML.Labels.Condition, pntd) <: Bool
     @test PNML.value_type(Rate, pntd) <: Float64
+end
+
+@testset "labelof page" for pntd in PnmlTypes.all_nettypes()
+
 end

@@ -12,55 +12,53 @@ using Printf
     IDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_sort_tag!(parse_context, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
     sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)
-    #@show ddict #!debug
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === PositiveSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^PositiveSort", sprint(show, sort))
+    @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<dot/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === DotSort(parse_context.ddict) # not a built-in
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^DotSort", sprint(show, sort))
+    @test eltype(sort) == Bool
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<bool/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === BoolSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^BoolSort", sprint(show, sort))
+    @test eltype(sort) == Bool
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<integer/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === IntegerSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^IntegerSort", sprint(show, sort))
+    @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<natural/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === NaturalSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^NaturalSort", sprint(show, sort))
+    @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<positive/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === PositiveSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^PositiveSort", sprint(show, sort))
+    @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<real/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
     @test sort === RealSort()
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"RealSort", sprint(show, sort))
+    @test eltype(sort) == Float64
 
-    #println()
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
@@ -68,8 +66,8 @@ using Printf
                             </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::CyclicEnumerationSort
     #!@test PNML.Sorts.xtag(sort) === :cyclicenumeration
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^CyclicEnumerationSort", sprint(show, sort))
+    @test eltype(sort) == Symbol
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"""<finiteenumeration>
@@ -79,16 +77,17 @@ using Printf
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
     #!@test PNML.Sorts.xtag(sort) === :finiteenumeration
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^FiniteEnumerationSort", sprint(show, sort))
+    @test eltype(sort) == Symbol
+    #@show @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
     #!@test PNML.Sorts.xtag(sort) === :finiteintrange
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^FiniteIntRangeSort", sprint(show, sort))
+    @test eltype(sort) == Int64
 
     # productsort is expected to be enclosed in a namedsort
     @test_logs(match_mode=:any, (:warn, r"^ISO 15909 Standard allows.*"),
@@ -101,8 +100,8 @@ using Printf
                                 <integer/>
                         </productsort>""", pntd, :redundant, "redundant"; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::ProductSort
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^ProductSort", sprint(show, sort))
+    @test eltype(sort) == Any #! TODO XXX
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
@@ -114,8 +113,8 @@ using Printf
                         </productsort>""", pntd, :someproduct, "someproduct"; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::ProductSort
     @test sort isa ProductSort
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^ProductSort", sprint(show, sort))
+    @test eltype(sort) == Any #! TODO XXX
 
     # IDRegistrys.reset_reg!(ctx.idregistry)
     # sort = parse_sort(xml"""<productsort>
@@ -134,9 +133,8 @@ using Printf
                             </multisetsort>""", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)#::MultisetSort
     PNML.fill_sort_tag!(parse_context, :amultiset, sort) #~ test of method needed here
-    #@show parse_context.ddict
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test occursin(r"^MultisetSort", sprint(show, sort))
+    @test eltype(sort) == Any
 
     #^ ArbitrarySort
 
@@ -144,9 +142,8 @@ using Printf
     PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
     #@show sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
     PNML.fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
-    #@show parse_context.ddict
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    #!@test occursin(r"^ArbitrarySort", sprint(show, sort))
+    #!@show @test_logs eltype(sort)
 
     #^ String
 
@@ -154,9 +151,9 @@ using Printf
     sortref = parse_sort(xml"<string/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::StringSort
     @test sort isa StringSort
-    @show PNML.sortelements(sort) eltype(sort)
-    @test_logs sprint(show, sort)
-    @test_logs eltype(sort)
+    @test PNML.sortelements(sort) == ("",)
+    @test occursin(r"^StringSort", sprint(show, sort))
+    @test eltype(sort) == String
     @test first(PNML.sortelements(sort)) == ""
     #TODO PartitionSort
 end

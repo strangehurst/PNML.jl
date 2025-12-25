@@ -72,6 +72,8 @@ end
     @test pid(n) === :transition1
     @test PNML.has_labels(n) == true
     @test elements(labels(n)[:somelabel2])[:c] == "value"
+    @test PNML.labelof(n, :somelabel2) != nothing
+    @test PNML.labelof(n, :nosuchlabel) == nothing
 end
 
 #---------------------------------------------

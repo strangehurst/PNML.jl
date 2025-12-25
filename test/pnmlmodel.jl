@@ -133,22 +133,31 @@ end
         # we harvest all declarations as one thing
         @test decldict(net) isa DeclDict
 
+        @test PNML.labelof(net, :XYZ) == nothing
+
         for page in pages(net)
             @test page isa Page
             @test @inferred(pid(page)) isa Symbol
+            @test PNML.labelof(page, :XYZ) == nothing
             for p in places(page)
                 @test p isa Place
+                @test PNML.labelof(p, :XYZ) == nothing
                 placeid = pid(p)::Symbol
                 @test has_place(page, placeid)
                 @test pid(place(page, placeid)) === placeid
+                @test initial_marking(net, pid(p)) == initial_marking(p)
             end
             for transition in transitions(page)
                 @test transition isa Transition
                 @test pid(transition) isa Symbol
+                @test PNML.labelof(transition, :XYZ) == nothing
+                @test condition(net, pid(transition)) == condition(transition)
             end
             for arc in arcs(page)
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
+                @test PNML.labelof(arc, :XYZ) == nothing
+                @test inscription(net, pid(arc)) == inscription(arc)
             end
         end
     end
@@ -196,6 +205,7 @@ println("-----------------------------------------")
 
     @test !isempty(repr(PNML.netdata(net)))
     @test !isempty(repr(PNML.netsets(firstpage(net))))
+    @test_throws ArgumentError PNML.netsets(net)
 
     summary(stdout, PNML.netsets(firstpage(net)))
 

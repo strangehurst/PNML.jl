@@ -29,6 +29,7 @@ using PNML, ..TestUtils, JET, XMLDict
     @test_call initial_marking(n)
     #@show pntd, initial_marking(n)
     @test initial_marking(n)::Number == 100
+    @test PNML.labelof(n, :nosuchlabel) == nothing
 end
 
 @testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -58,6 +59,7 @@ end
     @test_call target_modules=(@__MODULE__,) initial_marking(n)
     #@show pntd, initial_marking(n)
     @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101
+    @test PNML.labelof(n, :nosuchlabel) == nothing
 end
 
 @testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -86,6 +88,7 @@ end
     @test pid(n) === :place1
     @test has_name(n) == false
     @test PNML.has_labels(n) == true
+    @test PNML.labelof(n, :nosuchlabel) == nothing
     #@show labels(n)
     #@show keys(labels(n))
     #@show labels(n)[:somelabel1]
@@ -115,6 +118,7 @@ end
     n = parse_refPlace(node, pntd; parse_context)::RefPlace
     @test pid(n) === :rp1
     @test PNML.refid(n) === :p1
+    @test PNML.labelof(n, :nosuchlabel) == nothing
 end
 
 @testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
@@ -135,4 +139,5 @@ end
     @test PNML.refid(n) === :p1
     @test PNML.has_labels(n) == true
     @test elements(labels(n)[:somelabel2])[:c] == "value"
+    @test PNML.labelof(n, :nosuchlabel) == nothing
 end

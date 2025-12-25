@@ -9,20 +9,16 @@ using Printf
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
 
-        # decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-        #         parse_declaration!(ctx, xml"""<declaration key="test empty">
-        #         <structure><declarations></declarations></structure>
-        #     </declaration>""", pntd)::Declaration)
         decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
                 <structure><declarations></declarations></structure>
             </declaration>""", pntd)::Declaration
 
-        #@test ddict == decl
         @test length(decl) == 7 # nothing in <declarations>
         @test !isempty(decl)
         @test PNML.graphics(decl) === nothing
         @test PNML.toolinfos(decl) === nothing
 
+        @test occursin(r"^Declaration", sprint(show, decl))
         @test_opt PNML.decldict(decl)
         @test_opt PNML.graphics(decl)
         @test_opt PNML.toolinfos(decl)
