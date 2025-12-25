@@ -111,7 +111,11 @@ end
 function labelof(x, tag::Union{Symbol, String, SubString{String}})
     if has_labels(x)
         l = labels(x)::AbstractDict
-        return haskey(l, tag) ? @inbounds(l[tag]) : nothing
+        return if haskey(l, tag)
+            @inbounds(l[tag])
+        else
+            nothing
+        end
     end
     return nothing
 end
