@@ -134,9 +134,9 @@ end
 # NB: constructors are callable
 
 # We also need to define equality for our matchables expression. Ignore any metadata.
-function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
-    a.head == b.head && a.args == b.args && a.foo == b.foo #! is this corrct XXX
-end
+# function Base.:(==)(a::PnmlExpr, b::PnmlExpr)
+#     a.head == b.head && a.args == b.args && a.foo == b.foo #! is this corrct XXX
+# end
 
 ###################################################################################
 # expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
