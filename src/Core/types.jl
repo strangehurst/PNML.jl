@@ -82,6 +82,7 @@ has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(get
 name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
 
 # labels and toolspecinfos are vectors: isnothing vs isempty
+has_labels(::Any) = false
 has_labels(o::AbstractPnmlObject) = hasproperty(o, :extralabels) && !isnothing(o.extralabels)
 labels(o::AbstractPnmlObject)     = o.extralabels
 
