@@ -32,6 +32,8 @@ end
             (:warn, r"^ignoring unexpected child of <graphics>: 'unexpected'"),
              parse_graphics(node, pntd))
 
+    @test PNML.coordinate_type(pntd) == PNML.Coordinate
+
     # There can only be one offset, last tag parsed wins.
     @test PNML.x(n.offset) == 7.0 && PNML.y(n.offset) == 8.0
     @test n.offset == PNML.Coordinate(7.0, 8.0)

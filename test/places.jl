@@ -56,6 +56,7 @@ end
     @test @inferred(pid(n)) === :place1
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
+    @test has_labels(name(n)) == false
     @test_call target_modules=(@__MODULE__,) initial_marking(n)
     #@show pntd, initial_marking(n)
     @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101

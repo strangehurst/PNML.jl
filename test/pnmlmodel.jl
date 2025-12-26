@@ -131,9 +131,44 @@ end
     for net in nets(pnmlmodel(pnmldoc)::PnmlModel)
         @test net isa PnmlNet
         # we harvest all declarations as one thing
-        @test decldict(net) isa DeclDict
 
-        @test PNML.labelof(net, :XYZ) == nothing
+        let dd = decldict(net)::DeclDict
+            @test !isempty(collect(PNML.declarations(dd)))
+
+            for h in [PNML.has_variabledecl,
+                      PNML.has_namedsort,
+                      PNML.has_arbitrarysort,
+                      PNML.has_partitionsort,
+                      PNML.has_multisetsort,
+                      PNML.has_productsort,
+                      PNML.has_namedop,
+                      PNML.has_arbitraryop,
+                      PNML.has_partitionop,
+                      PNML.has_feconstant,
+                      PNML.has_useroperator]
+                @test PNML.has_useroperator(dd, :nosuch) == false
+            end
+
+            for d in [PNML.variabledecl,
+                      PNML.namedsort,
+                      PNML.arbitrarysort,
+                      PNML.partitionsort,
+                      PNML.multisetsort,
+                      PNML.productsort,
+                      PNML.namedop,
+                      PNML.arbitraryop,
+                      PNML.partitionop,
+                      PNML.feconstant,
+                      PNML.useroperator]
+                @test_throws KeyError d(dd, :nosuch)
+            end
+
+            @test PNML.has_operator(dd, :nosuch) == false
+            @test isempty(collect(PNML.operators(dd)))
+            @test PNML.operator(dd, :nosuch) == nothing
+        end
+
+        @test PNML.labelof(net, :nosuch) == nothing
 
         for page in pages(net)
             @test page isa Page
