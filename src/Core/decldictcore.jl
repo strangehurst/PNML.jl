@@ -116,25 +116,17 @@ has_namedsort(dd::DeclDict, id::Symbol)      = has_key(dd, namedsorts, id)
 has_arbitrarysort(dd::DeclDict, id::Symbol)  = has_key(dd, arbitrarysorts, id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = has_key(dd, partitionsorts, id)
 
-has_multisetsort(dd::DeclDict, id::Symbol)   = has_key(dd, mutisetsorts, id)
+has_multisetsort(dd::DeclDict, id::Symbol)   = has_key(dd, multisetsorts, id)
 has_productsort(dd::DeclDict, id::Symbol)    = has_key(dd, productsorts, id)
 
 has_namedop(dd::DeclDict, id::Symbol)        = has_key(dd, namedoperators, id)
 has_arbitraryop(dd::DeclDict, id::Symbol)    = has_key(dd, arbitraryops, id)
 has_partitionop(dd::DeclDict, id::Symbol)    = has_key(dd, partitionops, id)
 has_feconstant(dd::DeclDict, id::Symbol)     = has_key(dd, feconstants, id)
-#has_usersort(dd::DeclDict, id::Symbol)       = has_key(dd, usersorts, id)
 has_useroperator(dd::DeclDict, id::Symbol)   = has_key(dd, useroperators, id)
 
 "Lookup variable with `id` in DeclDict."
-function variabledecl(dd::DeclDict, id::Symbol)
-    if has_variabledecl(dd, id)
-        return @inbounds variabledecls(dd)[id]
-    else
-        error("no varibledecl[$id] found! DeclDict = $(repr(dd))")
-    end
-end
-
+variabledecl(dd::DeclDict, id::Symbol) = variabledecls(dd)[id]
 "Lookup namedsort with `id` in DeclDict."
 namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
 "Lookup arbitrarysort with `id` in DeclDict."
@@ -150,7 +142,7 @@ productsort(dd::DeclDict, id::Symbol)   = productsorts(dd)[id]
 "Lookup namedop with `id` in DeclDict."
 namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
 "Lookup arbitraryop with `id` in DeclDict."
-arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryoperators(dd)[id]
+arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryops(dd)[id]
 "Lookup partitionop with `id` in DeclDict."
 partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
 "Lookup feconstant with `id` in DeclDict."
