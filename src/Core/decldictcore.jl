@@ -177,7 +177,7 @@ has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(
     operator(dd::DeclDict, id::Symbol) -> AbstractOperator
 
 Return operator TermInterface expression for `id`.
-    `toexpr(::OpExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
+    `toexpr(::AbstractOpExpr, varsub, ddict) = :(useroperator(ddict, REFID)(varsub))`
 
 Operator Declarations include:
 :namedoperator, :feconstant, :partitionelement, :arbitraryoperator

@@ -25,7 +25,7 @@ true
 """
 @auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr} <: HLAnnotation
     text::Maybe{String}
-    term::T # duck-typed BoolExpr
+    term::T # duck-typed AbstractBoolExpr
     # color function: uses term and args, Built/JITed
     graphics::Maybe{Graphics} #TODO switch order of graphics, toolinfos everywhere!
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -74,7 +74,7 @@ function cond_implementation(c::Condition, varsub::NamedTuple)
     # for arg in keys(varsub)
     #     @show arg
     # end
-    # BooleanEx is a literal. BoolExpr <: PnmlExpr can be non-literal (non-ground term).
+    # BooleanEx is a literal. AbstractBoolExpr <: PnmlExpr can be non-literal (non-ground term).
     isa(term(c), PNML.BooleanEx) || @warn term(c) varsub  #! debug
     #@show term(c) varsub toexpr(term(c), varsub, decldict(c))
     eval(toexpr(term(c), varsub, decldict(c)))::eltype(c) # Bool isa Number

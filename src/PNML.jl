@@ -132,7 +132,7 @@ include("terms/variables.jl")
 
 include("terms/expressions.jl")
 using .Expressions
-#!using .Expressions: toexpr, PnmlExpr, BoolExpr, OpExpr
+#!using .Expressions: toexpr, PnmlExpr, AbstractBoolExpr, AbstractOpExpr
 
 include("terms/operators.jl")
 

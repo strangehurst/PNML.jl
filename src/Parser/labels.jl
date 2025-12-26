@@ -538,7 +538,7 @@ We support PTNets having `<condition>` with same syntax as High-level nets.
 Condition has `<text>` and `<structure>` elements, with all meaning in the `<structure>`
 that holds an expression evaluating to a boolean value.
 
-One field of a Condition holds a boolean expression, `BoolExpr`.
+One field of a Condition holds a boolean expression, `AbstractBoolExpr`.
 Another field holds information on variables in the expression.
 """
 function parse_condition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)

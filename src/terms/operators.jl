@@ -8,7 +8,7 @@ getInput -> list sort
 getDeclaration
 
 useroperator -> operator declaration -> builtin operator
-Let OpExpr <: PnmlExpr
+Let AbstractOpExpr <: PnmlExpr
 
 finite element constant is 0-ary operator expressed as useroperator wrapping an REFID
 

@@ -16,7 +16,7 @@ import PNML: basis, sortref, sortof, sortelements, sortdefinition
 
 export toexpr
 
-export PnmlExpr, BoolExpr, OpExpr # abstract types
+export PnmlExpr, AbstractBoolExpr, AbstractOpExpr # abstract types
 # concrete types
 export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
 export DotConstantEx
@@ -41,15 +41,17 @@ TermInterface boolean expression types.
 
 All boolean expressions have a known sort `:bool`.
 """
-abstract type BoolExpr <: PnmlExpr end
-basis(::BoolExpr) = NamedSortRef(:bool)
-sortref(::BoolExpr) = NamedSortRef(:bool)
-expr_sortref(b::BoolExpr; ddict) = sortref(b)::AbstractSortRef
+abstract type AbstractBoolExpr <: PnmlExpr end
+basis(::AbstractBoolExpr) = NamedSortRef(:bool)
+sortref(::AbstractBoolExpr) = NamedSortRef(:bool)
+expr_sortref(b::AbstractBoolExpr; ddict) = sortref(b)::AbstractSortRef
 
 """
 TermInterface operator expression types.
 """
-abstract type OpExpr <: PnmlExpr end
+abstract type AbstractOpExpr <: PnmlExpr end
+
+##################################################################
 
 """
     toexpr(ex::PnmlExpr, varsubs::NamedTuple{REFID,Any}, ddict) -> Expr
@@ -163,7 +165,7 @@ end
 
 ###################################################################################
 # expression wrapping a REFID used to do operator lookup `operator(ddict, REFID)`.
-@matchable struct UserOperatorEx <: OpExpr
+@matchable struct UserOperatorEx <: AbstractOpExpr
     refid::REFID # operator(ddict, REFID) returns operator callable.
 end
 
@@ -183,7 +185,7 @@ end
 
 
 ###################################################################################
-@matchable struct NamedOperatorEx <: OpExpr
+@matchable struct NamedOperatorEx <: AbstractOpExpr
     refid::REFID # operator(ddict, REFID) returns operator callable.
 end
 
@@ -267,10 +269,10 @@ end
 """
     BooleanEx
 
-TermInterface expression for a BooleanSort.
+TermInterface expression for a BooleanConstant.
 """
 BooleanEx # Need to avoid @matchable to have docstring
-@matchable struct BooleanEx <: BoolExpr
+@matchable struct BooleanEx <: AbstractBoolExpr
     element::BooleanConstant
 end
 
@@ -408,10 +410,9 @@ function Base.show(io::IO, x::CardinalityOf)
 end
 
 #"Bag -> Bool"
-@matchable struct Contains{S <: AbstractSortRef} <: BoolExpr #^ multiset contains access multiset.
+@matchable struct Contains{S <: AbstractSortRef} <: AbstractBoolExpr #^ multiset contains access multiset.
     lhs::Bag{S} # multiset expression
     rhs::Bag{S} # multiset expression
-
 end
 
 function toexpr(op::Contains, var::NamedTuple, ddict)
@@ -423,8 +424,8 @@ function Base.show(io::IO, x::Contains)
 end
 
 #& Boolean Operators
-@matchable struct Or <: BoolExpr #^ Uses `any`.
-    args::Vector{BoolExpr} # >=2 in ISO 15909, but some =1 exist.
+@matchable struct Or <: AbstractBoolExpr #^ Uses `any`.
+    args::Vector{AbstractBoolExpr} # >=2 in ISO 15909, but some =1 exist.
 end
 
 function toexpr(op::Or, vars::NamedTuple, ddict)
@@ -435,8 +436,8 @@ function Base.show(io::IO, x::Or)
     print(io, "Or(", join(x.args, ", "), ")" )
 end
 
-@matchable struct And <: BoolExpr #^ Uses `all`.
-    args::Vector{BoolExpr} # >=2
+@matchable struct And <: AbstractBoolExpr #^ Uses `all`.
+    args::Vector{AbstractBoolExpr} # >=2
 end
 
 function toexpr(op::And, vars::NamedTuple, ddict)
@@ -448,9 +449,9 @@ function Base.show(io::IO, x::And)
     print(io, "And(", join(x.args, ", "), ")" )
 end
 
-@matchable struct Not <: BoolExpr #^ Uses `!` operator.
-    args::Vector{BoolExpr} # >=2
-    #! rhs::Any # BoolExpr #todo handle ordered collection. return and of not.boolean
+@matchable struct Not <: AbstractBoolExpr #^ Uses `!` operator.
+    args::Vector{AbstractBoolExpr} # >=2
+    #! rhs::Any # AbstractBoolExpr #todo handle ordered collection. return and of not.boolean
 end
 
 #~  !any(true) === all(!true)
@@ -462,9 +463,9 @@ function Base.show(io::IO, x::Not)
     print(io, "Not(", x.args, ")" )
 end
 
-@matchable struct Imply <: BoolExpr #^ Uses `!` and `||` operators.
-    lhs::Any # BoolExpr
-    rhs::Any # BoolExpr
+@matchable struct Imply <: AbstractBoolExpr #^ Uses `!` and `||` operators.
+    lhs::Any # AbstractBoolExpr
+    rhs::Any # AbstractBoolExpr
 end
 
 function toexpr(op::Imply, var::NamedTuple, ddict)
@@ -475,7 +476,7 @@ function Base.show(io::IO, x::Imply)
     print(io, "Imply(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Equality <: BoolExpr #^ Uses `==` operator.
+@matchable struct Equality <: AbstractBoolExpr #^ Uses `==` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
@@ -488,7 +489,7 @@ function Base.show(io::IO, x::Equality)
     print(io, "Equality(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct Inequality <: BoolExpr #^ Uses `!=` operator.
+@matchable struct Inequality <: AbstractBoolExpr #^ Uses `!=` operator.
     lhs::Any # expression evaluating to a T
     rhs::Any # expression evaluating to a T
 end
@@ -596,7 +597,7 @@ function Base.show(io::IO, x::Division)
     print(io, "Division(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThan <: BoolExpr #? Use `>` operator.
+@matchable struct GreaterThan <: AbstractBoolExpr #? Use `>` operator.
     lhs::Any
     rhs::Any
 end
@@ -609,7 +610,7 @@ function Base.show(io::IO, x::GreaterThan)
     print(io, "GreaterThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct GreaterThanOrEqual <: BoolExpr #? Use `>=` operator.
+@matchable struct GreaterThanOrEqual <: AbstractBoolExpr #? Use `>=` operator.
     lhs::Any
     rhs::Any
 end
@@ -622,7 +623,7 @@ function Base.show(io::IO, x::GreaterThanOrEqual)
     print(io, "GreaterThanOrEqual(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThan <: BoolExpr #? Use `<` operator.
+@matchable struct LessThan <: AbstractBoolExpr #? Use `<` operator.
     lhs::Any
     rhs::Any
 end
@@ -635,7 +636,7 @@ function Base.show(io::IO, x::LessThan)
     print(io, "LessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct LessThanOrEqual <: BoolExpr #? Use `<=` operator.
+@matchable struct LessThanOrEqual <: AbstractBoolExpr #? Use `<=` operator.
     lhs::Any
     rhs::Any
 end
@@ -666,7 +667,7 @@ end
 
 #& Partition
 # PartitionElement is an operator declaration. Is this a literal? See PartitionElementOf.
-@matchable struct PartitionElementOp <: OpExpr #! Same as PartitionElement, for term rerwite?
+@matchable struct PartitionElementOp <: AbstractOpExpr #! Same as PartitionElement, for term rerwite?
     id::Symbol
     name::Union{String,SubString{String}}
     refs::Vector{REFID} # to FEConstant
@@ -684,7 +685,7 @@ end
 
 #> comparison functions on the partition elements which is based on
 #> the order in which they occur in the declaration of the partition
-@matchable struct PartitionLessThan <: BoolExpr
+@matchable struct PartitionLessThan <: AbstractBoolExpr
     lhs::Any #PartitionElement
     rhs::Any #PartitionElement
 end
@@ -701,10 +702,10 @@ function Base.show(io::IO, x::PartitionLessThan)
     print(io, "PartitionLessThan(", x.lhs, ", ", x.rhs, ")" )
 end
 
-@matchable struct PartitionGreaterThan <: BoolExpr
+@matchable struct PartitionGreaterThan <: AbstractBoolExpr
     lhs::Any #PartitionElement
     rhs::Any #PartitionElement
-    # return BoolExpr
+    # return AbstractBoolExpr
 end
 
 function gtp_impl(lhs, rhs)
@@ -764,25 +765,25 @@ end
     # use ?
 end
 
-@matchable struct StringLessThan{T <: AbstractString} <: BoolExpr
+@matchable struct StringLessThan{T <: AbstractString} <: AbstractBoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringLessThanOrEqual{T <: AbstractString} <: BoolExpr
+@matchable struct StringLessThanOrEqual{T <: AbstractString} <: AbstractBoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringGreaterThan{T <: AbstractString} <: BoolExpr
+@matchable struct StringGreaterThan{T <: AbstractString} <: AbstractBoolExpr
     lhs::T
     rhs::T
     # use ?
 end
 
-@matchable struct StringGreaterThanOrEqual{T <: AbstractString} <: BoolExpr
+@matchable struct StringGreaterThanOrEqual{T <: AbstractString} <: AbstractBoolExpr
     lhs::T
     rhs::T
     # use ?
