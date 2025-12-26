@@ -173,10 +173,6 @@ operators(dd::DeclDict) = Iterators.flatten(Iterators.map(keys, _ops(dd)))
 "Does any operator dictionary contain `id`?"
 has_operator(dd::DeclDict, id::Symbol) = any(opdict -> haskey(opdict, id), _ops(dd))
 
-#! Change first to only when de-duplication implementd? as test?
-"Return operator dictionary containing key `id`."
-_get_op_dict(dd::DeclDict, id::Symbol) = first(Iterators.filter(Fix2(haskey, id), _ops(dd)))
-
 """
     operator(dd::DeclDict, id::Symbol) -> AbstractOperator
 
