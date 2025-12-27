@@ -18,7 +18,7 @@ end
 
 decldict(i::Inscription) = i.declarationdicts
 term(i::Inscription) = i.term
-sortref(i::Inscription) = _sortref(decldict(i), term(i))::AbstractSortRef
+sortref(i::Inscription) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
 sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple)

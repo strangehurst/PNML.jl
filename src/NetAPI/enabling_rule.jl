@@ -58,7 +58,7 @@ function binding_value_sets(net::PnmlNet, marking)
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
         for a in PNML.preset(net, t)::Arc
             adj = adjacent_place(net, a)
-            placesort = _sortref(decldict(net), adj)
+            placesort = sortref(adj)
             vs = vars(inscription(a))::Tuple
 
             for v in vs # inscription that is not a ground term

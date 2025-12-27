@@ -239,7 +239,7 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
         CONFIG[].warn_on_fixup &&
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
-    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
     Inscription(nothing, term, graphics, toolspecinfos, REFID[],  parse_context.ddict)
 end
 
@@ -458,7 +458,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; parse_co
 
     # Find adjacent place's sorttype using `netdata`.
     adjacentplace = PNML.adjacent_place(netdata(pit), source(pit), target(pit))
-    placesort = PNML.Labels._sortref(parse_context.ddict, adjacentplace)::AbstractSortRef
+    placesort = PNML.Labels.sortref(adjacentplace)::AbstractSortRef
     # D()&& @show adjacentplace placesort
 
     # Variable substitution for a transition affects postset arc inscription,
@@ -650,7 +650,7 @@ function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, 
                         "replaced with $value")
     end
 
-    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
     return Rate(term, graphics, toolspecinfos, parse_context.ddict)
 end
 
@@ -685,6 +685,6 @@ function parse_priority(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
                         "replaced with $value")
     end
 
-    term = PNML.NumberEx(PNML.Labels._sortref(parse_context.ddict, value), value)
+    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
     return Priority(term, graphics, toolspecinfos, parse_context.ddict)
 end

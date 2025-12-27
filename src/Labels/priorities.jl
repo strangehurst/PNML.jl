@@ -23,7 +23,7 @@ Base.eltype(::Priority) = value_type(Priority)
 
 decldict(i::Priority) = i.declarationdicts
 term(i::Priority) = i.term
-sortref(i::Priority) = _sortref(decldict(i), term(i))::AbstractSortRef
+sortref(i::Priority) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
 sortof(i::Priority) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
 
 function (priority::Priority)(varsub::NamedTuple=NamedTuple())

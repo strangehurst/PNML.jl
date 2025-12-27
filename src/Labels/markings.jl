@@ -17,7 +17,7 @@ end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
 function Marking(m::Number, ddict::DeclDict)
-    Marking(PNML.NumberEx(PNML.Labels._sortref(ddict, m)::AbstractSortRef, m), ddict)
+    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::AbstractSortRef, m), ddict)
 end
 Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, nothing, ddict)
 Marking(t::PnmlExpr, s::Maybe{AbstractString}, ddict) = Marking(t, s, nothing, nothing, ddict)
@@ -92,7 +92,7 @@ These are used to give the initialize a marking vector that will then be updated
 (mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark)))
 
 basis(m::Marking)   = sortref(term(m))::AbstractSortRef
-sortref(m::Marking) = _sortref(decldict(m), term(m))::AbstractSortRef
+sortref(m::Marking) = expr_sortref(term(m); ddict=decldict(m))::AbstractSortRef
 sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
 
 function Base.show(io::IO, ptm::Marking)
@@ -108,28 +108,6 @@ function Base.show(io::IO, ptm::Marking)
     end
     print(io, ")")
 end
-
-
-#--------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------
-
-"""
-    _sortref(dd::DeclDict, x) -> SortRef
-
-When x isa Number, map to a NamedSortRef. Otherwise pass to sortref.
-Note the `DeclDict` parameter is currently unused.
-"""
-function _sortref end
-
-# These are some <:Number that have namedsorts.
-_sortref(dd::DeclDict, ::Type{<:Int64})   = NamedSortRef(:integer)
-_sortref(dd::DeclDict, ::Type{<:UInt64})  = NamedSortRef(:natural)
-_sortref(dd::DeclDict, ::Type{<:Float64}) = NamedSortRef(:real)
-_sortref(dd::DeclDict, ::Int64)   = NamedSortRef(:integer)
-_sortref(dd::DeclDict, ::UInt64)  = NamedSortRef(:naturall)
-_sortref(dd::DeclDict, ::Float64) = NamedSortRef(:real)
-
-_sortref(dd::DeclDict, x::Any) = sortref(x)
 
 #--------------------------------------------------------------------------------------
 # These are networks where the tokens have a collective identities.
@@ -147,7 +125,7 @@ PNML.value_type(::Type{Marking}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
 
 
 #~ Note the close relation of marking value_type to inscription value_type.
-#~ Inscription values are non-zero while marking values may be zdecldict(ero.
+#~ Inscription values are non-zero while marking values may be zero.
 
 #--------------------------------------------------------------------------------------
 # Basis sort can be, and are, restricted by/on PnmlType in the ISO 15909 standard.

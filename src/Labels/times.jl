@@ -23,7 +23,7 @@ Base.eltype(::Time) = value_type(Time)
 
 decldict(i::Time) = i.declarationdicts
 term(i::Time) = i.term
-sortref(i::Time) = _sortref(decldict(i), term(i))::AbstractSortRef
+sortref(i::Time) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
 sortof(i::Time) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
 
 function (time::Time)(varsub::NamedTuple=NamedTuple())

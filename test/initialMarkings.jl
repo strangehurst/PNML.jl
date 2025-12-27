@@ -20,10 +20,10 @@ using XMLDict: XMLDict
 
     parse_context = PNML.parser_context()
     @show PNML.value_type(PNML.Marking, pntd)
-    @show PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))
+    @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
 
     placetype = SortType("$pntd initMarking",
-        PNML.Labels._sortref(parse_context.ddict, PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
+        PNML.sortref(PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
         nothing, nothing, parse_context.ddict)
 
     # Parse ignoring unexpected child

@@ -28,7 +28,7 @@ import PNML:  arctype, isnormal, isinhibitor, isread, isreset, verify!
 
 using ..PnmlTypes # PNML PNTD
 
-import ..Expressions: toexpr, PnmlExpr
+import ..Expressions: toexpr, PnmlExpr, expr_sortref
 
 
 using ..Sorts

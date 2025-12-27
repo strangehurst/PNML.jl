@@ -20,7 +20,7 @@ Base.eltype(::Rate) = value_type(Rate)
 
 decldict(i::Rate) = i.declarationdicts
 term(i::Rate) = i.term
-sortref(i::Rate) = _sortref(decldict(i), term(i))::AbstractSortRef
+sortref(i::Rate) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
 
 sortof(i::Rate) = sortdefinition(namedsort(decldict(i), refid(sortref(i))))
 
