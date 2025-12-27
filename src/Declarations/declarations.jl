@@ -124,7 +124,7 @@ end
     # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
-decldict(vd::VariableDeclaration) = vd.declarationsdict
+decldict(vd::VariableDeclaration) = vd.declarationsdicts
 
 sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
