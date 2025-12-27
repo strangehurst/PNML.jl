@@ -130,12 +130,11 @@ just the schema file name, or a placeholder for a future schema.
 For readability, the 'pntd symbol' should match the name used in the URI
 with inconvinient characters removed or replaced. For example, '-' is replaced by '_'.
 """
-const pntd_map =
-    Dict{String, Symbol}(
+const pntd_map = Dict{String, Symbol}(
+            "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
+            "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
             "http://www.pnml.org/version-2009/grammar/ptnet" => :ptnet,
             "http://www.pnml.org/version-2009/grammar/highlevelnet" => :hlnet,
-            "http://www.pnml.org/version-2009/grammar/pnmlcoremodel" => :pnmlcore,
-            "http://www.pnml.org/version-2009/grammar/pnmlcore" => :pnmlcore,
             "http://www.pnml.org/version-2009/grammar/pt-hlpng" => :pt_hlpng,
             "http://www.pnml.org/version-2009/grammar/symmetricnet" => :symmetric,
 
@@ -153,14 +152,17 @@ const pntd_map =
             "https://www.pnml.org/version-2009/extensions/inhibitorptnet" => :ptnet,
             "https://www.pnml.org/version-2009/extensions/resetinhibitorptnet" => :ptnet,
 
-            "resetptnet" => :ptnet,
+            "resetptnet" => :ptnet, #^ `ArcType` arc label
             "inhibitorptnet" => :ptnet,
             "resetinhibitorptnet" => :ptnet,
 
             "continuous" => :continuous,
-            #"stochastic" => :stochastic,
-            #"timed" => :timednet,
+            #"stochastic" => :stochastic, #^ `rate` transition label
+            #"capacity" => :capacity #^ `capacity` place label
+            #"priority" => :priority #^ `priority` transition label
+            #"timed" => :timednet, #^ `delay` transition label
             #"timednet" => :timednet,
+            #"tpn" => :timednet,
             "nonstandard" => :pnmlcore,
             "open" => :pnmlcore,
             )
@@ -259,13 +261,13 @@ end
 
 # Traits
 
-"Values are integers."
+"Tokens represented by integers."
 function isdiscrete end
 
-"Values are floating point."
+"Tokens represented by floating point."
 function iscontinuous end
 
-"Values are many-sorted."
+"Tokens represented by multiset (aka bag)."
 function ishighlevel end
 
 isdiscrete(pntd::PnmlType) = false
