@@ -74,8 +74,6 @@ graphics(l::AbstractLabel) =  l.graphics
 has_tools(l::AbstractLabel) = hasproperty(l, :toolspecinfos) && !isnothing(l.toolspecinfos)
 toolinfos(l::AbstractLabel) = l.toolspecinfos
 
-# has_labels(l::AbstractLabel) = false # Labels DO NOT have sub-labels.
-
 #--------------------------------------------
 
 """
