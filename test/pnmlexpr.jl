@@ -51,6 +51,22 @@ end
                  eval(PNML.toexpr(b3, varsub, ddict))
 end
 
+#^ Boolean Expression tests
+#^------------------------------------------------------------------------
+function _test_abstractboolexpr(x::AbstractBoolExpr, ddict::DeclDict)
+    @show x
+    @test PNML.basis(x) == NamedSortRef(:bool)
+    @test sortref(x) == NamedSortRef(:bool)
+    @test expr_sortref(x; ddict) == sortref(x)
+
+end
+
+@testset "AbstractBoolExpr" begin
+    ddict = DeclDict()
+    x = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
+    _test_abstractboolexpr(x, ddict)
+end
+
 @testset "boolean not $pntd" begin
     b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
     b2 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
