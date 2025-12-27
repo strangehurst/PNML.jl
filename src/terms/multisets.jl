@@ -216,7 +216,8 @@ function pnmlmultiset(basis::AbstractSortRef, ::Nothing, ::Nothing; ddict::DeclD
     end
     #^ Where/how is absence of sort loop checked?
     #@show basis eltype(basis) #! debug
-    M = Multiset{eltype(basis, ddict)}()
+    #@show basis eltype(basis, ddict) #! debug
+    M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(b)
     #TODO ProductSort, PartitionSort
     sort = PNML.Parser.to_sort(basis; ddict)
