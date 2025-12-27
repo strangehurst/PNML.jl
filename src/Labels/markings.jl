@@ -93,7 +93,7 @@ These are used to give the initialize a marking vector that will then be updated
 
 basis(m::Marking)   = sortref(term(m))::AbstractSortRef
 sortref(m::Marking) = expr_sortref(term(m); ddict=decldict(m))::AbstractSortRef
-sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
+#sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
 
 function Base.show(io::IO, ptm::Marking)
     print(io, PNML.indent(io), "Marking(")
@@ -122,7 +122,6 @@ function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
 end
 
 PNML.value_type(::Type{Marking}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
-
 
 #~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zero.
