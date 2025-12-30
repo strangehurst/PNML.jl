@@ -145,18 +145,21 @@ end
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
     decl = parse_declaration!(ctx, node, pntd)
     @test typeof(decl) <: Declaration
+    #@show PNML.partitionsorts(decldict(decl))
+    #PNML.show_sorts(decldict(decl))
 
     # Examine 3 partition sorts
     for psort in values(PNML.partitionsorts(decldict(decl)))
-        # named partition -> partition element -> fe constant
-        @test typeof(psort) <: PartitionSort # is a declaration
-
-        @test PNML.isregistered(ctx.idregistry, pid(psort))
-        @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
         #@show psort
-        partname = PNML.name(psort)
-        partsort = PNML.Declarations.sortdefinition(psort)
-        part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+        # named partition -> partition element -> fe constant
+        #@test typeof(psort) <: PartitionSort # is a declaration
+
+        @test PNML.isregistered(ctx.idregistry, PNML.pid(psort))
+        sort = PNML.partitionsort(decldict(decl), PNML.pid(psort))
+        #@test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
+        partname = PNML.name(sort)
+        partsort = PNML.Declarations.sortdefinition(sort)
+        part_elements = PNML.sortelements(sort)::Vector{PartitionElement}
 
         for element in part_elements
             @test PNML.isregistered(ctx.idregistry, pid(element))

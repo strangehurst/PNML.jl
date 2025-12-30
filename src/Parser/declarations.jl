@@ -38,7 +38,7 @@ function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::Pnm
         check_nodename(node, "declaration")
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
-            if tag == "structure" # accumulate declarations
+            if tag == "structure" # accumulate '<declarations>'
                 fill_decl_dict!(ctx, child, pntd) # Assumes high-level semantics.
             elseif tag == "text" # may overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
@@ -60,10 +60,9 @@ end
 """
     fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType) -> ParseContext
 
-Add `<declaration>` `<declarations>` to ParseContext.
+Add a `<declaration><structure><declarations>` to ParseContext.
 `<declaration>` may be attached to `<net>` and `<page>` elements.
-Each will have contents in a `<structure>` element.
-Are net-level values.
+Are network-level values even if attached to pages.
 """
 function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "structure")
@@ -88,9 +87,6 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
             part = parse_partition(child, pntd; parse_context=ctx)::AbstractSortRef
             @assert isa_variant(part, PartitionSortRef)
-            #PNML.partitionsorts(ctx.ddict)[refid(part)] = part
-            #!@show ctx.ddict
-            #PNML.usersorts(ctx.ddict)[pid(part)] = part # fill_decl_dict! partitionsort duo
 
         #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -487,18 +483,18 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
         @warn "ISO 15909 Standard allows a <productsort> to be empty. And somebody did!"
     # What is the use of an empty productsort? bottom?
 
-    psort = ProductSort(tuple(sorts...), parse_context.ddict)
+    prodsort = ProductSort(tuple(sorts...), parse_context.ddict)
 
     # See if there exists a matching sort. #! debug?
     for (id,ps) in pairs(productsorts(parse_context.ddict))
-        if PNML.Sorts.equalSorts(ps, psort)
-            @info "Found product sort $id while looking for $psort for sortid=$sortid name=$name" productsorts(parse_context.ddict)
+        if PNML.Sorts.equalSorts(ps, prodsort)
+            @info "Found product sort $id while looking for $prodsort for sortid=$sortid name=$name" productsorts(parse_context.ddict)
          end
     end
 
 
-    fill_sort_tag!(parse_context, sortid, psort) # add to productsorts without a sortref
-    return make_sortref(parse_context, namedsorts, psort, "product", sortid, name)
+    fill_sort_tag!(parse_context, sortid, prodsort) # add to productsorts without a sortref
+    return make_sortref(parse_context, namedsorts, prodsort, "product", sortid, name)
 end
 
 
@@ -569,19 +565,19 @@ to_sort(s::AbstractSort; ddict::DeclDict) = s
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
-function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) #! partition is a sort declaration!
+function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) #! a sort declaration!
     partid = register_idof!(parse_context.idregistry, node)
     nameval = attribute(node, "name")
-    #@warn "partition $(repr(id)) $nameval"; flush(stdout);  #! debug
-    psort::Maybe{AbstractSortRef} = nothing
-    elements = PartitionElement[] # References into psort that form a equivalance class.
+    D()&& println("## parse_partition $(repr(partid)) $nameval")
+    partitioned_sortref::Maybe{AbstractSortRef} = nothing
+    elements = PartitionElement[] # References into partitioned_sortref that form a equivalance class.
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
             # The only non-partitionelement child possible,
-            psort = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+            partitioned_sortref = parse_usersort(child, pntd; parse_context)::AbstractSortRef
             #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
-            @assert isa_variant(psort, NamedSortRef)
+            @assert isa_variant(partitioned_sortref, NamedSortRef)
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
             parse_partitionelement!(elements, child, partid; parse_context) # pass REFID to partition
         else
@@ -589,19 +585,25 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                                 " allowed are usersort, partitionelement")))
         end
     end
-    isnothing(psort) &&
+    isnothing(partitioned_sortref) &&
         throw(ArgumentError("<partition id=$partid, name=$nameval> <usersort> element missing"))
 
     # One or more partitionelements.
     isempty(elements) &&
         error("partitions must have at least one partition element, found none: ",
-                "id = ", repr(partid), ", name = ", repr(nameval), ", sort = ", repr(psort))
+                "id = ", repr(partid),
+                ", name = ", repr(nameval),
+                ", sort = ", repr(partitioned_sortref))
 
     #~verify_partition(sort, elements)
+    partsort = PNML.PartitionSort(partid, nameval, partitioned_sortref, elements, parse_context.ddict) # A Declaraion named Sort!
 
-    ps = PNML.PartitionSort(partid, nameval, psort, elements, parse_context.ddict) # A Declaraion named Sort!
-    # Do partitionsorts have a nameedsort?
-    return make_sortref(parse_context, PNML.partitionsorts, ps, "partition", partid, "")
+    # add to productsorts
+    fill_sort_tag!(parse_context, partid, partsort)
+    @assert partitionsorts(parse_context.ddict)[partid] == partsort
+    # make a user/named sort duo
+    namedsorts(parse_context.ddict)[partid] = NamedSort(partid, string(partid), partsort, parse_context.ddict)
+    return make_sortref(parse_context, PNML.partitionsorts, partsort, "partition", partid, "")
 end
 
 """
