@@ -145,14 +145,14 @@ $(TYPEDFIELDS)
 Declaration of a `NamedSort`. Wraps a concrete instance of a built-in `AbstractSort`.
 See [`MultisetSort`](@ref), [`ProductSort`](@ref).
 """
-@auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort} <: SortDeclaration
+@auto_hash_equals fields=id,name,def struct NamedSort{S <: Union{AbstractSort,SortDeclaration}} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S  #! This remains where the concrete sort lives.
     # An instance of: ArbitrarySort, MultisetSort, ProductSort, or BUILT-IN sort!
     declarationdicts::DeclDict
 
-    function NamedSort(id_::Symbol, name_, def_::AbstractSort, dd::DeclDict)
+    function NamedSort(id_::Symbol, name_, def_::Union{AbstractSort,SortDeclaration}, dd::DeclDict)
         if isa(def_, NamedSort)
             error("NamedSort wraps NamedSort: $(repr(id_)) $(repr(name_)) $(repr(def_))") #|> throw
             yield()
