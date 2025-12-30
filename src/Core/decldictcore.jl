@@ -160,7 +160,7 @@ _ops(dd) = Iterators.map(Fix1(getfield, dd), _op_dictionaries())
 
 "Return tuple of sort dictionary fields in the Declaration Dictionaries."
 _sort_dictionaries() = (:namedsorts, :partitionsorts,
-                        :arbitrarysorts, multisetsorts, productsorts)
+                        :arbitrarysorts, :multisetsorts, :productsorts)
 "Return iterator over sort dictionaries of Declaration Dictionaries."
 _sorts(dd) = Iterators.map(Fix1(getfield, dd), _sort_dictionaries())
 
@@ -258,13 +258,15 @@ end
 
 
 function show_sorts(dd::DeclDict)
-    # println("show_sorts")
-    @show _sort_dictionaries()
-#     foreach(_sort_dictionaries()) do s
-#         println("sort = ", s, ", length = ", length(getfield(dd, s)))
-#         foreach(println, getfield(dd, s))
-#     end
-#     println()
+    println("show_sorts")
+    #@show _sort_dictionaries()
+    foreach(_sort_dictionaries()) do s
+        println("# ", s, ", length = ", length(getfield(dd, s)))
+        foreach(getfield(dd, s)) do d
+            println(repr(d.first), " => ", d.second)
+        end
+    end
+    println()
 end
 
 "Look for matching value `x` in dictionary `d`, return key symbol or nothing."
