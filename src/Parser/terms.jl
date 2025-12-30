@@ -512,22 +512,22 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
     # the combination of element sorts must have a matching product sort.
 
     # VariableEx can lookup sort.
-    # UserOperatorEx (constant?) also has enclosng sort.
+    # UserOperatorEx (constant?) also has enclosing sort.
     # Both hold refid field.
 
     #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
     #! Part of expression evaluation -- dynamic behavior of a Petri net
-    psort = ProductSort(tuple((expr_sortref.(sts; parse_context.ddict))...), parse_context.ddict)
-    #!  psort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict))), parse_context.ddict)
+    prodsort = ProductSort(tuple((expr_sortref.(sts; parse_context.ddict))...), parse_context.ddict)
+    #! prodsort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict))), parse_context.ddict)
 
     #D()&& @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
 
-    # Look for an existing declaration for psort. Return a NamedSortRef to it in TermJunk.
+    # Look for an existing declaration for prodsort. Return a NamedSortRef to it in TermJunk.
     # Find matching sort
     sorttag = nothing
     for (id,ps) in pairs(productsorts(parse_context.ddict))
-        if PNML.Sorts.equalSorts(ps, psort)
-            #@error "Found product sort $id while looking for $psort" productsorts(parse_context.ddict)
+        if PNML.Sorts.equalSorts(ps, prodsort)
+            #@error "Found product sort $id while looking for $prodsort" productsorts(parse_context.ddict)
             sorttag = id
         end
     end
@@ -536,12 +536,12 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, parse_co
             join(Iterators.map(refid, expr_sortref.(sts; parse_context.ddict)), "_")) |> Symbol
 
         # add to productsorts
-        fill_sort_tag!(parse_context, sorttag, psort)
-        #@assert productsorts(parse_context.ddict)[sorttag] = psort
+        fill_sort_tag!(parse_context, sorttag, prodsort)
+        #@assert productsorts(parse_context.ddict)[sorttag] == prodsort
 
         # make a user/named sort duo
-        namedsorts(parse_context.ddict)[sorttag] = NamedSort(sorttag, string(sorttag), psort, parse_context.ddict)
-        make_sortref(parse_context, productsorts, psort, "product", sorttag, "") #! is above fill_sort_tag! redundant?
+        namedsorts(parse_context.ddict)[sorttag] = NamedSort(sorttag, string(sorttag), prodsort, parse_context.ddict)
+        make_sortref(parse_context, productsorts, prodsort, "product", sorttag, "") #! is above fill_sort_tag! redundant?
     else
         ProductSortRef(sorttag)
     end
