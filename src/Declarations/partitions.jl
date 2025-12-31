@@ -126,7 +126,7 @@ function element_ids(ps::PartitionSort)
 end
 
 "Iterator over partition element names"
-function element_names(ps::PartitionSort, netid::Symbol)
+function element_names(ps::PartitionSort)
     Iterators.map(name, sortelements(ps))
 end
 
