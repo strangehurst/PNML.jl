@@ -140,10 +140,11 @@ using Printf
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
     PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    #@show sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
+    sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
     PNML.fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
     #!@test occursin(r"^ArbitrarySort", sprint(show, sort))
     #!@show @test_logs eltype(sort)
+    #!@show parse_context.ddict
 
     #^ String
 
