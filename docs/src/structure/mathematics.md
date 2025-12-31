@@ -51,5 +51,5 @@ f_{C_i} = \sum_{k=1..e_i} {\alpha_{i,k} \cdot \langle X_{C_i}^k \rangle} +
 \sum_{k=1..e_i} {\gamma_{i,k} \cdot \langle X_i^k{++} \rangle}
 ```
 such that ``\forall d \in D,\, \forall c \in C_i,\, f_{C_i}(d)(c) \geq 0``,
-where constrants on ``\alpha_{i,k},\, \beta_{i,q}.\, \gamma_{i,k}`` are defined to ensure
-``f_{C_i}(d)(d) > 0 ,\, \forall c \in C_i``
+where constraints on ``\alpha_{i,k},\, \beta_{i,q}.\, \gamma_{i,k}`` are defined to ensure
+``f_{C_i}(d)(c) > 0 ,\, \forall c \in C_i``
