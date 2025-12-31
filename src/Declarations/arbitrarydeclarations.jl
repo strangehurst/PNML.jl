@@ -15,10 +15,6 @@ struct ArbitrarySort <: SortDeclaration
     declarationdicts::DeclDict
 end
 
-function ArbitrarySort()
-    ArbitrarySort(:arbitrarysort, "ArbitrarySort", nothing)
-end
-
 function Base.show(io::IO, s::ArbitrarySort)
     print(io, nameof(typeof(s)), "(", repr(pid(s)), ", ", repr(name(s)), ")")
 end
