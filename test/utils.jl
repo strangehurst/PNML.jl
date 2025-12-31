@@ -115,4 +115,11 @@ end
     @test sortref(0x12345678) == NamedSortRef(:natural)
     @test sortref(0x1234567812345678) == NamedSortRef(:natural)
     @test sortref(1.0) == NamedSortRef(:real)
+
+    @test sortref(Int64) == NamedSortRef(:integer)
+    @test sortref(UInt64) == NamedSortRef(:natural)
+    @test sortref(UInt32) == NamedSortRef(:natural)
+    @test sortref(UInt16) == NamedSortRef(:natural)
+    @test sortref(UInt8) == NamedSortRef(:natural)
+    @test sortref(Float64) == NamedSortRef(:real)
 end
