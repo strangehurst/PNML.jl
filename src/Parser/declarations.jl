@@ -595,8 +595,9 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                 ", name = ", repr(nameval),
                 ", sort = ", repr(partitioned_sortref))
 
-    #~verify_partition(sort, elements)
     partsort = PNML.PartitionSort(partid, nameval, partitioned_sortref, elements, parse_context.ddict) # A Declaraion named Sort!
+
+    PNML.verify_partition(partsort) || error("verify_partition failed: $repr(partsort)")
 
     # add to productsorts
     fill_sort_tag!(parse_context, partid, partsort)

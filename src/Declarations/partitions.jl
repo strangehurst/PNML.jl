@@ -121,13 +121,19 @@ sortelements(p::PartitionSort) = p.elements
 # access by partition id, element id
 
 "Iterator over partition element REFIDs of a `PartitionSort"
-function element_ids(ps::PartitionSort, netid::Symbol)
-    Iterators.map(pid, sortelements(ps))::PartitionSort
+function element_ids(ps::PartitionSort)
+    Iterators.map(pid, sortelements(ps))
 end
 
 "Iterator over partition element names"
 function element_names(ps::PartitionSort, netid::Symbol)
     Iterators.map(name, sortelements(ps))
+end
+
+function verify_partition(part::PartitionSort)
+    defelements = sortelements(sortdefinition(part))
+    partels = collect(Iterators.flatmap(e->e.terms, sortelements(part)))
+    defelements == partels
 end
 
 function Base.show(io::IO, ps::PartitionSort)

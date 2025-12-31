@@ -124,13 +124,18 @@ end
                 </partition>
                 <partition id="P2" name="P2">
                     <usersort declaration="pluck2"/>
-                    <partitionelement id="bs2" name="bs2">
+                    <partitionelement id="bs21" name="bs21">
                         <useroperator declaration="b4"/>
+                    </partitionelement>
+                    <partitionelement id="bs22" name="bs22">
+                        <useroperator declaration="b5"/>
+                        <useroperator declaration="b6"/>
                     </partitionelement>
                 </partition>
                 <partition id="P3" name="P3">
                     <usersort declaration="pluck2"/>
                     <partitionelement id="bs3" name="bs3">
+                        <useroperator declaration="b4"/>
                         <useroperator declaration="b5"/>
                     </partitionelement>
                     <partitionelement id="bs4" name="bs4">
@@ -150,20 +155,20 @@ end
 
     # Examine 3 partition sorts
     for psort in values(PNML.partitionsorts(decldict(decl)))
-        #@show psort
-        # named partition -> partition element -> fe constant
-        #@test typeof(psort) <: PartitionSort # is a declaration
-
+        # partition -> partition element -> fe constant
+        @test typeof(psort) <: PartitionSort # is a declaration
         @test PNML.isregistered(ctx.idregistry, PNML.pid(psort))
-        sort = PNML.partitionsort(decldict(decl), PNML.pid(psort))
-        #@test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        partname = PNML.name(sort)
-        partsort = PNML.Declarations.sortdefinition(sort)
-        part_elements = PNML.sortelements(sort)::Vector{PartitionElement}
+        psort == PNML.partitionsort(decldict(decl), PNML.pid(psort))
+        @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
+        partname = PNML.name(psort)
+        partsort = PNML.Declarations.sortdefinition(psort)
+        part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
 
         for element in part_elements
             @test PNML.isregistered(ctx.idregistry, pid(element))
         end
+
+        PNML.Declarations.verify_partition(psort)
     end
 end
 

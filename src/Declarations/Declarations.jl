@@ -6,7 +6,7 @@ export      OperatorDeclaration, NamedOperator, ArbitraryOperator, PartitionElem
 export      VariableDeclaration
 export      UnknownDeclaration
 
-export element_ids
+export element_ids, verify_partition
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 import Base: eltype
