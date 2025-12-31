@@ -116,7 +116,7 @@ end
 
                 <partition id="P1" name="P1">
                     <usersort declaration="pluck"/>
-                    <partitionelement id="bs1" name="bs1">
+                    <partitionelement id="pe1" name="pe1">
                         <useroperator declaration="b1"/>
                         <useroperator declaration="b2"/>
                         <useroperator declaration="b3"/>
@@ -124,21 +124,21 @@ end
                 </partition>
                 <partition id="P2" name="P2">
                     <usersort declaration="pluck2"/>
-                    <partitionelement id="bs21" name="bs21">
+                    <partitionelement id="pe2" name="pe2">
                         <useroperator declaration="b4"/>
                     </partitionelement>
-                    <partitionelement id="bs22" name="bs22">
+                    <partitionelement id="pe3" name="pe3">
                         <useroperator declaration="b5"/>
                         <useroperator declaration="b6"/>
                     </partitionelement>
                 </partition>
                 <partition id="P3" name="P3">
                     <usersort declaration="pluck2"/>
-                    <partitionelement id="bs3" name="bs3">
+                    <partitionelement id="pe4" name="pe4">
                         <useroperator declaration="b4"/>
                         <useroperator declaration="b5"/>
                     </partitionelement>
-                    <partitionelement id="bs4" name="bs4">
+                    <partitionelement id="pe5" name="pe5">
                         <useroperator declaration="b6"/>
                     </partitionelement>
                 </partition>
@@ -167,7 +167,11 @@ end
         for element in part_elements
             @test PNML.isregistered(ctx.idregistry, pid(element))
         end
-
+        # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
+        #     collect(PNML.Declarations.element_ids(psort)), " ",
+        #     collect(PNML.Declarations.element_names(psort)))
+        @test !isempty(PNML.Declarations.element_ids(psort))
+        @test !isempty(PNML.Declarations.element_names(psort))
         PNML.Declarations.verify_partition(psort)
     end
 end
