@@ -35,14 +35,9 @@ include("declarations.jl")
 include("partitions.jl")
 include("arbitrarydeclarations.jl")
 
-# Default is concrete AbstractSort subtype to be wrapped in a NamedSort.
-fill_sort_tag!(ctx, tag, sort::AbstractSort) =
-    fill_sort_tag!(ctx, tag, NamedSort(tag, string(tag), sort, ctx.ddict))::AbstractSortRef
-
 # # These 3 are Declarations of sorts, not AbstractSorts!
 fill_sort_tag!(ctx, tag, sort::NamedSort) = fill_sort_tag!(ctx, tag, sort, PNML.namedsorts)::AbstractSortRef
 fill_sort_tag!(ctx, tag, sort::PartitionSort) = fill_sort_tag!(ctx, tag, sort, PNML.partitionsorts)::AbstractSortRef
 fill_sort_tag!(ctx, tag, sort::ArbitrarySort) = fill_sort_tag!(ctx, tag, sort, PNML.arbitrarysorts)::AbstractSortRef
-
 
 end # module Declarations
