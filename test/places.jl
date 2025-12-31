@@ -29,7 +29,8 @@ using PNML, ..TestUtils, JET, XMLDict
     @test_call initial_marking(n)
     #@show pntd, initial_marking(n)
     @test initial_marking(n)::Number == 100
-    @test PNML.labelof(n, :nosuchlabel) == nothing
+    @test PNML.labelof([1 2], :nosuchlabel) == nothing
+    @test PNML.has_tools(n) == false
 end
 
 @testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -57,6 +58,7 @@ end
     @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test has_labels(name(n)) == false
+    @test has_labels([1 2 3]) == false
     @test_call target_modules=(@__MODULE__,) initial_marking(n)
     #@show pntd, initial_marking(n)
     @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101

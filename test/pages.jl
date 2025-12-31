@@ -42,6 +42,8 @@ function verify_sets(net::PnmlNet)
     for pageid in page_idset(net)
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
+
+    @test PNML.has_tools(net) == false
 end
 
 model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>

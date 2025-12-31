@@ -90,4 +90,5 @@ println("\nARC\n")
     else
         @test inscription(a)(NamedTuple()) == 6
     end
+    @test PNML.has_tools(a) == false
 end

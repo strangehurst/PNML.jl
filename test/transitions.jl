@@ -74,6 +74,7 @@ end
     @test elements(labels(n)[:somelabel2])[:c] == "value"
     @test PNML.labelof(n, :somelabel2) != nothing
     @test PNML.labelof(n, :nosuchlabel) == nothing
+    @test PNML.has_tools(n) == false
 end
 
 #---------------------------------------------
