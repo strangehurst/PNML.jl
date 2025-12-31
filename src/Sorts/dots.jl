@@ -9,3 +9,7 @@ end
 decldict(s::DotSort) = s.declarationdicts
 Base.eltype(::Type{<:DotSort}) = Bool # What would be iterated over. See `sortelements`.
 sortelements(s::DotSort) = tuple(PNML.DotConstant(decldict(s))) # DotConstant is an AbstractOperator
+
+function Base.show(io::IO, sort::DotSort)
+    print(io, nameof(typeof(sort)), "()")
+end
