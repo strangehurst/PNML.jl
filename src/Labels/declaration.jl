@@ -30,9 +30,10 @@ function Base.show(io::IO, d::Declaration)
     print(io, ")")
 end
 
-function verify!(errors, page::Declaration, verbose::Bool , idreg::PNML.IDRegistry)
+function verify!(errors, decl::Declaration, verbose::Bool, idreg::PNML.IDRegistry)
+    verbose && println("## verify Declaration $(decl.text)")
+    isempty(decl) &&
+        push!(errors, string("declaration is empty: $(repr(decl))")::String)
 
-    # TODO
-
-     return errors
+    return errors
 end

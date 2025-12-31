@@ -28,9 +28,8 @@ end
 # Constructor for use in test scaffolding.
 PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =
     PnmlNet(; type, id, declaration,
-                pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
-                idregistry=IDRegistry(),
-    )
+            pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
+             idregistry=IDRegistry())
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
@@ -43,7 +42,7 @@ decldict(net::PnmlNet) = decldict(net.declaration)
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(net::PnmlNet) = net.pagedict # Will be ordered.
-page_idset(net::PnmlNet) = net.page_set
+page_idset(net::PnmlNet) = net.page_set # Indices into `pagedict` directly owned by net.
 
 netdata(net::PnmlNet) = net.netdata
 netsets(net::PnmlNet) = throw(ArgumentError("PnmlNet $(pid(net)) does not have a PnmlKeySet, did you mean `netdata`?"))
@@ -171,6 +170,8 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
     verify_id!(errors, "reftransitions id", reftransitions(net), idreg)
 
     verify!(errors, decldict(net), verbose, idreg)
+
+    verify!(errors, net.declaration, verbose, idreg)
 
     # Call net object's verify method.
     foreach(x -> verify!(errors, x, verbose, idreg), allpages(net))
