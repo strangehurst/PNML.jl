@@ -93,7 +93,6 @@ These are used to give the initialize a marking vector that will then be updated
 
 basis(m::Marking)   = sortref(term(m))::AbstractSortRef
 sortref(m::Marking) = expr_sortref(term(m); ddict=decldict(m))::AbstractSortRef
-#sortof(m::Marking)  = _sortof(decldict(m), term(m))::AbstractSort
 
 function Base.show(io::IO, ptm::Marking)
     print(io, PNML.indent(io), "Marking(")
@@ -116,7 +115,7 @@ PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::
 
 # These are networks were the tokens have individual identities.
 function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
-    error("value_type(::Type{Marking}, $pntd) undefined.")
+    error("value_type(::Type{Marking}, $pntd) undefined.") #! XXX TODO XXX
     # Base.show_backtrace(stdout, stacktrace())
     # PnmlMultiset{<:Any}
 end
