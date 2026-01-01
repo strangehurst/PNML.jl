@@ -166,6 +166,7 @@ end
 
         for element in part_elements
             @test PNML.isregistered(ctx.idregistry, pid(element))
+            @test PNML.Declarations.contains(element, :nosuch) == false
         end
         # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
         #     collect(PNML.Declarations.element_ids(psort)), " ",
