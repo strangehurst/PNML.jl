@@ -94,11 +94,9 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
         #!     dd.partitionops[pid(partop)] = partop
 
         elseif tag == "arbitrarysort" # TODO
-            @warn "arbitrarysort declaration not supported yet"
-            # arb = parse_arbitrarysort(child, pntd)
-            # PNML.variabledecls(dd)[pid(arb)] = arb
+            arb = parse_arbitrarysort(child, pntd; parse_context=ctx)
+            @assert isa_variant(arb, ArbitrarySortRef)
        else
-            #TODO add unknown_decls to DeclDict
             push!(unknown_decls, parse_unknowndecl(child, pntd; parse_context=ctx))
         end
     end
@@ -319,8 +317,12 @@ function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; parse_context::Parse
     check_nodename(node, "arbitrarysort")
     arbid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
-    @warn("parse unparse_arbitrarysort: id = $arbid, name = $name")
-    return ArbitrarySort(arbid, name, parse_context.ddict)
+    @warn("parse arbitrarysort: id = $arbid, name = $name")
+    arb = ArbitrarySort(arbid, name, parse_context.ddict)
+    fill_sort_tag!(parse_context, arbid, arb)
+    @assert PNML.arbitrarysorts(parse_context.ddict)[arbid] == arb
+    namedsorts(parse_context.ddict)[arbid] = NamedSort(arbid, string(arbid), arb, parse_context.ddict)
+    return make_sortref(parse_context, PNML.arbitrarysorts, arb, "arbitrarysort", arbid, "")
 end
 
 #=

@@ -177,6 +177,54 @@ end
     end
 end
 
+
+
+
+@testset "arbitrary sort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
+    node = xml"""
+    <declaration>
+        <structure>
+            <declarations>
+                <arbitrarysort id="id1" name="AGENT"/>
+            </declarations>
+        </structure>
+    </declaration>
+    """
+
+    ctx = PNML.Parser.parser_context()::PNML.ParseContext
+    decl = parse_declaration!(ctx, node, pntd)
+    @test typeof(decl) <: Declaration
+    #@show PNML.arbitrarysort(decldict(decl), :id1)
+    @test name(PNML.arbitrarysort(decldict(decl), :id1)) == "AGENT"
+    @test name(PNML.arbitrarysorts(decldict(decl))[:id1]) == "AGENT"
+    #@show PNML.partitionsorts(decldict(decl))
+    #PNML.show_sorts(decldict(decl))
+
+    # # Examine 3 partition sorts
+    # for psort in values(PNML.partitionsorts(decldict(decl)))
+    #     # partition -> partition element -> fe constant
+    #     @test typeof(psort) <: PartitionSort # is a declaration
+    #     @test PNML.isregistered(ctx.idregistry, PNML.pid(psort))
+    #     psort == PNML.partitionsort(decldict(decl), PNML.pid(psort))
+    #     @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
+    #     partname = PNML.name(psort)
+    #     partsort = PNML.Declarations.sortdefinition(psort)
+    #     part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+
+    #     for element in part_elements
+    #         @test PNML.isregistered(ctx.idregistry, pid(element))
+    #         @test PNML.Declarations.contains(element, :nosuch) == false
+    #     end
+    #     # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
+    #     #     collect(PNML.Declarations.element_ids(psort)), " ",
+    #     #     collect(PNML.Declarations.element_names(psort)))
+    #     @test !isempty(PNML.Declarations.element_ids(psort))
+    #     @test !isempty(PNML.Declarations.element_names(psort))
+    #     PNML.Declarations.verify_partition(psort)
+    # end
+end
+
+
 const nonsimple_sorts = (MultisetSort, ProductSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort)
 
@@ -223,16 +271,16 @@ end
 
     #TODO Add tests for enumerated sorts, et al., with content.
     # MultisetSort
-    println("""
+    # println("""
 
-    for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
-        for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
-            a = PNML.MultisetSort(sorta())
-            b = PNML.MultisetSort(sortb())
-            sorta != sortb && @test a != b && !PNML.equals(a, b)
-            sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
-        end
-    end
-    """)
+    # for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
+    #     for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
+    #         a = PNML.MultisetSort(sorta())
+    #         b = PNML.MultisetSort(sortb())
+    #         sorta != sortb && @test a != b && !PNML.equals(a, b)
+    #         sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
+    #     end
+    # end
+    # """)
     println("============================")
 end

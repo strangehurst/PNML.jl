@@ -15,6 +15,9 @@ struct ArbitrarySort <: SortDeclaration
     declarationdicts::DeclDict
 end
 
+pid(a::ArbitrarySort) = a.id
+name(a::ArbitrarySort) = a.name
+
 function Base.show(io::IO, s::ArbitrarySort)
     print(io, nameof(typeof(s)), "(", repr(pid(s)), ", ", repr(name(s)), ")")
 end
