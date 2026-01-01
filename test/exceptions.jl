@@ -25,6 +25,13 @@ end
                         <pnml><net id="N1" type="foo"><page id="pg1"/></net></pnml>"""))
 end
 
+#println("pntd_override")
+@test_logs((:info,"net 4712 pntd set to reallygood, overrides test"),
+            parse_net(xml"""<net id="4712" type="test">
+              </net>"""; parse_context=PNML.Parser.parser_context(),
+                         pntd_override="reallygood"))
+
+
 # println("E 2")
 @testset "malformed $pntd" for pntd in PnmlTypes.core_nettypes()
     # println("malformed $pntd")
@@ -35,45 +42,78 @@ end
     # println("-- 2")
     @test_throws("MalformedException: attribute tool missing",
         pnmlmodel(xml"""
-    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-    <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
-    <page id="pg1">
-      <place id="p1"/>
-      <transition id="t1"/>
-      <place id="p3"/>
-      <place id="p4"/>
-      <place id="p5">
-        <toolspecific/>
-      </place>
-      <place id="p6">
-        <toolspecific/>
-      </place>
-    </page>
-    </net>
-    </pnml>
-    """))
+            <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
+                <toolspecific/>
+                <page id="pg1"/>
+            </net>
+            </pnml>
+            """))
+
+    @test_throws("MalformedException: attribute tool missing",
+        pnmlmodel(xml"""
+            <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net type="http://www.pnml.org/version-2009/grammar/pnmlcore" id="n1">
+                <page id="pg1">
+                    <toolspecific/>
+                </page>
+            </net>
+            </pnml>
+            """))
 
     # println("-- 3")
     @test_throws("MalformedException: attribute type missing",
+        pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+                        <net id="4712"/>"""))
+
+
+    @test_throws("MalformedException: attribute type missing",
         pnmlmodel(xml"""
-<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-  <net id="4712">
-    <page id="3">
-      <place id="p2">
-        <toolspecific/>
-      </place>
-      <arc id="a3" source="p2" target="t3"/>
-      <transition id="t3"/>
-    </page>
-  </net>
-</pnml>
-"""))
+            <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net id="4712">
+                <page id="3">
+                <place id="p2">
+                    <toolspecific/>
+                </place>
+                <arc id="a3" source="p2" target="t3"/>
+                <transition id="t3"/>
+                </page>
+            </net>
+            </pnml>
+            """))
 
     # println("-- 4")
     @test_throws("MalformedException: attribute type missing",
-             parse_net(xml"""<net id="4712"> </net>""";
-                        parse_context=PNML.Parser.parser_context()))
+        parse_net(xml"""<net id="4712"> </net>""";
+             parse_context=PNML.Parser.parser_context()))
 end
+
+@test_logs((:warn,"ignoring unexpected child of <net>: <graphics>"),
+    pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+                <net id="4712" type='test'>
+                    <graphics/>
+                </net>
+                </pnml>""";
+            parse_context=PNML.Parser.parser_context()))
+
+@test_logs((:info, r"^add PnmlLabel :unexpected.*"),
+    pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+                <net id="4712" type='test'>
+                    <unexpected/>
+                </net>
+                </pnml>""";
+            parse_context=PNML.Parser.parser_context()))
+
+@test_logs((:info, r"^add PnmlLabel :unexpected.*"),
+    pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+                <net id="4712" type='test'>
+                    <page id="3">
+                        <unexpected/>
+                    </page>
+                </net>
+                </pnml>""";
+            parse_context=PNML.Parser.parser_context()))
+
 
 # println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()

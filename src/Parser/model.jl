@@ -25,12 +25,12 @@ from a file containing XML or a XMLNode.
 """
 function pnmlmodel end
 
-function pnmlmodel(filename::AbstractString; context...)
+function pnmlmodel(filename::AbstractString; kwargs...)
     isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))
-    pnmlmodel(EzXML.root(EzXML.readxml(filename)); context...)
+    pnmlmodel(EzXML.root(EzXML.readxml(filename)); kwargs...)
 end
 
-function pnmlmodel(node::XMLNode; context...)
+function pnmlmodel(node::XMLNode; lp=nothing, tp=nothing, kwargs...)
     check_nodename(node, "pnml")
     namespace = pnml_namespace(node) # Model level XML value.
 
@@ -40,29 +40,31 @@ function pnmlmodel(node::XMLNode; context...)
         if tag == "net"
 
             parse_context = parser_context()::ParseContext
+            @assert !isempty(parse_context.labelparser) # Has built-in label parsers.
 
             #-------------------------------------------------------------------
             # Add context[:lp_vec] to parse_context.labelparser.
             #-------------------------------------------------------------------
-            if haskey(context, :lp_vec) && !isempty(context[:lp_vec])
-                @warn "add $(length(context[:lp_vec])) labelparser(s)"
-                for lp in context[:lp_vec]
+            if !isnothing(lp) && !isempty(lp)
+                @warn "add $(length(lp)) labelparser(s)"
+                foreach(lp) do lparser
                     #! todo sanity check
-                    @show lp
-                    parse_context.labelparser[lp.tag] = lp.func
+                    @show lparser
+                    parse_context.labelparser[lparser.tag] = lparser.func
                 end
                 @show parse_context.labelparser
             end
 
+            @assert isempty(parse_context.toolparser) #TODO built-in toolparsers
             #-------------------------------------------------------------------
             # Add context[:tp_vec] to parse_context.toolparser.
             #-------------------------------------------------------------------
-            if haskey(context, :tp_vec) && !isempty(context[:tp_vec])
-                @warn "add $(length(context[:tp_vec])) toolparser(s)"
-                for tp in context[:tp_vec]
+            if !isnothing(tp) && !isempty(tp)
+                @warn "add $(length(t)) toolparser(s)"
+                foreach(tp) do tparser
                     #! todo sanity check
-                    @show tp
-                    push!(parse_context.toolparser, tp)
+                    @show tparser
+                    push!(parse_context.toolparser, tparser) # NB: a vector #TODO?
                 end
                 @show parse_context.toolparser
             end
@@ -70,7 +72,7 @@ function pnmlmodel(node::XMLNode; context...)
             #-------------------------------------------------------------------
             # Each net can be different PNTD.
             #-------------------------------------------------------------------
-            net = parse_net(child; parse_context)::PnmlNet # Fully formed
+            net = parse_net(child; parse_context, kwargs...)::PnmlNet # Fully formed
 
             #TODO Add net verification plugin here. Make our verifiers the 1st plugin.
             net_tup = (net_tup..., net)
@@ -94,21 +96,20 @@ end
  - parse_context::ParseContext
 """
 function parse_net(node::XMLNode;
-                    pntd_override::Maybe{PnmlType} = nothing,
-                    parse_context::ParseContext)
+                    parse_context::ParseContext,
+                    pntd_override::Maybe{String} = nothing,
+                    kwargs...)
 
     netid = register_idof!(parse_context.idregistry, node)
 
     # Parse the pnml net type attribute. Not the place sort `<type>` label.
-    pntd = let pn_typedef = pnmltype(attribute(node, "type"))
-        if isnothing(pntd_override)
-            pn_typedef
-        else
-            # Override of the Petri Net Type Definition (PNTD) value for fun & games.
-            @info "net $id pntd set to $pntd_override, overrides $pn_typedef"
-            pntd_override
-        end
+    typestr = attribute(node, "type")
+    if !isnothing(pntd_override)
+        # Override of the Petri Net Type Definition (PNTD) value for fun & games.
+        @info "net $netid pntd set to $pntd_override, overrides $typestr"
+        typestr = pntd_override
     end
+    pntd = pnmltype(typestr)
 
     #----------------------------------------------------------------
     # Now we know the PNTD and can parse a net.
@@ -210,7 +211,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: <graphics>"
         else
-            unexpected_label!(net.extralabels, child, tag, pntd; parse_context, parentid=netid) # net
+            unexpected_label!(net.extralabels, child, Symbol(tag), pntd; parse_context, parentid=netid) # net
         end
     end
 
