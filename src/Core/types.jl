@@ -218,19 +218,6 @@ abstract type AbstractOperator <: AbstractTerm end
 #
 # Note that a 0-ary operator is a constant.
 
-#---------------------------------------------------------------------------
-# Collect the Singleton to Type translations here.
-# The part that needs to know Type details is defined elsewhere. :)
-#---------------------------------------------------------------------------
-
-coordinate_type(pntd::PnmlType)    = coordinate_type(typeof(pntd))
-
-"""
-    value_type(::Type{<AbstractLabel}, ::PnmlType) -> Type
-
-Return the Type of a label's value.
-"""
-function value_type end
 
 ####################################################################
 # """

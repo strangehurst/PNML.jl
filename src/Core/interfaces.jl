@@ -343,6 +343,13 @@ function term end
 function coordinate_type end
 
 """
+    value_type(::Type{<AbstractLabel}, ::PnmlType) -> Type
+
+Return the `Type` of a label's value.
+"""
+function value_type end
+
+"""
     sortof(x) -> AbstractSort
 
 Return the sort of an object or type.
