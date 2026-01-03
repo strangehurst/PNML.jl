@@ -30,7 +30,8 @@ str1 = """
 
 @testset "SIMPLENET" begin
     @test_call target_modules=target_modules pnmlmodel(xmlnode(str1))
-    model = @test_logs((:info, "add PnmlLabel :structure to :p3"),
+    model = @test_logs(match_mode=:any,
+                       (:info, "add PnmlLabel :structure to :p3"),
                        (:info, "add PnmlLabel :frog to :p3"),
                 pnmlmodel(xmlnode(str1))::PnmlModel) #
     net0 = @inferred PnmlNet first(nets(model))
