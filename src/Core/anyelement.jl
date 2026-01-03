@@ -65,23 +65,19 @@ See [`DictType`](@ref).
                          Union{DictType, String, SubString{String}, Vector{Any}}}
 end
 
-function Base.convert(::Type{Vector{Union{DictType, String, SubString{String}}}}, x::Vector{Any})
-    x::Vector{Union{DictType, String, SubString{String}}}
-end
-
 tag(a::AnyElement) = a.tag
 elements(a::AnyElement) = a.elements # label elements
 
-function Base.show(io::IO, vae::Vector{AnyElement})
-    println(io, "AnyElement[")
-    iio = inc_indent(io)  # one more indent
-    for (i, ae) in enumerate(vae)
-        i > 1 && print(iio, indent(iio))
-        show(iio, ae)
-        length(vae) > 1 && i < length(vae) && println(iio)
-    end
-    println(io, "]")
-end
+# function Base.show(io::IO, vae::Vector{AnyElement}) #! styleguide says don't do this!
+#     println(io, "AnyElement[")
+#     iio = inc_indent(io)  # one more indent
+#     for (i, ae) in enumerate(vae)
+#         i > 1 && print(iio, indent(iio))
+#         show(iio, ae)
+#         length(vae) > 1 && i < length(vae) && println(iio)
+#     end
+#     println(io, "]")
+# end
 
 function Base.show(io::IO, ae::AnyElement)
     print(io, "AnyElement(", repr(tag(ae)), ", ")

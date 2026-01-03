@@ -23,16 +23,16 @@ version(ti::ToolInfo) = ti.version
 "Content of a ToolInfo."
 info(ti::ToolInfo)   = ti.info
 
-function Base.show(io::IO, toolvector::Vector{ToolInfo})
-    print(io, "ToolInfo[")
-    io = PNML.inc_indent(io)
-    for (n, anye) in enumerate(toolvector)
-        n > 1 && print(io, PNML.indent(io))
-        show(io, anye);
-        length(toolvector) > 1 && n < length(toolvector) && println(io)
-    end
-    print(io, "]")
-end
+# function Base.show(io::IO, toolvector::Vector{ToolInfo})
+#     print(io, "ToolInfo[")
+#     io = PNML.inc_indent(io)
+#     for (n, anye) in enumerate(toolvector)
+#         n > 1 && print(io, PNML.indent(io))
+#         show(io, anye);
+#         length(toolvector) > 1 && n < length(toolvector) && println(io)
+#     end
+#     print(io, "]")
+# end
 
 function Base.show(io::IO, ti::ToolInfo)
     print(io, "ToolInfo(", PNML.name(ti), ", ", version(ti), ", [")

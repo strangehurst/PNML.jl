@@ -121,20 +121,20 @@ tag(label::PnmlLabel) = label.tag
 tag(p::Pair{Symbol, PnmlLabel}) = p.first
 elements(label::PnmlLabel) = label.elements
 
-function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-    print(io, PNML.indent(io), "PnmlLabel[")
-    io = PNML.inc_indent(io)
-    for (i, label) in enumerate(labelvector)
-        i > 1 && print(io, PNML.indent(io))
-        print(io, "(", repr(tag(label)), ", ");
-        #!@show elements(label)
-        #!@show typeof(elements(label))
-        PNML.dict_show(io, elements(label));
-        print(")")
-        i < length(labelvector) && print(io, "\n")
-    end
-    print(io, "]")
-end
+# function Base.show(io::IO, labelvector::Vector{PnmlLabel})
+#     print(io, PNML.indent(io), "PnmlLabel[")
+#     io = PNML.inc_indent(io)
+#     for (i, label) in enumerate(labelvector)
+#         i > 1 && print(io, PNML.indent(io))
+#         print(io, "(", repr(tag(label)), ", ");
+#         #!@show elements(label)
+#         #!@show typeof(elements(label))
+#         PNML.dict_show(io, elements(label));
+#         print(")")
+#         i < length(labelvector) && print(io, "\n")
+#     end
+#     print(io, "]")
+# end
 
 function Base.show(io::IO, label::PnmlLabel)
     print(io, PNML.indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
