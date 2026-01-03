@@ -250,7 +250,7 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}, ddict::DeclD
         elseif tag === :cardnalitiyof
             UserSortRef(:natural) # NaturalSort()
         elseif tag === :contains
-            uUserSortRef(:bool) # BoolSort()
+            UserSortRef(:bool) # BoolSort()
         else
             error("$tag not a known multiset operator")
         end
