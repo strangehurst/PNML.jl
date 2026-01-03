@@ -117,10 +117,6 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     sortid = Symbol(@inbounds(node["id"]))
     if !Sorts.isbuiltinsort(sortid)
-        # Rest of register_idof! Needed the ID to replace the duo.
-        if isregistered(parse_context.idregistry, sortid)
-            @warn "registering existing id $sortid in $(objectid(parse_context.idregistry))" parse_context.idregistry
-        end
         register_id!(parse_context.idregistry, sortid)
     end
     name = attribute(node, "name")
