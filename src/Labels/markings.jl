@@ -87,7 +87,7 @@ High-level Nets (SymmetricNet, HLPNG) use individual token identity (colored pet
 There is a multi-sorted algebra definition mechanism defined for HL Nets.
 HL Net Marking values are a ground terms of this multi-sorted algebra.
 
-These are used to give the initialize a marking vector that will then be updated by firing a transition.
+Used to initialize a marking vector that will then be updated by firing a transition.
 """
 (mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark)))
 
@@ -120,7 +120,7 @@ function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
     # PnmlMultiset{<:Any}
 end
 
-PNML.value_type(::Type{Marking}, ::PT_HLPNG) = PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}
 
 #~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zero.
@@ -157,11 +157,11 @@ Others have a marking that is a `Number`.
 """
 function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
     D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
-    Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) #! Will not be a PnmlMultiset.
+    Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) # not high-level!
 end
 
 function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType; ddict)
     el = def_sort_element(placetype; ddict)
     D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
-    Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # empty multiset, el used for its type
+    Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # el used for its type
 end

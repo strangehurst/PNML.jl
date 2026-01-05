@@ -58,7 +58,7 @@ end
 # Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
-inscription_value(::Type{T}, a::Arc, def, varsub) -> T
+inscription_value(a::Maybe{Arc}, def, varsub) -> T
 
 If `a` is nothing return `def` else evaluate inscription expression with varsub,
 where `def` is a default value of same sort as adjacent place.
@@ -66,17 +66,18 @@ and `varsub` is a possibly empty variable substitution.
 """
 function inscription_value end
 
-function inscription_value(::Type{T}, a::Maybe{Arc}, def, varsub) where {T}
+function inscription_value(a::Maybe{Arc}, def, varsub)
     if isnothing(a)
-        def::T # return supplied default.
+        def
     else
-        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))::T
+        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))
     end
 end
 
-"Convert inscription value of PN_HLPNG from multiset to cardinality of the multiset."
+"Convert inscription value of PT_HLPNG from multiset to cardinality of the multiset."
 function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, def, varsub)
-    val = inscription_value(value_type(PNML.Inscription, pntd), a, def, varsub)
+    #vt = value_type(PNML.Inscription, pntd)
+    val = inscription_value(a, def, varsub)
     return pntd isa PT_HLPNG ? cardinality(val) : val
 end
 
@@ -87,7 +88,8 @@ ISO 15909-1:2019 Concept 13: Color class is a non-empty finite set,
 may be linearly ordered, circular or unordered.
 Color domain (concept 14) a finite cartesian product of color classes.
 C is a mapping which defines for each place and each transition its color domain.
-W is the weight function, associates with each arc a general color function from C(t) to Bag(C(p)).
+W is the weight function, associates with each arc
+    a general color function from C(t) to Bag(C(p)).
 
 Color functions (concept 16, 17),
 Let D be a color domain
