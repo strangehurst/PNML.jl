@@ -11,10 +11,28 @@ using PNML: isnormal, isinhibitor, isread, isreset
     str = """<arc source="t1" target="p1" id="a1">
         <arctype>
             <text> $arct </text>
+            <graphics/>
+            <toolspecific tool="tname" version="1"/>
         </arctype>
       </arc>"""
     #@show str
     node = xmlnode(str)
+    pntd = PnmlCoreNet()
+
+    str = """<arc source="t1" target="p1" id="a1">
+        <arctype>
+            <text> $arct </text>
+            <graphics/>
+            <toolspecific tool="tname" version="1"/>
+        </arctype>
+      </arc>"""
+    #@show str
+    node = xmlnode(str)
+    PNML.CONFIG[].warn_on_unclaimed = true
+    parse_context = PNML.Parser.parser_context()
+
+    a = parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc
+
     PNML.CONFIG[].warn_on_unclaimed = true
     parse_context = PNML.Parser.parser_context()
 
@@ -33,4 +51,19 @@ using PNML: isnormal, isinhibitor, isread, isreset
     @test pid(a) === :a1
     @test !has_name(a)
     @test inscription(a)(NamedTuple()) == 1
+end
+
+@testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
+    pntd = PnmlCoreNet()
+
+    str = """<arc source="t1" target="p1" id="a1">
+        <arctype>
+        </arctype>
+      </arc>"""
+    #@show str
+    node = xmlnode(str)
+    parse_context = PNML.Parser.parser_context()
+
+    @test_throws(ArgumentError,
+        parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc)
 end

@@ -3,15 +3,10 @@ using PNML, ..TestUtils, JET, XMLDict
 #---------------------------------------------
 # ARC
 #---------------------------------------------
+PNML.CONFIG[].warn_on_unclaimed = true
 
-println("\nARC\n")
-@testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
-    PNML.CONFIG[].warn_on_unclaimed = true
-    parse_context = PNML.Parser.parser_context()
-    netdata = PNML.PnmlNetData()
-    netsets = PNML.PnmlNetKeys()
-
-    insc_xml = if ishighlevel(pntd)
+function insc_xml(pntd)
+    if ishighlevel(pntd)
         """<hlinscription>
             <text>6</text>
             <structure>
@@ -26,53 +21,66 @@ println("\nARC\n")
     else
         """<inscription> <text>6</text> </inscription>"""
     end
-
-    #! arc needs :place1 for adjacent place
-    let pl_node = if ishighlevel(pntd)
-            xml"""
-                <place id="place1">
-                <name> <text>with text</text> </name>
-                <type><structure><dot/></structure></type>
-                <hlinitialMarking>
-                    <text>101</text>
-                    <structure>
-                        <numberof>
-                            <subterm>
-                                <numberconstant value="11"><positive/></numberconstant>
-                            </subterm>
-                            <subterm><dotconstant/></subterm>
-                        </numberof>
-                    </structure>
-                </hlinitialMarking>
-                </place>
-                """
-        else
-            xml"""
-                <place id="place1">
-                <initialMarking> <text>1</text> </initialMarking>
-                </place>
-                """
-        end
-        pl = parse_place(pl_node, pntd; parse_context)
-        push!(PNML.place_idset(netsets), pid(pl))
-        PNML.placedict(netdata)[pid(pl)] = pl
+end
+#! arc needs :place1 for adjacent place
+function pl_node(pntd, parse_context, netdata, netsets)
+    node = if ishighlevel(pntd)
+        xml"""
+            <place id="place1">
+            <name> <text>with text</text> </name>
+            <type><structure><dot/></structure></type>
+            <hlinitialMarking>
+                <text>101</text>
+                <structure>
+                    <numberof>
+                        <subterm>
+                            <numberconstant value="11"><positive/></numberconstant>
+                        </subterm>
+                        <subterm><dotconstant/></subterm>
+                    </numberof>
+                </structure>
+            </hlinitialMarking>
+            </place>
+            """
+    else
+        xml"""
+            <place id="place1">
+            <initialMarking> <text>1</text> </initialMarking>
+            </place>
+            """
     end
+    pl = parse_place(node, pntd; parse_context)
+    push!(PNML.place_idset(netsets), pid(pl))
+    PNML.placedict(netdata)[pid(pl)] = pl
+end
 
-    #! arc needs :transition1 for adjacent transition
-    let tr_node = xml"""<transition id="transition1" />"""
-        tr = parse_transition(tr_node, pntd; parse_context)
-        push!(PNML.transition_idset(netsets), pid(tr))
-        PNML.transitiondict(netdata)[pid(tr)] = tr
-    end
+#! arc needs :transition1 for adjacent transition
+function tr_node(pntd, parse_context, netdata, netsets)
+    node = xml"""<transition id="transition1" />"""
+    tr = parse_transition(node, pntd; parse_context)
+    push!(PNML.transition_idset(netsets), pid(tr))
+    PNML.transitiondict(netdata)[pid(tr)] = tr
+end
 
-    node = xmlnode("""
+println("\nARC\n")
+@testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
+    # PNML.CONFIG[].warn_on_unclaimed = true
+    parse_context = PNML.Parser.parser_context()
+    netdata = PNML.PnmlNetData()
+    netsets = PNML.PnmlNetKeys()
+    pl_node(pntd, parse_context, netdata, netsets)
+    tr_node(pntd, parse_context, netdata, netsets)
+
+     node = xmlnode("""
       <arc source="transition1" target="place1" id="arc1">
         <name> <text>Some arc</text> </name>
-        $insc_xml
+        $(insc_xml(pntd))
         <unknown id="unkn">
             <name> <text>unknown label</text> </name>
             <text>content text</text>
         </unknown>
+        <graphics/>
+        <toolspecific tool=":test" version="1.0.0" />
       </arc>
     """)
 
@@ -82,13 +90,37 @@ println("\nARC\n")
     @test typeof(a) <: Arc
     @test pid(a) === :arc1
     @test has_name(a)
+    @test has_graphics(a)
     @test name(a) == "Some arc"
     @test_call inscription(a)
-    #@show inscription(a)(NamedTuple())
+    #@show a inscription(a)(NamedTuple())
     if ishighlevel(pntd) # assumes storttype of dot
         @test PNML.cardinality(inscription(a)(NamedTuple())) == 6
     else
         @test inscription(a)(NamedTuple()) == 6
     end
-    @test PNML.has_tools(a) == false
+    @test PNML.has_tools(a) == true
+end
+
+@testset "arc unknown label for $pntd" for pntd in PnmlTypes.all_nettypes()
+    parse_context = PNML.Parser.parser_context()
+    netdata = PNML.PnmlNetData()
+    netsets = PNML.PnmlNetKeys()
+    pl_node(pntd, parse_context, netdata, netsets)
+    tr_node(pntd, parse_context, netdata, netsets)
+    node = xmlnode("""
+      <arc source="transition1" target="place1" id="arc1">
+        <name> <text>Some arc</text> </name>
+        $insc_xml
+        <unknown id="unkn">
+            <name> <text>unknown label</text> </name>
+            <text>content text</text>
+        </unknown>
+        <graphics/>
+        <toolspecific tool=":test" version="1.0.0" />
+      </arc>
+    """)
+   a = @test_logs(match_mode=:any,
+                  (:info, "add PnmlLabel :unknown to :arc1"),
+                  parse_arc(node, pntd; netdata, parse_context))
 end

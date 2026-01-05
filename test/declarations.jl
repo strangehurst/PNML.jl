@@ -177,9 +177,6 @@ end
     end
 end
 
-
-
-
 @testset "arbitrary sort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
     <declaration>
@@ -197,31 +194,20 @@ end
     #@show PNML.arbitrarysort(decldict(decl), :id1)
     @test name(PNML.arbitrarysort(decldict(decl), :id1)) == "AGENT"
     @test name(PNML.arbitrarysorts(decldict(decl))[:id1]) == "AGENT"
-    #@show PNML.partitionsorts(decldict(decl))
-    #PNML.show_sorts(decldict(decl))
-
-    # # Examine 3 partition sorts
-    # for psort in values(PNML.partitionsorts(decldict(decl)))
-    #     # partition -> partition element -> fe constant
-    #     @test typeof(psort) <: PartitionSort # is a declaration
-    #     @test PNML.isregistered(ctx.idregistry, PNML.pid(psort))
-    #     psort == PNML.partitionsort(decldict(decl), PNML.pid(psort))
-    #     @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-    #     partname = PNML.name(psort)
-    #     partsort = PNML.Declarations.sortdefinition(psort)
-    #     part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
-
-    #     for element in part_elements
-    #         @test PNML.isregistered(ctx.idregistry, pid(element))
-    #         @test PNML.Declarations.contains(element, :nosuch) == false
-    #     end
-    #     # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
-    #     #     collect(PNML.Declarations.element_ids(psort)), " ",
-    #     #     collect(PNML.Declarations.element_names(psort)))
-    #     @test !isempty(PNML.Declarations.element_ids(psort))
-    #     @test !isempty(PNML.Declarations.element_names(psort))
-    #     PNML.Declarations.verify_partition(psort)
-    # end
+end
+@testset "arbitrary sort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
+    node = xml"""
+    <declaration>
+        <structure>
+            <declarations>
+                <namedsort id="dot2" name="SecondDot"> <dot/> </namedsort>
+                <namedsort id="dot2" name="SecondDot"> <dot/> </namedsort>
+            </declarations>
+        </structure>
+    </declaration>
+    """
+    ctx = PNML.Parser.parser_context()::PNML.ParseContext
+    @test_throws DuplicateIDException parse_declaration!(ctx, node, pntd)
 end
 
 
