@@ -234,7 +234,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     @assert isa_variant(refsort, NamedSortRef)
     #! @assert isfinitesort(refsort) #^ Only expect finite sorts here.
 
-    return TermJunk(PNML.Bag(refsort), refsort, vars)
+    return TermJunk(PNML.Bag(refsort), refsort, vars) # :all
 end
 
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
@@ -245,7 +245,7 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, parse_co
     #! ePNK uses <integer/>. Could be inlined productsort.
     x = first(PNML.sortelements(refsort)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
-    return TermJunk(PNML.Bag(refsort, x, 0), refsort, vars)
+    return TermJunk(PNML.Bag(refsort, x, 0), refsort, vars) # :empty
 end
 
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
@@ -363,7 +363,7 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::PnmlType; vars, parse
     # Return of a sort is required because the sort may not be deducable from the expression,
     # Consider NaturalSort vs PositiveSort.
     # D()&& @show  isort instance multiplicity PNML.Bag(isort, instance, multiplicity)::PnmlExpr
-    return TermJunk(PNML.Bag(isort, instance, multiplicity)::PnmlExpr, isort, vars)
+    return TermJunk(PNML.Bag(isort, instance, multiplicity)::PnmlExpr, isort, vars) # :numberof
 end
 
 function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
@@ -374,6 +374,18 @@ function parse_term(::Val{:cardinality}, node::XMLNode, pntd::PnmlType; vars, pa
 
     return TermJunk(PNML.Cardinality(exp)::PnmlExpr, NamedSortRef(:natural), vars)
 end
+
+# rhs multiset is contained in lhs multiset
+function parse_term(::Val{:contains}, node::XMLNode, pntd::PnmlType; vars, parse_context::ParseContext)
+    sts, vars = subterms(node, pntd; vars, parse_context)
+    @assert length(sts) == 2
+    @show sts # :contains sts[2] sts[1]
+    @show pe = PNML.Contains(sts...) #! We have PnmlExpr elements at this point.
+    #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
+    #@assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
+    return TermJunk(pe, NamedSortRef(:bool), vars)
+end
+
 
 #^#########################################################################
 #^ Booleans
@@ -616,6 +628,7 @@ function parse_term(::Val{:gtp}, node::XMLNode, pntd::PnmlType; vars, parse_cont
     return TermJunk(pe, PartitionSortRef(first(sts).refpartition), vars) #todo! when can we map to partition
 end
 
+#====================================================================================#
 """
     `<makelist>` Make a List
 """

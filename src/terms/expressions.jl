@@ -3,16 +3,18 @@ Expressions Module
 """
 module Expressions
 
+import Metatheory
+import PNML: PNML, basis, sortref, sortof, sortelements, sortdefinition
+import Multisets: Multiset
+
 using Base: Fix2
 using TermInterface
 
-import Metatheory
 using Metatheory: @matchable
 
 using PNML
 using PNML: BooleanConstant, FEConstant , feconstant, ProductSort
-using PNML: pnmlmultiset, operator, partitionsort
-import PNML: basis, sortref, sortof, sortelements, sortdefinition
+using PNML: pnmlmultiset, operator, partitionsort, mcontains
 
 export toexpr
 
@@ -54,7 +56,7 @@ abstract type AbstractOpExpr <: PnmlExpr end
 ##################################################################
 
 """
-    toexpr(ex::PnmlExpr, varsubs::NamedTuple{REFID,Any}, ddict) -> Expr
+    toexpr(ex::PnmlExpr, varsubs::NamedTuple{Symbol,Any}, ddict) -> Expr
 
 Return `Expr` constructed from `ex`. Call `toexpr` on any contained terms.
 `varsubs` used to replace variables in expressions.
@@ -69,7 +71,10 @@ function toexpr(t::Tuple, vsub::NamedTuple, ddict)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-
+function toexpr(t::Multiset, vsub::NamedTuple, ddict)
+    isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
+    return t
+end
 toexpr(nc::PNML.NumberConstant, ::NamedTuple, ddict) = value(nc)
 toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple, ddict) = value(c)
 toexpr(::PNML.DotConstant, ::NamedTuple, ddict) = PNML.DotConstant(ddict)
@@ -141,9 +146,9 @@ end
 # end
 
 ###################################################################################
-# expression constructing a `Variable` wrapping a REFID to a `VariableDeclaration`.
+# expression constructing a `Variable` wrapping a REFID symbol to a `VariableDeclaration`.
 @matchable struct VariableEx <: PnmlExpr
-    refid::REFID #  Varia
+    refid::Symbol
 end
 
 function toexpr(op::VariableEx, varsub::NamedTuple, ddict)
@@ -164,9 +169,9 @@ function Base.show(io::IO, x::VariableEx)
 end
 
 ###################################################################################
-# expression wrapping a REFID used to do operator lookup `operator(ddict, REFID)`.
+# expression wrapping a REFID symbol used to do operator lookup `operator(ddict, REFID)`.
 @matchable struct UserOperatorEx <: AbstractOpExpr
-    refid::REFID # operator(ddict, REFID) returns operator callable.
+    refid::Symbol # operator(ddict, REFID) returns operator callable.
 end
 
 function toexpr(op::UserOperatorEx, varsub::NamedTuple, ddict)
@@ -186,7 +191,7 @@ end
 
 ###################################################################################
 @matchable struct NamedOperatorEx <: AbstractOpExpr
-    refid::REFID # operator(ddict, REFID) returns operator callable.
+    refid::Symbol # operator(ddict, REFID) returns operator callable.
 end
 
 function toexpr(op::NamedOperatorEx, varsub::NamedTuple, ddict)
@@ -211,19 +216,21 @@ a [`PNML.PnmlMultiset`](@ref).
 See [`PNML.Operator`](@ref) for another TermInterface operator.
 """
 Bag # Need to avoid @matchable to have docstring
-@matchable struct Bag{S <: AbstractSortRef} <: PnmlExpr
-    basis::S # Wraps a sort REFID.
-    element::Any # ground term expression
-    multi::Any # multiplicity expression of element in a multiset
+@matchable struct Bag{S <: AbstractSortRef, E <: Any, M <: Any} <: PnmlExpr
+    basis::S
+    element::E # ground term expression or Multiset
+    multi::M # multiplicity expression of element in a multiset
     # Bag(b, x, m) = begin
     #     # if x isa PnmlTupleEx
     #     #     @error "bag element is tuple" b x m
     #     # end
     #     new(b, x, m)
-    # end
+    # end h
 end
-Bag(b, x) = Bag(b, x, 1) # singleton multiset
-Bag(b) = Bag(b, nothing, nothing) # multiset: one of each element of the basis sort.
+Bag(b::AbstractSortRef, x) = Bag(b::AbstractSortRef, x, 1) # singleton multiset
+Bag(ms::PNML.PnmlMultiset) = Bag(basis(ms), PNML.multiset(ms))
+Bag(b::AbstractSortRef, x::Multiset) = Bag(b::AbstractSortRef, x, nothing) # x is a Multiset
+Bag(b::AbstractSortRef) = Bag(b::AbstractSortRef, nothing, nothing) # multiset: one of each element of the basis sort.
 
 sortref(b::Bag) = b.basis
 basis(b::Bag) = b.basis
@@ -231,7 +238,7 @@ expr_sortref(b::Bag; ddict) = sortref(b)::AbstractSortRef # also basis
 
 function toexpr(b::Bag, varsub::NamedTuple, ddict)
     #@show b varsub Expr(:parameters, Expr(:kw,:ddict, ddict))
-    #^ Warning: b.element can be: `PnmlMultiset`, `pnmltuple`
+    #^ Warning: b.element can be: `PnmlMultiset`, `tuple`
     #^ tuples are elements of a `ProductSort`
     Expr(:call, pnmlmultiset,
         Expr(:parameters, Expr(:kw, :ddict, ddict)), # keyword arguments
@@ -398,7 +405,7 @@ end
 
 @matchable struct CardinalityOf{S <: AbstractSortRef} <: PnmlExpr #^ cardinalityof accesses multiset.
     ms::Bag{S} # multiset expression
-    refid::REFID # element of basis sort
+    refid::Symbol # element of basis sort
 end
 
 function toexpr(op::CardinalityOf, var::NamedTuple, ddict)
@@ -411,16 +418,20 @@ end
 
 #"Bag -> Bool"
 @matchable struct Contains{S <: AbstractSortRef} <: AbstractBoolExpr #^ multiset contains access multiset.
-    lhs::Bag{S} # multiset expression
+    lhs::Bag{S} # multiset expression #TODO Union{Bag{S}, VariableEx}
     rhs::Bag{S} # multiset expression
 end
 
 function toexpr(op::Contains, var::NamedTuple, ddict)
-    Expr(:call, :(>), Expr(:call, :contains, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict)))
+    @show "contains" op# op.rhs op.lhs
+    #@show toexpr(op.rhs, var, ddict)
+    #@show toexpr(op.lhs, var, ddict)
+    # issubset(toexpr(op.rhs, var, ddict), toexpr(op.lhs, var, ddict)))
+    Expr(:call, :mcontains, toexpr(op.rhs, var, ddict), toexpr(op.lhs, var, ddict))
 end
 
 function Base.show(io::IO, x::Contains)
-    print(io, "Contains(", x.ms, ", ", repr(refid), ")" )
+    print(io, "Contains(", x.lhs, ", ", x.rhs, ")" )
 end
 
 #& Boolean Operators
@@ -670,8 +681,8 @@ end
 @matchable struct PartitionElementOp <: AbstractOpExpr #! Same as PartitionElement, for term rerwite?
     id::Symbol
     name::Union{String,SubString{String}}
-    refs::Vector{REFID} # to FEConstant
-    partition::REFID
+    refs::Vector{Symbol} # to FEConstant
+    partition::Symbol
 end
 
 expr_sortref(a::PartitionElementOp; ddict) = sortref(partitionsort(ddict, a.partition))::AbstractSortRef
@@ -726,7 +737,7 @@ end
 # 0-arity despite the refpartition
 @matchable struct PartitionElementOf <: PnmlExpr
     arg::Any
-    refpartition::REFID # TODO! SortRef
+    refpartition::Symbol # TODO! SortRef
 end
 
 expr_sortref(a::PartitionElementOf; ddict) = sortref(partitionsort(ddict, a.refpartition))::AbstractSortRef
