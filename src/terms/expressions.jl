@@ -423,11 +423,7 @@ end
 end
 
 function toexpr(op::Contains, var::NamedTuple, ddict)
-    @show "contains" op# op.rhs op.lhs
-    #@show toexpr(op.rhs, var, ddict)
-    #@show toexpr(op.lhs, var, ddict)
-    # issubset(toexpr(op.rhs, var, ddict), toexpr(op.lhs, var, ddict)))
-    Expr(:call, :mcontains, toexpr(op.rhs, var, ddict), toexpr(op.lhs, var, ddict))
+    Expr(:call, :mcontains, toexpr(op.lhs, var, ddict), toexpr(op.rhs, var, ddict))
 end
 
 function Base.show(io::IO, x::Contains)

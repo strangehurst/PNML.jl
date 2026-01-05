@@ -44,14 +44,14 @@ parse_declaration!(ctx, node, pntd)
 
     a = PNML.Add([b1, b2, b3])
     ex = PNML.toexpr(a, varsub, ddict)
-    @show val = eval(ex)
+    val = eval(ex)
     @test val == eval(PNML.toexpr(b1, varsub, ddict)) +
                  eval(PNML.toexpr(b2, varsub, ddict)) +
                  eval(PNML.toexpr(b3, varsub, ddict))
 end
 
 @testset "multiset contains $pntd" begin
-    println("multiset contains")
+    #println("multiset contains")
     b1 = PNML.Bag(NamedSortRef(:pro), 1, PNML.NumberEx(NamedSortRef(:natural), 1))
     b2 = PNML.Bag(NamedSortRef(:pro), 2, PNML.NumberEx(NamedSortRef(:natural), 1))
     b3 = PNML.Bag(NamedSortRef(:pro), 3, PNML.NumberEx(NamedSortRef(:natural), 2))
@@ -63,11 +63,15 @@ end
 
     a = eval(aex)
     b = eval(bex)
-    Bag(a)
-    Bag(b)
-    @show c = Contains(Bag(a), Bag(b))
-    @show ex = PNML.toexpr(c, varsub, ddict)
-    @show val = eval(ex)
+    Bag(a) # 1'1 2'1 3'2 4'2
+    Bag(b) # 1'1 2'1 3'2 4'1
+    # is bag(a) contains bag(b) or bag(b) issubset bag(a)
+    c = Contains(Bag(a), Bag(b))
+    ex = PNML.toexpr(c, varsub, ddict)
+    @test eval(ex) == true
+
+    c2 = Contains(Bag(b), Bag(a))
+    @test eval(PNML.toexpr(c2, varsub, ddict)) == false
 
     println()
 end
@@ -80,7 +84,7 @@ end
 
     a = PNML.And([b1, b2, b3, b4])
     ex = PNML.toexpr(a, varsub, ddict)
-    @show val = eval(ex)
+    val = eval(ex)
     @test val == eval(PNML.toexpr(b1, varsub, ddict)) &
                  eval(PNML.toexpr(b2, varsub, ddict)) &
                  eval(PNML.toexpr(b3, varsub, ddict)) &
@@ -95,7 +99,7 @@ end
 
     a = PNML.Or([b1, b2, b3, b4])
     ex = PNML.toexpr(a, varsub, ddict)
-    @show val = eval(ex)
+    val = eval(ex)
     @test val == eval(PNML.toexpr(b1, varsub, ddict)) |
                  eval(PNML.toexpr(b2, varsub, ddict)) |
                  eval(PNML.toexpr(b3, varsub, ddict)) |
@@ -105,7 +109,7 @@ end
 #^ Boolean Expression tests
 #^------------------------------------------------------------------------
 function _test_abstractboolexpr(x::AbstractBoolExpr, ddict::DeclDict)
-    @show x
+    #@show x
     @test PNML.basis(x) == NamedSortRef(:bool)
     @test sortref(x) == NamedSortRef(:bool)
     @test expr_sortref(x; ddict) == sortref(x)
