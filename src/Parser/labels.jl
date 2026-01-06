@@ -273,9 +273,6 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     else
         @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
                 " or product of named sorts, found $(placetype)")
-        if isa_variant(placetype, ProductSortRef)
-            foreach(println, Sorts.sorts(placetype, parse_context.ddict))
-        end
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
