@@ -31,14 +31,11 @@ Each keyed by REFID symbols.
     feconstants::Dict{Symbol, Any}        = Dict{Symbol, Any}()
 
     # Use an REFID symbol as a network-level "global" to reference
-    # SortDeclaration or Operatordeclaration.
+    # SortDeclaration or OperatorDeclaration.
 
-    # usersort wraps REFID, is well used, we create them as part of duos,
-    # though we use the SortRef ADT as implementation.
     #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
     #! 2025-09-27 moving to Moshi ADT.
     #! 2025-10-12 Remove UserSort. Use NamedSortRef where proper, UserSortRef when needed.
-    #usersorts::Dict{Symbol, Any}     = Dict{Symbol, Any}() #
 
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
@@ -54,8 +51,6 @@ _decldict_fields = (:namedsorts, :arbitrarysorts,
 Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
 
-# "Return dictionary of `UserSort`"
-# usersorts(dd::DeclDict)      = dd.usersorts
 "Return dictionary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
 "Return dictionary of `VariableDecl`"
@@ -147,8 +142,6 @@ arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryops(dd)[id]
 partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
 "Lookup feconstant with `id` in DeclDict."
 feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
-#"Lookup usersort with `id` in DeclDict."
-#usersort(dd::DeclDict, id::Symbol)       = usersorts(dd)[id]
 "Lookup useroperator with `id` in DeclDict."
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 

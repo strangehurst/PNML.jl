@@ -79,7 +79,7 @@ tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 decldict(c::FiniteIntRangeConstant) = c.declarationdicts
 
 # FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
-# We create a usersort, namedsort duo to match. Is expected to be an IntegerSort.
+# We create a namedsort duo to match. Is expected to be an IntegerSort.
 sortref(c::FiniteIntRangeConstant) = identity(c.sort)::AbstractSortRef
 
 "Special case to ` IntegerSort()`, it is part of the name, innit."
@@ -88,7 +88,6 @@ sortof(c::FiniteIntRangeConstant) = IntegerSort() # FiniteIntRangeConstant are a
 
 value(c::FiniteIntRangeConstant) = c.value
 (c::FiniteIntRangeConstant)() = value(c)
-
 
 """
 The only element of `DotSort` is `DotConstant`.

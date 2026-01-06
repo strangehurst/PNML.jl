@@ -34,7 +34,7 @@ struct Operator{S <: AbstractSortRef} <: AbstractOperator
     func::Union{Function, Type} # Apply `func` to `inexprs`:
     inexprs::Vector{AbstractTerm} #! TermInterface expressions some may be variables (not just ground terms).
     insorts::Vector{UserSortRef} # typeof(inexprs[i]) == eltype(insorts[i])
-    outsort::S # wraps IDREF Symbol -> NamedSort, AbstractSort, PartitionSort
+    outsort::S # wraps REFID Symbol
     metadata::Any
     declarationdicts::DeclDict
     #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])

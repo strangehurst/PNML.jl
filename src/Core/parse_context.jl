@@ -42,7 +42,6 @@ end
 
 
 """
-    fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort) -> fill_sort_tag!(ctx, tag, sort, dict)
     fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict) -> AbstractSortRef
 
 If not already in the declarations dictionary `dict`, add `sort` with key of `tag`.
@@ -60,12 +59,11 @@ function fill_sort_tag!(ctx::ParseContext, tag::Symbol, sort, dict::Base.Callabl
     end
     #!@show sort dict
     return @match dict begin
-        PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin, in a namedsort
-        PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of usersort, in a namedsort
+        PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin,
+        PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of SortRefs
         PNML.partitionsorts => PartitionSortRef(tag) # declaration
         PNML.arbitrarysorts => ArbitrarySortRef(tag) # declaration
-        _ => NamedSortRef(tag)                       # declaration
-        # usersort -> namedsort | partitionsort | arbitrary sort
+        _ => NamedSortRef(tag)
     end
 end
 

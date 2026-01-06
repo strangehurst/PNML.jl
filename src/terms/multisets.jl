@@ -196,13 +196,13 @@ function pnmlmultiset(basis::AbstractSortRef, ms::Multiset, ::Nothing; ddict::De
     PnmlMultiset{eltype(ms), typeof(basis)}(basis, ms, ddict)
 end
 
-# Expect `element` and `muti` subterms to have already been eval'ed to perform variable substitution.
+# Expect `element` and `mutli` subterms to have already been eval'ed to perform variable substitution.
 function pnmlmultiset(basis::AbstractSortRef, element, multi::Int=1; ddict::DeclDict)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
     # Should we test `issingletonmultiset` here?
 
-    if isa(basis, MultisetSort) # not usersort or namedsort, but definition
+    if isa(basis, MultisetSort)
         #^ Where/how is absence of sort loop checked?
         throw(ArgumentError("Cannot be a MultisetSort: found $basis for $(repr(element))"))
     end
