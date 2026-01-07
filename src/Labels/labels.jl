@@ -121,47 +121,6 @@ tag(label::PnmlLabel) = label.tag
 tag(p::Pair{Symbol, PnmlLabel}) = p.first
 elements(label::PnmlLabel) = label.elements
 
-# function Base.show(io::IO, labelvector::Vector{PnmlLabel})
-#     print(io, PNML.indent(io), "PnmlLabel[")
-#     io = PNML.inc_indent(io)
-#     for (i, label) in enumerate(labelvector)
-#         i > 1 && print(io, PNML.indent(io))
-#         print(io, "(", repr(tag(label)), ", ");
-#         #!@show elements(label)
-#         #!@show typeof(elements(label))
-#         PNML.dict_show(io, elements(label));
-#         print(")")
-#         i < length(labelvector) && print(io, "\n")
-#     end
-#     print(io, "]")
-# end
-
 function Base.show(io::IO, label::PnmlLabel)
     print(io, PNML.indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
-end
-
-#--------------------------------------
-#TODO this is more general, make a utiity (and use somewhere else)?
-"""
-    hastag(x, tagvalue::Union{Symbol, String, SubString{String}}) -> Bool
-Test anything with a `tag` accessor for equality with `tagvalue`.
-
-Usage:
-    `Iterators.filter(Fix2(hastag, :asymbol), iteratable)`
-"""
-hastag(l, tagvalue::Union{Symbol, String, SubString{String}}) = tag(l) == tagvalue
-
-function labels(iteratable, tag::Union{Symbol, String, SubString{String}})
-    isnothing(iteratable) && error("iteratable is nothing")
-    Iterators.filter(Fix2(hastag, tag), iteratable)
-end
-
-"Return label matching `tag`` or `nothing``."
-function get_label(iteratable, tag::Union{Symbol, String, SubString{String}})
-    first(labels(iteratable, tag)).second::PnmlLabel
-end
-
-"Return `true` if collection `iteratable` contains label with `tag`."
-function has_label(iteratable, tag::Union{Symbol, String, SubString{String}})
-    !isempty(labels(iteratable, tag))
 end
