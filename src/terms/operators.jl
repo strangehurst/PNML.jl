@@ -19,7 +19,7 @@ there are 4 kinds of operator declarations:
 each have different types.
 See decldictcore.jl
 
-sortdefinition(outsort) isa FEConstant, inexprs, insorts are empty.
+#~sortdefinition(outsort) isa FEConstant, inexprs, insorts are empty.
 
 
 eval(::FEXEx)
