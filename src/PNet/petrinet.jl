@@ -62,9 +62,8 @@ function Base.getproperty(pn::AbstractPetriNet, prop_name::Symbol)
 end
 
 nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
-
-#TODO Is redundant copy of id in petri net and pnml net needed/wanted?
 pid(petrinet::AbstractPetriNet)     = PNML.pid(pnmlnet(petrinet))
+name(petrinet::AbstractPetriNet)    = PNML.name(pnmlnet(petrinet))
 pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 
 #------------------------------------------------------------------------------------------
