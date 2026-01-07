@@ -24,7 +24,6 @@ using PNML, ..TestUtils, JET, XMLDict
     @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; parse_context=ctx)
     @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
     @test @inferred(pid(n)) === :place1
-    @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test_call initial_marking(n)
     #@show pntd, initial_marking(n)
@@ -55,7 +54,6 @@ end
     @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
 
     @test @inferred(pid(n)) === :place1
-    @test has_name(n)
     @test @inferred(name(n)) == "with text"
     @test has_labels(name(n)) == false
     @test has_labels([1 2 3]) == false
@@ -89,7 +87,7 @@ end
                    (:info, "add PnmlLabel :somelabel2 to :place1"),
                     parse_place(node, pntd; parse_context=ctx)::Place)
     @test pid(n) === :place1
-    @test has_name(n) == false
+    @test name(n) == ""
     @test PNML.has_labels(n) == true
     @test PNML.labelof(n, :nosuchlabel) == nothing
     #@show labels(n)

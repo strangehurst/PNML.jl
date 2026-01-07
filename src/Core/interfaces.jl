@@ -26,15 +26,6 @@ Return reference id symbol. Multiple objects may hold the same refid value.
 function refid end
 
 """
-    has_name(x) -> Bool
-
-Return true if there is a name.
-Some declarations (inside a label) have a name.
-Nodes (nets, pages, places, transitions, arcs) may optionally have a name (as a label).
-"""
-function has_name end
-
-"""
     name(x) -> String
 
 Return name String. Default to empty string.
@@ -354,8 +345,8 @@ function value_type end
 
 Return the sort of an object or type.
 
-Often implemented as `sortdefinition(namedsort(ddict, sortref(x)))`
-or other call of `sortdefinition`. Default implementation is `identity`.
+Often implemented as `sortdefinition(namedsort(ddict, sortref(x)))`.
+Default implementation is `identity`.
 
 We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.
 """
@@ -376,8 +367,7 @@ PnmlMultiset, Operator, Variable,
 function sortref end
 
 """
-    sortdefinition(::SortDeclaration) -> Sort
-    sortdefinition(::AbstractDeclaration) -> Sort
+    sortdefinition(::NamedSort) -> Sort
 
 Return concrete sort attached to a sort declaration object.
 
@@ -385,10 +375,6 @@ Dictionaries in a network-level [`DeclDict`](@ref) hold, among other things,
 `NamedSort`, `ArbitrarySort` and `PartitionSort` declarations.
 These declarations add an ID and name to a concrete sort,
 with the ID symbol used as the dictionary key.
-
-# Examples
-    sortdefinition(namedsort(decldict, refid))
-    sortdefinition(partitionsort(decldict, refid))
 """
 function sortdefinition end
 

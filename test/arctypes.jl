@@ -49,7 +49,7 @@ using PNML: isnormal, isinhibitor, isread, isreset
     @test isread(a) == isread(atl) == isread(arct)
 
     @test pid(a) === :a1
-    @test !has_name(a)
+    @test name(a) == ""
     @test inscription(a)(NamedTuple()) == 1
 end
 

@@ -74,12 +74,13 @@ end
 
 pid(o::AbstractPnmlObject)        = o.id
 
-#
-# When a thing may be nothing, any collection is expected to be non-empty.
-# Strings may be empty. Don't blame us when someone else objects.
-#
-has_name(o::AbstractPnmlObject)   = hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
-name(o::AbstractPnmlObject)       = has_name(o) ? text(o.namelabel) : ""
+function name(o::AbstractPnmlObject)
+    if hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
+        text(o.namelabel)
+    else
+        ""
+    end
+end
 
 # labels and toolspecinfos are vectors: isnothing vs isempty
 has_labels(::Any) = false

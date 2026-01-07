@@ -89,9 +89,8 @@ println("\nARC\n")
                   parse_arc(node, pntd; netdata, parse_context))
     @test typeof(a) <: Arc
     @test pid(a) === :arc1
-    @test has_name(a)
-    @test has_graphics(a)
     @test name(a) == "Some arc"
+    @test has_graphics(a)
     @test_call inscription(a)
     #@show a inscription(a)(NamedTuple())
     if ishighlevel(pntd) # assumes storttype of dot

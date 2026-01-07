@@ -9,7 +9,6 @@ The definitions are attached to PNML nets and/or pages using a PNML Label define
 abstract type AbstractDeclaration end
 
 pid(decl::AbstractDeclaration) = decl.id
-has_name(decl::AbstractDeclaration) = hasproperty(decl, :name)
 name(decl::AbstractDeclaration) = decl.name
 decldict(decl::AbstractDeclaration) = decl.declarationdicts
 

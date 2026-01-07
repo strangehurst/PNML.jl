@@ -88,8 +88,13 @@ toolinfos(net::PnmlNet)     = net.toolspecinfos
 has_labels(net::PnmlNet) = !isnothing(net.extralabels)
 labels(net::PnmlNet)     = net.extralabels
 
-has_name(net::PnmlNet) = hasproperty(net, :namelabel) && !isnothing(net.namelabel)
-name(net::PnmlNet)     = has_name(net) ? text(net.namelabel) : ""
+function name(net::PnmlNet)
+    if hasproperty(net, :namelabel) && !isnothing(net.namelabel)
+        text(net.namelabel)
+    else
+        ""
+    end
+end
 
 places(net::PnmlNet)         = values(placedict((net)))
 transitions(net::PnmlNet)    = values(transitiondict((net)))
@@ -216,7 +221,7 @@ end
 #------------------------------------------------------------------------------
 function Base.summary(net::PnmlNet)
     string(typeof(net), " id ", repr(pid(net)),
-            " name '", has_name(net) ? name(net) : "", "', ",
+            " name ", repr(name(net)), ", ",
             " type ", nettype(net), ", ",
             npages(net), " pages, ",
             ndeclarations(net), " declarations, ",

@@ -18,7 +18,6 @@ using PNML, ..TestUtils, JET, XMLDict
     n = @inferred Transition parse_transition(node, PnmlCoreNet(); parse_context)
     @test n isa Transition
     @test pid(n) === :transition1
-    @test has_name(n)
     @test name(n) == "Some transition"
     #@show condition(n)()
     @test condition(n)() isa Bool
