@@ -24,7 +24,6 @@ println("DELAY")
     #! This has Float64 and Int
     t = @test_logs((:info, "add PnmlLabel :delay to :t6"),
         parse_transition(node, pntd; parse_context)::Transition)
-    @test has_label(t, :delay) == true
 
     del = PNML.get_label(t, :delay)
     @test PNML.get_label(t, :delay) == del

@@ -45,13 +45,6 @@ Return iterator of labels attached to `x`.
 function labels end
 
 """
-    has_label(x, tag::Union{Symbol, String, SubString{String}) -> Bool
-
-Does `x` have any label with a matching `tag`.
-"""
-function has_label end
-
-"""
     get_label(x, tag::Symbol) -> PnmlLabel
 
 Return first label of `x` with a matching `tagvalue`.

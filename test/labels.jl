@@ -44,7 +44,6 @@ end
     #     @test tag(l) === :test1 || tag(l) === :test2
     # end
 
-    # @test_call has_label(lab, :test1)
 #    @test_call get_label(lab, :test1)
 
     # @test has_key(lab, :test1)

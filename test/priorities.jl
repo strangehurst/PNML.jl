@@ -15,12 +15,10 @@ println("PRIORITY")
 
     @test PNML.get_label(trans, :nosuchlabel) == nothing
     lab = PNML.get_label(trans, :priority)
-    @test PNML.has_label(trans, :priority) === true
     @test PNML.get_label(trans, :priority) === PNML.labels(trans)[:priority]
     @test PNML.get_label(trans, :priority) == lab != nothing
     @test PNML.priority_value(trans) ≈ 0.3
 
-    @test_call PNML.has_label(trans, :priority)
     @test_call PNML.get_label(trans, :priority)
     @test_call PNML.labels(trans)
     @test_call PNML.priority_value(trans)

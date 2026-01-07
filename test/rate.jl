@@ -8,8 +8,7 @@ println("RATE")
             pntd; parse_context)
     #@show lab = PNML.labels(trans)
 
-    @test has_label(trans, :rate) === true
-    @test get_label(trans, :rate) === labels(trans)[:rate] == PNML.get_label(trans, :rate)
+    @test get_label(trans, :rate) === labels(trans)[:rate]
     @test get_label(trans, :rate) !== nothing
     @test PNML.rate_value(trans) ≈ 0.3
     r = PNML.get_label(trans, :rate)
@@ -19,7 +18,6 @@ println("RATE")
     @test refid(sortref(r)) === :real
     @test sortof(r) isa RealSort
 
-    @test_call PNML.has_label(trans, :rate)
     @test_call PNML.get_label(trans, :rate)
     @test_call PNML.labels(trans)
     @test_call PNML.rate_value(trans)

@@ -90,17 +90,10 @@ toolinfos(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) ? o.toolspecin
 has_graphics(o::AbstractPnmlObject) = hasproperty(o, :graphics) && !isnothing(o.graphics)
 graphics(o::AbstractPnmlObject)     = o.graphics
 
-# Jet once needed a hint about `o`.
-function has_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
-    isnothing(o) && error("o is nothing")
-    return haskey(labels(o), tag)
-end
-
-#! function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
 """
     get_label(x, tag) -> Maybe{AbstractLabel}
 
-`x` is anyting that supports has_label/get_label,
+`x` is anyting that supports 'labels'.
 `tag` is the tag of the xml label element.
 """
 function get_label(x, tag::Union{Symbol, String, SubString{String}})
