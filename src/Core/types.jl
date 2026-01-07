@@ -82,10 +82,7 @@ function name(o::AbstractPnmlObject)
     end
 end
 
-# labels and toolspecinfos are vectors: isnothing vs isempty
-has_labels(::Any) = false
-has_labels(o::AbstractPnmlObject) = hasproperty(o, :extralabels) && !isnothing(o.extralabels)
-labels(o::AbstractPnmlObject)     = o.extralabels
+labels(o) = hasproperty(o, :extralabels) ? o.extralabels : nothing
 
 has_tools(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) && !isnothing(o.toolspecinfos)
 toolinfos(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) ? o.toolspecinfos : nothing
@@ -96,30 +93,24 @@ graphics(o::AbstractPnmlObject)     = o.graphics
 # Jet once needed a hint about `o`.
 function has_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
     isnothing(o) && error("o is nothing")
-    return has_labels(o) && haskey(labels(o), tag)
+    return haskey(labels(o), tag)
 end
 
-function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
-    isnothing(o) && error("o is nothing")
-    return has_labels(o) ? labels(o)[tag] : nothing
-end
-
+#! function get_label(o::AbstractPnmlObject, tag::Union{Symbol, String, SubString{String}})
 """
-    labelof(x, tag) -> Maybe{AbstractLabel}
+    get_label(x, tag) -> Maybe{AbstractLabel}
 
 `x` is anyting that supports has_label/get_label,
 `tag` is the tag of the xml label element.
 """
-function labelof(x, tag::Union{Symbol, String, SubString{String}})
-    if has_labels(x)
-        l = labels(x)::AbstractDict
-        return if haskey(l, tag)
-            @inbounds(l[tag])
-        else
-            nothing
-        end
+function get_label(x, tag::Union{Symbol, String, SubString{String}})
+    isnothing(x) && throw(ArgumentError("argument 'x' is nothing"))
+    l = labels(x)::AbstractDict
+    return if haskey(l, tag)
+        @inbounds(l[tag])
+    else
+        nothing
     end
-    return nothing
 end
 
 #--------------------------------------------

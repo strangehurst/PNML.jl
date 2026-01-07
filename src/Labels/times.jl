@@ -44,7 +44,7 @@ Return value of a `Time` label.  Missing time labels are defaulted to one.
 Expected label XML: `<time> <text>0.3</text> </time>`
 
 # Arguments
-    `t` is anything that supports `labelof(t, tag)`.
+    `t` is anything that supports `get_label(t, tag)`.
 """
 function time_value(t)
     label_value(t, :time, value_type(Time), one)::value_type(Time)

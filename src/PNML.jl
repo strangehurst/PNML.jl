@@ -107,7 +107,7 @@ export @xml_str, xmlnode, D
 @public pnmlmodel, pnmlnet
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
 @public namedsort
-@public labelof, transition_function, rates, mcontains
+@public transition_function, rates, mcontains
 
 Multisets.set_key_value_show()
 

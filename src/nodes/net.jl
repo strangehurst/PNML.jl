@@ -85,9 +85,6 @@ firstpage(net::PnmlNet)    = first(values(pagedict(net)))
 has_tools(net::PnmlNet) = !isnothing(net.toolspecinfos)
 toolinfos(net::PnmlNet)     = net.toolspecinfos
 
-has_labels(net::PnmlNet) = !isnothing(net.extralabels)
-labels(net::PnmlNet)     = net.extralabels
-
 function name(net::PnmlNet)
     if hasproperty(net, :namelabel) && !isnothing(net.namelabel)
         text(net.namelabel)
@@ -225,8 +222,7 @@ function Base.summary(net::PnmlNet)
             " type ", nettype(net), ", ",
             npages(net), " pages, ",
             ndeclarations(net), " declarations, ",
-            has_tools(net) ? length(toolinfos(net)) : 0, " toolinfos, ",
-            has_labels(net) ? length(labels(net)) : 0, " labels")::String
+            has_tools(net) ? length(toolinfos(net)) : 0, " toolinfos, ")::String
 end
 
 # No indent here.

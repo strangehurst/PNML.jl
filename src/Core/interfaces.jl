@@ -37,13 +37,6 @@ function name end
 #-------------------------------------------------------
 
 """
-    has_labels(x) -> Bool
-
-Does x have any labels.
-"""
-function has_labels end
-
-"""
     labels(x) -> Iterateable
     labels(x, tag::Union{Symbol, String, SubString{String}) -> Iterateable
 

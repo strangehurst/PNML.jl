@@ -69,10 +69,9 @@ end
    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(); parse_context)::Transition)
     @test pid(n) === :transition1
-    @test PNML.has_labels(n) == true
     @test elements(labels(n)[:somelabel2])[:c] == "value"
-    @test PNML.labelof(n, :somelabel2) != nothing
-    @test PNML.labelof(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :somelabel2) != nothing
+    @test PNML.get_label(n, :nosuchlabel) == nothing
     @test PNML.has_tools(n) == false
 end
 
@@ -112,6 +111,5 @@ end
     @test pid(n) === :rt1
     @test PNML.refid(n) === :t1
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
-    @test PNML.has_labels(n) == true
     @test elements(labels(n)[:somelabel2])[:c] == "value"
 end

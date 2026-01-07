@@ -18,12 +18,12 @@ using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm
 using PNML: namedsort, namedsorts, multisetsorts, multisetsorts
-using PNML: labelof, ToolParser, LabelParser, ParseContext
+using PNML: ToolParser, LabelParser, ParseContext
 
 import PNML: name
 import PNML: value_type
 import PNML: value, term, graphics, toolinfos, refid, tag, elements
-import PNML: has_graphics, get_label, has_label, has_labels, labels, declarations, decldict
+import PNML: has_graphics, get_label, has_label, labels, declarations, decldict
 import PNML:  arctype, isnormal, isinhibitor, isread, isreset, verify!
 
 using ..PnmlTypes # PNML PNTD
@@ -69,9 +69,9 @@ If there is a label `tag` in `n.extralabels`, return its value,
 else return a default value of the correct Type `type`.
 """
 function label_value(n::AbstractPnmlNode, tag::Symbol, type, default)
-    label = labelof(n, tag)
+    label = get_label(n, tag)
     if isnothing(label)
-        default(type)
+        default(type)::type
     else
         #@show label
         value(label)::type

@@ -44,7 +44,7 @@ Return value of a `Priority` label.  Missing priority labels are defaulted to on
 Expected label XML: `<priority> <text>0.3</text> </priority>`
 
 # Arguments
-    `t` is anything that supports `labelof(t, tag)`.
+    `t` is anything that supports `get_label(t, tag)`.
 """
 function priority_value(t)
     label_value(t, :priority, value_type(Priority), one)::value_type(Priority)

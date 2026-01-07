@@ -8,19 +8,17 @@ println("RATE")
             pntd; parse_context)
     #@show lab = PNML.labels(trans)
 
-    @test has_labels(trans) === true
     @test has_label(trans, :rate) === true
-    @test get_label(trans, :rate) === labels(trans)[:rate] == PNML.labelof(trans, :rate)
+    @test get_label(trans, :rate) === labels(trans)[:rate] == PNML.get_label(trans, :rate)
     @test get_label(trans, :rate) !== nothing
     @test PNML.rate_value(trans) ≈ 0.3
-    r = PNML.labelof(trans, :rate)
+    r = PNML.get_label(trans, :rate)
     @test occursin(r"^Rate", sprint(show, r))
     @test eltype(r) == Float64
     @test sortref(r) isa AbstractSortRef
     @test refid(sortref(r)) === :real
     @test sortof(r) isa RealSort
 
-    @test_call PNML.has_labels(trans)
     @test_call PNML.has_label(trans, :rate)
     @test_call PNML.get_label(trans, :rate)
     @test_call PNML.labels(trans)

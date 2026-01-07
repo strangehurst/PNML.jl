@@ -19,7 +19,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.PNet
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlnode, @xml_str
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
-    name, has_name, length, arity, tag, value, term, Labels.text, elements,
+    name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
     DictType, AnyElement, Parser.anyelement, Parser.xmldict,
     multiset
@@ -38,7 +38,7 @@ Multisets.set_key_value_show()
     RefTransition, reftransition, reftransitions, nreftransitions,
     Arc, arc, arcs, narcs, source, target, has_arc
 
-@reexport using PNML: has_labels, labels, varsubs
+@reexport using PNML: labels, varsubs
 
 @reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,

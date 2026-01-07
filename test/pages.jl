@@ -242,7 +242,3 @@ end
     @test PNML.value_type(PNML.Labels.Condition, pntd) <: Bool
     @test PNML.value_type(Rate, pntd) <: Float64
 end
-
-@testset "labelof page" for pntd in PnmlTypes.all_nettypes()
-
-end

@@ -42,7 +42,7 @@ Return value of a `Rate` label.  Missing rate labels are defaulted to zero.
 Expected label XML: `<rate> <text>0.3</text> </rate>`
 
 # Arguments
-    `t` is anything that supports `labelof(t, tag)`.
+    `t` is anything that supports `get_label(t, tag)`.
 """
 function rate_value(t)
     label_value(t, :rate, value_type(Rate), zero)::value_type(Rate)
