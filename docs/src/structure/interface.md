@@ -413,18 +413,6 @@ methods(PNML.text) # hide
 methods(PNML.value) # hide
 ```
 
-### has_labels - do any exist
-[`has_labels`](@ref)
-```@example methods
-methods(PNML.has_labels) # hide
-```
-
-### has_label - does a specific label exist
-[`has_label`](@ref)
-```@example methods
-methods(PNML.has_label) # hide
-```
-
 ### get_label - get a specific label
 [`get_label`](@ref)
 ```@example methods
