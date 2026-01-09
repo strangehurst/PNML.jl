@@ -10,16 +10,25 @@ end
 DocMeta.setdocmeta!(PNML, :DocTestSetup, :(using PNML); recursive=true)
 
 #println("Build documentation, repo = $(to_repo())")
-mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/physics"]),
-                           :tex => Dict("inlineMath" => [["\$", "\$"],
-                                                         ["\\(", "\\)"]],
-                                        "tags" => "ams",
-                                        "packages" => ["base",
-                                                       "ams",
-                                                       "autoload",
-                                                       "physics"],
-                        ),))
+# mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/physics"]),
+#                            :tex => Dict("inlineMath" => [["\$", "\$"],
+#                                                          ["\\(", "\\)"]],
+#                                         "tags" => "ams",
+#                                         "packages" => ["base",
+#                                                        "ams",
+#                                                        "autoload",
+#                                                        "physics"],
+#                         ),))
 
+mathengine = MathJax3(Dict(:loader => Dict("load" => ["[tex]/require", "[tex]/mathtools"]),
+    :tex => Dict("inlineMath" => [["\$", "\$"], ["\\(", "\\)"]],
+        "packages" => [
+            "base",
+            "ams",
+            "autoload",
+            "mathtools",
+            "require"
+        ])))
 
 pages=[
     "Petri Net Markup Language" => "index.md",
@@ -27,6 +36,7 @@ pages=[
     "Structure" => [
         "Intermediate Representation" => "structure/layers.md",
         "Petri Net Type Definition" => "structure/pntd.md",
+        "High Level Concepts"       => "structure/high_level.md",
         "Labels"                    => "structure/labels.md",
         "Traits"                    => "structure/traits.md",
         "Type Hierarchies"          => "structure/type_hierarchies.md",
@@ -47,11 +57,11 @@ pages=[
 # Building HTML documentation with Documenter
 ################################################################################
 
-makedocs(;
+makedocs(sitename="PNML.jl",
+         authors = "Jeff Hurst",
+         modules = [PNML],
          clean = true,
          doctest = false, # runtests.jl also does doctest
-         modules = [PNML],
-         authors = "Jeff Hurst",
          #repo="/home/jeff/Jules/PNML/{path}",
          #repo = Documenter.Remotes.GitHub("strangehurst","PNML.jl"),
          warnonly = [:docs_block, :missing_docs, :cross_references],
@@ -59,14 +69,13 @@ makedocs(;
          checkdocs = :all,
 
          format=Documenter.HTML(;
-                                edit_link=nothing,
+                                #edit_link=nothing,
                                 # CI means publish documentation on GitHub.
-                                prettyurls=get(ENV, "CI", nothing) == "true",
-                                canonical="https://strangehurst.github.io/PNML.jl",
-                                size_threshold_ignore=["library.md"],
+                                prettyurls = (get(ENV, "CI", nothing) == "true"),
+                                canonical = "https://strangehurst.github.io/PNML.jl",
+                                size_threshold_ignore = ["library.md"],
                                 mathengine,
                                 ),
-         sitename="PNML.jl",
          pages=pages,
          )
 
