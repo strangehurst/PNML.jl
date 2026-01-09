@@ -72,11 +72,13 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     return getfield(o, prop_name)
 end
 
-pid(o::AbstractPnmlObject)        = o.id
-
-function name(o::AbstractPnmlObject)
-    if hasproperty(o, :namelabel) && !isnothing(getfield(o, :namelabel))
-        text(o.namelabel)
+#! 2026-01-09 change pid, name from ::AbstractPnmlObject to ::Any
+pid(x) = hasproperty(x, :id) ? x.id : nothing
+function name(x)
+    if hasproperty(x, :namelabel) && !isnothing(x.namelabel)
+        text(x.namelabel)
+    elseif hasproperty(x, :name)
+        x.name
     else
         ""
     end
