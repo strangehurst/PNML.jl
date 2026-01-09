@@ -45,7 +45,7 @@ $(TYPEDEF)
 See [`Declarations.NamedSort`](@ref), [`Declarations.PartitionSort`](@ref) and
 [`Declarations.ArbitrarySort`] as concrete subtypes.
 """
-abstract type SortDeclaration <: AbstractDeclaration end
+abstract type SortDeclaration <: AbstractSort end #!<: AbstractDeclaration end
 
 """
 $(TYPEDEF)
@@ -55,7 +55,7 @@ $(TYPEDEF)
 
 `UserOperator` wraps REFID used to access `DeclDict`.
 """
-abstract type OperatorDeclaration <: AbstractDeclaration end
+abstract type OperatorDeclaration <: AbstractSort end #!<: AbstractDeclaration end
 
 """
 $(TYPEDEF)
