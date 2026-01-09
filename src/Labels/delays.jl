@@ -28,7 +28,7 @@ function delay_value(t;
             valtype::Type{<:Number} = Float64,
             content_parser::Base.Callable = delay_content_parser,
             default_value = tuple("closed", 0.0, 0.0))
-    label = labelof(t, tag)
+    label = get_label(t, tag)
     d = if isnothing(label)
         default_value
     else
@@ -38,7 +38,7 @@ function delay_value(t;
 end
 
 function delay_content_parser(label, value_type)
-    (tag, interval) = first(elements(label))
+    @show (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$(repr(tag))'")
     D()&& @show value_type
     #xmlns = PNML._attribute(interval, :xmlns)
