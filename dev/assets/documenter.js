@@ -31,12 +31,12 @@ requirejs.config({
 require([], function() {
 window.MathJax = {
   "tex": {
-    "tags": "ams",
     "packages": [
       "base",
       "ams",
       "autoload",
-      "physics"
+      "mathtools",
+      "require"
     ],
     "inlineMath": [
       [
@@ -51,7 +51,8 @@ window.MathJax = {
   },
   "loader": {
     "load": [
-      "[tex]/physics"
+      "[tex]/require",
+      "[tex]/mathtools"
     ]
   },
   "options": {
