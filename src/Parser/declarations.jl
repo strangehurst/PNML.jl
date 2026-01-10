@@ -70,15 +70,15 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
         throw(ArgumentError("missing <declaration><structure> element"))
     declarations = EzXML.firstelement(node) # Only child node must be `<declarations>`.
     check_nodename(declarations, "declarations")
-    unknown_decls = AbstractDeclaration[]
+    unknown_decls = Any[]
 
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
-            ns = parse_namedsort(child, pntd; parse_context=ctx)::SortDeclaration
+            ns = parse_namedsort(child, pntd; parse_context=ctx)
             PNML.namedsorts(ctx.ddict)[pid(ns)] = ns # fill_decl_dict! namedsort
         elseif tag == "namedoperator"
-            no = parse_namedoperator(child, pntd; parse_context=ctx) #::NamedOperator
+            no = parse_namedoperator(child, pntd; parse_context=ctx)
             PNML.namedoperators(ctx.ddict)[pid(no)] = no # fill_decl_dict! namedoperator
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd; parse_context=ctx)
@@ -193,10 +193,9 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
 end
 
 
-
-
 #=
-From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml
+From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml.
+
 <namedoperator id="id3" name="sum">
     <parameter> <!-- as many variabledecls as operator has variable subterms. -->
         <variabledecl id="id4" name="x"> <integer/> </variabledecl>
@@ -211,19 +210,21 @@ From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml
 </namedoperator>
 =#
 
-#########################################################################################
 """
     parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) -> VariableDeclaration
 
-Variables are used during firing a transition to identify tokens
+Variable declarations associate an `id`, `name` and `sort`.
+Stored in DeclDict with key of `id`.
+
+Variable declarationss may appear in the definition of an operator
+as well as directly in a declaration.
+
+'<variabledecl>s' are referenced by '<variable>s' in terms.
+
+Variables are used during enabling/firing a transition to identify tokens
 removed from input place markings, added to output place markings.
 
-Variables are used in evaluating an `<namedoperator.>`
-
-Variabledecls provide a name and sort.
-
-Variabledecls may appear in the definition of an operator
-as well as directly in a declaration.
+Variables are used to substitute tokens into expressions when evaluating terms.
 """
 function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "variabledecl")
@@ -242,12 +243,11 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) #? just a label?
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     nn = EzXML.nodename(node)
     unkid = register_idof!(parse_context.idregistry, node)
     name = attribute(node, "name")
     unkncontent = anyelement(unkid, node)
-    #!unkncontent = [anyelement(x) for x in EzXML.eachelement(node) if x !== nothing]
     @warn("parse unknown declaration: tag = $nn, id = $unkid, name = $name", unkncontent)
     return UnknownDeclaration(unkid, name, nn, unkncontent, parse_context.ddict)
 end
@@ -388,7 +388,7 @@ function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType, sortid, u2; pars
 end
 
 function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext) #! see parse_namedsort
-    parse_usersort(node, pntd; parse_context) #check_nodename(node, "usersort")
+    parse_usersort(node, pntd; parse_context)
 end
 
 
