@@ -178,10 +178,24 @@ with types
 `NamedOperator`, `FEConstant`, `PartitionElement`, `ArbitraryOperator`.
 These define operators of different types that are placed into separate dictionaries.
 
-#! CORRECT AbstractOperator type hierarchy that has `Operator` as concrete type.
 
-#! AbstractDeclarations and AbstractTerms are "parallel" hierarchies in the UML,
-#! with AbstractTerms divided into AbstractOperators and AbstractVariables.
+#! AbstractDeclarations and AbstractTerms are "parallel" semi-overlapping hierarchies
+#! in the UML, with AbstractTerms divided into AbstractOperators and AbstractVariables.
+
+#! AbstractTerms overlap with OperatorDeclaration and VariableDeclaration .
+#! AbstractSorts overlap with SortDeclaration.
+
+#! Consider OperatorDeclaration, SortDeclaration to be generators of concrete subtypes of
+#! AbstractOperator, AbstractSort.
+#! Without multiple inheritance, this cannot be expressed in a Julia type hiearchy.
+
+#! What the 'parse_*' of these <declaration> XML elements produce is
+#! a concrete AbstractOperator, AbstractSort.
+
+#! VariableDeclaration and Variable are not hiearchies.
+#! A `Varaible` is a reference to a `VariableDeclaration`,
+#! The variable declaration is a id, name, sort triplet.
+#! Where the sort is a SortRef or a sort declaration.
 
 useroperator(REFID) is used to locate the operator definition,
 when it is found in `feconstants()`, is a callable returning a `FEConstant` literal.

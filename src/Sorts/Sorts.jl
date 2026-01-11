@@ -1,4 +1,37 @@
+"""
+$(TYPEDEF)
+Part of the high-level pnml many-sorted algebra. See [`PNML.Labels.SortType`](@ref).
+
+NamedSort is a _SortDecl_ (SortDeclaration) that gives a name and id to a _Sort_.
+
+The pnml standard sometimes uses overlapping language. And explains little, expecting one
+to be knowledgeable about colored petri nets.
+
+From the 'primer': built-in sorts of Symmetric Nets are the following:
+booleans, integerrange, finite enumerations, cyclic enumerations,
+products, dots and partitions.
+
+And more sorts for HLPNG: integer, strings, list
+
+With additions we made: real.
+
+Oh, also ArbitrarySorts.
+
+#! XXX The `eltype` is expected to be a
+concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
+
+# Extras
+
+Notes:
+  - `NamedSort` is a Declarations.SortDeclaration
+  - [`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
+  - `PartitionSort` is called "Partition" in the standard.
+  - `SortRef` holds the id symbol of a concrete sort.
+  - We use sorts even for non-high-level nets.
+  - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
+"""
 module Sorts
+
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
@@ -25,37 +58,6 @@ export DotSort, BoolSort, NumberSort, IntegerSort, PositiveSort, NaturalSort, Re
 export EnumerationSort, CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort
 export ListSort, StringSort
 export make_sortref
-
-
-"""
-$(TYPEDEF)
-Part of the high-level pnml many-sorted algebra. See  [`PNML.Labels.SortType`](@ref).
-
-NamedSort is an AbstractTerm that declares a definition using an AbstractSort.
-The pnml standard sometimes uses overlapping language.
-
-From the 'primer': built-in sorts of Symmetric Nets are the following:
-booleans, integerrange, finite enumerations, cyclic enumerations, permutations, dots and partitions.
-
-And more sorts for HLPNG: integer, strings, list
-
-With additions we made: real.
-
-Oh, also ArbitrarySorts.
-
-The `eltype` is expected to be a
-concrete subtype of `Number` such as `Int`, `Bool` or `Float64`.
-
-# Extras
-
-Notes:
-- `NamedSort` is a Declarations.SortDeclaration
-[`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
-- `SortRef` holds the id symbol of a concrete sort.
-- Here 'type' means a 'term' from the many-sorted algebra.
-- We use sorts even for non-high-level nets.
-- Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
-"""
 
 include("sorts.jl")
 include("dots.jl")
