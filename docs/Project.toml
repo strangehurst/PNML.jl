@@ -1,3 +1,5 @@
+name = "PNML-Docs"
+
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -11,7 +13,6 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 SciMLLogging = "a6db7da4-7206-11f0-1eab-35f2a5dbe1d1"
 
 [sources]
-Metatheory = {rev = "ale/3.0", url = "https://github.com/JuliaSymbolics/Metatheory.jl.git"}
 PNML = {path = ".."}
 
 [compat]
