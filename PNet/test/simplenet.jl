@@ -155,7 +155,7 @@ end
     </pnml>
     """
     model = @inferred PNML.PnmlModel PNML.pnmlmodel(xml"""<?xml version="1.0"?>
-    <pnml xmlns="http://www.pnml.orginitial_marking\(/version-2009/grammar/pnml">
+    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="core">
         <page id="page0">
             <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
