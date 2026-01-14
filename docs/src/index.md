@@ -69,7 +69,7 @@ Notably `pnmlcore` and `nonstandard` are mapped to [`PnmlCoreNet`](@ref).
 
 `PnmlCoreNet` is the minimum level of meaning that any pnml file can hold.
 
-Further parsing of labels is specialized upon subtypes of [`PNML.AbstractPetriNet`](@ref).
+Further parsing of labels is specialized upon subtypes of `PNet.AbstractPetriNet`.
 See [Traits](@ref) for more details.
 
 If you want interchangability of pnml models, you will have to stick to

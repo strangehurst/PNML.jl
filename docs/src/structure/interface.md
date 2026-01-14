@@ -52,7 +52,7 @@ each described by a <net> tag and one or more <page> tags.
 It contains [`AbstractPnmlObject`](@ref) types that implement the Petri Net Graph (PNG).
 
 [^layers]:
-    `Page` inside a `PnmlNet` inside a `AbstractPetriNet`.
+    `Page` inside a `PnmlNet` inside a `PNet.AbstractPetriNet`.
     Where the Petri Net part is expressed as a Petri Net Type Definition XML schema
     file (.pntd) identified by a URI. Or would if our nonstandard extensions had schemas
     defined. Someday there will be such schemas.
@@ -69,14 +69,14 @@ Another future extension may be to use pages for distributed computing.
 The pnml standard permits that multiple pages canto be flattened
 (by [`flatten_pages!`](@ref)) to a single `Page` before use. We do that.
 
-[`AbstractPetriNet`](@ref) subtypes wrap and extend [`PnmlNet`](@ref).
+`PNet.AbstractPetriNet` subtypes wrap and extend [`PnmlNet`](@ref).
 Note the **Pnml** to **Petri**.
 
 `PnmlNet` and its contents can be considered an intermediate representation (IR).
-A concrete `AbstractPetriNet` type uses the IR to produce higher-level behavior.
+A concrete `PNet.AbstractPetriNet` type uses the IR to produce higher-level behavior.
 This is the level at which [`flatten_pages!`](@ref) and [`deref!`](@ref) operate.
 
-`AbstractPetriNet` is the level of most Petri Net Graph semantics.
+`PNet.AbstractPetriNet` is the level of most Petri Net Graph semantics.
 One example is enforcing integer, non-negative, positive.
 One mechanism used is type parameters.
 
@@ -119,21 +119,21 @@ interchangable with other tools.
 
 [VANESA](https://www.sciencedirect.com/science/article/pii/S0303264721001714#b8)
 
-See [`rate_value`](@ref) for a use of non-standard labels by [`SimpleNet`](@ref).
+See [`rate_value`](@ref) for a use of non-standard labels.
 Implements a stochastic petri net as part of the first working use-case.
 Demonstrates the expressiveness of pnml.
 
 ## Petri Net Graphs and Networks
 
 There are 3 top-level forms:
-  - [`AbstractPetriNet`](@ref) subtypes wraping a single `PnmlNet`.
+  - `PNet.AbstractPetriNet` subtypes wraping a single `PnmlNet`.
   - [`PnmlNet`](@ref)  maybe multiple pages.
-  - [`Page`](@ref) as the only page of the only net in a Abstractpetrinet.
+  - [`Page`](@ref) as the only page of the only net in a `Abstractpetrinet`.
 
 The simplest arrangement is a pnml model with a single <net> element having
 a single <page>. Any <net> may be flatten to a single page.
 
-The initial `AbstractPetriNet` subtypes are built using the assumption that
+The initial `PNet.AbstractPetriNet` subtypes are built using the assumption that
 multiple pages will be flattened to a single page.
 
 ## Simple Interface Methods
@@ -355,12 +355,6 @@ methods(PNML.deref_transition)  # hide
 ```@example methods
 methods(PNML.initial_marking)  # hide
 ```
-### initial_markings - return Vector of pairs
-[`initial_markings`](@ref)
-```@example methods
-methods(PNML.initial_markings)  # hide
-```
-
 ## Transition Related
 
 ### conditions - collect evaluated conditions
@@ -373,29 +367,6 @@ methods(PNML.conditions)  # hide
 ```@example methods
 methods(PNML.condition)  # hide
 ```
-### transition\_function - return `LVector` of `in_out` for all transitions
-[`transition_function`](@ref PNML.PNet.transition_function)
-```@example methods
-methods(PNML.PNet.transition_function)  # hide
-```
-### in\_out - tuple of `ins`, `outs` of one transition
-[`PNet.in_out`](@ref)
-```@example methods
-methods(PNML.PNet.in_out)  # hide
-```
-
-### ins - `LVector` of source arc evaluated inscriptions.
-[`PNet.ins`](@ref)
-```@example methods
-methods(PNML.PNet.ins)  # hide
-```
-
-### outs - `LVector` of target arc evaluated inscriptions.
-[`PNet.outs`](@ref)
-```@example methods
-methods(PNML.PNet.outs)  # hide
-```
-
 ## Labels - `Annotation` and `HLAnnotation`
 
 Both kinds (all labels) have `Graphics` and `ToolInfo`.

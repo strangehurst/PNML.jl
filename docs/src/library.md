@@ -34,17 +34,11 @@ Modules = [PNML.Labels]
 ```@autodocs
 Modules = [PNML.Parser]
 ```
-## PNML.PNet
-```@autodocs
-Modules = [PNML.PNet]
-```
 ## PNML.Expressions
 ```@autodocs
 Modules = [PNML.Expressions]
 ```
-
-
 ## Index
 ```@index
-Modules = [PNML, PNML.PnmlTypes, PNML.IDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser, PNML.PNet, PNML.Expressions]
+Modules = [PNML, PNML.PnmlTypes, PNML.IDRegistrys, PNML.Sorts, PNML.Declarations, PNML.PnmlGraphics, PNML.Labels, PNML.Parser, PNML.Expressions]
 ```

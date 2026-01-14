@@ -16,19 +16,19 @@ See [`PnmlTypes`](@ref) module page.
 There are levels:  Core (Place-Transition), Continuous and High-Level PNG (HLPNG).
 
 [`PnmlCoreNet`](@ref) is a concrete subtype of [`PnmlType`](@ref).
-`PnmlCoreNet` is used by some [`AbstractPetriNet`](@ref) concrete types ([`PNet.SimpleNet`](@ref)).
+`PnmlCoreNet` is used by some `PNet.AbstractPetriNet` concrete types (`PNet.SimpleNet`).
 
 [`ContinuousNet`](@ref) is a concrete type of [`AbstractContinuousNet`](@ref).
 `ContinuousNet` uses floating point marking and inscriptions.
 It is a nonstandard extension to the ISO standard.
 
 [`HLCoreNet`](@ref) is a concrete subtype of [`AbstractHLCore`](@ref).
-`HLCoreNet` is used by some `AbstractPetriNet` concrete types ([`PNet.HLPetriNet`](@ref)).
+`HLCoreNet` is used by some `PNet.AbstractPetriNet` concrete types (`PNet.HLPetriNet`).
 Think of it as a testable implementation of `AbstractHLCore`.
 
 Tries to represent the model (all models) at a structural level.
 Tries to avoid imposing semantics. It is a toolkit with a wide range of behavior.
-Those semantics should be part of [`AbstractPetriNet`](@ref).
+Those semantics should be part of `PNet.AbstractPetriNet`.
 Yes, the [`PnmlType`](@ref) in use selects some semantics and affects the toolkit.
 
 ```@example type
@@ -49,14 +49,10 @@ type_tree(PNML.PnmlTypes.PnmlType) # hide
 
 Todo: Continuous Petri Net
 
-## AbstractPetriNet
+## PNet.AbstractPetriNet
 
-[`AbstractPetriNet`](@ref) uses the Intermediate Representation's
+`PNet.AbstractPetriNet` uses the Intermediate Representation's
 [`PnmlNet`](@ref) and `PnmlType` to implement a Petri Net Graph (PNG).
-
-```@example type
-type_tree(PNML.AbstractPetriNet) # hide
-```
 
 ## AbstractPnmlObject
 
