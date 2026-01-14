@@ -1,5 +1,5 @@
 #
-
+metagraph(model::PnmlModel) = metagraph(first(nets(model)))
 function metagraph(net::PnmlNet)
     #! println("\nmetagraph $(pntd(net)) $(pid(net))")
     if !(narcs(net) > 0 && nplaces(net) > 0 && ntransitions(net) > 0)
