@@ -1,0 +1,5 @@
+[deps]
+Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
+PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
+Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
+ProfileCanvas = "efd6af41-a80b-495e-886c-e51b0c7d77a3"
