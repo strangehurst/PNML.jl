@@ -1,0 +1,38 @@
+name = "PNet"
+uuid = "b17e8b3e-4e57-4399-9a85-41e87fede9cd"
+version = "0.1.0"
+authors = ["Jeff <strangehurst@gmail.com>"]
+
+[deps]
+AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+LoggingExtras = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+MetaGraphsNext = "fa8bd995-216d-47f1-8a91-f3b68fbeb377"
+Multisets = "3b2b4ff1-bcff-5658-a3ee-dbcf1ce5ac09"
+NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
+SciMLLogging = "a6db7da4-7206-11f0-1eab-35f2a5dbe1d1"
+TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
+XMLDict = "228000da-037f-5747-90a9-8195ccbf91a5"
+
+[sources]
+PNML = {path = ".."}
+
+[compat]
+AutoHashEquals = "2.2.0"
+DocStringExtensions = "0.9.5"
+Graphs = "1.13.3"
+Logging = "1.11.0"
+LoggingExtras = "1.2.0"
+MetaGraphsNext = "0.7.5"
+Multisets = "0.4.5"
+NamedTupleTools = "0.14.3"
+OrderedCollections = "1.8.1"
+PNML = "0.0.28"
+SciMLLogging = "1.8.0"
+TermInterface = "2.0.0"
+XMLDict = "0.4.1"
+julia = "1.12.4"

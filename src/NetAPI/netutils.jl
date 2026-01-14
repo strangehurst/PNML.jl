@@ -15,7 +15,7 @@ adjacent_place(netdata::PnmlNetData, a::Arc) = adjacent_place(netdata, source(a)
 
 Iterate ids of input (arc's source) for output transition or place `id`.
 
-See [`PNet.in_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
+See `PNet.in_inscriptions` and `PNet.transition_function`.
 """
 preset(net::PnmlNet, id::Symbol) = begin
     Iterators.map(arcid -> source(arcdict(net)[arcid]), tgt_arcs(net, id))
@@ -27,7 +27,7 @@ end
 
 Iterate ids of output (arc's target) for source transition or place `id`.
 
-See [`PNet.out_inscriptions`](@ref) and [`transition_function`](@ref PNet.transition_function).
+See `PNet.out_inscriptions` and `PNet.transition_function``).
 """
 postset(net::PnmlNet , id::Symbol) = begin
     Iterators.map(arcid -> target(arcdict(net)[arcid]), src_arcs(net, id))
@@ -125,16 +125,6 @@ They are forbidden as a marking since the basis used is imaginary.
 Will not appear in input marking or output of fir!(incidence, enabled, marking).
 
 ===========================================================================#
-
-"""
-    rewrite(net)
-
-Rewrite TermInterface expressions.
-"""
-function rewrite(net::PnmlNet, marking)
-    # TODO!
-end
-
 
 ########################################################################################
 # firing rule

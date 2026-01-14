@@ -4,7 +4,7 @@ version = "0.0.28"
 authors = ["Jeff Hurst <strangehurst@users.noreply.github.com>"]
 
 [workspace]
-projects = ["test", "docs", "benchmark"]
+projects = ["test", "docs", "benchmark", "profile"]
 
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"

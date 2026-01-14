@@ -81,7 +81,7 @@ term(marking::Marking) = marking.term
 $(TYPEDSIGNATURES)
 Evaluate [`Marking`](@ref) instance by evaluating term expression.
 
-Place/Transition Nets (PNet, ContinuousNet) use collective token identity (map to `Number`).
+Place/Transition Nets (and ContinuousNet) use collective token identity (map to `Number`).
 High-level Nets (SymmetricNet, HLPNG) use individual token identity (colored petri nets).
 
 There is a multi-sorted algebra definition mechanism defined for HL Nets.

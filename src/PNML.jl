@@ -104,10 +104,10 @@ export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, Arbitrar
 export decldict
 export @xml_str, xmlnode, D
 
-@public pnmlmodel, pnmlnet
+@public pnmlmodel
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
 @public namedsort
-@public transition_function, rates, mcontains
+@public rates, mcontains
 
 Multisets.set_key_value_show()
 
@@ -204,8 +204,9 @@ include("Parser/Parser.jl")
 using .Parser
 
 # API Facade:
-include("PNet/PNet.jl")
-using .PNet
+#! 2026-01-12 Split PNet into a pPNetackage
+#! include("PNet/PNet.jl")
+#! using .PNet
 
 include("precompile.jl")
 

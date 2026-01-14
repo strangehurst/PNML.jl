@@ -92,6 +92,20 @@ end
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
+    labeled_places(net::PnmlNet)
+
+Return Vector of place_id=>marking_value.
+"""
+function labeled_places end
+
+function labeled_places(net::PnmlNet, markings)
+    # create vector place_id=>marking_value
+    # initial_markings(net) becomes vector of marking_value
+    [k=>v for (k,v) in zip(map(pid, PNML.places(net)), markings)]
+end
+
+
+"""
     enabled(::PnmlNet, marking) -> Vector{Bool}
 
 Return vector of booleans where `true` means the matching transition is enabled at current `marking`.

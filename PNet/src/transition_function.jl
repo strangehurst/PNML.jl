@@ -17,21 +17,6 @@ transition_function(net::PnmlNet) =
     [tid => in_out(net, tid) for tid in PNML.transition_idset(net)]
 
 """
-    labeled_places(net::PnmlNet)
-
-Return Vector of place_id=>marking_value.
-"""
-function labeled_places end
-
-labeled_places(petrinet::AbstractPetriNet) = labeled_places(pnmlnet(petrinet))
-
-function labeled_places(net::PnmlNet, markings=initial_markings(net))
-    # create vector place_id=>marking_value
-    # initial_markings(net) becomes vector of marking_value
-    [k=>v for (k,v) in zip(map(pid, PNML.places(net)), markings)]
-end
-
-"""
     civ(net, arcid) -> _cvt_inscription_value(pntd, arcdict[srcid], z, NamedTuple())
 """
 function civ(net, arcid)

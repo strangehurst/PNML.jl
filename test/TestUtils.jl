@@ -16,7 +16,7 @@ Multisets.set_key_value_show()
 @reexport using PNML.IDRegistrys
 @reexport using PNML.PnmlTypes
 @reexport using PNML.PnmlGraphics
-@reexport using PNML.PNet
+#!@reexport using PNML.PNet
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlnode, @xml_str
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, length, arity, tag, value, term, Labels.text, elements,
@@ -25,7 +25,7 @@ Multisets.set_key_value_show()
     multiset
 @reexport using PNML: toexpr, PnmlExpr
 
-@reexport using PNML: Context
+#@reexport using PNML: Context
 
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
 
@@ -51,20 +51,19 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: toolinfos
 
-@reexport using PNML: AbstractDeclaration, Declaration, refid
-@reexport using PNML: PNet.initial_marking, PNet.initial_markings, inscription, condition
+@reexport using PNML: AbstractDeclaration, Declaration, refid, inscription, condition
 
 @reexport using PNML: AbstractSort, SortType, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, ArbitrarySort,
-    sortof, sortref, sortdefinition, namedsort
+    sortof, sortref, sortdefinition, namedsort, initial_marking
 
 @reexport using PNML: NumberConstant, DotConstant, DotConstantEx, zero
-
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
-
 @reexport using PNML.Expressions
+
+#!@reexport using PNet: initial_markings
 
 "Run @test_opt, expect many dynamic dispatch reports."
 const runopt::Bool = false

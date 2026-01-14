@@ -1,5 +1,13 @@
-using PNML, ..TestUtils, JET
-using Test, Logging
+using PNet, JET, Test, Logging, Graphs, MetaGraphsNext
+import PNML
+using PNML: pnmlmodel, nets, pages, firstpage, places, transitions, arcs,
+      pid, xmlnode, @xml_str, ntransitions, nplaces, narcs,
+      has_place, place, has_transition, transition, has_arc, arc,
+      condition, inscription, rates, initial_marking,
+      PnmlModel, PnmlNet, Page, Place, Arc, Transition
+using PNML.Parser: xmlnode
+
+const target_modules = (PNet,)
 
 testlogger = TestLogger()
 println("SIMPLENET")
@@ -27,6 +35,7 @@ str1 = """
         </net>
     </pnml>
 """
+@show @__MODULE__
 
 @testset "SIMPLENET" begin
     @test_call target_modules=target_modules pnmlmodel(xmlnode(str1))
@@ -49,7 +58,7 @@ str1 = """
                      PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
                      PNML.reftransition_idset, PNML.refplace_idset]
         #@show accessor
-        @test accessor(PNet.pnmlnet(simp1)) == accessor(PNet.pnmlnet(simp)) # These 2 are expected to match.
+        @test accessor(pnmlnet(simp1)) == accessor(pnmlnet(simp)) # These 2 are expected to match.
     end
 
     @testset "inferred" begin
@@ -71,35 +80,35 @@ str1 = """
 
     # page, pnmlnet, petrinet, the 3 top=levels
     #@show typeof(first(pages(simp.net))) typeof(simp.net) typeof(simp)
-    @test first(pages(PNet.pnmlnet(simp))) isa Page
+    @test first(pages(pnmlnet(simp))) isa Page
     @test simp.net isa PnmlNet
-    @test simp isa PNML.AbstractPetriNet
+    @test simp isa AbstractPetriNet
 
     for top in [first(pages(simp.net)), simp.net]
 
         @test_call target_modules=target_modules places(top)
         for placeid in PNML.place_idset(top)
-            has_place(top, placeid)
-            @test_call has_place(top, placeid)
-            @test @inferred has_place(top, placeid)
-            p = @inferred Maybe{Place} place(top, placeid)
+            PNML.has_place(top, placeid)
+            @test_call PNML.has_place(top, placeid)
+            @test @inferred PNML.has_place(top, placeid)
+            p = @inferred Union{Nothing,PNML.Place} PNML.place(top, placeid)
         end
 
-        @test_call target_modules=target_modules transitions(top)
-        for t in transitions(top)
+        @test_call target_modules=target_modules PNML.transitions(top)
+        for t in PNML.transitions(top)
             @test PNML.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
-            @test @inferred Maybe{Bool} has_transition(top, pid(t))
-            t == @inferred Maybe{Transition} transition(top, pid(t))
+            @test @inferred Union{Nothing,Bool} has_transition(top, pid(t))
+            t == @inferred Union{Nothing,Transition} transition(top, pid(t))
             @test pid(t) ===  t.id
 
             @test @inferred(condition(t)()) !== nothing
         end
 
-        @test_call target_modules=target_modules arcs(top)
-        for a in arcs(top)
-            @test @inferred Maybe{Bool} has_arc(top, pid(a))
-            a == @inferred Maybe{Arc} arc(top, pid(a))
+        @test_call target_modules=target_modules PNML.arcs(top)
+        for a in PNML.arcs(top)
+            @test @inferred Union{Nothing,Bool} has_arc(top, pid(a))
+            a == @inferred Union{Nothing,Arc} arc(top, pid(a))
             @test pid(a) ===  a.id
                         @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
@@ -116,7 +125,7 @@ end
 # Used in precompile.
 @testset "simple ptnet" begin
     @show "precompile's SimpleNet"
-    @test PNML.SimpleNet(xml"""<?xml version="1.0"?>
+    @test SimpleNet(xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
             <name> <text>P/T Net with one place</text> </name>
@@ -132,7 +141,7 @@ end
             </arc>
             </page>
         </net>
-        </pnml>""") isa PNML.SimpleNet
+        </pnml>""") isa SimpleNet
 end
 
 @testset "rate" begin
@@ -145,8 +154,8 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
-    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+    model = @inferred PNML.PnmlModel PNML.pnmlmodel(xml"""<?xml version="1.0"?>
+    <pnml xmlns="http://www.pnml.orginitial_marking\(/version-2009/grammar/pnml">
         <net id="net0" type="core">
         <page id="page0">
             <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
@@ -154,10 +163,10 @@ end
         </net>
     </pnml>
     """)
-    net = @inferred first(nets(model))
-    simp = @inferred PNML.SimpleNet(net)
+    net = @inferred first(PNML.nets(model))
+    simp = @inferred SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
-    β = PNML.PNet.rates(simp)
+    β = rates(simp)
     @show β
     @test β == [:birth=>0.3]
 end
@@ -183,16 +192,16 @@ end
         </net>
     </pnml>
     """
-    model = @inferred PNML.PnmlModel pnmlmodel(xmlnode(str3))
+    model = @inferred PnmlModel PNML.pnmlmodel(PNML.Parser.xmlnode(str3))
     net1 = first(nets(model));          #@show typeof(net1)
-    simp = @inferred PNML.SimpleNet(net1); #@show typeof(simp)
+    simp = @inferred SimpleNet(net1); #@show typeof(simp)
 
     @show S = @inferred collect(PNML.place_idset(simp.net)) # [:rabbits, :wolves]
     @show T = @inferred collect(PNML.transition_idset(simp.net))
-    @show m₀ = PNML.initial_markings(simp.net)
-    @show input = PNML.input_matrix(simp.net)
-    @show PNML.output_matrix(simp.net)
-    @show dt = PNML.incidence_matrix(simp.net)
+    @show m₀ = initial_markings(simp.net)
+    @show input = input_matrix(pnmlnet(simp))
+    @show output_matrix(pnmlnet(simp))
+    @show dt = PNML.incidence_matrix(pnmlnet(simp))
 
     #@show lp = collect(PNML.labeled_places(net1))
     #@show lt = collect(PNML.labeled_transitions(net1))
@@ -223,7 +232,7 @@ end
     # @test Δ.death     == expected_transition_function.death
 
     expected_u0 = [10.0, 100.0] # initialMarking
-    @show u0 = PNML.initial_markings(simp.net)
+    @show u0 = initial_markings(simp.net)
     @test u0 == expected_u0
 
     expected_β = [:birth=>0.3, :predation=>0.015, :death=>0.7] # transition rate
@@ -231,8 +240,8 @@ end
     @show β
     @test β == expected_β
 
-    let net = simp.net
-        @show du = map(last, PNML.initial_markings(simp.net))
+    let net = pnmlnet(simp)
+        @show du = map(last, initial_markings(simp.net))
         #map(last, collect(du))
         @show valtype(du)
         @show rates = zeros(valtype(du), ntransitions(net)) # φ in paper
@@ -241,18 +250,18 @@ end
         # p : S → N^T is preset(net, place_id)
         # r^-1 : S → N^T is preset(net, place_id)
 
-        for (i, t) in enumerate(transitions(net))
+        for (i, t) in enumerate(PNML.transitions(net))
             @show PNML.rate_value(t)
-            @show [pid(p) for (j,p) in enumerate(places(net))]
+            @show [pid(p) for (j,p) in enumerate(PNML.places(net))]
             @show collect(PNML.preset(net, pid(t)))
             @show collect(PNML.postset(net, pid(t)))
-            for (j,p) in enumerate(places(net))
+            for (j,p) in enumerate(PNML.places(net))
                 @show collect(PNML.preset(net, pid(p)))
                 @show collect(PNML.postset(net, pid(p)))
             end
-            @show [pid(p) for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t))]
+            @show [pid(p) for (j,p) in enumerate(PNML.places(net)) if pid(p) in PNML.preset(net, pid(t))]
             rates[i] = PNML.rate_value(t) * prod(initial_marking(p) ^ input[i, j]
-                for (j,p) in enumerate(places(net)) if pid(p) in PNML.preset(net, pid(t)))
+                for (j,p) in enumerate(PNML.places(net)) if pid(p) in PNML.preset(net, pid(t)))
         end
         @show rates
         for j in 1:nplaces(net)
@@ -262,7 +271,6 @@ end
     end
 end
 
-using Graphs, MetaGraphsNext
 
 # String so that pntd can be embedded in the XML.
 const core_types = ("pnmlcore","ptnet",)
@@ -338,11 +346,11 @@ const ex_types = ("continuous",)
         </net>
     </pnml>
     """
-    anet = PNML.SimpleNet(xmlnode(str3))::PNML.AbstractPetriNet
+    anet = SimpleNet(PNML.Parser.xmlnode(str3))::AbstractPetriNet
     mg = PNML.metagraph(anet.net)
     mg2 = PNML.metagraph(anet)
 
-    m₀ = PNML.initial_markings(anet.net) #::LVector
+    m₀ = initial_markings(anet.net) #::LVector
     C  = PNML.incidence_matrix(anet.net) # Matrix of PnmlMultiset
     e  = PNML.enabled(anet.net, m₀)
 

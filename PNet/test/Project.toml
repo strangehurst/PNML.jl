@@ -1,0 +1,18 @@
+name = "PNet-Tests"
+
+[deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+MetaGraphsNext = "fa8bd995-216d-47f1-8a91-f3b68fbeb377"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+PNML = "1f34f301-fe8c-4464-8328-ff2334f05424"
+PNet = "b17e8b3e-4e57-4399-9a85-41e87fede9cd"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+PNML = {path = "../.."}
+PNet = {path = ".."}

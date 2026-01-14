@@ -141,8 +141,8 @@ end
 #-----------------------------------------------------------------
 
 """
-    HLPetriNet(ctx::Context, str::AbstractString)
-    HLPetriNet(ctx::Context, model::PnmlModel)
+    HLPetriNet(str::AbstractString)
+    HLPetriNet(model::PnmlModel)
 
 Construct Petri net from the first network in model.
 Construct model from string of valid pnml XML and possible LabelParser & ToolParser vectors.
@@ -157,16 +157,15 @@ $(TYPEDFIELDS)
 
 """
 struct HLPetriNet{C, PNTD<:PnmlType} <: AbstractPetriNet{PNTD}
-    ctx::C
     net::PnmlNet{PNTD}
 end
 
 function HLPetriNet(ctx, str::AbstractString)
-    HLPetriNet(ctx, pnmlmodel(ctx, xmlnode(str);
+    HLPetriNet(ctx, pnmlmodel(xmlnode(str);
                                 tp_vec=ToolParser[],
                                 lp_vec=LabelParser[]))
 end
-HLPetriNet(ctx, model::PnmlModel) = HLPetriNet(ctx, first(nets(model)))
+HLPetriNet(model::PnmlModel) = HLPetriNet(ctx, first(nets(model)))
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -214,20 +213,19 @@ referenceTransitions & referencePlaces, and merging pages into the first page.
 struct SimpleNet{PNTD} <: AbstractPetriNet{PNTD}
     id::Symbol # Redundant copy of the net's ID for dispatch.
     net::PnmlNet{PNTD}
-    metadata::Any #
 end
 
 # Method Cascade.
 # First two run the parser and can have addded tool and label plugins as context.
 # toolinfos => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
-SimpleNet(s::AbstractString; context...)  = SimpleNet(xmlnode(s); context...)
-SimpleNet(node::PNML.XMLNode; context...) = SimpleNet(PNML.Parser.pnmlmodel(node; context...))
+SimpleNet(s::AbstractString; kwargs...)  = SimpleNet(xmlnode(s); kwargs...)
+SimpleNet(node::PNML.XMLNode; kwargs...) = SimpleNet(PNML.Parser.pnmlmodel(node; kwargs...))
 
 # These two use the flattened 1st net of the PnmlModel.
-SimpleNet(model::PnmlModel; metadata=nothing) = SimpleNet(first(PNML.nets(model)); metadata)
-function SimpleNet(net::PnmlNet; metadata=nothing)
+SimpleNet(model::PnmlModel; kwargs...) = SimpleNet(first(PNML.nets(model)); kwargs...)
+function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)
-    SimpleNet(PNML.pid(net), net, metadata)
+    SimpleNet(PNML.pid(net), net)
 end
 
 #-------------------------------------------------------------------------------
