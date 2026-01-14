@@ -47,5 +47,5 @@ Examples marking, inscription condition, sorttype, declaration
 
 =#
 
-"Start as Singleton"
-struct Context end
+#"Start as Singleton"
+#struct Context end
