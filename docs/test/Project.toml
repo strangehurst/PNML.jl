@@ -1,1 +1,2 @@
-[deps]
+[compat]
+julia = "1.12.4"
