@@ -1,5 +1,8 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
 using OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("EXCEPTIONS")
 

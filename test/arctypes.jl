@@ -1,7 +1,10 @@
-using PNML, ..TestUtils, JET, NamedTupleTools
+using PNML, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
 # todo parse_arctype
+
+include("TestUtils.jl")
+using .TestUtils
 
 using PNML: isnormal, isinhibitor, isread, isreset
 

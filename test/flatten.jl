@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("FLATTEN")
 @testset "flatten" begin
@@ -53,7 +56,7 @@ println("FLATTEN")
     @test target(arc(net, :a22)) === :p3
     @test source(arc(net, :a23)) === :t3
 
-    @test PNML.post_flatten_verify(net; verbose=true)===nothing
+    @test PNML.post_flatten_verify(net, true)===nothing
     #@show PNML.vertex_codes(net)
     #@show PNML.vertex_labels(net)
 end

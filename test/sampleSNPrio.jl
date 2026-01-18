@@ -1,5 +1,8 @@
-using PNML, ..TestUtils, JET, OrderedCollections
+using PNML, JET, OrderedCollections
 #
+include("TestUtils.jl")
+using .TestUtils
+
 # Read a SymmetricNet with partitions & tuples from pnmlframework test file.
 # NB: This model is from part 2 of the ISO 15909 standard as informative.
 # From ePNK
@@ -23,7 +26,7 @@ println("-----------------------------------------"); flush(stdout)
             "Meta graph based on a Graphs.SimpleGraphs.SimpleDiGraph{Int64}")
     end
     #TODO more tests
-    #@test PNML.verify(net; verbose=true)
+    #@test PNML.verify(net, true)
 end
 
 println("\n-----------------------------------------")

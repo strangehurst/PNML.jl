@@ -1,6 +1,8 @@
-using PNML, ..TestUtils, JET
-
+using PNML, JET
 using OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 
 str1 = (tool="JARP", version="1.2", str = """
 <toolspecific tool="JARP" version="1.2">

@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET, InteractiveUtils, XMLDict, OrderedCollections
+using PNML, JET, InteractiveUtils, XMLDict, OrderedCollections
 using SciMLLogging: SciMLLogging, @SciMLMessage
 import EzXML
+
+include("TestUtils.jl")
+using .TestUtils
 
 @testset "CONFIG" begin
     @show PNML.CONFIG[]
@@ -21,14 +24,14 @@ end
         <c name="c2"/>
     </test>
     """
-    @test_call target_modules=target_modules firstchild(node, "a")
+    @test_call target_modules=t_modules firstchild(node, "a")
     @test_call EzXML.nodename(firstchild(node, "a"))
     @test EzXML.nodename(firstchild(node, "a")) == "a"
     @test firstchild(node, "a")["name"] == "a1"
     @test firstchild(node, "b") === nothing
     @test EzXML.nodename(firstchild(node, "c")) == "c"
 
-    @test_call target_modules=target_modules allchildren(node, "a")
+    @test_call target_modules=t_modules allchildren(node, "a")
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 

@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET, NamedTupleTools
+using PNML, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 # timed petri net is a metamodel
 

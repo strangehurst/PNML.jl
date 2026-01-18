@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, OrderedCollections
+using PNML, JET, OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("\n-----------------------------------------")
 println("test1.pnml")
@@ -22,9 +25,9 @@ println("-----------------------------------------\n")
     for n in PNML.nets(model)
         println("-----------------------------------------")
         println(summary(n))
-        @test PNML.verify(n; verbose=false)
+        @test PNML.verify(n, false)
         PNML.flatten_pages!(n; verbose=false)
-        @test PNML.verify(n; verbose=false)
+        @test PNML.verify(n, false)
         #Base.redirect_stdio(stdout=devnull, stderr=devnull) do
         Base.redirect_stdio(stdout=nothing, stderr=nothing) do #! debug
             #TODO use MetaGraph as base of a validation tool

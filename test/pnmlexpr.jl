@@ -1,4 +1,8 @@
-using PNML, ..TestUtils, JET, NamedTupleTools
+using PNML, JET, NamedTupleTools
+
+include("TestUtils.jl")
+using .TestUtils
+
 using EzXML: EzXML
 using XMLDict: XMLDict
 using ExproniconLite: JLCall, JLExpr, JLFor, JLIfElse, JLFunction,

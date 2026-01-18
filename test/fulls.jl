@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, OrderedCollections
+using PNML, JET, OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 
 #
 # copied from pnmlframework-2.2.16/pnmlFw-Tests/XMLTestFilesRepository/Oracle

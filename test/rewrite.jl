@@ -1,5 +1,8 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
 import Metatheory
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("REWRITE")
 ctx = PNML.parser_context()

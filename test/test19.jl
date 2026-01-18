@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, OrderedCollections
+using PNML, JET, OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 
 # from ePNK
 println("-----------------------------------------")

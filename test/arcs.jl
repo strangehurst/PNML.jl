@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, XMLDict
+using PNML, JET, XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 #---------------------------------------------
 # ARC

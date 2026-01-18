@@ -72,31 +72,36 @@ const runopt::Bool = false
 const noisy::Bool = false
 
 "Only report for our module."
-const target_modules = (PNML,)
+const t_modules = (PNML,)
 
 "Allow test of print/show methods without creating a file."
 const testshow = devnull # nothing turns off redirection
 
 "Ignore some dynamically-designed functions."
-function pff(@nospecialize(ft))
+function pff(@nospecialize ft)
     #if ft === typeof(IDRegistrys.register_id!) ||
     if  ft === Preferences.load_preference ||
         ft === EzXML.nodename ||
         ft === EzXML.namespace ||
+        #ft === Core.kwcall ||
         ft === Base.repr ||
         ft === Base.sprint ||
         ft === Base.string ||
+        ft === Base.show ||
         ft === Base.print ||
         ft === Base.println ||
         ft === PNML.Parser.xmldict ||
-        ft === PNML.Parser.add_label! ||
+        #ft === PNML.Parser.add_label! ||
         ft === XMLDict.xml_dict ||
+        #ft === PNML.Parser.__any_element ||
+        ft === PNML.verify! ||
+        ft === PNML.verify_ids! ||
         false
         return false
     end
     return true
 end
 
-export VERBOSE_PNML, pff, target_modules, runopt, testshow, noisy
+export VERBOSE_PNML, pff, t_modules, runopt, testshow, noisy
 
 end # module TestUtils

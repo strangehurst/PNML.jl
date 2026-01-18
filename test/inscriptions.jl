@@ -1,4 +1,6 @@
-using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
+
+include("TestUtils.jl")
+using .TestUtils
 using EzXML: EzXML
 using XMLDict: XMLDict
 

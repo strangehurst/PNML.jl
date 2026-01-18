@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET, NamedTupleTools
+using PNML, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("PRIORITY")
 @testset "get priority label $pntd" for pntd in PnmlTypes.all_nettypes()

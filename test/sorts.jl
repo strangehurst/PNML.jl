@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
 using InteractiveUtils
 using Printf
+
+include("TestUtils.jl")
+using .TestUtils
 
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()

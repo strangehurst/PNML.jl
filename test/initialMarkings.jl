@@ -1,4 +1,6 @@
-using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
+using PNML, JET
+include("TestUtils.jl")
+using .TestUtils, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
 
@@ -116,6 +118,33 @@ end
     #     end
     # end
 
+
+   @testset "placetype error" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+        #println("\nplacetype error")
+        node = xml"""
+        <hlinitialMarking>
+            <text>3`dot</text>
+            <structure>
+                <numberof>
+                    <subterm><numberconstant value="3"><positive/></numberconstant></subterm>
+                    <subterm><dotconstant/></subterm>
+                </numberof>
+            </structure>
+        </hlinitialMarking>
+        """
+        # numberof is an operator: natural number, element of a sort -> multiset
+        # subterms are in an ordered collection, first is a number, second an element of a sort
+        # This is a high-level integer, use the first part of this pair in contexts that want numbers.
+        ctx = PNML.parser_context()
+        sort = ArbitrarySort(:foo, "ArbSort", ctx.ddict)
+        PNML.fill_sort_tag!(ctx, :foo, sort) #~ test of method needed here
+
+        # Marking is a multiset in high-level nets with sort matching placetype, :dot.
+        # @show placetype = SortType("XXX", PNML.ArbitrarySortRef(:foo), ctx.ddict)
+
+        # mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
+    end
+
     # add two multisets: another way to express 3 + 2
     @testset "3`dot ++ 2'dot" for pntd in PnmlTypes.all_nettypes(ishighlevel)
         #println("\n\"3'dot ++ 2'dot\" $pntd")
@@ -165,10 +194,7 @@ end
         placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), ctx.ddict)
         mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:xxx)
         val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any}
-        #@show val NumberConstant(8, PNML.usersort(ctx.ddict, :positive), ctx.ddict)()
-        #@show PNML.usersort(ctx.ddict, :positive)
         @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive), ctx.ddict)()) == 1
-        #@show PNML.Parser.to_sort(PNML.basis(val); ctx.ddict)
         @test NumberConstant(8, NamedSortRef(:positive), ctx.ddict)() in multiset(val)
      end
 

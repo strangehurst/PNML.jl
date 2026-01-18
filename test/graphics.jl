@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
+
+include("TestUtils.jl")
+using .TestUtils
 
 @testset "coordinate" begin
     PNML.Coordinate(1, 2)

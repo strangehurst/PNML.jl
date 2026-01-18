@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
+
+include("TestUtils.jl")
+using .TestUtils
 
 @testset "Show" begin
     node = xml"""<?xml version="1.0"?>
@@ -37,9 +40,9 @@ end
             </net>
         </pnml>
     """
-    @test_logs(match_mode=:all, pnmlmodel(emptypage) )
-    @test_opt target_modules=(@__MODULE__,) pnmlmodel(emptypage)
-    @test_call broken=false target_modules=target_modules pnmlmodel(emptypage)
+    @test_logs(match_mode=:all, pnmlmodel(emptypage))
+    @test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
+    @test_opt target_modules=t_modules pnmlmodel(emptypage)
  end
 
 @testset "multiple empty net types" begin
@@ -211,7 +214,7 @@ println("-----------------------------------------")
 
     net = first(netvec)::PnmlNet{<:SymmetricNet}
 
-    @test PNML.verify(net; verbose=false)
+    @test PNML.verify(net, false)
 
     @test pages(net) isa Base.Iterators.Filter
     @test only(allpages(net)) == only(pages(net))
@@ -235,7 +238,7 @@ println("-----------------------------------------")
     @test PNML.nrefplaces(net) == 0
     @test isempty(PNML.refplaces(net))
 
-    @test_call broken=false target_modules=target_modules pnmlmodel(testfile)
+    @test_call broken=false target_modules=t_modules pnmlmodel(testfile)
     @test_call nets(model)
 
     @test !isempty(repr(PNML.netdata(net)))

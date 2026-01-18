@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
 using InteractiveUtils
 using Printf
+
+include("TestUtils.jl")
+using .TestUtils
 
 #!
 #! TODO add tests for variable declarations

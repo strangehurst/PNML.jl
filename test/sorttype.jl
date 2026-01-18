@@ -1,6 +1,9 @@
-using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
+using PNML, JET, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 @testset "type $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
     # Add usersort, namedsort duo as test context.

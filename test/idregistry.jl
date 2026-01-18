@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, Logging
+using PNML, JET, Logging
+
+include("TestUtils.jl")
+using .TestUtils
 
 ctx = PNML.parser_context()
 IDRegistrys.reset_reg!(ctx.idregistry)
@@ -15,9 +18,9 @@ register_id!(ctx.idregistry, :p1)
 @test_throws PNML.DuplicateIDException PNML.register_id!(ctx.idregistry, :p1)
 @test isregistered(ctx.idregistry, :p1) # still registered
 
-@test_opt target_modules=(@__MODULE__,) IDRegistry()
+@test_opt target_modules=t_modules IDRegistry()
 @test_call IDRegistry()
-@test_opt target_modules=(@__MODULE__,) register_id!(ctx.idregistry, :p1)
+@test_opt target_modules=t_modules register_id!(ctx.idregistry, :p1)
 @test_opt !isregistered(ctx.idregistry, :p1)
 #@test_opt broken=false IDRegistrys.reset_reg!(ctx.idregistry, )
 

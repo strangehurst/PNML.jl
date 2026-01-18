@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
+
+include("TestUtils.jl")
+using .TestUtils
 
 println("RATE")
 @testset "get rate label $pntd" for pntd in PnmlTypes.all_nettypes()

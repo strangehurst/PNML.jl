@@ -1,5 +1,8 @@
-using PNML, ..TestUtils, JET
+using PNML, JET
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
+
+include("TestUtils.jl")
+using .TestUtils
 
 function verify_sets(net::PnmlNet)
     println("\nverify sets and structure ++++++++++++++++++++++")
@@ -123,20 +126,20 @@ def_funs = (
 
 @testset "by pntd $pntd" for pntd in PnmlTypes.core_nettypes()
     for fun in type_funs
-        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
+        @test_opt function_filter=pff target_modules=t_modules fun(pntd)
         @test_call fun(pntd)
 
         pt = typeof(pntd)
-        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pt)
+        @test_opt function_filter=pff target_modules=t_modules fun(pt)
         @test_call fun(pt)
 
-        @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(net)
+        @test_opt function_filter=pff target_modules=t_modules fun(net)
         @test_call fun(net)
         @test fun(net) isa Type
     end
 
     #for fun in def_funs
-    #    @test_opt function_filter=pff target_modules=(@__MODULE__,) fun(pntd)
+    #    @test_opt function_filter=pff target_modules=t_modules fun(pntd)
     #    @test_call fun(pntd)
     #end
 end
@@ -183,7 +186,7 @@ end
     @test isempty(setdiff(arc_idset(net), expected_a))
     @test isempty(setdiff(arc_idset(firstpage(net)), expected_a))
     @test isempty(setdiff(arc_idset(net), arc_idset(firstpage(net))))
-    @test_call target_modules=target_modules arc_idset(net)
+    @test_call target_modules=t_modules arc_idset(net)
     @test_call arc_idset(firstpage(net))
     for a ∈ expected_a
         @test a ∈ arc_idset(net)
@@ -193,7 +196,7 @@ end
     @test isempty(setdiff(place_idset(net), expected_p))
     @test isempty(setdiff(place_idset(firstpage(net)), expected_p))
     @test isempty(setdiff(place_idset(net), place_idset(firstpage(net))))
-    @test_call target_modules=target_modules place_idset(net)
+    @test_call target_modules=t_modules place_idset(net)
     @test_call place_idset(firstpage(net))
     for p ∈ expected_p
         @test p ∈ place_idset(net)
@@ -202,7 +205,7 @@ end
     @test (sort ∘ collect)(transition_idset(net)) == expected_t
     @test (sort ∘ collect)(transition_idset(firstpage(net))) == expected_t
     @test (sort ∘ collect)(transition_idset(net)) == (sort ∘ collect)(transition_idset(firstpage(net)))
-    @test_call target_modules=target_modules transition_idset(net)
+    @test_call target_modules=t_modules transition_idset(net)
     @test_call transition_idset(firstpage(net))
     for t ∈ expected_t
         @test t ∈ transition_idset(net)
@@ -213,7 +216,7 @@ end
     @test (sort ∘ collect)(reftransition_idset(net)) == expected_rt
     @test (sort ∘ collect)(reftransition_idset(firstpage(net))) == expected_rt
     @test (sort ∘ collect)(reftransition_idset(net)) == (sort ∘ collect)(reftransition_idset(firstpage(net)))
-    @test_call target_modules=target_modules reftransition_idset(net)
+    @test_call target_modules=t_modules reftransition_idset(net)
     @test_call reftransition_idset(firstpage(net))
     for rt ∈ expected_rt
         @test rt ∈ reftransition_idset(net)
@@ -224,7 +227,7 @@ end
     @test (sort ∘ collect)(refplace_idset(net)) == expected_rp
     @test (sort ∘ collect)(refplace_idset(firstpage(net))) == expected_rp
     @test (sort ∘ collect)(refplace_idset(net)) == (sort ∘ collect)(refplace_idset(firstpage(net)))
-    @test_call target_modules=target_modules refplace_idset(net)
+    @test_call target_modules=t_modules refplace_idset(net)
     @test_call refplace_idset(firstpage(net))
     for rp ∈ expected_rp
         @test rp ∈ refplace_idset(net)

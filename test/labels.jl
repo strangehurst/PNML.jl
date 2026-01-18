@@ -1,13 +1,13 @@
-using PNML, ..TestUtils, JET, NamedTupleTools, OrderedCollections
+using PNML, JET, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 @testset "text $pntd" for pntd in PnmlTypes.core_nettypes()
     @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
-
-
-
 
 #@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
     # lab = PnmlLabel[]
@@ -73,7 +73,7 @@ function test_unclaimed(pntd, xmlstring::String)
     reg2 = IDRegistry()
 
     nodeid = Symbol(EzXML.nodename(node))
-    u = Parser.xmldict(node) # tag is a string
+    u = Parser.xmldict(node)::LittleDict
     l = PnmlLabel(nodeid, u, parse_context.ddict)
     a = anyelement(nodeid, node)
 
@@ -81,9 +81,9 @@ function test_unclaimed(pntd, xmlstring::String)
     @test l isa PnmlLabel
     @test a isa AnyElement
 
-    @test_opt target_modules=(@__MODULE__,) Parser.xmldict(node)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff PnmlLabel(nodeid,u,parse_context.ddict)
-    @test_opt target_modules=(@__MODULE__,) function_filter=pff Parser.anyelement(nodeid, node)
+    @test_opt target_modules=t_modules Parser.xmldict(node)
+    @test_opt target_modules=t_modules function_filter=pff PnmlLabel(nodeid,u,parse_context.ddict)
+    @test_opt target_modules=t_modules function_filter=pff Parser.anyelement(nodeid, node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.xmldict(node)

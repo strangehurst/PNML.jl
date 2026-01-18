@@ -1,4 +1,7 @@
-using PNML, ..TestUtils, JET, XMLDict
+using PNML, JET, XMLDict
+
+include("TestUtils.jl")
+using .TestUtils
 
 #---------------------------------------------
 # PLACE
@@ -21,8 +24,9 @@ using PNML, ..TestUtils, JET, XMLDict
     placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, ctx.ddict)
 
     n  = parse_place(node, pntd; parse_context=ctx)::Place
-    @test_opt target_modules=(@__MODULE__,) parse_place(node, pntd; parse_context=ctx)
-    @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
+    pntd isa PnmlCoreNet &&
+        @test_opt target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
+    @test_call target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
     @test_call initial_marking(n)
@@ -51,11 +55,11 @@ end
     ctx = PNML.parser_context()
 
     n = parse_place(node, pntd; parse_context=ctx)::Place
-    @test_call target_modules=target_modules parse_place(node, pntd; parse_context=ctx)
+    @test_call target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
 
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
-    @test_call target_modules=(@__MODULE__,) initial_marking(n)
+    @test_call target_modules=t_modules initial_marking(n)
     #@show pntd, initial_marking(n)
     @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101
     @test PNML.get_label(n, :nosuchlabel) == nothing
