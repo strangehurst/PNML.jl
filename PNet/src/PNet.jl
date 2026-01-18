@@ -35,7 +35,6 @@ export labeled_transitions, counted_transitions
 
 include("petrinet.jl")
 include("transition_function.jl")
-include("metagraph.jl")
 include("firing_rule.jl")
 
 end # module PNet
