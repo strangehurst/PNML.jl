@@ -5,6 +5,45 @@ using Printf
 include("TestUtils.jl")
 using .TestUtils
 
+@testset "parser_context" begin
+    println("parser_context")
+    pntd = PnmlCoreNet()
+    ctx = PNML.parser_context()::PNML.ParseContext
+    ddict = ctx.ddict
+    @test_call target_modules=t_modules PNML.NamedSort(:X, "X", PositiveSort(), ddict)
+    @test_opt target_modules=t_modules function_filter=pff PNML.NamedSort(:X, "X", PositiveSort(), ddict)
+
+    @test_call target_modules=t_modules PNML.fill_sort_tag!(ctx, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
+    @test_opt target_modules=t_modules function_filter=pff PNML.fill_sort_tag!(ctx, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
+    builtin_sorts = ((:integer, "Integer", Sorts.IntegerSort()),
+                    (:natural, "Natural", Sorts.NaturalSort()),
+                    (:positive, "Positive", Sorts.PositiveSort()),
+                    (:real, "Real", Sorts.RealSort()),
+                    (:bool, "AbstractSortRefBool", Sorts.BoolSort()),
+                    (:null, "Null", Sorts.NullSort()),
+                    (:dot, "Dot", Sorts.DotSort(ctx.ddict)), #users can overrid
+                    )
+    for (tag, name, sort) in builtin_sorts
+        #@show typeof(sort)
+        nsort = Declarations.NamedSort(tag, name, sort, ctx.ddict)
+        @test_call target_modules=t_modules PNML.fill_sort_tag!(ctx, tag, nsort)
+        @test_opt target_modules=t_modules function_filter=pff PNML.fill_sort_tag!(ctx, tag, nsort)
+    end
+
+
+    @test_call target_modules=t_modules PNML.ParseContext()
+    @test_opt target_modules=t_modules function_filter=pff PNML.ParseContext()
+
+    let ctx = PNML.ParseContext()
+        @test_call target_modules=t_modules  PNML.fill_nonhl!(ctx)
+        @test_call target_modules=t_modules  PNML.fill_labelp!(ctx)
+        @test_opt target_modules=t_modules function_filter=pff  PNML.fill_nonhl!(ctx)
+        @test_opt target_modules=t_modules function_filter=pff  PNML.fill_labelp!(ctx)
+    end
+
+    @test_call target_modules=t_modules PNML.parser_context()
+    @test_opt target_modules=t_modules function_filter=pff PNML.parser_context()
+end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
     #println("\nparse_sort $pntd")

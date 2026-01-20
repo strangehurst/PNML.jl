@@ -7,7 +7,7 @@ using PNML: pnmlmodel, nets, pages, firstpage, places, transitions, arcs,
       PnmlModel, PnmlNet, Page, Place, Arc, Transition
 using PNML.Parser: xmlnode
 
-const target_modules = (PNet,)
+const t_modules = (PNML,PNet)
 
 testlogger = TestLogger()
 println("SIMPLENET")
@@ -35,10 +35,10 @@ str1 = """
         </net>
     </pnml>
 """
-@show @__MODULE__
+#@show t_modules
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=target_modules pnmlmodel(xmlnode(str1))
+    @test_call target_modules=t_modules pnmlmodel(xmlnode(str1))
     model = @test_logs(match_mode=:any,
                        (:info, "add PnmlLabel :structure to :p3"),
                        (:info, "add PnmlLabel :frog to :p3"),
@@ -48,10 +48,10 @@ str1 = """
     simp1 = @inferred SimpleNet SimpleNet(model)
     simp  = @inferred SimpleNet SimpleNet(net0)
 
-    @test_opt target_modules=(@__MODULE__,) SimpleNet(net0)
+    @test_opt target_modules=t_modules SimpleNet(net0)
     @test_call broken=false SimpleNet(net0)
 
-    @test_opt target_modules=(@__MODULE__,) SimpleNet(model)
+    @test_opt target_modules=t_modules SimpleNet(model)
     @test_call broken=false SimpleNet(model)
 
     for accessor in [PNML.pid,
@@ -86,7 +86,7 @@ str1 = """
 
     for top in [first(pages(simp.net)), simp.net]
 
-        @test_call target_modules=target_modules places(top)
+        @test_call target_modules=t_modules places(top)
         for placeid in PNML.place_idset(top)
             PNML.has_place(top, placeid)
             @test_call PNML.has_place(top, placeid)
@@ -94,7 +94,7 @@ str1 = """
             p = @inferred Union{Nothing,PNML.Place} PNML.place(top, placeid)
         end
 
-        @test_call target_modules=target_modules PNML.transitions(top)
+        @test_call target_modules=t_modules PNML.transitions(top)
         for t in PNML.transitions(top)
             @test PNML.ispid(pid(t))(pid(t))
             @test_call has_transition(top, pid(t))
@@ -105,7 +105,7 @@ str1 = """
             @test @inferred(condition(t)()) !== nothing
         end
 
-        @test_call target_modules=target_modules PNML.arcs(top)
+        @test_call target_modules=t_modules PNML.arcs(top)
         for a in PNML.arcs(top)
             @test @inferred Union{Nothing,Bool} has_arc(top, pid(a))
             a == @inferred Union{Nothing,Arc} arc(top, pid(a))
@@ -347,8 +347,8 @@ const ex_types = ("continuous",)
     </pnml>
     """
     anet = SimpleNet(PNML.Parser.xmlnode(str3))::AbstractPetriNet
-    mg = PNML.metagraph(anet.net)
-    mg2 = PNML.metagraph(anet)
+    mg = PNML.metagraph(pnmlnet(anet))
+    #! mg2 = PNML.metagraph(anet)
 
     m₀ = initial_markings(anet.net) #::LVector
     C  = PNML.incidence_matrix(anet.net) # Matrix of PnmlMultiset

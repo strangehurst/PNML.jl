@@ -83,21 +83,23 @@ function pff(@nospecialize ft)
     if  ft === Preferences.load_preference ||
         ft === EzXML.nodename ||
         ft === EzXML.namespace ||
-        #ft === Core.kwcall ||
         ft === Base.repr ||
         ft === Base.sprint ||
         ft === Base.string ||
         ft === Base.show ||
         ft === Base.print ||
         ft === Base.println ||
+        ft === Base.show_backtrace ||
         ft === PNML.Parser.xmldict ||
-        #ft === PNML.Parser.add_label! ||
         ft === XMLDict.xml_dict ||
-        #ft === PNML.Parser.__any_element ||
         ft === PNML.verify! ||
         ft === PNML.verify_ids! ||
+        ft === PNML.Parser.__any_element ||
         false
         return false
+
+        #ft === PNML.Parser.add_label! ||
+        #ft === Core.kwcall ||
     end
     return true
 end

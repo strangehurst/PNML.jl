@@ -42,7 +42,7 @@ end
     """
     @test_logs(match_mode=:all, pnmlmodel(emptypage))
     @test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
-    @test_opt target_modules=t_modules pnmlmodel(emptypage)
+    @test_opt broken=false target_modules=t_modules pnmlmodel(emptypage)
  end
 
 @testset "multiple empty net types" begin

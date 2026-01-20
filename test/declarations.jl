@@ -67,6 +67,8 @@ end
     """
 
     ctx = PNML.Parser.parser_context()::PNML.ParseContext
+    @test_call target_modules=t_modules PNML.namedsorts(ctx.ddict)
+    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(ctx.ddict)
 
         base_decl_length = length(PNML.namedsorts(ctx.ddict))
         decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),

@@ -111,37 +111,18 @@ net = first(nets(model))
 #@show net
 verify_sets(net)
 
-type_funs = (
-    #! PNML.condition_value_type,
-    #! PNML.inscription_value_type,
-    #! PNML.marking_value_type,
-    #! PNML.rate_value_type,
-    )
-
-def_funs = (
-            #!Labels.default_inscription,
-            #!Labels.default_marking, #! needs ids
-            #!Labels.default_condition,
-            )
-
 @testset "by pntd $pntd" for pntd in PnmlTypes.core_nettypes()
-    for fun in type_funs
-        @test_opt function_filter=pff target_modules=t_modules fun(pntd)
-        @test_call fun(pntd)
-
-        pt = typeof(pntd)
-        @test_opt function_filter=pff target_modules=t_modules fun(pt)
-        @test_call fun(pt)
-
-        @test_opt function_filter=pff target_modules=t_modules fun(net)
-        @test_call fun(net)
-        @test fun(net) isa Type
+    for ot in (PNML.Coordinate, Inscription, PNML.Labels.Condition, Marking,
+                Priority, Rate, PNML.Labels.Time)
+        @test_opt function_filter=pff target_modules=t_modules PNML.value_type(ot, pntd)
+        @test_call PNML.value_type(ot, pntd)
     end
 
-    #for fun in def_funs
-    #    @test_opt function_filter=pff target_modules=t_modules fun(pntd)
-    #    @test_call fun(pntd)
-    #end
+    # default test is not page specific
+    # for ot in (Inscription, PNML.Labels.Condition, Marking)
+    #     @test_opt function_filter=pff target_modules=t_modules PNML.default(ot, XXX)
+    #     @test_call PNML.default(ot, XXX)
+    # end
 end
 
 exp_arc_ids           = [:a11, :a12, :a21, :a22, :a31, :a311]

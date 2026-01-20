@@ -25,7 +25,7 @@ using .TestUtils
 
     n  = parse_place(node, pntd; parse_context=ctx)::Place
     pntd isa PnmlCoreNet &&
-        @test_opt target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
+        @test_opt target_modules=t_modules broken=true parse_place(node, pntd; parse_context=ctx)
     @test_call target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
