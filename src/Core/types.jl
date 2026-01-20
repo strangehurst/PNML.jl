@@ -73,14 +73,21 @@ function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
 end
 
 #! 2026-01-09 change pid, name from ::AbstractPnmlObject to ::Any
-pid(x) = hasproperty(x, :id) ? x.id : nothing
+pid(x) = x.id::Symbol
+
+"""
+    name(x) -> String
+
+If `x` has a `namelabel`,return its `text`,
+else return any `name` field. Default to `string()`
+"""
 function name(x)
     if hasproperty(x, :namelabel) && !isnothing(x.namelabel)
         text(x.namelabel)
     elseif hasproperty(x, :name)
         x.name
     else
-        ""
+        string()
     end
 end
 
