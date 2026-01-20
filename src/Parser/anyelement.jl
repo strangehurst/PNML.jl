@@ -5,9 +5,11 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(tag::Symbol, node::XMLNode)::AnyElement
-    xd = xmldict(node)
-    AnyElement(tag, xd) # wrap a `DictType`
+    xd = xmldict(node)::Union{DictType, String, SubString{String}}
+    return __any_element(tag, xd)
 end
+
+__any_element(t, d) = AnyElement(t, d) #! does dynamic dispatch
 
 """
     xmldict(node::XMLNode) -> Union{DictType, String, SubString{String}, Vectr{Any}}
@@ -15,40 +17,12 @@ end
 Return tuple holding a well formed XML tree as parsed by `XMLDict.xml_dict`.
 Symbols for attribute key, strings for element/child keys and strings for value of leaf.
 
-`tag` is the name of the XML element that is "unparsed". It is the root of the tree.
-
 See: [`anyelement`](@ref),
-[`AnyElement`](@ref),[`PnmlLabel`](@ref), [`Labels.Structure`](@ref).
+[`AnyElement`](@ref),[`PnmlLabel`](@ref)
 """
 function xmldict(node::XMLNode)
     xd = XMLDict.xml_dict(node, DictType; strip_text=true)
-    #@show typeof(xd) xd
-    # if xd isa AbstractDict
-    #     #@show collect(keys(xd))
-    #     for (k,v) in pairs(xd)
-    #         #@show k, typeof(v)
-    #         if k isa Union{Symbol, AbstractString}
-    #             if v isa Vector
-    #                 #@show k, typeof(v)
-    #                 #@show length(v)
-    #                 for x in v
-    #                     @show typeof(x), x
-    #                 end
-    #             else
-    #                 @show k, typeof(v), v
-    #             end
-    #         else # is DictType
-    #             @show k, collect(keys(v))
-    #             v isa AbstractString && @show k, v
-    #         end
-    #     end
-    # elseif xd isa AbstractString
-    #     @show xd
-    # else
-    #     error("xd isa $(typeof(xd))")
-    # end
-    #println("------------------------")
-    return xd #! Use whatever ::PNML.XDVT #! Union{DictType, String, SubString{String}}
+    return xd::Union{DictType, String, SubString{String}}
     # empty dictionarys are a valid thing.
 end
 
