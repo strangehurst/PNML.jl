@@ -9,7 +9,7 @@ There must be at least 1 Page for a valid pnml model.
 See [`PnmlNet`](@ref)
 """
 @kwdef mutable struct Page{PNTD <: PnmlType} <: AbstractPnmlObject
-    net::RefValue{<:AbstractPnmlNet} # PnmlNet{PNTD} #todo net::PnmlNet ==> pagedict netdata decldict
+    net::RefValue{<:AbstractPnmlNet}
     pntd::PNTD
     id::Symbol
     namelabel::Maybe{Name} = nothing
@@ -80,7 +80,7 @@ function Base.show(io::IO, page::Page)
     print(io, ")")
 end
 
-function verify(page::Page; verbose::Bool, idreg::IDRegistry)
+function verify(page::Page, verbose::Bool, idreg::IDRegistry)
     errors = String[]
     verify!(errors, page, verbose, idreg)
     isempty(errors) ||
@@ -89,7 +89,7 @@ function verify(page::Page; verbose::Bool, idreg::IDRegistry)
 end
 
 function verify!(errors, page::Page, verbose::Bool , idreg::IDRegistry)
-    verbose && println("## verify $(typeof(page)) $(pid(page))");
+    verbose && println("## verify $(typeof(page)) $(pid(page))")
     !isregistered(idreg, pid(page)) &&
         push!(errors, string("page ", repr(pid(page)), " not registered")::String)
 

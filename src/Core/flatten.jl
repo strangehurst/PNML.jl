@@ -44,7 +44,7 @@ function flatten_pages!(net::PnmlNet; trim::Bool = true, verbose::Bool = CONFIG[
 end
 
 "Verify a `PnmlNet` after it has been flattened or is otherwise expected to be a single-page net."
-function post_flatten_verify(net::PnmlNet;
+function post_flatten_verify(net::PnmlNet,
                           trim::Bool = true,
                           verbose::Bool = CONFIG[].verbose)
     verbose && @info "post_flatten_verify"

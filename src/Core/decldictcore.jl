@@ -32,7 +32,6 @@ Each keyed by REFID symbols.
 
     # Use an REFID symbol as a network-level "global" to reference
     # SortDeclaration or OperatorDeclaration.
-
     #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
     #! 2025-09-27 moving to Moshi ADT.
     #! 2025-10-12 Remove UserSort. Use NamedSortRef where proper, UserSortRef when needed.
@@ -40,16 +39,14 @@ Each keyed by REFID symbols.
     useroperators::Dict{Symbol, Any} = Dict{Symbol, Any}() # Advanced users define ops?
 end
 
-_decldict_fields = (:namedsorts, :arbitrarysorts,
-                    :multisetsorts, :productsorts,
-                    :namedoperators, :arbitraryoperators,
-                    :variabledecls,
-                    :partitionsorts, :partitionops, :feconstants,
-                    :useroperators)
-
 # Explicit propeties allows ignoring metadata.
-Base.isempty(dd::DeclDict) = all(isempty, Iterators.map(Fix1(getproperty,dd), _decldict_fields))
-Base.length(dd::DeclDict)  = sum(length,  Iterators.map(Fix1(getproperty,dd), _decldict_fields))
+__dd_fields(dd) = Iterators.map(Fix1(getproperty, dd), (:namedsorts, :arbitrarysorts,
+                        :multisetsorts, :productsorts, :partitionsorts,
+                        :namedoperators, :arbitraryoperators, :useroperators,
+                        :partitionops, :feconstants, :variabledecls))
+
+Base.isempty(dd::DeclDict) = all(isempty, __dd_fields(dd))
+Base.length(dd::DeclDict)  = sum(length,  __dd_fields(dd))
 
 "Return dictionary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
@@ -234,9 +231,9 @@ function operator(dd::DeclDict, opid::Symbol)
 end
 
 """
-    verify(dd::DeclDict; verbose::Bool, idreg::IDRegistry) -> Bool
+    verify(dd::DeclDict, verbose::Bool, idreg::IDRegistry) -> Bool
 """
-function verify(dd::DeclDict; verbose::Bool, idreg::IDRegistry)
+function verify(dd::DeclDict, verbose::Bool, idreg::IDRegistry)
     errors = String[]
     verify!(errors, dd, verbose, idreg)
     isempty(errors) ||

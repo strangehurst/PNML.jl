@@ -23,6 +23,7 @@ A "multiset sort over a basis sort is interpreted as
     extralabels::LittleDict{Symbol,Any} = nothing
     declarationdicts::DeclDict = DeclDict()
     #todo net::PnmlNet{PNTD}
+    #net::RefValue{<:AbstractPnmlNet}
 end
 
 initial_marking(place::Place) = (place.initialMarking)()
@@ -47,7 +48,7 @@ function Base.show(io::IO, place::Place)
 end
 
 function verify!(errors, p::Place, verbose::Bool , idreg::IDRegistry)
-    verbose && println("## verify Place{$(sortref(p))} $(pid(p))");
+    verbose && println("## verify Place{$(sortref(p))} $(pid(p))")
     !isregistered(idreg, pid(p)) &&
         push!(errors, string("place ", repr(pid(p)), " not registered")::String)
 
@@ -83,6 +84,7 @@ mutable struct Transition  <: AbstractPnmlNode
     "Cache of variable substitutons for this transition"
     varsubs::Vector{NamedTuple}
     declarationdicts::DeclDict
+    #net::RefValue{<:AbstractPnmlNet}
 end
 
 decldict(transition::Transition) = transition.declarationdicts
@@ -113,7 +115,7 @@ function Base.show(io::IO, trans::Transition)
 end
 
 function verify!(errors, t::Transition, verbose::Bool , idreg::IDRegistry)
-    verbose && println("## verify Transition $(pid(t))");
+    verbose && println("## verify Transition $(pid(t))")
     !isregistered(idreg, pid(t)) &&
         push!(errors, string("transition ", repr(pid(t)), " not registered")::String)
 
@@ -141,6 +143,7 @@ $(TYPEDFIELDS)
     extralabels::LittleDict{Symbol,Any}
     #todo net::PnmlNet
     declarationdicts::DeclDict
+    #net::RefValue{<:AbstractPnmlNet}
 end
 
 """
@@ -209,7 +212,7 @@ function Base.show(io::IO, arc::Arc)
 end
 
 function verify!(errors, a::Arc, verbose::Bool , idreg::IDRegistry)
-    verbose && println("## verify Transition $(pid(a))");
+    verbose && println("## verify Transition $(pid(a))")
     !isregistered(idreg, pid(a)) &&
         push!(errors, string("arc ", repr(pid(a)), " not registered")::String)
 
@@ -233,6 +236,7 @@ struct RefPlace <: ReferenceNode
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
     declarationdicts::DeclDict
+    #net::RefValue{<:AbstractPnmlNet}
 end
 
 #-------------------
@@ -250,13 +254,14 @@ struct RefTransition <: ReferenceNode
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
     declarationdicts::DeclDict
+    #net::RefValue{<:AbstractPnmlNet}
 end
 
 function Base.show(io::IO, r::ReferenceNode)
     print(io, nameof(typeof(r)), "(", repr(pid(r)), ",  ", repr(refid(r)), ")")
 end
 function verify!(errors, r::ReferenceNode, verbose::Bool , idreg::IDRegistry)
-    verbose && println("## verify $(typeof(r)) $(pid(r))");
+    verbose && println("## verify $(typeof(r)) $(pid(r))")
     !isregistered(idreg, pid(r)) &&
         push!(errors, string("arc ", repr(pid(r)), " not registered")::String)
 

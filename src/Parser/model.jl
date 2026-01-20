@@ -118,7 +118,7 @@ function parse_net(node::XMLNode;
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
     #~ --------------------------------------------------------------
-    PNML.verify(net; verbose=CONFIG[].verbose)
+    PNML.verify(net, CONFIG[].verbose)
 
     # Ground terms used to set initial markings can be rewritten and evaluated here.
     # 0-arity operator means empty variable substitution, i.e. constant.
@@ -178,7 +178,7 @@ function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; parse_contex
     # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     declaration = parse_declaration!(parse_context, decls, pntd)::Declaration
     @assert PNML.decldict(declaration) === parse_context.ddict
-    #PNML.verify(PNML.decldict(declaration); idreg=parse_context.idregistry, verbose=true) #
+    #PNML.verify(PNML.decldict(declaration), idreg=parse_context.idregistry, verbose=true) #
 
     # Collect all the toolspecinfos at net level (if any exist). Enables use in later parsing.
     toolspecinfos = find_toolinfos!(nothing, node, pntd, parse_context)::Maybe{Vector{ToolInfo}}
@@ -230,7 +230,7 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
         extralabels[tag] =
             parse_context.labelparser[tag](child, pntd; parse_context, parentid)
     else
-        xd = xmldict(child)
+        xd = xmldict(child)::LittleDict
         l = PnmlLabel(tag, xd, parse_context.ddict)
         #CONFIG[].warn_on_unclaimed &&
         @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l

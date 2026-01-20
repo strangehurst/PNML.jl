@@ -145,9 +145,8 @@ reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
 """
 Error if any diagnostic messages are collected. Especially intended to detect semantc error.
 """
-function verify(net::PnmlNet; verbose::Bool)
-    verbose &&
-        println("## verify $(typeof(net)) $(pid(net))"); flush(stdout)
+function verify(net::PnmlNet, verbose::Bool)
+    verbose && println("## verify $(typeof(net)) $(pid(net))")
     errors = String[]
     verify!(errors, net, verbose, registry_of(net))
     isempty(errors) || error("verify(net) $(pid(net)) error(s):\n ", join(errors, ",\n "))
@@ -162,14 +161,14 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
     # extralabels
 
     # Are the things with PNML IDs in the IDRegistry?
-    verify_id!(errors, "net id", (net,), idreg)
-    verify_id!(errors, "pages id", pages(net), idreg)
-    verify_id!(errors, "allpages id", allpages(net), idreg)
-    verify_id!(errors, "places id", places(net), idreg)
-    verify_id!(errors, "transition id", transitions(net), idreg)
-    verify_id!(errors, "arcs id", arcs(net), idreg)
-    verify_id!(errors, "refplaces id", refplaces(net), idreg)
-    verify_id!(errors, "reftransitions id", reftransitions(net), idreg)
+    verify_ids!(errors, "net id", (net,), idreg)
+    verify_ids!(errors, "pages id", pages(net), idreg)
+    verify_ids!(errors, "allpages id", allpages(net), idreg)
+    verify_ids!(errors, "places id", places(net), idreg)
+    verify_ids!(errors, "transition id", transitions(net), idreg)
+    verify_ids!(errors, "arcs id", arcs(net), idreg)
+    verify_ids!(errors, "refplaces id", refplaces(net), idreg)
+    verify_ids!(errors, "reftransitions id", reftransitions(net), idreg)
 
     verify!(errors, decldict(net), verbose, idreg)
 
@@ -202,15 +201,16 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
 end
 
 """
-    verify_id!(errors::Vector{String}, str, iterable, idreg::IDRegistry) -> Vector{String}
+    verify_ids!(errors, str, iterable, idreg::IDRegistry) -> Vector{String}
 
 Iterate over `iterable` testing that `pid` is registered in `idreg`.
-`str` used in message appended to `errors` vector.
+`str` used in message appended to `errors` vector of strings.
 """
-function verify_id!(errors::Vector{String}, str::AbstractString, iterable, idreg::IDRegistry)
+function verify_ids!(errors, str::AbstractString, iterable, idreg::IDRegistry)
     for x in iterable
-        !isregistered(idreg, pid(x)) &&
-            push!(errors, string(str, " ", repr(pid(x)), " not registered")::String)
+        if !isregistered(idreg, pid(x))
+            push!(errors, string(str, " ", pid(x), " not registered")::String)
+        end
     end
 end
 

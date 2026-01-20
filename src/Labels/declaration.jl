@@ -27,13 +27,12 @@ function Base.show(io::IO, d::Declaration)
     show(io, d.graphics); print(io, ", ")
     show(io, d.toolspecinfos); print(io, ", ")
     show(io, decldict(d))
-    print(io, ")")
+    return print(io, ")")
 end
 
 function verify!(errors, decl::Declaration, verbose::Bool, idreg::PNML.IDRegistry)
-    verbose && println("## verify Declaration $(decl.text)")
-    isempty(decl) &&
-        push!(errors, string("declaration is empty: $(repr(decl))")::String)
-
+    if isempty(decl)
+        push!(errors, string("declaration is empty: $decl")::String)
+    end
     return errors
 end
