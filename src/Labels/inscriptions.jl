@@ -70,9 +70,9 @@ PNML.value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort)
 PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}
 
 function PNML.value_type(::Type{Inscription}, pntd::AbstractHLCore)
-    error("value_type(::Type{Inscription}, $pntd) undefined.")
-    # Base.show_backtrace(stdout, stacktrace())
-    # PnmlMultiset{<:Any}
+    @error("value_type(::Type{Inscription}, $pntd) undefined.") #! XXX TODO XXX
+    #Base.show_backtrace(stdout, stacktrace())
+    eltype(DotSort) #! XXX TODO XXX
 end
 
 function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)

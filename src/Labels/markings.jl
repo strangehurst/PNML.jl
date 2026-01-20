@@ -115,9 +115,9 @@ PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::
 
 # These are networks were the tokens have individual identities.
 function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
-    error("value_type(::Type{Marking}, $pntd) undefined.") #! XXX TODO XXX
-    # Base.show_backtrace(stdout, stacktrace())
-    # PnmlMultiset{<:Any}
+    @error("value_type(::Type{Marking}, $pntd) undefined.") #! XXX TODO XXX
+    #Base.show_backtrace(stdout, stacktrace())
+    eltype(DotSort) #! XXX TODO XXX
 end
 
 PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}
