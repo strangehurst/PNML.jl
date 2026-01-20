@@ -41,13 +41,13 @@ function Base.show(io::IO, ti::ToolInfo)
 end
 
 function verify!(errors, v::Vector{T}, verbose::Bool , idreg::PNML.IDRegistry) where T
-    verbose && println("## verify $(typeof(v))");
+    verbose && println("## verify $(typeof(v))")
     foreach(t -> verify!(errors, t, verbose, idreg),  v)
     return errors
 end
 
-function verify!(errors, t::ToolInfo, verbose::Bool , idreg::PNML.IDRegistry)
-    verbose && println("## verify $(typeof(t)) $(repr(name(t))) $(repr(version(t)))");
+function verify!(errors, t::ToolInfo, verbose::Bool, idreg::PNML.IDRegistry)
+    verbose && println("## verify $(typeof(t)) $(repr(name(t))) $(repr(version(t)))")
     isempty(name(t)) &&
         push!(errors, string("ToolInfo must have non-empty name")::String)
     isempty(version(t)) &&
