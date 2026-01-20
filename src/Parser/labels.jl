@@ -605,16 +605,14 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return [`PNML.Labels.Structure`](@ref) holding an XML <structure>.
-Should be inside of an PNML label.
-A "claimed" label usually elids the <structure> level (does not call this method).
+TODO For future support in non-High-Level.
 """
 function parse_structure(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
     check_nodename(node, "structure")
-    @warn "parse_structure is not a well defined thing, $pntd" xmldict(node) parse_context.ddict
+    @warn "parse_structure is not implemented for $pntd " xmldict(node)
     # tuple(EzXML.nodename(node), xd::Union{DictType, String, SubString{String}})
     #PNML.Labels.Structure(nname, d; parse_context.ddict) #TODO anyelement
-    error("parse_structure not any good, man")
+    error("parse_structure is not implemented for $pntd")
 end
 
 function parse_rate(node::XMLNode, pntd::PnmlType; parse_context::ParseContext, parentid)

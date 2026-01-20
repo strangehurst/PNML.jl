@@ -14,13 +14,6 @@ using .TestUtils
 #         </tuple>
 #      </structure>
 #     """
-#     # expected structure: tuple -> subterm -> all -> usersort -> declaration
-
-#     stru = PNML.parse_structure(node, pntd)
-#     @test stru isa PNML.Structure
-#     @test tag(stru) == :structure
-#     axn = elements(stru)
-#     @test axn isa DictType
 
 #     tup = axn["tuple"]
 #     sub = tup["subterm"]
