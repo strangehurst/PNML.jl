@@ -3,13 +3,7 @@
 #--------------------------------------------
 
 "Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `xmldict`."
-const DictType = LittleDict{Union{Symbol,String}, Any}
-
-"""
-    XMLDict Value Type, what `XMLDict.xml_dict` returns.
-    Note that there may be Arrays holding repeated tags's values in the dictionary.
-"""
-const XDVT = Union{DictType, String, SubString, Vector{Union{DictType,String,SubString}}}
+const DictType = LittleDict{Union{Symbol,String}, Any} #Union{DictType, String, SubString{String}}}
 
 tag(d::DictType) = first(keys(d)) # String or Symbol
 
@@ -56,13 +50,12 @@ interior nodes values are `Union{DictType, Vector{DictType}}`
 
 See [`DictType`](@ref).
 """
-@auto_hash_equals struct AnyElement
+@auto_hash_equals struct AnyElement{T}
     # Tag of node enclosing the
     tag::Symbol
     # LittleDict{Union{Symbol,String}, Any}  returned by `xmldict`.
     # We hope/promise the following is the Type of ALL values in dictionary.
-    elements::LittleDict{Union{Symbol,String},
-                         Union{DictType, String, SubString{String}, Vector{Any}}}
+    elements::T #LittleDict{Union{Symbol,String}, Union{DictType, String, SubString{String}, Vector{Any}}}
 end
 
 tag(a::AnyElement) = a.tag
@@ -83,6 +76,7 @@ function Base.show(io::IO, ae::AnyElement)
     print(io, "AnyElement(", repr(tag(ae)), ", ")
     print(inc_indent(io), elements(ae)) # what XMLDict produced
     print(io, ")")
+    return nothing
 end
 
 #--------------------------------------------
