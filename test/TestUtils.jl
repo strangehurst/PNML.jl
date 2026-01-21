@@ -23,7 +23,7 @@ Multisets.set_key_value_show()
     graphics, has_graphics,
     DictType, AnyElement, Parser.anyelement, Parser.xmldict,
     multiset
-@reexport using PNML: toexpr, PnmlExpr
+@reexport using PNML: toexpr, PnmlExpr, decldict
 
 #@reexport using PNML: Context
 
@@ -39,6 +39,8 @@ Multisets.set_key_value_show()
     Arc, arc, arcs, narcs, source, target, has_arc
 
 @reexport using PNML: labels, varsubs
+
+@reexport using PNML: ParseContext, parser_context
 
 @reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
@@ -57,11 +59,15 @@ Multisets.set_key_value_show()
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, ArbitrarySort,
-    sortof, sortref, sortdefinition, namedsort, initial_marking
+    sortof, sortref, sortdefinition, sortelements, namedsort, initial_marking
 
 @reexport using PNML: NumberConstant, DotConstant, DotConstantEx, zero
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
 @reexport using PNML.Expressions
+
+@reexport using PNML.SortRef: UserSortRef, NamedSortRef, PartitionSortRef,
+                    ProductSortRef, MultisetSortRef, ArbitrarySortRef
+
 
 #!@reexport using PNet: initial_markings
 
