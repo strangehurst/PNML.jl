@@ -35,21 +35,21 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-ctx = PNML.parser_context()
+ctx = @inferred PNML.parser_context()
 
 @testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
-    c = Labels.default(Labels.Condition, pntd; ctx.ddict)::Labels.Condition
+    c = @inferred Labels.default(Labels.Condition, pntd; ctx.ddict) #::Labels.Condition
     @test c() == true
 end
 
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
     placetype = if ishighlevel(pntd)
-        SortType("dummy", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
     elseif iscontinuous(pntd)
-        SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
     elseif isdiscrete(pntd)
-        SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
     else
         error("pntd not known")
     end
@@ -97,32 +97,32 @@ end
 @testset "add_nettype" begin
     add_type! = PnmlTypes.add_nettype!
     typemap   = PnmlTypes.pnmltype_map
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :pnmlcore, PnmlCoreNet())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :hlcore, HLCoreNet())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :ptnet, PTNet())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :hlnet, HLPNG())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :pt_hlpng, PT_HLPNG())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :symmetric, SymmetricNet())
-    @test_logs (:info, r"^updating mapping") add_type!(typemap, :continuous, ContinuousNet())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :pnmlcore, PnmlCoreNet())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :hlcore, HLCoreNet())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :ptnet, PTNet())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :hlnet, HLPNG())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :pt_hlpng, PT_HLPNG())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :symmetric, SymmetricNet())
+    @test_logs (:info, r"^updating mapping") @inferred add_type!(typemap, :continuous, ContinuousNet())
 
-    @test_logs (:info, r"^adding mapping") add_type!(typemap, :newpntd, PnmlCoreNet())
+    @test_logs (:info, r"^adding mapping") @inferred add_type!(typemap, :newpntd, PnmlCoreNet())
     @test :newpntd in keys(typemap)
     @test typemap[:newpntd] === PnmlCoreNet()
     @show typemap
 end
 
 @testset "sortref" begin
-    @test sortref(1) == NamedSortRef(:integer)
-    @test sortref(0x1) == NamedSortRef(:natural)
-    @test sortref(0x1234) == NamedSortRef(:natural)
-    @test sortref(0x12345678) == NamedSortRef(:natural)
-    @test sortref(0x1234567812345678) == NamedSortRef(:natural)
-    @test sortref(1.0) == NamedSortRef(:real)
+    @test @inferred(sortref(1)) == @inferred NamedSortRef(:integer)
+    @test @inferred(sortref(0x1)) == @inferred NamedSortRef(:natural)
+    @test @inferred(sortref(0x1234)) == @inferred NamedSortRef(:natural)
+    @test @inferred(sortref(0x12345678)) == @inferred NamedSortRef(:natural)
+    @test @inferred(sortref(0x1234567812345678)) == @inferred NamedSortRef(:natural)
+    @test @inferred(sortref(1.0)) == @inferred NamedSortRef(:real)
 
-    @test sortref(Int64) == NamedSortRef(:integer)
-    @test sortref(UInt64) == NamedSortRef(:natural)
-    @test sortref(UInt32) == NamedSortRef(:natural)
-    @test sortref(UInt16) == NamedSortRef(:natural)
-    @test sortref(UInt8) == NamedSortRef(:natural)
-    @test sortref(Float64) == NamedSortRef(:real)
+    @test @inferred(sortref(Int64)) == NamedSortRef(:integer)
+    @test @inferred(sortref(UInt64)) == NamedSortRef(:natural)
+    @test @inferred(sortref(UInt32)) == NamedSortRef(:natural)
+    @test @inferred(sortref(UInt16)) == NamedSortRef(:natural)
+    @test @inferred(sortref(UInt8)) == NamedSortRef(:natural)
+    @test @inferred(sortref(Float64)) == NamedSortRef(:real)
 end

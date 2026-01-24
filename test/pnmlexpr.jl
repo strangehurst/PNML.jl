@@ -11,6 +11,7 @@ using ExproniconLite: xtuple, xnamedtuple, xcall, xpush, xgetindex, xfirst, xlas
                       xprint, xprintln, xmap, xmapreduce, xiterate
 
 using PNML: mcontains
+
 const pntd = HLCoreNet()
 const ctx = PNML.parser_context()
 const ddict = ctx.ddict
@@ -40,14 +41,14 @@ parse_declaration!(ctx, node, pntd)
 
 @testset "multiset add $pntd" begin
     # When will it be noticed that `:pro` is not a valid REFID?
-    b1 = PNML.Bag(NamedSortRef(:pro), 1, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b2 = PNML.Bag(NamedSortRef(:pro), 2, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b3 = PNML.Bag(NamedSortRef(:pro), 3, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b4 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b5 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
+    b1 = @inferred PNML.Bag(NamedSortRef(:pro), 1, PNML.NumberEx(NamedSortRef(:natural), 1))
+    b2 = @inferred PNML.Bag(NamedSortRef(:pro), 2, PNML.NumberEx(NamedSortRef(:natural), 1))
+    b3 = @inferred PNML.Bag(NamedSortRef(:pro), 3, PNML.NumberEx(NamedSortRef(:natural), 2))
+    b4 = @inferred PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 2))
+    b5 = @inferred PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
 
-    a = PNML.Add([b1, b2, b3])
-    ex = PNML.toexpr(a, varsub, ddict)
+    a = @inferred PNML.Add([b1, b2, b3])
+    ex = @inferred PNML.toexpr(a, varsub, ddict)
     val = eval(ex)
     @test val == eval(PNML.toexpr(b1, varsub, ddict)) +
                  eval(PNML.toexpr(b2, varsub, ddict)) +
@@ -70,8 +71,8 @@ end
     Bag(a) # 1'1 2'1 3'2 4'2
     Bag(b) # 1'1 2'1 3'2 4'1
     # is bag(a) contains bag(b) or bag(b) issubset bag(a)
-    c = Contains(Bag(a), Bag(b))
-    ex = PNML.toexpr(c, varsub, ddict)
+    c = @inferred Contains(Bag(a), Bag(b))
+    ex = @inferred PNML.toexpr(c, varsub, ddict)
     @test eval(ex) == true
 
     c2 = Contains(Bag(b), Bag(a))

@@ -1,20 +1,19 @@
-using PNML, JET
-using InteractiveUtils
-using Printf
+using PNML, JET, InteractiveUtils, Printf
 
 include("TestUtils.jl")
 using .TestUtils
+using PNML: fill_sort_tag!, fill_nonhl!, fill_labelp!
 
 @testset "parser_context" begin
     println("parser_context")
     pntd = PnmlCoreNet()
-    ctx = PNML.parser_context()::PNML.ParseContext
+    ctx = parser_context()::ParseContext
     ddict = ctx.ddict
-    @test_call target_modules=t_modules PNML.NamedSort(:X, "X", PositiveSort(), ddict)
-    @test_opt target_modules=t_modules function_filter=pff PNML.NamedSort(:X, "X", PositiveSort(), ddict)
+    @test_call target_modules=t_modules NamedSort(:X, "X", PositiveSort(), ddict)
+    @test_opt target_modules=t_modules function_filter=pff NamedSort(:X, "X", PositiveSort(), ddict)
 
-    @test_call target_modules=t_modules PNML.fill_sort_tag!(ctx, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
-    @test_opt target_modules=t_modules function_filter=pff PNML.fill_sort_tag!(ctx, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
+    @test_call target_modules=t_modules fill_sort_tag!(ctx, :X, NamedSort(:X, "X", PositiveSort(), ddict))
+    @test_opt target_modules=t_modules function_filter=pff fill_sort_tag!(ctx, :X, NamedSort(:X, "X", PositiveSort(), ddict))
     builtin_sorts = ((:integer, "Integer", Sorts.IntegerSort()),
                     (:natural, "Natural", Sorts.NaturalSort()),
                     (:positive, "Positive", Sorts.PositiveSort()),
@@ -25,37 +24,38 @@ using .TestUtils
                     )
     for (tag, name, sort) in builtin_sorts
         #@show typeof(sort)
-        nsort = Declarations.NamedSort(tag, name, sort, ctx.ddict)
-        @test_call target_modules=t_modules PNML.fill_sort_tag!(ctx, tag, nsort)
-        @test_opt target_modules=t_modules function_filter=pff PNML.fill_sort_tag!(ctx, tag, nsort)
+        nsort = NamedSort(tag, name, sort, ctx.ddict)
+        @test_call target_modules=t_modules fill_sort_tag!(ctx, tag, nsort)
+        @test_opt target_modules=t_modules function_filter=pff fill_sort_tag!(ctx, tag, nsort)
     end
 
 
-    @test_call target_modules=t_modules PNML.ParseContext()
-    @test_opt target_modules=t_modules function_filter=pff PNML.ParseContext()
+    @test_call target_modules=t_modules ParseContext()
+    @test_opt target_modules=t_modules function_filter=pff ParseContext()
 
-    let ctx = PNML.ParseContext()
-        @test_call target_modules=t_modules  PNML.fill_nonhl!(ctx)
-        @test_call target_modules=t_modules  PNML.fill_labelp!(ctx)
-        @test_opt target_modules=t_modules function_filter=pff  PNML.fill_nonhl!(ctx)
-        @test_opt target_modules=t_modules function_filter=pff  PNML.fill_labelp!(ctx)
+    let ctx = @inferred ParseContext()
+        @test_call target_modules=t_modules  fill_nonhl!(ctx)
+        @test_call target_modules=t_modules  fill_labelp!(ctx)
+        @test_opt target_modules=t_modules function_filter=pff  fill_nonhl!(ctx)
+        @test_opt target_modules=t_modules function_filter=pff  fill_labelp!(ctx)
     end
 
-    @test_call target_modules=t_modules PNML.parser_context()
-    @test_opt target_modules=t_modules function_filter=pff PNML.parser_context()
+    @test_call target_modules=t_modules parser_context()
+    @test_opt target_modules=t_modules function_filter=pff parser_context()
 end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
     #println("\nparse_sort $pntd")
-    parse_context = PNML.parser_context()::PNML.ParseContext
+    parse_context = @inferred ParseContext parser_context()
     ddict = parse_context.ddict
     #@show ddict
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_sort_tag!(parse_context, :X, PNML.NamedSort(:X, "X", PositiveSort(), ddict))
-    sortref = parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)
-    sort = to_sort(sortref; parse_context.ddict)::NamedSort |> sortdefinition
-    @test sort === PositiveSort()
+    @inferred fill_sort_tag!(parse_context, :X, NamedSort(:X, "X", PositiveSort(), ddict))
+    sortref = @inferred SortRef.Type parse_sort(xml"<usersort declaration=\"X\"/>", pntd; parse_context)
+    ts = @inferred NamedSort to_sort(sortref; parse_context.ddict)
+    sort = @inferred sortdefinition(ts)
+    @test sort === @inferred PositiveSort()
     @test occursin(r"^PositiveSort", sprint(show, sort))
     @test eltype(sort) == Int64
 
@@ -107,7 +107,6 @@ end
                                 <feconstant id="FE1" name="1"/>
                             </cyclicenumeration>""", PnmlCoreNet(), :testenum1; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::CyclicEnumerationSort
-    #!@test PNML.Sorts.xtag(sort) === :cyclicenumeration
     @test occursin(r"^CyclicEnumerationSort", sprint(show, sort))
     @test eltype(sort) == Symbol
 
@@ -118,7 +117,6 @@ end
                         </finiteenumeration>""", pntd, :testenum2; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteEnumerationSort
-    #!@test PNML.Sorts.xtag(sort) === :finiteenumeration
     @test occursin(r"^FiniteEnumerationSort", sprint(show, sort))
     @test eltype(sort) == Symbol
     #@show @test eltype(sort) == Int64
@@ -127,7 +125,6 @@ end
     sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; parse_context)
 
     sort = to_sort(sortref; parse_context.ddict)::FiniteIntRangeSort
-    #!@test PNML.Sorts.xtag(sort) === :finiteintrange
     @test occursin(r"^FiniteIntRangeSort", sprint(show, sort))
     @test eltype(sort) == Int64
 
@@ -136,7 +133,7 @@ end
                parse_sort(xml"""<productsort/>""", pntd, :emptyproduct, "emptyproduct"; parse_context))
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    fill_nonhl!(parse_context) # should be redundant, but harmless
     sortref = parse_sort(xml"""<productsort>
                                 <integer/>
                                 <integer/>
@@ -146,9 +143,9 @@ end
     @test eltype(sort) == Any #! TODO XXX
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    PNML.fill_sort_tag!(parse_context, :speed, NamedSort(:speed, "speed", PositiveSort(), ddict))
-    PNML.fill_sort_tag!(parse_context, :distance, NamedSort(:distance, "dictance", NaturalSort(), ddict))
+    fill_nonhl!(parse_context) # should be redundant, but harmless
+    fill_sort_tag!(parse_context, :speed, NamedSort(:speed, "speed", PositiveSort(), ddict))
+    fill_sort_tag!(parse_context, :distance, NamedSort(:distance, "dictance", NaturalSort(), ddict))
     sortref= parse_sort(xml"""<productsort>
                         <usersort declaration="speed"/>
                         <usersort declaration="distance"/>
@@ -167,23 +164,23 @@ end
     # @test_logs eltype(sort)
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
-    PNML.fill_sort_tag!(parse_context, :duck, NamedSort(:duck, "duck", PositiveSort(), ddict))
+    fill_nonhl!(parse_context) # should be redundant, but harmless
+    fill_sort_tag!(parse_context, :duck, NamedSort(:duck, "duck", PositiveSort(), ddict))
 
     sortref = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
                             </multisetsort>""", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)#::MultisetSort
-    PNML.fill_sort_tag!(parse_context, :amultiset, sort) #~ test of method needed here
+    fill_sort_tag!(parse_context, :amultiset, sort) #~ test of method needed here
     @test occursin(r"^MultisetSort", sprint(show, sort))
     @test eltype(sort) == Any
 
     #^ ArbitrarySort
 
     IDRegistrys.reset_reg!(parse_context.idregistry)
-    PNML.fill_nonhl!(parse_context) # should be redundant, but harmless
+    fill_nonhl!(parse_context) # should be redundant, but harmless
     sort = ArbitrarySort(:arbsort, "ArbSort", ddict)
-    PNML.fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
+    fill_sort_tag!(parse_context, :arbsort, sort) #~ test of method needed here
     #!@test occursin(r"^ArbitrarySort", sprint(show, sort))
     #!@show @test_logs eltype(sort)
     #!@show parse_context.ddict
@@ -194,9 +191,9 @@ end
     sortref = parse_sort(xml"<string/>", pntd; parse_context)
     sort = to_sort(sortref; parse_context.ddict)::StringSort
     @test sort isa StringSort
-    @test PNML.sortelements(sort) == ("",)
+    @test sortelements(sort) == ("",)
     @test occursin(r"^StringSort", sprint(show, sort))
     @test eltype(sort) == String
-    @test first(PNML.sortelements(sort)) == ""
+    @test first(sortelements(sort)) == ""
     #TODO PartitionSort
 end
