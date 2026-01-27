@@ -97,7 +97,8 @@ using DocStringExtensions
 
 # EXPORTS
 
-export PnmlModel, PnmlNet, Page, Place, RefPlace, Transition, RefTransition, Arc
+export PnmlModel, AbstractPnmlNet, PnmlNet, Page
+export Place, RefPlace, Transition, RefTransition, Arc
 export REFID, SortRef, AbstractSortRef, ArcT, AbstractArcEnum
 export UserSortRef # From SortRef ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
@@ -131,11 +132,10 @@ include("Core/types.jl") # Abstract Types with docstrings.
 
 include("Core/toolparser.jl")
 include("Core/labelparser.jl")
-include("Core/decldictcore.jl") # define structure filled by Sorts, Declarations
 
 # Parts of Labels and Nodes.
 
-include("Core/parse_context.jl") # parse context has id registry and DeclDict
+include("Core/decldictcore.jl") # define structure filled by Sorts, Declarations
 
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
@@ -152,6 +152,8 @@ using .Declarations: SortDeclaration, NamedSort, ArbitrarySort, PartitionSort
 using .Declarations: OperatorDeclaration, NamedOperator, ArbitraryOperator, PartitionElement
 using .Declarations: VariableDeclaration
 
+# include("Core/decldictcore.jl") # define structure filled by Sorts, Declarations
+include("Core/parse_context.jl") # parse context has id registry and DeclDict
 
 include("terms/multisets.jl")
 include("terms/constterm.jl")
