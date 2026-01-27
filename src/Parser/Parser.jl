@@ -37,7 +37,7 @@ using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 #using PNML: Context
-using PNML: pid, fill_labelp!, fill_toolp!, fill_nonhl!
+using PNML: pid, fill_labelp!, fill_nonhl! #, fill_toolp!
 using PNML: multisetsorts
 using PNML: ToolParser, LabelParser
 using PNML: default, fill_sort_tag!
