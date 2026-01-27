@@ -10,25 +10,26 @@ using .TestUtils
 #!
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
-    ctx = PNML.Parser.parser_context()::PNML.ParseContext
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    decl = @inferred parse_declaration!(net, xml"""<declaration key="test empty">
+            <structure><declarations></declarations></structure>
+        </declaration>""", pntd)
 
-        decl = parse_declaration!(ctx, xml"""<declaration key="test empty">
-                <structure><declarations></declarations></structure>
-            </declaration>""", pntd)::Declaration
+    @test length(decl) == 7 # nothing in <declarations>
+    @test !isempty(decl)
+    @test @inferred(Maybe{Graphics}, PNML.graphics(decl)) === nothing
+    @test @inferred(Maybe{ToolInfo}, PNML.toolinfos(decl)) === nothing
 
-        @test length(decl) == 7 # nothing in <declarations>
-        @test !isempty(decl)
-        @test PNML.graphics(decl) === nothing
-        @test PNML.toolinfos(decl) === nothing
+    @test occursin(r"^Declaration", sprint(show, decl))
+    #@test_opt @inferred(PNML.decldict(decl)) #! JET goes crazy
+    @test_opt PNML.graphics(decl)
+    @test_opt PNML.toolinfos(decl)
 
-        @test occursin(r"^Declaration", sprint(show, decl))
-        @test_opt PNML.decldict(decl)
-        @test_opt PNML.graphics(decl)
-        @test_opt PNML.toolinfos(decl)
-
-        @test_call PNML.decldict(decl)
-        @test_call PNML.graphics(decl)
-        @test_call PNML.toolinfos(decl)
+    @test_call PNML.decldict(decl)
+    @test_call PNML.graphics(decl)
+    @test_call PNML.toolinfos(decl)
 end
 
 @testset "namedsort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
@@ -66,26 +67,28 @@ end
     </declaration>
     """
 
-    ctx = PNML.Parser.parser_context()::PNML.ParseContext
-    @test_call target_modules=t_modules PNML.namedsorts(ctx.ddict)
-    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(ctx.ddict)
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    @test_call target_modules=t_modules PNML.namedsorts(decldict(net))
+    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(decldict(net))
 
-        base_decl_length = length(PNML.namedsorts(ctx.ddict))
+        base_decl_length = length(PNML.namedsorts(decldict(net)))
         decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-            parse_declaration!(ctx, node, pntd)::PNML.Declaration) # Add 3 declarations.
-        @test length(PNML.namedsorts(ctx.ddict)) == base_decl_length + 3
+            parse_declaration!(net, node, pntd)::PNML.Declaration) # Add 3 declarations.
+        @test length(PNML.namedsorts(decldict(net))) == base_decl_length + 3
 
-        for nsort in values(PNML.namedsorts(ctx.ddict))
+        for nsort in values(PNML.namedsorts(decldict(net)))
             #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
             #@show nsort pid(nsort)
-            @test isregistered(ctx.idregistry, pid(nsort))
+            @test isregistered(net.idregistry, pid(nsort))
             #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
             #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
             #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
 
             sortname = PNML.name(nsort)
-            cesort   = PNML.sortdefinition(nsort)
-            feconsts = PNML.sortelements(cesort) # should be iteratable ordered collection
+            cesort   = sortdefinition(nsort)
+            feconsts = sortelements(cesort, net) # should be iteratable ordered collection
             feconsts isa Vector{PNML.FEConstant}
             #!@test length(feconsts) == 2
             # for fec in feconsts
@@ -152,8 +155,10 @@ end
     </declaration>
     """
 
-    ctx = PNML.Parser.parser_context()::PNML.ParseContext
-    decl = parse_declaration!(ctx, node, pntd)
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    decl = @inferred parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
     #@show PNML.partitionsorts(decldict(decl))
     #PNML.show_sorts(decldict(decl))
@@ -162,15 +167,15 @@ end
     for psort in values(PNML.partitionsorts(decldict(decl)))
         # partition -> partition element -> fe constant
         @test typeof(psort) <: PartitionSort # is a declaration
-        @test PNML.isregistered(ctx.idregistry, PNML.pid(psort))
-        psort == PNML.partitionsort(decldict(decl), PNML.pid(psort))
+        @test PNML.isregistered(net.idregistry, PNML.pid(psort))
+        psort == PNML.partitionsort(decldict(decl), PNML.pid(psort)) #! @inferred
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        partname = PNML.name(psort)
-        partsort = PNML.Declarations.sortdefinition(psort)
-        part_elements = PNML.sortelements(psort)::Vector{PartitionElement}
+        partname = @inferred Union{SubString{String}, String} PNML.name(psort)
+        partsort = sortdefinition(psort) #! @inferred
+        part_elements = sortelements(psort, net)::Vector{PartitionElement}
 
         for element in part_elements
-            @test PNML.isregistered(ctx.idregistry, pid(element))
+            @test PNML.isregistered(net.idregistry, pid(element))
             @test PNML.Declarations.contains(element, :nosuch) == false
         end
         # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
@@ -193,8 +198,10 @@ end
     </declaration>
     """
 
-    ctx = PNML.Parser.parser_context()::PNML.ParseContext
-    decl = parse_declaration!(ctx, node, pntd)
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    decl = parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
     #@show PNML.arbitrarysort(decldict(decl), :id1)
     @test name(PNML.arbitrarysort(decldict(decl), :id1)) == "AGENT"
@@ -211,8 +218,10 @@ end
         </structure>
     </declaration>
     """
-    ctx = PNML.Parser.parser_context()::PNML.ParseContext
-    @test_throws DuplicateIDException parse_declaration!(ctx, node, pntd)
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    @test_throws DuplicateIDException parse_declaration!(net, node, pntd)
 end
 
 

@@ -5,10 +5,14 @@ using .TestUtils
 
 println("RATE")
 @testset "get rate label $pntd" for pntd in PnmlTypes.all_nettypes()
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    trans = PNML.Parser.parse_transition(xml"""<transition id ="birth"><rate> <text>0.3</text> </rate></transition>""",
-            pntd; parse_context)
+    trans = PNML.Parser.parse_transition(xml"""<transition id ="birth">
+                                                 <rate> <text>0.3</text> </rate>
+                                               </transition>""",
+            pntd, net)
     #@show lab = PNML.labels(trans)
 
     @test get_label(trans, :rate) === labels(trans)[:rate]

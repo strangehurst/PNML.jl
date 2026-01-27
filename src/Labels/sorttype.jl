@@ -60,42 +60,42 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType{S <: AbstractSortRef} <: Annotation # Label not limited to high-level dialects.
+struct SortType{S <: AbstractSortRef, N <: AbstractPnmlNet} <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
     sort_::S # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    declarationdicts::DeclDict
+    net::N
 end
 
 # >The label Type of a place defines the type by referring to some sort;
 # > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 
-SortType(sort::AbstractSortRef, ddict) = SortType(nothing, sort, nothing, nothing, ddict)
-SortType(s::AbstractString, sort::AbstractSortRef, ddict) = SortType(s, sort, nothing, nothing, ddict)
+SortType(sort::AbstractSortRef, net) = SortType(nothing, sort, nothing, nothing, net)
+SortType(s::AbstractString, sort::AbstractSortRef, net) = SortType(s, sort, nothing, nothing, net)
 
-decldict(t::SortType) = t.declarationdicts
+decldict(t::SortType) = decldict(t.net)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 refid(t::SortType) = refid(sortref(t))::Symbol
-sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(decldict(t), refid(t)))
-sortelements(t::SortType) = PNML.Sorts.sortelements(sortof(t))
+sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(decldict(t.net), refid(t)))
+sortelements(t::SortType, net::AbstractPnmlNet) = PNML.Sorts.sortelements(sortof(t), net)
 
 """
-    def_sort_element(x)
+    def_sort_element(x, net)
 
 Return an arbitrary element of sort `x`.
 All sorts are expected to be iteratable and non-empty, so we return `first`.
 Uses include default inscription value and default initial marking value sorts.
 
-`x` can be anything with a `sortelements(x)` method that returns an iterator with length.
+`x` can be anything with a `sortelements(x, net)` method that returns an iterator with length.
 See [`AbstractSort`](@ref), [`SortType`](@ref).
 """
-function def_sort_element(pt::SortType; ddict::DeclDict)
-    els = PNML.Sorts.sortelements(pt) # HLPNG allows infinite iterators.
+function def_sort_element(pt::SortType, net::AbstractPnmlNet)
+    els = PNML.Sorts.sortelements(pt, pt.net) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
-    D()&& @warn "def_sort_element($pt) = $(repr(el)) from $(typeof(els))"
+    #D()&& @warn "def_sort_element($pt, pid(net)) = $(repr(el)) from $(typeof(els))"
     return el
 end
 

@@ -45,12 +45,11 @@ import AutoHashEquals: @auto_hash_equals
 import Multisets: Multisets, Multiset
 
 using PNML
-using PNML: DeclDict
-using PNML: multisetsorts, productsorts
-using PNML: AbstractSort
+using PNML: DeclDict, multisetsorts
+using PNML: AbstractSort, namedsort, namedsorts, productsort, productsorts
 
 import PNML: sortof, sortref, sortelements, sortdefinition, basis
-import PNML: value, term, tag, pid, refid, namedsort, namedsorts
+import PNML: value, term, tag, pid, refid
 import PNML: fill_sort_tag!
 
 export AbstractSort, MultisetSort, ProductSort
@@ -67,15 +66,9 @@ include("numbers.jl")
 include("strings.jl")
 
 
-# # These two sorts are not used in variable declarations.
-# # They do not add a name to the contained sorts (or sortrefs).
-# # Add a dictionary accessor argument.
-fill_sort_tag!(ctx, tag, sort::ProductSort) = fill_sort_tag!(ctx, tag, sort, productsorts)::AbstractSortRef
-fill_sort_tag!(ctx, tag, sort::MultisetSort) = fill_sort_tag!(ctx, tag, sort, multisetsorts)::AbstractSortRef
-
 #
 """
-    make_sortref(parse_context, dict, sort, seed, id, name) ->  AbstractSortRef`
+    make_sortref(net, dict, sort, seed, id, name) ->  AbstractSortRef`
 
  - `dict` is a method/callable that returns an AbstractDict (in a DeclDict).
  - `sort` ia a concrete sort that is to be in `dict`.
@@ -86,16 +79,16 @@ Uses `fill_sort_tag!`.
 
 Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 """
-function make_sortref(parse_context, dict::Base.Callable, sort, seed, sortid, name=nothing)
+function make_sortref(net, dict::Base.Callable, sort, seed, sortid, name=nothing)
     #!@show sort dict seed sortid
-    id2 = PNML.find_valuekey(dict(parse_context.ddict), sort) # in make_sortref
+    id2 = PNML.find_valuekey(dict(decldict(net)), sort) # in make_sortref
     if isnothing(id2) # Did not find existing ...
         if isnothing(sortid) # and no enclosing provided name/id ...
             @show sortid = gensym(seed) # so invent one.
         end
     end
     # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
-    return fill_sort_tag!(parse_context, sortid, sort, dict)::AbstractSortRef # in make_sortref
+    return fill_sort_tag!(net, sortid, sort, dict)::AbstractSortRef # in make_sortref
 end
 
 end # module Sorts

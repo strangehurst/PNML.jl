@@ -20,24 +20,26 @@ using XMLDict: XMLDict
     """)
     #println(str)
 
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     @show PNML.value_type(PNML.Marking, pntd)
     @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
 
     placetype = SortType("$pntd initMarking",
         PNML.sortref(PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
-        nothing, nothing, parse_context.ddict)
+        nothing, nothing, net)
 
     # Parse ignoring unexpected child
     mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd; parse_context, parentid=:xxx)::PNML.Marking)
+                parse_initialMarking(node, placetype, pntd; net, parentid=:xxx)::PNML.Marking)
     #@test typeof(value(mark)) <: Union{Int,Float64}
     @test mark()::Union{Int,Float64} == 123
 
     # Integer
-    mark1 = PNML.Marking(23, parse_context.ddict)
-    @test_opt broken=false PNML.Marking(23, parse_context.ddict)
-    @test_call PNML.Marking(23, parse_context.ddict)
+    mark1 = PNML.Marking(23, net)
+    @test_opt broken=false PNML.Marking(23, net)
+    @test_call PNML.Marking(23, net)
     @test typeof(mark1()) == typeof(23)
     @test mark1() == 23
     @test_opt broken=false mark1()
@@ -47,10 +49,10 @@ using XMLDict: XMLDict
     @test toolinfos(mark1) === nothing || isempty(toolinfos(mark1))
 
     # Floating point
-    mark2 = PNML.Marking(3.5, parse_context.ddict)
+    mark2 = PNML.Marking(3.5, net)
     #@show mark2 mark2()
-    @test_opt broken=false PNML.Marking(3.5, parse_context.ddict)
-    @test_call PNML.Marking(3.5, parse_context.ddict)
+    @test_opt broken=false PNML.Marking(3.5, net)
+    @test_call PNML.Marking(3.5, net)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
     @test_call mark2()
@@ -75,12 +77,13 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
-        ctx = PNML.parser_context()
-
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("XXX", PNML.NamedSortRef(:dot), ctx.ddict)
+        placetype = SortType("XXX", PNML.NamedSortRef(:dot), net)
 
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
+        mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
         #@show mark
         @test mark isa PNML.Marking
 
@@ -89,11 +92,11 @@ end
         #println(); flush(stdout)
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
-        @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa PNML.PnmlMultiset
+        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), net) #! debug
+        @test eval(PNML.toexpr(term(mark), NamedTuple(), net)) isa PNML.PnmlMultiset
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
-        # @test inputs(markterm)[2] == DotConstant(ddict)
+        # @test inputs(markterm)[2] == DotConstant()
 
         #TODO HL implementation not complete:
         #TODO  evaluate the HL expression, check place sorttype
@@ -135,14 +138,16 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
-        ctx = PNML.parser_context()
-        sort = ArbitrarySort(:foo, "ArbSort", ctx.ddict)
-        PNML.fill_sort_tag!(ctx, :foo, sort) #~ test of method needed here
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
+        sort = ArbitrarySort(:foo, "ArbSort", net)
+        PNML.fill_sort_tag!(net, :foo, sort)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         # @show placetype = SortType("XXX", PNML.ArbitrarySortRef(:foo), ctx.ddict)
 
-        # mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
+        # mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
     end
 
     # add two multisets: another way to express 3 + 2
@@ -170,9 +175,11 @@ end
             </structure>
         </hlinitialMarking>
         """
-        ctx = PNML.parser_context()
-        placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), ctx.ddict)
-        mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:tmp)
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
+        placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), net)
+        mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
         #TODO add tests
     end
     # The constant eight.
@@ -190,12 +197,14 @@ end
             </structure>
         </hlinitialMarking>
         """
-        ctx = PNML.parser_context()
-        placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), ctx.ddict)
-        mark = parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:xxx)
-        val = eval(toexpr(term(mark), NamedTuple(), ctx.ddict))::PNML.PnmlMultiset{<:Any}
-        @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive), ctx.ddict)()) == 1
-        @test NumberConstant(8, NamedSortRef(:positive), ctx.ddict)() in multiset(val)
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
+        placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), net)
+        mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
+        val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset{<:Any}
+        @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive))()) == 1
+        @test NumberConstant(8, NamedSortRef(:positive))() in multiset(val)
      end
 
     # This is the same as when the element is omitted.
@@ -204,9 +213,11 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        ctx = PNML.parser_context()
-        placetype = SortType("testdot", PNML.NamedSortRef(:dot), ctx.ddict)
-        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:xxx)
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
+        placetype = SortType("testdot", PNML.NamedSortRef(:dot), net)
+        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
     end
 
     #println()
@@ -232,12 +243,15 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
-        ctx = PNML.parser_context()
+
+        net = PnmlNet(pntd, :fake)
+        PNML.fill_nonhl!(net)
+        PNML.fill_labelp!(net)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("FIFO", PNML.NamedSortRef(:dot), ctx.ddict)
+        placetype = SortType("FIFO", PNML.NamedSortRef(:dot), net)
 
-        mark = parse_fifoinitialMarking(node, placetype, pntd; parse_context=ctx, parentid=:bogusid)
+        mark = parse_fifoinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
         #@show mark
         @test mark isa PNML.Marking
 
@@ -246,11 +260,11 @@ end
         #println(); flush(stdout)
 
         @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), ctx.ddict) #! debug
-        @test eval(PNML.toexpr(term(mark), NamedTuple(), ctx.ddict)) isa Vector{PNML.DotConstant}
+        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), net) #! debug
+        @test eval(PNML.toexpr(term(mark), NamedTuple(), net)) isa Vector{PNML.DotConstant}
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
-        # @test inputs(markterm)[2] == DotConstant(ddict)
+        # @test inputs(markterm)[2] == DotConstant()
     end
 end # fifoinitialMarking
 

@@ -16,9 +16,11 @@ using .TestUtils
         </condition>
       </transition>
     """
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    n = @inferred Transition parse_transition(node, PnmlCoreNet(); parse_context)
+    n = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
     @test n isa Transition
     @test pid(n) === :transition1
     @test name(n) == "Some transition"
@@ -30,13 +32,13 @@ using .TestUtils
     @test isempty(varsubs(n))
 
     node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
-    @test_throws PNML.MalformedException parse_transition(node, pntd; parse_context)
+    @test_throws PNML.MalformedException parse_transition(node, pntd, net)
 
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test_throws Exception parse_transition(node, pntd; parse_context)
+    @test_throws Exception parse_transition(node, pntd, net)
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd; parse_context)
+    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd, net)
 
     node = xml"""<transition id ="t4">
         <condition>
@@ -44,7 +46,7 @@ using .TestUtils
             <structure> true </structure>
         </condition>
     </transition>"""
-    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd; parse_context)
+    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd, net)
 
     node = xml"""<transition id ="t5">
         <condition>
@@ -52,7 +54,7 @@ using .TestUtils
             <structure> <booleanconstant value="true"/> </structure>
         </condition>
     </transition>"""
-    t = parse_transition(node, pntd; parse_context)
+    t = parse_transition(node, pntd, net)
     @test t isa Transition
     @test condition(t)() === true
 end
@@ -67,10 +69,12 @@ end
         <somelabel2 c="value" />
      </transition>
     """
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
-                parse_transition(node, PnmlCoreNet(); parse_context)::Transition)
+                parse_transition(node, PnmlCoreNet(), net)::Transition)
     @test pid(n) === :transition1
     @test elements(labels(n)[:somelabel2])[:c] == "value"
     @test PNML.get_label(n, :somelabel2) != nothing
@@ -90,9 +94,11 @@ end
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     </referenceTransition>
     """
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    n = parse_refTransition(node, pntd; parse_context)::RefTransition
+    n = parse_refTransition(node, pntd, net)::RefTransition
     @test pid(n) === :rt1
     @test PNML.refid(n) === :t1
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
@@ -107,10 +113,12 @@ end
         <somelabel2 c="value" />
     </referenceTransition>
     """
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
-            parse_refTransition(node, pntd; parse_context)::RefTransition)
+            parse_refTransition(node, pntd, net)::RefTransition)
     @test pid(n) === :rt1
     @test PNML.refid(n) === :t1
     @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")

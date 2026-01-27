@@ -1,6 +1,6 @@
 #= Example from sampleSNPrio.pnml
 <declaration>
-<text>F
+<text>Fs
     Without the following structure this Symmetric net
     example will not be a structurally conformant High-level Petri Net.
 </text>
@@ -70,7 +70,6 @@ struct PartitionElement <: OperatorDeclaration
     name::Union{String,SubString{String}}
     terms::Vector{REFID} # 1 or more ref to feconstant in partitions's referenced sort.
     partition::REFID
-    declarationdicts::DeclDict
     #todo verify terms are in parent partitions's referenced sort
 end
 
@@ -94,12 +93,12 @@ Is the sort at the partition or the element level (1 sort or many sorts?)
 Like [`NamedSort`](@ref), will add an `id` and `name` to a sort,
 may be accessed by `UserSortRef` indirection.
 """
-struct PartitionSort{S <: AbstractSortRef} <: SortDeclaration
+struct PartitionSort{S <: AbstractSortRef, N <: AbstractPnmlNet} <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
     def::S # Like a NamedSort, refers to a sort (EnumerationSort)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
-    declarationdicts::DeclDict
+    net::N
 
     # function PartitionSort(i, n, d, e, dd)
     #     # PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
@@ -109,11 +108,11 @@ struct PartitionSort{S <: AbstractSortRef} <: SortDeclaration
     # end
 end
 
-decldict(p::PartitionSort) = p.declarationdicts
+decldict(p::PartitionSort) = decldict(p.net)
 
 #TODO also do AbstractSort, another SortDeclaration
 sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(decldict(p), refid(p.def)))
-sortelements(p::PartitionSort) = p.elements
+sortelements(p::PartitionSort, ::AbstractPnmlNet) = p.elements
 
 # TODO Add Partition/PartitionElement methods here
 # list PartitionElement ids & names
@@ -122,17 +121,17 @@ sortelements(p::PartitionSort) = p.elements
 
 "Iterator over partition element REFIDs of a `PartitionSort"
 function element_ids(ps::PartitionSort)
-    Iterators.map(pid, sortelements(ps))
+    Iterators.map(pid, sortelements(ps, ps.net))
 end
 
 "Iterator over partition element names"
 function element_names(ps::PartitionSort)
-    Iterators.map(name, sortelements(ps))
+    Iterators.map(name, sortelements(ps, ps.net))
 end
 
 function verify_partition(part::PartitionSort)
-    defelements = sortelements(sortdefinition(part))
-    partels = collect(Iterators.flatmap(e->e.terms, sortelements(part)))
+    defelements = sortelements(sortdefinition(part), part.net)
+    partels = collect(Iterators.flatmap(e->e.terms, sortelements(part, part.net)))
     defelements == partels
 end
 
@@ -140,7 +139,7 @@ function Base.show(io::IO, ps::PartitionSort)
     println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ", ", repr(ps.def), ",")
     io = PNML.inc_indent(io)
     print(io, PNML.indent(io), "[")
-    e = sortelements(ps)
+    e = sortelements(ps, ps.net)
     for  (i, c) in enumerate(e)
         show(io, c)
         i < length(e) && print(io, ",\n", PNML.indent(io), " ")

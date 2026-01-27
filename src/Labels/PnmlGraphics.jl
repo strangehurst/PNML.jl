@@ -1,16 +1,13 @@
-###############################################################################
-# GRAPHICS
-###############################################################################
+"""
+    PnmlGraphics holds CSS-like data. Can be attached to 'AbstractPnmlObject`s and
+`Annotation` label parts of `PnmlNet`s.
+"""
 module PnmlGraphics
 
 import Base: eltype
-
 import AutoHashEquals: @auto_hash_equals
 using DocStringExtensions
-
-using PNML
-using PNML: Maybe, Coordinate, coordinate_type
-using ..PnmlTypes
+using PNML: Coordinate
 
 export Graphics, ArcGraphics, NodeGraphics, AnnotationGraphics #, Line, Fill, Font
 
@@ -92,7 +89,8 @@ end
 #---------------------------------------------------------
 #---------------------------------------------------------
 """
-PNML Graphics can be attached to many parts of PNML models.
+PNML Graphics can be attached to 'AbstractPnmlObject`s and
+`Annotation` label parts of Pnml models.
 
 $(TYPEDEF)
 $(TYPEDFIELDS)

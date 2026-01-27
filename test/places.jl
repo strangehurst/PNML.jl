@@ -19,20 +19,22 @@ using .TestUtils
         </initialMarking>
         </place>
     """
-    ctx = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, ctx.ddict)
+    placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
 
-    n  = parse_place(node, pntd; parse_context=ctx)::Place
+    n  = parse_place(node, pntd, net)::Place
     pntd isa PnmlCoreNet &&
-        @test_opt target_modules=t_modules broken=true parse_place(node, pntd; parse_context=ctx)
-    @test_call target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
+        @test_opt target_modules=t_modules broken=true parse_place(node, pntd, net)
+    @test_call target_modules=t_modules parse_place(node, pntd, net)
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
     @test_call initial_marking(n)
     #@show pntd, initial_marking(n)
     @test initial_marking(n)::Number == 100
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
     @test PNML.has_tools(n) == false
 end
 
@@ -52,17 +54,19 @@ end
         </hlinitialMarking>
         </place>
     """
-    ctx = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    n = parse_place(node, pntd; parse_context=ctx)::Place
-    @test_call target_modules=t_modules parse_place(node, pntd; parse_context=ctx)
+    n = parse_place(node, pntd, net)::Place
+    @test_call target_modules=t_modules parse_place(node, pntd, net)
 
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
     @test_call target_modules=t_modules initial_marking(n)
     #@show pntd, initial_marking(n)
     @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
 end
 
 @testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -84,13 +88,15 @@ end
         <somelabel2 c="value" />
         </place>
     """
-    ctx = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     n = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
                    (:info, "add PnmlLabel :somelabel2 to :place1"),
-                    parse_place(node, pntd; parse_context=ctx)::Place)
+                    parse_place(node, pntd, net)::Place)
     @test pid(n) === :place1
     @test name(n) == ""
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
     #@show labels(n)
     #@show keys(labels(n))
     #@show labels(n)[:somelabel1]
@@ -116,11 +122,13 @@ end
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     </referencePlace>"""
 
-    parse_context = PNML.parser_context()
-    n = parse_refPlace(node, pntd; parse_context)::RefPlace
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+    n = parse_refPlace(node, pntd, net)::RefPlace
     @test pid(n) === :rp1
     @test PNML.refid(n) === :p1
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
 end
 
 @testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
@@ -134,11 +142,13 @@ end
         <somelabel2 c="value" />
     </referencePlace>"""
 
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
-            parse_refPlace(node, pntd; parse_context)::RefPlace)
+            parse_refPlace(node, pntd, net)::RefPlace)
     @test pid(n) === :rp1
     @test PNML.refid(n) === :p1
     @test elements(labels(n)[:somelabel2])[:c] == "value"
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
 end

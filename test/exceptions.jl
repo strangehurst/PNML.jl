@@ -31,7 +31,7 @@ end
 #println("pntd_override")
 @test_logs((:info,"net 4712 pntd set to reallygood, overrides test"),
             parse_net(xml"""<net id="4712" type="test">
-              </net>"""; parse_context=PNML.Parser.parser_context(),
+              </net>"""; net=PNML.PnmlNet(PnmlCoreNet(), :fake),
                          pntd_override="reallygood"))
 
 
@@ -88,7 +88,7 @@ end
     # println("-- 4")
     @test_throws("MalformedException: attribute type missing",
         parse_net(xml"""<net id="4712"> </net>""";
-             parse_context=PNML.Parser.parser_context()))
+             net=PNML.PnmlNet(PnmlCoreNet(), :fake)))
 end
 
 @test_logs((:warn,"ignoring unexpected child of <net>: <graphics>"),
@@ -97,7 +97,7 @@ end
                     <graphics/>
                 </net>
                 </pnml>""";
-            parse_context=PNML.Parser.parser_context()))
+            net=PNML.PnmlNet(PnmlCoreNet(), :fake)))
 
 @test_logs((:info, r"^add PnmlLabel :unexpected.*"),
     pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -105,7 +105,7 @@ end
                     <unexpected/>
                 </net>
                 </pnml>""";
-            parse_context=PNML.Parser.parser_context()))
+            net=PNML.PnmlNet(PnmlCoreNet(), :fake)))
 
 @test_logs((:info, r"^add PnmlLabel :unexpected.*"),
     pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -115,42 +115,42 @@ end
                     </page>
                 </net>
                 </pnml>""";
-            parse_context=PNML.Parser.parser_context()))
+            net=PNML.PnmlNet(PnmlCoreNet(), :fake)))
 
 
 # println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()
     #idreg = IDRegistry()
     #ddict = PNML.decldict(idreg)
-    parse_context = PNML.Parser.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     @test_throws("MissingIDException: net",
-            parse_net(xml"<net type='test'></net>"; parse_context))
+            parse_net(xml"<net type='test'></net>"; net))
 
     pagedict = OrderedDict{Symbol, PNML.Page{typeof(pntd)}}()
     netdata = PNML.PnmlNetData()
     netsets = PNML.PnmlNetKeys()
-
-    dummynet = PnmlNet(PnmlCoreNet(), :fake)
+    @show PNML.page_idset(netsets)
     #todo add net to parse_page!
     @test_throws(r"^MissingIDException: page",
-        PNML.Parser.parse_page!(dummynet, netsets, xml"<page></page>",
-            pntd; parse_context))
+        PNML.Parser.parse_page!(net, PNML.page_idset(netsets), xml"<page></page>",
+            pntd))
     @test_throws(r"^MissingIDException: place",
         PNML.Parser.parse_place(xml"<place></place>",
-            pntd;  parse_context))
+            pntd, net))
     @test_throws(r"^MissingIDException: transition",
         PNML.Parser.parse_transition(xml"<transition></transition>",
-            pntd;  parse_context))
+            pntd, net))
     @test_throws(r"^MissingIDException: arc",
-        PNML.Parser.parse_arc(xml"<arc></arc>", pntd, netdata=PNML.PnmlNetData();
-            parse_context))
-
+        PNML.Parser.parse_arc(xml"<arc></arc>",
+            pntd, net))
     @test_throws(r"^MissingIDException: referencePlace",
-        PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", pntd;
-            parse_context))
+        PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>",
+            pntd, net))
     @test_throws(r"^MissingIDException: referenceTransition",
         PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>",
-            pntd;  parse_context))
+            pntd, net))
 end
 
 # println("E 4")

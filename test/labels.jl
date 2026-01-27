@@ -28,12 +28,12 @@ end
 #end
 
 @testset "labels $pntd" for pntd in PnmlTypes.core_nettypes()
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
     lab = OrderedCollections.LittleDict{Symbol,Any}() # PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
         str = "<test$x> $i </test$x>"
-        PNML.Parser.add_label!(lab, xmlnode(str), pntd, parse_context)
+        PNML.Parser.add_label!(lab, xmlnode(str), pntd, net)
         #@show lab
     end
     @test length(lab) == 2
@@ -67,14 +67,14 @@ end
 
 "Return PnmlLabel, AnyElement"
 function test_unclaimed(pntd, xmlstring::String)
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
     node = xmlnode(xmlstring)::XMLNode
     reg1 = IDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = IDRegistry()
 
     nodeid = Symbol(EzXML.nodename(node))
     u = Parser.xmldict(node)::LittleDict
-    l = PnmlLabel(nodeid, u, parse_context.ddict)
+    l = PnmlLabel(nodeid, u, net)
     a = anyelement(nodeid, node)
 
     @test u isa PNML.DictType
@@ -82,13 +82,13 @@ function test_unclaimed(pntd, xmlstring::String)
     @test a isa AnyElement
 
     @test_opt target_modules=t_modules Parser.xmldict(node)
-    @test_opt target_modules=t_modules function_filter=pff PnmlLabel(nodeid,u,parse_context.ddict)
+    @test_opt target_modules=t_modules function_filter=pff PnmlLabel(nodeid, u, net)
     @test_opt target_modules=t_modules function_filter=pff Parser.anyelement(nodeid, node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.xmldict(node)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
-                            JET.AnyFrameModule(XMLDict)) PnmlLabel(nodeid,u,parse_context.ddict)
+                            JET.AnyFrameModule(XMLDict)) PnmlLabel(nodeid, u, net)
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.anyelement(nodeid, node)
 
@@ -102,14 +102,14 @@ function test_unclaimed(pntd, xmlstring::String)
     #! unclaimed id is not registered
     x = get(u, :id, nothing)
     !isnothing(x) &&
-        @test !isregistered(parse_context.idregistry, Symbol(x))
+        @test !isregistered(net.idregistry, Symbol(x))
     return l, a
 end
 
 @testset "unclaimed $pntd" for pntd in PnmlTypes.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
 
     ctrl = [ # Vector of tuples of XML string, expected result from `XMLDict.xml_dict`.
         ("""<declarations> </declarations>""",
@@ -169,7 +169,7 @@ end
     for (s, expected) in ctrl
         lab, anye = test_unclaimed(pntd, s)
         # TODO Add equality test, skip xml node.
-        expected_label = PnmlLabel(Symbol(expected.first), expected.second, parse_context.ddict)
+        expected_label = PnmlLabel(Symbol(expected.first), expected.second, net)
         @test tag(lab) == tag(expected_label)
         @test length(elements(lab)) == length(elements(expected_label))
         # TODO recursive compare

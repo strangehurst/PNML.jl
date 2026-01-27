@@ -22,11 +22,11 @@ $(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 
-Expected interface is for every concrete object to have fields:
+Expected interface is for every concrete object to have at least these fields:
     - id
     - namelabel
     - graphics
-    - labels
+    - extralabels
     - toolspecinfos
 """
 abstract type AbstractPnmlObject end
@@ -35,11 +35,11 @@ abstract type AbstractPnmlObject end
 $(TYPEDEF)
 Labels are attached to the Petri Net Graph objects. See [`AbstractPnmlObject`](@ref).
 
-Expected interface is for every concrete label to have fields:
+Expected interface is for every concrete label to have at least these fields:
     - text
     - graphics
     - toolspecinfos
-    - declarationdicts
+    - net
 """
 abstract type AbstractLabel end
 
@@ -232,6 +232,7 @@ abstract type AbstractOperator <: AbstractTerm end
 """
 abstract type AbstractSort end
 
+abstract type AbstractDeclDict end
 
 """
     SortRef

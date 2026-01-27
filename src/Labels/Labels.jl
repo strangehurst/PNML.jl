@@ -18,7 +18,7 @@ using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, DictType
 using PNML: PnmlMultiset, AbstractTerm
 using PNML: namedsort, namedsorts, multisetsorts, multisetsorts
-using PNML: ToolParser, LabelParser, ParseContext
+using PNML: ToolParser, LabelParser
 
 import PNML: name
 import PNML: value_type
@@ -41,9 +41,9 @@ include("PnmlGraphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
 
 """
-    default(::Type{T<:AbstractLabel}, pntd::PnmlType; ddict::DeclDict) -> T
+    default(::Type{T<:AbstractLabel}, pntd::PnmlType, net::AbstractPnmlNet) -> T
 
-Return a default label `T` for `pntd`.
+Return a default instance of label `T` for `pntd`.
 """
 function default end
 

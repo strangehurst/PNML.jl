@@ -15,12 +15,12 @@ Return `Vector` of `FEConstant` `REFID`s.
 refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 
 """
-    sortelements(sort::EnumerationSort) -> Iterator
+    sortelements(sort::EnumerationSort, ::AbstractPnmlNet) -> Iterator
 
 Return iterator into feconstant(decldict) for this sort's `FEConstants`.
 Maintains order of this sort.
 """
-sortelements(sort::EnumerationSort) = refs(sort)
+sortelements(sort::EnumerationSort, ::AbstractPnmlNet) = refs(sort)
 
 "Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
@@ -52,10 +52,7 @@ MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> 
 @auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort <: EnumerationSort
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
-    declarationdicts::DeclDict
 end
-
-#!xtag(::CyclicEnumerationSort) = :cyclicenumeration # XML <tag>
 
 #TODO successor/predecessor methods
 
@@ -66,10 +63,7 @@ Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
 @auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort <: EnumerationSort
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
-    declarationdicts::DeclDict
 end
-
-#!xtag(::FiniteEnumerationSort) = :finiteenumeration
 
 """
     $(TYPEDEF)
@@ -78,10 +72,8 @@ end
 @auto_hash_equals fields=start,stop typearg=true struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
-    declarationdicts::DeclDict
 end
 
-#!xtag(::FiniteIntRangeSort) = :finiteintrange
 Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
@@ -90,7 +82,7 @@ stop(fir::FiniteIntRangeSort) = fir.stop
     $(TYPEDEF)
 Return iterator from `start` to `stop`, inclusive.
 """
-sortelements(fir::FiniteIntRangeSort) = Iterators.map(identity, start(fir):stop(fir))
+sortelements(fir::FiniteIntRangeSort, ::AbstractPnmlNet) = Iterators.map(identity, start(fir):stop(fir))
 
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")

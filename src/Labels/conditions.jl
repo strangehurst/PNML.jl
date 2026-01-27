@@ -6,42 +6,29 @@ Label a Transition with an boolean expression used to determine when/if the tran
 
 There may be other things evaluating to boolean used to determine transition firing filters,
 including: priority labels, inhibitor arc, place capacity labels, time/delay labels.
-
-# Examples
-Vector
-```jldoctest; setup=:(using PNML; using PNML:  Labels, BooleanEx, BooleanConstant; using PNML.IDRegistrys; ctx=PNML.parser_context())
-julia> c = Labels.Condition(false, ctx.ddict)
-Condition("", BooleanEx(BooleanConstant(false)))
-
-julia> c()
-false
-
-julia> c = Labels.Condition("xx", BooleanEx(BooleanConstant(true, ctx.ddict)), ctx.ddict)
-Condition("xx", BooleanEx(BooleanConstant(true)))
-
-julia> c()
-true
 ```
 """
-@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr} <: HLAnnotation
+@auto_hash_equals fields=text,term,graphics,toolspecinfos,vars typearg=true struct Condition{T<:PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
     text::Maybe{String}
     term::T # duck-typed AbstractBoolExpr
     # color function: uses term and args, Built/JITed
     graphics::Maybe{Graphics} #TODO switch order of graphics, toolinfos everywhere!
     toolspecinfos::Maybe{Vector{ToolInfo}}
     vars::Vector{REFID} #! XXX DOCUMENT ME XXX
-    declarationdicts::DeclDict
+    net::N
 end
 
-Condition(b::Bool, ddict) = Condition(PNML.BooleanConstant(b, ddict), ddict)
-Condition(c::PNML.BooleanConstant, ddict) = Condition(PNML.BooleanEx(c), ddict)
-Condition(expr::PNML.BooleanEx, ddict) = Condition(nothing, expr, nothing, nothing, REFID[], ddict)
-Condition(text::AbstractString, expr::PNML.BooleanEx, ddict) = Condition(text, expr, nothing, nothing, REFID[], ddict)
+Condition(b::Bool, net::AbstractPnmlNet) = Condition(PNML.BooleanConstant(b), net)
+Condition(c::PNML.BooleanConstant, net::AbstractPnmlNet) = Condition(PNML.BooleanEx(c), net)
+Condition(expr::PNML.BooleanEx, net::AbstractPnmlNet) =
+    Condition(nothing, expr, nothing, nothing, REFID[], net)
+Condition(text::AbstractString, expr::PNML.BooleanEx, net::AbstractPnmlNet) =
+    Condition(text, expr, nothing, nothing, REFID[], net)
 
 Base.eltype(::Type{<:Condition}) = Bool
 PNML.value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
 
-decldict(c::Condition) = c.declarationdicts
+decldict(c::Condition) = decldict(c.net)
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
@@ -51,9 +38,9 @@ term(c::Condition) = c.term #todo! pnml variables
 
 variables(c::Condition) = c.vars
 
-function default(::Type{<:Condition}, ::PnmlType; ddict::DeclDict)
+function default(::Type{<:Condition}, ::PnmlType, net::AbstractPnmlNet)
     #@info "default Condition"
-    Condition(PNML.BooleanEx(PNML.BooleanConstant(true, ddict)), ddict)
+    Condition(PNML.BooleanEx(PNML.BooleanConstant(true)), net)
 end
 
 """
@@ -76,8 +63,8 @@ function cond_implementation(c::Condition, varsub::NamedTuple)
     # end
     # BooleanEx is a literal. AbstractBoolExpr <: PnmlExpr can be non-literal (non-ground term).
     isa(term(c), PNML.BooleanEx) || @warn term(c) varsub  #! debug
-    #@show term(c) varsub toexpr(term(c), varsub, decldict(c))
-    eval(toexpr(term(c), varsub, decldict(c)))::eltype(c) # Bool isa Number
+    #@show term(c) varsub toexpr(term(c), varsub, c)
+    eval(toexpr(term(c), varsub, c.net))::eltype(c) # Bool isa Number
 end
 
 

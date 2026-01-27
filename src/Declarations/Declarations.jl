@@ -16,7 +16,7 @@ using Logging, LoggingExtras
 using SciMLLogging: @SciMLMessage
 
 using PNML
-using PNML: DeclDict
+#!using PNML: DeclDict
 using PNML: REFID, AnyElement, AbstractTerm
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
@@ -26,7 +26,7 @@ using PNML: multisetsorts
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
-import PNML: fill_sort_tag!
+import PNML: fill_sort_tag!, decldict
 
 using ..Sorts
 using ..IDRegistrys
@@ -34,10 +34,5 @@ using ..IDRegistrys
 include("declarations.jl")
 include("partitions.jl")
 include("arbitrarydeclarations.jl")
-
-# # These 3 are Declarations of sorts, not AbstractSorts!
-fill_sort_tag!(ctx, tag, sort::NamedSort) = fill_sort_tag!(ctx, tag, sort, PNML.namedsorts)::AbstractSortRef
-fill_sort_tag!(ctx, tag, sort::PartitionSort) = fill_sort_tag!(ctx, tag, sort, PNML.partitionsorts)::AbstractSortRef
-fill_sort_tag!(ctx, tag, sort::ArbitrarySort) = fill_sort_tag!(ctx, tag, sort, PNML.arbitrarysorts)::AbstractSortRef
 
 end # module Declarations

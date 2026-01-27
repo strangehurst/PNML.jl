@@ -7,22 +7,22 @@ Label of [`Place`](@ref).
 Is a functor that returns the `value`.
 ```
 """
-struct Marking{T <: PnmlExpr} <: Annotation
+struct Marking{T <: PnmlExpr, N <: AbstractPnmlNet} <: Annotation
     term::T #! expression
     text::Maybe{String} # Supposed to be for human consumption.
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in toolspecinfos rather than graphics.
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    declarationdicts::DeclDict
+    net::N
 end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
-function Marking(m::Number, ddict::DeclDict)
-    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::AbstractSortRef, m), ddict)
+function Marking(m::Number, net::AbstractPnmlNet)
+    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::AbstractSortRef, m), net)
 end
-Marking(nx::PNML.NumberEx, ddict::DeclDict) = Marking(nx, nothing, nothing, nothing, ddict)
-Marking(t::PnmlExpr, s::Maybe{AbstractString}, ddict) = Marking(t, s, nothing, nothing, ddict)
+Marking(nx::PNML.NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
+Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::AbstractPnmlNet) = Marking(t, s, nothing, nothing, net)
 
-decldict(marking::Marking) = marking.declarationdicts
+decldict(marking::Marking) = decldict(marking.net)
 term(marking::Marking) = marking.term
 
 # 1'value where value isa eltype(sortof(marking))
@@ -54,9 +54,7 @@ term(marking::Marking) = marking.term
 
 # # Examples
 
-# ```julia
-# ; setup=:(using PNML; using PNML: Marking, NaturalSort, ddict)
-# julia> m = Marking(PNML.pnmlmultiset(NamedSortRef(:integer), 1; ddict))
+
 # Marking(Bag(NamedSortRef(:integer), 1))
 
 # julia> m()
@@ -89,10 +87,10 @@ HL Net Marking values are a ground terms of this multi-sorted algebra.
 
 Used to initialize a marking vector that will then be updated by firing a transition.
 """
-(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), decldict(mark)))
+(mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), mark.net))
 
 basis(m::Marking)   = sortref(term(m))::AbstractSortRef
-sortref(m::Marking) = expr_sortref(term(m); ddict=decldict(m))::AbstractSortRef
+sortref(m::Marking) = expr_sortref(term(m), m.net)::AbstractSortRef
 
 function Base.show(io::IO, ptm::Marking)
     print(io, PNML.indent(io), "Marking(")
@@ -155,13 +153,13 @@ Return default marking value based on `PnmlType`. Has meaning of empty, as in `z
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType; ddict)
+function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
     D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
-    Marking(zero(PNML.value_type(PNML.Marking, pntd)), ddict) # not high-level!
+    Marking(zero(PNML.value_type(PNML.Marking, pntd)), net) # not high-level!
 end
 
-function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType; ddict)
-    el = def_sort_element(placetype; ddict)
+function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
+    el = def_sort_element(placetype, net)
     D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
-    Marking(PNML.Bag(sortref(placetype), el, 0), "default", ddict) # el used for its type
+    Marking(PNML.Bag(sortref(placetype), el, 0), "default", net) # el used for its type
 end

@@ -32,14 +32,12 @@ using PNML: isnormal, isinhibitor, isread, isreset
     #@show str
     node = xmlnode(str)
     PNML.CONFIG[].warn_on_unclaimed = true
-    parse_context = PNML.Parser.parser_context()
-
-    a = parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc
-
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     PNML.CONFIG[].warn_on_unclaimed = true
-    parse_context = PNML.Parser.parser_context()
 
-    a = parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc
+    a = parse_arc(node, pntd, net)::Arc
     atl = PNML.arctypelabel(a)
     arct = PNML.Labels.arctype(atl)
 
@@ -65,8 +63,9 @@ end
       </arc>"""
     #@show str
     node = xmlnode(str)
-    parse_context = PNML.Parser.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    @test_throws(ArgumentError,
-        parse_arc(node, pntd, netdata=PNML.PnmlNetData(); parse_context)::Arc)
+    @test_throws(ArgumentError, parse_arc(node, pntd, net)::Arc)
 end

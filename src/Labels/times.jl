@@ -8,12 +8,12 @@ Expected XML: `<time> <text>0.3</text> </time>`.
 
 Dynamic time is a function with arguments of net marking and transition.
 """
-@kwdef struct Time{T<:PnmlExpr} <: Annotation
+@kwdef struct Time{T <: PnmlExpr, N <: AbstractPnmlNet} <: Annotation
     #todo text
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    declarationdicts::DeclDict
+    net::N
 end
 
 value_type(::Type{Time}) = Float64
@@ -23,11 +23,11 @@ Base.eltype(::Time) = value_type(Time)
 
 decldict(i::Time) = i.declarationdicts
 term(i::Time) = i.term
-sortref(i::Time) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
-sortof(i::Time) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
+sortref(i::Time) = expr_sortref(term(i), decldict(i.net))::AbstractSortRef
+sortof(i::Time) = sortdefinition(namedsort(decldict(i.net), sortref(i)))::Number
 
 function (time::Time)(varsub::NamedTuple=NamedTuple())
-    eval(toexpr(term(time), varsub, decldict(time)))::value_type(Time)
+    eval(toexpr(term(time), varsub, time.net))::value_type(Time)
 end
 
 value(r::Time) = r()

@@ -33,13 +33,13 @@ using ..Declarations
 using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D
 using PNML: Graphics, Coordinate
 using PNML: ToolInfo, DictType
-using PNML: DeclDict, PnmlNetData, PnmlNetKeys
+using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 #using PNML: Context
-using PNML: pid
+using PNML: pid, fill_labelp!, fill_toolp!, fill_nonhl!
 using PNML: multisetsorts
-using PNML: ParseContext, parser_context, ToolParser, LabelParser
+using PNML: ToolParser, LabelParser
 using PNML: default, fill_sort_tag!
 using PNML: namedsort, multisetsort, productsort
 using PNML: namedsorts, multisetsorts, productsorts

@@ -327,11 +327,11 @@ Return the `Type` of a label's value.
 function value_type end
 
 """
-    sortof(x) -> AbstractSort
+    sortof(x[, net]) -> AbstractSort
 
 Return the sort of an object or type.
 
-Often implemented as `sortdefinition(namedsort(ddict, sortref(x)))`.
+Often implemented as `sortdefinition(namedsort(decldict(net), sortref(x)))`.
 Default implementation is `identity`.
 
 We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.
@@ -375,9 +375,9 @@ function basis end
 
 
 """
-    sortelements(x) -> Iterator
+    sortelements(x, net) -> Iterator
 
-Return iterator over elements of the sort of x.
+Return iterator over elements of the sort of `x` in `net`.
 """
 function sortelements end
 
@@ -405,9 +405,6 @@ function decldict end
 "Version of tool for this tool specific information element and its parser."
 """
 function version end
-
-"Fill and return a `ParserContext` object."
-function parser_context end
 
 function fill_sort_tag! end
 

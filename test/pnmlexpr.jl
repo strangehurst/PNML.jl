@@ -13,8 +13,11 @@ using ExproniconLite: xtuple, xnamedtuple, xcall, xpush, xgetindex, xfirst, xlas
 using PNML: mcontains
 
 const pntd = HLCoreNet()
-const ctx = PNML.parser_context()
-const ddict = ctx.ddict
+const net = PnmlNet(pntd, :fake)
+PNML.fill_nonhl!(net)
+PNML.fill_labelp!(net)
+
+const ddict = decldict(net)
 const varsub = NamedTuple()
 
 const node = xml"""
@@ -34,7 +37,7 @@ const node = xml"""
     </declaration>
     """
 
-parse_declaration!(ctx, node, pntd)
+parse_declaration!(net, node, pntd)
 
 #^ Multiset Expression tests
 #^------------------------------------------------------------------------
@@ -48,11 +51,11 @@ parse_declaration!(ctx, node, pntd)
     b5 = @inferred PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
 
     a = @inferred PNML.Add([b1, b2, b3])
-    ex = @inferred PNML.toexpr(a, varsub, ddict)
+    ex = @inferred PNML.toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, ddict)) +
-                 eval(PNML.toexpr(b2, varsub, ddict)) +
-                 eval(PNML.toexpr(b3, varsub, ddict))
+    @test val == eval(PNML.toexpr(b1, varsub, net)) +
+                 eval(PNML.toexpr(b2, varsub, net)) +
+                 eval(PNML.toexpr(b3, varsub, net))
 end
 
 @testset "multiset contains $pntd" begin
@@ -63,8 +66,8 @@ end
     b4 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 2))
     b5 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
 
-    aex = PNML.toexpr(PNML.Add([b1, b2, b4]), varsub, ddict)
-    bex = PNML.toexpr(PNML.Add([b1, b2, b5]), varsub, ddict)
+    aex = PNML.toexpr(PNML.Add([b1, b2, b4]), varsub, net)
+    bex = PNML.toexpr(PNML.Add([b1, b2, b5]), varsub, net)
 
     a = eval(aex)
     b = eval(bex)
@@ -72,43 +75,43 @@ end
     Bag(b) # 1'1 2'1 3'2 4'1
     # is bag(a) contains bag(b) or bag(b) issubset bag(a)
     c = @inferred Contains(Bag(a), Bag(b))
-    ex = @inferred PNML.toexpr(c, varsub, ddict)
+    ex = @inferred PNML.toexpr(c, varsub, net)
     @test eval(ex) == true
 
     c2 = Contains(Bag(b), Bag(a))
-    @test eval(PNML.toexpr(c2, varsub, ddict)) == false
+    @test eval(PNML.toexpr(c2, varsub, net)) == false
 
     println()
 end
 
 @testset "multiset and $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
-    b3 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
-    b4 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
+    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
+    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
+    b3 = PNML.BooleanEx(PNML.BooleanConstant(true))
+    b4 = PNML.BooleanEx(PNML.BooleanConstant(false))
 
     a = PNML.And([b1, b2, b3, b4])
-    ex = PNML.toexpr(a, varsub, ddict)
+    ex = PNML.toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, ddict)) &
-                 eval(PNML.toexpr(b2, varsub, ddict)) &
-                 eval(PNML.toexpr(b3, varsub, ddict)) &
-                 eval(PNML.toexpr(b3, varsub, ddict))
+    @test val == eval(PNML.toexpr(b1, varsub, net)) &
+                 eval(PNML.toexpr(b2, varsub, net)) &
+                 eval(PNML.toexpr(b3, varsub, net)) &
+                 eval(PNML.toexpr(b3, varsub, net))
 end
 
 @testset "multiset or $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
-    b3 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
-    b4 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
+    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
+    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
+    b3 = PNML.BooleanEx(PNML.BooleanConstant(true))
+    b4 = PNML.BooleanEx(PNML.BooleanConstant(false))
 
     a = PNML.Or([b1, b2, b3, b4])
-    ex = PNML.toexpr(a, varsub, ddict)
+    ex = PNML.toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, ddict)) |
-                 eval(PNML.toexpr(b2, varsub, ddict)) |
-                 eval(PNML.toexpr(b3, varsub, ddict)) |
-                 eval(PNML.toexpr(b3, varsub, ddict))
+    @test val == eval(PNML.toexpr(b1, varsub, net)) |
+                 eval(PNML.toexpr(b2, varsub, net)) |
+                 eval(PNML.toexpr(b3, varsub, net)) |
+                 eval(PNML.toexpr(b3, varsub, net))
 end
 
 #^ Boolean Expression tests
@@ -117,22 +120,22 @@ function _test_abstractboolexpr(x::AbstractBoolExpr, ddict::DeclDict)
     #@show x
     @test PNML.basis(x) == NamedSortRef(:bool)
     @test sortref(x) == NamedSortRef(:bool)
-    @test expr_sortref(x; ddict) == sortref(x)
+    @test expr_sortref(x, ddict) == sortref(x)
 
 end
 
 @testset "AbstractBoolExpr" begin
     #ddict = DeclDict()
-    x = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
+    x = PNML.BooleanEx(PNML.BooleanConstant(true))
     _test_abstractboolexpr(x, ddict)
 end
 
 @testset "boolean not $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true, ddict))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false, ddict))
+    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
+    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
 
     a = PNML.Not([b1, b2])
-    ex = PNML.toexpr(a, varsub, ddict)
+    ex = PNML.toexpr(a, varsub, net)
     val = eval(ex)
     @test val == false
 end

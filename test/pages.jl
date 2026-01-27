@@ -46,7 +46,7 @@ function verify_sets(net::PnmlNet)
         @test netdata(net) === netdata(pagedict(net)[pageid])
     end
 
-    @test PNML.has_tools(net) == false
+    @test PNML.has_tools(net) == true
 end
 
 model = @inferred PNML.PnmlModel pnmlmodel(xml"""<?xml version="1.0"?>
@@ -104,7 +104,7 @@ net = first(nets(model))
 @test net isa PnmlNet  # Any concrete subtype.
 @test isconcretetype(typeof(net))
 @test startswith(sprint(show, model), "PnmlModel")
-@test @inferred(firstpage(net)) isa Page # add parameters?
+@test firstpage(net) isa Page # add parameters? #! @inferred
 @test length(PNML.allpages(net)) == 14
 
 @test_logs sprint(println, PNML.allpages(net))

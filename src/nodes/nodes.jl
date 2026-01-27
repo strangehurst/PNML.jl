@@ -9,9 +9,9 @@ M is a "multiset sort denoting a collection of tokens".
 A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
-@kwdef mutable struct Place{S <: AbstractSortRef}  <: AbstractPnmlNode
+@kwdef mutable struct Place{S <: AbstractSortRef , N <: AbstractPnmlNet}  <: AbstractPnmlNode
     id::Symbol
-    initialMarking::Marking #! Expression as value. Used to create marking vector.
+    initialMarking::Marking # Expression as value. Used to create marking vector.
 
     # For each place, a sort defines the type of the marking tokens of the place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
@@ -21,14 +21,12 @@ A "multiset sort over a basis sort is interpreted as
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::LittleDict{Symbol,Any} = nothing
-    declarationdicts::DeclDict = DeclDict()
-    #todo net::PnmlNet{PNTD}
-    #net::RefValue{<:AbstractPnmlNet}
+    net::N
 end
 
 initial_marking(place::Place) = (place.initialMarking)()
-#net(place::Place) = place.net
-
+net(place::Place) = place.net
+decldict(place::Place) = decldict(place.net)
 sortref(place::Place) = sortref(place.sorttype)::AbstractSortRef
 
 """
@@ -72,7 +70,7 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Transition  <: AbstractPnmlNode
+mutable struct Transition{N <: AbstractPnmlNet}  <: AbstractPnmlNode
     id::Symbol
     condition::Labels.Condition #! booleran expression label
     namelabel::Maybe{Name}
@@ -83,11 +81,10 @@ mutable struct Transition  <: AbstractPnmlNode
     vars::Set{REFID}
     "Cache of variable substitutons for this transition"
     varsubs::Vector{NamedTuple}
-    declarationdicts::DeclDict
-    #net::RefValue{<:AbstractPnmlNet}
+    net::N
 end
 
-decldict(transition::Transition) = transition.declarationdicts
+decldict(transition::Transition) = decldict(transition.net)
 
 """
     varsubs(transition) -> Vector{NamedTuple}
@@ -131,7 +128,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef mutable struct Arc{T <: PnmlExpr} <: AbstractPnmlNode #Object
+@kwdef mutable struct Arc{T <: PnmlExpr, N <: AbstractPnmlNet} <: AbstractPnmlNode #Object
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
@@ -141,9 +138,7 @@ $(TYPEDFIELDS)
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
-    #todo net::PnmlNet
-    declarationdicts::DeclDict
-    #net::RefValue{<:AbstractPnmlNet}
+    net::N
 end
 
 """
@@ -185,7 +180,7 @@ isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
 
 #!sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
 
-decldict(arc::Arc) = arc.declarationdicts
+decldict(arc::Arc) = declarationdict(arc.net)
 
 """
     source(arc) -> Symbol
@@ -228,15 +223,14 @@ Reference Place node of a Petri Net Markup Language graph. For connections betwe
 $(TYPEDEF)r
 $(TYPEDFIELDS)
 """
-struct RefPlace <: ReferenceNode
+struct RefPlace{N <: AbstractPnmlNet} <: ReferenceNode
     id::Symbol
     ref::Symbol # Place or RefPlace
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
-    declarationdicts::DeclDict
-    #net::RefValue{<:AbstractPnmlNet}
+    net::N
 end
 
 #-------------------
@@ -246,15 +240,14 @@ Refrence Transition node of a Petri Net Markup Language graph. For connections b
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefTransition <: ReferenceNode
+struct RefTransition{N <: AbstractPnmlNet} <: ReferenceNode
     id::Symbol
     ref::Symbol # Transition or RefTransition IDREF
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     extralabels::LittleDict{Symbol,Any}
-    declarationdicts::DeclDict
-    #net::RefValue{<:AbstractPnmlNet}
+    net::N
 end
 
 function Base.show(io::IO, r::ReferenceNode)

@@ -5,12 +5,13 @@ The definitions are attached to PNML nets and/or pages using a PNML Label define
 
 - id
 - name
+- net for access to DeclDct
 """
 abstract type AbstractDeclaration end
 
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name
-decldict(decl::AbstractDeclaration) = decl.declarationdicts
+decldict(decl::AbstractDeclaration) = decldict(decl.net)
 
 function Base.show(io::IO, declare::AbstractDeclaration)
     print(io, nameof(typeof(declare)), "(")
@@ -26,12 +27,12 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct UnknownDeclaration  <: AbstractDeclaration
+struct UnknownDeclaration{N <: AbstractPnmlNet}  <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     nodename::Union{String,SubString{String}}
     content::AnyElement
-    declarationdicts::DeclDict
+    net::N
 end
 
 function Base.show(io::IO, x::UnknownDeclaration)
@@ -70,11 +71,11 @@ EXAMPLE
 
 PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
-struct VariableDeclaration{S <: AbstractSortRef} <: AbstractDeclaration
+struct VariableDeclaration{S <: AbstractSortRef, N <: AbstractPnmlNet} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     sort::S
-    declarationdicts::DeclDict
+    net::N
 
     #! Inline Sorts allowed, also <usersort> indirection.
     # Example:
@@ -123,10 +124,10 @@ end
     # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
-decldict(vd::VariableDeclaration) = vd.declarationsdicts
+#!decldict(vd::VariableDeclaration) = vd.declarationsdicts
 
 sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd), refid(vd)))::AbstractSort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd.net), refid(vd)))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
@@ -141,22 +142,28 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Declaration of a `NamedSort`. Wraps a concrete instance of a built-in `AbstractSort`.
-See [`MultisetSort`](@ref), [`ProductSort`](@ref).
+Declaration of a `NamedSort` gives an `id` and `name` to
+a concrete instance of a built-in `AbstractSort`.
+The sort defined in the XML file may be shared with other named sorts.
+
+See [`MultisetSort`](@ref), [`PartitionSort`](@ref), [`PartitionSort`](@ref).
+These are all `Declaration` subtypes in the UML2/RelaxNG parts of ISO 15909-2:2011 which has
+a strong _Java_ bias. The text on the standard states they are also sort-like.
+We use a different type system.
 """
-@auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort} <: SortDeclaration
+@auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort, N <: AbstractPnmlNet} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S  #! This remains where the concrete sort lives.
     # An instance of: ArbitrarySort, MultisetSort, ProductSort, or BUILT-IN sort!
-    declarationdicts::DeclDict
+    net::N
 
-    function NamedSort(id_::Symbol, name_, def_::AbstractSort, dd::DeclDict)
+    function NamedSort(id_::Symbol, name_, def_::AbstractSort, net_::AbstractPnmlNet)
         if isa(def_, NamedSort)
-            error("NamedSort wraps NamedSort: $(repr(id_)) $(repr(name_)) $(repr(def_))") #|> throw
+            error("NamedSort wraps NamedSort: $id_ $name_ $def_") #|> throw
             yield()
         end
-        new{typeof(def_)}(id_, name_, def_, dd)
+        new{typeof(def_), typeof(net_)}(id_, name_, def_, net_)
     end
 end
 
@@ -164,9 +171,9 @@ function sortdefinition(namedsort::NamedSort)
     namedsort.def # Instance of concrete sort.
 end
 
-sortelements(namedsort::NamedSort) = sortelements(sortdefinition(namedsort))
+sortelements(namedsort::NamedSort, net::AbstractPnmlNet) = sortelements(sortdefinition(namedsort), net)
 
-Base.eltype(::Type{NamedSort{S}}) where {S} = eltype(S)
+Base.eltype(::Type{NamedSort{S,N}}) where {S <: AbstractSort, N <: AbstractPnmlNet} = eltype(S)
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
@@ -186,20 +193,21 @@ See `UserOperator`.
 Vector of `VariableDeclaration` for parameters (ordered),
 and duck-typed `AbstractTerm` for its body.
 """
-struct NamedOperator{T} <: OperatorDeclaration
+struct NamedOperator{T, N <: AbstractPnmlNet} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO XXX
     def::T # expression  terms (with inferred output sort) #TODO! XXX how to infer from expression ===
-    declarationdicts::DeclDict
+    net::N
 end
 
 # Empty parameter vector. Default to return sort of dots.
-NamedOperator(id::Symbol, str; ddict) = NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant(ddict), ddict)
+NamedOperator(id::Symbol, str::AbstractString, net::AbstractPnmlNet) =
+    NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant(), net)
 
-decldict(no::NamedOperator) = no.declarationdicts
-operator(ddict, no::NamedOperator) = operator(ddict, no.def)
+#operator(no::NamedOperator) = operator(decldict(no.net), no.def) #! XXX def is an expression
 parameters(no::NamedOperator) = no.parameter
+(no::NamedOperator)(vars) = eval(toexpr(uo.def, vars, no.net))(parameters(no))
 
 function Base.show(io::IO, op::NamedOperator)
     print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ",

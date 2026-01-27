@@ -5,12 +5,12 @@ $(TYPEDFIELDS)
 Real valued label. An expected use is as a transition rate.
 Expected XML: `<rate> <text>0.3</text> </rate>`.
 """
-@kwdef struct Rate{T<:PnmlExpr} <: Annotation
+@kwdef struct Rate{T<:PnmlExpr, N <: AbstractPnmlNet} <: Annotation
     #todo text
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    declarationdicts::DeclDict
+    net::N
 end
 
 value_type(::Type{Rate}) = Float64
@@ -18,14 +18,14 @@ value_type(::Type{Rate}, ::PnmlType) = Float64
 
 Base.eltype(::Rate) = value_type(Rate)
 
-decldict(i::Rate) = i.declarationdicts
-term(i::Rate) = i.term
-sortref(i::Rate) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
+decldict(r::Rate) = decldict(r.net)
+term(r::Rate) = r.term
+sortref(r::Rate) = expr_sortref(term(r), decldict(r))::AbstractSortRef
 
-sortof(i::Rate) = sortdefinition(namedsort(decldict(i), refid(sortref(i))))
+sortof(r::Rate) = sortdefinition(namedsort(decldict(r), refid(sortref(r))))
 
 function (rate::Rate)(varsub::NamedTuple=NamedTuple())
-    eval(toexpr(term(rate), varsub, decldict(rate)))::value_type(Rate)
+    eval(toexpr(term(rate), varsub, rate.net))::value_type(Rate)
 end
 
 value(r::Rate) = r()

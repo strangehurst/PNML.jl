@@ -6,9 +6,10 @@ $(TYPEDFIELDS)
 Label of a <net> or <page> that holds zero or more declarations. The declarations are used
 to define parts of the many-sorted algebra used by High-Level Petri Nets.
 
-All the declarations in the <structure> are placed into a single per-net dictionary `ddict`.
-The text, graphics, and toolspecinfos fields are expected to be nothing, but are present because,
-being labels, it is allowed.
+All the declarations in the <structure> are placed into
+a single per-net dictionary collection `ddict`.
+The text, graphics, and toolspecinfos fields are expected to be nothing,
+but are present because, being labels, it is allowed.
 """
 @kwdef struct Declaration <: Annotation
     text::Maybe{String} = nothing

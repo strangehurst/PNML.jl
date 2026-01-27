@@ -70,7 +70,7 @@ function inscription_value(a::Maybe{Arc}, def, varsub)
     if isnothing(a)
         def
     else
-        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, decldict(a)))
+        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, a.net))
     end
 end
 

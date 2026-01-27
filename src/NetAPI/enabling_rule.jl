@@ -185,7 +185,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
                                                     zero_marking(place(net, placeid)),
                                                     NamedTuple())
                     mi_val = mark >= inscription_val # multiset >= multiset or number >= number
-                    c_val = eval(toexpr(term(condition(tr)), NamedTuple(), decldict(tr)))
+                    c_val = eval(toexpr(term(condition(tr)), NamedTuple(), tr.net))
                     enabled &= mi_val && c_val
                 else
                     # Use the transition-level variable substution bindings `bvs`.
@@ -205,7 +205,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
 
                         #? Do we want <= or is it issubset(A,B)?
                         mi_val = issubset(i_val, mark)
-                        c_val = eval(toexpr(term(condition(tr)), vsub, decldict(tr)))
+                        c_val = eval(toexpr(term(condition(tr)), vsub, tr.net))
 
                         if mi_val && c_val
                             push!(tr.varsubs, vsub)
@@ -248,9 +248,9 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
             #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            any(==(var_refid), Sorts.sorts(sortof(placesort))) ||
+            any(==(var_refid), Sorts.sorts(sortof(placesort, decldict(net)))) ||
                     error("none of tuple are equal sorts of $var_refid: ",
-                            Sorts.sorts(sortof(placesort)))
+                            Sorts.sorts(sortof(placesort, decldict(net))))
         else
             placesort !== sortref(variabledecl(ddict, v)) &&
                 error("not equal sorts ($placesort, $(sortref(variabledecl(ddict, v))))")

@@ -26,7 +26,7 @@ function insc_xml(pntd)
     end
 end
 #! arc needs :place1 for adjacent place
-function pl_node(pntd, parse_context, netdata, netsets)
+function pl_node(pntd, net, netdata, netsets)
     node = if ishighlevel(pntd)
         xml"""
             <place id="place1">
@@ -52,15 +52,15 @@ function pl_node(pntd, parse_context, netdata, netsets)
             </place>
             """
     end
-    pl = parse_place(node, pntd; parse_context)
+    pl = parse_place(node, pntd, net)
     push!(PNML.place_idset(netsets), pid(pl))
     PNML.placedict(netdata)[pid(pl)] = pl
 end
 
 #! arc needs :transition1 for adjacent transition
-function tr_node(pntd, parse_context, netdata, netsets)
+function tr_node(pntd, net, netdata, netsets)
     node = xml"""<transition id="transition1" />"""
-    tr = parse_transition(node, pntd; parse_context)
+    tr = parse_transition(node, pntd, net)
     push!(PNML.transition_idset(netsets), pid(tr))
     PNML.transitiondict(netdata)[pid(tr)] = tr
 end
@@ -68,11 +68,12 @@ end
 println("\nARC\n")
 @testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
     # PNML.CONFIG[].warn_on_unclaimed = true
-    parse_context = PNML.Parser.parser_context()
-    netdata = PNML.PnmlNetData()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     netsets = PNML.PnmlNetKeys()
-    pl_node(pntd, parse_context, netdata, netsets)
-    tr_node(pntd, parse_context, netdata, netsets)
+    pl_node(pntd, net, netdata(net), netsets)
+    tr_node(pntd, net, netdata(net), netsets)
 
      node = xmlnode("""
       <arc source="transition1" target="place1" id="arc1">
@@ -89,7 +90,7 @@ println("\nARC\n")
 
     a = @test_logs(match_mode=:any,
                   (:info, "add PnmlLabel :unknown to :arc1"),
-                  parse_arc(node, pntd; netdata, parse_context))
+                  parse_arc(node, pntd, net))
     @test typeof(a) <: Arc
     @test pid(a) === :arc1
     @test name(a) == "Some arc"
@@ -105,11 +106,12 @@ println("\nARC\n")
 end
 
 @testset "arc unknown label for $pntd" for pntd in PnmlTypes.all_nettypes()
-    parse_context = PNML.Parser.parser_context()
-    netdata = PNML.PnmlNetData()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     netsets = PNML.PnmlNetKeys()
-    pl_node(pntd, parse_context, netdata, netsets)
-    tr_node(pntd, parse_context, netdata, netsets)
+    pl_node(pntd, net, netdata(net), netsets)
+    tr_node(pntd, net, netdata(net), netsets)
     node = xmlnode("""
       <arc source="transition1" target="place1" id="arc1">
         <name> <text>Some arc</text> </name>
@@ -124,5 +126,5 @@ end
     """)
    a = @test_logs(match_mode=:any,
                   (:info, "add PnmlLabel :unknown to :arc1"),
-                  parse_arc(node, pntd; netdata, parse_context))
+                  parse_arc(node, pntd, net))
 end

@@ -10,7 +10,9 @@ using .TestUtils
 println("DELAY")
 @testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
     #println("delay label $pntd")
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
     # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
     # This bit may be from the pre-standard era.
     # <ci> is a variable(constant) like pi, infinity.
@@ -26,7 +28,7 @@ println("DELAY")
     </transition>"""
     #! This has Float64 and Int
     t = @test_logs((:info, "add PnmlLabel :delay to :t6"),
-        parse_transition(node, pntd; parse_context)::Transition)
+        parse_transition(node, pntd, net)::Transition)
 
     del = PNML.get_label(t, :delay)
     @test PNML.get_label(t, :delay) == del
@@ -47,7 +49,7 @@ println("DELAY")
         </delay>
     </transition>"""
     t = @test_logs((:info, "add PnmlLabel :delay to :t7"),
-        parse_transition(node, pntd; parse_context)::Transition)
+        parse_transition(node, pntd, net)::Transition)
     del = PNML.get_label(t, :delay)
     @test PNML.get_label(t, :delay) == del
     @test elements(del)["interval"][:closure] == "closed-open"
@@ -63,7 +65,7 @@ println("DELAY")
         </delay>
     </transition>"""
     t = @test_logs((:info, "add PnmlLabel :delay to :t8"),
-        parse_transition(node, pntd; parse_context)::Transition)
+        parse_transition(node, pntd, net)::Transition)
     del = PNML.get_label(t, :delay)
     @test PNML.get_label(t, :delay) == del
     @test elements(del)["interval"][:closure] == "open"

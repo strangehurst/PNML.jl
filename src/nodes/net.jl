@@ -7,14 +7,16 @@ One Petri Net of a PNML model.
 @kwdef mutable struct PnmlNet{PNTD<:PnmlType} <: AbstractPnmlNet
     type::PNTD
     id::Symbol
-    pagedict::OrderedDict{Symbol, Page{PNTD}} # Shared by pages, holds all pages.
+    # Holds all pages. Shared by pages,
+    pagedict::OrderedDict{Symbol, Page{PNTD,<:AbstractPnmlNet}}
     netdata::PnmlNetData = PnmlNetData() # Shared by pages, holds all places, transitions, arcs, refs
 
     # Note: `PnmlNet` only has `page_set` not `netsets` as it only contains pages.
     # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
-    page_set::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
+    page_idset::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
 
-    declaration::Declaration # Label with `DeclDict`, `Text` `Graphics`, `ToolInfo`.
+    ddict = DeclDict() # empty dictionarys
+    declaration::Maybe{Declaration} = nothing # Label with `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
 
@@ -22,14 +24,17 @@ One Petri Net of a PNML model.
     # no graphics for net
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}() # empty by default
+
     idregistry::IDRegistry
+    labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
+    toolparser::Vector{ToolParser} = ToolParser[] # toolinfo parsers
 end
 
 # Constructor for use in test scaffolding.
-PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =
+PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =#! XXX
     PnmlNet(; type, id, declaration,
-            pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
-             idregistry=IDRegistry())
+              pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
+              idregistry=IDRegistry())
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
@@ -38,11 +43,11 @@ pid(net::PnmlNet) = net.id
 
 "Return IDRegistry of a PnmlNet."
 registry_of(net::PnmlNet) = net.idregistry
-decldict(net::PnmlNet) = decldict(net.declaration)
+decldict(net::PnmlNet) = net.ddict
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(net::PnmlNet) = net.pagedict # Will be ordered.
-page_idset(net::PnmlNet) = net.page_set # Indices into `pagedict` directly owned by net.
+page_idset(net::PnmlNet) = net.page_idset # Indices into `pagedict` directly owned by net.
 
 netdata(net::PnmlNet) = net.netdata
 netsets(net::PnmlNet) = throw(ArgumentError("PnmlNet $(pid(net)) does not have a PnmlKeySet, did you mean `netdata`?"))

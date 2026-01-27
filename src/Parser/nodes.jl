@@ -1,7 +1,7 @@
 # parse nodes of graph
 "Fill place_set, place_dict."
-function parse_place!(netsets, netdata, child, pntd; parse_context::ParseContext)
-    pl = parse_place(child, pntd; parse_context)::valtype(PNML.placedict(netdata))
+function parse_place!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
+    pl = parse_place(child, pntd, net)::valtype(PNML.placedict(netdata))
     #@show valtype(PNML.placedict(netdata)) typeof(PNML.placedict(netdata))
     push!(place_idset(netsets), pid(pl))
     PNML.placedict(netdata)[pid(pl)] = pl
@@ -9,16 +9,16 @@ function parse_place!(netsets, netdata, child, pntd; parse_context::ParseContext
 end
 
 "Fill transition_set, transition_dict."
-function parse_transition!(netsets, netdata, child, pntd; parse_context::ParseContext)
-    tr = parse_transition(child, pntd; parse_context)::valtype(PNML.transitiondict(netdata))
+function parse_transition!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
+    tr = parse_transition(child, pntd, net)::valtype(PNML.transitiondict(netdata))
     push!(transition_idset(netsets), pid(tr))
     PNML.transitiondict(netdata)[pid(tr)] = tr
     return transition_idset(netsets)
 end
 
 "Fill arc_set, arc_dict."
-function parse_arc!(netsets, netdata, child, pntd; parse_context::ParseContext)
-    a = parse_arc(child, pntd; netdata, parse_context)
+function parse_arc!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
+    a = parse_arc(child, pntd, net)
     a isa valtype(PNML.arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_idset(netsets), pid(a))
@@ -27,16 +27,16 @@ function parse_arc!(netsets, netdata, child, pntd; parse_context::ParseContext)
 end
 
 "Fill refplace_set, refplace_dict."
-function parse_refPlace!(netsets, netdata, child, pntd; parse_context::ParseContext)
-    rp = parse_refPlace(child, pntd; parse_context)::valtype(PNML.refplacedict(netdata))
+function parse_refPlace!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
+    rp = parse_refPlace(child, pntd, net)::valtype(PNML.refplacedict(netdata))
     push!(refplace_idset(netsets), pid(rp))
     PNML.refplacedict(netdata)[pid(rp)] = rp
     return refplace_idset(netsets)
 end
 
 "Fill reftransition_set, reftransition_dict."
-function parse_refTransition!(netsets, netdata, child, pntd; parse_context::ParseContext)
-    rt = parse_refTransition(child, pntd; parse_context)::valtype(PNML.reftransitiondict(netdata))
+function parse_refTransition!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
+    rt = parse_refTransition(child, pntd, net)::valtype(PNML.reftransitiondict(netdata))
     push!(reftransition_idset(netsets), pid(rt))
     PNML.reftransitiondict(netdata)[pid(rt)] = rt
     return reftransition_idset(netsets)
@@ -46,9 +46,9 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_place(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     check_nodename(node, "place")
-    placeid = register_idof!(parse_context.idregistry, node)
+    placeid = register_idof!(net.idregistry, node)
     D()&& println("## parse_place ", repr(placeid))
     mark = nothing
 
@@ -58,10 +58,10 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
             if isa(pntd, AbstractHLCore) && !isa(pntd, PT_HLPNG)
                 nothing # Deduce from initial marking.
             else
-                SortType("default", Labels.default_typesort(pntd), parse_context.ddict)
+                SortType("default", Labels.default_typesort(pntd), net)
             end
         else
-            parse_sorttype(typenode, pntd; parse_context, parentid=placeid)
+            parse_sorttype(typenode, pntd; net, parentid=placeid)
         end
     end
 
@@ -74,17 +74,17 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
         tag = Symbol(EzXML.nodename(child))
         if tag == :initialMarking || tag == :hlinitialMarking tag == :fifoinitialMarking
             isnothing(sorttype) && @warn "$pntd parse_place $placeid sorttype is nothing"
-            mark = parse_context.labelparser[tag](child, sorttype, pntd; parse_context, parentid=placeid)
+            mark = net.labelparser[tag](child, sorttype, pntd; net, parentid=placeid)
         elseif tag == :type
             # we already handled this
         elseif tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=placeid)
+            namelabel = net.labelparser[tag](child, pntd; net, parentid=placeid)
         elseif tag == :graphics
-            graphics = parse_context.labelparser[tag](child, pntd)
+            graphics = net.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # place
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # place
         else
-            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=placeid)
+            unexpected_label!(extralabels, child, tag, pntd; net, parentid=placeid)
         end
     end
 
@@ -94,30 +94,30 @@ function parse_place(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
                 #D()&&
                 @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
                             "use :dot even if it is WRONG")
-                SortType("dummy", NamedSortRef(:dot), parse_context.ddict)
+                SortType("dummy", NamedSortRef(:dot), net)
             else
                 sorttype
             end
         else
-            SortType("dummy", NamedSortRef(:natural), parse_context.ddict)
+            SortType("dummy", NamedSortRef(:natural), net)
         end
-        mark = default(Marking, pntd, default_sorttype; parse_context.ddict)
+        mark = default(Marking, pntd, default_sorttype, net)
     end
 
     if isnothing(sorttype) # Infer sortype of place from mark
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
         D()&& @warn("$pntd parse_place $(repr(placeid)) infer sorttype ", mark)
-        sorttype = SortType("default", basis(mark)::AbstractSortRef, decldict(mark))
+        sorttype = SortType("default", basis(mark)::AbstractSortRef, net)
     end
-    Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, net)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_transition(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     check_nodename(node, "transition")
-    transitionid = register_idof!(parse_context.idregistry, node)
+    transitionid = register_idof!(net.idregistry, node)
     D()&& println("## parse_transition ", repr(transitionid))
 
     cond::Maybe{PNML.Labels.Condition} = nothing
@@ -130,23 +130,23 @@ function parse_transition(node::XMLNode, pntd::PnmlType; parse_context::ParseCon
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
         if tag == :condition
-            cond = parse_context.labelparser[tag](child, pntd; parse_context, parentid=transitionid)
+            cond = net.labelparser[tag](child, pntd; net, parentid=transitionid)
         elseif tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=transitionid)
+            namelabel = net.labelparser[tag](child, pntd; net, parentid=transitionid)
         elseif tag == :graphics
-            graphics = parse_context.labelparser[tag](child, pntd)
+            graphics = net.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net)
         else
-            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=transitionid)
+            unexpected_label!(extralabels, child, tag, pntd; net, parentid=transitionid)
         end
     end
 
     Transition(transitionid,
-            something(cond, Labels.default(Labels.Condition, pntd; parse_context.ddict)),
+            something(cond, Labels.default(Labels.Condition, pntd, net)),
             namelabel, graphics, toolspecinfos, extralabels,
             Set{REFID}(),
-            NamedTuple[], parse_context.ddict)
+            NamedTuple[], net)
 end
 
 """
@@ -154,9 +154,9 @@ end
 
 Construct an `Arc` with labels specialized for the PnmlType.
 """
-function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseContext)
+function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     check_nodename(node, "arc")
-    arcid = register_idof!(parse_context.idregistry, node)
+    arcid = register_idof!(net.idregistry, node)
 
     source = Symbol(attribute(node, "source"))
     target = Symbol(attribute(node, "target"))
@@ -177,20 +177,18 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
             # Output arc inscription and target's marking/placesort must have equal Sorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
-            inscription = parse_context.labelparser[tag](child, source, target, pntd;
-                            netdata, parse_context, parentid=arcid)
+            inscription = net.labelparser[tag](child, source, target, pntd;
+                            net, parentid=arcid)
         elseif tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd;
-                            parse_context, parentid=arcid)
+            namelabel = net.labelparser[tag](child, pntd; net, parentid=arcid)
         elseif tag == :arctype
-            arc_type_label = parse_context.labelparser[tag](child, pntd;
-                                parse_context, parentid=arcid)
+            arc_type_label = net.labelparser[tag](child, pntd; net, parentid=arcid)
         elseif tag == :graphics
-            graphics = parse_context.labelparser[tag](child, pntd)
+            graphics = net.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context) # arc
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # arc
         else
-            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=arcid)
+            unexpected_label!(extralabels, child, tag, pntd; net, parentid=arcid)
         end
     end
 
@@ -199,7 +197,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     if isnothing(inscription)
         dummy_placetype = if ishighlevel(pntd)
             if pntd isa PT_HLPNG
-                SortType("dummy PT_HLPNG", NamedSortRef(:dot),  parse_context.ddict)
+                SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
             else
                 #D()&&r),  par
                 @error "$pntd inscription not provided for arc $(repr(arcid)) ($(repr(source)) -> $(repr(target))), will use :dot."
@@ -211,14 +209,14 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
                 # This (an inscription) is an expression for a ground term.
                 # Default should be one of the adjacent place sorttype.
                 #todo? Make expression that creates/caches default expresson when evaluated?
-                SortType("dummy HIGHLEVEL", NamedSortRef(:dot),  parse_context.ddict)
+                SortType("dummy HIGHLEVEL", NamedSortRef(:dot),  net)
            end
         elseif iscontinuous(pntd)
-            SortType("dummy CONTINUOUS", NamedSortRef(:real), parse_context.ddict)
+            SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
         elseif isdiscrete(pntd)
-            SortType("dummy DISCRETE", NamedSortRef(:positive), parse_context.ddict)
+            SortType("dummy DISCRETE", NamedSortRef(:positive), net)
         end
-        inscription = default(Inscription, pntd, dummy_placetype; parse_context.ddict)
+        inscription = default(Inscription, pntd, dummy_placetype, net)
     end
 
     if isnothing(arc_type_label)
@@ -228,15 +226,15 @@ function parse_arc(node::XMLNode, pntd::PnmlType; netdata, parse_context::ParseC
     Arc(; id=arcid, source=Ref(source), target=Ref(target),
         inscription, arctypelabel=arc_type_label, namelabel, graphics,
         toolspecinfos, extralabels,
-        declarationdicts=parse_context.ddict)
+        net)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_refPlace(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     check_nodename(node, "referencePlace")
-    refp_id = register_idof!(parse_context.idregistry, node)
+    refp_id = register_idof!(net.idregistry, node)
     D()&& println("## parse_refPlace ", repr(refp_id))
 
     ref = Symbol(attribute(node, "ref"))
@@ -249,25 +247,25 @@ function parse_refPlace(node::XMLNode, pntd::PnmlType; parse_context::ParseConte
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
         if tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=refp_id)
+            namelabel = net.labelparser[tag](child, pntd; net, parentid=refp_id)
         elseif tag == :graphics
-            graphics =  parse_context.labelparser[tag](child, pntd)
+            graphics =  net.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net)
         else
-            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=refp_id)
+            unexpected_label!(extralabels, child, tag, pntd; net, parentid=refp_id)
         end
     end
 
-    RefPlace(refp_id, ref, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    RefPlace(refp_id, ref, namelabel, graphics, toolspecinfos, extralabels, net)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_refTransition(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     check_nodename(node, "referenceTransition")
-    reft_id = register_idof!(parse_context.idregistry, node)
+    reft_id = register_idof!(net.idregistry, node)
     D()&& println("## parse_refTransition ", repr(reft_id))
 
     ref = Symbol(attribute(node, "ref"))
@@ -280,15 +278,15 @@ function parse_refTransition(node::XMLNode, pntd::PnmlType; parse_context::Parse
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
         if tag == :name
-            namelabel = parse_context.labelparser[tag](child, pntd; parse_context, parentid=reft_id)
+            namelabel = net.labelparser[tag](child, pntd; net, parentid=reft_id)
         elseif tag == :graphics
-            graphics = parse_context.labelparser[tag](child, pntd)
+            graphics = net.labelparser[tag](child, pntd)
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, parse_context)
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net)
         else
-            unexpected_label!(extralabels, child, tag, pntd; parse_context, parentid=reft_id)
+            unexpected_label!(extralabels, child, tag, pntd; net, parentid=reft_id)
         end
     end
 
-    RefTransition(reft_id, ref, namelabel, graphics, toolspecinfos, extralabels, parse_context.ddict)
+    RefTransition(reft_id, ref, namelabel, graphics, toolspecinfos, extralabels, net)
 end

@@ -74,9 +74,9 @@ import XMLDict
 #-----------------------------------------------------------------------------------
 @testset "parse tool specific info $(s.tool) $(s.version)" for s in [str1, str2, str3, str4, str5, str6, str7]
     println("\n###### parse tool $(s.tool) $(s.version)")
-    ctx = PNML.parser_context()
+    net = PnmlNet(PnmlCoreNet(), :fake)
     # println(s.str)
-    tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); parse_context=ctx)
+    tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); net)
 
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
@@ -93,7 +93,7 @@ end
 println()
 
 @testset "tool specific info combined" begin
-    n::XMLNode = xmlnode("""<place id="place0">
+    s = """<place id="place0">
         $(str1.str)
         $(str2.str)
         $(str3.str)
@@ -103,10 +103,13 @@ println()
         $(str7.str)
         <initialMarking> <text>5</text> </initialMarking>
     </place>
-    """)
+    """
+    n::XMLNode = xmlnode(s)
+    net = PnmlNet(PnmlCoreNet(), :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
 
-    ctx = PNML.parser_context()
-    combinedplace = parse_place(n, PnmlCoreNet(); parse_context=ctx)
+    combinedplace = parse_place(n, PnmlCoreNet(), net)
 
     @test_call toolinfos(combinedplace)
     placetools = toolinfos(combinedplace)
@@ -135,18 +138,18 @@ end
 @testset "parse tool specific errors" begin
     println("\n\nparse tool specific errors")
     pntd = PnmlCoreNet()
-    ctx = PNML.parser_context()
+    net = PnmlNet(PnmlCoreNet(), :fake)
 
     t1 = """<toolspecific version="" tool="toolname" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t1), PnmlCoreNet(); parse_context=ctx)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t1), PnmlCoreNet(); net)
     # errors = String[]
     # @show PNML.verify!(errors, tool1, true, ctx.idregistry)
 
     t2 = """<toolspecific version="1.0" tool="" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t2), PnmlCoreNet(); parse_context=ctx)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t2), PnmlCoreNet(); net)
 
     t3 = """<toolspecific version="" tool="" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t3), PnmlCoreNet(); parse_context=ctx)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t3), PnmlCoreNet(); net)
 
 #    @test_throws  "ToolInfo must have non-empty version"
 #    @test_throws  "ToolInfo must have non-empty name"

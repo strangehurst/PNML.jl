@@ -35,25 +35,27 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-ctx = @inferred PNML.parser_context()
+net = PnmlNet(PnmlCoreNet(), :fake)
+PNML.fill_nonhl!(net)
+PNML.fill_labelp!(net)
 
 @testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
-    c = @inferred Labels.default(Labels.Condition, pntd; ctx.ddict) #::Labels.Condition
+    c = @inferred Labels.default(Labels.Condition, pntd, net) #::Labels.Condition
     @test c() == true
 end
 
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
     placetype = if ishighlevel(pntd)
-        @inferred SortType("dummy", NamedSortRef(:dot), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:dot), nothing, nothing, net)
     elseif iscontinuous(pntd)
-        @inferred SortType("dummy", NamedSortRef(:real), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:real), nothing, nothing, net)
     elseif isdiscrete(pntd)
-        @inferred SortType("dummy", NamedSortRef(:positive), nothing, nothing, ctx.ddict)
+        @inferred SortType("dummy", NamedSortRef(:positive), nothing, nothing, net)
     else
         error("pntd not known")
     end
-    i = @inferred Inscription Labels.default(Inscription, pntd, placetype; ctx.ddict)
+    i = @inferred Inscription Labels.default(Inscription, pntd, placetype, net)
     #println("default(Inscription($pntd) = ", i)
 end
 
@@ -108,7 +110,6 @@ end
     @test_logs (:info, r"^adding mapping") @inferred add_type!(typemap, :newpntd, PnmlCoreNet())
     @test :newpntd in keys(typemap)
     @test typemap[:newpntd] === PnmlCoreNet()
-    @show typemap
 end
 
 @testset "sortref" begin

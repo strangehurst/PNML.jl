@@ -1,3 +1,5 @@
+# ToolInfo is not a PNML Label.
+# It can be attached to `PnmlNets`, PNML labels, `AbstractPnmlObject`s.
 """
 $(TYPEDEF)
 $(TYPEDFIELDS)
@@ -8,11 +10,11 @@ It wraps an AbstractDict representing well formed XML.
 parsed into [`AnyElement`](@ref)s for use by anything that understands
 toolname, version tool specifics.
 """
-@auto_hash_equals fields=toolname,version,info typearg=true struct ToolInfo
+@auto_hash_equals fields=toolname,version,info typearg=true struct ToolInfo{N <: AbstractPnmlNet}
     toolname::String
     version::String
     info::AnyElement
-    declarationdicts::DeclDict
+    net::N
 end
 
 "Name of tool to for this tool specific information element."

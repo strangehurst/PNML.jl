@@ -8,8 +8,8 @@ There must be at least 1 Page for a valid pnml model.
 `PNTD` binds the other type parameters together to express a specific PNG.
 See [`PnmlNet`](@ref)
 """
-@kwdef mutable struct Page{PNTD <: PnmlType} <: AbstractPnmlObject
-    net::RefValue{<:AbstractPnmlNet}
+@kwdef mutable struct Page{PNTD <: PnmlType, N <: AbstractPnmlNet} <: AbstractPnmlObject
+    net::N
     pntd::PNTD
     id::Symbol
     namelabel::Maybe{Name} = nothing
@@ -17,13 +17,14 @@ See [`PnmlNet`](@ref)
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
     netsets::PnmlNetKeys # This page's keys of items owned in netdata/pagedict. Not shared.
-    # Note: `PnmlNet` only has `page_set` because all PNML net Objects are attached to a `Page`. And there must be one `Page`.
+    # Note: `PnmlNet` only has `page_idset` becpage_setause all PNML net Objects
+    # are attached to a `Page`. And there must be at least one `Page`.
     # There could be >1 nets. `netdata` is ordered, `netsets` are unordered.
 end
 
 nettype(pg::Page) = nettype(net(pg))
 
-net(page::Page) = page.net[]
+net(page::Page) = page.net
 pagedict(page::Page) = pagedict(net(page))
 netdata(page::Page)  = netdata(net(page))
 netsets(page::Page)  = page.netsets
@@ -64,9 +65,9 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-function Base.show(io::IO, page::Page)
+function Base.show(io::IO, page::Page{T,N}) where {T <: PnmlType, N <: AbstractPnmlNet}
     #TODO Add support for :trim and :compact
-    print(io, "Page{", nettype(page),"}("),
+    print(io, "Page{", T, ", ", N,"}("),
     show(io, pid(page)); print(io, ", ")
     show(io, name(page)); print(io, ", ")
     println(io)

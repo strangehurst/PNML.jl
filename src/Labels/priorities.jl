@@ -8,12 +8,12 @@ Expected XML: `<priority> <text>0.3</text> </priority>`.
 
 Dynamic priority is a function with arguments of net marking and transition.
 """
-@kwdef struct Priority{T<:PnmlExpr} <: Annotation
+@kwdef struct Priority{T<:PnmlExpr, N <: AbstractPnmlNet} <: Annotation
     #todo text
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    declarationdicts::DeclDict
+    net::N
 end
 
 value_type(::Type{Priority}) = Float64
@@ -21,13 +21,13 @@ value_type(::Type{Priority}, ::PnmlType) = Float64
 
 Base.eltype(::Priority) = value_type(Priority)
 
-decldict(i::Priority) = i.declarationdicts
+decldict(i::Priority) = decldict(i.net)
 term(i::Priority) = i.term
-sortref(i::Priority) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
+sortref(i::Priority) = expr_sortref(term(i), i.net)::AbstractSortRef
 sortof(i::Priority) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
 
 function (priority::Priority)(varsub::NamedTuple=NamedTuple())
-    eval(toexpr(term(priority), varsub, decldict(priority)))::value_type(Priority)
+    eval(toexpr(term(priority), varsub, priority.net))::value_type(Priority)
 end
 
 value(r::Priority) = r()

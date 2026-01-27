@@ -40,8 +40,6 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: labels, varsubs
 
-@reexport using PNML: ParseContext, parser_context
-
 @reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
     parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
     parse_name, parse_text, parse_graphics, parse_toolspecific,

@@ -24,11 +24,11 @@ All fill the same `DeclDict`. See [`fill_decl_dict!`](@ref)
 """
 function parse_declaration! end
 
-function parse_declaration!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
-    parse_declaration!(ctx, [node], pntd)
+function parse_declaration!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
+    parse_declaration!(net, [node], pntd)
 end
 
-function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::PnmlType)
+function parse_declaration!(net::AbstractPnmlNet, nodes::Vector{XMLNode}, pntd::PnmlType)
     D()&& println("## parse_declaration! $(length(nodes)) <declaration> node(s)")
 
     text = nothing
@@ -39,32 +39,32 @@ function parse_declaration!(ctx::ParseContext, nodes::Vector{XMLNode}, pntd::Pnm
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
             if tag == "structure" # accumulate '<declarations>'
-                fill_decl_dict!(ctx, child, pntd) # Assumes high-level semantics.
-            elseif tag == "text" # may overwrite
+                fill_decl_dict!(net, child, pntd) # Assumes high-level semantics.
+            elseif tag == "text" && isnothing(text) # no overwrite
                 text = string(strip(EzXML.nodecontent(child)))::String
                 #@info "declaration text: $text" # Do not expect text here, so it must be important.
-            elseif tag == "graphics"# may overwrite
+            elseif tag == "graphics" && isnothing(graphics) # no overwrite
                 graphics = parse_graphics(child, pntd)
             elseif tag == "toolspecific" # accumulate tool specific
-                toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, ctx) # declarations are labels
+                toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # declarations are labels
             else
                 @warn "ignoring unexpected child of <declaration>: '$tag'"
             end
         end
     end
     D()&& println("Declaration '$text'")
-    D()&& println(ctx.ddict)
-    Declaration(; text, ctx.ddict, graphics, toolspecinfos)
+    D()&& println(net.ddict)
+    Declaration(; text, net.ddict, graphics, toolspecinfos) #? make Ref(net.ddict)?
 end
 
 """
-    fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType) -> ParseContext
+    fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType) -> Nothing
 
-Add a `<declaration><structure><declarations>` to ParseContext.
+Add a `<declaration><structure><declarations>` to DeclDict.
 `<declaration>` may be attached to `<net>` and `<page>` elements.
 Are network-level values even if attached to pages.
 """
-function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
+function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "structure")
     EzXML.haselement(node) ||
         throw(ArgumentError("missing <declaration><structure> element"))
@@ -75,17 +75,17 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
     for child in EzXML.eachelement(declarations)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
-            ns = parse_namedsort(child, pntd; parse_context=ctx)
-            PNML.namedsorts(ctx.ddict)[pid(ns)] = ns # fill_decl_dict! namedsort
+            ns = parse_namedsort(child, pntd; net)
+            PNML.namedsorts(decldict(net))[pid(ns)] = ns # fill_decl_dict! namedsort
         elseif tag == "namedoperator"
-            no = parse_namedoperator(child, pntd; parse_context=ctx)
-            PNML.namedoperators(ctx.ddict)[pid(no)] = no # fill_decl_dict! namedoperator
+            no = parse_namedoperator(child, pntd; net)
+            PNML.namedoperators(decldict(net))[pid(no)] = no # fill_decl_dict! namedoperator
         elseif tag == "variabledecl"
-            vardecl = parse_variabledecl(child, pntd; parse_context=ctx)
-            PNML.variabledecls(ctx.ddict)[pid(vardecl)] = vardecl # fill_decl_dict! variabledecl
+            vardecl = parse_variabledecl(child, pntd; net)
+            PNML.variabledecls(decldict(net))[pid(vardecl)] = vardecl # fill_decl_dict! variabledecl
         elseif tag == "partition"
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
-            part = parse_partition(child, pntd; parse_context=ctx)::AbstractSortRef
+            part = parse_partition(child, pntd; net)::AbstractSortRef
             @assert isa_variant(part, PartitionSortRef)
 
         #TODO Where do we find these things? Is this were they are de-duplicated?
@@ -94,13 +94,13 @@ function fill_decl_dict!(ctx::ParseContext, node::XMLNode, pntd::PnmlType)
         #!     dd.partitionops[pid(partop)] = partop
 
         elseif tag == "arbitrarysort" # TODO
-            arb = parse_arbitrarysort(child, pntd; parse_context=ctx)
+            arb = parse_arbitrarysort(child, pntd; net)
             @assert isa_variant(arb, ArbitrarySortRef)
        else
-            push!(unknown_decls, parse_unknowndecl(child, pntd; parse_context=ctx))
+            push!(unknown_decls, parse_unknowndecl(child, pntd; net))
         end
     end
-    return ctx
+    return nothing
 end
 
 """
@@ -108,7 +108,7 @@ $(TYPEDSIGNATURES)
 
 Declaration that wraps a Sort, adding an ID and name.
 """
-function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_namedsort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "namedsort")
     # Will have created namedsort for builtin sorts.
     # Replacement of those, in particular, :dot, will trigger a duplicate id error
@@ -117,27 +117,26 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     sortid = Symbol(@inbounds(node["id"]))
     if !Sorts.isbuiltinsort(sortid)
-        register_id!(parse_context.idregistry, sortid)
+        register_id!(net.idregistry, sortid)
     end
     name = attribute(node, "name")
 
     child = EzXML.firstelement(node)
     isnothing(child) && error("no sort definition element for namedsort $(repr(sortid)) $name")
-    ddict = parse_context.ddict
 
     D()&& println("## parse_namedsort $sortid $name")
     # Sort can be built-in, multiset, product.
-    def = parse_sort(EzXML.firstelement(node), pntd, sortid, name; parse_context)::AbstractSortRef
+    def = parse_sort(EzXML.firstelement(node), pntd, sortid, name; net)::AbstractSortRef
     isnothing(def) &&
         error("failed to parse sort definition for namedsort $(repr(sortid)) $name")
 
     #? check for loops?
     # convert SortRef to concrete sort object.
-    sort = to_sort(def; ddict)
+    sort = to_sort(def, net)
     if isa(sort, NamedSort)
         sort = sortdefinition(sort)
     end
-    NamedSort(sortid, name, sort, ddict) #^ Concrete sort object.
+    NamedSort(sortid, name, sort, net) #^ Concrete sort object.
 
     # AbstractSortRef concrete type holds REFID and implicit dictionary of `DeclDict`.
     # Examples: `arbitrarysorts`, 'partitionsorts`, `productsorts`, `multisetsorts`.
@@ -154,9 +153,9 @@ Declaration of an operator expression in many-sorted algebra.
 An operator of arity 0 is a constant (ground-term, literal).
 When arity > 0, the parameters are variables, using a NamedTuple for values.
 """
-function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_namedoperator(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "namedoperator")
-    nopid = register_idof!(parse_context.idregistry, node)
+    nopid = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
     D()&& println("parse_namedoperator $(repr(nopid)) $(repr(name))") #! debug
 
@@ -167,8 +166,8 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
     if !isnothing(pnode)
         # Zero or more parameters for operator (arity). Map from id to sort object.
         for vdeclnode in EzXML.eachelement(pnode)
-            vardecl = parse_variabledecl(vdeclnode, pntd; parse_context)
-            PNML.variabledecls(parse_context.ddict)[pid(vardecl)] = vardecl # parse_namedoperator
+            vardecl = parse_variabledecl(vdeclnode, pntd; net)
+            PNML.variabledecls(decldict(net))[pid(vardecl)] = vardecl # parse_namedoperator
             push!(parameters, vardecl)
         end
     end
@@ -181,7 +180,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
     # The sortof the operator is the output sort of def.
     if !isnothing(dnode)
         # contains 1 term
-        def = parse_term(EzXML.firstelement(dnode), pntd; parse_context, vars=())::TermJunk
+        def = parse_term(EzXML.firstelement(dnode), pntd; net, vars=())::TermJunk
     else
         error("<namedoperator name=$(repr(name)) id=$(repr(nopid))> does not have a <def> element")
     end
@@ -189,7 +188,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; parse_context::Parse
     isempty(def.vars) ||
         @error("<namedoperator name=$(repr(name)) id=$(repr(nopid))> has variables: ",  def)
 
-    NamedOperator(nopid, name, parameters, def.exp, parse_context.ddict)
+    NamedOperator(nopid, name, parameters, def.exp, net)
 end
 
 
@@ -211,7 +210,7 @@ From ePNK-pnml-examples/NetworkAlgorithms/runtimeValueEval.pnml.
 =#
 
 """
-    parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) -> VariableDeclaration
+    parse_variabledecl(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet) -> VariableDeclaration
 
 Variable declarations associate an `id`, `name` and `sort`.
 Stored in DeclDict with key of `id`.
@@ -226,41 +225,41 @@ removed from input place markings, added to output place markings.
 
 Variables are used to substitute tokens into expressions when evaluating terms.
 """
-function parse_variabledecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_variabledecl(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "variabledecl")
-    varid = register_idof!(parse_context.idregistry, node)
+    varid = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
     D()&& println("## parse_variabledecl $(repr(varid)) $(repr(name))") #! debug
 
     # firstelement throws on nothing. Ignore more than 1.
-    vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; parse_context)::AbstractSortRef
+    vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; net)::AbstractSortRef
     isnothing(vsortref) &&
         error("failed to parse sort definition for variabledecl $(repr(varid)) $name")
     # There is a namedsort created for every built-in sort, #todo multisetsorts, productsorts
-    VariableDeclaration(varid, name, vsortref, parse_context.ddict)
+    VariableDeclaration(varid, name, vsortref, net)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function parse_unknowndecl(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_unknowndecl(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     nn = EzXML.nodename(node)
-    unkid = register_idof!(parse_context.idregistry, node)
+    unkid = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
     unkncontent = anyelement(unkid, node)
     @warn("parse unknown declaration: tag = $nn, id = $unkid, name = $name", unkncontent)
-    return UnknownDeclaration(unkid, name, nn, unkncontent, parse_context.ddict)
+    return UnknownDeclaration(unkid, name, nn, unkncontent, net)
 end
 
 """
-    parse_feconstants(::XMLNode, ::PnmlType, ::REFID; ddict) -> Tuple{<:AbstractSortRef}
+    parse_feconstants(::XMLNode, ::PnmlType, ::REFID; net::AbstractPnmlNet) -> Tuple{<:AbstractSortRef}
 
-Place the constants into feconstants(ddict).
+Place the constants into feconstants(net).
 Return tuple of finite enumeration constant REFIDs.
 
 Access as 0-ary operator indexed by REFID
 """
-function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortRef; parse_context::ParseContext)
+function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortRef; net::AbstractPnmlNet)
     sorttag = EzXML.nodename(node)
     @assert sorttag in ("finiteenumeration", "cyclicenumeration") #? partition also?
     EzXML.haselement(node) || error("$sorttag has no child element")
@@ -271,10 +270,10 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortR
         if tag != "feconstant"
             throw(PNML.MalformedException("$sorttag has unexpected child element $tag"))
         else
-            fecid = register_idof!(parse_context.idregistry, child)
+            fecid = register_idof!(net.idregistry, child)
             name = attribute(child, "name")
-            PNML.feconstants(parse_context.ddict)[fecid] =
-                PNML.FEConstant(fecid, name, sortref,  parse_context.ddict) #= sortref =#
+            PNML.feconstants(decldict(net))[fecid] =
+                PNML.FEConstant(fecid, name, sortref)  #,  decldict(net))
             push!(fec_refids, fecid)
         end
     end
@@ -287,20 +286,20 @@ $(TYPEDSIGNATURES)
 Returns concrete [`AbstractSortRef`](@ref) wraping the REFID of a
 [`NamedSort`](@ref), [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref).
 """
-function parse_usersort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_usersort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "usersort")
     declid = Symbol(attribute(node, "declaration"))
 
     # <usersort> holds a reference to a declaration: named, partition, arbitrary.
     # We extract that information and encode it in the SortRef ADT.
-    if PNML.has_namedsort(parse_context.ddict, declid)
+    if PNML.has_namedsort(decldict(net), declid)
         NamedSortRef(declid)
-    elseif PNML.has_partitionsort(parse_context.ddict, declid)
+    elseif PNML.has_partitionsort(decldict(net), declid)
         PartitionSortRef(declid)
-    elseif PNML.has_arbitrarysort(parse_context.ddict, declid)
+    elseif PNML.has_arbitrarysort(decldict(net), declid)
         ArbitrarySortRef(declid)
     else
-        error("Did not find sort declaration for $(repr(declid)) in $(repr(parse_context.ddict))")
+        error("Did not find sort declaration for $(repr(declid)) in $(repr(decldict(net)))")
     end
 end
 
@@ -309,16 +308,16 @@ $(TYPEDSIGNATURES)
 
 Returns concrete [`AbstractSortRef`](@ref) wraping the REFID of a [`ArbitrarySort`](@ref).
 """
-function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; parse_context::ParseContext)
+function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "arbitrarysort")
-    arbid = register_idof!(parse_context.idregistry, node)
+    arbid = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
     @warn("parse arbitrarysort: id = $arbid, name = $name")
-    arb = ArbitrarySort(arbid, name, parse_context.ddict)
-    fill_sort_tag!(parse_context, arbid, arb)
-    @assert PNML.arbitrarysorts(parse_context.ddict)[arbid] == arb
-    namedsorts(parse_context.ddict)[arbid] = NamedSort(arbid, string(arbid), arb, parse_context.ddict)
-    return make_sortref(parse_context, PNML.arbitrarysorts, arb, "arbitrarysort", arbid, "")
+    arb = ArbitrarySort(arbid, name, net)
+    fill_sort_tag!(net, arbid, arb)
+    @assert PNML.arbitrarysorts(decldict(net))[arbid] == arb
+    namedsorts(decldict(net))[arbid] = NamedSort(arbid, string(arbid), arb, net)
+    return make_sortref(net, PNML.arbitrarysorts, arb, "arbitrarysort", arbid, "")
 end
 
 #=
@@ -331,21 +330,21 @@ with a NamedSort holding the concrete sort.
 """
     parse_sort(node::XMLNode, pntd::PnmlType,
                 id::Maybe{REFID}=nothing, name::String="";
-                parse_context::ParseContext)
+                net::AbstractPnmlNet)
     parse_sort(::Val{:tag}, node::XMLNode, pntd::PnmlType, id, name;
-                parse_context::ParseContext)
+                net::AbstractPnmlNet)
 
 
 Where `tag` is the XML element tag name for a parser invoked using Val{:tag}.
 
 See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_variabledecl`](@ref).
 """
-function parse_sort(node::XMLNode, pntd::PnmlType, sortid::Maybe{REFID}=nothing,  name::String=""; parse_context::ParseContext)
+function parse_sort(node::XMLNode, pntd::PnmlType, sortid::Maybe{REFID}=nothing,  name::String=""; kwargs...)#net::AbstractPnmlNet)
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
     # !isnothing(sortid) || !isempty(name) &&
     D()&& println("## parse_sort $sorttag id=$sortid name=$name tag=$(repr(sorttag))") #! debug
-    return parse_sort(Val(sorttag), node, pntd, sortid, name; parse_context)::AbstractSortRef
+    return parse_sort(Val(sorttag), node, pntd, sortid, name; kwargs...)::AbstractSortRef
 end
 
 # Built-ins sorts
@@ -355,23 +354,23 @@ end
 #! Followed by parsing all declarations where `parse_sort is used`.
 #! Then the net where terms use sorts.
 
-function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:bool}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:bool)
 end
 
-function parse_sort(::Val{:integer}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:integer}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:integer)
 end
 
-function parse_sort(::Val{:natural}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:natural}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:natural)
 end
 
-function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:positive}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:positive)
 end
 
-function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:real}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:real)
 end
 
@@ -383,12 +382,12 @@ end
 
 # NB: ePNK examples uses some inlined sorts
 
-function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:dot}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     NamedSortRef(:dot) # The user overrides in a declaration.
 end
 
-function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext) #! see parse_namedsort
-    parse_usersort(node, pntd; parse_context)
+function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet) #! see parse_namedsort
+    parse_usersort(node, pntd; net)
 end
 
 
@@ -410,25 +409,25 @@ end
 
 
 # is a finiteenumeration with additional operators: successor, predecessor
-function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
+function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
     check_nodename(node, "cyclicenumeration")
     #D()&& println("cyclicenumeration $(repr(parentid)), $(repr(name))") #! debug
-    fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); parse_context) # pared
-    ces = CyclicEnumerationSort(fecs, parse_context.ddict)
-    sref = make_sortref(parse_context, PNML.namedsorts, ces, "cyclicenumeration", parentid, name)
+    fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); net) # pared
+    ces = CyclicEnumerationSort(fecs)
+    sref = make_sortref(net, PNML.namedsorts, ces, "cyclicenumeration", parentid, name)
     return sref
 end
 
-function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
+function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
     check_nodename(node, "finiteenumeration")
     #D()&& println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
-    fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); parse_context)
-    fes = FiniteEnumerationSort(fecs, parse_context.ddict)
-    sref = make_sortref(parse_context, PNML.namedsorts, fes, "finiteenumeration", parentid, name)
+    fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); net)
+    fes = FiniteEnumerationSort(fecs)#, decldict(net))
+    sref = make_sortref(net, PNML.namedsorts, fes, "finiteenumeration", parentid, name)
     return sref
 end
 
-function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
+function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
     check_nodename(node, "finiteintrange")
 
     startstr = attribute(node, "start")
@@ -444,12 +443,12 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, paren
     # See function parse_term(::Val{:finiteintrangeconstant} for inline sort use.
     # Look for `sort` in `namedsorts(ddict)`, else create named/user duo.
     sorttag = Symbol("FiniteIntRange_",startstr,"_",stopstr)
-    if haskey(namedsorts(parse_context.ddict), sorttag)
+    if haskey(namedsorts(decldict(net)), sorttag)
         return NamedSortRef(sorttag)
     else
         # Did not find namedsort, will instantiate named,user duo for one. See fill_nonhl!
-        sort = FiniteIntRangeSort(startval, stopval, parse_context.ddict)
-        sref = make_sortref(parse_context, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
+        sort = FiniteIntRangeSort(startval, stopval)
+        sref = make_sortref(net, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
         #D()&& @show sref
         @assert isa_variant(sref, NamedSortRef)
         return sref
@@ -466,7 +465,7 @@ end
 #TODO inline sort like FiniteIntRangeSort, but <tuple> may use non-ground terms to deduce.
 #TODO tuples may be nested.
 #TODO <tuple> is operator, subterms are expressions (terms) that have sortrefs.
-function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, name; parse_context::ParseContext)
+function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, name; net::AbstractPnmlNet)
     check_nodename(node, "productsort")
 
     isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is $(repr(sortid))") #! debug
@@ -474,41 +473,41 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
     sorts = [] # Orderded collection of zero or more Sorts in ISO 15909 Standard.
     for child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(child))
-        asr = parse_sort(Val(tag), child, pntd, nothing, ""; parse_context)::AbstractSortRef
+        asr = parse_sort(Val(tag), child, pntd, nothing, ""; net)::AbstractSortRef
         push!(sorts, asr)
     end
     isempty(sorts) &&
         @warn "ISO 15909 Standard allows a <productsort> to be empty. And somebody did!"
     # What is the use of an empty productsort? bottom?
 
-    prodsort = ProductSort(tuple(sorts...), parse_context.ddict)
+    prodsort = ProductSort(tuple(sorts...))
 
     # See if there exists a matching sort. #! debug?
-    for (id,ps) in pairs(productsorts(parse_context.ddict))
-        if PNML.Sorts.equalSorts(ps, prodsort)
-            @info "Found product sort $id while looking for $prodsort for sortid=$sortid name=$name" productsorts(parse_context.ddict)
+    for (id,ps) in pairs(productsorts(decldict(net)))
+        if PNML.Sorts.equalSorts(ps, prodsort, net)
+            @info "Found product sort $id while looking for $prodsort "*
+                    "for sortid=$sortid name=$name" productsorts(decldict(net))
          end
     end
 
-
-    fill_sort_tag!(parse_context, sortid, prodsort) # add to productsorts without a sortref
-    return make_sortref(parse_context, namedsorts, prodsort, "product", sortid, name)
+    fill_sort_tag!(net, sortid, prodsort) # add to productsorts without a sortref
+    return make_sortref(net, namedsorts, prodsort, "product", sortid, name)
 end
 
 
-function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, sortid, u2; parse_context::ParseContext)
+function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     @error("IMPLEMENT ME: :list")
     #make_sort!(dict, :list, "List",
-    ListSort(parse_context.ddict)
+    ListSort(decldict(net))
 end
 
-function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, parentid, name; parse_context::ParseContext)
-    ss = StringSort(parse_context.ddict)
-    sref = make_sortref(parse_context, PNML.namedsorts, ss, "string", parentid, name)
+function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
+    ss = StringSort(decldict(net))
+    sref = make_sortref(net, PNML.namedsorts, ss, "string", parentid, name)
     return sref
 end
 
-function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, sortid, name; parse_context::ParseContext)
+function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, sortid, name; net::AbstractPnmlNet)
     check_nodename(node, "multisetsort")
     EzXML.haselement(node) || throw(ArgumentError("multisetsort missing basis sort"))
 
@@ -523,22 +522,23 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, pntd::PnmlType, sortid,
 
     tag in (:partition, :partitionelement, :multisetsort) &&
         throw(ArgumentError("multisetsort basis $tag not allowed")) #todo test this!
-    basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; parse_context)::AbstractSortRef # of multisetsort
+    basissort = parse_sort(Val(tag), basisnode, pntd, nothing, ""; net)::AbstractSortRef # of multisetsort
     @assert isa_variant(basissort, NamedSortRef)
-    #D()&& @warn "parse_sort(::Val{:multisetsort}" basissort sortdefinition(to_sort(basissort; parse_context.ddict))
-    #!isnothing(sortid) && @error "inlined multiset" parse_context.ddict
-    ms = MultisetSort(basissort, parse_context.ddict)
-    return make_sortref(parse_context, PNML.multisetsorts, ms, "multiset", sortid, name)
+    #D()&& @warn "parse_sort(::Val{:multisetsort}" basissort sortdefinition(to_sort(basissort, net))
+    #!isnothing(sortid) && @error "inlined multiset" net
+    ms = MultisetSort(basissort, net)
+    return make_sortref(net, PNML.multisetsorts, ms, "multiset", sortid, name)
 end
 
 """
-    to_sort(sortref::AbstractSortRef; ddict::DeclDict) -> AbstractSort
+    to_sort(sortref::AbstractSortRef, ddict::DeclDict) -> AbstractSort
 
 Return concrete sort from `ddict` using the `REFID` in `sortref`,
 """
-function to_sort(sr::AbstractSortRef; ddict::DeclDict)
+function to_sort(sr::AbstractSortRef, net::AbstractPnmlNet)
     #@show sr
     is_data_type(sr) || error("!isdata_type($sr)")
+    ddict = decldict(net)
     # NamedSort, PatritionSort, ArbitrarySort are declarations
     isa_variant(sr, SortRef.NamedSortRef) && return PNML.namedsort(ddict, refid(sr)) # todo unwrap namedsort
     isa_variant(sr, SortRef.ProductSortRef) && return PNML.productsort(ddict, refid(sr)) #! named sort
@@ -558,13 +558,13 @@ function to_sort(sr::AbstractSortRef; ddict::DeclDict)
     # end
     return s
 end
-to_sort(s::AbstractSort; ddict::DeclDict) = s
+to_sort(s::AbstractSort, ::AbstractPnmlNet) = s
 
 #=
 Partition # id, name, usersort, partitionelement[]
 =#
-function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseContext) #! a sort declaration!
-    partid = register_idof!(parse_context.idregistry, node)
+function parse_partition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet) #! a sort declaration!
+    partid = register_idof!(net.idregistry, node)
     nameval = attribute(node, "name")
     D()&& println("## parse_partition $(repr(partid)) $nameval")
     partitioned_sortref::Maybe{AbstractSortRef} = nothing
@@ -573,11 +573,11 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
         tag = EzXML.nodename(child)
         if tag == "usersort" # The sort that partitionelements reference into.
             # The only non-partitionelement child possible,
-            partitioned_sortref = parse_usersort(child, pntd; parse_context)::AbstractSortRef
+            partitioned_sortref = parse_usersort(child, pntd; net)::AbstractSortRef
             #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
             @assert isa_variant(partitioned_sortref, NamedSortRef)
         elseif tag === "partitionelement" # Each holds REFIDs to sort elements of the enumeration.
-            parse_partitionelement!(elements, child, partid; parse_context) # pass REFID to partition
+            parse_partitionelement!(elements, child, partid; net) # pass REFID to partition
         else
             throw(PNML.MalformedException(string("partition child element unknown: ", tag,
                                 " allowed are usersort, partitionelement")))
@@ -593,26 +593,27 @@ function parse_partition(node::XMLNode, pntd::PnmlType; parse_context::ParseCont
                 ", name = ", repr(nameval),
                 ", sort = ", repr(partitioned_sortref))
 
-    partsort = PNML.PartitionSort(partid, nameval, partitioned_sortref, elements, parse_context.ddict) # A Declaraion named Sort!
+    partsort = PNML.PartitionSort(partid, nameval, partitioned_sortref, elements, net) # A Declaraion named Sort!
 
     PNML.verify_partition(partsort) || error("verify_partition failed: $repr(partsort)")
 
     # add to productsorts
-    fill_sort_tag!(parse_context, partid, partsort)
-    @assert partitionsorts(parse_context.ddict)[partid] == partsort
+    fill_sort_tag!(net, partid, partsort)
+    @assert partitionsorts(decldict(net))[partid] == partsort
     # make a user/named sort duo
-    namedsorts(parse_context.ddict)[partid] = NamedSort(partid, string(partid), partsort, parse_context.ddict)
-    return make_sortref(parse_context, PNML.partitionsorts, partsort, "partition", partid, "")
+    namedsorts(decldict(net))[partid] = NamedSort(partid, string(partid), partsort, net)
+    return make_sortref(net, PNML.partitionsorts, partsort, "partition", partid, "")
 end
 
 """
-    parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode; ddict)
+    parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode rid::REFID; net::AbstractPnmlNet)
 
 Parse `<partitionelement>`, add FEConstant refids to the element and append element to the vector.
 """
-function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode, rid::REFID; parse_context::ParseContext)
+function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode,
+                                    rid::REFID; net::AbstractPnmlNet)
     check_nodename(node, "partitionelement")
-    peid = register_idof!(parse_context.idregistry, node)
+    peid = register_idof!(net.idregistry, node)
     nameval = attribute(node, "name")
     terms = REFID[] # Ordered collection, usually feconstant.
     for child in EzXML.eachelement(node)
@@ -621,7 +622,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
             # PartitionElements refer to the FEConstants of the referenced enumeration sort.
             # UserOperator here holds an REFID to a FEConstant callable object.
             declid = Symbol(attribute(child, "declaration"))
-            PNML.has_feconstant(parse_context.ddict, declid) ||
+            PNML.has_feconstant(decldict(net), declid) ||
                 error("declid $declid not found in feconstants") #! move to verify?
             push!(terms, declid)
         else
@@ -631,7 +632,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     end
     isempty(terms) && throw(ArgumentError("<partitionelement id=$peid, name=$nameval> has no terms"))
 
-    push!(elements, PartitionElement(peid, nameval, terms, rid, parse_context.ddict)) # rid is REFID to enclosing partition
+    push!(elements, PartitionElement(peid, nameval, terms, rid)) # rid is REFID to enclosing partition
     return elements
 end
 

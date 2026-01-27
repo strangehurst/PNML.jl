@@ -16,11 +16,13 @@ using XMLDict: XMLDict
             <text>unknown content text</text>
         </unknown>
     </inscription>"""
-    parse_context = PNML.parser_context()
+    net = PnmlNet(pntd, :fake)
+    PNML.fill_nonhl!(net)
+    PNML.fill_labelp!(net)
+
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                    parse_inscription(n1, :nothing, :nothing, pntd;
-                            netdata=PnmlNetData(), parse_context, parentid=:xxx))
+                    parse_inscription(n1, :nothing, :nothing, pntd; net, parentid=:xxx))
     @test inscript isa PNML.Inscription
     #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
     #@show inscript

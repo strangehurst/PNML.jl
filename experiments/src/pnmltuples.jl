@@ -34,14 +34,14 @@ function (PT::Type{PnmlTuple{sorts, T}})(pt::PnmlTuple) where {sorts, T <: Tuple
 endhouse
 
 
-function PnmlTuple{sorts}(nt::PnmlTuple) where {sorts}
+function PnmlTuple{sorts}(net::PnmlTuple) where {sorts}
     if @generated
-        idx = Int[fieldindex(nt, sorts[n]) for n in eachindex(sorts)]
-        types = Tuple{(fieldtype(nt, idx[n]) for n in eachindex(sorts))...,}
-        Expr(:new, :(PnmlTuple{sorts, $types}), Any[ :(getfield(nt, $(idx[n]))) for n in eachindex(sorts)]...)
+        idx = Int[fieldindex(net, sorts[n]) for n in eachindex(sorts)]
+        types = Tuple{(fieldtype(net, idx[n]) for n in eachindex(sorts))...,}
+        Expr(:new, :(PnmlTuple{sorts, $types}), Any[ :(getfield(net, $(idx[n]))) for n in eachindex(sorts)]...)
     else
         #length_sorts = length(sorts::Tuple)
-        types = Tuple{(fieldtype(typeof(nt), sorts[n]) for n in eachindex(sorts))...}
-        _new_PnmlTuple(PnmlTuple{sorts, types}, map(Fix1(getfield, nt), sorts))
+        types = Tuple{(fieldtype(typeof(net), sorts[n]) for n in eachindex(sorts))...}
+        _new_PnmlTuple(PnmlTuple{sorts, types}, map(Fix1(getfield, net), sorts))
     end
 end

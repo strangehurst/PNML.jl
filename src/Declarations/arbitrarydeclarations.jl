@@ -11,10 +11,10 @@ they just introduce a new symbol.
 
 Like `ArbitraryOperator`, does not have an associated algebra, not usable by `SymmetricNet.`
 """
-struct ArbitrarySort <: SortDeclaration
+struct ArbitrarySort{N <: AbstractPnmlNet} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    declarationdicts::DeclDict
+    net::N
 end
 
 pid(a::ArbitrarySort) = a.id
@@ -33,11 +33,11 @@ they just introduce a new symbol.
 
 Like `ArbitrarySort`, does not have an associated algebra, not usable by `SymmetricNet.`
 """
-struct ArbitraryOperator <: OperatorDeclaration
+struct ArbitraryOperator{N <: AbstractPnmlNet} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     declaration::Symbol #! Are id and declaration redundent?
-    declarationdicts::DeclDict
+    net::N
 end
 
 function Base.show(io::IO, op::ArbitraryOperator)

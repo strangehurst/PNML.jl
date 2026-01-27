@@ -7,22 +7,22 @@ Labels an Arc with a expression term .
 `Inscription(t::PnmlExpr)()` is a functor evaluating the expression and
 returns a value of the `eltype` of sort of inscription.
 """
-struct Inscription{T <: PnmlExpr} <: HLAnnotation
+struct Inscription{T <: PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     vars::Vector{Symbol}
-    declarationdicts::DeclDict
+    net::N
 end
 
-decldict(i::Inscription) = i.declarationdicts
+decldict(i::Inscription) = decldict(i.net)
 term(i::Inscription) = i.term
-sortref(i::Inscription) = expr_sortref(term(i); ddict=decldict(i))::AbstractSortRef
+sortref(i::Inscription) = expr_sortref(term(i), decldict(i))::AbstractSortRef
 sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple)
-    eval(toexpr(term(inscription), varsub, decldict(inscription)))
+    eval(toexpr(term(inscription), varsub, inscription.net))
 end
 
 variables(inscription::Inscription) = inscription.vars
@@ -75,30 +75,28 @@ function PNML.value_type(::Type{Inscription}, pntd::AbstractHLCore)
     eltype(DotSort) #! XXX TODO XXX
 end
 
-function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType; ddict::DeclDict)
+function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
     #@info "$pntd default Inscription $placetype = NamedSortRef(:positive)"
     if refid(placetype) !== :positive
-        println()
         @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
         Base.show_backtrace(stdout, stacktrace())
     end
-    Inscription(nothing, PNML.NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], ddict)
+    Inscription(nothing, PNML.NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
-function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType; ddict::DeclDict)
+function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType, net::AbstractPnmlNet)
     #@info "$pntd default Inscription $placetype = NamedSortRef(:real)" # positive real?
     if refid(placetype) !== :real
-        println()
-        @error "$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :real"
+        @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
         Base.show_backtrace(stdout, stacktrace())
     end
-    Inscription(nothing, PNML.NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], ddict)
+    Inscription(nothing, PNML.NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
 end
 
 # See def_insc
-function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType; ddict)
+function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
     basis = sortref(placetype)::AbstractSortRef
-    el = def_sort_element(placetype; ddict)
+    el = def_sort_element(placetype, net)
     D()&& @info "$pntd default Inscription $placetype = Bag($basis, $el, 1)"
-    Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], ddict) # non-empty singleton multiset.
+    Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], net) # non-empty singleton multiset.
 end
