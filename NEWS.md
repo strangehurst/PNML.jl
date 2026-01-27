@@ -1,6 +1,9 @@
 # News
 
 Still under active development! These are some of the highlights.
+Version 0.0.29 2026-01-27
+  - Use workspace, sources.
+  - Split PNet into separate package in monorepo.
 
 Version 0.0.28 2025-12-05
   - Introduce FIFO place intitial marking values labels.
