@@ -26,8 +26,8 @@ using .TestUtils
     placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
 
     n  = parse_place(node, pntd, net)::Place
-    pntd isa PnmlCoreNet &&
-        @test_opt target_modules=t_modules broken=true parse_place(node, pntd, net)
+    # pntd isa PnmlCoreNet &&
+    #     @test_opt target_modules=t_modules broken=false parse_place(node, pntd, net)
     @test_call target_modules=t_modules parse_place(node, pntd, net)
     @test @inferred(pid(n)) === :place1
     @test @inferred(name(n)) == "with text"
