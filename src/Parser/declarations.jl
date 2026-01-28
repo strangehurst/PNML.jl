@@ -76,13 +76,13 @@ function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
         tag = EzXML.nodename(child)
         if tag == "namedsort"
             ns = parse_namedsort(child, pntd; net)
-            PNML.namedsorts(decldict(net))[pid(ns)] = ns # fill_decl_dict! namedsort
+            PNML.namedsorts(net)[pid(ns)] = ns # fill_decl_dict! namedsort
         elseif tag == "namedoperator"
             no = parse_namedoperator(child, pntd; net)
-            PNML.namedoperators(decldict(net))[pid(no)] = no # fill_decl_dict! namedoperator
+            PNML.namedoperators(net)[pid(no)] = no # fill_decl_dict! namedoperator
         elseif tag == "variabledecl"
             vardecl = parse_variabledecl(child, pntd; net)
-            PNML.variabledecls(decldict(net))[pid(vardecl)] = vardecl # fill_decl_dict! variabledecl
+            PNML.variabledecls(net)[pid(vardecl)] = vardecl # fill_decl_dict! variabledecl
         elseif tag == "partition"
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
             part = parse_partition(child, pntd; net)::AbstractSortRef
@@ -167,7 +167,7 @@ function parse_namedoperator(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet
         # Zero or more parameters for operator (arity). Map from id to sort object.
         for vdeclnode in EzXML.eachelement(pnode)
             vardecl = parse_variabledecl(vdeclnode, pntd; net)
-            PNML.variabledecls(decldict(net))[pid(vardecl)] = vardecl # parse_namedoperator
+            PNML.variabledecls(net)[pid(vardecl)] = vardecl # parse_namedoperator
             push!(parameters, vardecl)
         end
     end
@@ -272,8 +272,8 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortR
         else
             fecid = register_idof!(net.idregistry, child)
             name = attribute(child, "name")
-            PNML.feconstants(decldict(net))[fecid] =
-                PNML.FEConstant(fecid, name, sortref)  #,  decldict(net))
+            PNML.feconstants(net)[fecid] =
+                PNML.FEConstant(fecid, name, sortref)  #,  net)
             push!(fec_refids, fecid)
         end
     end
@@ -292,14 +292,14 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
 
     # <usersort> holds a reference to a declaration: named, partition, arbitrary.
     # We extract that information and encode it in the SortRef ADT.
-    if PNML.has_namedsort(decldict(net), declid)
+    if PNML.has_namedsort(net, declid)
         NamedSortRef(declid)
-    elseif PNML.has_partitionsort(decldict(net), declid)
+    elseif PNML.has_partitionsort(net, declid)
         PartitionSortRef(declid)
-    elseif PNML.has_arbitrarysort(decldict(net), declid)
+    elseif PNML.has_arbitrarysort(net, declid)
         ArbitrarySortRef(declid)
     else
-        error("Did not find sort declaration for $(repr(declid)) in $(repr(decldict(net)))")
+        error("Did not find sort declaration for $(repr(declid)) in $(decldict(net))")
     end
 end
 
@@ -315,8 +315,8 @@ function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet
     @warn("parse arbitrarysort: id = $arbid, name = $name")
     arb = ArbitrarySort(arbid, name, net)
     fill_sort_tag!(net, arbid, arb)
-    @assert PNML.arbitrarysorts(decldict(net))[arbid] == arb
-    namedsorts(decldict(net))[arbid] = NamedSort(arbid, string(arbid), arb, net)
+    @assert PNML.arbitrarysorts(net)[arbid] == arb
+    namedsorts(net)[arbid] = NamedSort(arbid, string(arbid), arb, net)
     return make_sortref(net, PNML.arbitrarysorts, arb, "arbitrarysort", arbid, "")
 end
 
@@ -422,7 +422,7 @@ function parse_sort(::Val{:finiteenumeration}, node::XMLNode, pntd::PnmlType, pa
     check_nodename(node, "finiteenumeration")
     #D()&& println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
     fecs = parse_feconstants(node, pntd, NamedSortRef(parentid); net)
-    fes = FiniteEnumerationSort(fecs)#, decldict(net))
+    fes = FiniteEnumerationSort(fecs)#, net)
     sref = make_sortref(net, PNML.namedsorts, fes, "finiteenumeration", parentid, name)
     return sref
 end
@@ -441,9 +441,9 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, paren
         throw(ArgumentError("stop attribute value '$stopstr' failed to parse as `Int`"))
 
     # See function parse_term(::Val{:finiteintrangeconstant} for inline sort use.
-    # Look for `sort` in `namedsorts(ddict)`, else create named/user duo.
+    # Look for `sort` in `namedsorts(net)`, else create named/user duo.
     sorttag = Symbol("FiniteIntRange_",startstr,"_",stopstr)
-    if haskey(namedsorts(decldict(net)), sorttag)
+    if haskey(namedsorts(net), sorttag)
         return NamedSortRef(sorttag)
     else
         # Did not find namedsort, will instantiate named,user duo for one. See fill_nonhl!
@@ -483,10 +483,10 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
     prodsort = ProductSort(tuple(sorts...))
 
     # See if there exists a matching sort. #! debug?
-    for (id,ps) in pairs(productsorts(decldict(net)))
+    for (id,ps) in pairs(productsorts(net))
         if PNML.Sorts.equalSorts(ps, prodsort, net)
             @info "Found product sort $id while looking for $prodsort "*
-                    "for sortid=$sortid name=$name" productsorts(decldict(net))
+                    "for sortid=$sortid name=$name" productsorts(net)
          end
     end
 
@@ -498,11 +498,11 @@ end
 function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, sortid, u2; net::AbstractPnmlNet)
     @error("IMPLEMENT ME: :list")
     #make_sort!(dict, :list, "List",
-    ListSort(decldict(net))
+    ListSort(net)
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
-    ss = StringSort(decldict(net))
+    ss = StringSort(net)
     sref = make_sortref(net, PNML.namedsorts, ss, "string", parentid, name)
     return sref
 end
@@ -533,27 +533,26 @@ end
 """
     to_sort(sortref::AbstractSortRef, ddict::DeclDict) -> AbstractSort
 
-Return concrete sort from `ddict` using the `REFID` in `sortref`,
+Return concrete sort from `net` using the `REFID` in `sortref`,
 """
 function to_sort(sr::AbstractSortRef, net::AbstractPnmlNet)
     #@show sr
     is_data_type(sr) || error("!isdata_type($sr)")
-    ddict = decldict(net)
     # NamedSort, PatritionSort, ArbitrarySort are declarations
-    isa_variant(sr, SortRef.NamedSortRef) && return PNML.namedsort(ddict, refid(sr)) # todo unwrap namedsort
-    isa_variant(sr, SortRef.ProductSortRef) && return PNML.productsort(ddict, refid(sr)) #! named sort
-    isa_variant(sr, SortRef.MultisetSortRef) && return PNML.multisetsort(ddict, refid(sr)) #! named sort
-    isa_variant(sr, SortRef.PartitionSortRef) && return PNML.partition(ddict, refid(sr))
-    isa_variant(sr, SortRef.ArbitrarySortRef) && return PNML.arbitrarysort(ddict, refid(sr))
+    isa_variant(sr, SortRef.NamedSortRef) && return PNML.namedsort(net, refid(sr)) # todo unwrap namedsort
+    isa_variant(sr, SortRef.ProductSortRef) && return PNML.productsort(net, refid(sr)) #! named sort
+    isa_variant(sr, SortRef.MultisetSortRef) && return PNML.multisetsort(net, refid(sr)) #! named sort
+    isa_variant(sr, SortRef.PartitionSortRef) && return PNML.partition(net, refid(sr))
+    isa_variant(sr, SortRef.ArbitrarySortRef) && return PNML.arbitrarysort(net, refid(sr))
     error("not isa_variant $(repr(sr))")
 
     # s = @match sr begin
     #     # NamedSort, PatritionSort, ArbitrarySort are declarations
-    #     SortRef.NamedSortRef(refid)     => PNML.namedsort(ddict, refid) # todo unwrap namedsort
-    #     SortRef.ProductSortRef(refid)   => PNML.productsort(ddict, refid) #! named sort
-    #     SortRef.MultisetSortRef(refid)  => PNML.multisetsort(ddict, refid) #! named sort
-    #     SortRef.PartitionSortRef(refid) => PNML.partition(ddict, refid)
-    #     SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysort(ddict, refid)
+    #     SortRef.NamedSortRef(refid)     => PNML.namedsort(net, refid) # todo unwrap namedsort
+    #     SortRef.ProductSortRef(refid)   => PNML.productsort(net, refid) #! named sort
+    #     SortRef.MultisetSortRef(refid)  => PNML.multisetsort(net, refid) #! named sort
+    #     SortRef.PartitionSortRef(refid) => PNML.partition(net, refid)
+    #     SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysort(net, refid)
     #     _ => error("to_sort SortRef not expected: $sr")
     # end
     return s
@@ -599,9 +598,9 @@ function parse_partition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet) #!
 
     # add to productsorts
     fill_sort_tag!(net, partid, partsort)
-    @assert partitionsorts(decldict(net))[partid] == partsort
+    @assert partitionsorts(net)[partid] == partsort
     # make a user/named sort duo
-    namedsorts(decldict(net))[partid] = NamedSort(partid, string(partid), partsort, net)
+    namedsorts(net)[partid] = NamedSort(partid, string(partid), partsort, net)
     return make_sortref(net, PNML.partitionsorts, partsort, "partition", partid, "")
 end
 
@@ -622,7 +621,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
             # PartitionElements refer to the FEConstants of the referenced enumeration sort.
             # UserOperator here holds an REFID to a FEConstant callable object.
             declid = Symbol(attribute(child, "declaration"))
-            PNML.has_feconstant(decldict(net), declid) ||
+            PNML.has_feconstant(net, declid) ||
                 error("declid $declid not found in feconstants") #! move to verify?
             push!(terms, declid)
         else

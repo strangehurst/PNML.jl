@@ -162,7 +162,7 @@ function toexpr(op::VariableEx, varsub::NamedTuple, net)
     end
 end
 
-expr_sortref(v::VariableEx, net) = sortref(PNML.variabledecl(decldict(net), v.refid))::AbstractSortRef
+expr_sortref(v::VariableEx, net) = sortref(PNML.variabledecl(net, v.refid))::AbstractSortRef
 
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
@@ -181,7 +181,7 @@ end
 
 function expr_sortref(o::UserOperatorEx, net)
     #todo or other constant/operator
-    return sortref(PNML.feconstant(decldict(net), o.refid))::AbstractSortRef
+    return sortref(PNML.feconstant(net, o.refid))::AbstractSortRef
 end
 
 function Base.show(io::IO, x::UserOperatorEx)
@@ -681,7 +681,7 @@ end
     partition::Symbol
 end
 
-expr_sortref(a::PartitionElementOp, net) = sortref(partitionsort(decldict(net), a.partition))::AbstractSortRef
+expr_sortref(a::PartitionElementOp, net) = sortref(partitionsort(net, a.partition))::AbstractSortRef
 
 toexpr(op::PartitionElementOp, var::NamedTuple, net) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))

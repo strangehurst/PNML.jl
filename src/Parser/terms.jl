@@ -173,7 +173,7 @@ function parse_term(::Val{:variable}, node::XMLNode, pntd::PnmlType; vars, net::
     #^ ePNK uses inline variabledecl, variable in useroperator `<parameter>`, `<def>`.
     #^ Done inside `<declaration>`
     var_ex = VariableEx(Symbol(attribute(node, "refvariable")))
-    usort = PNML.sortref(PNML.variabledecl(decldict(net), var_ex.refid))
+    usort = PNML.sortref(PNML.variabledecl(net, var_ex.refid))
     # vars will be the keys of a NamedTuple of substitutions &
     # the keys into the declaration dictionary of variable declarations.
     return TermJunk(var_ex, usort, tuple(vars..., var_ex.refid))
@@ -182,7 +182,7 @@ end
 #----------------------------------------------------------------------------------------
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
-    bc = PNML.BooleanConstant(attribute(node, "value"), decldict(net))
+    bc = PNML.BooleanConstant(attribute(node, "value"), net)
     return TermJunk(PNML.BooleanEx(bc), UserSortRef(:bool), vars) #TODO make into literal
 end
 
@@ -518,7 +518,7 @@ end
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     sts, vars = subterms(node, pntd; vars, net)
     # Expect elements to be an operator or variable (a.k.a. term)
-    @assert length(sts) >= 2
+    @assert length(sts) >= 2 #todo tuple of 1 item?
     expr_tup = PNML.PnmlTupleEx(sts)
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
@@ -530,14 +530,14 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::Abs
     #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
     #! Part of expression evaluation -- dynamic behavior of a Petri net
     prodsort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...))
-    #! prodsort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts, decldict(net)))), decldict(net))
+    #! prodsort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts, net))), net)
 
     #D()&& @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
 
     # Look for an existing declaration for prodsort. Return a NamedSortRef to it in TermJunk.
     # Find matching sort
     sorttag = nothing
-    for (id,ps) in pairs(productsorts(decldict(net)))
+    for (id,ps) in pairs(productsorts(net))
         if PNML.Sorts.equalSorts(ps, prodsort, net)
             #@error "Found product sort $id while looking for $prodsort" productsorts(decldict(net))
             sorttag = id
@@ -549,10 +549,10 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::Abs
 
         # add to productsorts
         fill_sort_tag!(net, sorttag, prodsort)
-        #@assert productsorts(decldict(net))[sorttag] == prodsort
+        #@assert productsorts(net)[sorttag] == prodsort
 
         # make a user/named sort duo
-        namedsorts(decldict(net))[sorttag] = NamedSort(sorttag, string(sorttag), prodsort, net)
+        namedsorts(net)[sorttag] = NamedSort(sorttag, string(sorttag), prodsort, net)
         make_sortref(net, productsorts, prodsort, "product", sorttag, "") #! is above fill_sort_tag! redundant?
     else
         ProductSortRef(sorttag)
@@ -568,7 +568,7 @@ end
 function parse_term(::Val{:useroperator}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     errmsg = "<useroperator> missing declaration refid"
     uo = PNML.UserOperatorEx(Symbol(attribute(node, "declaration", errmsg)))
-    usort = PNML.sortref(PNML.operator(decldict(net), uo.refid))
+    usort = PNML.sortref(PNML.operator(net, uo.refid))
     return TermJunk(uo, usort, vars)
 end
 
@@ -592,7 +592,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
     # Differs from <tuple> in that here we have a sort definintion, while <tuple>
     # must deduce the sort by examining the product's sorts.
-    fis = namedsort(decldict(net), refid(usref))::FiniteIntRangeSort
+    fis = namedsort(net, refid(usref))::FiniteIntRangeSort
     Sorts.start(fis) <= value <= Sorts.stop(fis) ||
         throw(ArgumentError("finite integer value $value not in range $(ns)"))
 

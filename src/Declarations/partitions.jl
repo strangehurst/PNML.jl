@@ -108,10 +108,8 @@ struct PartitionSort{S <: AbstractSortRef, N <: AbstractPnmlNet} <: SortDeclarat
     # end
 end
 
-decldict(p::PartitionSort) = decldict(p.net)
-
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(decldict(p), refid(p.def)))
+sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(p.net, refid(p.def)))
 sortelements(p::PartitionSort, ::AbstractPnmlNet) = p.elements
 
 # TODO Add Partition/PartitionElement methods here

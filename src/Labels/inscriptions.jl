@@ -16,10 +16,9 @@ struct Inscription{T <: PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
     net::N
 end
 
-decldict(i::Inscription) = decldict(i.net)
 term(i::Inscription) = i.term
-sortref(i::Inscription) = expr_sortref(term(i), decldict(i))::AbstractSortRef
-sortof(i::Inscription) = sortdefinition(namedsort(decldict(i), sortref(i)))::PnmlMultiset #TODO other sorts
+sortref(i::Inscription) = expr_sortref(term(i), i.net)::AbstractSortRef
+sortof(i::Inscription) = sortdefinition(namedsort(i.net, sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple)
     eval(toexpr(term(inscription), varsub, inscription.net))

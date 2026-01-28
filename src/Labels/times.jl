@@ -20,11 +20,9 @@ value_type(::Type{Time}) = Float64
 value_type(::Type{Time}, ::PnmlType) = Float64
 
 Base.eltype(::Time) = value_type(Time)
-
-decldict(i::Time) = i.declarationdicts
 term(i::Time) = i.term
-sortref(i::Time) = expr_sortref(term(i), decldict(i.net))::AbstractSortRef
-sortof(i::Time) = sortdefinition(namedsort(decldict(i.net), sortref(i)))::Number
+sortref(i::Time) = expr_sortref(term(i), i.net)::AbstractSortRef
+sortof(i::Time) = sortdefinition(namedsort(i.net, sortref(i)))::Number
 
 function (time::Time)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(time), varsub, time.net))::value_type(Time)

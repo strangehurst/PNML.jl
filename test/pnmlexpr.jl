@@ -16,8 +16,6 @@ const pntd = HLCoreNet()
 const net = PnmlNet(pntd, :fake)
 PNML.fill_nonhl!(net)
 PNML.fill_labelp!(net)
-
-const ddict = decldict(net)
 const varsub = NamedTuple()
 
 const node = xml"""
@@ -116,18 +114,17 @@ end
 
 #^ Boolean Expression tests
 #^------------------------------------------------------------------------
-function _test_abstractboolexpr(x::AbstractBoolExpr, ddict::DeclDict)
+function _test_abstractboolexpr(x::AbstractBoolExpr, net)
     #@show x
     @test PNML.basis(x) == NamedSortRef(:bool)
     @test sortref(x) == NamedSortRef(:bool)
-    @test expr_sortref(x, ddict) == sortref(x)
+    @test expr_sortref(x, net) == sortref(x)
 
 end
 
 @testset "AbstractBoolExpr" begin
-    #ddict = DeclDict()
     x = PNML.BooleanEx(PNML.BooleanConstant(true))
-    _test_abstractboolexpr(x, ddict)
+    _test_abstractboolexpr(x, net)
 end
 
 @testset "boolean not $pntd" begin

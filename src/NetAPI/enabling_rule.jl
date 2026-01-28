@@ -248,9 +248,9 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
             #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            any(==(var_refid), Sorts.sorts(sortof(placesort, decldict(net)))) ||
+            any(==(var_refid), Sorts.sorts(sortof(placesort, net))) ||
                     error("none of tuple are equal sorts of $var_refid: ",
-                            Sorts.sorts(sortof(placesort, decldict(net))))
+                            Sorts.sorts(sortof(placesort, net)))
         else
             placesort !== sortref(variabledecl(ddict, v)) &&
                 error("not equal sorts ($placesort, $(sortref(variabledecl(ddict, v))))")

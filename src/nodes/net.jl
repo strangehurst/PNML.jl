@@ -15,18 +15,19 @@ One Petri Net of a PNML model.
     # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
     page_idset::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
 
-    ddict = DeclDict() # empty dictionarys
+    ddict::DeclDict = DeclDict() # empty dictionarys
     declaration::Maybe{Declaration} = nothing # Label with `Text` `Graphics`, `ToolInfo`.
     # Zero or more `Declarations` used to populate ddict::DeclDict field.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
 
     namelabel::Maybe{Name} = nothing
     # no graphics for net
-    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
+    toolspecinfos::Vector{ToolInfo} = ToolInfo[]
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}() # empty by default
 
     idregistry::IDRegistry
-    labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
+    labelparser::LittleDict{Symbol, Any} = LittleDict{Symbol, Any}() # empty
+    #!labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
     toolparser::Vector{ToolParser} = ToolParser[] # toolinfo parsers
 end
 
@@ -44,6 +45,7 @@ pid(net::PnmlNet) = net.id
 "Return IDRegistry of a PnmlNet."
 registry_of(net::PnmlNet) = net.idregistry
 decldict(net::PnmlNet) = net.ddict
+declarations(net::PnmlNet) =  declarations(decldict(net))
 
 # `pagedict` is all pages in `net`, `page_idset` only for direct pages of net.
 pagedict(net::PnmlNet) = net.pagedict # Will be ordered.
@@ -144,6 +146,93 @@ has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
 refplace(net::PnmlNet, id::Symbol)          = refplacedict((net))[id]
 has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict((net)), id)
 reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
+
+#------------------------------------------------------------------------------
+# DeclDict access
+#------------------------------------------------------------------------------
+"Return dictionary of `UserOperator`"
+useroperators(net::AbstractPnmlNet)  = useroperators(decldict(net))
+"Return dictionary of `VariableDecl`"
+variabledecls(net::AbstractPnmlNet)  = variabledecls(decldict(net))
+"Return dictionary of `NamedSort`"
+namedsorts(net::AbstractPnmlNet)     = namedsorts(decldict(net))
+"Return dictionary of `ArbitrarySort`"
+arbitrarysorts(net::AbstractPnmlNet) = arbitrarysorts(decldict(net))
+"Return dictionary of `PartitionSort`"
+partitionsorts(net::AbstractPnmlNet) = partitionsorts(decldict(net))
+"Return dictionary of `NamedOperator`"
+namedoperators(net::AbstractPnmlNet) = namedoperators(decldict(net))
+"Return dictionary of `ArbitraryOperator`"
+arbitraryops(net::AbstractPnmlNet)   = arbitraryoperators(decldict(net))
+"Return dictionary of partitionops (`PartitionElement`)"
+partitionops(net::AbstractPnmlNet)   = partitionops(decldict(net))
+"Return dictionary of `FEConstant`"
+feconstants(net::AbstractPnmlNet)    = feconstants(decldict(net))
+
+"Return dictionary of `MultisetSort`"
+multisetsorts(net::AbstractPnmlNet)    = multisetsorts(decldict(net))
+"Return dictionary of `ProductSort`"
+productsorts(net::AbstractPnmlNet)    = productsorts(decldict(net))
+#
+#
+#
+"Lookup variable with `id` in DeclDict."
+variabledecl(net::AbstractPnmlNet, id::Symbol) = variabledecls(decldict(net))[id]
+"Lookup namedsort with `id` in DeclDict."
+namedsort(net::AbstractPnmlNet, id::Symbol)      = namedsorts(decldict(net))[id]
+"Lookup arbitrarysort with `id` in DeclDict."
+arbitrarysort(net::AbstractPnmlNet, id::Symbol)  = arbitrarysorts(decldict(net))[id]
+"Lookup partitionsort with `id` in DeclDict."
+partitionsort(net::AbstractPnmlNet, id::Symbol)  = partitionsorts(decldict(net))[id]
+
+"Lookup multisetsort with `id` in DeclDict."
+multisetsort(net::AbstractPnmlNet, id::Symbol)  = multisetsorts(decldict(net))[id]
+"Lookup productsort with `id` in DeclDict."
+productsort(net::AbstractPnmlNet, id::Symbol)   = productsorts(decldict(net))[id]
+
+"Lookup namedop with `id` in DeclDict."
+namedop(net::AbstractPnmlNet, id::Symbol)        = namedoperators(decldict(net))[id]
+"Lookup arbitraryop with `id` in DeclDict."
+arbitraryop(net::AbstractPnmlNet, id::Symbol)    = arbitraryops(decldict(net))[id]
+"Lookup partitionop with `id` in DeclDict."
+partitionop(net::AbstractPnmlNet, id::Symbol)    = partitionops(decldict(net))[id]
+"Lookup feconstant with `id` in DeclDict."
+feconstant(net::AbstractPnmlNet, id::Symbol)     = feconstants(decldict(net))[id]
+"Lookup useroperator with `id` in DeclDict."
+useroperator(net::AbstractPnmlNet, id::Symbol)   = useroperators(decldict(net))[id]
+
+"Lookup operator with `id` in DeclDict.::Symbol May be namedop, feconstant, etc"
+operator(net::AbstractPnmlNet, id::Symbol) = operator(decldict(net), id)
+"""
+    operators(net::AbstractPnmlNet)-> Iterator
+Iterate over each operator in the operator subset of declaration dictionaries .
+"""
+operators(net::AbstractPnmlNet) = operators(decldict(net))
+#
+#
+#
+"Does any operator dictionary contain `id`?"
+has_operator(net::AbstractPnmlNet, id::Symbol) = has_operator(decldict(net), id)
+
+"""
+    has_key(net::AbstractPnmlnet, dict, key::Symbol) -> Bool
+Where `dict` is the access method for a dictionary in `DeclDict`.
+"""
+has_key(net::AbstractPnmlNet, dict, key::Symbol) = haskey(dict(decldict(net)), key)
+
+has_variabledecl(net::AbstractPnmlNet, id::Symbol)   = has_key(decldict(net), variabledecls, id)
+has_namedsort(net::AbstractPnmlNet, id::Symbol)      = has_key(decldict(net), namedsorts, id)
+has_arbitrarysort(net::AbstractPnmlNet, id::Symbol)  = has_key(decldict(net), arbitrarysorts, id)
+has_partitionsort(net::AbstractPnmlNet, id::Symbol)  = has_key(decldict(net), partitionsorts, id)
+
+has_multisetsort(net::AbstractPnmlNet, id::Symbol)   = has_key(decldict(net), multisetsorts, id)
+has_productsort(net::AbstractPnmlNet, id::Symbol)    = has_key(decldict(net), productsorts, id)
+
+has_namedop(net::AbstractPnmlNet, id::Symbol)        = has_key(decldict(net), namedoperators, id)
+has_arbitraryop(net::AbstractPnmlNet, id::Symbol)    = has_key(decldict(net), arbitraryops, id)
+has_partitionop(net::AbstractPnmlNet, id::Symbol)    = has_key(decldict(net), partitionops, id)
+has_feconstant(net::AbstractPnmlNet, id::Symbol)     = has_key(decldict(net), feconstants, id)
+has_useroperator(net::AbstractPnmlNet, id::Symbol)   = has_key(decldict(net), useroperators, id)
 
 
 #------------------------------------------------------------------------------

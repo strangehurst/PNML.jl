@@ -5,13 +5,12 @@ The definitions are attached to PNML nets and/or pages using a PNML Label define
 
 - id
 - name
-- net for access to DeclDct
+- net
 """
 abstract type AbstractDeclaration end
 
 pid(decl::AbstractDeclaration) = decl.id
 name(decl::AbstractDeclaration) = decl.name
-decldict(decl::AbstractDeclaration) = decldict(decl.net)
 
 function Base.show(io::IO, declare::AbstractDeclaration)
     print(io, nameof(typeof(declare)), "(")
@@ -124,10 +123,8 @@ end
     # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
-#!decldict(vd::VariableDeclaration) = vd.declarationsdicts
-
 sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(decldict(vd.net), refid(vd)))::AbstractSort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, refid(vd)))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
@@ -205,7 +202,7 @@ end
 NamedOperator(id::Symbol, str::AbstractString, net::AbstractPnmlNet) =
     NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant(), net)
 
-#operator(no::NamedOperator) = operator(decldict(no.net), no.def) #! XXX def is an expression
+#operator(no::NamedOperator) = operator(no.net, no.def) #! XXX def is an expression
 parameters(no::NamedOperator) = no.parameter
 (no::NamedOperator)(vars) = eval(toexpr(uo.def, vars, no.net))(parameters(no))
 

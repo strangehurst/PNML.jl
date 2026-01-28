@@ -11,7 +11,6 @@ using PNML: fill_sort_tag!, fill_nonhl!, fill_labelp!
     PNML.fill_nonhl!(net)
     PNML.fill_labelp!(net)
 
-    ddict = decldict(net)
     @test_call target_modules=t_modules NamedSort(:X, "X", PositiveSort(), net)
     @test_opt target_modules=t_modules function_filter=pff NamedSort(:X, "X", PositiveSort(), net)
 
@@ -34,8 +33,8 @@ using PNML: fill_sort_tag!, fill_nonhl!, fill_labelp!
 
     @test_call target_modules=t_modules  fill_nonhl!(net)
     @test_call target_modules=t_modules  fill_labelp!(net)
-    @test_opt broken=true target_modules=t_modules function_filter=pff  fill_nonhl!(net)
-    @test_opt broken=true target_modules=t_modules function_filter=pff  fill_labelp!(net)
+    @test_opt broken=false target_modules=t_modules function_filter=pff fill_nonhl!(net)
+    @test_opt broken=false target_modules=t_modules function_filter=pff fill_labelp!(net)
 end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
@@ -56,7 +55,7 @@ end
     IDRegistrys.reset_reg!(net.idregistry)
     sortref = parse_sort(xml"<dot/>", pntd; net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
-    @test sort === DotSort()#decldict(net)) # not a built-in
+    @test sort === DotSort() # not a built-in
     @test occursin(r"^DotSort", sprint(show, sort))
     @test eltype(sort) == Bool
 

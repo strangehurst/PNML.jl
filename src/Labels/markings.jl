@@ -22,7 +22,6 @@ end
 Marking(nx::PNML.NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
 Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::AbstractPnmlNet) = Marking(t, s, nothing, nothing, net)
 
-decldict(marking::Marking) = decldict(marking.net)
 term(marking::Marking) = marking.term
 
 # 1'value where value isa eltype(sortof(marking))

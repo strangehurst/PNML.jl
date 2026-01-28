@@ -18,11 +18,9 @@ value_type(::Type{Rate}, ::PnmlType) = Float64
 
 Base.eltype(::Rate) = value_type(Rate)
 
-decldict(r::Rate) = decldict(r.net)
 term(r::Rate) = r.term
-sortref(r::Rate) = expr_sortref(term(r), decldict(r))::AbstractSortRef
-
-sortof(r::Rate) = sortdefinition(namedsort(decldict(r), refid(sortref(r))))
+sortref(r::Rate) = expr_sortref(term(r), r.net)::AbstractSortRef
+sortof(r::Rate) = sortdefinition(namedsort(r.net, refid(sortref(r))))
 
 function (rate::Rate)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(rate), varsub, rate.net))::value_type(Rate)

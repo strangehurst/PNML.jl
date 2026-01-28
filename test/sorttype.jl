@@ -10,7 +10,7 @@ using .TestUtils
     net = PnmlNet(pntd, :fake)
     PNML.fill_nonhl!(net)
     PNML.fill_labelp!(net)
-    PNML.namedsorts(decldict(net))[:N2] = PNML.NamedSort(:N2, "N2", DotSort(), net)
+    PNML.namedsorts(net)[:N2] = PNML.NamedSort(:N2, "N2", DotSort(), net)
 
     n1 = xml"""
 <type>

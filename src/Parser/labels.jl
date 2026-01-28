@@ -269,7 +269,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
 
     if isa_variant(placetype, NamedSortRef) ||
         (isa_variant(placetype, ProductSortRef) &&
-            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, decldict(net))))
+            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, net)))
         #NOOP# D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
     else
         @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
@@ -329,13 +329,13 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
 
     if isa_variant(placetype, NamedSortRef) ||
         (isa_variant(placetype, ProductSortRef) &&
-            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, decldict(net))))
+            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, net)))
         # D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
     else
         @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
                 " or product of named sorts, found $(placetype)")
         if isa_variant(placetype, ProductSortRef)
-            foreach(println, Sorts.sorts(placetype, decldict(net)))
+            foreach(println, Sorts.sorts(placetype, net))
         end
     end
 

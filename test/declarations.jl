@@ -70,15 +70,15 @@ end
     net = PnmlNet(pntd, :fake)
     PNML.fill_nonhl!(net)
     PNML.fill_labelp!(net)
-    @test_call target_modules=t_modules PNML.namedsorts(decldict(net))
-    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(decldict(net))
+    @test_call target_modules=t_modules PNML.namedsorts(net)
+    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(net)
 
-        base_decl_length = length(PNML.namedsorts(decldict(net)))
+        base_decl_length = length(PNML.namedsorts(net))
         decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
             parse_declaration!(net, node, pntd)::PNML.Declaration) # Add 3 declarations.
-        @test length(PNML.namedsorts(decldict(net))) == base_decl_length + 3
+        @test length(PNML.namedsorts(net)) == base_decl_length + 3
 
-        for nsort in values(PNML.namedsorts(decldict(net)))
+        for nsort in values(PNML.namedsorts(net))
             #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
             #@show nsort pid(nsort)
             @test isregistered(net.idregistry, pid(nsort))
@@ -168,7 +168,7 @@ end
         # partition -> partition element -> fe constant
         @test typeof(psort) <: PartitionSort # is a declaration
         @test PNML.isregistered(net.idregistry, PNML.pid(psort))
-        psort == PNML.partitionsort(decldict(decl), PNML.pid(psort)) #! @inferred
+        psort == PNML.partitionsort(net, PNML.pid(psort)) #! @inferred
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
         partname = @inferred Union{SubString{String}, String} PNML.name(psort)
         partsort = sortdefinition(psort) #! @inferred
@@ -203,9 +203,9 @@ end
     PNML.fill_labelp!(net)
     decl = parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
-    #@show PNML.arbitrarysort(decldict(decl), :id1)
-    @test name(PNML.arbitrarysort(decldict(decl), :id1)) == "AGENT"
-    @test name(PNML.arbitrarysorts(decldict(decl))[:id1]) == "AGENT"
+    #@show PNML.arbitrarysort(net, :id1)
+    @test name(PNML.arbitrarysort(net, :id1)) == "AGENT"
+    @test name(PNML.arbitrarysorts(net)[:id1]) == "AGENT"
 end
 @testset "arbitrary sort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""

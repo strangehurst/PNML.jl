@@ -331,7 +331,7 @@ function value_type end
 
 Return the sort of an object or type.
 
-Often implemented as `sortdefinition(namedsort(decldict(net), sortref(x)))`.
+Often implemented as `sortdefinition(namedsort(net, sortref(x)))`.
 Default implementation is `identity`.
 
 We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.

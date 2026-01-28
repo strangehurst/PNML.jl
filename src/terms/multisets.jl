@@ -24,8 +24,6 @@ As does `<all>` operator.
     # end
 end
 
-decldict(ms::PnmlMultiset) = decldict(ms.net)
-
 """
     multiset(ms::PnmlMultiset) -> Multiset
 Access wrapped multiset.
@@ -101,7 +99,7 @@ end
 """
 function (-)(a::PnmlMultiset{T,S,N}, b::PnmlMultiset{T,S,N}) where {T, S <: AbstractSortRef, N <: AbstractPnmlNet}
     @assert basis(a) == basis(b)
-    PnmlMultiset{T,S,N}(basis(a), multiset(a) - multiset(b), decldict(a))
+    PnmlMultiset{T,S,N}(basis(a), multiset(a) - multiset(b), a.net)
 end
 
 """
@@ -109,18 +107,18 @@ end
 """
 function Base.:*(a::PnmlMultiset{T,S,N}, b::PnmlMultiset{T}) where {T, S <: AbstractSortRef, N <: AbstractPnmlNet}
     @assert basis(a) == basis(b)
-    PnmlMultiset{T,S,N}(basis(a), multiset(a) * multiset(b), decldict(a))
+    PnmlMultiset{T,S,N}(basis(a), multiset(a) * multiset(b), a.net)
 end
 
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
 function Base.:*(n::Number, a::PnmlMultiset{T,S,N}) where {T, S <: AbstractSortRef, N <: AbstractPnmlNet}
-    PnmlMultiset{T,S,N}(basis(a), convert(Int, n) * multiset(a), decldict(a))
+    PnmlMultiset{T,S,N}(basis(a), convert(Int, n) * multiset(a), a.net)
 end
 
 function Base.:*(a::PnmlMultiset{T,S,N}, n::Number) where {T, S <: AbstractSortRef, N <: AbstractPnmlNet}
-    PnmlMultiset{T,S,N}(basis(a), convert(Int, n) * multiset(a), decldict(a))
+    PnmlMultiset{T,S,N}(basis(a), convert(Int, n) * multiset(a), a.net)
 end
 
 """

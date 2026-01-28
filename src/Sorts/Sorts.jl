@@ -70,7 +70,7 @@ include("strings.jl")
 """
     make_sortref(net, dict, sort, seed, id, name) ->  AbstractSortRef`
 
- - `dict` is a method/callable that returns an AbstractDict (in a DeclDict).
+ - `dict` is a method/callable that returns an AbstractDict a DeclDict attached to `net`.
  - `sort` ia a concrete sort that is to be in `dict`.
  - `seed` is passed to `gensym` if `id` is `nothing` and no `sort` is already in `dict`.
  - `id` is a `Symbol` and the string `name` are `nothing` and "" unless there is a wrapper providing such information,
@@ -81,7 +81,7 @@ Return concrete AbstractSortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(net, dict::Base.Callable, sort, seed, sortid, name=nothing)
     #!@show sort dict seed sortid
-    id2 = PNML.find_valuekey(dict(decldict(net)), sort) # in make_sortref
+    id2 = PNML.find_valuekey(dict(net), sort) # in make_sortref
     if isnothing(id2) # Did not find existing ...
         if isnothing(sortid) # and no enclosing provided name/id ...
             @show sortid = gensym(seed) # so invent one.

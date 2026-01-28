@@ -5,25 +5,22 @@ Fill a DeclDict with built-ins and defaults (that may be redefined).
 """
 
 function fill_nonhl!(net::AbstractPnmlNet)
-    builtin_sorts = ((:integer, "Integer", Sorts.IntegerSort()),
-                    (:natural, "Natural", Sorts.NaturalSort()),
-                    (:positive, "Positive", Sorts.PositiveSort()),
-                    (:real, "Real", Sorts.RealSort()),
-                    (:bool, "AbstractSortRefBool", Sorts.BoolSort()),
-                    (:null, "Null", Sorts.NullSort()),
-                    (:dot, "Dot", Sorts.DotSort()), # can be overridden
-                    )
-    for (tag, name, sort) in builtin_sorts
-        #@show typeof(sort)
-        #TODO Add list, strings, arbitrarysorts other built-ins.
-        nsort = Declarations.NamedSort(tag, name, sort, net)
-        fill_sort_tag!(net, tag, nsort)
-        #! runtime dispatch detected: `sort` is `Any`
-        #! ::NamedSort(%17::Symbol, %18::String, %19::Any, %20::DeclDict)::NamedSort
-    end
+    __insert_sort!(net, :dot, "Dot", Sorts.DotSort()) # can be overridden
+    __insert_sort!(net, :integer, "Integer", Sorts.IntegerSort())
+    __insert_sort!(net, :natural, "Natural", Sorts.NaturalSort())
+    __insert_sort!(net, :positive, "Positive", Sorts.PositiveSort())
+    __insert_sort!(net, :positive, "Positive", Sorts.PositiveSort())
+    __insert_sort!(net, :real, "Real", Sorts.RealSort())
+    __insert_sort!(net, :bool, "Bool", Sorts.BoolSort())
+    __insert_sort!(net, :null, "Null", Sorts.NullSort())
+
     return nothing
 end
-
+function __insert_sort!(net, tag, name, sort::AbstractSort)
+    nsort = Declarations.NamedSort(tag, name, sort, net)
+    fill_sort_tag!(net, tag, nsort)
+    return nothing
+end
 
 """
     fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict) -> AbstractSortRef
@@ -33,13 +30,15 @@ If not already in the declarations dictionary `dict`, add `sort` with key of `ta
 Register the tag and create and return an `AbstractSortRef` holding `tag`.
 """
 function fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict::Base.Callable)
-    ddict = decldict(net)
-    idreg = net.idregistry
-    if !has_key(ddict, dict, tag) # Do not overwrite existing content. #todo XXX dot XXX
+    fill_sort_tag!(decldict(net), net.idregistry, tag, sort, dict)
+end
+function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Callable)
+     # Do not overwrite existing content (except dot).
+    if tag === :dot || !has_key(ddict, dict, tag)
         !isregistered(idreg, tag) && register_id!(idreg, tag)
         dict(ddict)[tag] = sort
     end
-    return sortref(dict, tag) # used bu make_sortref
+    return sortref(dict, tag) # used by make_sortref
 end
 
 function sortref(dict::Base.Callable, tag)
@@ -77,7 +76,7 @@ Fill context with the base built-in label parsers. Useful in test stubs.
 """
 fill_labelp!(net::AbstractPnmlNet) = fill_labelp!(net.labelparser)
 
-function fill_labelp!(labelparser::LittleDict{Symbol, Base.Callable})
+function fill_labelp!(labelparser::AbstractDict)
     labelparser[:initialMarking]   = Parser.parse_initialMarking
     labelparser[:hlinitialMarking] = Parser.parse_hlinitialMarking
     labelparser[:inscription]      = Parser.parse_inscription
@@ -93,5 +92,23 @@ function fill_labelp!(labelparser::LittleDict{Symbol, Base.Callable})
     labelparser[:rate]     = Parser.parse_rate
     labelparser[:priority] = Parser.parse_priority
 
+    # __insert_lp!(labelparser, :initialMarking,   Parser.parse_initialMarking)
+    # __insert_lp!(labelparser, :hlinitialMarking, Parser.parse_hlinitialMarking)
+    # __insert_lp!(labelparser, :inscription,      Parser.parse_inscription)
+    # __insert_lp!(labelparser, :hlinscription,    Parser.parse_hlinscription)
+    # __insert_lp!(labelparser, :condition,        Parser.parse_condition)
+    # __insert_lp!(labelparser, :graphics,         Parser.parse_graphics)
+    # __insert_lp!(labelparser, :name,             Parser.parse_name)
+    # __insert_lp!(labelparser, :type,             Parser.parse_sorttype)
+
+    # # Extensions to ISO 15909-2:2011, some mentioned in ISO 15909-1:2019, ISO 15909-3:2021.
+    # __insert_lp!(labelparser, :fifoinitialMarking, Parser.parse_fifoinitialMarking)
+    # __insert_lp!(labelparser, :arctype,  Parser.parse_arctype)
+    # __insert_lp!(labelparser, :rate,     Parser.parse_rate)
+    # __insert_lp!(labelparser, :priority, Parser.parse_priority)
+   return nothing
+end
+function __insert_lp!(labelparser, tag, parser)
+    labelparser[tag] = parser
     return nothing
 end

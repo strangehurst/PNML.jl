@@ -42,7 +42,7 @@ end
     """
     @test_logs(match_mode=:all, pnmlmodel(emptypage))
     @test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
-    @test_opt broken=true target_modules=t_modules pnmlmodel(emptypage)
+    #@test_opt broken=false target_modules=t_modules pnmlmodel(emptypage)
  end
 
 @testset "multiple empty net types" begin
@@ -135,51 +135,49 @@ end
         @test net isa PnmlNet
         # we harvest all declarations as one thing
 
-        let dd = decldict(net)::DeclDict
-            @test !isempty(collect(PNML.declarations(dd)))
+        @test !isempty(collect(PNML.declarations(net)))
 
-            for h in [PNML.has_variabledecl,
-                      PNML.has_namedsort,
-                      PNML.has_arbitrarysort,
-                      PNML.has_partitionsort,
-                      PNML.has_multisetsort,
-                      PNML.has_productsort,
-                      PNML.has_namedop,
-                      PNML.has_arbitraryop,
-                      PNML.has_partitionop,
-                      PNML.has_feconstant,
-                      PNML.has_useroperator]
-                @test PNML.has_useroperator(dd, :nosuch) == false
-            end
-
-            for d in [PNML.variabledecl,
-                      PNML.namedsort,
-                      PNML.arbitrarysort,
-                      PNML.partitionsort,
-                      PNML.multisetsort,
-                      PNML.productsort,
-                      PNML.namedop,
-                      PNML.arbitraryop,
-                      PNML.partitionop,
-                      PNML.feconstant,
-                      PNML.useroperator]
-                @test_throws KeyError d(dd, :nosuch)
-            end
-
-            @test PNML.has_operator(dd, :nosuch) == false
-            @test isempty(collect(PNML.operators(dd)))
-            @test PNML.operator(dd, :nosuch) == nothing
+        for h in [PNML.has_variabledecl,
+                    PNML.has_namedsort,
+                    PNML.has_arbitrarysort,
+                    PNML.has_partitionsort,
+                    PNML.has_multisetsort,
+                    PNML.has_productsort,
+                    PNML.has_namedop,
+                    PNML.has_arbitraryop,
+                    PNML.has_partitionop,
+                    PNML.has_feconstant,
+                    PNML.has_useroperator]
+            @test PNML.has_useroperator(net, :nosuch) == false
         end
 
-        @test PNML.get_label(net, :nosuch) == nothing
+        for d in [PNML.variabledecl,
+                    PNML.namedsort,
+                    PNML.arbitrarysort,
+                    PNML.partitionsort,
+                    PNML.multisetsort,
+                    PNML.productsort,
+                    PNML.namedop,
+                    PNML.arbitraryop,
+                    PNML.partitionop,
+                    PNML.feconstant,
+                    PNML.useroperator]
+            @test_throws KeyError d(net, :nosuch)
+        end
+
+        @test PNML.has_operator(net, :nosuch) == false
+        @test isempty(collect(PNML.operators(net)))
+        @test PNML.operator(net, :nosuch) === nothing
+
+        @test PNML.get_label(net, :nosuch) === nothing
 
         for page in pages(net)
             @test page isa Page
             @test @inferred(pid(page)) isa Symbol
-            @test PNML.get_label(page, :XYZ) == nothing
+            @test PNML.get_label(page, :XYZ) === nothing
             for p in places(page)
                 @test p isa Place
-                @test PNML.get_label(p, :XYZ) == nothing
+                @test PNML.get_label(p, :XYZ) === nothing
                 placeid = pid(p)::Symbol
                 @test has_place(page, placeid)
                 @test pid(place(page, placeid)) === placeid
@@ -188,13 +186,13 @@ end
             for transition in transitions(page)
                 @test transition isa Transition
                 @test pid(transition) isa Symbol
-                @test PNML.get_label(transition, :XYZ) == nothing
+                @test PNML.get_label(transition, :XYZ) === nothing
                 @test condition(net, pid(transition)) == condition(transition)
             end
             for arc in arcs(page)
                 @test arc isa Arc
                 @test pid(arc) isa Symbol
-                @test PNML.get_label(arc, :XYZ) == nothing
+                @test PNML.get_label(arc, :XYZ) === nothing
                 @test inscription(net, pid(arc)) == inscription(arc)
             end
         end

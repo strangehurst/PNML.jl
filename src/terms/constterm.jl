@@ -13,7 +13,7 @@ end
 sortref(nc::NumberConstant) = identity(nc.sort)::AbstractSortRef
 basis(nc::NumberConstant)   = sortref(nc.value)::AbstractSortRef
 sortof(nc::NumberConstant, net::AbstractPnmlNet) =
-    sortdefinition(namedsort(decldict(net), sortref(nc)))
+                                 sortdefinition(namedsort(net, sortref(nc)))
 
 # others want the value of the value
 (c::NumberConstant)() = value(c)
@@ -49,9 +49,9 @@ Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is 
 function sortof(fec::FEConstant, net::AbstractPnmlNet)
     @match fec.ref begin
         NamedSortRef(refid) =>
-            sortdefinition(namedsort(decldict(net), refid))::EnumerationSort
+            sortdefinition(namedsort(net, refid))::EnumerationSort
         PartitionSortRef(refid) =>
-            sortdefinition(partitionsort(decldict(net), refid))::PartitionSort
+            sortdefinition(partitionsort(net, refid))::PartitionSort
         # Partitions are over a single EnumerationSort
         # partition element?
         _ => error("unsupported SortRef: ", repr(fec))
@@ -91,7 +91,7 @@ This is a 0-arity opertor term that evaluates to `1`.
 struct DotConstant <: AbstractOperator
 end
 sortref(::DotConstant) = UserSortRef(:dot)
-sortof(::DotConstant, net::AbstractPnmlNet) = sortdefinition(namedsort(decldict(net), :dot))
+sortof(::DotConstant, net::AbstractPnmlNet) = sortdefinition(namedsort(net, :dot))
 (d::DotConstant)() = 1 # true is a number, one
 
 function Base.show(io::IO, c::DotConstant)
@@ -121,7 +121,7 @@ end
 
 tag(::BooleanConstant) = :booleanconstant
 sortref(::BooleanConstant) = UserSortRef(:bool)
-sortof(::BooleanConstant, net::AbstractPnmlNet) = sortdefinition(namedsort(decldict(net), :bool))
+sortof(::BooleanConstant, net::AbstractPnmlNet) = sortdefinition(namedsort(net, :bool))
 
 (c::BooleanConstant)() = value(c)
 value(bc::BooleanConstant) = bc.value

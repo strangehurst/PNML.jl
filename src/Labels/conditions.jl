@@ -28,8 +28,6 @@ Condition(text::AbstractString, expr::PNML.BooleanEx, net::AbstractPnmlNet) =
 Base.eltype(::Type{<:Condition}) = Bool
 PNML.value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
 
-decldict(c::Condition) = decldict(c.net)
-
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
 # The expression is used to construct a "color function" whose arguments are variables.

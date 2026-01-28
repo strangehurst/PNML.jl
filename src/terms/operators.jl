@@ -43,11 +43,10 @@ end
 
 Operator(t, f, inex, ins, outs; metadata=nothing, net) = Operator(t, f, inex, ins, outs, metadata, net)
 
-decldict(op::Operator) = op.declarationdicts
 tag(op::Operator)     = op.tag # PNML XML tag
 inputs(op::Operator)  = op.inexprs #! when should these be eval(toexpr)'ed)
 sortref(op::Operator) = identity(op.outsort)::AbstractSortRef # output sort of operator. feconstants sort is enclosing enumeration
-sortof(op::Operator)  = sortdefinition(namedsort(decldict(op.net), op.outsort)) # also abstractsort, partitionsort
+sortof(op::Operator)  = sortdefinition(namedsort(op.net), op.outsort) # also abstractsort, partitionsort
 metadata(op::Operator) = op.metadata
 value(op::Operator)   = op(#= parameters? =#)
 
@@ -157,11 +156,8 @@ finite_operators()  = (:lessthan,
 Is tag in `finite_operators()`?
 """
 isfiniteoperator(tag::Symbol) = (tag in finite_operators())
-
 partition_operators = (:ltp, :gtp, :partitionelementof)
-
 ispartitionoperator(tag::Symbol) = tag in partition_operators
-
 
 # these constants are operators
 builtin_constants = (:numberconstant, :dotconstant, :booleanconstant,)
@@ -298,12 +294,10 @@ struct UserOperator{N <: AbstractPnmlNet} <: AbstractOperator
     net::N
 end
 
-decldict(uo::UserOperator) = decldict(uo.net)
-
 # Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.
 function (uo::UserOperator)(parameters)
     if has_operator(uo.declaration)
-        op = operator(decldict(uo), uo.declaration) # Lookup operator in DeclDict.
+        op = operator(uo.net, uo.declaration) # Lookup operator in DeclDict.
         r = op(parameters) # Operator objects are functors.
         @warn "found operator for $(uo.declaration)" op r
         return r
@@ -311,8 +305,8 @@ function (uo::UserOperator)(parameters)
     error("found NO operator $(repr(uo.declaration))")
 end
 
-sortof(uo::UserOperator) = sortof(operator(decldict(uo), uo.declaration))
-basis(uo::UserOperator)  = basis(operator(decldict(uo), uo.declaration))
+sortof(uo::UserOperator) = sortof(operator(uo.net, uo.declaration))
+basis(uo::UserOperator)  = basis(operator(uo.net, uo.declaration))
 
 function Base.show(io::IO, uo::UserOperator)
     print(io, nameof(typeof(uo)), "(", repr(uo.declaration), ")")

@@ -21,10 +21,9 @@ value_type(::Type{Priority}, ::PnmlType) = Float64
 
 Base.eltype(::Priority) = value_type(Priority)
 
-decldict(i::Priority) = decldict(i.net)
 term(i::Priority) = i.term
 sortref(i::Priority) = expr_sortref(term(i), i.net)::AbstractSortRef
-sortof(i::Priority) = sortdefinition(namedsort(decldict(i), sortref(i)))::Number
+sortof(i::Priority) = sortdefinition(namedsort(i.net, sortref(i)))::Number
 
 function (priority::Priority)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(priority), varsub, priority.net))::value_type(Priority)
