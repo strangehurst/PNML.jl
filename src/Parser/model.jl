@@ -91,16 +91,16 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     #-------------------------------------------------------------------------------------
     net = PnmlNet(; type=pntd, id=netid,
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
-                    netdata = PnmlNetData(), # holds all place, transition, arc
-                    page_idset = OrderedSet{Symbol}(),
-                    ddict = DeclDict(), # empty dictionarys
+                    #netdata = PnmlNetData(), # holds all place, transition, arc
+                    #page_idset = OrderedSet{Symbol}(),
+                    #ddict = DeclDict(), # empty dictionarys
                     #declaration, # Label, Wraps same DeclDict as decldict(net).
                     #namelabel,
-                    toolspecinfos = ToolInfo[],
+                    #toolspecinfos = ToolInfo[],
                     #todo extralabels = PnmlLabel[],
                     idregistry,
-                    labelparser= LittleDict{Symbol, Base.Callable}(),
-                    toolparser = ToolParser[]
+                    #labelparser= LittleDict{Symbol, Base.Callable}(),
+                    #toolparser = ToolParser[]
                     )
     #! FILL here
     # Fist the parser plugins.
