@@ -20,8 +20,8 @@ using .TestUtils
         </place>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
 
@@ -55,8 +55,8 @@ end
         </place>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     n = parse_place(node, pntd, net)::Place
     @test_call target_modules=t_modules parse_place(node, pntd, net)
@@ -89,8 +89,8 @@ end
         </place>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     n = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
                    (:info, "add PnmlLabel :somelabel2 to :place1"),
                     parse_place(node, pntd, net)::Place)
@@ -123,8 +123,8 @@ end
     </referencePlace>"""
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     n = parse_refPlace(node, pntd, net)::RefPlace
     @test pid(n) === :rp1
     @test PNML.refid(n) === :p1
@@ -143,8 +143,8 @@ end
     </referencePlace>"""
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
             parse_refPlace(node, pntd, net)::RefPlace)
     @test pid(n) === :rp1

@@ -17,8 +17,8 @@ using .TestUtils
       </transition>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     n = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
     @test n isa Transition
@@ -70,8 +70,8 @@ end
      </transition>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
@@ -95,8 +95,8 @@ end
     </referenceTransition>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     n = parse_refTransition(node, pntd, net)::RefTransition
     @test pid(n) === :rt1
@@ -114,8 +114,8 @@ end
     </referenceTransition>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
             parse_refTransition(node, pntd, net)::RefTransition)

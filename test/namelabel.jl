@@ -6,8 +6,8 @@ using XMLDict: XMLDict
 
 @testset "name $pntd" for pntd in PnmlTypes.core_nettypes()
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     n = @test_logs((:warn, r"^<name> missing <text>"),
             PNML.Parser.parse_name(xml"<name></name>", pntd;

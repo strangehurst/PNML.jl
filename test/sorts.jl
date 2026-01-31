@@ -2,14 +2,14 @@ using PNML, JET, InteractiveUtils, Printf
 
 include("TestUtils.jl")
 using .TestUtils
-using PNML: fill_sort_tag!, fill_nonhl!, fill_labelp!
+using PNML: fill_sort_tag!, fill_builtin_sorts!, fill_builtin_labelparsers!
 
 @testset "parser_context" begin
     println("parser_context")
     pntd = PnmlCoreNet()
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
 
     @test_call target_modules=t_modules NamedSort(:X, "X", PositiveSort(), net)
     @test_opt target_modules=t_modules function_filter=pff NamedSort(:X, "X", PositiveSort(), net)
@@ -31,16 +31,16 @@ using PNML: fill_sort_tag!, fill_nonhl!, fill_labelp!
         @test_opt target_modules=t_modules function_filter=pff fill_sort_tag!(net, tag, nsort)
     end
 
-    @test_call target_modules=t_modules  fill_nonhl!(net)
-    @test_call target_modules=t_modules  fill_labelp!(net)
-    @test_opt broken=false target_modules=t_modules function_filter=pff fill_nonhl!(net)
-    @test_opt broken=false target_modules=t_modules function_filter=pff fill_labelp!(net)
+    @test_call target_modules=t_modules  fill_builtin_sorts!(net)
+    @test_call target_modules=t_modules  fill_builtin_labelparsers!(net)
+    @test_opt broken=false target_modules=t_modules function_filter=pff fill_builtin_sorts!(net)
+    @test_opt broken=false target_modules=t_modules function_filter=pff fill_builtin_labelparsers!(net)
 end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     #println("\nparse_sort $pntd")
 
     IDRegistrys.reset_reg!(net.idregistry)
@@ -126,7 +126,7 @@ end
                parse_sort(xml"""<productsort/>""", pntd, :emptyproduct, "emptyproduct"; net))
 
     IDRegistrys.reset_reg!(net.idregistry)
-    #fill_nonhl!(net) # should be redundant, but harmless
+    #fill_builtin_sorts!(net) # should be redundant, but harmless
     sortref = parse_sort(xml"""<productsort>
                                 <integer/>
                                 <integer/>
@@ -136,7 +136,7 @@ end
     @test eltype(sort) == Any #! TODO XXX
 
     IDRegistrys.reset_reg!(net.idregistry)
-    #fill_nonhl!(net) # should be redundant, but harmless
+    #fill_builtin_sorts!(net) # should be redundant, but harmless
     fill_sort_tag!(net, :speed, NamedSort(:speed, "speed", PositiveSort(), net))
     fill_sort_tag!(net, :distance, NamedSort(:distance, "dictance", NaturalSort(), net))
     sortref= parse_sort(xml"""<productsort>
@@ -157,7 +157,7 @@ end
     # @test_logs eltype(sort)
 
     IDRegistrys.reset_reg!(net.idregistry)
-    #fill_nonhl!(net) # should be redundant, but harmless
+    #fill_builtin_sorts!(net) # should be redundant, but harmless
     fill_sort_tag!(net, :duck, NamedSort(:duck, "duck", PositiveSort(), net))
 
     sortref = parse_sort(xml"""<multisetsort>
@@ -171,7 +171,7 @@ end
     #^ ArbitrarySort
 
     IDRegistrys.reset_reg!(net.idregistry)
-    #fill_nonhl!(net) # should be redundant, but harmless
+    #fill_builtin_sorts!(net) # should be redundant, but harmless
     sort = ArbitrarySort(:arbsort, "ArbSort", net)
     fill_sort_tag!(net, :arbsort, sort) #~ test of method needed here
     #!@test occursin(r"^ArbitrarySort", sprint(show, sort))

@@ -1,9 +1,9 @@
 """
-    fill_nonhl!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_sorts!(net::AbstractPnmlNet) -> Nothing
 
 Fill a DeclDict with built-ins and defaults (that may be redefined).
 """
-function fill_nonhl!(net::AbstractPnmlNet)
+function fill_builtin_sorts!(net::AbstractPnmlNet)
     __insert_sort!(net, :dot, "Dot", Sorts.DotSort()) # can be overridden
     __insert_sort!(net, :integer, "Integer", Sorts.IntegerSort())
     __insert_sort!(net, :natural, "Natural", Sorts.NaturalSort())
@@ -69,13 +69,13 @@ fill_sort_tag!(net::AbstractPnmlNet, tag, sort::MultisetSort) =
     fill_sort_tag!(net, tag, sort, multisetsorts)
 
 """
-    fill_labelp!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_labelparsers!(net::AbstractPnmlNet) -> Nothing
 
 Fill context with the base built-in label parsers. Useful in test stubs.
 """
-fill_labelp!(net::AbstractPnmlNet) = fill_labelp!(net.labelparser)
+fill_builtin_labelparsers!(net::AbstractPnmlNet) = fill_builtin_labelparsers!(net.labelparser)
 
-function fill_labelp!(labelparser::AbstractDict)
+function fill_builtin_labelparsers!(labelparser::AbstractDict)
     labelparser[:initialMarking]   = Parser.parse_initialMarking
     labelparser[:hlinitialMarking] = Parser.parse_hlinitialMarking
     labelparser[:inscription]      = Parser.parse_inscription
@@ -110,4 +110,7 @@ end
 function __insert_lp!(labelparser, tag, parser)
     labelparser[tag] = parser
     return nothing
+end
+
+function fill_builtin_toolparsers!(toolparser::Vector{ToolParser})
 end

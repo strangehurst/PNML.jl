@@ -21,8 +21,8 @@ using XMLDict: XMLDict
     #println(str)
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     @show PNML.value_type(PNML.Marking, pntd)
     @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
 
@@ -78,8 +78,8 @@ end
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("XXX", PNML.NamedSortRef(:dot), net)
 
@@ -139,8 +139,8 @@ end
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
         sort = ArbitrarySort(:foo, "ArbSort", net)
         PNML.fill_sort_tag!(net, :foo, sort)
 
@@ -176,8 +176,8 @@ end
         </hlinitialMarking>
         """
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
         placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), net)
         mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
         #TODO add tests
@@ -198,8 +198,8 @@ end
         </hlinitialMarking>
         """
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
         placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), net)
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
         val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset{<:Any}
@@ -214,8 +214,8 @@ end
         </hlinitialMarking>
         """
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
         placetype = SortType("testdot", PNML.NamedSortRef(:dot), net)
         @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
     end
@@ -245,8 +245,8 @@ end
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
 
         net = PnmlNet(pntd, :fake)
-        PNML.fill_nonhl!(net)
-        PNML.fill_labelp!(net)
+        PNML.fill_builtin_sorts!(net)
+        PNML.fill_builtin_labelparsers!(net)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("FIFO", PNML.NamedSortRef(:dot), net)

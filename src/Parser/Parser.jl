@@ -36,7 +36,7 @@ using PNML: ToolInfo, XmlDictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
-using PNML: pid, fill_labelp!, fill_nonhl! #, fill_toolp!
+using PNML: pid, fill_builtin_labelparsers!, fill_builtin_sorts!, fill_builtin_toolparsers!
 using PNML: ToolParser, LabelParser
 using PNML: default, fill_sort_tag!
 using PNML: namedsort, multisetsort, partitionsort, productsort

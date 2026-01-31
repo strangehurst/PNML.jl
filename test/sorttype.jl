@@ -8,8 +8,8 @@ using .TestUtils
 @testset "type $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
     # Add usersort, namedsort duo as test context.
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     PNML.namedsorts(net)[:N2] = PNML.NamedSort(:N2, "N2", DotSort(), net)
 
     n1 = xml"""

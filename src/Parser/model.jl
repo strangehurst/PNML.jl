@@ -79,7 +79,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
                     )
     # First fill the built-in label parser plugins.
-    fill_labelp!(net.labelparser) #TODO rename to fill_builtin_labelparsers!
+    fill_builtin_labelparsers!(net.labelparser)
     @assert !isempty(net.labelparser)
 
     if haskey(kwargs, :lp) && !isnothing(kwargs[:lp]) && !isempty(kwargs[:lp])
@@ -92,8 +92,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
         @show net.labelparser #! bring-up
     end
 
-    #TODO rename to fill_builtin_toolparsers!
-    # fill_toolp!(net.toolparser) # built-in toolparsers
+    fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
     # @assert isempty(net.toolparser) #TODO
 
     # if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
@@ -106,7 +105,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     #     @show net.toolparser
     # end
 
-    fill_nonhl!(net) #TODO rename to fill_builti_sorts!
+    fill_builtin_sorts!(net)
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.

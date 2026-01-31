@@ -98,7 +98,7 @@ function pff(@nospecialize ft)
         ft === XMLDict.xml_dict ||
         ft === PNML.verify! ||
         ft === PNML.verify_ids! ||
-        ft === PNML.fill_labelp! ||
+        ft === PNML.fill_builtin_labelparsers! ||
         ft === PNML.Parser.__any_element ||
         false
         return false

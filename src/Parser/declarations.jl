@@ -349,7 +349,7 @@ end
 
 # Built-ins sorts
 # ! 2025-07-21 AbstractSortRef refactor, make these return a direct NamedSortRef.
-#! The insertion into decldict in done in `fill_sort_tag!` from `fill_nonhl!`
+#! The insertion into decldict in done in `fill_sort_tag!` from `fill_builtin_sorts!`
 #! as initial part of `PnmlNet` parsing.
 #! Followed by parsing all declarations where `parse_sort is used`.
 #! Then the net where terms use sorts.
@@ -446,7 +446,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, paren
     if haskey(namedsorts(net), sorttag)
         return NamedSortRef(sorttag)
     else
-        # Did not find namedsort, will instantiate named,user duo for one. See fill_nonhl!
+        # Did not find namedsort, will instantiate named,user duo for one. See fill_builtin_sorts!
         sort = FiniteIntRangeSort(startval, stopval)
         sref = make_sortref(net, PNML.namedsorts, sort, "finiteintrange", sorttag, name)
         #D()&& @show sref

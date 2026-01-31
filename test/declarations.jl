@@ -11,8 +11,8 @@ using .TestUtils
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     decl = @inferred parse_declaration!(net, xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
         </declaration>""", pntd)
@@ -66,8 +66,8 @@ end
     """
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     @test_call target_modules=t_modules PNML.namedsorts(net)
     @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(net)
 
@@ -154,8 +154,8 @@ end
     """
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     decl = @inferred parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
 
@@ -195,8 +195,8 @@ end
     """
 
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     decl = parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
     #@show PNML.arbitrarysort(net, :id1)
@@ -215,8 +215,8 @@ end
     </declaration>
     """
     net = PnmlNet(pntd, :fake)
-    PNML.fill_nonhl!(net)
-    PNML.fill_labelp!(net)
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
     @test_throws DuplicateIDException parse_declaration!(net, node, pntd)
 end
 
