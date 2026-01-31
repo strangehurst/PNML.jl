@@ -21,7 +21,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
     name, length, arity, tag, value, term, Labels.text, elements,
     graphics, has_graphics,
-    DictType, AnyElement, Parser.anyelement, Parser.xmldict,
+    XmlDictType, AnyElement, Parser.anyelement, Parser.xmldict,
     multiset
 @reexport using PNML: toexpr, PnmlExpr, decldict
 

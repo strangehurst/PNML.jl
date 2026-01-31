@@ -127,7 +127,7 @@ include("Core/coordinates.jl")
 include("context.jl")
 
 include("Core/interfaces.jl") # Function docstrings mostly.
-include("Core/anyelement.jl") # AnyElement, DictType, XDVT
+include("Core/anyelement.jl") # AnyElement, XmlDictType, XDVT
 include("Core/types.jl") # Abstract Types with docstrings.
 
 include("Core/toolparser.jl")

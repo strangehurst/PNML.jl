@@ -15,7 +15,7 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 using PNML
 using PNML: Maybe, nettype, AnyElement, D
 using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
-using PNML: DeclDict, DictType
+using PNML: DeclDict, XmlDictType
 using PNML: PnmlMultiset, AbstractTerm
 using PNML: namedsort, namedsorts, multisetsorts, multisetsorts
 using PNML: ToolParser, LabelParser

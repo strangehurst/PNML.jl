@@ -16,7 +16,7 @@ Marking is a ground term and is used to give a Petri net marking vector an initi
 
 ## Unclaimed Labels
 
-XML tags that are not 'claimed' are recursively parsed into a [`DictType`](@ref) by [`Parser.xmldict`](@ref).
+XML tags that are not 'claimed' are recursively parsed into a [`XmlDictType`](@ref) by [`Parser.xmldict`](@ref).
 
 See [`AnyElement`](@ref), [`Parser.anyelement`](@ref), [`PnmlLabel`](@ref)
 
@@ -30,7 +30,7 @@ __TODO__ Implement a `ToolInfo` for PNML.jl extensions.
 
 ## PnmlLabel
 
-Applies label semantics to a `DictType`.
+Applies label semantics to a `XmlDictType`.
 Used for not-yet-implemented labels. Many of the labels used for high-level many-sorted algebra have not been implemented.
 
 See [`rate_value`](@ref) for a use case.

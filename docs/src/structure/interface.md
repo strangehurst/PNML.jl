@@ -36,7 +36,7 @@ We start a description of the net IR here.
 
 ## Dict Type
 
-[`DictType`](@ref) used by:
+[`XmlDictType`](@ref) used by:
   * [`AnyElement`](@ref)
   * [`Labels.PnmlLabel`](@ref)
   * [`Labels.SortType`](@ref)

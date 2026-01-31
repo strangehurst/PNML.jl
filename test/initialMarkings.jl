@@ -316,21 +316,21 @@ end # fifoinitialMarking
 #     #~ @show inputs(markterm)[1:1]
 #     # # Decend each element of the term.
 #     # @test tag(axn) == "subterm"
-#     # @test value(axn) isa Vector #!{DictType}
+#     # @test value(axn) isa Vector #!{XmlDictType}
 
 #     # all1 = value(axn)[1]
 #     # @test tag(all1) == "all"
-#     # @test value(all1) isa DictType
+#     # @test value(all1) isa XmlDictType
 #     # use1 = value(all1)["usersort"]
-#     # @test use1 isa DictType
+#     # @test use1 isa XmlDictType
 #     # @test use1[:declaration] == "N1"
 #     # @test PNML._attribute(use1, :declaration) == "N1"
 
 #     # all2 = value(axn)[2]
 #     # @test tag(all2) == "all"
-#     # @test value(all2) isa DictType
+#     # @test value(all2) isa XmlDictType
 #     # use2 = value(all2)["usersort"]
-#     # @test use2 isa DictType
+#     # @test use2 isa XmlDictType
 #     # @test use2[:declaration] == "N2"
 #     # @test PNML._attribute(use2, :declaration) == "N2"
 # end

@@ -1,11 +1,11 @@
 #--------------------------------------------
-# AnyElement and DictType
+# AnyElement and XmlDictType
 #--------------------------------------------
 
 "Dictionary passed to `XMLDict.xml_dict` as `dict_type`. See `xmldict`."
-const DictType = LittleDict{Union{Symbol,String}, Any} #Union{DictType, String, SubString{String}}}
+const XmlDictType = LittleDict{Union{Symbol,String}, Any} #Union{XmlDictType, String, SubString{String}}}
 
-tag(d::DictType) = first(keys(d)) # String or Symbol
+tag(d::XmlDictType) = first(keys(d)) # String or Symbol
 
 """
 $(TYPEDSIGNATURES)
@@ -18,7 +18,7 @@ function text_content(vx::Vector{Any})
     text_content(first(vx))
 end
 
-function text_content(d::DictType)
+function text_content(d::XmlDictType)
     x = get(d, "text", nothing)
     isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
     return x
@@ -28,7 +28,7 @@ text_content(s::Union{String,SubString{String}}) = s
 """
 XMLDict uses symbols as keys. Value returned is a string.
 """
-function _attribute(vx::DictType, key::Symbol)
+function _attribute(vx::XmlDictType, key::Symbol)
     x = get(vx, key, nothing)
     isnothing(x) && throw(ArgumentError("missing $key value"))
     isa(x, AbstractString) ||
@@ -46,16 +46,16 @@ See also [`ToolInfo`](@ref) and [`PnmlLabel`](@ref).
 
 Creates a tree where the root is `tag`,
 leaf node values are `Union{String, SubString{String}}`, and
-interior nodes values are `Union{DictType, Vector{DictType}}`
+interior nodes values are `Union{XmlDictType, Vector{XmlDictType}}`
 
-See [`DictType`](@ref).
+See [`XmlDictType`](@ref).
 """
 @auto_hash_equals struct AnyElement{T}
     # Tag of node enclosing the
     tag::Symbol
     # LittleDict{Union{Symbol,String}, Any}  returned by `xmldict`.
     # We hope/promise the following is the Type of ALL values in dictionary.
-    elements::T #LittleDict{Union{Symbol,String}, Union{DictType, String, SubString{String}, Vector{Any}}}
+    elements::T #LittleDict{Union{Symbol,String}, Union{XmlDictType, String, SubString{String}, Vector{Any}}}
 end
 
 tag(a::AnyElement) = a.tag
@@ -85,12 +85,12 @@ end
 """
     dict_show(io::IO, x)
 
-Internal helper for things that contain `DictType`.
+Internal helper for things that contain `XmlDictType`.
 """
 function dict_show end
 
 # Called by show AnyElement
-function dict_show(io::IO, d::DictType)
+function dict_show(io::IO, d::XmlDictType)
     iio = inc_indent(io)
     for (i, kv) in enumerate(pairs(d))
         i > 1 && print(iio, indent(iio))
@@ -116,10 +116,10 @@ dict_show(io::IO, s::AbstractString)    = show(io, s)
 # dict_show(io::IO, p::Number) = show(io, p)
 # dict_show(io::IO, p::Nothing) = print(io, repr(p))
 
-function Base.show(io::IO, ::MIME"text/plain", d::DictType)
+function Base.show(io::IO, ::MIME"text/plain", d::XmlDictType)
     show(io, d)
 end
 
-function Base.show(io::IO, d::DictType)
+function Base.show(io::IO, d::XmlDictType)
     dict_show(io, d)
 end

@@ -77,7 +77,7 @@ function test_unclaimed(pntd, xmlstring::String)
     l = PnmlLabel(nodeid, u, net)
     a = anyelement(nodeid, node)
 
-    @test u isa PNML.DictType
+    @test u isa PNML.XmlDictType
     @test l isa PnmlLabel
     @test a isa AnyElement
 
@@ -96,8 +96,8 @@ function test_unclaimed(pntd, xmlstring::String)
     @test tag(l) isa Symbol && tag(l) === nn || tag(l) == string(nn)
     @test tag(a) isa Symbol && tag(a) === nn || tag(a) == string(nn)
 
-    @test u isa DictType
-    @test l.elements isa DictType
+    @test u isa XmlDictType
+    @test l.elements isa XmlDictType
     @test a.elements isa LittleDict
     #! unclaimed id is not registered
     x = get(u, :id, nothing)
@@ -113,42 +113,42 @@ end
 
     ctrl = [ # Vector of tuples of XML string, expected result from `XMLDict.xml_dict`.
         ("""<declarations> </declarations>""",
-            "declarations" => DictType()),
+            "declarations" => XmlDictType()),
 
         ("""<declarations atag="atag1"> </declarations>""",
-            "declarations" => DictType(:atag =>"atag1")),
+            "declarations" => XmlDictType(:atag =>"atag1")),
 
         ("""<foo><declarations> </declarations></foo>""",
-            "foo" => DictType("declarations" => DictType())),
+            "foo" => XmlDictType("declarations" => XmlDictType())),
 
         # no content, no attribute maybe results in empty tuple.
         ("""<null></null>""",
-            "null" => DictType()),
+            "null" => XmlDictType()),
         ("""<null2/>""",
-            "null2" => DictType()),
+            "null2" => XmlDictType()),
         # no content, with attribute
         ("""<null at="null"></null>""",
-            "null" => DictType(:at => "null")),
+            "null" => XmlDictType(:at => "null")),
         ("""<null2 at="null2" />""",
-            "null2" => DictType(:at => "null2")),
+            "null2" => XmlDictType(:at => "null2")),
         # empty content, no attribute
         ("""<empty> </empty>""",
-            "empty" => DictType()),
+            "empty" => XmlDictType()),
         # empty content, with attribute
         ("""<empty at="empty"> </empty>""",
-            "empty" => DictType(:at => "empty")),
+            "empty" => XmlDictType(:at => "empty")),
         # unclaimed do not register id
         ("""<foo id="testid1" />""",
-            "foo" => DictType(:id => "testid1")),
+            "foo" => XmlDictType(:id => "testid1")),
         ("""<foo id="testid2"/>""",
-            "foo" => DictType(:id => "testid2")),
+            "foo" => XmlDictType(:id => "testid2")),
 
         ("""<foo id="repeats">
                 <one>ONE</one>
                 <one>TWO</one>
                 <one>TRI</one>
             </foo>""",
-            "foo" => DictType(:id => "repeats",
+            "foo" => XmlDictType(:id => "repeats",
                             "one" => Any["ONE", "TWO", "TRI"])),
 
         ("""<declarations atag="atag2">
@@ -159,11 +159,11 @@ end
                     <value tag3="tagthree"/>
                 </something2>
             </declarations>""",
-            "declarations"=> DictType(:atag => "atag2",
+            "declarations"=> XmlDictType(:atag => "atag2",
                         "something" => Any["some content", "other stuff"],
                         "something2" =>
-                            DictType(:tag2 => "tagtwo",
-                                "value" => Any[DictType(), DictType(:tag3 => "tagthree")]))),
+                            XmlDictType(:tag2 => "tagtwo",
+                                "value" => Any[XmlDictType(), XmlDictType(:tag3 => "tagthree")]))),
     ]
     # expected is a pair to construct a PnmlLabel
     for (s, expected) in ctrl

@@ -32,7 +32,7 @@ using ..Declarations
 
 using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D
 using PNML: Graphics, Coordinate
-using PNML: ToolInfo, DictType
+using PNML: ToolInfo, XmlDictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator

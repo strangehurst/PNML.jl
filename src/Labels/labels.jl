@@ -113,7 +113,7 @@ while `PnmlLabel` is restricted to PNML Labels.
 @auto_hash_equals struct PnmlLabel{T, N <: AbstractPnmlNet} <: Annotation
     # XMLDict uses symbols for attribute keys and string for elements/children keys.
     tag::Union{Symbol, String, SubString{String}}
-    elements::T #! Union{DictType, String, SubString{String}, Vector{Any}} # is Any better?
+    elements::T #! Union{XmlDictType, String, SubString{String}, Vector{Any}} # is Any better?
     net::N
 end
 

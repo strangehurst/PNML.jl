@@ -31,7 +31,7 @@ end
 """
 Return `Vector{AnyElement}` for each well-formed element of a `<toolspecific> `node.`
 
-#! Return an AbstractDict, likely a `DictType` as returned by `xmldict`.
+#! Return an AbstractDict, likely a `XmlDictType` as returned by `xmldict`.
 """
 function toolspecific_content_fallback(node::XMLNode, pntd::PnmlType)
     anyelement(Symbol(EzXML.nodename(node)), node)
