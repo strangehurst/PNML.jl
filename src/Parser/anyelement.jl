@@ -5,14 +5,14 @@ Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
 function anyelement(tag::Symbol, node::XMLNode)::AnyElement
-    xd = xmldict(node)::Union{DictType, String, SubString{String}}
+    xd = xmldict(node) #!::Union{DictType, String, SubString{String}}
     return __any_element(tag, xd)
 end
 
 __any_element(t, d) = AnyElement(t, d) #! does dynamic dispatch
 
 """
-    xmldict(node::XMLNode) -> Union{DictType, String, SubString{String}, Vectr{Any}}
+    xmldict(node::XMLNode) -> Union{DictType, String, SubString{String}}
 
 Return tuple holding a well formed XML tree as parsed by `XMLDict.xml_dict`.
 Symbols for attribute key, strings for element/child keys and strings for value of leaf.
@@ -22,7 +22,7 @@ See: [`anyelement`](@ref),
 """
 function xmldict(node::XMLNode)
     xd = XMLDict.xml_dict(node, DictType; strip_text=true)
-    return xd::Union{DictType, String, SubString{String}}
+    return xd #!::Union{DictType, String, SubString{String}}
     # empty dictionarys are a valid thing.
 end
 

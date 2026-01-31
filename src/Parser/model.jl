@@ -177,7 +177,9 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
         #@error "labelparser[$(repr(tag))] " net.labelparser[tag] #! bring-up
         extralabels[tag] = net.labelparser[tag](child, pntd; net, parentid)
     else
-        xd = xmldict(child)::LittleDict
+        xd = xmldict(child)
+        xd isa AbstractString &&
+            error("PNML Labels must have XML structure, not just text content, found $xd")
         l = PnmlLabel(tag, xd, net)
         #CONFIG[].warn_on_unclaimed &&
         @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l #! bring-up? todo logginng
