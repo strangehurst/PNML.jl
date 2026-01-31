@@ -26,7 +26,6 @@ end
 
 initial_marking(place::Place) = (place.initialMarking)()
 net(place::Place) = place.net
-decldict(place::Place) = decldict(place.net)
 sortref(place::Place) = sortref(place.sorttype)::AbstractSortRef
 
 """
@@ -83,8 +82,6 @@ mutable struct Transition{N <: AbstractPnmlNet}  <: AbstractPnmlNode
     varsubs::Vector{NamedTuple}
     net::N
 end
-
-decldict(transition::Transition) = decldict(transition.net)
 
 """
     varsubs(transition) -> Vector{NamedTuple}
@@ -176,11 +173,6 @@ isnormal(e::AbstractArcEnum)    = isa_variant(e, ArcT.normal)
 isinhibitor(e::AbstractArcEnum) = isa_variant(e, ArcT.inhibitor)
 isread(e::AbstractArcEnum)      = isa_variant(e, ArcT.read)
 isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
-
-
-#!sortref(arc::Arc) = sortref(arc.inscription)::AbstractSortRef
-
-decldict(arc::Arc) = declarationdict(arc.net)
 
 """
     source(arc) -> Symbol
