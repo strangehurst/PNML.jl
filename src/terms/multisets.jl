@@ -53,10 +53,8 @@ issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 """
     basis(ms::PnmlMultiset) -> AbstractSortRef
 
-Multiset basis sort is accessed through a AbstractSortRef that holds an `REFID` index into `decldict`,
-can be used to find a NamedSort.
-Which gives a name and id to a built-in Sorts, ProductSorts, or __other__ UserSorts.
-MultisetSorts not allowed here. Nor loops in sort references.
+Multiset basis sort is accessed through a AbstractSortRef that holds a `REFID` index
+into `decldict(net)`. MultisetSorts not allowed here. Nor loops in sort references.
 """
 basis(ms::PnmlMultiset) = sortref(ms)::AbstractSortRef
 sortref(ms::PnmlMultiset) = ms.basis_ref

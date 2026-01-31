@@ -17,17 +17,15 @@ using .TestUtils
             <structure><declarations></declarations></structure>
         </declaration>""", pntd)
 
-    @test length(decl) == 7 # nothing in <declarations>
-    @test !isempty(decl)
+    @test length(decl.ddict) == 7 # nothing in <declarations>
+    @test !isempty(decl.ddict)
     @test @inferred(Maybe{Graphics}, PNML.graphics(decl)) === nothing
     @test @inferred(Maybe{ToolInfo}, PNML.toolinfos(decl)) === nothing
 
     @test occursin(r"^Declaration", sprint(show, decl))
-    #@test_opt @inferred(PNML.decldict(decl)) #! JET goes crazy
     @test_opt PNML.graphics(decl)
     @test_opt PNML.toolinfos(decl)
 
-    @test_call PNML.decldict(decl)
     @test_call PNML.graphics(decl)
     @test_call PNML.toolinfos(decl)
 end
@@ -160,11 +158,9 @@ end
     PNML.fill_labelp!(net)
     decl = @inferred parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
-    #@show PNML.partitionsorts(decldict(decl))
-    #PNML.show_sorts(decldict(decl))
 
     # Examine 3 partition sorts
-    for psort in values(PNML.partitionsorts(decldict(decl)))
+    for psort in values(PNML.partitionsorts(decl.ddict))
         # partition -> partition element -> fe constant
         @test typeof(psort) <: PartitionSort # is a declaration
         @test PNML.isregistered(net.idregistry, PNML.pid(psort))

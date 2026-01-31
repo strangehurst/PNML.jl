@@ -18,22 +18,17 @@ but are present because, being labels, it is allowed.
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
 end
 
-PNML.decldict(d::Declaration) = d.ddict
-Base.length(d::Declaration) = length(PNML.decldict(d))
-Base.isempty(d::Declaration) = isempty(PNML.decldict(d))
-
 function Base.show(io::IO, d::Declaration)
     print(io, nameof(typeof(d)), "(")
     show(io, text(d)); print(io, ", ")
     show(io, d.graphics); print(io, ", ")
     show(io, d.toolspecinfos); print(io, ", ")
-    show(io, decldict(d))
     return print(io, ")")
 end
 
 function verify!(errors, decl::Declaration, verbose::Bool, idreg::PNML.IDRegistry)
-    if isempty(decl)
-        push!(errors, string("declaration is empty: $decl")::String)
+    if isempty(decl.ddict)
+        push!(errors, string("declaration dictionarys is empty: $decl")::String)
     end
     return errors
 end

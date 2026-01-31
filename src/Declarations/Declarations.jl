@@ -26,7 +26,7 @@ using PNML: multisetsorts
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Lots has human-readable name strings.
 import PNML: pid, refid # PNML ID
-import PNML: fill_sort_tag!, decldict
+import PNML: fill_sort_tag!
 
 using ..Sorts
 using ..IDRegistrys

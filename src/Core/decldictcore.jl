@@ -92,7 +92,6 @@ function declarations(dd::DeclDict)
         values(arbitraryops(dd)),
         values(feconstants(dd)),
 
-        #values(usersorts(dd)),
         values(useroperators(dd)),
     ])
 end

@@ -3,7 +3,6 @@
 
 Fill a DeclDict with built-ins and defaults (that may be redefined).
 """
-
 function fill_nonhl!(net::AbstractPnmlNet)
     __insert_sort!(net, :dot, "Dot", Sorts.DotSort()) # can be overridden
     __insert_sort!(net, :integer, "Integer", Sorts.IntegerSort())
@@ -34,7 +33,7 @@ function fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict::Base.Call
 end
 function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Callable)
      # Do not overwrite existing content (except dot).
-    if tag === :dot || !has_key(ddict, dict, tag)
+    if tag === :dot || !haskey(dict(ddict), tag)
         !isregistered(idreg, tag) && register_id!(idreg, tag)
         dict(ddict)[tag] = sort
     end

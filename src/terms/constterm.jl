@@ -23,20 +23,21 @@ value(nc::NumberConstant) = nc.value
 """
     FEConstant
 
-Finite enumeration constant.
+Finite enumeration constant and its containing sort.
 
-> these FEConstants are part of the declaration of the FiniteEnumeration sort. On the other hand, each of
-these FEConstants defines a 0-ary operation, i. e. is a declaration of a constant.
+> "...these FEConstants are part of the declaration of the FiniteEnumeration sort.
+> On the other hand, each of these FEConstants defines a 0-ary operation,
+> i. e. is a declaration of a constant."
 
 # Usage
-    fec = FEConstant(:anID, "somevalue", decldict)
+    fec = FEConstant(:anID, "somevalue", sortref)
     fec() == :anID
     fec.name = "somevalue"
 """
 struct FEConstant{S <: AbstractSortRef} <: AbstractOperator
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
-    ref::S # of contining partition, enumeration, (or partitionelement?)
+    ref::S # of contining partition, enumeration, (or partitionelement?) sort.
 end
 
 refid(fec::FEConstant)    = refid(fec.ref)::Symbol
@@ -99,14 +100,14 @@ function Base.show(io::IO, c::DotConstant)
 end
 
 """
-    BooleanConstant("true"|"false", decldict)
+    BooleanConstant("true"|"false")
     BooleanConstant(true|false)
 
-A built-in operator (constants are 0-ary operators).
+A built-in operator constructor (constants are 0-ary operators).
 
 Examples
 ```
-    c = BooleanConstant("true", decldict);
+    c = BooleanConstant("true");
     c == BooleanConstant(true)
     c() == true
 ```

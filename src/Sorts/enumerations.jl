@@ -3,7 +3,7 @@
 """
 $(TYPEDEF)
 See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
-Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs and metadata.
+Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs.
 """
 abstract type EnumerationSort <: AbstractSort end
 
@@ -17,14 +17,12 @@ refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 """
     sortelements(sort::EnumerationSort, ::AbstractPnmlNet) -> Iterator
 
-Return iterator into feconstant(decldict) for this sort's `FEConstants`.
-Maintains order of this sort.
+Return iteratable ordered collection of keys into `feconstant(net)` dictionary.
 """
 sortelements(sort::EnumerationSort, ::AbstractPnmlNet) = refs(sort)
 
-"Return number of `FEConstants` contained by this sort."
+#"Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
-
 Base.eltype(::EnumerationSort) = REFID
 
 function Base.show(io::IO, esort::EnumerationSort)
@@ -40,7 +38,7 @@ end
 """
 $(TYPEDEF)
 
-Wraps tuple of REFIDs into feconstant(decldict).
+ Orderedcollection of REFIDs into feconstant(net).
 
 Operations differ between `EnumerationSort`s. All wrap a tuple of symbols and
 metadata, allowing attachment of Partition/PartitionElement.
@@ -49,7 +47,7 @@ See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 11 power or nth successor/predeces
 
 MCC2023/SharedMemory-COL-100000 has cyclic enumeration with 100000 <feconstant> elements.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct CyclicEnumerationSort <: EnumerationSort
+@auto_hash_equals struct CyclicEnumerationSort <: EnumerationSort
     # Difference of Cyclic from Finite EnumerationSort is successor/predecessor operators.
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
 end
@@ -58,9 +56,9 @@ end
 
 """
     FiniteEnumerationSort(ntuple) -> FiniteEnumerationSort{M}
-Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(decldict)[refid]`.
+Wraps a collection of `FEConstant` REFIDs. Usage: `feconstant(net)[refid]`.
 """
-@auto_hash_equals fields=fec_refs typearg=true struct FiniteEnumerationSort <: EnumerationSort
+@auto_hash_equals struct FiniteEnumerationSort <: EnumerationSort
     fec_refs::Vector{REFID} # ordered collection of FEConstant REFIDs
     #TODO! Constructor version with start,end attributes. See ISO/IEC 15909-2:2011/Cor.1:2013(E) defect 10
 end
@@ -69,7 +67,7 @@ end
     $(TYPEDEF)
     FiniteIntRangeSort(start::T, stop::T) where {T<:Integer}
 """
-@auto_hash_equals fields=start,stop typearg=true struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
+@auto_hash_equals struct FiniteIntRangeSort{T<:Integer} <: AbstractSort
     start::T
     stop::T # XML Schema calls this 'end'.
 end

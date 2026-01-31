@@ -395,9 +395,9 @@ function adjacent_place end
 #todo Use traits?
 
 """
-    decldict(x) -> DeclDict
+    decldict(net::AbstractPnmlNet) -> DeclDict
 
-`PnmlNet`,`Page` and `Declaration` labels have bindings to the net-level `DeclDict`.
+Access net-level `DeclDict`.
 """
 function decldict end
 

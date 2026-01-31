@@ -299,7 +299,7 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     elseif PNML.has_arbitrarysort(net, declid)
         ArbitrarySortRef(declid)
     else
-        error("Did not find sort declaration for $(repr(declid)) in $(decldict(net))")
+        error("Did not find sort declaration for $declid")
     end
 end
 

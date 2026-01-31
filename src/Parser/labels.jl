@@ -286,7 +286,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
             println()
             @error("$pntd parse_hlinitialMarking of $(repr(parentid)) " *
                     "sortref mismatch: $default_sorttype != $placetype",
-                    default_sorttype, placetype, l, decldict(net))
+                    default_sorttype, placetype, l)
             Base.show_backtrace(stdout, stacktrace())
             println()
         end
@@ -348,7 +348,7 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
         if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype, net)
             println()
             @error("$pntd parse_fifoinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
-                    default_sorttype, placetype, l, decldict(net))
+                    default_sorttype, placetype, l)
             Base.show_backtrace(stdout, stacktrace())
             println()
         end
@@ -472,11 +472,6 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(tj.exp))), expected PnmlExpr")
 
-    # D()&& @show tj target(pit) source(pit)
-    # if isempty(tj.vars)
-    #     D()&& foreach(println, values(PNML.variabledecls(decldict(net))))
-    #     D()&& println()
-    # end
     if !PNML.Sorts.equalSorts(tj.ref, placesort, net)
         @error("arc $(source(pit)) -> $(target(pit)) inscription term sort mismatch: $(tj.ref) != $placesort",
                 tj, adjacentplace)
@@ -583,12 +578,12 @@ end
     parse_sorttype_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, AbstractSortRef, Tuple
 
 The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algebra.
-Because we are sharing the HL implementation with the other meta-models,
+Because we are using the HL implementation with the other meta-models,
 we support it in all nets.
 
 The term here is a concrete sort.
 It is possible to have an inlined concrete sort that is anonymous.
-We place all these concrete sorts in the decldict(net) and pass around a AbstractSortRef.
+We place all these concrete sorts in the `decldict(net)`` and pass around a AbstractSortRef.
 
 See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 """
