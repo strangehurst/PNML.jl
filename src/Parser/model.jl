@@ -72,51 +72,27 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     D()&& println("\n## parse_net ", netid, " of type ", pntd)
 
     #----------------------------------------------------------------
-    # Now we know the PNTD and can parse a net.
-    #----------------------------------------------------------------
-    #! net = parse_net_1!(node, pntd, netid; net)
-
-    # Create empty data structures to be filled with the parsed pnml XML.
-
-    # Treat net as a psudo-page so that we can record child pages.
-
-    #-------------------------------------------------------------------
-    #-------------------------------------------------------------------
-        # We use the declarations toolkit for non-high-level nets,
-    # and assume a minimum level of function for high-level nets.
-    # Declarations present in the input file will overwrite these.
-
+    # Create net with empty data containers to be filled during parsing.
+    # We already used `idregistry` and `pagedict` needs to be type stable.
     #-------------------------------------------------------------------------------------
-    # Create net with empty data containers. Will fill during parsing.
-    #-------------------------------------------------------------------------------------
-    net = PnmlNet(; type=pntd, id=netid,
+    net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
-                    #netdata = PnmlNetData(), # holds all place, transition, arc
-                    #page_idset = OrderedSet{Symbol}(),
-                    #ddict = DeclDict(), # empty dictionarys
-                    #declaration, # Label, Wraps same DeclDict as decldict(net).
-                    #namelabel,
-                    #toolspecinfos = ToolInfo[],
-                    #todo extralabels = PnmlLabel[],
-                    idregistry,
-                    #labelparser= LittleDict{Symbol, Base.Callable}(),
-                    #toolparser = ToolParser[]
                     )
-    #! FILL here
-    # Fist the parser plugins.
-    fill_labelp!(net.labelparser) # Built-in label parsers
-    @assert !isempty(net.labelparser) # Has built-in label parsers.
+    # First fill the built-in label parser plugins.
+    fill_labelp!(net.labelparser) #TODO rename to fill_builtin_labelparsers!
+    @assert !isempty(net.labelparser)
 
     if haskey(kwargs, :lp) && !isnothing(kwargs[:lp]) && !isempty(kwargs[:lp])
         @warn "add $(length(kwargs[:lp])) labelparser(s)"
         foreach(kwargs[:lp]) do lparser
             #! todo sanity check
-            @show lparser
+            @show lparser #! bring-up
             net.labelparser[lparser.tag] = lparser.func
         end
-        @show net.labelparser
+        @show net.labelparser #! bring-up
     end
 
+    #TODO rename to fill_builtin_toolparsers!
     # fill_toolp!(net.toolparser) # built-in toolparsers
     # @assert isempty(net.toolparser) #TODO
 
@@ -130,7 +106,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     #     @show net.toolparser
     # end
 
-    fill_nonhl!(net) #(ddict, idregistry)
+    fill_nonhl!(net) #TODO rename to fill_builti_sorts!
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.
@@ -139,8 +115,8 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     # Though what use graphics could add escapes me (and the standard).
     decls = alldecendents(node, "declaration") # There may be none.
     # If there are multiple `<declaration>`s parsed they will share the DeclDict.
-    net.declaration =  parse_declaration!(net, decls, pntd)::Declaration
-    #PNML.verify(PNML.decldict(declaration), idreg=net.idregistry, verbose=true) #
+    net.declaration = parse_declaration!(net, decls, pntd)::Declaration
+    #PNML.verify(PNML.decldict(declaration), idreg=net.idregistry, verbose=true) #! MOVE
 
     let n = firstchild(node, "name")
         if !isnothing(n)
@@ -148,8 +124,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
         end
     end
 
-    # Collect all the toolspecinfos at net level (if any exist).
-    # Enables use in later parsing.
+    # Collect all the toolspecinfos at net level for use in later parsing.
     find_toolinfos!(net.toolspecinfos, node, pntd, net)
     PNML.Labels.validate_toolinfos(net.toolspecinfos)
 
@@ -162,66 +137,50 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
             # There is always at least one page. A forest of multiple page trees is allowd.
             parse_page!(net, net.page_idset, child, pntd)
         elseif tag in ["declaration", "name", "toolspecific"]
-            # println("NOOP: net already parsed ", tag)
+            # println("NOOP: already parsed ", tag)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: <graphics>"
         else
-            unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid) # net
+            unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid)
         end
     end
+    PNML.verify(net, CONFIG[].verbose)
 
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
     #~ --------------------------------------------------------------
 
-    PNML.verify(net, CONFIG[].verbose)
-
-    # Ground terms used to set initial markings can be rewritten and evaluated here.
-    # 0-arity operator means empty variable substitution, i.e. constant.
-
-    #~ Evaluate expressions to create a mutable vector of markings.
-    #todo API for using ToolInfo in expressions?
-    #^ Marking vector is used in enabling and firing rules.
-    #m₀ = PNML.PNet.initial_markings(net)
-
-    # ?Rewrite inscription and condition terms with variable substitution.
+    #^ Ground terms used to set initial markings can be rewritten and evaluated here.
+    #? Rewrite inscription and condition terms with variable substitution.
+    #? 0-arity operator means empty variable substitution, i.e. constant.
+    #TODO create API for using ToolInfo in expressions
 
     # Create "color functions" that process variables using TermInterface expressions.
     # Pre-caculate as much as is practical.
 
+    #~ Evaluate expressions to create a mutable vector of markings.
+    #^ Marking vector is used in enabling and firing rules.
+    #m₀ = PNML.PNet.initial_markings(net)
     #PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
     return net
 end
 
-# """
-#     parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol; net::AbstractPnmlNet) -> PnmlNet
-
-# Parse PNML `<net>` with a defined PnmlType.
-
-# Construct data structures that are filled during decend of the nets's XML tree.
-# """
-# function parse_net_1!(node::XMLNode, pntd::PnmlType, netid::Symbol;
-#                         lp=nothing, tp=nothing, kwargs...)
-
-#     return net
-# end
-
 """
     unexpected_label!(extralabels, child, tag, pntd; net, parentid)
 
-Apply a context labelparser to child if one matches nodename, otherwise call [`add_label!`](@ref).
+Apply a labelparser to `child` if one matches `tag`, otherwise call [`xmldict`](@ref).
+Add to `extralabels`.
 """
 function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbol, pntd; net, parentid::Symbol)
     #println("unexpected_label! $tag")
     if haskey(net.labelparser, tag)
-        #@error "labelparser[$(repr(tag))] " net.labelparser[tag]
-        extralabels[tag] =
-            net.labelparser[tag](child, pntd; net, parentid)
+        #@error "labelparser[$(repr(tag))] " net.labelparser[tag] #! bring-up
+        extralabels[tag] = net.labelparser[tag](child, pntd; net, parentid)
     else
         xd = xmldict(child)::LittleDict
         l = PnmlLabel(tag, xd, net)
         #CONFIG[].warn_on_unclaimed &&
-        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l
+        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l #! bring-up? todo logginng
         extralabels[tag] = l
     end
     return nothing
@@ -237,18 +196,18 @@ function parse_page!(net::PnmlNet, page_idset, node::XMLNode, pntd::PnmlType)
     check_nodename(node, "page")
     pageid = register_idof!(PNML.registry_of(net), node)
     push!(page_idset, pageid) # Record id before decending.
-    pg = _parse_page!(net, node, pntd, pageid)
+    pg = __parse_page!(net, node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict(net)[pageid] = pg
     return nothing
 end
 
 """
-    _parse_page!(net, node, pntd, pageid) -> Page
+    __parse_page!(net, node, pntd, pageid) -> Page
 
 Return `Page`. `pageid` already parsed from `node`.
 """
-function _parse_page!(net::AbstractPnmlNet, node::XMLNode, pntd::T, pageid::Symbol) where {T<:PnmlType}
+function __parse_page!(net::AbstractPnmlNet, node::XMLNode, pntd::T, pageid::Symbol) where {T<:PnmlType}
     D()&& println("## parse_page ", pageid)
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.
@@ -259,7 +218,7 @@ function _parse_page!(net::AbstractPnmlNet, node::XMLNode, pntd::T, pageid::Symb
     PNML.Labels.validate_toolinfos(toolinfos(page))
 
     #---------------------------------------------------------
-    # Fill page with graph nodes.
+    # Fill page with graph nodes & arcs.
     #---------------------------------------------------------
     for child in EzXML.eachelement(node)
         nname = Symbol(EzXML.nodename(child))
@@ -274,11 +233,10 @@ function _parse_page!(net::AbstractPnmlNet, node::XMLNode, pntd::T, pageid::Symb
         elseif nname == :arc
             parse_arc!(netsets(page), netdata(net), child, pntd, net)
         elseif nname in [:declaration, :toolspecific]
-             # NOOP println("already parsed ", tag)
+             # NOOP already parsed
         elseif nname == :page
             # Subpage stored at net-level with key in page's id set.
             parse_page!(net, page_idset(page), child, pntd)
-
         elseif nname == :name
             page.namelabel = net.labelparser[nname](child, pntd; net, parentid=pageid)
         elseif nname == :graphics
