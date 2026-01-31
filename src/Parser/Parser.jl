@@ -36,14 +36,11 @@ using PNML: ToolInfo, DictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
 using PNML: PartitionElement, PnmlMultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
-#using PNML: Context
 using PNML: pid, fill_labelp!, fill_nonhl! #, fill_toolp!
-using PNML: multisetsorts
 using PNML: ToolParser, LabelParser
 using PNML: default, fill_sort_tag!
-using PNML: namedsort, multisetsort, productsort
-using PNML: namedsorts, multisetsorts, productsorts
-using PNML: partitionsort, partitionsorts
+using PNML: namedsort, multisetsort, partitionsort, productsort
+using PNML: namedsorts, multisetsorts, partitionsorts, productsorts
 using PNML: pagedict, placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 using PNML: netsets, toolinfos
