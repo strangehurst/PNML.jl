@@ -28,7 +28,7 @@ end
 #end
 
 @testset "labels $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = PnmlNet(pntd, :fake)
+    net = make_net(pntd, :fake)
     lab = OrderedCollections.LittleDict{Symbol,Any}() # PnmlLabel[]
     for i in 1:4 # create & add 4 labels
         x = i < 3 ? 1 : 2 # make 2 different tagnames
@@ -67,7 +67,7 @@ end
 
 "Return PnmlLabel, AnyElement"
 function test_unclaimed(pntd, xmlstring::String)
-    net = PnmlNet(pntd, :fake)
+    net = make_net(pntd, :fake)
     node = xmlnode(xmlstring)::XMLNode
     reg1 = IDRegistry()# 2 registries to ensure any ids do not collide.
     reg2 = IDRegistry()
@@ -109,7 +109,7 @@ end
 @testset "unclaimed $pntd" for pntd in PnmlTypes.core_nettypes()
     # Even though they are "claimed" by having a parser, they still may be treated as unclaimed.
     # For example <declarations>.
-    net = PnmlNet(pntd, :fake)
+    net = make_net(pntd, :fake)
 
     ctrl = [ # Vector of tuples of XML string, expected result from `XMLDict.xml_dict`.
         ("""<declarations> </declarations>""",

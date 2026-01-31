@@ -30,7 +30,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
 
 @reexport using PNML: PnmlModel,
-    PnmlNet, nets, nettype,
+    PnmlNet, make_net, nets, nettype,
     Page, pages, npages, firstpage, allpages, flatten_pages!,
     Place, place, places, nplaces,  has_place,
     Transition, transition, transitions, ntransitions, has_transition,

@@ -7,9 +7,7 @@ using .TestUtils
 
 println("PRIORITY")
 @testset "get priority label $pntd" for pntd in PnmlTypes.all_nettypes()
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
     trans = PNML.Parser.parse_transition(
         xml"""<transition id ="birth">
@@ -33,9 +31,7 @@ println("PRIORITY")
 end
 
 @testset "get defaulted priority label $pntd" for pntd in PnmlTypes.all_nettypes()
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
     node = xml"""<transition id ="birth">
                     <priorityX> <text> 0.3 </text> </priorityX>
                  </transition>"""

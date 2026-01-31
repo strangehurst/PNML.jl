@@ -5,9 +5,7 @@ include("TestUtils.jl")
 using .TestUtils
 
 println("REWRITE")
-# net = PnmlNet(pntd, :fake)
-# PNML.fill_builtin_sorts!(net)
-# PNML.fill_builtin_labelparsers!(net)
+# net = make_net(pntd, :fake)
 @show d = DotConstant()
 @show Metatheory.rewrite(d, PNML.dot)
 

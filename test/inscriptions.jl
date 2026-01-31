@@ -16,9 +16,7 @@ using XMLDict: XMLDict
             <text>unknown content text</text>
         </unknown>
     </inscription>"""
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),

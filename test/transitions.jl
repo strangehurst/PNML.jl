@@ -16,9 +16,7 @@ using .TestUtils
         </condition>
       </transition>
     """
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
     n = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
     @test n isa Transition
@@ -69,11 +67,9 @@ end
         <somelabel2 c="value" />
      </transition>
     """
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
-   n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
+    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
     @test pid(n) === :transition1
     @test elements(labels(n)[:somelabel2])[:c] == "value"
@@ -94,9 +90,7 @@ end
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     </referenceTransition>
     """
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
     n = parse_refTransition(node, pntd, net)::RefTransition
     @test pid(n) === :rt1
@@ -113,9 +107,7 @@ end
         <somelabel2 c="value" />
     </referenceTransition>
     """
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
             parse_refTransition(node, pntd, net)::RefTransition)

@@ -62,7 +62,7 @@ DocTestSetup = quote
                 PnmlCoreNet, ContinuousNet, HLCoreNet,
                 NumberConstant, DotConstant
     using PNML.IDRegistrys
-    net = PnmlNet(PnmlCoreNet(), :fake)
+    net = PNML.make_net(PnmlCoreNet(), :fake)
     PNML.fill_builtin_sorts!(net)
     PNML.fill_builtin_labelparsers!(net)
  end

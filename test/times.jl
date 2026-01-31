@@ -10,9 +10,7 @@ using .TestUtils
 println("DELAY")
 @testset "delay label $pntd" for pntd in PnmlTypes.all_nettypes()
     #println("delay label $pntd")
-    net = PnmlNet(pntd, :fake)
-    PNML.fill_builtin_sorts!(net)
-    PNML.fill_builtin_labelparsers!(net)
+    net = make_net(pntd, :fake)
     # From [Tina .pnml formt](file://~/PetriNet/tina-3.7.5/doc/html/formats.html#5)
     # This bit may be from the pre-standard era.
     # <ci> is a variable(constant) like pi, infinity.

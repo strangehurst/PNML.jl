@@ -13,9 +13,7 @@ using ExproniconLite: xtuple, xnamedtuple, xcall, xpush, xgetindex, xfirst, xlas
 using PNML: mcontains
 
 const pntd = HLCoreNet()
-const net = PnmlNet(pntd, :fake)
-PNML.fill_builtin_sorts!(net)
-PNML.fill_builtin_labelparsers!(net)
+const net = make_net(pntd, :fake)
 const varsub = NamedTuple()
 
 const node = xml"""

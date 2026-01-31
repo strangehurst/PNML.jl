@@ -40,14 +40,15 @@ One Petri Net of a PNML model.
     toolparser::Vector{ToolParser} = ToolParser[]
 end
 
-
-# Constructor of empty net for use in test scaffolding.
-function PnmlNet(type::PnmlType, id::Symbol)
-    PnmlNet(; type, id,
-              idregistry=IDRegistry(),
-              pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
-              declaration=Declaration(; ddict=DeclDict()),
-              )
+"Create empty net with builtins installed for use in test scaffolding."
+function make_net(type::PnmlType, id=:fake,)
+    net = PnmlNet(; type, id,
+                    idregistry=IDRegistry(),
+                    pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
+                    declaration=Declaration(; ddict=DeclDict()))
+    PNML.fill_builtin_sorts!(net)
+    PNML.fill_builtin_labelparsers!(net)
+    return net
 end
 
 pntd(net::PnmlNet) = net.type
