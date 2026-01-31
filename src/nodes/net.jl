@@ -367,3 +367,5 @@ function Base.show(io::IO, net::PnmlNet)
         show(io, rt); println(io)
     end
 end
+
+show_sorts(net::AbstractPnmlNet) = show_sorts(decldict(net))
