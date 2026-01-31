@@ -5,37 +5,50 @@ $(TYPEDFIELDS)
 One Petri Net of a PNML model.
 """
 @kwdef mutable struct PnmlNet{PNTD<:PnmlType} <: AbstractPnmlNet
+    # Identify the meta-model this net implements.
     type::PNTD
+    # PNML ID needed here for multiple nets of same `type` in a `<pnml>` model.
     id::Symbol
-    # Holds all pages. Shared by pages,
-    pagedict::OrderedDict{Symbol, Page{PNTD,<:AbstractPnmlNet}}
-    netdata::PnmlNetData = PnmlNetData() # Shared by pages, holds all places, transitions, arcs, refs
-
-    # Note: `PnmlNet` only has `page_set` not `netsets` as it only contains pages.
-    # All PNML net Objects are attached to a `Page`. And there must be one `Page`.
-    page_idset::OrderedSet{Symbol} = OrderedSet{Symbol}()# REFID keys of pages in pagedict owned by this net.
-
-    ddict::DeclDict = DeclDict() # empty dictionarys
-    declaration::Maybe{Declaration} = nothing # Label with `Text` `Graphics`, `ToolInfo`.
-    # Zero or more `Declarations` used to populate ddict::DeclDict field.
-    # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
-
-    namelabel::Maybe{Name} = nothing
-    # no graphics for net
-    toolspecinfos::Vector{ToolInfo} = ToolInfo[]
-    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}() # empty by default
-
+    # Ensure that each PNML ID in a net is unique using a registry.
     idregistry::IDRegistry
-    labelparser::LittleDict{Symbol, Any} = LittleDict{Symbol, Any}() # empty
-    #!labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}() # empty
-    toolparser::Vector{ToolParser} = ToolParser[] # toolinfo parsers
+    # Holds all pages. Shared by pages that may have sub-pages.
+    # All PNML net objects are attached to a `Page`. And there must be at least one `Page`.
+    pagedict::OrderedDict{Symbol, Page{PNTD,<:AbstractPnmlNet}}
+    # Shared by pages, holds all places, transitions, arcs, refs
+    netdata::PnmlNetData = PnmlNetData()
+    # Keys of pages in `pagedict` owned by this net.
+    # Use only `page_idset` not full `netsets` collection as net only contains pages.
+    page_idset::OrderedSet{Symbol} = OrderedSet{Symbol}()
+    # Declarations dictionarys filled with built-ins & when parsing `declaration`.
+    # We use the declarations toolkit for non-high-level nets,
+    # and assume a minimum level of function for high-level nets.
+    # Declarations present in the input file will overwrite these. Particulary '<dot>'.
+    ddict::DeclDict = DeclDict() # empty dictionarys
+    # PNML Label with `Text` `Graphics`, `ToolInfo` and zero or more `Declarations`.
+    # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
+    # Used to populate `ddict`.
+    declaration::Maybe{Declaration} = nothing
+    # PNML Label with `Text` `Graphics`, `ToolInfo`.
+    namelabel::Maybe{Name} = nothing
+    # Zero or more `<toolspecific>` may be attched to net.
+    toolspecinfos::Vector{ToolInfo} = ToolInfo[]
+    # Zero or more PNML Labels may be attched to net. Extends meta-models of ISO 15909.
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
+    # Map xml tag symbol to parser callable for built-in labels and extension labels.
+    labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}()
+    # Collection of parsers that turn `<toolspecific>` into `ToolInfo` objects.
+    toolparser::Vector{ToolParser} = ToolParser[]
 end
 
-# Constructor for use in test scaffolding.
-PnmlNet(type::PnmlType, id::Symbol; declaration=Declaration(; ddict=DeclDict())) =#! XXX
-    PnmlNet(; type, id, declaration,
+
+# Constructor of empty net for use in test scaffolding.
+function PnmlNet(type::PnmlType, id::Symbol)
+    PnmlNet(; type, id,
+              idregistry=IDRegistry(),
               pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
-              idregistry=IDRegistry())
+              declaration=Declaration(; ddict=DeclDict()),
+              )
+end
 
 pntd(net::PnmlNet) = net.type
 nettype(net::PnmlNet) = typeof(net.type)
@@ -84,40 +97,32 @@ allpages(net::PnmlNet) = allpages(pagedict(net))
 allpages(pd::OrderedDict) = values(pd)
 
 "Iterator of `Pages` directly owned by `net`."
-pages(net::PnmlNet) = Iterators.filter(v -> in(pid(v), page_idset(net)), allpages(net))
+pages(net::PnmlNet) = Iterators.filter(pg -> in(pid(pg), page_idset(net)), allpages(net))
 
 "Usually the only interesting page."
-firstpage(net::PnmlNet)    = first(values(pagedict(net)))
+firstpage(net::PnmlNet) = first(values(pagedict(net)))
 
 has_tools(net::PnmlNet) = !isnothing(net.toolspecinfos)
-toolinfos(net::PnmlNet)     = net.toolspecinfos
+toolinfos(net::PnmlNet) = net.toolspecinfos
 
-function name(net::PnmlNet)
-    if hasproperty(net, :namelabel) && !isnothing(net.namelabel)
-        text(net.namelabel)
-    else
-        ""
-    end
-end
+places(net::PnmlNet)         = values(placedict(net))
+transitions(net::PnmlNet)    = values(transitiondict(net))
+arcs(net::PnmlNet)           = values(arcdict(net))
+refplaces(net::PnmlNet)      = values(refplacedict(net))
+reftransitions(net::PnmlNet) = values(reftransitiondict(net))
 
-places(net::PnmlNet)         = values(placedict((net)))
-transitions(net::PnmlNet)    = values(transitiondict((net)))
-arcs(net::PnmlNet)           = values(arcdict((net)))
-refplaces(net::PnmlNet)      = values(refplacedict((net)))
-reftransitions(net::PnmlNet) = values(reftransitiondict((net)))
-
-place(net::PnmlNet, id::Symbol)        = placedict((net))[id]
-has_place(net::PnmlNet, id::Symbol)    = haskey(placedict((net)), id)
+place(net::PnmlNet, id::Symbol)        = placedict(net)[id]
+has_place(net::PnmlNet, id::Symbol)    = haskey(placedict(net), id)
 
 initial_marking(net::PnmlNet, placeid::Symbol) = initial_marking(place(net, placeid))
 
-transition(net::PnmlNet, id::Symbol)      = transitiondict((net))[id]
-has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict((net)), id)
+transition(net::PnmlNet, id::Symbol)      = transitiondict(net)[id]
+has_transition(net::PnmlNet, id::Symbol)  = haskey(transitiondict(net), id)
 
 condition(net::PnmlNet, trans_id::Symbol) = condition(transition(net, trans_id))
 
-arc(net::PnmlNet, id::Symbol)      = arcdict((net))[id]
-has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict((net)), id)
+arc(net::PnmlNet, id::Symbol)      = arcdict(net)[id]
+has_arc(net::PnmlNet, id::Symbol)  = haskey(arcdict(net), id)
 
 """
 Return `Arc` from 's' to 't' or `nothing`.
@@ -128,24 +133,25 @@ arc(net, s::Symbol, t::Symbol) = begin
     isempty(x) ? nothing : first(x)
 end
 
-# Iterate IDs of arcs that have given source or target.values(arcdict((net)))
-all_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid,
-        Iterators.filter(a -> (source(a) === id || target(a) === id), values(arcdict(net))))
-src_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid,
-        Iterators.filter(a -> (source(a) === id), values(arcdict(net))))
-tgt_arcs(net::PnmlNet, id::Symbol) =
-    Iterators.map(pid,
-        Iterators.filter(a -> (target(a) === id), values(arcdict(net))))
+# Iterate IDs of arcs that have given source or target.values(arcdict(net))
+function all_arcs(net::PnmlNet, id::Symbol)
+    Iterators.map(pid, Iterators.filter(a -> (source(a) === id || target(a) === id),
+                                              values(arcdict(net))))
+end
+function src_arcs(net::PnmlNet, id::Symbol)
+    Iterators.map(pid, Iterators.filter(a -> (source(a) === id), values(arcdict(net))))
+end
+function tgt_arcs(net::PnmlNet, id::Symbol)
+    Iterators.map(pid, Iterators.filter(a -> (target(a) === id), values(arcdict(net))))
+end
 
 "Forward `inscription` to `arcdict`"
-inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict((net))[arc_id])
+inscription(net::PnmlNet, arc_id::Symbol) = inscription(arcdict(net)[arc_id])
 
-has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict((net)), id)
-refplace(net::PnmlNet, id::Symbol)          = refplacedict((net))[id]
-has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict((net)), id)
-reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict((net))[id]
+has_refplace(net::PnmlNet, id::Symbol)      = haskey(refplacedict(net), id)
+refplace(net::PnmlNet, id::Symbol)          = refplacedict(net)[id]
+has_reftransition(net::PnmlNet, id::Symbol) = haskey(reftransitiondict(net), id)
+reftransition(net::PnmlNet, id::Symbol)     = reftransitiondict(net)[id]
 
 #------------------------------------------------------------------------------
 # DeclDict access
