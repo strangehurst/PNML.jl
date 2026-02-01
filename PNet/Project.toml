@@ -3,6 +3,9 @@ uuid = "b17e8b3e-4e57-4399-9a85-41e87fede9cd"
 version = "0.1.0"
 authors = ["Jeff <strangehurst@gmail.com>"]
 
+[workspace]
+projects = ["test"]
+
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
@@ -26,10 +29,10 @@ PNML = {path = ".."}
 AutoHashEquals = "2.2.0"
 Compat = "4.18.1"
 DocStringExtensions = "0.9.5"
-Graphs = "1.13.3"
+Graphs = "1.13"
 Logging = "1.11.0"
 LoggingExtras = "1.2.0"
-MetaGraphsNext = "0.7.5"
+MetaGraphsNext = "0.7, 0.8"
 Multisets = "0.4.5"
 NamedTupleTools = "0.14.3"
 OrderedCollections = "1.8.1"
