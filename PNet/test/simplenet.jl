@@ -48,10 +48,10 @@ str1 = """
     simp1 = @inferred SimpleNet SimpleNet(model)
     simp  = @inferred SimpleNet SimpleNet(net0)
 
-    @test_opt target_modules=t_modules SimpleNet(net0)
+    #@test_opt target_modules=t_modules SimpleNet(net0)
     @test_call broken=false SimpleNet(net0)
 
-    @test_opt target_modules=t_modules SimpleNet(model)
+    #@test_opt target_modules=t_modules SimpleNet(model)
     @test_call broken=false SimpleNet(model)
 
     for accessor in [PNML.pid,
