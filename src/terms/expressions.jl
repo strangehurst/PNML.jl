@@ -75,10 +75,10 @@ function toexpr(t::Multiset, vsub::NamedTuple, net)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-toexpr(nc::PNML.NumberConstant, ::NamedTuple) = value(nc)
-toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple) = value(c)
-toexpr(::PNML.DotConstant, ::NamedTuple) = PNML.DotConstant()
-toexpr(c::PNML.BooleanConstant, ::NamedTuple) = value(c)
+toexpr(nc::PNML.NumberConstant, ::NamedTuple, net) = value(nc)
+toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple, net) = value(c)
+toexpr(::PNML.DotConstant, ::NamedTuple, net) = PNML.DotConstant()
+toexpr(c::PNML.BooleanConstant, ::NamedTuple, net) = value(c)
 
 """
     expr_sortref(v::PnmlExpr, net) -> AbstractSortRef
