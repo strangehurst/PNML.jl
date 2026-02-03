@@ -115,7 +115,6 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     decls = alldecendents(node, "declaration") # There may be none.
     # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     net.declaration = parse_declaration!(net, decls, pntd)::Declaration
-    #PNML.verify(PNML.decldict(declaration), idreg=net.idregistry, verbose=true) #! MOVE
 
     let n = firstchild(node, "name")
         if !isnothing(n)

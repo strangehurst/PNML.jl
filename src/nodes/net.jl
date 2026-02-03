@@ -36,7 +36,8 @@ One Petri Net of a PNML model.
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
     # Map xml tag symbol to parser callable for built-in labels and extension labels.
     labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}()
-    # Collection of parsers that turn `<toolspecific>` into `ToolInfo` objects.
+    # Collection of objects that associate a tool name and version with a callable.
+    # The callable parsers turn `<toolspecific>` into `ToolInfo` objects.
     toolparser::Vector{ToolParser} = ToolParser[]
 end
 
@@ -250,6 +251,7 @@ function verify(net::PnmlNet, verbose::Bool)
     verbose && println("## verify $(typeof(net)) $(pid(net))")
     errors = String[]
     verify!(errors, net, verbose, registry_of(net))
+    verify!(errors, decldict(net), verbose, registry_of(net))
     isempty(errors) || error("verify(net) $(pid(net)) error(s):\n ", join(errors, ",\n "))
     return true
 end
