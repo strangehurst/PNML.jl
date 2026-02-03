@@ -4,16 +4,12 @@
 $(TYPEDEF)
 $(TYPEDFIELDS)
 
-Holds a <toolspecific> tag.
-
-It wraps an AbstractDict representing well formed XML.
-parsed into [`AnyElement`](@ref)s for use by anything that understands
-toolname, version tool specifics.
+A <toolspecific> tag holds well formed XML that is parsed into an [`AnyElement`](@ref).
 """
-@auto_hash_equals fields=toolname,version,info typearg=true struct ToolInfo{N <: AbstractPnmlNet}
+@auto_hash_equals struct ToolInfo{T, N <: AbstractPnmlNet}
     toolname::String
     version::String
-    info::AnyElement
+    info::AnyElement{T}
     net::N
 end
 

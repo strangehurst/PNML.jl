@@ -179,15 +179,6 @@ include("Core/decldict.jl") # Just contains show(). See decldictcore.jl.
 include("Labels/Labels.jl")
 using .Labels
 
-# """
-#     TOOLSPECIFIC_PARSERS
-
-# Vector{ToolParser} of objects that associate a tool name and version with a callable.
-# The callable parses the content of a `<toolspecific tool="toolname" version="string">`
-# XML element.
-# """
-# const TOOLSPECIFIC_PARSERS = Labels.ToolParser[]#Labels.ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)]
-
 # Nodes #TODO make into a module?
 include("nodes/nodes.jl") # Concrete place, transition, arc.
 include("nodes/page.jl") # Contains nodes.

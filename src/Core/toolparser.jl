@@ -12,7 +12,6 @@ See `toolspecific_content_fallback(node, pntd)`.
     toolname::String
     version::String
     func::Base.Callable
-    #todo! declarationdicts::DeclDict
 end
 
 "Name of tool."
@@ -22,5 +21,3 @@ version(ti::ToolParser) = ti.version
 
 "Return callable parser of a ToolInfo."
 func(ti::ToolParser) = ti.func
-
-#!tokengraphics_toolparser = ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content)

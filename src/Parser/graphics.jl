@@ -1,34 +1,34 @@
-# """
-# $(TYPEDSIGNATURES)
+"""
+$(TYPEDSIGNATURES)
 
-# Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics.
-# See [`Labels.TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
-# """
-# function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
-#     nn = check_nodename(node, "tokengraphics")
-#     tpos = PNML.coordinate_type(pntd)[]
-#     for child in EzXML.eachelement(node)
-#         tag = EzXML.nodename(child)
-#         if tag == "tokenposition"
-#             push!(tpos, parse_tokenposition(child, pntd))
-#         else
-#             @warn "ignoring unexpected child of <tokengraphics>: '$tag'"
-#         end
-#     end
-#     if isempty(tpos)
-#         @warn "tokengraphics does not have any <tokenposition> elements"
-#     end
-#     Labels.TokenGraphics(tpos)
-# end
+Parse high-level place-transition net's (HL-PTNet) toolspecific structure defined for token graphics.
+See [`Labels.TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
+"""
+function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
+    nn = check_nodename(node, "tokengraphics")
+    tpos = PNML.coordinate_type(pntd)[]
+    for child in EzXML.eachelement(node)
+        tag = EzXML.nodename(child)
+        if tag == "tokenposition"
+            push!(tpos, parse_tokenposition(child, pntd))
+        else
+            @warn "ignoring unexpected child of <tokengraphics>: '$tag'"
+        end
+    end
+    if isempty(tpos)
+        @warn "tokengraphics does not have any <tokenposition> elements"
+    end
+    Labels.TokenGraphics(tpos)
+end
 
-# """
-#     tokengraphics_content(node::XMLNode, pntd::PnmlType) -> Vector{TokenGraphics}
+"""
+    tokengraphics_content(node::XMLNode, pntd::PnmlType) -> Vector{TokenGraphics}
 
-# Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
-# """
-# function tokengraphics_content(node, pntd)
-#     [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
-# end
+Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
+"""
+function tokengraphics_content(node, pntd)
+    [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
+end
 
 # """
 # $(TYPEDSIGNATURES)

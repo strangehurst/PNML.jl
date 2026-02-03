@@ -113,4 +113,5 @@ function __insert_lp!(labelparser, tag, parser)
 end
 
 function fill_builtin_toolparsers!(toolparser::Vector{ToolParser})
+    push!(toolparser, ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content))
 end
