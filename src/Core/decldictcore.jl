@@ -236,7 +236,7 @@ function verify(dd::DeclDict, verbose::Bool, idreg::IDRegistry)
     errors = String[]
     verify!(errors, dd, verbose, idreg)
     isempty(errors) ||
-        error("verify(page) error(s):\n ", join(errors, ",\n "))
+        error("verify(::DeclDict) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
