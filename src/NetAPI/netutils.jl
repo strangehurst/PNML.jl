@@ -42,7 +42,7 @@ function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
     @error "high level needs variable substitution"
 end
 
-function conditions(net::PnmlNet) #TODO! non-ground terms for HL
+function conditions(net::PnmlNet)
     Iterators.map((tr_id, t)->condition(t)(NamedTuple()), pairs(PNML.transitiondict(net)))
 end
 
@@ -63,6 +63,9 @@ inscription_value(a::Maybe{Arc}, def, varsub) -> T
 If `a` is nothing return `def` else evaluate inscription expression with varsub,
 where `def` is a default value of same sort as adjacent place.
 and `varsub` is a possibly empty variable substitution.
+
+Used to create arrays where the default value is used when
+there is no arc between an place and transition of the net.
 """
 function inscription_value end
 
@@ -139,8 +142,8 @@ end
 #! Default `<:Number`
 function input_matrix!(imatrix, net::PnmlNet)
     varsub = NamedTuple() # PT_HLPNG  is only supported High-level net here
-    for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id) in enumerate(place_idset(net))
+    for (p, place_id) in enumerate(place_idset(net))
+        for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id)) # 0 or empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
             imatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
@@ -150,6 +153,7 @@ return imatrix
 end
 
 function output_matrix(net::PnmlNet)
+    # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
     ivt = pntd(net) isa PT_HLPNG ? Int : value_type(Inscription, pntd(net))
     omatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return output_matrix!(omatrix, net) # Dispatch on net type.
@@ -157,8 +161,8 @@ end
 
 function output_matrix!(omatrix, net::PnmlNet)
     varsub = NamedTuple()
-    for (t, transition_id) in enumerate(transition_idset(net))
-        for (p, place_id) in enumerate(place_idset(net))
+    for (p, place_id) in enumerate(place_idset(net))
+        for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
             omatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
@@ -168,7 +172,7 @@ return omatrix
 end
 
 """
-    incidence_matrix(petrinet) -> LArray
+    incidence_matrix(petrinet) -> Matrix
 
 When token identity is collective, marking and inscription values are Numbers and matrix
 `C[arc(transition,place)] = inscription(arc(transition,place)) - inscription(arc(place,transition))`
@@ -181,8 +185,8 @@ Symmetric nets are restricted, and thus easier to deal with and reason about.
 function incidence_matrix end
 
 function incidence_matrix(net::PnmlNet)
-    return output_matrix(net::PnmlNet) - input_matrix(net::PnmlNet)
+    return output_matrix(net) - input_matrix(net)
 end
 
 # Vector{NamedTuple} cached in transition field.
-varsubs(net::PnmlNet, transition_id::REFID) = varsubs(transition(net, transition_id))
+varsubs(net::PnmlNet, transition_id::Symbol) = varsubs(transition(net, transition_id))
