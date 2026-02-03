@@ -48,9 +48,8 @@ function register_id!(registry::IDRegistry, id::Symbol)
 end
 
 _reg!(registry, id) = begin
-    #println("register id ", repr(id), " in reg ", objectid(registry)) #! debug
     id ∈ registry.idset ? duplicate_id_action(id) : push!(registry.idset, id)
-    return registry
+    return nothing
 end
 
 """
@@ -65,10 +64,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Empty the set of id symbols. Use case is unit tests.
+Empty the set of id symbols. Use case is tests.
 """
 function reset_reg!(registry::IDRegistry)
-    #println("reset IDRegistry ", objectid(registry)) #! debug
     @lock registry.lk empty!(registry.idset)
     return registry
 end
