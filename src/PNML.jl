@@ -193,13 +193,12 @@ include("nodes/nodes.jl") # Concrete place, transition, arc.
 include("nodes/page.jl") # Contains nodes.
 include("nodes/net.jl") # PnmlNet holds pages
 include("nodes/model.jl") # Holds multiple PnmlNets.
+include("nodes/flatten.jl") # Flatten pages of PnmlNet
 
 include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.
 include("NetAPI/enabling_rule.jl")
 include("NetAPI/firing_rule.jl")
 include("NetAPI/metagraph.jl")
-
-include("Core/flatten.jl") # Apply to PnmlModel or PnmlNet #todo move to nodes?
 
 # PARSE
 include("Parser/Parser.jl")
