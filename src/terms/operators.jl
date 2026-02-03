@@ -295,7 +295,7 @@ struct UserOperator{N <: AbstractPnmlNet} <: AbstractOperator
 end
 
 # Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.
-function (uo::UserOperator)(parameters)
+function (uo::UserOperator)(parameters) # TODO add variables
     if has_operator(uo.declaration)
         op = operator(uo.net, uo.declaration) # Lookup operator in DeclDict.
         r = op(parameters) # Operator objects are functors.

@@ -18,6 +18,9 @@ transition_function(net::PnmlNet) =
 
 """
     civ(net, arcid) -> _cvt_inscription_value(pntd, arcdict[srcid], z, NamedTuple())
+
+
+#TODO add variables for full HL support
 """
 function civ(net, arcid)
     a = PNML.arcdict(net)[arcid]
@@ -30,15 +33,16 @@ end
 
 Iterates over transitions producing a pair for each tansition :=
     `Pair{Pair{Symbol,Number}, Pair{Tuple,Tuple}}`
-where the Symbol is the transition ID, Number is the rate value and the Tuples are place IDs.
+where the Symbol is the transition ID, Number is the transition's rate value and
+the Tuples are transition's input and out place IDs tupled with arc's inscription value.
 """
 function labeled_transitions end
 labeled_transitions(petrinet::AbstractPetriNet) = labeled_transitions(pnmlnet(petrinet))
 function labeled_transitions(net::PnmlNet)
     Iterators.map(PNML.transitions(net)) do tr # states are places
-        # place ids, arc inscription value as integer
+        # tuple of tuple place id, arc inscription value as integer
         ins = tuple(zip(PNML.preset(net, pid(tr)),
-                    Iterators.map(arcid -> civ(net, arcid), PNML.tgt_arcs(net, pid(tr)))))
+                   Iterators.map(arcid -> civ(net, arcid), PNML.tgt_arcs(net, pid(tr)))))
         outs = tuple(zip(PNML.postset(net, pid(tr)),
                     Iterators.map(arcid -> civ(net, arcid), PNML.src_arcs(net, pid(tr)))))
         Pair(pid(tr)=>PNML.rate_value(tr), ins=>outs)
@@ -64,8 +68,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return tuple of input, output labelled vectors with key of place ids and
-value of arc inscription's value for use as a transition function.
+Return tuple of input, output tuples of place ids, arc inscription's value.
+For use in a transition function.
 #TODO When do these get called "pre" and "post"?
 """
 function in_out end

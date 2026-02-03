@@ -58,7 +58,7 @@ str1 = """
                      PNML.place_idset, PNML.transition_idset, PNML.arc_idset,
                      PNML.reftransition_idset, PNML.refplace_idset]
         #@show accessor
-        @test accessor(pnmlnet(simp1)) == accessor(pnmlnet(simp)) # These 2 are expected to match.
+        @test accessor(pnmlnet(simp1)) == accessor(pnmlnet(simp))
     end
 
     @testset "inferred" begin
@@ -84,6 +84,7 @@ str1 = """
     @test simp.net isa PnmlNet
     @test simp isa AbstractPetriNet
 
+    # For a flattened net these should have the same behavior.
     for top in [first(pages(simp.net)), simp.net]
 
         @test_call target_modules=t_modules places(top)
@@ -100,7 +101,7 @@ str1 = """
             @test_call has_transition(top, pid(t))
             @test @inferred Union{Nothing,Bool} has_transition(top, pid(t))
             t == @inferred Union{Nothing,Transition} transition(top, pid(t))
-            @test pid(t) ===  t.id
+            @test pid(t) === t.id
 
             @test @inferred(condition(t)()) !== nothing
         end
@@ -109,7 +110,7 @@ str1 = """
         for a in PNML.arcs(top)
             @test @inferred Union{Nothing,Bool} has_arc(top, pid(a))
             a == @inferred Union{Nothing,Arc} arc(top, pid(a))
-            @test pid(a) ===  a.id
+            @test pid(a) === a.id
                         @test @inferred(PNML.source(a)) !== nothing
             @test @inferred(PNML.target(a)) !== nothing
             @test @inferred(Number, inscription(a)(NamedTuple())) !== nothing
