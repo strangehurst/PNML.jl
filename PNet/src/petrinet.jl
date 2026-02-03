@@ -52,14 +52,14 @@ by [`PNML.flatten_pages!`](@ref) without losing any Petri Net semantics.
 abstract type AbstractPetriNet{PNTD<:PnmlType} end
 
 # Interface is having id::Symbol, net::PnmlNet.
-function Base.getproperty(pn::AbstractPetriNet, prop_name::Symbol)
-    if prop_name === :id
-        return getfield(pn, :id)::Symbol
-    elseif prop_name === :net
-        return getfield(pn, :net)::PnmlNet
-    end
-    return getfield(pn, prop_name)
-end
+# function Base.getproperty(pn::AbstractPetriNet, prop_name::Symbol)
+#     if prop_name === :id
+#         return getfield(pn, :id)::Symbol
+#     # elseif prop_name === :net
+#     #     return getfield(pn, :net)::PnmlNet # abstract
+#     end
+#     return getfield(pn, prop_name)
+# end
 
 nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
 pid(petrinet::AbstractPetriNet)     = PNML.pid(pnmlnet(petrinet))
@@ -199,6 +199,7 @@ A less-simple consumer of the IR can impose standards-checking.
 
 """
 $(TYPEDEF)
+
 $(TYPEDFIELDS)
 
 **TODO: Rename SimpleNet to TBD**
