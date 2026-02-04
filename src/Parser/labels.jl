@@ -381,7 +381,7 @@ placetype(pmt::ParseMarkingTerm) = pmt.defplacetype::Maybe{AbstractSortRef}
 
 
 #! MARK will be a TERM, a symbolic expression that, when evaluated,
-#! produces a PnmlMultiset object. Or a tuple of objects if a ProductSort is used.
+#! produces a PnmlMultiset element object. Or a tuple of objects if a ProductSort is used.
 function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(marknode, "structure")
 
@@ -447,7 +447,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
     isa(source(pit), Symbol) ||
-        error("source is a $(nameof(typeof(target(pit)))), expected Symbol")
+        error("source is a $(nameof(typeof(source(pit)))), expected Symbol")
 
     # The core PNML standard allows arcs from place to place, and transition to transition.
     # Here we support symmetric nets that restrict arcs and
@@ -639,7 +639,7 @@ function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
     end
 
     term = PNML.NumberEx(PNML.Labels.sortref(value), value)
-    return Rate(term, graphics, toolspecinfos, net)
+    return Rate(; term, graphics, toolspecinfos, net)
 end
 
 
@@ -674,5 +674,5 @@ function parse_priority(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, par
     end
 
     term = PNML.NumberEx(PNML.Labels.sortref(value), value)
-    return Priority(term, graphics, toolspecinfos, net)
+    return Priority(; term, graphics, toolspecinfos, net)
 end

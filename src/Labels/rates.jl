@@ -6,7 +6,7 @@ Real valued label. An expected use is as a transition rate.
 Expected XML: `<rate> <text>0.3</text> </rate>`.
 """
 @kwdef struct Rate{T<:PnmlExpr, N <: AbstractPnmlNet} <: Annotation
-    #todo text
+    text::Maybe{String} = nothing
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing

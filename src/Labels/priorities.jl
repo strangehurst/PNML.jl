@@ -9,7 +9,7 @@ Expected XML: `<priority> <text>0.3</text> </priority>`.
 Dynamic priority is a function with arguments of net marking and transition.
 """
 @kwdef struct Priority{T<:PnmlExpr, N <: AbstractPnmlNet} <: Annotation
-    #todo text
+    text::Maybe{String} = nothing
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
