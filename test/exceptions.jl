@@ -127,7 +127,6 @@ end
     pagedict = OrderedDict{Symbol, PNML.Page{typeof(pntd)}}()
     netdata = PNML.PnmlNetData()
     netsets = PNML.PnmlNetKeys()
-    @show PNML.page_idset(netsets)
     #todo add net to parse_page!
     @test_throws(r"^MissingIDException: page",
         PNML.Parser.parse_page!(net, PNML.page_idset(netsets), xml"<page></page>",
