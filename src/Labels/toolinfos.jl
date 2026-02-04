@@ -38,13 +38,13 @@ function Base.show(io::IO, ti::ToolInfo)
     print(io, ")")
 end
 
-function verify!(errors, v::Vector{T}, verbose::Bool , idreg::PNML.IDRegistry) where T
+function verify!(errors::Vector{String}, v::Vector{T}, verbose::Bool, net::AbstractPnmlNet) where {T <: ToolInfo}
     verbose && println("## verify $(typeof(v))")
-    foreach(t -> verify!(errors, t, verbose, idreg),  v)
+    foreach(t -> verify!(errors, t, verbose, net),  v)
     return errors
 end
 
-function verify!(errors, t::ToolInfo, verbose::Bool, idreg::PNML.IDRegistry)
+function verify!(errors::Vector{String}, t::ToolInfo, verbose::Bool, net::AbstractPnmlNet)
     verbose && println("## verify $(typeof(t)) $(repr(name(t))) $(repr(version(t)))")
     isempty(name(t)) &&
         push!(errors, string("ToolInfo must have non-empty name")::String)
@@ -53,7 +53,7 @@ function verify!(errors, t::ToolInfo, verbose::Bool, idreg::PNML.IDRegistry)
 
     info(t) isa AnyElement ||
         push!(errors, string("ToolInfo $(repr(name(t))) $(repr(version(t))) ",
-                    "info $n is not a AnyElement")::String)
+                    "$(info(t)) is not a AnyElement")::String)
     return errors
 end
 

@@ -230,17 +230,17 @@ function operator(dd::DeclDict, opid::Symbol)
 end
 
 """
-    verify(dd::DeclDict, verbose::Bool, idreg::IDRegistry) -> Bool
+    verify(dd::DeclDict, verbose::Bool, net::AbstractPnmlNet) -> Bool
 """
-function verify(dd::DeclDict, verbose::Bool, idreg::IDRegistry)
+function verify(dd::DeclDict, verbose::Bool, net::AbstractPnmlNet)
     errors = String[]
-    verify!(errors, dd, verbose, idreg)
+    verify!(errors, dd, verbose, net)
     isempty(errors) ||
         error("verify(::DeclDict) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, idreg::IDRegistry)
+function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, net::AbstractPnmlNet)
     verbose && println("## verify $(typeof(dd))")
     for k in Iterators.flatten([keys(variabledecls(dd)),
                             keys(namedsorts(dd)),
@@ -253,8 +253,12 @@ function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, idreg::IDR
                             keys(arbitraryops(dd)),
                             keys(feconstants(dd)),
                             keys(useroperators(dd))])
-        isregistered(idreg, k) ||
+        isregistered(registry_of(net), k) ||
             push!(errors, string("unregisrered id $(repr(k))"))
+    end
+    for (k,v) in partitionsorts(dd)
+        @show v
+        verify!(errors, v, verbose, net)
     end
     return errors
 end

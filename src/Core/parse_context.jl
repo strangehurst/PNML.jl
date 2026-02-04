@@ -29,7 +29,7 @@ If not already in the declarations dictionary `dict`, add `sort` with key of `ta
 Register the tag and create and return an `AbstractSortRef` holding `tag`.
 """
 function fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict::Base.Callable)
-    fill_sort_tag!(decldict(net), net.idregistry, tag, sort, dict)
+    fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)
 end
 function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Callable)
      # Do not overwrite existing content (except dot).

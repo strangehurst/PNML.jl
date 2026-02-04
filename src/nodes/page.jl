@@ -81,17 +81,17 @@ function Base.show(io::IO, page::Page{T,N}) where {T <: PnmlType, N <: AbstractP
     print(io, ")")
 end
 
-function verify(page::Page, verbose::Bool, idreg::IDRegistry)
+function verify(page::Page, verbose::Bool, net::AbstractPnmlNet)
     errors = String[]
-    verify!(errors, page, verbose, idreg)
+    verify!(errors, page, verbose, net)
     isempty(errors) ||
         error("verify(page) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors, page::Page, verbose::Bool , idreg::IDRegistry)
+function verify!(errors, page::Page, verbose::Bool, net::AbstractPnmlNet)
     verbose && println("## verify $(typeof(page)) $(pid(page))")
-    !isregistered(idreg, pid(page)) &&
+    !isregistered(registry_of(net), pid(page)) &&
         push!(errors, string("page ", repr(pid(page)), " not registered")::String)
 
     # TODO

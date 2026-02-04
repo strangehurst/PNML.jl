@@ -250,13 +250,13 @@ Error if any diagnostic messages are collected. Especially intended to detect se
 function verify(net::PnmlNet, verbose::Bool)
     verbose && println("## verify $(typeof(net)) $(pid(net))")
     errors = String[]
-    verify!(errors, net, verbose, registry_of(net))
-    verify!(errors, decldict(net), verbose, registry_of(net))
+    verify!(errors, net, verbose)
+    verify!(errors, decldict(net), verbose, net)
     isempty(errors) || error("verify(net) $(pid(net)) error(s):\n ", join(errors, ",\n "))
     return true
 end
 
-function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDRegistry)
+function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool)
     # pagedict
     # netdata
     # page_set
@@ -264,30 +264,30 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
     # extralabels
 
     # Are the things with PNML IDs in the IDRegistry?
-    verify_ids!(errors, "net id", (net,), idreg)
-    verify_ids!(errors, "pages id", pages(net), idreg)
-    verify_ids!(errors, "allpages id", allpages(net), idreg)
-    verify_ids!(errors, "places id", places(net), idreg)
-    verify_ids!(errors, "transition id", transitions(net), idreg)
-    verify_ids!(errors, "arcs id", arcs(net), idreg)
-    verify_ids!(errors, "refplaces id", refplaces(net), idreg)
-    verify_ids!(errors, "reftransitions id", reftransitions(net), idreg)
+    verify_ids!(errors, "net id", (net,), net)
+    verify_ids!(errors, "pages id", pages(net), net)
+    verify_ids!(errors, "allpages id", allpages(net), net)
+    verify_ids!(errors, "places id", places(net), net)
+    verify_ids!(errors, "transition id", transitions(net), net)
+    verify_ids!(errors, "arcs id", arcs(net), net)
+    verify_ids!(errors, "refplaces id", refplaces(net), net)
+    verify_ids!(errors, "reftransitions id", reftransitions(net), net)
 
-    verify!(errors, decldict(net), verbose, idreg)
+    verify!(errors, decldict(net), verbose, net)
 
-    verify!(errors, net.declaration, verbose, idreg)
+    verify!(errors, net.declaration, verbose, net)
 
     # Call net object's verify method.
-    foreach(x -> verify!(errors, x, verbose, idreg), allpages(net))
-    foreach(x -> verify!(errors, x, verbose, idreg), places(net))
-    foreach(x -> verify!(errors, x, verbose, idreg), transitions(net))
-    foreach(x -> verify!(errors, x, verbose, idreg), arcs(net))
-    foreach(x -> verify!(errors, x, verbose, idreg), refplaces(net))
-    foreach(x -> verify!(errors, x, verbose, idreg), reftransitions(net))
+    foreach(x -> verify!(errors, x, verbose, net), allpages(net))
+    foreach(x -> verify!(errors, x, verbose, net), places(net))
+    foreach(x -> verify!(errors, x, verbose, net), transitions(net))
+    foreach(x -> verify!(errors, x, verbose, net), arcs(net))
+    foreach(x -> verify!(errors, x, verbose, net), refplaces(net))
+    foreach(x -> verify!(errors, x, verbose, net), reftransitions(net))
 
     !isnothing(toolinfos(net)) &&
-        foreach(x -> verify!(errors, x, verbose, idreg), toolinfos(net))
-    # foreach(x -> verify!(errors, x, verbose, idreg), extralabels(net))
+        foreach(x -> verify!(errors, x, verbose, net), toolinfos(net))
+    # foreach(x -> verify!(errors, x, verbose, net), extralabels(net))
 
     if npages(net) == 1
         @assert npages(net) == length(page_idset(net))
@@ -304,14 +304,14 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool, idreg::IDR
 end
 
 """
-    verify_ids!(errors, str, iterable, idreg::IDRegistry) -> Vector{String}
+    verify_ids!(errors, str, iterable, net::AbstractPnmlNet) -> Vector{String}
 
-Iterate over `iterable` testing that `pid` is registered in `idreg`.
+Iterate over `iterable` testing that `pid` is registered in `net`.
 `str` used in message appended to `errors` vector of strings.
 """
-function verify_ids!(errors, str::AbstractString, iterable, idreg::IDRegistry)
+function verify_ids!(errors, str::AbstractString, iterable, net::AbstractPnmlNet)
     for x in iterable
-        if !isregistered(idreg, pid(x))
+        if !isregistered(registry_of(net), pid(x))
             push!(errors, string(str, " ", pid(x), " not registered")::String)
         end
     end

@@ -44,9 +44,9 @@ function Base.show(io::IO, place::Place)
     print(io, ")")
 end
 
-function verify!(errors, p::Place, verbose::Bool , idreg::IDRegistry)
+function verify!(errors, p::Place, verbose::Bool , net::AbstractPnmlNet)
     verbose && println("## verify Place{$(sortref(p))} $(pid(p))")
-    !isregistered(idreg, pid(p)) &&
+    !isregistered(registry_of(net), pid(p)) &&
         push!(errors, string("place ", repr(pid(p)), " not registered")::String)
 
     # TODO
@@ -108,9 +108,9 @@ function Base.show(io::IO, trans::Transition)
     print(io, ")")
 end
 
-function verify!(errors, t::Transition, verbose::Bool , idreg::IDRegistry)
+function verify!(errors, t::Transition, verbose::Bool , net::AbstractPnmlNet)
     verbose && println("## verify Transition $(pid(t))")
-    !isregistered(idreg, pid(t)) &&
+    !isregistered(registry_of(net), pid(t)) &&
         push!(errors, string("transition ", repr(pid(t)), " not registered")::String)
 
     # TODO
@@ -198,9 +198,9 @@ function Base.show(io::IO, arc::Arc)
     print(io, ")")
 end
 
-function verify!(errors, a::Arc, verbose::Bool , idreg::IDRegistry)
+function verify!(errors, a::Arc, verbose::Bool , net::AbstractPnmlNet)
     verbose && println("## verify Transition $(pid(a))")
-    !isregistered(idreg, pid(a)) &&
+    !isregistered(registry_of(net), pid(a)) &&
         push!(errors, string("arc ", repr(pid(a)), " not registered")::String)
 
     # TODO
@@ -245,9 +245,9 @@ end
 function Base.show(io::IO, r::ReferenceNode)
     print(io, nameof(typeof(r)), "(", repr(pid(r)), ",  ", repr(refid(r)), ")")
 end
-function verify!(errors, r::ReferenceNode, verbose::Bool , idreg::IDRegistry)
+function verify!(errors, r::ReferenceNode, verbose::Bool , net::AbstractPnmlNet)
     verbose && println("## verify $(typeof(r)) $(pid(r))")
-    !isregistered(idreg, pid(r)) &&
+    !isregistered(registry_of(net), pid(r)) &&
         push!(errors, string("arc ", repr(pid(r)), " not registered")::String)
 
     # TODO

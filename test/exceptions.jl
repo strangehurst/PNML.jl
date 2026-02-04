@@ -120,7 +120,6 @@ end
 
 # println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()
-    #idreg = IDRegistry()
     net = make_net(pntd, :fake)
     @test_throws("MissingIDException: net",
             parse_net(xml"<net type='test'></net>"; net))
