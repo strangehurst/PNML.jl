@@ -392,7 +392,6 @@ function adjacent_place end
 # Note that this behavior is suitable to many Petri nets.
 # But the PNML core does not have this limit; it is imposed by meta-models.
 #todo Remove limitation of requiring arcs to be between place and transition.
-#todo Use traits?
 
 """
     decldict(net::AbstractPnmlNet) -> DeclDict
@@ -423,3 +422,8 @@ function input_matrix end
 Create and return a matrix ntransitions x nplaces.
 """
 function output_matrix end
+
+"""
+    verify!(errors::Vector{String}, x, verbose::Bool, net::AbstractPnmlNet)
+"""
+function verify! end

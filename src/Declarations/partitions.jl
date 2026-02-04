@@ -70,7 +70,16 @@ struct PartitionElement <: OperatorDeclaration
     name::Union{String,SubString{String}}
     terms::Vector{REFID} # 1 or more ref to feconstant in partitions's referenced sort.
     partition::REFID
-    #todo verify terms are in parent partitions's referenced sort
+end
+
+#todo verify terms are in parent partitions's referenced sort elements.
+function verify!(errors::Vector{String}, pe::PartitionElement, verbose::Bool, net::AbstractPnmlNet)
+    if !isempty(setdiff(pe.terms,
+                        PNML.Sorts.sortelements(sortdefinition(PNML.partitionsort(net, pe.partition)),
+                                                net)))
+              #? pid needed?
+        push!(errors, string("PartitionElement term(s) not in partition def sort")::String)
+    end
 end
 
 "Return Bool true if partition contains the FEConstant"
@@ -125,6 +134,21 @@ end
 "Iterator over partition element names"
 function element_names(ps::PartitionSort)
     Iterators.map(name, sortelements(ps, ps.net))
+end
+
+function verify!(errors::Vector{String}, psort::PartitionSort, verbose::Bool, net::AbstractPnmlNet)
+    #psort = PNML.partitionsort(net, pe.partition)
+    for pe in psort.elements
+        verify!(errors, pe, verbose, net)
+    end
+    # if !isempty(setdiff(pe.terms,
+    #                     sortelements(sortdefinition(psort))))
+    #           #? pid needed?
+    #     push!(errors, string("PartitionElement $(pid(pe)) term(s) not in partition def sort")::String)
+    # end
+    verify_partition(psort) ||
+        push!(errors, string("PartitionSort $(pid(psort)) elemenet terms mismatch")::String)
+
 end
 
 function verify_partition(part::PartitionSort)
