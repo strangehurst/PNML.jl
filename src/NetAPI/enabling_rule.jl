@@ -161,7 +161,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
             arc_bvs   = OrderedDict{REFID, Multiset{Symbol}}() # Empty per-arc binding.
 
             placesort = sortref(place(net, placeid)) # TODO create exception
-            enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, decldict(net))
+            enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, net)
             enabled || break
             enabled &= accum_varsets!(bvs, arc_bvs) # Transaction accumulates/intersects arc bindings.
             enabled || break
@@ -234,16 +234,16 @@ end
 
 
 """
-    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, ddict) -> Bool
+    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, net) -> Bool
 
 Fill `arc_bvs` with an entry for each key in `arc_vars`.
 Return `true` if no variables are present or all variables have at least 1 substution.
 """
-function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
+function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, net)
     for v in keys(arc_vars) # Each variable must have a non-empty substitution.
         #! variable sorts are never PnmlTuples. Just one sort.
         arc_bvs[v] = Multiset{Symbol}() # Empty substution set.
-        var_refid = refid(sortref(variabledel(ddict, v)))
+        var_refid = refid(sortref(variabledel(net, v)))
 
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
@@ -252,8 +252,8 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, ddict)
                     error("none of tuple are equal sorts of $var_refid: ",
                             Sorts.sorts(sortof(placesort, net)))
         else
-            placesort !== sortref(variabledecl(ddict, v)) &&
-                error("not equal sorts ($placesort, $(sortref(variabledecl(ddict, v))))")
+            placesort !== sortref(variabledecl(net, v)) &&
+                error("not equal sorts ($placesort, $(sortref(variabledecl(net, v))))")
         end
 
         for (el,mu) in pairs(multiset(mark))
