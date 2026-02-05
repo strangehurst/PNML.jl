@@ -133,6 +133,10 @@ end
     ex = PNML.toexpr(a, varsub, net)
     val = eval(ex)
     @test val == false
+
+    @test eval(PNML.toexpr(PNML.Not([b2, b1]), varsub, net)) == false
+    @test eval(PNML.toexpr(PNML.Not([b1, b1]), varsub, net)) == false
+    @test eval(PNML.toexpr(PNML.Not([b2, b2]), varsub, net)) == true
 end
 
 # And, Or
