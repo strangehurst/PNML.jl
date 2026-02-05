@@ -1,18 +1,17 @@
 # Firing Rule
 
 """
-    fire(incidence, enabled, marking) -> LVector
+    fire(incidence, enabled, marking) -> ArbitraryOperator
 
 Return the marking vector after firing transition:   marking + incidence * enabled
 
 `marking` values added to product of `incidence'` matrix and firing vector `enabled`.
 """
-function fire(incidence, enabled, m₀) #TODO move "lvector toolinfos" section
+function fire(incidence, enabled, m₀)
     #println("fire")
     #@show typeof(incidence) enabled typeof(m₀)
     #@show permutedims(incidence) * enabled
     #! Multisets do not have negative multiplicities so fail here with incorrect marking!
-    #LVector(namedtuple(symbols(m₀), muladd(permutedims(incidence), enabled, m₀))) # old names, new values
     muladd(permutedims(incidence), enabled, m₀) # old names, new values
 end
 
