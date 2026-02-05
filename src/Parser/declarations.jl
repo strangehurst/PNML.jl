@@ -88,12 +88,11 @@ function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
             part = parse_partition(child, pntd; net)::AbstractSortRef
             @assert isa_variant(part, PartitionSortRef)
 
-        #TODO Where do we find these things? Is this were they are de-duplicated?
         #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
         #!    partop = parse_partition_op(child, pntd)
         #!     dd.partitionops[pid(partop)] = partop
 
-        elseif tag == "arbitrarysort" # TODO
+        elseif tag == "arbitrarysort"
             arb = parse_arbitrarysort(child, pntd; net)
             @assert isa_variant(arb, ArbitrarySortRef)
        else
@@ -230,12 +229,10 @@ function parse_variabledecl(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     varid = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
     D()&& println("## parse_variabledecl $(repr(varid)) $(repr(name))") #! debug
-
     # firstelement throws on nothing. Ignore more than 1.
     vsortref = parse_sort(EzXML.firstelement(node), pntd, varid, name; net)::AbstractSortRef
     isnothing(vsortref) &&
         error("failed to parse sort definition for variabledecl $(repr(varid)) $name")
-    # There is a namedsort created for every built-in sort, #todo multisetsorts, productsorts
     VariableDeclaration(varid, name, vsortref, net)
 end
 
@@ -252,10 +249,10 @@ function parse_unknowndecl(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
 end
 
 """
-    parse_feconstants(::XMLNode, ::PnmlType, ::REFID; net::AbstractPnmlNet) -> Tuple{<:AbstractSortRef}
+    parse_feconstants(::XMLNode, ::PnmlType, ::AbstractSortRef; net::AbstractPnmlNet) -> Vector{Symbol}
 
 Place the constants into feconstants(net).
-Return tuple of finite enumeration constant REFIDs.
+Return vector of finite enumeration constant REFIDs.
 
 Access as 0-ary operator indexed by REFID
 """
@@ -277,7 +274,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortR
             push!(fec_refids, fecid)
         end
     end
-    return fec_refids #todo NTuple?
+    return fec_refids
 end
 
 """
@@ -390,13 +387,9 @@ function parse_sort(::Val{:usersort}, node::XMLNode, pntd::PnmlType, sortid, u2;
     parse_usersort(node, pntd; net)
 end
 
-
-#!##########################################################and AbstractSortRef#
-#! XXX TODO Sorts that are not singletons. Must be wrapped in a NamedSort or Partition.
-#! XXX Invent id/name duo to wrap anonymous inline sorts.
 # Any REFID in the input XML must take precedence.
 # ? Can multiple REFIDs refer to the same sort? Yes, ISO 15909 says id/name are optional.
-# Sorts are expected to be comapproductsort\(arable for equality, that is what matters,
+# Sorts are expected to be comaparable for equality, that is what matters,
 # and specificially inline sorts are allowed and expected in some places.
 # Assume parsing is a smallish up-front cost; enabling & firing rules is the big work.
 # It is more important (for the big work) to be cache-friendly.
@@ -480,7 +473,7 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
         @warn "ISO 15909 Standard allows a <productsort> to be empty. And somebody did!"
     # What is the use of an empty productsort? bottom?
 
-    prodsort = ProductSort(tuple(sorts...))
+    prodsort = ProductSort(tuple(sorts...), net)
 
     # See if there exists a matching sort. #! debug?
     for (id,ps) in pairs(productsorts(net))

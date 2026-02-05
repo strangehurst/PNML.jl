@@ -182,7 +182,7 @@ end
 #----------------------------------------------------------------------------------------
 # Has value "true"|"false" and is BoolSort.
 function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
-    bc = PNML.BooleanConstant(attribute(node, "value"), net)
+    bc = PNML.BooleanConstant(attribute(node, "value"))
     return TermJunk(PNML.BooleanEx(bc), UserSortRef(:bool), vars) #TODO make into literal
 end
 
@@ -517,8 +517,8 @@ end
 
 function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     sts, vars = subterms(node, pntd; vars, net)
-    # Expect elements to be an operator or variable (a.k.a. term)
-    @assert length(sts) >= 2 #todo tuple of 1 item?
+    # Expect elements of tuple to be an operator or variable (a.k.a. term)
+    @assert length(sts) > 0 # allow tuple of 1 item?
     expr_tup = PNML.PnmlTupleEx(sts)
     # When turned into expressions and evaluated, each tuple element will have a sort,
     # the combination of element sorts must have a matching product sort.
@@ -529,7 +529,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::Abs
 
     #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
     #! Part of expression evaluation -- dynamic behavior of a Petri net
-    prodsort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...))
+    prodsort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...), net)
     #! prodsort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts, net))), net)
 
     #D()&& @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug

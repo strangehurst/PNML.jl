@@ -128,7 +128,8 @@ end
                         </productsort>""", pntd, :redundant, "redundant"; net)
     sort = to_sort(sortref, net)::ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
-    @test eltype(sort) == Any #! TODO XXX
+    @show sort, eltype(sort)
+    @test eltype(sort) == Tuple{Int64,Int64} #! TODO XXX
 
     IDRegistrys.reset_reg!(net.idregistry)
     fill_sort_tag!(net, :speed, NamedSort(:speed, "speed", PositiveSort(), net))
@@ -140,7 +141,8 @@ end
     sort = to_sort(sortref, net)::ProductSort
     @test sort isa ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
-    @test eltype(sort) == Any #! TODO XXX
+    @show sort, eltype(sort)
+    @test eltype(sort) == Tuple{Int64,Int64} #! TODO XXX
 
     # IDRegistrys.reset_reg!(ctx.idregistry)
     # sort = parse_sort(xml"""<productsort>
@@ -180,5 +182,6 @@ end
     @test occursin(r"^StringSort", sprint(show, sort))
     @test eltype(sort) == String
     @test first(sortelements(sort, net)) == ""
-    #TODO PartitionSort
+
+    #TODO PartitionSort tests here
 end

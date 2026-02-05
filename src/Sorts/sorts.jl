@@ -1,10 +1,7 @@
 """
-Tuple of sort IDs that are considered builtin.
-There will be a version defined for each in the `DeclDict`.
-Users may (re)define these.
+Set of sort IDs that are considered builtin.
 """
-builtin_sorts() = (:integer, :natural, :positive, :real, :dot, :bool, :null,)
-#todo Use set instead of tuple?
+builtin_sorts() = Set([:integer, :natural, :positive, :real, :dot, :bool, :null])
 
 """
     isbuiltinsort(::Symbol) -> Bool
@@ -51,7 +48,7 @@ $(TYPEDEF)
 
 Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 """
-@auto_hash_equals fields=basis struct MultisetSort{S <: AbstractSortRef} <: AbstractSort
+@auto_hash_equals struct MultisetSort{S <: AbstractSortRef} <: AbstractSort
     basis::S
 
     MultisetSort(b::AbstractSortRef, ddict) = MultisetSort{SortRef.Type}(b, ddict)
@@ -67,7 +64,7 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 end
 
 sortref(ms::MultisetSort) = identity(ms.basis)::AbstractSortRef
-sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)::AbstractSortRef)) #TODO abstract
+sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)::AbstractSortRef))
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -82,13 +79,19 @@ An ordered collection of sorts. The elements of the sort are tuples of elements 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
-@auto_hash_equals fields=ae typearg=true cache=true struct ProductSort{N} <: AbstractSort
+@auto_hash_equals struct ProductSort{N, P <:AbstractPnmlNet} <: AbstractSort
     ae::NTuple{N, SortRef.Type} #! AbstractSortRef
+    net::P
 end
-
+#
 isproductsort(::ProductSort) = true
 isproductsort(::Any) = false
-Base.length(ps::ProductSort, ddict) = length(sorts(ps, ddict))
+Base.length(ps::ProductSort, net) = length(sorts(ps, net))
+Base.eltype(ps::ProductSort) = Tuple{eltype.(sortdefinitions(ps))...}
+
+sortdefinitions(p::ProductSort) = Iterators.map(sorts(p, p.net)) do s
+    sortdefinition(PNML.namedsort(p.net, refid(s)))
+end
 
 """
     sorts(ps::ProductSort, ::AbstractPnmlNet) -> NTuple

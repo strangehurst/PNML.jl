@@ -136,7 +136,7 @@ end
 # end
 
 # Metatheory.quoted_head: nameof(x) for Union{Function,DataType}), else identity.
-# All @matchable structs are iscall() so use Metatheory.quoted_head #todo cache?
+# All @matchable structs are iscall() so use Metatheory.quoted_head?
 # The other leg is for things that are not callable.
 # NB: constructors are callable
 
@@ -180,7 +180,7 @@ function toexpr(op::UserOperatorEx, varsub::NamedTuple, net)
 end
 
 function expr_sortref(o::UserOperatorEx, net)
-    #todo or other constant/operator
+    #todo or other constant/operator, not just feconstant
     return sortref(PNML.feconstant(net, o.refid))::AbstractSortRef
 end
 
@@ -199,7 +199,7 @@ function toexpr(op::NamedOperatorEx, varsub::NamedTuple, net)
 end
 
 function expr_sortref(o::NamedOperatorEx, net)
-    #todo or other constant/operator
+    #todo or other constant/operator, not just feconstant
     return sortref(PNML.feconstant(net, o.refid))::AbstractSortRef
 end
 
@@ -457,13 +457,13 @@ function Base.show(io::IO, x::And)
 end
 
 @matchable struct Not <: AbstractBoolExpr #^ Uses `!` operator.
-    args::Vector{AbstractBoolExpr} # >=2
-    #! rhs::Any # AbstractBoolExpr #todo handle ordered collection. return and of not.boolean
+    args::Vector{AbstractBoolExpr}
 end
 
-#~  !any(true) === all(!true)
+# Return true if none of the args are true.
 function toexpr(op::Not, vars::NamedTuple, net)
     :(!any(eval(toexpr(arg, $vars, $net)) for arg in $(op.args)))
+    #:(!eval(toexpr(first(op.args), $vars, $net)))
 end
 
 function Base.show(io::IO, x::Not)
@@ -732,8 +732,8 @@ end
 
 # 0-arity despite the refpartition
 @matchable struct PartitionElementOf <: PnmlExpr
-    arg::Any
-    refpartition::Symbol # TODO! SortRef
+    arg::Any # TODO variable that should be a feconstant
+    refpartition::Symbol # TODO! wrap in PartitionSortRef
 end
 
 expr_sortref(a::PartitionElementOf, net) = sortref(partitionsort(net, a.refpartition))::AbstractSortRef
@@ -860,7 +860,7 @@ end
 # The sort of a tuple is a tuple of its element's sorts (a.k.a ProductSort).
 # Find the ProductSortRef
 function expr_sortref(tup::PnmlTupleEx, net)
-    exsort = ProductSort(tuple(expr_sortref.(tup.args, Ref(net))...))
+    exsort = ProductSort(tuple(expr_sortref.(tup.args, Ref(net))...), net)
     for (sortid,ps) in pairs(PNML.productsorts(net))
         #!@show ps
         if length(exsort) == length(ps) && PNML.Sorts.equalSorts(exsort, ps, net)
@@ -940,13 +940,13 @@ toexpr(exp::LiteralExpr, varsub::NamedTuple, net) = recurse_expr(exp.ex, varsub,
 """
     substitute(expr, dict)
 
-Recursivly substitute a VariableEx with its the value from `dict`.
-The values in `dict` will be ground terms of a place's sorttype.
+Recursivly substitute a VariableEx with its the value from `var`.
+The values in `var` will be ground terms of a place's sorttype.
 These values are from the current marking vector.
 ```
 """
 function substitute(expr::PnmlExpr, var::NamedTuple)
-    expr isa VariableEx && return var[expr.refid] #todo store marking vector index in dict.
+    expr isa VariableEx && return var[expr.refid]
 
     if iscall(expr) # all @matchable structs
         #~ Always substitute operation and arguments.
