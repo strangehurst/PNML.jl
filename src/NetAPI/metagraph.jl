@@ -28,7 +28,7 @@ function metagraph(net::PnmlNet)
     # Map from (src,dst) to arc. Uses pid, not vertex codes of graph.
     edgedata = Dict((source(a), target(a)) => a for a in arcs(net))
     @assert length(edgedata) == Graphs.ne(graph)
-    #todo weight function
+    #todo weight function for MetaGraph
     MetaGraph(graph, vlabel, vdata, edgedata, PNML.name(net), edge_data -> 1.0, 1.0)
 end
 

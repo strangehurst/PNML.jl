@@ -26,7 +26,6 @@ term(marking::Marking) = marking.term
 
 # 1'value where value isa eltype(sortof(marking))
 # because we assume a multiplicity of 1, and the sort is simple
-#TODO add sort trait where simple means has concrete eltype
 # Assume eltype(sortdefinition(marking)) == typeof(value(marking))
 
 # """
@@ -64,7 +63,7 @@ term(marking::Marking) = marking.term
 # The evaluated value is placed in the marking vector (as the initial value:).
 # Firing rules use arc inscriptions to determine the new value for marking vector.
 
-# NOTE #? Can HLPNG marking also be PnmlTuple, or other sort instance matching placetype?
+# NOTE: marking also be a tuple/PnmlTuple matching placetype ProductSort?
 
 # Inscription and condition expressions may contain variables that map to a place's current marking.
 # HL Nets need to evaluate expressions after variable substitution as part of enabling and transition firing rules.
@@ -112,9 +111,9 @@ PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::
 
 # These are networks were the tokens have individual identities.
 function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
-    @error("value_type(::Type{Marking}, $pntd) undefined.") #! XXX TODO XXX
+    @error("value_type(::Type{Marking}, $pntd) undefined. Using DotSort.")
     #Base.show_backtrace(stdout, stacktrace())
-    eltype(DotSort) #! XXX TODO XXX
+    eltype(DotSort)
 end
 
 PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}

@@ -85,7 +85,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     if haskey(kwargs, :lp) && !isnothing(kwargs[:lp]) && !isempty(kwargs[:lp])
         @warn "add $(length(kwargs[:lp])) labelparser(s)"
         foreach(kwargs[:lp]) do lparser
-            #! todo sanity check
+            #! todo sanity check labelparser
             @show lparser #! bring-up
             net.labelparser[lparser.tag] = lparser.func
         end
@@ -93,12 +93,11 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     end
 
     fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
-    # @assert isempty(net.toolparser) #TODO
 
     # if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
     #     @warn "add $(length(kwargs[:tp])) toolparser(s)"
     #     foreach(kwargs[:tp]) do tparser
-    #         #! todo sanity check
+    #         #! todo sanity check toolparser
     #         @show tparser
     #         push!(net.toolparser, tparser) # NB: a vector #TODO?
     #     end
@@ -159,7 +158,8 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     #~ Evaluate expressions to create a mutable vector of markings.
     #^ Marking vector is used in enabling and firing rules.
     #m₀ = PNML.PNet.initial_markings(net)
-    #PNML.enabledXXX(net, m₀) # enabling rule? #todo what side effect?
+    #PNML.enabledXXX(net, m₀) # enabling rule?
+
     return net
 end
 

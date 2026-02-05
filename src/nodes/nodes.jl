@@ -49,7 +49,7 @@ function verify!(errors, p::Place, verbose::Bool , net::AbstractPnmlNet)
     !isregistered(registry_of(net), pid(p)) &&
         push!(errors, string("place ", repr(pid(p)), " not registered")::String)
 
-    # TODO
+    # TODO more verify place
 
      return errors
 end
@@ -113,7 +113,7 @@ function verify!(errors, t::Transition, verbose::Bool , net::AbstractPnmlNet)
     !isregistered(registry_of(net), pid(t)) &&
         push!(errors, string("transition ", repr(pid(t)), " not registered")::String)
 
-    # TODO
+    # TODO more verify transition
 
      return errors
 end
@@ -203,7 +203,7 @@ function verify!(errors, a::Arc, verbose::Bool , net::AbstractPnmlNet)
     !isregistered(registry_of(net), pid(a)) &&
         push!(errors, string("arc ", repr(pid(a)), " not registered")::String)
 
-    # TODO
+    # TODO verify arc
 
      return errors
 end
@@ -250,7 +250,7 @@ function verify!(errors, r::ReferenceNode, verbose::Bool , net::AbstractPnmlNet)
     !isregistered(registry_of(net), pid(r)) &&
         push!(errors, string("arc ", repr(pid(r)), " not registered")::String)
 
-    # TODO
+    # TODO verify ReferenceNode
 
      return errors
 end

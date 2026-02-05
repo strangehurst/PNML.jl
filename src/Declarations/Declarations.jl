@@ -16,15 +16,13 @@ using Logging, LoggingExtras
 using SciMLLogging: @SciMLMessage
 
 using PNML
-#!using PNML: DeclDict
 using PNML: REFID, AnyElement, AbstractTerm
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants
 using PNML: multisetsorts
 
-# Extend PNML core #TODO what interfaces?
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
-import PNML: name # Lots has human-readable name strings.
+import PNML: name # Many things have human-readable name strings.
 import PNML: pid, refid # PNML ID
 import PNML: fill_sort_tag!, verify!
 

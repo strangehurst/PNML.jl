@@ -600,7 +600,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-TODO For future support in non-High-Level.
+For future support of structure elements in non-High-Level nets.
 """
 function parse_structure(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "structure")

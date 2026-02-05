@@ -53,9 +53,6 @@ end
 function rates(net::PnmlNet)
     [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
 end
-# rate label implements the PnmlLabel interface.
-# Provides a method that accepts a "label owning" object (PnmlNet, AbstractObject).
-# Method returns TODO! add traits to identify type? Whomever calls this method
 
 """
 inscription_value(a::Maybe{Arc}, def, varsub) -> T

@@ -72,7 +72,7 @@ struct PartitionElement <: OperatorDeclaration
     partition::REFID
 end
 
-#todo verify terms are in parent partitions's referenced sort elements.
+# verify terms are in parent partitions's referenced sort elements.
 function verify!(errors::Vector{String}, pe::PartitionElement, verbose::Bool, net::AbstractPnmlNet)
     if !isempty(setdiff(pe.terms,
                         PNML.Sorts.sortelements(sortdefinition(PNML.partitionsort(net, pe.partition)),

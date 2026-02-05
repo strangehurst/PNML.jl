@@ -87,7 +87,6 @@ struct VariableDeclaration{S <: AbstractSortRef, N <: AbstractPnmlNet} <: Abstra
 
     #! Sorts serve a similar role as Juia Types.
     #! Sorts are static, Distinct variabledecls may have the same product sort inlined.
-    #todo use hashes (dictionary?) to deduplicate.
 end
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID

@@ -160,7 +160,7 @@ function enabled(net::PnmlNet{<:AbstractHLCore}, marking)
 
             arc_bvs   = OrderedDict{REFID, Multiset{Symbol}}() # Empty per-arc binding.
 
-            placesort = sortref(place(net, placeid)) # TODO create exception
+            placesort = sortref(place(net, placeid))
             enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, net)
             enabled || break
             enabled &= accum_varsets!(bvs, arc_bvs) # Transaction accumulates/intersects arc bindings.

@@ -5,8 +5,6 @@ find . -name '*.pnml' -type f -print | xargs grep -nHPA5 '<type>' |  grep -PA1 '
 shows that ePNK examples uses built-in sorts.
 The rest of the examples, especially MCC, only contain usersorts.
 
-#TODO Find more pnml example files.
-
 Some built-in sorts are atoms, examples: </dot>, <natural>.
 These are represented by an empty xml element, but not necessarily of the form </dot>.
 Lists are not atoms and are not supported by symmetric nets in the standard.

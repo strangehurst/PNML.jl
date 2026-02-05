@@ -203,7 +203,7 @@ abstract type AbstractOperator <: AbstractTerm end
 
 # Expect each operator instance to have fields:
 # - expression (PnmlExpr <: TermInterfce) that evaluates to an instance of output sort.
-# - ordered sequence of zero or more input sorts #todo vector or tuple?
+# - ordered sequence of zero or more input sorts
 # - ordered sequence of zero or more subterms
 # - one output sort
 # and support methods to:

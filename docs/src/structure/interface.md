@@ -61,7 +61,7 @@ While [`Graphics`](@ref) is implemented
 it is not dicussed further (until someone extends/uses it).
 
 [`ToolInfo`](@ref) used to attach well-formed XML almost anywhere in the PNG.
-TODO: Need way to parse <toolspecific> that is flexible/extendable.
+TODO: document toolparser.
 
 Parse pnml for input, worry about writing back out and interchange later (future extensions).
 Another future extension may be to use pages for distributed computing.

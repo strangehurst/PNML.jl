@@ -141,7 +141,6 @@ feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
 "Lookup useroperator with `id` in DeclDict."
 useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
 
-#TODO :useroperator -> opdictionary -> op  # how type-stable is this?
 "Return tuple of operator dictionary fields in the Declaration Dictionaries."
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)
 "Return iterator over operator dictionaries of Declaration Dictionaries."
@@ -210,7 +209,7 @@ Other `OperatorDeclaration` dictionarys also hold `TermInterface` expressions ac
 where `PnmlExpr` is the `TermInterface` to match `OperatorDeclaration`.
 With output sort to match `OperatorDeclaration` .
 
-#TODO named operator input variables and thier sorts
+#TODO named operator input variables and their sorts
 
 #TODO partition element
 

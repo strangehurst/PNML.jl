@@ -219,9 +219,8 @@ function pnmlmultiset(basis::AbstractSortRef, ::Nothing, ::Nothing; net::Abstrac
     end
     #^ Where/how is absence of sort loop checked?
     #@show basis eltype(basis) #! debug
-    M = Multiset{eltype(basis)}()
     # Only expect finite sorts here. #! assert isfinitesort(basis)
-    #TODO ProductSort, PartitionSort
+    M = Multiset{eltype(basis)}()
     sort = PNML.Parser.to_sort(basis, net)
     for e in sortelements(sort, net) # iterator over elements
         #@show M e; flush(stdout) #! debug

@@ -26,8 +26,8 @@ function (var::Variable)()
 end
 value(v::Variable) = error("not well defined: value($v)") #! XXX FIXME XXX
 
-sortref(v::Variable) = sortref(variabledecl(v.net, refid(v)))::AbstractSortRef # Access variabledecl in decldicts
-sortof(v::Variable)  = sortof(variabledecl(v.net, refid(v)))  # Access variabledecl in decldicts
+sortref(v::Variable) = sortref(variabledecl(v.net, refid(v)))::AbstractSortRef
+sortof(v::Variable)  = sortof(variabledecl(v.net, refid(v)))
 
 function Base.show(io::IO, v::Variable)
     print(io, nameof(typeof(v)), "(", repr(v.refvariable), ")")

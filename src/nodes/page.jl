@@ -94,7 +94,7 @@ function verify!(errors, page::Page, verbose::Bool, net::AbstractPnmlNet)
     !isregistered(registry_of(net), pid(page)) &&
         push!(errors, string("page ", repr(pid(page)), " not registered")::String)
 
-    # TODO
+    # TODO more verify Page
 
      return errors
 end

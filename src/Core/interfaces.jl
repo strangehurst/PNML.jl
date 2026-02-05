@@ -276,14 +276,14 @@ $(TYPEDSIGNATURES)
 function has_reftransition end
 
 """
-    refplace_idset(x) -> OrderedSet{Symbol} #TODO iterator?
+    refplace_idset(x) -> OrderedSet{Symbol}
 
 Return reference place pnml ids.
 """
 function refplace_idset end
 
 """
-    reftransition_idset(x) -> OrderedSet{Symbol} #TODO iterator?
+    reftransition_idset(x) -> OrderedSet{Symbol}
 
 Return reference transition pnml ids.
 """
