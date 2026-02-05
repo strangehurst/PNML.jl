@@ -74,8 +74,9 @@ netsets hold pnml IDs "owned"
 """
 function append_page!(lpage::Page, rpage::Page;
             keys = (:toolspecinfos,), # non-idset and non-dict fields of page to merge
-            idsets = (place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset,),
-            verbose::Bool = CONFIG[].verbose            )
+            idsets = (place_idset, transition_idset, arc_idset,# except for page_idset
+                      refplace_idset, reftransition_idset,),
+            verbose::Bool = CONFIG[].verbose)
 
     for k in keys
         _update_maybe!(lpage, rpage, k)
@@ -86,15 +87,14 @@ function append_page!(lpage::Page, rpage::Page;
             lpage.extralabels[k] = v
         end
     end
-
-    for s in idsets # except for page_idset
-        union!(s(lpage), s(rpage)) #TODO type assert
+    #
+    for s in idsets
+        union!(s(lpage), s(rpage))
     end
 
     delete!(page_idset(lpage), pid(rpage))
     @assert pid(rpage) ∉ page_idset(lpage)
     #~ ensure empty page garbage collected?
-    #! TODO Verify netsets    #@show typeof(lval) typeof(rval) #! debug
 
     return lpage
 end
