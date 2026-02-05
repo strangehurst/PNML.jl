@@ -37,8 +37,8 @@ struct Operator{S <: AbstractSortRef, N <: AbstractPnmlNet} <: AbstractOperator
     outsort::S # wraps REFID Symbol
     metadata::Any
     net::N
-    #TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
-    #todo all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
+    # TODO have constructor validate typeof(inexprs[i]) == eltype(insorts[i])
+    # TODO all((ex,so) -> typeof(ex) == eltype(so), zip(inexprs, insorts))
 end
 
 Operator(t, f, inex, ins, outs; metadata=nothing, net) = Operator(t, f, inex, ins, outs, metadata, net)
@@ -160,7 +160,7 @@ partition_operators = (:ltp, :gtp, :partitionelementof)
 ispartitionoperator(tag::Symbol) = tag in partition_operators
 
 # these constants are operators
-builtin_constants = (:numberconstant, :dotconstant, :booleanconstant,)
+builtin_constants() = Set([:numberconstant, :dotconstant, :booleanconstant])
 
 """
     isbuiltinoperator(::Symbol) -> Bool
@@ -189,7 +189,7 @@ isoperator(tag::Symbol) = isintegeroperator(tag) ||
                           isbooleanoperator(tag) ||
                           isfiniteoperator(tag) ||
                           ispartitionoperator(tag) ||
-                          tag in builtin_constants ||
+                          tag in builtin_constants() ||
                           tag === :tuple ||
                           tag === :useroperator
 
