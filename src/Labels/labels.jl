@@ -59,7 +59,6 @@ function Base.getproperty(o::AbstractLabel, prop_name::Symbol)
     prop_name === :text && return getfield(o, :text)::Union{Nothing,String,SubString{String}}
     prop_name === :graphics && return getfield(o, :graphics)::Maybe{Graphics}
     prop_name === :toolspecinfos && return getfield(o, :toolspecinfos)::Maybe{Vector{ToolInfo}}
-    prop_name === :declarationdicts && return getfield(o, :declarationdicts)::Maybe{DeclDict}
 
     return getfield(o, prop_name)
 end
@@ -88,7 +87,6 @@ struct HLLabel{PNTD} <: HLAnnotation
     structure::Maybe{AnyElement}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
-    declarationdicts::DeclDict
     #TODO validate in constructor: must have text or structure (depends on pntd?)
     #TODO make all labels have text &/or structure?
 end
