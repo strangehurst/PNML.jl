@@ -91,12 +91,13 @@ This is a 0-arity opertor term that evaluates to `1`.
 """
 struct DotConstant <: AbstractOperator
 end
+
 sortref(::DotConstant) = UserSortRef(:dot)
 sortof(::DotConstant, net::AbstractPnmlNet) = sortdefinition(namedsort(net, :dot))
 (d::DotConstant)() = 1 # true is a number, one
 
 function Base.show(io::IO, c::DotConstant)
-    print(io, nameof(typeof(c)), "()") # Exclude declarationdicts
+    print(io, nameof(typeof(c)), "()")
 end
 
 """
@@ -116,8 +117,9 @@ struct BooleanConstant <: AbstractOperator
     value::Bool
 end
 
-function BooleanConstant(s::Union{AbstractString,SubString{String}}, ddict)
-    BooleanConstant(parse(eltype(sortdefinition(namedsort(ddict, :bool))), s))
+"Create by parsing string `s` to value of type `Bool`."
+function BooleanConstant(s::Union{AbstractString,SubString{String}})
+    BooleanConstant(parse(Bool, s))
 end
 
 tag(::BooleanConstant) = :booleanconstant
