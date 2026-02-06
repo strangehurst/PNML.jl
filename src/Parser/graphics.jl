@@ -30,15 +30,15 @@ function tokengraphics_content(node, pntd)
     [PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)]
 end
 
-# """
-# $(TYPEDSIGNATURES)
+"""
+$(TYPEDSIGNATURES)
 
-# Return Cartesian [`Coordinate`](@ref) relative to containing element.
-# """
-# function parse_tokenposition(node, pntd)
-#     check_nodename(node, "tokenposition")
-#     parse_graphics_coordinate(node, pntd)
-# end
+Return Cartesian [`Coordinate`](@ref) relative to containing element.
+"""
+function parse_tokenposition(node, pntd)
+    check_nodename(node, "tokenposition")
+    parse_graphics_coordinate(node, pntd)
+end
 
 """
 $(TYPEDSIGNATURES)
