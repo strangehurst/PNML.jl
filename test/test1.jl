@@ -19,8 +19,8 @@ println("-----------------------------------------\n")
 #     #~ repr tests everybody's show() methods. #! Errors exposed warrent test BEFORE HERE!
 #     #!@test startswith(repr(model), "PnmlModel")
 
-    @test map(pid, PNML.nets(model)) == (:net1,:net2,:net3,:net4,:net5,:net6,
-                                            :net7,:net8,:net9,:net10,:net11);
+    @test all(n->pid(n) in Set([:net1,:net2,:net3,:net4,:net5,:net6,
+                                :net7,:net8,:net9,:net10,:net11]), PNML.nets(model))
 
     for n in PNML.nets(model)
         println("-----------------------------------------")

@@ -4,8 +4,9 @@ $(TYPEDFIELDS)
 
 One or more Petri Nets.
 """
-mutable struct PnmlModel
-    nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
+struct PnmlModel
+    #nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
+    nets::Dict{Symbol,Any}
     namespace::String
 end
 
@@ -14,7 +15,7 @@ $(TYPEDSIGNATURES)
 
 Return all `nets` of `model`.
 """
-nets(model::PnmlModel) = model.nets
+nets(model::PnmlModel) = values(model.nets)
 namespace(model::PnmlModel) = model.namespace
 
 """
@@ -29,13 +30,10 @@ find_nets(model, pntd::PnmlType) = Iterators.filter(n -> Fix1(isa, pntd)(nettype
 """
 $(TYPEDSIGNATURES)
 
-Return `PnmlNet` having `id` or `nothing``.
+Return `PnmlNet` having `id` or `nothing`.
 """
 function find_net(model, id::Symbol)
-    for net in nets(model)
-        ispid(id)(pid(net)) && return net
-    end
-    return nothing
+    haskey(model.nets, id) ? model.nets[id] : nothing
 end
 
 # No indent done here.

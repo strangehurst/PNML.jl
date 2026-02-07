@@ -32,21 +32,20 @@ end
 
 function pnmlmodel(node::XMLNode; kwargs...)
     check_nodename(node, "pnml")
-    namespace = pnml_namespace(node) # Model level XML value.
-    net_tup = ()
+    model = PnmlModel(Dict{Symbol,Any}(), pnml_namespace(node))
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "net"
             net = parse_net(child; kwargs...)::PnmlNet # Fully formed
-            net_tup = (net_tup..., net)
+            model.nets[pid(net)] = net
         else
             @error "<model> has unexpected child $tag"
         end
     end
-    length(net_tup) > 0 ||
+    length(model.nets) > 0 ||
         throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
 
-    PnmlModel(net_tup, namespace)
+    return model #!PnmlModel(net_tup, namespace)
 end
 
 """

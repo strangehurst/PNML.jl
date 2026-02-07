@@ -66,8 +66,8 @@ end
         @show model
     end
 
-    modelnets = PNML.nets(model)::Tuple
-    @test length(modelnets) == 5
+    modelnets = PNML.nets(model)
+    @test length(model.nets) == 5
     @test all(PNML.registry_of(n) isa IDRegistry for n in modelnets)
 
     for net in modelnets
@@ -207,7 +207,7 @@ println("-----------------------------------------")
     model = pnmlmodel(testfile)::PnmlModel
     #model = @test_logs(match_mode=:all, pnmlmodel(testfile)
 
-    netvec = nets(model)::Tuple{Vararg{PnmlNet{<:PnmlType}}}
+    netvec = nets(model) # iterator
     @test length(netvec) == 1
 
     net = first(netvec)::PnmlNet{<:SymmetricNet}
