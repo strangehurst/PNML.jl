@@ -141,7 +141,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
             unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid)
         end
     end
-    PNML.verify(net, CONFIG[].verbose)
+    PNML.verify(net, false) # CONFIG[].verbose)
 
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.

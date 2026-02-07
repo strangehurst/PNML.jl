@@ -52,8 +52,8 @@ function parse_declaration!(net::AbstractPnmlNet, nodes::Vector{XMLNode}, pntd::
             end
         end
     end
-    D()&& println("Declaration '$text'")
-    D()&& println(net.ddict)
+    #D()&& println("Declaration '$text'")
+    #D()&& println(net.ddict)
     Declaration(; text, net.ddict, graphics, toolspecinfos) #? make Ref(net.ddict)?
 end
 
