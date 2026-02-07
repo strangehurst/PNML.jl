@@ -88,23 +88,19 @@ function parse_place(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
         end
     end
 
-    if isnothing(mark) # Use additive identity of proper sort.
-        default_sorttype = if ishighlevel(pntd)
-            if isnothing(sorttype)
-                #D()&&
-                @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
+    if isnothing(mark) # Use additive identity of proper sort as default value.
+        effective_sorttype = if ishighlevel(pntd) && isnothing(sorttype)
+            #D()&&
+            @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
                             "use :dot even if it is WRONG")
-                SortType("dummy", NamedSortRef(:dot), net)
-            else
-                sorttype
-            end
+            SortType("dummy", NamedSortRef(:dot), net)
         else
-            SortType("dummy", NamedSortRef(:natural), net)
+            sorttype # Already parsed a <type> or default for non-HL.
         end
-        mark = default(Marking, pntd, default_sorttype, net)
+        mark = default(Marking, pntd, effective_sorttype, net)
     end
 
-    if isnothing(sorttype) # Infer sortype of place from mark
+    if isnothing(sorttype) # Infer sortype of place from mark.
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
         D()&& @warn("$pntd parse_place $(repr(placeid)) infer sorttype ", mark)
         sorttype = SortType("default", basis(mark)::AbstractSortRef, net)
@@ -199,9 +195,8 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
             if pntd isa PT_HLPNG
                 SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
             else
-                #D()&&r),  par
+                #D()&&
                 @error "$pntd inscription not provided for arc $(repr(arcid)) ($(repr(source)) -> $(repr(target))), will use :dot."
-                D()&& Base.show_backtrace(stdout, stacktrace())
 
                 #TODO XXX Use the adjacent place's sorttype.
                 # Note that the adjacent place may have not been parsed yet.

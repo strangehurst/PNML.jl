@@ -112,7 +112,6 @@ PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::
 # These are networks were the tokens have individual identities.
 function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
     @error("value_type(::Type{Marking}, $pntd) undefined. Using DotSort.")
-    #Base.show_backtrace(stdout, stacktrace())
     eltype(DotSort)
 end
 
@@ -152,12 +151,12 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
-    D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
+    #D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
     Marking(zero(PNML.value_type(PNML.Marking, pntd)), net) # not high-level!
 end
 
 function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
     el = def_sort_element(placetype, net)
-    D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
+    #D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
     Marking(PNML.Bag(sortref(placetype), el, 0), "default", net) # el used for its type
 end

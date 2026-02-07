@@ -287,7 +287,6 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
             @error("$pntd parse_hlinitialMarking of $(repr(parentid)) " *
                     "sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l)
-            Base.show_backtrace(stdout, stacktrace())
             println()
         end
     end
@@ -349,7 +348,6 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
             println()
             @error("$pntd parse_fifoinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l)
-            Base.show_backtrace(stdout, stacktrace())
             println()
         end
     end
@@ -395,7 +393,6 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; net::Abstrac
             @warn "$pntd ParseMarkingTerm placetype(pmt) is nothing"
         elseif !PNML.Sorts.equalSorts(tj.ref, placetype(pmt), net)
             @warn "$pntd ParseMarkingTerm sort mismatch" tj.ref placetype(pmt) tj
-            Base.show_backtrace(stdout, stacktrace())
         end
         return tj
 
@@ -475,7 +472,6 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
     if !PNML.Sorts.equalSorts(tj.ref, placesort, net)
         @error("arc $(source(pit)) -> $(target(pit)) inscription term sort mismatch: $(tj.ref) != $placesort",
                 tj, adjacentplace)
-        D()&& Base.show_backtrace(stdout, stacktrace())
     end
     return tj
 end
