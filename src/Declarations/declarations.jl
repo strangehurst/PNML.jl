@@ -123,7 +123,7 @@ end
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
 sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, refid(vd)))::AbstractSort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, refid(sortref(vd))))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
@@ -147,7 +147,7 @@ These are all `Declaration` subtypes in the UML2/RelaxNG parts of ISO 15909-2:20
 a strong _Java_ bias. The text on the standard states they are also sort-like.
 We use a different type system.
 """
-@auto_hash_equals fields=id,name,def struct NamedSort{S <: AbstractSort, N <: AbstractPnmlNet} <: SortDeclaration
+@auto_hash_equals struct NamedSort{S <: AbstractSort, N <: AbstractPnmlNet} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S  #! This remains where the concrete sort lives.

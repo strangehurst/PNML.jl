@@ -75,7 +75,7 @@ SortType(s::AbstractString, sort::AbstractSortRef, net) = SortType(s, sort, noth
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 refid(t::SortType) = refid(sortref(t))::Symbol
-sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(t.net, refid(t)))
+sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(t.net, refid(sortref(t))))
 sortelements(t::SortType, net::AbstractPnmlNet) = PNML.Sorts.sortelements(sortof(t), net)
 
 """
