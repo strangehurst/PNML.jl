@@ -16,7 +16,7 @@ using XMLDict: XMLDict
             <text>unknown content text</text>
         </unknown>
     </inscription>"""
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :pt_inscription_net)
 
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),

@@ -20,7 +20,7 @@ using XMLDict: XMLDict
     """)
     #println(str)
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :pt_initmark)
     @show PNML.value_type(PNML.Marking, pntd)
     @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
 
@@ -75,7 +75,7 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :dot_net)
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("XXX", PNML.NamedSortRef(:dot), net)
 
@@ -134,7 +134,7 @@ end
         # numberof is an operator: natural number, element of a sort -> multiset
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :placetype_error_net)
         sort = ArbitrarySort(:foo, "ArbSort", net)
         PNML.fill_sort_tag!(net, :foo, sort)
 
@@ -169,7 +169,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :dot_dot)
         placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), net)
         mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
         #TODO add tests
@@ -189,7 +189,7 @@ end
             </structure>
         </hlinitialMarking>
         """
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :dot_1)
         placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), net)
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
         val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset{<:Any}
@@ -203,7 +203,7 @@ end
         <hlinitialMarking>
         </hlinitialMarking>
         """
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :empty_hlinitialMarking)
         placetype = SortType("testdot", PNML.NamedSortRef(:dot), net)
         @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
     end
@@ -232,7 +232,7 @@ end
         # subterms are in an ordered collection, first is a number, second an element of a sort
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
 
-        net = make_net(pntd, :fake)
+        net = make_net(pntd, :fifi_net)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("FIFO", PNML.NamedSortRef(:dot), net)

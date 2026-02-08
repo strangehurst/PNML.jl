@@ -31,7 +31,7 @@ end
 #println("pntd_override")
 @test_logs((:info,"net 4712 pntd set to reallygood, overrides test"),
             parse_net(xml"""<net id="4712" type="test">
-              </net>"""; net=make_net(PnmlCoreNet(), :fake),
+              </net>"""; net=make_net(PnmlCoreNet(), :pntd_override_net),
                          pntd_override="reallygood"))
 
 
@@ -88,7 +88,7 @@ end
     # println("-- 4")
     @test_throws("MalformedException: attribute type missing",
         parse_net(xml"""<net id="4712"> </net>""";
-             net=make_net(PnmlCoreNet(), :fake)))
+             net=make_net(PnmlCoreNet(), :missing_type_net)))
 end
 
 @test_logs((:warn,"ignoring unexpected child of <net>: <graphics>"),
@@ -97,7 +97,7 @@ end
                     <graphics/>
                 </net>
                 </pnml>""";
-            net=make_net(PnmlCoreNet(), :fake)))
+            net=make_net(PnmlCoreNet(), :unexpected_child_net)))
 
 @test_logs((:info, r"^add PnmlLabel :unexpected.*"),
     pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -105,7 +105,7 @@ end
                     <unexpected/>
                 </net>
                 </pnml>""";
-            net=make_net(PnmlCoreNet(), :fake)))
+            net=make_net(PnmlCoreNet(), :label_named_unexpected)))
 
 @test_logs((:info, r"^add PnmlLabel :unexpected.*"),
     pnmlmodel(xml"""<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
@@ -115,12 +115,12 @@ end
                     </page>
                 </net>
                 </pnml>""";
-            net=make_net(PnmlCoreNet(), :fake)))
+            net=make_net(PnmlCoreNet(), :label_named_unexpected2)))
 
 
 # println("E 3")
 @testset "missing id $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :missing_id_net)
     @test_throws("MissingIDException: net",
             parse_net(xml"<net type='test'></net>"; net))
 

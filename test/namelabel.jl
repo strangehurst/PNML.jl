@@ -5,7 +5,7 @@ using EzXML: EzXML
 using XMLDict: XMLDict
 
 @testset "name $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :name_net)
 
     n = @test_logs((:warn, r"^<name> missing <text>"),
             PNML.Parser.parse_name(xml"<name></name>", pntd;

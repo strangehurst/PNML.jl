@@ -5,7 +5,7 @@ using .TestUtils
 
 println("RATE")
 @testset "get rate label $pntd" for pntd in PnmlTypes.all_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :get_rate_net)
 
     trans = PNML.Parser.parse_transition(xml"""<transition id ="birth">
                                                  <rate> <text>0.3</text> </rate>

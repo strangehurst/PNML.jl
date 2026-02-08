@@ -35,7 +35,7 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-net = make_net(PnmlCoreNet(), :fake)
+net = make_net(PnmlCoreNet(), :utils_net)
 
 @testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
     c = @inferred Labels.default(Labels.Condition, pntd, net) #::Labels.Condition

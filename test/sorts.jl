@@ -7,7 +7,7 @@ using PNML: fill_sort_tag!, fill_builtin_sorts!, fill_builtin_labelparsers!
 @testset "parser_context" begin
     println("parser_context")
     pntd = PnmlCoreNet()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :parser_context_net)
 
     @test_call target_modules=t_modules NamedSort(:X, "X", PositiveSort(), net)
     @test_opt target_modules=t_modules function_filter=pff NamedSort(:X, "X", PositiveSort(), net)
@@ -23,7 +23,6 @@ using PNML: fill_sort_tag!, fill_builtin_sorts!, fill_builtin_labelparsers!
                     (:dot, "Dot", Sorts.DotSort())
                     )
     for (tag, name, sort) in builtin_sorts
-        #@show typeof(sort)
         nsort = NamedSort(tag, name, sort, net)
         @test_call target_modules=t_modules fill_sort_tag!(net, tag, nsort)
         @test_opt target_modules=t_modules function_filter=pff fill_sort_tag!(net, tag, nsort)
@@ -36,12 +35,12 @@ using PNML: fill_sort_tag!, fill_builtin_sorts!, fill_builtin_labelparsers!
 end
 
 @testset "parse_sort $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :parse_sort_net)
     #println("\nparse_sort $pntd")
 
     IDRegistrys.reset_reg!(net.idregistry)
-    @inferred fill_sort_tag!(net, :X, NamedSort(:X, "X", PositiveSort(), net))
-    sortref = @inferred SortRef.Type parse_sort(xml"<usersort declaration=\"X\"/>", pntd; net)
+    @inferred fill_sort_tag!(net, :X2, NamedSort(:X2, "X2", PositiveSort(), net))
+    sortref = @inferred SortRef.Type parse_sort(xml"<usersort declaration=\"X2\"/>", pntd; net)
     ts = @inferred NamedSort to_sort(sortref, net)
     sort = @inferred sortdefinition(ts)
     @test sort === @inferred PositiveSort()
@@ -128,7 +127,6 @@ end
                         </productsort>""", pntd, :redundant, "redundant"; net)
     sort = to_sort(sortref, net)::ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
-    @show sort, eltype(sort)
     @test eltype(sort) == Tuple{Int64,Int64} #! TODO XXX
 
     IDRegistrys.reset_reg!(net.idregistry)
@@ -141,7 +139,6 @@ end
     sort = to_sort(sortref, net)::ProductSort
     @test sort isa ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
-    @show sort, eltype(sort)
     @test eltype(sort) == Tuple{Int64,Int64} #! TODO XXX
 
     # IDRegistrys.reset_reg!(ctx.idregistry)

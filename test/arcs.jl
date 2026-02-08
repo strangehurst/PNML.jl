@@ -68,7 +68,7 @@ end
 println("\nARC\n")
 @testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
     # PNML.CONFIG[].warn_on_unclaimed = true
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :arc_net)
     netsets = PNML.PnmlNetKeys()
     pl_node(pntd, net, netdata(net), netsets)
     tr_node(pntd, net, netdata(net), netsets)
@@ -104,7 +104,7 @@ println("\nARC\n")
 end
 
 @testset "arc unknown label for $pntd" for pntd in PnmlTypes.all_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :arc_unknown)
     netsets = PNML.PnmlNetKeys()
     pl_node(pntd, net, netdata(net), netsets)
     tr_node(pntd, net, netdata(net), netsets)

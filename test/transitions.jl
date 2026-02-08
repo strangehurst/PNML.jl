@@ -16,7 +16,7 @@ using .TestUtils
         </condition>
       </transition>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :transition_net)
 
     n = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
     @test n isa Transition
@@ -67,7 +67,7 @@ end
         <somelabel2 c="value" />
      </transition>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :tran_unknoen_label)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
@@ -90,7 +90,7 @@ end
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     </referenceTransition>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :refrans_net)
 
     n = parse_refTransition(node, pntd, net)::RefTransition
     @test pid(n) === :rt1
@@ -107,7 +107,7 @@ end
         <somelabel2 c="value" />
     </referenceTransition>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :refrans_unkn_net)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
             parse_refTransition(node, pntd, net)::RefTransition)

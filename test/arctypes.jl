@@ -32,7 +32,7 @@ using PNML: isnormal, isinhibitor, isread, isreset
     #@show str
     node = xmlnode(str)
     PNML.CONFIG[].warn_on_unclaimed = true
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :arctypes_net)
     PNML.CONFIG[].warn_on_unclaimed = true
 
     a = parse_arc(node, pntd, net)::Arc
@@ -61,6 +61,6 @@ end
       </arc>"""
     #@show str
     node = xmlnode(str)
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :empty_arctype)
     @test_throws(ArgumentError, parse_arc(node, pntd, net)::Arc)
 end

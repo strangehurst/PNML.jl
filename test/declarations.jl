@@ -10,7 +10,7 @@ using .TestUtils
 #!
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :empty_declaration)
     decl = @inferred parse_declaration!(net, xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
         </declaration>""", pntd)
@@ -63,7 +63,7 @@ end
     </declaration>
     """
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :namedsorts_net)
     @test_call target_modules=t_modules PNML.namedsorts(net)
     @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(net)
 
@@ -149,7 +149,7 @@ end
     </declaration>
     """
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :declaration_net)
     decl = @inferred parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
 
@@ -188,7 +188,7 @@ end
     </declaration>
     """
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :arbitrarysort_net)
     decl = parse_declaration!(net, node, pntd)
     @test typeof(decl) <: Declaration
     #@show PNML.arbitrarysort(net, :id1)
@@ -206,7 +206,7 @@ end
         </structure>
     </declaration>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :duplicate_id_net)
     @test_throws DuplicateIDException parse_declaration!(net, node, pntd)
 end
 

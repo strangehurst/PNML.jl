@@ -19,7 +19,7 @@ using .TestUtils
         </initialMarking>
         </place>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :pt_place_net)
 
     placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
 
@@ -52,7 +52,7 @@ end
         </hlinitialMarking>
         </place>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :hl_place_net)
 
     n = parse_place(node, pntd, net)::Place
     @test_call target_modules=t_modules parse_place(node, pntd, net)
@@ -84,7 +84,7 @@ end
         <somelabel2 c="value" />
         </place>
     """
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :place_unknown_label)
     n = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
                    (:info, "add PnmlLabel :somelabel2 to :place1"),
                     parse_place(node, pntd, net)::Place)
@@ -116,7 +116,7 @@ end
         <toolspecific tool="unknowntool" version="1.0"><atool x="0"/></toolspecific>
     </referencePlace>"""
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :refplace_net)
     n = parse_refPlace(node, pntd, net)::RefPlace
     @test pid(n) === :rp1
     @test PNML.refid(n) === :p1
@@ -134,7 +134,7 @@ end
         <somelabel2 c="value" />
     </referencePlace>"""
 
-    net = make_net(pntd, :fake)
+    net = make_net(pntd, :refplace_extra_net)
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
             parse_refPlace(node, pntd, net)::RefPlace)
     @test pid(n) === :rp1
