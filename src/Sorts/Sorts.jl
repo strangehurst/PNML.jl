@@ -84,7 +84,7 @@ function make_sortref(net, dict::Base.Callable, sort, seed, sortid, name=nothing
     id2 = PNML.find_valuekey(dict(net), sort) # in make_sortref
     if isnothing(id2) # Did not find existing ...
         if isnothing(sortid) # and no enclosing provided name/id ...
-            @show sortid = gensym(seed) # so invent one.
+            sortid = gensym(seed) # so invent one.
         end
     end
     # fill_sort_tag! will not overwrite existing, returns AbstractSortRef

@@ -256,7 +256,7 @@ function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, net::Abstr
             push!(errors, string("unregisrered id $(repr(k))"))
     end
     for (k,v) in partitionsorts(dd)
-        @show v
+        #@show v
         verify!(errors, v, verbose, net)
     end
     return errors
