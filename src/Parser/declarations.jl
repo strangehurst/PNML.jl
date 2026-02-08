@@ -478,7 +478,7 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, 
     # See if there exists a matching sort. #! debug?
     for (id,ps) in pairs(productsorts(net))
         if PNML.Sorts.equalSorts(ps, prodsort, net)
-            @info "Found product sort $id while looking for $prodsort "*
+            @info "Found product sort $id while looking for $prodsort " *
                     "for sortid=$sortid name=$name" productsorts(net)
          end
     end
@@ -495,7 +495,7 @@ function parse_sort(::Val{:list}, node::XMLNode, pntd::PnmlType, sortid, u2; net
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, pntd::PnmlType, parentid, name; net::AbstractPnmlNet)
-    ss = StringSort(net)
+    ss = StringSort()
     sref = make_sortref(net, PNML.namedsorts, ss, "string", parentid, name)
     return sref
 end
