@@ -1,19 +1,21 @@
 """
 $(TYPEDEF)
-$(TYPEDFIELDS)
 
 One Petri Net of a PNML model.
+
+$(TYPEDFIELDS)
+
 """
 @kwdef mutable struct PnmlNet{PNTD<:PnmlType} <: AbstractPnmlNet
-    # Identify the meta-model this net implements.
-    type::PNTD
+    "The meta-model type this net implements."
+    const type::PNTD
     # PNML ID needed here for multiple nets of same `type` in a `<pnml>` model.
-    id::Symbol
+    const id::Symbol
     # Ensure that each PNML ID in a net is unique using a registry.
     idregistry::IDRegistry
     # Holds all pages. Shared by pages that may have sub-pages.
     # All PNML net objects are attached to a `Page`. And there must be at least one `Page`.
-    pagedict::OrderedDict{Symbol, Page{PNTD,<:AbstractPnmlNet}}
+    pagedict::OrderedDict{Symbol, Page{PNTD,<:AbstractPnmlNet}} #todo
     # Shared by pages, holds all places, transitions, arcs, refs
     netdata::PnmlNetData = PnmlNetData()
     # Keys of pages in `pagedict` owned by this net.
@@ -36,13 +38,15 @@ One Petri Net of a PNML model.
     extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
     # Map xml tag symbol to parser callable for built-in labels and extension labels.
     labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}()
-    # Collection of objects that associate a tool name and version with a callable.
-    # The callable parsers turn `<toolspecific>` into `ToolInfo` objects.
-    toolparser::Vector{ToolParser} = ToolParser[]
+    """
+        Collection that associates a tool name & version with a callable parser.
+        The parser turns `<toolspecific name="" version="">` into `ToolInfo` objects.
+    """
+    toolparser::LittleDict{Pair{String,String}, Base.Callable} = LittleDict{Pair{String,String}, Base.Callable}()
 end
 
 "Create empty net with builtins installed for use in test scaffolding."
-function make_net(type::PnmlType, id=:fake,)
+function make_net(type::PnmlType, id=:make_net,)
     net = PnmlNet(; type, id,
                     idregistry=IDRegistry(),
                     pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
@@ -186,6 +190,7 @@ productsorts(net::AbstractPnmlNet)    = productsorts(decldict(net))
 #
 "Lookup variable with `id` in DeclDict."
 variabledecl(net::AbstractPnmlNet, id::Symbol) = variabledecls(decldict(net))[id]
+
 "Lookup namedsort with `id` in DeclDict."
 namedsort(net::AbstractPnmlNet, id::Symbol)      = namedsorts(decldict(net))[id]
 "Lookup arbitrarysort with `id` in DeclDict."

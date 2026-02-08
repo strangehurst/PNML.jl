@@ -112,6 +112,18 @@ function __insert_lp!(labelparser, tag, parser)
     return nothing
 end
 
-function fill_builtin_toolparsers!(toolparser::Vector{ToolParser})
-    push!(toolparser, ToolParser( "org.pnml.tool", "1.0", Parser.tokengraphics_content))
+function fill_builtin_toolparsers!(toolparsers::AbstractDict)
+    for tp in (ToolParser("org.pnml.tool", "1.0", Parser.tokengraphics_content),
+        )
+        fill_toolparsers!(toolparsers, tp)
+    end
+    return nothing
+end
+function fill_toolparsers!(toolparsers::AbstractDict, tparser)
+    if haskey(toolparsers, name(tparser)=>version(tparser))
+        @warn "ignoring repeated toolparser" tparser
+    else
+        toolparsers[name(tparser)=>version(tparser)] = func(tparser)
+    end
+    return toolparsers
 end

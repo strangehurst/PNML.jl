@@ -6,7 +6,7 @@ Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 """
-function parse_toolspecific(node, pntd; net::AbstractPnmlNet, toolparser_vec = [])
+function parse_toolspecific(node, pntd; net::AbstractPnmlNet)
     check_nodename(node, "toolspecific")
     tool    = attribute(node, "tool")
     version = attribute(node, "version")
@@ -14,17 +14,13 @@ function parse_toolspecific(node, pntd; net::AbstractPnmlNet, toolparser_vec = [
     isempty(tool) && error("<toolspecific> tool attribute cannot be empty string")
     isempty(version) && error("<toolspecific> version attribute cannot be empty string")
 
-    # Find parser for tool, version. #NB use of toolinfo mechanism.
-    tool_parser = nothing
-    if !isempty(toolparser_vec)
-        tool_parser = first(Labels.get_toolinfo(toolparser_vec, tool, version))
-        if !isnothing(tool_parser)
-            tool_parser = tool_parser.func
-        end
+    # Find parser for tool, version.
+    tool_parser = if haskey(net.toolparser, tool=>version)
+        @show net.toolparser[tool=>version]
+    else
+        toolspecific_content_fallback
     end
-    toolspecific_content = something(tool_parser, toolspecific_content_fallback)
-    content = toolspecific_content(node, pntd) # Run ToolParser callable.
-    #@show content
+    content = tool_parser(node, pntd) # Run ToolParser callable.
     return Labels.ToolInfo(tool, version, content, net)
 end
 

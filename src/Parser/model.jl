@@ -45,7 +45,7 @@ function pnmlmodel(node::XMLNode; kwargs...)
     length(model.nets) > 0 ||
         throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
 
-    return model #!PnmlModel(net_tup, namespace)
+    return model
 end
 
 """
@@ -77,7 +77,7 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
                     )
-    # First fill the built-in label parser plugins.
+    # First fill the built-in label & toolinfo parser plugins, built-in sorts.
     fill_builtin_labelparsers!(net.labelparser)
     @assert !isempty(net.labelparser)
 
@@ -93,15 +93,15 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
 
     fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
 
-    # if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
-    #     @warn "add $(length(kwargs[:tp])) toolparser(s)"
-    #     foreach(kwargs[:tp]) do tparser
-    #         #! todo sanity check toolparser
-    #         @show tparser
-    #         push!(net.toolparser, tparser) # NB: a vector #TODO?
-    #     end
-    #     @show net.toolparser
-    # end
+    if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
+        @warn "add $(length(kwargs[:tp])) toolparser(s)"
+        foreach(kwargs[:tp]) do tparser
+            #! todo sanity check toolparser
+            @show tparser #! bring-up
+            fill_toolparsers!(net.toolparser, tparser)
+        end
+        @show net.toolparser #! bring-up
+    end
 
     fill_builtin_sorts!(net)
 
@@ -111,7 +111,6 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the standard).
     decls = alldecendents(node, "declaration") # There may be none.
-    # If there are multiple `<declaration>`s parsed they will share the DeclDict.
     net.declaration = parse_declaration!(net, decls, pntd)::Declaration
 
     let n = firstchild(node, "name")
