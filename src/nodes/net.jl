@@ -53,6 +53,7 @@ function make_net(type::PnmlType, id=:make_net,)
                     declaration=Declaration(; ddict=DeclDict()))
     PNML.fill_builtin_sorts!(net)
     PNML.fill_builtin_labelparsers!(net)
+    PNML.fill_builtin_toolparsers!(net)
     return net
 end
 
