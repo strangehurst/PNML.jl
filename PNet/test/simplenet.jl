@@ -9,7 +9,7 @@ using PNML.Parser: xmlnode
 
 const t_modules = (PNML,PNet)
 
-testlogger = TestLogger()
+#testlogger = TestLogger()
 println("SIMPLENET")
 str1 = """
 <?xml version="1.0"?>
@@ -164,7 +164,7 @@ end
         </net>
     </pnml>
     """)
-    net = @inferred first(PNML.nets(model))
+    net = @inferred PnmlNet first(PNML.nets(model))
     simp = @inferred SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
     β = rates(simp)
