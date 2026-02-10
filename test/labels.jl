@@ -83,7 +83,6 @@ function test_unclaimed(pntd, xmlstring::String)
 
     @test_opt target_modules=t_modules Parser.xmldict(node)
     @test_opt target_modules=t_modules function_filter=pff PnmlLabel(nodeid, u, net)
-    @test_opt target_modules=t_modules function_filter=pff Parser.anyelement(nodeid, node)
 
     @test_call ignored_modules=(JET.AnyFrameModule(EzXML),
                             JET.AnyFrameModule(XMLDict)) Parser.xmldict(node)

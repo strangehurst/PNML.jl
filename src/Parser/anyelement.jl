@@ -4,17 +4,14 @@ $(TYPEDSIGNATURES)
 Return [`AnyElement`](@ref) holding a well-formed XML node.
 See [`ToolInfo`](@ref) for one intended use-case.
 """
-function anyelement(tag::Symbol, node::XMLNode)::AnyElement
-    xd = xmldict(node) #!::Union{XmlDictType, String, SubString{String}}
-    return __any_element(tag, xd)
+function anyelement(tag::Symbol, node::XMLNode)
+    return AnyElement(tag, xmldict(node)::Union{XmlDictType, String, SubString{String}})
 end
-
-__any_element(t, d) = AnyElement(t, d) #! does dynamic dispatch
 
 """
     xmldict(node::XMLNode) -> Union{XmlDictType, String, SubString{String}}
 
-Return tuple holding a well formed XML tree as parsed by `XMLDict.xml_dict`.
+Return well formed XML as parsed by `XMLDict.xml_dict`.
 Symbols for attribute key, strings for element/child keys and strings for value of leaf.
 
 See: [`anyelement`](@ref),

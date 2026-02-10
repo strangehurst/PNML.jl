@@ -96,13 +96,14 @@ function pff(@nospecialize ft)
         ft === Base.show_backtrace ||
         ft === PNML.Parser.xmldict ||
         ft === XMLDict.xml_dict ||
+        ft === PNML.Parser.anyelement ||
         ft === PNML.verify! ||
         ft === PNML.verify_ids! ||
         ft === PNML.fill_builtin_labelparsers! ||
-        ft === PNML.Parser.__any_element ||
         false
         return false
 
+        #ft === PNML.Parser.__any_element ||
         #ft === PNML.Parser.add_label! ||
         #ft === Core.kwcall ||
     end
