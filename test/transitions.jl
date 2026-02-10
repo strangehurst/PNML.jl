@@ -54,7 +54,7 @@ using .TestUtils
     </transition>"""
     t = parse_transition(node, pntd, net)
     @test t isa Transition
-    @test condition(t)() === true
+    @test condition(t)() == true
 end
 
 @testset "transition unknown label $pntd" for pntd in PnmlTypes.all_nettypes()
@@ -67,14 +67,14 @@ end
         <somelabel2 c="value" />
      </transition>
     """
-    net = make_net(pntd, :tran_unknoen_label)
+    net = make_net(pntd, :tran_unknown_label)
 
     n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
     @test pid(n) === :transition1
     @test elements(labels(n)[:somelabel2])[:c] == "value"
-    @test PNML.get_label(n, :somelabel2) != nothing
-    @test PNML.get_label(n, :nosuchlabel) == nothing
+    @test PNML.get_label(n, :somelabel2) !== nothing
+    @test PNML.get_label(n, :nosuchlabel) === nothing
     @test PNML.has_tools(n) == false
 end
 
