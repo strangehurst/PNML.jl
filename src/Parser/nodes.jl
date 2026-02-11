@@ -220,8 +220,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
 
     Arc(; id=arcid, source=Ref(source), target=Ref(target),
         inscription, arctypelabel=arc_type_label, namelabel, graphics,
-        toolspecinfos, extralabels,
-        net)
+        toolspecinfos, extralabels, net)
 end
 
 """

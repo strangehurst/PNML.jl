@@ -9,11 +9,11 @@ A <toolspecific> tag holds well formed XML that is parsed into an [`AnyElement`]
 @auto_hash_equals struct ToolInfo{T, N <: AbstractPnmlNet}
     toolname::String
     version::String
-    info::AnyElement{T}
+    info::T # content of tool specific info
     net::N
 end
 
-"Name of tool to for this tool specific information element."
+"Name of tool for this tool specific information element."
 PNML.name(ti::ToolInfo) = ti.toolname
 
 version(ti::ToolInfo) = ti.version
@@ -55,28 +55,6 @@ function verify!(errors::Vector{String}, t::ToolInfo, verbose::Bool, net::Abstra
         push!(errors, string("ToolInfo $(repr(name(t))) $(repr(version(t))) ",
                     "$(info(t)) is not a AnyElement")::String)
     return errors
-end
-
-###############################################################################
-
-###############################################################################
-
-"""
-$(TYPEDEF)
-$(TYPEDFIELDS)
-
-TokenGraphics is <toolspecific> content.
-Combines the <tokengraphics> and <tokenposition> elements.
-"""
-struct TokenGraphics
-    positions::Vector{PNML.Coordinate}
-end
-
-# Empty TokenGraphics is allowed in spec.
-TokenGraphics() = TokenGraphics(PNML.Coordinate[])
-
-function Base.show(io::IO, tg::TokenGraphics)
-    print(io, "TokenGraphics(", tg.positions, ")")
 end
 
 ###############################################################################

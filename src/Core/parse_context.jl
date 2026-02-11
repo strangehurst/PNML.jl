@@ -8,7 +8,6 @@ function fill_builtin_sorts!(net::AbstractPnmlNet)
     __insert_sort!(net, :integer, "Integer", Sorts.IntegerSort())
     __insert_sort!(net, :natural, "Natural", Sorts.NaturalSort())
     __insert_sort!(net, :positive, "Positive", Sorts.PositiveSort())
-    __insert_sort!(net, :positive, "Positive", Sorts.PositiveSort())
     __insert_sort!(net, :real, "Real", Sorts.RealSort())
     __insert_sort!(net, :bool, "Bool", Sorts.BoolSort())
     __insert_sort!(net, :null, "Null", Sorts.NullSort())
@@ -70,8 +69,9 @@ fill_sort_tag!(net::AbstractPnmlNet, tag, sort::MultisetSort) =
 
 """
     fill_builtin_labelparsers!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_labelparsers!(labelparser::AbstractDict) -> Nothing
 
-Fill context with the base built-in label parsers. Useful in test stubs.
+Fill context with the base built-in label parsers.
 """
 fill_builtin_labelparsers!(net::AbstractPnmlNet) = fill_builtin_labelparsers!(net.labelparser)
 
@@ -112,16 +112,30 @@ function __insert_lp!(labelparser, tag, parser)
     return nothing
 end
 
+
+"""
+    fill_builtin_toolparsers!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_toolparsers!(toolparsers::AbstractDict) -> Nothing
+
+Fill context with the base built-in tool parsers.
+"""
+fill_builtin_toolparsers!(net::AbstractPnmlNet) = fill_builtin_toolparsers!(net.toolparser)
+
 function fill_builtin_toolparsers!(toolparsers::AbstractDict)
-    for tp in (ToolParser("org.pnml.tool", "1.0", Parser.tokengraphics_content),
+    for toolparser in (
+            ToolParser("org.pnml.tool", "1.0", Parser.tokengraphics_content),
+            ToolParser("nupn", "1.1", Parser.nupn_content),
         )
-        fill_toolparsers!(toolparsers, tp)
+        #@show toolparser
+        fill_toolparsers!(toolparsers, toolparser)
     end
     return nothing
 end
+
+"Add parser to dictionary"
 function fill_toolparsers!(toolparsers::AbstractDict, tparser)
     if haskey(toolparsers, name(tparser)=>version(tparser))
-        @warn "ignoring repeated toolparser" tparser
+        @warn "ignoring repeated toolparser" name(tparser)=>version(tparser) tparser
     else
         toolparsers[name(tparser)=>version(tparser)] = func(tparser)
     end
