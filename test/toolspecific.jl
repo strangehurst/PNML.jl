@@ -38,13 +38,17 @@ str4 = (tool="org.pnml.tool", version="1.0", str = """
 str5 = (tool="nupn", version="1.1", str = """
 <toolspecific tool="nupn" version="1.1">
     <size places="1" transitions="1" arcs="1"/>
-    <structure units="2" root="u0" safe="false"/>
+    <structure units="3" root="u0" safe="false"/>
     <unit id="u0">
         <places/>
-        <subunits>u1</subunits>
+        <subunits>u1 u2</subunits>
     </unit>
     <unit id="u1">
-        <places>p1</places>
+        <places>p1 p2 p3</places>
+        <subunits/>
+    </unit>
+    <unit id="u2">
+        <places>p4 p5</places>
         <subunits/>
     </unit>
 </toolspecific>
