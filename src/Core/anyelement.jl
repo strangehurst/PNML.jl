@@ -51,11 +51,10 @@ interior nodes values are `Union{XmlDictType, Vector{XmlDictType}}`
 See [`XmlDictType`](@ref).
 """
 @auto_hash_equals struct AnyElement{T}
-    # Tag of node enclosing the
+    # Tag of enclosing node (or any symbol-owninf thing).
     tag::Symbol
     # LittleDict{Union{Symbol,String}, Any}  returned by `xmldict`.
-    # We hope/promise the following is the Type of ALL values in dictionary.
-    elements::T #LittleDict{Union{Symbol,String}, Union{XmlDictType, String, SubString{String}, Vector{Any}}}
+    elements::T
 end
 
 tag(a::AnyElement) = a.tag
