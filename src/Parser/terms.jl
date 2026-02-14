@@ -584,7 +584,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
     sorttag = Symbol(EzXML.nodename(child))
     sorttag == :finiteintrange ||
-        throw(PNML.MalformedException("expected <finiteintrange>, found $sorttag"))
+        throw(PNML.MalformedException("expected finiteintrange, found $sorttag"))
 
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
@@ -653,7 +653,7 @@ function parse_term(::Val{:makelist}, node::XMLNode, pntd::PnmlType; vars, net::
     end
 
     if isnothing(sortref)
-        # deduce sort from first(sts)
+        # TODO deduce sort from first(sts)
     end
     #@show sortref
     #sts, vars = subterms(node, pntd; vars, net)

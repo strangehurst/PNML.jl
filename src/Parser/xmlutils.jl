@@ -18,21 +18,23 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Parse string `s` into EzXML node.
+Parse XML string `s` into a `XMLNode`.
 """
-xmlnode(s::AbstractString) = EzXML.root(EzXML.parsexml(s))
+xmlnode(s::AbstractString) = EzXML.root(EzXML.parsexml(s))::XMLNode
 
 #~ How expensive are these XPath queries?
 
 # https://scrapfly.io/blog/xpath-cheatsheet/
+# https://en.wikipedia.org/wiki/XPath#Axis_specifiers
 """
-$(TYPEDSIGNATURES)
+    firstchild(node::XMLNode, tag::AbstractString) -> Maybe{XMLNode}
 
-Return up to 1 immediate child of `el` that is a `tag`.  `ns` is the default namespace.
-Invent a prefix to create an iterator of namespace prefix and URI pairs
+Return first immediate child of `el` that is a `tag` or nothing.
 """
 function firstchild(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
-    EzXML.findfirst("./x:$tag | ./$tag", node, ("x" => namespace,))
+    # '.'  is short for self::node(), '/' selects direct child
+    EzXML.findfirst("./x:$tag | ./$tag", node, ("x" => namespace,))::Maybe{XMLNode}
+    # `("x" => namespace,)` optional prefix defaults to `pnml_ns`.
 end
 
 """
@@ -41,6 +43,7 @@ end
 Return vector of `el`'s immediate children with `tag`.
 """
 function allchildren(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
+    # '.' is short for self::node(), '/' selects direct child
     EzXML.findall("./x:$tag | ./$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 
@@ -50,6 +53,7 @@ end
 Return vector of node's immediate children and decendents with `tag`.
 """
 function alldecendents(node::XMLNode, tag::AbstractString, namespace::AbstractString = pnml_ns)
+    # '.'  is short for self::node(), '//' selects any decendent
     EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 

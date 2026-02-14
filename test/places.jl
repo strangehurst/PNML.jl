@@ -23,17 +23,17 @@ using .TestUtils
 
     placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
 
-    n  = parse_place(node, pntd, net)::Place
+    place  = parse_place(node, pntd, net)::Place
     # pntd isa PnmlCoreNet &&
     #     @test_opt target_modules=t_modules broken=false parse_place(node, pntd, net)
     @test_call target_modules=t_modules parse_place(node, pntd, net)
-    @test @inferred(pid(n)) === :place1
-    @test @inferred(name(n)) == "with text"
-    @test_call initial_marking(n)
-    #@show pntd, initial_marking(n)
-    @test initial_marking(n)::Number == 100
-    @test PNML.get_label(n, :nosuchlabel) === nothing
-    @test PNML.has_tools(n) == false
+    @test @inferred(pid(place)) === :place1
+    @test @inferred(name(place)) == "with text"
+    @test_call initial_marking(place)
+    #@show pntd, initial_marking(place)
+    @test initial_marking(place)::Number == 100
+    @test PNML.get_label(place, :nosuchlabel) === nothing
+    @test PNML.has_tools(place) == false
 end
 
 @testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -54,15 +54,15 @@ end
     """
     net = make_net(pntd, :hl_place_net)
 
-    n = parse_place(node, pntd, net)::Place
+    place = parse_place(node, pntd, net)::Place
     @test_call target_modules=t_modules parse_place(node, pntd, net)
 
-    @test @inferred(pid(n)) === :place1
-    @test @inferred(name(n)) == "with text"
-    @test_call target_modules=t_modules initial_marking(n)
-    #@show pntd, initial_marking(n)
-    @test PNML.cardinality(initial_marking(n)::PnmlMultiset) == 101
-    @test PNML.get_label(n, :nosuchlabel) === nothing
+    @test @inferred(pid(place)) === :place1
+    @test @inferred(name(place)) == "with text"
+    @test_call target_modules=t_modules initial_marking(place)
+    #@show pntd, initial_marking(place)
+    @test PNML.cardinality(initial_marking(place)::PnmlMultiset) == 101
+    @test PNML.get_label(place, :nosuchlabel) === nothing
 end
 
 @testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
@@ -85,21 +85,15 @@ end
         </place>
     """
     net = make_net(pntd, :place_unknown_label)
-    n = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
+    place = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
                    (:info, "add PnmlLabel :somelabel2 to :place1"),
                     parse_place(node, pntd, net)::Place)
-    @test pid(n) === :place1
-    @test name(n) == ""
-    @test PNML.get_label(n, :nosuchlabel) === nothing
-    #@show labels(n)
-    #@show keys(labels(n))
-    #@show labels(n)[:somelabel1]
-    #@show labels(n)[:somelabel2]
-    #@show elements(labels(n)[:somelabel1])
-    @test elements(labels(n)[:somelabel1])[:a] == "text"
-    @test elements(labels(n)[:somelabel1])["another"][:b] == "more"
-    #@show elements(labels(n)[:somelabel2])
-    @test elements(labels(n)[:somelabel2])[:c] == "value"
+    @test pid(place) === :place1
+    @test name(place) == ""
+    @test PNML.get_label(place, :nosuchlabel) === nothing
+    @test elements(get_label(place, :somelabel1))[:a] == "text"
+    @test elements(get_label(place, :somelabel1))["another"][:b] == "more"
+    @test elements(get_label(place, :somelabel2))[:c] == "value"
 end
 
 #---------------------------------------------
@@ -117,10 +111,10 @@ end
     </referencePlace>"""
 
     net = make_net(pntd, :refplace_net)
-    n = parse_refPlace(node, pntd, net)::RefPlace
-    @test pid(n) === :rp1
-    @test PNML.refid(n) === :p1
-    @test PNML.get_label(n, :nosuchlabel) === nothing
+    place = parse_refPlace(node, pntd, net)::RefPlace
+    @test pid(place) === :rp1
+    @test PNML.refid(place) === :p1
+    @test PNML.get_label(place, :nosuchlabel) === nothing
 end
 
 @testset "ref Place $pntd" for pntd in PnmlTypes.all_nettypes()
@@ -135,10 +129,10 @@ end
     </referencePlace>"""
 
     net = make_net(pntd, :refplace_extra_net)
-    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
+    place = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
             parse_refPlace(node, pntd, net)::RefPlace)
-    @test pid(n) === :rp1
-    @test PNML.refid(n) === :p1
-    @test elements(labels(n)[:somelabel2])[:c] == "value"
-    @test PNML.get_label(n, :nosuchlabel) === nothing
+    @test pid(place) === :rp1
+    @test PNML.refid(place) === :p1
+    @test elements(labels(place)[:somelabel2])[:c] == "value"
+    @test PNML.get_label(place, :nosuchlabel) === nothing
 end

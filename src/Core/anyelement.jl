@@ -20,7 +20,7 @@ end
 
 function text_content(d::XmlDictType)
     x = get(d, "text", nothing)
-    isnothing(x) && throw(ArgumentError("missing <text> element in $(d)"))
+    isnothing(x) && throw(ArgumentError("missing <text> element in $d"))
     return x
 end
 text_content(s::Union{String,SubString{String}}) = s
@@ -31,8 +31,7 @@ XMLDict uses symbols as keys. Value returned is a string.
 function _attribute(vx::XmlDictType, key::Symbol)
     x = get(vx, key, nothing)
     isnothing(x) && throw(ArgumentError("missing $key value"))
-    isa(x, AbstractString) ||
-        throw(ArgumentError("expected AbstractString got $(typeof(vx[key]))"))
+    isa(x, AbstractString) || throw(ArgumentError("expected AbstractString got $x"))
     return x
 end
 
@@ -51,7 +50,7 @@ interior nodes values are `Union{XmlDictType, Vector{XmlDictType}}`
 See [`XmlDictType`](@ref).
 """
 @auto_hash_equals struct AnyElement{T}
-    # Tag of enclosing node (or any symbol-owninf thing).
+    # Tag of enclosing node (or any symbol-owning thing).
     tag::Symbol
     # LittleDict{Union{Symbol,String}, Any}  returned by `xmldict`.
     elements::T

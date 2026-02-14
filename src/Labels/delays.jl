@@ -11,12 +11,12 @@
 """
 $(TYPEDSIGNATURES)
 
-Return delay label value as interval tuple: ("closure-string", left, right)
+Return transition delay label value as interval tuple: ("closure-string", left, right)
 Missing delay labels default to ("closed", 0.0, 0.0) a.k.a. zero.
 
-All net types may have a delay value type. Expected label XML: see MathML.
-Only non-negative.
-static transition
+All net types may have a delay. Expected label content copied from MathML.
+Only non-negative. ℝ⁺
+static transition #TODO define term
 Supports
   - ("closed-open", 0.0, ∞)  -> [0.0, ∞)
   - ("open-closed", 2.0, 6.0 -> (2.0, 6.0]
@@ -37,15 +37,19 @@ function delay_value(t;
     return d
 end
 
+"""
+    delay_content_parser(label, value_type) -> Tuple
+
+See [`delay_value`](@ref)
+"""
 function delay_content_parser(label, value_type)
     @show (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$(repr(tag))'")
     D()&& @show value_type
-    #xmlns = PNML._attribute(interval, :xmlns)
     closure = PNML._attribute(interval, :closure)
     D()&& @show closure
-
-    n = if haskey(interval, "cn") # Expect at least one cn number.
+    # Expect at least one cn number.
+    n = if haskey(interval, "cn")
         let cn = @inbounds interval["cn"]
             (isnothing(cn) || isempty(cn)) &&
                 throw(ArgumentError("<interval> <cn> element is $(repr(cn))"))

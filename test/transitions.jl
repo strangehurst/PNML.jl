@@ -18,16 +18,16 @@ using .TestUtils
     """
     net = make_net(pntd, :transition_net)
 
-    n = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
-    @test n isa Transition
-    @test pid(n) === :transition1
-    @test name(n) == "Some transition"
-    #@show condition(n)()
-    @test condition(n)() isa Bool
-    @test isempty(PNML.Labels.variables(condition(n))::Vector{Symbol})
+    trans = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
+    @test trans isa Transition
+    @test pid(trans) === :transition1
+    @test name(trans) == "Some transition"
+    #@show condition(trans)()
+    @test condition(trans)() isa Bool
+    @test isempty(PNML.Labels.variables(condition(trans))::Vector{Symbol})
 
-    @test varsubs(n) isa Vector{NamedTuple}
-    @test isempty(varsubs(n))
+    @test varsubs(trans) isa Vector{NamedTuple}
+    @test isempty(varsubs(trans))
 
     node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
     @test_throws PNML.MalformedException parse_transition(node, pntd, net)
@@ -69,13 +69,13 @@ end
     """
     net = make_net(pntd, :tran_unknown_label)
 
-    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
+    trans = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
-    @test pid(n) === :transition1
-    @test elements(labels(n)[:somelabel2])[:c] == "value"
-    @test PNML.get_label(n, :somelabel2) !== nothing
-    @test PNML.get_label(n, :nosuchlabel) === nothing
-    @test PNML.has_tools(n) == false
+    @test pid(trans) === :transition1
+    @test elements(labels(trans)[:somelabel2])[:c] == "value"
+    @test PNML.get_label(trans, :somelabel2) !== nothing
+    @test PNML.get_label(trans, :nosuchlabel) === nothing
+    @test PNML.has_tools(trans) == false
 end
 
 #---------------------------------------------
@@ -92,10 +92,10 @@ end
     """
     net = make_net(pntd, :refrans_net)
 
-    n = parse_refTransition(node, pntd, net)::RefTransition
-    @test pid(n) === :rt1
-    @test PNML.refid(n) === :t1
-    @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
+    rtrans = parse_refTransition(node, pntd, net)::RefTransition
+    @test pid(rtrans) === :rt1
+    @test PNML.refid(rtrans) === :t1
+    @test PNML.has_graphics(rtrans) && startswith(repr(PNML.graphics(rtrans)), "Graphics")
 end
 
 @testset "ref Trans unknown label $pntd" for pntd in PnmlTypes.all_nettypes()
@@ -109,10 +109,11 @@ end
     """
     net = make_net(pntd, :refrans_unkn_net)
 
-    n = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
+    trans = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
             parse_refTransition(node, pntd, net)::RefTransition)
-    @test pid(n) === :rt1
-    @test PNML.refid(n) === :t1
-    @test PNML.has_graphics(n) && startswith(repr(PNML.graphics(n)), "Graphics")
-    @test elements(labels(n)[:somelabel2])[:c] == "value"
+    @test pid(trans) === :rt1
+    @test PNML.refid(trans) === :t1
+    @test PNML.has_graphics(trans) && startswith(repr(PNML.graphics(trans)), "Graphics")
+    @test labels(trans)[:somelabel2] == PNML.get_label(trans, :somelabel2)
+    @test elements(PNML.get_label(trans, :somelabel2))[:c] == "value"
 end

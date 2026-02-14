@@ -12,7 +12,7 @@ Unknown tags get parsed by `xmldict`.
 """
 $(TYPEDSIGNATURES)
 
-Fill `dd::[`DeclDict`](@ref)` from one or more `<declaration>` labels.
+Fill [`DeclDict`](@ref) from one or more `<declaration>` labels.
 
 Expected format: `<declaration> <structure> <declarations> <namedsort/> <namedsort/> ...`
 
@@ -24,13 +24,14 @@ All fill the same `DeclDict`. See [`fill_decl_dict!`](@ref)
 """
 function parse_declaration! end
 
-function parse_declaration!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
-    parse_declaration!(net, [node], pntd)
+function parse_declarations!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
+    decls = alldecendents(node, "declaration") # There may be none (empty vector).
+    D()&& println("## parse_declarations! $(length(decls)) <declaration> node(s)")
+    return parse_declaration!(net, decls, pntd)::Declaration
 end
 
+# A function boundary that is used for test scaffolding by passing `[node]`.
 function parse_declaration!(net::AbstractPnmlNet, nodes::Vector{XMLNode}, pntd::PnmlType)
-    D()&& println("## parse_declaration! $(length(nodes)) <declaration> node(s)")
-
     text = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}}  = nothing
@@ -38,22 +39,21 @@ function parse_declaration!(net::AbstractPnmlNet, nodes::Vector{XMLNode}, pntd::
         check_nodename(node, "declaration")
         for child in EzXML.eachelement(node)
             tag = EzXML.nodename(child)
-            if tag == "structure" # accumulate '<declarations>'
-                fill_decl_dict!(net, child, pntd) # Assumes high-level semantics.
-            elseif tag == "text" && isnothing(text) # no overwrite
+            if tag == "structure"
+                fill_decl_dict!(net, child, pntd) # accumulate '<declarations>'
+            elseif tag == "text" && isnothing(text) # no overwrite if repeated
                 text = string(strip(EzXML.nodecontent(child)))::String
-                #@info "declaration text: $text" # Do not expect text here, so it must be important.
-            elseif tag == "graphics" && isnothing(graphics) # no overwrite
+                # Do not expect text here, so it must be important?
+                # @info "declaration text: $text"
+            elseif tag == "graphics" && isnothing(graphics) # no overwrite if repeated
                 graphics = parse_graphics(child, pntd)
-            elseif tag == "toolspecific" # accumulate tool specific
-                toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # declarations are labels
+            elseif tag == "toolspecific"
+                toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net)
             else
                 @warn "ignoring unexpected child of <declaration>: '$tag'"
             end
         end
     end
-    #D()&& println("Declaration '$text'")
-    #D()&& println(net.ddict)
     Declaration(; text, net.ddict, graphics, toolspecinfos) #? make Ref(net.ddict)?
 end
 
@@ -61,7 +61,7 @@ end
     fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType) -> Nothing
 
 Add a `<declaration><structure><declarations>` to DeclDict.
-`<declaration>` may be attached to `<net>` and `<page>` elements.
+`<declaration>` may be attached to `<net>` and/or `<page>` elements.
 Are network-level values even if attached to pages.
 """
 function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
@@ -87,10 +87,10 @@ function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
             part = parse_partition(child, pntd; net)::AbstractSortRef
             @assert isa_variant(part, PartitionSortRef)
-
-        #! elseif tag === :partitionoperator # PartitionLessThan, PartitionGreaterThan, PartitionElementOf
-        #!    partop = parse_partition_op(child, pntd)
-        #!     dd.partitionops[pid(partop)] = partop
+        #! elseif tag === :partitionoperator
+        #!      PartitionLessThan, PartitionGreaterThan, PartitionElementOf
+        #!      partop = parse_partition_op(child, pntd)
+        #!      PNML.partitionops(net)[pid(partop)] = partop
 
         elseif tag == "arbitrarysort"
             arb = parse_arbitrarysort(child, pntd; net)
@@ -109,10 +109,10 @@ Declaration that wraps a Sort, adding an ID and name.
 """
 function parse_namedsort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(node, "namedsort")
-    # Will have created namedsort for builtin sorts.
-    # Replacement of those, in particular, :dot, will trigger a duplicate id error
-    # unless the `(builtinsorts)` are excluded from the register_idof! check.
-    # Note: builtin sort definitions are all singleton types.
+    # Will have created a namedsort for builtin sorts.
+    # Replacement of those, in particular :dot, will trigger a `DuplicateIdException`
+    # unless the builtin sorts are excluded.
+    # So we re-implement `register_idof!` with that check added.
     EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
     sortid = Symbol(@inbounds(node["id"]))
     if !Sorts.isbuiltinsort(sortid)
@@ -121,13 +121,14 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     name = attribute(node, "name")
 
     child = EzXML.firstelement(node)
-    isnothing(child) && error("no sort definition element for namedsort $(repr(sortid)) $name")
+    isnothing(child) &&
+        error("no sort definition element for namedsort $sortid $name")
 
     D()&& println("## parse_namedsort $sortid $name")
     # Sort can be built-in, multiset, product.
     def = parse_sort(EzXML.firstelement(node), pntd, sortid, name; net)::AbstractSortRef
     isnothing(def) &&
-        error("failed to parse sort definition for namedsort $(repr(sortid)) $name")
+        error("failed to parse sort definition for namedsort $sortid $name")
 
     #? check for loops?
     # convert SortRef to concrete sort object.
@@ -136,12 +137,6 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
         sort = sortdefinition(sort)
     end
     NamedSort(sortid, name, sort, net) #^ Concrete sort object.
-
-    # AbstractSortRef concrete type holds REFID and implicit dictionary of `DeclDict`.
-    # Examples: `arbitrarysorts`, 'partitionsorts`, `productsorts`, `multisetsorts`.
-    # Symmetric nets use `EnumerationSort`s.
-    # `PartitionSort` uses a namedsort to identify the `EnumerationSort`
-    # `MultisetSort`
 end
 
 """
@@ -269,8 +264,7 @@ function parse_feconstants(node::XMLNode, pntd::PnmlType, sortref::AbstractSortR
         else
             fecid = register_idof!(net.idregistry, child)
             name = attribute(child, "name")
-            PNML.feconstants(net)[fecid] =
-                PNML.FEConstant(fecid, name, sortref)  #,  net)
+            PNML.feconstants(net)[fecid] = PNML.FEConstant(fecid, name, sortref)  #,  net)
             push!(fec_refids, fecid)
         end
     end

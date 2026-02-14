@@ -11,7 +11,7 @@ using .TestUtils
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     net = make_net(pntd, :empty_declaration)
-    decl = @inferred parse_declaration!(net, xml"""<declaration key="test empty">
+    decl = @inferred parse_declarations!(net, xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
         </declaration>""", pntd)
 
@@ -67,32 +67,34 @@ end
     @test_call target_modules=t_modules PNML.namedsorts(net)
     @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(net)
 
-        base_decl_length = length(PNML.namedsorts(net))
-        decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-            parse_declaration!(net, node, pntd)::PNML.Declaration) # Add 3 declarations.
-        @test length(PNML.namedsorts(net)) == base_decl_length + 3
+    base_decl_length = length(PNML.namedsorts(net))
+    #@show decl = parse_declaration!(net, [node], pntd)
+    #@show decl net.ddict
+    decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
+            parse_declaration!(net, [node], pntd)::PNML.Declaration) # Add 3 declarations.
+    @test length(PNML.namedsorts(net)) == base_decl_length + 3
 
-        for nsort in values(PNML.namedsorts(net))
-            #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
-            #@show nsort pid(nsort)
-            @test isregistered(net.idregistry, pid(nsort))
-            #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
-            #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
-            #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
+    for nsort in values(PNML.namedsorts(net))
+        #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
+        #@show nsort pid(nsort)
+        @test isregistered(net.idregistry, pid(nsort))
+        #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
+        #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
+        #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
 
-            sortname = PNML.name(nsort)
-            cesort   = sortdefinition(nsort)
-            feconsts = sortelements(cesort, net) # should be iteratable ordered collection
-            feconsts isa Vector{PNML.FEConstant}
-            #!@test length(feconsts) == 2
-            # for fec in feconsts
-            #     @test fec isa PNML.FEConstant
-            #     @test fec.id isa Symbol
-            #     @test fec.name isa AbstractString
-            #     @test isregistered(fec.id)
-            #     @test endswith(string(fec.id), fec.name)
-            # end
-        end
+        sortname = PNML.name(nsort)
+        cesort   = sortdefinition(nsort)
+        feconsts = sortelements(cesort, net) # should be iteratable ordered collection
+        feconsts isa Vector{PNML.FEConstant}
+        #!@test length(feconsts) == 2
+        # for fec in feconsts
+        #     @test fec isa PNML.FEConstant
+        #     @test fec.id isa Symbol
+        #     @test fec.name isa AbstractString
+        #     @test isregistered(fec.id)
+        #     @test endswith(string(fec.id), fec.name)
+        # end
+    end
 end
 
 
@@ -150,7 +152,7 @@ end
     """
 
     net = make_net(pntd, :declaration_net)
-    decl = @inferred parse_declaration!(net, node, pntd)
+    decl = @inferred parse_declaration!(net, [node], pntd)
     @test typeof(decl) <: Declaration
 
     # Examine 3 partition sorts
@@ -189,7 +191,7 @@ end
     """
 
     net = make_net(pntd, :arbitrarysort_net)
-    decl = parse_declaration!(net, node, pntd)
+    decl = parse_declaration!(net, [node], pntd)
     @test typeof(decl) <: Declaration
     #@show PNML.arbitrarysort(net, :id1)
     @test name(PNML.arbitrarysort(net, :id1)) == "AGENT"
@@ -207,7 +209,7 @@ end
     </declaration>
     """
     net = make_net(pntd, :duplicate_id_net)
-    @test_throws DuplicateIDException parse_declaration!(net, node, pntd)
+    @test_throws DuplicateIDException parse_declaration!(net, [node], pntd)
 end
 
 

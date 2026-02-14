@@ -38,14 +38,13 @@ function name end
 
 """
     labels(x) -> Iterateable
-    labels(x, tag::Union{Symbol, String, SubString{String}) -> Iterateable
 
 Return iterator of labels attached to `x`.
 """
 function labels end
 
 """
-    get_label(x, tag::Symbol) -> PnmlLabel
+    get_label(x, tag::Union{Symbol, String, SubString{String}}) -> PnmlLabel
 
 Return first label of `x` with a matching `tagvalue`.
 """
