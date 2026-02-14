@@ -33,7 +33,7 @@ const node = xml"""
     </declaration>
     """
 
-parse_declaration!(net, node, pntd)
+parse_declaration!(net, [node], pntd)
 
 #^ Multiset Expression tests
 #^------------------------------------------------------------------------
