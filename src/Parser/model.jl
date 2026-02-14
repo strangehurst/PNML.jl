@@ -32,7 +32,7 @@ end
 
 function pnmlmodel(node::XMLNode; kwargs...)
     check_nodename(node, "pnml")
-    model = PnmlModel(Dict{Symbol,Any}(), pnml_namespace(node))
+    model = PnmlModel(LittleDict{Symbol,Any}(), pnml_namespace(node))
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "net"
@@ -56,12 +56,12 @@ end
 # Arguments
  - pntd_override::Maybe{PnmlType}
 """
-function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs...)
+function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs...)
     idregistry = IDRegistry() # empty
-    netid = register_idof!(idregistry, node)
+    netid = register_idof!(idregistry, net_node)
 
     # Parse the pnml net type attribute. Not the place sort `<type>` label.
-    typestr = attribute(node, "type")
+    typestr = attribute(net_node, "type")
     if !isnothing(pntd_override)
         # Override of the Petri Net Type Definition (PNTD) value for fun & games.
         @info "net $netid pntd set to $pntd_override, overrides $typestr"
@@ -110,23 +110,22 @@ function parse_net(node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs
     # It is like we are flattening only the declarations.
     # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the standard).
-    decls = alldecendents(node, "declaration") # There may be none.
-    net.declaration = parse_declaration!(net, decls, pntd)::Declaration
+    net.declaration = parse_declarations!(net, net_node, pntd)::Declaration
 
-    let n = firstchild(node, "name")
+    let n = firstchild(net_node, "name")
         if !isnothing(n)
             net.namelabel = net.labelparser[:name](n, pntd; net, parentid=netid)::Name
         end
     end
 
     # Collect all the toolspecinfos at net level for use in later parsing.
-    find_toolinfos!(net.toolspecinfos, node, pntd, net)
+    find_toolinfos!(net.toolspecinfos, net_node, pntd, net)
     PNML.Labels.validate_toolinfos(net.toolspecinfos)
 
     #--------------------------------------------------------------------
     # Fill `net`
     #--------------------------------------------------------------------
-    for child in EzXML.eachelement(node)
+    for child in EzXML.eachelement(net_node)
         tag = EzXML.nodename(child)
         if tag == "page"
             # There is always at least one page. A forest of multiple page trees is allowd.
@@ -185,40 +184,43 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
 end
 
 """
-    parse_page!(net, page_idset, node, pntd) -> Nothing
+    parse_page!(net, page_idset, page_node, pntd) -> Nothing
 
 Call `_parse_page!` to create a page with its own `netsets`.
 Add created page to parent's `page_idset` and `pagedict(net)`.
 """
-function parse_page!(net::PnmlNet, page_idset, node::XMLNode, pntd::PnmlType)
-    check_nodename(node, "page")
-    pageid = register_idof!(PNML.registry_of(net), node)
+function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode, pntd::PnmlType)
+    check_nodename(page_node, "page")
+    pageid = register_idof!(PNML.registry_of(net), page_node)
     push!(page_idset, pageid) # Record id before decending.
-    pg = __parse_page!(net, node, pntd, pageid)
+    pg = __parse_page!(net, page_node, pntd, pageid)
     @assert pageid === pid(pg)
     pagedict(net)[pageid] = pg
     return nothing
 end
 
 """
-    __parse_page!(net, node, pntd, pageid) -> Page
+    __parse_page!(net, page_node, pntd, pageid) -> Page
 
-Return `Page`. `pageid` already parsed from `node`.
+Return `Page`. `pageid` already parsed from `page_node`.
 """
-function __parse_page!(net::AbstractPnmlNet, node::XMLNode, pntd::T, pageid::Symbol) where {T<:PnmlType}
+function __parse_page!(net::AbstractPnmlNet, page_node::XMLNode,
+                        pntd::T, pageid::Symbol) where {T<:PnmlType}
     D()&& println("## parse_page ", pageid)
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.
     #---------------------------------------------------------
-    page = Page{T,typeof(net)}(; net, pntd, id = pageid, netsets = PnmlNetKeys(),
-        toolspecinfos = find_toolinfos!(nothing, node, pntd, net)::Maybe{Vector{ToolInfo}})
+    page = Page{T,typeof(net)}(; net, pntd, id = pageid,
+                netsets = PnmlNetKeys(),
+                toolspecinfos = find_toolinfos!(nothing, page_node,
+                                                pntd, net)::Maybe{Vector{ToolInfo}})
 
     PNML.Labels.validate_toolinfos(toolinfos(page))
 
     #---------------------------------------------------------
     # Fill page with graph nodes & arcs.
     #---------------------------------------------------------
-    for child in EzXML.eachelement(node)
+    for child in EzXML.eachelement(page_node)
         nname = Symbol(EzXML.nodename(child))
         if nname == :place
             parse_place!(netsets(page), netdata(net), child, pntd, net)

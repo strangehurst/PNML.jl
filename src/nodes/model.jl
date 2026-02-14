@@ -4,9 +4,9 @@ $(TYPEDFIELDS)
 
 One or more Petri Nets.
 """
-struct PnmlModel
+struct PnmlModel{T <: AbstractDict}
     #nets::Tuple{Vararg{PnmlNet}} # Holds concrete subtypes.
-    nets::Dict{Symbol,Any}
+    nets::T #Dict{Symbol,Any}
     namespace::String
 end
 
