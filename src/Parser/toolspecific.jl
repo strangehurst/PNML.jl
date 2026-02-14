@@ -68,18 +68,20 @@ end
 
 #-------------------------------------------------------------------
 """
-    nupn_content(node::XMLNode, pntd::PnmlType) -> TokenGraphics
+    nupn_content(node::XMLNode, pntd::PnmlType) -> NupnTool
 
-Parse `ToolInfo` content that is expected to be `<toolspecific tool="nupn" version=".11">`.
-
-```<size places="P" transitions="T" arcs="A"/>
-   <structure units="U" root="R" safe="S">
+Parse `ToolInfo` content. Example:
+```
+<toolspecific tool="nupn" version="1.1">
+    <size places="P" transitions="T" arcs="A"/>
+    <structure units="U" root="R" safe="S">
         <unit id="I">
             <places>PL</places>
             <subunits>UL</subunits>
         </unit>
-   </structure>
- ```
+    </structure>
+    </toolspecific>
+```
 """
 function nupn_content(node::XMLNode, pntd::PnmlType)
     nupn = anyelement(Symbol(EzXML.nodename(node)), node)
@@ -103,26 +105,4 @@ function nupn_content(node::XMLNode, pntd::PnmlType)
                       safe = parse(Bool, e["structure"][:safe]),
                       units
                     )
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Parse place-transition net's (PTNet) toolspecific defined for nested unit petri nets.
-"""
-function parse_nupn(node::XMLNode, pntd::PnmlType)
-    nn = check_nodename(node, "")
-    tpos = PNML.coordinate_type(pntd)[]
-    for child in EzXML.eachelement(node)
-        tag = EzXML.nodename(child)
-        if tag == "tokenposition"
-            push!(tpos, parse_tokenposition(child, pntd))
-        else
-            @warn "ignoring unexpected child of <tokengraphics>: '$tag'"
-        end
-    end
-    if isempty(tpos)
-        @warn "tokengraphics does not have any <tokenposition> elements"
-    end
-    Labels.TokenGraphics(tpos)
 end
