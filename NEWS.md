@@ -12,7 +12,7 @@ Version 0.0.27 2025-11-17
   - Introduce Arc type labels. No use YET of the label.
 
 Version 0.0.25 2025-10-16
-  - SortRef ADT
+  - SortRefImpl ADT
 
 Version 0.0.23 2025-08-29
   - Begin AlgebraicPetri compatibility

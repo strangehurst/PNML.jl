@@ -26,7 +26,7 @@ Notes:
   - `NamedSort` is a Declarations.SortDeclaration
   - [`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
   - `PartitionSort` is called "Partition" in the standard.
-  - `SortRef` holds the id symbol of a concrete sort.
+  - `SortRefImpl` holds the id symbol of a concrete sort.
   - We use sorts even for non-high-level nets.
   - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """

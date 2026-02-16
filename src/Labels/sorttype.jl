@@ -113,7 +113,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return `SortRef` for default `SortType` of a `PNTD`.
+Return `SortRefImpl` for default `SortType` of a `PNTD`.
 """
 function default_typesort end
 

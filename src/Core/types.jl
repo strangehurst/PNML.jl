@@ -235,9 +235,9 @@ abstract type AbstractSort end
 abstract type AbstractDeclDict end
 
 """
-    SortRef
+    SortRefImpl
 
-SortRef is the name of the Module created by Moshi @data to hold an ADT.
+SortRefImpl is the name of the Module created by Moshi @data to hold an ADT.
 
 Each variant has a `REFID` `Symbol` that indexes one of the dictionaries
 in the network's declaration dictionary collection (`DeclDict`).
@@ -252,8 +252,8 @@ to anonymous sorts that are inlined.
 """
 abstract type AbstractSortRef end
 
-# SortRef is the name of the Module created by the macro.
-@data SortRef <: AbstractSortRef begin
+# SortRefImpl is the name of the Module created by the macro.
+@data SortRefImpl <: AbstractSortRef begin
     struct UserSortRef
         refid::REFID # Indirection to NamedSortRef, PartitionSortRef or ArbitrarySortRef
     end
@@ -274,13 +274,13 @@ abstract type AbstractSortRef end
     end
 end
 
-@derive SortRef[Show,Hash,Eq]
+@derive SortRefImpl[Show,Hash,Eq]
 
-# For access to values that SortRef.Type my have.
-using .SortRef: UserSortRef, NamedSortRef, PartitionSortRef,
+# For access to values that SortRefImpl.Type my have.
+using .SortRefImpl: UserSortRef, NamedSortRef, PartitionSortRef,
                     ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
-function refid(s::SortRef.Type)
+function refid(s::SortRefImpl.Type)
     @assert s.refid !== :nothing
     return s.refid::REFID
 end

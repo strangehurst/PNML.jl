@@ -32,7 +32,7 @@ Each keyed by REFID symbols.
 
     # Use an REFID symbol as a network-level "global" to reference
     # SortDeclaration or OperatorDeclaration.
-    #! 2025-07-14 moving to SortRef to wrap a REFID and retain type information.
+    #! 2025-07-14 moving to SortRefImpl to wrap a REFID and retain type information.
     #! 2025-09-27 moving to Moshi ADT.
     #! 2025-10-12 Remove UserSort. Use NamedSortRef where proper, UserSortRef when needed.
 
@@ -190,7 +190,7 @@ These define operators of different types that are placed into separate dictiona
 #! VariableDeclaration and Variable are not hiearchies.
 #! A `Varaible` is a reference to a `VariableDeclaration`,
 #! The variable declaration is a id, name, sort triplet.
-#! Where the sort is a SortRef or a sort declaration.
+#! Where the sort is a SortRefImpl or a sort declaration.
 
 useroperator(REFID) is used to locate the operator definition,
 when it is found in `feconstants()`, is a callable returning a `FEConstant` literal.

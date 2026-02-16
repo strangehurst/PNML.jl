@@ -64,7 +64,7 @@ Multisets.set_key_value_show()
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
 @reexport using PNML.Expressions
 
-@reexport using PNML.SortRef: UserSortRef, NamedSortRef, PartitionSortRef,
+@reexport using PNML.SortRefImpl: UserSortRef, NamedSortRef, PartitionSortRef,
                     ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
 

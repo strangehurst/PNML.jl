@@ -46,12 +46,12 @@ sortelements(::BoolSort, ::AbstractPnmlNet) = tuple(true, false)
 """
 $(TYPEDEF)
 
-Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
+Wrap a SortRefImpl. Warning: do not cause recursive multiset Sorts.
 """
 @auto_hash_equals struct MultisetSort{S <: AbstractSortRef} <: AbstractSort
     basis::S
 
-    MultisetSort(b::AbstractSortRef, ddict) = MultisetSort{SortRef.Type}(b, ddict)
+    MultisetSort(b::AbstractSortRef, ddict) = MultisetSort{SortRefImpl.Type}(b, ddict)
 
     function MultisetSort{S}(b, net::AbstractPnmlNet) where {S <: AbstractSortRef}
         if (isa_variant(b, NamedSortRef) &&
@@ -80,7 +80,7 @@ ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color cla
 Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
 @auto_hash_equals struct ProductSort{N, P <:AbstractPnmlNet} <: AbstractSort
-    ae::NTuple{N, SortRef.Type} #! AbstractSortRef
+    ae::NTuple{N, SortRefImpl.Type} #! AbstractSortRef
     net::P
 end
 #
@@ -95,7 +95,7 @@ end
 
 """
     sorts(ps::ProductSort, ::AbstractPnmlNet) -> NTuple
-Return iterator over `SortRef`s to sorts in the product.
+Return iterator over `SortRefImpl`s to sorts in the product.
 """
 sorts(ps::ProductSort, ::AbstractPnmlNet) = values(ps.ae)
 

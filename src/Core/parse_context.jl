@@ -40,7 +40,7 @@ function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Ca
 end
 
 function sortref(dict::Base.Callable, tag)
-    sortref::SortRef.Type = @match dict begin
+    sortref::SortRefImpl.Type = @match dict begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin,
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of SortRefs
         PNML.partitionsorts => PartitionSortRef(tag) # declaration

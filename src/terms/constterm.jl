@@ -55,7 +55,7 @@ function sortof(fec::FEConstant, net::AbstractPnmlNet)
             sortdefinition(partitionsort(net, refid))::PartitionSort
         # Partitions are over a single EnumerationSort
         # partition element?
-        _ => error("unsupported SortRef: ", repr(fec))
+        _ => error("unsupported SortRefImpl: ", repr(fec))
     end
 end
 

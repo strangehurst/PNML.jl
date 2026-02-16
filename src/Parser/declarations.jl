@@ -131,7 +131,7 @@ function parse_namedsort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
         error("failed to parse sort definition for namedsort $sortid $name")
 
     #? check for loops?
-    # convert SortRef to concrete sort object.
+    # convert SortRefImpl to concrete sort object.
     sort = to_sort(def, net)
     if isa(sort, NamedSort)
         sort = sortdefinition(sort)
@@ -282,7 +282,7 @@ function parse_usersort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     declid = Symbol(attribute(node, "declaration"))
 
     # <usersort> holds a reference to a declaration: named, partition, arbitrary.
-    # We extract that information and encode it in the SortRef ADT.
+    # We extract that information and encode it in the SortRefImpl ADT.
     if PNML.has_namedsort(net, declid)
         NamedSortRef(declid)
     elseif PNML.has_partitionsort(net, declid)
@@ -526,21 +526,21 @@ function to_sort(sr::AbstractSortRef, net::AbstractPnmlNet)
     #@show sr
     is_data_type(sr) || error("!isdata_type($sr)")
     # NamedSort, PatritionSort, ArbitrarySort are declarations
-    isa_variant(sr, SortRef.NamedSortRef) && return PNML.namedsort(net, refid(sr)) # todo unwrap namedsort
-    isa_variant(sr, SortRef.ProductSortRef) && return PNML.productsort(net, refid(sr)) #! named sort
-    isa_variant(sr, SortRef.MultisetSortRef) && return PNML.multisetsort(net, refid(sr)) #! named sort
-    isa_variant(sr, SortRef.PartitionSortRef) && return PNML.partition(net, refid(sr))
-    isa_variant(sr, SortRef.ArbitrarySortRef) && return PNML.arbitrarysort(net, refid(sr))
+    isa_variant(sr, SortRefImpl.NamedSortRef) && return PNML.namedsort(net, refid(sr)) # todo unwrap namedsort
+    isa_variant(sr, SortRefImpl.ProductSortRef) && return PNML.productsort(net, refid(sr)) #! named sort
+    isa_variant(sr, SortRefImpl.MultisetSortRef) && return PNML.multisetsort(net, refid(sr)) #! named sort
+    isa_variant(sr, SortRefImpl.PartitionSortRef) && return PNML.partition(net, refid(sr))
+    isa_variant(sr, SortRefImpl.ArbitrarySortRef) && return PNML.arbitrarysort(net, refid(sr))
     error("not isa_variant $(repr(sr))")
 
     # s = @match sr begin
     #     # NamedSort, PatritionSort, ArbitrarySort are declarations
-    #     SortRef.NamedSortRef(refid)     => PNML.namedsort(net, refid) # todo unwrap namedsort
-    #     SortRef.ProductSortRef(refid)   => PNML.productsort(net, refid) #! named sort
-    #     SortRef.MultisetSortRef(refid)  => PNML.multisetsort(net, refid) #! named sort
-    #     SortRef.PartitionSortRef(refid) => PNML.partition(net, refid)
-    #     SortRef.ArbitrarySortRef(refid) => PNML.arbitrarysort(net, refid)
-    #     _ => error("to_sort SortRef not expected: $sr")
+    #     SortRefImpl.NamedSortRef(refid)     => PNML.namedsort(net, refid) # todo unwrap namedsort
+    #     SortRefImpl.ProductSortRef(refid)   => PNML.productsort(net, refid) #! named sort
+    #     SortRefImpl.MultisetSortRef(refid)  => PNML.multisetsort(net, refid) #! named sort
+    #     SortRefImpl.PartitionSortRef(refid) => PNML.partition(net, refid)
+    #     SortRefImpl.ArbitrarySortRef(refid) => PNML.arbitrarysort(net, refid)
+    #     _ => error("to_sort SortRefImpl not expected: $sr")
     # end
     return s
 end

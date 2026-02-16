@@ -99,8 +99,8 @@ using DocStringExtensions
 
 export PnmlModel, AbstractPnmlNet, PnmlNet, Page
 export Place, RefPlace, Transition, RefTransition, Arc
-export REFID, SortRef, AbstractSortRef, ArcT, AbstractArcEnum
-export UserSortRef # From SortRef ADT
+export REFID, SortRefImpl, AbstractSortRef, ArcT, AbstractArcEnum
+export UserSortRef # From SortRefImpl ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
 export @xml_str, xmlnode, D
