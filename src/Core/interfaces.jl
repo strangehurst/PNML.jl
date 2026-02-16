@@ -338,9 +338,9 @@ We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for 
 function sortof end
 
 """
-    sortref(x) -> AbstractSortRef
+    sortref(x) -> SortRef
 
-Return a REFID wrapped in a [`AbstractSortRef`](@ref).
+Return a REFID wrapped in a [`SortRef`](@ref) ADT.
 
 Things that have a sortref include:
 Place, Arc, Inscription, Marking,
@@ -364,9 +364,9 @@ with the ID symbol used as the dictionary key.
 function sortdefinition end
 
 """
-    basis(x, ddict) -> AbstractSortRef
+    basis(x, ddict) -> SortRef
 
-Return AbstractSortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
+Return SortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
 `MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
 Place marking & sorttype, arc inscriptions have a `basis`.
 """

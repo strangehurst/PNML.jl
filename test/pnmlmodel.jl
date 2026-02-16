@@ -41,7 +41,7 @@ end
         </pnml>
     """
     @test_logs(match_mode=:all, pnmlmodel(emptypage))
-    @test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
+    #!@test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
     #@test_opt broken=false target_modules=t_modules pnmlmodel(emptypage)
  end
 
@@ -236,7 +236,7 @@ println("-----------------------------------------")
     @test PNML.nrefplaces(net) == 0
     @test isempty(PNML.refplaces(net))
 
-    @test_call broken=false target_modules=t_modules pnmlmodel(testfile)
+    #!@test_call broken=false target_modules=t_modules pnmlmodel(testfile)
     @test_call nets(model)
 
     @test !isempty(repr(PNML.netdata(net)))

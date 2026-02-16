@@ -25,7 +25,7 @@ isbuiltinsort(tag::Symbol) = (tag in builtin_sorts())
 # Called when both a and b are the same concrete type.
 equalSorts(a::AbstractSort, b::AbstractSort, ::AbstractPnmlNet) = a == b
 
-basis(a::AbstractSort) = sortref(a)::AbstractSortRef
+basis(a::AbstractSort) = sortref(a)::SortRef
 sortof(a::AbstractSort, ::AbstractPnmlNet) = identity(a)
 sortdefinition(a::AbstractSort) = identity(a)
 
@@ -46,25 +46,23 @@ sortelements(::BoolSort, ::AbstractPnmlNet) = tuple(true, false)
 """
 $(TYPEDEF)
 
-Wrap a SortRefImpl. Warning: do not cause recursive multiset Sorts.
+Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 """
-@auto_hash_equals struct MultisetSort{S <: AbstractSortRef} <: AbstractSort
-    basis::S
+@auto_hash_equals struct MultisetSort <: AbstractSort
+    basis::SortRef
 
-    MultisetSort(b::AbstractSortRef, ddict) = MultisetSort{SortRefImpl.Type}(b, ddict)
-
-    function MultisetSort{S}(b, net::AbstractPnmlNet) where {S <: AbstractSortRef}
+    function MultisetSort(b::SortRef, net::AbstractPnmlNet)
         if (isa_variant(b, NamedSortRef) &&
             isa(sortdefinition(namedsort(net, refid(b))), MultisetSort)) ||
            isa_variant(b, MultisetSortRef)
             throw(PNML.MalformedException("basis cannot be MultisetSort, found $b"))
         end
-        new{S}(b)
+        new(b)
     end
 end
 
-sortref(ms::MultisetSort) = identity(ms.basis)::AbstractSortRef
-sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)::AbstractSortRef))
+sortref(ms::MultisetSort) = identity(ms.basis)::SortRef
+sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)::SortRef))
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -80,7 +78,7 @@ ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color cla
 Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
 @auto_hash_equals struct ProductSort{N, P <:AbstractPnmlNet} <: AbstractSort
-    ae::NTuple{N, SortRefImpl.Type} #! AbstractSortRef
+    ae::NTuple{N, SortRef}
     net::P
 end
 #
@@ -95,16 +93,16 @@ end
 
 """
     sorts(ps::ProductSort, ::AbstractPnmlNet) -> NTuple
-Return iterator over `SortRefImpl`s to sorts in the product.
+Return iterator over `SortRef`s to sorts in the product.
 """
 sorts(ps::ProductSort, ::AbstractPnmlNet) = values(ps.ae)
 
-function sorts(psr::AbstractSortRef,  net::AbstractPnmlNet)
+function sorts(psr::SortRef,  net::AbstractPnmlNet)
     ps = PNML.productsort(net, refid(psr))::ProductSort
     sorts(ps, net)
 end
 
-function sortelements(ref::AbstractSortRef, net::AbstractPnmlNet)
+function sortelements(ref::SortRef, net::AbstractPnmlNet)
     sortelements(PNML.Parser.to_sort(ref, net), net)
 end
 
@@ -123,7 +121,7 @@ function equalSorts(a::ProductSort{N}, b::ProductSort{N}, net::AbstractPnmlNet) 
 end
 
 #
-function equalSorts(a::AbstractSortRef, b::AbstractSortRef, net::AbstractPnmlNet)
+function equalSorts(a::SortRef, b::SortRef, net::AbstractPnmlNet)
     if variant_type(a) == variant_type(b) && refid(a) == refid(b)
         #println("Same type ref and same refid means same sortdefinition.")
         return true

@@ -17,7 +17,7 @@ struct Inscription{T <: PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
 end
 
 term(i::Inscription) = i.term
-sortref(i::Inscription) = expr_sortref(term(i), i.net)::AbstractSortRef
+sortref(i::Inscription) = expr_sortref(term(i), i.net)::SortRef
 sortof(i::Inscription) = sortdefinition(namedsort(i.net, sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple)
@@ -66,7 +66,7 @@ end
 
 PNML.value_type(::Type{Inscription}, ::PnmlType) = eltype(PositiveSort) #::Int
 PNML.value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
-PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort)
 
 function PNML.value_type(::Type{Inscription}, pntd::AbstractHLCore)
     @error("value_type(::Type{Inscription}, $pntd) undefined. Using DotSort.") #! XXX TODO XXX
@@ -92,7 +92,7 @@ end
 
 # See def_insc
 function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
-    basis = sortref(placetype)::AbstractSortRef
+    basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype, net)
     #D()&& @info "$pntd default Inscription of adjacent $placetype = Bag($basis, $el, 1)"
     Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], net) # non-empty singleton multiset.

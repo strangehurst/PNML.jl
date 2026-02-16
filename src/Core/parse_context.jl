@@ -21,11 +21,11 @@ function __insert_sort!(net, tag, name, sort::AbstractSort)
 end
 
 """
-    fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict) -> AbstractSortRef
+    fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict) -> SortRef
 
 If not already in the declarations dictionary `dict`, add `sort` with key of `tag`.
 
-Register the tag and create and return an `AbstractSortRef` holding `tag`.
+Register the tag and create and return an `SortRef` holding `tag`.
 """
 function fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict::Base.Callable)
     fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)

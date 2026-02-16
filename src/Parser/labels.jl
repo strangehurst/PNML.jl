@@ -116,7 +116,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType;
 
     text::Maybe{Union{String,SubString{String}}} = nothing
     exp::Maybe{Any} = nothing # Filled by `termparser`.
-    ref::Maybe{AbstractSortRef} = nothing # Filled by `termparser`.
+    ref::Maybe{SortRef} = nothing # Filled by `termparser`.
     vars = () # Will be replaced/updated by `termparer`.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
@@ -371,11 +371,11 @@ end # parse_fifoinitialMarking
 
 Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType)
 """
-struct ParseMarkingTerm{S} #! <: Maybe{AbstractSortRef}}
+struct ParseMarkingTerm{S} #! <: Maybe{SortRef}}
     defplacetype::S
 end
 
-placetype(pmt::ParseMarkingTerm) = pmt.defplacetype::Maybe{AbstractSortRef}
+placetype(pmt::ParseMarkingTerm) = pmt.defplacetype::Maybe{SortRef}
 
 
 #! MARK will be a TERM, a symbolic expression that, when evaluated,
@@ -452,7 +452,7 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
 
     # Find adjacent place's sorttype using `netdata`.
     adjacentplace = PNML.adjacent_place(netdata(net), source(pit), target(pit))
-    placesort = PNML.Labels.sortref(adjacentplace)::AbstractSortRef
+    placesort = PNML.Labels.sortref(adjacentplace)::SortRef
     # D()&& @show adjacentplace placesort
 
     # Variable substitution for a transition affects postset arc inscription,
@@ -537,7 +537,7 @@ function parse_condition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, pa
 end
 
 """
-    parse_condition_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, AbstractSortRef, Tuple
+    parse_condition_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, SortRef, Tuple
 
 Used as `termparser` by [`parse_label_content`](@ref) for `Condition` label of a `Transition`;
 will have a structure element containing a term.
@@ -571,7 +571,7 @@ function parse_sorttype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, par
 end
 
 """
-    parse_sorttype_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, AbstractSortRef, Tuple
+    parse_sorttype_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, SortRef, Tuple
 
 The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algebra.
 Because we are using the HL implementation with the other meta-models,
@@ -579,7 +579,7 @@ we support it in all nets.
 
 The term here is a concrete sort.
 It is possible to have an inlined concrete sort that is anonymous.
-We place all these concrete sorts in the `decldict(net)`` and pass around a AbstractSortRef.
+We place all these concrete sorts in the `decldict(net)`` and pass around a SortRef.
 
 See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 """
@@ -587,7 +587,7 @@ function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType; net::AbstractPnm
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
     sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd, nothing, ""; net)::AbstractSortRef
+    sorttype = parse_sort(sortnode, pntd, nothing, ""; net)::SortRef
     isa_variant(sorttype, MultisetSortRef) && error("multiset sort not allowed for place <type>")
     # We use TermJunk because it is convenient. #! Does it work?
     return TermJunk(sorttype, sorttype, ()) # Not a term; has no variables.

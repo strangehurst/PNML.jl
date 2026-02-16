@@ -58,9 +58,9 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType{S <: AbstractSortRef, N <: AbstractPnmlNet} <: Annotation # Label not limited to high-level dialects.
+struct SortType{N <: AbstractPnmlNet} <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
-    sort_::S # NOT PartitionSort.  #! ePNK uses inline sorts.
+    sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
     net::N
@@ -69,8 +69,8 @@ end
 # >The label Type of a place defines the type by referring to some sort;
 # > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 
-SortType(sort::AbstractSortRef, net) = SortType(nothing, sort, nothing, nothing, net)
-SortType(s::AbstractString, sort::AbstractSortRef, net) = SortType(s, sort, nothing, nothing, net)
+SortType(sort::SortRef, net) = SortType(nothing, sort, nothing, nothing, net)
+SortType(s::AbstractString, sort::SortRef, net) = SortType(s, sort, nothing, nothing, net)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
@@ -113,7 +113,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return `SortRefImpl` for default `SortType` of a `PNTD`.
+Return `SortRef` for default `SortType` of a `PNTD`.
 """
 function default_typesort end
 

@@ -19,7 +19,7 @@ println("RATE")
     r = PNML.get_label(trans, :rate)
     @test occursin(r"^Rate", sprint(show, r))
     @test eltype(r) == Float64
-    @test sortref(r) isa AbstractSortRef
+    @test sortref(r) isa SortRef
     @test refid(sortref(r)) === :real
     @test sortof(r) isa RealSort
 

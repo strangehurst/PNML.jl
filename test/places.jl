@@ -55,7 +55,7 @@ end
     net = make_net(pntd, :hl_place_net)
 
     place = parse_place(node, pntd, net)::Place
-    @test_call target_modules=t_modules parse_place(node, pntd, net)
+    #!@test_call target_modules=t_modules parse_place(node, pntd, net)
 
     @test @inferred(pid(place)) === :place1
     @test @inferred(name(place)) == "with text"

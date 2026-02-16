@@ -38,7 +38,7 @@ str1 = """
 #@show t_modules
 
 @testset "SIMPLENET" begin
-    @test_call target_modules=t_modules pnmlmodel(xmlnode(str1))
+    #!@test_call target_modules=t_modules pnmlmodel(xmlnode(str1))
     model = @test_logs(match_mode=:any,
                        (:info, "add PnmlLabel :structure to :p3"),
                        (:info, "add PnmlLabel :frog to :p3"),

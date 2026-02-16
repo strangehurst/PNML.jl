@@ -26,7 +26,7 @@ Notes:
   - `NamedSort` is a Declarations.SortDeclaration
   - [`PNML.PnmlTypes.HLPNG`](@ref) adds [`PNML.Declarations.ArbitrarySort`](@ref).
   - `PartitionSort` is called "Partition" in the standard.
-  - `SortRefImpl` holds the id symbol of a concrete sort.
+  - `SortRef` holds the id symbol of a concrete sort.
   - We use sorts even for non-high-level nets.
   - Expect `eltype(::AbstractSort)` to return a concrete subtype of `Number`.
 """
@@ -68,7 +68,7 @@ include("strings.jl")
 
 #
 """
-    make_sortref(net, dict, sort, seed, id, name) ->  AbstractSortRef`
+    make_sortref(net, dict, sort, seed, id, name) ->  SortRef`
 
  - `dict` is a method/callable that returns an AbstractDict a DeclDict attached to `net`.
  - `sort` ia a concrete sort that is to be in `dict`.
@@ -77,7 +77,7 @@ include("strings.jl")
 
 Uses `fill_sort_tag!`.
 
-Return concrete AbstractSortRef matching `dict`, wrapping `id`.
+Return concrete SortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(net, dict::Base.Callable, sort, seed, sortid, name=nothing)
     #!@show sort dict seed sortid
@@ -87,8 +87,8 @@ function make_sortref(net, dict::Base.Callable, sort, seed, sortid, name=nothing
             sortid = gensym(seed) # so invent one.
         end
     end
-    # fill_sort_tag! will not overwrite existing, returns AbstractSortRef
-    return fill_sort_tag!(net, sortid, sort, dict)::AbstractSortRef # in make_sortref
+    # fill_sort_tag! will not overwrite existing, returns SortRef
+    return fill_sort_tag!(net, sortid, sort, dict)::SortRef # in make_sortref
 end
 
 end # module Sorts

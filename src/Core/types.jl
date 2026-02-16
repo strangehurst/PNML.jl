@@ -250,10 +250,7 @@ We use `NamedSortRef` -> `ConcreteSort` to add a name and REFID to built-in
 sorts, thus making them accessable. This extends this decoupling (symbols instead of sorts)
 to anonymous sorts that are inlined.
 """
-abstract type AbstractSortRef end
-
-# SortRefImpl is the name of the Module created by the macro.
-@data SortRefImpl <: AbstractSortRef begin
+@data SortRefImpl begin
     struct UserSortRef
         refid::REFID # Indirection to NamedSortRef, PartitionSortRef or ArbitrarySortRef
     end
@@ -276,13 +273,24 @@ end
 
 @derive SortRefImpl[Show,Hash,Eq]
 
+"""
+Alias for `PNML.SortRefImpl.Type`.
+"""
+const SortRef = SortRefImpl.Type
+
 # For access to values that SortRefImpl.Type my have.
 using .SortRefImpl: UserSortRef, NamedSortRef, PartitionSortRef,
                     ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
-function refid(s::SortRefImpl.Type)
-    @assert s.refid !== :nothing
-    return s.refid::REFID
+function refid(s::SortRef)
+    @match s begin
+        SortRefImpl.UserSortRef(; refid) => refid
+        SortRefImpl.NamedSortRef(; refid) => refid
+        SortRefImpl.PartitionSortRef(; refid) => refid
+        SortRefImpl.ProductSortRef(; refid) => refid
+        SortRefImpl.MultisetSortRef(; refid) => refid
+        SortRefImpl.ArbitrarySortRef( ;refid) => refid
+    end
 end
 
 abstract type AbstractArcEnum end

@@ -46,7 +46,7 @@ All boolean expressions have a known sort `:bool`.
 abstract type AbstractBoolExpr <: PnmlExpr end
 basis(::AbstractBoolExpr) = NamedSortRef(:bool)
 sortref(::AbstractBoolExpr) = NamedSortRef(:bool)
-expr_sortref(b::AbstractBoolExpr, net) = sortref(b)::AbstractSortRef
+expr_sortref(b::AbstractBoolExpr, net) = sortref(b)::SortRef
 
 """
 TermInterface operator expression types.
@@ -81,9 +81,9 @@ toexpr(::PNML.DotConstant, ::NamedTuple, net) = PNML.DotConstant()
 toexpr(c::PNML.BooleanConstant, ::NamedTuple, net) = value(c)
 
 """
-    expr_sortref(v::PnmlExpr, net) -> AbstractSortRef
+    expr_sortref(v::PnmlExpr, net) -> SortRef
 
-Return concrete AbstractSortRef of PnmlExpr. Sometimes aliased to `basis`, `sortref`.
+Return concrete SortRef of PnmlExpr. Sometimes aliased to `basis`, `sortref`.
 """
 function expr_sortref end
 
@@ -162,7 +162,7 @@ function toexpr(op::VariableEx, varsub::NamedTuple, net)
     end
 end
 
-expr_sortref(v::VariableEx, net) = sortref(PNML.variabledecl(net, v.refid))::AbstractSortRef
+expr_sortref(v::VariableEx, net) = sortref(PNML.variabledecl(net, v.refid))::SortRef
 
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
@@ -181,7 +181,7 @@ end
 
 function expr_sortref(o::UserOperatorEx, net)
     #todo or other constant/operator, not just feconstant
-    return sortref(PNML.feconstant(net, o.refid))::AbstractSortRef
+    return sortref(PNML.feconstant(net, o.refid))::SortRef
 end
 
 function Base.show(io::IO, x::UserOperatorEx)
@@ -200,7 +200,7 @@ end
 
 function expr_sortref(o::NamedOperatorEx, net)
     #todo or other constant/operator, not just feconstant
-    return sortref(PNML.feconstant(net, o.refid))::AbstractSortRef
+    return sortref(PNML.feconstant(net, o.refid))::SortRef
 end
 
 function Base.show(io::IO, x::NamedOperatorEx)
@@ -216,8 +216,8 @@ a [`PNML.PnmlMultiset`](@ref).
 See [`PNML.Operator`](@ref) for another TermInterface operator.
 """
 Bag # Need to avoid @matchable to have docstring
-@matchable struct Bag{S <: AbstractSortRef, E <: Any, M <: Any} <: PnmlExpr
-    basis::S
+@matchable struct Bag{E <: Any, M <: Any} <: PnmlExpr
+    basis::SortRef
     element::E # ground term expression or Multiset
     multi::M # multiplicity expression of element in a multiset
     # Bag(b, x, m) = begin
@@ -227,14 +227,14 @@ Bag # Need to avoid @matchable to have docstring
     #     new(b, x, m)
     # end h
 end
-Bag(b::AbstractSortRef, x) = Bag(b::AbstractSortRef, x, 1) # singleton multiset
+Bag(b::SortRef, x) = Bag(b::SortRef, x, 1) # singleton multiset
 Bag(ms::PNML.PnmlMultiset) = Bag(basis(ms), PNML.multiset(ms))
-Bag(b::AbstractSortRef, x::Multiset) = Bag(b::AbstractSortRef, x, nothing) # x is a Multiset
-Bag(b::AbstractSortRef) = Bag(b::AbstractSortRef, nothing, nothing) # multiset: one of each element of the basis sort.
+Bag(b::SortRef, x::Multiset) = Bag(b::SortRef, x, nothing) # x is a Multiset
+Bag(b::SortRef) = Bag(b::SortRef, nothing, nothing) # multiset: one of each element of the basis sort.
 
 sortref(b::Bag) = b.basis
 basis(b::Bag) = b.basis
-expr_sortref(b::Bag, net) = sortref(b)::AbstractSortRef # also basis
+expr_sortref(b::Bag, net) = sortref(b)::SortRef # also basis
 
 function toexpr(b::Bag, varsub::NamedTuple, net)
     #@show b varsub Expr(:parameters, Expr(:kw,:net, net))
@@ -258,8 +258,8 @@ end
     TermInterface expression for a `<numberconstant>`.
 """
 NumberEx # Need to avoid @matchable to have docstring
-@matchable struct NumberEx{T<:Number, S <: AbstractSortRef} <: PnmlExpr
-    basis::S # Wraps a sort REFID.
+@matchable struct NumberEx{T<:Number} <: PnmlExpr
+    basis::SortRef # Wraps a sort REFID.
     element::T #
 end
 
@@ -267,7 +267,7 @@ toexpr(b::NumberEx{T}, var::NamedTuple, net) where {T<:Number} = b.element
 
 basis(x::NumberEx) = x.basis
 sortref(x::NumberEx) = x.basis
-expr_sortref(x::NumberEx, net) = basis(x)::AbstractSortRef
+expr_sortref(x::NumberEx, net) = basis(x)::SortRef
 
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
@@ -306,7 +306,7 @@ end
 
 basis(::DotConstantEx) = UserSortRef(:dot)
 sortref(::DotConstantEx) = UserSortRef(:dot)
-expr_sortref(x::DotConstantEx, net) = basis(x)::AbstractSortRef
+expr_sortref(x::DotConstantEx, net) = basis(x)::SortRef
 
 function toexpr(b::DotConstantEx, var::NamedTuple, net)
     QuoteNode(PNML.DotConstant())
@@ -332,7 +332,7 @@ end
 
 basis(a::Add) = basis(first(a.args))
 sortref(a::Add) = sortref(first(a.args))
-expr_sortref(a::Add, net) = expr_sortref(first(a.args), net)::AbstractSortRef
+expr_sortref(a::Add, net) = expr_sortref(first(a.args), net)::SortRef
 
 function toexpr(op::Add, varsub::NamedTuple, net)
     @assert length(op.args) >= 2
@@ -352,7 +352,7 @@ end
 
 basis(a::Subtract) = basis(a.lhs)
 sortref(a::Subtract) = sortref(a.lhs)
-expr_sortref(a::Subtract, net) = expr_sortref(a.lhs, net)::AbstractSortRef
+expr_sortref(a::Subtract, net) = expr_sortref(a.lhs, net)::SortRef
 
 function toexpr(op::Subtract, var::NamedTuple, net)
     Expr(:call, :(-), toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -370,10 +370,10 @@ end
 
 basis(a::ScalarProduct) = basis(a.bag)
 sortref(a::ScalarProduct) = sortref(a.bag)
-expr_sortref(a::ScalarProduct, net) = expr_sortref(a.bag, net)::AbstractSortRef
+expr_sortref(a::ScalarProduct, net) = expr_sortref(a.bag, net)::SortRef
 
 function toexpr(op::ScalarProduct, var::NamedTuple, net)
-    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::AbstractSortRef,
+    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::SortRef,
         Expr(:call, :(*), toexpr(op.n, var, net), toexpr(op.bag, var, net)))
 end
 
@@ -387,13 +387,13 @@ end
 #     value::Any #! Expression evaluating to a term
 # end
 
-@matchable struct Cardinality{S <: AbstractSortRef} <: PnmlExpr #^ multiset cardinality uses `length`.
-    bag::Bag{S} # multiset expression
+@matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.
+    bag::Bag # multiset expression
 end
 
 basis(::Cardinality) = UserSortRef(:natural)
 sortref(::Cardinality) = UserSortRef(:natural)
-expr_sortref(a::Cardinality, net) = sortref(a)::AbstractSortRef
+expr_sortref(a::Cardinality, net) = sortref(a)::SortRef
 
 function toexpr(op::Cardinality, var::NamedTuple, net)
     Expr(:call, :cardinality, toexpr(op.bag, var, net))
@@ -403,8 +403,8 @@ function Base.show(io::IO, x::Cardinality)
     print(io, "Cardinality(", x.arg, ")" )
 end
 
-@matchable struct CardinalityOf{S <: AbstractSortRef} <: PnmlExpr #^ cardinalityof accesses multiset.
-    ms::Bag{S} # multiset expression
+@matchable struct CardinalityOf <: PnmlExpr #^ cardinalityof accesses multiset.
+    ms::Bag # multiset expression
     refid::Symbol # element of basis sort
 end
 
@@ -417,9 +417,9 @@ function Base.show(io::IO, x::CardinalityOf)
 end
 
 #"Bag -> Bool"
-@matchable struct Contains{S <: AbstractSortRef} <: AbstractBoolExpr #^ multiset contains access multiset.
-    lhs::Bag{S} # multiset expression #TODO Union{Bag{S}, VariableEx}
-    rhs::Bag{S} # multiset expression
+@matchable struct Contains <: AbstractBoolExpr #^ multiset contains access multiset.
+    lhs::Bag # multiset expression #TODO Union{Bag, VariableEx}
+    rhs::Bag # multiset expression
 end
 
 function toexpr(op::Contains, var::NamedTuple, net)
@@ -549,7 +549,7 @@ end
     rhs::Any
 end
 
-expr_sortref(a::Addition, net) = expr_sortref(a.lhs, net)::AbstractSortRef
+expr_sortref(a::Addition, net) = expr_sortref(a.lhs, net)::SortRef
 
 function toexpr(op::Addition, var::NamedTuple, net)
     Expr(:call, :(+), toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -564,7 +564,7 @@ end
     rhs::Any
 end
 
-expr_sortref(a::Subtraction, net) = expr_sortref(a.lhs, net)::AbstractSortRef
+expr_sortref(a::Subtraction, net) = expr_sortref(a.lhs, net)::SortRef
 
 function toexpr(op::Subtraction, var::NamedTuple, net)
     Expr(:call, :(-), toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -579,7 +579,7 @@ end
     rhs::Any
 end
 
-expr_sortref(a::Multiplication, net) = expr_sortref(a.lhs, net)::AbstractSortRef
+expr_sortref(a::Multiplication, net) = expr_sortref(a.lhs, net)::SortRef
 
 function toexpr(op::Multiplication, var::NamedTuple, net)
     Expr(:call, :(*), toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -594,7 +594,7 @@ end
     rhs::Any
 end
 
-expr_sortref(a::Division, net) = expr_sortref(a.lhs, net)::AbstractSortRef
+expr_sortref(a::Division, net) = expr_sortref(a.lhs, net)::SortRef
 
 function toexpr(op::Division, var::NamedTuple, net)
     Expr(:call, :div, toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -661,7 +661,7 @@ end
     rhs::Any
 end
 
-expr_sortref(a::Modulo, net) = sortref(a.lhs)::AbstractSortRef
+expr_sortref(a::Modulo, net) = sortref(a.lhs)::SortRef
 
 function toexpr(op::Modulo, var::NamedTuple, net)
     Expr(:call, :mod, toexpr(op.lhs, var, net), toexpr(op.rhs, var, net))
@@ -681,7 +681,7 @@ end
     partition::Symbol
 end
 
-expr_sortref(a::PartitionElementOp, net) = sortref(partitionsort(net, a.partition))::AbstractSortRef
+expr_sortref(a::PartitionElementOp, net) = sortref(partitionsort(net, a.partition))::SortRef
 
 toexpr(op::PartitionElementOp, var::NamedTuple, net) = error("implement me ", repr(op))
 #! Expr(:call, :(||), toexpr(op.lhs, var), toexpr(op.rhs, var))
@@ -736,7 +736,7 @@ end
     refpartition::Symbol # TODO! wrap in PartitionSortRef
 end
 
-expr_sortref(a::PartitionElementOf, net) = sortref(partitionsort(net, a.refpartition))::AbstractSortRef
+expr_sortref(a::PartitionElementOf, net) = sortref(partitionsort(net, a.refpartition))::SortRef
 
 function _peo_impl(fec::FEConstant, refpart, net)
     #@warn "peo_impl" lhs refpart
@@ -808,8 +808,8 @@ end
 #& Lists
 
 #
-@matchable struct ListEx{T <: AbstractSortRef} <: PnmlExpr
-    basis::T
+@matchable struct ListEx <: PnmlExpr
+    basis::SortRef
     els::Vector{Any} #
 end
 

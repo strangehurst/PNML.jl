@@ -25,7 +25,7 @@ using XMLDict: XMLDict
     @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
 
     placetype = SortType("$pntd initMarking",
-        PNML.sortref(PNML.value_type(PNML.Marking, pntd))::AbstractSortRef,
+        PNML.sortref(PNML.value_type(PNML.Marking, pntd))::SortRef,
         nothing, nothing, net)
 
     # Parse ignoring unexpected child
@@ -192,7 +192,7 @@ end
         net = make_net(pntd, :dot_1)
         placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), net)
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
-        val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset{<:Any}
+        val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset
         @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive))()) == 1
         @test NumberConstant(8, NamedSortRef(:positive))() in multiset(val)
      end

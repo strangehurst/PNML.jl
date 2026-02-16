@@ -70,10 +70,10 @@ EXAMPLE
 
 PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
-struct VariableDeclaration{S <: AbstractSortRef, N <: AbstractPnmlNet} <: AbstractDeclaration
+struct VariableDeclaration{N <: AbstractPnmlNet} <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    sort::S
+    sort::SortRef
     net::N
 
     #! Inline Sorts allowed, also <usersort> indirection.
@@ -122,7 +122,7 @@ end
     # They evolve and are possibly preserved as part of reachability graph.
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
-sortref(vd::VariableDeclaration) = vd.sort::AbstractSortRef
+sortref(vd::VariableDeclaration) = vd.sort::SortRef
 sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, refid(sortref(vd))))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 

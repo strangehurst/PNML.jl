@@ -40,7 +40,7 @@ end
 
     IDRegistrys.reset_reg!(net.idregistry)
     @inferred fill_sort_tag!(net, :X2, NamedSort(:X2, "X2", PositiveSort(), net))
-    sortref = @inferred SortRefImpl.Type parse_sort(xml"<usersort declaration=\"X2\"/>", pntd; net)
+    sortref = @inferred SortRef parse_sort(xml"<usersort declaration=\"X2\"/>", pntd; net)
     ts = @inferred NamedSort to_sort(sortref, net)
     sort = @inferred sortdefinition(ts)
     @test sort === @inferred PositiveSort()

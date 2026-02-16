@@ -21,7 +21,7 @@ value_type(::Type{Time}, ::PnmlType) = Float64
 
 Base.eltype(::Time) = value_type(Time)
 term(i::Time) = i.term
-sortref(i::Time) = expr_sortref(term(i), i.net)::AbstractSortRef
+sortref(i::Time) = expr_sortref(term(i), i.net)::SortRef
 sortof(i::Time) = sortdefinition(namedsort(i.net, sortref(i)))::Number
 
 function (time::Time)(varsub::NamedTuple=NamedTuple())

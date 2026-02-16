@@ -217,8 +217,8 @@ end
 
 @testset "lookup types $pntd" for pntd in PnmlTypes.all_nettypes()
     if ishighlevel(pntd)
-        #@test PNML.value_type(PNML.Inscription, pntd) <: PnmlMultiset{<:Any}
-        #@test PNML.value_type(PNML.Marking, pntd) <: PNML.PnmlMultiset{<:Any}
+        #@test PNML.value_type(PNML.Inscription, pntd) <: PnmlMultiset
+        #@test PNML.value_type(PNML.Marking, pntd) <: PNML.PnmlMultiset
     else
         @test PNML.value_type(PNML.Inscription, pntd) <: Number
         @test PNML.value_type(PNML.Marking, pntd) <: Number

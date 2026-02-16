@@ -17,7 +17,7 @@ end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
 function Marking(m::Number, net::AbstractPnmlNet)
-    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::AbstractSortRef, m), net)
+    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::SortRef, m), net)
 end
 Marking(nx::PNML.NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
 Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::AbstractPnmlNet) = Marking(t, s, nothing, nothing, net)
@@ -87,8 +87,8 @@ Used to initialize a marking vector that will then be updated by firing a transi
 """
 (mark::Marking)() = eval(toexpr(term(mark)::PnmlExpr, NamedTuple(), mark.net))
 
-basis(m::Marking)   = sortref(term(m))::AbstractSortRef
-sortref(m::Marking) = expr_sortref(term(m), m.net)::AbstractSortRef
+basis(m::Marking)   = sortref(term(m))::SortRef
+sortref(m::Marking) = expr_sortref(term(m), m.net)::SortRef
 
 function Base.show(io::IO, ptm::Marking)
     print(io, PNML.indent(io), "Marking(")
@@ -115,7 +115,7 @@ function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
     eltype(DotSort)
 end
 
-PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort) #!PnmlMultiset{PNML.DotConstant}
+PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
 
 #~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zero.

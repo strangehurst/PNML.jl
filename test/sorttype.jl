@@ -18,7 +18,7 @@ using .TestUtils
     """
     typ = PNML.Parser.parse_sorttype(n1, pntd; net, parentid=:foobar)::SortType
     @test text(typ) == "N2"
-    @test PNML.sortref(typ) isa PNML.AbstractSortRef # wrapping DotSort
+    @test PNML.sortref(typ) isa PNML.SortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?
     @test PNML.has_graphics(typ) == false
     @test !occursin("Graphics", sprint(show, typ))

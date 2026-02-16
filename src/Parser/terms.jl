@@ -1,11 +1,11 @@
 """
     TermJunk
 
-`parse_term` returns a triple of: PnmlExpr, AbstractSortRef, NTuple{N,REFID}
+`parse_term` returns a triple of: PnmlExpr, SortRef, NTuple{N,REFID}
 """
-struct TermJunk{N, R <: AbstractSortRef}
-    exp::Union{PnmlExpr,AbstractSortRef}
-    ref::R
+struct TermJunk{N}
+    exp::Union{PnmlExpr,SortRef}
+    ref::SortRef
     vars::NTuple{N,REFID}
 end
 
@@ -230,7 +230,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, net::Abstr
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<all> operator missing sort argument"))
     # refsort is the basis of a multiset.
-    refsort = parse_usersort(child, pntd; net)::AbstractSortRef
+    refsort = parse_usersort(child, pntd; net)::SortRef
     @assert isa_variant(refsort, NamedSortRef)
     #! @assert isfinitesort(refsort) #^ Only expect finite sorts here.
 
@@ -240,7 +240,7 @@ end
 function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(PNML.MalformedException("<empty> operator missing sort argument"))
-    refsort = parse_usersort(child, pntd; net)::AbstractSortRef
+    refsort = parse_usersort(child, pntd; net)::SortRef
     @assert isa_variant(refsort, NamedSortRef)
     #! ePNK uses <integer/>. Could be inlined productsort.
     x = first(PNML.sortelements(refsort, net)) # So Multiset can do eltype(basis) == typeof(x)
@@ -251,7 +251,7 @@ end
 function parse_term(::Val{:add}, node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     sts, vars = subterms(node, pntd; vars, net)
     @assert length(sts) >= 2
-    return TermJunk(PNML.Add(sts), basis(first(sts))::AbstractSortRef, vars)
+    return TermJunk(PNML.Add(sts), basis(first(sts))::SortRef, vars)
     # All are of same sort so we use the basis sort of first multiset.
 end
 
@@ -588,7 +588,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
-    usref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; net)::AbstractSortRef
+    usref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; net)::SortRef
 
     # Differs from <tuple> in that here we have a sort definintion, while <tuple>
     # must deduce the sort by examining the product's sorts.

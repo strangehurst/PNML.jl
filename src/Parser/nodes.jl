@@ -103,7 +103,7 @@ function parse_place(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     if isnothing(sorttype) # Infer sortype of place from mark.
         #~ NB: must support pnmlcore, no high-level stuff unless it is backported to pnmlcore.
         D()&& @warn("$pntd parse_place $(repr(placeid)) infer sorttype ", mark)
-        sorttype = SortType("default", basis(mark)::AbstractSortRef, net)
+        sorttype = SortType("default", basis(mark)::SortRef, net)
     end
     Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, net)
 end

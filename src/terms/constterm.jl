@@ -4,14 +4,14 @@
 Builtin operator that has arity=0 means the same result every time, a constant.
 Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 """
-struct NumberConstant{T<:Number, S <: AbstractSortRef} <: AbstractOperator
+struct NumberConstant{T<:Number} <: AbstractOperator
     value::T
-    sort::S # value isa eltype(sort), verified by parser.
+    sort::SortRef # value isa eltype(sort), verified by parser.
     # Constant operators are 0-arity by definition. Parameter vector not used here.
 end
 
-sortref(nc::NumberConstant) = identity(nc.sort)::AbstractSortRef
-basis(nc::NumberConstant)   = sortref(nc.value)::AbstractSortRef
+sortref(nc::NumberConstant) = identity(nc.sort)::SortRef
+basis(nc::NumberConstant)   = sortref(nc.value)::SortRef
 sortof(nc::NumberConstant, net::AbstractPnmlNet) =
                                  sortdefinition(namedsort(net, sortref(nc)))
 
@@ -34,10 +34,10 @@ Finite enumeration constant and its containing sort.
     fec() == :anID
     fec.name = "somevalue"
 """
-struct FEConstant{S <: AbstractSortRef} <: AbstractOperator
+struct FEConstant <: AbstractOperator
     id::Symbol # ID is unique within net.
     name::Union{String, SubString{String}} # Must name be unique within a sort?
-    ref::S # of contining partition, enumeration, (or partitionelement?) sort.
+    ref::SortRef # of contining partition, enumeration, (or partitionelement?) sort.
 end
 
 refid(fec::FEConstant)    = refid(fec.ref)::Symbol
@@ -49,13 +49,11 @@ Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is 
 
 function sortof(fec::FEConstant, net::AbstractPnmlNet)
     @match fec.ref begin
-        NamedSortRef(refid) =>
-            sortdefinition(namedsort(net, refid))::EnumerationSort
-        PartitionSortRef(refid) =>
-            sortdefinition(partitionsort(net, refid))::PartitionSort
+        NamedSortRef(refid) => sortdefinition(namedsort(net, refid))::EnumerationSort
+        PartitionSortRef(refid) => sortdefinition(partitionsort(net, refid))::PartitionSort
         # Partitions are over a single EnumerationSort
         # partition element?
-        _ => error("unsupported SortRefImpl: ", repr(fec))
+        _ => error("unsupported SortRef: ", fec)
     end
 end
 
@@ -67,16 +65,16 @@ end
     $(TYPEDEF)
 Must refer to a value between the start and end of the respective `FiniteIntRangeSort`.
 """
-struct FiniteIntRangeConstant{T<:Integer, S <: AbstractSortRef} <: AbstractOperator
+struct FiniteIntRangeConstant{T<:Integer} <: AbstractOperator
     value::T
-    sort::S
+    sort::SortRef
     #TODO! Assert that T is a sort eltype.
 end
 tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 
 # FIRconstants have an embedded sort definition, NOT a namedsort or usersort.
 # We create a namedsort duo to match. Is expected to be an IntegerSort.
-sortref(c::FiniteIntRangeConstant) = identity(c.sort)::AbstractSortRef
+sortref(c::FiniteIntRangeConstant) = identity(c.sort)::SortRef
 
 #"Special case to ` IntegerSort()`, it is part of the name, innit."
 sortof(::FiniteIntRangeConstant, ::AbstractPnmlNet) = IntegerSort() # FiniteIntRangeConstant are always integers

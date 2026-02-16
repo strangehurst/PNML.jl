@@ -19,7 +19,7 @@ value_type(::Type{Rate}, ::PnmlType) = Float64
 Base.eltype(::Rate) = value_type(Rate)
 
 term(r::Rate) = r.term
-sortref(r::Rate) = expr_sortref(term(r), r.net)::AbstractSortRef
+sortref(r::Rate) = expr_sortref(term(r), r.net)::SortRef
 sortof(r::Rate) = sortdefinition(namedsort(r.net, refid(sortref(r))))
 
 function (rate::Rate)(varsub::NamedTuple=NamedTuple())

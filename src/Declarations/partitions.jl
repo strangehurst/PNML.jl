@@ -102,10 +102,10 @@ Is the sort at the partition or the element level (1 sort or many sorts?)
 Like [`NamedSort`](@ref), will add an `id` and `name` to a sort,
 may be accessed by `UserSortRef` indirection.
 """
-struct PartitionSort{S <: AbstractSortRef, N <: AbstractPnmlNet} <: SortDeclaration
+struct PartitionSort{N <: AbstractPnmlNet} <: SortDeclaration
     id::Symbol
     name::Union{String, SubString{String}}
-    def::S # Like a NamedSort, refers to a sort (EnumerationSort)
+    def::SortRef # Like a NamedSort, refers to a sort (EnumerationSort)
     elements::Vector{PartitionElement} # 1 or more PartitionElements that index into `def` #TODO a set?
     net::N
 
