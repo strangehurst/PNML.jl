@@ -169,10 +169,10 @@ isinhibitor(label::ArcType) = isinhibitor(arctype(label))
 isread(label::ArcType)      = isread(arctype(label))
 isreset(label::ArcType)     = isreset(arctype(label))
 
-isnormal(e::AbstractArcEnum)    = isa_variant(e, ArcT.normal)
-isinhibitor(e::AbstractArcEnum) = isa_variant(e, ArcT.inhibitor)
-isread(e::AbstractArcEnum)      = isa_variant(e, ArcT.read)
-isreset(e::AbstractArcEnum)     = isa_variant(e, ArcT.reset)
+isnormal(e::ArcTypeEnum.T)    = e == ArcTypeEnum.Normal
+isinhibitor(e::ArcTypeEnum.T) = e == ArcTypeEnum.Inhibitor
+isread(e::ArcTypeEnum.T)      = e == ArcTypeEnum.Read
+isreset(e::ArcTypeEnum.T)     = e == ArcTypeEnum.Reset
 
 """
     source(arc) -> Symbol

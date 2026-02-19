@@ -282,6 +282,85 @@ const SortRef = SortRefImpl.Type
 using .SortRefImpl: UserSortRef, NamedSortRef, PartitionSortRef,
                     ProductSortRef, MultisetSortRef, ArbitrarySortRef
 
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `UserSortRef` variant of `SortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `UserSortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `UserSortRef` variant, `false` otherwise.
+"""
+isusersort(x::SortRef) = isa_variant(x, SortRefImpl.UserSortRef)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `NamedSortRef` variant of `SortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `NamedSortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `NamedSortRef` variant, `false` otherwise.
+"""
+isnamedsort(x::SortRef) = isa_variant(x, SortRefImpl.NamedSortRef)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `PartitionSortRef` variant of `SortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `PartitionSortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `PartitionSortRef` variant, `false` otherwise.
+"""
+ispartitionsort(x::SortRef) = isa_variant(x, SortRefImpl.PartitionSortRef)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `ProductSortRef` variant of `SortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `ProductSortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `ProductSortRef` variant, `false` otherwise.
+"""
+isproductsort(x::SortRef) = isa_variant(x, SortRefImpl.ProductSortRef)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `MultisetSortRef` variant of `SortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `MultisetSortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `MultisetSortRef` variant, `false` otherwise.
+"""
+ismultisetsort(x::SortRef) = isa_variant(x, SortRefImpl.MultisetSortRef)
+
+"""
+    $TYPEDSIGNATURES
+
+Check if a value is an `SortRef` variant of `ArbitrarySortRef`.
+
+# Arguments
+- `x`: Value to check (for `SortRef` input returns true if `ArbitrarySortRef`, for others returns false).
+
+# Returns
+- `true` if `x` is a `SortRef` with `ArbitrarySortRef` variant, `false` otherwise.
+"""
+isarbitrarysort(x::SortRef) = isa_variant(x, SortRefImpl.ArbitrarySortRef)
+
 function refid(s::SortRef)
     @match s begin
         SortRefImpl.UserSortRef(; refid) => refid
@@ -293,13 +372,11 @@ function refid(s::SortRef)
     end
 end
 
-abstract type AbstractArcEnum end
 
-# ArcT is the name of the Module created by the macro.
-@data ArcT <: AbstractArcEnum begin
-    normal
-    inhibitor
-    read
-    reset
-end
-@derive ArcT[Show,Hash,Eq]
+
+"""
+    $(TYPEDEF)
+
+An EnumX.jl enum used to distinguish arc types.
+"""
+@enumx ArcTypeEnum Normal Inhibitor Read Reset

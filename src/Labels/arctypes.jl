@@ -4,9 +4,9 @@ $(TYPEDFIELDS)
 
 Arc type label.
 """
-@kwdef struct ArcType{T<:AbstractArcEnum} <: Annotation
+@kwdef struct ArcType <: Annotation
     text::String = ""
-    arctype::T
+    arctype::ArcTypeEnum.T
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
 end

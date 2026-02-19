@@ -87,7 +87,7 @@ export ToolInfo
 export text, get_label, label_value, rate_value, priority_value, delay_value
 export def_sort_element
 export ToolParser
-export ArcType, ArcT
+export ArcType, ArcTypeEnum
 export Rate, Priority, Time
 export default
 

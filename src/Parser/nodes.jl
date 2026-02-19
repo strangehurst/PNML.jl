@@ -215,7 +215,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     end
 
     if isnothing(arc_type_label)
-        arc_type_label = ArcType(; arctype=Labels.ArcT.normal())
+        arc_type_label = ArcType(; arctype=Labels.ArcTypeEnum.Normal)
     end
 
     Arc(; id=arcid, source=Ref(source), target=Ref(target),

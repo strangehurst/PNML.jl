@@ -82,10 +82,10 @@ function parse_arctype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, pare
 
     #@show text
     arctype = @match text begin
-        "inhibitor" => ArcT.inhibitor()
-        "read" => ArcT.read()
-        "reset" => ArcT.reset()
-        _ => ArcT.normal()
+        "inhibitor" => ArcTypeEnum.Inhibitor
+        "read" => ArcTypeEnum.Read
+        "reset" => ArcTypeEnum.Reset
+        _ => ArcTypeEnum.Normal
     end
     #@show arctype
     return ArcType(; text, arctype, graphics, toolspecinfos)

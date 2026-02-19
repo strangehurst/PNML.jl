@@ -94,12 +94,13 @@ using Graphs: SimpleDiGraphFromIterator, Edge
 using MetaGraphsNext: MetaGraph
 using NamedTupleTools
 using DocStringExtensions
+using EnumX: @enumx
 
 # EXPORTS
 
 export PnmlModel, AbstractPnmlNet, PnmlNet, Page
 export Place, RefPlace, Transition, RefTransition, Arc
-export REFID, SortRefImpl, SortRef, ArcT, AbstractArcEnum
+export REFID, SortRefImpl, SortRef, ArcTypeEnum
 export UserSortRef # From SortRefImpl ADT
 export NamedSortRef, ProductSortRef, PartitionSortRef, MultisetSortRef, ArbitrarySortRef
 export decldict
@@ -109,6 +110,7 @@ export @xml_str, xmlnode, D
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
 @public namedsort
 @public rates, mcontains
+@public isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
 
 Multisets.set_key_value_show()
 
