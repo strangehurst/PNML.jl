@@ -4,7 +4,7 @@ CurrentModule = PNML
 
 ## PNML
 ```@autodocs
-Modules = [PNML]
+Modules = [PNML, PNML.SortRefImpl, PNML.ArcTypeEnum]
 ```
 ## PNML.PnmlTypes
 ```@autodocs
