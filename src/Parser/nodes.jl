@@ -1,44 +1,44 @@
 # parse nodes of graph
 "Fill place_set, place_dict."
 function parse_place!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
-    pl = parse_place(child, pntd, net)::valtype(PNML.placedict(netdata))
-    #@show valtype(PNML.placedict(netdata)) typeof(PNML.placedict(netdata))
+    pl = parse_place(child, pntd, net)::valtype(placedict(netdata))
+    #@show valtype(placedict(netdata)) typeof(placedict(netdata))
     push!(place_idset(netsets), pid(pl))
-    PNML.placedict(netdata)[pid(pl)] = pl
+    placedict(netdata)[pid(pl)] = pl
     return place_idset(netsets) #place_set
 end
 
 "Fill transition_set, transition_dict."
 function parse_transition!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
-    tr = parse_transition(child, pntd, net)::valtype(PNML.transitiondict(netdata))
+    tr = parse_transition(child, pntd, net)::valtype(transitiondict(netdata))
     push!(transition_idset(netsets), pid(tr))
-    PNML.transitiondict(netdata)[pid(tr)] = tr
+    transitiondict(netdata)[pid(tr)] = tr
     return transition_idset(netsets)
 end
 
 "Fill arc_set, arc_dict."
 function parse_arc!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
     a = parse_arc(child, pntd, net)
-    a isa valtype(PNML.arcdict(netdata)) ||
-        @error("$(typeof(a)) not a $(valtype(PNML.arcdict(netdata)))) $pntd $(repr(a))")
+    a isa valtype(arcdict(netdata)) ||
+        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a))")
     push!(arc_idset(netsets), pid(a))
-    PNML.arcdict(netdata)[pid(a)] = a
+    arcdict(netdata)[pid(a)] = a
     return arc_idset(netsets)
 end
 
 "Fill refplace_set, refplace_dict."
 function parse_refPlace!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
-    rp = parse_refPlace(child, pntd, net)::valtype(PNML.refplacedict(netdata))
+    rp = parse_refPlace(child, pntd, net)::valtype(refplacedict(netdata))
     push!(refplace_idset(netsets), pid(rp))
-    PNML.refplacedict(netdata)[pid(rp)] = rp
+    refplacedict(netdata)[pid(rp)] = rp
     return refplace_idset(netsets)
 end
 
 "Fill reftransition_set, reftransition_dict."
 function parse_refTransition!(netsets, netdata, child, pntd, net::AbstractPnmlNet)
-    rt = parse_refTransition(child, pntd, net)::valtype(PNML.reftransitiondict(netdata))
+    rt = parse_refTransition(child, pntd, net)::valtype(reftransitiondict(netdata))
     push!(reftransition_idset(netsets), pid(rt))
-    PNML.reftransitiondict(netdata)[pid(rt)] = rt
+    reftransitiondict(netdata)[pid(rt)] = rt
     return reftransition_idset(netsets)
 end
 

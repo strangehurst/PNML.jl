@@ -73,10 +73,10 @@ struct PartitionElement <: OperatorDeclaration
 end
 
 # verify terms are in parent partitions's referenced sort elements.
-function verify!(errors::Vector{String}, pe::PartitionElement, verbose::Bool, net::AbstractPnmlNet)
+function verify!(errors::Vector{String}, pe::PartitionElement,
+                 verbose::Bool, net::AbstractPnmlNet)
     if !isempty(setdiff(pe.terms,
-                        PNML.Sorts.sortelements(sortdefinition(PNML.partitionsort(net, pe.partition)),
-                                                net)))
+                        sortelements(sortdefinition(partitionsort(net, pe.partition)), net)))
               #? pid needed?
         push!(errors, string("PartitionElement term(s) not in partition def sort")::String)
     end
@@ -110,15 +110,15 @@ struct PartitionSort{N <: AbstractPnmlNet} <: SortDeclaration
     net::N
 
     # function PartitionSort(i, n, d, e, dd)
-    #     # PNML.has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
+    #     # has_namedsort(d) || throw(ArgumentError("REFID $(repr(d)) is not a NamedSort"))
     #     # # Look at what is wrapped.
-    #     # @assert PNML.tag(sortdefinition(PNML.namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
+    #     # @assert tag(sortdefinition(namedsort(d))) in (:finiteenumeration, :cyclicenumeration, :finiteintenumeration)
     #     new(i, n, d, e, dd)
     # end
 end
 
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(p::PartitionSort) = sortdefinition(PNML.namedsort(p.net, refid(p.def)))
+sortdefinition(p::PartitionSort) = sortdefinition(namedsort(p.net, refid(p.def)))
 sortelements(p::PartitionSort, ::AbstractPnmlNet) = p.elements
 
 # TODO Add Partition/PartitionElement methods here
@@ -137,7 +137,7 @@ function element_names(ps::PartitionSort)
 end
 
 function verify!(errors::Vector{String}, psort::PartitionSort, verbose::Bool, net::AbstractPnmlNet)
-    #psort = PNML.partitionsort(net, pe.partition)
+    #psort = partitionsort(net, pe.partition)
     for pe in psort.elements
         verify!(errors, pe, verbose, net)
     end
@@ -159,12 +159,12 @@ end
 
 function Base.show(io::IO, ps::PartitionSort)
     println(io, nameof(typeof(ps)), "(", pid(ps), ", ", repr(name(ps)), ", ", repr(ps.def), ",")
-    io = PNML.inc_indent(io)
-    print(io, PNML.indent(io), "[")
+    io = inc_indent(io)
+    print(io, indent(io), "[")
     e = sortelements(ps, ps.net)
     for  (i, c) in enumerate(e)
         show(io, c)
-        i < length(e) && print(io, ",\n", PNML.indent(io), " ")
+        i < length(e) && print(io, ",\n", indent(io), " ")
     end
     print(io, "])")
 end

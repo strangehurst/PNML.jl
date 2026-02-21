@@ -77,11 +77,11 @@ function parse_graphics_coordinate(node, pntd)
         throw(ArgumentError("element name wrong: $nn"))
     end
 
-    EzXML.haskey(node, "x") || throw(PNML.MalformedException("$nn missing x"))
-    EzXML.haskey(node, "y") || throw(PNML.MalformedException("$nn missing y"))
+    EzXML.haskey(node, "x") || throw(MalformedException("$nn missing x"))
+    EzXML.haskey(node, "y") || throw(MalformedException("$nn missing y"))
 
-    PnmlGraphics.Coordinate(PNML.number_value(eltype(Coordinate), node["x"]),
-                            PNML.number_value(eltype(Coordinate), node["y"]))
+    PnmlGraphics.Coordinate(number_value(eltype(Coordinate), node["x"]),
+                            number_value(eltype(Coordinate), node["y"]))
 end
 
 """

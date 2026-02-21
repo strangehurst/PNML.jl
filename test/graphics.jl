@@ -4,16 +4,16 @@ include("TestUtils.jl")
 using .TestUtils
 
 @testset "coordinate" begin
-    PNML.Coordinate(1, 2)
-    PNML.Coordinate(1.1, 2.2)
-    @test_opt PNML.Coordinate(1, 2)
-    @test_call PNML.Coordinate(1, 2)
-    @test_opt PNML.Coordinate(1.1, 2.2)
-    @test_call PNML.Coordinate(1.1, 2.2)
+    Coordinate(1, 2)
+    Coordinate(1.1, 2.2)
+    @test_opt Coordinate(1, 2)
+    @test_call Coordinate(1, 2)
+    @test_opt Coordinate(1.1, 2.2)
+    @test_call Coordinate(1.1, 2.2)
     #TODO more tests
 
-    @test_opt PNML.value_type(PNML.Coordinate)
-    @test_call PNML.value_type(PNML.Coordinate)
+    @test_opt value_type(Coordinate)
+    @test_call value_type(Coordinate)
 end
 
 @testset "graphics $pntd" for pntd in PnmlTypes.core_nettypes()
@@ -35,23 +35,23 @@ end
             (:warn, r"^ignoring unexpected child of <graphics>: 'unexpected'"),
              parse_graphics(node, pntd))
 
-    @test PNML.coordinate_type(pntd) == PNML.Coordinate
+    @test PNML.coordinate_type(pntd) == Coordinate
 
     # There can only be one offset, last tag parsed wins.
     @test PNML.x(n.offset) == 7.0 && PNML.y(n.offset) == 8.0
-    @test n.offset == PNML.Coordinate(7.0, 8.0)
-    @test n.offset == PNML.Coordinate(7, 8.0)
-    @test n.offset == PNML.Coordinate(7, 8)
-    @test n.dimension == PNML.Coordinate(5.0, 6.0)
-    @test n.offset isa PNML.Coordinate
-    @test n.dimension isa PNML.Coordinate
-    @test n.positions isa Vector{PNML.Coordinate}
+    @test n.offset == Coordinate(7.0, 8.0)
+    @test n.offset == Coordinate(7, 8.0)
+    @test n.offset == Coordinate(7, 8)
+    @test n.dimension == Coordinate(5.0, 6.0)
+    @test n.offset isa Coordinate
+    @test n.dimension isa Coordinate
+    @test n.positions isa Vector{Coordinate}
     @test length(n.positions) == 2
-    @test n.positions == [PNML.Coordinate(1.0, 2.0), PNML.Coordinate(3.0, 4.0)]
+    @test n.positions == [Coordinate(1.0, 2.0), Coordinate(3.0, 4.0)]
 
-    @test eltype(PNML.Coordinate) == Float32
-    @test PNML.value_type(PNML.Coordinate) == Float32
-    @test PNML.value_type(PNML.Coordinate, pntd) == Float32
+    @test eltype(Coordinate) == Float32
+    @test value_type(Coordinate) == Float32
+    @test value_type(Coordinate, pntd) == Float32
 
     @test n.line isa PnmlGraphics.Line
     @test n.line.color == "linecolor"

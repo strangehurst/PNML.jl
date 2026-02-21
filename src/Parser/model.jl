@@ -43,7 +43,7 @@ function pnmlmodel(node::XMLNode; kwargs...)
         end
     end
     length(model.nets) > 0 ||
-        throw(PNML.MalformedException("<pnml> does not have any <net> elements"))
+        throw(MalformedException("<pnml> does not have any <net> elements"))
 
     return model
 end
@@ -120,7 +120,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
 
     # Collect all the toolspecinfos at net level for use in later parsing.
     find_toolinfos!(net.toolspecinfos, net_node, pntd, net)
-    PNML.Labels.validate_toolinfos(net.toolspecinfos)
+    validate_toolinfos(net.toolspecinfos)
 
     #--------------------------------------------------------------------
     # Fill `net`
@@ -138,7 +138,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
             unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid)
         end
     end
-    PNML.verify(net, false) # CONFIG[].verbose)
+    verify(net, false) # CONFIG[].verbose)
 
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
@@ -191,7 +191,7 @@ Add created page to parent's `page_idset` and `pagedict(net)`.
 """
 function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode, pntd::PnmlType)
     check_nodename(page_node, "page")
-    pageid = register_idof!(PNML.registry_of(net), page_node)
+    pageid = register_idof!(registry_of(net), page_node)
     push!(page_idset, pageid) # Record id before decending.
     pg = __parse_page!(net, page_node, pntd, pageid)
     @assert pageid === pid(pg)
@@ -215,7 +215,7 @@ function __parse_page!(net::AbstractPnmlNet, page_node::XMLNode,
                 toolspecinfos = find_toolinfos!(nothing, page_node,
                                                 pntd, net)::Maybe{Vector{ToolInfo}})
 
-    PNML.Labels.validate_toolinfos(toolinfos(page))
+    validate_toolinfos(toolinfos(page))
 
     #---------------------------------------------------------
     # Fill page with graph nodes & arcs.

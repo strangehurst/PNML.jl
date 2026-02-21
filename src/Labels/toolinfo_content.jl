@@ -7,11 +7,11 @@ also holds the tool name and version.
 Combines the <tokengraphics> and <tokenposition> elements.
 """
 struct TokenGraphics
-    positions::Vector{PNML.Coordinate}
+    positions::Vector{Coordinate}
 end
 
 # Empty TokenGraphics is allowed in spec.
-TokenGraphics() = TokenGraphics(PNML.Coordinate[])
+TokenGraphics() = TokenGraphics(Coordinate[])
 
 function Base.show(io::IO, tg::TokenGraphics)
     print(io, "TokenGraphics(", tg.positions, ")")

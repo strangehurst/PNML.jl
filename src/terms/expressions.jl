@@ -13,15 +13,16 @@ using TermInterface
 using Metatheory: @matchable
 
 using PNML
-using PNML: BooleanConstant, FEConstant , feconstant, ProductSort
-using PNML: pnmlmultiset, operator, partitionsort, mcontains
+using PNML: BooleanConstant, FEConstant, NumberConstant, DotConstant, FiniteIntRangeConstant
+using PNML: feconstant, multiset, value
+using PNML: ProductSort, PnmlMultiset
+using PNML: pnmlmultiset, operator, partitionsort, variabledecl, mcontains
 
-export toexpr
-
-export PnmlExpr, AbstractBoolExpr, AbstractOpExpr # abstract types
+export toexpr, expr_sortref
+# abstract types
+export PnmlExpr, AbstractBoolExpr, AbstractOpExpr
 # concrete types
-export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx
-export DotConstantEx
+export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx, DotConstantEx
 export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
 export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
 export PartitionLessThan, PartitionGreaterThan, PartitionElementOf
@@ -30,7 +31,6 @@ export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
 export Concatenation, Append, StringLength, SubstringEx
 export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
 export ListEx, ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
-export expr_sortref
 
 
 """
@@ -75,10 +75,10 @@ function toexpr(t::Multiset, vsub::NamedTuple, net)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-toexpr(nc::PNML.NumberConstant, ::NamedTuple, net) = value(nc)
-toexpr(c::PNML.FiniteIntRangeConstant, ::NamedTuple, net) = value(c)
-toexpr(::PNML.DotConstant, ::NamedTuple, net) = PNML.DotConstant()
-toexpr(c::PNML.BooleanConstant, ::NamedTuple, net) = value(c)
+toexpr(nc::NumberConstant, ::NamedTuple, net) = value(nc)
+toexpr(c::FiniteIntRangeConstant, ::NamedTuple, net) = value(c)
+toexpr(::DotConstant, ::NamedTuple, net) = DotConstant()
+toexpr(c::BooleanConstant, ::NamedTuple, net) = value(c)
 
 """
     expr_sortref(v::PnmlExpr, net) -> SortRef
@@ -162,7 +162,7 @@ function toexpr(op::VariableEx, varsub::NamedTuple, net)
     end
 end
 
-expr_sortref(v::VariableEx, net) = sortref(PNML.variabledecl(net, v.refid))::SortRef
+expr_sortref(v::VariableEx, net) = sortref(variabledecl(net, v.refid))::SortRef
 
 function Base.show(io::IO, x::VariableEx)
     print(io, "VariableEx(", x.refid, ")" )
@@ -181,7 +181,7 @@ end
 
 function expr_sortref(o::UserOperatorEx, net)
     #todo or other constant/operator, not just feconstant
-    return sortref(PNML.feconstant(net, o.refid))::SortRef
+    return sortref(feconstant(net, o.refid))::SortRef
 end
 
 function Base.show(io::IO, x::UserOperatorEx)
@@ -200,7 +200,7 @@ end
 
 function expr_sortref(o::NamedOperatorEx, net)
     #todo or other constant/operator, not just feconstant
-    return sortref(PNML.feconstant(net, o.refid))::SortRef
+    return sortref(feconstant(net, o.refid))::SortRef
 end
 
 function Base.show(io::IO, x::NamedOperatorEx)
@@ -211,9 +211,7 @@ end
 ###################################################################################
 """
 Bag: a TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
-a [`PNML.PnmlMultiset`](@ref).
-
-See [`PNML.Operator`](@ref) for another TermInterface operator.
+a [`PnmlMultiset`](@ref).
 """
 Bag # Need to avoid @matchable to have docstring
 @matchable struct Bag{E <: Any, M <: Any} <: PnmlExpr
@@ -228,7 +226,7 @@ Bag # Need to avoid @matchable to have docstring
     # end h
 end
 Bag(b::SortRef, x) = Bag(b::SortRef, x, 1) # singleton multiset
-Bag(ms::PNML.PnmlMultiset) = Bag(basis(ms), PNML.multiset(ms))
+Bag(ms::PnmlMultiset) = Bag(basis(ms), multiset(ms))
 Bag(b::SortRef, x::Multiset) = Bag(b::SortRef, x, nothing) # x is a Multiset
 Bag(b::SortRef) = Bag(b::SortRef, nothing, nothing) # multiset: one of each element of the basis sort.
 
@@ -285,7 +283,7 @@ end
 
 function toexpr(b::BooleanEx, var::NamedTuple, net)
     if b.element isa BooleanConstant
-        QuoteNode(PNML.Labels.value(b.element))
+        QuoteNode(value(b.element))
     else
         toexpr(b.element, var::NamedTuple, net)
     end
@@ -309,7 +307,7 @@ sortref(::DotConstantEx) = UserSortRef(:dot)
 expr_sortref(x::DotConstantEx, net) = basis(x)::SortRef
 
 function toexpr(b::DotConstantEx, var::NamedTuple, net)
-    QuoteNode(PNML.DotConstant())
+    QuoteNode(DotConstant())
 end
 
 function Base.show(io::IO, x::DotConstantEx)
@@ -373,7 +371,7 @@ sortref(a::ScalarProduct) = sortref(a.bag)
 expr_sortref(a::ScalarProduct, net) = expr_sortref(a.bag, net)::SortRef
 
 function toexpr(op::ScalarProduct, var::NamedTuple, net)
-    Expr(:call, PNML.PnmlMultiset, basis(op.bag)::SortRef,
+    Expr(:call, PnmlMultiset, basis(op.bag)::SortRef,
         Expr(:call, :(*), toexpr(op.n, var, net), toexpr(op.bag, var, net)))
 end
 
@@ -741,7 +739,7 @@ expr_sortref(a::PartitionElementOf, net) = sortref(partitionsort(net, a.refparti
 function _peo_impl(fec::FEConstant, refpart, net)
     #@warn "peo_impl" lhs refpart
     p = partitionsort(net, refpart)
-    # look for value of fec in findfirst(e -> PNML.Declarations.contains(e, fec()), p.elements)
+    # look for value of fec in findfirst(e -> contains(e, fec()), p.elements)
     findfirst(Fix2(PNML.Declarations.contains, fec()), p.elements)
 end
 
@@ -861,9 +859,9 @@ end
 # Find the ProductSortRef
 function expr_sortref(tup::PnmlTupleEx, net)
     exsort = ProductSort(tuple(expr_sortref.(tup.args, Ref(net))...), net)
-    for (sortid,ps) in pairs(PNML.productsorts(net))
+    for (sortid,ps) in pairs(productsorts(net))
         #!@show ps
-        if length(exsort) == length(ps) && PNML.Sorts.equalSorts(exsort, ps, net)
+        if length(exsort) == length(ps) && equalSorts(exsort, ps, net)
             return ProductSortRef(sortid)
         end
     end

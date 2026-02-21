@@ -2,8 +2,8 @@
 
 """
 $(TYPEDEF)
-See [`FiniteEnumerationSort`](@ref), [`PNML.Sorts.CyclicEnumerationSort`](@ref).
-Both hold an ordered collection of [`PNML.FEConstant`](@ref) REFIDs.
+See [`FiniteEnumerationSort`](@ref), [`CyclicEnumerationSort`](@ref).
+Both hold an ordered collection of `FEConstant` REFIDs.
 """
 abstract type EnumerationSort <: AbstractSort end
 
@@ -27,9 +27,9 @@ Base.eltype(::EnumerationSort) = REFID
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
-    io = PNML.inc_indent(io)
+    io = inc_indent(io)
     for (i, finite_enum_const_refid) in enumerate(refs(esort))
-        print(io, '\n', PNML.indent(io), finite_enum_const_refid);
+        print(io, '\n', indent(io), finite_enum_const_refid);
         i < length(esort) && print(io, ",")
     end
     print(io, "])")

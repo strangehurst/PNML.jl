@@ -29,7 +29,7 @@ function metagraph(net::PnmlNet)
     edgedata = Dict((source(a), target(a)) => a for a in arcs(net))
     @assert length(edgedata) == Graphs.ne(graph)
     #todo weight function for MetaGraph
-    MetaGraph(graph, vlabel, vdata, edgedata, PNML.name(net), edge_data -> 1.0, 1.0)
+    MetaGraph(graph, vlabel, vdata, edgedata, name(net), edge_data -> 1.0, 1.0)
 end
 
 "pnml id symbol mapped to graph vertex code."

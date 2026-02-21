@@ -26,7 +26,7 @@ end
 text_content(s::Union{String,SubString{String}}) = s
 
 """
-XMLDict uses symbols as keys. Value returned is a string.
+XMLDict uses symbols as keys for XML attributes. Value returned is a string.
 """
 function _attribute(vx::XmlDictType, key::Symbol)
     x = get(vx, key, nothing)

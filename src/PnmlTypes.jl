@@ -198,7 +198,7 @@ Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
 function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
     action = s ∈ keys(dict) ? "updating" : "adding"
     @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
-    # @SciMLMessage("$action mapping from $(repr(s)) to $pntd in $(typeof(dict))", PNML.verbose, :information, :options)
+    # @SciMLMessage("$action mapping from $(repr(s)) to $pntd in $(typeof(dict))", verbose, :information, :options)
     #@assert pntd ∉ values(dict) "$pntd already in pnml nettype dictionary"
     dict[s] = pntd
     return dict

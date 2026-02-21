@@ -58,7 +58,7 @@ end
 end
 
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()
-    r = PNML.value_type(Rate, pntd)
+    r = value_type(Rate, pntd)
     #println("value_type(Rate, $pntd) = ", r)
     @test r == eltype(RealSort) == Float64
 end

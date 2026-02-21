@@ -14,7 +14,7 @@ See `toolspecific_content_fallback(node, pntd)`.
     func::T
 end
 
-PNML.name(ti::ToolParser) = ti.toolname
+name(ti::ToolParser) = ti.toolname
 version(ti::ToolParser) = ti.version
 
 "Return callable parser of a ToolInfo."

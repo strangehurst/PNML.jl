@@ -28,5 +28,5 @@ println("RATE")
     @test_call PNML.rate_value(trans)
 
     tr = @inferred PNML.rate_value(trans)
-    @test eltype(tr) == PNML.value_type(Labels.Rate)
+    @test eltype(tr) == value_type(Labels.Rate)
 end

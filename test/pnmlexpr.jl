@@ -40,11 +40,11 @@ parse_declaration!(net, [node], pntd)
 
 @testset "multiset add $pntd" begin
     # When will it be noticed that `:pro` is not a valid REFID?
-    b1 = @inferred PNML.Bag(NamedSortRef(:pro), 1, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b2 = @inferred PNML.Bag(NamedSortRef(:pro), 2, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b3 = @inferred PNML.Bag(NamedSortRef(:pro), 3, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b4 = @inferred PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b5 = @inferred PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
+    b1 = @inferred Bag(NamedSortRef(:pro), 1, NumberEx(NamedSortRef(:natural), 1))
+    b2 = @inferred Bag(NamedSortRef(:pro), 2, NumberEx(NamedSortRef(:natural), 1))
+    b3 = @inferred Bag(NamedSortRef(:pro), 3, NumberEx(NamedSortRef(:natural), 2))
+    b4 = @inferred Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 2))
+    b5 = @inferred Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 1))
 
     a = @inferred PNML.Add([b1, b2, b3])
     ex = @inferred PNML.toexpr(a, varsub, net)
@@ -56,11 +56,11 @@ end
 
 @testset "multiset contains $pntd" begin
     #println("multiset contains")
-    b1 = PNML.Bag(NamedSortRef(:pro), 1, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b2 = PNML.Bag(NamedSortRef(:pro), 2, PNML.NumberEx(NamedSortRef(:natural), 1))
-    b3 = PNML.Bag(NamedSortRef(:pro), 3, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b4 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 2))
-    b5 = PNML.Bag(NamedSortRef(:pro), 4, PNML.NumberEx(NamedSortRef(:natural), 1))
+    b1 = Bag(NamedSortRef(:pro), 1, NumberEx(NamedSortRef(:natural), 1))
+    b2 = Bag(NamedSortRef(:pro), 2, NumberEx(NamedSortRef(:natural), 1))
+    b3 = Bag(NamedSortRef(:pro), 3, NumberEx(NamedSortRef(:natural), 2))
+    b4 = Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 2))
+    b5 = Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 1))
 
     aex = PNML.toexpr(PNML.Add([b1, b2, b4]), varsub, net)
     bex = PNML.toexpr(PNML.Add([b1, b2, b5]), varsub, net)
@@ -81,33 +81,33 @@ end
 end
 
 @testset "multiset and $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
-    b3 = PNML.BooleanEx(PNML.BooleanConstant(true))
-    b4 = PNML.BooleanEx(PNML.BooleanConstant(false))
+    b1 = BooleanEx(BooleanConstant(true))
+    b2 = BooleanEx(BooleanConstant(false))
+    b3 = BooleanEx(BooleanConstant(true))
+    b4 = BooleanEx(BooleanConstant(false))
 
     a = PNML.And([b1, b2, b3, b4])
     ex = PNML.toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, net)) &
-                 eval(PNML.toexpr(b2, varsub, net)) &
-                 eval(PNML.toexpr(b3, varsub, net)) &
-                 eval(PNML.toexpr(b3, varsub, net))
+    @test val == eval(toexpr(b1, varsub, net)) &
+                 eval(toexpr(b2, varsub, net)) &
+                 eval(toexpr(b3, varsub, net)) &
+                 eval(toexpr(b3, varsub, net))
 end
 
 @testset "multiset or $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
-    b3 = PNML.BooleanEx(PNML.BooleanConstant(true))
-    b4 = PNML.BooleanEx(PNML.BooleanConstant(false))
+    b1 = PNML.BooleanEx(BooleanConstant(true))
+    b2 = PNML.BooleanEx(BooleanConstant(false))
+    b3 = PNML.BooleanEx(BooleanConstant(true))
+    b4 = PNML.BooleanEx(BooleanConstant(false))
 
     a = PNML.Or([b1, b2, b3, b4])
-    ex = PNML.toexpr(a, varsub, net)
+    ex = toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, net)) |
-                 eval(PNML.toexpr(b2, varsub, net)) |
-                 eval(PNML.toexpr(b3, varsub, net)) |
-                 eval(PNML.toexpr(b3, varsub, net))
+    @test val == eval(toexpr(b1, varsub, net)) |
+                 eval(toexpr(b2, varsub, net)) |
+                 eval(toexpr(b3, varsub, net)) |
+                 eval(toexpr(b3, varsub, net))
 end
 
 #^ Boolean Expression tests
@@ -121,13 +121,13 @@ function _test_abstractboolexpr(x::AbstractBoolExpr, net)
 end
 
 @testset "AbstractBoolExpr" begin
-    x = PNML.BooleanEx(PNML.BooleanConstant(true))
+    x = PNML.BooleanEx(BooleanConstant(true))
     _test_abstractboolexpr(x, net)
 end
 
 @testset "boolean not $pntd" begin
-    b1 = PNML.BooleanEx(PNML.BooleanConstant(true))
-    b2 = PNML.BooleanEx(PNML.BooleanConstant(false))
+    b1 = PNML.BooleanEx(BooleanConstant(true))
+    b2 = PNML.BooleanEx(BooleanConstant(false))
 
     a = PNML.Not([b1, b2])
     ex = PNML.toexpr(a, varsub, net)

@@ -129,7 +129,7 @@ end
     netsets = PNML.PnmlNetKeys()
     #todo add net to parse_page!
     @test_throws(r"^MissingIDException: page",
-        PNML.Parser.parse_page!(net, PNML.page_idset(netsets), xml"<page></page>",
+        PNML.Parser.parse_page!(net, page_idset(netsets), xml"<page></page>",
             pntd))
     @test_throws(r"^MissingIDException: place",
         PNML.Parser.parse_place(xml"<place></place>",

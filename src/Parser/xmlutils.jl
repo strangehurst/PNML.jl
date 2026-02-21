@@ -70,7 +70,7 @@ $(TYPEDSIGNATURES)
 Return registered symbol from id attribute of node. See [`IDRegistry`](@ref).
 """
 function register_idof!(registry::IDRegistry, node::XMLNode)
-    EzXML.haskey(node, "id") || throw(PNML.MissingIDException(EzXML.nodename(node)))
+    EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
     return register_id!(registry, Symbol(@inbounds(node["id"])))
 end
 
@@ -80,7 +80,7 @@ Return XML attribute value.
 """
 function attribute(node::XMLNode, key::AbstractString, msg::String="attribute $key missing")
     key == "id" && error("'id' attribute not handled here")
-    EzXML.haskey(node, key) || throw(PNML.MalformedException(msg))
+    EzXML.haskey(node, key) || throw(MalformedException(msg))
     return @inbounds node[key]
 end
 

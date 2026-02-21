@@ -21,11 +21,11 @@ using XMLDict: XMLDict
     #println(str)
 
     net = make_net(pntd, :pt_initmark)
-    @show PNML.value_type(PNML.Marking, pntd)
-    @show PNML.Labels.sortref(PNML.value_type(PNML.Marking, pntd))
+    @show value_type(PNML.Marking, pntd)
+    @show PNML.Labels.sortref(value_type(PNML.Marking, pntd))
 
     placetype = SortType("$pntd initMarking",
-        PNML.sortref(PNML.value_type(PNML.Marking, pntd))::SortRef,
+        PNML.sortref(value_type(PNML.Marking, pntd))::SortRef,
         nothing, nothing, net)
 
     # Parse ignoring unexpected child
@@ -77,13 +77,13 @@ end
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
         net = make_net(pntd, :dot_net)
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("XXX", PNML.NamedSortRef(:dot), net)
+        placetype = SortType("XXX", NamedSortRef(:dot), net)
 
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
         #@show mark
         @test mark isa PNML.Marking
 
-        @test PNML.term(mark) isa PNML.Bag
+        @test PNML.term(mark) isa Bag
         @test text(mark) == "3`dot"
         #println(); flush(stdout)
 
@@ -136,7 +136,7 @@ end
         # This is a high-level integer, use the first part of this pair in contexts that want numbers.
         net = make_net(pntd, :placetype_error_net)
         sort = ArbitrarySort(:foo, "ArbSort", net)
-        PNML.fill_sort_tag!(net, :foo, sort)
+        fill_sort_tag!(net, :foo, sort)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         # @show placetype = SortType("XXX", PNML.ArbitrarySortRef(:foo), ctx.ddict)

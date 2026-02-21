@@ -120,5 +120,5 @@ tag(p::Pair{Symbol, PnmlLabel}) = p.first
 elements(label::PnmlLabel) = label.elements
 
 function Base.show(io::IO, label::PnmlLabel)
-    print(io, PNML.indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
+    print(io, indent(io), "PnmlLabel(", tag(label), ", ", elements(label), ")")
 end

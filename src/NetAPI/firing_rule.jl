@@ -19,5 +19,5 @@ function fire2(C, net, mx)
     if pntd(net) isa AbstractHLCore
         pntd(net) isa PT_HLPNG || println("firing $(pntd(net)) not implemented here, good luck")
     end
-    fire(C, PNML.enabled(net, mx), mx)
+    fire(C, enabled(net, mx), mx)
 end

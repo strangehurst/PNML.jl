@@ -1,5 +1,4 @@
 using PNML, JET
-using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
 
 include("TestUtils.jl")
 using .TestUtils
@@ -114,8 +113,8 @@ verify_sets(net)
 @testset "by pntd $pntd" for pntd in PnmlTypes.core_nettypes()
     for ot in (PNML.Coordinate, Inscription, PNML.Labels.Condition, Marking,
                 Priority, Rate, PNML.Labels.Time)
-        @test_opt function_filter=pff target_modules=t_modules PNML.value_type(ot, pntd)
-        @test_call PNML.value_type(ot, pntd)
+        @test_opt function_filter=pff target_modules=t_modules value_type(ot, pntd)
+        @test_call value_type(ot, pntd)
     end
 
     # default test is not page specific
@@ -217,12 +216,12 @@ end
 
 @testset "lookup types $pntd" for pntd in PnmlTypes.all_nettypes()
     if ishighlevel(pntd)
-        #@test PNML.value_type(PNML.Inscription, pntd) <: PnmlMultiset
-        #@test PNML.value_type(PNML.Marking, pntd) <: PNML.PnmlMultiset
+        #@test value_type(PNML.Inscription, pntd) <: PnmlMultiset
+        #@test value_type(PNML.Marking, pntd) <: PNML.PnmlMultiset
     else
-        @test PNML.value_type(PNML.Inscription, pntd) <: Number
-        @test PNML.value_type(PNML.Marking, pntd) <: Number
+        @test value_type(PNML.Inscription, pntd) <: Number
+        @test value_type(PNML.Marking, pntd) <: Number
     end
-    @test PNML.value_type(PNML.Labels.Condition, pntd) <: Bool
-    @test PNML.value_type(Rate, pntd) <: Float64
+    @test value_type(PNML.Labels.Condition, pntd) <: Bool
+    @test value_type(Rate, pntd) <: Float64
 end

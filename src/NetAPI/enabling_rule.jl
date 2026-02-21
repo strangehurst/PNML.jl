@@ -56,7 +56,7 @@ function binding_value_sets(net::PnmlNet, marking)
     # The order of transitions is maintained.
     for t in transitions(net)::Transition
         bvalset = Dict{REFID,Set{eltype(basis)}}() # For this transition
-        for a in PNML.preset(net, t)::Arc
+        for a in preset(net, t)::Arc
             adj = adjacent_place(net, a)
             placesort = sortref(adj)
             vs = vars(inscription(a))::Tuple
@@ -101,7 +101,7 @@ function labeled_places end
 function labeled_places(net::PnmlNet, markings)
     # create vector place_id=>marking_value
     # initial_markings(net) becomes vector of marking_value
-    [k=>v for (k,v) in zip(map(pid, PNML.places(net)), markings)]
+    [k=>v for (k,v) in zip(map(pid, places(net)), markings)]
 end
 
 
@@ -123,12 +123,12 @@ function enabled(net::PnmlNet, marking) #!::Vararg{Union{Pair,Tuple}})
     for tr in transitions(net)
         trid = pid(tr)
         enabled = true # Assume all transitions possible.
-        e = all(d[p] >= inscription(arc(net,p,trid))(varsub) for p in PNML.preset(net, trid))
+        e = all(d[p] >= inscription(arc(net,p,trid))(varsub) for p in preset(net, trid))
         push!(evector, e)
     end
     return evector
     # Bool[all(p -> d[p] >= inscription(arc(net,p,t))(varsub),
-    #                                     PNML.preset(net, t)) for t in transition_idset(net)]
+    #                                     preset(net, t)) for t in transition_idset(net)]
 end
 
 function enabled(net::PnmlNet{<:AbstractHLCore}, marking)

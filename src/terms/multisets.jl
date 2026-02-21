@@ -80,9 +80,9 @@ end
 """
     sortelements(ms::PnmlMultiset, net::AbstractPnmlNet) -> iterator
 
-Iterates over elements of the basis sort. __May not be finite sort!__
+Iterates over elements of the basis sort. __May not be a finite sort!__
 """
-sortelements(ms::PnmlMultiset, net::AbstractPnmlNet) = sortelements(basis(ms), net) # basis element iterator
+sortelements(ms::PnmlMultiset, net::AbstractPnmlNet) = sortelements(basis(ms), net)
 
 """
 `A+B` for PnmlMultisets is the disjoint union of enclosed multiset.
@@ -177,12 +177,12 @@ Create empty Multiset{T}() then fill.
 
 Usages
   - ⟨all⟩ wants all sortelements
-  - default marking, inscription want one element or zero elements (elements can be PnmlTuples)
+  - default marking, inscription want one element or zero elements (elements can be tuples),
 we always find a sort to use, And use dummy elements for their `typeof` for empty multisets.
 
 Expect to be called from a `@matchable` `Terminterface`, thusly:
-  - `eval(toexpr(Bag(basis, x, multi, ddict), variable_substitutions))`
-  - `eval(toexpr(Bag(basis), ddict), variable_substitutions))`
+  - `eval(toexpr(Bag(basis, x, multi; net), variable_substitutions))`
+  - `eval(toexpr(Bag(basis); net), variable_substitutions))`
 
 """
 function pnmlmultiset end
@@ -192,7 +192,8 @@ function pnmlmultiset(basis::SortRef, ms::Multiset, ::Nothing; net::AbstractPnml
     PnmlMultiset{eltype(ms), typeof(net)}(basis, ms, net)
 end
 
-# Expect `element` and `multi` subterms to have already been eval'ed to perform variable substitution.
+# Expect `element` and `multi` subterms to have already
+# been eval'ed to perform variable substitution.
 function pnmlmultiset(basis::SortRef, element, multi::Int=1; net::AbstractPnmlNet)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
@@ -217,12 +218,10 @@ function pnmlmultiset(basis::SortRef, ::Nothing, ::Nothing; net::AbstractPnmlNet
         throw(ArgumentError("Cannot have MultisetSort basis of $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?
-    #@show basis eltype(basis) #! debug
     # Only expect finite sorts here. #! assert isfinitesort(basis)
     M = Multiset{eltype(basis)}()
-    sort = PNML.Parser.to_sort(basis, net)
+    sort = to_sort(basis, net)
     for e in sortelements(sort, net) # iterator over elements
-        #@show M e; flush(stdout) #! debug
         push!(M, e)
     end
     PnmlMultiset{eltype(M), typeof(net)}(basis, M, net)

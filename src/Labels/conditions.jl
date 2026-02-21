@@ -18,15 +18,15 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
     net::N
 end
 
-Condition(b::Bool, net::AbstractPnmlNet) = Condition(PNML.BooleanConstant(b), net)
-Condition(c::PNML.BooleanConstant, net::AbstractPnmlNet) = Condition(PNML.BooleanEx(c), net)
-Condition(expr::PNML.BooleanEx, net::AbstractPnmlNet) =
+Condition(b::Bool, net::AbstractPnmlNet) = Condition(BooleanConstant(b), net)
+Condition(c::BooleanConstant, net::AbstractPnmlNet) = Condition(BooleanEx(c), net)
+Condition(expr::BooleanEx, net::AbstractPnmlNet) =
     Condition(nothing, expr, nothing, nothing, REFID[], net)
-Condition(text::AbstractString, expr::PNML.BooleanEx, net::AbstractPnmlNet) =
+Condition(text::AbstractString, expr::BooleanEx, net::AbstractPnmlNet) =
     Condition(text, expr, nothing, nothing, REFID[], net)
 
 Base.eltype(::Type{<:Condition}) = Bool
-PNML.value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
+value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
@@ -38,7 +38,7 @@ variables(c::Condition) = c.vars
 
 function default(::Type{<:Condition}, ::PnmlType, net::AbstractPnmlNet)
     #@info "default Condition"
-    Condition(PNML.BooleanEx(PNML.BooleanConstant(true)), net)
+    Condition(BooleanEx(BooleanConstant(true)), net)
 end
 
 """
@@ -60,7 +60,7 @@ function cond_implementation(c::Condition, varsub::NamedTuple)
     #     @show arg
     # end
     # BooleanEx is a literal. AbstractBoolExpr <: PnmlExpr can be non-literal (non-ground term).
-    isa(term(c), PNML.BooleanEx) || @warn term(c) varsub  #! debug
+    isa(term(c), BooleanEx) || @warn term(c) varsub  #! debug
     #@show term(c) varsub toexpr(term(c), varsub, c)
     eval(toexpr(term(c), varsub, c.net))::eltype(c) # Bool isa Number
 end

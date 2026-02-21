@@ -147,10 +147,10 @@ At which level, both <text> and <structure> are optional.
 The <type> label of a [`Place`](@ref) is meant to be a _sort_ of a _many-sorted algebra_.
 We call it _sorttype_ to reduce the confusion.
 
-PNML.jl allows/requires all net type's places to have _sorttype_ objects. Only high-level PNML input is expected to contain a <type> tag. For other nets we interpret the [`SortType`](@ref) to be [`IntegerSort`](@ref) or [`RealSort`](@ref) based on PNTD. And [`Marking`](@ref) values of non-high-level nets are interpreted as multisets with airity of 1.
+PNML.jl allows/requires all net type's places to have _sorttype_ objects. Only high-level PNML input is expected to contain a <type> tag. For other nets we interpret the [`SortType`](@ref PNML.Labels.SortType) to be [`IntegerSort`](@ref) or [`RealSort`](@ref) based on PNTD. And [`Marking`](@ref) values of non-high-level nets are interpreted as multisets with airity of 1.
 This allows more common implementation in the core layer.
 
-For high-level nets the sorttype object is an [`SortType`](@ref) `HLAnnotation`
+For high-level nets the sorttype object is an [`SortType`](@ref PNML.Labels.SortType) `HLAnnotation`
 subtype containing an [`AbstractSort`](@ref).
 
 ## AbstractDeclaration

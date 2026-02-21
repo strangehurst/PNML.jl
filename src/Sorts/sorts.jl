@@ -55,18 +55,18 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
         if (isa_variant(b, NamedSortRef) &&
             isa(sortdefinition(namedsort(net, refid(b))), MultisetSort)) ||
            isa_variant(b, MultisetSortRef)
-            throw(PNML.MalformedException("basis cannot be MultisetSort, found $b"))
+            throw(MalformedException("basis cannot be MultisetSort, found $b"))
         end
         new(b)
     end
 end
 
 sortref(ms::MultisetSort) = identity(ms.basis)::SortRef
-sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)::SortRef))
+sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)))
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
-    print(io, PNML.indent(io), "MultisetSort(", repr(basis(us)), ")")
+    print(io, indent(io), "MultisetSort(", repr(basis(us)), ")")
 end
 
 """
@@ -88,7 +88,7 @@ Base.length(ps::ProductSort, net) = length(sorts(ps, net))
 Base.eltype(ps::ProductSort) = Tuple{eltype.(sortdefinitions(ps))...}
 
 sortdefinitions(p::ProductSort) = Iterators.map(sorts(p, p.net)) do s
-    sortdefinition(PNML.namedsort(p.net, refid(s)))
+    sortdefinition(namedsort(p.net, refid(s)))
 end
 
 """
@@ -98,21 +98,21 @@ Return iterator over `SortRef`s to sorts in the product.
 sorts(ps::ProductSort, ::AbstractPnmlNet) = values(ps.ae)
 
 function sorts(psr::SortRef,  net::AbstractPnmlNet)
-    ps = PNML.productsort(net, refid(psr))::ProductSort
+    ps = productsort(net, refid(psr))::ProductSort
     sorts(ps, net)
 end
 
 function sortelements(ref::SortRef, net::AbstractPnmlNet)
-    sortelements(PNML.Parser.to_sort(ref, net), net)
+    sortelements(to_sort(ref, net), net)
 end
 
-# return tuple = product of elements of each sort of ProductSort
-function sortelements(ps::ProductSort, net::AbstractPnmlNet) # Iterators.product does tuples
-    # sortref to sort to sortelements
+# Iterators.product is over tuples of 1 element from each sort of ProductSort
+function sortelements(ps::ProductSort, net::AbstractPnmlNet)
     Iterators.product(Fix2(sortelements, net).(sorts(ps, net))...)
 end
 
-function equalSorts(a::ProductSort{N}, b::ProductSort{N}, net::AbstractPnmlNet) where {N <: Integer}
+function equalSorts(a::ProductSort{N}, b::ProductSort{N},
+                    net::AbstractPnmlNet) where {N <: Integer}
     if length(a) == length(b) &&
             all(refid(x) == refid(y) for (x,y) in zip(sorts(a, net), sorts(b, net)))
         return true
@@ -128,9 +128,9 @@ function equalSorts(a::SortRef, b::SortRef, net::AbstractPnmlNet)
     else
         # Compare sortdefinitions.function
         #@show a
-        asort = PNML.Parser.to_sort(isa_variant(a, NamedSortRef) ? sortdefinition(namedsorts(net)[refid(a)]) : a, net)
+        asort = to_sort(unwrap_namedsort(a, net), net)
         #@show b
-        bsort = PNML.Parser.to_sort(isa_variant(b, NamedSortRef) ? sortdefinition(namedsorts(net)[refid(b)]) : b, net)
+        bsort = to_sort(unwrap_namedsort(b, net), net)
         return equalSorts(asort, bsort, net)
     end
 end
@@ -141,5 +141,5 @@ end
 
 
 function Base.show(io::IO, ps::ProductSort)
-    print(io, PNML.indent(io), "ProductSort(", ps.ae, ")")
+    print(io, indent(io), "ProductSort(", ps.ae, ")")
 end

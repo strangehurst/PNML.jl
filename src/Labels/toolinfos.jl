@@ -14,7 +14,7 @@ A <toolspecific> tag holds well formed XML that is parsed into an [`AnyElement`]
 end
 
 "Name of tool for this tool specific information element."
-PNML.name(ti::ToolInfo) = ti.toolname
+name(ti::ToolInfo) = ti.toolname
 
 version(ti::ToolInfo) = ti.version
 
@@ -23,9 +23,9 @@ info(ti::ToolInfo)   = ti.info
 
 # function Base.show(io::IO, toolvector::Vector{ToolInfo})
 #     print(io, "ToolInfo[")
-#     io = PNML.inc_indent(io)
+#     io = inc_indent(io)
 #     for (n, anye) in enumerate(toolvector)
-#         n > 1 && print(io, PNML.indent(io))
+#         n > 1 && print(io, indent(io))
 #         show(io, anye);
 #         length(toolvector) > 1 && n < length(toolvector) && println(io)
 #     end
@@ -33,7 +33,7 @@ info(ti::ToolInfo)   = ti.info
 # end
 
 function Base.show(io::IO, ti::ToolInfo)
-    print(io, "ToolInfo(", PNML.name(ti), ", ", version(ti), ", [")
+    print(io, "ToolInfo(", name(ti), ", ", version(ti), ", [")
     show(io, info(ti))
     print(io, ")")
 end
@@ -121,7 +121,7 @@ Return `true` if both toolname and version match. Default is any version.
 Applies to ToolInfo, ToolParser, and other objects with a `name` and `version` method.
 """
 function _match(tx::Union{ToolInfo,ToolParser}, namerex::Regex, versionrex::Regex = r"^.*$")
-    match_name = match(namerex, PNML.name(tx))
+    match_name = match(namerex, name(tx))
     match_version = match(versionrex, version(tx))
     !isnothing(match_name) && !isnothing(match_version)
 end

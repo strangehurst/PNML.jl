@@ -20,7 +20,6 @@
 # struct Structure{T}
 #     tag::Symbol
 #     el::T
-#     ddict::PNML.DeclDict
 # end
 # Structure(s::AbstractString, e; ddict) = Structure(Symbol(s), e, ddict)
 

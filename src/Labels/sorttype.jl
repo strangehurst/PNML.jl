@@ -37,9 +37,9 @@ A places's <type> label wraps a `UserSortRef` that holds a REFID to the sort of 
 hence use of `sorttype`. It is the type (or set) concept of the many-sorted algebra.
 
 For high-level nets there will be a declaration section with a rich language of sorts
-using `UserSortFRef`, [`NamedSort`](@ref PNML.Declarations.NamedSort),
-[`PartitionSort`](@ref PNML.Declarations.PartitionSort) or
-[`ArbitrarySort`](@ref PNML.Declarations.ArbitrarySort)
+using `UserSortFRef`, [`NamedSort`](@ref),
+[`PartitionSort`](@ref) or
+[`ArbitrarySort`](@ref)
 defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
@@ -75,8 +75,8 @@ SortType(s::AbstractString, sort::SortRef, net) = SortType(s, sort, nothing, not
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 refid(t::SortType) = refid(sortref(t))::Symbol
-sortof(t::SortType) = PNML.Sorts.sortdefinition(namedsort(t.net, refid(sortref(t))))
-sortelements(t::SortType, net::AbstractPnmlNet) = PNML.Sorts.sortelements(sortof(t), net)
+sortof(t::SortType) = sortdefinition(namedsort(t.net, refid(sortref(t))))
+sortelements(t::SortType, net::AbstractPnmlNet) = sortelements(sortof(t), net)
 
 """
     def_sort_element(x, net)
@@ -86,17 +86,17 @@ All sorts are expected to be iteratable and non-empty, so we return `first`.
 Uses include default inscription value and default initial marking value sorts.
 
 `x` can be anything with a `sortelements(x, net)` method that returns an iterator with length.
-See [`AbstractSort`](@ref), [`SortType`](@ref).
+See [`AbstractSort`](@ref), [`SortType`](@ref PNML.Labels.SortType).
 """
 function def_sort_element(pt::SortType, net::AbstractPnmlNet)
-    els = PNML.Sorts.sortelements(pt, pt.net) # HLPNG allows infinite iterators.
+    els = sortelements(pt, pt.net) # HLPNG allows infinite iterators.
     el = first(els) # Default to first of sort's elements (how often is this best?)
     #D()&& @warn "def_sort_element($pt, pid(net)) = $(repr(el)) from $(typeof(els))"
     return el
 end
 
 function Base.show(io::IO, st::SortType)
-    print(io, PNML.indent(io), "SortType(")
+    print(io, indent(io), "SortType(")
     show(io, text(st)); print(io, ", ")
     show(io, sortref(st))
     if has_graphics(st)

@@ -160,7 +160,7 @@ end
         # partition -> partition element -> fe constant
         @test typeof(psort) <: PartitionSort # is a declaration
         @test PNML.isregistered(net.idregistry, PNML.pid(psort))
-        psort == PNML.partitionsort(net, PNML.pid(psort)) #! @inferred
+        psort == partitionsort(net, PNML.pid(psort)) #! @inferred
         @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
         partname = @inferred Union{SubString{String}, String} PNML.name(psort)
         partsort = sortdefinition(psort) #! @inferred

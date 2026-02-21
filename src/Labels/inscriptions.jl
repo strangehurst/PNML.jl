@@ -64,11 +64,11 @@ end
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
 
-PNML.value_type(::Type{Inscription}, ::PnmlType) = eltype(PositiveSort) #::Int
-PNML.value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
-PNML.value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort)
+value_type(::Type{Inscription}, ::PnmlType) = eltype(PositiveSort) #::Int
+value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
+value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort)
 
-function PNML.value_type(::Type{Inscription}, pntd::AbstractHLCore)
+function value_type(::Type{Inscription}, pntd::AbstractHLCore)
     @error("value_type(::Type{Inscription}, $pntd) undefined. Using DotSort.") #! XXX TODO XXX
     eltype(DotSort) #! XXX TODO XXX
 end
@@ -79,7 +79,7 @@ function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType, net
         @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
     end
     #D()&& @info "$pntd default Inscription of adjacent $placetype = NumberEx(NamedSortRef(:positive), one(Int))"
-    Inscription(nothing, PNML.NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
+    Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
 function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType, net::AbstractPnmlNet)
@@ -87,7 +87,7 @@ function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::
         @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
     end
     #D()&& @info "$pntd default Inscription of adjacent $placetype = NumberEx(NamedSortRef(:real), one(Float64))"
-    Inscription(nothing, PNML.NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
+    Inscription(nothing, NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
 end
 
 # See def_insc
@@ -95,5 +95,5 @@ function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortTyp
     basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype, net)
     #D()&& @info "$pntd default Inscription of adjacent $placetype = Bag($basis, $el, 1)"
-    Inscription(nothing, PNML.Bag(basis, el, 1), nothing, nothing, REFID[], net) # non-empty singleton multiset.
+    Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net) # non-empty singleton multiset.
 end

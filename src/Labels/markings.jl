@@ -17,9 +17,9 @@ end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
 function Marking(m::Number, net::AbstractPnmlNet)
-    Marking(PNML.NumberEx(PNML.Labels.sortref(m)::SortRef, m), net)
+    Marking(NumberEx(sortref(m)::SortRef, m), net)
 end
-Marking(nx::PNML.NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
+Marking(nx::NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
 Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::AbstractPnmlNet) = Marking(t, s, nothing, nothing, net)
 
 term(marking::Marking) = marking.term
@@ -91,7 +91,7 @@ basis(m::Marking)   = sortref(term(m))::SortRef
 sortref(m::Marking) = expr_sortref(term(m), m.net)::SortRef
 
 function Base.show(io::IO, ptm::Marking)
-    print(io, PNML.indent(io), "Marking(")
+    print(io, indent(io), "Marking(")
     show(io, term(ptm))
     if has_graphics(ptm)
         print(io, ", ")
@@ -106,16 +106,16 @@ end
 
 #--------------------------------------------------------------------------------------
 # These are networks where the tokens have a collective identities.
-PNML.value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
-PNML.value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
+value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
+value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
-function PNML.value_type(::Type{Marking}, pntd::AbstractHLCore)
+function value_type(::Type{Marking}, pntd::AbstractHLCore)
     @error("value_type(::Type{Marking}, $pntd) undefined. Using DotSort.")
     eltype(DotSort)
 end
 
-PNML.value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
+value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
 
 #~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zero.
@@ -151,12 +151,12 @@ For high-level nets, the marking is an empty multiset whose basis matches `place
 Others have a marking that is a `Number`.
 """
 function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
-    #D()&& @info "$pntd default Marking $placetype value_type = $(PNML.value_type(PNML.Marking, pntd)))"
-    Marking(zero(PNML.value_type(PNML.Marking, pntd)), net) # not high-level!
+    #D()&& @info "$pntd default Marking $placetype value_type = $(value_type(Marking, pntd)))"
+    Marking(zero(value_type(Marking, pntd)), net) # not high-level!
 end
 
 function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
     el = def_sort_element(placetype, net)
     #D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
-    Marking(PNML.Bag(sortref(placetype), el, 0), "default", net) # el used for its type
+    Marking(Bag(sortref(placetype), el, 0), "default", net) # el used for its type
 end

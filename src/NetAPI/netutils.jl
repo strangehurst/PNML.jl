@@ -35,7 +35,7 @@ end
 
 
 function inscriptions(net::PnmlNet)
-    Iterators.map((arc_id, a)->arc_id => inscription(a)(NamedTuple()), pairs(PNML.arcdict(net)))
+    Iterators.map((arc_id, a)->arc_id => inscription(a)(NamedTuple()), pairs(arcdict(net)))
 end
 
 function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
@@ -43,7 +43,7 @@ function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
 end
 
 function conditions(net::PnmlNet)
-    Iterators.map((tr_id, t)->condition(t)(NamedTuple()), pairs(PNML.transitiondict(net)))
+    Iterators.map((tr_id, t)->condition(t)(NamedTuple()), pairs(transitiondict(net)))
 end
 
 function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
@@ -51,7 +51,7 @@ function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
 end
 
 function rates(net::PnmlNet)
-    [tid => rate_value(t) for (tid, t) in pairs(PNML.transitiondict(net))]
+    [tid => rate_value(t) for (tid, t) in pairs(transitiondict(net))]
 end
 
 """
@@ -70,13 +70,13 @@ function inscription_value(a::Maybe{Arc}, def, varsub)
     if isnothing(a)
         def
     else
-        eval(PNML.toexpr(PNML.term(PNML.inscription(a)), varsub, a.net))
+        eval(toexpr(term(inscription(a)), varsub, a.net))
     end
 end
 
 "Convert inscription value of PT_HLPNG from multiset to cardinality of the multiset."
 function _cvt_inscription_value(pntd::PnmlType, a::Maybe{Arc}, def, varsub)
-    #vt = value_type(PNML.Inscription, pntd)
+    #vt = value_type(Inscription, pntd)
     val = inscription_value(a, def, varsub)
     return pntd isa PT_HLPNG ? cardinality(val) : val
 end
@@ -131,7 +131,7 @@ Will not appear in input marking or output of fir!(incidence, enabled, marking).
 ########################################################################################
 function input_matrix(net::PnmlNet)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
-    ivt = pntd(net) isa PT_HLPNG ? Int : PNML.value_type(Inscription, pntd(net))
+    ivt = pntd(net) isa PT_HLPNG ? Int : value_type(Inscription, pntd(net))
     imatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return input_matrix!(imatrix, net) # Dispatch on net type.
 end

@@ -1,7 +1,8 @@
 """
 $(TYPEDEF)
-Declarations define objects/names that are used for high-level terms in conditions, inscriptions, markings.
-The definitions are attached to PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
+Declarations define objects/names that are used for high-level terms
+in conditions, inscriptions, markings. The definitions are attached to
+PNML nets and/or pages using a PNML Label defined in a <declarations> tag.
 
 - id
 - name
@@ -50,7 +51,7 @@ abstract type SortDeclaration <: AbstractSort end #!<: AbstractDeclaration end
 """
 $(TYPEDEF)
 
-[`NamedOperator`](@ref). [`PNML.FEConstant`](@ref), [`PartitionElement`](@ref) and
+[`NamedOperator`](@ref). `FEConstant`, [`PartitionElement`](@ref) and
 [`ArbitraryOperator`](@ref) are all referenced by `UserOperator`.
 
 `UserOperator` wraps REFID used to access `DeclDict`.
@@ -66,9 +67,7 @@ shared with `<variable>` terms in non-ground terms.
 
 EXAMPLE
 
-[`PNML.DeclDict`](@ref)
-
-PNML.variabledecls[id] = VariableDeclaration(id, "human name", sort)
+variabledecls[id] = VariableDeclaration(id, "human name", sort)
 """
 struct VariableDeclaration{N <: AbstractPnmlNet} <: AbstractDeclaration
     id::Symbol
@@ -175,7 +174,7 @@ function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
     show(io, pid(nsort)); print(io, ", ")
     show(io, name(nsort)); print(io, ", ")
-    io = PNML.inc_indent(io)
+    io = inc_indent(io)
     show(io, sortdefinition(nsort));
     print(io, ")")
 end
@@ -199,7 +198,7 @@ end
 
 # Empty parameter vector. Default to return sort of dots.
 NamedOperator(id::Symbol, str::AbstractString, net::AbstractPnmlNet) =
-    NamedOperator(id, str, VariableDeclaration[], PNML.DotConstant(), net)
+    NamedOperator(id, str, VariableDeclaration[], DotConstant(), net)
 
 #operator(no::NamedOperator) = operator(no.net, no.def) #! XXX def is an expression
 parameters(no::NamedOperator) = no.parameter

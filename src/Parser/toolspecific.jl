@@ -40,7 +40,7 @@ end
 Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
 """
 function tokengraphics_content(node, pntd)
-    PNML.Parser.parse_tokengraphics(EzXML.firstelement(node), pntd)
+    parse_tokengraphics(EzXML.firstelement(node), pntd)
 end
 
 """
@@ -51,7 +51,7 @@ See [`Labels.TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
 """
 function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
     nn = check_nodename(node, "tokengraphics")
-    tpos = PNML.coordinate_type(pntd)[]
+    tpos = coordinate_type(pntd)[]
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "tokenposition"
@@ -86,7 +86,7 @@ Parse `ToolInfo` content. Example:
 function nupn_content(node::XMLNode, pntd::PnmlType)
     nupn = anyelement(Symbol(EzXML.nodename(node)), node)
     #@show nupn
-    e = PNML.elements(nupn)
+    e = elements(nupn)
     @assert e[:tool] == "nupn"
     @assert e[:version] == "1.1"
     units = Labels.NupnUnit[]

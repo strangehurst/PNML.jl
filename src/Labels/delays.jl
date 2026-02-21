@@ -46,7 +46,7 @@ function delay_content_parser(label, value_type)
     @show (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$(repr(tag))'")
     D()&& @show value_type
-    closure = PNML._attribute(interval, :closure)
+    closure = _attribute(interval, :closure)
     D()&& @show closure
     # Expect at least one cn number.
     n = if haskey(interval, "cn")
@@ -54,9 +54,9 @@ function delay_content_parser(label, value_type)
             (isnothing(cn) || isempty(cn)) &&
                 throw(ArgumentError("<interval> <cn> element is $(repr(cn))"))
             if cn isa Vector
-                value_type[PNML.number_value(value_type, x) for x in cn]
+                value_type[number_value(value_type, x) for x in cn]
             else
-                value_type[PNML.number_value(value_type, cn)]
+                value_type[number_value(value_type, cn)]
             end
         end
     else
@@ -88,7 +88,7 @@ function delay_content_parser(label, value_type)
     return tup
 end
 
-"Map MathML constant string `i` to a Number. Supported: `infty`."
+"Map MathML constant string `i` to a Number. Supported: `infin, infty`."
 function _ci(i)
     if i == "infin" || i == "infty"
         return Base.Inf

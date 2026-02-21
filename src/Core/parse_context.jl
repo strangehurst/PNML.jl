@@ -40,25 +40,24 @@ function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Ca
 end
 
 function sortref(dict::Base.Callable, tag)
-    sortref::SortRefImpl.Type = @match dict begin
+    #sortref::SortRefImpl.Type =
+    @match dict begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin,
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of SortRefs
         PNML.partitionsorts => PartitionSortRef(tag) # declaration
         PNML.arbitrarysorts => ArbitrarySortRef(tag) # declaration
         _ => NamedSortRef(tag)
     end
-    #@show typeof(sortref)
-    return sortref
 end
 
 
 # match sort type to dictionary access method
 fill_sort_tag!(net::AbstractPnmlNet, tag, sort::NamedSort) =
-    fill_sort_tag!(net, tag, sort, PNML.namedsorts)
+    fill_sort_tag!(net, tag, sort, namedsorts)
 fill_sort_tag!(net::AbstractPnmlNet, tag, sort::PartitionSort) =
-    fill_sort_tag!(net, tag, sort, PNML.partitionsorts)
+    fill_sort_tag!(net, tag, sort, partitionsorts)
 fill_sort_tag!(net::AbstractPnmlNet, tag, sort::ArbitrarySort) =
-    fill_sort_tag!(net, tag, sort, PNML.arbitrarysorts)
+    fill_sort_tag!(net, tag, sort, arbitrarysorts)
 
 # These two sorts are not used in variable declarations.
 # They do not add a name to the contained sorts (or sortrefs).

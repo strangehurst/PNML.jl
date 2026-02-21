@@ -73,9 +73,9 @@ end
                 parse_transition(node, PnmlCoreNet(), net)::Transition)
     @test pid(trans) === :transition1
     @test elements(labels(trans)[:somelabel2])[:c] == "value"
-    @test PNML.get_label(trans, :somelabel2) !== nothing
-    @test PNML.get_label(trans, :nosuchlabel) === nothing
-    @test PNML.has_tools(trans) == false
+    @test get_label(trans, :somelabel2) !== nothing
+    @test get_label(trans, :nosuchlabel) === nothing
+    @test has_tools(trans) == false
 end
 
 #---------------------------------------------

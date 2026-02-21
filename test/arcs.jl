@@ -53,23 +53,23 @@ function pl_node(pntd, net, netdata, netsets)
             """
     end
     pl = parse_place(node, pntd, net)
-    push!(PNML.place_idset(netsets), pid(pl))
-    PNML.placedict(netdata)[pid(pl)] = pl
+    push!(place_idset(netsets), pid(pl))
+    placedict(netdata)[pid(pl)] = pl
 end
 
 #! arc needs :transition1 for adjacent transition
 function tr_node(pntd, net, netdata, netsets)
     node = xml"""<transition id="transition1" />"""
     tr = parse_transition(node, pntd, net)
-    push!(PNML.transition_idset(netsets), pid(tr))
-    PNML.transitiondict(netdata)[pid(tr)] = tr
+    push!(transition_idset(netsets), pid(tr))
+    transitiondict(netdata)[pid(tr)] = tr
 end
 
 println("\nARC\n")
 @testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
     # PNML.CONFIG[].warn_on_unclaimed = true
     net = make_net(pntd, :arc_net)
-    netsets = PNML.PnmlNetKeys()
+    netsets = PnmlNetKeys()
     pl_node(pntd, net, netdata(net), netsets)
     tr_node(pntd, net, netdata(net), netsets)
 
@@ -96,16 +96,16 @@ println("\nARC\n")
     @test_call inscription(a)
     #@show a inscription(a)(NamedTuple())
     if ishighlevel(pntd) # assumes storttype of dot
-        @test PNML.cardinality(inscription(a)(NamedTuple())) == 6
+        @test cardinality(inscription(a)(NamedTuple())) == 6
     else
         @test inscription(a)(NamedTuple()) == 6
     end
-    @test PNML.has_tools(a) == true
+    @test has_tools(a) == true
 end
 
 @testset "arc unknown label for $pntd" for pntd in PnmlTypes.all_nettypes()
     net = make_net(pntd, :arc_unknown)
-    netsets = PNML.PnmlNetKeys()
+    netsets = PnmlNetKeys()
     pl_node(pntd, net, netdata(net), netsets)
     tr_node(pntd, net, netdata(net), netsets)
     node = xmlnode("""

@@ -27,7 +27,7 @@ println("PRIORITY")
     @test_call PNML.priority_value(trans)
 
     tr = @inferred PNML.priority_value(trans)
-    @test eltype(tr) == PNML.value_type(Labels.Priority)
+    @test eltype(tr) == value_type(Labels.Priority)
 end
 
 @testset "get defaulted priority label $pntd" for pntd in PnmlTypes.all_nettypes()
