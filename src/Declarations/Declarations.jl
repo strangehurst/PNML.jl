@@ -17,10 +17,12 @@ using SciMLLogging: @SciMLMessage
 using PNML
 using PNML: REFID, AnyElement, AbstractTerm
 using PNML: arbitrarysorts, partitionsorts, partitionops
-using PNML: namedoperators, arbitraryops, feconstants
-using PNML: multisetsorts
+using PNML: namedoperators, arbitraryops, feconstants, multisetsorts
+using PNML: namedsort, arbitrarysort, partitionsort, partitionop
+using PNML: arbitraryop, feconstant, multisetsort
 using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort
-using PNML: ismultisetsort, isarbitrarysort, unwrap_namedsort
+using PNML: ismultisetsort, isarbitrarysort, indent, inc_indent
+using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
 
 import PNML: sortof, sortref, sortdefinition, sortelements, basis # Sort related
 import PNML: name # Many things have human-readable name strings.
@@ -28,6 +30,7 @@ import PNML: pid, refid # PNML ID
 import PNML: fill_sort_tag!, verify!
 
 using ..Sorts
+using ..Sorts: equalSorts
 using ..IDRegistrys
 
 include("declarations.jl")

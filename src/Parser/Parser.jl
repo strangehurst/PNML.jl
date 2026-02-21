@@ -26,25 +26,32 @@ using ..Expressions
 using ..IDRegistrys
 using ..PnmlTypes
 using ..Labels
+using ..Labels: validate_toolinfos
 using ..Sorts
-using ..Sorts: make_sortref
+using ..Sorts: make_sortref, equalSorts
 using ..Declarations
 
-using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D
-using PNML: Graphics, Coordinate
+using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D, registry_of, verify
+using PNML: Graphics, Coordinate, coordinate_type, elements
 using PNML: ToolInfo, XmlDictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
-using PNML: PartitionElement, PnmlMultiset
+using PNML: PartitionElement, PnmlMultiset, BooleanConstant
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
+using PNML: FEConstant, feconstants, has_feconstant
 using PNML: pid, fill_builtin_labelparsers!, fill_builtin_sorts!, fill_builtin_toolparsers!
-using PNML: ToolParser, LabelParser
+using PNML: ToolParser, LabelParser, NamedSort, Operator
 using PNML: default, fill_sort_tag!
-using PNML: namedsort, multisetsort, partitionsort, productsort
-using PNML: namedsorts, multisetsorts, partitionsorts, productsorts
+using PNML: namedsort, multisetsort, partitionsort, productsort, variabledecl, variabledecls
+using PNML: namedoperators, operator
+using PNML: has_namedsort, has_multisetsort, has_partitionsort, has_productsort, has_arbitrarysort
+using PNML: namedsorts, multisetsorts, partitionsorts, productsorts, arbitrarysorts
 using PNML: pagedict, placedict, transitiondict, arcdict, refplacedict, reftransitiondict
 using PNML: page_idset, place_idset, transition_idset, arc_idset, refplace_idset, reftransition_idset
-using PNML: netsets, toolinfos
+using PNML: netsets, toolinfos, value_type, number_value
 using PNML: NamedSortRef, PartitionSortRef, ProductSortRef, MultisetSortRef, ArbitrarySortRef
+using PNML: to_sort
+using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
+using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
 
 # Methods implemented in this module.
 import PNML: adjacent_place
@@ -64,6 +71,5 @@ include("toolspecific.jl")
 
 export XMLNode, xmlnode, @xml_str
 export pnmlmodel
-@public to_sort
 
 end

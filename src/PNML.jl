@@ -108,8 +108,8 @@ export @xml_str, xmlnode, D
 
 @public pnmlmodel
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
-@public namedsort
-@public rates, mcontains
+@public namedsort, Coordinate
+@public rates, mcontains, to_sort
 @public isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
 
 Multisets.set_key_value_show()
@@ -131,6 +131,7 @@ include("context.jl")
 include("Core/interfaces.jl") # Function docstrings mostly.
 include("Core/anyelement.jl") # AnyElement, XmlDictType, XDVT
 include("Core/types.jl") # Abstract Types with docstrings.
+include("Core/sortref.jl")
 
 include("Core/toolparser.jl")
 include("Core/labelparser.jl")
@@ -138,6 +139,7 @@ include("Core/labelparser.jl")
 # Parts of Labels and Nodes.
 
 include("Core/decldictcore.jl") # define structure filled by Sorts, Declarations
+include("terms/constterm.jl")
 
 include("Sorts/Sorts.jl") # used in Variables, Operators, Places
 using .Sorts
@@ -158,7 +160,6 @@ using .Declarations: VariableDeclaration
 include("Core/parse_context.jl") # parse context has id registry and DeclDict
 
 include("terms/multisets.jl")
-include("terms/constterm.jl")
 include("terms/variables.jl")
 
 include("terms/expressions.jl")

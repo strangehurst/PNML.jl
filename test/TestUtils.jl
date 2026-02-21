@@ -10,24 +10,38 @@ Multisets.set_key_value_show()
 @reexport using PNML
 @reexport using PNML.Sorts
 @reexport using PNML.Labels
-@reexport using PNML.Labels: TokenGraphics, get_toolinfo, version
+@reexport using PNML.Labels: TokenGraphics, get_toolinfo, version, text
+@reexport using PNML.Labels: PnmlLabel, get_label, Condition
+@reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
+    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
+    parse_name, parse_text, parse_graphics, parse_toolspecific,
+    parse_initialMarking, parse_inscription, parse_sort,
+    parse_declaration!, parse_declarations!,
+    parse_hlinitialMarking, parse_hlinscription, parse_fifoinitialMarking
+@reexport using PNML.Parser: to_sort, anyelement, xmldict
 @reexport using PNML.Parser
+@reexport using PNML.Parser: firstchild, allchildren
 @reexport using PNML.Declarations
 @reexport using PNML.IDRegistrys
 @reexport using PNML.PnmlTypes
 @reexport using PNML.PnmlGraphics
 #!@reexport using PNML.PNet
 @reexport using PNML: Maybe, DeclDict, XMLNode, xmlnode, @xml_str
-@reexport using PNML: Parser.firstchild, Parser.allchildren, PnmlMultiset, pid, ispid,
-    name, length, arity, tag, value, term, Labels.text, elements,
+@reexport using PNML: PnmlMultiset, pid, ispid,
+    name, length, arity, tag, value, term, elements, value_type,
     graphics, has_graphics,
-    XmlDictType, AnyElement, Parser.anyelement, Parser.xmldict,
-    multiset
+    XmlDictType, AnyElement,
+    multiset,
+    fill_sort_tag!,
+    fill_builtin_labelparsers!, fill_builtin_sorts!, fill_builtin_toolparsers!
 @reexport using PNML: toexpr, PnmlExpr, decldict
+@reexport using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
 
 #@reexport using PNML: Context
 
-@reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict
+@reexport using PNML: PnmlNetData, PnmlNetKeys, netsets, netdata, pagedict,
+    namedsorts, partitionsorts, arbitrarysorts,
+    namedsort, partitionsort, arbitrarysort
 
 @reexport using PNML: PnmlModel,
     PnmlNet, make_net, nets, nettype,
@@ -38,30 +52,27 @@ Multisets.set_key_value_show()
     RefTransition, reftransition, reftransitions, nreftransitions,
     Arc, arc, arcs, narcs, source, target, has_arc
 
-@reexport using PNML: labels, varsubs
+@reexport using PNML: labels, varsubs, Coordinate
 
-@reexport using PNML.Parser: pnmlmodel, parse_net, parse_page!,
-    parse_place, parse_arc, parse_transition, parse_refPlace, parse_refTransition,
-    parse_name, parse_text, parse_graphics, parse_toolspecific,
-    parse_initialMarking, parse_inscription, parse_sort,
-    parse_declaration!, parse_declarations!,
-    parse_hlinitialMarking, parse_hlinscription, parse_fifoinitialMarking
-@reexport using PNML.Parser: to_sort
+@reexport using PNML: page_idset, place_idset, transition_idset,
+    arc_idset, refplace_idset, reftransition_idset
+@reexport using PNML: pagedict, placedict, transitiondict, arcdict,
+    refplacedict, reftransitiondict
 
-@reexport using PNML.Labels: PnmlLabel, get_label, Condition
-
-@reexport using PNML: toolinfos
+@reexport using PNML: toolinfos, has_tools, get_label, cardinality
 
 @reexport using PNML: AbstractDeclaration, Declaration, refid, inscription, condition
 
 @reexport using PNML: AbstractSort, SortType, NamedSort, BoolSort, DotSort,
     CyclicEnumerationSort, FiniteEnumerationSort, FiniteIntRangeSort, PartitionElement,
     IntegerSort, NaturalSort, PositiveSort, RealSort,
-    MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, ArbitrarySort,
-    sortof, sortref, sortdefinition, sortelements, namedsort, initial_marking
+    MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, ArbitrarySort
 
-@reexport using PNML: NumberConstant, DotConstant, DotConstantEx, zero
+@reexport using PNML: sortof, sortref, sortdefinition, sortelements, namedsort, initial_marking
+
+@reexport using PNML: NumberConstant, BooleanConstant, DotConstant, DotConstantEx, zero
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
+
 @reexport using PNML.Expressions
 
 @reexport using PNML.SortRefImpl: UserSortRef, NamedSortRef, PartitionSortRef,

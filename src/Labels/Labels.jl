@@ -1,5 +1,17 @@
 module Labels
 
+export Inscription, Marking, Condition
+export Name, PnmlLabel, SortType, Declaration
+export HLLabel
+export Graphics, PnmlGraphics
+export ToolInfo
+export text, get_label, label_value, rate_value, priority_value, delay_value
+export def_sort_element
+export ToolParser
+export ArcType, ArcTypeEnum
+export Rate, Priority, Time
+export default, validate_toolinfos
+
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
@@ -13,23 +25,24 @@ import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, D
+using PNML: Maybe, nettype, AnyElement, D, indent, inc_indent
 using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, XmlDictType
-using PNML: PnmlMultiset, AbstractTerm
-using PNML: namedsort, namedsorts, multisetsorts, multisetsorts
-using PNML: ToolParser, LabelParser
+using PNML: BooleanConstant, PnmlMultiset, AbstractTerm
+using PNML: namedsort, multisetsort, partitionsort, productsort
+using PNML: namedsorts, multisetsorts, partitionsorts, productsorts
+using PNML: ToolParser, LabelParser, NamedSort, PartitionSort, ArbitrarySort
 
-import PNML: name
-import PNML: value_type
+import PNML: name, Coordinate
+import PNML: value_type, number_value
 import PNML: value, term, graphics, toolinfos, refid, tag, elements
 import PNML: has_graphics, get_label, labels, declarations
 import PNML:  arctype, isnormal, isinhibitor, isread, isreset, verify!
 
 using ..PnmlTypes # PNML PNTD
 
+using ..Expressions
 import ..Expressions: toexpr, PnmlExpr, expr_sortref
-
 
 using ..Sorts
 # Some labels implement the Sort interface
@@ -47,7 +60,6 @@ using .PnmlGraphics
 Return a default instance of label `T` for `pntd`.
 """
 function default end
-
 
 include("labels.jl")
 include("declaration.jl")
@@ -69,8 +81,8 @@ include("times.jl")
 If there is a label `tag` in `n.extralabels`, return its value,
 else return a default value of the correct Type `type`.
 """
-function label_value(n::AbstractPnmlNode, tag::Symbol, type, default)
-    label = get_label(n, tag)
+function label_value(node::AbstractPnmlNode, tag::Symbol, type, default)
+    label = get_label(node, tag)
     if isnothing(label)
         default(type)::type
     else
@@ -78,17 +90,4 @@ function label_value(n::AbstractPnmlNode, tag::Symbol, type, default)
         value(label)::type
     end
 end
-
-export Inscription, Marking, Condition
-export Name, PnmlLabel, SortType, Declaration
-export HLLabel
-export Graphics, PnmlGraphics
-export ToolInfo
-export text, get_label, label_value, rate_value, priority_value, delay_value
-export def_sort_element
-export ToolParser
-export ArcType, ArcTypeEnum
-export Rate, Priority, Time
-export default
-
 end # module labels
