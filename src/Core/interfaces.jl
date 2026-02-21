@@ -159,7 +159,8 @@ function inscriptions end
 """
     conditions(net::PnmlNet) -> Iterator
 
-Iterate over REFID => condition(transaction) pairs of `net`. This is the same order as `transactions`.
+Iterate over REFID => condition(transaction) pairs of `net`.
+This is the same order as `transactions`.
 """
 function conditions end
 
@@ -426,3 +427,74 @@ function output_matrix end
     verify!(errors::Vector{String}, x, verbose::Bool, net::AbstractPnmlNet)
 """
 function verify! end
+
+
+
+"Return dictionary of `UserOperator`"
+function useroperators end
+"Return dictionary of `VariableDecl`"
+function variabledecls end
+"Return dictionary of `NamedSort`"
+function namedsorts end
+"Return dictionary of `ArbitrarySort`"
+function arbitrarysorts end
+"Return dictionary of `PartitionSort`"
+function partitionsorts end
+"Return dictionary of `NamedOperator`"
+function namedoperators end
+"Return dictionary of `ArbitraryOperator`"
+function arbitraryops end
+"Return dictionary of partitionops (`PartitionElement`)"
+function partitionops end
+"Return dictionary of `FEConstant`"
+function feconstants end
+"Return dictionary of `MultisetSort`"
+function multisetsorts end
+"Return dictionary of `ProductSort`"
+function productsorts end
+
+
+"Lookup variable with `id`."
+function variabledecl end
+"Lookup namedsort with `id`."
+function namedsort end
+"Lookup arbitrarysort with `id`."
+function arbitrarysort end
+"Lookup partitionsort with `id`."
+function partitionsort end
+"Lookup multisetsort with `id`."
+function multisetsort end
+"Lookup productsort with `id`."
+function productsort end
+"Lookup namedop with `id`."
+function namedop end
+"Lookup arbitraryop with `id`."
+function arbitraryop end
+"Lookup partitionop with `id`."
+function partitionop end
+"Lookup feconstant with `id`."
+function feconstant end
+"Lookup useroperator with `id`."
+function useroperator end
+
+
+"Does any operator dictionary contain `id`?"
+function has_operator end
+
+"""
+    has_key(net::AbstractPnmlnet, dict, key::Symbol) -> Bool
+Where `dict` is the access method for a dictionary in `DeclDict`.
+"""
+function has_key end
+
+function has_variabledecl end
+function has_namedsort end
+function has_arbitrarysort end
+function has_partitionsort end
+function has_multisetsort end
+function has_productsort end
+function has_namedop end
+function has_arbitraryop end
+function has_partitionop end
+function has_feconstant end
+function has_useroperator end

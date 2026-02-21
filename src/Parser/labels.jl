@@ -23,7 +23,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = string(strip(EzXML.nodecontent(child)))::String
+            text = parse_text(child, pntd)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -65,7 +65,7 @@ function parse_arctype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, pare
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = string(strip(EzXML.nodecontent(child)))::String
+            text = parse_text(child, pntd)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -185,7 +185,7 @@ function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::P
     isnothing(placetype) && error("parse_initialMarking expects placetype to be not-nothing")
     # See if there is a <structure> attached to the label. This is non-standard.
     # Use of same mechanism used for high-level nets: if there is a <structure> attached
-    # to the label apply the `parse_structure` `termparser`.
+    # to the label apply `parse_structure` as a `termparser`.
     l = parse_label_content(node, parse_structure, pntd; net)::NamedTuple
     if !isnothing(l.exp) # There was a <structure> tag. It is now an expression.
         @warn "$nn place $parentid <structure> element in $pntd net; parsed as $(l.exp)"
@@ -195,15 +195,15 @@ function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::P
     end
     @assert isempty(l.vars) # All markings are ground terms.
     # sr = @show sortref(placetype)
-    # ts = @show to_sort(sortref(placetype), net)
+    # ts = @show to_sort(sr, net)
     # pt = @show eltype(ts)
     pt = eltype(to_sort(sortref(placetype), net))
-    mvt = eltype(PNML.value_type(Marking, pntd))
+    mvt = eltype(value_type(Marking, pntd))
     pt <: mvt ||
         @error("initial marking value type of $pntd must be $mvt, found: $pt")
-    value = isnothing(l.text) ? zero(pt) : PNML.number_value(pt, l.text)
+    value = isnothing(l.text) ? zero(pt) : number_value(pt, l.text)
     # We ate the text to make the expression.
-    Marking(PNML.NumberEx(sortref(placetype), value), nothing, l.graphics, l.toolspecinfos, net)
+    Marking(NumberEx(sortref(placetype), value), nothing, l.graphics, l.toolspecinfos, net)
 end
 
 """
@@ -223,8 +223,8 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            txt = string(strip(EzXML.nodecontent(child)))
-            value = PNML.number_value(PNML.value_type(Inscription, pntd), txt)
+            txt = parse_text(child, pntd)
+            value = number_value(value_type(Inscription, pntd), txt)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -236,11 +236,11 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
 
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value)
-        value = one(PNML.value_type(Inscription, pntd))
+        value = one(value_type(Inscription, pntd))
         CONFIG[].warn_on_fixup &&
             @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
-    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
+    term = NumberEx(sortref(value), value)
     Inscription(nothing, term, graphics, toolspecinfos, REFID[], net)
 end
 
@@ -282,7 +282,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
             error("$pntd default_sorttype of $(repr(parentid)) " *
                     "expected to be NamedSortRef, found $(default_sorttype)")
         end
-        if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype, net)
+        if !equalSorts(sortref(default_sorttype), placetype, net)
             println()
             @error("$pntd parse_hlinitialMarking of $(repr(parentid)) " *
                     "sortref mismatch: $default_sorttype != $placetype",
@@ -293,7 +293,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
 
     markexp = if isnothing(l.exp)
         # Default is an empty multiset whose basis matches placetype.
-        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype, net), 0)
+        Bag(sortref(placetype), def_sort_element(placetype, net), 0)
     else
         l.exp
     end
@@ -344,7 +344,7 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
             error("$pntd default_sorttype of $(repr(parentid)) expected to be NamedSortRef" *
                     ", found $(default_sorttype)")
         end
-        if !PNML.Sorts.equalSorts(sortref(default_sorttype), placetype, net)
+        if !equalSorts(sortref(default_sorttype), placetype, net)
             println()
             @error("$pntd parse_fifoinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l)
@@ -354,16 +354,12 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
 
     markexp = if isnothing(l.exp)
         # Default is an empty queue whose eltype matches placetype.
-        PNML.Bag(PNML.sortref(placetype), def_sort_element(placetype, net), 0)
+        Bag(sortref(placetype), def_sort_element(placetype, net), 0)
     else
         l.exp
     end
     Marking(markexp, l.text, l.graphics, l.toolspecinfos, net)
 end # parse_fifoinitialMarking
-
-
-
-
 
 
 """
@@ -391,7 +387,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; net::Abstrac
         isempty(tj.vars) || error("unexpected variables in $tj")
         if isnothing(placetype(pmt))
             @warn "$pntd ParseMarkingTerm placetype(pmt) is nothing"
-        elseif !PNML.Sorts.equalSorts(tj.ref, placetype(pmt), net)
+        elseif !equalSorts(tj.ref, placetype(pmt), net)
             @warn "$pntd ParseMarkingTerm sort mismatch" tj.ref placetype(pmt) tj
         end
         return tj
@@ -438,8 +434,8 @@ source(pit::ParseInscriptionTerm) = pit.source
 target(pit::ParseInscriptionTerm) = pit.target
 #netdata(pit::ParseInscriptionTerm) = pit.netdata
 
-function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
-    check_nodename(inscnode, "structure")
+function (pit::ParseInscriptionTerm)(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+    check_nodename(node, "structure")
     # D()&& println("\nParseInscriptionTerm ", pit)
     isa(target(pit), Symbol) ||
         error("target is a $(nameof(typeof(target(pit)))), expected Symbol")
@@ -451,8 +447,8 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
     # assume exactly one is a place (and the other a transition).
 
     # Find adjacent place's sorttype using `netdata`.
-    adjacentplace = PNML.adjacent_place(netdata(net), source(pit), target(pit))
-    placesort = PNML.Labels.sortref(adjacentplace)::SortRef
+    adjacentplace = adjacent_place(netdata(net), source(pit), target(pit))
+    placesort = sortref(adjacentplace)::SortRef
     # D()&& @show adjacentplace placesort
 
     # Variable substitution for a transition affects postset arc inscription,
@@ -460,33 +456,31 @@ function (pit::ParseInscriptionTerm)(inscnode::XMLNode, pntd::PnmlType; net::Abs
     # Variable substitution covers all variables in a transition. Variables are from inscriptions.
     # A condition expression may use variables from an inscripion.
 
-    tj = if EzXML.haselement(inscnode)
-        parse_term(EzXML.firstelement(inscnode), pntd; vars=(), net)::TermJunk
-    else
-        error("missing inscription term arc $(source(pit)) -> $(target(pit))")
-    end
+    EzXML.haselement(node) ||
+        error("missing inscription term of arc $(source(pit)) -> $(target(pit))")
+    tj = parse_term(EzXML.firstelement(node), pntd; vars=(), net)::TermJunk
 
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(tj.exp))), expected PnmlExpr")
 
-    if !PNML.Sorts.equalSorts(tj.ref, placesort, net)
+    if !equalSorts(tj.ref, placesort, net)
         @error("arc $(source(pit)) -> $(target(pit)) inscription term sort mismatch: $(tj.ref) != $placesort",
                 tj, adjacentplace)
     end
     return tj
 end
 
-function PNML.adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID)
+function adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID)
     # Meta-model constraint for Petri nets is that arcs must be between place and transition.
 
-    if haskey(PNML.placedict(netdata), source)
-        haskey(PNML.transitiondict(netdata), target) ||
-            error("adjacent source plece $source does not have transition target $target")
-        return @inline PNML.placedict(netdata)[source]
-    elseif haskey(PNML.placedict(netdata), target)
-        haskey(PNML.transitiondict(netdata), source) ||
+    if haskey(placedict(netdata), source)
+        haskey(transitiondict(netdata), target) ||
+            error("adjacent source place $source does not have transition target $target")
+        return @inline placedict(netdata)[source]
+    elseif haskey(placedict(netdata), target)
+        haskey(transitiondict(netdata), source) ||
              error("adjacent target place $target does not have transition source $source")
-        return @inline PNML.placedict(netdata)[target]
+        return @inline placedict(netdata)[target]
     else
         error("adjacent place not found for source = $source, target = $target")
     end
@@ -498,13 +492,11 @@ function def_insc(netdata, source,::REFID, target::REFID, net::AbstractPnmlNet)
     # Core PNML standard allows arcs from place to place & transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
-    place = PNML.adjacent_place(netdata, source, target)
-    placetype = place.sorttype
-    el = def_sort_element(placetype, net)
-    @info "def_insc $(repr(source)) $(repr(target)) pnmlmultiset $placetype $el"
-    inscr = PNML.pnmlmultiset(PNML.sortref(placetype), el, 1; net)::PnmlMultiset
-    #@show inscr
-    return inscr
+    place = adjacent_place(netdata, source, target)
+    place_type = place.sorttype
+    sort_element = def_sort_element(place_type, net)
+    @info "def_insc $(repr(source)) $(repr(target)) pnmlmultiset $place_type $sort_element"
+    return pnmlmultiset(sortref(place_type), sort_element, 1; net)::PnmlMultiset
 end
 
 """
@@ -532,7 +524,7 @@ Another field holds information on variables in the expression.
 function parse_condition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
     l = parse_label_content(node, parse_condition_term, pntd; net)::NamedTuple
     isnothing(l.exp) &&
-        throw(PNML.MalformedException("$(repr(parentid)) missing condition term in $(repr(l))"))
+        throw(MalformedException("$(repr(parentid)) missing condition term in $l"))
     PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, REFID[l.vars...], net)
 end
 
@@ -586,11 +578,12 @@ See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
-    sortnode = EzXML.firstelement(typenode)::XMLNode # Expect only child element to be a sort.
-    sorttype = parse_sort(sortnode, pntd, nothing, ""; net)::SortRef
-    isa_variant(sorttype, MultisetSortRef) && error("multiset sort not allowed for place <type>")
+    # Expect only child element to be a sort.
+    sort_node = EzXML.firstelement(typenode)::XMLNode
+    sort_type = parse_sort(sort_node, pntd, nothing, ""; net)::SortRef
+    ismultisetsort(sort_type) && error("multiset sort not allowed for place <type>")
     # We use TermJunk because it is convenient. #! Does it work?
-    return TermJunk(sorttype, sorttype, ()) # Not a term; has no variables.
+    return TermJunk(sort_type, sort_type, ()) # Not a term; has no variables.
 end
 
 """
@@ -615,8 +608,8 @@ function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            txt = string(strip(EzXML.nodecontent(child)))
-            value = PNML.number_value(PNML.value_type(Rate, pntd), txt)
+            txt = parse_text(child, pntd)
+            value = number_value(value_type(Rate, pntd), txt)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -628,13 +621,13 @@ function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
 
     # Treat missing value as if the <rate> element was absent.
     if isnothing(value)
-        value = one(PNML.value_type(Rate, pntd))
+        value = one(value_type(Rate, pntd))
         CONFIG[].warn_on_fixup &&
             @warn("$(repr(parentid)) has missing or unparsable <rate> value '$txt' " *
                         "replaced with $value")
     end
 
-    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
+    term = NumberEx(sortref(value), value)
     return Rate(; term, graphics, toolspecinfos, net)
 end
 
@@ -650,8 +643,8 @@ function parse_priority(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, par
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            txt = string(strip(EzXML.nodecontent(child)))
-            value = PNML.number_value(PNML.value_type(Priority, pntd), txt)
+            txt = parse_text(child, pntd)
+            value = number_value(value_type(Priority, pntd), txt)
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
@@ -663,12 +656,12 @@ function parse_priority(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, par
 
     # Treat missing value as if the element was absent.
     if isnothing(value)
-        value = one(PNML.value_type(Priority, pntd))
+        value = one(value_type(Priority, pntd))
         CONFIG[].warn_on_fixup &&
             @warn("$(repr(parentid)) has missing or unparsable <priority> value '$txt' " *
                         "replaced with $value")
     end
 
-    term = PNML.NumberEx(PNML.Labels.sortref(value), value)
+    term = NumberEx(sortref(value), value)
     return Priority(; term, graphics, toolspecinfos, net)
 end

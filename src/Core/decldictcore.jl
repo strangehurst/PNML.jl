@@ -48,28 +48,16 @@ __dd_fields(dd) = Iterators.map(Fix1(getproperty, dd), (:namedsorts, :arbitrarys
 Base.isempty(dd::DeclDict) = all(isempty, __dd_fields(dd))
 Base.length(dd::DeclDict)  = sum(length,  __dd_fields(dd))
 
-"Return dictionary of `UserOperator`"
 useroperators(dd::DeclDict)  = dd.useroperators
-"Return dictionary of `VariableDecl`"
 variabledecls(dd::DeclDict)  = dd.variabledecls
-"Return dictionary of `NamedSort`"
 namedsorts(dd::DeclDict)     = dd.namedsorts
-"Return dictionary of `ArbitrarySort`"
 arbitrarysorts(dd::DeclDict) = dd.arbitrarysorts
-"Return dictionary of `PartitionSort`"
 partitionsorts(dd::DeclDict) = dd.partitionsorts
-"Return dictionary of `NamedOperator`"
 namedoperators(dd::DeclDict) = dd.namedoperators
-"Return dictionary of `ArbitraryOperator`"
 arbitraryops(dd::DeclDict)   = dd.arbitraryoperators
-"Return dictionary of partitionops (`PartitionElement`)"
 partitionops(dd::DeclDict)   = dd.partitionops
-"Return dictionary of `FEConstant`"
 feconstants(dd::DeclDict)    = dd.feconstants
-
-"Return dictionary of `MultisetSort`"
 multisetsorts(dd::DeclDict)    = dd.multisetsorts
-"Return dictionary of `ProductSort`"
 productsorts(dd::DeclDict)    = dd.productsorts #! put in namedsorts like FiniteItRangeSort
 
 """
@@ -96,50 +84,31 @@ function declarations(dd::DeclDict)
     ])
 end
 
-"""
-    has_key(dd::DeclDict, dict, key::Symbol) -> Bool
-Where `dict` is the access method for a dictionary in `DeclDict`.
-"""
 has_key(dd::DeclDict, dict, key::Symbol)   = haskey(dict(dd),key)
 
 has_variabledecl(dd::DeclDict, id::Symbol)   = has_key(dd, variabledecls, id)
 has_namedsort(dd::DeclDict, id::Symbol)      = has_key(dd, namedsorts, id)
 has_arbitrarysort(dd::DeclDict, id::Symbol)  = has_key(dd, arbitrarysorts, id)
 has_partitionsort(dd::DeclDict, id::Symbol)  = has_key(dd, partitionsorts, id)
-
 has_multisetsort(dd::DeclDict, id::Symbol)   = has_key(dd, multisetsorts, id)
 has_productsort(dd::DeclDict, id::Symbol)    = has_key(dd, productsorts, id)
-
 has_namedop(dd::DeclDict, id::Symbol)        = has_key(dd, namedoperators, id)
 has_arbitraryop(dd::DeclDict, id::Symbol)    = has_key(dd, arbitraryops, id)
 has_partitionop(dd::DeclDict, id::Symbol)    = has_key(dd, partitionops, id)
 has_feconstant(dd::DeclDict, id::Symbol)     = has_key(dd, feconstants, id)
 has_useroperator(dd::DeclDict, id::Symbol)   = has_key(dd, useroperators, id)
 
-"Lookup variable with `id` in DeclDict."
-variabledecl(dd::DeclDict, id::Symbol) = variabledecls(dd)[id]
-"Lookup namedsort with `id` in DeclDict."
-namedsort(dd::DeclDict, id::Symbol)      = namedsorts(dd)[id]
-"Lookup arbitrarysort with `id` in DeclDict."
-arbitrarysort(dd::DeclDict, id::Symbol)  = arbitrarysorts(dd)[id]
-"Lookup partitionsort with `id` in DeclDict."
-partitionsort(dd::DeclDict, id::Symbol)  = partitionsorts(dd)[id]
-
-"Lookup multisetsort with `id` in DeclDict."
+variabledecl(dd::DeclDict, id::Symbol)  = variabledecls(dd)[id]
+namedsort(dd::DeclDict, id::Symbol)     = namedsorts(dd)[id]
+arbitrarysort(dd::DeclDict, id::Symbol) = arbitrarysorts(dd)[id]
+partitionsort(dd::DeclDict, id::Symbol) = partitionsorts(dd)[id]
 multisetsort(dd::DeclDict, id::Symbol)  = multisetsorts(dd)[id]
-"Lookup productsort with `id` in DeclDict."
 productsort(dd::DeclDict, id::Symbol)   = productsorts(dd)[id]
-
-"Lookup namedop with `id` in DeclDict."
-namedop(dd::DeclDict, id::Symbol)        = namedoperators(dd)[id]
-"Lookup arbitraryop with `id` in DeclDict."
-arbitraryop(dd::DeclDict, id::Symbol)    = arbitraryops(dd)[id]
-"Lookup partitionop with `id` in DeclDict."
-partitionop(dd::DeclDict, id::Symbol)    = partitionops(dd)[id]
-"Lookup feconstant with `id` in DeclDict."
-feconstant(dd::DeclDict, id::Symbol)     = feconstants(dd)[id]
-"Lookup useroperator with `id` in DeclDict."
-useroperator(dd::DeclDict, id::Symbol)   = useroperators(dd)[id]
+namedop(dd::DeclDict, id::Symbol)       = namedoperators(dd)[id]
+arbitraryop(dd::DeclDict, id::Symbol)   = arbitraryops(dd)[id]
+partitionop(dd::DeclDict, id::Symbol)   = partitionops(dd)[id]
+feconstant(dd::DeclDict, id::Symbol)    = feconstants(dd)[id]
+useroperator(dd::DeclDict, id::Symbol)  = useroperators(dd)[id]
 
 "Return tuple of operator dictionary fields in the Declaration Dictionaries."
 _op_dictionaries() = (:namedoperators, :feconstants, :partitionops, :arbitraryoperators)

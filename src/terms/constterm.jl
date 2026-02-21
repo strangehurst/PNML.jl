@@ -6,7 +6,7 @@ Restricted to NumberSorts, those `Sort`s whose `eltype` isa `Number`.
 """
 struct NumberConstant{T<:Number} <: AbstractOperator
     value::T
-    sort::SortRef # value isa eltype(sort), verified by parser.
+    sort::SortRef # value isa eltype(to_sort(sort, net), verified by parser.
     # Constant operators are 0-arity by definition. Parameter vector not used here.
 end
 
@@ -77,7 +77,7 @@ tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 sortref(c::FiniteIntRangeConstant) = identity(c.sort)::SortRef
 
 #"Special case to ` IntegerSort()`, it is part of the name, innit."
-sortof(::FiniteIntRangeConstant, ::AbstractPnmlNet) = IntegerSort() # FiniteIntRangeConstant are always integers
+sortof(::FiniteIntRangeConstant, ::AbstractPnmlNet) = IntegerSort()
 # or sortdefinition(namedsort(ddict, :integer))::IntegerSort
 
 value(c::FiniteIntRangeConstant) = c.value
