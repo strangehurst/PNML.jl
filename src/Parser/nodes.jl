@@ -188,23 +188,28 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
         end
     end
 
-    #TODO Does creating default values win over Maybe? for inscriptions?
-    #TODO There will be net meta-models that assume all inscriptions are 1 and omit the label.
+    # We are using REFIDs to access both the adjacent place in a dictionary.
+    # This (an inscription) is an expression returning a ground term.
+    # It may have non-ground terms as parameters.
+
     if isnothing(inscription)
         dummy_placetype = if ishighlevel(pntd)
             if pntd isa PT_HLPNG
                 SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
             else
-                #D()&&
-                @error "$pntd inscription not provided for arc $(repr(arcid)) ($(repr(source)) -> $(repr(target))), will use :dot."
-
-                #TODO XXX Use the adjacent place's sorttype.
+                # For High-level nets try to deduce using the adjacent place's sorttype.
                 # Note that the adjacent place may have not been parsed yet.
-                # We are using REFIDs to access them in a store.
-                # This (an inscription) is an expression for a ground term.
-                # Default should be one of the adjacent place sorttype.
-                #todo? Make expression that creates/caches default expresson when evaluated?
-                SortType("dummy HIGHLEVEL", NamedSortRef(:dot),  net)
+                sr = if has_place(net, source)
+                    sortref(place(net, source))
+                elseif has_place(net, target)
+                    sortref(place(net, target))
+                else
+                    @error string("$pntd inscription not provided for ",
+                                "arc $arcid ($source -> $target), ",
+                                "and we failed to deduce a sorttype, will use :dot.")
+                    NamedSortRef(:dot)
+                end
+                SortType("dummy HIGHLEVEL", sr,  net)
            end
         elseif iscontinuous(pntd)
             SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
@@ -215,7 +220,8 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
     end
 
     if isnothing(arc_type_label)
-        arc_type_label = ArcType(; arctype=Labels.ArcTypeEnum.Normal)
+        arc_type_label = ArcType()
+        @assert isnormal(arc_type_label)
     end
 
     Arc(; id=arcid, source=Ref(source), target=Ref(target),

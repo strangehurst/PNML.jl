@@ -52,6 +52,8 @@ using PNML: NamedSortRef, PartitionSortRef, ProductSortRef, MultisetSortRef, Arb
 using PNML: to_sort
 using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
 using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
+using PNML: isnormal, isinhibitor, isread, isreset
+using PNML: has_place, place
 
 # Methods implemented in this module.
 import PNML: adjacent_place
