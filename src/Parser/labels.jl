@@ -470,20 +470,25 @@ function (pit::ParseInscriptionTerm)(node::XMLNode, pntd::PnmlType; net::Abstrac
     return tj
 end
 
-function adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID)
-    # Meta-model constraint for Petri nets is that arcs must be between place and transition.
+function adjacent_place(netdata::PnmlNetData, source::REFID, target::REFID, strict=true)
+    # `strict` means enforce Meta-model constraint for Petri nets
+    # that arcs must be between place and transition.
 
     if haskey(placedict(netdata), source)
-        haskey(transitiondict(netdata), target) ||
+        if strict && !haskey(transitiondict(netdata), target)
             error("adjacent source place $source does not have transition target $target")
+        end
         return @inline placedict(netdata)[source]
     elseif haskey(placedict(netdata), target)
-        haskey(transitiondict(netdata), source) ||
+        if strict && !haskey(transitiondict(netdata), source)
              error("adjacent target place $target does not have transition source $source")
+        end
         return @inline placedict(netdata)[target]
-    else
+    elseif strict
+        # Forbid speculative lookup attempt.
         error("adjacent place not found for source = $source, target = $target")
     end
+    return nothing # Means place not yet parsed.
 end
 
 

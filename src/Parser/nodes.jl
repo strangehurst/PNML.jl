@@ -197,7 +197,7 @@ function parse_arc(node::XMLNode, pntd::PnmlType, net::AbstractPnmlNet)
             if pntd isa PT_HLPNG
                 SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
             else
-                # For High-level nets try to deduce using the adjacent place's sorttype.
+                # For other high-level nets, try to deduce using the adjacent place.
                 # Note that the adjacent place may have not been parsed yet.
                 sr = if has_place(net, source)
                     sortref(place(net, source))
