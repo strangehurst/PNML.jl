@@ -267,24 +267,21 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     isnothing(l.exp) &&
         error("Missing expression for $pntd net")
 
-    if isa_variant(placetype, NamedSortRef) ||
-        (isa_variant(placetype, ProductSortRef) &&
-            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, net)))
-        #NOOP# D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
-    else
-        @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
-                " or product of named sorts, found $(placetype)")
+    if !(isnamedsort(placetype) ||
+        (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
+        @error("$pntd placetype of $parentid expected to be NamedSortRef" *
+                " or product of named sorts, found $placetype")
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
-        if !isa_variant(sortref(default_sorttype), NamedSortRef)
-            error("$pntd default_sorttype of $(repr(parentid)) " *
-                    "expected to be NamedSortRef, found $(default_sorttype)")
+        if !isnamedsort(sortref(default_sorttype))
+            error("$pntd default_sorttype of $parentid " *
+                    "expected to be NamedSortRef, found $default_sorttype")
         end
         if !equalSorts(sortref(default_sorttype), placetype, net)
             println()
-            @error("$pntd parse_hlinitialMarking of $(repr(parentid)) " *
+            @error("$pntd parse_hlinitialMarking of $parentid " *
                     "sortref mismatch: $default_sorttype != $placetype",
                     default_sorttype, placetype, l)
             println()
@@ -326,23 +323,20 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
         error("Missing expression for $pntd net")
     #@show l.exp
 
-    if isa_variant(placetype, NamedSortRef) ||
-        (isa_variant(placetype, ProductSortRef) &&
-            all(Fix2(isa_variant, NamedSortRef), Sorts.sorts(placetype, net)))
-        # D()&& @warn "$pntd place $(repr(parentid)) placetype is a product sort of named sorts"
-    else
-        @error("$pntd placetype of $(repr(parentid)) expected to be NamedSortRef" *
-                " or product of named sorts, found $(placetype)")
-        if isa_variant(placetype, ProductSortRef)
+    if !(isnamedsort(placetype) ||
+         (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
+        @error("$pntd placetype of $parentid expected to be NamedSortRef" *
+                " or product of named sorts, found $placetype")
+        if isproductsort(placetype)
             foreach(println, Sorts.sorts(placetype, net))
         end
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
-        if !isa_variant(sortref(default_sorttype), NamedSortRef)
-            error("$pntd default_sorttype of $(repr(parentid)) expected to be NamedSortRef" *
-                    ", found $(default_sorttype)")
+        if !isnamedsort(sortref(default_sorttype))
+            error("$pntd default_sorttype of $parentid expected to be NamedSortRef" *
+                    ", found $default_sorttype")
         end
         if !equalSorts(sortref(default_sorttype), placetype, net)
             println()

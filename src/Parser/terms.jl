@@ -231,7 +231,7 @@ function parse_term(::Val{:all}, node::XMLNode, pntd::PnmlType; vars, net::Abstr
     isnothing(child) && throw(MalformedException("<all> operator missing sort argument"))
     # refsort is the basis of a multiset.
     refsort = parse_usersort(child, pntd; net)::SortRef
-    @assert isa_variant(refsort, NamedSortRef)
+    @assert isnamedsort(refsort)
     #! @assert isfinitesort(refsort) #^ Only expect finite sorts here.
 
     return TermJunk(Bag(refsort), refsort, vars) # :all
@@ -241,7 +241,7 @@ function parse_term(::Val{:empty}, node::XMLNode, pntd::PnmlType; vars, net::Abs
     child = EzXML.firstelement(node) # Child is the one argument.
     isnothing(child) && throw(MalformedException("<empty> operator missing sort argument"))
     refsort = parse_usersort(child, pntd; net)::SortRef
-    @assert isa_variant(refsort, NamedSortRef)
+    @assert isnamedsort(refsort)
     #! ePNK uses <integer/>. Could be inlined productsort.
     x = first(sortelements(refsort, net)) # So Multiset can do eltype(basis) == typeof(x)
     # Can handle non-finite sets here.
@@ -557,7 +557,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::Abs
     else
         ProductSortRef(sorttag)
     end
-    @assert isa_variant(sortref, ProductSortRef)
+    @assert isproductsort(sortref)
     return TermJunk(expr_tup, sortref, ())
 end
 

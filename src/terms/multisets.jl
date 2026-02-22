@@ -214,7 +214,7 @@ end
 
 # For <all> only the basis is needed.
 function pnmlmultiset(basis::SortRef, ::Nothing, ::Nothing; net::AbstractPnmlNet)
-    if isa_variant(basis, MultisetSortRef)
+    if ismultisetsort(basis)
         throw(ArgumentError("Cannot have MultisetSort basis of $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?

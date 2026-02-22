@@ -86,7 +86,7 @@ function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
         elseif tag == "partition"
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
             part = parse_partition(child, pntd; net)::SortRef
-            @assert isa_variant(part, PartitionSortRef)
+            @assert ispartitionsort(part)
         #! elseif tag === :partitionoperator
         #!      PartitionLessThan, PartitionGreaterThan, PartitionElementOf
         #!      partop = parse_partition_op(child, pntd)
@@ -94,7 +94,7 @@ function fill_decl_dict!(net::AbstractPnmlNet, node::XMLNode, pntd::PnmlType)
 
         elseif tag == "arbitrarysort"
             arb = parse_arbitrarysort(child, pntd; net)
-            @assert isa_variant(arb, ArbitrarySortRef)
+            @assert isarbitrarysort(arb)
        else
             push!(unknown_decls, parse_unknowndecl(child, pntd; net))
         end
@@ -437,7 +437,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, pntd::PnmlType, paren
         sort = FiniteIntRangeSort(startval, stopval)
         sref = make_sortref(net, namedsorts, sort, "finiteintrange", sorttag, name)
         #D()&& @show sref
-        @assert isa_variant(sref, NamedSortRef)
+        @assert isnamedsort(sref)
         return sref
     end
 end
