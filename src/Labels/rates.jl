@@ -20,7 +20,7 @@ Base.eltype(::Rate) = value_type(Rate)
 
 term(r::Rate) = r.term
 sortref(r::Rate) = expr_sortref(term(r), r.net)::SortRef
-sortof(r::Rate) = sortdefinition(namedsort(r.net, refid(sortref(r))))
+sortof(r::Rate) = sortdefinition(namedsort(r.net, sortref(r)))
 
 function (rate::Rate)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(rate), varsub, rate.net))::value_type(Rate)

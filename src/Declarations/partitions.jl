@@ -118,7 +118,7 @@ struct PartitionSort{N <: AbstractPnmlNet} <: SortDeclaration
 end
 
 #TODO also do AbstractSort, another SortDeclaration
-sortdefinition(p::PartitionSort) = sortdefinition(namedsort(p.net, refid(p.def)))
+sortdefinition(p::PartitionSort) = sortdefinition(namedsort(p.net, p.def))
 sortelements(p::PartitionSort, ::AbstractPnmlNet) = p.elements
 
 # TODO Add Partition/PartitionElement methods here

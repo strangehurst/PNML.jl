@@ -75,7 +75,7 @@ SortType(s::AbstractString, sort::SortRef, net) = SortType(s, sort, nothing, not
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort_
 refid(t::SortType) = refid(sortref(t))::Symbol
-sortof(t::SortType) = sortdefinition(namedsort(t.net, refid(sortref(t))))
+sortof(t::SortType) = sortdefinition(namedsort(t.net, sortref(t)))
 sortelements(t::SortType, net::AbstractPnmlNet) = sortelements(sortof(t), net)
 
 """
@@ -89,10 +89,7 @@ Uses include default inscription value and default initial marking value sorts.
 See [`AbstractSort`](@ref), [`SortType`](@ref PNML.Labels.SortType).
 """
 function def_sort_element(pt::SortType, net::AbstractPnmlNet)
-    els = sortelements(pt, pt.net) # HLPNG allows infinite iterators.
-    el = first(els) # Default to first of sort's elements (how often is this best?)
-    #D()&& @warn "def_sort_element($pt, pid(net)) = $(repr(el)) from $(typeof(els))"
-    return el
+    first(sortelements(pt, pt.net))
 end
 
 function Base.show(io::IO, st::SortType)

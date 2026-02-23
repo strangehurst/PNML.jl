@@ -122,7 +122,7 @@ end
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
 sortref(vd::VariableDeclaration) = vd.sort::SortRef
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, refid(sortref(vd))))::AbstractSort
+sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, sortref(vd)))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
