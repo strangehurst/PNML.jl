@@ -52,9 +52,10 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
     basis::SortRef
 
     function MultisetSort(b::SortRef, net::AbstractPnmlNet)
-        if (isa_variant(b, NamedSortRef) &&
-            isa(sortdefinition(namedsort(net, refid(b))), MultisetSort)) ||
-           isa_variant(b, MultisetSortRef)
+        if ismultisetsort(b) ||
+           (isnamedsort(b) &&
+                isa(sortdefinition(namedsort(net, b)), MultisetSort))
+
             throw(MalformedException("basis cannot be MultisetSort, found $b"))
         end
         new(b)
@@ -82,13 +83,11 @@ Where sorts are the syntax for color classes and ProductSort is the color domain
     net::P
 end
 #
-isproductsort(::ProductSort) = true
-isproductsort(::Any) = false
 Base.length(ps::ProductSort, net) = length(sorts(ps, net))
 Base.eltype(ps::ProductSort) = Tuple{eltype.(sortdefinitions(ps))...}
 
 sortdefinitions(p::ProductSort) = Iterators.map(sorts(p, p.net)) do s
-    sortdefinition(namedsort(p.net, refid(s)))
+    sortdefinition(namedsort(p.net, s))
 end
 
 """
@@ -98,7 +97,7 @@ Return iterator over `SortRef`s to sorts in the product.
 sorts(ps::ProductSort, ::AbstractPnmlNet) = values(ps.ae)
 
 function sorts(psr::SortRef,  net::AbstractPnmlNet)
-    ps = productsort(net, refid(psr))::ProductSort
+    ps = productsort(net, psr)::ProductSort
     sorts(ps, net)
 end
 
@@ -126,10 +125,8 @@ function equalSorts(a::SortRef, b::SortRef, net::AbstractPnmlNet)
         #println("Same type ref and same refid means same sortdefinition.")
         return true
     else
-        # Compare sortdefinitions.function
-        #@show a
+        # Compare sortdefinitions.
         asort = to_sort(unwrap_namedsort(a, net), net)
-        #@show b
         bsort = to_sort(unwrap_namedsort(b, net), net)
         return equalSorts(asort, bsort, net)
     end

@@ -36,10 +36,10 @@ function parse_term(node::XMLNode, pntd::PnmlType; vars, net::AbstractPnmlNet)
     # Collect varible REFIDs in `vars`. `length(vars) == 0` means is a ground term.
     # Ensure that there is a `toexpr` method. #! DEBUG only?
     if !isa(which(toexpr, (typeof(tjtuple.exp), NamedTuple, DeclDict)), Method)
-        error("No `toexpr` method for expression in $(tjtuple)")
+        error("No `toexpr` method for expression in $tjtuple")
     end
     if tjtuple.exp isa Number
-        @info "TermJunk expression is a Number $(tjtuple)"
+        @info "TermJunk expression is a Number $tjtuple"
     end
     return tjtuple
 end
@@ -527,34 +527,36 @@ function parse_term(::Val{:tuple}, node::XMLNode, pntd::PnmlType; vars, net::Abs
     # UserOperatorEx (constant?) also has enclosing sort.
     # Both hold refid field.
 
+    #! Needs to be returned from `sortof(term)` as `ProductSort(...)`
     #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
     #! Part of expression evaluation -- dynamic behavior of a Petri net
-    prodsort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...), net)
-    #! prodsort = ProductSort(tuple(Iterators.map(refid, expr_sortref.(sts, net))), net)
+    prod_sort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...), net)
 
-    #D()&& @info "parse_term(::Val{:tuple}" sts expr_tup; #! debug
-
-    # Look for an existing declaration for prodsort. Return a NamedSortRef to it in TermJunk.
-    # Find matching sort
+    # Look for an existing declaration for prod_sort. Return a NamedSortRef to it in TermJunk.
+    # Find matching sort REFID
     sorttag = nothing
     for (id,ps) in pairs(productsorts(net))
-        if equalSorts(ps, prodsort, net)
-            #@error "Found product sort $id while looking for $prodsort" productsorts(decldict(net))
+        if equalSorts(ps, prod_sort, net)
+            #"Found product sort $id while looking for $prod_sort"
             sorttag = id
+            break
         end
     end
     sortref = if isnothing(sorttag)
+        # Is an inline sort that does not have  id/name.
+        # Add `prod_sort` to the dictionary using an invented key.
+        # Concatenate member sort ids to create a key for the product sort.
         sorttag = string("ProductSort_",
-            join(Iterators.map(refid, expr_sortref.(sts, net)), "_")) |> Symbol
+            join(Iterators.map(refid, expr_sortref.(sts, Ref(net))), "_")) |> Symbol
 
-        # add to productsorts
-        fill_sort_tag!(net, sorttag, prodsort)
-        #@assert productsorts(net)[sorttag] == prodsort
+        fill_sort_tag!(net, sorttag, prod_sort)
+        @assert productsort(net, sorttag) == prod_sort
 
-        # make a user/named sort duo
-        namedsorts(net)[sorttag] = NamedSort(sorttag, string(sorttag), prodsort, net)
-        make_sortref(net, productsorts, prodsort, "product", sorttag, "") #! is above fill_sort_tag! redundant?
+        # Make a named sort to store the sort object.
+        namedsorts(net)[sorttag] = NamedSort(sorttag, string(sorttag), prod_sort, net)
+        make_sortref(net, productsorts, prod_sort, "product", sorttag, "")
     else
+        # Use the one already in the dictionary (abandon prod_sort)
         ProductSortRef(sorttag)
     end
     @assert isproductsort(sortref)
@@ -588,15 +590,15 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, pntd::PnmlTyp
 
     # Note: The ISO 15909 Standard specifically allows (requires?) inline sorts here.
     #^ NB: inlining is used in ePNK test19
-    usref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; net)::SortRef
+    sort_ref = parse_sort(Val(:finiteintrange), child, pntd, nothing, ""; net)::SortRef
 
     # Differs from <tuple> in that here we have a sort definintion, while <tuple>
     # must deduce the sort by examining the product's sorts.
-    fis = namedsort(net, refid(usref))::FiniteIntRangeSort
-    Sorts.start(fis) <= value <= Sorts.stop(fis) ||
-        throw(ArgumentError("finite integer value $value not in range $(ns)"))
+    fir_sort = namedsort(net, sort_ref)::FiniteIntRangeSort
+    Sorts.start(fir_sort) <= value <= Sorts.stop(fir_sort) ||
+        throw(ArgumentError("finite integer value $value not in range $fir_sort"))
 
-    return TermJunk(NumberEx(usref, value), usref, vars)
+    return TermJunk(NumberEx(sort_ref, value), sort_ref, vars)
 end
 
 #====================================================================================#

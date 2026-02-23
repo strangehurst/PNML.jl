@@ -74,11 +74,9 @@ function value_type(::Type{Inscription}, pntd::AbstractHLCore)
 end
 
 function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
-    #@info "$pntd default Inscription $placetype = NamedSortRef(:positive)"
     if refid(placetype) !== :positive
         @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
     end
-    #D()&& @info "$pntd default Inscription of adjacent $placetype = NumberEx(NamedSortRef(:positive), one(Int))"
     Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
@@ -86,7 +84,6 @@ function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::
     if refid(placetype) !== :real
         @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
     end
-    #D()&& @info "$pntd default Inscription of adjacent $placetype = NumberEx(NamedSortRef(:real), one(Float64))"
     Inscription(nothing, NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
 end
 
@@ -94,6 +91,5 @@ end
 function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
     basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype, net)
-    #D()&& @info "$pntd default Inscription of adjacent $placetype = Bag($basis, $el, 1)"
-    Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net) # non-empty singleton multiset.
+    Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net)
 end

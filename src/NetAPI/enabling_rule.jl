@@ -92,15 +92,11 @@ end
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
-    labeled_places(net::PnmlNet)
+    labeled_places(net::PnmlNet, marking_vector)
 
-Return Vector of place_id=>marking_value.
+Return Vector of place_id=>marking_value of that pace.
 """
-function labeled_places end
-
 function labeled_places(net::PnmlNet, markings)
-    # create vector place_id=>marking_value
-    # initial_markings(net) becomes vector of marking_value
     [k=>v for (k,v) in zip(map(pid, places(net)), markings)]
 end
 
@@ -248,7 +244,7 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars, placesort, mark, net)
         # Verify variable sort matches placesort.
         if sortof(placesort) isa ProductSort
             #! Variable is PnmlTuple element. Variable sort is one of the sorts of the product.
-            any(==(var_refid), Sorts.sorts(sortof(placesort, net))) ||
+            any(==(var_refid), sorts(sortof(placesort, net))) ||
                     error("none of tuple are equal sorts of $var_refid: ",
                             Sorts.sorts(sortof(placesort, net)))
         else

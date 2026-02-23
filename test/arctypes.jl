@@ -18,7 +18,7 @@ using PNML: isnormal, isinhibitor, isread, isreset
             <toolspecific tool="tname" version="1"/>
         </arctype>
       </arc>"""
-    #@show str
+
     node = xmlnode(str)
     pntd = PnmlCoreNet()
 
@@ -29,7 +29,6 @@ using PNML: isnormal, isinhibitor, isread, isreset
             <toolspecific tool="tname" version="1"/>
         </arctype>
       </arc>"""
-    #@show str
     node = xmlnode(str)
     PNML.CONFIG[].warn_on_unclaimed = true
     net = make_net(pntd, :arctypes_net)
@@ -59,7 +58,6 @@ end
         <arctype>
         </arctype>
       </arc>"""
-    #@show str
     node = xmlnode(str)
     net = make_net(pntd, :empty_arctype)
     @test_throws(ArgumentError, parse_arc(node, pntd, net)::Arc)

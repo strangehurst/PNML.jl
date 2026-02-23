@@ -336,7 +336,7 @@ See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_varia
 function parse_sort(node::XMLNode, pntd::PnmlType, sortid::Maybe{REFID}=nothing,  name::String=""; kwargs...)#net::AbstractPnmlNet)
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
-    D()&&  println("## parse_sort $sorttag id=$sortid name=$name tag=$(repr(sorttag))") #! debug
+    D()&&  println("## parse_sort $sorttag id=$sortid name=$name tag=$sorttag") #! debug
     return parse_sort(Val(sorttag), node, pntd, sortid, name; kwargs...)::SortRef
 end
 
@@ -454,7 +454,7 @@ end
 #TODO <tuple> is operator, subterms are expressions (terms) that have sortrefs.
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::PnmlType, sortid, name; net::AbstractPnmlNet)
     check_nodename(node, "productsort")
-    isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is $(repr(sortid))") #! debug
+    isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is $sortid") #! debug
 
     sorts = [] # Orderded collection of zero or more Sorts in ISO 15909 Standard.
     for child in EzXML.eachelement(node)
@@ -550,7 +550,7 @@ function parse_partition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet) #!
 
     partsort = PartitionSort(partition_id, nameval, partitioned_sortref, elements, net) # A Declaraion named Sort!
 
-    verify_partition(partsort) || error("verify_partition failed: $repr(partsort)")
+    verify_partition(partsort) || error("verify_partition failed: $partsort")
 
     # add to productsorts
     fill_sort_tag!(net, partition_id, partsort)
