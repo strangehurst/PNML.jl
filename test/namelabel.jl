@@ -43,7 +43,7 @@ using XMLDict: XMLDict
     @test PNML.text(n) == "some name3"
 
     #TODO add toolinfo
-    n = @test_logs((:warn, ":xxx ignoring unexpected child of <name>: 'unknown'"),
+    n = @test_logs((:warn, r"^xxx ignoring unexpected child of <name>: 'unknown'"),
             PNML.Parser.parse_name(xml"""
                 <name>
                     <text>some name4</text>
