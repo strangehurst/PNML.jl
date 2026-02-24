@@ -15,11 +15,11 @@ Return `Vector` of `FEConstant` `REFID`s.
 refs(sort::EnumerationSort) = sort.fec_refs # NTuple
 
 """
-    sortelements(sort::EnumerationSort, ::AbstractPnmlNet) -> Iterator
+    sortelements(sort::EnumerationSort, ::APN) -> Iterator
 
 Return iteratable ordered collection of keys into `feconstant(net)` dictionary.
 """
-sortelements(sort::EnumerationSort, ::AbstractPnmlNet) = refs(sort)
+sortelements(sort::EnumerationSort, ::APN) = refs(sort)
 
 #"Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
@@ -80,7 +80,7 @@ stop(fir::FiniteIntRangeSort) = fir.stop
     $(TYPEDEF)
 Return iterator from `start` to `stop`, inclusive.
 """
-sortelements(fir::FiniteIntRangeSort, ::AbstractPnmlNet) = Iterators.map(identity, start(fir):stop(fir))
+sortelements(fir::FiniteIntRangeSort, ::APN) = Iterators.map(identity, start(fir):stop(fir))
 
 function Base.show(io::IO, fir::FiniteIntRangeSort)
     print(io, "FiniteIntRangeSort(", start(fir), ", ", stop(fir), ")")

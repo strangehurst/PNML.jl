@@ -1,9 +1,9 @@
 """
-    fill_builtin_sorts!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_sorts!(net::APN) -> Nothing
 
 Fill a DeclDict with built-ins and defaults (that may be redefined).
 """
-function fill_builtin_sorts!(net::AbstractPnmlNet)
+function fill_builtin_sorts!(net::APN)
     __insert_sort!(net, :dot, "Dot", Sorts.DotSort()) # can be overridden
     __insert_sort!(net, :integer, "Integer", Sorts.IntegerSort())
     __insert_sort!(net, :natural, "Natural", Sorts.NaturalSort())
@@ -21,13 +21,13 @@ function __insert_sort!(net, tag, name, sort::AbstractSort)
 end
 
 """
-    fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict) -> SortRef
+    fill_sort_tag!(net::APN, tag::Symbol, sort, dict) -> SortRef
 
 If not already in the declarations dictionary `dict`, add `sort` with key of `tag`.
 
 Register the tag and create and return an `SortRef` holding `tag`.
 """
-function fill_sort_tag!(net::AbstractPnmlNet, tag::Symbol, sort, dict::Base.Callable)
+function fill_sort_tag!(net::APN, tag::Symbol, sort, dict::Base.Callable)
     fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)
 end
 function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Callable)
@@ -52,27 +52,27 @@ end
 
 
 # match sort type to dictionary access method
-fill_sort_tag!(net::AbstractPnmlNet, tag, sort::NamedSort) =
+fill_sort_tag!(net::APN, tag, sort::NamedSort) =
     fill_sort_tag!(net, tag, sort, namedsorts)
-fill_sort_tag!(net::AbstractPnmlNet, tag, sort::PartitionSort) =
+fill_sort_tag!(net::APN, tag, sort::PartitionSort) =
     fill_sort_tag!(net, tag, sort, partitionsorts)
-fill_sort_tag!(net::AbstractPnmlNet, tag, sort::ArbitrarySort) =
+fill_sort_tag!(net::APN, tag, sort::ArbitrarySort) =
     fill_sort_tag!(net, tag, sort, arbitrarysorts)
 
 # These two sorts are not used in variable declarations.
 # They do not add a name to the contained sorts (or sortrefs).
-fill_sort_tag!(net::AbstractPnmlNet, tag, sort::ProductSort) =
+fill_sort_tag!(net::APN, tag, sort::ProductSort) =
     fill_sort_tag!(net, tag, sort, productsorts)
-fill_sort_tag!(net::AbstractPnmlNet, tag, sort::MultisetSort) =
+fill_sort_tag!(net::APN, tag, sort::MultisetSort) =
     fill_sort_tag!(net, tag, sort, multisetsorts)
 
 """
-    fill_builtin_labelparsers!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_labelparsers!(net::APN) -> Nothing
     fill_builtin_labelparsers!(labelparser::AbstractDict) -> Nothing
 
 Fill context with the base built-in label parsers.
 """
-fill_builtin_labelparsers!(net::AbstractPnmlNet) = fill_builtin_labelparsers!(net.labelparser)
+fill_builtin_labelparsers!(net::APN) = fill_builtin_labelparsers!(net.labelparser)
 
 function fill_builtin_labelparsers!(labelparser::AbstractDict)
     labelparser[:initialMarking]   = Parser.parse_initialMarking
@@ -113,12 +113,12 @@ end
 
 
 """
-    fill_builtin_toolparsers!(net::AbstractPnmlNet) -> Nothing
+    fill_builtin_toolparsers!(net::APN) -> Nothing
     fill_builtin_toolparsers!(toolparsers::AbstractDict) -> Nothing
 
 Fill context with the base built-in tool parsers.
 """
-fill_builtin_toolparsers!(net::AbstractPnmlNet) = fill_builtin_toolparsers!(net.toolparser)
+fill_builtin_toolparsers!(net::APN) = fill_builtin_toolparsers!(net.toolparser)
 
 function fill_builtin_toolparsers!(toolparsers::AbstractDict)
     for toolparser in (

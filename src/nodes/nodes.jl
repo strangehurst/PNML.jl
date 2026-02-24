@@ -9,7 +9,7 @@ M is a "multiset sort denoting a collection of tokens".
 A "multiset sort over a basis sort is interpreted as
 "the set of multisets over the type associated with the basis sort".
 """
-@kwdef mutable struct Place{N <: AbstractPnmlNet}  <: AbstractPnmlNode
+@kwdef mutable struct Place{N <: APN}  <: AbstractPnmlNode
     id::Symbol
     initialMarking::Marking # Expression as value. Used to create marking vector.
 
@@ -44,7 +44,7 @@ function Base.show(io::IO, place::Place)
     print(io, ")")
 end
 
-function verify!(errors, p::Place, verbose::Bool , net::AbstractPnmlNet)
+function verify!(errors, p::Place, verbose::Bool , net::APN)
     verbose && println("## verify Place{$(sortref(p))} $(pid(p))")
     !isregistered(registry_of(net), pid(p)) &&
         push!(errors, string("place ", repr(pid(p)), " not registered")::String)
@@ -69,7 +69,7 @@ Transition node of a Petri Net Markup Language graph.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-mutable struct Transition{N <: AbstractPnmlNet}  <: AbstractPnmlNode
+mutable struct Transition{N <: APN}  <: AbstractPnmlNode
     id::Symbol
     condition::Labels.Condition #! booleran expression label
     namelabel::Maybe{Name}
@@ -108,7 +108,7 @@ function Base.show(io::IO, trans::Transition)
     print(io, ")")
 end
 
-function verify!(errors, t::Transition, verbose::Bool , net::AbstractPnmlNet)
+function verify!(errors, t::Transition, verbose::Bool , net::APN)
     verbose && println("## verify Transition $(pid(t))")
     !isregistered(registry_of(net), pid(t)) &&
         push!(errors, string("transition ", repr(pid(t)), " not registered")::String)
@@ -125,7 +125,7 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef mutable struct Arc{T <: PnmlExpr, N <: AbstractPnmlNet} <: AbstractPnmlNode #Object
+@kwdef mutable struct Arc{T <: PnmlExpr, N <: APN} <: AbstractPnmlNode #Object
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
@@ -198,7 +198,7 @@ function Base.show(io::IO, arc::Arc)
     print(io, ")")
 end
 
-function verify!(errors, a::Arc, verbose::Bool , net::AbstractPnmlNet)
+function verify!(errors, a::Arc, verbose::Bool , net::APN)
     verbose && println("## verify Transition $(pid(a))")
     !isregistered(registry_of(net), pid(a)) &&
         push!(errors, string("arc ", repr(pid(a)), " not registered")::String)
@@ -215,7 +215,7 @@ Reference Place node of a Petri Net Markup Language graph. For connections betwe
 $(TYPEDEF)r
 $(TYPEDFIELDS)
 """
-struct RefPlace{N <: AbstractPnmlNet} <: ReferenceNode
+struct RefPlace{N <: APN} <: ReferenceNode
     id::Symbol
     ref::Symbol # Place or RefPlace
     namelabel::Maybe{Name}
@@ -232,7 +232,7 @@ Refrence Transition node of a Petri Net Markup Language graph. For connections b
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct RefTransition{N <: AbstractPnmlNet} <: ReferenceNode
+struct RefTransition{N <: APN} <: ReferenceNode
     id::Symbol
     ref::Symbol # Transition or RefTransition IDREF
     namelabel::Maybe{Name}
@@ -245,7 +245,7 @@ end
 function Base.show(io::IO, r::ReferenceNode)
     print(io, nameof(typeof(r)), "(", repr(pid(r)), ",  ", repr(refid(r)), ")")
 end
-function verify!(errors, r::ReferenceNode, verbose::Bool , net::AbstractPnmlNet)
+function verify!(errors, r::ReferenceNode, verbose::Bool , net::APN)
     verbose && println("## verify $(typeof(r)) $(pid(r))")
     !isregistered(registry_of(net), pid(r)) &&
         push!(errors, string("arc ", repr(pid(r)), " not registered")::String)

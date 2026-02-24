@@ -7,7 +7,7 @@ Label of [`Place`](@ref).
 Is a functor that returns the `value`.
 ```
 """
-struct Marking{T <: PnmlExpr, N <: AbstractPnmlNet} <: Annotation
+struct Marking{T <: PnmlExpr, N <: APN} <: Annotation
     term::T #! expression
     text::Maybe{String} # Supposed to be for human consumption.
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in toolspecinfos rather than graphics.
@@ -16,11 +16,11 @@ struct Marking{T <: PnmlExpr, N <: AbstractPnmlNet} <: Annotation
 end
 
 # Allow any Number subtype, only a few concrete subtypes are expected.
-function Marking(m::Number, net::AbstractPnmlNet)
+function Marking(m::Number, net::APN)
     Marking(NumberEx(sortref(m)::SortRef, m), net)
 end
-Marking(nx::NumberEx, net::AbstractPnmlNet) = Marking(nx, nothing, nothing, nothing, net)
-Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::AbstractPnmlNet) = Marking(t, s, nothing, nothing, net)
+Marking(nx::NumberEx, net::APN) = Marking(nx, nothing, nothing, nothing, net)
+Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::APN) = Marking(t, s, nothing, nothing, net)
 
 term(marking::Marking) = marking.term
 
@@ -106,7 +106,7 @@ end
 
 #--------------------------------------------------------------------------------------
 # These are networks where the tokens have a collective identities.
-value_type(::Type{Marking}, ::PnmlType) = eltype(NaturalSort) #::Int
+value_type(::Type{Marking}, ::APNTD) = eltype(NaturalSort) #::Int
 value_type(::Type{Marking}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
 
 # These are networks were the tokens have individual identities.
@@ -121,7 +121,7 @@ value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
 #~ Inscription values are non-zero while marking values may be zero.
 
 #--------------------------------------------------------------------------------------
-# Basis sort can be, and are, restricted by/on PnmlType in the ISO 15909 standard.
+# Basis sort can be, and are, restricted by/on APNTD in the ISO 15909 standard.
 # That is a statement about the XML file content. Allows a partial implementation that
 # only supports the PTNet meta-model or SymmetricNet meta-model of Petri nets.
 # The PnmlCoreNet, upon which PTNet, SymmetricNet, HLPNG, etc. are defined can be used
@@ -146,16 +146,16 @@ value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
 
 """
 $(TYPEDSIGNATURES)
-Return default marking value based on `PnmlType`. Has meaning of empty, as in `zero`.
+Return default marking value based on `APNTD`. Has meaning of empty, as in `zero`.
 For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
 Others have a marking that is a `Number`.
 """
-function default(::Type{<:Marking}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
+function default(::Type{<:Marking}, pntd::APNTD, placetype::SortType, net::APN)
     #D()&& @info "$pntd default Marking $placetype value_type = $(value_type(Marking, pntd)))"
     Marking(zero(value_type(Marking, pntd)), net) # not high-level!
 end
 
-function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
+function default(::Type{<:Marking}, pntd::AbstractHLCore, placetype::SortType, net::APN)
     el = def_sort_element(placetype, net)
     #D()&& @info "$pntd default Marking $placetype value_type = Bag($(sortref(placetype)), $el, 0))"
     Marking(Bag(sortref(placetype), el, 0), "default", net) # el used for its type

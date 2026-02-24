@@ -55,7 +55,7 @@ include("PnmlGraphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
 
 """
-    default(::Type{T<:AbstractLabel}, pntd::PnmlType, net::AbstractPnmlNet) -> T
+    default(::Type{T<:AbstractLabel}, pntd::APNTD, net::APN) -> T
 
 Return a default instance of label `T` for `pntd`.
 """

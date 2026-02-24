@@ -3,7 +3,7 @@ $(TYPEDSIGNATURES)
 
 Return the stripped string of `<text>` node's content.
 """
-function parse_text(node::XMLNode, _::PnmlType)
+function parse_text(node::XMLNode, _::APNTD)
     check_nodename(node, "text")
     return string(strip(EzXML.nodecontent(node)))::String
 end
@@ -14,7 +14,7 @@ $(TYPEDSIGNATURES)
 Return [`Name`](@ref) label holding `<text>` value.
 With optional `<toolspecific>` & `<graphics>` information.
 """
-function parse_name(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_name(node::XMLNode, pntd::APNTD; net::APN, parentid)
     check_nodename(node, "name")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -29,7 +29,7 @@ function parse_name(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
         elseif tag == "toolspecific"
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # of name label
         else
-            @warn "$(repr(parentid)) ignoring unexpected child of <name>: '$tag'"
+            @warn "$parentid ignoring unexpected child of <name>: '$tag'"
         end
     end
 
@@ -56,7 +56,7 @@ $(TYPEDSIGNATURES)
 Return [`ArcType`](@ref) label holding `<text>` value.
 With optional `<toolspecific>` & `<graphics>` information.
 """
-function parse_arctype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_arctype(node::XMLNode, pntd::APNTD; net::APN, parentid)
     check_nodename(node, "arctype")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -71,7 +71,7 @@ function parse_arctype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, pare
         elseif tag == "toolspecific"
             toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # name label
         else
-            @warn "$(repr(parentid)) ignoring unexpected child of <arctype>: '$tag'"
+            @warn "$parentid ignoring unexpected child of <arctype>: '$tag'"
         end
     end
 
@@ -110,8 +110,8 @@ Each having a `termparser`.
 Returns vars, a tuple of PNML variable REFIDs.
 Used in the muti-sorted algebra of High-level nets.
 """
-function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType;
-            net::AbstractPnmlNet) where {F}
+function parse_label_content(node::XMLNode, termparser::F, pntd::APNTD;
+            net::APN) where {F}
     EzXML.haselement(node) || error("xml node is empty")
 
     text::Maybe{Union{String,SubString{String}}} = nothing
@@ -176,11 +176,11 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Non-high-level `PnmlType` initial marking parser. Most things are assumed to be Numbers.
+Non-high-level `APNTD` initial marking parser. Most things are assumed to be Numbers.
 See also [`parse_hlinitialMarking`](@ref), [`parse_fifoinitialMarking`](@ref).
 """
-function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::PnmlType;
-                            net::AbstractPnmlNet, parentid::Symbol)
+function parse_initialMarking(node::XMLNode, placetype::Maybe{SortType}, pntd::APNTD;
+                            net::APN, parentid::Symbol)
     nn = check_nodename(node, "initialMarking")
     isnothing(placetype) && error("parse_initialMarking expects placetype to be not-nothing")
     # See if there is a <structure> attached to the label. This is non-standard.
@@ -210,8 +210,8 @@ end
 $(TYPEDSIGNATURES)
 Ignore the source & target symbols.
 """
-function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
-                            net::AbstractPnmlNet,
+function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::APNTD;
+                            net::APN,
                             parentid::Symbol)
     @assert !(pntd isa AbstractHLCore)
     check_nodename(node, "inscription")
@@ -255,7 +255,7 @@ See also [`parse_initialMarking`](@ref), [`parse_fifoinitialMarking`](@ref).
 """
 function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
             pntd::AbstractHLCore;
-            net::AbstractPnmlNet,
+            net::APN,
             parentid::Symbol)
     check_nodename(node, "hlinitialMarking")
     #! non-PT_HLPNG High Level nets are expected to always have a marking.
@@ -310,7 +310,7 @@ See also [`parse_initialMarking`](@ref), [`parse_hlinitialMarking`](@ref).
 """
 function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType},
             pntd::AbstractHLCore;
-            net::AbstractPnmlNet,
+            net::APN,
             parentid::Symbol)
     check_nodename(node, "fifoinitialMarking")
     #! non-PT_HLPNG High Level nets are expected to always have a marking.
@@ -359,7 +359,7 @@ end # parse_fifoinitialMarking
 """
     ParseMarkingTerm(defsort) -> Functor
 
-Holds parameters for parsing when called as (f::T)(::XMLNode, ::PnmlType)
+Holds parameters for parsing when called as (f::T)(::XMLNode, ::APNTD)
 """
 struct ParseMarkingTerm{S} #! <: Maybe{SortRef}}
     defplacetype::S
@@ -370,7 +370,7 @@ placetype(pmt::ParseMarkingTerm) = pmt.defplacetype::Maybe{SortRef}
 
 #! MARK will be a TERM, a symbolic expression that, when evaluated,
 #! produces a PnmlMultiset element object. Or a tuple of objects if a ProductSort is used.
-function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::APNTD; net::APN)
     check_nodename(marknode, "structure")
 
     if EzXML.haselement(marknode)
@@ -403,7 +403,7 @@ hlinscriptions are expressions.
 """
 function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
                              pntd::AbstractHLCore;
-                             net::AbstractPnmlNet,
+                             net::APN,
                              parentid::Symbol)
     check_nodename(node, "hlinscription")
     l = parse_label_content(node, ParseInscriptionTerm(source, target), pntd; net)::NamedTuple
@@ -416,7 +416,7 @@ end
 Holds parameters for parsing inscription.
 The sort of the inscription must match the place sorttype.
 Input arcs (source is a transition) and output arcs (source is a place)
-called as (pit::ParseInscriptionTerm)(::XMLNode, ::PnmlType)
+called as (pit::ParseInscriptionTerm)(::XMLNode, ::APNTD)
 """
 struct ParseInscriptionTerm
     source::Symbol
@@ -428,7 +428,7 @@ source(pit::ParseInscriptionTerm) = pit.source
 target(pit::ParseInscriptionTerm) = pit.target
 #netdata(pit::ParseInscriptionTerm) = pit.netdata
 
-function (pit::ParseInscriptionTerm)(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+function (pit::ParseInscriptionTerm)(node::XMLNode, pntd::APNTD; net::APN)
     check_nodename(node, "structure")
     # D()&& println("\nParseInscriptionTerm ", pit)
     isa(target(pit), Symbol) ||
@@ -487,19 +487,19 @@ end
 
 
 # default inscription with sort of adjacent place
-function def_insc(netdata, source,::REFID, target::REFID, net::AbstractPnmlNet)
+function def_insc(netdata, source,::REFID, target::REFID, net::APN)
     # Core PNML standard allows arcs from place to place & transition to transition.
     # Here we support symmetric nets that restrict arcs and
     # assume exactly one is a place (and the other a transition).
     place = adjacent_place(netdata, source, target)
     place_type = place.sorttype
     sort_element = def_sort_element(place_type, net)
-    @info "def_insc $(repr(source)) $(repr(target)) pnmlmultiset $place_type $sort_element"
+    @info "def_insc $source -> $target singleton pnmlmultiset: $place_type $sort_element"
     return pnmlmultiset(sortref(place_type), sort_element, 1; net)::PnmlMultiset
 end
 
 """
-    parse_condition(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> Condition
+    parse_condition(::XMLNode, ::APNTD; net::APN) -> Condition
 
 Label of transition node. Used in the enabling function.
 
@@ -520,20 +520,20 @@ that holds an expression evaluating to a boolean value.
 One field of a Condition holds a boolean expression, `AbstractBoolExpr`.
 Another field holds information on variables in the expression.
 """
-function parse_condition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_condition(node::XMLNode, pntd::APNTD; net::APN, parentid)
     l = parse_label_content(node, parse_condition_term, pntd; net)::NamedTuple
     isnothing(l.exp) &&
-        throw(MalformedException("$(repr(parentid)) missing condition term in $l"))
+        throw(MalformedException("$parentid missing condition term in $l"))
     PNML.Labels.Condition(l.text, l.exp, l.graphics, l.toolspecinfos, REFID[l.vars...], net)
 end
 
 """
-    parse_condition_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, SortRef, Tuple
+    parse_condition_term(::XMLNode, ::APNTD; net::APN) -> PnmlExpr, SortRef, Tuple
 
 Used as `termparser` by [`parse_label_content`](@ref) for `Condition` label of a `Transition`;
 will have a structure element containing a term.
 """
-function parse_condition_term(cnode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+function parse_condition_term(cnode::XMLNode, pntd::APNTD; net::APN)
     check_nodename(cnode, "structure")
     if EzXML.haselement(cnode)
         return parse_term(EzXML.firstelement(cnode), pntd; vars=(), net)
@@ -551,18 +551,18 @@ the Petri Net "type" of a net or "pntd". Neither is directly a julia type. Nor a
 We allow all pntd's places to have a <type> label.
 Non-high-level net places are expecting a numeric sort: eltype(sort) <: Number.
 """
-function parse_sorttype(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_sorttype(node::XMLNode, pntd::APNTD; net::APN, parentid)
     check_nodename(node, "type")
     l = parse_label_content(node, parse_sorttype_term, pntd; net)::NamedTuple
     @assert isempty(l.vars) # No variables as sort is not a term.
-    # High-level nets are expected to have a sorttype defined.
-    # Possibly sorttype inferred from initial marking value.
+    # High-level nets are expected to have a sorttype defined
+    # or inferred from initial marking value.
 
     SortType(l.text, l.exp, l.graphics, l.toolspecinfos, net) # Basic label structure.
 end
 
 """
-    parse_sorttype_term(::XMLNode, ::PnmlType; net::AbstractPnmlNet) -> PnmlExpr, SortRef, Tuple
+    parse_sorttype_term(::XMLNode, ::APNTD; net::APN) -> PnmlExpr, SortRef, Tuple
 
 The PNML `<type>` of a `<place>` is a "sort" of the high-level many-sorted algebra.
 Because we are using the HL implementation with the other meta-models,
@@ -574,7 +574,7 @@ We place all these concrete sorts in the `decldict(net)`` and pass around a Sort
 
 See [`parse_sorttype`](@ref) for the rest of the `AnnotationLabel` structure.
 """
-function parse_sorttype_term(typenode::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+function parse_sorttype_term(typenode::XMLNode, pntd::APNTD; net::APN)
     check_nodename(typenode, "structure")
     EzXML.haselement(typenode) || throw(ArgumentError("missing <type> element in <structure>"))
     # Expect only child element to be a sort.
@@ -590,13 +590,13 @@ $(TYPEDSIGNATURES)
 
 For future support of structure elements in non-High-Level nets.
 """
-function parse_structure(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet)
+function parse_structure(node::XMLNode, pntd::APNTD; net::APN)
     check_nodename(node, "structure")
     @warn "parse_structure is not implemented for $pntd " xmldict(node)
     error("parse_structure is not implemented for $pntd")
 end
 
-function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_rate(node::XMLNode, pntd::APNTD; net::APN, parentid)
     check_nodename(node, "rate")
     #@warn "parse_rate of $(repr(parentid))"
     txt = nothing
@@ -622,7 +622,7 @@ function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
     if isnothing(value)
         value = one(value_type(Rate, pntd))
         CONFIG[].warn_on_fixup &&
-            @warn("$(repr(parentid)) has missing or unparsable <rate> value '$txt' " *
+            @warn("$parentid has missing or unparsable <rate> value '$txt' " *
                         "replaced with $value")
     end
 
@@ -631,7 +631,7 @@ function parse_rate(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parenti
 end
 
 
-function parse_priority(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, parentid)
+function parse_priority(node::XMLNode, pntd::APNTD; net::APN, parentid)
     check_nodename(node, "priority")
     #@warn "parse_priority of $(repr(parentid))"
     txt = nothing
@@ -657,7 +657,7 @@ function parse_priority(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet, par
     if isnothing(value)
         value = one(value_type(Priority, pntd))
         CONFIG[].warn_on_fixup &&
-            @warn("$(repr(parentid)) has missing or unparsable <priority> value '$txt' " *
+            @warn("$parentid has missing or unparsable <priority> value '$txt' " *
                         "replaced with $value")
     end
 

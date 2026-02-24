@@ -26,7 +26,7 @@ function Base.show(io::IO, d::Declaration)
     return print(io, ")")
 end
 
-function verify!(errors::Vector{String}, decl::Declaration, verbose::Bool, ::AbstractPnmlNet)
+function verify!(errors::Vector{String}, decl::Declaration, verbose::Bool, ::APN)
     if isempty(decl.ddict)
         push!(errors, string("declaration dictionarys is empty: $decl")::String)
     end

@@ -3,7 +3,7 @@ using Base: Fix2, Fix1
 =====================================================================================
 2025-05-01 Consider a declarative API to define different nets.
 
-Tool Info Parsers: from an `(XLNode, PnmlType)` parse well-formed XML into a `ToolInfo`.
+Tool Info Parsers: from an `(XLNode, APNTD)` parse well-formed XML into a `ToolInfo`.
     What type is returned? `Vector{AnyElement}` is the default.
     `TokenGraphics` is defined in ISO/IEC 15909-2:2011 for `PTNets`.
     Some run-time dispatch expected during parsing phase.
@@ -36,7 +36,7 @@ Note that pnml can represent nets that are **not** Petri Nets.
 
 Here is where specialization and restriction are applied to achive Proper Petri Behavior.
 
-See [`PnmlModel`](@ref), [`PnmlType`](@ref).
+See [`PnmlModel`](@ref), [`AbstractPnmlType`](@ref).
 
 # Extended
 
@@ -49,7 +49,7 @@ a higher-level will create multiple AbstractPetriNet instances, each a different
 Multiple [`Page`](@ref)s can (are permitted to) be merged into one page
 by [`PNML.flatten_pages!`](@ref) without losing any Petri Net semantics.
 """
-abstract type AbstractPetriNet{PNTD<:PnmlType} end
+abstract type AbstractPetriNet{PNTD <: AbstractPnmlType} end
 
 # Interface is having id::Symbol, net::PnmlNet.
 # function Base.getproperty(pn::AbstractPetriNet, prop_name::Symbol)
@@ -61,9 +61,9 @@ abstract type AbstractPetriNet{PNTD<:PnmlType} end
 #     return getfield(pn, prop_name)
 # end
 
-nettype(::AbstractPetriNet{T}) where {T <: PnmlType} = T
-pid(petrinet::AbstractPetriNet)     = PNML.pid(pnmlnet(petrinet))
-name(petrinet::AbstractPetriNet)    = PNML.name(pnmlnet(petrinet))
+nettype(::AbstractPetriNet{T}) where {T <: APNTD} = T
+pid(petrinet::AbstractPetriNet)     = pid(pnmlnet(petrinet))
+name(petrinet::AbstractPetriNet)    = name(pnmlnet(petrinet))
 pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 
 #------------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ $(TYPEDFIELDS)
 # Details
 
 """
-struct HLPetriNet{C, PNTD<:PnmlType} <: AbstractPetriNet{PNTD}
+struct HLPetriNet{C, PNTD<:APNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 

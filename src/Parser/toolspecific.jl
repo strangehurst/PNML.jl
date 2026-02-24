@@ -6,7 +6,7 @@ Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 """
-function parse_toolspecific(node, pntd; net::AbstractPnmlNet)
+function parse_toolspecific(node, pntd; net::APN)
     check_nodename(node, "toolspecific")
     tool    = attribute(node, "tool")
     version = attribute(node, "version")
@@ -26,16 +26,16 @@ function parse_toolspecific(node, pntd; net::AbstractPnmlNet)
 end
 
 """
-    toolspecific_content_fallback(node::XMLNode, pntd::PnmlType) -> AnyElement
+    toolspecific_content_fallback(node::XMLNode, pntd::APNTD) -> AnyElement
 Content of a `<toolspecific> `node` as parsed by `xmldict`.
 """
-function toolspecific_content_fallback(node::XMLNode, pntd::PnmlType)
+function toolspecific_content_fallback(node::XMLNode, pntd::APNTD)
     anyelement(Symbol(EzXML.nodename(node)), node)
 end
 
 #-------------------------------------------------------------------
 """
-    tokengraphics_content(node::XMLNode, pntd::PnmlType) -> TokenGraphics
+    tokengraphics_content(node::XMLNode, pntd::APNTD) -> TokenGraphics
 
 Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
 """
@@ -49,7 +49,7 @@ $(TYPEDSIGNATURES)
 Parse place-transition net's (PTNet) toolspecific structure defined for token graphics.
 See [`Labels.TokenGraphics`](@ref) and [`parse_tokenposition`](@ref).
 """
-function parse_tokengraphics(node::XMLNode, pntd::PnmlType)
+function parse_tokengraphics(node::XMLNode, pntd::APNTD)
     nn = check_nodename(node, "tokengraphics")
     tpos = coordinate_type(pntd)[]
     for child in EzXML.eachelement(node)
@@ -68,7 +68,7 @@ end
 
 #-------------------------------------------------------------------
 """
-    nupn_content(node::XMLNode, pntd::PnmlType) -> NupnTool
+    nupn_content(node::XMLNode, pntd::APNTD) -> NupnTool
 
 Parse `ToolInfo` content. Example:
 ```
@@ -83,7 +83,7 @@ Parse `ToolInfo` content. Example:
     </toolspecific>
 ```
 """
-function nupn_content(node::XMLNode, pntd::PnmlType)
+function nupn_content(node::XMLNode, pntd::APNTD)
     nupn = anyelement(Symbol(EzXML.nodename(node)), node)
     #@show nupn
     e = elements(nupn)

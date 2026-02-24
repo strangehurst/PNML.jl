@@ -15,7 +15,10 @@ const REFID = Symbol
 $(TYPEDEF)
 """
 abstract type AbstractPnmlNet end
-
+"""
+Alias for AbstractPnmlNet.
+"""
+const APN = AbstractPnmlNet
 
 """
 $(TYPEDEF)
@@ -63,7 +66,7 @@ abstract type HLAnnotation <: AbstractLabel end
 
 function Base.getproperty(o::AbstractPnmlObject, prop_name::Symbol)
     prop_name === :id   && return getfield(o, :id)::Symbol
-#     prop_name === :pntd && return getfield(o, :pntd)::PnmlType #! abstract
+#     prop_name === :pntd && return getfield(o, :pntd)::APNTD #! abstract
     prop_name === :namelabel && return getfield(o, :namelabel)::Maybe{Name}
     prop_name === :graphics  && return getfield(o, :graphics)::Maybe{Graphics}
     prop_name === :extralabels && return getfield(o, :extralabels)::LittleDict{Symbol,Any}

@@ -58,7 +58,7 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType{N <: AbstractPnmlNet} <: Annotation # Label not limited to high-level dialects.
+struct SortType{N <: APN} <: Annotation # Label not limited to high-level dialects.
     text::Maybe{String} # Supposed to be for human consumption.
     sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
     graphics::Maybe{Graphics}
@@ -76,7 +76,7 @@ text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::Abstrac
 sortref(t::SortType) = t.sort_
 refid(t::SortType) = refid(sortref(t))::Symbol
 sortof(t::SortType) = sortdefinition(namedsort(t.net, sortref(t)))
-sortelements(t::SortType, net::AbstractPnmlNet) = sortelements(sortof(t), net)
+sortelements(t::SortType, net::APN) = sortelements(sortof(t), net)
 
 """
     def_sort_element(x, net)
@@ -88,7 +88,7 @@ Uses include default inscription value and default initial marking value sorts.
 `x` can be anything with a `sortelements(x, net)` method that returns an iterator with length.
 See [`AbstractSort`](@ref), [`SortType`](@ref PNML.Labels.SortType).
 """
-function def_sort_element(pt::SortType, net::AbstractPnmlNet)
+function def_sort_element(pt::SortType, net::APN)
     first(sortelements(pt, pt.net))
 end
 
@@ -114,7 +114,7 @@ Return `SortRef` for default `SortType` of a `PNTD`.
 """
 function default_typesort end
 
-default_typesort(::PnmlType) = NamedSortRef(:natural)
+default_typesort(::APNTD) = NamedSortRef(:natural)
 default_typesort(::AbstractContinuousNet) = NamedSortRef(:real)
 # High-level nets are expected to provide a useful value. PT_HLPNG uses the minimum: 'dot'.
 # We provide an implementation of 'dot', so this is a safe assumption.

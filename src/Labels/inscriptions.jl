@@ -7,7 +7,7 @@ Labels an Arc with a expression term .
 `Inscription(t::PnmlExpr)()` is a functor evaluating the expression and
 returns a value of the `eltype` of sort of inscription.
 """
-struct Inscription{T <: PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
+struct Inscription{T <: PnmlExpr, N <: APN} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
@@ -64,7 +64,7 @@ end
 #! with inscription being PositiveSort and marking being NaturalSort.
 #!============================================================================
 
-value_type(::Type{Inscription}, ::PnmlType) = eltype(PositiveSort) #::Int
+value_type(::Type{Inscription}, ::APNTD) = eltype(PositiveSort) #::Int
 value_type(::Type{Inscription}, ::AbstractContinuousNet) = eltype(RealSort) #::Float64
 value_type(::Type{Inscription}, ::PT_HLPNG) = eltype(DotSort)
 
@@ -73,14 +73,14 @@ function value_type(::Type{Inscription}, pntd::AbstractHLCore)
     eltype(DotSort) #! XXX TODO XXX
 end
 
-function default(::Type{<:Inscription}, pntd::PnmlType, placetype::SortType, net::AbstractPnmlNet)
+function default(::Type{<:Inscription}, pntd::APNTD, placetype::SortType, net::APN)
     if refid(placetype) !== :positive
         @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
     end
     Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
-function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType, net::AbstractPnmlNet)
+function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType, net::APN)
     if refid(placetype) !== :real
         @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
     end
@@ -88,7 +88,7 @@ function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::
 end
 
 # See def_insc
-function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::AbstractPnmlNet)
+function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::APN)
     basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype, net)
     Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net)

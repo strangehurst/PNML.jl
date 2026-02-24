@@ -1,5 +1,5 @@
 """
-Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
+Petri Net Type Definition (pntd) URI mapped to AbstractPnmlType subtype singleton.
 """
 module PnmlTypes
 
@@ -7,7 +7,7 @@ using DocStringExtensions
 using SciMLLogging: @SciMLMessage
 
 # Abstract Types
-export PnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContinuousNet
+export APNTD, AbstractPnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContinuousNet
 # Concrete Types
 export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
 # Functions
@@ -28,7 +28,9 @@ are suported by this tool. See [`pntd_map`](@ref).
 Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref) for
 how to get from the URI to a singleton.
 """
-abstract type PnmlType end
+abstract type AbstractPnmlType end
+"Abbreviation for AbstractPnmlType"
+const APNTD = AbstractPnmlType
 
 """
 $(TYPEDEF)
@@ -36,7 +38,7 @@ Base of token/integer-based Petri Net pntds.
 
 See [`PnmlCoreNet`](@ref), [`PTNet`](@ref) and others.
 """
-abstract type AbstractPnmlCore <: PnmlType end
+abstract type AbstractPnmlCore <: APNTD end
 
 """
 $(TYPEDEF)
@@ -62,9 +64,10 @@ $(TYPEDEF)
 Base of High Level Petri Net pntds which add large extensions to PNML core.
 hlinitialMarking, hlinscription, and defined label structures.
 
-See [`PnmlTypes.HLCoreNet`](@ref), [`PnmlTypes.SymmetricNet`](@ref), [`PnmlTypes.PT_HLPNG`](@ref) and others.
+See [`PnmlTypes.HLCoreNet`](@ref), [`PnmlTypes.SymmetricNet`](@ref),
+[`PnmlTypes.PT_HLPNG`](@ref) and others.
 """
-abstract type AbstractHLCore <: PnmlType end
+abstract type AbstractHLCore <: APNTD end
 
 """
 $(TYPEDEF)
@@ -103,7 +106,7 @@ Uses floating point numbers for markings, inscriptions.
 Most of the functionality is shared with [`AbstractPnmlCore`](@ref).
 This seperates the
 """
-abstract type AbstractContinuousNet <: PnmlType end
+abstract type AbstractContinuousNet <: APNTD end
 
 """
 $(TYPEDEF)
@@ -167,9 +170,10 @@ const pntd_map = Dict{String, Symbol}(
 """
 $(TYPEDEF)
 
-The key Symbols are the supported kinds of Petri Nets. Maps to singletons.
+The key Symbols are the supported kinds of PNML Nets (PNTDs).
+Values are concrete singletons.
 """
-const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
+const pnmltype_map = IdDict{Symbol, APNTD}(:pnmlcore => PnmlCoreNet(),
                                             :hlcore => HLCoreNet(),
                                             :ptnet => PTNet(),
                                             :hlnet => HLPNG(),
@@ -181,22 +185,26 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
 """
     all_nettypes([predicate])
 
-Return iterator over [`PnmlType`](@ref) singletons. Filtered predicate `p` if present.
+Return iterator over [`AbstractPnmlType`](@ref) singletons.
+Filtered by a predicate `p` if one is provided.
 """
 all_nettypes() = values(pnmltype_map)
 all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
-"Useful for testing the 3 kinds of tokens."
+"""
+Useful for testing the 3 kinds of tokens corresponding to
+abstract subclasses of `APNTD` (or `AbstractPnmlType`) .
+"""
 core_nettypes() = (PnmlCoreNet(), HLCoreNet(), ContinuousNet())
 
 """
 $(TYPEDSIGNATURES)
 
-Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
+Add or replace mapping from Symbol `s` to [`APNTD`](@ref) singleton `pntd`.
 """
-function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
+function add_nettype!(dict::AbstractDict, s::Symbol, pntd::APNTD)
     action = s ∈ keys(dict) ? "updating" : "adding"
-    @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
+    @info  "$action mapping from $s to $pntd in $(typeof(dict))"
     dict[s] = pntd
     return dict
 end
@@ -206,7 +214,7 @@ $(TYPEDSIGNATURES)
 
 Map string `s` to a pntd symbol using [`pntd_map`](@ref).
 Any unknown `s` is mapped to `:pnmlcore`.
-Returned symbol is suitable for [`pnmltype`](@ref) to use to index into [`pnmltype_map`](@ref).
+Returned symbol is a key of [`pnmltype_map`](@ref).
 
 # Examples
 
@@ -218,9 +226,9 @@ julia> PNML.PnmlTypes.pntd_symbol("foo")
 pntd_symbol(s::AbstractString) = get(pntd_map, s, :pnmlcore)::Symbol
 
 """
-    pnmltype(pntd::PnmlType) -> pntd
-    pnmltype(uri::AbstractString) -> PnmlType
-    pnmltype(s::Symbol; pnmltype_map) -> PnmlType
+    pnmltype(pntd::APNTD) -> pntd
+    pnmltype(uri::AbstractString) -> APNTD
+    pnmltype(s::Symbol; pnmltype_map) -> APNTD
 
 Map either a text string or a symbol to a dispatch type object.
 
@@ -246,7 +254,7 @@ SymmetricNet()
 ```
 """
 function pnmltype end
-pnmltype(pntd::PnmlType) = pntd
+pnmltype(pntd::APNTD) = pntd
 pnmltype(uri::AbstractString) = pnmltype(pntd_symbol(uri))
 pnmltype(s::Symbol) = if haskey(pnmltype_map, s)
     pnmltype_map[s]
@@ -256,23 +264,23 @@ end
 
 "Tokens represented by integers."
 function isdiscrete end
-isdiscrete(pntd::PnmlType) = false
+isdiscrete(pntd::APNTD) = false
 isdiscrete(pntd::AbstractPnmlCore) = true
-isdiscrete(::Type{<:PnmlType}) = false
+isdiscrete(::Type{<:APNTD}) = false
 isdiscrete(::Type{<:AbstractPnmlCore}) = true
 
 "Tokens represented by floating point."
 function iscontinuous end
-iscontinuous(pntd::PnmlType) = false
+iscontinuous(pntd::APNTD) = false
 iscontinuous(pntd::AbstractContinuousNet) = true
-iscontinuous(::Type{<:PnmlType}) = false
+iscontinuous(::Type{<:APNTD}) = false
 iscontinuous(::Type{<:AbstractContinuousNet}) = true
 
 "Tokens represented by multiset (aka bag)."
 function ishighlevel end
-ishighlevel(pntd::PnmlType) = false
+ishighlevel(pntd::APNTD) = false
 ishighlevel(pntd::AbstractHLCore) = true
-ishighlevel(::Type{<:PnmlType}) = false
+ishighlevel(::Type{<:APNTD}) = false
 ishighlevel(::Type{<:AbstractHLCore}) = true
 
 end # module PnmlTypes

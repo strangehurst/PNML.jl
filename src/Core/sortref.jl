@@ -142,7 +142,7 @@ end
 
 Return concrete sort from `net` using the `REFID` in `sortref`,
 """
-function to_sort(sr::SortRef, net::AbstractPnmlNet)
+function to_sort(sr::SortRef, net::APN)
     s = @match sr begin
         SortRefImpl.NamedSortRef(refid)     => namedsort(net, refid) # todo unwrap namedsort
         SortRefImpl.ProductSortRef(refid)   => productsort(net, refid) #! named sort
@@ -153,4 +153,4 @@ function to_sort(sr::SortRef, net::AbstractPnmlNet)
     end
     return s
 end
-to_sort(s::AbstractSort, ::AbstractPnmlNet) = s
+to_sort(s::AbstractSort, ::APN) = s

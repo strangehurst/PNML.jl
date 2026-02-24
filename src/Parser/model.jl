@@ -54,7 +54,7 @@ end
 [`PnmlNet`](@ref) created from an `<net>` `XMLNode`.
 
 # Arguments
- - pntd_override::Maybe{PnmlType}
+ - pntd_override::Maybe{AbstractPnmlType}
 """
 function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs...)
     idregistry = IDRegistry() # empty
@@ -189,7 +189,7 @@ end
 Call `_parse_page!` to create a page with its own `netsets`.
 Add created page to parent's `page_idset` and `pagedict(net)`.
 """
-function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode, pntd::PnmlType)
+function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode, pntd::APNTD)
     check_nodename(page_node, "page")
     pageid = register_idof!(registry_of(net), page_node)
     push!(page_idset, pageid) # Record id before decending.
@@ -204,8 +204,8 @@ end
 
 Return `Page`. `pageid` already parsed from `page_node`.
 """
-function __parse_page!(net::AbstractPnmlNet, page_node::XMLNode,
-                        pntd::T, pageid::Symbol) where {T<:PnmlType}
+function __parse_page!(net::APN, page_node::XMLNode,
+                        pntd::T, pageid::Symbol) where {T<:APNTD}
     D()&& println("## parse_page ", pageid)
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.

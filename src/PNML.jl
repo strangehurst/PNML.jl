@@ -98,7 +98,7 @@ using EnumX: @enumx
 
 # EXPORTS
 
-export PnmlModel, AbstractPnmlNet, PnmlNet, Page
+export PnmlModel, APN, PnmlNet, Page
 export Place, RefPlace, Transition, RefTransition, Arc
 export REFID, SortRefImpl, SortRef, ArcTypeEnum
 export UserSortRef # From SortRefImpl ADT

@@ -23,10 +23,10 @@ isbuiltinsort(tag::Symbol) = (tag in builtin_sorts())
 # Unless they have content, just the types are sufficent.
 # Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
 # Called when both a and b are the same concrete type.
-equalSorts(a::AbstractSort, b::AbstractSort, ::AbstractPnmlNet) = a == b
+equalSorts(a::AbstractSort, b::AbstractSort, ::APN) = a == b
 
 basis(a::AbstractSort) = sortref(a)::SortRef
-sortof(a::AbstractSort, ::AbstractPnmlNet) = identity(a)
+sortof(a::AbstractSort, ::APN) = identity(a)
 sortdefinition(a::AbstractSort) = identity(a)
 
 """
@@ -39,7 +39,7 @@ Functions: equality, inequality
 @auto_hash_equals struct BoolSort <: AbstractSort end
 Base.eltype(::Type{<:BoolSort}) = Bool
 "Elements of boolean sort"
-sortelements(::BoolSort, ::AbstractPnmlNet) = tuple(true, false)
+sortelements(::BoolSort, ::APN) = tuple(true, false)
 
 #------------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 @auto_hash_equals struct MultisetSort <: AbstractSort
     basis::SortRef
 
-    function MultisetSort(b::SortRef, net::AbstractPnmlNet)
+    function MultisetSort(b::SortRef, net::APN)
         if ismultisetsort(b) ||
            (isnamedsort(b) &&
                 isa(sortdefinition(namedsort(net, b)), MultisetSort))
@@ -63,7 +63,7 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 end
 
 sortref(ms::MultisetSort) = identity(ms.basis)::SortRef
-sortof(ms::MultisetSort, net::AbstractPnmlNet) = sortdefinition(namedsort(net, basis(ms)))
+sortof(ms::MultisetSort, net::APN) = sortdefinition(namedsort(net, basis(ms)))
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -78,7 +78,7 @@ An ordered collection of sorts. The elements of the sort are tuples of elements 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
-@auto_hash_equals struct ProductSort{N, P <:AbstractPnmlNet} <: AbstractSort
+@auto_hash_equals struct ProductSort{N, P <:APN} <: AbstractSort
     ae::NTuple{N, SortRef}
     net::P
 end
@@ -91,27 +91,27 @@ sortdefinitions(p::ProductSort) = Iterators.map(sorts(p, p.net)) do s
 end
 
 """
-    sorts(ps::ProductSort, ::AbstractPnmlNet) -> NTuple
+    sorts(ps::ProductSort, ::APN) -> NTuple
 Return iterator over `SortRef`s to sorts in the product.
 """
-sorts(ps::ProductSort, ::AbstractPnmlNet) = values(ps.ae)
+sorts(ps::ProductSort, ::APN) = values(ps.ae)
 
-function sorts(psr::SortRef,  net::AbstractPnmlNet)
+function sorts(psr::SortRef,  net::APN)
     ps = productsort(net, psr)::ProductSort
     sorts(ps, net)
 end
 
-function sortelements(ref::SortRef, net::AbstractPnmlNet)
+function sortelements(ref::SortRef, net::APN)
     sortelements(to_sort(ref, net), net)
 end
 
 # Iterators.product is over tuples of 1 element from each sort of ProductSort
-function sortelements(ps::ProductSort, net::AbstractPnmlNet)
+function sortelements(ps::ProductSort, net::APN)
     Iterators.product(Fix2(sortelements, net).(sorts(ps, net))...)
 end
 
 function equalSorts(a::ProductSort{N}, b::ProductSort{N},
-                    net::AbstractPnmlNet) where {N <: Integer}
+                    net::APN) where {N <: Integer}
     if length(a) == length(b) &&
             all(refid(x) == refid(y) for (x,y) in zip(sorts(a, net), sorts(b, net)))
         return true
@@ -120,7 +120,7 @@ function equalSorts(a::ProductSort{N}, b::ProductSort{N},
 end
 
 #
-function equalSorts(a::SortRef, b::SortRef, net::AbstractPnmlNet)
+function equalSorts(a::SortRef, b::SortRef, net::APN)
     if variant_type(a) == variant_type(b) && refid(a) == refid(b)
         #println("Same type ref and same refid means same sortdefinition.")
         return true

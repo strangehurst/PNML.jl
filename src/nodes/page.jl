@@ -8,7 +8,7 @@ There must be at least 1 Page for a valid pnml model.
 `PNTD` binds the other type parameters together to express a specific PNG.
 See [`PnmlNet`](@ref)
 """
-@kwdef mutable struct Page{PNTD <: PnmlType, N <: AbstractPnmlNet} <: AbstractPnmlObject
+@kwdef mutable struct Page{PNTD <: APNTD, N <: APN} <: AbstractPnmlObject
     net::N
     pntd::PNTD
     id::Symbol
@@ -65,7 +65,7 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-function Base.show(io::IO, page::Page{T,N}) where {T <: PnmlType, N <: AbstractPnmlNet}
+function Base.show(io::IO, page::Page{T,N}) where {T <: APNTD, N <: APN}
     #TODO Add support for :trim and :compact
     print(io, "Page{", T, ", ", N,"}("),
     show(io, pid(page)); print(io, ", ")
@@ -81,7 +81,7 @@ function Base.show(io::IO, page::Page{T,N}) where {T <: PnmlType, N <: AbstractP
     print(io, ")")
 end
 
-function verify(page::Page, verbose::Bool, net::AbstractPnmlNet)
+function verify(page::Page, verbose::Bool, net::APN)
     errors = String[]
     verify!(errors, page, verbose, net)
     isempty(errors) ||
@@ -89,7 +89,7 @@ function verify(page::Page, verbose::Bool, net::AbstractPnmlNet)
     return true
 end
 
-function verify!(errors, page::Page, verbose::Bool, net::AbstractPnmlNet)
+function verify!(errors, page::Page, verbose::Bool, net::APN)
     verbose && println("## verify $(typeof(page)) $(pid(page))")
     !isregistered(registry_of(net), pid(page)) &&
         push!(errors, string("page ", repr(pid(page)), " not registered")::String)

@@ -68,18 +68,15 @@ Return an iterator over all the declaration dictionaries' values.
 function declarations(dd::DeclDict)
     Iterators.flatten([
         values(variabledecls(dd)),
-
         values(namedsorts(dd)),
         values(arbitrarysorts(dd)),
         values(partitionsorts(dd)),
         values(multisetsorts(dd)),
         values(productsorts(dd)),
-
         values(partitionops(dd)),
         values(namedoperators(dd)),
         values(arbitraryops(dd)),
         values(feconstants(dd)),
-
         values(useroperators(dd)),
     ])
 end
@@ -198,9 +195,9 @@ function operator(dd::DeclDict, opid::Symbol)
 end
 
 """
-    verify(dd::DeclDict, verbose::Bool, net::AbstractPnmlNet) -> Bool
+    verify(dd::DeclDict, verbose::Bool, net::APN) -> Bool
 """
-function verify(dd::DeclDict, verbose::Bool, net::AbstractPnmlNet)
+function verify(dd::DeclDict, verbose::Bool, net::APN)
     errors = String[]
     verify!(errors, dd, verbose, net)
     isempty(errors) ||
@@ -208,7 +205,7 @@ function verify(dd::DeclDict, verbose::Bool, net::AbstractPnmlNet)
     return true
 end
 
-function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, net::AbstractPnmlNet)
+function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, net::APN)
     verbose && println("## verify $(typeof(dd))")
     for k in Iterators.flatten([keys(variabledecls(dd)),
                             keys(namedsorts(dd)),
@@ -222,7 +219,7 @@ function verify!(errors::Vector{String}, dd::DeclDict, verbose::Bool, net::Abstr
                             keys(feconstants(dd)),
                             keys(useroperators(dd))])
         isregistered(registry_of(net), k) ||
-            push!(errors, string("unregisrered id $(repr(k))"))
+            push!(errors, string("unregisrered id $k"))
     end
     for (k,v) in partitionsorts(dd)
         #@show v
@@ -250,7 +247,7 @@ function find_valuekey(d::AbstractDict, x, func=identity)
     for (k,v) in pairs(skipmissing(d))
         if func(v) == x # Apply `func` to each value, looking for a match.
             id = k
-            @warn("found existing $id for repr($x)")
+            @warn("found existing $id for $x")
             break
         end
     end

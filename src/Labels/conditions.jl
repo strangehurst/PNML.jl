@@ -8,7 +8,7 @@ There may be other things evaluating to boolean used to determine transition fir
 including: priority labels, inhibitor arc, place capacity labels, time/delay labels.
 ```
 """
-@auto_hash_equals struct Condition{T<:PnmlExpr, N <: AbstractPnmlNet} <: HLAnnotation
+@auto_hash_equals struct Condition{T<:PnmlExpr, N <: APN} <: HLAnnotation
     text::Maybe{String}
     term::T # duck-typed AbstractBoolExpr
     # color function: uses term and args, Built/JITed
@@ -18,15 +18,15 @@ including: priority labels, inhibitor arc, place capacity labels, time/delay lab
     net::N
 end
 
-Condition(b::Bool, net::AbstractPnmlNet) = Condition(BooleanConstant(b), net)
-Condition(c::BooleanConstant, net::AbstractPnmlNet) = Condition(BooleanEx(c), net)
-Condition(expr::BooleanEx, net::AbstractPnmlNet) =
+Condition(b::Bool, net::APN) = Condition(BooleanConstant(b), net)
+Condition(c::BooleanConstant, net::APN) = Condition(BooleanEx(c), net)
+Condition(expr::BooleanEx, net::APN) =
     Condition(nothing, expr, nothing, nothing, REFID[], net)
-Condition(text::AbstractString, expr::BooleanEx, net::AbstractPnmlNet) =
+Condition(text::AbstractString, expr::BooleanEx, net::APN) =
     Condition(text, expr, nothing, nothing, REFID[], net)
 
 Base.eltype(::Type{<:Condition}) = Bool
-value_type(::Type{<:Condition}, ::PnmlType) = eltype(BoolSort)
+value_type(::Type{<:Condition}, ::APNTD) = eltype(BoolSort)
 
 #! Term may be non-ground and need arguments:
 #! pnml variable expressions that reference a marking's value?
@@ -36,7 +36,7 @@ term(c::Condition) = c.term #todo! pnml variables
 
 variables(c::Condition) = c.vars
 
-function default(::Type{<:Condition}, ::PnmlType, net::AbstractPnmlNet)
+function default(::Type{<:Condition}, ::APNTD, net::APN)
     #@info "default Condition"
     Condition(BooleanEx(BooleanConstant(true)), net)
 end

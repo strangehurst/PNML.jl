@@ -57,7 +57,7 @@ function toolinfos end
 """
 $(TYPEDSIGNATURES)
 
-Return the [`PnmlType`](@ref) subtype representing the flavor (or pntd) of this kind of
+Return the [`APNTD`](@ref) subtype representing the flavor (or pntd) of this kind of
 Petri Net Graph.
 
 See also [`pnmltype`](@ref PnmlTypes.pnmltype)
@@ -320,7 +320,7 @@ function term end
 function coordinate_type end
 
 """
-    value_type(::Type{<AbstractLabel}, ::PnmlType) -> Type
+    value_type(::Type{<AbstractLabel}, ::APNTD) -> Type
 
 Return the `Type` of a label's value.
 """
@@ -394,7 +394,7 @@ function adjacent_place end
 #todo Remove limitation of requiring arcs to be between place and transition.
 
 """
-    decldict(net::AbstractPnmlNet) -> DeclDict
+    decldict(net::APN) -> DeclDict
 
 Access net-level `DeclDict`.
 """
@@ -408,23 +408,23 @@ function version end
 function fill_sort_tag! end
 
 """
-    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::PnmlType))}
-    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::PnmlType)}
+    input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::APNTD))}
+    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function input_matrix end
 
 """
-    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::PnmlType)}
-    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::PnmlType)}
+    output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::APNTD)}
+    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
 
 Create and return a matrix ntransitions x nplaces.
 """
 function output_matrix end
 
 """
-    verify!(errors::Vector{String}, x, verbose::Bool, net::AbstractPnmlNet)
+    verify!(errors::Vector{String}, x, verbose::Bool, net::APN)
 """
 function verify! end
 
