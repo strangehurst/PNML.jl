@@ -305,6 +305,7 @@ function parse_arbitrarysort(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet
     check_nodename(node, "arbitrarysort")
     arb_id = register_idof!(net.idregistry, node)
     name = attribute(node, "name")
+
     @warn("parse arbitrarysort: id = $arb_id, name = $name")
     arb = ArbitrarySort(arb_id, name, net)
     fill_sort_tag!(net, arb_id, arb)
@@ -548,22 +549,24 @@ function parse_partition(node::XMLNode, pntd::PnmlType; net::AbstractPnmlNet) #!
                 ", name = ", repr(nameval),
                 ", sort = ", repr(partitioned_sortref))
 
-    partsort = PartitionSort(partition_id, nameval, partitioned_sortref, elements, net) # A Declaraion named Sort!
+    part_sort = PartitionSort(partition_id, nameval, partitioned_sortref, elements, net) # A Declaraion named Sort!
 
-    verify_partition(partsort) || error("verify_partition failed: $partsort")
+    verify_partition(part_sort) || error("verify_partition failed: $part_sort")
 
     # add to productsorts
-    fill_sort_tag!(net, partition_id, partsort)
-    @assert partitionsorts(net)[partition_id] == partsort
+    fill_sort_tag!(net, partition_id, part_sort)
+    @assert partitionsorts(net)[partition_id] == part_sort
     # make a user/named sort duo
-    namedsorts(net)[partition_id] = NamedSort(partition_id, string(partition_id), partsort, net)
-    return make_sortref(net, partitionsorts, partsort, "partition", partition_id, "")
+    namedsorts(net)[partition_id] = NamedSort(partition_id,
+                                              string(partition_id), part_sort, net)
+    return make_sortref(net, partitionsorts, part_sort, "partition", partition_id, "")
 end
 
 """
     parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode rid::REFID; net::AbstractPnmlNet)
 
-Parse `<partitionelement>`, add FEConstant refids to the element and append element to the vector.
+Parse a `<partitionelement>` XML node,
+add FEConstant refids to the element and append element to the vector.
 """
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode,
                                     rid::REFID; net::AbstractPnmlNet)
@@ -575,7 +578,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
         tag = EzXML.nodename(child)
         if tag === "useroperator"
             # PartitionElements refer to the FEConstants of the referenced enumeration sort.
-            # UserOperator here holds an REFID to a FEConstant callable object.
+            # UserOperator here holds an REFID to a FEConstant object.
             decl_id = Symbol(attribute(child, "declaration"))
             has_feconstant(net, decl_id) ||
                 error("declaration id $decl_id not found in feconstants") #! move to verify?
@@ -591,5 +594,3 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
     push!(elements, PartitionElement(element_id, nameval, terms, rid))
     return elements
 end
-
-############################################################

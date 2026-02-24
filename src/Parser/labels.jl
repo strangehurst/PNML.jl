@@ -130,7 +130,7 @@ function parse_label_content(node::XMLNode, termparser::F, pntd::PnmlType;
         elseif tag == "graphics"
             graphics = parse_graphics(child, pntd)
         elseif tag == "toolspecific"
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # label content termparser
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net)
         else
             @warn("ignoring unexpected child of <$(EzXML.nodename(node))>: '$tag'", termparser, pntd)
         end
@@ -208,7 +208,7 @@ end
 
 """
 $(TYPEDSIGNATURES)
-Ignore the source & target IDREF symbols.
+Ignore the source & target symbols.
 """
 function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::PnmlType;
                             net::AbstractPnmlNet,

@@ -3,19 +3,13 @@ Petri Net Type Definition (pntd) URI mapped to PnmlType subtype singleton.
 """
 module PnmlTypes
 
-import Base: eltype
 using DocStringExtensions
-
 using SciMLLogging: @SciMLMessage
-
-import PNML
 
 # Abstract Types
 export PnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContinuousNet
-
 # Concrete Types
 export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
-
 # Functions
 export pnmltype, isdiscrete, iscontinuous, ishighlevel
 
@@ -23,13 +17,16 @@ export pnmltype, isdiscrete, iscontinuous, ishighlevel
 $(TYPEDEF)
 Abstract root of a dispatch type based on Petri Net Type Definitions (pntd).
 
-Each Petri Net Markup Language (PNML) network element will have a single pntd URI
+Each Petri Net Markup Language (PNML) `<net>` element will have a single URI
 as a required 'type' XML attribute. That URI should refer to a RelaxNG schema defining
 the syntax and semantics of the XML model.
+See ISO 15909-2, http://www.pnml.org/ for details.
 
-Selected abbreviations, URIs that do not resolve to a valid schema file, are also allowed.
+Selected abbreviations and URIs that do not resolve to a valid schema file
+are suported by this tool. See [`pntd_map`](@ref).
 
-Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref) for how to get from the URI to a singleton.
+Refer to [`pntd_symbol`](@ref) and [`pnmltype`](@ref) for
+how to get from the URI to a singleton.
 """
 abstract type PnmlType end
 
@@ -181,16 +178,18 @@ const pnmltype_map = IdDict{Symbol, PnmlType}(:pnmlcore => PnmlCoreNet(),
                                             :continuous => ContinuousNet()
                                             )
 
-"Return iterator over [`PnmlType`](@ref) singletons."
-all_nettypes() = values(pnmltype_map)
+"""
+    all_nettypes([predicate])
 
-"Return iterator over [`PnmlType`](@ref) singletons filtered by the prediciate `p`."
+Return iterator over [`PnmlType`](@ref) singletons. Filtered predicate `p` if present.
+"""
+all_nettypes() = values(pnmltype_map)
 all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
+"Useful for testing the 3 kinds of tokens."
 core_nettypes() = (PnmlCoreNet(), HLCoreNet(), ContinuousNet())
 
 """
-
 $(TYPEDSIGNATURES)
 
 Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
@@ -198,8 +197,6 @@ Add or replace mapping from Symbol `s` to [`PnmlType`](@ref) singleton `pntd`.
 function add_nettype!(dict::AbstractDict, s::Symbol, pntd::PnmlType)
     action = s ∈ keys(dict) ? "updating" : "adding"
     @info  "$action mapping from $(repr(s)) to $pntd in $(typeof(dict))"
-    # @SciMLMessage("$action mapping from $(repr(s)) to $pntd in $(typeof(dict))", verbose, :information, :options)
-    #@assert pntd ∉ values(dict) "$pntd already in pnml nettype dictionary"
     dict[s] = pntd
     return dict
 end
@@ -218,12 +215,12 @@ julia> PNML.PnmlTypes.pntd_symbol("foo")
 :pnmlcore
 ```
 """
-pntd_symbol(s::AbstractString) = get(pntd_map::Dict{String, Symbol}, s, :pnmlcore)::Symbol
+pntd_symbol(s::AbstractString) = get(pntd_map, s, :pnmlcore)::Symbol
 
 """
-    pnmltype(pntd::PnmlType) -> pnml
+    pnmltype(pntd::PnmlType) -> pntd
     pnmltype(uri::AbstractString) -> PnmlType
-    pnmltype(s::Symbol; pnmltype_map=pnmltype_map) -> PnmlType
+    pnmltype(s::Symbol; pnmltype_map) -> PnmlType
 
 Map either a text string or a symbol to a dispatch type object.
 
@@ -251,35 +248,28 @@ SymmetricNet()
 function pnmltype end
 pnmltype(pntd::PnmlType) = pntd
 pnmltype(uri::AbstractString) = pnmltype(pntd_symbol(uri))
-function pnmltype(s::Symbol)
-
-    typemap = pnmltype_map::IdDict{Symbol, PnmlType}
-    haskey(typemap, s) || throw(DomainError("Unknown PNTD symbol $s"))
-    @inbounds typemap[s]
+pnmltype(s::Symbol) = if haskey(pnmltype_map, s)
+    pnmltype_map[s]
+else
+    throw(DomainError("Unknown PNTD symbol $s"))
 end
-
-
-# Traits
 
 "Tokens represented by integers."
 function isdiscrete end
-
-"Tokens represented by floating point."
-function iscontinuous end
-
-"Tokens represented by multiset (aka bag)."
-function ishighlevel end
-
 isdiscrete(pntd::PnmlType) = false
 isdiscrete(pntd::AbstractPnmlCore) = true
 isdiscrete(::Type{<:PnmlType}) = false
 isdiscrete(::Type{<:AbstractPnmlCore}) = true
 
+"Tokens represented by floating point."
+function iscontinuous end
 iscontinuous(pntd::PnmlType) = false
 iscontinuous(pntd::AbstractContinuousNet) = true
 iscontinuous(::Type{<:PnmlType}) = false
 iscontinuous(::Type{<:AbstractContinuousNet}) = true
 
+"Tokens represented by multiset (aka bag)."
+function ishighlevel end
 ishighlevel(pntd::PnmlType) = false
 ishighlevel(pntd::AbstractHLCore) = true
 ishighlevel(::Type{<:PnmlType}) = false
