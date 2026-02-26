@@ -376,6 +376,6 @@ const ex_types = ("continuous",)
         for n in 1:10
             mx = PNML.fire2(C, anet.net, mx)
         end
-        #@show mx
+        @test PNML.enabled(anet.net, mx) == [false,false,true,false]
     end
 end
