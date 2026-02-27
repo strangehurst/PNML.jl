@@ -351,12 +351,13 @@ const ex_types = ("continuous",)
     mg = PNML.metagraph(pnmlnet(anet))
     #! mg2 = PNML.metagraph(anet)
 
-    m₀ = initial_markings(anet.net) #::LVector
+    m₀ = initial_markings(anet.net)
     C  = PNML.incidence_matrix(anet.net) # Matrix of PnmlMultiset
     e  = PNML.enabled(anet.net, m₀)
+    #@show m₀ C e typeof(e)
 
-    @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == Bool[1,0,0,0]
+    @test e == [true,false,false,false] # 3 representations of the enabled vector.
     @test e == [1,0,0,0]
 
     m₁ = PNML.fire2(C, anet.net, m₀)
@@ -371,7 +372,6 @@ const ex_types = ("continuous",)
     m₄ = PNML.fire2(C, anet.net, m₃)
     @test PNML.enabled(anet.net, m₄) == [true,false,false,false]
 
-    #println("==================================")
     let mx = m₀
         for n in 1:10
             mx = PNML.fire2(C, anet.net, mx)

@@ -3,7 +3,7 @@
 """
     fire(incidence, enabled, marking) -> ArbitraryOperator
 
-Return the marking vector after firing transition:   marking + incidence * enabled
+Return the marking vector after firing transition: marking + incidence * enabled
 
 `marking` values added to product of `incidence'` matrix and firing vector `enabled`.
 """
