@@ -117,7 +117,8 @@ function value_type(::Type{Marking}, pntd::AbstractHLCore)
     eltype(DotSort)
 end
 
-value_type(::Type{Marking}, ::PT_HLPNG) = eltype(DotSort)
+# PT_HLPNG is restricted to DotSort, we treat its singleton multisets as  NaturalSort.
+value_type(::Type{Marking}, ::PT_HLPNG) = eltype(NaturalSort) #::Int
 
 #~ Note the close relation of marking value_type to inscription value_type.
 #~ Inscription values are non-zero while marking values may be zero.
