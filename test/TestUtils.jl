@@ -44,7 +44,7 @@ Multisets.set_key_value_show()
     namedsort, partitionsort, arbitrarysort
 
 @reexport using PNML: PnmlModel,
-    PnmlNet, make_net, nets, nettype,
+    PnmlNet, make_net, nets, nettype, registry_of, pntd,
     Page, pages, npages, firstpage, allpages, flatten_pages!,
     Place, place, places, nplaces,  has_place,
     Transition, transition, transitions, ntransitions, has_transition,
@@ -70,8 +70,12 @@ Multisets.set_key_value_show()
 
 @reexport using PNML: sortof, sortref, sortdefinition, sortelements, namedsort, initial_marking
 
-@reexport using PNML: NumberConstant, BooleanConstant, DotConstant, DotConstantEx, zero
+@reexport using PNML: metagraph, vertex_codes, vertex_labels
+
+@reexport using PNML: FEConstant, NumberConstant, BooleanConstant, DotConstant, DotConstantEx, zero
 @reexport using PNML: AbstractTerm, AbstractVariable, AbstractOperator, inputs
+
+@reexport using PNML: multiplicity
 
 @reexport using PNML.Expressions
 

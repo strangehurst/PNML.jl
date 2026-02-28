@@ -15,7 +15,7 @@ IDRegistrys.reset_reg!(net.idregistry)
 @test !isregistered(net.idregistry, :p1)
 register_id!(net.idregistry, :p1)
 @test isregistered(net.idregistry, :p1)
-@test_throws PNML.DuplicateIDException PNML.register_id!(net.idregistry, :p1)
+@test_throws DuplicateIDException register_id!(net.idregistry, :p1)
 @test isregistered(net.idregistry, :p1) # still registered
 
 @test_opt target_modules=t_modules IDRegistry()

@@ -47,11 +47,11 @@ parse_declaration!(net, [node], pntd)
     b5 = @inferred Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 1))
 
     a = @inferred PNML.Add([b1, b2, b3])
-    ex = @inferred PNML.toexpr(a, varsub, net)
+    ex = @inferred toexpr(a, varsub, net)
     val = eval(ex)
-    @test val == eval(PNML.toexpr(b1, varsub, net)) +
-                 eval(PNML.toexpr(b2, varsub, net)) +
-                 eval(PNML.toexpr(b3, varsub, net))
+    @test val == eval(toexpr(b1, varsub, net)) +
+                 eval(toexpr(b2, varsub, net)) +
+                 eval(toexpr(b3, varsub, net))
 end
 
 @testset "multiset contains $pntd" begin
@@ -62,8 +62,8 @@ end
     b4 = Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 2))
     b5 = Bag(NamedSortRef(:pro), 4, NumberEx(NamedSortRef(:natural), 1))
 
-    aex = PNML.toexpr(PNML.Add([b1, b2, b4]), varsub, net)
-    bex = PNML.toexpr(PNML.Add([b1, b2, b5]), varsub, net)
+    aex = toexpr(PNML.Add([b1, b2, b4]), varsub, net)
+    bex = toexpr(PNML.Add([b1, b2, b5]), varsub, net)
 
     a = eval(aex)
     b = eval(bex)
@@ -71,11 +71,11 @@ end
     Bag(b) # 1'1 2'1 3'2 4'1
     # is bag(a) contains bag(b) or bag(b) issubset bag(a)
     c = @inferred Contains(Bag(a), Bag(b))
-    ex = @inferred PNML.toexpr(c, varsub, net)
+    ex = @inferred toexpr(c, varsub, net)
     @test eval(ex) == true
 
     c2 = Contains(Bag(b), Bag(a))
-    @test eval(PNML.toexpr(c2, varsub, net)) == false
+    @test eval(toexpr(c2, varsub, net)) == false
 
     println()
 end
@@ -87,7 +87,7 @@ end
     b4 = BooleanEx(BooleanConstant(false))
 
     a = PNML.And([b1, b2, b3, b4])
-    ex = PNML.toexpr(a, varsub, net)
+    ex = toexpr(a, varsub, net)
     val = eval(ex)
     @test val == eval(toexpr(b1, varsub, net)) &
                  eval(toexpr(b2, varsub, net)) &
@@ -130,13 +130,13 @@ end
     b2 = PNML.BooleanEx(BooleanConstant(false))
 
     a = PNML.Not([b1, b2])
-    ex = PNML.toexpr(a, varsub, net)
+    ex = toexpr(a, varsub, net)
     val = eval(ex)
     @test val == false
 
-    @test eval(PNML.toexpr(PNML.Not([b2, b1]), varsub, net)) == false
-    @test eval(PNML.toexpr(PNML.Not([b1, b1]), varsub, net)) == false
-    @test eval(PNML.toexpr(PNML.Not([b2, b2]), varsub, net)) == true
+    @test eval(toexpr(PNML.Not([b2, b1]), varsub, net)) == false
+    @test eval(toexpr(PNML.Not([b1, b1]), varsub, net)) == false
+    @test eval(toexpr(PNML.Not([b2, b2]), varsub, net)) == true
 end
 
 # And, Or

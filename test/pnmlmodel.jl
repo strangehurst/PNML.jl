@@ -66,15 +66,15 @@ end
         @show model
     end
 
-    modelnets = PNML.nets(model)
+    modelnets = nets(model)
     @test length(model.nets) == 5
-    @test all(PNML.registry_of(n) isa IDRegistry for n in modelnets)
+    @test all(registry_of(n) isa IDRegistry for n in modelnets)
 
     for net in modelnets
-        @test_opt PNML.pntd(net)
-        ntup = PNML.find_nets(model, PNML.pntd(net))
+        @test_opt pntd(net)
+        ntup = PNML.find_nets(model, pntd(net))
         t = PNML.nettype(net)
-        @test PNML.name(net) == string(pid(net)) # true by special construction
+        @test name(net) == string(pid(net)) # true by special construction
         for n in ntup
             @test t === PNML.nettype(n)
         end

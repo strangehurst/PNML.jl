@@ -21,23 +21,23 @@ using XMLDict: XMLDict
     #println(str)
 
     net = make_net(pntd, :pt_initmark)
-    @show value_type(PNML.Marking, pntd)
-    @show PNML.Labels.sortref(value_type(PNML.Marking, pntd))
+    @show value_type(Marking, pntd)
+    @show sortref(value_type(Marking, pntd))
 
     placetype = SortType("$pntd initMarking",
-        PNML.sortref(value_type(PNML.Marking, pntd))::SortRef,
+        sortref(value_type(Marking, pntd))::SortRef,
         nothing, nothing, net)
 
     # Parse ignoring unexpected child
     mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd; net, parentid=:xxx)::PNML.Marking)
+                parse_initialMarking(node, placetype, pntd; net, parentid=:xxx)::Marking)
     #@test typeof(value(mark)) <: Union{Int,Float64}
     @test mark()::Union{Int,Float64} == 123
 
     # Integer
-    mark1 = PNML.Marking(23, net)
-    @test_opt broken=false PNML.Marking(23, net)
-    @test_call PNML.Marking(23, net)
+    mark1 = Marking(23, net)
+    @test_opt broken=false Marking(23, net)
+    @test_call Marking(23, net)
     @test typeof(mark1()) == typeof(23)
     @test mark1() == 23
     @test_opt broken=false mark1()
@@ -47,10 +47,10 @@ using XMLDict: XMLDict
     @test toolinfos(mark1) === nothing || isempty(toolinfos(mark1))
 
     # Floating point
-    mark2 = PNML.Marking(3.5, net)
+    mark2 = Marking(3.5, net)
     #@show mark2 mark2()
-    @test_opt broken=false PNML.Marking(3.5, net)
-    @test_call PNML.Marking(3.5, net)
+    @test_opt broken=false Marking(3.5, net)
+    @test_call Marking(3.5, net)
     @test typeof(mark2()) == typeof(3.5)
     @test mark2() ≈ 3.5
     @test_call mark2()
@@ -81,15 +81,15 @@ end
 
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
         #@show mark
-        @test mark isa PNML.Marking
+        @test mark isa Marking
 
-        @test PNML.term(mark) isa Bag
+        @test term(mark) isa Bag
         @test text(mark) == "3`dot"
         #println(); flush(stdout)
 
-        @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), net) #! debug
-        @test eval(PNML.toexpr(term(mark), NamedTuple(), net)) isa PNML.PnmlMultiset
+        @test has_graphics(mark) == false # This instance does not have any graphics.
+        #@show term(mark) toexpr(term(mark), NamedTuple(), net) #! debug
+        @test eval(toexpr(term(mark), NamedTuple(), net)) isa PnmlMultiset
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
         # @test inputs(markterm)[2] == DotConstant()
@@ -109,9 +109,9 @@ end
     #         </structure>
     #     </hlinitialMarking>
     #     """
-    #     @with PNML.idregistry => IDRegistry() begin
-    #         PNML.namedoperators()[:uop] = PNML.NamedOperator(:uop, "uop")
-    #         placetype = SortType("YYY", PNML.usersort(ddict, :uop))
+    #     @with idregistry => IDRegistry() begin
+    #         namedoperators()[:uop] = NamedOperator(:uop, "uop")
+    #         placetype = SortType("YYY", usersort(ddict, :uop))
     #         mark = parse_hlinitialMarking(node, placetype, pntd)
     #         @test mark isa Marking
     #     end
@@ -139,7 +139,7 @@ end
         fill_sort_tag!(net, :foo, sort)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        # @show placetype = SortType("XXX", PNML.ArbitrarySortRef(:foo), ctx.ddict)
+        # @show placetype = SortType("XXX", ArbitrarySortRef(:foo), ctx.ddict)
 
         # mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
     end
@@ -170,8 +170,8 @@ end
         </hlinitialMarking>
         """
         net = make_net(pntd, :dot_dot)
-        placetype = SortType("dot sorttype", PNML.NamedSortRef(:dot), net)
-        mark = PNML.Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
+        placetype = SortType("dot sorttype", NamedSortRef(:dot), net)
+        mark = Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
         #TODO add tests
     end
     # The constant eight.
@@ -190,10 +190,10 @@ end
         </hlinitialMarking>
         """
         net = make_net(pntd, :dot_1)
-        placetype = SortType("positive sorttype", PNML.NamedSortRef(:positive), net)
+        placetype = SortType("positive sorttype", NamedSortRef(:positive), net)
         mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
-        val = eval(toexpr(term(mark), NamedTuple(), net))::PNML.PnmlMultiset
-        @test PNML.multiplicity(val, NumberConstant(8, NamedSortRef(:positive))()) == 1
+        val = eval(toexpr(term(mark), NamedTuple(), net))::PnmlMultiset
+        @test multiplicity(val, NumberConstant(8, NamedSortRef(:positive))()) == 1
         @test NumberConstant(8, NamedSortRef(:positive))() in multiset(val)
      end
 
@@ -204,7 +204,7 @@ end
         </hlinitialMarking>
         """
         net = make_net(pntd, :empty_hlinitialMarking)
-        placetype = SortType("testdot", PNML.NamedSortRef(:dot), net)
+        placetype = SortType("testdot", NamedSortRef(:dot), net)
         @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
     end
 
@@ -235,19 +235,19 @@ end
         net = make_net(pntd, :fifi_net)
 
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
-        placetype = SortType("FIFO", PNML.NamedSortRef(:dot), net)
+        placetype = SortType("FIFO", NamedSortRef(:dot), net)
 
         mark = parse_fifoinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
         #@show mark
-        @test mark isa PNML.Marking
+        @test mark isa Marking
 
-        #@test PNML.term(mark) isa PNML.Bag
+        #@test PNMLterm(mark) isa Bag
         #@test text(mark) == "3`dot"
         #println(); flush(stdout)
 
-        @test PNML.has_graphics(mark) == false # This instance does not have any graphics.
-        #@show term(mark) PNML.toexpr(term(mark), NamedTuple(), net) #! debug
-        @test eval(PNML.toexpr(term(mark), NamedTuple(), net)) isa Vector{PNML.DotConstant}
+        @test has_graphics(mark) == false # This instance does not have any graphics.
+        #@show term(mark) toexpr(term(mark), NamedTuple(), net) #! debug
+        @test eval(toexpr(term(mark), NamedTuple(), net)) isa Vector{DotConstant}
         # @test arity(markterm) == 2
         # @test inputs(markterm)[1] == NumberConstant(3, PositiveSort())
         # @test inputs(markterm)[2] == DotConstant()
@@ -282,20 +282,20 @@ end # fifoinitialMarking
 #     dd.namedsorts[:N1]  = NamedSort(:N1, "N1", DotSort())
 #     dd.namedsorts[:N2]  = NamedSort(:N2, "N2", DotSort())
 
-#     mark = PNML.parse_hlinitialMarking(node, placetype, pntd)
+#     mark = parse_hlinitialMarking(node, placetype, pntd)
 
 #     #@test_logs(match_mode=:all, (:warn, "ignoring unexpected child of <hlinitialMarking>: 'unknown'"),
-#     @test mark isa PNML.AbstractLabel
-#     @test mark isa PNML.Marking
-#     @test PNML.has_graphics(mark) == true
+#     @test mark isa AbstractLabel
+#     @test mark isa Marking
+#     @test has_graphics(mark) == true
 #     @test occursin("Graphics", sprint(show, mark))
 
 #     # Following HL text,structure label pattern where structure is a `Term`.
 #     @test text(mark) == "<All,All>"
 #     markterm = value(mark)
 #     #~ @show markterm
-#     @test markterm isa PNML.AbstractTerm
-#     @test markterm isa PNML.Operator
+#     @test markterm isa AbstractTerm
+#     @test markterm isa Operator
 #     @test tag(markterm) === :tuple # pnml many-sorted algebra's tuple
 
 #     @test arity(markterm) == 2
@@ -310,7 +310,7 @@ end # fifoinitialMarking
 #     # use1 = value(all1)["usersort"]
 #     # @test use1 isa XmlDictType
 #     # @test use1[:declaration] == "N1"
-#     # @test PNML._attribute(use1, :declaration) == "N1"
+#     # @test _attribute(use1, :declaration) == "N1"
 
 #     # all2 = value(axn)[2]
 #     # @test tag(all2) == "all"
@@ -318,5 +318,5 @@ end # fifoinitialMarking
 #     # use2 = value(all2)["usersort"]
 #     # @test use2 isa XmlDictType
 #     # @test use2[:declaration] == "N2"
-#     # @test PNML._attribute(use2, :declaration) == "N2"
+#     # @test _attribute(use2, :declaration) == "N2"
 # end

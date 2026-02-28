@@ -17,15 +17,15 @@ using .TestUtils
 
     @test length(decl.ddict) == 7 # nothing in <declarations>
     @test !isempty(decl.ddict)
-    @test @inferred(Maybe{Graphics}, PNML.graphics(decl)) === nothing
-    @test @inferred(Maybe{ToolInfo}, PNML.toolinfos(decl)) === nothing
+    @test @inferred(Maybe{Graphics}, graphics(decl)) === nothing
+    @test @inferred(Maybe{ToolInfo}, toolinfos(decl)) === nothing
 
     @test occursin(r"^Declaration", sprint(show, decl))
-    @test_opt PNML.graphics(decl)
-    @test_opt PNML.toolinfos(decl)
+    @test_opt graphics(decl)
+    @test_opt toolinfos(decl)
 
-    @test_call PNML.graphics(decl)
-    @test_call PNML.toolinfos(decl)
+    @test_call graphics(decl)
+    @test_call toolinfos(decl)
 end
 
 @testset "namedsort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
@@ -64,31 +64,31 @@ end
     """
 
     net = make_net(pntd, :namedsorts_net)
-    @test_call target_modules=t_modules PNML.namedsorts(net)
-    @test_opt target_modules=t_modules function_filter=pff PNML.namedsorts(net)
+    @test_call target_modules=t_modules namedsorts(net)
+    @test_opt target_modules=t_modules function_filter=pff namedsorts(net)
 
-    base_decl_length = length(PNML.namedsorts(net))
+    base_decl_length = length(namedsorts(net))
     #@show decl = parse_declaration!(net, [node], pntd)
     #@show decl net.ddict
     decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-            parse_declaration!(net, [node], pntd)::PNML.Declaration) # Add 3 declarations.
-    @test length(PNML.namedsorts(net)) == base_decl_length + 3
+            parse_declaration!(net, [node], pntd)::Declaration) # Add 3 declarations.
+    @test length(namedsorts(net)) == base_decl_length + 3
 
-    for nsort in values(PNML.namedsorts(net))
-        #!@test typeof(nsort) <: PNML.NamedSort # is a declaration
+    for nsort in values(namedsorts(net))
+        #!@test typeof(nsort) <: NamedSort # is a declaration
         #@show nsort pid(nsort)
         @test isregistered(net.idregistry, pid(nsort))
-        #!@test Symbol(PNML.name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
-        #!@test PNML.sortof(nsort) isa PNML.CyclicEnumerationSort
-        #@test PNML.elements(PNML.sortof(nsort)) isa Vector{PNML.FEConstant}
+        #!@test Symbol(name(nsort)) === pid(nsort) # NOT TRUE! name and id are the same.
+        #!@test sortof(nsort) isa CyclicEnumerationSort
+        #@test elements(sortof(nsort)) isa Vector{FEConstant}
 
-        sortname = PNML.name(nsort)
+        sortname = name(nsort)
         cesort   = sortdefinition(nsort)
         feconsts = sortelements(cesort, net) # should be iteratable ordered collection
-        feconsts isa Vector{PNML.FEConstant}
+        feconsts isa Vector{FEConstant}
         #!@test length(feconsts) == 2
         # for fec in feconsts
-        #     @test fec isa PNML.FEConstant
+        #     @test fec isa FEConstant
         #     @test fec.id isa Symbol
         #     @test fec.name isa AbstractString
         #     @test isregistered(fec.id)
@@ -156,26 +156,26 @@ end
     @test typeof(decl) <: Declaration
 
     # Examine 3 partition sorts
-    for psort in values(PNML.partitionsorts(decl.ddict))
+    for psort in values(partitionsorts(decl.ddict))
         # partition -> partition element -> fe constant
         @test typeof(psort) <: PartitionSort # is a declaration
-        @test PNML.isregistered(net.idregistry, PNML.pid(psort))
-        psort == partitionsort(net, PNML.pid(psort)) #! @inferred
-        @test Symbol(PNML.name(psort)) === pid(psort) # name and id are the same.
-        partname = @inferred Union{SubString{String}, String} PNML.name(psort)
+        @test isregistered(net.idregistry, pid(psort))
+        psort == partitionsort(net, pid(psort)) #! @inferred
+        @test Symbol(name(psort)) === pid(psort) # name and id are the same.
+        partname = @inferred Union{SubString{String}, String} name(psort)
         partsort = sortdefinition(psort) #! @inferred
         part_elements = sortelements(psort, net)::Vector{PartitionElement}
 
         for element in part_elements
-            @test PNML.isregistered(net.idregistry, pid(element))
-            @test PNML.Declarations.contains(element, :nosuch) == false
+            @test isregistered(net.idregistry, pid(element))
+            @test Declarations.contains(element, :nosuch) == false
         end
-        # println("partition $(repr(pid(psort))) $(repr(PNML.name(psort))) ",
-        #     collect(PNML.Declarations.element_ids(psort)), " ",
-        #     collect(PNML.Declarations.element_names(psort)))
-        @test !isempty(PNML.Declarations.element_ids(psort))
-        @test !isempty(PNML.Declarations.element_names(psort))
-        PNML.Declarations.verify_partition(psort)
+        # println("partition $(repr(pid(psort))) $(repr(name(psort))) ",
+        #     collect(Declarations.element_ids(psort)), " ",
+        #     collect(Declarations.element_names(psort)))
+        @test !isempty(Declarations.element_ids(psort))
+        @test !isempty(Declarations.element_names(psort))
+        Declarations.verify_partition(psort)
     end
 end
 
@@ -193,9 +193,9 @@ end
     net = make_net(pntd, :arbitrarysort_net)
     decl = parse_declaration!(net, [node], pntd)
     @test typeof(decl) <: Declaration
-    #@show PNML.arbitrarysort(net, :id1)
-    @test name(PNML.arbitrarysort(net, :id1)) == "AGENT"
-    @test name(PNML.arbitrarysorts(net)[:id1]) == "AGENT"
+    #@show arbitrarysort(net, :id1)
+    @test name(arbitrarysort(net, :id1)) == "AGENT"
+    @test name(arbitrarysorts(net)[:id1]) == "AGENT"
 end
 @testset "arbitrary sort declaration $pntd" for pntd in PnmlTypes.core_nettypes()
     node = xml"""
@@ -263,8 +263,8 @@ end
 
     # for sorta in [x for x in _sorts() if x ∉ nonsimple_sorts]
     #     for sortb in [x for x in _sorts() if x ∉ nonsimple_sorts]
-    #         a = PNML.MultisetSort(sorta())
-    #         b = PNML.MultisetSort(sortb())
+    #         a = .MultisetSort(sorta())
+    #         b = MultisetSort(sortb())
     #         sorta != sortb && @test a != b && !PNML.equals(a, b)
     #         sorta == sortb && @test PNML.equals(a, b)::Bool && (a == b)
     #     end
