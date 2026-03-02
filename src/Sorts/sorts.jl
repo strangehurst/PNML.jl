@@ -83,23 +83,22 @@ Where sorts are the syntax for color classes and ProductSort is the color domain
     net::P
 end
 #
-Base.length(ps::ProductSort, net) = length(sorts(ps, net))
+Base.length(ps::ProductSort, net) = length(sorts(ps))
 Base.eltype(ps::ProductSort) = Tuple{eltype.(sortdefinitions(ps))...}
 
-sortdefinitions(p::ProductSort) = Iterators.map(sorts(p, p.net)) do s
+sortdefinitions(p::ProductSort) = Iterators.map(sorts(p)) do s
     sortdefinition(namedsort(p.net, s))
 end
 
 """
-    sorts(ps::ProductSort, ::APN) -> NTuple
-Return iterator over `SortRef`s to sorts in the product.
-"""
-sorts(ps::ProductSort, ::APN) = values(ps.ae)
+    sorts(ps::ProductSort) -> Iterator
+    sorts(psr::SortRef, net::APN) -> Iterator
 
-function sorts(psr::SortRef,  net::APN)
-    ps = productsort(net, psr)::ProductSort
-    sorts(ps, net)
-end
+Return iterator over `SortRef`s to sorts in the product of sorts.
+"""
+function sorts end
+sorts(ps::ProductSort) = values(ps.ae)
+sorts(psr::SortRef, net::APN) = sorts(productsort(net, psr)::ProductSort)
 
 function sortelements(ref::SortRef, net::APN)
     sortelements(to_sort(ref, net), net)
@@ -107,13 +106,13 @@ end
 
 # Iterators.product is over tuples of 1 element from each sort of ProductSort
 function sortelements(ps::ProductSort, net::APN)
-    Iterators.product(Fix2(sortelements, net).(sorts(ps, net))...)
+    Iterators.product(Fix2(sortelements, net).(sorts(ps))...)
 end
 
 function equalSorts(a::ProductSort{N}, b::ProductSort{N},
                     net::APN) where {N <: Integer}
     if length(a) == length(b) &&
-            all(refid(x) == refid(y) for (x,y) in zip(sorts(a, net), sorts(b, net)))
+            all(refid(x) == refid(y) for (x,y) in zip(sorts(a), sorts(b)))
         return true
     end
     return false
