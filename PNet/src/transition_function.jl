@@ -17,15 +17,15 @@ transition_function(net::PnmlNet) =
     [tid => in_out(net, tid) for tid in PNML.transition_idset(net)]
 
 """
-    civ(net, arcid) -> _cvt_inscription_value(pntd, arcdict[srcid], z, NamedTuple())
+    civ(net, arcid) -> _cvt_inscription_value(pntd(net), arcdict[arcid], z, NamedTuple())
 
-
+Lookup the `Arc`, find its inscription's value and if PT_HLPNG convert to integer-valued.
 #TODO add variables for full HL support
 """
-function civ(net, arcid)
-    a = PNML.arcdict(net)[arcid]
+function civ(net, arc_id)
+    arc = PNML.arcdict(net)[arc_id]
     z = PNML.zero_marking(PNML.adjacent_place(net, a)) # 0 or empty multiset similar to placetype
-    PNML._cvt_inscription_value(pntd(net), PNML.arcdict(net)[arcid], z, NamedTuple())
+    PNML._cvt_inscription_value(pntd(net), arc, z, NamedTuple())
 end
 
 """
