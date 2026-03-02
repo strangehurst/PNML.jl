@@ -10,7 +10,7 @@ export def_sort_element
 export ToolParser
 export ArcType, ArcTypeEnum
 export Rate, Priority, Time
-export default, validate_toolinfos
+export default, validate_toolinfos, variables
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
@@ -25,7 +25,7 @@ import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, D, indent, inc_indent
+using PNML: Maybe, nettype, AnyElement, D, indent, inc_indent, pntd
 using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
 using PNML: DeclDict, XmlDictType
 using PNML: BooleanConstant, PnmlMultiset, AbstractTerm

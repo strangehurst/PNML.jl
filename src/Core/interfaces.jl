@@ -498,3 +498,8 @@ function has_arbitraryop end
 function has_partitionop end
 function has_feconstant end
 function has_useroperator end
+
+"""
+    pntd(net) -> AbstractPnmlType
+"""
+function pntd end
