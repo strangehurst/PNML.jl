@@ -3,7 +3,7 @@ import PNML
 using PNML: pnmlmodel, nets, pages, firstpage, places, transitions, arcs,
       pid, xmlnode, @xml_str, ntransitions, nplaces, narcs,
       has_place, place, has_transition, transition, has_arc, arc,
-      condition, inscription, rates, initial_marking,
+      condition, inscription, rates, initial_marking, initial_markings, enabled,
       PnmlModel, PnmlNet, Page, Place, Arc, Transition,
       pntd
 using PNML.Parser: xmlnode
@@ -12,7 +12,7 @@ const t_modules = (PNML,PNet)
 
 #testlogger = TestLogger()
 println("SIMPLENET")
-str1 = """
+const str1 = """
 <?xml version="1.0"?>
     <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="net0" type="what">
