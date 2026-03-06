@@ -22,14 +22,14 @@ using PNML.Sorts
 using PNML.PnmlGraphics
 using PNML.Declarations
 
-import PNML: initial_marking, PnmlMultiset, pid
+import PNML: initial_markings, initial_marking, enabled, PnmlMultiset, pid
 import PNML: metagraph
 import PNML: ToolParser, LabelParser
 import PNML: input_matrix, output_matrix
 import PNML: nettype, rates
 
 export AbstractPetriNet, SimpleNet
-export initial_markings, input_matrix, output_matrix, transition_function, pnmlnet
+export input_matrix, output_matrix, transition_function, pnmlnet
 export labeled_transitions, counted_transitions
 
 include("petrinet.jl")
