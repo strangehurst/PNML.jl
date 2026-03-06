@@ -138,11 +138,12 @@ end
 #! Default `<:Number`
 function input_matrix!(imatrix, net::PnmlNet)
     varsub = NamedTuple() # PT_HLPNG  is only supported High-level net here
+    @show typeof(imatrix)
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id)) # 0 or empty multiset similar to placetype
             a = arc(net, place_id, transition_id)
-            imatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
+            imatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)#::Number
         end
     end
 return imatrix
@@ -157,11 +158,12 @@ end
 
 function output_matrix!(omatrix, net::PnmlNet)
     varsub = NamedTuple()
+    @show typeof(omatrix)
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id))
             a = arc(net, transition_id, place_id)
-            omatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)::Number
+            omatrix[t, p] = _cvt_inscription_value(pntd(net), a, z, varsub)#::Number
         end
     end
 return omatrix
@@ -186,3 +188,31 @@ end
 
 # Vector{NamedTuple} cached in transition field.
 varsubs(net::PnmlNet, transition_id::Symbol) = varsubs(transition(net, transition_id))
+
+"""
+    initial_markings(petrinet) -> Tuple{Pair{id(place),value_type(marking(place))}
+
+Tuple of Pair(place_id, initial_marking value).
+
+High-level P/T Nets use cardinality of its multiset place marking value.
+Really, the implementation should be the same as for PTNet.
+
+Other HL Nets use multisets.
+"""
+function initial_markings end
+
+function initial_markings(net::AbstractPnmlNet)
+    [initial_marking(p)::Number for p in PNML.places(net)]
+end
+
+# PT_HLPNG multisets of dotconstants map well to integer via cardinality.
+function initial_markings(net::PnmlNet{PT_HLPNG})
+    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
+end
+
+#! XXX Other HL nets need it to be treated as multiset, not simple numbers! XXX
+function initial_markings(net::PnmlNet{<:AbstractHLCore})
+    # Evaluate the ground term expression into a multiset.
+    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
+    #! FIFO places use queues, will co-exist with multisets from regular HL places.
+end

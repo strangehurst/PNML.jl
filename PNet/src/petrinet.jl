@@ -72,43 +72,10 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 # ! TODO SEE if there is a need for much forwarding.
 #------------------------------------------------------------------------------------------
 
-
 inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
-
 conditions(petrinet::AbstractPetriNet) = conditions(pnmlnet(petrinet))
-
 rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
-
-"""
-    initial_markings(petrinet) -> Tuple{Pair{id(place),value_type(marking(place))}
-
-Tuple of Pair(place_id, initial_marking value).
-
-High-level P/T Nets use cardinality of its multiset place marking value.
-Really, the implementation should be the same as for PTNet.
-
-Other HL Nets use multisets.
-"""
-function initial_markings end #TODO move "lvector toolinfos" section
-
 initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet))
-
-function initial_markings(net::PnmlNet)
-    #^ AlgebraicJulia uses vector of pairs not LVector
-    [initial_marking(p)::Number for p in PNML.places(net)]
-end
-
-# PT_HLPNG multisets of dotconstants map well to integer via cardinality.
-function initial_markings(net::PnmlNet{PT_HLPNG})
-    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
-end
-
-#! XXX Other HL nets need it to be treated as multiset, not simple numbers! XXX
-function initial_markings(net::PnmlNet{<:AbstractHLCore})
-    # Evaluate the ground term expression into a multiset.
-    [PNML.cardinality(initial_marking(p)::PnmlMultiset)::Number for p in PNML.places(net)]
-    #! FIFO places use queues, will co-exist with multisets from regular HL places.
-end
 
 
 #####################################################################################
