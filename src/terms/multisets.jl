@@ -47,6 +47,19 @@ Base.keys(ms::PnmlMultiset) = keys(multiset(ms))
 Base.values(ms::PnmlMultiset) = values(multiset(ms))
 Base.iterate(ms::PnmlMultiset, ss) = iterate(multiset(ms), ss)
 Base.iterate(ms::PnmlMultiset) = iterate(multiset(ms))
+Base.convert(Bool, c::PnmlMultiset{DotConstant}) = true
+
+Base.:(==)(c::PnmlMultiset{DotConstant}, n::Number)  = convert(Bool, c) == n
+Base.:(==)( n::Number, c::PnmlMultiset{DotConstant}) = n == convert(Bool, c)
+
+Base.isequal(c::PnmlMultiset{DotConstant}, n::Number)  = isequal(convert(Bool, c), n)
+Base.isequal( n::Number, c::PnmlMultiset{DotConstant}) = isequal(n, convert(Bool, c))
+
+Base.isless(c::PnmlMultiset{DotConstant}, n::Number)  = isless(convert(Bool, c), n)
+Base.isless( n::Number, c::PnmlMultiset{DotConstant}) = isless(n, convert(Bool, c))
+
+Base.:(<)(c::PnmlMultiset{DotConstant}, n::Number)  = convert(Bool, c)< n
+Base.:(<)( n::Number, c::PnmlMultiset{DotConstant}) = n < convert(Bool, c)
 
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
