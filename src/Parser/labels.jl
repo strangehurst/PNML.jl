@@ -319,17 +319,14 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
 
     l = parse_label_content(node, ParseMarkingTerm(defsort), pntd; net)::NamedTuple
     placetype = l.sort
-    isnothing(l.exp) &&
-        error("Missing expression for $pntd net")
+    isnothing(l.exp) && error("Missing expression for $pntd net")
     #@show l.exp
 
     if !(isnamedsort(placetype) ||
-         (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
-        @error("$pntd placetype of $parentid expected to be NamedSortRef" *
-                " or product of named sorts, found $placetype")
-        if isproductsort(placetype)
-            foreach(println, Sorts.sorts(placetype, net))
-        end
+            (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
+        @error(string("$pntd placetype of $parentid expected to be NamedSortRef",
+                      " or product of named sorts, found $placetype"))
+        isproductsort(placetype) && foreach(println, Sorts.sorts(placetype, net))
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
@@ -340,7 +337,8 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
         end
         if !equalSorts(sortref(default_sorttype), placetype, net)
             println()
-            @error("$pntd parse_fifoinitialMarking of $parentid sortref mismatch: $default_sorttype != $placetype",
+            @error(string("$pntd parse_fifoinitialMarking of $parentid",
+                          " sortref mismatch: $default_sorttype != $placetype"),
                     default_sorttype, placetype, l)
             println()
         end
@@ -361,7 +359,7 @@ end # parse_fifoinitialMarking
 
 Holds parameters for parsing when called as (f::T)(::XMLNode, ::APNTD)
 """
-struct ParseMarkingTerm{S} #! <: Maybe{SortRef}}
+struct ParseMarkingTerm{S}
     defplacetype::S
 end
 
@@ -411,9 +409,9 @@ function parse_hlinscription(node::XMLNode, source::Symbol, target::Symbol,
 end
 
 """
-    ParseInscriptionTerm(placetype) -> Functor
+    ParseInscriptionTerm( Functor
 
-Holds parameters for parsing inscription.
+Holds `source` & `target` parameters for parsing an inscription.
 The sort of the inscription must match the place sorttype.
 Input arcs (source is a transition) and output arcs (source is a place)
 called as (pit::ParseInscriptionTerm)(::XMLNode, ::APNTD)

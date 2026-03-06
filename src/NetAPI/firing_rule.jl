@@ -15,9 +15,9 @@ function fire(incidence, enabled, m₀)
     muladd(permutedims(incidence), enabled, m₀) # old names, new values
 end
 
-fire2(C, net::AbstractPnmlNet, mx) = fire(C, enabled(net, mx), mx)
-fire2(C, net::PT_HLPNG, mx) = fire(C, enabled(net, mx), mx)
-function fire2(C, net::AbstractHLCore, mx)
+fire2(C, net::AbstractPnmlNet, marking) = fire(C, enabled(net, marking), marking)
+fire2(C, net::PT_HLPNG, mx) = fire(C, enabled(net, marking), marking)
+function fire2(C, net::AbstractHLCore, marking)
     println("firing $(pntd(net)) not implemented here, good luck")
-    fire(C, enabled(net, mx), mx)
+    fire(C, enabled(net, marking), marking)
 end

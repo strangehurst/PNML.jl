@@ -264,38 +264,42 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars::Multiset, placesort::Sort
     for v in keys(arc_vars)
         # Each variable must have a non-empty substitution.
         #! variable sorts are never ProductSort. Just one sort.
-        arc_bvs[v] = Multiset{Symbol}() # Start with empty substution set.
-        var_refid = refid(sortref(variabledel(net, v)))
+        arc_bvs[v] = Multiset{Symbol}() # Start with empty substution set for variable.
+        v_decl = variabledecl(net, v)
+        v_sortref = sortref(v_decl)
+        v_refid = refid(v_sortref)
 
         # Verify variable sort matches placesort.
         if isproductsort(placesort)
-            any(==(var_refid), Sorts.sorts(sortof(placesort, net))) ||
-                    error("none of tuple are equal sorts of $var_refid: ",
+            any(==(v_refid), Sorts.sorts(sortof(placesort, net))) ||
+                    error("none of product sorts are equal to $v_refid: ",
                             Sorts.sorts(sortof(placesort, net)))
         else
-            placesort !== sortref(variabledecl(net, v)) &&
-                error("not equal sorts ($placesort, $(sortref(variabledecl(net, v))))")
+            placesort !== v_sortref &&
+                error("not equal sorts ($placesort, $v_sortref)")
         end
 
-        for (el,mu) in pairs(multiset(mark))
+        # Examine mark
+        for (element, multiplicity) in pairs(multiset(mark))
+            @show typeof element
             #! arc_bvs counts possible substitutions in source place's marking.
-            # Multiple of same variable in inscription expression means arc_bvs only includes
-            # elements with a multiplicity at least as that large.
-            if mu >= arc_vars[v] # Variable multiplicity is per-arc, value is shared among arcs.
-                if el isa Tuple
-                    # Select the tuple element matching variable sort.
-                    # Standard PnmlTuple are pairs. We allow tuple of at least one element.
-                    for e in el #? PnmlMultiset?
-                        if refid(e) == var_refid
-                            e2 = e()
-                            push!(arc_bvs[v], e2) # Add value to count of substitutions.
+            # Multiple of same variable in inscription expression means
+            # arc_bvs only includes mark elements with multiplicity at least as that large.
+            if multiplicity >= arc_vars[v]
+                # Variable multiplicity is per-arc, value is shared among arcs.
+                if element isa Tuple # mark is a ProductSort.
+                    # Select the tuple member(s) matching variable sort.
+                    for expr in element
+                        if refid(expr) == v_refid
+                            push!(arc_bvs[v], expr()) # Add value of expr to set.
                         end
                     end
                 else #! el may be a PnmlMultiset
-                    push!(arc_bvs[v], el) # Add value to count of substitutions.
+                    push!(arc_bvs[v], element) # Add value to count of substitutions.
                 end
             end
         end
+
         if !isempty(arc_vars) && isempty(arc_bvs[v])
             return false # There are variables and one of them has no substitution.
         end
