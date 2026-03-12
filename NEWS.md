@@ -1,6 +1,13 @@
 # News
 
 Still under active development! These are some of the highlights.
+
+Version 0.1.0 2026-03-11
+    - Use 0.1.0 so PNet compat not touchie
+    - readability
+    - verify methods
+    - refactor SortRef and more
+
 Version 0.0.29 2026-01-27
   - Use workspace, sources.
   - Split PNet into separate package in monorepo.
