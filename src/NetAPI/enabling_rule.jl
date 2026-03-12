@@ -1,26 +1,31 @@
 # Enabling Rule
 
 """
-    accum_varsets!(bvs, arc_bvs) -> Bool
+    accum_tr_var_binding_sets!(tr_var_binding_set, arc_var_binding_set) -> Bool
+
 Collect variable bindings, intersecting among arcs.
 Return enabled status of false if any variable does not have a substitution.
 """
-function accum_varsets!(bvs::OrderedDict, arc_bvs::OrderedDict)
-    for v in keys(arc_bvs) # Each variable found in arc is merged into transaction set.
-        accum_varset!(bvs, arc_bvs, v)
+function accum_tr_var_binding_sets!(tr_var_binding_set::OrderedDict,
+                                    arc_var_binding_set::OrderedDict)
+    # Each variable found in arc is merged into transaction set.
+    for v in keys(arc_var_binding_set)
+        accum_tr_var_binding_set!(tr_var_binding_set, arc_var_binding_set, v)
     end
-    # Transition enabled when all(s->cardinality(s) > 0, values(bvs)).
-    all(!isempty, values(bvs))
+    # Transition enabled when all(s->cardinality(s) > 0, values(tr_var_binding_set)).
+    all(!isempty, values(tr_var_binding_set))
 end
 
-"Collect/intersect binding of one arc variable binding set."
-function accum_varset!(bvs::OrderedDict, arc_bvs::OrderedDict, v::REFID)
-    @assert arc_bvs[v] != 0 # This arc must satisfy all its variables.
-    if !haskey(bvs, v) # Previous arcs did not have variable.
-        bvs[v] = arc_bvs[v] # Initial value from 1st use.
+"Collect/intersect binding of one arc variable binding set for variable `v`."
+function accum_tr_var_binding_set!(tr_var_binding_set::OrderedDict,
+                                   arc_var_binding_set::OrderedDict,
+                                   v::REFID)
+    @assert arc_var_binding_set[v] != 0 # This arc must satisfy all its variables.
+    if !haskey(tr_var_binding_set, v)
+        tr_var_binding_set[v] = arc_var_binding_set[v] # Initial value from 1st use.
     else
-        @assert eltype(bvs[v]) == eltype(arc_bvs[v]) # Same type is expected.
-        intersect!(bvs[v], arc_bvs[v])
+        @assert eltype(tr_var_binding_set[v]) == eltype(arc_var_binding_set[v])
+        intersect!(tr_var_binding_set[v], arc_var_binding_set[v])
     end
 end
 
@@ -33,73 +38,70 @@ function unwrap_pmset(mark)
     if mark isa PnmlMultiset
         # That contains PnmlMultisets
         if eltype(mark) <: PnmlMultiset
-            # In the wrapped Multiset we allow one singleton PnmlMultiset
             single = only(multiset(mark))
-            eltype(single) <: PnmlMultiset && error("recursive PnmlMultisets not allowed here")
+            eltype(single) <: PnmlMultiset &&
+                error("recursive PnmlMultisets not allowed here")
             return single # Replace mark with the wrapped PnmlMultiset
         end
-    # else
-    #     @warn "mark in not a PnmlMultiset" mark
     end
     return mark
 end
 
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-"""
-    binding_value_sets(net::PnmlNet, marking) -> Vector{Dict{REFID,Any}}
+# """
+#     binding_value_sets(net::PnmlNet, marking) -> Vector{Dict{REFID,Any}}
 
-Return dictionary with transaction ID as key
-and value is binding set for variables of that transition.
-Each variable of an enabled transition will have a non-empty binding.
-"""
-function binding_value_sets(net::PnmlNet, marking)
-    bv_sets = Vector{Dict{REFID, Any}}() # One dictionary for each transition.
+# Return dictionary with transaction ID as key
+# and value is binding set for variables of that transition.
+# Each variable of an enabled transition will have a non-empty binding.
+# """
+# function binding_value_sets(net::PnmlNet, marking)
+#     bv_sets = Vector{Dict{REFID, Any}}() # One dictionary for each transition.
 
-    # The order of transitions is maintained.
-    for t in transitions(net)::Transition
-        bval_set = Dict{REFID, Set{eltype(basis)}}() # For this transition
+#     # The order of transitions is maintained.
+#     for t in transitions(net)::Transition
+#         bval_set = Dict{REFID, Set{eltype(basis)}}() # For this transition
 
-        for a in preset(net, t)::Arc
-            adj = adjacent_place(net, a)
-            placesort = sortref(adj)
-            vs = variables(inscription(a))
+#         for a in preset(net, t)::Arc
+#             adj = adjacent_place(net, a)
+#             placesort = sortref(adj)
+#             vs = variables(inscription(a))
 
-            for v in vs # inscription that is not a ground term
-                equal(placesort, v) ||
-                    error("sorts not equal for variable $v and marking $placesort")
-                #? for creating Ref need index into product sort/PnmlTuple
-                bvs = Dict{REFID, Set{eltype(basis)}}() # For this arc
-                # bind elements of the multiset to the variable when the multiplicities match.
-                for el in keys(marking[pid(adj)])
-                    # each element with enough multiplicity can be bound as a substitution.
-                    if multiplicity(marking[pid(adj)], el) >= length(filter(==(v), vs))
-                        push!(bvs[v], el)
-                    end
-                end
+#             for v in vs # inscription that is not a ground term
+#                 equal(placesort, v) ||
+#                     error("sorts not equal for variable $v and marking $placesort")
+#                 #? for creating Ref need index into product sort/PnmlTuple
+#                 tr_var_binding_set = Dict{REFID, Set{eltype(basis)}}() # For this arc
+#                 for el in keys(marking[pid(adj)])
+#                     # each element with enough multiplicity can be bound as a substitution.
+#                     if multiplicity(marking[pid(adj)], el) >= length(filter(==(v), vs))
+#                         push!(tr_var_binding_set[v], el)
+#                     end
+#                 end
 
-                for k in keys(bvs)
-                    bval_set[k] = if haskey(bval_set, k)
-                        intersect(bval_set[k], bvs[k])
-                    else
-                         bvs[k]
-                    end
-                end
-            end
-            # Empty binding value set means the transition is not enabled.
-            isempty(vars) || !isempty(bval_set) ||
-                error("expected non-empty binding value set")
-        end
-        push!(bv_sets, bval_set)
-    end
-    return bv_sets
-end
+#                 for k in keys(tr_var_binding_set)
+#                     bval_set[k] = if haskey(bval_set, k)
+#                         intersect(bval_set[k], tr_var_binding_set[k])
+#                     else
+#                          tr_var_binding_set[k]
+#                     end
+#                 end
+#             end
+#             # Empty binding value set means the transition is not enabled.
+#             isempty(vars) || !isempty(bval_set) ||
+#                 error("expected non-empty binding value set")
+#         end
+#         push!(bv_sets, bval_set)
+#     end
+#     return bv_sets
+# end
 
 # function variable_subs(tr::Transition, marking)
 #     #@error("implement me variable_subs($tr, $marking)")
 #     return varsubs(tr)
 # end
-
 #^+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 """
     labeled_places(net::PnmlNet, marking_vector)
 
@@ -113,49 +115,78 @@ end
 """
     enabled(::PnmlNet, marking) -> Vector{Bool}
 
-Return vector of booleans where `true` means the matching transition is enabled at current `marking`.
-Has the same order as the `transitions` dictionary.
+Return vector of booleans where `true` means the matching transition
+is enabled at current `marking`. Has the same order as the `transitions` dictionary.
 Used in the firing rule.
-Update tr.vars Set and tr.varsubs NamedTuple.
+
+
+
+Update tr.vars Set and tr.varsubs, NamedTuple.
 """
 function enabled end
 
 function enabled(net::AbstractPnmlNet, marking)
+    # Start by assuming all transitions are enabled.
+    # dictionary with key of transaction id, value of enabled state boolean
     e_dict = OrderedDict{Symbol, Bool}(id=>true for (id,t) in pairs(transitiondict(net)))
+
+    # dictionary with key of place id, value of its marking value (from marking vector)
     mark_dict = OrderedDict{Symbol, value_type(Marking, net)}(labeled_places(net, marking))
+
+    # filters
     #TODO other filters reducing work done by token_load!
-    token_load!(e_dict, mark_dict, net)
+    sufficient_tokens!(e_dict, mark_dict, net)
+    transition_guard!(e_dict, mark_dict, net)
     #TODO other filters modifying e_dict
     return collect(values(e_dict))
 end
 
 """
-    token_load!(enabled_dict, mark_dict, net::AbstractPnmlNet)
+    transition_guard!(enabled_dict, mark_dict, net::AbstractPnmlNet)
+
+Update each enabled transition's state in `enabled_dict` by testing its condition.
+"""
+function transition_guard! end
+function transition_guard!(enabled_dict::AbstractDict, # transaction id => boolean
+                           mark_dict::AbstractDict,    # place id => marking value
+                           net::PnmlNet)
+    # Non-high-level do not have conditions. Do they hve other guards?
+    return enabled_dict
+end
+function transition_guard!(enabled_dict::AbstractDict, # transaction id => boolean
+                           mark_dict::AbstractDict,    # place id => marking value
+                           net::PnmlNet{<:AbstractHLCore})
+    return enabled_dict
+end
+
+"""
+    sufficient_tokens!(enabled_dict, mark_dict, net::AbstractPnmlNet)
 
 Update each enabled transition's state in `enabled_dict` by testing that
 all its input places have enough tokens.
 """
-function token_load! end
+function sufficient_tokens! end
 
-function token_load!(enabled_dict::AbstractDict,
-                     mark_dict::AbstractDict,
-                     net::AbstractPnmlNet)
+function sufficient_tokens!(enabled_dict::AbstractDict, # transaction id => boolean
+                            mark_dict::AbstractDict,    # place id => marking value
+                            net::AbstractPnmlNet)
     varsub = NamedTuple() # There are no varibles possible here.
-    for t in transitions(net)
-        # Do all input places of enabled transitions have enough tokens?
-        tid = pid(t)
-        if enabled_dict[tid]
-            # evaluate preset inscription expressions
-            enabled_dict[tid] &= all(mark_dict[p] >= inscription(arc(net, p, tid))(varsub)
-                                    for p in preset(net, tid))
+    for tr in transitions(net)
+        transition_id = pid(tr)
+        if enabled_dict[transition_id]
+            # Evaluate preset inscription expressions, compare to mark value.
+            # Do all input places of transitions have enough tokens?
+            enabled_dict[transition_id] &=
+                all(mark_dict[p] >= inscription(arc(net, p, transition_id))(varsub)
+                                        for p in preset(net, transition_id))
         end
     end
     return enabled_dict
 end
 
-function token_load!(enabled_dict::AbstractDict,
-                     mark_dict::AbstractDict,
-                     net::PnmlNet{<:AbstractHLCore})
+function sufficient_tokens!(enabled_dict::AbstractDict,
+                            mark_dict::AbstractDict,
+                            net::PnmlNet{<:AbstractHLCore})
 
    for tr in transitions(net)
         trid = pid(tr)
@@ -164,107 +195,119 @@ function token_load!(enabled_dict::AbstractDict,
         enabled = enabled_dict[trid]
 
         #!2025-01-27 JDH moved tr_vars to Transition tr.vars
-        bvs = OrderedDict{REFID, Any}() # During enabling rule, bvs maps variable to a set of elements.
+        # During enabling rule, tr_var_binding_set maps variable to a set of elements.
+        tr_var_binding_set = OrderedDict{REFID, Any}()
         #~ marking = PnmlMultiset{B, T}(Multiset{T}(T() => 1)) singleton
-        # varsub maps a variable to 1 element of multiset(marking[trid]) when enabling/firing transition.
+        # varsub maps a variable to 1 element of multiset(marking[trid])
+        # when enabling/firing transition.
         # Multiset type set from first use
-        # marking[placeid][element] > 0 (multiplicity >= arc_var matching variableid)
 
         # Get transition variable substitution from preset arcs.
-        for placeid in preset(net, trid)
-            ar = arc(net, placeid, trid)
-            mark     = unwrap_pmset(mark_dict[placeid]) #! Possibly extract a singlton.
-            arc_vars = Multiset(variables(inscription(ar))...) # Count variables.
-            #! No-variable arcs must still be tested for place marking >= inscription & condition.
-            isempty(arc_vars) ||
-                union!(tr.vars, keys(arc_vars)) # Only variable REFID is stored in transaction.
-
-            # Empty per-arc binding.
-            arc_bvs = OrderedDict{REFID, Multiset{Symbol}}()
-
-            placesort = sortref(place(net, placeid))
-            enabled &= get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, net)
-            enabled || break
-            enabled &= accum_varsets!(bvs, arc_bvs) # Transaction accumulates/intersects arc bindings.
-            enabled || break
-        end # preset arcs
+        # Update enabled and transition
+        get_variable_substitutions!(enabled, net, trid, tr_var_binding_set, mark_dict)
+        #^--------------------------------------------------------------------------------
         #& XXX variable substitutions fully specified by preset of transition XXX
-        #& tr.vars is complete. bvs has valid substitutions (if any exist)
+        #& tr.vars is complete. tr_var_binding_set has valid substitutions (if any exist)
+        #^--------------------------------------------------------------------------------
 
         if enabled
-            #! 2st stage of enabling rule has succeded. (place marking >= inscription)
-            for arc in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
-                placeid   = source(arc) # adjacent place
-                mark      = mark_dict[placeid]
-
-                # Inscription evaluates to multiset element of sufficent multiplicity.
-                # Condition evaluates to `true`
-                if isempty(tr.vars) # 0-ary operators
-                    # This includes the non-HL net types that do not have variables.
-                    inscription_val = _cvt_inscription_value(pntd(net), arc,
-                                                    zero_marking(place(net, placeid)),
-                                                    NamedTuple())
-                    mi_val = mark >= inscription_val # multiset >= multiset or number >= number
-
-                    c_val = eval(toexpr(term(condition(tr)), NamedTuple(), tr.net))
-
-                    enabled &= mi_val && c_val
-                else
-                    # Use the transition-level variable substution bindings `bvs`.
-                    # Iterate over the cartesian product to produce a list of candidate firings.
-                    # A candidate firing is a NamedTuple
-                    vtup = tuple(values(bvs)...) # Tuple of Multisets{PnmlMultiset}
-                    # If an element is a PnmlMultiset it probably is a singleton. Treat as literal value.
-                    sub1 = tuple((keys.(vtup))...) # substitutions
-                    vsubiter = Iterators.product(sub1...)
-                    foreach(vsubiter) do  params
-                        # Is params a tuple
-                        vsub = namedtuple(tuple(keys(bvs)...), params)
-                        i_val = _cvt_inscription_value(pntd(net), arc,
-                                            zero_marking(place(net, placeid)),
-                                            vsub)
-                        mark = unwrap_pmset(mark)
-
-                        #? Do we want <= or is it issubset(A,B)?
-                        mi_val = issubset(i_val, mark)
-                        c_val = eval(toexpr(term(condition(tr)), vsub, tr.net)) #!#
-
-                        if mi_val && c_val
-                            push!(tr.varsubs, vsub)
-                        else
-                           enabled = false
-                        end
-                    end
-                    #@show tr.varsubs
-                end
-            end
+            enabled &= comp_mark_inscription(net, mark_dict, trid,
+                                  term(condition(tr)), tr_var_binding_set,
+                                  tr.vars, tr.varsubs)
             #! REMEMBER marking multiset element may be a PnmlMultiset.
         end
         enabled_dict[trid] = enabled
 
-        # if enabled
-        #     # Condition passed
-        #     printstyled("ENABLED ", length(tr.varsubs), " variable substitution candidates\n"; color=:green)
-        # else
-        #     printstyled("DISABLED\n"; color=:red)
-        # end
     end # for tr
     return enabled_dict
 end
 
+"""
+Get transition variable substitution from preset arcs.
+Updte enabled and transition, tr_var_binding_set.
+"""
+function get_variable_substitutions!(enabled, net, transaction_id,
+                                     tr_var_binding_set, mark_dict)
+    for place_id in preset(net, transaction_id)
+        ar = arc(net, place_id, transaction_id)
+        mark = unwrap_pmset(mark_dict[place_id])
+        arc_vars = Multiset(variables(inscription(ar))...) # Count variables.
+        # No-variable arcs will be tested for place marking >= inscription & condition.
+        isempty(arc_vars) || union!(tr.vars, keys(arc_vars)) # Cache variable REFIDs.
+
+        # Empty per-arc binding.
+        arc_var_binding_set = OrderedDict{REFID, Multiset{Symbol}}()
+
+        place_sort = sortref(place(net, place_id))
+        enabled &= get_arc_var_binding_set!(arc_var_binding_set, arc_vars,
+                                            place_sort, mark, net)
+        enabled || break
+        enabled &= accum_tr_var_binding_sets!(tr_var_binding_set,
+                                              arc_var_binding_set)
+        enabled || break
+    end # preset arcs
+end
+
+
+function comp_mark_inscription(net, mark_dict, trid, cond_term, tr_var_binding_set, vars, varsubs)
+    enabled = true
+    for arc in Iterators.filter(a -> (target(a) === trid), values(arcdict(net)))
+        place_id = source(arc) # adjacent place
+        mark     = mark_dict[place_id]
+
+        # Inscription evaluates to multiset element of sufficent multiplicity.
+        # Condition evaluates to `true`
+        if isempty(vars) # 0-ary operators
+            # This includes the non-HL net types that do not have variables.
+            inscription_val = _cvt_inscription_value(pntd(net), arc,
+                                            zero_marking(place(net, place_id)),
+                                            NamedTuple())
+            mi_val = mark >= inscription_val # multiset >= multiset or number >= number
+            c_val = eval(toexpr(cond_term, NamedTuple(), net)) #! XXX CACHE
+            enabled &= mi_val && c_val
+        else
+            # Use the transition-level variable substution bindings `tr_var_binding_set`.
+            # Iterate over the cartesian product to produce a list of candidate firings.
+            # A candidate firing is a NamedTuple variable_id => marking_value of substitutions.
+            vtup = tuple(values(tr_var_binding_set)...) # Tuple of Multisets{PnmlMultiset}
+            # If an element is a PnmlMultiset it probably is a singleton.
+            # Treat as literal value.
+            sub1 = tuple((keys.(vtup))...) # substitutions
+            vsubiter = Iterators.product(sub1...)
+            foreach(vsubiter) do  params
+                vsub = namedtuple(tuple(keys(tr_var_binding_set)...), params)
+                i_val = _cvt_inscription_value(pntd(net), arc,
+                                    zero_marking(place(net, place_id)), vsub)
+                mark = unwrap_pmset(mark)
+                mi_val = issubset(i_val, mark)
+                c_val = eval(toexpr(cond_term, vsub, net)) #! XXX CACHE
+
+                if mi_val && c_val
+                    push!(varsubs, vsub)
+                else
+                    enabled = false # no substitution found
+                end
+            end
+        end
+    end
+    return enabled
+end
 
 """
-    get_arc_bvs!(arc_bvs, arc_vars, placesort, mark, net) -> Bool
+    get_arc_var_binding_set!(arc_var_binding_set, arc_vars, placesort, mark, net) -> Bool
 
-Fill `arc_bvs` with an entry for each key in `arc_vars`.
+Fill `arc_var_binding_set` with an entry for each key in `arc_vars`.
 Return `true` if no variables are present or all variables have at least 1 substition.
 Indicates that transition is able to fire (enabled fro selection to fire).
 """
-function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars::Multiset, placesort::SortRef, mark, net)
+function get_arc_var_binding_set!(arc_var_binding_set::AbstractDict,
+                                  arc_vars::Multiset, placesort::SortRef, mark, net)
     for v in keys(arc_vars)
         # Each variable must have a non-empty substitution.
         #! variable sorts are never ProductSort. Just one sort.
-        arc_bvs[v] = Multiset{Symbol}() # Start with empty substution set for variable.
+        # Start with empty substution set for variable.
+        # Use multiset as a counter.
+        arc_var_binding_set[v] = Multiset{Symbol}()
         v_decl = variabledecl(net, v)
         v_sortref = sortref(v_decl)
         v_refid = refid(v_sortref)
@@ -282,25 +325,25 @@ function get_arc_bvs!(arc_bvs::AbstractDict, arc_vars::Multiset, placesort::Sort
         # Examine mark
         for (element, multiplicity) in pairs(multiset(mark))
             @show typeof element
-            #! arc_bvs counts possible substitutions in source place's marking.
+            #! arc_var_binding_set counts possible substitutions in source place's marking.
             # Multiple of same variable in inscription expression means
-            # arc_bvs only includes mark elements with multiplicity at least as that large.
+            # arc_var_binding_set only includes mark elements with multiplicity at least as that large.
             if multiplicity >= arc_vars[v]
                 # Variable multiplicity is per-arc, value is shared among arcs.
                 if element isa Tuple # mark is a ProductSort.
                     # Select the tuple member(s) matching variable sort.
                     for expr in element
                         if refid(expr) == v_refid
-                            push!(arc_bvs[v], expr()) # Add value of expr to set.
+                            push!(arc_var_binding_set[v], expr()) # Add value of expr to set.
                         end
                     end
-                else #! el may be a PnmlMultiset
-                    push!(arc_bvs[v], element) # Add value to count of substitutions.
+                else #! element may be a PnmlMultiset
+                    push!(arc_var_binding_set[v], element) # Add value to count of substitutions.
                 end
             end
         end
 
-        if !isempty(arc_vars) && isempty(arc_bvs[v])
+        if !isempty(arc_vars) && isempty(arc_var_binding_set[v])
             return false # There are variables and one of them has no substitution.
         end
     end
