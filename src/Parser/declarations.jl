@@ -174,16 +174,16 @@ function parse_namedoperator(node::XMLNode, pntd::APNTD; net::APN)
     # The sortof the operator is the output sort of def.
     if !isnothing(dnode)
         # contains 1 term
-        definition = parse_term(EzXML.firstelement(dnode), pntd; net, vars=())::TermJunk
+        definition_tj = parse_term(EzXML.firstelement(dnode), pntd; net, vars=())::TermJunk
     else
         ERR_MSG ="<namedoperator name=$name id=$operator_id> does not have a <def> element"
         throw(MalformedException(ERR_MSG))
     end
 
-    isempty(definition.vars) ||
-        @error("<namedoperator name=$name id=$operator_id> has variables: ", definition)
+    isempty(definition_tj.vars) ||
+        @error("<namedoperator name=$name id=$operator_id> has variables: ", definition_tj)
     @warn "operators are a work in progress"
-    NamedOperator(operator_id, name, parameters, definition.exp, net)
+    NamedOperator(operator_id, name, parameters, definition_tj.exp, net)
 end
 
 

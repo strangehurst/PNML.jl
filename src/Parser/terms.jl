@@ -54,11 +54,11 @@ function subterms(node, pntd; vars, net::APN)
     sts = Vector{Any}()
     for subterm in EzXML.eachelement(node)
         if EzXML.nodename(subterm) == "subterm"
-            stnode, tag = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
-            tj = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk
-            isnothing(tj) && throw(MalformedException("subterm is nothing"))
-            vars = tj.vars
-            push!(sts, tj.exp)
+            tag, stnode = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
+            subterm_tj = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk
+            isnothing(subterm_tj) && throw(MalformedException("subterm is nothing"))
+            vars = subterm_tj.vars
+            push!(sts, subterm_tj.exp)
         else
             println("not a subterm ", EzXML.nodename(node))
             Base.show_backtrace(stdout, stacktrace())
@@ -283,13 +283,15 @@ end
 # Notably, this differs from `:numberof` by both arguments being variables, NOT ground terms.
 # As well as the 2nd being a multiset rather than a sort.
 function parse_term(::Val{:scalarproduct}, node::XMLNode, pntd::APNTD; vars, net::APN)
-    stnode, tag = unwrap_subterm(EzXML.firstelement(node))
-    tj1 = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk # scalar
+    tag, stnode = unwrap_subterm(EzXML.firstelement(node))
+    product1_tj = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk # scalar
 
-    stnode, tag = unwrap_subterm(EzXML.nextelement(st))
-    tj2 = parse_term(Val(tag), stnode, pntd; tj1.vars, net)::TermJunk # bag
+    tag, stnode = unwrap_subterm(EzXML.nextelement(st))
+    product2_tj = parse_term(Val(tag), stnode, pntd; product1_tj.vars, net)::TermJunk # bag
 
-    return TermJunk(ScalarProduct(tj1.exp, tj2.exp), basis(tj2.exp), tj2.vars)
+    return TermJunk(ScalarProduct(product1_tj.exp, product2_tj.exp),
+                    basis(product2_tj.exp),
+                    product2_tj.vars) #
 end
 
 
@@ -338,20 +340,20 @@ function parse_term(::Val{:numberof}, node::XMLNode, pntd::APNTD; vars, net::APN
     instance = nothing # PnmlExpr
     isort = nothing
     for st in EzXML.eachelement(node)
-        stnode, tag = unwrap_subterm(st)
+        tag, stnode = unwrap_subterm(st)
         if tag == :numberconstant && isnothing(multiplicity)
-            tj1 = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk
-            multiplicity = tj1.exp
-            vars = tj1.vars
+            multi_tj = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk
+            multiplicity = multi_tj.exp
+            vars = multi_tj.vars
             # RealSort as first numberconstant might confuse `Multiset.jl`.
             # Negative integers will cause problems. Don't do that either.
         else
             # If 2 numberconstants, first is `multiplicity`, this is `instance`.
             EzXML.nodename(stnode)
-            tj2 = parse_term(stnode, pntd; vars, net)::TermJunk
-            instance = tj2.exp # may be a bag
-            isort = tj2.ref
-            vars = tj2.vars
+            inst_tj = parse_term(stnode, pntd; vars, net)::TermJunk
+            instance = inst_tj.exp # may be a bag
+            isort = inst_tj.ref
+            vars = inst_tj.vars
         end
     end
     isnothing(multiplicity) &&
@@ -368,7 +370,7 @@ end
 
 function parse_term(::Val{:cardinality}, node::XMLNode, pntd::APNTD; vars, net::APN)
     subterm = EzXML.firstelement(node) # single argument subterm
-    stnode, _ = unwrap_subterm(subterm)
+    _, stnode = unwrap_subterm(subterm)
     isnothing(stnode) && throw(MalformedException("<cardinality> missing argument subterm"))
     (; exp, vars) = parse_term(stnode, pntd; vars, net)::TermJunk
 
@@ -638,7 +640,7 @@ function parse_term(::Val{:makelist}, node::XMLNode, pntd::APNTD; vars, net::APN
     sortref = nothing
     for child in EzXML.eachelement(node)
         if EzXML.nodename(child) == "subterm"
-            stnode, tag = unwrap_subterm(child) # Used to dispatch on `Val(tag)`.
+            tag, stnode = unwrap_subterm(child) # Used to dispatch on `Val(tag)`.
             tj = parse_term(Val(tag), stnode, pntd; vars, net)::TermJunk
             isnothing(tj) && throw(MalformedException("subterm is nothing"))
             vars = tj.vars

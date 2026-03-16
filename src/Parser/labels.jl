@@ -375,14 +375,14 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, pntd::APNTD; net::APN)
         term = EzXML.firstelement(marknode) # ignore any others
 
         # Here we are parsing a term from XML to a ground term, which must be an operator.
-        tj = parse_term(term, pntd; vars=(), net) # ParseMarkingTerm
-        isempty(tj.vars) || error("unexpected variables in $tj")
+        mark_tj = parse_term(term, pntd; vars=(), net) # ParseMarkingTerm
+        isempty(mark_tj.vars) || error("unexpected variables in $mark_tj")
         if isnothing(placetype(pmt))
             @warn "$pntd ParseMarkingTerm placetype(pmt) is nothing"
-        elseif !equalSorts(tj.ref, placetype(pmt), net)
-            @warn "$pntd ParseMarkingTerm sort mismatch" tj.ref placetype(pmt) tj
+        elseif !equalSorts(mark_tj.ref, placetype(pmt), net)
+            @warn "$pntd ParseMarkingTerm sort mismatch" mark_tj.ref placetype(pmt) mark_tj
         end
-        return tj
+        return mark_tj
 
         # PnmlMultiset (datastructure) vs UserOperator/NamedOperator (term/expression)
         # Like with sorts, we have useroperator -> namedoperator -> operator.
