@@ -49,7 +49,7 @@ end
 
 "Iterate enable filters"
 function filters(net::AbstractPnmlNet)
-    @show net.enabled_filters
+    # @show net.enabled_filters
     values(net.enabled_filters)
 end
 

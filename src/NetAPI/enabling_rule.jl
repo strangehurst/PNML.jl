@@ -88,7 +88,7 @@ function enabled(net::AbstractPnmlNet, marking)
         # enabled_dict[transition_id] || continue
 
         foreach(filters(net)) do f
-            @show typeof(f) f
+            # @show typeof(f) f
             # filters modifying e_dict, may use variables
             f(enabled_dict, mark_dict, net, transition_id)
         end
@@ -274,7 +274,7 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
         end
 
         if !isempty(arc_vars) && isempty(arc_var_binding_sets[v])
-            return false , arc_binding_sets # A variable has no substitution.
+            return false, arc_binding_sets # A variable has no substitution.
         end
     end
     return true, arc_binding_sets # No variables or all of them have at least 1 substution.

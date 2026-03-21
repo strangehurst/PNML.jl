@@ -108,10 +108,10 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
         @warn "add $(length(kwargs[:ef])) enabled filter(s)"
         foreach(kwargs[:ef]) do (tag,efilter)
             #! todo sanity check
-            @show efilter #! bring-upenabled_filters
+            @show efilter #! bring-up
             net.enabled_filters[tag] = efilter
         end
-        @show net.enabled_filters #! bring-up
+        # @show net.enabled_filters #! bring-up
     end
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
