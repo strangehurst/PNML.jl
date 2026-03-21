@@ -20,7 +20,7 @@ term(i::Inscription) = i.term
 sortref(i::Inscription) = expr_sortref(term(i), i.net)::SortRef
 sortof(i::Inscription) = sortdefinition(namedsort(i.net, sortref(i)))::PnmlMultiset #TODO other sorts
 
-function (inscription::Inscription)(varsub::NamedTuple)
+function (inscription::Inscription)(varsub::NamedTuple = NamedTuple())
     eval(toexpr(term(inscription), varsub, inscription.net))
 end
 
