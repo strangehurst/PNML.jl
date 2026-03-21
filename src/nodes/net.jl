@@ -7,12 +7,12 @@ $(FIELDS)
 
 """
 @kwdef mutable struct PnmlNet{PNTD <: APNTD} <: APN
-    "The meta-model type this net implements."
+    #"The meta-model type this net implements."
     const type::PNTD
     # PNML ID needed here for multiple nets of same `type` in a `<pnml>` model.
     const id::Symbol
     # Ensure that each PNML ID in a net is unique using a registry.
-    idregistry::IDRegistry
+    const idregistry::IDRegistry
     # Holds all pages. Shared by pages that may have sub-pages.
     # All PNML net objects are attached to a `Page`. And there must be at least one `Page`.
     pagedict::OrderedDict{Symbol, Page{PNTD,<:APN}} #todo
@@ -35,14 +35,22 @@ $(FIELDS)
     # Zero or more `<toolspecific>` may be attched to net.
     toolspecinfos::Vector{ToolInfo} = ToolInfo[]
     # Zero or more PNML Labels may be attched to net. Extends meta-models of ISO 15909.
-    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
+    extralabels::LittleDict{Symbol, Any} = LittleDict{Symbol,Any}()
     # Map xml tag symbol to parser callable for built-in labels and extension labels.
-    labelparser::LittleDict{Symbol, Base.Callable} = LittleDict{Symbol, Base.Callable}()
+    labelparser::LittleDict{Symbol, Any} =  LittleDict{Symbol, Any}()
     """
         Collection that associates a tool name & version with a callable parser.
         The parser turns `<toolspecific name="" version="">` into `ToolInfo` objects.
     """
-    toolparser::LittleDict{Pair{String,String}, Base.Callable} = LittleDict{Pair{String,String}, Base.Callable}()
+    toolparser::LittleDict{Pair{String,String}, Any} = LittleDict{Pair{String,String}, Any}()
+    # Collection of filters used by enabling rule.
+    enabled_filters::LittleDict{Symbol, Any} =  LittleDict{Symbol, Any}()
+end
+
+"Iterate enable filters"
+function filters(net::AbstractPnmlNet)
+    @show net.enabled_filters
+    values(net.enabled_filters)
 end
 
 "Create empty net with builtins installed for use in test scaffolding."
@@ -54,6 +62,7 @@ function make_net(type::APNTD, id=:make_net,)
     fill_builtin_sorts!(net)
     fill_builtin_labelparsers!(net)
     fill_builtin_toolparsers!(net)
+    fill_enabled_filters!(net)
     return net
 end
 

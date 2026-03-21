@@ -77,10 +77,9 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
                     )
-    # First fill the built-in label & toolinfo parser plugins, built-in sorts.
+    # 1st fill built-in label & toolinfo parser plugins, built-in sorts, enabled filters.
     fill_builtin_labelparsers!(net.labelparser)
     @assert !isempty(net.labelparser)
-
     if haskey(kwargs, :lp) && !isnothing(kwargs[:lp]) && !isempty(kwargs[:lp])
         @warn "add $(length(kwargs[:lp])) labelparser(s)"
         foreach(kwargs[:lp]) do lparser
@@ -92,7 +91,6 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     end
 
     fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
-
     if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
         @warn "add $(length(kwargs[:tp])) toolparser(s)"
         foreach(kwargs[:tp]) do tparser
@@ -104,6 +102,17 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     end
 
     fill_builtin_sorts!(net)
+
+    fill_enabled_filters!(net)
+    if haskey(kwargs, :ef) && !isnothing(kwargs[:ef]) && !isempty(kwargs[:ef])
+        @warn "add $(length(kwargs[:ef])) enabled filter(s)"
+        foreach(kwargs[:ef]) do (tag,efilter)
+            #! todo sanity check
+            @show efilter #! bring-upenabled_filters
+            net.enabled_filters[tag] = efilter
+        end
+        @show net.enabled_filters #! bring-up
+    end
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.

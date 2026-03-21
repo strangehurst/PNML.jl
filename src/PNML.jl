@@ -190,6 +190,7 @@ include("nodes/model.jl") # Holds multiple PnmlNets.
 include("nodes/flatten.jl") # Flatten pages of PnmlNet
 
 include("NetAPI/netutils.jl") # API for Petri nets, graphs, et al.
+include("NetAPI/enable_filters.jl")
 include("NetAPI/enabling_rule.jl")
 include("NetAPI/firing_rule.jl")
 include("NetAPI/metagraph.jl")

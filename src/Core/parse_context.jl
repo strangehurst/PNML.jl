@@ -1,4 +1,21 @@
 """
+    fill_enabled_filters!(net::APN) -> Nothing
+
+Fill a dictionary with default enabled filters. Part of the enabling rule.
+Based on ISO 15909-1:2019, ISO 15909-3:2021.
+"""
+function fill_enabled_filters!(net::APN)
+    #println("fill_enabled_filters")
+    net.enabled_filters[:inhibit] = enable_filter_inhibit
+    net.enabled_filters[:reset] = enable_filter_reset
+    net.enabled_filters[:read] = enable_filter_read
+    net.enabled_filters[:capacity] = enable_filter_capacity
+    net.enabled_filters[:priority] =  enable_filter_priority
+    net.enabled_filters[:tpn] = enable_filter_tpn
+end
+
+
+"""
     fill_builtin_sorts!(net::APN) -> Nothing
 
 Fill a DeclDict with built-ins and defaults (that may be redefined).
