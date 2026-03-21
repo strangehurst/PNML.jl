@@ -86,12 +86,12 @@ end
 
 
 """
-    unwrap_subterm(st::XMLNode) -> XMLNode, Symbol
+    unwrap_subterm(st::XMLNode) -> Symbol, XMLNode
 
 Unwrap a `<subterm>` by returning tuple of child node and child's tag.
 """
 function unwrap_subterm(st::XMLNode)
     check_nodename(st, "subterm")
     child = EzXML.firstelement(st)
-    return (child, Symbol(EzXML.nodename(child)))
+    return (Symbol(EzXML.nodename(child)), child)
 end
