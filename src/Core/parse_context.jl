@@ -47,7 +47,7 @@ Register the tag and create and return an `SortRef` holding `tag`.
 function fill_sort_tag!(net::APN, tag::Symbol, sort, dict)
     fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)
 end
-function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict:)
+function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict)
      # Do not overwrite existing content (except dot).
     if tag === :dot || !haskey(dict(ddict), tag)
         !isregistered(idreg, tag) && register_id!(idreg, tag)
