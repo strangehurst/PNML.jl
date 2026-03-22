@@ -9,62 +9,6 @@ using .TestUtils
     @test parse_text(xml"<text>ready</text>", pntd) == "ready"
 end
 
-#@testset "add_labels JET $pntd" for pntd in PnmlTypes.core_nettypes()
-    # lab = PnmlLabel[]
-    # reg = IDRegistry()
-    # @show pff(PNML.Parser.add_label!) pff(PNML.xmldict) pff(PNML.extralabels)
-    # @test_opt PNML.Parser.add_label!(lab, node, pntd)
-    # @test_opt(broken=false,
-    #             ignored_modules=(JET.AnyFrameModule(EzXML),
-    #                             JET.AnyFrameModule(XMLDict),
-    #                             JET.AnyFrameModule(Base.CoreLogging)),
-    #             function_filter=pff,
-    #             PNML.Parser.add_label!(lab, xml"""<test1> 1 </test1>""", pntd))
-
-    # @test_call PNML.Parser.add_label!(lab, node, pntd)
-    # @test_call(ignored_modules=(JET.AnyFrameModule(EzXML),
-    #                             JET.AnyFrameModule(XMLDict)),
-    #                             PNML.Parser.add_label!(lab, node, pntd))
-#end
-
-@testset "labels $pntd" for pntd in PnmlTypes.core_nettypes()
-    net = make_net(pntd, :labels_net)
-    lab = OrderedCollections.LittleDict{Symbol,Any}() # PnmlLabel[]
-    for i in 1:4 # create & add 4 labels
-        x = i < 3 ? 1 : 2 # make 2 different tagnames
-        str = "<test$x> $i </test$x>"
-        PNML.Parser.add_label!(lab, xmlnode(str), pntd, net)
-        #@show lab
-    end
-    @test length(lab) == 2
-    #@show lab
-    # for l in values(lab)
-    #     @test_opt tag(l)
-    #     @test_call tag(l)
-    #     @test tag(l) === :test1 || tag(l) === :test2
-    # end
-
-#    @test_call get_label(lab, :test1)
-
-    # @test has_key(lab, :test1)
-    # @test !has_key(lab, :bumble)
-
-    # v = @inferred PnmlLabel get_label(lab, :test2)
-    # @test v isa PnmlLabel
-    # @test tag(v) === :test2
-    # @test elements(v) == "3"
-
-    # @testset "label $labeltag" for labeltag in [:test1, :test2]
-    #     vec = PNML.labels(lab, labeltag)
-    #     lv = 0
-    #     for l in vec
-    #         @test tag(l) === labeltag
-    #         lv += 1
-    #     end
-    #     @test lv == 2
-    # end
-end
-
 "Return PnmlLabel, AnyElement"
 function test_unclaimed(pntd, xmlstring::String)
     net = make_net(pntd, :test_unclaimed_net)

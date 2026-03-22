@@ -5,21 +5,6 @@
 # Could do conversion from xmldict.
 #! 2 collections, one for PnmlLabels other for other Annotations?
 
-"""
-    add_label!(collection, node, pntd) -> AbstractDict
-
-Parse and add [`PnmlLabel`](@ref) to collection, return collection.
-
-See [`AbstractPnmlObject`](@ref) for those XML entities that have labels.
-Any "unknown" XML is presumed to be a label.
-"""
-function add_label!(v::AbstractDict{Symbol,Any}, node::XMLNode, pntd, net)
-    xd = xmldict(node)
-    tag = Symbol(EzXML.nodename(node))
-    v[tag] = PnmlLabel(tag, xd, net)
-    return v
-end
-
 #---------------------------------------------------------------------
 # TOOLINFO
 #---------------------------------------------------------------------
