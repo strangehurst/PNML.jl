@@ -10,10 +10,10 @@ See [`fill_builtin_labelparsers!`](@ref) for some built-in label parsers.
 """
 @auto_hash_equals struct LabelParser
     tag::Symbol
-    func::Base.Callable
+    func::Any # callable
 end
 
 tag(lp::LabelParser) = lp.tag
 
-"LabelParser Callable."
+"LabelParser callable: func(lp)(::XMLNode, ::AbstractPnmlType)) -> PnmlLabel"
 func(lp::LabelParser) = lp.func

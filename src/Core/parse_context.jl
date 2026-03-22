@@ -44,10 +44,10 @@ If not already in the declarations dictionary `dict`, add `sort` with key of `ta
 
 Register the tag and create and return an `SortRef` holding `tag`.
 """
-function fill_sort_tag!(net::APN, tag::Symbol, sort, dict::Base.Callable)
+function fill_sort_tag!(net::APN, tag::Symbol, sort, dict)
     fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)
 end
-function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Callable)
+function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict:)
      # Do not overwrite existing content (except dot).
     if tag === :dot || !haskey(dict(ddict), tag)
         !isregistered(idreg, tag) && register_id!(idreg, tag)
@@ -56,9 +56,9 @@ function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict::Base.Ca
     return sortref(dict, tag) # used by make_sortref
 end
 
-function sortref(dict::Base.Callable, tag)
+function sortref(dict_callable, tag)
     #sortref::SortRefImpl.Type =
-    @match dict begin
+    @match dict_callable begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin,
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of SortRefs
         PNML.partitionsorts => PartitionSortRef(tag) # declaration

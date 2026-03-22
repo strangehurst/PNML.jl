@@ -27,7 +27,7 @@ eval(::FEXEx)
 """
 PNML Operator as Functor
 
-tag maps to func, a functor/function Callable. Its arity is same as length of inexprs and insorts
+tag maps to func, a functor/function callable. Its arity is same as length of inexprs and insorts
 """
 struct Operator{N <: APN} <: AbstractOperator
     tag::Symbol
@@ -205,7 +205,7 @@ function null_function(inputs)#::Vector{AbstractTerm})
 end
 
 """
-    pnml_hl_operator(tag::Symbol) -> Callable(::Vector{AbstractTerm})
+    pnml_hl_operator(tag::Symbol) -> callable
 
 Return callable with a single argument, a vector of inputs.
 """

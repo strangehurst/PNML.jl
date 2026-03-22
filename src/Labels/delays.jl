@@ -26,7 +26,7 @@ Supports
 function delay_value(t;
             tag::Symbol = :delay,
             valtype::Type{<:Number} = Float64,
-            content_parser::Base.Callable = delay_content_parser,
+            content_parser = delay_content_parser,
             default_value = tuple("closed", 0.0, 0.0))
     label = get_label(t, tag)
     d = if isnothing(label)

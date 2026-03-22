@@ -81,7 +81,7 @@ Uses `fill_sort_tag!`.
 
 Return concrete SortRef matching `dict`, wrapping `id`.
 """
-function make_sortref(net, dict::Base.Callable, sort, seed, sort_id, name=nothing)
+function make_sortref(net, dict, sort, seed, sort_id, name=nothing)
     #!@show sort dict seed sortid
     id2 = find_valuekey(dict(net), sort) # in make_sortref
     if isnothing(id2) # Did not find existing ...

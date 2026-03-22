@@ -97,7 +97,7 @@ function expr_sortref end
 :(arr[i, j]) == maketerm(Expr, :ref, [:arr, :i, :j]) #~ varaible?
 :(f(a, b))   == maketerm(Expr, :call, [:f, :a, :b])  #~ operator
 
-:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is a constant when 0-airy Callable
+:(f()) == maketerm(Expr, :call, [:f])  #~ Operator is a constant when 0-airy callable
 
 variables are used in token firing rules.
 Of all enabled firing modes for a transition one is chosen (randomly?).
