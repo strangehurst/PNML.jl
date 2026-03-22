@@ -27,14 +27,12 @@ It is also where other Net constructs can be defined over `PnmlNet`s. Perhaps as
 module PNML
 __precompile__(true)
 
-include("preferences.jl") # PnmlConfig, read_config!, save_config, show
+using Accessors
+include("config.jl")
+include("preferences.jl") # read_config!, save_config, show
+__init__() = read_config!()
 
-"See [`PnmlConfig`](@ref) for default values."
-const CONFIG = Ref(PnmlConfig())
-
-__init__() = read_config!(CONFIG[])
-
-D() = CONFIG[].verbose # Guard for bring-up/debug noise.
+D() = CONFIG.verbose # Guard for bring-up/debug noise.
 
 # Width for printing.
 if !haskey(ENV, "COLUMNS")

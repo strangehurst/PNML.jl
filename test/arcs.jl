@@ -6,8 +6,6 @@ using .TestUtils
 #---------------------------------------------
 # ARC
 #---------------------------------------------
-PNML.CONFIG[].warn_on_unclaimed = true
-
 function insc_xml(pntd)
     if ishighlevel(pntd)
         """<hlinscription>
@@ -67,7 +65,6 @@ end
 
 println("\nARC\n")
 @testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
-    # PNML.CONFIG[].warn_on_unclaimed = true
     net = make_net(pntd, :arc_net)
     netsets = PnmlNetKeys()
     pl_node(pntd, net, netdata(net), netsets)

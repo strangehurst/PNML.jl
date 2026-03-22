@@ -37,7 +37,7 @@ function parse_name(node::XMLNode, pntd::APNTD; net::APN, parentid)
     # Attempt to harvest content of <name> element instead of the child <text> element.
     if isnothing(text)
         emsg = "<name> missing <text> element."
-        if CONFIG[].text_element_optional
+        if CONFIG.text_optional
             text = string(strip(EzXML.nodecontent(node)))::String
             @warn string(emsg, "Using content = '", text, "'")::String
         else
@@ -237,8 +237,6 @@ function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, pntd::
     # Treat missing value as if the <inscription> element was absent.
     if isnothing(value)
         value = one(value_type(Inscription, pntd))
-        CONFIG[].warn_on_fixup &&
-            @warn("missing or unparsable <inscription> value '$txt' replaced with $value")
     end
     term = NumberEx(sortref(value), value)
     Inscription(nothing, term, graphics, toolspecinfos, REFID[], net)
@@ -619,9 +617,6 @@ function parse_rate(node::XMLNode, pntd::APNTD; net::APN, parentid)
     # Treat missing value as if the <rate> element was absent.
     if isnothing(value)
         value = one(value_type(Rate, pntd))
-        CONFIG[].warn_on_fixup &&
-            @warn("$parentid has missing or unparsable <rate> value '$txt' " *
-                        "replaced with $value")
     end
 
     term = NumberEx(sortref(value), value)
@@ -654,9 +649,6 @@ function parse_priority(node::XMLNode, pntd::APNTD; net::APN, parentid)
     # Treat missing value as if the element was absent.
     if isnothing(value)
         value = one(value_type(Priority, pntd))
-        CONFIG[].warn_on_fixup &&
-            @warn("$parentid has missing or unparsable <priority> value '$txt' " *
-                        "replaced with $value")
     end
 
     term = NumberEx(sortref(value), value)

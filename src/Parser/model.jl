@@ -147,7 +147,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
             unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid)
         end
     end
-    verify(net, false) # CONFIG[].verbose)
+    verify(net, false) # CONFIG.verbose)
 
     #~ --------------------------------------------------------------
     #~ At this point the XML has been processed into PnmlExpr terms.
@@ -184,10 +184,9 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
         xd = xmldict(child)
         xd isa AbstractString &&
             error("PNML Labels must have XML structure, not just text content, found $xd")
-        l = PnmlLabel(tag, xd, net)
-        #CONFIG[].warn_on_unclaimed &&
-        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" l #! bring-up? todo logginng
-        extralabels[tag] = l
+        extra = PnmlLabel(tag, xd, net)
+        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" extra #! bring-up/logginng
+        extralabels[tag] = extra
     end
     return nothing
 end

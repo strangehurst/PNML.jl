@@ -30,9 +30,7 @@ using PNML: isnormal, isinhibitor, isread, isreset
         </arctype>
       </arc>"""
     node = xmlnode(str)
-    PNML.CONFIG[].warn_on_unclaimed = true
     net = make_net(pntd, :arctypes_net)
-    PNML.CONFIG[].warn_on_unclaimed = true
 
     a = parse_arc(node, pntd, net)::Arc
     atl = PNML.arctypelabel(a)

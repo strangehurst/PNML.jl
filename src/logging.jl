@@ -34,7 +34,7 @@ const logger_for_pnml = SciMLLogging.SciMLLogger(
     info_repl = true,     # Show info in REPL
     warn_repl = true,     # Show warnings in REPL
     error_repl = true,    # Show errors in REPL
-    info_file = logstream(logfile(CONFIG[], "infos.log")),  # Also log to file
-    warn_file = logstream(logfile(CONFIG[], "warnings.log")), # Also log to file
-    error_file = logstream(logfile(CONFIG[], "errors.log")), # Also log warnings to file
+    info_file = logstream(logfile(CONFIG, "infos.log")),  # Also log to file
+    warn_file = logstream(logfile(CONFIG, "warnings.log")), # Also log to file
+    error_file = logstream(logfile(CONFIG, "errors.log")), # Also log warnings to file
 )

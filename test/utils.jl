@@ -6,8 +6,8 @@ include("TestUtils.jl")
 using .TestUtils
 
 @testset "CONFIG" begin
-    @show PNML.CONFIG[]
-    #@SciMLMessage  repr(PNML.CONFIG[]) PNML.verbose :information :options
+    @show PNML.CONFIG
+    #@SciMLMessage  repr(PNML.CONFIG) PNML.verbose :information :options
 end
 
 @testset "ExXML" begin

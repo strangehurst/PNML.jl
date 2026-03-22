@@ -11,7 +11,7 @@ indent(io::IO) = indent(get(io, :indent, 0)::Int)
 indent(i::Int) = repeat(' ', i)
 
 "Increment the `:indent` value by `inc`."
-inc_indent(io::IO, inc::Int=CONFIG[].indent_width) =
+inc_indent(io::IO, inc::Int=CONFIG.indent_width) =
         IOContext(io, :indent => get(io, :indent, 0)::Int + inc)
 
 """
