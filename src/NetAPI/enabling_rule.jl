@@ -83,9 +83,7 @@ function enabled(net::AbstractPnmlNet, marking)
         enabled_dict[transition_id] &= enabled
         enabled_dict[transition_id] || continue
 
-        # enabled_dict[transition_id] &=
-        #     transition_guard!(mark_dict, net, transition_id)
-        # enabled_dict[transition_id] || continue
+        # transition_guard evaluated as part of sufficient_tokens!
 
         foreach(filters(net)) do f
             # @show typeof(f) f
@@ -94,24 +92,6 @@ function enabled(net::AbstractPnmlNet, marking)
         end
     end
     return collect(values(enabled_dict))
-end
-
-"""
-    transition_guard!(enabled_dict, mark_dict, net::AbstractPnmlNet)
-
-Update each enabled transition's state in `enabled_dict` by testing its condition.
-"""
-function transition_guard! end
-function transition_guard!(mark_dict::AbstractDict,    # place id => marking value
-                           net::PnmlNet)
-    # Non-high-level do not have conditions.
-    return true
-end
-function transition_guard!(mark_dict::AbstractDict,    # place id => marking value
-                           net::PnmlNet{<:AbstractHLCore})
-    c_val = eval(toexpr(cond_term, vsub, net)) #! XXX CACHE
-    # see comp_mark_inscription(net, mark_dict, transition_id, term(condition(tr)),
-    #                              tr_var_binding_set, tr.vars, tr.varsubs)
 end
 
 """
@@ -192,7 +172,7 @@ function comp_mark_inscription(net, mark_dict, transition_id, cond_term,
                 issubset(inscription_val, mark) || continue # not a valid substitution
                 push!(varsubs, vsub)
             end
-            isempty(vsub) && return false # no sunstitution found
+            isempty(varsubs) && return false # no sunstitution found
         end
     end
     return true
@@ -203,13 +183,14 @@ Return enabled state,
 update `tr_vars` (variable ids of transition)
 and `binding_sets` (map from variable id to set of substitution values).
 """
-function get_variable_substitutions!(binding_sets, net, transaction_id, tr_vars, mark_dict)
-    for place_id in preset(net, transaction_id)
-        ar = arc(net, place_id, transaction_id)
+function get_variable_substitutions!(binding_sets, net, transition_id, tr_vars, mark_dict)
+    for place_id in preset(net, transition_id)
+        ar = arc(net, place_id, transition_id)
+        isnothing(ar) && error("did not find arc: $place_id -> $transition_id")
         mark = unwrap_pmset(mark_dict[place_id])
-        arc_vars = Multiset(variables(inscription(ar))...) # Count variables.
+        arc_vars = Multiset(variables(PNML.inscription(ar))...) # Count variables.
         isempty(arc_vars) || union!(tr_vars, keys(arc_vars)) # Cache variable ids.
-
+get_arc_var_binding_sets!
         place_sort = sortref(place(net, place_id))
         enabled, arc_binding_sets = get_arc_var_binding_sets!(arc_vars, place_sort, mark, net)
         enabled || return false # transition not enabled
@@ -241,9 +222,9 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
 
         # Verify variable sort matches placesort.
         if isproductsort(placesort)
-            any(==(v_refid), Sorts.sorts(sortof(placesort, net))) ||
+            any(==(v_refid), Sorts.sorts(placesort, net))||
                     error("none of product sorts are equal to $v_refid: ",
-                            Sorts.sorts(sortof(placesort, net)))
+                            Sorts.sorts(placesort, net))
         else
             placesort !== v_sortref &&
                 error("not equal sorts ($placesort, $v_sortref)")
@@ -251,7 +232,7 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
 
         # Examine mark
         for (element, multiplicity) in pairs(multiset(mark))
-            @show typeof element
+            @show typeof(element)
             #! arc_binding_set counts possible substitutions in source place's marking.
             # Multiple of same variable in arc inscription expression
             # means arc_binding_set only includes values of mark elements with
@@ -273,7 +254,7 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
             end
         end
 
-        if !isempty(arc_vars) && isempty(arc_var_binding_sets[v])
+        if !isempty(arc_vars) && isempty(arc_binding_sets[v])
             return false, arc_binding_sets # A variable has no substitution.
         end
     end
