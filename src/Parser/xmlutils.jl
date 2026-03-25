@@ -57,6 +57,11 @@ function alldecendents(node::XMLNode, tag::AbstractString, namespace::AbstractSt
     EzXML.findall(".//x:$tag | .//$tag", node, ("x" => namespace,))::Vector{XMLNode}
 end
 
+"""
+    check_nodename(node::XMLNode, str::AbstractString)
+
+Throw if `nodename(node)` != `str`, otherwise return `str`.
+"""
 function check_nodename(node::XMLNode, str::AbstractString)
     if EzXML.nodename(node) != str
         throw(ArgumentError(string("element name wrong, expected ", str,
