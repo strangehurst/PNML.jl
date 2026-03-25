@@ -147,7 +147,7 @@ function to_sort(sr::SortRef, net::APN)
         SortRefImpl.NamedSortRef(refid)     => namedsort(net, refid) # todo unwrap namedsort
         SortRefImpl.ProductSortRef(refid)   => productsort(net, refid) #! named sort
         SortRefImpl.MultisetSortRef(refid)  => multisetsort(net, refid) #! named sort
-        SortRefImpl.PartitionSortRef(refid) => partition(net, refid)
+        SortRefImpl.PartitionSortRef(refid) => partitionsort(net, refid)
         SortRefImpl.ArbitrarySortRef(refid) => arbitrarysort(net, refid)
         _ => error("to_sort SortRefImpl not expected: $sr")
     end
