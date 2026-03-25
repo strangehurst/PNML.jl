@@ -28,17 +28,7 @@ module PNML
 __precompile__(true)
 
 using Accessors
-include("config.jl")
-include("preferences.jl") # read_config!, save_config, show
-__init__() = read_config!()
-
-D() = CONFIG.verbose # Guard for bring-up/debug noise.
-
-# Width for printing.
-if !haskey(ENV, "COLUMNS")
-    ENV["COLUMNS"] = 180
-end
-
+using Preferences: Preferences, load_preference, set_preferences!
 import AutoHashEquals: @auto_hash_equals
 import Base: eltype, keys, *, +, -, <, >,>=, <=, zero, length, iterate
 import FunctionWrappers
@@ -111,6 +101,17 @@ export @xml_str, xmlnode, D
 @public isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
 
 Multisets.set_key_value_show()
+
+include("config.jl")
+include("preferences.jl") # read_config!, save_config, show
+__init__() = read_config!()
+
+D() = CONFIG.verbose # Guard for bring-up/debug noise.
+
+# Width for printing.
+if !haskey(ENV, "COLUMNS")
+    ENV["COLUMNS"] = 180
+end
 
 #include("logging.jl") # SciMLLogging based: `silent`, `verbose`, `logger_for_pnml`
 

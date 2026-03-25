@@ -30,6 +30,6 @@ Configuration with default values that can be overidden by a LocalPreferences.to
   - `warn_on_unimplemented::Bool`: Issue warning to highlight something unimplemented. Expect high volume of messages.
   - `verbose::Bool`: Print information as runs.
 
-See [`PnmlConfig`](@ref) for default values.
+See `PnmlConfig` for default values.
 """
 global CONFIG::PnmlConfig = PnmlConfig()

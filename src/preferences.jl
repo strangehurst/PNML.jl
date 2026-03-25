@@ -1,6 +1,4 @@
 # Preference scheme inspired by Tim Holy's Cthuhlu.jl
-using Preferences: Preferences, load_preference, set_preferences!
-
 
 """
     save_config!(config::PnmlConfig=CONFIG)
