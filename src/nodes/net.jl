@@ -28,15 +28,15 @@ $(FIELDS)
     ddict::DeclDict = DeclDict() # empty dictionarys
     # PNML Label with `Text` `Graphics`, `ToolInfo` and zero or more `Declarations`.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
-    # Used to populate `ddict`.
     declaration::Maybe{Declaration} = nothing
     # PNML Label with `Text` `Graphics`, `ToolInfo`.
     namelabel::Maybe{Name} = nothing
     # Zero or more `<toolspecific>` may be attched to net.
     toolspecinfos::Vector{ToolInfo} = ToolInfo[]
-    # Zero or more PNML Labels may be attched to net. Extends meta-models of ISO 15909.
+    # Zero or more extra PNML Labels may be attched to net.
     extralabels::LittleDict{Symbol, Any} = LittleDict{Symbol,Any}()
     # Map xml tag symbol to parser callable for built-in labels and extension labels.
+    #todo Reference to label parser interface.
     labelparser::LittleDict{Symbol, Any} =  LittleDict{Symbol, Any}()
     """
         Collection that associates a tool name & version with a callable parser.
