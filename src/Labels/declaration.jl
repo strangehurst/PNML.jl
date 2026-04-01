@@ -27,8 +27,11 @@ function Base.show(io::IO, d::Declaration)
 end
 
 function verify!(errors::Vector{String}, decl::Declaration, verbose::Bool, ::APN)
+    verbose && println("## verify $(typeof(decl))")
     if isempty(decl.ddict)
-        push!(errors, string("declaration dictionarys is empty: $decl")::String)
+        msg = string("declaration dictionarys is empty: $decl")::String
+        verbose && println("verify error: $msg")
+        push!(errors, msg)
     end
     return errors
 end
