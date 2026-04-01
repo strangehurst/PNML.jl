@@ -45,5 +45,5 @@ Expected label XML: `<time> <text>0.3</text> </time>`
     `t` is anything that supports `get_label(t, tag)`.
 """
 function time_value(t)
-    label_value(t, :time, value_type(Time), one)::value_type(Time)
+    label_value(t, :time, one(value_type(Time)))::value_type(Time)
 end

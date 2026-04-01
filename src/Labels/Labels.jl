@@ -76,18 +76,13 @@ include("structure.jl")
 include("times.jl")
 
 """
-    label_value(n::AbstractPnmlNode, tag::Symbol, type) -> x::type
+    label_value(n::AbstractPnmlNode, tag::Symbol, default)
 
-If there is a label `tag` in `n.extralabels`, return its value,
-else return a default value of the correct Type `type`.
+If there is a label `tag` in `node.extralabels`, return its value,
+else return a default value.
 """
-function label_value(node::AbstractPnmlNode, tag::Symbol, type, default)
+function label_value(node::AbstractPnmlNode, tag::Symbol, default_value)
     label = get_label(node, tag)
-    if isnothing(label)
-        default(type)::type
-    else
-        #@show label
-        value(label)::type
-    end
+    isnothing(label) ? default_value : value(label)
 end
 end # module labels

@@ -46,5 +46,5 @@ Expected label XML: `<priority> <text>0.3</text> </priority>`
     `t` is anything that supports `get_label(t, tag)`.
 """
 function priority_value(t)
-    label_value(t, :priority, value_type(Priority), one)::value_type(Priority)
+    label_value(t, :priority, one(value_type(Priority)))::value_type(Priority)
 end

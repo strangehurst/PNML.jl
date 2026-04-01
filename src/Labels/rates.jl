@@ -43,5 +43,5 @@ Expected label XML: `<rate> <text>0.3</text> </rate>`
     `t` is anything that supports `get_label(t, tag)`.
 """
 function rate_value(t)
-    label_value(t, :rate, value_type(Rate), zero)::value_type(Rate)
+    label_value(t, :rate, zero(value_type(Rate)))::value_type(Rate)
 end
