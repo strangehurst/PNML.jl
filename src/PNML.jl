@@ -28,11 +28,10 @@ module PNML
 __precompile__(true)
 
 using Accessors
-using Preferences: Preferences, load_preference, set_preferences!
+using Preferences: load_preference, set_preferences!
 import AutoHashEquals: @auto_hash_equals
 import Base: eltype, keys, *, +, -, <, >,>=, <=, zero, length, iterate
 import FunctionWrappers
-import Reexport: @reexport
 import Graphs
 import MetaGraphsNext
 import MacroTools
@@ -41,6 +40,7 @@ import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 import EzXML
 import XMLDict
 import Multisets: Multisets, Multiset
+import Moshi
 import Moshi.Match: @match
 import Moshi.Data: @data, isa_variant, is_data_type, variant_type
 import Moshi.Derive: @derive

@@ -14,19 +14,22 @@ import AutoHashEquals: @auto_hash_equals
 import XMLDict
 import Multisets: Multisets, Multiset
 
-using PNML
-using PNML: DeclDict, pntd
+#using PNML
+
+import PNML
+import PNML: PnmlModel, PnmlNet
+import PNML: initial_markings, initial_marking, enabled, PnmlMultiset, pid
+import PNML: metagraph, pnmlmodel
+import PNML: ToolParser, LabelParser
+import PNML: input_matrix, output_matrix
+import PNML: nettype, rates
+import PNML: pntd
+
 using PNML.PnmlTypes
 using PNML.Labels
 using PNML.Sorts
 using PNML.PnmlGraphics
 using PNML.Declarations
-
-import PNML: initial_markings, initial_marking, enabled, PnmlMultiset, pid
-import PNML: metagraph
-import PNML: ToolParser, LabelParser
-import PNML: input_matrix, output_matrix
-import PNML: nettype, rates
 
 export AbstractPetriNet, SimpleNet
 export input_matrix, output_matrix, transition_function, pnmlnet
