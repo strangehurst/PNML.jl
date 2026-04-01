@@ -79,7 +79,7 @@ sortof(t::SortType) = sortdefinition(namedsort(t.net, sortref(t)))
 sortelements(t::SortType, net::APN) = sortelements(sortof(t), net)
 
 """
-    def_sort_element(x, net)
+    def_sort_element(x)
 
 Return an arbitrary element of sort `x`.
 All sorts are expected to be iteratable and non-empty, so we return `first`.
@@ -88,8 +88,8 @@ Uses include default inscription value and default initial marking value sorts.
 `x` can be anything with a `sortelements(x, net)` method that returns an iterator with length.
 See [`AbstractSort`](@ref), [`SortType`](@ref PNML.Labels.SortType).
 """
-function def_sort_element(pt::SortType, net::APN)
-    first(sortelements(pt, pt.net))
+function def_sort_element(placetype::SortType)
+    first(sortelements(placetype, placetype.net))
 end
 
 function Base.show(io::IO, st::SortType)

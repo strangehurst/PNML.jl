@@ -262,6 +262,8 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
 
     l = parse_label_content(node, ParseMarkingTerm(defsort), pntd; net)::NamedTuple
     placetype = l.sort
+    isnothing(l.sort) &&
+        error("Missing parse_hlinitialMarking sort")
     isnothing(l.exp) &&
         error("Missing expression for $pntd net")
 
@@ -288,7 +290,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
 
     markexp = if isnothing(l.exp)
         # Default is an empty multiset whose basis matches placetype.
-        Bag(sortref(placetype), def_sort_element(placetype, net), 0)
+        Bag(sortref(placetype), def_sort_element(placetype), 0)
     else
         l.exp
     end
@@ -344,7 +346,7 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
 
     markexp = if isnothing(l.exp)
         # Default is an empty queue whose eltype matches placetype.
-        Bag(sortref(placetype), def_sort_element(placetype, net), 0)
+        Bag(sortref(placetype), def_sort_element(placetype), 0)
     else
         l.exp
     end
@@ -489,7 +491,7 @@ function def_insc(netdata, source,::REFID, target::REFID, net::APN)
     # assume exactly one is a place (and the other a transition).
     place = adjacent_place(netdata, source, target)
     place_type = place.sorttype
-    sort_element = def_sort_element(place_type, net)
+    sort_element = def_sort_element(place_type)
     @info "def_insc $source -> $target singleton pnmlmultiset: $place_type $sort_element"
     return pnmlmultiset(sortref(place_type), sort_element, 1; net)::PnmlMultiset
 end
@@ -586,7 +588,7 @@ $(TYPEDSIGNATURES)
 
 For future support of structure elements in non-High-Level nets.
 """
-function parse_structure(node::XMLNode, pntd::APNTD; net::APN)
+function parse_structure(node::XMLNode, pntd::APNTD; _net::APN)
     check_nodename(node, "structure")
     @warn "parse_structure is not implemented for $pntd " xmldict(node)
     error("parse_structure is not implemented for $pntd")
