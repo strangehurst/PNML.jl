@@ -83,7 +83,7 @@ Where sorts are the syntax for color classes and ProductSort is the color domain
     net::P
 end
 #
-Base.length(ps::ProductSort, net) = length(sorts(ps))
+Base.length(ps::ProductSort) = length(ps.ae)
 Base.eltype(ps::ProductSort) = Tuple{eltype.(sortdefinitions(ps))...}
 
 sortdefinitions(p::ProductSort) = Iterators.map(sorts(p)) do s
