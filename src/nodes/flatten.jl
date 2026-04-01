@@ -111,7 +111,7 @@ function _update_maybe!(l, r, key::Symbol) # pass a type for assertion
     isnothing(rval) && return
     lval = getproperty(l, key)::Maybe{AbstractVector}
     if isnothing(lval)
-        lval = rval # setproperty!(l, key, rval)
+        setproperty!(l, key, rval)
     else
         @info "append! " lval rval #!debug
         append!(lval, rval)
