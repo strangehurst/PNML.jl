@@ -1,45 +1,12 @@
-using EzXML, JET, AbstractTrees, NamedTupleTools, Preferences
+using EzXML, AbstractTrees, NamedTupleTools, Preferences
 using PNML
 using PNML:
-    rate_value_type,
     parse_net,
-    AbstractContinuousNet, AbstractHLCore, AbstractLabel,
-    AbstractPnmlCore, AbstractPnmlTool, @xml_str,
-    Annotation, AnyElement, Arc, Condition,
-    ContinuousNet, Coordinate, Declaration,
-    Fill, Font, Graphics, HLCoreNet, HLPNG,
-    Inscription, Line,
-    MalformedException, Marking, Maybe, MissingIDException, Name, ObjectCommon,
-    PTNet, PT_HLPNG, Page, Place, PnmlCoreNet, PnmlException,
-    PnmlIDRegistry, PnmlLabel, PnmlModel, PnmlNet, AbstractPnmlNode,
-    AbstractPnmlObject, PnmlType, RefPlace, RefTransition, ReferenceNode,
-    SymmetricNet, TokenGraphics, ToolInfo, Transition,
+    MalformedException,
+    PnmlModel,
     XMLNode,
-    _evaluate,
-    all_arcs, allchildren, append_page!, arc, arc_idset, arcs,
-    check_nodename, common, condition, conditions, initial_markings,
-    condition_type, condition_value_type,
-    declarations, default_condition, default_inscription, default_marking,
-    deref!, deref_place, deref_transition, elements,
-    find_net, find_nets, first_net, firstchild, firstpage, flatten_pages!,
-    get_label, get_labels, graphics,
-    has_arc, has_graphics, has_label, has_labels, has_name, has_place,
-    has_refplace, has_reftransition, has_transition,
-    hastag, ispid, inc_indent, indent, infos,
-    initialMarking, initial_marking, marking_type, marking_value_type,
-    inscription, inscription_type, inscription_value_type,
-    isregistered, labels,
-    name, namespace, nets, nettype,
-    pages, pid, place, place_idset, places, pnml_ns,
-    pnmltype, pntd_symbol, refid, refplace, refplace_idset, refplaces,
-    reftransition, reftransition_idset, reftransitions, register_id!,
-    show_common, show_page_field, shownames, source,
-    src_arcs, structure, tag, target, text, tgt_arcs, tools,
-    transition, transition_idset, transitions,
-    value, version,
-    xmlroot,
-    arc_type, place_type, transition_type, refplace_type, reftransition_type,
-    page_type, sort_type
+    allchildren,
+    check_nodename
 
 "Test input file."
 const fname = "test1.pnml"
@@ -66,8 +33,8 @@ julia> import Pkg; Pkg.activate("./snoopy"); cd("snoopy"); @time includet("setup
 =#
 function top_net(x::XMLNode)
     netxml = first(allchildren(x, "net"))
-    @report_opt target_modules=(PNML,) function_filter=pnml_ff PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry(); ids=(:foo,))
-endparse_net_1
+    #@report_opt target_modules=(PNML,) function_filter=pnml_ff PNML.parse_net_1(netxml, pnmltype(netxml["type"]), registry(); ids=(:foo,))
+end
 
 function timed_parse(node::XMLNode)
     #! DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
@@ -112,5 +79,4 @@ function showtree(n)
     println()
     AbstractTrees.print_tree(n)
 end
-include("defaults_types.jl")
-nothing
+#include("defaults_types.jl")
