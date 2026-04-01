@@ -32,9 +32,9 @@ const FAILFAST = parse(Bool, get(ENV, "JULIA_TEST_FAILFAST", "true"))
         @testset "Aqua" begin
             Aqua.test_all(PNet;
                 ambiguities=(recursive=false),
-                #unbound_args=true,
-                #undefined_exports=true,
-                #project_extras=true,
+                unbound_args=true,
+                undefined_exports=true,
+                project_extras=true,
                 stale_deps=(ignore=[:Compat],),
                 #deps_compat=(ignore=[:Metatheory],),
                 #project_toml_formatting=true,

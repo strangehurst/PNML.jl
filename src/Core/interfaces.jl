@@ -152,22 +152,23 @@ function transition_idset end
 """
     inscriptions(net::PnmlNet) -> Iterator
 
-Iterate over REFID => inscription(arc) pairs of `net`. This is the same order as `arcs`.
+Return iterator over REFID => inscription(arc) pairs of `net`. This is the same order as `arcs`.
 """
 function inscriptions end
 
 """
     conditions(net::PnmlNet) -> Iterator
 
-Iterate over REFID => condition(transaction) pairs of `net`.
+Return iterator  over REFID => condition(transaction) pairs of `net`.
 This is the same order as `transactions`.
 """
 function conditions end
 
 """
-    rates(net::PnmlNet) -> [id(transition) => rate_value(transition)]
+    rates(net::PnmlNet) -> Iterator
 
-Return a vector of transition_id=>rate_value.
+Return iterator over REFID => rate_value(transaction) pairs of `net`.
+This is the same order as `transactions`.
 
 We allow all PNML nets to be stochastic Petri nets. See [`rate_value`](@ref).
 """

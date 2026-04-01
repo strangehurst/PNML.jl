@@ -15,26 +15,27 @@ We use `NamedSortRef` -> `ConcreteSort` to add a name and REFID to built-in
 sorts, thus making them accessable. This extends this decoupling (symbols instead of sorts)
 to anonymous sorts that are inlined.
 """
-@data SortRefImpl begin
+Moshi.Data.@data SortRefImpl begin
     struct UserSortRef
-        refid::REFID # Indirection to NamedSortRef, PartitionSortRef or ArbitrarySortRef
+        refid::Symbol # Indirection to NamedSortRef, PartitionSortRef or ArbitrarySortRef
     end
     struct NamedSortRef
-        refid::REFID
+        refid::Symbol
     end
     struct PartitionSortRef
-        refid::REFID
+        refid::Symbol
     end
     struct ProductSortRef
-        refid::REFID
+        refid::Symbol
     end
     struct MultisetSortRef
-        refid::REFID
+        refid::Symbol
     end
     struct ArbitrarySortRef
-        refid::REFID
+        refid::Symbol
     end
 end
+@assert @isdefined(SortRefImpl) "SortRefImpl should be defined"
 
 @derive SortRefImpl[Show,Hash,Eq]
 

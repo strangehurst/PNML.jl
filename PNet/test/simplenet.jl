@@ -1,11 +1,9 @@
-using PNet, JET, Test, Logging, Graphs, MetaGraphsNext
+using Graphs, JET, Logging, MetaGraphsNext, PNet, Test
 import PNML
-using PNML: pnmlmodel, nets, pages, firstpage, places, transitions, arcs,
-      pid, xmlnode, @xml_str, ntransitions, nplaces, narcs,
-      has_place, place, has_transition, transition, has_arc, arc,
-      condition, inscription, rates, initial_marking, initial_markings, enabled,
-      PnmlModel, PnmlNet, Page, Place, Arc, Transition,
-      pntd
+using PNML: @xml_str, Arc, Page, Place, PnmlModel, PnmlNet, Transition, arc, arcs, condition,
+    enabled, firstpage, has_arc, has_place, has_transition, initial_marking,
+    initial_markings, inscription, narcs, nets, nplaces, ntransitions, pages, pid, place,
+    places, pnmlmodel, pntd, rates, transition, transitions, xmlnode
 using PNML.Parser: xmlnode
 
 const t_modules = (PNML,PNet)
@@ -44,7 +42,7 @@ const str1 = """
                        (:info, "add PnmlLabel :structure to :p3"),
                        (:info, "add PnmlLabel :frog to :p3"),
                 pnmlmodel(xmlnode(str1))::PnmlModel) #
-    net0 = @inferred PnmlNet first(nets(model))
+    net0 = @inferred PnmlNet first(PNML.nets(model))
 
     simp1 = @inferred SimpleNet SimpleNet(model)
     simp  = @inferred SimpleNet SimpleNet(net0)
@@ -126,7 +124,7 @@ end
 
 # Used in precompile.
 @testset "simple ptnet" begin
-    @show "precompile's SimpleNet"
+    #@show "precompile's SimpleNet"
     @test SimpleNet(xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
         <net id="smallnet" type="http://www.pnml.org/version-2009/grammar/ptnet">
@@ -147,29 +145,20 @@ end
 end
 
 @testset "rate" begin
-    str2 = """<?xml version="1.0"?>
-    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="core">
-        <page id="page0">
-            <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
-        </page>
-        </net>
-    </pnml>
-    """
     model = @inferred PNML.PnmlModel PNML.pnmlmodel(xml"""<?xml version="1.0"?>
-    <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-        <net id="net0" type="core">
-        <page id="page0">
-            <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
-        </page>
-        </net>
-    </pnml>
-    """)
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net id="net0" type="core">
+            <page id="page0">
+                <transition id ="birth"><rate> <text>0.3</text> </rate> </transition>
+            </page>
+            </net>
+        </pnml>
+        """)
     net = @inferred PnmlNet first(PNML.nets(model))
     simp = @inferred SimpleNet(net)
     @test contains(sprint(show, simp), "SimpleNet")
-    β = rates(simp)
-    @show β
+    #@show simp.net
+    β = [pid(tr) => PNML.rate_value(tr) for tr in PNML.transitions(simp.net)]
     @test β == [:birth=>0.3]
 end
 
@@ -238,15 +227,14 @@ end
     @test u0 == expected_u0
 
     expected_β = [:birth=>0.3, :predation=>0.015, :death=>0.7] # transition rate
-    β = PNet.rates(simp)
-    @show β
+    @show β = [pid(tr) => PNML.rate_value(tr) for tr in PNML.transitions(simp.net)]
     @test β == expected_β
 
     let net = pnmlnet(simp)
         @show du = map(last, initial_markings(simp.net))
         #map(last, collect(du))
         @show valtype(du)
-        @show rates = zeros(valtype(du), ntransitions(net)) # φ in paper
+        @show rate_vals = zeros(valtype(du), ntransitions(net)) # φ in paper
         # φ = [βₜ Σ\_(s∈r(t)) uₛ for t in preset(net, transition_id)]
         # r : T → N^S is preset(net, transition_id)
         # p : S → N^T is preset(net, place_id)
@@ -262,12 +250,12 @@ end
                 @show collect(PNML.postset(net, pid(p)))
             end
             @show [pid(p) for (j,p) in enumerate(PNML.places(net)) if pid(p) in PNML.preset(net, pid(t))]
-            rates[i] = PNML.rate_value(t) * prod(initial_marking(p) ^ input[i, j]
+            rate_vals[i] = PNML.rate_value(t) * prod(initial_marking(p) ^ input[i, j]
                 for (j,p) in enumerate(PNML.places(net)) if pid(p) in PNML.preset(net, pid(t)))
         end
-        @show rates
+        @show rate_vals
         for j in 1:nplaces(net)
-            du[j] = sum(rates[i] * dt[i, j] for i in 1:ntransitions(net); init=0.0)
+            du[j] = sum(rate_vals[i] * dt[i, j] for i in 1:ntransitions(net); init=0.0)
         end
         @show du
     end

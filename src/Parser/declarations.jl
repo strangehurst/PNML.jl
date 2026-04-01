@@ -348,23 +348,23 @@ end
 #! Followed by parsing all declarations where `parse_sort is used`.
 #! Then the net where terms use sorts.
 
-function parse_sort(::Val{:bool}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:bool}, _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:bool)
 end
 
-function parse_sort(::Val{:integer}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:integer}, _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:integer)
 end
 
-function parse_sort(::Val{:natural}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:natural}, _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:natural)
 end
 
-function parse_sort(::Val{:positive}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:positive}, _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:positive)
 end
 
-function parse_sort(::Val{:real}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:real},  _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:real)
 end
 
@@ -376,11 +376,11 @@ end
 
 # NB: ePNK examples uses some inlined sorts
 
-function parse_sort(::Val{:dot}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
+function parse_sort(::Val{:dot}, _node::XMLNode, _pntd::APNTD, _sortid, _u2; net::APN)
     NamedSortRef(:dot) # The user overrides in a declaration.
 end
 
-function parse_sort(::Val{:usersort}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN) #! see parse_namedsort
+function parse_sort(::Val{:usersort}, node::XMLNode, pntd::APNTD, _sortid, _u2; net::APN) #! see parse_namedsort
     parse_usersort(node, pntd; net)
 end
 
@@ -455,7 +455,7 @@ end
 #TODO <tuple> is operator, subterms are expressions (terms) that have sortrefs.
 function parse_sort(::Val{:productsort}, node::XMLNode, pntd::APNTD, sortid, name; net::APN)
     check_nodename(node, "productsort")
-    isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is $sortid") #! debug
+    isnothing(sortid) && error("parse_sort(::Val{:productsort} sortid is nothing") #! debug
 
     sorts = [] # Orderded collection of zero or more Sorts in ISO 15909 Standard.
     for child in EzXML.eachelement(node)
@@ -481,10 +481,12 @@ function parse_sort(::Val{:productsort}, node::XMLNode, pntd::APNTD, sortid, nam
 end
 
 
-function parse_sort(::Val{:list}, node::XMLNode, pntd::APNTD, sortid, u2; net::APN)
-    @error("IMPLEMENT ME: :list")
-    #make_sort!(dict, :list, "List",
-    ListSort(net)
+function parse_sort(::Val{:list}, node::XMLNode, pntd::APNTD, parentid, name; net::APN)
+    check_nodename(node, "list")
+    @error("IMPLEMENT ME: :list for pntd=$pntd")
+    ls = ListSort(NamedSortRef(:dot)) #! Made up, until we parse `node!
+    sref = make_sortref(net, namedsorts, ls, "list", parentid, name)
+    return sref
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, pntd::APNTD, parentid, name; net::APN)
@@ -590,7 +592,7 @@ function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNo
         end
     end
     isempty(terms) &&
-        throw(ArgumentError("<partitionelement id=$pelem_id, name=$nameval> has no terms"))
+        throw(ArgumentError("<partitionelement id=$element_id, name=$nameval> has no terms"))
     # rid is REFID to enclosing partition
     push!(elements, PartitionElement(element_id, nameval, terms, rid))
     return elements

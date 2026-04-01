@@ -181,7 +181,7 @@ end
 
 #----------------------------------------------------------------------------------------
 # Has value "true"|"false" and is BoolSort.
-function parse_term(::Val{:booleanconstant}, node::XMLNode, pntd::APNTD; vars, net::APN)
+function parse_term(::Val{:booleanconstant}, node::XMLNode, _pntd::APNTD; vars, net::APN)
     bc = BooleanConstant(attribute(node, "value"))
     return TermJunk(BooleanEx(bc), UserSortRef(:bool), vars) #TODO make into literal
 end

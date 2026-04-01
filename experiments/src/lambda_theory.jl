@@ -1,5 +1,6 @@
 # 2024-10-03 JDH Copied/Hacked/Butchered the Metatheory.jl tutorial: Lambda theory
-This is not usable! Ideas only. Copy to somewhere like terms/extressions.jl
+
+#! This is not usable! Ideas only. Copy to somewhere like terms/extressions.jl
 
 using Metatheory, Test, TermInterface
 

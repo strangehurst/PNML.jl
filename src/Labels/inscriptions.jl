@@ -75,11 +75,13 @@ end
 
 function default(::Type{<:Inscription}, pntd::APNTD, placetype::SortType, net::APN)
     if refid(placetype) !== :positive
-        @error("$pntd default Inscription $placetype mismatch $(repr(refid(placetype))) != :positive")
+        @error(string("$(pntd(net)) default Inscription $placetype mismatch ",
+                      "$(repr(refid(placetype))) != :positive"))
     end
     Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
+#!function default(::Type{<:Inscription}, placetype::SortType, net::PnmlNet{<:AbstractContinuousNet})
 function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::SortType, net::APN)
     if refid(placetype) !== :real
         @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
@@ -88,8 +90,8 @@ function default(::Type{<:Inscription}, pntd::AbstractContinuousNet, placetype::
 end
 
 # See def_insc
-function default(::Type{<:Inscription}, pntd::AbstractHLCore, placetype::SortType, net::APN)
+function default(::Type{<:Inscription}, _::AbstractHLCore, placetype::SortType, net::APN)
     basis = sortref(placetype)::SortRef
-    el = def_sort_element(placetype, net)
+    el = def_sort_element(placetype)
     Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net)
 end

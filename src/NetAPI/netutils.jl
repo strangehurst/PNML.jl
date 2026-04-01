@@ -39,19 +39,20 @@ function inscriptions(net::PnmlNet)
 end
 
 function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
-    @error "high level needs variable substitution"
+    @error "high level net $(pid(net)) needs variable substitution"
 end
 
 function conditions(net::PnmlNet)
-    Iterators.map((tr_id, t)->condition(t)(NamedTuple()), pairs(transitiondict(net)))
+    Iterators.map((tr_id, t)->tr_id => condition(t)(NamedTuple()), pairs(transitiondict(net)))
 end
 
 function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
-    @error "high level needs variable substitution"
+    @error "high level net $(pid(net)) needs variable substitution"
 end
 
 function rates(net::PnmlNet)
-    [tid => rate_value(t) for (tid, t) in pairs(transitiondict(net))]
+    #[tid => rate_value(t) for (tid, t) in pairs(transitiondict(net))]
+    Iterators.map((tr_id, t)->tr_id => rate_value(t), pairs(transitiondict(net)))
 end
 
 """

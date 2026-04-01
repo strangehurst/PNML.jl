@@ -46,7 +46,7 @@ All boolean expressions have a known sort `:bool`.
 abstract type AbstractBoolExpr <: PnmlExpr end
 basis(::AbstractBoolExpr) = NamedSortRef(:bool)
 sortref(::AbstractBoolExpr) = NamedSortRef(:bool)
-expr_sortref(b::AbstractBoolExpr, net) = sortref(b)::SortRef
+expr_sortref(b::AbstractBoolExpr, _net) = sortref(b)::SortRef
 
 """
 TermInterface operator expression types.
@@ -64,21 +64,21 @@ Return `Expr` constructed from `ex`. Call `toexpr` on any contained terms.
 function toexpr end
 
 # Some expressions are ground terms that have no variables.
-toexpr(::Nothing, ::NamedTuple, net) = nothing
-toexpr(x::T, ::NamedTuple, net) where {T <: Number} = identity(x) #! literal
-toexpr(s::Symbol, ::NamedTuple, net) = QuoteNode(s)
-function toexpr(t::Tuple, vsub::NamedTuple, net)
+toexpr(::Nothing, ::NamedTuple, _net) = nothing
+toexpr(x::T, ::NamedTuple, _net) where {T <: Number} = identity(x) #! literal
+toexpr(s::Symbol, ::NamedTuple, _net) = QuoteNode(s)
+function toexpr(t::Tuple, vsub::NamedTuple, _net)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-function toexpr(t::Multiset, vsub::NamedTuple, net)
+function toexpr(t::Multiset, vsub::NamedTuple, n_et)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-toexpr(nc::NumberConstant, ::NamedTuple, net) = value(nc)
-toexpr(c::FiniteIntRangeConstant, ::NamedTuple, net) = value(c)
-toexpr(::DotConstant, ::NamedTuple, net) = DotConstant()
-toexpr(c::BooleanConstant, ::NamedTuple, net) = value(c)
+toexpr(nc::NumberConstant, ::NamedTuple, _net) = value(nc)
+toexpr(c::FiniteIntRangeConstant, ::NamedTuple, _net) = value(c)
+toexpr(::DotConstant, ::NamedTuple, _net) = DotConstant()
+toexpr(c::BooleanConstant, ::NamedTuple, _net) = value(c)
 
 """
     expr_sortref(v::PnmlExpr, net) -> SortRef
@@ -117,7 +117,7 @@ recurse_expr(ex::Any, varsub::NamedTuple, net) = toexpr(ex, varsub, net)
 #recurse_expr(ex::PnmlExpr, sub) = Expr(ex.head, recurse_expr.(ex.args, (sub,))...)
 
 "@matchable TermInterface expressions"
-function TermInterface.maketerm(::Type{<:PnmlExpr}, head, children, metadata = nothing)
+function TermInterface.maketerm(::Type{<:PnmlExpr}, head, children, _metadata = nothing)
   head(children...)
 end
 
@@ -232,7 +232,7 @@ Bag(b::SortRef) = Bag(b::SortRef, nothing, nothing) # multiset: one of each elem
 
 sortref(b::Bag) = b.basis
 basis(b::Bag) = b.basis
-expr_sortref(b::Bag, net) = sortref(b)::SortRef # also basis
+expr_sortref(b::Bag, _net) = sortref(b)::SortRef # also basis
 
 function toexpr(b::Bag, varsub::NamedTuple, net)
     #@show b varsub Expr(:parameters, Expr(:kw,:net, net))
@@ -261,11 +261,11 @@ NumberEx # Need to avoid @matchable to have docstring
     element::T #
 end
 
-toexpr(b::NumberEx{T}, var::NamedTuple, net) where {T<:Number} = b.element
+toexpr(b::NumberEx{T}, _var::NamedTuple, _net) where {T<:Number} = b.element
 
 basis(x::NumberEx) = x.basis
 sortref(x::NumberEx) = x.basis
-expr_sortref(x::NumberEx, net) = basis(x)::SortRef
+expr_sortref(x::NumberEx, _net) = basis(x)::SortRef
 
 function Base.show(io::IO, x::NumberEx)
     print(io, "NumberEx(", x.basis, ", ", x.element,")")
@@ -304,9 +304,9 @@ end
 
 basis(::DotConstantEx) = UserSortRef(:dot)
 sortref(::DotConstantEx) = UserSortRef(:dot)
-expr_sortref(x::DotConstantEx, net) = basis(x)::SortRef
+expr_sortref(x::DotConstantEx, _net) = basis(x)::SortRef
 
-function toexpr(b::DotConstantEx, var::NamedTuple, net)
+function toexpr(b::DotConstantEx, _var::NamedTuple, _net)
     QuoteNode(DotConstant())
 end
 

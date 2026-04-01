@@ -1,4 +1,3 @@
-using Base: Fix2, Fix1
 #=
 =====================================================================================
 2025-05-01 Consider a declarative API to define different nets.
@@ -74,7 +73,7 @@ pnmlnet(petrinet::AbstractPetriNet) = petrinet.net
 
 inscriptions(petrinet::AbstractPetriNet) = inscriptions(pnmlnet(petrinet))
 conditions(petrinet::AbstractPetriNet) = conditions(pnmlnet(petrinet))
-rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
+#!rates(petrinet::AbstractPetriNet) = rates(pnmlnet(petrinet))
 initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet))
 
 
@@ -89,9 +88,9 @@ initial_markings(petrinet::AbstractPetriNet) = initial_markings(pnmlnet(petrinet
 Base.summary(io::IO, pn::AbstractPetriNet) = print(io, summary(pn))
 function Base.summary(pn::AbstractPetriNet)
     string(typeof(pn), " id ", PNet.pid(pn), ", ",
-        length(PNML.places(pn.net)), " places, ",
-        length(PNML.transitions(pn.net)), " transitions, ",
-        length(PNML.arcs(pn.net)), " arcs")::String
+        PNML.nplaces(pn.net), " places, ",
+        PNML.ntransitions(pn.net), " transitions, ",
+        PNML.narcs(pn.net), " arcs")::String
 end
 
 function Base.show(io::IO, pn::AbstractPetriNet)
@@ -106,6 +105,8 @@ end
 
 #-----------------------------------------------------------------
 #-----------------------------------------------------------------
+@assert @isdefined(PnmlNet) "PnmlNet should be defined."
+@assert @isdefined(pnmlmodel) "pnmlmodel should be defined."
 
 """
     HLPetriNet(str::AbstractString)
@@ -127,12 +128,12 @@ struct HLPetriNet{C, PNTD<:APNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
-function HLPetriNet(ctx, str::AbstractString)
-    HLPetriNet(ctx, pnmlmodel(xmlnode(str);
-                                tp_vec=ToolParser[],
-                                lp_vec=LabelParser[]))
+function HLPetriNet(str::AbstractString)
+    @assert @isdefined(pnmlmodel) "pnmlmodel should be defined"
+
+    HLPetriNet(pnmlmodel(xmlnode(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
 end
-HLPetriNet(model::PnmlModel) = HLPetriNet(ctx, first(nets(model)))
+HLPetriNet(model::PnmlModel) = HLPetriNet(PNML.firstnet(model))
 
 #=
 # What are the characteristics of a SimpleNet?
@@ -190,7 +191,7 @@ SimpleNet(s::AbstractString; kwargs...)  = SimpleNet(xmlnode(s); kwargs...)
 SimpleNet(node::PNML.XMLNode; kwargs...) = SimpleNet(PNML.Parser.pnmlmodel(node; kwargs...))
 
 # These two use the flattened 1st net of the PnmlModel.
-SimpleNet(model::PnmlModel; kwargs...) = SimpleNet(first(PNML.nets(model)); kwargs...)
+SimpleNet(model::PnmlModel; kwargs...) = SimpleNet(PNML.firstnet(model); kwargs...)
 function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)
     SimpleNet(PNML.pid(net), net)

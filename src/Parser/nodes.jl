@@ -80,7 +80,7 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
         elseif tag == :name
             namelabel = net.labelparser[tag](place_child, pntd; net, parentid=placeid)
         elseif tag == :graphics
-            graphics = net.labelparser[tag](place_child, pntd)
+            graphics = parse_graphics(place_child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, place_child, pntd, net) # place
         else
@@ -129,7 +129,7 @@ function parse_transition(node::XMLNode, pntd::APNTD, net::APN)
         elseif tag == :name
             namelabel = net.labelparser[tag](trans_child, pntd; net, parentid=transitionid)
         elseif tag == :graphics
-            graphics = net.labelparser[tag](trans_child, pntd)
+            graphics = parse_graphics(trans_child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, trans_child, pntd, net)
         else
@@ -180,7 +180,7 @@ function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
         elseif tag == :arctype
             arc_type_label = net.labelparser[tag](arc_child, pntd; net, parentid=arc_id)
         elseif tag == :graphics
-            graphics = net.labelparser[tag](arc_child, pntd)
+            graphics = parse_graphics(arc_child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, arc_child, pntd, net)
         else
@@ -249,7 +249,7 @@ function parse_refPlace(node::XMLNode, pntd::APNTD, net::APN)
         if tag == :name
             namelabel = net.labelparser[tag](refp_child, pntd; net, parentid=refp_id)
         elseif tag == :graphics
-            graphics =  net.labelparser[tag](refp_child, pntd)
+            graphics =  parse_graphics(refp_child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, refp_child, pntd, net)
         else
@@ -280,7 +280,7 @@ function parse_refTransition(node::XMLNode, pntd::APNTD, net::APN)
         if tag == :name
             namelabel = net.labelparser[tag](reft_child, pntd; net, parentid=reft_id)
         elseif tag == :graphics
-            graphics = net.labelparser[tag](reft_child, pntd)
+            graphics = parse_graphics(reft_child, pntd)
         elseif tag == :toolspecific
             toolspecinfos = add_toolinfo(toolspecinfos, reft_child, pntd, net)
         else

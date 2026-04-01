@@ -103,7 +103,7 @@ and trasnsition guard is true.
 function sufficient_tokens! end
 
 function sufficient_tokens!(mark_dict::AbstractDict, net::AbstractPnmlNet,
-                            transition_id, vars, varsubs)
+                            transition_id, _vars, _varsubs)
     # There are no varibles possible here and the guard is `true`.
     # Evaluate preset inscription expressions, compare to mark value.
     all(mark_dict[place_id] >= inscription(arc(net, place_id, transition_id))()

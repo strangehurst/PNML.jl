@@ -9,8 +9,9 @@
 # julia --project=@.  -e 'include("all_pnml.jl"); testfile("/home/jeff/Jules/testf2.list"; topdir="/home/jeff/Jules/PNML")'
 
 using DataFrames, DataFramesMeta, Dates, CSV, Graphs, MetaGraphsNext, LoggingExtras
-using PNML
-using PNML: pid, narcs, nplaces, ntransitions, PNet.pnmlnet
+using PNML, PNet
+using PNML: pid, narcs, nplaces, ntransitions
+using PNet: PNet.pnmlnet
 
 const DEFAULT_TOP_DIR = "/home/jeff/PetriNet/PNML-files" # prefix to each file in list.
 const DEFAULT_OUTDIR = "/home/jeff/Jules/testpmnl"

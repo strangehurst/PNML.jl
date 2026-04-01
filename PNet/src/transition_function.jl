@@ -1,5 +1,5 @@
 """
-transition_function(petrinet::AbstractPetriNet) -> LVector{Symbol, Tuple{LVector,LVector}
+transition_function(petrinet::AbstractPetriNet) -> Vector{Pair{Symbol, Vector{Symbol}}
 
 Transition function of a Petri Net.
 Each transition has an input vector and an output vector.
@@ -24,7 +24,7 @@ Lookup the `Arc`, find its inscription's value and if PT_HLPNG convert to intege
 """
 function civ(net, arc_id)
     arc = PNML.arcdict(net)[arc_id]
-    z = PNML.zero_marking(PNML.adjacent_place(net, a)) # 0 or empty multiset similar to placetype
+    z = PNML.zero_marking(PNML.adjacent_place(net, arc)) # 0 or empty multiset similar to placetype
     PNML._cvt_inscription_value(pntd(net), arc, z, NamedTuple())
 end
 
@@ -77,19 +77,19 @@ in_out(petrinet::AbstractPetriNet, transition_id) = in_out(pnmlnet(petrinet), tr
 in_out(net::PnmlNet, transition_id) = (in_inscriptions(net, transition_id),
                                        out_inscriptions(net, transition_id))
 
-"""
-    ins(net, transition_id) -> LVector
+# """
+#     ins(net, transition_id) -> LVector
 
-Inscription values labeled with source place id for arcs with `transition_id` as the target id.
-"""
-ins(net::PnmlNet, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transition_id))...))
+# Inscription values labeled with source place id for arcs with `transition_id` as the target id.
+# """
+# ins(net::PnmlNet, transition_id::Symbol) = LVector((; collect(in_inscriptions(net, transition_id))...))
 
-"""
-    outs(net, transition_id) -> LVector
+# """
+#     outs(net, transition_id) -> LVector
 
-Inscription values labeled with target place id for arcs with `transition_id` as the source id.
-"""
-outs(net::PnmlNet, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
+# Inscription values labeled with target place id for arcs with `transition_id` as the source id.
+# """
+# outs(net::PnmlNet, transition_id::Symbol) = LVector((; collect(out_inscriptions(net, transition_id))...))
 
 #
 # See input flow #todo cite ISO 15909-1:2019

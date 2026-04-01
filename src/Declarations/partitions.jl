@@ -75,16 +75,19 @@ end
 # verify terms are in parent partitions's referenced sort elements.
 function verify!(errors::Vector{String}, pe::PartitionElement,
                  verbose::Bool, net::APN)
-    if !isempty(setdiff(pe.terms,
-                        sortelements(sortdefinition(partitionsort(net, pe.partition)), net)))
-              #? pid needed?
-        push!(errors, string("PartitionElement term(s) not in partition def sort")::String)
+    sdiff = setdiff(pe.terms,
+                    sortelements(sortdefinition(partitionsort(net, pe.partition)), net))
+    verbose && println("## verify $(typeof(pe))")
+    if !isempty(sdiff)
+        msg = string("PartitionElement term(s) not in partition def sort")
+        verbose && println("verify error: $msg, sdiff = ", sdiff)
+        push!(errors, msg)
     end
 end
 
 "Return Bool true if partition contains the FEConstant"
 function contains end
-contains(pe::PartitionElement, fec::REFID) = fec in pe.terms
+contains(pe::PartitionElement, fec::Symbol) = fec in pe.terms
 
 function Base.show(io::IO, pe::PartitionElement)
     print(io, nameof(typeof(pe)), "(", pid(pe), ", ", repr(name(pe)), ", ")

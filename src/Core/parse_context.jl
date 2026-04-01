@@ -97,7 +97,7 @@ function fill_builtin_labelparsers!(labelparser::AbstractDict)
     labelparser[:inscription]      = Parser.parse_inscription
     labelparser[:hlinscription]    = Parser.parse_hlinscription
     labelparser[:condition]        = Parser.parse_condition
-    labelparser[:graphics]         = Parser.parse_graphics
+#!    labelparser[:graphics]         = Parser.parse_graphics #! graphics are not labels! XXX
     labelparser[:name]             = Parser.parse_name
     labelparser[:type]             = Parser.parse_sorttype
 
@@ -149,7 +149,7 @@ function fill_builtin_toolparsers!(toolparsers::AbstractDict)
 end
 
 "Add parser to dictionary"
-function fill_toolparsers!(toolparsers::AbstractDict, tparser)
+function fill_toolparsers!(toolparsers::AbstractDict, tparser::ToolParser)
     if haskey(toolparsers, name(tparser)=>version(tparser))
         @warn "ignoring repeated toolparser" name(tparser)=>version(tparser) tparser
     else

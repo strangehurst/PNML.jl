@@ -36,8 +36,8 @@ struct UnknownDeclaration{N <: APN}  <: AbstractDeclaration
 end
 
 function Base.show(io::IO, x::UnknownDeclaration)
-    print(io, nameof(typeof(x)), "(", repr(id), ", ", repr(name), ", ",
-            repr(nodename), content, ")")
+    print(io, nameof(typeof(x)), "(", repr(x.id), ", ", repr(x.name), ", ",
+            repr(x.nodename), x.content, ")")
 end
 
 """

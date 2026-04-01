@@ -44,7 +44,7 @@ function verify!(errors::Vector{String}, v::Vector{T}, verbose::Bool, net::APN) 
     return errors
 end
 
-function verify!(errors::Vector{String}, t::ToolInfo, verbose::Bool, net::APN)
+function verify!(errors::Vector{String}, t::ToolInfo, verbose::Bool, _net::APN)
     verbose && println("## verify $(typeof(t)) $(repr(name(t))) $(repr(version(t)))")
     isempty(name(t)) &&
         push!(errors, string("ToolInfo must have non-empty name")::String)
