@@ -18,12 +18,25 @@ function pnml_namespace(node::XMLNode;
 end
 
 """
-$(TYPEDSIGNATURES)
+    pnmlmodel([filename::AbstractString|node::XMLNode]; kwargs...)
 
 Build a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref)
-from a file containing XML or a XMLNode.
+from a file containing XML or a XMLNode. XMLNode is an alias for EzXML.Node.
+
+# Arguments
+
 """
 function pnmlmodel end
+
+function pnmlmodel(; kwargs...)
+    empty_model = xml"""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net id="empty_net" type="pnmlcore" />
+        </pnml>
+    """
+    @info "Create PNML model with 1 empty pnmlcore"
+    pnmlmodel(empty_model; kwargs...)
+end
 
 function pnmlmodel(filename::AbstractString; kwargs...)
     isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))

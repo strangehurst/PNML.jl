@@ -32,18 +32,39 @@ using .TestUtils
     @test pnmlmodel(xnode) isa PnmlModel
 end
 
-@testset "pnmlmodel(emptypage)" begin
-    emptypage = xml"""<?xml version="1.0"?>
+@testset "pnmlmodel(empty_page)" begin
+    empty_page = xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
-            <net id="netid1" type="pnmlcore">
+            <net id="empty_page" type="pnmlcore">
                 <page id="page"/>
             </net>
         </pnml>
     """
-    @test_logs(match_mode=:all, pnmlmodel(emptypage))
-    #!@test_call broken=false target_modules=t_modules pnmlmodel(emptypage)
-    #@test_opt broken=false target_modules=t_modules pnmlmodel(emptypage)
+    @test_logs(match_mode=:all, pnmlmodel(empty_page))
  end
+
+@testset "pnmlmodel(empty_net)" begin
+    println("pnmlmodel(empty_net)")
+    empty_net = xml"""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+            <net id="empty_net" type="pnmlcore" />
+        </pnml>
+    """
+    @test_logs(match_mode=:all, pnmlmodel(empty_net))
+ end
+
+@testset "pnmlmodel(empty_pnml)" begin
+    println("pnmlmodel(empty_pnml)")
+    empty_pnml = xml"""<?xml version="1.0"?>
+        <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+        </pnml>
+    """
+    @test_throws("MalformedException: <pnml> does not have any <net> elements", pnmlmodel(empty_pnml))
+ end
+
+#^ Pattern to use? https://discourse.julialang.org/t/specializing-on-keyword-arguments/78263/3
+# _f(a; b = default_b, c = default_c) = some code
+# f(a; kwargs...) = isempty(kwargs) ? _f(a; c = c_specialized_for_default_b) : _f(a; kwargs...)
 
 @testset "multiple empty net types" begin
     model = @test_logs(match_mode=:all, pnmlmodel(xml"""
