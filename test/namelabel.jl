@@ -8,19 +8,17 @@ using XMLDict: XMLDict
     net = make_net(pntd, :name_net)
 
     n = @test_logs((:warn, r"^<name> missing <text>"),
-            PNML.Parser.parse_name(xml"<name></name>", pntd;
-                                    net, parentid=:xxx))::PNML.AbstractLabel
+            PNML.Parser.parse_name(xml"<name></name>", net, parentid=:xxx))::PNML.AbstractLabel
     @test PNML.text(n) == ""
 
     n = @test_logs((:warn, r"^<name> missing <text>"),
-            PNML.Parser.parse_name(xml"<name>stuff</name>", pntd;
-                                    net, parentid=:xxx))
+            PNML.Parser.parse_name(xml"<name>stuff</name>", net, parentid=:xxx))
     @test PNML.text(n) == "stuff"
 
     @test n.graphics === nothing
     @test n.toolspecinfos === nothing || isempty(n.toolspecinfos)
 
-    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", pntd; net, parentid=:xxx)
+    n = PNML.Parser.parse_name(xml"<name><text>some name</text></name>", net, parentid=:xxx)
     @test n isa PNML.Name
     @test PNML.text(n) == "some name"
 
@@ -28,8 +26,7 @@ using XMLDict: XMLDict
         <name>
             <text>some name2</text>
             <graphics/>
-        </name>""",
-        pntd; net, parentid=:xxx)
+        </name>""", net, parentid=:xxx)
     @test PNML.text(n) == "some name2"
     @test has_graphics(n) == true
 
@@ -38,8 +35,7 @@ using XMLDict: XMLDict
         <name>
             <text>some name3</text>
             <toolspecific tool="faketool" version="1.2.3" />
-        </name>""",
-        pntd; net, parentid=:xxx)
+        </name>""", net, parentid=:xxx)
     @test PNML.text(n) == "some name3"
 
     #TODO add toolinfo
@@ -48,13 +44,11 @@ using XMLDict: XMLDict
                 <name>
                     <text>some name4</text>
                     <unknown/>
-                </name>""",
-                pntd; net, parentid=:xxx))
+                </name>""", net, parentid=:xxx))
 
     # old_cfg = PNML.CONFIG.text_optional
     # PNML.CONFIG.text_optional = false
     # n = @test_throws(ArgumentError,
-    #         PNML.Parser.parse_name(xml"<name>stuff</name>", pntd;
-    #                                 net, parentid=:xxx))
+    #         PNML.Parser.parse_name(xml"<name>stuff</name>", net, parentid=:xxx))
     # PNML.CONFIG.text_optional =  old_cfg
 end

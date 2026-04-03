@@ -14,7 +14,7 @@ $(TYPEDSIGNATURES)
 Return [`Name`](@ref) label holding `<text>` value.
 With optional `<toolspecific>` & `<graphics>` information.
 """
-function parse_name(node::XMLNode, pntd::APNTD; net::APN, parentid)
+function parse_name(node::XMLNode, net::APN; parentid)
     check_nodename(node, "name")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -23,11 +23,11 @@ function parse_name(node::XMLNode, pntd::APNTD; net::APN, parentid)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = parse_text(child, pntd)
+            text = parse_text(child, PNML.pntd(net))
         elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
+            graphics = parse_graphics(child, PNML.pntd(net))
         elseif tag == "toolspecific"
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # of name label
+            toolspecinfos = add_toolinfo(toolspecinfos, child, PNML.pntd(net), net) # of name label
         else
             @warn "$parentid ignoring unexpected child of <name>: '$tag'"
         end
@@ -50,13 +50,18 @@ function parse_name(node::XMLNode, pntd::APNTD; net::APN, parentid)
     return Name(text, graphics, toolspecinfos)
 end
 
+# function parse_name(node::XMLNode, _pntd::APNTD; net::APN, parentid)
+#     parse_name(node, net; parentid)
+# end
+
+
 """
 $(TYPEDSIGNATURES)
 
 Return [`ArcType`](@ref) label holding `<text>` value.
 With optional `<toolspecific>` & `<graphics>` information.
 """
-function parse_arctype(node::XMLNode, pntd::APNTD; net::APN, parentid)
+function parse_arctype(node::XMLNode, net::APN; parentid)
     check_nodename(node, "arctype")
     text::Maybe{String} = nothing
     graphics::Maybe{Graphics} = nothing
@@ -65,11 +70,11 @@ function parse_arctype(node::XMLNode, pntd::APNTD; net::APN, parentid)
     for child in EzXML.eachelement(node)
         tag = EzXML.nodename(child)
         if tag == "text"
-            text = parse_text(child, pntd)
+            text = parse_text(child, pntd(net))
         elseif tag == "graphics"
-            graphics = parse_graphics(child, pntd)
+            graphics = parse_graphics(child, pntd(net))
         elseif tag == "toolspecific"
-            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd, net) # name label
+            toolspecinfos = add_toolinfo(toolspecinfos, child, pntd(net), net) # name label
         else
             @warn "$parentid ignoring unexpected child of <arctype>: '$tag'"
         end

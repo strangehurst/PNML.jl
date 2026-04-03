@@ -78,7 +78,7 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
         elseif tag == :type
             # we already handled this
         elseif tag == :name
-            namelabel = net.labelparser[tag](place_child, pntd; net, parentid=placeid)
+            namelabel = net.labelparser[tag](place_child, net, parentid=placeid)
         elseif tag == :graphics
             graphics = parse_graphics(place_child, pntd)
         elseif tag == :toolspecific
@@ -127,7 +127,7 @@ function parse_transition(node::XMLNode, pntd::APNTD, net::APN)
         if tag == :condition
             cond = net.labelparser[tag](trans_child, pntd; net, parentid=transitionid)
         elseif tag == :name
-            namelabel = net.labelparser[tag](trans_child, pntd; net, parentid=transitionid)
+            namelabel = net.labelparser[tag](trans_child, net; parentid=transitionid)
         elseif tag == :graphics
             graphics = parse_graphics(trans_child, pntd)
         elseif tag == :toolspecific
@@ -176,9 +176,9 @@ function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
             inscription = net.labelparser[tag](arc_child, source, target, pntd;
                             net, parentid=arc_id)
         elseif tag == :name
-            namelabel = net.labelparser[tag](arc_child, pntd; net, parentid=arc_id)
+            namelabel = net.labelparser[tag](arc_child, net, parentid=arc_id)
         elseif tag == :arctype
-            arc_type_label = net.labelparser[tag](arc_child, pntd; net, parentid=arc_id)
+            arc_type_label = net.labelparser[tag](arc_child, net, parentid=arc_id)
         elseif tag == :graphics
             graphics = parse_graphics(arc_child, pntd)
         elseif tag == :toolspecific
@@ -247,7 +247,7 @@ function parse_refPlace(node::XMLNode, pntd::APNTD, net::APN)
     for refp_child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(refp_child))
         if tag == :name
-            namelabel = net.labelparser[tag](refp_child, pntd; net, parentid=refp_id)
+            namelabel = net.labelparser[tag](refp_child, net, parentid=refp_id)
         elseif tag == :graphics
             graphics =  parse_graphics(refp_child, pntd)
         elseif tag == :toolspecific
@@ -278,7 +278,7 @@ function parse_refTransition(node::XMLNode, pntd::APNTD, net::APN)
     for reft_child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(reft_child))
         if tag == :name
-            namelabel = net.labelparser[tag](reft_child, pntd; net, parentid=reft_id)
+            namelabel = net.labelparser[tag](reft_child, net, parentid=reft_id)
         elseif tag == :graphics
             graphics = parse_graphics(reft_child, pntd)
         elseif tag == :toolspecific

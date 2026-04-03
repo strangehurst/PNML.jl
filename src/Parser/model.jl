@@ -34,11 +34,12 @@ function pnmlmodel(; kwargs...)
             <net id="empty_net" type="pnmlcore" />
         </pnml>
     """
-    @info "Create PNML model with 1 empty pnmlcore"
+    D()&& println("\n## pnmlmodel with 1empty pnmlcore net")
     pnmlmodel(empty_model; kwargs...)
 end
 
 function pnmlmodel(filename::AbstractString; kwargs...)
+    D()&& println("\n## pnmlmodel filename $filename")
     isempty(filename) && throw(ArgumentError("must have a non-empty file name argument"))
     pnmlmodel(EzXML.root(EzXML.readxml(filename)); kwargs...)
 end
@@ -136,7 +137,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
 
     let n = firstchild(net_node, "name")
         if !isnothing(n)
-            net.namelabel = net.labelparser[:name](n, pntd; net, parentid=netid)::Name
+            net.namelabel = net.labelparser[:name](n, net; parentid=netid)::Name
         end
     end
 
@@ -259,7 +260,7 @@ function __parse_page!(net::APN, page_node::XMLNode,
             # Subpage stored at net-level with key in page's id set.
             parse_page!(net, page_idset(page), child, pntd)
         elseif nname == :name
-            page.namelabel = net.labelparser[nname](child, pntd; net, parentid=pageid)
+            page.namelabel = net.labelparser[nname](child, net; parentid=pageid)
         elseif nname == :graphics
             page.graphics = parse_graphics(child, pntd)
         else
