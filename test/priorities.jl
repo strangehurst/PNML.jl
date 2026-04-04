@@ -1,4 +1,4 @@
-using PNML, JET, NamedTupleTools
+using PNML, Test, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
 
@@ -12,8 +12,7 @@ println("PRIORITY")
     trans = PNML.Parser.parse_transition(
         xml"""<transition id ="birth">
                 <priority> <text>0.3</text> </priority>
-            </transition>""",
-            pntd, net)
+            </transition>""", net)
     #@show lab = PNML.labels(trans)
 
     @test PNML.get_label(trans, :nosuchlabel) === nothing
@@ -36,6 +35,6 @@ end
                     <priorityX> <text> 0.3 </text> </priorityX>
                  </transition>"""
     tr = @test_logs(match_mode=:any, (:info, r"add PnmlLabel"),
-                    PNML.Parser.parse_transition(node, pntd, net))
+                    PNML.Parser.parse_transition(node, net))
     @test PNML.priority_value(tr) ≈ 1.0
 end

@@ -146,18 +146,3 @@ value_type(::Type{Marking}, ::PT_HLPNG) = eltype(NaturalSort) #::Int
 #
 # Implementation detail: the concrete NumberSort subtypes are Singleton types held in a field.
 # NB: not all sort types are singletons, example FiniteEnumerationSort.
-
-"""
-$(TYPEDSIGNATURES)
-Return default marking value based on `APNTD`. Has meaning of empty, as in `zero`.
-For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
-Others have a marking that is a `Number`.
-"""
-function default(::Type{<:Marking}, pntd::APNTD, _placetype::SortType, net::APN)
-    Marking(zero(value_type(Marking, pntd)), net) # not high-level!
-end
-
-function default(::Type{<:Marking}, _pntd::AbstractHLCore, placetype::SortType, net::APN)
-    el = def_sort_element(placetype)
-    Marking(Bag(sortref(placetype), el, 0), "default", net) # el used for its type
-end

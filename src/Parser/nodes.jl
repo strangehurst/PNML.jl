@@ -1,7 +1,15 @@
+
+"""
+    default(::Type{T<:AbstractLabel}, net::APN) -> T
+
+Return a default instance of label `T` for `pntd`.
+"""
+function default end
+
 # parse nodes of graph
 "Fill place_set, place_dict."
-function parse_place!(netsets, netdata, node, pntd, net::APN)
-    pl = parse_place(node, pntd, net)::valtype(placedict(netdata))
+function parse_place!(netsets, netdata, node, net::APN)
+    pl = parse_place(node, net)::valtype(placedict(netdata))
     #@show valtype(placedict(netdata)) typeof(placedict(netdata))
     push!(place_idset(netsets), pid(pl))
     placedict(netdata)[pid(pl)] = pl
@@ -9,34 +17,34 @@ function parse_place!(netsets, netdata, node, pntd, net::APN)
 end
 
 "Fill transition_set, transition_dict."
-function parse_transition!(netsets, netdata, node, pntd, net::APN)
-    tr = parse_transition(node, pntd, net)::valtype(transitiondict(netdata))
+function parse_transition!(netsets, netdata, node, net::APN)
+    tr = parse_transition(node, net)::valtype(transitiondict(netdata))
     push!(transition_idset(netsets), pid(tr))
     transitiondict(netdata)[pid(tr)] = tr
     return transition_idset(netsets)
 end
 
 "Fill arc_set, arc_dict."
-function parse_arc!(netsets, netdata, node, pntd, net::APN)
-    a = parse_arc(node, pntd, net)
+function parse_arc!(netsets, netdata, node, net::APN)
+    a = parse_arc(node, net)
     a isa valtype(arcdict(netdata)) ||
-        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $pntd $(repr(a))")
+        @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $(pntd(net)) $(repr(a))")
     push!(arc_idset(netsets), pid(a))
     arcdict(netdata)[pid(a)] = a
     return arc_idset(netsets)
 end
 
 "Fill refplace_set, refplace_dict."
-function parse_refPlace!(netsets, netdata, node, pntd, net::APN)
-    rp = parse_refPlace(node, pntd, net)::valtype(refplacedict(netdata))
+function parse_refPlace!(netsets, netdata, node, net::APN)
+    rp = parse_refPlace(node, net)::valtype(refplacedict(netdata))
     push!(refplace_idset(netsets), pid(rp))
     refplacedict(netdata)[pid(rp)] = rp
     return refplace_idset(netsets)
 end
 
 "Fill reftransition_set, reftransition_dict."
-function parse_refTransition!(netsets, netdata, node, pntd, net::APN)
-    rt = parse_refTransition(node, pntd, net)::valtype(reftransitiondict(netdata))
+function parse_refTransition!(netsets, netdata, node, net::APN)
+    rt = parse_refTransition(node, net)::valtype(reftransitiondict(netdata))
     push!(reftransition_idset(netsets), pid(rt))
     reftransitiondict(netdata)[pid(rt)] = rt
     return reftransition_idset(netsets)
@@ -45,8 +53,23 @@ end
 
 """
 $(TYPEDSIGNATURES)
+Return default marking value based on `APNTD`. Has meaning of empty, as in `zero`.
+For high-level nets, the marking is an empty multiset whose basis matches `placetype`.
+Others have a marking that is a `Number`.
 """
-function parse_place(node::XMLNode, pntd::APNTD, net::APN)
+function default(::Type{<:Marking}, net::APN, _placetype::SortType)
+    Marking(zero(value_type(Marking, pntd(net))), net) # not high-level!
+end
+
+function default(::Type{<:Marking}, net::PnmlNet{T}, placetype::SortType) where {T <: AbstractHLCore}
+    el = def_sort_element(placetype)
+    Marking(Bag(sortref(placetype), el, 0), "default", net) # el used for its type
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function parse_place(node::XMLNode, net::APN)
     check_nodename(node, "place")
     placeid = register_idof!(net.idregistry, node)
     D()&& println("## parse_place ", repr(placeid))
@@ -55,13 +78,13 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
     # Get sorttype to use in parsing marking.
     sorttype::Maybe{SortType} = let typenode = firstchild(node, "type")
         if isnothing(typenode) # Deduce sort type of place if possible.
-            if isa(pntd, AbstractHLCore) && !isa(pntd, PT_HLPNG)
+            if isa(pntd(net), AbstractHLCore) && !isa(pntd(net), PT_HLPNG)
                 nothing # Deduce from initial marking.
             else
-                SortType("default", Labels.default_typesort(pntd), net)
+                SortType("default", Labels.default_typesort(pntd(net)), net)
             end
         else
-            parse_sorttype(typenode, pntd; net, parentid=placeid)
+            parse_sorttype(typenode, net; parentid=placeid)
         end
     end
 
@@ -74,22 +97,22 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
         tag = Symbol(EzXML.nodename(place_child))
         if tag == :initialMarking || tag == :hlinitialMarking tag == :fifoinitialMarking
             isnothing(sorttype) && @warn "$pntd parse_place $placeid sorttype is nothing"
-            mark = net.labelparser[tag](place_child, sorttype, pntd; net, parentid=placeid)
+            mark = net.labelparser[tag](place_child, sorttype, net, parentid=placeid)
         elseif tag == :type
             # we already handled this
         elseif tag == :name
             namelabel = net.labelparser[tag](place_child, net, parentid=placeid)
         elseif tag == :graphics
-            graphics = parse_graphics(place_child, pntd)
+            graphics = parse_graphics(place_child, pntd(net))
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, place_child, pntd, net) # place
+            toolspecinfos = add_toolinfo(toolspecinfos, place_child, net) # place
         else
-            unexpected_label!(extralabels, place_child, tag, pntd; net, parentid=placeid)
+            unexpected_label!(extralabels, place_child, tag, net; parentid=placeid)
         end
     end
 
     if isnothing(mark) # Use additive identity of proper sort as default value.
-        effective_sorttype = if ishighlevel(pntd) && isnothing(sorttype)
+        effective_sorttype = if ishighlevel(pntd(net)) && isnothing(sorttype)
             #D()&&
             @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
                             "use :dot even if it is WRONG")
@@ -97,7 +120,7 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
         else
             sorttype # Already parsed a <type> or default for non-HL.
         end
-        mark = default(Marking, pntd, effective_sorttype, net)
+        mark = default(Marking, net, effective_sorttype)
     end
 
     if isnothing(sorttype) # Infer sortype of place from mark.
@@ -107,10 +130,15 @@ function parse_place(node::XMLNode, pntd::APNTD, net::APN)
     Place(placeid, mark, sorttype, namelabel, graphics, toolspecinfos, extralabels, net)
 end
 
+function default(::Type{<:Labels.Condition}, net::APN)
+    #@info "default Condition"
+    Labels.Condition(BooleanEx(BooleanConstant(true)), net)
+end
+
 """
 $(TYPEDSIGNATURES)
 """
-function parse_transition(node::XMLNode, pntd::APNTD, net::APN)
+function parse_transition(node::XMLNode, net::APN)
     check_nodename(node, "transition")
     transitionid = register_idof!(net.idregistry, node)
     D()&& println("## parse_transition ", repr(transitionid))
@@ -120,37 +148,59 @@ function parse_transition(node::XMLNode, pntd::APNTD, net::APN)
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
-    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol,Any}()
+    extralabels::LittleDict{Symbol,Any} = LittleDict{Symbol, Any}()
 
     for trans_child in EzXML.eachelement(node)
         tag = Symbol(EzXML.nodename(trans_child))
         if tag == :condition
-            cond = net.labelparser[tag](trans_child, pntd; net, parentid=transitionid)
+            cond = net.labelparser[tag](trans_child, net; parentid=transitionid)
         elseif tag == :name
-            namelabel = net.labelparser[tag](trans_child, net; parentid=transitionid)
+            namelabel = net.labelparser[tag](trans_child, net, parentid=transitionid)
         elseif tag == :graphics
-            graphics = parse_graphics(trans_child, pntd)
+            graphics = parse_graphics(trans_child, pntd(net))
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, trans_child, pntd, net)
+            toolspecinfos = add_toolinfo(toolspecinfos, trans_child, net)
         else
             unexpected_label!(extralabels,
-                              trans_child, tag, pntd; net, parentid=transitionid)
+                              trans_child, tag, net; parentid=transitionid)
         end
     end
 
     Transition(transitionid,
-            something(cond, Labels.default(Labels.Condition, pntd, net)),
+            something(cond, default(Labels.Condition, net)),
             namelabel, graphics, toolspecinfos, extralabels,
             Set{REFID}(),
             NamedTuple[], net)
+end #= function parse_transition =#
+
+function default(::Type{<:Inscription}, net::APN, placetype::SortType)
+    if refid(placetype) !== :positive
+        @error(string("$(pntd(net)) default Inscription $placetype mismatch ",
+                      "$(repr(refid(placetype))) != :positive"))
+    end
+    Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
+end
+
+function default(::Type{<:Inscription}, net::PnmlNet{T}, placetype::SortType) where {T <: AbstractContinuousNet}
+    if refid(placetype) !== :real
+        @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
+    end
+    Inscription(nothing, NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
+end
+
+# See def_insc
+function default(::Type{<:Inscription}, net::PnmlNet{T}, placetype::SortType) where {T <: AbstractHLCore}
+    basis = sortref(placetype)::SortRef
+    el = def_sort_element(placetype)
+    Inscription(nothing, Bag(basis, el, 1), nothing, nothing, REFID[], net)
 end
 
 """
-    parse_arc(node::XMLNode, pntd::APNTD) -> Arc
+    parse_arc(node::XMLNode, net::APN) -> Arc
 
 Construct an `Arc` with labels specialized for the APNTD.
 """
-function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
+function parse_arc(node::XMLNode, net::APN)
     check_nodename(node, "arc")
     arc_id = register_idof!(net.idregistry, node)
 
@@ -173,18 +223,17 @@ function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
             # Output arc inscription and target's marking/placesort must have equal Sorts.
             # Have IDREF to source & target place & transition.
             # They which must have been parsed and can be found in netdata.
-            inscription = net.labelparser[tag](arc_child, source, target, pntd;
-                            net, parentid=arc_id)
+            inscription = net.labelparser[tag](arc_child, source, target, net, parentid=arc_id)
         elseif tag == :name
             namelabel = net.labelparser[tag](arc_child, net, parentid=arc_id)
         elseif tag == :arctype
             arc_type_label = net.labelparser[tag](arc_child, net, parentid=arc_id)
         elseif tag == :graphics
-            graphics = parse_graphics(arc_child, pntd)
+            graphics = parse_graphics(arc_child, pntd(net))
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, arc_child, pntd, net)
+            toolspecinfos = add_toolinfo(toolspecinfos, arc_child, net)
         else
-            unexpected_label!(extralabels, arc_child, tag, pntd; net, parentid=arc_id)
+            unexpected_label!(extralabels, arc_child, tag, net; parentid=arc_id)
         end
     end
 
@@ -193,7 +242,7 @@ function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
     # It may have non-ground terms as parameters.
 
     if isnothing(inscription)
-        dummy_placetype = if ishighlevel(pntd)
+        dummy_placetype = if ishighlevel(pntd(net))
             if pntd isa PT_HLPNG
                 SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
             else
@@ -211,12 +260,12 @@ function parse_arc(node::XMLNode, pntd::APNTD, net::APN)
                 end
                 SortType("dummy HIGHLEVEL", sr,  net)
            end
-        elseif iscontinuous(pntd)
+        elseif iscontinuous(pntd(net))
             SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
-        elseif isdiscrete(pntd)
+        elseif isdiscrete(pntd(net))
             SortType("dummy DISCRETE", NamedSortRef(:positive), net)
         end
-        inscription = default(Inscription, pntd, dummy_placetype, net)
+        inscription = default(Inscription, net, dummy_placetype)
     end
 
     if isnothing(arc_type_label)
@@ -232,7 +281,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refPlace(node::XMLNode, pntd::APNTD, net::APN)
+function parse_refPlace(node::XMLNode, net::APN)
     check_nodename(node, "referencePlace")
     refp_id = register_idof!(net.idregistry, node)
     D()&& println("## parse_refPlace ", repr(refp_id))
@@ -249,11 +298,11 @@ function parse_refPlace(node::XMLNode, pntd::APNTD, net::APN)
         if tag == :name
             namelabel = net.labelparser[tag](refp_child, net, parentid=refp_id)
         elseif tag == :graphics
-            graphics =  parse_graphics(refp_child, pntd)
+            graphics =  parse_graphics(refp_child, pntd(net))
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, refp_child, pntd, net)
+            toolspecinfos = add_toolinfo(toolspecinfos, refp_child, net)
         else
-            unexpected_label!(extralabels, refp_child, tag, pntd; net, parentid=refp_id)
+            unexpected_label!(extralabels, refp_child, tag, net; parentid=refp_id)
         end
     end
 
@@ -263,7 +312,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function parse_refTransition(node::XMLNode, pntd::APNTD, net::APN)
+function parse_refTransition(node::XMLNode, net::APN)
     check_nodename(node, "referenceTransition")
     reft_id = register_idof!(net.idregistry, node)
     D()&& println("## parse_refTransition ", repr(reft_id))
@@ -280,11 +329,11 @@ function parse_refTransition(node::XMLNode, pntd::APNTD, net::APN)
         if tag == :name
             namelabel = net.labelparser[tag](reft_child, net, parentid=reft_id)
         elseif tag == :graphics
-            graphics = parse_graphics(reft_child, pntd)
+            graphics = parse_graphics(reft_child, pntd(net))
         elseif tag == :toolspecific
-            toolspecinfos = add_toolinfo(toolspecinfos, reft_child, pntd, net)
+            toolspecinfos = add_toolinfo(toolspecinfos, reft_child, net)
         else
-            unexpected_label!(extralabels, reft_child, tag, pntd; net, parentid=reft_id)
+            unexpected_label!(extralabels, reft_child, tag, net; parentid=reft_id)
         end
     end
 

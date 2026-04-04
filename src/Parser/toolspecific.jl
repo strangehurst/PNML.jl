@@ -6,7 +6,7 @@ Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
 """
-function parse_toolspecific(node, pntd; net::APN)
+function parse_toolspecific(node, net::APN)
     check_nodename(node, "toolspecific")
     tool    = attribute(node, "tool")
     version = attribute(node, "version")
@@ -21,15 +21,15 @@ function parse_toolspecific(node, pntd; net::APN)
         toolspecific_content_fallback
     end
     #@show tool, version, tool_parser
-    content = tool_parser(node, pntd) # Run ToolParser callable.
+    content = tool_parser(node, pntd(net)) # Run ToolParser callable.
     return Labels.ToolInfo(tool, version, content, net)
 end
 
 """
-    toolspecific_content_fallback(node::XMLNode, pntd::APNTD) -> AnyElement
+    toolspecific_content_fallback(node::XMLNode, net::APN) -> AnyElement
 Content of a `<toolspecific> `node` as parsed by `xmldict`.
 """
-function toolspecific_content_fallback(node::XMLNode, pntd::APNTD)
+function toolspecific_content_fallback(node::XMLNode, _pntd::APNTD)
     anyelement(Symbol(EzXML.nodename(node)), node)
 end
 
@@ -39,7 +39,7 @@ end
 
 Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
 """
-function tokengraphics_content(node, pntd)
+function tokengraphics_content(node::XMLNode, pntd::APNTD)
     parse_tokengraphics(EzXML.firstelement(node), pntd)
 end
 

@@ -10,7 +10,7 @@ export def_sort_element
 export ToolParser
 export ArcType, ArcTypeEnum
 export Rate, Priority, Time
-export default, validate_toolinfos, variables
+export validate_toolinfos, variables
 
 using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
@@ -54,13 +54,6 @@ include("toolinfo_content.jl") # Some infos have known content.
 include("PnmlGraphics.jl") # labels and nodes can both have graphics
 using .PnmlGraphics
 
-"""
-    default(::Type{T<:AbstractLabel}, pntd::APNTD, net::APN) -> T
-
-Return a default instance of label `T` for `pntd`.
-"""
-function default end
-
 include("labels.jl")
 include("declaration.jl")
 include("name.jl")
@@ -76,7 +69,7 @@ include("structure.jl")
 include("times.jl")
 
 """
-    label_value(n::AbstractPnmlNode, tag::Symbol, default)
+    label_value(n::AbstractPnmlNode, tag::Symbol, default_value)
 
 If there is a label `tag` in `node.extralabels`, return its value,
 else return a default value.

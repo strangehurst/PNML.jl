@@ -9,18 +9,7 @@ using .TestUtils
 using PNML: isnormal, isinhibitor, isread, isreset
 
 @testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
-    pntd = PnmlCoreNet()
-
-    str = """<arc source="t1" target="p1" id="a1">
-        <arctype>
-            <text> $arct </text>
-            <graphics/>
-            <toolspecific tool="tname" version="1"/>
-        </arctype>
-      </arc>"""
-
-    node = xmlnode(str)
-    pntd = PnmlCoreNet()
+    net = make_net(PnmlCoreNet(), :arctypes_net)
 
     str = """<arc source="t1" target="p1" id="a1">
         <arctype>
@@ -30,9 +19,8 @@ using PNML: isnormal, isinhibitor, isread, isreset
         </arctype>
       </arc>"""
     node = xmlnode(str)
-    net = make_net(pntd, :arctypes_net)
 
-    a = parse_arc(node, pntd, net)::Arc
+    a = parse_arc(node, net)::Arc
     atl = PNML.arctypelabel(a)
     arct = PNML.Labels.arctype(atl)
 
@@ -50,13 +38,12 @@ using PNML: isnormal, isinhibitor, isread, isreset
 end
 
 @testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
-    pntd = PnmlCoreNet()
-
+    net = make_net(PnmlCoreNet(), :empty_arctype)
     str = """<arc source="t1" target="p1" id="a1">
         <arctype>
+            <!-- empty -->
         </arctype>
       </arc>"""
     node = xmlnode(str)
-    net = make_net(pntd, :empty_arctype)
-    @test_throws(ArgumentError, parse_arc(node, pntd, net)::Arc)
+    @test_throws(ArgumentError, parse_arc(node, net)::Arc)
 end

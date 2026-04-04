@@ -1,4 +1,4 @@
-using PNML, JET, NamedTupleTools
+using PNML, Test, JET, NamedTupleTools
 
 include("TestUtils.jl")
 using .TestUtils
@@ -33,7 +33,7 @@ const node = xml"""
     </declaration>
     """
 
-parse_declaration!(net, [node], pntd)
+parse_declaration!(net, [node])
 
 #^ Multiset Expression tests
 #^------------------------------------------------------------------------

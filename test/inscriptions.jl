@@ -1,4 +1,4 @@
-
+using PNML, Test
 include("TestUtils.jl")
 using .TestUtils
 using EzXML: EzXML
@@ -20,7 +20,7 @@ using XMLDict: XMLDict
 
     inscript = @test_logs(match_mode=:any,
                     (:warn, r"^ignoring unexpected child of <inscription>: 'unknown'"),
-                    parse_inscription(n1, :nothing, :nothing, pntd; net, parentid=:xxx))
+                    parse_inscription(n1, :nothing, :nothing, net; parentid=:xxx))
     @test inscript isa PNML.Inscription
     #@test_broken typeof(eval(value(inscript))) <: Union{Int,Float64}
     #@show inscript

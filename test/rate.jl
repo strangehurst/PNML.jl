@@ -1,4 +1,4 @@
-using PNML, JET
+using PNML, Test, JET
 
 include("TestUtils.jl")
 using .TestUtils
@@ -9,8 +9,7 @@ println("RATE")
 
     trans = PNML.Parser.parse_transition(xml"""<transition id ="birth">
                                                  <rate> <text>0.3</text> </rate>
-                                               </transition>""",
-            pntd, net)
+                                               </transition>""", net)
     #@show lab = PNML.labels(trans)
 
     @test get_label(trans, :rate) === labels(trans)[:rate]

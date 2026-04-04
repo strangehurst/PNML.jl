@@ -1,4 +1,4 @@
-using PNML, JET, NamedTupleTools, OrderedCollections
+using PNML, Test, JET, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
 using XMLDict: XMLDict
 
@@ -16,7 +16,7 @@ using .TestUtils
     <structure> <usersort declaration="N2"/> </structure>
 </type>
     """
-    typ = PNML.Parser.parse_sorttype(n1, pntd; net, parentid=:foobar)::SortType
+    typ = PNML.Parser.parse_sorttype(n1, net; parentid=:foobar)::SortType
     @test text(typ) == "N2"
     @test PNML.sortref(typ) isa PNML.SortRef # wrapping DotSort
     @test PNML.sortof(typ) == DotSort() #! does the name of a sort affect equal Sorts?

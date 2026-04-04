@@ -133,7 +133,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     # It is like we are flattening only the declarations.
     # Only the first <declaration> label's text and graphics will be preserved.
     # Though what use graphics could add escapes me (and the standard).
-    net.declaration = parse_declarations!(net, net_node, pntd)::Declaration
+    net.declaration = parse_declarations!(net, net_node)::Declaration
 
     let n = firstchild(net_node, "name")
         if !isnothing(n)
@@ -142,7 +142,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     end
 
     # Collect all the toolspecinfos at net level for use in later parsing.
-    find_toolinfos!(net.toolspecinfos, net_node, pntd, net)
+    find_toolinfos!(net.toolspecinfos, net_node, net)
     validate_toolinfos(net.toolspecinfos)
 
     #--------------------------------------------------------------------
@@ -152,13 +152,13 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
         tag = EzXML.nodename(child)
         if tag == "page"
             # There is always at least one page. A forest of multiple page trees is allowd.
-            parse_page!(net, net.page_idset, child, pntd)
+            parse_page!(net, net.page_idset, child)
         elseif tag in ["declaration", "name", "toolspecific"]
             # println("NOOP: already parsed ", tag)
         elseif tag == "graphics"
             @warn "ignoring unexpected child of <net>: <graphics>"
         else
-            unexpected_label!(net.extralabels, child, Symbol(tag), pntd; net, parentid=netid)
+            unexpected_label!(net.extralabels, child, Symbol(tag), net; parentid=netid)
         end
     end
     verify(net, false) # CONFIG.verbose)
@@ -184,16 +184,16 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
 end
 
 """
-    unexpected_label!(extralabels, child, tag, pntd; net, parentid)
+    unexpected_label!(extralabels, child, tag, net; parentid)
 
 Apply a labelparser to `child` if one matches `tag`, otherwise call [`xmldict`](@ref).
 Add to `extralabels`.
 """
-function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbol, pntd; net, parentid::Symbol)
+function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbol, net; parentid::Symbol)
     #println("unexpected_label! $tag")
     if haskey(net.labelparser, tag)
         #@error "labelparser[$(repr(tag))] " net.labelparser[tag] #! bring-up
-        extralabels[tag] = net.labelparser[tag](child, pntd; net, parentid)
+        extralabels[tag] = net.labelparser[tag](child, net, parentid)
     else
         xd = xmldict(child)
         xd isa AbstractString &&
@@ -206,16 +206,16 @@ function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbo
 end
 
 """
-    parse_page!(net, page_idset, page_node, pntd) -> Nothing
+    parse_page!(net, page_idset, page_node) -> Nothing
 
 Call `_parse_page!` to create a page with its own `netsets`.
 Add created page to parent's `page_idset` and `pagedict(net)`.
 """
-function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode, pntd::APNTD)
+function parse_page!(net::PnmlNet, page_idset, page_node::XMLNode)
     check_nodename(page_node, "page")
     pageid = register_idof!(registry_of(net), page_node)
     push!(page_idset, pageid) # Record id before decending.
-    pg = __parse_page!(net, page_node, pntd, pageid)
+    pg = __parse_page!(net, page_node, pageid)
     @assert pageid === pid(pg)
     pagedict(net)[pageid] = pg
     return nothing
@@ -226,16 +226,14 @@ end
 
 Return `Page`. `pageid` already parsed from `page_node`.
 """
-function __parse_page!(net::APN, page_node::XMLNode,
-                        pntd::T, pageid::Symbol) where {T<:APNTD}
+function __parse_page!(net::PnmlNet{T}, page_node::XMLNode, pageid::Symbol) where {T<:APNTD}
     D()&& println("## parse_page ", pageid)
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.
     #---------------------------------------------------------
-    page = Page{T,typeof(net)}(; net, pntd, id = pageid,
+    page = Page{T,typeof(net)}(; net, id = pageid,
                 netsets = PnmlNetKeys(),
-                toolspecinfos = find_toolinfos!(nothing, page_node,
-                                                pntd, net)::Maybe{Vector{ToolInfo}})
+                toolspecinfos = find_toolinfos!(nothing, page_node, net)::Maybe{Vector{ToolInfo}})
 
     validate_toolinfos(toolinfos(page))
 
@@ -245,26 +243,26 @@ function __parse_page!(net::APN, page_node::XMLNode,
     for child in EzXML.eachelement(page_node)
         nname = Symbol(EzXML.nodename(child))
         if nname == :place
-            parse_place!(netsets(page), netdata(net), child, pntd, net)
+            parse_place!(netsets(page), netdata(net), child, net)
         elseif nname == :referencePlace
-            parse_refPlace!(netsets(page), netdata(net), child, pntd, net)
+            parse_refPlace!(netsets(page), netdata(net), child, net)
         elseif nname == :transition
-            parse_transition!(netsets(page), netdata(net), child, pntd, net)
+            parse_transition!(netsets(page), netdata(net), child,  net)
         elseif nname == :referenceTransition
-            parse_refTransition!(netsets(page), netdata(net), child, pntd, net)
+            parse_refTransition!(netsets(page), netdata(net), child,  net)
         elseif nname == :arc
-            parse_arc!(netsets(page), netdata(net), child, pntd, net)
+            parse_arc!(netsets(page), netdata(net), child, net)
         elseif nname in [:declaration, :toolspecific]
              # NOOP already parsed
         elseif nname == :page
             # Subpage stored at net-level with key in page's id set.
-            parse_page!(net, page_idset(page), child, pntd)
+            parse_page!(net, page_idset(page), child)
         elseif nname == :name
             page.namelabel = net.labelparser[nname](child, net; parentid=pageid)
         elseif nname == :graphics
-            page.graphics = parse_graphics(child, pntd)
+            page.graphics = parse_graphics(child, pntd(net))
         else
-            unexpected_label!(page.extralabels, child, nname, pntd; net, parentid=pageid)
+            unexpected_label!(page.extralabels, child, nname, net; parentid=pageid)
         end
     end
 
@@ -274,12 +272,12 @@ end
 """
     find_toolinfos!(toolspecinfos, node, pntd, net) -> toolinfos
 
-Calls `add_toolinfo(toolspecinfos, info, pntd, net)` for each info found.
+Calls `add_toolinfo(toolspecinfos, info_node, net)` for each info found.
 See [`Labels.get_toolinfos`](@ref) for accessing `ToolInfo`s.
 """
-function find_toolinfos!(toolspecinfos::Maybe{Vector{ToolInfo}}, node, pntd, net)
+function find_toolinfos!(toolspecinfos::Maybe{Vector{ToolInfo}}, node, net)
     for info in allchildren(node, "toolspecific")
-        toolspecinfos = add_toolinfo(toolspecinfos, info, pntd, net) # nets and pages
+        toolspecinfos = add_toolinfo(toolspecinfos, info, net) # nets and pages
     end
     return toolspecinfos
 end

@@ -1,4 +1,4 @@
-using PNML, JET
+using PNML, Test, JET
 using InteractiveUtils
 using Printf
 
@@ -13,7 +13,7 @@ using .TestUtils
     net = make_net(pntd, :empty_declaration)
     decl = @inferred parse_declarations!(net, xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
-        </declaration>""", pntd)
+        </declaration>""")
 
     @test length(decl.ddict) == 7 # nothing in <declarations>
     @test !isempty(decl.ddict)
@@ -68,10 +68,10 @@ end
     @test_opt target_modules=t_modules function_filter=pff namedsorts(net)
 
     base_decl_length = length(namedsorts(net))
-    #@show decl = parse_declaration!(net, [node], pntd)
+    #@show decl = parse_declaration!(net, [node])
     #@show decl net.ddict
     decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-            parse_declaration!(net, [node], pntd)::Declaration) # Add 3 declarations.
+            parse_declaration!(net, [node])::Declaration) # Add 3 declarations.
     @test length(namedsorts(net)) == base_decl_length + 3
 
     for nsort in values(namedsorts(net))
@@ -152,7 +152,7 @@ end
     """
 
     net = make_net(pntd, :declaration_net)
-    decl = @inferred parse_declaration!(net, [node], pntd)
+    decl = @inferred parse_declaration!(net, [node])
     @test typeof(decl) <: Declaration
 
     # Examine 3 partition sorts
@@ -191,7 +191,7 @@ end
     """
 
     net = make_net(pntd, :arbitrarysort_net)
-    decl = parse_declaration!(net, [node], pntd)
+    decl = parse_declaration!(net, [node])
     @test typeof(decl) <: Declaration
     #@show arbitrarysort(net, :id1)
     @test name(arbitrarysort(net, :id1)) == "AGENT"
@@ -209,7 +209,7 @@ end
     </declaration>
     """
     net = make_net(pntd, :duplicate_id_net)
-    @test_throws DuplicateIDException parse_declaration!(net, [node], pntd)
+    @test_throws DuplicateIDException parse_declaration!(net, [node])
 end
 
 

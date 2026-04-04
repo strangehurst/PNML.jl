@@ -1,4 +1,4 @@
-using PNML, JET
+using PNML, Test, JET
 using OrderedCollections
 
 include("TestUtils.jl")
@@ -129,23 +129,17 @@ end
     netsets = PNML.PnmlNetKeys()
     #todo add net to parse_page!
     @test_throws(r"^MissingIDException: page",
-        PNML.Parser.parse_page!(net, page_idset(netsets), xml"<page></page>",
-            pntd))
+        PNML.Parser.parse_page!(net, page_idset(netsets), xml"<page></page>"))
     @test_throws(r"^MissingIDException: place",
-        PNML.Parser.parse_place(xml"<place></place>",
-            pntd, net))
+        PNML.Parser.parse_place(xml"<place></place>", net))
     @test_throws(r"^MissingIDException: transition",
-        PNML.Parser.parse_transition(xml"<transition></transition>",
-            pntd, net))
+        PNML.Parser.parse_transition(xml"<transition></transition>", net))
     @test_throws(r"^MissingIDException: arc",
-        PNML.Parser.parse_arc(xml"<arc></arc>",
-            pntd, net))
+        PNML.Parser.parse_arc(xml"<arc></arc>", net))
     @test_throws(r"^MissingIDException: referencePlace",
-        PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>",
-            pntd, net))
+        PNML.Parser.parse_refPlace(xml"<referencePlace></referencePlace>", net))
     @test_throws(r"^MissingIDException: referenceTransition",
-        PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>",
-            pntd, net))
+        PNML.Parser.parse_refTransition(xml"<referenceTransition></referenceTransition>", net))
 end
 
 # println("E 4")

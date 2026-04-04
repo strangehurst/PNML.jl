@@ -1,4 +1,5 @@
-using PNML, JET, XMLDict
+using PNML, Test,
+JET, XMLDict
 
 include("TestUtils.jl")
 using .TestUtils
@@ -24,8 +25,9 @@ function insc_xml(pntd)
     end
 end
 #! arc needs :place1 for adjacent place
-function pl_node(pntd, net, netdata, netsets)
-    node = if ishighlevel(pntd)
+"Parse place with marking, add to dict & id set"
+function pl_node(net, netdata, netsets)
+    node = if ishighlevel(net)
         xml"""
             <place id="place1">
             <name> <text>with text</text> </name>
@@ -50,15 +52,16 @@ function pl_node(pntd, net, netdata, netsets)
             </place>
             """
     end
-    pl = parse_place(node, pntd, net)
+    pl = parse_place(node, net)
     push!(place_idset(netsets), pid(pl))
     placedict(netdata)[pid(pl)] = pl
 end
 
 #! arc needs :transition1 for adjacent transition
-function tr_node(pntd, net, netdata, netsets)
+"Parse empty transition, add to dict & id set"
+function tr_node(net, netdata, netsets)
     node = xml"""<transition id="transition1" />"""
-    tr = parse_transition(node, pntd, net)
+    tr = parse_transition(node, net)
     push!(transition_idset(netsets), pid(tr))
     transitiondict(netdata)[pid(tr)] = tr
 end
@@ -67,13 +70,13 @@ println("\nARC\n")
 @testset "arc $pntd" for pntd in PnmlTypes.all_nettypes()
     net = make_net(pntd, :arc_net)
     netsets = PnmlNetKeys()
-    pl_node(pntd, net, netdata(net), netsets)
-    tr_node(pntd, net, netdata(net), netsets)
+    pl_node(net, netdata(net), netsets)
+    tr_node(net, netdata(net), netsets)
 
      node = xmlnode("""
       <arc source="transition1" target="place1" id="arc1">
         <name> <text>Some arc</text> </name>
-        $(insc_xml(pntd))
+        $(insc_xml(PNML.pntd(net)))
         <unknown id="unkn">
             <name> <text>unknown label</text> </name>
             <text>content text</text>
@@ -85,14 +88,14 @@ println("\nARC\n")
 
     a = @test_logs(match_mode=:any,
                   (:info, "add PnmlLabel :unknown to :arc1"),
-                  parse_arc(node, pntd, net))
+                  parse_arc(node, net))
     @test typeof(a) <: Arc
     @test pid(a) === :arc1
     @test name(a) == "Some arc"
     @test has_graphics(a)
     @test_call inscription(a)
     #@show a inscription(a)(NamedTuple())
-    if ishighlevel(pntd) # assumes storttype of dot
+    if ishighlevel(net) # assumes storttype of dot
         @test cardinality(inscription(a)(NamedTuple())) == 6
     else
         @test inscription(a)(NamedTuple()) == 6
@@ -103,12 +106,12 @@ end
 @testset "arc unknown label for $pntd" for pntd in PnmlTypes.all_nettypes()
     net = make_net(pntd, :arc_unknown)
     netsets = PnmlNetKeys()
-    pl_node(pntd, net, netdata(net), netsets)
-    tr_node(pntd, net, netdata(net), netsets)
+    pl_node(net, netdata(net), netsets)
+    tr_node(net, netdata(net), netsets)
     node = xmlnode("""
       <arc source="transition1" target="place1" id="arc1">
         <name> <text>Some arc</text> </name>
-        $insc_xml
+        $insc_xml(pntd(net))
         <unknown id="unkn">
             <name> <text>unknown label</text> </name>
             <text>content text</text>
@@ -119,5 +122,5 @@ end
     """)
    a = @test_logs(match_mode=:any,
                   (:info, "add PnmlLabel :unknown to :arc1"),
-                  parse_arc(node, pntd, net))
+                  parse_arc(node, net))
 end

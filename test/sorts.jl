@@ -1,4 +1,4 @@
-using PNML, JET, InteractiveUtils, Printf
+using PNML, Test, JET, InteractiveUtils, Printf
 
 include("TestUtils.jl")
 using .TestUtils
@@ -40,7 +40,7 @@ end
 
     IDRegistrys.reset_reg!(net.idregistry)
     @inferred fill_sort_tag!(net, :X2, NamedSort(:X2, "X2", PositiveSort(), net))
-    sortref = @inferred SortRef parse_sort(xml"<usersort declaration=\"X2\"/>", pntd; net)
+    sortref = @inferred SortRef parse_sort(xml"<usersort declaration=\"X2\"/>", net)
     ts = @inferred NamedSort to_sort(sortref, net)
     sort = @inferred sortdefinition(ts)
     @test sort === @inferred PositiveSort()
@@ -48,42 +48,42 @@ end
     @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<dot/>", pntd; net)
+    sortref = parse_sort(xml"<dot/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === DotSort() # not a built-in
     @test occursin(r"^DotSort", sprint(show, sort))
     @test eltype(sort) == Bool
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<bool/>", pntd; net)
+    sortref = parse_sort(xml"<bool/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === BoolSort()
     @test occursin(r"^BoolSort", sprint(show, sort))
     @test eltype(sort) == Bool
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<integer/>", pntd; net)
+    sortref = parse_sort(xml"<integer/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === IntegerSort()
     @test occursin(r"^IntegerSort", sprint(show, sort))
     @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<natural/>", pntd; net)
+    sortref = parse_sort(xml"<natural/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === NaturalSort()
     @test occursin(r"^NaturalSort", sprint(show, sort))
     @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<positive/>", pntd; net)
+    sortref = parse_sort(xml"<positive/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === PositiveSort()
     @test occursin(r"^PositiveSort", sprint(show, sort))
     @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<real/>", pntd; net)
+    sortref = parse_sort(xml"<real/>", net)
     sort = to_sort(sortref, net)::NamedSort |> sortdefinition
     @test sort === RealSort()
     @test occursin(r"RealSort", sprint(show, sort))
@@ -93,7 +93,7 @@ end
     sortref = parse_sort(xml"""<cyclicenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                            </cyclicenumeration>""", PnmlCoreNet(), :testenum1; net)
+                            </cyclicenumeration>""", net, :testenum1)
     sort = to_sort(sortref, net)::CyclicEnumerationSort
     @test occursin(r"^CyclicEnumerationSort", sprint(show, sort))
     @test eltype(sort) == Symbol
@@ -102,7 +102,7 @@ end
     sortref = parse_sort(xml"""<finiteenumeration>
                                 <feconstant id="FE0" name="0"/>
                                 <feconstant id="FE1" name="1"/>
-                        </finiteenumeration>""", pntd, :testenum2; net)
+                        </finiteenumeration>""", net, :testenum2)
 
     sort = to_sort(sortref, net)::FiniteEnumerationSort
     @test occursin(r"^FiniteEnumerationSort", sprint(show, sort))
@@ -110,7 +110,7 @@ end
     #@show @test eltype(sort) == Int64
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", pntd, :testfiniteintrange; net)
+    sortref = parse_sort(xml"<finiteintrange start=\"2\" end=\"3\"/>", net, :testfiniteintrange)
 
     sort = to_sort(sortref, net)::FiniteIntRangeSort
     @test occursin(r"^FiniteIntRangeSort", sprint(show, sort))
@@ -118,13 +118,13 @@ end
 
     # productsort is expected to be enclosed in a namedsort
     @test_logs(match_mode=:any, (:warn, r"^ISO 15909 Standard allows.*"),
-               parse_sort(xml"""<productsort/>""", pntd, :emptyproduct, "emptyproduct"; net))
+               parse_sort(xml"""<productsort/>""", net, :emptyproduct, "emptyproduct"))
 
     IDRegistrys.reset_reg!(net.idregistry)
     sortref = parse_sort(xml"""<productsort>
                                 <integer/>
                                 <integer/>
-                        </productsort>""", pntd, :redundant, "redundant"; net)
+                        </productsort>""", net, :redundant, "redundant")
     sort = to_sort(sortref, net)::ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
     @test eltype(sort) == Tuple{Int64,Int64} #! TODO XXX
@@ -135,7 +135,7 @@ end
     sortref= parse_sort(xml"""<productsort>
                         <usersort declaration="speed"/>
                         <usersort declaration="distance"/>
-                        </productsort>""", pntd, :someproduct, "someproduct"; net)
+                        </productsort>""", net, :someproduct, "someproduct")
     sort = to_sort(sortref, net)::ProductSort
     @test sort isa ProductSort
     @test occursin(r"^ProductSort", sprint(show, sort))
@@ -154,7 +154,7 @@ end
 
     sortref = parse_sort(xml"""<multisetsort>
                                 <usersort declaration="duck"/>
-                            </multisetsort>""", pntd; net)
+                            </multisetsort>""", net)
     sort = to_sort(sortref, net)#::MultisetSort
     fill_sort_tag!(net, :amultiset, sort) #~ test of method needed here
     @test occursin(r"^MultisetSort", sprint(show, sort))
@@ -172,7 +172,7 @@ end
     #^ String
 
     IDRegistrys.reset_reg!(net.idregistry)
-    sortref = parse_sort(xml"<string/>", pntd; net)
+    sortref = parse_sort(xml"<string/>", net)
     sort = to_sort(sortref, net)::StringSort
     @test sort isa StringSort
     @test sortelements(sort, net) == ("",)

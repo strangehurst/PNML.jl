@@ -1,4 +1,4 @@
-using PNML, JET
+using PNML, Test, JET
 include("TestUtils.jl")
 using .TestUtils, NamedTupleTools, OrderedCollections
 using EzXML: EzXML
@@ -30,7 +30,7 @@ using XMLDict: XMLDict
 
     # Parse ignoring unexpected child
     mark = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
-                parse_initialMarking(node, placetype, pntd; net, parentid=:xxx)::Marking)
+                parse_initialMarking(node, placetype, net; parentid=:xxx)::Marking)
     #@test typeof(value(mark)) <: Union{Int,Float64}
     @test mark()::Union{Int,Float64} == 123
 
@@ -79,7 +79,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("XXX", NamedSortRef(:dot), net)
 
-        mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
+        mark = parse_hlinitialMarking(node, placetype, net; parentid=:bogusid)
         #@show mark
         @test mark isa Marking
 
@@ -141,7 +141,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         # @show placetype = SortType("XXX", ArbitrarySortRef(:foo), ctx.ddict)
 
-        # mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
+        # mark = parse_hlinitialMarking(node, placetype, net; parentid=:bogusid)
     end
 
     # add two multisets: another way to express 3 + 2
@@ -171,7 +171,7 @@ end
         """
         net = make_net(pntd, :dot_dot)
         placetype = SortType("dot sorttype", NamedSortRef(:dot), net)
-        mark = Parser.parse_hlinitialMarking(node, placetype, pntd; net, parentid=:tmp)
+        mark = Parser.parse_hlinitialMarking(node, placetype, net; parentid=:tmp)
         #TODO add tests
     end
     # The constant eight.
@@ -191,7 +191,7 @@ end
         """
         net = make_net(pntd, :dot_1)
         placetype = SortType("positive sorttype", NamedSortRef(:positive), net)
-        mark = parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
+        mark = parse_hlinitialMarking(node, placetype, net; parentid=:xxx)
         val = eval(toexpr(term(mark), NamedTuple(), net))::PnmlMultiset
         @test multiplicity(val, NumberConstant(8, NamedSortRef(:positive))()) == 1
         @test NumberConstant(8, NamedSortRef(:positive))() in multiset(val)
@@ -205,7 +205,7 @@ end
         """
         net = make_net(pntd, :empty_hlinitialMarking)
         placetype = SortType("testdot", NamedSortRef(:dot), net)
-        @test_throws Exception parse_hlinitialMarking(node, placetype, pntd; net, parentid=:xxx)
+        @test_throws Exception parse_hlinitialMarking(node, placetype, net; parentid=:xxx)
     end
 
     #println()
@@ -237,7 +237,7 @@ end
         # Marking is a multiset in high-level nets with sort matching placetype, :dot.
         placetype = SortType("FIFO", NamedSortRef(:dot), net)
 
-        mark = parse_fifoinitialMarking(node, placetype, pntd; net, parentid=:bogusid)
+        mark = parse_fifoinitialMarking(node, placetype, net; parentid=:bogusid)
         #@show mark
         @test mark isa Marking
 

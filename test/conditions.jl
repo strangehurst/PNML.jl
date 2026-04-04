@@ -42,7 +42,7 @@ using .TestUtils
 
 #         cond = @test_logs(match_mode=:all,
 #                 (:warn, "ignoring unexpected child of <condition>: 'unknown'"),
-#                 PNML.parse_condition(node, pntd)
+#                 PNML.parse_condition(node, net)
 #         @show cond
 #         @test text(cond) == "pt==cts||pt==ack"
 #         # @test value(cond) isa PNML.Operator

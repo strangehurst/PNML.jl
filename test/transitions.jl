@@ -1,4 +1,4 @@
-using PNML, JET, XMLDict
+using PNML, Test, JET, XMLDict
 
 include("TestUtils.jl")
 using .TestUtils
@@ -18,7 +18,7 @@ using .TestUtils
     """
     net = make_net(pntd, :transition_net)
 
-    trans = @inferred Transition parse_transition(node, PnmlCoreNet(), net)
+    trans = @inferred Transition parse_transition(node, net)
     @test trans isa Transition
     @test pid(trans) === :transition1
     @test name(trans) == "Some transition"
@@ -30,13 +30,13 @@ using .TestUtils
     @test isempty(varsubs(trans))
 
     node = xml"""<transition id ="t1"> <condition><text>test w/o structure</text></condition></transition>"""
-    @test_throws PNML.MalformedException parse_transition(node, pntd, net)
+    @test_throws PNML.MalformedException parse_transition(node, net)
 
     node = xml"""<transition id ="t2"> <condition/> </transition>"""
-    @test_throws Exception parse_transition(node, pntd, net)
+    @test_throws Exception parse_transition(node, net)
 
     node = xml"""<transition id ="t3"> <condition><structure/></condition> </transition>"""
-    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd, net)
+    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, net)
 
     node = xml"""<transition id ="t4">
         <condition>
@@ -44,7 +44,7 @@ using .TestUtils
             <structure> true </structure>
         </condition>
     </transition>"""
-    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, pntd, net)
+    @test_throws "ArgumentError: missing condition term in <structure>" parse_transition(node, net)
 
     node = xml"""<transition id ="t5">
         <condition>
@@ -52,7 +52,7 @@ using .TestUtils
             <structure> <booleanconstant value="true"/> </structure>
         </condition>
     </transition>"""
-    t = parse_transition(node, pntd, net)
+    t = parse_transition(node, net)
     @test t isa Transition
     @test condition(t)() == true
 end
@@ -70,7 +70,7 @@ end
     net = make_net(pntd, :tran_unknown_label)
 
     trans = @test_logs((:info, "add PnmlLabel :somelabel2 to :transition1"),
-                parse_transition(node, PnmlCoreNet(), net)::Transition)
+                parse_transition(node, net)::Transition)
     @test pid(trans) === :transition1
     @test elements(labels(trans)[:somelabel2])[:c] == "value"
     @test get_label(trans, :somelabel2) !== nothing
@@ -92,7 +92,7 @@ end
     """
     net = make_net(pntd, :refrans_net)
 
-    rtrans = parse_refTransition(node, pntd, net)::RefTransition
+    rtrans = parse_refTransition(node, net)::RefTransition
     @test pid(rtrans) === :rt1
     @test PNML.refid(rtrans) === :t1
     @test PNML.has_graphics(rtrans) && startswith(repr(PNML.graphics(rtrans)), "Graphics")
@@ -110,7 +110,7 @@ end
     net = make_net(pntd, :refrans_unkn_net)
 
     trans = @test_logs((:info, "add PnmlLabel :somelabel2 to :rt1"),
-            parse_refTransition(node, pntd, net)::RefTransition)
+            parse_refTransition(node, net)::RefTransition)
     @test pid(trans) === :rt1
     @test PNML.refid(trans) === :t1
     @test PNML.has_graphics(trans) && startswith(repr(PNML.graphics(trans)), "Graphics")

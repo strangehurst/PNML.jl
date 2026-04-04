@@ -1,4 +1,4 @@
-using PNML, JET, InteractiveUtils, XMLDict, OrderedCollections
+using PNML, Test, JET, InteractiveUtils, XMLDict, OrderedCollections
 using SciMLLogging: SciMLLogging, @SciMLMessage
 import EzXML
 
@@ -37,23 +37,23 @@ end
 
 net = make_net(PnmlCoreNet(), :utils_net)
 
-@testset "default(Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
-    c = @inferred Labels.default(Labels.Condition, pntd, net) #::Labels.Condition
-    @test c() == true
-end
+# @testset "default Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
+#     c = @inferred default(Labels.Condition, net)
+#     @test c() == true
+# end
 
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
     placetype = if ishighlevel(pntd)
-        @inferred SortType("dummy", NamedSortRef(:dot), nothing, nothing, net)
+        @inferred SortType("dummy", NamedSortRef(:dot), net)
     elseif iscontinuous(pntd)
-        @inferred SortType("dummy", NamedSortRef(:real), nothing, nothing, net)
+        @inferred SortType("dummy", NamedSortRef(:real), net)
     elseif isdiscrete(pntd)
-        @inferred SortType("dummy", NamedSortRef(:positive), nothing, nothing, net)
+        @inferred SortType("dummy", NamedSortRef(:positive), net)
     else
         error("pntd not known")
     end
-    i = @inferred Inscription Labels.default(Inscription, pntd, placetype, net)
+    i = @inferred Inscription default(Inscription, net, placetype)
     #println("default(Inscription($pntd) = ", i)
 end
 

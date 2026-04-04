@@ -36,11 +36,6 @@ term(c::Condition) = c.term #todo! pnml variables
 
 variables(c::Condition) = c.vars
 
-function default(::Type{<:Condition}, ::APNTD, net::APN)
-    #@info "default Condition"
-    Condition(BooleanEx(BooleanConstant(true)), net)
-end
-
 """
     (c::Condition)(args) -> Bool
 

@@ -20,7 +20,7 @@ Multisets.set_key_value_show()
     parse_hlinitialMarking, parse_hlinscription, parse_fifoinitialMarking
 @reexport using PNML.Parser: to_sort, anyelement, xmldict
 @reexport using PNML.Parser
-@reexport using PNML.Parser: firstchild, allchildren
+@reexport using PNML.Parser: firstchild, allchildren, default
 @reexport using PNML.Declarations
 @reexport using PNML.IDRegistrys
 @reexport using PNML.PnmlTypes

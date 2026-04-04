@@ -117,6 +117,7 @@ end
 
 include("PnmlTypes.jl")
 using .PnmlTypes
+import .PnmlTypes: isdiscrete, iscontinuous, ishighlevel
 
 include("IDRegistrys.jl")
 using .IDRegistrys

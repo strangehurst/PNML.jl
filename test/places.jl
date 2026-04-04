@@ -1,4 +1,4 @@
-using PNML, JET, XMLDict
+using PNML, Test, JET, XMLDict
 
 include("TestUtils.jl")
 using .TestUtils
@@ -21,12 +21,12 @@ using .TestUtils
     """
     net = make_net(pntd, :pt_place_net)
 
-    placetype = SortType("XXX", NamedSortRef(:natural), nothing, nothing, net)
+    placetype = SortType("XXX", NamedSortRef(:natural), net)
 
-    place  = parse_place(node, pntd, net)::Place
+    place  = parse_place(node, net)::Place
     # pntd isa PnmlCoreNet &&
-    #     @test_opt target_modules=t_modules broken=false parse_place(node, pntd, net)
-    @test_call target_modules=t_modules parse_place(node, pntd, net)
+    #     @test_opt target_modules=t_modules broken=false parse_place(node, net)
+    @test_call target_modules=t_modules parse_place(node, net)
     @test @inferred(pid(place)) === :place1
     @test @inferred(name(place)) == "with text"
     @test_call initial_marking(place)
@@ -54,8 +54,8 @@ end
     """
     net = make_net(pntd, :hl_place_net)
 
-    place = parse_place(node, pntd, net)::Place
-    #!@test_call target_modules=t_modules parse_place(node, pntd, net)
+    place = parse_place(node, net)::Place
+    #!@test_call target_modules=t_modules parse_place(node, net)
 
     @test @inferred(pid(place)) === :place1
     @test @inferred(name(place)) == "with text"
@@ -86,8 +86,8 @@ end
     """
     net = make_net(pntd, :place_unknown_label)
     place = @test_logs((:info, "add PnmlLabel :somelabel1 to :place1"),
-                   (:info, "add PnmlLabel :somelabel2 to :place1"),
-                    parse_place(node, pntd, net)::Place)
+                       (:info, "add PnmlLabel :somelabel2 to :place1"),
+                       parse_place(node, net)::Place)
     @test pid(place) === :place1
     @test name(place) == ""
     @test PNML.get_label(place, :nosuchlabel) === nothing
@@ -111,7 +111,7 @@ end
     </referencePlace>"""
 
     net = make_net(pntd, :refplace_net)
-    place = parse_refPlace(node, pntd, net)::RefPlace
+    place = parse_refPlace(node, net)::RefPlace
     @test pid(place) === :rp1
     @test PNML.refid(place) === :p1
     @test PNML.get_label(place, :nosuchlabel) === nothing
@@ -130,7 +130,7 @@ end
 
     net = make_net(pntd, :refplace_extra_net)
     place = @test_logs((:info, "add PnmlLabel :somelabel2 to :rp1"),
-            parse_refPlace(node, pntd, net)::RefPlace)
+            parse_refPlace(node, net)::RefPlace)
     @test pid(place) === :rp1
     @test PNML.refid(place) === :p1
     @test elements(labels(place)[:somelabel2])[:c] == "value"

@@ -1,4 +1,4 @@
-using PNML, JET
+using PNML, Test, JET
 using OrderedCollections
 
 include("TestUtils.jl")
@@ -80,7 +80,7 @@ import XMLDict
     println("\n###### parse tool $(s.tool) $(s.version)")
     net = make_net(PnmlCoreNet(), :specific_net)
     # println(s.str)
-    tooli = parse_toolspecific(xmlnode(s.str), PnmlCoreNet(); net)
+    tooli = parse_toolspecific(xmlnode(s.str), net)
 
     @test isa(tooli, ToolInfo)
     @test name(tooli) == s.tool
@@ -111,7 +111,7 @@ println()
     n::XMLNode = xmlnode(s)
     net = make_net(PnmlCoreNet(), :combined_specific_net)
 
-    combinedplace = parse_place(n, PnmlCoreNet(), net)
+    combinedplace = parse_place(n, net)
 
     @test_call toolinfos(combinedplace)
     placetools = toolinfos(combinedplace)
@@ -143,15 +143,15 @@ end
     net = make_net(PnmlCoreNet(), :ftool_specific_errors)
 
     t1 = """<toolspecific version="" tool="toolname" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t1), PnmlCoreNet(); net)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t1), net)
     # errors = String[]
     # @show PNML.verify!(errors, tool1, true, ctx.idregistry)
 
     t2 = """<toolspecific version="1.0" tool="" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t2), PnmlCoreNet(); net)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t2), net)
 
     t3 = """<toolspecific version="" tool="" />"""
-    @test_throws ErrorException parse_toolspecific(xmlnode(t3), PnmlCoreNet(); net)
+    @test_throws ErrorException parse_toolspecific(xmlnode(t3), net)
 
 #    @test_throws  "ToolInfo must have non-empty version"
 #    @test_throws  "ToolInfo must have non-empty name"

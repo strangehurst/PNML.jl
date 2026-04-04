@@ -10,7 +10,6 @@ See [`PnmlNet`](@ref)
 """
 @kwdef mutable struct Page{PNTD <: APNTD, N <: APN} <: AbstractPnmlObject
     net::N
-    pntd::PNTD
     id::Symbol
     namelabel::Maybe{Name} = nothing
     graphics::Maybe{Graphics} = nothing

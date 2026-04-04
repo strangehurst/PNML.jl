@@ -264,22 +264,22 @@ end
 
 "Tokens represented by integers."
 function isdiscrete end
-isdiscrete(pntd::APNTD) = false
-isdiscrete(pntd::AbstractPnmlCore) = true
+isdiscrete(::APNTD) = false
+isdiscrete(::AbstractPnmlCore) = true
 isdiscrete(::Type{<:APNTD}) = false
 isdiscrete(::Type{<:AbstractPnmlCore}) = true
 
 "Tokens represented by floating point."
 function iscontinuous end
-iscontinuous(pntd::APNTD) = false
-iscontinuous(pntd::AbstractContinuousNet) = true
+iscontinuous(::APNTD) = false
+iscontinuous(::AbstractContinuousNet) = true
 iscontinuous(::Type{<:APNTD}) = false
 iscontinuous(::Type{<:AbstractContinuousNet}) = true
 
 "Tokens represented by multiset (aka bag)."
 function ishighlevel end
-ishighlevel(pntd::APNTD) = false
-ishighlevel(pntd::AbstractHLCore) = true
+ishighlevel(::APNTD) = false
+ishighlevel(::AbstractHLCore) = true
 ishighlevel(::Type{<:APNTD}) = false
 ishighlevel(::Type{<:AbstractHLCore}) = true
 

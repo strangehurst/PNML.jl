@@ -1,4 +1,4 @@
-using PNML, JET, NamedTupleTools
+using PNML, Test, JET, NamedTupleTools
 using EzXML: EzXML
 using XMLDict: XMLDict
 
@@ -26,7 +26,7 @@ println("DELAY")
     </transition>"""
     #! This has Float64 and Int
     trans = @test_logs((:info, "add PnmlLabel :delay to :t6"),
-        parse_transition(node, pntd, net)::Transition)
+        parse_transition(node, net)::Transition)
 
     del = PNML.get_label(trans, :delay)
     @test PNML.get_label(trans, :delay) == del
@@ -47,7 +47,7 @@ println("DELAY")
         </delay>
     </transition>"""
     trans = @test_logs((:info, "add PnmlLabel :delay to :t7"),
-        parse_transition(node, pntd, net)::Transition)
+        parse_transition(node, net)::Transition)
     del = PNML.get_label(trans, :delay)
     @test PNML.get_label(trans, :delay) == del
     @test elements(del)["interval"][:closure] == "closed-open"
@@ -63,7 +63,7 @@ println("DELAY")
         </delay>
     </transition>"""
     trans = @test_logs((:info, "add PnmlLabel :delay to :t8"),
-        parse_transition(node, pntd, net)::Transition)
+        parse_transition(node, net)::Transition)
     del = PNML.get_label(trans, :delay)
     @test PNML.get_label(trans, :delay) == del
     @test elements(del)["interval"][:closure] == "open"
