@@ -70,16 +70,16 @@ DocTestSetup = quote
 ```
 
 ```jldoctest
-julia> c = default(Condition, PnmlCoreNet(), net)
+julia> c = default(Condition, net)
 Condition("", BooleanEx(BooleanConstant(true)))
 
 julia> c()
 true
 
-julia> c = default(Condition, PnmlCoreNet(), net)
+julia> c = default(Condition, net)
 Condition("", BooleanEx(BooleanConstant(true)))
 
-julia> c = default(Condition, PnmlCoreNet(), net)
+julia> c = default(Condition, net)
 Condition("", BooleanEx(BooleanConstant(true)))
 ```
 
