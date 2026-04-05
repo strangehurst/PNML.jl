@@ -58,22 +58,22 @@ this is a sort, not a term, so no variables or operators.
 
 Ground terms have no variables and can be evaluated outside of a transition firing rule.
 """
-struct SortType{N <: APN} <: Annotation # Label not limited to high-level dialects.
-    text::Maybe{String} # Supposed to be for human consumption.
-    sort_::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
-    graphics::Maybe{Graphics}
-    toolspecinfos::Maybe{Vector{ToolInfo}}
+@kwdef struct SortType{N <: APN} <: Annotation # Label not limited to high-level dialects.
+    text::Maybe{String} = nothing # Supposed to be for human consumption.
+    sort::SortRef # NOT PartitionSort.  #! ePNK uses inline sorts.
+    graphics::Maybe{Graphics} = nothing
+    toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
     net::N
 end
 
 # >The label Type of a place defines the type by referring to some sort;
 # > by the fixed interpretation of built-in sorts, this sort defines the type of the place.
 
-SortType(sort::SortRef, net) = SortType(nothing, sort, nothing, nothing, net)
-SortType(s::AbstractString, sort::SortRef, net) = SortType(s, sort, nothing, nothing, net)
+SortType(sort::SortRef, net) = SortType(; sort, net)
+SortType(s::AbstractString, sort::SortRef, net) = SortType(; text=s, sort, net)
 
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
-sortref(t::SortType) = t.sort_
+sortref(t::SortType) = t.sort
 refid(t::SortType) = refid(sortref(t))::Symbol
 sortof(t::SortType) = sortdefinition(namedsort(t.net, sortref(t)))
 sortelements(t::SortType, net::APN) = sortelements(sortof(t), net)

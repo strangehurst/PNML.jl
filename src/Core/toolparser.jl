@@ -6,7 +6,7 @@ $(TYPEDFIELDS)
 Holds a parser callable for a `<toolspecific>` tag's well-formed contents.
 
 Will be in an iteratable collection that maps tool name & version to a parser callable.
-See `toolspecific_content_fallback(node, pntd)`.
+See `toolspecific_content_fallback.
 """
 @auto_hash_equals struct ToolParser{T}
     toolname::String
