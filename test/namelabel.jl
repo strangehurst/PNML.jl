@@ -1,4 +1,4 @@
-
+using Test
 include("TestUtils.jl")
 using .TestUtils
 using EzXML: EzXML
