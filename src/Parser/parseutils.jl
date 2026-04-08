@@ -9,7 +9,7 @@
 # TOOLINFO
 #---------------------------------------------------------------------
 """
-    add_toolinfo!(collection, node, pntd, parse_contex) -> collection
+    add_toolinfo!(collection, node, net) -> collection
 
 Parse and add [`ToolInfo`](@ref) to `infos` collection, return `infos`.
 
