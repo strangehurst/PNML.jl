@@ -63,7 +63,6 @@ end
 
 function Base.show(io::IO, pnd::PnmlNetData)
     println(io, nameof(typeof(pnd)), "(",)
-    #!show(io, pnd.pntd); println(io, ", ")
     io = inc_indent(io)
     for (tag, dict) in (("places", placedict),
                   ("transitions", transitiondict),

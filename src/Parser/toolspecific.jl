@@ -5,6 +5,7 @@ $(TYPEDSIGNATURES)
 Return [`ToolInfo`](@ref) with tool & version attributes and content.
 
 The content can be one or more well-formed xml elements.
+Parsed by `net.toolparser[tool][version]` or [`toolspecific_content_fallback`](@ref)
 """
 function parse_toolspecific(node, net::APN)
     check_nodename(node, "toolspecific")
@@ -15,21 +16,24 @@ function parse_toolspecific(node, net::APN)
     isempty(version) && error("<toolspecific> version attribute cannot be empty string")
 
     # Find parser for tool, version.
-    tool_parser = if haskey(net.toolparser, tool=>version)
-        net.toolparser[tool=>version]
+    tool_parser = if haskey(net.toolparser, tool) &&
+                     haskey(net.toolparser[tool], version)
+        net.toolparser[tool][version]
     else
         toolspecific_content_fallback
     end
     #@show tool, version, tool_parser
-    content = tool_parser(node, pntd(net)) # Run ToolParser callable.
+    content = tool_parser(node, net) # Run ToolParser callable.
     return Labels.ToolInfo(tool, version, content, net)
 end
 
 """
     toolspecific_content_fallback(node::XMLNode, net::APN) -> AnyElement
 Content of a `<toolspecific> `node` as parsed by `xmldict`.
+The `net` argument is present to conform to the _toolparser interface_.
+Some users may do net-specific parsing.
 """
-function toolspecific_content_fallback(node::XMLNode, _pntd::APNTD)
+function toolspecific_content_fallback(node::XMLNode, net::APN)
     anyelement(Symbol(EzXML.nodename(node)), node)
 end
 
@@ -39,8 +43,8 @@ end
 
 Parse `ToolInfo` content that is expected to be `<tokengraphics>`.
 """
-function tokengraphics_content(node::XMLNode, pntd::APNTD)
-    parse_tokengraphics(EzXML.firstelement(node), pntd)
+function tokengraphics_content(node::XMLNode, net::APN)
+    parse_tokengraphics(EzXML.firstelement(node), pntd(net))
 end
 
 """
@@ -69,6 +73,7 @@ end
 #-------------------------------------------------------------------
 """
     nupn_content(node::XMLNode, pntd::APNTD) -> NupnTool
+    nupn_content(node::XMLNode, net::APN) -> NupnTool
 
 Parse `ToolInfo` content. Example:
 ```
@@ -83,6 +88,8 @@ Parse `ToolInfo` content. Example:
     </toolspecific>
 ```
 """
+function nupn_content end
+nupn_content(node::XMLNode, net::APN) = nupn_content(node, pntd(net))
 function nupn_content(node::XMLNode, pntd::APNTD)
     nupn = anyelement(Symbol(EzXML.nodename(node)), node)
     #@show nupn

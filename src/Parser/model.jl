@@ -63,6 +63,32 @@ function pnmlmodel(node::XMLNode; kwargs...)
 end
 
 """
+    plugins(kwargs, dict::AbstractDict, plugintag=:lp)
+
+If `kwargs[plugintag]`` has a collection of tuples with
+the first element being the tag for the last entry the callable.
+Intermediate elements are dictionary keys for nested dictionaries,
+Place them in `dict`.
+"""
+function plugins(kwargs, dict::AbstractDict, plugintag=:lp)
+    if haskey(kwargs, tag) && !isnothing(kwargs[plugintag]) && !isempty(kwargs[tag])
+        @warn "add $(length(kwargs[plugintag])) $tag plugin(s)"
+        for plugin in kwargs[plugintag]
+            #! todo sanity check labelparser
+            @show plugin #! bring-up
+            if length(plugin) == 2
+                dict[plugin[1]] = last(plugin)
+            elseif length(plugin) == 3
+                dict[plugin[1]][plugin[2]] = last(plugin)
+            elseif length(plugin) == 4
+                dict[plugin[1]][plugin[2]] = last(plugin)
+            end
+        end
+        @show dict #! bring-up
+    end
+end
+
+"""
     parse_net(node::XMLNode[; options...]) -> PnmlNet
 
 [`PnmlNet`](@ref) created from an `<net>` `XMLNode`.
@@ -91,42 +117,21 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
                     )
-    # 1st fill built-in label & toolinfo parser plugins, built-in sorts, enabled filters.
+    #^ Label Parsers
     fill_builtin_labelparsers!(net.labelparser)
-    @assert !isempty(net.labelparser)
-    if haskey(kwargs, :lp) && !isnothing(kwargs[:lp]) && !isempty(kwargs[:lp])
-        @warn "add $(length(kwargs[:lp])) labelparser(s)"
-        foreach(kwargs[:lp]) do lparser
-            #! todo sanity check labelparser
-            @show lparser #! bring-up
-            net.labelparser[lparser.tag] = lparser.func
-        end
-        @show net.labelparser #! bring-up
-    end
+    @assert !isempty(net.labelparser) "There are expected to be built-in label parsers."
+    plugins(kwargs, net.labelparser, :lp)
 
+    #^ Tool Parsers
     fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
-    if haskey(kwargs, :tp) && !isnothing(kwargs[:tp]) && !isempty(kwargs[:tp])
-        @warn "add $(length(kwargs[:tp])) toolparser(s)"
-        foreach(kwargs[:tp]) do tparser
-            #! todo sanity check toolparser
-            @show tparser #! bring-up
-            fill_toolparsers!(net.toolparser, tparser)
-        end
-        @show net.toolparser #! bring-up
-    end
+    plugins(kwargs, net.toolparser, :tp)
 
+    #^ Sorts
     fill_builtin_sorts!(net)
 
-    fill_enabled_filters!(net)
-    if haskey(kwargs, :ef) && !isnothing(kwargs[:ef]) && !isempty(kwargs[:ef])
-        @warn "add $(length(kwargs[:ef])) enabled filter(s)"
-        foreach(kwargs[:ef]) do (tag,efilter)
-            #! todo sanity check
-            @show efilter #! bring-up
-            net.enabled_filters[tag] = efilter
-        end
-        # @show net.enabled_filters #! bring-up
-    end
+    #^ Enabled Filters
+    fill_enabled_filters!(net.enabled_filters) # builtin
+    plugins(kwargs, net.enabled_filters, :ef)
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.

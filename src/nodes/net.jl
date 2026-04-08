@@ -42,7 +42,9 @@ $(FIELDS)
         Collection that associates a tool name & version with a callable parser.
         The parser turns `<toolspecific name="" version="">` into `ToolInfo` objects.
     """
-    toolparser::LittleDict{Pair{String,String}, Any} = LittleDict{Pair{String,String}, Any}()
+    toolparser::LittleDict{String, LittleDict{String, Any}} =
+                LittleDict{String, LittleDict{String, Any}}()
+
     # Collection of filters used by enabling rule.
     enabled_filters::LittleDict{Symbol, Any} =  LittleDict{Symbol, Any}()
 end

@@ -3,15 +3,19 @@
 
 Fill a dictionary with default enabled filters. Part of the enabling rule.
 Based on ISO 15909-1:2019, ISO 15909-3:2021.
+
 """
-function fill_enabled_filters!(net::APN)
+function fill_enabled_filters! end
+fill_enabled_filters!(net::APN) = fill_enabled_filters!(net.enabled_filters)
+function fill_enabled_filters!(dict::AbstractDict)
     #println("fill_enabled_filters")
-    net.enabled_filters[:inhibit] = enable_filter_inhibit
-    net.enabled_filters[:reset] = enable_filter_reset
-    net.enabled_filters[:read] = enable_filter_read
-    net.enabled_filters[:capacity] = enable_filter_capacity
-    net.enabled_filters[:priority] =  enable_filter_priority
-    net.enabled_filters[:tpn] = enable_filter_tpn
+    dict[:inhibit] = enable_filter_inhibit
+    dict[:reset] = enable_filter_reset
+    dict[:read] = enable_filter_read
+    dict[:capacity] = enable_filter_capacity
+    dict[:priority] =  enable_filter_priority
+    dict[:priority] =  enable_filter_priority
+    dict[:tpn] = enable_filter_tpn
 end
 
 
@@ -107,20 +111,6 @@ function fill_builtin_labelparsers!(labelparser::AbstractDict)
     labelparser[:rate]     = Parser.parse_rate
     labelparser[:priority] = Parser.parse_priority
 
-    # __insert_lp!(labelparser, :initialMarking,   Parser.parse_initialMarking)
-    # __insert_lp!(labelparser, :hlinitialMarking, Parser.parse_hlinitialMarking)
-    # __insert_lp!(labelparser, :inscription,      Parser.parse_inscription)
-    # __insert_lp!(labelparser, :hlinscription,    Parser.parse_hlinscription)
-    # __insert_lp!(labelparser, :condition,        Parser.parse_condition)
-    # __insert_lp!(labelparser, :graphics,         Parser.parse_graphics)
-    # __insert_lp!(labelparser, :name,             Parser.parse_name)
-    # __insert_lp!(labelparser, :type,             Parser.parse_sorttype)
-
-    # # Extensions to ISO 15909-2:2011, some mentioned in ISO 15909-1:2019, ISO 15909-3:2021.
-    # __insert_lp!(labelparser, :fifoinitialMarking, Parser.parse_fifoinitialMarking)
-    # __insert_lp!(labelparser, :arctype,  Parser.parse_arctype)
-    # __insert_lp!(labelparser, :rate,     Parser.parse_rate)
-    # __insert_lp!(labelparser, :priority, Parser.parse_priority)
    return nothing
 end
 function __insert_lp!(labelparser, tag, parser)
@@ -130,30 +120,21 @@ end
 
 
 """
-    fill_builtin_toolparsers!(net::APN) -> Nothing
+fill_builtin_toolparsers!(net)
     fill_builtin_toolparsers!(toolparsers::AbstractDict) -> Nothing
 
 Fill context with the base built-in tool parsers.
 """
+function fill_builtin_toolparsers! end
+
 fill_builtin_toolparsers!(net::APN) = fill_builtin_toolparsers!(net.toolparser)
 
 function fill_builtin_toolparsers!(toolparsers::AbstractDict)
-    for toolparser in (
-            ToolParser("org.pnml.tool", "1.0", Parser.tokengraphics_content),
-            ToolParser("nupn", "1.1", Parser.nupn_content),
+    for plugin in (
+            ("org.pnml.tool", "1.0", Parser.tokengraphics_content),
+            ("nupn", "1.1", Parser.nupn_content),
         )
-        #@show toolparser
-        fill_toolparsers!(toolparsers, toolparser)
+        toolparsers[plugin[1]] = LittleDict(plugin[2] => last(plugin))
     end
     return nothing
-end
-
-"Add parser to dictionary"
-function fill_toolparsers!(toolparsers::AbstractDict, tparser::ToolParser)
-    if haskey(toolparsers, name(tparser)=>version(tparser))
-        @warn "ignoring repeated toolparser" name(tparser)=>version(tparser) tparser
-    else
-        toolparsers[name(tparser)=>version(tparser)] = func(tparser)
-    end
-    return toolparsers
 end
