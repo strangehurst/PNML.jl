@@ -147,9 +147,7 @@ function validate_toolinfos(toolinfos)
 end
 function list_toolinfos(toolinfos)
     isnothing(toolinfos) && return true
-    if isnothing(toolinfos)
-        for tool in toolinfos
-            @show tool
-        end
+    for tool in toolinfos
+        @show tool
     end
-end
+  end
