@@ -349,23 +349,23 @@ end
 #! Followed by parsing all declarations where `parse_sort is used`.
 #! Then the net where terms use sorts.
 
-function parse_sort(::Val{:bool}, _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:bool}, _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:bool)
 end
 
-function parse_sort(::Val{:integer}, _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:integer}, _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:integer)
 end
 
-function parse_sort(::Val{:natural}, _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:natural}, _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:natural)
 end
 
-function parse_sort(::Val{:positive}, _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:positive}, _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:positive)
 end
 
-function parse_sort(::Val{:real},  _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:real},  _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:real)
 end
 
@@ -377,7 +377,7 @@ end
 
 # NB: ePNK examples uses some inlined sorts
 
-function parse_sort(::Val{:dot}, _node::XMLNode, net::APN, _sortid, _u2)
+function parse_sort(::Val{:dot}, _node::XMLNode, _net::APN, _sortid, _u2)
     NamedSortRef(:dot) # The user overrides in a declaration.
 end
 
@@ -416,7 +416,7 @@ function parse_sort(::Val{:finiteenumeration}, node::XMLNode, net::APN, parentid
     return make_sortref(net, namedsorts, fesort, "finiteenumeration", parentid, name)
 end
 
-function parse_sort(::Val{:finiteintrange}, node::XMLNode, net::APN, parentid, name)
+function parse_sort(::Val{:finiteintrange}, node::XMLNode, net::APN, _parentid, name)
     check_nodename(node, "finiteintrange")
 
     startstr = attribute(node, "start")
@@ -491,6 +491,7 @@ function parse_sort(::Val{:list}, node::XMLNode, net::APN, parentid, name)
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, net::APN, parentid, name)
+    check_nodename(node, "string")
     ss = StringSort()
     sref = make_sortref(net, namedsorts, ss, "string", parentid, name)
     return sref
