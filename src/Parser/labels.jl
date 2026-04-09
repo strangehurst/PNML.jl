@@ -214,9 +214,8 @@ end
 $(TYPEDSIGNATURES)
 Ignore the source & target symbols.
 """
-function parse_inscription(node::XMLNode, source::Symbol, target::Symbol, net::APN;
-                            parentid::Symbol)
-    @assert !(pntd(net) isa AbstractHLCore)
+function parse_inscription(node::XMLNode, _source::Symbol, _target::Symbol, net::APN; parentid::Symbol)
+    @assert !(pntd(net) isa AbstractHLCore) "inscription unexpected on pntd $(pntd(net)): $parentid"
     check_nodename(node, "inscription")
     value = nothing
     graphics::Maybe{Graphics} = nothing
