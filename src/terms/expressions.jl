@@ -4,7 +4,7 @@ Expressions Module
 module Expressions
 
 import Metatheory
-import PNML: PNML, basis, sortref, sortof, sortelements, sortdefinition
+import PNML: PNML, basis, sortref
 import Multisets: Multiset
 
 using Base: Fix2
@@ -71,7 +71,7 @@ function toexpr(t::Tuple, vsub::NamedTuple, _net)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
-function toexpr(t::Multiset, vsub::NamedTuple, n_et)
+function toexpr(t::Multiset, vsub::NamedTuple, _net)
     isempty(vsub) || @error "variable substitutions NOT Empty: " t vsub
     return t
 end
@@ -111,7 +111,7 @@ variables: store in dictionary named "variables", key is PNML ID: maketerm(Expr,
 
 ===================================#
 #! From SymbolicUtils.jl NOTE: this is NOT TermInterface (a.k.a. PnmlExpr)
-recurse_expr(ex::Expr, varsub::NamedTuple, net) = Expr(ex.head, recurse_expr.(ex.args, (varsub,))...)
+recurse_expr(ex::Expr, varsub::NamedTuple, _net) = Expr(ex.head, recurse_expr.(ex.args, (varsub,))...)
 recurse_expr(ex::Any, varsub::NamedTuple, net) = toexpr(ex, varsub, net)
 
 #recurse_expr(ex::PnmlExpr, sub) = Expr(ex.head, recurse_expr.(ex.args, (sub,))...)
@@ -306,11 +306,11 @@ basis(::DotConstantEx) = UserSortRef(:dot)
 sortref(::DotConstantEx) = UserSortRef(:dot)
 expr_sortref(x::DotConstantEx, _net) = basis(x)::SortRef
 
-function toexpr(b::DotConstantEx, _var::NamedTuple, _net)
+function toexpr(::DotConstantEx, _var::NamedTuple, _net)
     QuoteNode(DotConstant())
 end
 
-function Base.show(io::IO, x::DotConstantEx)
+function Base.show(io::IO, ::DotConstantEx)
     print(io, "DotConstantEx()")
 end
 
@@ -376,14 +376,8 @@ function toexpr(op::ScalarProduct, var::NamedTuple, net)
 end
 
 function Base.show(io::IO, x::ScalarProduct)
-    print(io, "ScalarProduct(", x.n, ", ", bag, ")" )
+    print(io, "ScalarProduct(", x.n, ", ", x.bag, ")" )
 end
-
-# See parse_term(Val{:numberof}, returns Bag
-# struct NumberOf
-#     n::Any #! Expression evaluating to integer >= 0
-#     value::Any #! Expression evaluating to a term
-# end
 
 @matchable struct Cardinality <: PnmlExpr #^ multiset cardinality uses `length`.
     bag::Bag # multiset expression
@@ -391,14 +385,14 @@ end
 
 basis(::Cardinality) = UserSortRef(:natural)
 sortref(::Cardinality) = UserSortRef(:natural)
-expr_sortref(a::Cardinality, net) = sortref(a)::SortRef
+expr_sortref(a::Cardinality, _net) = sortref(a)::SortRef
 
 function toexpr(op::Cardinality, var::NamedTuple, net)
     Expr(:call, :cardinality, toexpr(op.bag, var, net))
 end
 
 function Base.show(io::IO, x::Cardinality)
-    print(io, "Cardinality(", x.arg, ")" )
+    print(io, "Cardinality(", x.bag, ")" )
 end
 
 @matchable struct CardinalityOf <: PnmlExpr #^ cardinalityof accesses multiset.
@@ -411,7 +405,7 @@ function toexpr(op::CardinalityOf, var::NamedTuple, net)
 end
 
 function Base.show(io::IO, x::CardinalityOf)
-    print(io, "(CardinalityOf", x.ms, ", ", repr(refid), ")" )
+    print(io, "(CardinalityOf", x.ms, ", ", repr(x.refid), ")" )
 end
 
 #"Bag -> Bool"
@@ -859,9 +853,9 @@ end
 # Find the ProductSortRef
 function expr_sortref(tup::PnmlTupleEx, net)
     exsort = ProductSort(tuple(expr_sortref.(tup.args, Ref(net))...), net)
-    for (sortid,ps) in pairs(productsorts(net))
+    for (sortid,ps) in pairs(PNML.productsorts(net))
         #!@show ps
-        if length(exsort) == length(ps) && equalSorts(exsort, ps, net)
+        if length(exsort) == length(ps) && PNML.Sorts.equalSorts(exsort, ps, net)
             return ProductSortRef(sortid)
         end
     end

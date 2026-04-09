@@ -54,7 +54,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Line`](@ref PnmlGraphics.Line).
 """
-function parse_graphics_line(node, pntd)
+function parse_graphics_line(node, _pntd)
     check_nodename(node, "line")
     args = Dict()
     for key in ["color", "shape", "style", "width"]
@@ -71,7 +71,7 @@ $(TYPEDSIGNATURES)
 Return [`Coordinate`](@ref PnmlGraphics.Coordinate).
 Sandard seems to only use integers, we also allow real numbers.
 """
-function parse_graphics_coordinate(node, pntd)
+function parse_graphics_coordinate(node, _pntd)
     nn = EzXML.nodename(node)
     if !(nn=="position" || nn=="dimension" || nn=="offset" || nn=="tokenposition")
         throw(ArgumentError("element name wrong: $nn"))
@@ -89,7 +89,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Fill`](@ref PnmlGraphics.Fill)
 """
-function parse_graphics_fill(node, pntd)
+function parse_graphics_fill(node, _pntd)
     check_nodename(node, "fill")
     args = Dict{Symbol,Union{String,SubString{String}}}()
     for key in ["color", "image", "gradient-color", "gradient-rotation"]
@@ -103,7 +103,7 @@ $(TYPEDSIGNATURES)
 
 Return [`Font`](@ref PnmlGraphics.Font).
 """
-function parse_graphics_font(node, pntd)
+function parse_graphics_font(node, _pntd)
     check_nodename(node, "font")
     args = Dict()
     for key in ["weight", "style", "align", "decoration", "family", "rotation", "size"]

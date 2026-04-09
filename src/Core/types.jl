@@ -237,7 +237,6 @@ abstract type AbstractSort end
 
 abstract type AbstractDeclDict end
 
-
 """
     $(TYPEDEF)
 
