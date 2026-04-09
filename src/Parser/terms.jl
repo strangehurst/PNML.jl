@@ -45,20 +45,19 @@ function parse_term(node::XMLNode, net::APN; vars)
 end
 
 """
-    subterms(node, net; vars) -> Vector{PnmlExpr}, Tuple{REFID}
+    subterms(node, net; vars) -> Vector{PnmlExpr}
 
 Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref) term.
-Collect expressions in a `Vector` and accumulate variable REFIDs in a `Tuple`.
 """
 function subterms(node, net::APN; vars)
-    sts = Vector{Any}()
+    sts = Vector{PnmlExpr}()
     for subterm in EzXML.eachelement(node)
         if EzXML.nodename(subterm) == "subterm"
             tag, stnode = unwrap_subterm(subterm) # Used to dispatch on `Val(tag)`.
             subterm_tj = parse_term(Val(tag), stnode, net; vars)::TermJunk
             isnothing(subterm_tj) && throw(MalformedException("subterm is nothing"))
             vars = subterm_tj.vars
-            push!(sts, subterm_tj.exp)
+            push!(sts, subterm_tj.exp::PnmlExpr)
         else
             println("not a subterm ", EzXML.nodename(node))
             Base.show_backtrace(stdout, stacktrace())
@@ -255,10 +254,13 @@ function parse_term(::Val{:add}, node::XMLNode, net::APN; vars)
     # All are of same sort so we use the basis sort of first multiset.
 end
 
+# multiset subtraction.
 function parse_term(::Val{:subtract}, node::XMLNode, net::APN; vars)
     sts, vars = subterms(node, net; vars)
     @assert length(sts) == 2
-    return TermJunk(Subtract(sts), basis(first(sts))::SorRef, vars)
+    return TermJunk(Subtract(sts[1]::Bag, sts[2]::Bag),
+                    basis(first(sts)::Bag)::SortRef,
+                    vars)
 end
 
 #! ePNK-pnml-examples/release-0.9.0/MS-Bool-Int-technical-example.pnml
@@ -283,11 +285,11 @@ end
 # Notably, this differs from `:numberof` by both arguments being variables, NOT ground terms.
 # As well as the 2nd being a multiset rather than a sort.
 function parse_term(::Val{:scalarproduct}, node::XMLNode, net::APN; vars)
-    tag, stnode = unwrap_subterm(EzXML.firstelement(node))
-    product1_tj = parse_term(Val(tag), stnode, net; vars)::TermJunk # scalar
+    tag1, stnode1 = unwrap_subterm(EzXML.firstelement(node))
+    product1_tj = parse_term(Val(tag1), stnode1, net; vars)::TermJunk # scalar
 
-    tag, stnode = unwrap_subterm(EzXML.nextelement(st))
-    product2_tj = parse_term(Val(tag), stnode, net; product1_tj.vars)::TermJunk # bag
+    tag2, stnode2 = unwrap_subterm(EzXML.nextelement(node))
+    product2_tj = parse_term(Val(tag2), stnode2, net; product1_tj.vars)::TermJunk # bag
 
     return TermJunk(ScalarProduct(product1_tj.exp, product2_tj.exp),
                     basis(product2_tj.exp),
@@ -360,6 +362,8 @@ function parse_term(::Val{:numberof}, node::XMLNode, net::APN; vars)
         throw(ArgumentError("Missing numberof multiplicity subterm. Expected :numberconstant"))
     isnothing(instance) &&
         throw(ArgumentError("Missing numberof instance subterm. Expected variable, operator or constant."))
+    isnothing(isort) &&
+        throw(ArgumentError("Missing instance sort reference. Expected `SortRef`."))
 
     #todo Note how the multiplicity PnmlExpr here is a constant. Evaluate it here?
     # Return of a sort is required because the sort may not be deducable from the expression,
@@ -633,32 +637,34 @@ end
 function parse_term(::Val{:makelist}, node::XMLNode, net::APN; vars)
     D()&& @warn "parse_term(::Val{:makelist}"; flush(stdout); #! debug
 
-    # One child will be a sort.
-    # All other children will be subterms.
+    # One child may be a sort.
+    # All other children will be subterms of the same sort.
 
     sts = Vector{Any}()
-    sortref = nothing
+    list_sortref = nothing
     for child in EzXML.eachelement(node)
-        if EzXML.nodename(child) == "subterm"
+        nname = EzXML.nodename(child)
+        if nname == "subterm"
             tag, stnode = unwrap_subterm(child) # Used to dispatch on `Val(tag)`.
             tj = parse_term(Val(tag), stnode, net; vars)::TermJunk
-            isnothing(tj) && throw(MalformedException("subterm is nothing"))
+            isnothing(tj) && throw(MalformedException("a <makelist> subterm is nothing"))
             vars = tj.vars
             push!(sts, tj.exp)
         else
-            sortref = parse_sort(child, net)
+            !isnothing(list_sortref) &&
+                @warn "<makelist> sortref redefined: from $list_sortref to $nname"
+            list_sortref = parse_sort(child, net)::SortRef
         end
     end
 
-    if isnothing(sortref)
-        # TODO deduce sort from first(sts)
+    if isnothing(list_sortref) && !isempty(sts)
+        # Deduce list's sort from first subterm.
+        list_sortref = sortref(first(sts)::PnmlExpr)::SortRef
     end
-    #@show sortref
-    #sts, vars = subterms(node, net; vars)
-    #@show sts vars
+    isnothing(list_sortref) && throw(MalformedException("<makelist> missing sortref"))
 
-    lex = ListEx(sortref, sts) #! We have PnmlExpr elements at this point.
+    lex = ListEx(list_sortref, sts) #! We have PnmlExpr elements at this point.
     #@show first(sts).refpartition Iterators.map(x->x.refpartition, sts)
     #@assert all(==(first(sts).refpartition), Iterators.map(x->x.refpartition, sts))
-    return TermJunk(lex, sortref, vars) #todo! when can we map to partition
+    return TermJunk(lex, list_sortref, vars) #todo! when can we map to partition
 end
