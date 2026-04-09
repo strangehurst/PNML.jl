@@ -192,6 +192,8 @@ all_nettypes() = values(pnmltype_map)
 all_nettypes(p) = Iterators.filter(p, values(pnmltype_map))
 
 """
+    core_nettypes() -> Tuple{APNTD}
+
 Useful for testing the 3 kinds of tokens corresponding to
 abstract subclasses of `APNTD` (or `AbstractPnmlType`) .
 """
