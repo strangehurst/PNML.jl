@@ -115,7 +115,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     # We already used `idregistry` and `pagedict` needs to be type stable.
     #-------------------------------------------------------------------------------------
     net = PnmlNet(; type=pntd, id=netid, idregistry,
-                    pagedict = OrderedDict{Symbol, Page{typeof(pntd)}}(),
+                    pagedict = OrderedDict{Symbol, Page{PnmlNet{typeof(pntd)}}}(), #! abstract Page
                     )
     #^ Label Parsers
     fill_builtin_labelparsers!(net.labelparser)
@@ -236,7 +236,7 @@ function __parse_page!(net::PnmlNet{T}, page_node::XMLNode, pageid::Symbol) wher
     #---------------------------------------------------------
     # Create "empty" page. Will have `toolinfos` parsed.
     #---------------------------------------------------------
-    page = Page{T,typeof(net)}(; net, id = pageid,
+    page = Page{typeof(net)}(; net, id = pageid,
                 netsets = PnmlNetKeys(),
                 toolspecinfos = find_toolinfos!(nothing, page_node, net)::Maybe{Vector{ToolInfo}})
 

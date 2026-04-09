@@ -15,7 +15,7 @@ $(FIELDS)
     const idregistry::IDRegistry
     # Holds all pages. Shared by pages that may have sub-pages.
     # All PNML net objects are attached to a `Page`. And there must be at least one `Page`.
-    pagedict::OrderedDict{Symbol, Page{PNTD,<:APN}} #todo
+    pagedict::OrderedDict{Symbol, Page{PnmlNet{PNTD}}} # abstract Page
     # Shared by pages, holds all places, transitions, arcs, refs
     netdata::PnmlNetData = PnmlNetData()
     # Keys of pages in `pagedict` owned by this net.
@@ -59,7 +59,7 @@ end
 function make_net(type::APNTD, id=:make_net,)
     net = PnmlNet(; type, id,
                     idregistry=IDRegistry(),
-                    pagedict=OrderedDict{Symbol, Page{typeof(type)}}(),
+                    pagedict=OrderedDict{Symbol, Page{PnmlNet{typeof(type)}}}(),
                     declaration=Declaration(; ddict=DeclDict()))
     fill_builtin_sorts!(net)
     fill_builtin_labelparsers!(net)
@@ -280,9 +280,11 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool)
     verify_ids!(errors, "refplaces id", refplaces(net), net)
     verify_ids!(errors, "reftransitions id", reftransitions(net), net)
 
-    verify!(errors, decldict(net), verbose, net)
+        verify!(errors, decldict(net), verbose, net)
 
-    verify!(errors, net.declaration, verbose, net)
+    if !isnothing(net.declaration)
+        verify!(errors, net.declaration, verbose, net)
+    end
 
     # Call net object's verify method.
     foreach(x -> verify!(errors, x, verbose, net), allpages(net))

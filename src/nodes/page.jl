@@ -8,7 +8,7 @@ There must be at least 1 Page for a valid pnml model.
 `PNTD` binds the other type parameters together to express a specific PNG.
 See [`PnmlNet`](@ref)
 """
-@kwdef mutable struct Page{PNTD <: APNTD, N <: APN} <: AbstractPnmlObject
+@kwdef mutable struct Page{N <: APN} <: AbstractPnmlObject
     net::N
     id::Symbol
     namelabel::Maybe{Name} = nothing
@@ -64,9 +64,9 @@ has_refplace(page::Page, id::Symbol) = in(id, refplace_idset(page))
 reftransition(page::Page, id::Symbol)     = reftransitiondict(page)[id]
 has_reftransition(page::Page, id::Symbol) = in(id, reftransition_idset(page))
 
-function Base.show(io::IO, page::Page{T,N}) where {T <: APNTD, N <: APN}
+function Base.show(io::IO, page::Page{N}) where {N <: APN}
     #TODO Add support for :trim and :compact
-    print(io, "Page{", T, ", ", N,"}("),
+    print(io, "Page{",N,"}("),
     show(io, pid(page)); print(io, ", ")
     show(io, name(page)); print(io, ", ")
     println(io)
