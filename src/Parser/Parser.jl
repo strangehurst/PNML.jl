@@ -35,7 +35,7 @@ using PNML: Maybe, CONFIG, AnyElement, PnmlLabel, D, registry_of, verify
 using PNML: Graphics, Coordinate, coordinate_type, elements
 using PNML: ToolInfo, XmlDictType
 using PNML: DeclDict, PnmlNetData, PnmlNetKeys, decldict
-using PNML: PartitionElement, PnmlMultiset, BooleanConstant
+using PNML: PartitionElement, PnmlMultiset, BooleanConstant, pnmlmultiset
 using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Operator
 using PNML: FEConstant, feconstants, has_feconstant
 using PNML: pid, fill_builtin_labelparsers!, fill_builtin_sorts!, fill_builtin_toolparsers!
