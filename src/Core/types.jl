@@ -94,6 +94,15 @@ function name(x)
     end
 end
 
+"Return `text` property or empty string."
+function text(x)
+    if hasproperty(x, :text)
+        x.text
+    else
+        string()
+    end
+end
+
 labels(o) = hasproperty(o, :extralabels) ? o.extralabels : nothing
 
 has_tools(o::AbstractPnmlObject) = hasproperty(o, :toolspecinfos) && !isnothing(o.toolspecinfos)
