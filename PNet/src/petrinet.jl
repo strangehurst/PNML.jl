@@ -131,7 +131,7 @@ end
 function HLPetriNet(str::AbstractString)
     @assert @isdefined(pnmlmodel) "pnmlmodel should be defined"
 
-    HLPetriNet(pnmlmodel(xmlnode(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
+    HLPetriNet(pnmlmodel(PNML.xmlnode(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
 end
 HLPetriNet(model::PnmlModel) = HLPetriNet(PNML.firstnet(model))
 
@@ -187,7 +187,7 @@ end
 # Method Cascade.
 # First two run the parser and can have addded tool and label plugins as context.
 # toolinfos => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
-SimpleNet(s::AbstractString; kwargs...)  = SimpleNet(xmlnode(s); kwargs...)
+SimpleNet(s::AbstractString; kwargs...)  = SimpleNet(PNML.xmlnode(s); kwargs...)
 SimpleNet(node::PNML.XMLNode; kwargs...) = SimpleNet(PNML.Parser.pnmlmodel(node; kwargs...))
 
 # These two use the flattened 1st net of the PnmlModel.
