@@ -27,11 +27,11 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct UnknownDeclaration{N <: APN}  <: AbstractDeclaration
+struct UnknownDeclaration{T <: AnyElement, N <: APN}  <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     nodename::Union{String,SubString{String}}
-    content::AnyElement
+    content::T
     net::N
 end
 
@@ -191,20 +191,20 @@ and duck-typed `AbstractTerm` for its body.
 struct NamedOperator{T, N <: APN} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
-    parameter::Vector{VariableDeclaration} # constants,variables with inferred sorts #TODO XXX
+    parameter::Vector{VariableDeclaration{N}} # constants,variables with inferred sorts #TODO XXX
     def::T # expression  terms (with inferred output sort) #TODO! XXX how to infer from expression ===
     net::N
 end
 
 # Empty parameter vector. Default to return sort of dots.
 NamedOperator(id::Symbol, str::AbstractString, net::APN) =
-    NamedOperator(id, str, VariableDeclaration[], DotConstant(), net)
+    NamedOperator(id, str, VariableDeclaration{typeof(net)}[], DotConstant(), net)
 
 #operator(no::NamedOperator) = operator(no.net, no.def) #! XXX def is an expression
 parameters(no::NamedOperator) = no.parameter
-(no::NamedOperator)(vars) = eval(toexpr(uo.def, vars, no.net))(parameters(no))
+(no::NamedOperator)(vars) = eval(toexpr(no.def, vars, no.net))(parameters(no))
 
 function Base.show(io::IO, op::NamedOperator)
-    print(io, nameof(typeof(op)), "(", repr(id), ", ", repr(name), ", ",
-            parameter, ", ", def,  ")")
+    print(io, nameof(typeof(op)), "(", repr(op.id), ", ", repr(op.name), ", ",
+            op.parameter, ", ", op.def,  ")")
 end

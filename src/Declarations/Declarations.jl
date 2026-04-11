@@ -15,7 +15,7 @@ using Logging, LoggingExtras
 using SciMLLogging: @SciMLMessage
 
 using PNML
-using PNML: REFID, AnyElement, AbstractTerm
+using PNML: REFID, AnyElement, AbstractTerm, DotConstant, toexpr
 using PNML: arbitrarysorts, partitionsorts, partitionops
 using PNML: namedoperators, arbitraryops, feconstants, multisetsorts
 using PNML: namedsort, arbitrarysort, partitionsort, partitionop
@@ -32,6 +32,8 @@ import PNML: fill_sort_tag!, verify!
 using ..Sorts
 using ..Sorts: equalSorts
 using ..IDRegistrys
+
+
 
 include("declarations.jl")
 include("partitions.jl")
