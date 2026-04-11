@@ -378,7 +378,7 @@ function parse_term(::Val{:cardinality}, node::XMLNode, net::APN; vars)
     isnothing(stnode) && throw(MalformedException("<cardinality> missing argument subterm"))
     (; exp, vars) = parse_term(stnode, net; vars)::TermJunk
 
-    return TermJunk(Cardinality(exp)::PnmlExpr, NamedSortRef(:natural), vars)
+    return TermJunk(Cardinality(exp::Bag)::PnmlExpr, NamedSortRef(:natural), vars)
 end
 
 # rhs multiset is contained in lhs multiset

@@ -11,7 +11,7 @@ function default end
 function parse_place!(netsets, netdata, node, net::APN)
     pl = parse_place(node, net)::valtype(placedict(netdata))
     #@show valtype(placedict(netdata)) typeof(placedict(netdata))
-    push!(place_idset(netsets), pid(pl))
+    push!(place_idset(netsets)::OrderedSet{Symbol}, pid(pl))
     placedict(netdata)[pid(pl)] = pl
     return place_idset(netsets) #place_set
 end
@@ -19,7 +19,7 @@ end
 "Fill transition_set, transition_dict."
 function parse_transition!(netsets, netdata, node, net::APN)
     tr = parse_transition(node, net)::valtype(transitiondict(netdata))
-    push!(transition_idset(netsets), pid(tr))
+    push!(transition_idset(netsets)::OrderedSet{Symbol}, pid(tr))
     transitiondict(netdata)[pid(tr)] = tr
     return transition_idset(netsets)
 end
@@ -29,7 +29,7 @@ function parse_arc!(netsets, netdata, node, net::APN)
     a = parse_arc(node, net)
     a isa valtype(arcdict(netdata)) ||
         @error("$(typeof(a)) not a $(valtype(arcdict(netdata)))) $(pntd(net)) $(repr(a))")
-    push!(arc_idset(netsets), pid(a))
+    push!(arc_idset(netsets)::OrderedSet{Symbol}, pid(a))
     arcdict(netdata)[pid(a)] = a
     return arc_idset(netsets)
 end
@@ -37,7 +37,7 @@ end
 "Fill refplace_set, refplace_dict."
 function parse_refPlace!(netsets, netdata, node, net::APN)
     rp = parse_refPlace(node, net)::valtype(refplacedict(netdata))
-    push!(refplace_idset(netsets), pid(rp))
+    push!(refplace_idset(netsets)::OrderedSet{Symbol}, pid(rp))
     refplacedict(netdata)[pid(rp)] = rp
     return refplace_idset(netsets)
 end
@@ -45,7 +45,7 @@ end
 "Fill reftransition_set, reftransition_dict."
 function parse_refTransition!(netsets, netdata, node, net::APN)
     rt = parse_refTransition(node, net)::valtype(reftransitiondict(netdata))
-    push!(reftransition_idset(netsets), pid(rt))
+    push!(reftransition_idset(netsets)::OrderedSet{Symbol}, pid(rt))
     reftransitiondict(netdata)[pid(rt)] = rt
     return reftransition_idset(netsets)
 end
@@ -120,7 +120,7 @@ function parse_place(node::XMLNode, net::APN)
         else
             sorttype # Already parsed a <type> or default for non-HL.
         end
-        mark = default(Marking, net, effective_sorttype)
+        mark = default(Marking, net, effective_sorttype::SortType)
     end
 
     if isnothing(sorttype) # Infer sortype of place from mark.
@@ -173,22 +173,28 @@ function parse_transition(node::XMLNode, net::APN)
             NamedTuple[], net)
 end #= function parse_transition =#
 
-function default(::Type{<:Inscription}, net::APN, placetype::SortType)
-    if refid(placetype) !== :positive
-        @error(string("$(pntd(net)) default Inscription $placetype mismatch ",
-                      "$(repr(refid(placetype))) != :positive"))
-    end
+function default(::Type{<:Inscription}, net::APN)
+    #! Move this check to a verify! method! XXX
+    # if refid(placetype) !== :positive
+    #     @error(string("$(pntd(net)) default Inscription $placetype mismatch ",
+    #                   "$(repr(refid(placetype))) != :positive"))
+    # end
     Inscription(nothing, NumberEx(NamedSortRef(:positive), one(Int)), nothing, nothing, REFID[], net)
 end
 
-function default(::Type{<:Inscription}, net::PnmlNet{T}, placetype::SortType) where {T <: AbstractContinuousNet}
-    if refid(placetype) !== :real
-        @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
-    end
+function default(::Type{<:Inscription}, net::PnmlNet{T}) where {T <: AbstractContinuousNet}
+    #! Move this check to a verify! method! XXX
+    # if refid(placetype) !== :real
+    #     @error "$pntd default Inscription $placetype mismatch $(refid(placetype)) != :real"
+    # end
     Inscription(nothing, NumberEx(NamedSortRef(:real), one(Float64)), nothing, nothing, REFID[], net)
 end
 
-# See def_insc
+function default(::Type{<:Inscription}, net::PnmlNet{T}) where {T <: PT_HLPNG}
+    Inscription(nothing, DotConstantEx(), nothing, nothing, REFID[], net)
+end
+
+# Requires placetype
 function default(::Type{<:Inscription}, net::PnmlNet{T}, placetype::SortType) where {T <: AbstractHLCore}
     basis = sortref(placetype)::SortRef
     el = def_sort_element(placetype)
@@ -242,30 +248,48 @@ function parse_arc(node::XMLNode, net::APN)
     # It may have non-ground terms as parameters.
 
     if isnothing(inscription)
-        dummy_placetype = if ishighlevel(pntd(net))
-            if pntd isa PT_HLPNG
-                SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
+    #     dummy_placetype = if ishighlevel(pntd(net))
+    #         if pntd isa PT_HLPNG
+    #             SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
+    #         else
+    #             # For other high-level nets, try to deduce using the adjacent place.
+    #             # Note that the adjacent place may have not been parsed yet.
+    #             sr = if has_place(net, source)
+    #                 sortref(place(net, source))
+    #             elseif has_place(net, target)
+    #                 sortref(place(net, target))
+    #             else
+    #                 @error string("$pntd inscription not provided for ",
+    #                             "arc $arc_id ($source -> $target), ",
+    #                             "and we failed to deduce a sorttype, will use :dot.")
+    #                 NamedSortRef(:dot)
+    #             end
+    #             SortType("dummy HIGHLEVEL", sr,  net)
+    #        end
+    #     elseif iscontinuous(pntd(net))
+    #         SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
+    #     elseif isdiscrete(pntd(net))
+    #         SortType("dummy DISCRETE", NamedSortRef(:positive), net)
+    #     end
+        if is_collective_token(pntd(net))
+            inscription = default(Inscription, net)
+        elseif is_individual_token(pntd(net))
+            # Try to deduce using the adjacent place.
+            # NB: adjacent place may have not been parsed yet.
+            sr = if has_place(net, source)
+                sortref(place(net, source))
+            elseif has_place(net, target)
+                sortref(place(net, target))
             else
-                # For other high-level nets, try to deduce using the adjacent place.
-                # Note that the adjacent place may have not been parsed yet.
-                sr = if has_place(net, source)
-                    sortref(place(net, source))
-                elseif has_place(net, target)
-                    sortref(place(net, target))
-                else
-                    @error string("$pntd inscription not provided for ",
-                                "arc $arc_id ($source -> $target), ",
-                                "and we failed to deduce a sorttype, will use :dot.")
-                    NamedSortRef(:dot)
-                end
-                SortType("dummy HIGHLEVEL", sr,  net)
-           end
-        elseif iscontinuous(pntd(net))
-            SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
-        elseif isdiscrete(pntd(net))
-            SortType("dummy DISCRETE", NamedSortRef(:positive), net)
+                @error string("$pntd inscription not provided for ",
+                            "arc $arc_id ($source -> $target), ",
+                            "and we failed to deduce a sorttype, will use :dot.")
+                NamedSortRef(:dot)
+            end
+            inscription = default(Inscription, net, SortType("dummy HIGHLEVEL", sr,  net))
+       else
+            error()
         end
-        inscription = default(Inscription, net, dummy_placetype)
     end
 
     if isnothing(arc_type_label)

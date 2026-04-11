@@ -35,7 +35,6 @@ end
     @test map(c->c["name"], @inferred(allchildren(node, "a"))) == ["a1", "a2", "a3"]
 end
 
-net = make_net(PnmlCoreNet(), :utils_net)
 
 # @testset "default Condition, $pntd)" for pntd in PnmlTypes.all_nettypes()
 #     c = @inferred default(Labels.Condition, net)
@@ -44,17 +43,22 @@ net = make_net(PnmlCoreNet(), :utils_net)
 
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
-    placetype = if ishighlevel(pntd)
-        @inferred SortType("dummy", NamedSortRef(:dot), net)
-    elseif iscontinuous(pntd)
-        @inferred SortType("dummy", NamedSortRef(:real), net)
-    elseif isdiscrete(pntd)
-        @inferred SortType("dummy", NamedSortRef(:positive), net)
+    net = make_net(pntd, :utils_net)
+    # placetype = if ishighlevel(pntd)
+    #     @inferred SortType("dummy", NamedSortRef(:dot), net)
+    # elseif iscontinuous(pntd)
+    #     @inferred SortType("dummy", NamedSortRef(:real), net)
+    # elseif isdiscrete(pntd)
+    #     @inferred SortType("dummy", NamedSortRef(:positive), net)
+    # else
+    #     error("pntd not known")
+    # end
+    if is_collective_token(pntd)
+        @inferred Inscription default(Inscription, net)
     else
-        error("pntd not known")
+        @inferred Inscription default(Inscription, net,
+                                      SortType("dummy", NamedSortRef(:dot), net))
     end
-    i = @inferred Inscription default(Inscription, net, placetype)
-    #println("default(Inscription($pntd) = ", i)
 end
 
 @testset "value_type(Rate, $pntd)" for pntd in PnmlTypes.all_nettypes()

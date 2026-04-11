@@ -71,6 +71,7 @@ into `decldict(net)`. MultisetSorts not allowed here. Nor loops in sort referenc
 """
 basis(ms::PnmlMultiset) = sortref(ms)::SortRef
 sortref(ms::PnmlMultiset) = ms.basis_ref
+net(ms::PnmlMultiset) = ms.net
 
 Base.eltype(::Type{PnmlMultiset{T,N}}) where {T, N <: APN} = T
 
@@ -79,13 +80,21 @@ function Base.show(io::IO, t::PnmlMultiset)
 end
 
 # Return empty multiset with matching basis sort, element type.
-function Base.zero(::PnmlMultiset{T,N}) where {T, N <: APN}
-    PnmlMultiset{T,N}(Multiset{T}()) #^ empty multiset
+function Base.zero(pms::PnmlMultiset{T,N}) where {T, N <: APN}
+    z = PnmlMultiset{T,N}(basis(pms),
+                          Multiset{T}(), #^ empty multiset
+                          net)(pms)
+
+    @assert issingletonmultiset(z)
+    return z
 end
 
-# Choose an arbitrary value (probably 0) to have multiplicity of 1.
-function Base.one(m::PnmlMultiset{T,N}) where {T, N <: APN}
-    o = PnmlMultiset{T,N}(Multiset{T}(first(sortelements(basis(m), m.net))))
+# Choose an arbitrary value to have multiplicity of 1.
+function Base.one(pms::PnmlMultiset{T,N}) where {T, N <: APN}
+    f = first(sortelements(basis(pms), net(pms)))::T
+    o = PnmlMultiset{T,N}(basis(pms),
+                          Multiset{T}(f::T),
+                          net(pms))
     @assert issingletonmultiset(o)
     return o
 end

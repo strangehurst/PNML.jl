@@ -259,11 +259,11 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
     defsort = isnothing(default_sorttype) ? nothing : sortref(default_sorttype)
 
     l = parse_label_content(node, ParseMarkingTerm(defsort), net)::NamedTuple
-    placetype = l.sort
     isnothing(l.sort) &&
         error("Missing parse_hlinitialMarking sort")
     isnothing(l.exp) &&
         error("Missing expression for $(pntd(net)) net")
+    placetype = l.sort
 
     if !(isnamedsort(placetype) ||
         (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
@@ -314,9 +314,11 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
     defsort = isnothing(default_sorttype) ? nothing : sortref(default_sorttype)
 
     l = parse_label_content(node, ParseMarkingTerm(defsort), net)::NamedTuple
+    isnothing(l.exp) &&
+        error("Missing expression for $(pntd(net)) net")
+    isnothing(l.sort) &&
+        error("Missing parse_fifoinitialMarking sort")
     placetype = l.sort
-    isnothing(l.exp) && error("Missing expression for $(pntd(net)) net")
-    #@show l.exp
 
     if !(isnamedsort(placetype) ||
             (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
@@ -375,7 +377,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, net::APN)
         isempty(mark_tj.vars) || error("unexpected variables in $mark_tj")
         if isnothing(placetype(pmt))
             @warn "$(pntd(net)) ParseMarkingTerm placetype(pmt) is nothing"
-        elseif !equalSorts(mark_tj.ref, placetype(pmt), net)
+        elseif !equalSorts(mark_tj.ref, placetype(pmt)::SortRef, net)
             @warn "$(pntd(net)) ParseMarkingTerm sort mismatch" mark_tj.ref placetype(pmt) mark_tj
         end
         return mark_tj

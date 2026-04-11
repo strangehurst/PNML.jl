@@ -167,7 +167,6 @@ function parse_namedoperator(node::XMLNode, net::APN)
     end
     D()&& @show parameters #! debug, empty vector allowed
 
-    definition = nothing
     dnode = firstchild(node, "def")
     # NamedOperators have a def element that is a  term/expression of existing
     # operators &/or variable parameters that define the operation.
@@ -335,11 +334,11 @@ See also [`parse_sorttype_term`](@ref), [`parse_namedsort`](@ref), [`parse_varia
 """
 function parse_sort end
 
-function parse_sort(node::XMLNode, net::APN, sortid::Maybe{REFID}=nothing,  name::String=""; kwargs...)
+function parse_sort(node::XMLNode, net::APN, sortid::Maybe{REFID}=nothing,  name::String="")
     # Note: Sorts are NOT PNML labels. Will NOT have <text>, <graphics>, <toolspecific>.
     sorttag = Symbol(EzXML.nodename(node))
     D()&&  println("## parse_sort $sorttag id=$sortid name=$name tag=$sorttag") #! debug
-    return parse_sort(Val(sorttag), node, net, sortid, name; kwargs...)::SortRef
+    return parse_sort(Val(sorttag), node, net, sortid, name)::SortRef
 end
 
 # Built-ins sorts
@@ -349,23 +348,23 @@ end
 #! Followed by parsing all declarations where `parse_sort is used`.
 #! Then the net where terms use sorts.
 
-function parse_sort(::Val{:bool}, _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:bool}, _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:bool)
 end
 
-function parse_sort(::Val{:integer}, _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:integer}, _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:integer)
 end
 
-function parse_sort(::Val{:natural}, _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:natural}, _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:natural)
 end
 
-function parse_sort(::Val{:positive}, _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:positive}, _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:positive)
 end
 
-function parse_sort(::Val{:real},  _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:real},  _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:real)
 end
 
@@ -377,11 +376,11 @@ end
 
 # NB: ePNK examples uses some inlined sorts
 
-function parse_sort(::Val{:dot}, _node::XMLNode, _net::APN, _sortid, _u2)
+function parse_sort(::Val{:dot}, _node::XMLNode, _net::APN, _sortid, _name)
     NamedSortRef(:dot) # The user overrides in a declaration.
 end
 
-function parse_sort(::Val{:usersort}, node::XMLNode, net::APN, _sortid, _u2) #! see parse_namedsort
+function parse_sort(::Val{:usersort}, node::XMLNode, net::APN, _sortid, _name) #! see parse_namedsort
     parse_usersort(node, net)
 end
 
@@ -574,7 +573,7 @@ Parse a `<partitionelement>` XML node,
 add FEConstant refids to the element and append element to the vector.
 """
 function parse_partitionelement!(elements::Vector{PartitionElement}, node::XMLNode,
-                                    rid::REFID; net::APN)
+                                    rid::Symbol; net::APN)
     check_nodename(node, "partitionelement")
     element_id = register_idof!(net.idregistry, node)
     nameval = attribute(node, "name")

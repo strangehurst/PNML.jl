@@ -11,7 +11,7 @@ export APNTD, AbstractPnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContin
 # Concrete Types
 export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
 # Functions
-export pnmltype, isdiscrete, iscontinuous, ishighlevel
+export pnmltype, isdiscrete, iscontinuous, ishighlevel, is_collective_token, is_individual_token
 
 """
 $(TYPEDEF)
@@ -284,5 +284,14 @@ ishighlevel(::APNTD) = false
 ishighlevel(::AbstractHLCore) = true
 ishighlevel(::Type{<:APNTD}) = false
 ishighlevel(::Type{<:AbstractHLCore}) = true
+
+"Token identity is collective."
+function is_collective_token end
+is_collective_token(pntd::APNTD) = isdiscrete(pntd) || iscontinuous(pntd)
+
+"Token identity is individual."
+function is_individual_token end
+is_individual_token(pntd::APNTD) = ishighlevel(pntd)
+
 
 end # module PnmlTypes
