@@ -53,7 +53,6 @@ end
 function cond_implementation(c::Condition, varsub::NamedTuple)
     # BooleanEx is a literal. AbstractBoolExpr <: PnmlExpr can be non-literal (non-ground term).
     isa(term(c), BooleanEx) || @warn term(c) varsub  #! debug
-    #@show term(c) varsub toexpr(term(c), varsub, c)
     eval(toexpr(term(c), varsub, c.net))::eltype(c) # Bool isa Number
 end
 

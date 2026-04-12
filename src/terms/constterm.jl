@@ -44,7 +44,7 @@ refid(fec::FEConstant)    = refid(fec.ref)::Symbol
 sortref(fec::FEConstant)  = fec.ref
 Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is name.
 
-(fec::FEConstant)(args) = fec() # Constants are 0-ary operators. Ignore arguments.
+(fec::FEConstant)(_args) = fec() # Constants are 0-ary operators. Ignore arguments.
 (fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use name string.
 
 function sortof(fec::FEConstant, net::APN)
@@ -92,7 +92,7 @@ end
 
 sortref(::DotConstant) = UserSortRef(:dot)
 sortof(::DotConstant, net::APN) = sortdefinition(namedsort(net, :dot))
-(d::DotConstant)() = 1 # true is a number, one
+(_dot::DotConstant)() = 1 # true is a number, one
 
 function Base.show(io::IO, c::DotConstant)
     print(io, nameof(typeof(c)), "()")

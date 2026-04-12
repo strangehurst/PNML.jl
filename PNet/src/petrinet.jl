@@ -105,8 +105,8 @@ end
 
 #-----------------------------------------------------------------
 #-----------------------------------------------------------------
-@assert @isdefined(PnmlNet) "PnmlNet should be defined."
-@assert @isdefined(pnmlmodel) "pnmlmodel should be defined."
+#@assert @isdefined(PnmlNet) "PnmlNet should be defined."
+#@assert @isdefined(pnmlmodel) "pnmlmodel should be defined."
 
 """
     HLPetriNet(str::AbstractString)
@@ -124,7 +124,7 @@ $(TYPEDFIELDS)
 # Details
 
 """
-struct HLPetriNet{C, PNTD<:APNTD} <: AbstractPetriNet{PNTD}
+struct HLPetriNet{PNTD<:APNTD} <: AbstractPetriNet{PNTD}
     net::PnmlNet{PNTD}
 end
 
@@ -187,11 +187,11 @@ end
 # Method Cascade.
 # First two run the parser and can have addded tool and label plugins as context.
 # toolinfos => (tool1, [tool2,]...), labels =< (label1, [label2,]...)
-SimpleNet(s::AbstractString; kwargs...)  = SimpleNet(PNML.xmlnode(s); kwargs...)
-SimpleNet(node::PNML.XMLNode; kwargs...) = SimpleNet(PNML.Parser.pnmlmodel(node; kwargs...))
+SimpleNet(str::AbstractString)  = SimpleNet(PNML.xmlnode(str))
+SimpleNet(node::PNML.XMLNode) = SimpleNet(PNML.Parser.pnmlmodel(node))
 
 # These two use the flattened 1st net of the PnmlModel.
-SimpleNet(model::PnmlModel; kwargs...) = SimpleNet(PNML.firstnet(model); kwargs...)
+SimpleNet(model::PnmlModel) = SimpleNet(PNML.firstnet(model))
 function SimpleNet(net::PnmlNet)
     PNML.flatten_pages!(net)
     SimpleNet(PNML.pid(net), net)
