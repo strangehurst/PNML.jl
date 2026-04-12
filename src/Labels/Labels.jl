@@ -25,13 +25,12 @@ import Multisets
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
 
 using PNML
-using PNML: Maybe, nettype, AnyElement, D, indent, inc_indent, pntd
+using PNML: Maybe, AnyElement, D, indent, inc_indent, pntd
 using PNML: AbstractPnmlNode, AbstractLabel, Annotation, HLAnnotation
-using PNML: DeclDict, XmlDictType
-using PNML: BooleanConstant, PnmlMultiset, AbstractTerm
-using PNML: namedsort, multisetsort, partitionsort, productsort
-using PNML: namedsorts, multisetsorts, partitionsorts, productsorts
-using PNML: ToolParser, LabelParser, NamedSort, PartitionSort, ArbitrarySort
+using PNML: DeclDict
+using PNML: BooleanConstant, PnmlMultiset
+using PNML: namedsort
+using PNML: ToolParser
 
 import PNML: name, Coordinate
 import PNML: value_type, number_value

@@ -1,15 +1,15 @@
 module PNet
 __precompile__(true)
 
-using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
+#using Base: Fix1, Fix2, @kwdef, RefValue, isempty, length
 using DocStringExtensions
 using NamedTupleTools
 using TermInterface
 using Logging, LoggingExtras
-using SciMLLogging: @SciMLMessage
+#using SciMLLogging: @SciMLMessage
 
 import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
-import Base: eltype
+#import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 import XMLDict
 import Multisets: Multisets, Multiset
