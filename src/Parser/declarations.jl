@@ -155,7 +155,7 @@ function parse_namedoperator(node::XMLNode, net::APN)
 
     #^ ePNK uses inline variabledecl, variable in namedoperator declaration
     #! Must register id of variabledecl before seeing variable: `<parameter>` before `<def>`.
-    parameters = VariableDeclaration[]
+    parameters = VariableDeclaration{typeof(net)}[]
     pnode = firstchild(node, "parameter")
     if !isnothing(pnode)
         # Zero or more parameters for operator (arity). Map from id to sort object.
