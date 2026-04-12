@@ -5,7 +5,7 @@ $(TYPEDFIELDS)
 One or more Petri Nets.
 """
 struct PnmlModel{T <: AbstractDict}
-    nets::T #Dict{Symbol, PnmlNet}
+    nets::T #Dict{Symbol, PnmlNet{<:APNTD}}
     namespace::String
 end
 
