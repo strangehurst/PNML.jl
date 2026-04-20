@@ -6,7 +6,7 @@ include("TestUtils.jl")
 using .TestUtils
 
 # # Conditions are for everybody, but we cannot (feasibily) test high-level
-# @testset "condition $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+# @testset "condition $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
 #     n1 = xml"""
 #  <condition>
 #     <text>pt==cts||pt==ack</text>

@@ -20,8 +20,9 @@ value_type(::Type{Priority}) = Float64
 value_type(::Type{Priority}, ::APNTD) = Float64
 
 Base.eltype(::Priority) = value_type(Priority)
+Base.eltype(::Type{Priority}) = value_type(Priority)
 
-term(i::Priority) = i.term
+term(i::Priority{N, T}) where {N <: APN, T <: PnmlExpr} = i.term
 sortref(i::Priority) = expr_sortref(term(i), i.net)::SortRef
 
 function (priority::Priority)(varsub::NamedTuple=NamedTuple())

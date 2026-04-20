@@ -64,7 +64,7 @@ Base.isless( n::Number, c::PnmlMultiset{APN, DotConstant}) = isless(n, convert(B
 Base.:(<)(c::PnmlMultiset{APN, DotConstant}, n::Number)  = convert(Bool, c)< n
 Base.:(<)( n::Number, c::PnmlMultiset{APN, DotConstant}) = n < convert(Bool, c)
 
-issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
+is_singletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
 """
     basis(ms::PnmlMultiset) -> SortRef
@@ -88,17 +88,17 @@ function Base.zero(pms::PnmlMultiset{N, T}) where {T, N <: APN}
                           Multiset{T}(), #^ empty multiset
                           net)(pms)
 
-    @assert issingletonmultiset(z)
+    @assert is_singletonmultiset(z)
     return z
 end
 
-# Choose an arbitrary value to have multiplicity of 1.
+# Choose an arbitrary value `f` of `pms` to have multiplicity of 1.
 function Base.one(pms::PnmlMultiset{N, T}) where {T, N <: APN}
     f = first(sortelements(basis(pms), net(pms)))::T
     o = PnmlMultiset{N,T}(basis(pms),
                            Multiset(f),
                            net(pms))
-    @assert issingletonmultiset(o)
+    @assert is_singletonmultiset(o)
     return o
 end
 
@@ -222,7 +222,7 @@ end
 function pnmlmultiset(basis::SortRef, element, multi::Int=1; net::APN)
     # NOTE: This is legal and used.
     # Seem to recall something about singleton-multisets serving as "numbers".
-    # Should we test `issingletonmultiset` here?
+    # Should we test `is_singletonmultiset` here?
 
     if isa(basis, MultisetSort)
         #^ Where/how is absence of sort loop checked?
@@ -239,7 +239,7 @@ end
 
 # For <all> only the basis is needed.
 function pnmlmultiset(basis::SortRef, ::Nothing, ::Nothing; net::APN)
-    if ismultisetsort(basis)
+    if is_multisetsort(basis)
         throw(ArgumentError("Cannot have MultisetSort basis of $(repr(basis))"))
     end
     #^ Where/how is absence of sort loop checked?

@@ -51,8 +51,8 @@ using PNML: netsets, toolinfos, value_type, number_value
 using PNML: NamedSortRef, PartitionSortRef, ProductSortRef, MultisetSortRef, ArbitrarySortRef
 using PNML: to_sort
 using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
-using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
-using PNML: isnormal, isinhibitor, isread, isreset
+using PNML: is_usersort, is_namedsort, is_partitionsort, is_productsort, is_multisetsort, is_arbitrarysort
+using PNML: is_normal, is_inhibitor, is_read, is_reset
 using PNML: has_place, place, pntd
 
 # Methods implemented in this module.

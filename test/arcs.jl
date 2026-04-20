@@ -8,7 +8,7 @@ using .TestUtils
 # ARC
 #---------------------------------------------
 function insc_xml(pntd)
-    if ishighlevel(pntd)
+    if is_highlevel(pntd)
         """<hlinscription>
             <text>6</text>
             <structure>
@@ -27,7 +27,7 @@ end
 #! arc needs :place1 for adjacent place
 "Parse place with marking, add to dict & id set"
 function pl_node(net, netdata, netsets)
-    node = if ishighlevel(net)
+    node = if is_highlevel(net)
         xml"""
             <place id="place1">
             <name> <text>with text</text> </name>
@@ -95,7 +95,7 @@ println("\nARC\n")
     @test has_graphics(a)
     @test_call inscription(a)
     #@show a inscription(a)(NamedTuple())
-    if ishighlevel(net) # assumes storttype of dot
+    if is_highlevel(net) # assumes storttype of dot
         @test cardinality(inscription(a)(NamedTuple())) == 6
     else
         @test inscription(a)(NamedTuple()) == 6

@@ -8,7 +8,7 @@ using XMLDict: XMLDict
 @testset "PT initMarking $pntd" for pntd in (PnmlCoreNet(), ContinuousNet())
     node = xmlnode("""
     <initialMarking>
-        <text> $(iscontinuous(pntd) ? "123.0" : "123") </text>
+        <text> $(is_continuous(pntd) ? "123.0" : "123") </text>
         <toolspecific tool="org.pnml.tool" version="1.0">
             <tokengraphics> <tokenposition x="6" y="9"/> </tokengraphics>
         </toolspecific>
@@ -59,7 +59,7 @@ using XMLDict: XMLDict
 end
 
 @testset "HL initMarking" begin
-     @testset "3`dot $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+     @testset "3`dot $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         #println("\n3`dot $pntd")
         node = xml"""
         <hlinitialMarking>
@@ -99,7 +99,7 @@ end
     end
 
     # 0-arity operators are constants
-    # @testset "useroperator" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+    # @testset "useroperator" for pntd in PnmlTypes.all_nettypes(is_highlevel)
     #     println("\nuseroperator $pntd")
     #     node = xml"""
     #     <hlinitialMarking>
@@ -118,7 +118,7 @@ end
     # end
 
 
-   @testset "placetype error" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+   @testset "placetype error" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         #println("\nplacetype error")
         node = xml"""
         <hlinitialMarking>
@@ -145,7 +145,7 @@ end
     end
 
     # add two multisets: another way to express 3 + 2
-    @testset "3`dot ++ 2'dot" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+    @testset "3`dot ++ 2'dot" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         #println("\n\"3'dot ++ 2'dot\" $pntd")
         #~ @show
         node = xml"""
@@ -175,7 +175,7 @@ end
         #TODO add tests
     end
     # The constant eight.
-    @testset "1`8" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+    @testset "1`8" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         #println("\n1`8 $pntd")
         #~ @show
         node = xml"""
@@ -198,7 +198,7 @@ end
      end
 
     # This is the same as when the element is omitted.
-    @testset "x" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+    @testset "x" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         node = xml"""
         <hlinitialMarking>
         </hlinitialMarking>
@@ -213,7 +213,7 @@ end
 
 @testset "FIFO initMarking" begin
 
-     @testset "FIFO $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+     @testset "FIFO $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
         #println("\n3`dot $pntd")
         node = xml"""
         <fifoinitialMarking>
@@ -255,7 +255,7 @@ end
 end # fifoinitialMarking
 
 
-# @testset "<All,All>" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+# @testset "<All,All>" for pntd in PnmlTypes.all_nettypes(is_highlevel)
 #     println("\n<All,All> $pntd")
 #     # <All,All> example from Sudoku-COL-A-N01.pnml
 #     #~ YES, markings can be tuples, an operator, cries for TermInterface,Metatheory

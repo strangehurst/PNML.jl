@@ -18,8 +18,8 @@ using PNML
 using PNML: REFID, AnyElement, DotConstant, toexpr, indent, inc_indent
 using PNML: namedsort, partitionsort
 #using PNML: arbitraryop,  multisetsort
-#using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort
-#using PNML: ismultisetsort, isarbitrarysort, indent, inc_indent
+#using PNML: is_usersort, is_namedsort, is_partitionsort, is_productsort
+#using PNML: is_multisetsort, is_arbitrarysort, indent, inc_indent
 #using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
 
 import PNML: sortref, sortdefinition, sortelements#, basis # Sort related

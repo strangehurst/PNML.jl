@@ -11,7 +11,7 @@ export APNTD, AbstractPnmlType, AbstractPnmlCore, AbstractHLCore, AbstractContin
 # Concrete Types
 export PnmlCoreNet, PTNet, HLCoreNet, PT_HLPNG, SymmetricNet, HLPNG, ContinuousNet
 # Functions
-export pnmltype, isdiscrete, iscontinuous, ishighlevel, is_collective_token, is_individual_token
+export pnmltype, is_discrete, is_continuous, is_highlevel, is_collective_token, is_individual_token
 
 """
 $(TYPEDEF)
@@ -265,33 +265,33 @@ else
 end
 
 "Tokens represented by integers."
-function isdiscrete end
-isdiscrete(::APNTD) = false
-isdiscrete(::AbstractPnmlCore) = true
-isdiscrete(::Type{<:APNTD}) = false
-isdiscrete(::Type{<:AbstractPnmlCore}) = true
+function is_discrete end
+is_discrete(::APNTD) = false
+is_discrete(::AbstractPnmlCore) = true
+is_discrete(::Type{<:APNTD}) = false
+is_discrete(::Type{<:AbstractPnmlCore}) = true
 
 "Tokens represented by floating point."
-function iscontinuous end
-iscontinuous(::APNTD) = false
-iscontinuous(::AbstractContinuousNet) = true
-iscontinuous(::Type{<:APNTD}) = false
-iscontinuous(::Type{<:AbstractContinuousNet}) = true
+function is_continuous end
+is_continuous(::APNTD) = false
+is_continuous(::AbstractContinuousNet) = true
+is_continuous(::Type{<:APNTD}) = false
+is_continuous(::Type{<:AbstractContinuousNet}) = true
 
 "Tokens represented by multiset (aka bag)."
-function ishighlevel end
-ishighlevel(::APNTD) = false
-ishighlevel(::AbstractHLCore) = true
-ishighlevel(::Type{<:APNTD}) = false
-ishighlevel(::Type{<:AbstractHLCore}) = true
+function is_highlevel end
+is_highlevel(::APNTD) = false
+is_highlevel(::AbstractHLCore) = true
+is_highlevel(::Type{<:APNTD}) = false
+is_highlevel(::Type{<:AbstractHLCore}) = true
 
 "Token identity is collective."
 function is_collective_token end
-is_collective_token(pntd::APNTD) = isdiscrete(pntd) || iscontinuous(pntd)
+is_collective_token(pntd::APNTD) = is_discrete(pntd) || is_continuous(pntd)
 
 "Token identity is individual."
 function is_individual_token end
-is_individual_token(pntd::APNTD) = ishighlevel(pntd)
+is_individual_token(pntd::APNTD) = is_highlevel(pntd)
 
 
 end # module PnmlTypes

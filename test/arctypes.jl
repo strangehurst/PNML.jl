@@ -6,7 +6,7 @@ using XMLDict: XMLDict
 include("TestUtils.jl")
 using .TestUtils
 
-using PNML: isnormal, isinhibitor, isread, isreset
+using PNML: is_normal, is_inhibitor, is_read, is_reset
 
 @testset "arctypes $arct" for arct in ["normal", "inhibitor", "read", "reset"]
     net = make_net(PnmlCoreNet(), :arctypes_net)
@@ -24,13 +24,13 @@ using PNML: isnormal, isinhibitor, isread, isreset
     atl = PNML.arctypelabel(a)
     arct = PNML.Labels.arctype(atl)
 
-    @test length(Base.findall([isnormal(a), isinhibitor(a), isread(a), isreset(a)])) == 1
-    @test length(Base.findall([isnormal(atl), isinhibitor(atl), isread(atl), isreset(atl)])) == 1
-    @test length(Base.findall([isnormal(arct), isinhibitor(arct), isread(arct), isreset(arct)])) == 1
+    @test length(Base.findall([is_normal(a), is_inhibitor(a), is_read(a), is_reset(a)])) == 1
+    @test length(Base.findall([is_normal(atl), is_inhibitor(atl), is_read(atl), is_reset(atl)])) == 1
+    @test length(Base.findall([is_normal(arct), is_inhibitor(arct), is_read(arct), is_reset(arct)])) == 1
 
-    @test isnormal(a) == isnormal(atl) == isnormal(arct)
-    @test isinhibitor(a) == isinhibitor(atl) ==isinhibitor(arct)
-    @test isread(a) == isread(atl) == isread(arct)
+    @test is_normal(a) == is_normal(atl) == is_normal(arct)
+    @test is_inhibitor(a) == is_inhibitor(atl) ==is_inhibitor(arct)
+    @test is_read(a) == is_read(atl) == is_read(arct)
 
     @test pid(a) === :a1
     @test name(a) == ""

@@ -36,7 +36,7 @@ import PNML: name, Coordinate
 import PNML: value_type, number_value
 import PNML: value, term, graphics, toolinfos, refid, tag, elements
 import PNML: has_graphics, get_label, labels, declarations
-import PNML:  arctype, isnormal, isinhibitor, isread, isreset, verify!
+import PNML:  arctype, is_normal, is_inhibitor, is_read, is_reset, verify!
 
 using ..PnmlTypes # PNML PNTD
 

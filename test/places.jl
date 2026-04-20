@@ -7,7 +7,7 @@ using .TestUtils
 # PLACE
 #---------------------------------------------
 
-@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(!ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(!is_highlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -36,7 +36,7 @@ using .TestUtils
     @test PNML.has_tools(place) == false
 end
 
-@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+@testset "place $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
     node = xml"""
         <place id="place1">
         <name> <text>with text</text> </name>
@@ -65,7 +65,7 @@ end
     @test PNML.get_label(place, :nosuchlabel) === nothing
 end
 
-@testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+@testset "place unknown label $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
     node = xml"""
         <place id="place1">
         <type><structure><dot/></structure></type>

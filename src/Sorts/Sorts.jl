@@ -47,9 +47,9 @@ import Multisets: Multisets, Multiset
 using PNML
 using PNML: DeclDict, multisetsorts, find_valuekey, to_sort, DotConstant
 using PNML: AbstractSort, namedsort, namedsorts, productsort, productsorts
-using PNML: isnormal, isinhibitor, isread, isreset, indent, inc_indent
-using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort
-using PNML: ismultisetsort, isarbitrarysort
+using PNML: is_normal, is_inhibitor, is_read, is_reset, indent, inc_indent
+using PNML: is_usersort, is_namedsort, is_partitionsort, is_productsort
+using PNML: is_multisetsort, is_arbitrarysort
 
 import PNML: sortref, sortelements, sortdefinition, basis
 import PNML: value, term, tag, pid, refid

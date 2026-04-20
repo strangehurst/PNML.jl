@@ -239,10 +239,10 @@ function tgt_arcs end
 
 function arctype end
 
-function isnormal end
-function isinhibitor end
-function isread end
-function isreset end
+function is_normal end
+function is_inhibitor end
+function is_read end
+function is_reset end
 
 
 """

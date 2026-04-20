@@ -5,7 +5,7 @@ using XMLDict: XMLDict
 include("TestUtils.jl")
 using .TestUtils
 
-@testset "type $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+@testset "type $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
     # Add usersort, namedsort duo as test context.
     net = make_net(pntd, :sorttype_net)
     PNML.namedsorts(net)[:N2] = PNML.NamedSort(:N2, "N2", DotSort(), net)

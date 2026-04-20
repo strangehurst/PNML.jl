@@ -21,17 +21,17 @@ Each supported pntd has a singleton subtype of AbstractPnmlType.
 
 Default place markings and arc inscriptions are different for the three.
 
-# isdiscrete
+# is_discrete
 ```@example types
-list_type(PNML.isdiscrete)
+list_type(PNML.is_discrete)
 ```
 
-# iscontinuous
+# is_continuous
 ```@example types
-list_type(PNML.iscontinuous)
+list_type(PNML.is_continuous)
 ```
 
-# ishighlevel
+# is_highlevel
 ```@example types
-list_type(PNML.ishighlevel)
+list_type(PNML.is_highlevel)
 ```

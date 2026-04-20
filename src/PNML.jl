@@ -98,7 +98,7 @@ export @xml_str, xmlnode, D
 @public PnmlException, MissingIDException, DuplicateIDException, MalformedException
 @public namedsort, Coordinate
 @public rates, mcontains, to_sort
-@public isusersort, isnamedsort, ispartitionsort, isproductsort, ismultisetsort, isarbitrarysort
+@public is_usersort, is_namedsort, is_partitionsort, is_productsort, is_multisetsort, is_arbitrarysort
 
 Multisets.set_key_value_show()
 
@@ -117,7 +117,7 @@ end
 
 include("PnmlTypes.jl")
 using .PnmlTypes
-import .PnmlTypes: isdiscrete, iscontinuous, ishighlevel,
+import .PnmlTypes: is_discrete, is_continuous, is_highlevel,
                    is_collective_token, is_individual_token
 
 include("IDRegistrys.jl")

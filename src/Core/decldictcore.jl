@@ -274,4 +274,4 @@ end
 """
 If `a` is a `NamedSortRef` return its `sortdefinition`, otherwise return `a`.
 """
-unwrap_namedsort(a, net) = isnamedsort(a) ? sortdefinition(namedsort(net, a)) : a
+unwrap_namedsort(a, net) = is_namedsort(a) ? sortdefinition(namedsort(net, a)) : a

@@ -4,11 +4,11 @@ Set of sort IDs that are considered builtin.
 builtin_sorts() = Set([:integer, :natural, :positive, :real, :dot, :bool, :null])
 
 """
-    isbuiltinsort(::Symbol) -> Bool
+    is_builtinsort(::Symbol) -> Bool
 
 Is tag in `builtin_sorts()`.
 """
-isbuiltinsort(tag::Symbol) = (tag in builtin_sorts())
+is_builtinsort(tag::Symbol) = (tag in builtin_sorts())
 
 # """
 # $(TYPEDSIGNATURES)
@@ -51,8 +51,8 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
     basis::SortRef
 
     function MultisetSort(b::SortRef, net::APN)
-        if ismultisetsort(b) ||
-           (isnamedsort(b) &&
+        if is_multisetsort(b) ||
+           (is_namedsort(b) &&
                 isa(sortdefinition(namedsort(net, b)), MultisetSort))
 
             throw(MalformedException("basis cannot be MultisetSort, found $b"))

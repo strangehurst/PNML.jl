@@ -112,7 +112,7 @@ function parse_place(node::XMLNode, net::APN)
     end
 
     if isnothing(mark) # Use additive identity of proper sort as default value.
-        effective_sorttype = if ishighlevel(pntd(net)) && isnothing(sorttype)
+        effective_sorttype = if is_highlevel(pntd(net)) && isnothing(sorttype)
             #D()&&
             @error("$pntd parse_place $(repr(placeid)) has neither a mark nor sorttype, " *
                             "use :dot even if it is WRONG")
@@ -248,7 +248,7 @@ function parse_arc(node::XMLNode, net::APN)
     # It may have non-ground terms as parameters.
 
     if isnothing(inscription)
-    #     dummy_placetype = if ishighlevel(pntd(net))
+    #     dummy_placetype = if is_highlevel(pntd(net))
     #         if pntd isa PT_HLPNG
     #             SortType("dummy PT_HLPNG", NamedSortRef(:dot), net)
     #         else
@@ -266,9 +266,9 @@ function parse_arc(node::XMLNode, net::APN)
     #             end
     #             SortType("dummy HIGHLEVEL", sr,  net)
     #        end
-    #     elseif iscontinuous(pntd(net))
+    #     elseif is_continuous(pntd(net))
     #         SortType("dummy CONTINUOUS", NamedSortRef(:real), net)
-    #     elseif isdiscrete(pntd(net))
+    #     elseif is_discrete(pntd(net))
     #         SortType("dummy DISCRETE", NamedSortRef(:positive), net)
     #     end
         if is_collective_token(pntd(net))
@@ -294,7 +294,7 @@ function parse_arc(node::XMLNode, net::APN)
 
     if isnothing(arc_type_label)
         arc_type_label = ArcType()
-        @assert isnormal(arc_type_label)
+        @assert is_normal(arc_type_label)
     end
 
     Arc(; id=arc_id, source=Ref(source), target=Ref(target),

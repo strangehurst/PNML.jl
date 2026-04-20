@@ -90,7 +90,7 @@ function fill_decl_dict!(net::APN, node::XMLNode)
         elseif tag == "partition"
             # NB: partiton is a declaration of a new sort refering to the partitioned sort.
             part = parse_partition(child, net)::SortRef
-            @assert ispartitionsort(part)
+            @assert is_partitionsort(part)
         #! elseif tag === :partitionoperator
         #!      PartitionLessThan, PartitionGreaterThan, PartitionElementOf
         #!      partop = parse_partition_op(child, pntd)
@@ -98,7 +98,7 @@ function fill_decl_dict!(net::APN, node::XMLNode)
 
         elseif tag == "arbitrarysort"
             arb = parse_arbitrarysort(child, net)
-            @assert isarbitrarysort(arb)
+            @assert is_arbitrarysort(arb)
        else
             push!(unknown_decls, parse_unknowndecl(child, net))
         end
@@ -119,7 +119,7 @@ function parse_namedsort(node::XMLNode, net::APN)
     # So we re-implement `register_idof!` with that check added.
     EzXML.haskey(node, "id") || throw(MissingIDException(EzXML.nodename(node)))
     sort_id = Symbol(@inbounds(node["id"]))
-    if !Sorts.isbuiltinsort(sort_id)
+    if !Sorts.is_builtinsort(sort_id)
         register_id!(net.idregistry, sort_id)
     end
     name = attribute(node, "name")
@@ -453,7 +453,7 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, net::APN, _parentid, 
         namedsorts(net)[sorttag] = NamedSort(sorttag, String(sorttag), sort, net)
         sref = make_sortref(net, namedsorts, sort, "finiteintrange", sorttag, name)
         #D()&& @show sref
-        @assert isnamedsort(sref)
+        @assert is_namedsort(sref)
         return sref
     end
 end
@@ -533,7 +533,7 @@ function parse_sort(::Val{:multisetsort}, node::XMLNode, net::APN, sortid, name)
     tag in (:partition, :partitionelement, :multisetsort) &&
         throw(ArgumentError("multisetsort basis of $tag not allowed")) #todo test this!
     basis_sort = parse_sort(Val(tag), basis_node, net, nothing, "")::SortRef
-    @assert isnamedsort(basis_sort)
+    @assert is_namedsort(basis_sort)
     #D()&& @warn "parse_sort(::Val{:multisetsort}" basis_sort sortdefinition(to_sort(basis_sort, net))
     #!isnothing(sortid) && @error "inlined multiset" net
     ms = MultisetSort(basis_sort, net)
@@ -555,7 +555,7 @@ function parse_partition(node::XMLNode, net::APN) #! a sort declaration!
             # The only non-partitionelement child possible,
             partitioned_sortref = parse_usersort(part_child, net)::SortRef
             #! RelaxNG Schema says: "defined over a NamedSort which it refers to."
-            @assert isnamedsort(partitioned_sortref)
+            @assert is_namedsort(partitioned_sortref)
         elseif tag === "partitionelement"
             # Each partitionelement holds REFIDs to elements of an enumeration sort.
             parse_partitionelement!(elements, part_child, partition_id; net)

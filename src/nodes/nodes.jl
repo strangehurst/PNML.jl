@@ -159,20 +159,20 @@ function arctypelabel(arc::Arc)
     arc.arctypelabel # label
 end
 
-isnormal(arc::Arc)    = isnormal(arctypelabel(arc))
-isinhibitor(arc::Arc) = isinhibitor(arctypelabel(arc))
-isread(arc::Arc)      = isread(arctypelabel(arc))
-isreset(arc::Arc)     = isreset(arctypelabel(arc))
+is_normal(arc::Arc)    = is_normal(arctypelabel(arc))
+is_inhibitor(arc::Arc) = is_inhibitor(arctypelabel(arc))
+is_read(arc::Arc)      = is_read(arctypelabel(arc))
+is_reset(arc::Arc)     = is_reset(arctypelabel(arc))
 
-isnormal(label::ArcType)    = isnormal(arctype(label))
-isinhibitor(label::ArcType) = isinhibitor(arctype(label))
-isread(label::ArcType)      = isread(arctype(label))
-isreset(label::ArcType)     = isreset(arctype(label))
+is_normal(label::ArcType)    = is_normal(arctype(label))
+is_inhibitor(label::ArcType) = is_inhibitor(arctype(label))
+is_read(label::ArcType)      = is_read(arctype(label))
+is_reset(label::ArcType)     = is_reset(arctype(label))
 
-isnormal(e::ArcTypeEnum.T)    = e == ArcTypeEnum.Normal
-isinhibitor(e::ArcTypeEnum.T) = e == ArcTypeEnum.Inhibitor
-isread(e::ArcTypeEnum.T)      = e == ArcTypeEnum.Read
-isreset(e::ArcTypeEnum.T)     = e == ArcTypeEnum.Reset
+is_normal(e::ArcTypeEnum.T)    = e == ArcTypeEnum.Normal
+is_inhibitor(e::ArcTypeEnum.T) = e == ArcTypeEnum.Inhibitor
+is_read(e::ArcTypeEnum.T)      = e == ArcTypeEnum.Read
+is_reset(e::ArcTypeEnum.T)     = e == ArcTypeEnum.Reset
 
 """
     source(arc) -> Symbol

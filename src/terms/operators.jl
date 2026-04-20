@@ -112,7 +112,7 @@ boolean_operators = (:or,
                      :equality,
                      :inequality,
                     )
-isbooleanoperator(tag::Symbol) = tag in boolean_operators
+is_booleanoperator(tag::Symbol) = tag in boolean_operators
 # boolean constants true, false
 
 
@@ -127,7 +127,7 @@ integer_operators = (:addition, # "Addition",
                      :lt, # "LessThan",
                      :leq, # "LessThanOrEqual",)
                     )
-isintegeroperator(tag::Symbol) = tag in integer_operators
+is_integeroperator(tag::Symbol) = tag in integer_operators
 #integer_constants = (:one = one(Int), :zero = zero(Int))
 
 multiset_operators = (:add,
@@ -140,7 +140,7 @@ multiset_operators = (:add,
                       :cardnalitiyof,
                       :contains,
                       )
-ismultisetoperator(tag::Symbol) = tag in multiset_operators
+is_multisetoperator(tag::Symbol) = tag in multiset_operators
 
 finite_operators()  = (:lessthan,
                      :lessthanorequal,
@@ -149,27 +149,27 @@ finite_operators()  = (:lessthan,
                      :finiteintrangeconstant,
                      )
 """
-    iisfiniteoperator(::Symbol) -> Bool
+    is_finiteoperator(::Symbol) -> Bool
 
 Is tag in `finite_operators()`?
 """
-isfiniteoperator(tag::Symbol) = (tag in finite_operators())
+is_finiteoperator(tag::Symbol) = (tag in finite_operators())
 partition_operators = (:ltp, :gtp, :partitionelementof)
-ispartitionoperator(tag::Symbol) = tag in partition_operators
+is_partitionoperator(tag::Symbol) = tag in partition_operators
 
 # these constants are operators
 builtin_constants() = Set([:numberconstant, :dotconstant, :booleanconstant])
 
 """
-    isbuiltinoperator(::Symbol) -> Bool
+    is_builtinoperator(::Symbol) -> Bool
 
 Is tag in `builtin_operators()`?
 """
-isbuiltinoperator(tag::Symbol) = (tag in builtin_constants()) #todo whrat are these?
+is_builtinoperator(tag::Symbol) = (tag in builtin_constants()) #todo whrat are these?
 
 # boolean_constants = (:true, :false)
 """
-    isoperator(tag::Symbol) -> Bool
+    is_operator(tag::Symbol) -> Bool
 
 Predicate to identify operators in the high-level pntd's many-sorted algebra abstract syntaxt tree.
 
@@ -182,14 +182,14 @@ Note: It is not the same as Meta.isoperator. Both work on Symbols. Not expecting
   - builtin constant
   - useroperator
 """
-isoperator(tag::Symbol) = isintegeroperator(tag) ||
-                          ismultisetoperator(tag) ||
-                          isbooleanoperator(tag) ||
-                          isfiniteoperator(tag) ||
-                          ispartitionoperator(tag) ||
-                          tag in builtin_constants() ||
-                          tag === :tuple ||
-                          tag === :useroperator
+is_operator(tag::Symbol) = is_integeroperator(tag) ||
+                           is_multisetoperator(tag) ||
+                           is_booleanoperator(tag) ||
+                           is_finiteoperator(tag) ||
+                           is_partitionoperator(tag) ||
+                           tag in builtin_constants() ||
+                           tag === :tuple ||
+                           tag === :useroperator
 
 
 #===============================================================#
@@ -223,11 +223,11 @@ end
 Return sort that operator `tag` returns.
 """
 function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef})
-    outref = if isbooleanoperator(tag) # 0-arity function is a constant
+    outref = if is_booleanoperator(tag) # 0-arity function is a constant
         UserSortRef(:bool) # BoolSort()
-    elseif isintegeroperator(tag) # 0-arity function is a constant
+    elseif is_integeroperator(tag) # 0-arity function is a constant
         UserSortRef(:integer) # IntegerSort()
-    elseif ismultisetoperator(tag)
+    elseif is_multisetoperator(tag)
         if tag in (:add,)
             length(insorts) >= 2 ||
                 @error "pnml_hl_outsort length(insorts) < 2" tag insorts
@@ -248,14 +248,14 @@ function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef})
         else
             error("$tag not a known multiset operator")
         end
-    elseif isfiniteoperator(tag)
+    elseif is_finiteoperator(tag)
         #:lessthan, :lessthanorequal, :greaterthan, :greaterthanorequal, :finiteintrangeconstant
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         @error("enumeration sort needs content")
         first(insorts)
         #todo assert is finite enumeration
         #
-    elseif ispartitionoperator(tag)
+    elseif is_partitionoperator(tag)
         #:ltp, :gtp, :partitionelementof
         length(insorts) == 2 || @error "pnml_hl_outsort length(insorts) != 2" tag insorts
         first(insorts)

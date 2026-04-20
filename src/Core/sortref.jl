@@ -60,7 +60,7 @@ Check if a value is an `UserSortRef` variant of `SortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `UserSortRef` variant, `false` otherwise.
 """
-isusersort(x::SortRef) = isa_variant(x, SortRefImpl.UserSortRef)
+is_usersort(x::SortRef) = isa_variant(x, SortRefImpl.UserSortRef)
 
 """
     $TYPEDSIGNATURES
@@ -73,7 +73,7 @@ Check if a value is an `NamedSortRef` variant of `SortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `NamedSortRef` variant, `false` otherwise.
 """
-isnamedsort(x::SortRef) = isa_variant(x, SortRefImpl.NamedSortRef)
+is_namedsort(x::SortRef) = isa_variant(x, SortRefImpl.NamedSortRef)
 
 """
     $TYPEDSIGNATURES
@@ -86,7 +86,7 @@ Check if a value is an `PartitionSortRef` variant of `SortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `PartitionSortRef` variant, `false` otherwise.
 """
-ispartitionsort(x::SortRef) = isa_variant(x, SortRefImpl.PartitionSortRef)
+is_partitionsort(x::SortRef) = isa_variant(x, SortRefImpl.PartitionSortRef)
 
 """
     $TYPEDSIGNATURES
@@ -99,7 +99,7 @@ Check if a value is an `ProductSortRef` variant of `SortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `ProductSortRef` variant, `false` otherwise.
 """
-isproductsort(x::SortRef) = isa_variant(x, SortRefImpl.ProductSortRef)
+is_productsort(x::SortRef) = isa_variant(x, SortRefImpl.ProductSortRef)
 
 """
     $TYPEDSIGNATURES
@@ -112,7 +112,7 @@ Check if a value is an `MultisetSortRef` variant of `SortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `MultisetSortRef` variant, `false` otherwise.
 """
-ismultisetsort(x::SortRef) = isa_variant(x, SortRefImpl.MultisetSortRef)
+is_multisetsort(x::SortRef) = isa_variant(x, SortRefImpl.MultisetSortRef)
 
 """
     $TYPEDSIGNATURES
@@ -125,7 +125,7 @@ Check if a value is an `SortRef` variant of `ArbitrarySortRef`.
 # Returns
 - `true` if `x` is a `SortRef` with `ArbitrarySortRef` variant, `false` otherwise.
 """
-isarbitrarysort(x::SortRef) = isa_variant(x, SortRefImpl.ArbitrarySortRef)
+is_arbitrarysort(x::SortRef) = isa_variant(x, SortRefImpl.ArbitrarySortRef)
 
 function refid(s::SortRef)
     @match s begin

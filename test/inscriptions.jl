@@ -32,7 +32,7 @@ using XMLDict: XMLDict
     #@test occursin("Graphics", sprint(show, inscript))
 end
 
-# @testset "hlinscription $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+# @testset "hlinscription $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
 #     println("\nhlinscription $pntd")
 #     n1 = xml"""
 #     <hlinscription>

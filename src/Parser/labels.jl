@@ -265,15 +265,15 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
         error("Missing expression for $(pntd(net)) net")
     placetype = l.sort
 
-    if !(isnamedsort(placetype) ||
-        (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
+    if !(is_namedsort(placetype) ||
+        (is_productsort(placetype) && all(is_namedsort, Sorts.sorts(placetype, net))))
         @error("$(pntd(net)) placetype of $parentid expected to be NamedSortRef" *
                 " or product of named sorts, found $placetype")
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
-        if !isnamedsort(sortref(default_sorttype))
+        if !is_namedsort(sortref(default_sorttype))
             error("$(pntd(net)) default_sorttype of $parentid " *
                     "expected to be NamedSortRef, found $default_sorttype")
         end
@@ -320,16 +320,16 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
         error("Missing parse_fifoinitialMarking sort")
     placetype = l.sort
 
-    if !(isnamedsort(placetype) ||
-            (isproductsort(placetype) && all(isnamedsort, Sorts.sorts(placetype, net))))
+    if !(is_namedsort(placetype) ||
+            (is_productsort(placetype) && all(is_namedsort, Sorts.sorts(placetype, net))))
         @error(string("$(pntd(net)) placetype of $parentid expected to be NamedSortRef",
                       " or product of named sorts, found $placetype"))
-        isproductsort(placetype) && foreach(println, Sorts.sorts(placetype, net))
+        is_productsort(placetype) && foreach(println, Sorts.sorts(placetype, net))
     end
 
     #^ Do an equalSorts default_sorttype if !nothing.
     if !isnothing(default_sorttype)
-        if !isnamedsort(sortref(default_sorttype))
+        if !is_namedsort(sortref(default_sorttype))
             error("$(pntd(net)) default_sorttype of $parentid expected to be NamedSortRef" *
                     ", found $default_sorttype")
         end
@@ -574,7 +574,7 @@ function parse_sorttype_term(typenode::XMLNode, net::APN)
     # Expect only child element to be a sort.
     sort_node = EzXML.firstelement(typenode)::XMLNode
     sort_type = parse_sort(sort_node, net, nothing, "")::SortRef
-    ismultisetsort(sort_type) && error("multiset sort not allowed for place <type>")
+    is_multisetsort(sort_type) && error("multiset sort not allowed for place <type>")
     # We use TermJunk because it is convenient. #! Does it work?
     return TermJunk(sort_type, sort_type, ()) # Not a term; has no variables.
 end

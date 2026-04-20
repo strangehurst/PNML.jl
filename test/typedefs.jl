@@ -76,18 +76,18 @@ end
 end
 
 @testset "pnml traits $pntd" for pntd in PnmlTypes.all_nettypes()
-    #println("pnml traits $pntd: ", [isdiscrete(pntd), iscontinuous(pntd), ishighlevel(pntd)])
+    #println("pnml traits $pntd: ", [is_discrete(pntd), is_continuous(pntd), is_highlevel(pntd)])
     t = typeof(pntd)
-    @test isdiscrete(pntd) isa Bool
-    @test iscontinuous(pntd) isa Bool
-    @test ishighlevel(pntd) isa Bool
-    @test isdiscrete(t) isa Bool
-    @test iscontinuous(t) isa Bool
-    @test ishighlevel(t) isa Bool
-    @test isdiscrete(pntd) == isdiscrete(t)
-    @test iscontinuous(pntd) == iscontinuous(t)
-    @test ishighlevel(pntd) == ishighlevel(t)
-     #@show [isdiscrete(pntd), iscontinuous(pntd), ishighlevel(pntd)]
-    @test only(filter(==(true), [isdiscrete(pntd), iscontinuous(pntd), ishighlevel(pntd)]))
-    @test only(filter(==(true), [isdiscrete(t), iscontinuous(t), ishighlevel(t)]))
+    @test is_discrete(pntd) isa Bool
+    @test is_continuous(pntd) isa Bool
+    @test is_highlevel(pntd) isa Bool
+    @test is_discrete(t) isa Bool
+    @test is_continuous(t) isa Bool
+    @test is_highlevel(t) isa Bool
+    @test is_discrete(pntd) == is_discrete(t)
+    @test is_continuous(pntd) == is_continuous(t)
+    @test is_highlevel(pntd) == is_highlevel(t)
+     #@show [is_discrete(pntd), is_continuous(pntd), is_highlevel(pntd)]
+    @test only(filter(==(true), [is_discrete(pntd), is_continuous(pntd), is_highlevel(pntd)]))
+    @test only(filter(==(true), [is_discrete(t), is_continuous(t), is_highlevel(t)]))
 end

@@ -44,11 +44,11 @@ end
 #println()
 @testset "default inscription $pntd" for pntd in PnmlTypes.all_nettypes()
     net = make_net(pntd, :utils_net)
-    # placetype = if ishighlevel(pntd)
+    # placetype = if is_highlevel(pntd)
     #     @inferred SortType("dummy", NamedSortRef(:dot), net)
-    # elseif iscontinuous(pntd)
+    # elseif is_continuous(pntd)
     #     @inferred SortType("dummy", NamedSortRef(:real), net)
-    # elseif isdiscrete(pntd)
+    # elseif is_discrete(pntd)
     #     @inferred SortType("dummy", NamedSortRef(:positive), net)
     # else
     #     error("pntd not known")
@@ -93,9 +93,9 @@ end
 end
 #println()
 @testset "predicates for $pntd" for pntd in PnmlTypes.all_nettypes()
-    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.isdiscrete(pntd), ishighlevel(pntd), iscontinuous(pntd))))
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.is_discrete(pntd), is_highlevel(pntd), is_continuous(pntd))))
     tp = typeof(pntd) # translate from singleton to type
-    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.isdiscrete(tp), ishighlevel(tp), iscontinuous(tp))))
+    @test Iterators.only(Iterators.filter(==(true), (PnmlTypes.is_discrete(tp), is_highlevel(tp), is_continuous(tp))))
 end
 
 @testset "add_nettype" begin

@@ -5,7 +5,7 @@ using XMLDict: XMLDict
 include("TestUtils.jl")
 using .TestUtils
 
-# @testset "structure $pntd" for pntd in PnmlTypes.all_nettypes(ishighlevel)
+# @testset "structure $pntd" for pntd in PnmlTypes.all_nettypes(is_highlevel)
 #     node = xml"""
 #      <structure>
 #         <tuple>

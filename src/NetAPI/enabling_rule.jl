@@ -58,8 +58,6 @@ Return vector of booleans where `true` means the matching transition
 is enabled at current `marking`. Has the same order as the `transitions` dictionary.
 Used in the firing rule.
 
-
-
 Update tr.vars Set and tr.varsubs, NamedTuple.
 """
 function enabled end
@@ -110,8 +108,8 @@ function sufficient_tokens!(mark_dict::AbstractDict, net::AbstractPnmlNet,
                                          for place_id in preset(net, transition_id))
 end
 
-function sufficient_tokens!(mark_dict::AbstractDict, net::PnmlNet{<:AbstractHLCore},
-                            transition_id, vars, varsubs)
+function sufficient_tokens!(mark_dict::AbstractDict, net::PnmlNet{T},
+                            transition_id, vars, varsubs) where (T <: AbstractHLCore)
     # During enabling rule, tr_var_binding_set maps variable to a set of elements.
     tr_var_binding_set = OrderedDict{REFID, Any}()
     #~ marking = PnmlMultiset{B, T}(Multiset(T() => 1)) singleton
@@ -221,7 +219,7 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
         v_refid = refid(v_sortref)
 
         # Verify variable sort matches placesort.
-        if isproductsort(placesort)
+        if is_productsort(placesort)
             any(==(v_refid), Sorts.sorts(placesort, net)) ||
                     error("none of product sorts are '$v_refid': ", repr(placesort))
         else
