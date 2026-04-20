@@ -58,8 +58,8 @@ abstract type AbstractOpExpr <: PnmlExpr end
 """
     toexpr(ex::PnmlExpr, varsubs::NamedTuple{Symbol,Any}, net) -> Expr
 
-Return `Expr` constructed from `ex`. Call `toexpr` on any contained terms.
-`varsubs` used to replace variables in expressions.
+Return `Expr` constructed from `ex`. Calls `toexpr` on any contained terms.
+`varsubs` used to replace variables in expressions with values from current marking vector.
 """
 function toexpr end
 
@@ -210,8 +210,8 @@ end
 
 ###################################################################################
 """
-Bag: a TermInterface expression calling pnmlmultiset(basis, x, multi) to construct
-a [`PnmlMultiset`](@ref).
+Bag:
+Expression calling pnmlmultiset(basis, x, multi) to construct a [`PnmlMultiset`](@ref).
 """
 Bag # Need to avoid @matchable to have docstring
 @matchable struct Bag{E <: Any, M <: Any} <: PnmlExpr
@@ -855,7 +855,7 @@ function expr_sortref(tup::PnmlTupleEx, net)
     exsort = ProductSort(tuple(expr_sortref.(tup.args, Ref(net))...), net)
     for (sortid,ps) in pairs(PNML.productsorts(net))
         #!@show ps
-        if length(exsort) == length(ps) && PNML.Sorts.equalSorts(exsort, ps, net)
+        if length(exsort) == length(ps) && PNML.Sorts.equalSorts(net, exsort, ps)
             return ProductSortRef(sortid)
         end
     end

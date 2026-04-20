@@ -277,7 +277,7 @@ function parse_hlinitialMarking(node::XMLNode, default_sorttype::Maybe{SortType}
             error("$(pntd(net)) default_sorttype of $parentid " *
                     "expected to be NamedSortRef, found $default_sorttype")
         end
-        if !equalSorts(sortref(default_sorttype), placetype, net)
+        if !equalSorts(net, sortref(default_sorttype), placetype)
             println()
             @error("$(pntd(net)) parse_hlinitialMarking of $parentid " *
                     "sortref mismatch: $default_sorttype != $placetype",
@@ -333,7 +333,7 @@ function parse_fifoinitialMarking(node::XMLNode, default_sorttype::Maybe{SortTyp
             error("$(pntd(net)) default_sorttype of $parentid expected to be NamedSortRef" *
                     ", found $default_sorttype")
         end
-        if !equalSorts(sortref(default_sorttype), placetype, net)
+        if !equalSorts(net, sortref(default_sorttype), placetype)
             println()
             @error(string("$(pntd(net)) parse_fifoinitialMarking of $parentid",
                           " sortref mismatch: $default_sorttype != $placetype"),
@@ -377,7 +377,7 @@ function (pmt::ParseMarkingTerm)(marknode::XMLNode, net::APN)
         isempty(mark_tj.vars) || error("unexpected variables in $mark_tj")
         if isnothing(placetype(pmt))
             @warn "$(pntd(net)) ParseMarkingTerm placetype(pmt) is nothing"
-        elseif !equalSorts(mark_tj.ref, placetype(pmt)::SortRef, net)
+        elseif !equalSorts(net, mark_tj.ref, placetype(pmt)::SortRef)
             @warn "$(pntd(net)) ParseMarkingTerm sort mismatch" mark_tj.ref placetype(pmt) mark_tj
         end
         return mark_tj
@@ -451,7 +451,7 @@ function (pit::ParseInscriptionTerm)(node::XMLNode, net::APN)
     isa(tj.exp, PnmlExpr) ||
         error("inscription is a $(nameof(typeof(tj.exp))), expected PnmlExpr")
 
-    if !equalSorts(tj.ref, placesort, net)
+    if !equalSorts(net, tj.ref, placesort)
         @error("arc $(source(pit)) -> $(target(pit)) inscription term sort mismatch: $(tj.ref) != $placesort",
                 tj, adjacentplace)
     end
