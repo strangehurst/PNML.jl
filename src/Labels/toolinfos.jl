@@ -6,7 +6,7 @@ $(TYPEDFIELDS)
 
 A <toolspecific> tag holds well formed XML that is parsed into an [`AnyElement`](@ref).
 """
-@auto_hash_equals struct ToolInfo{T, N <: APN}
+@auto_hash_equals struct ToolInfo{N <: APN, T}
     toolname::String
     version::String
     info::T # content of tool specific info

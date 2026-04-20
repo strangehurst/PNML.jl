@@ -22,6 +22,15 @@ const APN = AbstractPnmlNet
 
 """
 $(TYPEDEF)
+"""
+abstract type AbstractDeclarationDicts end
+"""
+Alias for AbstractDeclarationDicts.
+"""
+const ADDicts = AbstractDeclarationDicts
+
+"""
+$(TYPEDEF)
 
 Objects of a Petri Net Graph are pages, arcs, nodes.
 

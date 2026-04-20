@@ -11,7 +11,7 @@ A "multiset sort over a basis sort is interpreted as
 """
 @kwdef mutable struct Place{N <: APN}  <: AbstractPnmlNode
     id::Symbol
-    initialMarking::Marking # Expression as value. Used to create marking vector.
+    initialMarking::Marking{N} # Expression as value. Used to create marking vector.
 
     # For each place, a sort defines the type of the marking tokens of the place (sorttype).
     # The inscription of an arc to or from a place defines which tokens are added or removed
@@ -71,7 +71,7 @@ $(TYPEDFIELDS)
 """
 mutable struct Transition{N <: APN}  <: AbstractPnmlNode
     id::Symbol
-    condition::Labels.Condition #! booleran expression label
+    condition::Labels.Condition{N} #! booleran expression label
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}
     toolspecinfos::Maybe{Vector{ToolInfo}}
@@ -125,11 +125,11 @@ Edge of a Petri Net Markup Language graph that connects place and transition.
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-@kwdef mutable struct Arc{T <: PnmlExpr, N <: APN} <: AbstractPnmlNode #Object
+@kwdef mutable struct Arc{N <: APN, T <: PnmlExpr} <: AbstractPnmlNode #Object
     id::Symbol
     source::RefValue{Symbol} # IDREF
     target::RefValue{Symbol} # IDREF
-    inscription::Inscription{T} #! expression label
+    inscription::Inscription{N,T} #! expression label
     arctypelabel::ArcType
     namelabel::Maybe{Name}
     graphics::Maybe{Graphics}

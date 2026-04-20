@@ -23,10 +23,9 @@ isbuiltinsort(tag::Symbol) = (tag in builtin_sorts())
 # Unless they have content, just the types are sufficent.
 # Use @auto_hash_equals on all sorts so that these compare item, by, item. Could use hashes.
 # Called when both a and b are the same concrete type.
-equalSorts(a::AbstractSort, b::AbstractSort, ::APN) = a == b
+equalSorts(::APN, a::AbstractSort, b::AbstractSort) = a == b
 
 basis(a::AbstractSort) = sortref(a)::SortRef
-sortof(a::AbstractSort, ::APN) = identity(a)
 sortdefinition(a::AbstractSort) = identity(a)
 
 """
@@ -63,7 +62,6 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
 end
 
 sortref(ms::MultisetSort) = identity(ms.basis)::SortRef
-sortof(ms::MultisetSort, net::APN) = sortdefinition(namedsort(net, basis(ms)))
 basis(ms::MultisetSort) = ms.basis
 
 function Base.show(io::IO, us::MultisetSort)
@@ -78,9 +76,9 @@ An ordered collection of sorts. The elements of the sort are tuples of elements 
 ISO 15909-1:2019 Concept 14 (color domain) finite cartesian product of color classes.
 Where sorts are the syntax for color classes and ProductSort is the color domain.
 """
-@auto_hash_equals struct ProductSort{N, P <:APN} <: AbstractSort
+@auto_hash_equals struct ProductSort{PN <:APN, N} <: AbstractSort
     ae::NTuple{N, SortRef}
-    net::P
+    net::PN
 end
 #
 Base.length(ps::ProductSort) = length(ps.ae)
@@ -109,8 +107,8 @@ function sortelements(ps::ProductSort, net::APN)
     Iterators.product(Fix2(sortelements, net).(sorts(ps))...)
 end
 
-function equalSorts(a::ProductSort{N}, b::ProductSort{N},
-                    net::APN) where {N <: Integer}
+function equalSorts(_net::PN, a::ProductSort{PN, N}, b::ProductSort{PN, N},
+                    ) where {PN <: APN, N <: Integer}
     if length(a) == length(b) &&
             all(refid(x) == refid(y) for (x,y) in zip(sorts(a), sorts(b)))
         return true
@@ -119,7 +117,7 @@ function equalSorts(a::ProductSort{N}, b::ProductSort{N},
 end
 
 #
-function equalSorts(a::SortRef, b::SortRef, net::APN)
+function equalSorts( net::APN, a::SortRef, b::SortRef)
     if variant_type(a) == variant_type(b) && refid(a) == refid(b)
         #println("Same type ref and same refid means same sortdefinition.")
         return true
@@ -127,7 +125,7 @@ function equalSorts(a::SortRef, b::SortRef, net::APN)
         # Compare sortdefinitions.
         asort = to_sort(unwrap_namedsort(a, net), net)
         bsort = to_sort(unwrap_namedsort(b, net), net)
-        return equalSorts(asort, bsort, net)
+        return equalSorts(net, asort, bsort)
     end
 end
 

@@ -8,7 +8,7 @@ There may be other things evaluating to boolean used to determine transition fir
 including: priority labels, inhibitor arc, place capacity labels, time/delay labels.
 ```
 """
-@auto_hash_equals struct Condition{T<:PnmlExpr, N <: APN} <: HLAnnotation
+@auto_hash_equals struct Condition{N <: APN, T<:PnmlExpr} <: HLAnnotation
     text::Maybe{String}
     term::T # duck-typed AbstractBoolExpr
     # color function: uses term and args, Built/JITed

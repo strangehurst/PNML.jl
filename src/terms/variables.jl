@@ -8,7 +8,7 @@ Example input: <variable refvariable="varx"/>.
 #TODO examples of use, modifying and accessing
 """
 struct Variable{N <: APN} <: AbstractVariable
-    refvariable::Symbol # of VariableDeclaration{SortRef} that gives name and Type
+    refvariable::Symbol # of VariableDeclaration{N} that gives name and Type
     net::N
 
     function Variable(v::Symbol, net::APN)
@@ -25,9 +25,7 @@ function (var::Variable)()
     value(var)
 end
 value(v::Variable) = error("not well defined: value($v)") #! XXX FIXME XXX
-
 sortref(v::Variable) = sortref(variabledecl(v.net, refid(v)))::SortRef
-sortof(v::Variable)  = sortof(variabledecl(v.net, refid(v)))
 
 function Base.show(io::IO, v::Variable)
     print(io, nameof(typeof(v)), "(", repr(v.refvariable), ")")

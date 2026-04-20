@@ -57,7 +57,7 @@ using PNML: has_place, place, pntd
 
 # Methods implemented in this module.
 import PNML: adjacent_place
-import PNML: basis, sortref, sortof, sortelements, sortdefinition
+import PNML: basis, sortref, sortelements, sortdefinition
 import PNML: refid, netdata, tag, verify!
 
 include("xmlutils.jl")

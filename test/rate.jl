@@ -20,7 +20,7 @@ println("RATE")
     @test eltype(r) == Float64
     @test sortref(r) isa SortRef
     @test refid(sortref(r)) === :real
-    @test sortof(r) isa RealSort
+    #!@test sortof(r) isa RealSort
 
     @test_call PNML.get_label(trans, :rate)
     @test_call PNML.labels(trans)

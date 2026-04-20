@@ -37,9 +37,7 @@ A places's <type> label wraps a `UserSortRef` that holds a REFID to the sort of 
 hence use of `sorttype`. It is the type (or set) concept of the many-sorted algebra.
 
 For high-level nets there will be a declaration section with a rich language of sorts
-using `UserSortFRef`, [`NamedSort`](@ref),
-[`PartitionSort`](@ref) or
-[`ArbitrarySort`](@ref)
+using `UserSortRef`, `NamedSort`, `PartitionSort`, or `ArbitrarySort`
 defined in the xml input.
 
 For other PnmlNet's they are used internally to allow common implementations.
@@ -75,8 +73,7 @@ SortType(s::AbstractString, sort::SortRef, net) = SortType(; text=s, sort, net)
 text(t::SortType)   = ifelse(isnothing(t.text), "", t.text) # See text(::AbstractLabel)
 sortref(t::SortType) = t.sort
 refid(t::SortType) = refid(sortref(t))::Symbol
-sortof(t::SortType) = sortdefinition(namedsort(t.net, sortref(t)))
-sortelements(t::SortType, net::APN) = sortelements(sortof(t), net)
+sortelements(t::SortType, net::APN) = sortelements(sortdefinition(namedsort(net, sortref(t))), net)
 
 """
     def_sort_element(x)

@@ -45,7 +45,7 @@ import ..Expressions: toexpr, PnmlExpr, expr_sortref
 
 using ..Sorts
 # Some labels implement the Sort interface
-import PNML: basis, sortref, sortof, sortelements, sortdefinition, version
+import PNML: basis, sortref, sortelements, sortdefinition, version
 
 include("toolinfos.jl") # labels and nodes can both have tool specific information.
 include("toolinfo_content.jl") # Some infos have known content.

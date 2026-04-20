@@ -68,7 +68,7 @@ Multisets.set_key_value_show()
     IntegerSort, NaturalSort, PositiveSort, RealSort,
     MultisetSort, ProductSort, PartitionSort, ListSort, StringSort, ArbitrarySort
 
-@reexport using PNML: sortof, sortref, sortdefinition, sortelements, namedsort, initial_marking
+@reexport using PNML: sortref, sortdefinition, sortelements, namedsort, initial_marking
 
 @reexport using PNML: metagraph, vertex_codes, vertex_labels
 

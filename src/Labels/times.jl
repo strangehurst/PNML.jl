@@ -8,7 +8,7 @@ Expected XML: `<time> <text>0.3</text> </time>`.
 
 Dynamic time is a function with arguments of net marking and transition.
 """
-@kwdef struct Time{T <: PnmlExpr, N <: APN} <: Annotation
+@kwdef struct Time{N <: APN, T <: PnmlExpr} <: Annotation
     text::Maybe{String} = nothing
     term::T # Use the same mechanism as PTNet initialMarking and inscription.
     graphics::Maybe{Graphics} = nothing
@@ -22,7 +22,6 @@ value_type(::Type{Time}, ::APNTD) = Float64
 Base.eltype(::Time) = value_type(Time)
 term(i::Time) = i.term
 sortref(i::Time) = expr_sortref(term(i), i.net)::SortRef
-sortof(i::Time) = sortdefinition(namedsort(i.net, sortref(i)))::Number
 
 function (time::Time)(varsub::NamedTuple=NamedTuple())
     eval(toexpr(term(time), varsub, time.net))::value_type(Time)

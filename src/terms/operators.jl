@@ -46,18 +46,17 @@ Operator(t, f, inex, ins, outs; metadata=nothing, net) = Operator(t, f, inex, in
 tag(op::Operator)     = op.tag # PNML XML tag
 inputs(op::Operator)  = op.inexprs #! when should these be eval(toexpr)'ed)
 sortref(op::Operator) = identity(op.outsort)::SortRef # output sort of operator. feconstants sort is enclosing enumeration
-sortof(op::Operator)  = sortdefinition(namedsort(op.net), op.outsort) # also abstractsort, partitionsort
 metadata(op::Operator) = op.metadata
 value(op::Operator)   = op(#= parameters? =#)
 
 #? Possible to pass variables at this point? Pass marking vector?
 function (op::Operator)(#= parameters? =#)
-    #println("\nOperator functor $(tag(op)) arity $(arity(op)) $(sortof(op))") #! debug
+    #println("\nOperator functor $(tag(op)) arity $(arity(op))") #! debug
     input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
 
     @assert all((in,so) -> typeof(in) == eltype(so), zip(input, insorts(op)))
     out = op.func(input) #^ apply func to evaluated +/-inputs
-    @assert isa(out, eltype(sortof(op)))
+    #!@assert isa(out, eltype(x_sortof(op)))
     return out
 end
 
@@ -97,7 +96,6 @@ end
 function Base.show(io::IO, t::Operator)
     print(io, nameof(typeof(t)), "(")
     show(io, tag(t)); print(io, ", ");
-    show(io, sortof(t)); print(io, ", ");
     show(io, inputs(t))
     print(io, ")")
 end
@@ -224,7 +222,7 @@ end
 
 Return sort that operator `tag` returns.
 """
-function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef}, ddict::DeclDict)
+function pnml_hl_outsort(tag::Symbol; insorts::Vector{UserSortRef})
     outref = if isbooleanoperator(tag) # 0-arity function is a constant
         UserSortRef(:bool) # BoolSort()
     elseif isintegeroperator(tag) # 0-arity function is a constant
@@ -305,7 +303,6 @@ function (uo::UserOperator)(parameters) # TODO add variables
     error("found NO operator $(repr(uo.declaration))")
 end
 
-sortof(uo::UserOperator) = sortof(operator(uo.net, uo.declaration))
 basis(uo::UserOperator)  = basis(operator(uo.net, uo.declaration))
 
 function Base.show(io::IO, uo::UserOperator)

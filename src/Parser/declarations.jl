@@ -10,27 +10,18 @@ Unknown tags get parsed by `xmldict`.
 
 
 """
-$(TYPEDSIGNATURES)
+    parse_declaration!(net::APN, nodes::Vector{XMLNode}) -> Declaration
 
-Fill [`DeclDict`](@ref) from one or more `<declaration>` labels.
+Fill `decldict(net)`] from one or more `<declaration>` labels.
 
 Expected format: `<declaration> <structure> <declarations> <namedsort/> <namedsort/> ...`
 
 Assume behavior with the meaning in a <structure> for all nets.
 
-Note the use of both declaration and declarations.
+Note the use of both declaration and declarations, which comes from ISO 15909 Standard.
 We allow repeated declaration (without the s) here.
 All fill the same `DeclDict`. See [`fill_decl_dict!`](@ref)
 """
-function parse_declaration! end
-
-function parse_declarations!(net::APN, node::XMLNode)
-    decls = alldecendents(node, "declaration") # There may be none (empty vector).
-    D()&& println("## parse_declarations! $(length(decls)) <declaration> node(s)")
-    return parse_declaration!(net, decls)::Declaration
-end
-
-# A function boundary that is used for test scaffolding by passing `[node]`.
 function parse_declaration!(net::APN, nodes::Vector{XMLNode})
     text = nothing
     graphics::Maybe{Graphics} = nothing
@@ -54,7 +45,20 @@ function parse_declaration!(net::APN, nodes::Vector{XMLNode})
             end
         end
     end
-    Declaration(; text, net.ddict, graphics, toolspecinfos) #? make Ref(net.ddict)?
+
+    Declaration(; text, ddict=decldict(net), graphics, toolspecinfos)
+end
+
+"""
+    parse_declarations!(net::APN, node::XMLNode) -> Declaration
+
+Collect a vector of `<declaration>` `XMLNodes`. Serves as function barrier.
+NB: This is NOT where `<declarations>` are parsed, see [`fill_decl_dict!`](@ref) .
+"""
+function parse_declarations!(net::APN, node::XMLNode)
+    decls = alldecendents(node, "declaration") # There may be none (empty vector).
+    D()&& println("## parse_declarations! $(length(decls)) <declaration> node(s)")
+    return parse_declaration!(net, decls)::Declaration
 end
 
 """
@@ -126,17 +130,19 @@ function parse_namedsort(node::XMLNode, net::APN)
 
     D()&& println("## parse_namedsort $sort_id $name")
     # Sort can be built-in, multiset, product.
-    def = parse_sort(EzXML.firstelement(node), net, sort_id, name)::SortRef
-    isnothing(def) &&
-        error("failed to parse sort definition for namedsort $sort_id $name")
+    namedsort_def = parse_sort(EzXML.firstelement(node), net, sort_id, name)::SortRef
+    isnothing(namedsort_def) &&
+        error("failed to parse sort definition of namedsort $sort_id $name")
 
-    #? check for loops?
     # convert SortRef to concrete sort object.
-    sort = to_sort(def, net)
+    sort = to_sort(namedsort_def, net)
+    #^ NB: We wrap built-ins in a NamedSort to give them an id, name.
+    #^ Assume any NamedSort found here, which is illegal in ISO 15909-2,
+    #^ is being used to transport a sort definition.
     if isa(sort, NamedSort)
-        sort = sortdefinition(sort)
+        sort = sortdefinition(sort) # extract concrete sort
     end
-    NamedSort(sort_id, name, sort, net) #^ Concrete sort object.
+    NamedSort(sort_id, name, sort, net) #^ in parse_namedsort
 end
 
 """
@@ -170,7 +176,7 @@ function parse_namedoperator(node::XMLNode, net::APN)
     dnode = firstchild(node, "def")
     # NamedOperators have a def element that is a  term/expression of existing
     # operators &/or variable parameters that define the operation.
-    # The sortof the operator is the output sort of def.
+    # The sort of the operator is the output sort of def.
     if !isnothing(dnode)
         # contains 1 term
         definition_tj = parse_term(EzXML.firstelement(dnode), net; vars=())::TermJunk
@@ -228,7 +234,7 @@ function parse_variabledecl(node::XMLNode, net::APN)
     var_sortref = parse_sort(EzXML.firstelement(node), net, var_id, name)::SortRef
     isnothing(var_sortref) &&
         error("failed to parse sort definition for variabledecl $var_id $name")
-    VariableDeclaration(var_id, name, var_sortref, net)
+    VariableDeclaration{typeof(net)}(var_id, name, var_sortref, net)
 end
 
 """
@@ -276,7 +282,7 @@ end
 $(TYPEDSIGNATURES)
 
 Return [`SortRef`](@ref) wraping the REFID of a
-[`NamedSort`](@ref), [`ArbitrarySort`](@ref). or [`PartitionSort`](@ref) declaration.
+`NamedSort`, `ArbitrarySort`, or `PartitionSort` declaration.
 """
 function parse_usersort(node::XMLNode, net::APN)
     check_nodename(node, "usersort")
@@ -325,8 +331,7 @@ end
                 id::Maybe{REFID}=nothing, name::String="") -> SortRef
 
 
-Where `tag` is the XML element tag name. Used to dispatch to a specialized parser
-by assuming `node` is a sort.
+Where `tag` is the XML element tag name. Used to dispatch to a specialized parser.
 
 #TODO `id`, `name` are added by/for declarations, anonymous sorts.
 
@@ -399,20 +404,28 @@ end
 
 
 # is a finiteenumeration with additional operators: successor, predecessor
-function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, net::APN, parentid, name)
+function parse_sort(::Val{:cyclicenumeration}, node::XMLNode, net::APN, namedsort_id, name)
     check_nodename(node, "cyclicenumeration")
-    #D()&& println("cyclicenumeration $(repr(parentid)), $(repr(name))") #! debug
-    fec_ids = parse_feconstants(node, net, NamedSortRef(parentid)) # pared
+    D()&& println("cyclicenumeration $(repr(namedsort_id)), $(repr(name))") #! debug
+    @assert !isnothing(namedsort_id) "missing enclosing namedsort id"
+    fec_ids = parse_feconstants(node, net, NamedSortRef(namedsort_id))
     cesort = CyclicEnumerationSort(fec_ids)
-    return make_sortref(net, namedsorts, cesort, "cyclicenumeration", parentid, name)
+    ce_id = gensym("cyclicenumeration")
+    !isregistered(net.idregistry, ce_id) && register_id!(net.idregistry, ce_id)
+    namedsorts(net)[ce_id] = NamedSort(ce_id, String(ce_id), cesort, net)
+    return make_sortref(net, namedsorts, cesort, "cyclicenumeration", ce_id, name)
 end
 
-function parse_sort(::Val{:finiteenumeration}, node::XMLNode, net::APN, parentid, name)
+function parse_sort(::Val{:finiteenumeration}, node::XMLNode, net::APN, namedsort_id, name)
     check_nodename(node, "finiteenumeration")
-    #D()&& println("finiteenumeration $(repr(parentid)), $(repr(name))") #! debug
-    fec_ids = parse_feconstants(node, net, NamedSortRef(parentid))
-    fesort = FiniteEnumerationSort(fec_ids)#, net)
-    return make_sortref(net, namedsorts, fesort, "finiteenumeration", parentid, name)
+    D()&& println("finiteenumeration $(repr(namedsort_id)), $(repr(name))") #! debug
+    @assert !isnothing(namedsort_id) "missing enclosing namedsort id"
+    fec_ids = parse_feconstants(node, net, NamedSortRef(namedsort_id))
+    fesort = FiniteEnumerationSort(fec_ids)
+    fe_id = gensym("finiteenumeration")
+    !isregistered(net.idregistry, fe_id) && register_id!(net.idregistry, fe_id)
+    namedsorts(net)[fe_id] = NamedSort(fe_id, String(fe_id), fesort, net)
+    return make_sortref(net, namedsorts, fesort, "finiteenumeration", fe_id, name)
 end
 
 function parse_sort(::Val{:finiteintrange}, node::XMLNode, net::APN, _parentid, name)
@@ -436,6 +449,8 @@ function parse_sort(::Val{:finiteintrange}, node::XMLNode, net::APN, _parentid, 
     else
         # Did not find namedsort, will instantiate named,user duo for one. See fill_builtin_sorts!
         sort = FiniteIntRangeSort(startval, stopval)
+        !isregistered(net.idregistry, sorttag) && register_id!(net.idregistry, sorttag)
+        namedsorts(net)[sorttag] = NamedSort(sorttag, String(sorttag), sort, net)
         sref = make_sortref(net, namedsorts, sort, "finiteintrange", sorttag, name)
         #D()&& @show sref
         @assert isnamedsort(sref)
@@ -470,14 +485,14 @@ function parse_sort(::Val{:productsort}, node::XMLNode, net::APN, sortid, name)
 
     # See if there exists a matching sort. #! debug?
     for (id,ps) in pairs(productsorts(net))
-        if equalSorts(ps, prod_sort, net)
+        if equalSorts(net, ps, prod_sort)
             @info "Found product sort $id while looking for $prod_sort " *
                     "for sortid=$sortid name=$name" productsorts(net)
          end
     end
 
     fill_sort_tag!(net, sortid, prod_sort) # add to productsorts without a sortref
-    return make_sortref(net, namedsorts, prod_sort, "product", sortid, name)
+    return make_sortref(net, productsorts, prod_sort, "product", sortid, name)
 end
 
 
@@ -485,14 +500,20 @@ function parse_sort(::Val{:list}, node::XMLNode, net::APN, parentid, name)
     check_nodename(node, "list")
     @error("IMPLEMENT ME: :list for pntd=$(pntd(net))")
     ls = ListSort(NamedSortRef(:dot)) #! Made up, until we parse `node!
-    sref = make_sortref(net, namedsorts, ls, "list", parentid, name)
+    ls_id = gensym("list")
+    !isregistered(net.idregistry, ls_id) && register_id!(net.idregistry, ls_id)
+    namedsorts(net)[ls_id] = NamedSort(ls_id, String(ls_id), ls, net)
+    sref = make_sortref(net, namedsorts, ls, "list", ls_id, name)
     return sref
 end
 
 function parse_sort(::Val{:string}, node::XMLNode, net::APN, parentid, name)
     check_nodename(node, "string")
     ss = StringSort()
-    sref = make_sortref(net, namedsorts, ss, "string", parentid, name)
+    ss_id = gensym("string")
+    !isregistered(net.idregistry, ss_id) && register_id!(net.idregistry, ss_id)
+    namedsorts(net)[ss_id] = NamedSort(ss_id, String(ss_id), ss, net)
+    sref = make_sortref(net, namedsorts, ss, "string", ss_id, name)
     return sref
 end
 

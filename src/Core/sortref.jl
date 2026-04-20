@@ -139,7 +139,7 @@ function refid(s::SortRef)
 end
 
 """
-    to_sort(sortref::SortRef, ddict::DeclDict) -> AbstractSort
+    to_sort(sortref::SortRef, net::APN) -> AbstractSort
 
 Return concrete sort from `net` using the `REFID` in `sortref`,
 """

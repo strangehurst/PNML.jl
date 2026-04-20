@@ -21,11 +21,13 @@ $(FIELDS)
     # Keys of pages in `pagedict` owned by this net.
     # Use only `page_idset` not full `netsets` collection as net only contains pages.
     page_idset::OrderedSet{Symbol} = OrderedSet{Symbol}()
+
     # Declarations dictionarys filled with built-ins & when parsing `declaration`.
     # We use the declarations toolkit for non-high-level nets,
     # and assume a minimum level of function for high-level nets.
     # Declarations present in the input file will overwrite these. Particulary '<dot>'.
-    ddict::DeclDict = DeclDict() # empty dictionarys
+    ddict::RefValue{DeclDict} = Ref{DeclDict}() # undef
+
     # PNML Label with `Text` `Graphics`, `ToolInfo` and zero or more `Declarations`.
     # Yes, The ISO 15909-2 Standard uses `Declarations` inside `Declaration`.
     declaration::Maybe{Declaration} = nothing
@@ -59,8 +61,11 @@ end
 function make_net(type::APNTD, id=:make_net,)
     net = PnmlNet(; type, id,
                     idregistry=IDRegistry(),
-                    pagedict=OrderedDict{Symbol, Page{PnmlNet{typeof(type)}}}(),
-                    declaration=Declaration(; ddict=DeclDict()))
+                    pagedict=OrderedDict{Symbol, Page{PnmlNet{typeof(type)}}}())
+
+    net.ddict[] = DeclDict(net) # Empty DeclDict
+    net.declaration = Declaration(; ddict=decldict(net)) # Empty Declarations
+
     fill_builtin_sorts!(net)
     fill_builtin_labelparsers!(net)
     fill_builtin_toolparsers!(net)
@@ -75,7 +80,7 @@ pid(net::PnmlNet) = net.id
 
 "Return IDRegistry of a PnmlNet."
 registry_of(net::PnmlNet) = net.idregistry
-decldict(net::PnmlNet) = net.ddict
+decldict(net::PnmlNet) = net.ddict[]
 declarations(net::PnmlNet) =  declarations(decldict(net))
 
 isdiscrete(net::APN) = isdiscrete(pntd(net))
@@ -216,7 +221,6 @@ Iterate over each operator in the operator subset of declaration dictionaries .
 """
 operators(net::APN) = operators(decldict(net))
 
-"Does any operator dictionary contain `id`?"
 has_operator(net::APN, id::Symbol) = has_operator(decldict(net), id)
 
 """
@@ -280,10 +284,11 @@ function verify!(errors::Vector{String}, net::PnmlNet, verbose::Bool)
     verify_ids!(errors, "refplaces id", refplaces(net), net)
     verify_ids!(errors, "reftransitions id", reftransitions(net), net)
 
-        verify!(errors, decldict(net), verbose, net)
+    verify!(errors, decldict(net), verbose, net)
 
-    if !isnothing(net.declaration)
-        verify!(errors, net.declaration, verbose, net)
+    let d = net.declaration
+        @assert !isnothing(d)
+        isnothing(d) || verify!(errors, d, verbose, net)
     end
 
     # Call net object's verify method.

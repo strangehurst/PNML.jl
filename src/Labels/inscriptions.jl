@@ -7,7 +7,7 @@ Labels an Arc with a expression term .
 `Inscription(t::PnmlExpr)()` is a functor evaluating the expression and
 returns a value of the `eltype` of sort of inscription.
 """
-struct Inscription{T <: PnmlExpr, N <: APN} <: HLAnnotation
+struct Inscription{N <: APN, T <: PnmlExpr} <: HLAnnotation
     text::Maybe{String}
     term::T # expression whose output sort is the same as adjacent place's sorttype.
     graphics::Maybe{Graphics}
@@ -18,7 +18,6 @@ end
 
 term(i::Inscription) = i.term
 sortref(i::Inscription) = expr_sortref(term(i), i.net)::SortRef
-sortof(i::Inscription) = sortdefinition(namedsort(i.net, sortref(i)))::PnmlMultiset #TODO other sorts
 
 function (inscription::Inscription)(varsub::NamedTuple = NamedTuple())
     eval(toexpr(term(inscription), varsub, inscription.net))
@@ -53,7 +52,6 @@ end
 # - PnmlMultiset wraps a multiset and a sort. The sort and the contents of the multiset
 #   must have the same type.
 #
-# The combination of basis and sortof is complicated.
 # Terms sort and type are related. Type is very much a Julia mechanism. Like sort it is found
 # in mathmatical texts that also use type.
 

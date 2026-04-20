@@ -83,7 +83,7 @@ function plugins(kwargs, dict::AbstractDict, plugintag=:lp)
                 dict[plugin[1]][plugin[2]] = last(plugin)
             end
         end
-        @show dict #! bring-up
+        @warn dict #! bring-up
     end
 end
 
@@ -116,6 +116,8 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{PnmlNet{typeof(pntd)}}}(), #! abstract Page
                     )
+    net.ddict[] = DeclDict(net) # Empty DeclDict
+
     #^ Label Parsers
     fill_builtin_labelparsers!(net.labelparser)
     @assert !isempty(net.labelparser) "There are expected to be built-in label parsers."

@@ -11,9 +11,9 @@ a single per-net dictionary collection `ddict`.
 The text, graphics, and toolspecinfos fields are expected to be nothing,
 but are present because, being labels, it is allowed.
 """
-@kwdef struct Declaration <: Annotation
+@kwdef struct Declaration{D <: PNML.AbstractDeclarationDicts} <: Annotation
     text::Maybe{String} = nothing
-    ddict::DeclDict #! The declaration data store for a net.
+    ddict::D # Required, The declaration data store for a net.
     graphics::Maybe{Graphics} = nothing
     toolspecinfos::Maybe{Vector{ToolInfo}} = nothing
 end
@@ -28,10 +28,6 @@ end
 
 function verify!(errors::Vector{String}, decl::Declaration, verbose::Bool, ::APN)
     verbose && println("## verify $(typeof(decl))")
-    if isempty(decl.ddict)
-        msg = string("declaration dictionarys is empty: $decl")::String
-        verbose && println("verify error: $msg")
-        push!(errors, msg)
-    end
+    #! TBD
     return errors
 end

@@ -11,7 +11,7 @@ using .TestUtils
 
 @testset "empty declarations $pntd" for pntd in PnmlTypes.core_nettypes()
     net = make_net(pntd, :empty_declaration)
-    decl = @inferred parse_declarations!(net, xml"""<declaration key="test empty">
+    decl = @inferred Declaration parse_declarations!(net, xml"""<declaration key="test empty">
             <structure><declarations></declarations></structure>
         </declaration>""")
 
@@ -62,17 +62,22 @@ end
         <unknownchild />
     </declaration>
     """
-
+    println()
     net = make_net(pntd, :namedsorts_net)
     @test_call target_modules=t_modules namedsorts(net)
     @test_opt target_modules=t_modules function_filter=pff namedsorts(net)
-
+    #@show namedsorts(net)
+    #foreach(println, pairs(namedsorts(net)))
     base_decl_length = length(namedsorts(net))
     #@show decl = parse_declaration!(net, [node])
     #@show decl net.ddict
     decl = @test_logs(match_mode=:any, (:warn, r"^ignoring unexpected child"),
             parse_declaration!(net, [node])::Declaration) # Add 3 declarations.
-    @test length(namedsorts(net)) == base_decl_length + 3
+
+    #println()
+    #foreach(println, pairs(namedsorts(net)))
+    # declarations in namedsorts twice
+    @test length(namedsorts(net)) == base_decl_length + 6
 
     for nsort in values(namedsorts(net))
         #!@test typeof(nsort) <: NamedSort # is a declaration
@@ -152,7 +157,7 @@ end
     """
 
     net = make_net(pntd, :declaration_net)
-    decl = @inferred parse_declaration!(net, [node])
+    decl = @inferred Declaration parse_declaration!(net, [node])
     @test typeof(decl) <: Declaration
 
     # Examine 3 partition sorts

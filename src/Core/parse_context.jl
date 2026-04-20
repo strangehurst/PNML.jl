@@ -51,17 +51,17 @@ Register the tag and create and return an `SortRef` holding `tag`.
 function fill_sort_tag!(net::APN, tag::Symbol, sort, dict)
     fill_sort_tag!(decldict(net), registry_of(net), tag, sort, dict)
 end
-function fill_sort_tag!(ddict::DeclDict, idreg, tag::Symbol, sort, dict)
-     # Do not overwrite existing content (except dot).
-    if tag === :dot || !haskey(dict(ddict), tag)
+function fill_sort_tag!(dd::DeclDict, idreg, tag::Symbol, sort, dict)
+    # Do not overwrite existing content (except dot).
+    if tag === :dot || !haskey(dict(dd), tag)
         !isregistered(idreg, tag) && register_id!(idreg, tag)
-        dict(ddict)[tag] = sort
+        dict(dd)[tag] = sort
     end
     return sortref(dict, tag) # used by make_sortref
 end
 
+
 function sortref(dict_callable, tag)
-    #sortref::SortRefImpl.Type =
     @match dict_callable begin
         PNML.multisetsorts  => MultisetSortRef(tag)  # sort, basis is a builtin,
         PNML.productsorts   => ProductSortRef(tag)   # sort, tuple of SortRefs
@@ -73,19 +73,14 @@ end
 
 
 # match sort type to dictionary access method
-fill_sort_tag!(net::APN, tag, sort::NamedSort) =
-    fill_sort_tag!(net, tag, sort, namedsorts)
-fill_sort_tag!(net::APN, tag, sort::PartitionSort) =
-    fill_sort_tag!(net, tag, sort, partitionsorts)
-fill_sort_tag!(net::APN, tag, sort::ArbitrarySort) =
-    fill_sort_tag!(net, tag, sort, arbitrarysorts)
+fill_sort_tag!(net::APN, tag, sort::NamedSort) = fill_sort_tag!(net, tag, sort, namedsorts)
+fill_sort_tag!(net::APN, tag, sort::PartitionSort) = fill_sort_tag!(net, tag, sort, partitionsorts)
+fill_sort_tag!(net::APN, tag, sort::ArbitrarySort) = fill_sort_tag!(net, tag, sort, arbitrarysorts)
 
 # These two sorts are not used in variable declarations.
 # They do not add a name to the contained sorts (or sortrefs).
-fill_sort_tag!(net::APN, tag, sort::ProductSort) =
-    fill_sort_tag!(net, tag, sort, productsorts)
-fill_sort_tag!(net::APN, tag, sort::MultisetSort) =
-    fill_sort_tag!(net, tag, sort, multisetsorts)
+fill_sort_tag!(net::APN, tag, sort::ProductSort) = fill_sort_tag!(net, tag, sort, productsorts)
+fill_sort_tag!(net::APN, tag, sort::MultisetSort) = fill_sort_tag!(net, tag, sort, multisetsorts)
 
 """
     fill_builtin_labelparsers!(net::APN) -> Nothing

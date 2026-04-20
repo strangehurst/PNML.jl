@@ -14,7 +14,7 @@ See `Bag` for expression that returns this data structure.
 "multi`x" is text representation of the `<numberof>` operator that produces a multiset.
 As does `<all>` operator.
 """
-@auto_hash_equals struct PnmlMultiset{T, N <: APN} #! data type
+@auto_hash_equals struct PnmlMultiset{N <: APN, T} #! data type
     basis_ref::SortRef # REFID indirection
     mset::Multiset{T}
     net::N
@@ -47,19 +47,22 @@ Base.keys(ms::PnmlMultiset) = keys(multiset(ms))
 Base.values(ms::PnmlMultiset) = values(multiset(ms))
 Base.iterate(ms::PnmlMultiset, ss) = iterate(multiset(ms), ss)
 Base.iterate(ms::PnmlMultiset) = iterate(multiset(ms))
-Base.convert(Bool, c::PnmlMultiset{DotConstant}) = true
+Base.convert(Bool, ::PnmlMultiset{APN, DotConstant}) = begin
+    @assert Bool <: Number
+    true
+end
 
-Base.:(==)(c::PnmlMultiset{DotConstant}, n::Number)  = convert(Bool, c) == n
-Base.:(==)( n::Number, c::PnmlMultiset{DotConstant}) = n == convert(Bool, c)
+Base.:(==)(c::PnmlMultiset{APN, DotConstant}, n::Number)  = convert(Bool, c) == n
+Base.:(==)( n::Number, c::PnmlMultiset{APN, DotConstant}) = n == convert(Bool, c)
 
-Base.isequal(c::PnmlMultiset{DotConstant}, n::Number)  = isequal(convert(Bool, c), n)
-Base.isequal( n::Number, c::PnmlMultiset{DotConstant}) = isequal(n, convert(Bool, c))
+Base.isequal(c::PnmlMultiset{APN, DotConstant}, n::Number)  = isequal(convert(Bool, c), n)
+Base.isequal( n::Number, c::PnmlMultiset{APN, DotConstant}) = isequal(n, convert(Bool, c))
 
-Base.isless(c::PnmlMultiset{DotConstant}, n::Number)  = isless(convert(Bool, c), n)
-Base.isless( n::Number, c::PnmlMultiset{DotConstant}) = isless(n, convert(Bool, c))
+Base.isless(c::PnmlMultiset{APN, DotConstant}, n::Number)  = isless(convert(Bool, c), n)
+Base.isless( n::Number, c::PnmlMultiset{APN, DotConstant}) = isless(n, convert(Bool, c))
 
-Base.:(<)(c::PnmlMultiset{DotConstant}, n::Number)  = convert(Bool, c)< n
-Base.:(<)( n::Number, c::PnmlMultiset{DotConstant}) = n < convert(Bool, c)
+Base.:(<)(c::PnmlMultiset{APN, DotConstant}, n::Number)  = convert(Bool, c)< n
+Base.:(<)( n::Number, c::PnmlMultiset{APN, DotConstant}) = n < convert(Bool, c)
 
 issingletonmultiset(ms::PnmlMultiset) = cardinality(ms) == 1
 
@@ -73,15 +76,15 @@ basis(ms::PnmlMultiset) = sortref(ms)::SortRef
 sortref(ms::PnmlMultiset) = ms.basis_ref
 net(ms::PnmlMultiset) = ms.net
 
-Base.eltype(::Type{PnmlMultiset{T,N}}) where {T, N <: APN} = T
+Base.eltype(::Type{PnmlMultiset{N, T}}) where {T <: Any, N <: APN} = T
 
 function Base.show(io::IO, t::PnmlMultiset)
      print(io, nameof(typeof(t)), "(",basis(t), ", ", multiset(t), ")")
 end
 
 # Return empty multiset with matching basis sort, element type.
-function Base.zero(pms::PnmlMultiset{T,N}) where {T, N <: APN}
-    z = PnmlMultiset{T,N}(basis(pms),
+function Base.zero(pms::PnmlMultiset{N, T}) where {T, N <: APN}
+    z = PnmlMultiset{N,T}(basis(pms),
                           Multiset{T}(), #^ empty multiset
                           net)(pms)
 
@@ -90,11 +93,11 @@ function Base.zero(pms::PnmlMultiset{T,N}) where {T, N <: APN}
 end
 
 # Choose an arbitrary value to have multiplicity of 1.
-function Base.one(pms::PnmlMultiset{T,N}) where {T, N <: APN}
+function Base.one(pms::PnmlMultiset{N, T}) where {T, N <: APN}
     f = first(sortelements(basis(pms), net(pms)))::T
-    o = PnmlMultiset{T,N}(basis(pms),
-                          Multiset{T}(f::T),
-                          net(pms))
+    o = PnmlMultiset{N,T}(basis(pms),
+                           Multiset(f),
+                           net(pms))
     @assert issingletonmultiset(o)
     return o
 end
@@ -109,42 +112,42 @@ sortelements(ms::PnmlMultiset, net::APN) = sortelements(basis(ms), net)
 """
 `A+B` for PnmlMultisets is the disjoint union of enclosed multiset.
 """
-function (+)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (+)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
-    PnmlMultiset{T,N}(basis(a), multiset(a) + multiset(b), a.net)
+    PnmlMultiset{N,T}(basis(a), multiset(a) + multiset(b), a.net)
 end
 
  """
 `A-B` for PnmlMultisets is the disjoint union of enclosed multiset.
 """
-function (-)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (-)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
-    PnmlMultiset{T,N}(basis(a), multiset(a) - multiset(b), a.net)
+    PnmlMultiset{N,T}(basis(a), multiset(a) - multiset(b), a.net)
 end
 
 """
 `A*B` for PnmlMultisets is forwarded to `Multiset`.
 """
-function Base.:*(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function Base.:*(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
-    PnmlMultiset{T,N}(basis(a), multiset(a) * multiset(b), a.net)
+    PnmlMultiset{N,T}(basis(a), multiset(a) * multiset(b), a.net)
 end
 
 """
 `n*B` for PnmlMultisets is the scalar multiset product.
 """
-function Base.:*(n::Number, a::PnmlMultiset{T,N}) where {T, N <: APN}
-    PnmlMultiset{T,N}(basis(a), convert(Int, n) * multiset(a), a.net)
+function Base.:*(n::Number, a::PnmlMultiset{N,T}) where {T, N <: APN}
+    PnmlMultiset{N,T}(basis(a), convert(Int, n) * multiset(a), a.net)
 end
 
-function Base.:*(a::PnmlMultiset{T,N}, n::Number) where {T, N <: APN}
-    PnmlMultiset{T,N}(basis(a), convert(Int, n) * multiset(a), a.net)
+function Base.:*(a::PnmlMultiset{N,T}, n::Number) where {T, N <: APN}
+    PnmlMultiset{N,T}(basis(a), convert(Int, n) * multiset(a), a.net)
 end
 
 """
 `A<B` for PnmlMultisets is forwarded  to`Multiset`.
 """
-function (<)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (<)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
     multiset(a) < multiset(b)
 end
@@ -152,14 +155,14 @@ end
 """
 `A>B` for PnmlMultisets is forwarded  to`Multiset`.
 """
-function (>)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (>)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
     multiset(a) > multiset(b)
 end
 """
 `A<=B` for PnmlMultisets is forwarded to `Multiset`.
 """
-function (<=)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (<=)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
     multiset(a) <= multiset(b)
 end
@@ -167,7 +170,7 @@ end
 """
 `A>=B` for PnmlMultisets is forwarded to `Multiset`.
 """
-function (>=)(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function (>=)(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
     multiset(a) >= multiset(b)
 end
@@ -177,7 +180,7 @@ end
 
 Forwarded to `Multiset.issubset(multiset(b), multiset(a))`.
 """
-function mcontains(a::PnmlMultiset{T,N}, b::PnmlMultiset{T,N}) where {T, N <: APN}
+function mcontains(a::PnmlMultiset{N,T}, b::PnmlMultiset{N,T}) where {T, N <: APN}
     @assert basis(a) == basis(b)
     Multisets.issubset(multiset(b), multiset(a))
 end
@@ -211,7 +214,7 @@ function pnmlmultiset end
 
 # Constructor call
 function pnmlmultiset(basis::SortRef, ms::Multiset, ::Nothing; net::APN)
-    PnmlMultiset{eltype(ms), typeof(net)}(basis, ms, net)
+    PnmlMultiset{typeof(net), eltype(ms)}(basis, ms, net)
 end
 
 # Expect `element` and `multi` subterms to have already
@@ -226,12 +229,12 @@ function pnmlmultiset(basis::SortRef, element, multi::Int=1; net::APN)
         throw(ArgumentError("Cannot be a MultisetSort: found $basis for $element"))
     end
     multi >= 0 || throw(ArgumentError("multiplicity cannot be negative: found $multi"))
-    # if !(equal(sortof(basis), sortof(element)) || (typeof(element) == eltype(basis)))
-    #     @warn "!equal" sortof(basis) sortof(element) typeof(element) eltype(basis)
+    # if !(equal(x_sortof(basis), x_sortof(element)) || (typeof(element) == eltype(basis)))
+    #     @warn "!equal" x_sortof(basis) x_sortof(element) typeof(element) eltype(basis)
     # end
     M = Multiset{typeof(element)}()
     M[element] = multi
-    PnmlMultiset{eltype(M), typeof(net)}(basis, M, net)
+    PnmlMultiset{typeof(net), eltype(M), }(basis, M, net)
 end
 
 # For <all> only the basis is needed.
@@ -246,5 +249,5 @@ function pnmlmultiset(basis::SortRef, ::Nothing, ::Nothing; net::APN)
     for e in sortelements(sort, net) # iterator over elements
         push!(M, e)
     end
-    PnmlMultiset{eltype(M), typeof(net)}(basis, M, net)
+    PnmlMultiset{typeof(net), eltype(M)}(basis, M, net)
 end

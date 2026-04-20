@@ -12,8 +12,6 @@ end
 
 sortref(nc::NumberConstant) = identity(nc.sort)::SortRef
 basis(nc::NumberConstant)   = sortref(nc.value)::SortRef
-sortof(nc::NumberConstant, net::APN) =
-                                 sortdefinition(namedsort(net, sortref(nc)))
 
 # others want the value of the value
 (c::NumberConstant)() = value(c)
@@ -47,7 +45,7 @@ Base.eltype(::FEConstant) = Symbol # Use id symbol as the value. Alternative is 
 (fec::FEConstant)(_args) = fec() # Constants are 0-ary operators. Ignore arguments.
 (fec::FEConstant)() = fec.id # A constant literal. We use symbol, could use name string.
 
-function sortof(fec::FEConstant, net::APN)
+function x_sortof(fec::FEConstant, net::APN)
     @match fec.ref begin
         NamedSortRef(refid) => sortdefinition(namedsort(net, refid))::EnumerationSort
         PartitionSortRef(refid) => sortdefinition(partitionsort(net, refid))::PartitionSort
@@ -77,7 +75,7 @@ tag(::FiniteIntRangeConstant) = :finiteintrangeconstant
 sortref(c::FiniteIntRangeConstant) = identity(c.sort)::SortRef
 
 #"Special case to ` IntegerSort()`, it is part of the name, innit."
-sortof(::FiniteIntRangeConstant, ::APN) = IntegerSort()
+x_sortof(::FiniteIntRangeConstant, ::APN) = IntegerSort()
 # or sortdefinition(namedsort(ddict, :integer))::IntegerSort
 
 value(c::FiniteIntRangeConstant) = c.value
@@ -91,7 +89,6 @@ struct DotConstant <: AbstractOperator
 end
 
 sortref(::DotConstant) = UserSortRef(:dot)
-sortof(::DotConstant, net::APN) = sortdefinition(namedsort(net, :dot))
 (_dot::DotConstant)() = 1 # true is a number, one
 
 function Base.show(io::IO, c::DotConstant)
@@ -122,7 +119,6 @@ end
 
 tag(::BooleanConstant) = :booleanconstant
 sortref(::BooleanConstant) = UserSortRef(:bool)
-sortof(::BooleanConstant, net::APN) = sortdefinition(namedsort(net, :bool))
 
 (c::BooleanConstant)() = value(c)
 value(bc::BooleanConstant) = bc.value

@@ -328,18 +328,6 @@ Return the `Type` of a label's value.
 function value_type end
 
 """
-    sortof(x[, net]) -> AbstractSort
-
-Return the sort of an object or type.
-
-Often implemented as `sortdefinition(namedsort(net, sortref(x)))`.
-Default implementation is `identity`.
-
-We provide a sort for some Julia types: `Integer`, `Int64`, `Float64`. Used for `PTNet`.
-"""
-function sortof end
-
-"""
     sortref(x) -> SortRef
 
 Return a REFID wrapped in a [`SortRef`](@ref) ADT.
@@ -366,11 +354,11 @@ with the ID symbol used as the dictionary key.
 function sortdefinition end
 
 """
-    basis(x, ddict) -> SortRef
+    basis(x) -> SortRef
 
 Return SortRef referencing a NamedSort, ArbitrarySort or PartitionSort declaration.
-`MultisetSort`, `Multiset`, `List` have a `basis`.  Default `basis` is `sortof`
-Place marking & sorttype, arc inscriptions have a `basis`.
+`MultisetSort`, `Multiset`, `List` have a `basis` sort.
+Place marking & sorttype, arc inscriptions have a `basis` sort.
 """
 function basis end
 
@@ -410,17 +398,17 @@ function fill_sort_tag! end
 
 """
     input_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::APNTD))}
-    input_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
+    input_matrix(pnmlnet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
 
-Create and return a matrix ntransitions x nplaces.
+Create and return a ntransitions x nplaces matrix.
 """
 function input_matrix end
 
 """
     output_matrix(petrinet::AbstractPetriNet) -> Matrix{value_type(Inscription, ::APNTD)}
-    output_matrix(petrinet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
+    output_matrix(pnmlnet::PnmlNet) -> Matrix{value_type(Inscription, ::APNTD)}
 
-Create and return a matrix ntransitions x nplaces.
+Create and return a ntransitions x nplaces matrix.
 """
 function output_matrix end
 
@@ -431,27 +419,27 @@ function verify! end
 
 
 
-"Return dictionary of `UserOperator`"
+"Return dictionary of `id` => `UserOperator`"
 function useroperators end
-"Return dictionary of `VariableDecl`"
+"Return dictionary of `id` => `VariableDecl`"
 function variabledecls end
-"Return dictionary of `NamedSort`"
+"Return dictionary of ``id` => NamedSort`"
 function namedsorts end
-"Return dictionary of `ArbitrarySort`"
+"Return dictionary of `id` => `ArbitrarySort`"
 function arbitrarysorts end
-"Return dictionary of `PartitionSort`"
+"Return dictionary of `id` => `PartitionSort`"
 function partitionsorts end
-"Return dictionary of `NamedOperator`"
+"Return dictionary of ``id` => NamedOperator`"
 function namedoperators end
-"Return dictionary of `ArbitraryOperator`"
+"Return dictionary of ``id` => ArbitraryOperator`"
 function arbitraryops end
-"Return dictionary of partitionops (`PartitionElement`)"
+"Return dictionary of `id` => partitionops (`PartitionElement`)"
 function partitionops end
-"Return dictionary of `FEConstant`"
+"Return dictionary of `id` => `FEConstant`"
 function feconstants end
-"Return dictionary of `MultisetSort`"
+"Return dictionary of `id` => `MultisetSort`"
 function multisetsorts end
-"Return dictionary of `ProductSort`"
+"Return dictionary of `id` => `ProductSort`"
 function productsorts end
 
 

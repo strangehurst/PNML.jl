@@ -7,7 +7,7 @@ Label of [`Place`](@ref).
 Is a functor that returns the `value`.
 ```
 """
-struct Marking{T <: PnmlExpr, N <: APN} <: Annotation
+struct Marking{N <: APN, T <: PnmlExpr} <: Annotation
     term::T #! expression
     text::Maybe{String} # Supposed to be for human consumption.
     graphics::Maybe{Graphics} # PTNet uses TokenGraphics in toolspecinfos rather than graphics.
@@ -24,7 +24,7 @@ Marking(t::PnmlExpr, s::Maybe{AbstractString}, net::APN) = Marking(t, s, nothing
 
 term(marking::Marking) = marking.term
 
-# 1'value where value isa eltype(sortof(marking))
+# 1'value where value isa eltype(marking)
 # because we assume a multiplicity of 1, and the sort is simple
 # Assume eltype(sortdefinition(marking)) == typeof(value(marking))
 

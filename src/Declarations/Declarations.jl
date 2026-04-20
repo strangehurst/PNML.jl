@@ -22,7 +22,7 @@ using PNML: namedsort, partitionsort
 #using PNML: ismultisetsort, isarbitrarysort, indent, inc_indent
 #using PNML: PnmlException, MissingIDException, DuplicateIDException, MalformedException
 
-import PNML: sortof, sortref, sortdefinition, sortelements#, basis # Sort related
+import PNML: sortref, sortdefinition, sortelements#, basis # Sort related
 import PNML: name, pid, verify!
 
 using ..Sorts

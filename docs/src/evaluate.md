@@ -24,7 +24,9 @@ using PNML, InteractiveUtils, Markdown
 
 ### Operator that constructs a multiset of sort dot.
 
-A marking is a multiset of a place's sorttype. The output sort of the operator must be of this sort (equatSorts is true and sortof(place) == sortof(marking)).
+A marking is a multiset of a place's sorttype.
+The output sort of the operator must be of this sort
+(equatSorts is true and sort of place == sort of marking).
 
 The output sort of numberof is the sort of the element in 2nd subterm.
 
@@ -58,7 +60,7 @@ The output sort of numberof is the sort of the element in 2nd subterm.
 ```
 
 Constructs an expression that adds 2 multisets.
-When all multiplicities are 1 and sortof subterm has an eltype the usual math applies.
+When all multiplicities are 1 and sort of subterm has an eltype the usual math applies.
 Output sort needs to match eltype of operation result.
 
 ```

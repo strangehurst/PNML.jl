@@ -2,7 +2,7 @@
 #! see decldictcore.jl for  struct DeclDict
 #!--------------------
 
-function Base.show(io::IO, dd::DeclDict)
+function Base.show(io::IO, dd::ADDicts)
 
     println(io, nameof(typeof(dd)), "(")
 

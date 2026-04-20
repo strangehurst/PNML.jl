@@ -51,7 +51,7 @@ using PNML: isnormal, isinhibitor, isread, isreset, indent, inc_indent
 using PNML: isusersort, isnamedsort, ispartitionsort, isproductsort
 using PNML: ismultisetsort, isarbitrarysort
 
-import PNML: sortof, sortref, sortelements, sortdefinition, basis
+import PNML: sortref, sortelements, sortdefinition, basis
 import PNML: value, term, tag, pid, refid
 import PNML: fill_sort_tag!, unwrap_namedsort, indent, inc_indent
 
@@ -69,27 +69,27 @@ include("numbers.jl")
 include("strings.jl")
 
 """
-    make_sortref(net, dict, sort, seed, id, name) ->  SortRef`
+    make_sortref(net, dict, sort, seed, sort_id, name) ->  SortRef`
 
- - `dict` is a method/callable that returns an AbstractDict a DeclDict attached to `net`.
+ - `dict` is a method/callable that returns an AbstractDict attached to `net`.
  - `sort` ia a concrete sort that is to be in `dict`.
- - `seed` is passed to `gensym` if `id` is `nothing` and no `sort` is already in `dict`.
- - `id` is a `Symbol` and the string `name`
-    are `nothing` and "" unless there is a wrapper providing such information,
+ - `seed` is passed to `gensym` if `sort_id` is `nothing` and no `sort` is already in `dict`.
+ - `sort_id` is a `Symbol` and the string `name` are `nothing` and ""
+    unless there is a wrapper providing such information,
 
 Uses `fill_sort_tag!`.
 
 Return concrete SortRef matching `dict`, wrapping `id`.
 """
 function make_sortref(net, dict, sort, seed, sort_id, name=nothing)
-    #!@show sort dict seed sortid
-    id2 = find_valuekey(dict(net), sort) # in make_sortref
-    if isnothing(id2) # Did not find existing ...
-        if isnothing(sort_id) # and no enclosing provided name/id ...
+    #println("\n## make_sortref $(pid(net)) $dict $sort $(repr(sort_id)) '$name'")
+    # See if there is an existing `sort` in `dict`
+    if isnothing(sort_id) # No provided id, if no existing sort found, invent an id.
+        if isnothing(find_valuekey(dict(net), sort))
             sort_id = gensym(seed) # so invent one.
         end
     end
-    # fill_sort_tag! will not overwrite existing, returns SortRef
+    # fill_sort_tag! will not overwrite existing
     return fill_sort_tag!(net, sort_id, sort, dict)::SortRef # in make_sortref
 end
 

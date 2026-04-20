@@ -27,7 +27,7 @@ end
 $(TYPEDEF)
 $(TYPEDFIELDS)
 """
-struct UnknownDeclaration{T <: AnyElement, N <: APN}  <: AbstractDeclaration
+struct UnknownDeclaration{N <: APN, T <: AnyElement}  <: AbstractDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     nodename::Union{String,SubString{String}}
@@ -89,8 +89,6 @@ struct VariableDeclaration{N <: APN} <: AbstractDeclaration
 end
 
     # Implementation of variables use a reference to a marking paired with a variable declaration REFID
-    #   (ref::Ref{sortof(vdecl)}(mark), REFID)
-    # or ref::Ref{sortof(vdecl)}(mark) => REFID
     # where the sort of the mark matches the VariableDeclaration sort.
 
     #! If the place sorttype is a product sort
@@ -107,7 +105,7 @@ end
     # How to match marking element?
     # A place has one marking, a multiset, with sorttype(place) as basis sort.
     # if sorttype(place) isa productsort
-    #   if sortof(variable) isa productsort
+    #   if variable isa productsort
     #       add/remove tuple, with cost
     #   else
     #       need an index into the product to add/remove (Ref(mark,i))
@@ -122,7 +120,6 @@ end
     # PnmlTuple fields will be read as part of enabling function (inscription,condition) and firing function.
 
 sortref(vd::VariableDeclaration) = vd.sort::SortRef
-sortof(vd::VariableDeclaration) = sortdefinition(namedsort(vd.net, sortref(vd)))::AbstractSort
 #TODO also do `partitionsort`, `arbitrarysort` that function like `namedsort` to add `id` and `name` to something.
 
 function Base.show(io::IO, declare::VariableDeclaration)
@@ -146,7 +143,7 @@ These are all `Declaration` subtypes in the UML2/RelaxNG parts of ISO 15909-2:20
 a strong _Java_ bias. The text on the standard states they are also sort-like.
 We use a different type system.
 """
-@auto_hash_equals struct NamedSort{S <: AbstractSort, N <: APN} <: SortDeclaration
+@auto_hash_equals struct NamedSort{N <: APN, S <: AbstractSort} <: SortDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     def::S  #! This remains where the concrete sort lives.
@@ -155,10 +152,10 @@ We use a different type system.
 
     function NamedSort(id_::Symbol, name_, def_::AbstractSort, net_::APN)
         if isa(def_, NamedSort)
-            error("NamedSort wraps NamedSort: $id_ $name_ $def_") #|> throw
+            throw(ArgumentError("NamedSort wraps NamedSort: $id_ $name_ $def_"))
             yield()
         end
-        new{typeof(def_), typeof(net_)}(id_, name_, def_, net_)
+        new{typeof(net_), typeof(def_)}(id_, name_, def_, net_)
     end
 end
 
@@ -168,7 +165,7 @@ end
 
 sortelements(namedsort::NamedSort, net::APN) = sortelements(sortdefinition(namedsort), net)
 
-Base.eltype(::Type{NamedSort{S,N}}) where {S <: AbstractSort, N <: APN} = eltype(S)
+Base.eltype(::Type{NamedSort{N, S}}) where {N <: APN, S <: AbstractSort} = eltype(S)
 
 function Base.show(io::IO, nsort::NamedSort)
     print(io, "NamedSort(")
@@ -188,7 +185,7 @@ See `UserOperator`.
 Vector of `VariableDeclaration` for parameters (ordered),
 and duck-typed `AbstractTerm` for its body.
 """
-struct NamedOperator{T, N <: APN} <: OperatorDeclaration
+struct NamedOperator{N <: APN, T} <: OperatorDeclaration
     id::Symbol
     name::Union{String,SubString{String}}
     parameter::Vector{VariableDeclaration{N}} # constants,variables with inferred sorts #TODO XXX

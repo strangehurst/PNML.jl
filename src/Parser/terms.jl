@@ -45,9 +45,9 @@ function parse_term(node::XMLNode, net::APN; vars)
 end
 
 """
-    subterms(node, net; vars) -> Vector{PnmlExpr}
+    subterms(node, net; vars) -> Vector{PnmlExpr} || Tuple{<:PnmlExpr}
 
-Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref) term.
+Unwrap each `<subterm>` and parse into a [`PnmlExpr`](@ref) term in a tuple..
 """
 function subterms(node, net::APN; vars)
     sts = Vector{PnmlExpr}()
@@ -64,6 +64,7 @@ function subterms(node, net::APN; vars)
         end
     end
     return sts, vars
+    return (Tuple(sts), vars) # Change vector into tuple.
 end
 
 
@@ -533,16 +534,13 @@ function parse_term(::Val{:tuple}, node::XMLNode, net::APN; vars)
     # UserOperatorEx (constant?) also has enclosing sort.
     # Both hold refid field.
 
-    #! Needs to be returned from `sortof(term)` as `ProductSort(...)`
-    #! Needs to be returned from `sortof(term)` as `ProductSort(...)`.
-    #! Part of expression evaluation -- dynamic behavior of a Petri net
     prod_sort = ProductSort(tuple((expr_sortref.(sts, Ref(net)))...), net)
 
     # Look for an existing declaration for prod_sort. Return a NamedSortRef to it in TermJunk.
     # Find matching sort REFID
     sorttag = nothing
     for (id,ps) in pairs(productsorts(net))
-        if equalSorts(ps, prod_sort, net)
+        if equalSorts(net, ps, prod_sort)
             #"Found product sort $id while looking for $prod_sort"
             sorttag = id
             break
@@ -558,7 +556,7 @@ function parse_term(::Val{:tuple}, node::XMLNode, net::APN; vars)
         fill_sort_tag!(net, sorttag, prod_sort)
         @assert productsort(net, sorttag) == prod_sort
 
-        # Make a named sort to store the sort object.
+        # Make a named sort to store the product sort object. `id`
         namedsorts(net)[sorttag] = NamedSort(sorttag, string(sorttag), prod_sort, net)
         make_sortref(net, productsorts, prod_sort, "product", sorttag, "")
     else
@@ -600,7 +598,7 @@ function parse_term(::Val{:finiteintrangeconstant}, node::XMLNode, net::APN; var
 
     # Differs from <tuple> in that here we have a sort definintion, while <tuple>
     # must deduce the sort by examining the product's sorts.
-    fir_sort = namedsort(net, sort_ref)::FiniteIntRangeSort
+    fir_sort = to_sort(sort_ref, net) |> sortdefinition
     Sorts.start(fir_sort) <= value <= Sorts.stop(fir_sort) ||
         throw(ArgumentError("finite integer value $value not in range $fir_sort"))
 
