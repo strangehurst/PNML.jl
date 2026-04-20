@@ -201,7 +201,7 @@ include("Parser/Parser.jl")
 using .Parser
 
 # API Facade:
-#! 2026-01-12 Split PNet into a pPNetackage
+#! 2026-01-12 Split PNet into a package
 #! include("PNet/PNet.jl")
 #! using .PNet
 
