@@ -46,7 +46,7 @@ function delay_content_parser(label, value_type)
     @show (tag, interval) = first(elements(label))
     tag == "interval" || error("expected 'interval', found '$(repr(tag))'")
     D()&& @show value_type
-    closure = _attribute(interval, :closure)
+    closure = PNML._attribute(interval, :closure)
     D()&& @show closure
     # Expect at least one cn number.
     n = if haskey(interval, "cn")
@@ -93,6 +93,6 @@ function _ci(i)
     if i == "infin" || i == "infty"
         return Base.Inf
     else
-        error("may only contain infin|infty, found: $ci")
+        error("may only contain infin|infty, found: $i")
     end
 end
