@@ -67,7 +67,7 @@ function enabled end
 function enabled(net::AbstractPnmlNet, marking)
     # Start by assuming all transitions are enabled.
     # dictionary with key of transaction id, value of enabled state boolean
-    enabled_dict = OrderedDict{Symbol, Bool}(id=>true for (id,t) in pairs(transitiondict(net)))
+    enabled_dict = OrderedDict{Symbol, Bool}(id=>true for (id,_) in pairs(transitiondict(net)))
 
     # dictionary with key of place id, value of its marking value (from marking vector)
     mark_dict = OrderedDict{Symbol, value_type(Marking, net)}(labeled_places(net, marking))
@@ -114,7 +114,7 @@ function sufficient_tokens!(mark_dict::AbstractDict, net::PnmlNet{<:AbstractHLCo
                             transition_id, vars, varsubs)
     # During enabling rule, tr_var_binding_set maps variable to a set of elements.
     tr_var_binding_set = OrderedDict{REFID, Any}()
-    #~ marking = PnmlMultiset{B, T}(Multiset{T}(T() => 1)) singleton
+    #~ marking = PnmlMultiset{B, T}(Multiset(T() => 1)) singleton
     # varsub maps a variable to 1 element value of multiset(marking[transition_id])
     # when enabling/firing transition.
     # Multiset type set from first use
@@ -190,7 +190,7 @@ function get_variable_substitutions!(binding_sets, net, transition_id, tr_vars, 
         mark = unwrap_pmset(mark_dict[place_id])
         arc_vars = Multiset(variables(PNML.inscription(ar))...) # Count variables.
         isempty(arc_vars) || union!(tr_vars, keys(arc_vars)) # Cache variable ids.
-get_arc_var_binding_sets!
+
         place_sort = sortref(place(net, place_id))
         enabled, arc_binding_sets = get_arc_var_binding_sets!(arc_vars, place_sort, mark, net)
         enabled || return false # transition not enabled
@@ -222,9 +222,8 @@ function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark,
 
         # Verify variable sort matches placesort.
         if isproductsort(placesort)
-            any(==(v_refid), Sorts.sorts(placesort, net))||
-                    error("none of product sorts are equal to $v_refid: ",
-                            Sorts.sorts(placesort, net))
+            any(==(v_refid), Sorts.sorts(placesort, net)) ||
+                    error("none of product sorts are '$v_refid': ", repr(placesort))
         else
             placesort !== v_sortref &&
                 error("not equal sorts ($placesort, $v_sortref)")
