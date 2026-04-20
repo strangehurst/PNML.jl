@@ -13,10 +13,12 @@ using TermInterface
 using Metatheory: @matchable
 
 using PNML
-using PNML: BooleanConstant, FEConstant, NumberConstant, DotConstant, FiniteIntRangeConstant
+using PNML: BooleanConstant, DotConstant, FEConstant, FiniteIntRangeConstant, NumberConstant
 using PNML: feconstant, multiset, value
-using PNML: ProductSort, PnmlMultiset
-using PNML: pnmlmultiset, operator, partitionsort, variabledecl, mcontains
+using PNML: PnmlMultiset, ProductSort
+using PNML: mcontains, operator, partitionsort, pnmlmultiset, variabledecl
+
+import PNML: toexpr
 
 export toexpr, expr_sortref
 # abstract types
@@ -54,14 +56,6 @@ TermInterface operator expression types.
 abstract type AbstractOpExpr <: PnmlExpr end
 
 ##################################################################
-
-"""
-    toexpr(ex::PnmlExpr, varsubs::NamedTuple{Symbol,Any}, net) -> Expr
-
-Return `Expr` constructed from `ex`. Calls `toexpr` on any contained terms.
-`varsubs` used to replace variables in expressions with values from current marking vector.
-"""
-function toexpr end
 
 # Some expressions are ground terms that have no variables.
 toexpr(::Nothing, ::NamedTuple, _net) = nothing

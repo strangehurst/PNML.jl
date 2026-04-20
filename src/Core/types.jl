@@ -261,3 +261,11 @@ abstract type AbstractDeclDict end
 An EnumX.jl enum used to distinguish arc types.
 """
 @enumx ArcTypeEnum Normal Inhibitor Read Reset
+
+"""
+    toexpr(ex::PnmlExpr, varsubs::NamedTuple{Symbol,Any}, net) -> Expr
+
+Return `Expr` constructed from `ex`. Calls `toexpr` on any contained terms.
+`varsubs` used to replace variables in expressions with values from current marking vector.
+"""
+function toexpr end
