@@ -19,6 +19,7 @@ end
 
 coordinate_type(::APNTD) = Coordinate
 
+Base.eltype(::Coordinate) = Float32
 Base.eltype(::Type{Coordinate}) = Float32
 value_type(::Type{Coordinate}, ::APNTD) = eltype(Coordinate)
 value_type(::Type{Coordinate}) = eltype(Coordinate)

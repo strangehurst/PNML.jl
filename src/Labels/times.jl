@@ -20,6 +20,7 @@ value_type(::Type{Time}) = Float64
 value_type(::Type{Time}, ::APNTD) = Float64
 
 Base.eltype(::Time) = value_type(Time)
+Base.eltype(::Type{Time}) = value_type(Time)
 term(i::Time) = i.term
 sortref(i::Time) = expr_sortref(term(i), i.net)::SortRef
 

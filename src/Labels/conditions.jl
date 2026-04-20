@@ -25,6 +25,7 @@ Condition(expr::BooleanEx, net::APN) =
 Condition(text::AbstractString, expr::BooleanEx, net::APN) =
     Condition(text, expr, nothing, nothing, REFID[], net)
 
+Base.eltype(::Condition) = Bool
 Base.eltype(::Type{<:Condition}) = Bool
 value_type(::Type{<:Condition}, ::APNTD) = eltype(BoolSort)
 
