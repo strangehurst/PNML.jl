@@ -23,7 +23,7 @@ sortelements(sort::EnumerationSort, ::APN) = refs(sort)
 
 #"Return number of `FEConstants` contained by this sort."
 Base.length(sort::EnumerationSort) = length(refs(sort))
-Base.eltype(::EnumerationSort) = REFID
+Base.eltype(::Type{<:EnumerationSort}) = Symbol
 
 function Base.show(io::IO, esort::EnumerationSort)
     print(io, nameof(typeof(esort)), "([")
@@ -72,7 +72,7 @@ end
     stop::T # XML Schema calls this 'end'.
 end
 
-Base.eltype(::FiniteIntRangeSort{T}) where {T<:Integer} = T
+Base.eltype(::Type{FiniteIntRangeSort{T}}) where {T<:Integer} = T
 start(fir::FiniteIntRangeSort) = fir.start
 stop(fir::FiniteIntRangeSort) = fir.stop
 
