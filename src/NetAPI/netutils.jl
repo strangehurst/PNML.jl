@@ -1,6 +1,6 @@
 # PnmlNet Utilities.
 
-adjacent_place(net::PnmlNet, a::Arc) = adjacent_place(netdata(net), a)
+adjacent_place(net::AbstractPnmlNet, a::Arc) = adjacent_place(netdata(net), a)
 adjacent_place(netdata::PnmlNetData, a::Arc) = adjacent_place(netdata, source(a), target(a))
 
 #-----------------------------------------------------------------
@@ -17,7 +17,7 @@ Iterate ids of input (arc's source) for output transition or place `id`.
 
 See `PNet.in_inscriptions` and `PNet.transition_function`.
 """
-preset(net::PnmlNet, id::Symbol) = begin
+preset(net::AbstractPnmlNet, id::Symbol) = begin
     Iterators.map(arcid -> source(arcdict(net)[arcid]), tgt_arcs(net, id))
 end
 
@@ -29,12 +29,12 @@ Iterate ids of output (arc's target) for source transition or place `id`.
 
 See `PNet.out_inscriptions` and `PNet.transition_function``).
 """
-postset(net::PnmlNet , id::Symbol) = begin
+postset(net::AbstractPnmlNet , id::Symbol) = begin
     Iterators.map(arcid -> target(arcdict(net)[arcid]), src_arcs(net, id))
 end
 
 
-function inscriptions(net::PnmlNet)
+function inscriptions(net::AbstractPnmlNet)
     Iterators.map((arc_id, a)->arc_id => inscription(a)(NamedTuple()), pairs(arcdict(net)))
 end
 
@@ -42,7 +42,7 @@ function inscriptions(net::AbstractHLCore) #TODO! non-ground terms for HL
     @error "high level net $(pid(net)) needs variable substitution"
 end
 
-function conditions(net::PnmlNet)
+function conditions(net::AbstractPnmlNet)
     Iterators.map((tr_id, t)->tr_id => condition(t)(NamedTuple()), pairs(transitiondict(net)))
 end
 
@@ -50,7 +50,7 @@ function conditions(net::AbstractHLCore) #TODO! non-ground terms for HL
     @error "high level net $(pid(net)) needs variable substitution"
 end
 
-function rates(net::PnmlNet)
+function rates(net::AbstractPnmlNet)
     #[tid => rate_value(t) for (tid, t) in pairs(transitiondict(net))]
     Iterators.map((tr_id, t)->tr_id => rate_value(t), pairs(transitiondict(net)))
 end
@@ -129,7 +129,7 @@ Will not appear in input marking or output of fir!(incidence, enabled, marking).
 ########################################################################################
 # firing rule
 ########################################################################################
-function input_matrix(net::PnmlNet)
+function input_matrix(net::AbstractPnmlNet)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
     ivt = pntd(net) isa PT_HLPNG ? Int : value_type(Inscription, pntd(net))
     imatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
@@ -137,9 +137,8 @@ function input_matrix(net::PnmlNet)
 end
 
 #! Default `<:Number`
-function input_matrix!(imatrix, net::PnmlNet)
-    varsub = NamedTuple() # PT_HLPNG  is only supported High-level net here
-    @show typeof(imatrix)
+function input_matrix!(imatrix, net::AbstractPnmlNet)
+    varsub = NamedTuple() # PT_HLPNG is only supported High-level net here
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id)) # 0 or empty multiset similar to placetype
@@ -150,16 +149,15 @@ function input_matrix!(imatrix, net::PnmlNet)
 return imatrix
 end
 
-function output_matrix(net::PnmlNet)
+function output_matrix(net::AbstractPnmlNet)
     # PT_HLPNG will convert multiset of DotConstant to cardinality (an integer value).
     ivt = pntd(net) isa PT_HLPNG ? Int : value_type(Inscription, pntd(net))
     omatrix = Matrix{ivt}(undef, ntransitions(net), nplaces(net))
     return output_matrix!(omatrix, net) # Dispatch on net type.
 end
 
-function output_matrix!(omatrix, net::PnmlNet)
+function output_matrix!(omatrix, net::AbstractPnmlNet)
     varsub = NamedTuple()
-    @show typeof(omatrix)
     for (p, place_id) in enumerate(place_idset(net))
         for (t, transition_id) in enumerate(transition_idset(net))
             z = zero_marking(place(net, place_id))
@@ -183,12 +181,12 @@ Symmetric nets are restricted, and thus easier to deal with and reason about.
 """
 function incidence_matrix end
 
-function incidence_matrix(net::PnmlNet)
+function incidence_matrix(net::AbstractPnmlNet)
     return output_matrix(net) - input_matrix(net)
 end
 
 # Vector{NamedTuple} cached in transition field.
-varsubs(net::PnmlNet, transition_id::Symbol) = varsubs(transition(net, transition_id))
+varsubs(net::APN, transition_id::Symbol) = varsubs(transition(net, transition_id))
 
 """
     initial_markings(petrinet) -> Tuple{Pair{id(place),value_type(marking(place))}
