@@ -100,3 +100,21 @@ function unwrap_subterm(st::XMLNode)
     child = EzXML.firstelement(st)
     return (Symbol(EzXML.nodename(child)), child)
 end
+
+#TODO test pnml_namespace
+"""
+$(TYPEDSIGNATURES)
+
+Return namespace of `node` or default value [`pnml_ns`](@ref) with warning (or error).
+"""
+function pnml_namespace(node::XMLNode;
+                        missing_ns_fatal::Bool=false,
+                        default_ns::String=pnml_ns)
+    if EzXML.hasnamespace(node)
+        return EzXML.namespace(node)
+    else
+        emsg = "$(EzXML.nodename(node)) missing namespace"
+        missing_ns_fatal ? throw(ArgumentError(emsg)) : @warn(emsg)
+        return default_ns
+    end
+end

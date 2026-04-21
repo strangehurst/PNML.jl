@@ -69,7 +69,7 @@ function make_net(type::APNTD, id=:make_net,)
     fill_builtin_sorts!(net)
     fill_builtin_labelparsers!(net)
     fill_builtin_toolparsers!(net)
-    fill_enabled_filters!(net)
+    fill_builtin_enabled_filters!(net)
     return net
 end
 

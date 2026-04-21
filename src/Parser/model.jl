@@ -1,27 +1,13 @@
-#TODO test pnml_namespace
-
-"""
-$(TYPEDSIGNATURES)
-
-Return namespace of `node` or default value [`pnml_ns`](@ref) with warning (or error).
-"""
-function pnml_namespace(node::XMLNode;
-                        missing_ns_fatal::Bool=false,
-                        default_ns::String=pnml_ns)
-    if EzXML.hasnamespace(node)
-        return EzXML.namespace(node)
-    else
-        emsg = "$(EzXML.nodename(node)) missing namespace"
-        missing_ns_fatal ? throw(ArgumentError(emsg)) : @warn(emsg)
-        return default_ns
-    end
-end
-
 """
     pnmlmodel([filename::AbstractString|node::XMLNode]; kwargs...)
 
-Build a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref)
-from a file containing XML or a XMLNode. XMLNode is an alias for EzXML.Node.
+Build a [`PnmlModel`](@ref) holding one or more [`PnmlNet`](@ref) from either:
+
+   - a file containing XML that is parsed into a XMLNode,
+   - a XMLNode,
+   - if no source, use an empty net.
+
+XMLNode is an alias for EzXML.Node.
 
 # Arguments
 
@@ -29,12 +15,12 @@ from a file containing XML or a XMLNode. XMLNode is an alias for EzXML.Node.
 function pnmlmodel end
 
 function pnmlmodel(; kwargs...)
+    D()&& println("\n## pnmlmodel with 1 empty pnmlcore net")
     empty_model = xml"""<?xml version="1.0"?>
         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
             <net id="empty_net" type="pnmlcore" />
         </pnml>
     """
-    D()&& println("\n## pnmlmodel with 1empty pnmlcore net")
     pnmlmodel(empty_model; kwargs...)
 end
 
@@ -62,15 +48,17 @@ function pnmlmodel(node::XMLNode; kwargs...)
 end
 
 """
-    plugins(kwargs, dict::AbstractDict, plugintag=:lp)
+    plugins!(dict::AbstractDict, kwargs, plugintag)
 
 If `kwargs[plugintag]`` has a collection of tuples with
-the first element being the tag for the last entry the callable.
+the first element being the tag and the last entry the callable.
 Intermediate elements are dictionary keys for nested dictionaries,
 Place them in `dict`.
 """
-function plugins(kwargs, dict::AbstractDict, plugintag=:lp)
-    if haskey(kwargs, tag) && !isnothing(kwargs[plugintag]) && !isempty(kwargs[tag])
+function plugins!(dict::AbstractDict, kwargs, plugintag)
+    if haskey(kwargs, plugintag) &&
+       !isnothing(kwargs[plugintag]) &&
+       !isempty(kwargs[plugintag])
         @warn "add $(length(kwargs[plugintag])) $tag plugin(s)"
         for plugin in kwargs[plugintag]
             #! todo sanity check labelparser
@@ -80,11 +68,12 @@ function plugins(kwargs, dict::AbstractDict, plugintag=:lp)
             elseif length(plugin) == 3
                 dict[plugin[1]][plugin[2]] = last(plugin)
             elseif length(plugin) == 4
-                dict[plugin[1]][plugin[2]] = last(plugin)
+                dict[plugin[1]][plugin[2]][plugin[3]]= last(plugin)
             end
         end
         @warn dict #! bring-up
     end
+
 end
 
 """
@@ -112,27 +101,30 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     #----------------------------------------------------------------
     # Create net with empty data containers to be filled during parsing.
     # We already used `idregistry` and `pagedict` needs to be type stable.
+    # `ddict` is a RefValue so that the types of values in its dictonaries
+    # can be determined at runtime.
     #-------------------------------------------------------------------------------------
     net = PnmlNet(; type=pntd, id=netid, idregistry,
                     pagedict = OrderedDict{Symbol, Page{PnmlNet{typeof(pntd)}}}(), #! abstract Page
                     )
-    net.ddict[] = DeclDict(net) # Empty DeclDict
+    net.ddict[] = DeclDict(net) # Create with empty dictionaries of net specific values.
 
     #^ Label Parsers
     fill_builtin_labelparsers!(net.labelparser)
     @assert !isempty(net.labelparser) "There are expected to be built-in label parsers."
-    plugins(kwargs, net.labelparser, :lp)
+    plugins!(net.labelparser, kwargs, :lp)
 
     #^ Tool Parsers
-    fill_builtin_toolparsers!(net.toolparser) # built-in toolparsers
-    plugins(kwargs, net.toolparser, :tp)
+    fill_builtin_toolparsers!(net.toolparser)
+    plugins!(net.toolparser, kwargs, :tp)
 
     #^ Sorts
     fill_builtin_sorts!(net)
+    # TODO? sort parser plugins?
 
     #^ Enabled Filters
-    fill_enabled_filters!(net.enabled_filters) # builtin
-    plugins(kwargs, net.enabled_filters, :ef)
+    fill_builtin_enabled_filters!(net.enabled_filters)
+    plugins!(net.enabled_filters, kwargs, :ef)
 
     # Parse *ALL* Declarations here. Including any Declarations attached to Pages.
     # Place any/all declarations in single net-level DeclDict.
@@ -189,27 +181,6 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     return net
 end
 
-"""
-    unexpected_label!(extralabels, child, tag, net; parentid)
-
-Apply a labelparser to `child` if one matches `tag`, otherwise call [`xmldict`](@ref).
-Add to `extralabels`.
-"""
-function unexpected_label!(extralabels::AbstractDict, child::XMLNode, tag::Symbol, net; parentid::Symbol)
-    #println("unexpected_label! $tag")
-    if haskey(net.labelparser, tag)
-        #@error "labelparser[$(repr(tag))] " net.labelparser[tag] #! bring-up
-        extralabels[tag] = net.labelparser[tag](child, net, parentid)
-    else
-        xd = xmldict(child)
-        xd isa AbstractString &&
-            error("PNML Labels must have XML structure, not just text content, found $xd")
-        extra = PnmlLabel(tag, xd, net)
-        @info "add PnmlLabel $(repr(tag)) to $(repr(parentid))" extra #! bring-up/logginng
-        extralabels[tag] = extra
-    end
-    return nothing
-end
 
 """
     parse_page!(net, page_idset, page_node) -> Nothing

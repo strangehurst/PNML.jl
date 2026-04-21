@@ -1,14 +1,14 @@
 """
-    fill_enabled_filters!(net::APN) -> Nothing
+    fill_builtin_enabled_filters!(net::APN) -> Nothing
 
 Fill a dictionary with default enabled filters. Part of the enabling rule.
 Based on ISO 15909-1:2019, ISO 15909-3:2021.
 
 """
-function fill_enabled_filters! end
-fill_enabled_filters!(net::APN) = fill_enabled_filters!(net.enabled_filters)
-function fill_enabled_filters!(dict::AbstractDict)
-    #println("fill_enabled_filters")
+function fill_builtin_enabled_filters! end
+fill_builtin_enabled_filters!(net::APN) = fill_builtin_enabled_filters!(net.enabled_filters)
+function fill_builtin_enabled_filters!(dict::AbstractDict)
+    #println("fill_builtin_enabled_filters")
     dict[:inhibit] = enable_filter_inhibit
     dict[:reset] = enable_filter_reset
     dict[:read] = enable_filter_read

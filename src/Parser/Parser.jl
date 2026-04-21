@@ -40,7 +40,7 @@ using PNML: AbstractTerm, AbstractOperator, AbstractVariable, UserOperator, Oper
 using PNML: FEConstant, feconstants, has_feconstant
 using PNML: pid, fill_builtin_labelparsers!, fill_builtin_sorts!, fill_builtin_toolparsers!
 using PNML: ToolParser, LabelParser, NamedSort, Operator
-using PNML: fill_sort_tag!, fill_enabled_filters!
+using PNML: fill_sort_tag!, fill_builtin_enabled_filters!
 using PNML: namedsort, multisetsort, partitionsort, productsort, variabledecl, variabledecls
 using PNML: namedoperators, operator
 using PNML: has_namedsort, has_multisetsort, has_partitionsort, has_productsort, has_arbitrarysort
@@ -66,6 +66,7 @@ include("anyelement.jl")
 include("model.jl")
 include("nodes.jl")
 include("labels.jl")
+include("extra_labels.jl")
 include("graphics.jl")
 include("declarations.jl")
 include("terms.jl")
