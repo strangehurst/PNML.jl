@@ -138,7 +138,7 @@ end
 Evaluate preset inscription expressions, compare to mark value.
 Update varsubs
 """
-function comp_mark_inscription(net, mark_dict, transition_id, cond_term,
+function comp_mark_inscription(net::APN, mark_dict, transition_id, cond_term,
                                 tr_var_binding_set, vars, varsubs)
     enabled = true
     for place_id in preset(net, transition_id)
@@ -181,7 +181,7 @@ Return enabled state,
 update `tr_vars` (variable ids of transition)
 and `binding_sets` (map from variable id to set of substitution values).
 """
-function get_variable_substitutions!(binding_sets, net, transition_id, tr_vars, mark_dict)
+function get_variable_substitutions!(binding_sets, net::APN, transition_id, tr_vars, mark_dict)
     for place_id in preset(net, transition_id)
         ar = arc(net, place_id, transition_id)
         isnothing(ar) && error("did not find arc: $place_id -> $transition_id")
@@ -206,7 +206,7 @@ Fill `arc_var_binding_set` with an entry for each key in `arc_vars`.
 Return `true` if no variables are present or all variables have at least 1 substition.
 Indicates that transition is able to fire (enabled fro selection to fire).
 """
-function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark, net)
+function get_arc_var_binding_sets!(arc_vars::Multiset, placesort::SortRef, mark, net::APN)
     arc_binding_sets = OrderedDict{Symbol, Multiset{Symbol}}()
     for v in keys(arc_vars)
         # Each variable must have a non-empty substitution.
