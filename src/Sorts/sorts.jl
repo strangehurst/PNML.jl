@@ -55,7 +55,7 @@ Wrap a SortRef. Warning: do not cause recursive multiset Sorts.
            (is_namedsort(b) &&
                 isa(sortdefinition(namedsort(net, b)), MultisetSort))
 
-            throw(MalformedException("basis cannot be MultisetSort, found $b"))
+            throw(PNML.MalformedException("basis cannot be MultisetSort, found $b"))
         end
         new(b)
     end
