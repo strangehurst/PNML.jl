@@ -171,8 +171,8 @@ end
     #^ String
 
     IDRegistrys.reset_reg!(net.idregistry)
-    println()
-    @show net typeof(decldict(net))
+    #println()
+    #@show net typeof(decldict(net))
     sortref = parse_sort(xml"<string/>", net)
     sort = to_sort(sortref, net)::NamedSort
     @test sortelements(sort, net) == ("",)
