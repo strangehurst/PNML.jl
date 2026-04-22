@@ -4,35 +4,30 @@ Expressions Module
 module Expressions
 
 import Metatheory
-import PNML: PNML, basis, sortref
 import Multisets: Multiset
+import PNML: PNML, basis, sortref, toexpr
 
 using Base: Fix2
+using Metatheory: @matchable
+using PNML
+using PNML: BooleanConstant, DotConstant, FEConstant, FiniteIntRangeConstant,
+    NumberConstant, PnmlMultiset, ProductSort, feconstant, mcontains, multiset, operator,
+    partitionsort, pnmlmultiset, value, variabledecl
 using TermInterface
 
-using Metatheory: @matchable
-
-using PNML
-using PNML: BooleanConstant, DotConstant, FEConstant, FiniteIntRangeConstant, NumberConstant
-using PNML: feconstant, multiset, value
-using PNML: PnmlMultiset, ProductSort
-using PNML: mcontains, operator, partitionsort, pnmlmultiset, variabledecl
-
-import PNML: toexpr
-
-export toexpr, expr_sortref
+export expr_sortref, toexpr
 # abstract types
-export PnmlExpr, AbstractBoolExpr, AbstractOpExpr
+export AbstractBoolExpr, AbstractOpExpr, PnmlExpr
 # concrete types
-export VariableEx, UserOperatorEx, PnmlTupleEx, NumberEx, BooleanEx, DotConstantEx
-export Bag, Add, Subtract, ScalarProduct, Cardinality, CardinalityOf, Contains
-export And, Or, Not, Imply, Equality, Inequality, Successor, Predecessor
-export PartitionLessThan, PartitionGreaterThan, PartitionElementOf
-export Addition, Subtraction, Multiplication, Division
+export BooleanEx, DotConstantEx, NumberEx, PnmlTupleEx, UserOperatorEx, VariableEx
+export Add, Bag, Cardinality, CardinalityOf, Contains, ScalarProduct, Subtract
+export And, Equality, Imply, Inequality, Not, Or, Predecessor, Successor
+export PartitionElementOf, PartitionGreaterThan, PartitionLessThan
+export Addition, Division, Multiplication, Subtraction
 export GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, Modulo
-export Concatenation, Append, StringLength, SubstringEx
-export StringLessThan, StringLessThanOrEqual, StringGreaterThan, StringGreaterThanOrEqual
-export ListEx, ListLength, ListConcatenation, Sublist, ListAppend, MemberAtIndex
+export Append, Concatenation, StringLength, SubstringEx
+export StringGreaterThan, StringGreaterThanOrEqual, StringLessThan, StringLessThanOrEqual
+export ListAppend, ListConcatenation, ListEx, ListLength, MemberAtIndex, Sublist
 
 
 """
