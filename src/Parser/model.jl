@@ -50,30 +50,45 @@ end
 """
     plugins!(dict::AbstractDict, kwargs, plugintag)
 
-If `kwargs[plugintag]`` has a collection of tuples with
-the first element being the tag and the last entry the callable.
-Intermediate elements are dictionary keys for nested dictionaries,
-Place them in `dict`.
+If `kwargs[plugintag]` has a collection of tuples with
+the first element being a key of `dict` and the last entry the callable.
+Intermediate elements are dictionary keys for nested dictionaries.
 """
 function plugins!(dict::AbstractDict, kwargs, plugintag)
     if haskey(kwargs, plugintag) &&
-       !isnothing(kwargs[plugintag]) &&
-       !isempty(kwargs[plugintag])
-        @warn "add $(length(kwargs[plugintag])) $tag plugin(s)"
+            !isnothing(kwargs[plugintag]) && !isempty(kwargs[plugintag])
+        @warn "add $(length(kwargs[plugintag])) $plugintag plugin(s)" kwargs[plugintag] dict
         for plugin in kwargs[plugintag]
             #! todo sanity check labelparser
             @show plugin #! bring-up
             if length(plugin) == 2
                 dict[plugin[1]] = last(plugin)
             elseif length(plugin) == 3
-                dict[plugin[1]][plugin[2]] = last(plugin)
+                if haskey(dict, plugin[1])
+                    dict[plugin[1]][plugin[2]] = last(plugin)
+                else
+                    dict[plugin[1]] = LittleDict(plugin[2] => last(plugin))
+                end
             elseif length(plugin) == 4
-                dict[plugin[1]][plugin[2]][plugin[3]]= last(plugin)
-            end
+                if haskey(dict, plugin[1])
+                    if haskey(dict, plugin[2])
+                        if haskey(dict, plugin[3])
+                            dict[plugin[1]][plugin[2]][plugin[3]] = last(plugin)
+                        else
+                            dict[plugin[1]][plugin[2]] = LittleDict(plugin[3] => last(plugin))
+                        end
+                    else
+                        dict[plugin[1]][plugin[2]] => LittleDict(plugin[3] => last(plugin))
+                    end
+                else
+                    dict[plugin[1]] = LittleDict(plugin[2] => LittleDict(plugin[3] => last(plugin)))
+                end
+            else
+                error("plugin $plugin too long: $(length(plugin) )")
+           end
         end
-        @warn dict #! bring-up
+        #@warn dict #! bring-up
     end
-
 end
 
 """
@@ -120,7 +135,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
 
     #^ Sorts
     fill_builtin_sorts!(net)
-    # TODO? sort parser plugins?
+    # TODO? net.sortparser plugins?
 
     #^ Enabled Filters
     fill_builtin_enabled_filters!(net.enabled_filters)
@@ -179,7 +194,7 @@ function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kw
     #PNML.enabledXXX(net, m₀) # enabling rule?
 
     return net
-end
+end #= function parse_net =#
 
 
 """
@@ -232,7 +247,9 @@ function __parse_page!(net::PnmlNet{T}, page_node::XMLNode, pageid::Symbol) wher
         elseif nname in [:declaration, :toolspecific]
              # NOOP already parsed
         elseif nname == :page
+            #---------------------------------------------------------
             # Subpage stored at net-level with key in page's id set.
+            #---------------------------------------------------------
             parse_page!(net, page_idset(page), child)
         elseif nname == :name
             page.namelabel = net.labelparser[nname](child, net; parentid=pageid)
@@ -241,10 +258,10 @@ function __parse_page!(net::PnmlNet{T}, page_node::XMLNode, pageid::Symbol) wher
         else
             unexpected_label!(page.extralabels, child, nname, net; parentid=pageid)
         end
-    end
+    end #= for child in EzXML.eachelement(page_node) =#
 
     return page
-end
+end #= function __parse_page! =#
 
 """
     find_toolinfos!(toolspecinfos, node, pntd, net) -> toolinfos

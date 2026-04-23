@@ -14,7 +14,6 @@ function fill_builtin_enabled_filters!(dict::AbstractDict)
     dict[:read] = enable_filter_read
     dict[:capacity] = enable_filter_capacity
     dict[:priority] =  enable_filter_priority
-    dict[:priority] =  enable_filter_priority
     dict[:tpn] = enable_filter_tpn
 end
 
@@ -127,7 +126,6 @@ fill_builtin_toolparsers!(net::APN) = fill_builtin_toolparsers!(net.toolparser)
 function fill_builtin_toolparsers!(toolparsers::AbstractDict)
     for plugin in (
             ("org.pnml.tool", "1.0", Parser.tokengraphics_content),
-            ("nupn", "1.1", Parser.nupn_content),
         )
         toolparsers[plugin[1]] = LittleDict(plugin[2] => last(plugin))
     end

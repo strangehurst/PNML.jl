@@ -26,10 +26,24 @@ using .TestUtils
                 <inscription> <text> 13 </text> </inscription>
               </arc>
             </page>
-          </net>
+          </net>(1)
         </pnml>
         """
-    @test pnmlmodel(xnode) isa PnmlModel
+    m = pnmlmodel(xnode;
+                  tp=(("org.pnml.tool", "1.0", Parser.tokengraphics_content),
+                      ("nupn", "1.2", Parser.nupn_content),
+                      ("nupn", "1.1", Parser.nupn_content),), # toolinfo parser
+                  lp=(tuple(:arctype, Parser.parse_arctype),), # label parser
+                  ef=(tuple(:priority, PNML.enable_filter_priority),),
+                ) # enabled filter
+    @test m isa PnmlModel
+    net = PNML.firstnet(m)
+    println()
+    foreach(println, pairs(net.toolparser)) # ::XMLNode, ::APN
+    println()
+    foreach(println, pairs(net.labelparser)) # ::XMLNode, ::APN; Symbol
+    println()
+    foreach(println, pairs(net.enabled_filters)) # ::Dict, ::Dict, ::APN, ::Symbol
 end
 
 @testset "pnmlmodel(empty_page)" begin
