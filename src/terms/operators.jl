@@ -54,7 +54,7 @@ function (op::Operator)(#= parameters? =#)
     #println("\nOperator functor $(tag(op)) arity $(arity(op))") #! debug
     input = map(term -> term(), inputs(op)) #^ evaluate each operator or variable
 
-    @assert all((in,so) -> typeof(in) == eltype(so), zip(input, insorts(op)))
+    @assert all((in,so) -> typeof(in) == eltype(so), zip(input, op.insorts))
     out = op.func(input) #^ apply func to evaluated +/-inputs
     #!@assert isa(out, eltype(x_sortof(op)))
     return out
@@ -65,12 +65,10 @@ TermInterface.isexpr(op::Operator)    = true
 TermInterface.iscall(op::Operator)    = true
 TermInterface.head(op::Operator)      = Operator #! A constructor
 TermInterface.operation(op::Operator) = TermInterface.head(op)
-#!TermInterface.children(op::Operator)  = nothing #getfield.((op,), ($(QuoteNode.(fields)...),))
+TermInterface.children(op::Operator)  = nothing #getfield.((op,), ($(QuoteNode.(fields)...),))
 TermInterface.arguments(op::Operator) = TermInterface.children(op)
 TermInterface.arity(op::Operator)     = length(inputs(op))
 TermInterface.metadata(op::Operator)  = metadata(op)
-
-#!TermInterface.arity(x::$name) = $(length(fields))
 
 # maketerm is used to rewrite terms of the inexprs.
 function TermInterface.maketerm(::Type{Operator}, head, children, metadata)
@@ -294,7 +292,7 @@ end
 
 # Forward to the NamedOperator or AbstractOperator declaration in the DeclDict.
 function (uo::UserOperator)(parameters) # TODO add variables
-    if has_operator(uo.declaration)
+    if has_operator(decldict(uo.net), uo.declaration)
         op = operator(uo.net, uo.declaration) # Lookup operator in DeclDict.
         r = op(parameters) # Operator objects are functors.
         @warn "found operator for $(uo.declaration)" op r
