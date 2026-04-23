@@ -4,7 +4,7 @@ Parser module of PNML.
 See [`LabelParser`](@ref), (`ToolParser`)(@ref).
 """
 module Parser
-import OrderedCollections: OrderedDict, LittleDict, freeze, OrderedSet
+import OrderedCollections: LittleDict, OrderedDict, OrderedSet, freeze
 import Base: eltype
 import AutoHashEquals: @auto_hash_equals
 import EzXML
