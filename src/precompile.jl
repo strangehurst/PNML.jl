@@ -25,7 +25,7 @@ PrecompileTools.@setup_workload begin
 
             let pntds = ["hlcore", "hlnet", "pt_hlpng", "symmetricnet"]
                 for pntd in pntds
-                     PNML.metagraph(pnmlmodel(xmlnode("""<?xml version="1.0"?>
+                    PNML.metagraph(pnmlmodel(xmlnode("""<?xml version="1.0"?>
                         <pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
                         <net id="smallnet_$pntd" type="$pntd">
                         <name> <text>Some Net</text> </name>
@@ -39,11 +39,11 @@ PrecompileTools.@setup_workload begin
                                                 <numberconstant value="100">
                                                     <positive/>
                                                 </numberconstant>
-                                        </subterm>
-                                        <subterm>
+                                            </subterm>
+                                            <subterm>
                                                 <dotconstant/>
                                             </subterm>
-                                    </numberof>
+                                        </numberof>
                                     </structure>
                                 </hlinitialMarking>
                                 <type>
@@ -64,11 +64,11 @@ PrecompileTools.@setup_workload begin
                                                 <numberconstant value="12">
                                                     <positive/>
                                                 </numberconstant>
-                                        </subterm>
-                                        <subterm>
+                                            </subterm>
+                                            <subterm>
                                                 <dotconstant/>
                                             </subterm>
-                                    </numberof>
+                                        </numberof>
                                     </structure>
                                 </hlinscription>
                             </arc>
