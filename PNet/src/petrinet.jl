@@ -131,7 +131,8 @@ end
 function HLPetriNet(str::AbstractString)
     @assert @isdefined(pnmlmodel) "pnmlmodel should be defined"
 
-    HLPetriNet(pnmlmodel(PNML.xmlnode(str); tp_vec=ToolParser[], lp_vec=LabelParser[]))
+    HLPetriNet(pnmlmodel(PNML.xmlnode(str);
+                         tp=(("nupn", "1.1", PNML.Parser.nupn_content),), ))
 end
 HLPetriNet(model::PnmlModel) = HLPetriNet(PNML.firstnet(model))
 
