@@ -50,44 +50,31 @@ end
 """
     plugins!(dict::AbstractDict, kwargs, plugintag)
 
-If `kwargs[plugintag]` has a collection of tuples with
-the first element being a key of `dict` and the last entry the callable.
+Fill `dict` if `kwargs[plugintag]` exists & has a collection of tuples.
+The first tuple element being a key of `dict` and the last entry the callable.
 Intermediate elements are dictionary keys for nested dictionaries.
 """
 function plugins!(dict::AbstractDict, kwargs, plugintag)
     if haskey(kwargs, plugintag) &&
             !isnothing(kwargs[plugintag]) && !isempty(kwargs[plugintag])
-        @warn "add $(length(kwargs[plugintag])) $plugintag plugin(s)" kwargs[plugintag] dict
+        @info "add $(length(kwargs[plugintag])) $plugintag plugin(s)" #kwargs[plugintag] dict
         for plugin in kwargs[plugintag]
             #! todo sanity check labelparser
             @show plugin #! bring-up
-            if length(plugin) == 2
-                dict[plugin[1]] = last(plugin)
-            elseif length(plugin) == 3
-                if haskey(dict, plugin[1])
-                    dict[plugin[1]][plugin[2]] = last(plugin)
-                else
-                    dict[plugin[1]] = LittleDict(plugin[2] => last(plugin))
-                end
-            elseif length(plugin) == 4
-                if haskey(dict, plugin[1])
-                    if haskey(dict, plugin[2])
-                        if haskey(dict, plugin[3])
-                            dict[plugin[1]][plugin[2]][plugin[3]] = last(plugin)
-                        else
-                            dict[plugin[1]][plugin[2]] = LittleDict(plugin[3] => last(plugin))
-                        end
-                    else
-                        dict[plugin[1]][plugin[2]] => LittleDict(plugin[3] => last(plugin))
-                    end
-                else
-                    dict[plugin[1]] = LittleDict(plugin[2] => LittleDict(plugin[3] => last(plugin)))
-                end
+            if length(plugin) >= 2
+                push!(dict, recurse_plugin(plugin, 1, length(plugin)))
             else
-                error("plugin $plugin too long: $(length(plugin) )")
+                error("plugin $plugin size wrong: $(length(plugin) )")
            end
         end
-        #@warn dict #! bring-up
+    end
+end #= function plugins! =#
+
+function recurse_plugin(plugin, i, n)
+    if i < n - 1
+        return plugin[i] => LittleDict(plugin[i+1] => recurse_plugin(plugin, i+1, n))
+    else
+        return plugin[i] => plugin[n]
     end
 end
 
@@ -96,8 +83,11 @@ end
 
 [`PnmlNet`](@ref) created from an `<net>` `XMLNode`.
 
-# Arguments
+# Options
  - pntd_override::Maybe{AbstractPnmlType}
+ - lp: optional label parser plugins, a collection of (Symbol, callable) tuples
+ - tp: optional toolspecific parser plugins, a collection of(String, String, callable) tuples
+ - ef: optional enabled filter plugins, a collection of (Symbol, callable) tuples
 """
 function parse_net(net_node::XMLNode; pntd_override::Maybe{String} = nothing, kwargs...)
     idregistry = IDRegistry() # empty
