@@ -237,9 +237,9 @@ function __parse_page!(net::PnmlNet{T}, page_node::XMLNode, pageid::Symbol) wher
         elseif nname in [:declaration, :toolspecific]
              # NOOP already parsed
         elseif nname == :page
-            #---------------------------------------------------------
-            # Subpage stored at net-level with key in page's id set.
-            #---------------------------------------------------------
+            #---------------------------------------------------------------------------
+            # Subpage stored at net-level with key in page's id set (until flattened).
+            #---------------------------------------------------------------------------
             parse_page!(net, page_idset(page), child)
         elseif nname == :name
             page.namelabel = net.labelparser[nname](child, net; parentid=pageid)

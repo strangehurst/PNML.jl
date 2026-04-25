@@ -177,9 +177,15 @@ function comp_mark_inscription(net::APN, mark_dict, transition_id, cond_term,
 end
 
 """
-Return enabled state,
-update `tr_vars` (variable ids of transition)
-and `binding_sets` (map from variable id to set of substitution values).
+    get_variable_substitutions!(binding_sets, net::APN, transition_id, tr_vars, mark_dict)
+# Arguments
+ - binding_sets map from variable id to set of substitution values
+ - net contains
+ - transition_id
+ - tr_vars variable ids of transition
+ - mark_dict
+
+Return enabled state, update `tr_vars`  and `binding_sets`.
 """
 function get_variable_substitutions!(binding_sets, net::APN, transition_id, tr_vars, mark_dict)
     for place_id in preset(net, transition_id)

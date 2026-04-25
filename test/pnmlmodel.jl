@@ -38,11 +38,8 @@ using .TestUtils
                 ) # enabled filter
     @test m isa PnmlModel
     net = PNML.firstnet(m)
-    println()
     foreach(println, pairs(net.toolparser)) # ::XMLNode, ::APN
-    println()
     foreach(println, pairs(net.labelparser)) # ::XMLNode, ::APN; Symbol
-    println()
     foreach(println, pairs(net.enabled_filters)) # ::Dict, ::Dict, ::APN, ::Symbol
 end
 

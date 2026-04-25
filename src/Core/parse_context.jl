@@ -3,12 +3,10 @@
 
 Fill a dictionary with default enabled filters. Part of the enabling rule.
 Based on ISO 15909-1:2019, ISO 15909-3:2021.
-
 """
 function fill_builtin_enabled_filters! end
 fill_builtin_enabled_filters!(net::APN) = fill_builtin_enabled_filters!(net.enabled_filters)
 function fill_builtin_enabled_filters!(dict::AbstractDict)
-    #println("fill_builtin_enabled_filters")
     dict[:inhibit] = enable_filter_inhibit
     dict[:reset] = enable_filter_reset
     dict[:read] = enable_filter_read
@@ -16,7 +14,6 @@ function fill_builtin_enabled_filters!(dict::AbstractDict)
     dict[:priority] =  enable_filter_priority
     dict[:tpn] = enable_filter_tpn
 end
-
 
 """
     fill_builtin_sorts!(net::APN) -> Nothing
@@ -34,6 +31,7 @@ function fill_builtin_sorts!(net::APN)
 
     return nothing
 end
+"Insert a `NamedSort` wrapping `sort"
 function __insert_sort!(net, tag, name, sort::AbstractSort)
     nsort = Declarations.NamedSort(tag, name, sort, net)
     fill_sort_tag!(net, tag, nsort)
