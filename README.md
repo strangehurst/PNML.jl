@@ -1,2 +1,3 @@
-# PNMLToolkit.jl
-Monorepo for PNML et al.
+# PNML.jl
+
+Placeholder, former content now lives in PNMLToolkit.jl/PNML.
